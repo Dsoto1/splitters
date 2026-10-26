@@ -15665,7 +15665,7 @@
       "url": "https://elbolilloduro.itch.io/metro",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "photo textures replaced by one flat colour per face (no image shipped)"
       ]
@@ -15681,7 +15681,7 @@
       "url": "https://elbolilloduro.itch.io/metro",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "photo textures replaced by one flat colour per face (no image shipped)"
       ]
@@ -15697,7 +15697,7 @@
       "url": "https://elbolilloduro.itch.io/metro",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "photo textures replaced by one flat colour per face (no image shipped)"
       ]
@@ -15713,7 +15713,7 @@
       "url": "https://elbolilloduro.itch.io/metro",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "photo textures replaced by one flat colour per face (no image shipped)"
       ]
@@ -15729,7 +15729,7 @@
       "url": "https://elbolilloduro.itch.io/metro",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "photo textures replaced by one flat colour per face (no image shipped)"
       ]
@@ -15745,7 +15745,7 @@
       "url": "https://elbolilloduro.itch.io/metro",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "photo textures replaced by one flat colour per face (no image shipped)"
       ]
@@ -15761,7 +15761,7 @@
       "url": "https://elbolilloduro.itch.io/metro",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "photo textures replaced by one flat colour per face (no image shipped)"
       ]
@@ -15777,9 +15777,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15793,9 +15793,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15809,9 +15809,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15825,9 +15825,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15841,9 +15841,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15857,9 +15857,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15873,9 +15873,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15889,9 +15889,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15905,9 +15905,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15921,9 +15921,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15937,9 +15937,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15953,9 +15953,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15969,9 +15969,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -15985,9 +15985,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16001,9 +16001,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16017,9 +16017,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16033,9 +16033,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16049,9 +16049,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16065,9 +16065,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16081,9 +16081,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16097,9 +16097,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16113,9 +16113,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16129,9 +16129,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16145,9 +16145,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16161,9 +16161,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -16177,9 +16177,9 @@
       "url": "https://loafbrr.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 512 px JPEGs"
       ]
     },
     {
@@ -17251,7 +17251,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17267,7 +17267,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17283,7 +17283,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17299,7 +17299,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17315,7 +17315,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17331,7 +17331,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17347,7 +17347,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17363,7 +17363,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17379,7 +17379,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17395,7 +17395,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17411,7 +17411,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17427,7 +17427,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17443,7 +17443,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17459,7 +17459,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17475,7 +17475,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17491,7 +17491,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17507,7 +17507,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17523,7 +17523,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17539,7 +17539,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17555,7 +17555,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17571,7 +17571,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17587,7 +17587,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17603,7 +17603,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17619,7 +17619,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17635,7 +17635,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17651,7 +17651,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17667,7 +17667,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17683,7 +17683,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17699,7 +17699,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17715,7 +17715,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17731,7 +17731,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17747,7 +17747,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17763,7 +17763,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17779,7 +17779,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17795,7 +17795,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17811,7 +17811,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17827,7 +17827,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17843,7 +17843,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17859,7 +17859,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17875,7 +17875,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17891,7 +17891,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17907,7 +17907,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17923,7 +17923,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17939,7 +17939,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17955,7 +17955,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17971,7 +17971,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -17987,7 +17987,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18003,7 +18003,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18019,7 +18019,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18035,7 +18035,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18051,7 +18051,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18067,7 +18067,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18083,7 +18083,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18099,7 +18099,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18115,7 +18115,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18131,7 +18131,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18147,7 +18147,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18163,7 +18163,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18179,7 +18179,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18195,7 +18195,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18211,7 +18211,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18227,7 +18227,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18243,7 +18243,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18259,7 +18259,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18275,7 +18275,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18291,7 +18291,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18307,7 +18307,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18323,7 +18323,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18339,7 +18339,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18355,7 +18355,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18371,7 +18371,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18387,7 +18387,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18403,7 +18403,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18419,7 +18419,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18435,7 +18435,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18451,7 +18451,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18467,7 +18467,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18483,7 +18483,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18499,7 +18499,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18515,7 +18515,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18531,7 +18531,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18547,7 +18547,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18563,7 +18563,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18579,7 +18579,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18595,7 +18595,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18611,7 +18611,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18627,7 +18627,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18643,7 +18643,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18659,7 +18659,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18675,7 +18675,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18691,7 +18691,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18707,7 +18707,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18723,7 +18723,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18739,7 +18739,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18755,7 +18755,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18771,7 +18771,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18787,7 +18787,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18803,7 +18803,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18819,7 +18819,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18835,7 +18835,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18851,7 +18851,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18867,7 +18867,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18883,7 +18883,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18899,7 +18899,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18915,7 +18915,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18931,7 +18931,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18947,7 +18947,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18963,7 +18963,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18979,7 +18979,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -18995,7 +18995,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19011,7 +19011,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19027,7 +19027,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19043,7 +19043,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19059,7 +19059,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19075,7 +19075,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19091,7 +19091,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19107,7 +19107,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19123,7 +19123,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19139,7 +19139,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19155,7 +19155,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19171,7 +19171,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19187,7 +19187,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19203,7 +19203,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19219,7 +19219,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19235,7 +19235,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19251,7 +19251,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19267,7 +19267,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19283,7 +19283,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19299,7 +19299,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19315,7 +19315,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19331,7 +19331,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19347,7 +19347,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19363,7 +19363,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19379,7 +19379,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19395,7 +19395,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19411,7 +19411,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19427,7 +19427,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19443,7 +19443,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19459,7 +19459,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19475,7 +19475,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19491,7 +19491,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19507,7 +19507,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19523,7 +19523,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19539,7 +19539,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19555,7 +19555,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19571,7 +19571,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19587,7 +19587,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19603,7 +19603,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19619,7 +19619,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19635,7 +19635,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19651,7 +19651,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19667,7 +19667,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19683,7 +19683,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19699,7 +19699,7 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "untextured: each material keeps the pack's own colour"
       ]
     },
     {
@@ -19713,9 +19713,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19729,9 +19729,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19745,9 +19745,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19761,9 +19761,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19777,9 +19777,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19793,9 +19793,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19809,9 +19809,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19825,9 +19825,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19841,9 +19841,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19857,9 +19857,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19873,9 +19873,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19889,9 +19889,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19905,9 +19905,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19921,9 +19921,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19937,9 +19937,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19953,9 +19953,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19969,9 +19969,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -19985,9 +19985,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20001,9 +20001,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20017,9 +20017,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20033,9 +20033,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20049,9 +20049,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20065,9 +20065,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20081,9 +20081,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20097,9 +20097,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20113,9 +20113,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20129,9 +20129,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20145,9 +20145,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20161,9 +20161,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20177,9 +20177,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20193,9 +20193,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20209,9 +20209,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20225,9 +20225,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20241,9 +20241,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20257,9 +20257,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20273,9 +20273,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20289,9 +20289,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20305,9 +20305,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20321,9 +20321,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20337,9 +20337,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20353,9 +20353,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20369,9 +20369,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20385,9 +20385,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20401,9 +20401,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20417,9 +20417,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20433,9 +20433,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20449,9 +20449,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20465,9 +20465,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20481,9 +20481,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20497,9 +20497,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20513,9 +20513,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20529,9 +20529,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20545,9 +20545,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20561,9 +20561,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20577,9 +20577,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20593,9 +20593,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20609,9 +20609,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20625,9 +20625,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20641,9 +20641,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20657,9 +20657,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20673,9 +20673,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20689,9 +20689,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20705,9 +20705,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20721,9 +20721,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20737,9 +20737,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20753,9 +20753,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20769,9 +20769,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20785,9 +20785,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20801,9 +20801,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20817,9 +20817,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20833,9 +20833,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20849,9 +20849,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20865,9 +20865,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20881,9 +20881,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20897,9 +20897,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20913,9 +20913,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20929,9 +20929,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20945,9 +20945,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20961,9 +20961,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20977,9 +20977,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -20993,9 +20993,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21009,9 +21009,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21025,9 +21025,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21041,9 +21041,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21057,9 +21057,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21073,9 +21073,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21089,9 +21089,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21105,9 +21105,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21121,9 +21121,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21137,9 +21137,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21153,9 +21153,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21169,9 +21169,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21185,9 +21185,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21201,9 +21201,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21217,9 +21217,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21233,9 +21233,9 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {
@@ -21249,9 +21249,1257 @@
       "url": "https://sigilsvault.itch.io/",
       "license": "CC0-1.0",
       "modifications": [
-        "converted to glTF (FBX via three.js FBXLoader)",
+        "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "palette texture embedded"
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_corner.glb",
+      "sha256": "cc50db5fdc70bbd9",
+      "triangles": 56,
+      "bytes": 31980,
+      "source": "loafbrr-fences/brick_fence/brick_Wall_corner.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall.glb",
+      "sha256": "041019da5957d504",
+      "triangles": 44,
+      "bytes": 30932,
+      "source": "loafbrr-fences/brick_fence/brick_wall.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_gate.glb",
+      "sha256": "73f7e112ad8ce486",
+      "triangles": 324,
+      "bytes": 21344,
+      "source": "loafbrr-fences/brick_fence/brick_wall_gate.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_one_overhang.glb",
+      "sha256": "8eefa5c701a8f518",
+      "triangles": 52,
+      "bytes": 31316,
+      "source": "loafbrr-fences/brick_fence/brick_wall_one_overhang.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_one_overhang_small.glb",
+      "sha256": "cb431f59c7fd3027",
+      "triangles": 52,
+      "bytes": 31376,
+      "source": "loafbrr-fences/brick_fence/brick_wall_one_overhang_small.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_pole.glb",
+      "sha256": "b4f9446982b8c6d4",
+      "triangles": 36,
+      "bytes": 30868,
+      "source": "loafbrr-fences/brick_fence/brick_wall_pole.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_small.glb",
+      "sha256": "38014571155d3a91",
+      "triangles": 44,
+      "bytes": 31136,
+      "source": "loafbrr-fences/brick_fence/brick_wall_small.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_drystone_column.glb",
+      "sha256": "453f525837cd15d8",
+      "triangles": 28,
+      "bytes": 17748,
+      "source": "loafbrr-fences/drystone_wall/drystone_column.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_drystone_column_capped.glb",
+      "sha256": "a02c033314e2a01d",
+      "triangles": 44,
+      "bytes": 23908,
+      "source": "loafbrr-fences/drystone_wall/drystone_column_capped.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_drystone_column_tiles.glb",
+      "sha256": "c35e8355585a1033",
+      "triangles": 44,
+      "bytes": 33328,
+      "source": "loafbrr-fences/drystone_wall/drystone_column_tiles.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall.glb",
+      "sha256": "22b747db91597c38",
+      "triangles": 104,
+      "bytes": 21228,
+      "source": "loafbrr-fences/drystone_wall/drystone_wall.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_capped.glb",
+      "sha256": "b64429e19c03b530",
+      "triangles": 116,
+      "bytes": 27124,
+      "source": "loafbrr-fences/drystone_wall/drystone_wall_capped.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_half.glb",
+      "sha256": "7b5e969011730e07",
+      "triangles": 64,
+      "bytes": 19536,
+      "source": "loafbrr-fences/drystone_wall/drystone_wall_half.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_half_capped.glb",
+      "sha256": "f5de8d5cda9d0e56",
+      "triangles": 76,
+      "bytes": 25528,
+      "source": "loafbrr-fences/drystone_wall/drystone_wall_half_capped.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_half_tiles.glb",
+      "sha256": "0eea0916897f6a02",
+      "triangles": 108,
+      "bytes": 36384,
+      "source": "loafbrr-fences/drystone_wall/drystone_wall_half_tiles.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_tiles.glb",
+      "sha256": "c99054799a8082e6",
+      "triangles": 172,
+      "bytes": 39600,
+      "source": "loafbrr-fences/drystone_wall/drystone_wall_tiles.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_beam.glb",
+      "sha256": "8f1fc57e58a9305d",
+      "triangles": 36,
+      "bytes": 14744,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_beam.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_beam_b.glb",
+      "sha256": "4e28ff28e45f38e1",
+      "triangles": 36,
+      "bytes": 14748,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_beam_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_beam_c.glb",
+      "sha256": "053478991d0480f9",
+      "triangles": 36,
+      "bytes": 14748,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_beam_alt_2.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_broken.glb",
+      "sha256": "0d0b77d7f3f52b70",
+      "triangles": 108,
+      "bytes": 18632,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_broken.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_broken_b.glb",
+      "sha256": "9c1eadc1cba97ffe",
+      "triangles": 112,
+      "bytes": 18860,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_broken_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_broken_c.glb",
+      "sha256": "db4bf8f2e7cb1276",
+      "triangles": 200,
+      "bytes": 23280,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_broken_alt2.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_closed.glb",
+      "sha256": "bfb14fc512402977",
+      "triangles": 144,
+      "bytes": 20680,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_closed.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_open_crossed.glb",
+      "sha256": "3fd630375f92d97c",
+      "triangles": 108,
+      "bytes": 18644,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_oen_crossed.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_open.glb",
+      "sha256": "80635b8ede27e31f",
+      "triangles": 108,
+      "bytes": 18640,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_open.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_open_b.glb",
+      "sha256": "c18f58ac048f4cf1",
+      "triangles": 108,
+      "bytes": 18640,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_open_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_pile.glb",
+      "sha256": "302bf488b84b462f",
+      "triangles": 76,
+      "bytes": 16960,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_pile.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post.glb",
+      "sha256": "49bec8413230dcf1",
+      "triangles": 36,
+      "bytes": 14804,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_pole.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_b.glb",
+      "sha256": "a070f47f9e4e0bd9",
+      "triangles": 36,
+      "bytes": 14792,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_pole_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_c.glb",
+      "sha256": "d80d4db9fd54c46a",
+      "triangles": 36,
+      "bytes": 14812,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_pole_alt_2.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_broken.glb",
+      "sha256": "fbff6a33a61f0253",
+      "triangles": 78,
+      "bytes": 16920,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_pole_broken_large.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_stump.glb",
+      "sha256": "356e5a07c3842000",
+      "triangles": 46,
+      "bytes": 15196,
+      "source": "loafbrr-fences/low_wooden_fence/wooden_fence_pole_broken_small.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_metal_gate.glb",
+      "sha256": "b4b986ed4e5a580b",
+      "triangles": 114,
+      "bytes": 11344,
+      "source": "loafbrr-fences/metal_fence/gate.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_gate.glb",
+      "sha256": "b2971dcb8a7393c7",
+      "triangles": 56,
+      "bytes": 5200,
+      "source": "loafbrr-fences/metal_fence/metal_fence_gate_with_gate.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_both_sides.glb",
+      "sha256": "939b6aef0c44615b",
+      "triangles": 34,
+      "bytes": 4408,
+      "source": "loafbrr-fences/metal_fence/metalfence_both_sides_no_topbar.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_both_sides_topbar.glb",
+      "sha256": "c5a031f36d188abb",
+      "triangles": 46,
+      "bytes": 5276,
+      "source": "loafbrr-fences/metal_fence/metalfence_both_sides_topbar.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_gate_posts.glb",
+      "sha256": "d7e2f234c00b00a1",
+      "triangles": 56,
+      "bytes": 5204,
+      "source": "loafbrr-fences/metal_fence/metalfence_gate_only_sides.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_one_side.glb",
+      "sha256": "fb55a50f44fe6fc5",
+      "triangles": 18,
+      "bytes": 3388,
+      "source": "loafbrr-fences/metal_fence/metalfence_one_side_no_topbar.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_one_side_topbar.glb",
+      "sha256": "4871d211ab417dfa",
+      "triangles": 34,
+      "bytes": 4456,
+      "source": "loafbrr-fences/metal_fence/metalfence_one_side_topbar.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "photo textures replaced by one flat colour per face (no image shipped)"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_broken.glb",
+      "sha256": "4ceb4d632801bbed",
+      "triangles": 164,
+      "bytes": 18180,
+      "source": "loafbrr-fences/plackard_wall/plackard_broken.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_broken_b.glb",
+      "sha256": "8d02e66feb070c3c",
+      "triangles": 128,
+      "bytes": 16364,
+      "source": "loafbrr-fences/plackard_wall/plackard_broken_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_broken_slanted.glb",
+      "sha256": "b9a437b3dd422cb2",
+      "triangles": 172,
+      "bytes": 18208,
+      "source": "loafbrr-fences/plackard_wall/plackard_broken_slanted.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_closed.glb",
+      "sha256": "f1618b633230fd23",
+      "triangles": 152,
+      "bytes": 17772,
+      "source": "loafbrr-fences/plackard_wall/plackard_closed.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_closed_full.glb",
+      "sha256": "8519482a4512535f",
+      "triangles": 108,
+      "bytes": 15496,
+      "source": "loafbrr-fences/plackard_wall/plackard_closed_full.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner.glb",
+      "sha256": "7e3d7be6a7c82879",
+      "triangles": 96,
+      "bytes": 14964,
+      "source": "loafbrr-fences/plackard_wall/plackard_corner.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_closed.glb",
+      "sha256": "2defdf921fa8227d",
+      "triangles": 36,
+      "bytes": 12432,
+      "source": "loafbrr-fences/plackard_wall/plackard_corner_closed.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_closed_b.glb",
+      "sha256": "a8505a8de6cdd722",
+      "triangles": 36,
+      "bytes": 12436,
+      "source": "loafbrr-fences/plackard_wall/plackard_corner_closed_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open.glb",
+      "sha256": "98c2efa855c310e1",
+      "triangles": 60,
+      "bytes": 13132,
+      "source": "loafbrr-fences/plackard_wall/plackard_corner_open.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open_90.glb",
+      "sha256": "deb15340c9f4d534",
+      "triangles": 60,
+      "bytes": 13216,
+      "source": "loafbrr-fences/plackard_wall/plackard_corner_open_90.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open_90_b.glb",
+      "sha256": "63fd3d4b32575434",
+      "triangles": 60,
+      "bytes": 13220,
+      "source": "loafbrr-fences/plackard_wall/plackard_corner_open_90_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open_b.glb",
+      "sha256": "98293ce582bfdaf5",
+      "triangles": 60,
+      "bytes": 13456,
+      "source": "loafbrr-fences/plackard_wall/plackard_corner_open_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open.glb",
+      "sha256": "b479c375d36462c0",
+      "triangles": 176,
+      "bytes": 18588,
+      "source": "loafbrr-fences/plackard_wall/plackard_open.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open_b.glb",
+      "sha256": "69d7f2307b82a66f",
+      "triangles": 96,
+      "bytes": 14888,
+      "source": "loafbrr-fences/plackard_wall/plackard_open_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open_c.glb",
+      "sha256": "5c804aa19b0f9e2d",
+      "triangles": 176,
+      "bytes": 18592,
+      "source": "loafbrr-fences/plackard_wall/plackard_open_alt2.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open_patched.glb",
+      "sha256": "51f717ce4f657066",
+      "triangles": 176,
+      "bytes": 17556,
+      "source": "loafbrr-fences/plackard_wall/plackard_open_patched.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_broken.glb",
+      "sha256": "2f540bec9ef4cd67",
+      "triangles": 68,
+      "bytes": 13584,
+      "source": "loafbrr-fences/plackard_wall/plackard_slab_boken.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_broken_b.glb",
+      "sha256": "3e8e38aebe3c6f02",
+      "triangles": 68,
+      "bytes": 13592,
+      "source": "loafbrr-fences/plackard_wall/plackard_slab_broken_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_chipped.glb",
+      "sha256": "bccfb9f0a3d33947",
+      "triangles": 44,
+      "bytes": 12680,
+      "source": "loafbrr-fences/plackard_wall/plackard_slab_chipped.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_chipped_b.glb",
+      "sha256": "00615043ad4a985d",
+      "triangles": 60,
+      "bytes": 13804,
+      "source": "loafbrr-fences/plackard_wall/plackard_slab_chipped_alt.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_full.glb",
+      "sha256": "10d1d984f9b485df",
+      "triangles": 36,
+      "bytes": 12832,
+      "source": "loafbrr-fences/plackard_wall/plackard_slab_full.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_half.glb",
+      "sha256": "875234ceece268df",
+      "triangles": 24,
+      "bytes": 12276,
+      "source": "loafbrr-fences/plackard_wall/plackard_slab_half.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_single.glb",
+      "sha256": "e01ff4b0234ee4f8",
+      "triangles": 12,
+      "bytes": 11724,
+      "source": "loafbrr-fences/plackard_wall/plackard_slab_single.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_wood_patched.glb",
+      "sha256": "7ffde6173aaf52f1",
+      "triangles": 60,
+      "bytes": 13444,
+      "source": "loafbrr-fences/plackard_wall/plackard_slab_wood_patched.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall.glb",
+      "sha256": "b064822aaa2cb711",
+      "triangles": 60,
+      "bytes": 27512,
+      "source": "loafbrr-fences/plaster_wall/plaster_wall.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plaster_column.glb",
+      "sha256": "0d6aadffaf7c2f8c",
+      "triangles": 36,
+      "bytes": 17104,
+      "source": "loafbrr-fences/plaster_wall/plaster_wall_column.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plaster_column_fancy.glb",
+      "sha256": "ca18c7c5bcfb41cb",
+      "triangles": 84,
+      "bytes": 19248,
+      "source": "loafbrr-fences/plaster_wall/plaster_wall_column_fancy.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall_fenced.glb",
+      "sha256": "8e896f3efd6e579f",
+      "triangles": 408,
+      "bytes": 47672,
+      "source": "loafbrr-fences/plaster_wall/plaster_wall_fenced.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall_half.glb",
+      "sha256": "1954b7dab14573d2",
+      "triangles": 44,
+      "bytes": 26880,
+      "source": "loafbrr-fences/plaster_wall/plaster_wall_half.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall_half_fenced.glb",
+      "sha256": "4525054e7626223a",
+      "triangles": 252,
+      "bytes": 40676,
+      "source": "loafbrr-fences/plaster_wall/plaster_wall_half_fenced.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plastic_gate_left.glb",
+      "sha256": "b4d1164262ce76eb",
+      "triangles": 476,
+      "bytes": 23244,
+      "source": "loafbrr-fences/plaster_wall/plastic_gate_left.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_plastic_gate_right.glb",
+      "sha256": "e8f8381d75b9fd81",
+      "triangles": 528,
+      "bytes": 25276,
+      "source": "loafbrr-fences/plaster_wall/plastic_gate_right.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_left.glb",
+      "sha256": "575875cbc655008d",
+      "triangles": 156,
+      "bytes": 22512,
+      "source": "loafbrr-fences/white_picket_fence/white_picket_fence_closed_left.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_right.glb",
+      "sha256": "eb3a1d5325c77302",
+      "triangles": 156,
+      "bytes": 23536,
+      "source": "loafbrr-fences/white_picket_fence/white_picket_fence_closed_right.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_picket_gate.glb",
+      "sha256": "d758564880b65b3d",
+      "triangles": 113,
+      "bytes": 19800,
+      "source": "loafbrr-fences/white_picket_fence/white_picket_fence_gate.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_picket_gate_posts.glb",
+      "sha256": "fe4a2ee18c1391be",
+      "triangles": 72,
+      "bytes": 18132,
+      "source": "loafbrr-fences/white_picket_fence/white_picket_fence_gate_poles.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_open_left.glb",
+      "sha256": "5cee26b1a1fe23dc",
+      "triangles": 120,
+      "bytes": 20292,
+      "source": "loafbrr-fences/white_picket_fence/white_picket_fence_open_left.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_open_right.glb",
+      "sha256": "dd568ae0b3d43288",
+      "triangles": 120,
+      "bytes": 20248,
+      "source": "loafbrr-fences/white_picket_fence/white_picket_fence_open_right.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/lf_picket_post.glb",
+      "sha256": "ea647ed782706e7c",
+      "triangles": 36,
+      "bytes": 15972,
+      "source": "loafbrr-fences/white_picket_fence/white_picket_fence_pole.glb",
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from the glTF in the download",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 256 px JPEGs"
       ]
     },
     {

@@ -413,7 +413,8 @@
       "download": "Low Poly Wild West",
       "models": ".",
       "convert": true,
-      "scale": 0.01
+      "scale": 0.01,
+      "untextured": true
     },
     "sigilsvault-modular-dungeon": {
       "title": "Modular Dungeon Kit",
@@ -423,6 +424,18 @@
       "licenseFile": "assets-src/sigilsvault-modular-dungeon/License.txt",
       "retrieved": "2026-10-26",
       "download": "modular dungeon kit",
+      "models": ".",
+      "convert": true,
+      "textureSize": 256
+    },
+    "loafbrr-fences": {
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/loafbrr-fences/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Fences",
       "models": ".",
       "convert": true,
       "textureSize": 256
@@ -11045,6 +11058,637 @@
       "src": "Props/GLB format/pot.glb",
       "name": "Clay Pot",
       "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_corner",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_Wall_corner.glb",
+      "name": "Brick Wall Corner",
+      "category": "Fences & Walls",
+      "collide": "shell"
+    },
+    {
+      "id": "lf_brick_wall",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall.glb",
+      "name": "Brick Wall",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_gate",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_gate.glb",
+      "name": "Brick Wall Gate",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_one_overhang",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_one_overhang.glb",
+      "name": "Brick Wall One Overhang",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_one_overhang_small",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_one_overhang_small.glb",
+      "name": "Brick Wall One Overhang Small",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_pole",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_pole.glb",
+      "name": "Brick Wall Pole",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_small",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_small.glb",
+      "name": "Brick Wall Small",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_column",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column.glb",
+      "name": "Drystone Column",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_column_capped",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column_capped.glb",
+      "name": "Drystone Column Capped",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_column_tiles",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column_tiles.glb",
+      "name": "Drystone Column Tiles",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall.glb",
+      "name": "Drystone Wall",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_capped",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_capped.glb",
+      "name": "Drystone Wall Capped",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_half",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half.glb",
+      "name": "Drystone Wall Half",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_half_capped",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half_capped.glb",
+      "name": "Drystone Wall Half Capped",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_half_tiles",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half_tiles.glb",
+      "name": "Drystone Wall Half Tiles",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_tiles",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_tiles.glb",
+      "name": "Drystone Wall Tiles",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_beam",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam.glb",
+      "name": "Wooden Fence Beam",
+      "category": "Fences & Walls",
+      "collide": "none"
+    },
+    {
+      "id": "lf_wooden_fence_beam_b",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam_alt.glb",
+      "name": "Wooden Fence Beam B",
+      "category": "Fences & Walls",
+      "collide": "none"
+    },
+    {
+      "id": "lf_wooden_fence_beam_c",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam_alt_2.glb",
+      "name": "Wooden Fence Beam C",
+      "category": "Fences & Walls",
+      "collide": "none"
+    },
+    {
+      "id": "lf_wooden_fence_broken",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken.glb",
+      "name": "Wooden Fence Broken",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_broken_b",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken_alt.glb",
+      "name": "Wooden Fence Broken B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_broken_c",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken_alt2.glb",
+      "name": "Wooden Fence Broken C",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_closed",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_closed.glb",
+      "name": "Wooden Fence Closed",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_open_crossed",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_oen_crossed.glb",
+      "name": "Wooden Fence Open Crossed",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_open",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_open.glb",
+      "name": "Wooden Fence Open",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_open_b",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_open_alt.glb",
+      "name": "Wooden Fence Open B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_pile",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pile.glb",
+      "name": "Wooden Fence Pile",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole.glb",
+      "name": "Wooden Fence Post",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post_b",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_alt.glb",
+      "name": "Wooden Fence Post B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post_c",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_alt_2.glb",
+      "name": "Wooden Fence Post C",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post_broken",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_broken_large.glb",
+      "name": "Wooden Fence Post Broken",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post_stump",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_broken_small.glb",
+      "name": "Wooden Fence Post Stump",
+      "category": "Fences & Walls",
+      "collide": "none"
+    },
+    {
+      "id": "lf_metal_gate",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/gate.glb",
+      "name": "Metal Gate",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_gate",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metal_fence_gate_with_gate.glb",
+      "name": "Metal Fence Gate",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_both_sides",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_both_sides_no_topbar.glb",
+      "name": "Metal Fence Both Sides",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_both_sides_topbar",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_both_sides_topbar.glb",
+      "name": "Metal Fence Both Sides Topbar",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_gate_posts",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_gate_only_sides.glb",
+      "name": "Metal Fence Gate Posts",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_one_side",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_one_side_no_topbar.glb",
+      "name": "Metal Fence One Side",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_one_side_topbar",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_one_side_topbar.glb",
+      "name": "Metal Fence One Side Topbar",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_plackard_broken",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken.glb",
+      "name": "Concrete Panel Broken",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_broken_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken_alt.glb",
+      "name": "Concrete Panel Broken B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_broken_slanted",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken_slanted.glb",
+      "name": "Concrete Panel Broken Slanted",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_closed",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_closed.glb",
+      "name": "Concrete Panel Closed",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_closed_full",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_closed_full.glb",
+      "name": "Concrete Panel Closed Full",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner.glb",
+      "name": "Concrete Panel Corner",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_closed",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_closed.glb",
+      "name": "Concrete Panel Corner Closed",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_closed_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_closed_alt.glb",
+      "name": "Concrete Panel Corner Closed B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_open",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open.glb",
+      "name": "Concrete Panel Corner Open",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_open_90",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_90.glb",
+      "name": "Concrete Panel Corner Open 90°",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_open_90_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_90_alt.glb",
+      "name": "Concrete Panel Corner Open 90° B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_open_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_alt.glb",
+      "name": "Concrete Panel Corner Open B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_open",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open.glb",
+      "name": "Concrete Panel Open",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_open_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_alt.glb",
+      "name": "Concrete Panel Open B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_open_c",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_alt2.glb",
+      "name": "Concrete Panel Open C",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_open_patched",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_patched.glb",
+      "name": "Concrete Panel Open Patched",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_broken",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_boken.glb",
+      "name": "Concrete Slab Broken",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_broken_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_broken_alt.glb",
+      "name": "Concrete Slab Broken B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_chipped",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_chipped.glb",
+      "name": "Concrete Slab Chipped",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_chipped_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_chipped_alt.glb",
+      "name": "Concrete Slab Chipped B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_full",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_full.glb",
+      "name": "Concrete Slab Full",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_half",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_half.glb",
+      "name": "Concrete Slab Half",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_single",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_single.glb",
+      "name": "Concrete Slab Single",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_wood_patched",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_wood_patched.glb",
+      "name": "Concrete Slab Wood Patched",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_wall",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall.glb",
+      "name": "Plaster Wall",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_column",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_column.glb",
+      "name": "Plaster Column",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_column_fancy",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_column_fancy.glb",
+      "name": "Plaster Column Fancy",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_wall_fenced",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_fenced.glb",
+      "name": "Plaster Wall Fenced",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_wall_half",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_half.glb",
+      "name": "Plaster Wall Half",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_wall_half_fenced",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_half_fenced.glb",
+      "name": "Plaster Wall Half Fenced",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plastic_gate_left",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plastic_gate_left.glb",
+      "name": "Plastic Gate Left",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plastic_gate_right",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plastic_gate_right.glb",
+      "name": "Plastic Gate Right",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_fence_left",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_closed_left.glb",
+      "name": "Picket Fence Left",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_fence_right",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_closed_right.glb",
+      "name": "Picket Fence Right",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_gate",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_gate.glb",
+      "name": "Picket Gate",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_gate_posts",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_gate_poles.glb",
+      "name": "Picket Gate Posts",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_fence_open_left",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_open_left.glb",
+      "name": "Picket Fence Open Left",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_fence_open_right",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_open_right.glb",
+      "name": "Picket Fence Open Right",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_post",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_pole.glb",
+      "name": "Picket Post",
+      "category": "Fences & Walls",
       "collide": "box"
     }
   ]

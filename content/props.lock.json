@@ -10942,6 +10942,1020 @@
         1.088,
         0.578
       ]
+    },
+    {
+      "file": "props/lf_brick_wall_corner.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_Wall_corner.glb",
+      "triangles": 56,
+      "bytes": 31980,
+      "sha256": "cc50db5fdc70bbd9",
+      "size": [
+        1.151,
+        2.081,
+        1.149
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall.glb",
+      "triangles": 44,
+      "bytes": 30932,
+      "sha256": "041019da5957d504",
+      "size": [
+        4,
+        2.081,
+        0.3
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_gate.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_gate.glb",
+      "triangles": 324,
+      "bytes": 21344,
+      "sha256": "73f7e112ad8ce486",
+      "size": [
+        1.581,
+        1.639,
+        0.084
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_one_overhang.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_one_overhang.glb",
+      "triangles": 52,
+      "bytes": 31316,
+      "sha256": "8eefa5c701a8f518",
+      "size": [
+        4.049,
+        2.081,
+        0.299
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_one_overhang_small.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_one_overhang_small.glb",
+      "triangles": 52,
+      "bytes": 31376,
+      "sha256": "cb431f59c7fd3027",
+      "size": [
+        2.049,
+        2.081,
+        0.3
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_pole.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_pole.glb",
+      "triangles": 36,
+      "bytes": 30868,
+      "sha256": "b4f9446982b8c6d4",
+      "size": [
+        0.48,
+        2.2,
+        0.48
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_small.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_small.glb",
+      "triangles": 44,
+      "bytes": 31136,
+      "sha256": "38014571155d3a91",
+      "size": [
+        2,
+        2.081,
+        0.3
+      ]
+    },
+    {
+      "file": "props/lf_drystone_column.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column.glb",
+      "triangles": 28,
+      "bytes": 17748,
+      "sha256": "453f525837cd15d8",
+      "size": [
+        0.569,
+        0.9,
+        0.553
+      ]
+    },
+    {
+      "file": "props/lf_drystone_column_capped.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column_capped.glb",
+      "triangles": 44,
+      "bytes": 23908,
+      "sha256": "a02c033314e2a01d",
+      "size": [
+        0.6,
+        0.949,
+        0.6
+      ]
+    },
+    {
+      "file": "props/lf_drystone_column_tiles.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column_tiles.glb",
+      "triangles": 44,
+      "bytes": 33328,
+      "sha256": "c35e8355585a1033",
+      "size": [
+        0.569,
+        0.979,
+        0.565
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall.glb",
+      "triangles": 104,
+      "bytes": 21228,
+      "sha256": "22b747db91597c38",
+      "size": [
+        2,
+        0.846,
+        0.573
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_capped.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_capped.glb",
+      "triangles": 116,
+      "bytes": 27124,
+      "sha256": "b64429e19c03b530",
+      "size": [
+        2.013,
+        0.833,
+        0.573
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_half.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half.glb",
+      "triangles": 64,
+      "bytes": 19536,
+      "sha256": "7b5e969011730e07",
+      "size": [
+        1,
+        0.815,
+        0.513
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_half_capped.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half_capped.glb",
+      "triangles": 76,
+      "bytes": 25528,
+      "sha256": "f5de8d5cda9d0e56",
+      "size": [
+        1.013,
+        0.833,
+        0.513
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_half_tiles.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half_tiles.glb",
+      "triangles": 108,
+      "bytes": 36384,
+      "sha256": "0eea0916897f6a02",
+      "size": [
+        1,
+        0.94,
+        0.481
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_tiles.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_tiles.glb",
+      "triangles": 172,
+      "bytes": 39600,
+      "sha256": "c99054799a8082e6",
+      "size": [
+        2.007,
+        0.94,
+        0.511
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_beam.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam.glb",
+      "triangles": 36,
+      "bytes": 14744,
+      "sha256": "8f1fc57e58a9305d",
+      "size": [
+        1.997,
+        0.178,
+        0.128
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_beam_b.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam_alt.glb",
+      "triangles": 36,
+      "bytes": 14748,
+      "sha256": "4e28ff28e45f38e1",
+      "size": [
+        2.02,
+        0.187,
+        0.12
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_beam_c.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam_alt_2.glb",
+      "triangles": 36,
+      "bytes": 14748,
+      "sha256": "053478991d0480f9",
+      "size": [
+        2.018,
+        0.152,
+        0.131
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_broken.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken.glb",
+      "triangles": 108,
+      "bytes": 18632,
+      "sha256": "0d0b77d7f3f52b70",
+      "size": [
+        2.106,
+        1.275,
+        0.292
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_broken_b.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken_alt.glb",
+      "triangles": 112,
+      "bytes": 18860,
+      "sha256": "9c1eadc1cba97ffe",
+      "size": [
+        2.137,
+        1.199,
+        0.189
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_broken_c.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken_alt2.glb",
+      "triangles": 200,
+      "bytes": 23280,
+      "sha256": "db4bf8f2e7cb1276",
+      "size": [
+        2.072,
+        1.034,
+        0.83
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_closed.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_closed.glb",
+      "triangles": 144,
+      "bytes": 20680,
+      "sha256": "bfb14fc512402977",
+      "size": [
+        2.212,
+        1.199,
+        0.199
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_open_crossed.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_oen_crossed.glb",
+      "triangles": 108,
+      "bytes": 18644,
+      "sha256": "3fd630375f92d97c",
+      "size": [
+        2.124,
+        1.199,
+        0.237
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_open.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_open.glb",
+      "triangles": 108,
+      "bytes": 18640,
+      "sha256": "80635b8ede27e31f",
+      "size": [
+        2.117,
+        1.199,
+        0.189
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_open_b.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_open_alt.glb",
+      "triangles": 108,
+      "bytes": 18640,
+      "sha256": "c18f58ac048f4cf1",
+      "size": [
+        2.195,
+        1.199,
+        0.266
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_pile.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pile.glb",
+      "triangles": 76,
+      "bytes": 16960,
+      "sha256": "302bf488b84b462f",
+      "size": [
+        2.062,
+        0.276,
+        0.831
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole.glb",
+      "triangles": 36,
+      "bytes": 14804,
+      "sha256": "49bec8413230dcf1",
+      "size": [
+        0.237,
+        1.199,
+        0.249
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_b.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_alt.glb",
+      "triangles": 36,
+      "bytes": 14792,
+      "sha256": "a070f47f9e4e0bd9",
+      "size": [
+        0.189,
+        1.199,
+        0.185
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_c.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_alt_2.glb",
+      "triangles": 36,
+      "bytes": 14812,
+      "sha256": "d80d4db9fd54c46a",
+      "size": [
+        0.266,
+        1.199,
+        0.256
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_broken.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_broken_large.glb",
+      "triangles": 78,
+      "bytes": 16920,
+      "sha256": "fbff6a33a61f0253",
+      "size": [
+        0.266,
+        0.968,
+        0.256
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_stump.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_broken_small.glb",
+      "triangles": 46,
+      "bytes": 15196,
+      "sha256": "356e5a07c3842000",
+      "size": [
+        0.219,
+        0.453,
+        0.208
+      ]
+    },
+    {
+      "file": "props/lf_metal_gate.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/gate.glb",
+      "triangles": 114,
+      "bytes": 11344,
+      "sha256": "b4b986ed4e5a580b",
+      "size": [
+        1.035,
+        1.25,
+        0.045
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_gate.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metal_fence_gate_with_gate.glb",
+      "triangles": 56,
+      "bytes": 5200,
+      "sha256": "b2971dcb8a7393c7",
+      "size": [
+        1.189,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_both_sides.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_both_sides_no_topbar.glb",
+      "triangles": 34,
+      "bytes": 4408,
+      "sha256": "939b6aef0c44615b",
+      "size": [
+        2.696,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_both_sides_topbar.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_both_sides_topbar.glb",
+      "triangles": 46,
+      "bytes": 5276,
+      "sha256": "c5a031f36d188abb",
+      "size": [
+        2.696,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_gate_posts.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_gate_only_sides.glb",
+      "triangles": 56,
+      "bytes": 5204,
+      "sha256": "d7e2f234c00b00a1",
+      "size": [
+        1.189,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_one_side.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_one_side_no_topbar.glb",
+      "triangles": 18,
+      "bytes": 3388,
+      "sha256": "fb55a50f44fe6fc5",
+      "size": [
+        2.685,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_one_side_topbar.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_one_side_topbar.glb",
+      "triangles": 34,
+      "bytes": 4456,
+      "sha256": "4871d211ab417dfa",
+      "size": [
+        2.696,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_plackard_broken.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken.glb",
+      "triangles": 164,
+      "bytes": 18180,
+      "sha256": "4ceb4d632801bbed",
+      "size": [
+        3.051,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_broken_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken_alt.glb",
+      "triangles": 128,
+      "bytes": 16364,
+      "sha256": "8d02e66feb070c3c",
+      "size": [
+        3.051,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_broken_slanted.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken_slanted.glb",
+      "triangles": 172,
+      "bytes": 18208,
+      "sha256": "b9a437b3dd422cb2",
+      "size": [
+        3.159,
+        2.508,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_closed.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_closed.glb",
+      "triangles": 152,
+      "bytes": 17772,
+      "sha256": "f1618b633230fd23",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_closed_full.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_closed_full.glb",
+      "triangles": 108,
+      "bytes": 15496,
+      "sha256": "8519482a4512535f",
+      "size": [
+        3.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner.glb",
+      "triangles": 96,
+      "bytes": 14964,
+      "sha256": "7e3d7be6a7c82879",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_closed.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_closed.glb",
+      "triangles": 36,
+      "bytes": 12432,
+      "sha256": "2defdf921fa8227d",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_closed_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_closed_alt.glb",
+      "triangles": 36,
+      "bytes": 12436,
+      "sha256": "a8505a8de6cdd722",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open.glb",
+      "triangles": 60,
+      "bytes": 13132,
+      "sha256": "98c2efa855c310e1",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open_90.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_90.glb",
+      "triangles": 60,
+      "bytes": 13216,
+      "sha256": "deb15340c9f4d534",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open_90_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_90_alt.glb",
+      "triangles": 60,
+      "bytes": 13220,
+      "sha256": "63fd3d4b32575434",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_alt.glb",
+      "triangles": 60,
+      "bytes": 13456,
+      "sha256": "98293ce582bfdaf5",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open.glb",
+      "triangles": 176,
+      "bytes": 18588,
+      "sha256": "b479c375d36462c0",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_alt.glb",
+      "triangles": 96,
+      "bytes": 14888,
+      "sha256": "69d7f2307b82a66f",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open_c.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_alt2.glb",
+      "triangles": 176,
+      "bytes": 18592,
+      "sha256": "5c804aa19b0f9e2d",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open_patched.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_patched.glb",
+      "triangles": 176,
+      "bytes": 17556,
+      "sha256": "51f717ce4f657066",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_broken.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_boken.glb",
+      "triangles": 68,
+      "bytes": 13584,
+      "sha256": "2f540bec9ef4cd67",
+      "size": [
+        2.901,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_broken_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_broken_alt.glb",
+      "triangles": 68,
+      "bytes": 13592,
+      "sha256": "3e8e38aebe3c6f02",
+      "size": [
+        2.901,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_chipped.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_chipped.glb",
+      "triangles": 44,
+      "bytes": 12680,
+      "sha256": "bccfb9f0a3d33947",
+      "size": [
+        2.9,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_chipped_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_chipped_alt.glb",
+      "triangles": 60,
+      "bytes": 13804,
+      "sha256": "00615043ad4a985d",
+      "size": [
+        2.9,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_full.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_full.glb",
+      "triangles": 36,
+      "bytes": 12832,
+      "sha256": "10d1d984f9b485df",
+      "size": [
+        2.9,
+        2.433,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_half.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_half.glb",
+      "triangles": 24,
+      "bytes": 12276,
+      "sha256": "875234ceece268df",
+      "size": [
+        2.9,
+        1.616,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_single.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_single.glb",
+      "triangles": 12,
+      "bytes": 11724,
+      "sha256": "e01ff4b0234ee4f8",
+      "size": [
+        2.9,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_wood_patched.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_wood_patched.glb",
+      "triangles": 60,
+      "bytes": 13444,
+      "sha256": "7ffde6173aaf52f1",
+      "size": [
+        2.9,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall.glb",
+      "triangles": 60,
+      "bytes": 27512,
+      "sha256": "b064822aaa2cb711",
+      "size": [
+        2,
+        0.75,
+        0.399
+      ]
+    },
+    {
+      "file": "props/lf_plaster_column.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_column.glb",
+      "triangles": 36,
+      "bytes": 17104,
+      "sha256": "0d6aadffaf7c2f8c",
+      "size": [
+        0.528,
+        2.143,
+        0.528
+      ]
+    },
+    {
+      "file": "props/lf_plaster_column_fancy.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_column_fancy.glb",
+      "triangles": 84,
+      "bytes": 19248,
+      "sha256": "ca18c7c5bcfb41cb",
+      "size": [
+        0.528,
+        2.143,
+        0.528
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall_fenced.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_fenced.glb",
+      "triangles": 408,
+      "bytes": 47672,
+      "sha256": "8e896f3efd6e579f",
+      "size": [
+        2,
+        1.483,
+        0.419
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall_half.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_half.glb",
+      "triangles": 44,
+      "bytes": 26880,
+      "sha256": "1954b7dab14573d2",
+      "size": [
+        1,
+        0.75,
+        0.399
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall_half_fenced.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_half_fenced.glb",
+      "triangles": 252,
+      "bytes": 40676,
+      "sha256": "4525054e7626223a",
+      "size": [
+        1.007,
+        1.483,
+        0.43
+      ]
+    },
+    {
+      "file": "props/lf_plastic_gate_left.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plastic_gate_left.glb",
+      "triangles": 476,
+      "bytes": 23244,
+      "sha256": "b4d1164262ce76eb",
+      "size": [
+        2,
+        1.8,
+        0.061
+      ]
+    },
+    {
+      "file": "props/lf_plastic_gate_right.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plastic_gate_right.glb",
+      "triangles": 528,
+      "bytes": 25276,
+      "sha256": "e8f8381d75b9fd81",
+      "size": [
+        2.024,
+        1.8,
+        0.061
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_left.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_closed_left.glb",
+      "triangles": 156,
+      "bytes": 22512,
+      "sha256": "575875cbc655008d",
+      "size": [
+        2.388,
+        1.366,
+        0.261
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_right.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_closed_right.glb",
+      "triangles": 156,
+      "bytes": 23536,
+      "sha256": "eb3a1d5325c77302",
+      "size": [
+        2.389,
+        1.366,
+        0.261
+      ]
+    },
+    {
+      "file": "props/lf_picket_gate.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_gate.glb",
+      "triangles": 113,
+      "bytes": 19800,
+      "sha256": "d758564880b65b3d",
+      "size": [
+        1.08,
+        1.266,
+        0.062
+      ]
+    },
+    {
+      "file": "props/lf_picket_gate_posts.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_gate_poles.glb",
+      "triangles": 72,
+      "bytes": 18132,
+      "sha256": "fe4a2ee18c1391be",
+      "size": [
+        1.546,
+        1.366,
+        0.261
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_open_left.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_open_left.glb",
+      "triangles": 120,
+      "bytes": 20292,
+      "sha256": "5cee26b1a1fe23dc",
+      "size": [
+        2.164,
+        1.266,
+        0.062
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_open_right.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_open_right.glb",
+      "triangles": 120,
+      "bytes": 20248,
+      "sha256": "dd568ae0b3d43288",
+      "size": [
+        2.164,
+        1.266,
+        0.062
+      ]
+    },
+    {
+      "file": "props/lf_picket_post.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_pole.glb",
+      "triangles": 36,
+      "bytes": 15972,
+      "sha256": "ea647ed782706e7c",
+      "size": [
+        0.257,
+        1.366,
+        0.261
+      ]
     }
   ]
 }

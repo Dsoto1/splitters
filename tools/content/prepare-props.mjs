@@ -443,7 +443,8 @@ async function convertPiece(dir, pack, p) {
   }
   // Vertex colours some exports carry as painting masks, not colours.
   if (pack.dropVertexColors) for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) prim.setAttribute('COLOR_0', null);
-  if (pack.flatten) await flattenTextures(doc);
+  // `flatten` on a prop: only those pieces carry third-party photo maps (loafbrr's metal fence).
+  if (pack.flatten || p.flatten) await flattenTextures(doc);
   if (pack.colors) await paintFlat(doc, pack, p);
   for (const mat of doc.getRoot().listMaterials()) {
     mat.setMetallicRoughnessTexture(null).setNormalTexture(null).setOcclusionTexture(null).setMetallicFactor(0).setRoughnessFactor(0.8);

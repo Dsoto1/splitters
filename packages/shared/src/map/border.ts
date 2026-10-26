@@ -14,12 +14,14 @@ import { terrainHeightAt } from './terrain.ts';
  * - fence: a park-style electric fence that hums, zaps and throws you back
  * - forest: a dense wall of trees with undergrowth in front
  * - water: a beach running down into open sea
+ * - brick_wall, picket_fence, wooden_fence, drystone_wall, concrete_wall: a
+ *   wall or fence of loafbrr's Fences props (CC0) along the line
  *
  * Unlike the rest of the backdrop a border is solid: this module gives the
  * collision (barrier boxes, so they are never drawn by the tile styler) and
  * the fence's shock lines; the client draws the rest from the same layout.
  */
-export const BORDER_STYLES = ['none', 'cliffs', 'skyline', 'fence', 'forest', 'water'] as const;
+export const BORDER_STYLES = ['none', 'cliffs', 'skyline', 'fence', 'forest', 'water', 'brick_wall', 'picket_fence', 'wooden_fence', 'drystone_wall', 'concrete_wall'] as const;
 export type BorderStyle = (typeof BORDER_STYLES)[number];
 
 export const BORDER_LABELS: Record<BorderStyle, string> = {
@@ -29,7 +31,27 @@ export const BORDER_LABELS: Record<BorderStyle, string> = {
   fence: 'Electric fence',
   forest: 'Forest wall',
   water: 'Shoreline & sea',
+  brick_wall: 'Brick wall',
+  picket_fence: 'White picket fence',
+  wooden_fence: 'Wooden fence',
+  drystone_wall: 'Drystone wall',
+  concrete_wall: 'Concrete panel wall',
 };
+
+/**
+ * Walls and fences laid from props (loafbrr's Fences, `lf_*`): the panel
+ * repeated along the line just outside it (each stretched a little so a whole
+ * number fits a side), a post at every joint, as high as `height` (m).
+ */
+export const PROP_FENCES: Partial<Record<BorderStyle, { panel: string; post?: string; height: number }>> = {
+  brick_wall: { panel: 'lf_brick_wall', post: 'lf_brick_wall_pole', height: 2.2 },
+  picket_fence: { panel: 'lf_picket_fence_left', post: 'lf_picket_post', height: 1.37 },
+  wooden_fence: { panel: 'lf_wooden_fence_closed', post: 'lf_wooden_fence_post', height: 1.2 },
+  drystone_wall: { panel: 'lf_drystone_wall_capped', post: 'lf_drystone_column_capped', height: 0.95 },
+  concrete_wall: { panel: 'lf_plackard_closed_full', post: 'lf_plackard_corner_closed', height: 2.5 },
+};
+/** How far outside the boundary line a prop fence stands (m): inside the solid band behind it. */
+export const PROP_FENCE_OFFSET = 0.35;
 
 /** Sides of the boundary rectangle: north is its +Z edge, east its +X edge. */
 export const BORDER_SIDES = ['north', 'east', 'south', 'west'] as const;
@@ -154,7 +176,14 @@ export function borderFloor(map: Pick<MapDocument, 'terrain'>, boxes: readonly W
 }
 
 /** How high each style's solid wall reaches above the ground at the line (the bounds' own barrier carries on above). */
-const SOLID_HEIGHT: Record<Exclude<BorderStyle, 'none'>, number> = { cliffs: 24, skyline: 20, forest: 12, fence: ELECTRIC_FENCE.height, water: 0 };
+const SOLID_HEIGHT: Record<Exclude<BorderStyle, 'none'>, number> = {
+  cliffs: 24,
+  skyline: 20,
+  forest: 12,
+  fence: ELECTRIC_FENCE.height,
+  water: 0,
+  ...(Object.fromEntries(Object.entries(PROP_FENCES).map(([k, v]) => [k, v.height])) as Record<'brick_wall' | 'picket_fence' | 'wooden_fence' | 'drystone_wall' | 'concrete_wall', number>),
+};
 /** Collision is laid in pieces this long along an edge, each as high as its highest ground. */
 const SOLID_STEP = 12;
 

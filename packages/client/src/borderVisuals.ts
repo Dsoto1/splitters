@@ -10,6 +10,8 @@ import type { Observer } from '@babylonjs/core/Misc/observable';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import {
   ELECTRIC_FENCE,
+  PROP_FENCES,
+  PROP_FENCE_OFFSET,
   borderEdges,
   borderFloor,
   borderGround,
@@ -38,7 +40,8 @@ type V3 = [number, number, number];
  * plus GPU-instanced city-kit facades on the front row, the forest instanced
  * trees close in and instanced low-poly cones further out (its far rows), the
  * fence instanced posts and signs with one mesh of glowing wire, the shore one
- * beach and one sea mesh. Rebuilt whole when the map's border or boundary
+ * beach and one sea mesh, the prop walls and fences (brick, picket, wooden,
+ * drystone, concrete) their panel and post models instanced. Rebuilt whole when the map's border or boundary
  * changes; the collision lives in shared (borderBoxes).
  */
 export class BorderVisuals {
@@ -93,6 +96,8 @@ export class BorderVisuals {
     if (of('forest').length) waits.push(this.forest(of('forest'), ctx, build));
     if (of('fence').length) this.fence(of('fence'), ctx);
     if (of('water').length) this.water(of('water'), ctx);
+    const walled = edges.filter((e) => PROP_FENCES[e.style]);
+    if (walled.length) waits.push(this.propFence(walled, ctx, build));
     this.ready = Promise.all(waits).then(() => this.count());
     this.count();
   }
@@ -399,6 +404,51 @@ export class BorderVisuals {
     for (const m of made.meshes) this.add(m);
     this.materials.push(...made.materials);
     this.pulse = this.scene.onBeforeRenderObservable.add(() => made.animate(performance.now(), true));
+  }
+
+  // ---------------------------------------------------------------- prop walls and fences
+
+  /**
+   * A wall or fence of props just outside the line (see PROP_FENCES): the
+   * panel model repeated along each side, stretched a little so a whole number
+   * fits, each standing on the lower ground at its ends, and a post at every
+   * joint. One instanced mesh per model part, whatever the boundary's length.
+   */
+  private async propFence(edges: BorderEdge[], ctx: Ctx, build: number): Promise<void> {
+    if (!this.models) return;
+    const lay = new Map<string, Matrix[]>();
+    const put = (model: string, x: number, y: number, z: number, yaw: number, stretch = 1) => {
+      const list = lay.get(model) ?? lay.set(model, []).get(model)!;
+      list.push(Matrix.Compose(new Vector3(stretch, 1, 1), Quaternion.RotationAxis(Vector3.Up(), yaw), new Vector3(x, y, z)));
+    };
+    for (const e of edges) {
+      const spec = PROP_FENCES[e.style]!;
+      const panel = getProp(`prop.${spec.panel}`);
+      if (!panel) continue;
+      const f = frame(e);
+      // Panels run along their own x: turn that onto the side's direction.
+      const yaw = Math.atan2(-f.dir[1], f.dir[0]);
+      const n = Math.max(1, Math.round(e.length / panel.size[0]));
+      const len = e.length / n;
+      for (let i = 0; i < n; i++) {
+        const a = f.at(i * len, PROP_FENCE_OFFSET);
+        const b = f.at((i + 1) * len, PROP_FENCE_OFFSET);
+        const [x, z] = f.at((i + 0.5) * len, PROP_FENCE_OFFSET);
+        put(spec.panel, x, Math.min(ctx.ground(...a), ctx.ground(...b), ctx.ground(x, z)) - 0.05, z, yaw, len / panel.size[0]);
+      }
+      if (spec.post) for (let i = 0; i <= n; i++) {
+        const [x, z] = f.at(i * len, PROP_FENCE_OFFSET);
+        put(spec.post, x, ctx.ground(x, z) - 0.05, z, yaw);
+      }
+    }
+    const made = await Promise.all(
+      [...lay].map(([model, mats]) => {
+        const def = getProp(`prop.${model}`);
+        return def ? thinModel(this.models!, def.file, `border_wall_${model}`, mats).catch(() => [] as Mesh[]) : Promise.resolve([] as Mesh[]);
+      }),
+    );
+    if (build !== this.build) return made.flat().forEach((m) => m.dispose());
+    for (const m of made.flat()) this.add(m);
   }
 
   // ---------------------------------------------------------------- water
