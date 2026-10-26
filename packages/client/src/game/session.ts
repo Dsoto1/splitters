@@ -559,9 +559,7 @@ export class GameSession {
     this.pauseDrawnAt = t;
     this.hud.pauseContext();
     if (this.pauseMenu.tab === 'match') {
-      const html = this.hud.scoreHtml(this.scores, this.slot);
-      const box = $('pause-scores');
-      if (box.innerHTML !== html) box.innerHTML = html;
+      this.hud.renderPauseScores($('pause-scores'), this.scores, this.slot);
     }
     ($('pause-class') as HTMLButtonElement).hidden = !this.classesOn;
   }
@@ -971,6 +969,7 @@ export class GameSession {
         if (msg.lan?.length) this.showLanAddresses(msg.lan);
         const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
         this.hud.setTeams(teams);
+        this.hud.setBoardMode(msg.rules.mode);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
         this.hud.waitLabel = msg.rules.mode === 'core.zombies' ? 'Down: back at the next wave' : 'Respawning…';
         // Classes: the class screen opens as you join (and whenever you're down).
@@ -1009,7 +1008,7 @@ export class GameSession {
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, map: loaded.map.metadata.id };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, map: loaded.map.metadata.id };
         this.opts.onReady?.();
         void this.prepareMatch();
         break;
@@ -1037,6 +1036,8 @@ export class GameSession {
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8], size: n[11] ?? 1 });
         this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr, msg.hold);
         if (msg.ld) this.view.setLeaders(new Set(msg.ld.filter((s) => s >= 0)));
+        this.hud.setLeaders(msg.ld);
+        this.hud.setLife(msg.players);
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt, msg.tick);
         this.covers?.apply(msg.cv);
@@ -1288,6 +1289,9 @@ export class GameSession {
         this.serverStats = msg;
         this.noteIfSlow(msg);
         break;
+      case 'pings':
+        this.hud.setPings(msg.p);
+        break;
       case 'pong':
         break;
     }
@@ -1323,12 +1327,15 @@ export class GameSession {
     }
     for (const m of models) jobs.push(this.view.models.load(m).catch(() => undefined));
     let done = 0;
+    let started = false;
     const total = jobs.length + 2;
-    const tick = () => this.hud.setLoading(`Loading ${map.metadata.name}`, ++done / total);
+    // A file that finishes after the start (see the cap below) must not bring the loading screen back over the game.
+    const tick = () => void (started || this.hud.setLoading(`Loading ${map.metadata.name}`, ++done / total));
     this.hud.setLoading(`Loading ${map.metadata.name}`, 0);
     const all = Promise.all([...jobs.map((j) => j.then(tick, tick)), this.view.scene.whenReadyAsync().then(tick, tick), this.view.city.ready.then(tick, tick)]);
     // Never stall the start on one slow file.
     await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
+    started = true;
     if (this.closed) return;
     this.hud.setLoading(null);
     this.opts.transport.sendReady();
@@ -1806,7 +1813,7 @@ export class GameSession {
       this.mounts?.riders(),
     );
     this.sfx.remoteSteps(poses);
-    this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot);
+    this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot, this.phase === 'intermission');
     this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0, this.allied);
     if (local) {
       // Teammates on the minimap (co-op: every player is one).

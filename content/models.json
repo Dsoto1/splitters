@@ -502,7 +502,7 @@
       "out": "vehicles/hover_bike.glb",
       "pack": "kenney-space-kit",
       "file": "craft_speederA.glb",
-      "forward": "+z",
+      "forward": "-z",
       "length": 3.0
     },
     {

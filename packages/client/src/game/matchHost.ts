@@ -97,6 +97,8 @@ interface Remote {
   slot: number | null;
   /** Messages that came before the match was running (their hello comes at once). */
   early: string[] | null;
+  /** The friend's own round-trip time to us (ms), from their pings: for everyone's scoreboard. */
+  rtt?: number | undefined;
 }
 
 /**
@@ -168,6 +170,7 @@ export class MatchHost {
     let aiTotal = 0;
     let ticks = 0;
     let late = 0;
+    let pingRounds = 0;
     const wake = () => {
       if (this.stopped) return;
       const now = performance.now();
@@ -231,6 +234,11 @@ export class MatchHost {
           lateTicks: late,
         });
         tickTotal = tickMax = aiTotal = ticks = late = 0;
+        // Host game, every other second: each friend's ping (the host's own is 0) for everyone's scoreboard.
+        if (this.remotes.size && ++pingRounds % 2 === 0) {
+          const p = [me.slot, 0, ...[...this.remotes.values()].flatMap((r) => (r.slot !== null && r.rtt !== undefined ? [r.slot, r.rtt] : []))];
+          this.announce({ t: 'pings', p });
+        }
       }
       this.timer = setTimeout(wake, Math.max(0, next - performance.now()));
     };
@@ -329,7 +337,10 @@ export class MatchHost {
       this.rosterToAll();
     } else if (msg.t === 'input' && r.slot !== null) match.queueInputs(r.slot, msg.inputs);
     else if (msg.t === 'ready' && r.slot !== null) match.ready(r.slot);
-    else if (msg.t === 'ping') this.sink.send(id, JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
+    else if (msg.t === 'ping') {
+      if (msg.rtt !== undefined) r.rtt = msg.rtt;
+      this.sink.send(id, JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
+    }
     // Only the host runs the match: a friend's host commands (or admin logins) are refused.
     else if ((msg.t === 'host' || msg.t === 'admin') && r.slot !== null) this.sink.send(id, JSON.stringify({ t: 'host', state: null, error: 'Only the host can change the match' } satisfies ServerMessage));
   }

@@ -27,6 +27,22 @@ export function liquidAt(liquids: readonly LiquidBox[], p: Vec3): LiquidBox | nu
   return null;
 }
 
+/**
+ * The surface a floating vehicle rides on at `p` (see FLOAT in mounts.ts):
+ * the top of the water or swamp whose column holds it, from the bottom of
+ * the pool up to `above` m over the surface, or null. Lava and acid carry
+ * nothing.
+ */
+export function floatSurface(liquids: readonly LiquidBox[], p: Vec3, above = 3): number | null {
+  let top: number | null = null;
+  for (const l of liquids) {
+    if (l.liquid !== 'water' && l.liquid !== 'swamp') continue;
+    if (p.x < l.min.x || p.x > l.max.x || p.z < l.min.z || p.z > l.max.z || p.y < l.min.y - 0.5 || p.y > l.max.y + above) continue;
+    if (top === null || l.max.y > top) top = l.max.y;
+  }
+  return top;
+}
+
 /** How each liquid treats you: speed swimming and wading, and damage per second while your feet are in it. */
 export const LIQUID_SPECS: Record<Liquid, { swim: number; wade: number; dps: number; label: string }> = {
   water: { swim: 0.7, wade: 0.85, dps: 0, label: 'Water' },
