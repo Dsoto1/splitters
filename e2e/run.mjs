@@ -1108,6 +1108,28 @@ async function vehiclesFlow(browser) {
     if (out) break;
   }
   check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
+  // A blast next to you while looking up shakes the view; once it settles, turning and looking around stay level
+  // (Babylon kept the up vector from the shake's last frame, which rolled the view and gun with every turn).
+  await page.evaluate(() => {
+    window.__cs.input.pitch = 0.35;
+    const me = window.__match.slots[window.__cs.slot];
+    const at = { x: me.move.pos.x + 2, y: me.move.pos.y + 0.3, z: me.move.pos.z + 1 };
+    window.__match.pendingEvents.push({ e: 'explode', s: -1, p: [at.x, at.y, at.z], r: 5 });
+    window.__match.splash(at, 5, 20, 0.3, null, undefined, 1);
+  });
+  await page.waitForTimeout(1200);
+  let roll = 0;
+  for (const [yaw, pitch] of [[1.2, 0], [0.8, 0.4], [1.5, -0.3]]) {
+    await page.evaluate(([yaw, pitch]) => { window.__cs.input.yaw += yaw; window.__cs.input.pitch = pitch; }, [yaw, pitch]);
+    await page.waitForTimeout(250);
+    roll = Math.max(roll, await page.evaluate(() => {
+      // How far a node's right axis leaves the horizontal: its roll, in degrees.
+      const deg = (n) => { n.computeWorldMatrix(true); const m = n.getWorldMatrix().m; return (Math.asin(Math.abs(m[1]) / Math.hypot(m[0], m[1], m[2])) * 180) / Math.PI; };
+      return Math.max(deg(window.__cs.view.camera), deg(window.__cs.view.viewRoot));
+    }));
+  }
+  await page.evaluate(() => (window.__cs.input.pitch = 0));
+  check(roll < 1, `after leaving the buggy and a blast nearby, the view and gun stay level as you turn (${roll.toFixed(2)}° roll)`);
   // Blow the buggy up: it goes up in a vehicle explosion and leaves a charred wreck the client keeps solid.
   const boom = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
