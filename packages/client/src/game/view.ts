@@ -2,6 +2,8 @@ import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Frustum } from '@babylonjs/core/Maths/math.frustum';
+import type { Plane } from '@babylonjs/core/Maths/math.plane';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
@@ -134,6 +136,10 @@ interface Avatar {
   /** Crowds: far avatars animate every few frames; the frames counted and the time saved up since. */
   animFrame?: number;
   animDt?: number;
+  /** The power-up glow last applied (it is only set again when it changes). */
+  glowKey?: string;
+  /** Crowds: left out of drawing while outside the view (see updateAvatars). */
+  culled?: boolean;
 }
 
 /** How long an NPC takes to climb out of a hatch or burrow (ms), and from how deep. */
@@ -168,6 +174,14 @@ const MAX_ACTIVE_RAGDOLLS = 12;
 const ANIM_LOD_CROWD = 24;
 const ANIM_LOD_NEAR = 45;
 const ANIM_LOD_FAR = 120;
+/** Crowds: a character is drawn while a sphere this big (m) round its middle touches the view (it covers the gun and most of a shadow). */
+const CULL_RADIUS = 2.5;
+
+/** Whether a sphere touches the view frustum (planes from Frustum.GetPlanes). */
+function inView(planes: readonly Plane[], x: number, y: number, z: number, r: number): boolean {
+  for (const p of planes) if (p.normal.x * x + p.normal.y * y + p.normal.z * z + p.d < -r) return false;
+  return true;
+}
 /** "Fade" setting: seconds a body lies there, then seconds it takes to sink away. */
 const CORPSE_STAY = 30;
 const CORPSE_SINK = 3;
@@ -773,6 +787,7 @@ export class GameView {
     const now = performance.now();
     const crowd = poses.length > ANIM_LOD_CROWD;
     const cam = crowd ? this.scene.activeCamera?.globalPosition : undefined;
+    const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
     const seen = new Set<number>();
     for (const p of poses) {
       if (p.slot === localSlot) continue;
@@ -831,15 +846,26 @@ export class GameView {
         }
         a.root.rotation.y = p.yaw;
       }
+      // Crowds: characters outside the view (with a margin for their shadows) are left out of drawing
+      // and the shadow map, and animate only now and then.
+      const out = !!planes && !a.ragdoll && !inView(planes, p.x, p.y + 0.9, p.z, CULL_RADIUS);
+      if (out !== !!a.culled) {
+        a.culled = out;
+        a.root.setEnabled(!out);
+      }
       a.placeholder.setEnabled(p.alive && !a.anim);
       const glowColor = p.powerups & POWERUP_DAMAGE_BIT ? '#c03cff' : p.powerups & POWERUP_SPEED_BIT ? '#36d6ff' : null;
-      a.mat.emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
+      // Only when it changes: setting a PBR colour marks every mesh using the material for a shader check.
+      const glowKey = `${glowColor}|${a.anim ? 1 : 0}`;
+      const reglow = a.glowKey !== glowKey;
+      a.glowKey = glowKey;
+      if (reglow) a.mat.emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
       if (a.anim) {
         // Riders stand still in their seats, however fast the vehicle goes.
         const speed = seated.has(p.slot) ? 0 : Math.hypot(a.vel.x, a.vel.z);
         // Far characters in a crowd animate every few frames, with the time saved up (a death always plays at once).
         const far = crowd && cam && p.alive ? Math.hypot(p.x - cam.x, p.z - cam.z) : 0;
-        const every = far > ANIM_LOD_FAR ? 4 : far > ANIM_LOD_NEAR ? 2 : 1;
+        const every = a.culled ? 8 : far > ANIM_LOD_FAR ? 4 : far > ANIM_LOD_NEAR ? 2 : 1;
         a.animDt = (a.animDt ?? 0) + dt;
         a.animFrame = ((a.animFrame ?? 0) + 1) % every;
         const animDt = Math.min(every > 1 ? 0.25 : 0.1, a.animDt);
@@ -854,7 +880,7 @@ export class GameView {
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
         });
-        if (a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
+        if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
       }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
       if (p.status || a.aura) {

@@ -1,7 +1,7 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { Vec3 } from '../math.ts';
 import { PLAYER, SPRINT, STANCES, TICK_DT, quantize, type Stance } from './constants.ts';
-import type { PhysicsWorld } from './physics.ts';
+import type { GroundHeight, PhysicsWorld } from './physics.ts';
 import { JET, LIQUID_SPECS, SWIM_DEPTH, liquidAt, type LiquidBox } from './liquids.ts';
 import { mapPortals, portalLinks } from './portals.ts';
 import { CHUTE_GLIDER, CHUTE_PARACHUTE, chuteVelY, chuteWish, wantsChute, type ChuteKind } from './parachute.ts';
@@ -124,6 +124,8 @@ export interface MoveEnv {
   glider?: boolean;
   /** Always open a canopy before a long fall, and never cut it away (bots). */
   autoChute?: boolean;
+  /** Coarse move over the terrain (bots no player is near): see PhysicsWorld.moveCharacter. */
+  ground?: GroundHeight;
 }
 
 /** A zone that changes gravity inside it (an axis-aligned box from `min` to `max`), as movement sees it. */
@@ -383,7 +385,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   }
 
   const desiredY = velY * dt;
-  const moved = physics.moveCharacter(collider, state.pos, { x: (wx + vx) * dt, y: desiredY, z: (wz + vz) * dt }, STANCES[stance].height * k, radius);
+  const moved = physics.moveCharacter(collider, state.pos, { x: (wx + vx) * dt, y: desiredY, z: (wz + vz) * dt }, STANCES[stance].height * k, radius, env.ground);
   let grounded = moved.grounded;
   if (grounded && velY < 0) velY = 0;
   // Bumped a ceiling while rising.

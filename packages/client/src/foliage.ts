@@ -3,9 +3,12 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import type { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { TERRAIN_MATERIALS, boxBounds, cellFoliage, getProp, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
+import { loadGraphicsQuality } from './game/atmosphere.ts';
 
 /** Plants by the job they do: carpet grass, taller tufts, flowers, low shrubs, bushes, and pebbles on bare ground. */
 const KINDS = {
@@ -46,6 +49,20 @@ function recipe(material: TerrainMaterial, level: number): Partial<Record<Kind, 
 
 /** Draw distance (m) per kind: grass pops in close, bushes further out. */
 const RANGE: Record<Kind, number> = { grass: 60, tall: 70, flower: 70, shrub: 90, pebbles: 50, bush: 130 };
+/** Decoration only, thinned by distance and graphics setting; shrubs and bushes always grow in full. */
+const THINNED: ReadonlySet<Kind> = new Set<Kind>(['grass', 'tall', 'flower', 'pebbles']);
+/**
+ * Graphics setting: how far thinned kinds reach (share of RANGE), how many
+ * grow close by, and how many are left at the far edge (fading out between
+ * FULL_NEAR of the range and its end). Grass was most of the triangles on a
+ * meadow map: 0.6 M at 60 m on Norman Shores.
+ */
+const DETAIL: Record<string, { range: number; density: number; far: number }> = {
+  low: { range: 0.5, density: 0.35, far: 0.5 },
+  medium: { range: 0.8, density: 0.75, far: 0.3 },
+  high: { range: 1, density: 1, far: 0.35 },
+};
+const FULL_NEAR = 0.35;
 const CHUNK = 32;
 const FOLIAGE_TINT = new Color3(0.82, 0.86, 0.42);
 
@@ -53,7 +70,10 @@ interface Chunk {
   x: number;
   z: number;
   kind: Kind;
-  meshes: Mesh[];
+  /** Each mesh and how many plants its buffer holds (they are shuffled, so drawing the first n thins evenly). */
+  meshes: { mesh: Mesh; total: number }[];
+  /** Plants drawn now, as a share of the chunk's (0: hidden). */
+  shown: number;
 }
 
 /**
@@ -65,8 +85,12 @@ interface Chunk {
 export class FoliageVisuals {
   private chunks: Chunk[] = [];
   private bases: Mesh[] = [];
-  private materials: PBRMaterial[] = [];
+  private materials: StandardMaterial[] = [];
   private build = 0;
+  private readonly detail = DETAIL[loadGraphicsQuality()] ?? DETAIL.high!;
+  /** Where the camera was at the last update (chunks are only looked at again after it moves a metre). */
+  private lastX = Infinity;
+  private lastZ = Infinity;
 
   constructor(
     private readonly scene: Scene,
@@ -94,28 +118,55 @@ export class FoliageVisuals {
     for (const list of geometry.values()) this.bases.push(...list);
     for (const [key, byModel] of placements) {
       const [kind, cx, cz] = key.split(':') as [Kind, string, string];
-      const chunk: Chunk = { x: (+cx + 0.5) * CHUNK, z: (+cz + 0.5) * CHUNK, kind, meshes: [] };
+      const chunk: Chunk = { x: (+cx + 0.5) * CHUNK, z: (+cz + 0.5) * CHUNK, kind, meshes: [], shown: 1 };
       for (const [model, matrices] of byModel) {
+        const buf = shuffled(matrices, key + model);
         for (const base of geometry.get(model) ?? []) {
           // Instance buffers live on the geometry, so each chunk needs its own copy (a few hundred vertices).
           const mesh = base.clone(`${base.name}_${key}`, null, true)!;
           mesh.makeGeometryUnique();
           mesh.setEnabled(true);
-          mesh.thinInstanceSetBuffer('matrix', new Float32Array(matrices), 16, true);
+          mesh.thinInstanceSetBuffer('matrix', buf, 16, true);
+          // Bounds over every plant in the chunk, so the chunk is culled when out of view.
           mesh.thinInstanceRefreshBoundingInfo(false);
-          chunk.meshes.push(mesh);
+          mesh.freezeWorldMatrix();
+          mesh.doNotSyncBoundingInfo = true;
+          chunk.meshes.push({ mesh, total: buf.length / 16 });
         }
       }
       this.chunks.push(chunk);
     }
+    this.lastX = this.lastZ = Infinity;
   }
 
-  /** Show the chunks near the camera. Call every frame (cheap). */
+  /**
+   * Show the chunks near the camera. Call every frame (cheap: nothing to do
+   * until the camera has moved a metre). Decorative kinds thin out with
+   * distance: all of them (times the setting's density) up to FULL_NEAR of
+   * their range, then fewer and fewer to the setting's far share at its end.
+   */
   update(camera: Vector3): void {
+    if ((camera.x - this.lastX) ** 2 + (camera.z - this.lastZ) ** 2 < 1) return;
+    this.lastX = camera.x;
+    this.lastZ = camera.z;
+    const d = this.detail;
     for (const c of this.chunks) {
-      const range = RANGE[c.kind] + CHUNK * 0.71;
-      const on = (c.x - camera.x) ** 2 + (c.z - camera.z) ** 2 < range * range;
-      if (c.meshes[0]?.isEnabled() !== on) for (const m of c.meshes) m.setEnabled(on);
+      const thin = THINNED.has(c.kind);
+      const range = RANGE[c.kind] * (thin ? d.range : 1);
+      // Distance to the chunk's nearest edge, roughly (its centre less half a diagonal).
+      const dist = Math.max(0, Math.hypot(c.x - camera.x, c.z - camera.z) - CHUNK * 0.71);
+      let shown = dist < range ? 1 : 0;
+      if (shown && thin) {
+        const t = Math.max(0, (dist / range - FULL_NEAR) / (1 - FULL_NEAR));
+        // In steps of an eighth, so buffers are recounted only now and then.
+        shown = Math.max(1, Math.round(d.density * (1 - t * (1 - d.far)) * 8)) / 8;
+      }
+      if (shown === c.shown) continue;
+      c.shown = shown;
+      for (const { mesh, total } of c.meshes) {
+        mesh.setEnabled(shown > 0);
+        if (shown > 0) mesh.thinInstanceCount = Math.max(1, Math.round(total * shown));
+      }
     }
   }
 
@@ -125,7 +176,7 @@ export class FoliageVisuals {
   }
 
   private clear(): void {
-    for (const c of this.chunks) for (const m of c.meshes) m.dispose();
+    for (const c of this.chunks) for (const m of c.meshes) m.mesh.dispose();
     for (const m of this.bases) m.dispose();
     for (const m of this.materials) m.dispose();
     this.chunks = [];
@@ -149,10 +200,23 @@ export class FoliageVisuals {
         m.bakeCurrentTransformIntoVertices();
         m.isPickable = false;
         m.setEnabled(false);
-        // Kenney's greens are teal; pull them toward the ground's olive so plants sit in the grass.
+        // A plain lambert material instead of the model's PBR one (most of a plant's cost is its
+        // pixels, and thousands of them cover the ground), no specular, few lights. Kenney's greens
+        // are teal; pull them toward the ground's olive so plants sit in the grass.
         if (m.material && 'albedoColor' in m.material) {
-          const mat = (m.material as PBRMaterial).clone(`${m.material.name}_foliage`);
-          mat.albedoColor = mat.albedoColor.multiply(FOLIAGE_TINT);
+          const pbr = m.material as PBRMaterial;
+          const mat = new StandardMaterial(`${pbr.name}_foliage`, this.scene);
+          mat.diffuseColor = pbr.albedoColor.multiply(FOLIAGE_TINT);
+          if (pbr.albedoTexture) mat.diffuseTexture = pbr.albedoTexture as BaseTexture;
+          mat.specularColor = Color3.Black();
+          mat.backFaceCulling = pbr.backFaceCulling;
+          mat.maxSimultaneousLights = 2;
+          if (pbr.albedoTexture?.hasAlpha || pbr.needAlphaTesting()) {
+            // Cut-outs are alpha-tested, never blended (no sorting, no overdraw blending).
+            mat.useAlphaFromDiffuseTexture = false;
+            mat.transparencyMode = 1;
+            if (mat.diffuseTexture) mat.diffuseTexture.hasAlpha = true;
+          }
           m.material = mat;
           this.materials.push(mat);
         }
@@ -208,6 +272,22 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string):
       }
     }
   }
+  return out;
+}
+
+/** A chunk's plant matrices in a seeded random order, so drawing only the first n thins them evenly. */
+function shuffled(matrices: readonly number[], seed: string): Float32Array {
+  const n = matrices.length / 16;
+  const order = Array.from({ length: n }, (_, i) => i);
+  const rand = seeded(seed);
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
+  const out = new Float32Array(matrices.length);
+  order.forEach((from, to) => {
+    for (let k = 0; k < 16; k++) out[to * 16 + k] = matrices[from * 16 + k]!;
+  });
   return out;
 }
 

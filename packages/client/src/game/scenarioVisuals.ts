@@ -25,6 +25,7 @@ import {
   carriedTransform,
   dynamicBlockIds,
   lightBlinkOf,
+  logicTargets,
   quatRotate,
   type MapDocument,
   type MoverEntity,
@@ -113,13 +114,55 @@ export class ScenarioVisuals {
   build(entities: readonly MapEntity[], map?: MapDocument): void {
     this.clear();
     this.dynamicBlocks = map ? dynamicBlockIds(map) : new Set();
+    // Lights nothing ever changes (no logic aims at them, not off or blinking at the start) share their
+    // glow material, and their fixtures are merged into a few meshes below.
+    const targets = map && !this.opts.editor ? logicTargets(map.logic) : null;
+    this.fixedLights = new Set(targets ? entities.filter((e) => e.kind === 'light' && !targets.has(e.id) && !e.off && !e.blink).map((e) => e.id) : []);
+    const fixtures: Mesh[] = [];
     entities.forEach((e, i) => {
       if (!isScenarioEntity(e)) return;
       const v = this.create(e, `sc_${e.id}`);
       placeScenarioNode(v.root, e);
       for (const m of v.root.getChildMeshes()) m.isPickable = false;
+      if (this.fixedLights.has(e.id)) for (const m of v.root.getChildMeshes()) if (m instanceof Mesh && !m.skeleton) fixtures.push(m);
       this.visuals.set(i, v);
     });
+    this.mergeFixtures(fixtures);
+  }
+
+  /** Lights nothing changes (see build). */
+  private fixedLights = new Set<string>();
+  private merged: Mesh[] = [];
+
+  /**
+   * Light fixtures are a few small meshes each (a panel and its rim, a shade and
+   * its plate, a sign's letters and tubes): a hundred lights were three hundred
+   * draw calls. Fixed ones are merged into one mesh per material.
+   */
+  private mergeFixtures(meshes: Mesh[]): void {
+    const byMat = new Map<Material | null, Mesh[]>();
+    for (const m of meshes) {
+      let list = byMat.get(m.material);
+      if (!list) byMat.set(m.material, (list = []));
+      list.push(m);
+    }
+    for (const [mat, list] of byMat) {
+      if (list.length < 2) continue;
+      for (const m of list) m.computeWorldMatrix(true);
+      let one: Mesh | null = null;
+      try {
+        one = Mesh.MergeMeshes(list, false, true);
+      } catch {
+        // Meshes that can't be merged (different vertex layouts) stay as they are.
+      }
+      if (!one) continue;
+      for (const m of list) m.dispose();
+      one.name = `sc_fixtures_${mat?.name ?? 'plain'}`;
+      one.material = mat;
+      one.isPickable = false;
+      one.freezeWorldMatrix();
+      this.merged.push(one);
+    }
   }
 
   /**
@@ -169,6 +212,8 @@ export class ScenarioVisuals {
   clear(): void {
     for (const v of this.visuals.values()) v.root.dispose(false, false);
     this.visuals.clear();
+    for (const m of this.merged) m.dispose();
+    this.merged = [];
   }
 
   dispose(): void {
@@ -535,7 +580,7 @@ export class ScenarioVisuals {
     // Without clustered lighting the fixture still glows, but casts no light: dozens of plain point lights
     // would each go into every material's shader (too big to compile, too slow to run).
     // Lights logic drives get their own glow material, so one can change colour, dim or blink alone.
-    const ownGlow = this.opts.editor ? null : this.ownMat(e.color, 1.4);
+    const ownGlow = this.opts.editor || this.fixedLights.has(e.id) ? null : this.ownMat(e.color, 1.4);
     if (ownGlow) {
       ownGlow.disableLighting = true;
       for (const m of root.getChildMeshes()) if (m.material === glow) m.material = ownGlow;

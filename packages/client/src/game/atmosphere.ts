@@ -114,6 +114,28 @@ export class Atmosphere {
     s.normalBias = 0.02;
     s.darkness = 0.1;
     s.transparencyShadow = false;
+    // Only casters that can reach the shadows: the shadow map draws its whole list every frame (no
+    // culling of its own), which on a big map with 96 characters was several thousand draw calls.
+    const reach = quality === 'high' ? 180 : BOX * Math.SQRT2 + 10;
+    const near: AbstractMesh[] = [];
+    let nearFrame = -1;
+    const map = s.getShadowMap();
+    if (map) {
+      map.getCustomRenderList = (_pass, list, length) => {
+        if (!list) return null;
+        const frame = scene.getFrameId();
+        if (frame === nearFrame) return near;
+        nearFrame = frame;
+        near.length = 0;
+        const c = this.camera.globalPosition;
+        for (let i = 0; i < length; i++) {
+          const m = list[i]!;
+          const b = m.getBoundingInfo().boundingSphere;
+          if (Vector3.Distance(b.centerWorld, c) - b.radiusWorld <= reach) near.push(m);
+        }
+        return near;
+      };
+    }
 
     for (const m of scene.meshes) this.pending.push(m);
     this.observers.push(scene.onNewMeshAddedObservable.add((m) => this.pending.push(m)) as Observer<unknown>);
@@ -167,6 +189,8 @@ export class Atmosphere {
       const mat = m.material as { alpha?: number } | null;
       // See-through things (glass, water, effects) catch shadows but don't cast them.
       if (mat && mat.alpha !== undefined && mat.alpha < 0.99) continue;
+      // Ankle-high terrain plants (thousands of them) catch shadows but cast none worth drawing.
+      if (m.name.startsWith('foliage')) continue;
       map.renderList?.push(m);
       m.onDisposeObservable.addOnce(() => {
         const list = map.renderList;
