@@ -1603,7 +1603,8 @@ export class Match {
     if (!last || this.tick - last.tick >= every) return false;
     // Field by field (no rest/spread copy: two bots in three coast on any tick of a big match).
     const i = last.input;
-    const next: PlayerInput = { seq: c.lastSeq + 1, forward: i.forward, right: i.right, yaw: i.yaw, pitch: i.pitch, buttons: i.buttons & COAST_BUTTONS };
+    // (A fighting bot put off by the think budget keeps its finger on the trigger for that tick.)
+    const next: PlayerInput = { seq: c.lastSeq + 1, forward: i.forward, right: i.right, yaw: i.yaw, pitch: i.pitch, buttons: i.buttons & (force ? COAST_BUTTONS | BUTTON_FIRE : COAST_BUTTONS) };
     if (i.viewTick !== undefined) next.viewTick = i.viewTick;
     if (i.rc) next.rc = i.rc;
     c.queue.push(next);
