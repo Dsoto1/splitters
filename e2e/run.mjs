@@ -455,7 +455,7 @@ async function offlineFlow(browser) {
   const inv = await page.evaluate(() => [...window.__cs.local.inventory.keys()]);
   check(inv.join(',') === '1,2', `offline match spawns with knife + pistol (${inv})`);
   // The match runs in its own worker (rendering keeps the page's thread): it ticks there, and the page only hears about it.
-  const where = await page.evaluate(() => ({ mode: window.__sim?.mode, match: 'window.__match' in window }));
+  const where = await page.evaluate(() => ({ mode: window.__sim?.mode, match: '__match' in window }));
   const t0 = await sim(page, (m) => m.tick);
   await page.waitForTimeout(1000);
   const t1 = await sim(page, (m) => m.tick);
