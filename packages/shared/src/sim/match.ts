@@ -1410,20 +1410,12 @@ export class Match {
     };
     const anySentries = this.mounts.some((m) => m.def.sentry && m.alive);
     const every = this.botBudget(actors);
-    // Big matches: each side's living members and enemies on a grid over the ground, for perception and keeping apart.
+    // Big matches: each side's living members on a grid over the ground, for keeping apart.
     const alliesGrids = new Map<string, ViewGrid>();
-    const othersGrids = new Map<string | null, ViewGrid>();
     if (every > 1) {
       let i = 0;
       for (const [side, list] of factionViews) alliesGrids.set(side, this.gridFor(i++, list));
-      this.gridsUsed = i;
     }
-    const othersGridFor = (c: Combatant, list: readonly CombatantView[]): ViewGrid | undefined => {
-      if (every === 1 || list !== hostileViewsBySide.get(c.faction)) return undefined;
-      let g = othersGrids.get(c.faction);
-      if (!g) othersGrids.set(c.faction, (g = this.gridFor(this.gridsUsed++, list)));
-      return g;
-    };
     // Think budget (big matches): at most this many full thinks a tick; the rest of those due wait a tick,
     // steering or coasting meanwhile, and go first on the next (round robin: the loop starts at a different
     // bot every tick, and a bot never waits two ticks running).
@@ -1462,14 +1454,8 @@ export class Match {
       // Over the think budget, a bot due to think steers (or coasts) this tick and thinks first on the next.
       const over = due && every > 1 && thoughts >= cap && !deferredBefore.has(c.slot);
       const mayWait = every > 1 && (!due || over) && c.alive && !c.mount;
-      const goalOf = () =>
-        npc
-          ? shambler
-            ? this.nearestGoal(c, hostiles, 1.5)
-            : this.encounters.goalFor(c.slot)
-          : (this.teammateOrder(c) ?? (zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null)));
       // (A steering bot has no use for its goal, except a class's own input below.)
-      let orderGoal = mayWait && !this.classes ? undefined : goalOf();
+      let orderGoal = mayWait && !this.classes ? undefined : this.botGoal(c, hostiles, zombies, coop);
       const view: BotWorldView = {
         tick: this.tick,
         self: views.get(c.slot)!,
@@ -1498,13 +1484,9 @@ export class Match {
         mounts: aware < Infinity ? undefined : mounts && !c.mount && this.mode?.blocksVehicle(c) ? mounts.filter((m) => m.kind !== 'vehicle') : mounts,
         seat: c.mount ? this.seatView(c) : null,
         squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
+        // (Always present, so every view has one shape: bot code reading it stays monomorphic.)
+        alliesGrid: every > 1 && c.faction !== null ? alliesGrids.get(c.faction) : undefined,
       };
-      if (every > 1) {
-        const og = othersGridFor(c, others);
-        if (og) view.othersGrid = og;
-        const ag = c.faction === null ? undefined : alliesGrids.get(c.faction);
-        if (ag) view.alliesGrid = ag;
-      }
       // Big matches: between its full thinks a fighting bot steers: perception runs when due, its aim
       // follows the target and the trigger discipline runs, its move carries on (see BotBrain.steer).
       let input: PlayerInput | null = null;
@@ -1526,7 +1508,7 @@ export class Match {
       }
       if (!input) {
         if (orderGoal === undefined) {
-          orderGoal = goalOf();
+          orderGoal = this.botGoal(c, hostiles, zombies, coop);
           view.orderGoal = orderGoal;
           view.spawnPoints = npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints;
         }
@@ -1562,9 +1544,15 @@ export class Match {
   private readonly botThought = new Map<number, { input: PlayerInput; tick: number }>();
   /** Bots whose think the budget put off last tick: they think first this tick. */
   private botDeferred = new Set<number>();
-  /** Grids reused tick to tick (runBots), and how many this tick has handed out. */
+  /** Grids reused tick to tick (runBots). */
   private readonly grids: ViewGrid[] = [];
-  private gridsUsed = 0;
+
+  /** Where a bot is told to go (squad orders, teammates' orders, co-op and mode goals), or null to roam. */
+  private botGoal(c: Combatant, hostiles: Combatant[], zombies: boolean, coop: boolean): { pos: Vec3; radius: number } | null {
+    const npc = c.npc;
+    if (npc) return npc.role === 'zombie' ? this.nearestGoal(c, hostiles, 1.5) : this.encounters.goalFor(c.slot);
+    return this.teammateOrder(c) ?? (zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null));
+  }
 
   private gridFor(i: number, list: readonly CombatantView[]): ViewGrid {
     const g = this.grids[i] ?? (this.grids[i] = new ViewGrid());
@@ -1613,8 +1601,12 @@ export class Match {
     if (!force && (c.bot!.target !== null || (c.shotAt && this.tick - c.shotAt.tick <= every))) return false;
     const last = this.botThought.get(c.slot);
     if (!last || this.tick - last.tick >= every) return false;
-    const { seq: _seq, say: _say, build: _build, weapon: _weapon, ...keep } = last.input;
-    c.queue.push({ ...keep, seq: c.lastSeq + 1, buttons: keep.buttons & COAST_BUTTONS });
+    // Field by field (no rest/spread copy: two bots in three coast on any tick of a big match).
+    const i = last.input;
+    const next: PlayerInput = { seq: c.lastSeq + 1, forward: i.forward, right: i.right, yaw: i.yaw, pitch: i.pitch, buttons: i.buttons & COAST_BUTTONS };
+    if (i.viewTick !== undefined) next.viewTick = i.viewTick;
+    if (i.rc) next.rc = i.rc;
+    c.queue.push(next);
     return true;
   }
 

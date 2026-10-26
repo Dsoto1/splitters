@@ -118,10 +118,8 @@ export interface BotWorldView {
   squad?: { advance: boolean } | null;
   /** Line of sight between actors shared by all bots in the match (perception uses it when given). */
   sight?: SightCache;
-  /** `others` on a grid over the ground (big matches): perception reads the cells in sight range. */
-  othersGrid?: ViewGrid;
-  /** `allies` on a grid: keeping apart reads the cells around the bot. */
-  alliesGrid?: ViewGrid;
+  /** `allies` on a grid (big matches): keeping apart reads the cells around the bot. */
+  alliesGrid?: ViewGrid | undefined;
 }
 
 /** What aiming reads (BotBrain.steer reads the whole view, like think). */
@@ -1544,8 +1542,7 @@ export class BotBrain {
     // Who could be seen (in range, in view or close enough to hear, not hidden in a bush), nearest first.
     const live = this.live;
     live.length = 0;
-    const others = view.othersGrid ? view.othersGrid.near(me.pos.x, me.pos.z, SIGHT_RANGE, this.nearScratch) : view.others;
-    for (const o of others) {
+    for (const o of view.others) {
       if (!o.alive) continue;
       const ox = o.pos.x - me.pos.x;
       const oy = o.pos.y - me.pos.y;
