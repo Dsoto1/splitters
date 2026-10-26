@@ -48,7 +48,7 @@ export class NetTransport implements Transport {
     ws.addEventListener('open', () => {
       const admin = adminToken(this.url);
       this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, ...(admin ? { admin } : {}) });
-      this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: ++this.pingId, ct: performance.now() }), 1000);
+      this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: ++this.pingId, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) }), 1000);
     });
     ws.addEventListener('message', (e) => {
       const text = e.data as string;

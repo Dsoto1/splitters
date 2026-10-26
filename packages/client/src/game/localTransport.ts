@@ -65,7 +65,7 @@ export class LocalTransport implements Transport {
   /** Time from start() to the welcome message, for the TEST transition budget. */
   startupMs = 0;
   /** Friends playing in this match (Host game), and the hook that lets them in once it's running. */
-  private remotes = new Set<{ link: RemoteLink; slot: number | null }>();
+  private remotes = new Set<{ link: RemoteLink; slot: number | null; rtt?: number | undefined }>();
   private admit?: (link: RemoteLink) => void;
   /** Friends who connected before the match had loaded (after a map change, they come straight back): let in once it runs. */
   private waiting: RemoteLink[] = [];
@@ -187,7 +187,7 @@ export class LocalTransport implements Transport {
       for (const r of this.remotes) if (r.slot !== null) r.link.send(text);
     };
     this.admit = (link) => {
-      const r = { link, slot: null as number | null };
+      const r = { link, slot: null as number | null, rtt: undefined as number | undefined };
       this.remotes.add(r);
       link.onMessage((text) => {
         const msg = parseClientMessage(text);
@@ -208,7 +208,10 @@ export class LocalTransport implements Transport {
           rosterToAll();
         } else if (msg.t === 'input' && r.slot !== null) match.queueInputs(r.slot, msg.inputs);
         else if (msg.t === 'ready' && r.slot !== null) match.ready(r.slot);
-        else if (msg.t === 'ping') link.send(JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
+        else if (msg.t === 'ping') {
+          if (msg.rtt !== undefined) r.rtt = msg.rtt;
+          link.send(JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
+        }
         // Only the host runs the match: a friend's host commands (or admin logins) are refused.
         else if ((msg.t === 'host' || msg.t === 'admin') && r.slot !== null) link.send(JSON.stringify({ t: 'host', state: null, error: 'Only the host can change the match' } satisfies ServerMessage));
       });
@@ -242,6 +245,7 @@ export class LocalTransport implements Transport {
     const tickMs = 1000 / TICK_RATE;
     let next = performance.now();
     let statsAt = next;
+    let pingRounds = 0;
     let tickTotal = 0;
     let tickMax = 0;
     let aiTotal = 0;
@@ -289,6 +293,11 @@ export class LocalTransport implements Transport {
           lateTicks: 0,
         });
         tickTotal = tickMax = aiTotal = ticks = 0;
+        // Host game, every other second: each friend's ping (the host's own is 0) for everyone's scoreboard.
+        if (this.remotes.size && ++pingRounds % 2 === 0) {
+          const p = [me.slot, 0, ...[...this.remotes].flatMap((r) => (r.slot !== null && r.rtt !== undefined ? [r.slot, r.rtt] : []))];
+          this.announce?.({ t: 'pings', p });
+        }
       }
       this.timer = window.setTimeout(loop, Math.max(0, next - performance.now()));
     };

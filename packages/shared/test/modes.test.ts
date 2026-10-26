@@ -170,6 +170,9 @@ describe('Capture the Flag', () => {
     expect(ctf.flagOf(A.id)!.state).toBe(FLAG_HOME);
     expect(b.modeSpeed).toBeUndefined();
     expect(match.snapshot([]).md!.ts).toEqual([0, 1]);
+    // The capture is the carrier's on the scoreboard.
+    expect(match.scores().find((e) => e.s === b.slot)?.o).toBe(1);
+    expect(match.scores().find((e) => e.s === a.slot)?.o).toBeUndefined();
     // Kills don't count in CTF: only captures.
     expect(match.teamScores().get(A.id)).toBe(0);
     // Second capture reaches the limit.

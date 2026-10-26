@@ -94,6 +94,8 @@ interface Client {
   admin: boolean;
   /** Wrong admin tokens so far (the connection closes after a few). */
   badTokens: number;
+  /** The round trip the client last reported (ms), for everyone's scoreboard. */
+  rtt?: number;
 }
 
 /** Wrong admin tokens a connection may send before it is closed. */
@@ -267,6 +269,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       } else if (msg.t === 'ready' && client.slot !== null) {
         match.ready(client.slot);
       } else if (msg.t === 'ping') {
+        if (msg.rtt !== undefined) client.rtt = msg.rtt;
         send(client, { t: 'pong', id: msg.id, ct: msg.ct });
       }
     });
@@ -326,6 +329,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const tickMs = 1000 / TICK_RATE;
   let nextTickAt = performance.now();
   let lastStatsAt = performance.now();
+  let pingRounds = 0;
   let stopped = false;
   let timer: NodeJS.Timeout;
 
@@ -405,6 +409,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       });
       broadcast({ t: 'stats', ...summary });
       opts.onStats?.(StatsWindow.format(summary));
+      // Every other second: each human's ping, for the scoreboard.
+      if (++pingRounds % 2 === 0) {
+        const p = connected.flatMap((c) => (c.rtt !== undefined ? [c.slot!, c.rtt] : []));
+        if (p.length) broadcast({ t: 'pings', p });
+      }
     }
     timer = setTimeout(loop, Math.max(0, nextTickAt - performance.now()));
   };
