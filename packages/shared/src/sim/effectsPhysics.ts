@@ -1,5 +1,5 @@
 import RAPIER from '@dimforge/rapier3d-compat';
-import type { WorldBox } from '../map/geometry.ts';
+import { boxQuat, type WorldBox } from '../map/geometry.ts';
 import type { Vec3 } from '../math.ts';
 
 /**
@@ -37,7 +37,8 @@ export class EffectsWorld {
       const hy = (b.max[1] - b.min[1]) / 2;
       const hz = (b.max[2] - b.min[2]) / 2;
       const desc = RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(b.min[0] + hx, b.min[1] + hy, b.min[2] + hz).setCollisionGroups(statics).setFriction(0.9);
-      if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
+      if (b.pitch || b.roll) desc.setRotation(boxQuat(b.yaw, b.pitch, b.roll));
+      else if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
       this.world.createCollider(desc);
     }
   }

@@ -44,6 +44,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [17, (doc) => ({ ...doc })],
   // v18 -> v19: `airplane` entity kind (transport plane, air drop) and an optional `skin` on mounts (absent = automatic).
   [18, (doc) => ({ ...doc })],
+  // v19 -> v20: `mover` entity kind; optional light `off`/`blink`, block `pitch`/`roll`/`startHidden`, liquid `tint`,
+  // and `team` on buttons, doors and zones; new logic actions and conditions. All additive: v19 data is valid as is.
+  [19, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

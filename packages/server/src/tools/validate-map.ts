@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { PhysicsWorld, blockBoxes, buildMapGeometry, propBoxes, initPhysics, loadMap, mapTerrainMesh, navLinks } from '@tiletrigger/shared';
+import { PhysicsWorld, liftLinks, blockBoxes, buildMapGeometry, propBoxes, initPhysics, loadMap, mapTerrainMesh, navLinks } from '@tiletrigger/shared';
 import { NavWorld, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 
 /** Usage: pnpm validate-map <map.json> — prints creator-facing issues; exits 1 on errors. */
@@ -17,7 +17,7 @@ const issues = [...result.issues];
 if (result.ok) {
   const geometry = buildMapGeometry(result.map);
   const physics = new PhysicsWorld(geometry, mapTerrainMesh(result.map));
-  const nav = NavWorld.build([...geometry, ...propBoxes(result.map, true), ...blockBoxes(result.map, true)], mapTerrainMesh(result.map), navLinks(result.map.entities, physics));
+  const nav = NavWorld.build([...geometry, ...propBoxes(result.map, true), ...blockBoxes(result.map, true)], mapTerrainMesh(result.map), [...navLinks(result.map.entities, physics), ...liftLinks(result.map)]);
   physics.free();
   issues.push(...validateNavigation(result.map, nav));
   nav.destroy();

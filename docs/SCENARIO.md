@@ -15,7 +15,14 @@ Try it: main menu → **Play The Vault**, or MapMaker → Open… → **The Vaul
 | **Explosive Barrel** | Explodes when destroyed (4.5 m blast) and sets off nearby barrels. | Health |
 | **Breakable Wall** | Wall panel that fills a doorway (250 HP). Tick "explosives only" for a reinforced wall that needs grenades. | Health, explosives only |
 | **Ladder** | Wooden ladder up a wall. Put its foot against the wall facing out (R turns it). Walk into it to climb, look down or back off to go down, jump to let go. Bots use ladders both ways. | Facing, height (1-24 m; 4 m reaches the next level), width |
-| **Trigger Zone** | Invisible box (drawn in MapMaker only). Fires "Players enter zone" / "Player leaves zone". | Size; fires for any player, once N players are inside, or once every living player is inside |
+| **Trigger Zone** | Invisible box (drawn in MapMaker only). Fires "Players enter zone" / "Player leaves zone". | Size; fires for any player, once N players are inside, or once every living player is inside; team only |
+| **Lift / Sliding Wall / Drawbridge** | A **mover** with the block it carries (v20): see *Movers* below. | Mode, speed, turn speed, wait, points, carried blocks |
+
+Buttons, doors and zones take an optional **Team only** (v20): only that team
+(or NPC faction, or `players` in co-op) can press the button, opens the door by
+walking up or pressing E, or counts in the zone ("every living player" then
+means all of that team). Logic still opens a team door for everyone. Bots of
+other teams path round a team door as if it were locked.
 
 ### Traps
 
@@ -45,7 +52,7 @@ Damage can be overridden per trap. Trap deaths show in the kill feed ("was crush
 
 | WHEN | IF | DO |
 |---|---|---|
-| Match starts · Button pressed · Players enter zone · Player leaves zone · Door opened/closed · Object destroyed · Trap fires · Pickup taken · A player dies · Timer runs out · Objective completed · Variable changes | Variable compare · Objective is … · Door is open/closed/locked/unlocked · Players in zone compare · Is enabled/disabled | Open/close/toggle/lock/unlock door · Enable/disable (buttons, zones, traps, pickups) · Fire trap · Destroy object · Set/add variable · Set objective · Start/stop timer · Show message · Play sound (alarm, chime, buzzer, boom) · **Wait** · End the round (instigator wins / nobody wins) |
+| Match starts · Button pressed · Players enter zone · Player leaves zone · Door opened/closed · Object destroyed · Trap fires · Pickup taken · A player dies · Timer runs out · Objective completed · Variable changes · Mover arrives | Variable compare · Objective is … · Door is open/closed/locked/unlocked · Players in zone compare · Is enabled/disabled · Light is on/off · Block is present/gone · Mover parked at point (compare; 0 while moving) | Open/close/toggle/lock/unlock door · Enable/disable (buttons, zones, traps, pickups, blocks, movers, lights) · Fire trap · Destroy object (destructibles and blocks) · Set/add variable · Set objective · Start/stop timer · Show message · Play sound (alarm, chime, buzzer, boom) · **Wait** · End the round (instigator wins / nobody wins) · Light on/off/toggle · Set light colour · Flash light · Blink light · Drop / crumble block · Rebuild block · Send mover · Move mover to point |
 
 - A rule can be marked **Once** (fires once per round).
 - "Wait" pauses the action list, so a rule can be a timed sequence.
@@ -69,9 +76,81 @@ The validator reports:
 - buttons no rule uses;
 - locked doors nothing unlocks;
 - logic-only traps nothing fires;
-- objectives nothing completes.
+- objectives nothing completes;
+- logic-only trapdoors and crumbling floors nothing drops, and blocks that start hidden nothing rebuilds;
+- "Set light colour" without a #rrggbb colour, and "Move mover to point" past the mover's last point;
+- movers carrying missing blocks, a block carried by two movers (an error), and trigger movers no rule sends;
+- team filters naming no team or faction of the map.
 
 Clicking an issue frames the object or opens the rule.
+
+### Lights, blocks and movers in logic (map format v20)
+
+**Lights.** Every light has an ID like any object, so rules can switch it
+**on**, **off** or **toggle** it, **set its colour** (a #rrggbb colour; empty puts
+back its own), **flash** it (a bright pulse for *seconds*, then back as it was:
+a trap's tell) and **blink** it (*per second*; state on/off: alarms, failing
+tubes). Enable/Disable and "Is enabled" work on lights too, and "Light is
+on/off" is a condition. In the inspector a light can **start off** or **blink**
+from the start. Only lights some rule (or a start setting) drives are sent to
+players, as `[index, flags, colour]` in the scenario snapshot (flags:
+`LIGHT_ON`, `LIGHT_FLASH`, blinks per second × 10 from bit 2); the rest cost
+nothing. Blinking runs on each client's clock; on/off/colour/flash are the
+server's.
+
+**Blocks.** Any free block can be a target: **Drop / crumble block** makes a
+crumbling floor or trapdoor give way now (a breakable block breaks, a solid one
+vanishes), **Rebuild block** puts it back (as soon as nobody stands where it
+goes), and Enable/Disable do the same. "Destroy object" also accepts blocks,
+and "Block is present/gone" is a condition. A block can **start hidden** (a
+bridge that extends on cue). Solid blocks a rule targets, that start hidden or
+that a mover carries leave the static level and are run by the scenario like
+trapdoors (`dynamicBlockIds`): drawn as their own meshes, colliders switched
+and moved, state replicated like any breakable. Hidden solid blocks never come
+back by themselves.
+
+**Reachability.** Navigation and the validator's reachability checks see every
+block in its **idle** state: trapdoors and crumbling floors present, blocks
+that start hidden absent, carried blocks at their mover's first point. So a
+trapdoor sprung from a lever is still a floor for the spawn-to-spawn checks,
+and a bridge that only appears on cue doesn't count as a way across.
+
+### Movers (map format v20)
+
+A **mover** carries a group of free blocks (by ID) between two or more
+**points**, offsets in metres from where the blocks are placed (point 1 is
+usually 0, 0, 0), and can turn them at each point by an **angle** about a
+level hinge through the mover's marker, square to its facing (drawbridges:
+positive angles lift the side it faces). It moves at **speed** m/s and turns at
+**turn speed** °/s (a leg takes the slower of the two), eases in and out, and
+waits **wait** seconds at each point.
+
+| Mode | Runs |
+|---|---|
+| loop | 1 → 2 → … → last → 1, over and over |
+| pingpong | there and back, over and over |
+| trigger | only when logic sends it: **Send mover** (on to the next point, back and forth) or **Move mover to point** *n* |
+
+Enable/Disable start and park loop and pingpong movers (they finish the leg
+they are on). "Mover arrives" fires at each point; "Mover parked at point" is
+a condition.
+
+Players standing on a carried block ride it: each tick the server moves the
+movers first, then carries everyone standing on top of a carried block by that
+spot's own motion (turning with it on a drawbridge), then moves everyone as
+usual. Client prediction does the same thing at the same ticks, because a
+mover's pose is a pure function of its current leg (from, to, start tick) and
+the tick: the server sends only the leg, `[index, start tick, from × 64 + to]`,
+when it changes, and every client works out the pose for its own predicted
+tick, and draws platforms at that tick so they stay under your feet. Movers
+don't push anyone: keep their paths clear of walls and floors players stand
+on.
+
+Bots ride **lifts**: every loop or pingpong mover that mostly goes up and down
+adds a navmesh link each way between its stops (`liftLinks`); a bot waits a
+couple of metres back until the platform is there, steps on, stands still
+until it arrives, then walks off. Trigger movers and drawbridges are not
+links: bots treat them as wherever they start.
 
 ## How it runs
 
@@ -82,7 +161,7 @@ Clicking an issue frames the object or opens the rule.
   - Scenario state resets each round, and "Match starts" fires again.
 - **Physics:** doors and destructibles are real colliders (`ScenarioBodies` in `sim/scenarioDefs.ts`). They block movement, bullets, grenades and line of sight. Clients mirror them in prediction from replicated state.
 - **Network:** `snapshot.sc` carries entity states as deltas, with a full keyframe every 2 s; `welcome.sc` carries a full copy. Events cover doors, buttons, traps, breakage, objectives, messages and sound cues.
-- **Bots:** paths through locked/manual closed doors and intact breakable walls count as blocked, and bots wait at the edge of an active trap. Mines are hidden from them. Bots don't press buttons or chase objectives yet (M4).
+- **Bots:** paths through locked/manual closed doors (and other teams' team doors) and intact breakable walls count as blocked, and bots wait at the edge of an active trap. Mines are hidden from them. When a closed door blocks a bot's way and an enabled button it may press has a rule that opens, toggles or unlocks-and-opens that door, the bot walks to the button, faces it, presses E and goes on (`Scenario.doorButtons`, `BotBrain.planPress`); it doesn't read the rule's IF conditions. Bots ride lifts (see *Movers*).
 - **Look and sound:** procedural models (`client/src/game/scenarioVisuals.ts`), the same in MapMaker and in game. Sounds are Kenney CC0 plus our synthesised flame, beep and alarm (see [`AUDIO.md`](AUDIO.md)).
 
 ## NPCs, factions and co-op (M4)

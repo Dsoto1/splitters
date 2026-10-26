@@ -14,7 +14,7 @@ import { z } from 'zod';
 const LogicId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
 
 /** What a `target` field refers to. */
-export type TargetKind = 'door' | 'button' | 'destructible' | 'zone' | 'trap' | 'pickup' | 'encounter' | 'toggleable' | 'variable' | 'timer' | 'objective';
+export type TargetKind = 'door' | 'button' | 'destructible' | 'zone' | 'trap' | 'pickup' | 'encounter' | 'toggleable' | 'light' | 'block' | 'mover' | 'variable' | 'timer' | 'objective';
 
 export const EVENT_TYPES = [
   'match_start',
@@ -32,6 +32,7 @@ export const EVENT_TYPES = [
   'variable_changed',
   'encounter_cleared',
   'npc_killed',
+  'mover_arrived',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -51,12 +52,13 @@ export const EVENT_INFO: Record<EventType, { label: string; target: TargetKind |
   variable_changed: { label: 'Variable changes', target: 'variable' },
   encounter_cleared: { label: 'Encounter cleared', target: 'encounter' },
   npc_killed: { label: 'An NPC dies', target: 'encounter' },
+  mover_arrived: { label: 'Mover arrives at a point', target: 'mover' },
 };
 
 export const COMPARE_OPS = ['==', '!=', '<', '<=', '>', '>='] as const;
 export type CompareOp = (typeof COMPARE_OPS)[number];
 
-export const CONDITION_TYPES = ['variable', 'objective', 'door', 'zone_count', 'enabled', 'encounter_alive'] as const;
+export const CONDITION_TYPES = ['variable', 'objective', 'door', 'zone_count', 'enabled', 'encounter_alive', 'light', 'block', 'mover_at'] as const;
 export type ConditionType = (typeof CONDITION_TYPES)[number];
 
 /** `states`: allowed values of the condition's `state` field; `compare`: uses op + value. */
@@ -67,6 +69,10 @@ export const CONDITION_INFO: Record<ConditionType, { label: string; target: Targ
   zone_count: { label: 'Players in zone', target: 'zone', compare: true },
   enabled: { label: 'Is enabled', target: 'toggleable', states: ['enabled', 'disabled'] },
   encounter_alive: { label: 'NPCs alive in', target: 'encounter', compare: true },
+  light: { label: 'Light is', target: 'light', states: ['on', 'off'] },
+  block: { label: 'Block is', target: 'block', states: ['present', 'gone'] },
+  /** Point number (1 = the first) the mover is parked at; 0 while it travels. */
+  mover_at: { label: 'Mover parked at point', target: 'mover', compare: true },
 };
 
 export const ACTION_TYPES = [
@@ -92,6 +98,16 @@ export const ACTION_TYPES = [
   'encounter_stop',
   'encounter_order',
   'next_map',
+  'light_on',
+  'light_off',
+  'light_toggle',
+  'light_color',
+  'light_flash',
+  'light_blink',
+  'block_drop',
+  'block_restore',
+  'mover_go',
+  'mover_to',
 ] as const;
 export type ActionType = (typeof ACTION_TYPES)[number];
 
@@ -127,6 +143,23 @@ export const ACTION_INFO: Record<ActionType, { label: string; target: TargetKind
   encounter_order: { label: 'Order squad to', target: 'encounter', states: ['hold', 'attack', 'defend', 'patrol', 'follow', 'roam'] },
   /** Wins the match and sends everyone on to another map of our suite (text: its ID, e.g. creature_lab). */
   next_map: { label: 'Next map (wins, then loads it)', target: null, text: true },
+  light_on: { label: 'Light on', target: 'light' },
+  light_off: { label: 'Light off', target: 'light' },
+  light_toggle: { label: 'Toggle light', target: 'light' },
+  /** text: the new colour (#rrggbb); empty puts back the light's own colour. */
+  light_color: { label: 'Set light colour', target: 'light', text: true },
+  /** A bright pulse for `value` seconds (a trap's tell, a muzzle flash), then back to how it was. */
+  light_flash: { label: 'Flash light', target: 'light', value: 'seconds' },
+  /** state on: blink `value` times a second (alarms); off: steady again. */
+  light_blink: { label: 'Blink light', target: 'light', value: 'per second', states: ['on', 'off'] },
+  /** A crumbling floor or trapdoor gives way now (a breakable block breaks; a solid one vanishes). */
+  block_drop: { label: 'Drop / crumble block', target: 'block' },
+  /** Puts a dropped, broken or hidden block back (if nobody is in the way). */
+  block_restore: { label: 'Rebuild block', target: 'block' },
+  /** Sends the mover on to its next point (trigger movers), or starts a parked one. */
+  mover_go: { label: 'Send mover', target: 'mover' },
+  /** value: point number (1 = the first). */
+  mover_to: { label: 'Move mover to point', target: 'mover', value: 'point' },
 };
 
 export const LogicWhen = z.object({
@@ -202,5 +235,26 @@ export type ScenarioLogic = z.infer<typeof ScenarioLogic>;
 
 export const emptyLogic = (): ScenarioLogic => ({ variables: [], timers: [], objectives: [], rules: [] });
 
-/** Entity kinds that can be enabled/disabled by logic. */
-export const TOGGLEABLE_KINDS = ['button', 'zone', 'trap', 'pickup'] as const;
+/**
+ * Entity kinds that can be enabled/disabled by logic. Blocks: present or
+ * gone (any behaviour); movers: running or parked (at their next point);
+ * lights: on or off.
+ */
+export const TOGGLEABLE_KINDS = ['button', 'zone', 'trap', 'pickup', 'block', 'mover', 'light'] as const;
+
+/** Whether an entity of `kind` can be the target of a logic field expecting `target`. Blocks count as destructibles (destroy / destroyed). */
+export function entityFitsTarget(kind: string, target: TargetKind): boolean {
+  if (target === 'toggleable') return (TOGGLEABLE_KINDS as readonly string[]).includes(kind);
+  if (target === 'destructible') return kind === 'destructible' || kind === 'block';
+  return kind === target;
+}
+
+/** Light, block and mover targets of a rule (they need to be logic-driven at runtime). */
+export function logicTargets(logic: ScenarioLogic): Set<string> {
+  const out = new Set<string>();
+  for (const r of logic.rules) {
+    for (const a of r.do) if (a.target) out.add(a.target);
+    for (const c of r.if) if (c.target) out.add(c.target);
+  }
+  return out;
+}

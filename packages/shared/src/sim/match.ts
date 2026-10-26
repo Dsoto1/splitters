@@ -48,6 +48,7 @@ import { ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } f
 import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
+import { liftLinks } from './movers.ts';
 import { Encounters } from './encounters.ts';
 import { ZombieSurvival } from './zombies.ts';
 import { RaceDirector, raceShot, roadHandling, type RaceVehicleView } from './race.ts';
@@ -404,7 +405,7 @@ export class Match {
     this.phys = matchPhysics(rules, map);
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map));
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), navLinks(map.entities, this.physics, this.phys.gravity));
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), [...navLinks(map.entities, this.physics, this.phys.gravity), ...liftLinks(map)]);
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -475,8 +476,9 @@ export class Match {
       get tick() {
         return match.tick;
       },
-      players: () => this.combatants().map((c) => ({ slot: c.slot, alive: c.alive, pos: c.move.pos })),
-      actors: () => this.actors().map((c) => ({ slot: c.slot, alive: c.alive, pos: c.move.pos })),
+      players: () => this.combatants().map((c) => ({ slot: c.slot, alive: c.alive, pos: c.move.pos, team: c.faction })),
+      actors: () => this.actors().map((c) => ({ slot: c.slot, alive: c.alive, pos: c.move.pos, team: c.faction })),
+      teamOf: (slot) => this.actor(slot)?.faction ?? null,
       hurt: (slot, amount, weapon) => {
         const c = this.actor(slot);
         if (c) this.damage(c, amount, null, weapon);
@@ -778,7 +780,7 @@ export class Match {
     const area = xs.length ? (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs)) : 0;
     if (area > NAV_REBUILD_MAX_AREA) return false;
     const old = this.nav;
-    this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], mapTerrainMesh(this.map), navLinks(this.map.entities, this.physics, this.phys.gravity));
+    this.nav = NavWorld.build([...this.geometry, ...propBoxes(this.map, true), ...blockBoxes(this.map, true), ...extra], mapTerrainMesh(this.map), [...navLinks(this.map.entities, this.physics, this.phys.gravity), ...liftLinks(this.map)]);
     old.destroy();
     this.nav.places();
     return true;
@@ -1147,6 +1149,8 @@ export class Match {
     } else {
       this.runBots();
       if (this.race) this.raceInputs(this.race);
+      // Movers first, so everyone moves against (and rides) this tick's platforms.
+      this.scenario.moveMovers();
       for (const c of this.actors()) this.applyInputs(c);
       if (this.ambient.length && this.road) this.driveAmbient(this.road);
       this.stepMounts();
@@ -1197,7 +1201,12 @@ export class Match {
     const lyingSpears: PickupView[] = spearItem ? this.projectiles.filter((p) => p.stuck && p.spec.retrievable).map((p) => ({ id: `spear_${p.id}`, item: spearItem, pos: p.pos, available: true })) : [];
     const pickups: PickupView[] = [...lyingSpears, ...this.pickups.filter((p) => !restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
     const npcPickups: PickupView[] = [];
-    const blockers = this.scenario.blockers();
+    // Team-only doors block other teams; buttons a bot may press can open the doors in its way.
+    const blockersBy = new Map<string | null, ReturnType<Scenario['blockers']>>();
+    const blockersFor = (team: string | null) => blockersBy.get(team) ?? blockersBy.set(team, this.scenario.blockers(team)).get(team)!;
+    const buttonsBy = new Map<string | null, ReturnType<Scenario['doorButtons']>>();
+    const doorButtonsFor = (team: string | null) => buttonsBy.get(team) ?? buttonsBy.set(team, this.scenario.doorButtons(team)).get(team)!;
+    const lifts = this.scenario.liftViews();
     const hazards = this.scenario.hazards();
     const spawnPoints = this.spawnPoints.map((s) => s.pos);
     // Team Deathmatch bots roam toward the other side's spawns, so the teams meet in the middle.
@@ -1267,7 +1276,9 @@ export class Match {
         throwable: c.throwable?.kind ?? null,
         held: c.current,
         reloading: c.reloadTicks > 0,
-        blockers,
+        blockers: blockersFor(c.faction),
+        doorButtons: doorButtonsFor(c.faction),
+        ...(lifts.length ? { lifts } : {}),
         hazards,
         orderGoal,
         allies,
@@ -1566,6 +1577,9 @@ export class Match {
           m.aimPitch = c.pitch;
         }
       } else {
+        // Standing on a moving platform: go where it goes.
+        const ridden = this.scenario.carry(c.move.pos);
+        if (ridden) c.move = { ...c.move, pos: ridden };
         const was = c.move.pos;
         const before = c.move;
         const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), TICK_DT, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}), ...(c.jetFuel !== null ? { jetpack: true } : {}), ...(c.glider ? { glider: true } : {}), ...(c.kind !== 'human' ? { autoChute: true } : {}) });

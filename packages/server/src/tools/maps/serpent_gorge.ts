@@ -3,7 +3,8 @@
  * canyon, a stepped temple on the other. Three ways over: a rope bridge of
  * planks in the west (two of them rotten: they give way under you), the
  * drawbridge in the middle between two gatehouses (a winch in either one
- * swings both gates shut), and the river itself, reached by rock-cut stairs
+ * swings both gates shut and raises both leaves of the bridge; anyone still
+ * on it slides off into the river), and the river itself, reached by rock-cut stairs
  * in the east and the west and waded under the waterfalls.
  *
  * The temple: side doors from the forecourt into antechambers, a vestibule,
@@ -162,9 +163,14 @@ for (const x of [6.3, 9.7]) {
   for (let z = 36.2; z <= 52; z += 3.9) m.block([x, -0.6, z], [0.2, 1.7, 0.2], 'solid', { material: 'dark_wood' });
   m.block([x, 0.95, 44], [0.2, 0.1, 15.8], 'solid', { material: 'canvas', tint: '#b8a070' });
 }
-// The drawbridge (middle, x 29–35): heavy timbers between the gatehouses, chains to the gate towers.
-m.block([32, -0.6, 44], [6, 0.6, 16], 'solid', { material: PLANK, tint: '#7a5a3a' });
-for (const x of [29.1, 34.9]) m.block([x, 0, 44], [0.2, 0.9, 16], 'solid', { material: 'dark_wood' });
+// The drawbridge (middle, x 29–35): two leaves of heavy timbers, each hinged at its gatehouse, chains to the gate towers.
+// The winches raise both leaves (movers turning about their hinges) as they drop the gates, and lower them again.
+for (const [leaf, hingeZ, yaw] of [['south', 36, 0], ['north', 52, Math.PI]] as const) {
+  const mid = (hingeZ + 44) / 2;
+  m.block([32, -0.6, mid], [6, 0.6, 8], 'solid', { material: PLANK, tint: '#7a5a3a', id: `bridge_${leaf}` });
+  for (const [k, x] of [29.1, 34.9].entries()) m.block([x, 0, mid], [0.2, 0.9, 8], 'solid', { material: 'dark_wood', id: `bridge_${leaf}_rail${k + 1}` });
+  m.mover(`drawbridge_${leaf}`, [32, -0.3, hingeZ], [`bridge_${leaf}`, `bridge_${leaf}_rail1`, `bridge_${leaf}_rail2`], [[0, 0, 0], [0, 0, 0]], { mode: 'trigger', yaw, angles: [0, 1.2], turnSpeed: 25, wait: 0, name: `Drawbridge (${leaf} leaf)` });
+}
 for (const z of [36.5, 51.5]) for (const x of [29.1, 34.9]) m.block([x, 0, z], [0.4, 3.4, 0.4], 'solid', { material: 'rusty_metal' });
 m.add({ kind: 'door', id: 'gate_south', name: 'South drawbridge gate', position: [32, 0, 36], yaw: 0, startOpen: true, locked: false, auto: false });
 m.add({ kind: 'door', id: 'gate_north', name: 'North drawbridge gate', position: [32, 0, 52], yaw: 0, startOpen: true, locked: false, auto: false });
@@ -240,8 +246,8 @@ m.logic({
   rules: [
     // Either winch: drop both gates and lock them, or unlock and raise them (the flag flips a moment later, so only one of each pair runs).
     ...(['winch_south', 'winch_north'] as const).flatMap((w) => [
-      rule(`rule_${w}_shut`, `${w}: gates shut`, 'button_pressed', w, [act('door_close', 'gate_south'), act('door_close', 'gate_north'), act('door_lock', 'gate_south'), act('door_lock', 'gate_north'), act('sound', null, { state: 'buzzer' }), say('Chains rattle: the drawbridge gates slam shut.', 3), act('wait', null, { value: 0.2 }), act('set_var', 'var_gates', { value: 0 })], [cond('variable', 'var_gates', '==', 1)]),
-      rule(`rule_${w}_open`, `${w}: gates open`, 'button_pressed', w, [act('door_unlock', 'gate_south'), act('door_unlock', 'gate_north'), act('door_open', 'gate_south'), act('door_open', 'gate_north'), act('sound', null, { state: 'chime' }), say('Chains rattle: the drawbridge gates swing open.', 3), act('wait', null, { value: 0.2 }), act('set_var', 'var_gates', { value: 1 })], [cond('variable', 'var_gates', '==', 0)]),
+      rule(`rule_${w}_shut`, `${w}: gates shut`, 'button_pressed', w, [act('door_close', 'gate_south'), act('door_close', 'gate_north'), act('door_lock', 'gate_south'), act('door_lock', 'gate_north'), act('sound', null, { state: 'buzzer' }), say('Chains rattle: the gates slam shut and the drawbridge rises!', 3), act('mover_to', 'drawbridge_south', { value: 2 }), act('mover_to', 'drawbridge_north', { value: 2 }), act('wait', null, { value: 0.2 }), act('set_var', 'var_gates', { value: 0 })], [cond('variable', 'var_gates', '==', 1)]),
+      rule(`rule_${w}_open`, `${w}: gates open`, 'button_pressed', w, [act('door_unlock', 'gate_south'), act('door_unlock', 'gate_north'), act('door_open', 'gate_south'), act('door_open', 'gate_north'), act('sound', null, { state: 'chime' }), say('Chains rattle: the drawbridge comes down and the gates swing open.', 3), act('mover_to', 'drawbridge_south', { value: 1 }), act('mover_to', 'drawbridge_north', { value: 1 }), act('wait', null, { value: 0.2 }), act('set_var', 'var_gates', { value: 1 })], [cond('variable', 'var_gates', '==', 0)]),
     ]),
     rule('rule_idol', 'The idol is lifted', 'button_pressed', 'btn_idol', [
       act('door_close', 'door_idol'),
@@ -375,7 +381,7 @@ m.terrain(jungle.t);
 m.teams([10, 10]);
 m.meta({
   description:
-    'A jungle river canyon between an expedition camp and a stepped temple. Cross by the rope bridge (mind the rotten planks), the drawbridge (either winch swings both gates shut) or the river under the falls. Inside the temple: spike floors, serpent heads and a falling stone guard the idol; lift it and the room seals, leaving only the rotten floor down into the crypt. A cracked wall hides the treasure chamber.',
+    'A jungle river canyon between an expedition camp and a stepped temple. Cross by the rope bridge (mind the rotten planks), the drawbridge (either winch shuts both gates and raises the bridge) or the river under the falls. Inside the temple: spike floors, serpent heads and a falling stone guard the idol; lift it and the room seals, leaving only the rotten floor down into the crypt. A cracked wall hides the treasure chamber.',
   modes: ['core.ctf', 'core.tdm', 'core.koth', 'core.deathmatch'],
   players: [8, 20],
 });

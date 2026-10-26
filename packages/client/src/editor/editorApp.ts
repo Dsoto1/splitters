@@ -42,7 +42,9 @@ import {
   TRAP_KINDS,
   TRAP_SPECS,
   entityLabel,
-  newScenarioEntity,
+  newScenarioEntities,
+  MOVER_MODES,
+  type MoverMode,
   snapToDoorway,
   snapsToDoorway,
   getItem,
@@ -141,6 +143,7 @@ import {
   initPhysics,
   mapPads,
   navLinks,
+  liftLinks,
   padLandings,
   fitBounds,
   CORE_WEAPONS,
@@ -153,6 +156,7 @@ import {
   AIRDROP_MODES,
   type AirdropMode,
   MAX_TEAMS,
+  PLAYER,
   TEAM_PRESETS,
   teamLayoutLabel,
   mapTerrainMesh,
@@ -178,6 +182,7 @@ import canyonTemplate from '../../../../maps/canyon.json';
 /** Every map file shipped in maps/. */
 const SHIPPED_MAPS = import.meta.glob<unknown>('../../../../maps/*.json', { eager: true, import: 'default' });
 import { EditorView } from './editorView.ts';
+import { LIQUID_LOOKS } from '../game/scenarioVisuals.ts';
 import { deleteFromLibrary, exportMap, importMapFile, listLibrary, openFromLibrary, readAutosave, saveToLibrary, writeAutosave } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
@@ -253,6 +258,9 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'water:lava': '<rect x="6" y="24" width="44" height="22" fill="#ff5a1a"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#ffd34d" stroke-width="2" fill="none"/><circle cx="20" cy="34" r="3" fill="#ffd34d"/>',
   'water:acid': '<rect x="6" y="24" width="44" height="22" fill="#8aff3a" fill-opacity=".85"/><circle cx="18" cy="32" r="3" fill="#d8ffb0"/><circle cx="34" cy="38" r="2" fill="#d8ffb0"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#d8ffb0" stroke-width="2" fill="none"/>',
   airplane: '<path d="M28 6l4 10v8l16 8v4l-16-4v10l5 4v3l-9-2-9 2v-3l5-4V32L8 36v-4l16-8v-8z" fill="#e2703a"/><path d="M10 50h36" stroke="#e2703a" stroke-width="2" stroke-dasharray="4 3"/>',
+  'mover:lift': '<rect x="14" y="8" width="4" height="40" fill="#5a5f68"/><rect x="38" y="8" width="4" height="40" fill="#5a5f68"/><rect x="16" y="30" width="24" height="5" fill="#2ec4b6"/><path d="M28 12v12M23 17l5-5 5 5" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
+  'mover:slider': '<rect x="10" y="12" width="20" height="32" fill="#8a8f98"/><path d="M34 28h14M43 23l5 5-5 5" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
+  'mover:drawbridge': '<rect x="6" y="40" width="10" height="10" fill="#5a5f68"/><path d="M16 42L44 18" stroke="#8a6a42" stroke-width="5"/><path d="M40 44a20 20 0 0 0-6-18" stroke="#2ec4b6" stroke-width="2" fill="none"/>',
   'water:swamp': '<rect x="6" y="24" width="44" height="22" fill="#5a6a32"/><path d="M14 24q2-10 4-14M38 24q-1-9 2-13" stroke="#6fbf4a" stroke-width="2" fill="none"/>',
 };
 
@@ -738,9 +746,10 @@ export class EditorApp {
         p = [d.x, y, d.z];
         yaw = d.yaw;
       }
-      const entity = newScenarioEntity(this.tool.key, p, yaw, this.doc);
+      const placed = newScenarioEntities(this.tool.key, p, yaw, this.doc);
+      const entity = placed[placed.length - 1]!;
       const label = SCENARIO_PALETTE.find((x) => x.key === (this.tool as { key: string }).key)?.label ?? 'object';
-      if (this.run(`Place ${label}`, { kind: 'addEntities', entities: [entity] })) this.setSelection({ tiles: [], entities: [entity.id] });
+      if (this.run(`Place ${label}`, { kind: 'addEntities', entities: placed })) this.setSelection({ tiles: [], entities: [entity.id] });
     } else if (this.tool.kind === 'npc' && this.hoverPoint) {
       const y = this.hoverOnTerrain ? Math.round(this.hoverPoint.y * 100) / 100 : this.level * this.doc.classicStructure.levelHeight;
       const r = placeNpcCommand(this.doc, this.tool.key, [snap(this.hoverPoint.x, this.snapStep(0.5)), y, snap(this.hoverPoint.z, this.snapStep(0.5))], this.scenarioYaw);
@@ -2382,6 +2391,12 @@ export class EditorApp {
     };
     const number = (label: string, value: number, step: number, patch: (v: number) => Partial<MapEntity>) => el.append(row(label, numberInput(value, step, (v) => update(`Set ${label.toLowerCase()}`, patch(v)))));
     const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+    // Team-only buttons, doors and zones (any team of the map, or an NPC faction).
+    const teamFilter = (value: string | undefined, what: string) => {
+      const sides = [...mapTeams(doc, MAX_TEAMS).map((t) => [t.id, t.name] as const), ...mapFactions(doc).map((f) => [f.id, `${f.name} (NPCs)`] as const), ['players', 'Players (co-op)'] as const];
+      choose('Team only', [['', 'Everyone'] as const, ...sides], value ?? '', (v) => ({ team: v || undefined }) as Partial<MapEntity>);
+      if (value) el.append(small(`Only that team ${what}.`));
+    };
 
     switch (e.kind) {
       case 'prop': {
@@ -2416,6 +2431,7 @@ export class EditorApp {
         toggle('Locked', e.locked, (v) => ({ locked: v }));
         toggle('Starts open', e.startOpen, (v) => ({ startOpen: v }));
         el.append(small(e.auto ? 'Slides open when a player comes close (unless locked).' : 'Players press E to open it, or logic opens it.'));
+        teamFilter(e.team, 'opens it by walking up or pressing E (logic still opens it for everyone); bots of other teams path round it');
         break;
       case 'button':
         {
@@ -2429,6 +2445,7 @@ export class EditorApp {
         toggle('Single use', e.once, (v) => ({ once: v }));
         number('Cooldown (s)', e.cooldownSeconds, 0.5, (v) => ({ cooldownSeconds: clamp(v, 0.2, 60) }));
         toggle('Starts enabled', e.startEnabled, (v) => ({ startEnabled: v }));
+        teamFilter(e.team, 'can press it');
         break;
       case 'destructible': {
         const spec = DESTRUCTIBLE_SPECS[e.model];
@@ -2458,7 +2475,18 @@ export class EditorApp {
           toggle('Comes back', e.respawnSeconds !== null, (v) => ({ respawnSeconds: v ? 8 : null }));
           if (e.respawnSeconds !== null) number('Back after (s)', e.respawnSeconds, 1, (v) => ({ respawnSeconds: clamp(v, 1, 600) }));
         }
-        el.append(small(e.behaviour === 'solid' ? 'Part of the level: walk on it anywhere, at any height.' : 'Drawn with a coloured lip so players can learn what it does.'));
+        // Tilt: ramps, roofs, toppled wrecks (±45°, about the block's centre).
+        const deg = (r: number | undefined) => Math.round(((r ?? 0) * 180) / Math.PI);
+        const rad = (d: number) => {
+          const r = (clamp(Math.round(d), -45, 45) * Math.PI) / 180;
+          return r === 0 ? undefined : r;
+        };
+        number('Pitch ° (±45)', deg(e.pitch), 5, (v) => ({ pitch: rad(v) }));
+        number('Roll ° (±45)', deg(e.roll), 5, (v) => ({ roll: rad(v) }));
+        if (e.pitch || e.roll) el.append(small(`Pitch lifts its far (+Z) end, roll its +X side. Players walk up slopes of ${PLAYER.maxSlopeDegrees}° or less; steeper ones are slides and walls (bots treat them so too).`));
+        toggle('Starts hidden', !!e.startHidden, (v) => ({ startHidden: v || undefined }));
+        if (e.startHidden) el.append(small('Appears when a rule rebuilds or enables it (a bridge that extends).'));
+        el.append(small(e.behaviour === 'solid' ? 'Part of the level: walk on it anywhere, at any height. Logic can drop it (Drop block), bring it back (Rebuild block) or carry it on a mover.' : 'Drawn with a coloured lip so players can learn what it does. Logic can drop it at any time (Drop block) and rebuild it.'));
         break;
       }
       case 'water':
@@ -2467,7 +2495,15 @@ export class EditorApp {
         number('Length (Z)', e.size[2], 1, (v) => ({ size: [e.size[0], e.size[1], clamp(v, 0.5, 512)] }));
         choose('Liquid', LIQUIDS.map((l) => [l, LIQUID_SPECS[l].label] as const), e.liquid, (v) => ({ liquid: v as typeof e.liquid }));
         el.append(small(e.liquid === 'water' ? 'Deeper than 1 m you swim (hold jump to rise). Stay under 15 s and you start drowning.' : e.liquid === 'swamp' ? 'Slows everyone right down.' : `Hurts ${LIQUID_SPECS[e.liquid].dps} a second while you stand in it.`));
-        el.append(small('Its surface is at Height + Depth: sink it into a pit or a dip in the terrain.'));
+        {
+          const tint = document.createElement('input');
+          tint.type = 'color';
+          tint.value = e.tint ?? LIQUID_LOOKS[e.liquid].color;
+          tint.addEventListener('change', () => update('Tint liquid', { tint: tint.value.toLowerCase() }));
+          el.append(row('Colour', tint));
+          if (e.tint) el.append(button('Default colour', () => update('Tint liquid', { tint: undefined })));
+        }
+        el.append(small('Its surface is at Height + Depth: sink it into a pit or a dip in the terrain. Colour only changes the look (green acid, murky sewer water).'));
         break;
       case 'zone':
         number('Width (X)', e.size[0], 0.5, (v) => ({ size: [clamp(v, 0.5, 64), e.size[1], e.size[2]] }));
@@ -2476,6 +2512,7 @@ export class EditorApp {
         choose('Fires when', [['any', 'any player enters'], ['count', 'enough players are in'], ['all', 'every living player is in']], e.who, (v) => ({ who: v as typeof e.who }));
         if (e.who === 'count') number('Players needed', e.count, 1, (v) => ({ count: clamp(Math.round(v), 1, 32) }));
         toggle('Starts enabled', e.startEnabled, (v) => ({ startEnabled: v }));
+        teamFilter(e.team, 'counts in it ("every living player" means all of that team)');
         break;
       case 'trap': {
         const spec = TRAP_SPECS[e.trap];
@@ -2543,6 +2580,9 @@ export class EditorApp {
         number('Brightness', e.intensity, 0.1, (v) => ({ intensity: clamp(v, 0.1, 5) }));
         number('Reach (m)', e.range, 1, (v) => ({ range: clamp(v, 1, 30) }));
         number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
+        toggle('Starts off', !!e.off, (v) => ({ off: v || undefined }));
+        number('Blinks per s (0 steady)', e.blink ?? 0, 0.5, (v) => ({ blink: v <= 0 ? undefined : clamp(v, 0.2, 10) }));
+        el.append(small('Logic can switch it on and off, change its colour, flash it or make it blink (alarms, trap tells, a cinema dimming).'));
         el.append(small('Lights the area round it out to its reach (lighting only). Ceiling panels and strips go just under a ceiling, wall lamps on a wall facing into the room. Hundreds are fine on most GPUs.'));
         break;
       }
@@ -2625,6 +2665,61 @@ export class EditorApp {
         }));
         const length = e.route.reduce((sum, p, i) => (i ? sum + Math.hypot(p[0] - e.route[i - 1]![0], p[1] - e.route[i - 1]![1]) : 0), 0) + (e.closed ? Math.hypot(e.route[0]![0] - e.route[e.route.length - 1]![0], e.route[0]![1] - e.route[e.route.length - 1]![1]) : 0);
         el.append(small(`Points are metres from the marker (moving it moves the whole route). ${Math.round(length)} m a lap at ${Math.round(length / e.loopSeconds)} m/s. Riders jump out with E or Space and parachute down; bots jump over their objective.`));
+        break;
+      }
+      case 'mover': {
+        const modeLabels: Record<MoverMode, string> = { loop: 'round its points, over and over', pingpong: 'there and back, over and over', trigger: 'only when logic sends it' };
+        choose('Moves', MOVER_MODES.map((m) => [m, modeLabels[m]] as const), e.mode, (v) => ({ mode: v as MoverMode }));
+        number('Speed (m/s)', e.speed, 0.5, (v) => ({ speed: clamp(v, 0.2, 40) }));
+        number('Turn speed (°/s)', e.turnSpeed, 5, (v) => ({ turnSpeed: clamp(v, 5, 360) }));
+        number('Wait at points (s)', e.wait, 0.5, (v) => ({ wait: clamp(v, 0, 120) }));
+        if (e.mode !== 'trigger') toggle('Runs from the start', e.startActive, (v) => ({ startActive: v }));
+        const h3 = document.createElement('h3');
+        h3.textContent = 'Points';
+        el.append(h3);
+        e.points.forEach((p, i) => {
+          const set = (j: 0 | 1 | 2, v: number) => {
+            const points = e.points.map((q) => [...q] as [number, number, number]);
+            points[i]![j] = clamp(v, -500, 500);
+            return { points };
+          };
+          const angle = numberInput(Math.round(((e.angles?.[i] ?? 0) * 180) / Math.PI), 15, (v) => {
+            const angles = e.points.map((_, k) => e.angles?.[k] ?? 0);
+            angles[i] = (clamp(Math.round(v), -180, 180) * Math.PI) / 180;
+            update('Turn mover point', { angles: angles.some((a) => a !== 0) ? angles : undefined });
+          });
+          angle.title = 'Hinge angle (°): turns the blocks about a level hinge through the marker, square to its facing (drawbridges)';
+          const wrap = document.createElement('span');
+          wrap.className = 'route-point';
+          const del = button('✕', () => update('Remove mover point', { points: e.points.filter((_, j) => j !== i), ...(e.angles ? { angles: e.angles.filter((_, j) => j !== i) } : {}) }));
+          del.disabled = e.points.length <= 2;
+          wrap.append(numberInput(p[0], 0.5, (v) => update('Move mover point', set(0, v))), numberInput(p[1], 0.5, (v) => update('Move mover point', set(1, v))), numberInput(p[2], 0.5, (v) => update('Move mover point', set(2, v))), angle, del);
+          el.append(row(`${i + 1}. X, Y, Z, °`, wrap));
+        });
+        el.append(button('+ Add point', () => {
+          const last = e.points[e.points.length - 1]!;
+          if (e.points.length < 16) update('Add mover point', { points: [...e.points, [last[0], last[1] + 2, last[2]]], ...(e.angles ? { angles: [...e.angles, e.angles[e.angles.length - 1] ?? 0] } : {}) });
+        }));
+        const h3b = document.createElement('h3');
+        h3b.textContent = 'Carries';
+        el.append(h3b);
+        // Blocks near the marker: tick the ones it carries.
+        const near = doc.entities
+          .filter((o): o is Extract<MapEntity, { kind: 'block' }> => o.kind === 'block' && (e.blocks.includes(o.id) || Math.hypot(o.position[0] - e.position[0], o.position[2] - e.position[2]) < 24))
+          .sort((a, b) => Math.hypot(a.position[0] - e.position[0], a.position[2] - e.position[2]) - Math.hypot(b.position[0] - e.position[0], b.position[2] - e.position[2]))
+          .slice(0, 24);
+        for (const b of near) {
+          const c = document.createElement('input');
+          c.type = 'checkbox';
+          c.checked = e.blocks.includes(b.id);
+          c.addEventListener('change', () => {
+            const blocks = c.checked ? [...e.blocks, b.id] : e.blocks.filter((id) => id !== b.id);
+            if (blocks.length) update('Carry blocks', { blocks });
+            else c.checked = true;
+          });
+          el.append(row(entityLabel(doc, b), c));
+        }
+        el.append(small('Points are metres from where the blocks are placed (point 1 is usually 0, 0, 0). Players standing on a carried block ride it; bots ride lifts that run by themselves. Logic: "Send mover", "Move mover to point", Enable/Disable (start, park), and the "Mover arrives" event.'));
         break;
       }
       case 'spawn': {
@@ -2836,7 +2931,7 @@ export class EditorApp {
         const geometry = buildMapGeometry(doc);
         await initPhysics();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(doc));
-        const nav = NavWorld.build(geometry, mapTerrainMesh(doc), navLinks(doc.entities, physics));
+        const nav = NavWorld.build(geometry, mapTerrainMesh(doc), [...navLinks(doc.entities, physics), ...liftLinks(doc)]);
         physics.free();
         this.navIssues = validateNavigation(doc, nav);
         nav.destroy();

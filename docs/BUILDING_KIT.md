@@ -232,6 +232,10 @@ type guessed from its size and the theme.
   furniture keeps clear of them (Snowline Offices, Crossroads and Pump Tower
   are dressed this way);
 - `theme`, `terrain`, `bounds`, `teams` and `meta`;
+- `block` (with `pitch`/`roll`/`hidden`), `light` (with `id`, `off`, `blink`),
+  `water` (with a `tint`) and `mover(id, at, blocks, points, { mode, speed,
+  turnSpeed, wait, yaw, angles })` for the v20 kit (lifts, drawbridges, logic
+  lights; see [SET_PIECES.md](SET_PIECES.md) and [SCENARIO.md](SCENARIO.md));
 - `save`, which validates the map and its navmesh and writes `maps/<id>.json`.
 
 The homage maps are built this way, one script each in
@@ -243,4 +247,10 @@ shows up in the Arcade and as a MapMaker template automatically.
 
 Skies, distant scenery, ground past the border, terrain plants and the scatter brush are covered in [SCENERY.md](SCENERY.md).
 
-Free blocks (sky platforms, crumbling floors, trapdoors), liquids and the jetpack are in [SET_PIECES.md](SET_PIECES.md); size limits in [MAP_BUDGETS.md](MAP_BUDGETS.md).
+Free blocks (sky platforms, crumbling floors, trapdoors, pitched ramps and roofs, movers), liquids (and their colours) and the jetpack are in [SET_PIECES.md](SET_PIECES.md); size limits in [MAP_BUDGETS.md](MAP_BUDGETS.md).
+
+Map format v20 adds: the `mover` entity; light `off`/`blink`; block
+`pitch`/`roll`/`startHidden`; liquid `tint`; `team` on buttons, doors and
+zones; and the logic events, conditions and actions for lights, blocks and
+movers. All of it is optional, so v19 maps load unchanged (the v19 → v20
+migration is the identity).

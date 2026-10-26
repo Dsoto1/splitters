@@ -1,4 +1,4 @@
-import { ACTION_INFO, CONDITION_INFO, EVENT_INFO, TOGGLEABLE_KINDS, type TargetKind } from './logic.ts';
+import { ACTION_INFO, CONDITION_INFO, EVENT_INFO, entityFitsTarget, type TargetKind } from './logic.ts';
 import { isMapId } from '../sim/playlist.ts';
 import { PLAYERS_FACTION, type MapDocument } from './schema.ts';
 import { MAX_TEAMS, mapFactions, mapTeams, rosterSize } from '../sim/npc.ts';
@@ -7,12 +7,15 @@ import type { ValidationIssue } from './validate.ts';
 const KIND_LABEL: Record<TargetKind, string> = {
   door: 'door',
   button: 'button',
-  destructible: 'destructible',
+  destructible: 'destructible or block',
   zone: 'zone',
   trap: 'trap',
   pickup: 'pickup',
   encounter: 'encounter',
-  toggleable: 'button, zone, trap or pickup',
+  toggleable: 'button, zone, trap, pickup, block, mover or light',
+  light: 'light',
+  block: 'block',
+  mover: 'mover',
   variable: 'variable',
   timer: 'timer',
   objective: 'objective',
@@ -44,7 +47,7 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
     if (kind === 'variable' || kind === 'timer' || kind === 'objective') return lists[kind].has(id);
     const e = entities.get(id);
     if (!e) return false;
-    return kind === 'toggleable' ? (TOGGLEABLE_KINDS as readonly string[]).includes(e.kind) : e.kind === kind;
+    return entityFitsTarget(e.kind, kind);
   };
   const checkTarget = (ruleId: string, ruleName: string, where: string, target: string | null, kind: TargetKind | null): void => {
     if (!kind) return;
@@ -55,7 +58,7 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
     }
   };
 
-  const used = { buttons: new Set<string>(), zones: new Set<string>(), unlocked: new Set<string>(), fired: new Set<string>(), completed: new Set<string>() };
+  const used = { buttons: new Set<string>(), zones: new Set<string>(), unlocked: new Set<string>(), fired: new Set<string>(), completed: new Set<string>(), dropped: new Set<string>(), shown: new Set<string>(), sent: new Set<string>() };
   for (const rule of logic.rules) {
     const name = rule.name || rule.id;
     const when = EVENT_INFO[rule.when.event];
@@ -84,6 +87,16 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
       if ((a.type === 'door_unlock' || a.type === 'door_open' || a.type === 'door_toggle') && a.target) used.unlocked.add(a.target);
       if ((a.type === 'trap_fire' || a.type === 'enable') && a.target) used.fired.add(a.target);
       if (a.type === 'objective' && a.state === 'complete' && a.target) used.completed.add(a.target);
+      if ((a.type === 'destroy' || a.type === 'block_drop' || a.type === 'disable') && a.target) used.dropped.add(a.target);
+      if ((a.type === 'block_restore' || a.type === 'enable') && a.target) used.shown.add(a.target);
+      if ((a.type === 'mover_go' || a.type === 'mover_to') && a.target) used.sent.add(a.target);
+      if (a.type === 'light_color' && a.text.trim() && !/^#[0-9a-fA-F]{6}$/.test(a.text.trim())) {
+        issues.push({ severity: 'warning', code: 'logic.color', message: `rule "${name}": "Set light colour" needs a colour like #ff2020 (or nothing for the light's own)`, targetId: rule.id });
+      }
+      const mover = a.target ? entities.get(a.target) : undefined;
+      if (a.type === 'mover_to' && mover?.kind === 'mover' && (a.value < 1 || a.value > mover.points.length || !Number.isInteger(a.value))) {
+        issues.push({ severity: 'warning', code: 'logic.mover_point', message: `rule "${name}": mover ${mover.id} has points 1 to ${mover.points.length}, not ${a.value}`, targetId: rule.id });
+      }
     }
   }
 
@@ -148,8 +161,31 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
     issues.push({ severity: 'error', code: 'koth.no_hill', message: 'King of the Hill needs at least one hill' });
   }
 
+  // Team-only buttons, doors and zones name a team or faction.
+  const sides = new Set([PLAYERS_FACTION, ...mapTeams(map, MAX_TEAMS).map((t) => t.id), ...mapFactions(map).map((f) => f.id)]);
+  // Movers: blocks they carry exist, and each is carried by one mover only.
+  const carriedBy = new Map<string, string>();
   for (const e of map.entities) {
-    if (e.kind === 'button' && !used.buttons.has(e.id)) {
+    if ((e.kind === 'button' || e.kind === 'door' || e.kind === 'zone') && e.team && !sides.has(e.team)) {
+      issues.push({ severity: 'warning', code: 'team.unknown', message: `${e.kind} ${e.id} is for team "${e.team}", which is not a team or faction of this map`, targetId: e.id });
+    }
+    if (e.kind !== 'mover') continue;
+    for (const id of e.blocks) {
+      const b = entities.get(id);
+      if (b?.kind !== 'block') issues.push({ severity: 'warning', code: 'mover.block', message: `mover ${e.id} carries a missing block (${id})`, targetId: e.id });
+      else if (carriedBy.has(id)) issues.push({ severity: 'error', code: 'mover.shared_block', message: `block ${id} is carried by two movers (${carriedBy.get(id)} and ${e.id})`, targetId: e.id });
+      else carriedBy.set(id, e.id);
+    }
+    if ((e.angles?.length ?? 0) > e.points.length) issues.push({ severity: 'warning', code: 'mover.angles', message: `mover ${e.id} has more angles than points; the extra ones are ignored`, targetId: e.id });
+    if (e.mode === 'trigger' && !used.sent.has(e.id)) issues.push({ severity: 'warning', code: 'mover.never_moves', message: `mover ${e.id} only moves when logic sends it, but no rule does`, targetId: e.id });
+  }
+
+  for (const e of map.entities) {
+    if (e.kind === 'block' && (e.behaviour === 'crumble' || e.behaviour === 'trapdoor') && e.trigger === 'logic' && !used.dropped.has(e.id)) {
+      issues.push({ severity: 'warning', code: 'block.never_drops', message: `block ${e.id} only gives way from logic, but no rule drops it`, targetId: e.id });
+    } else if (e.kind === 'block' && e.startHidden && !used.shown.has(e.id)) {
+      issues.push({ severity: 'warning', code: 'block.never_appears', message: `block ${e.id} starts hidden and no rule ever rebuilds or enables it`, targetId: e.id });
+    } else if (e.kind === 'button' && !used.buttons.has(e.id)) {
       issues.push({ severity: 'warning', code: 'button.unused', message: `button ${e.id} does nothing (no rule uses it)`, targetId: e.id });
     } else if (e.kind === 'zone' && !used.zones.has(e.id)) {
       issues.push({ severity: 'suggestion', code: 'zone.unused', message: `zone ${e.id} isn't used by any rule`, targetId: e.id });

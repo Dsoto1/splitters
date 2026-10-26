@@ -12,11 +12,21 @@ import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import type { Material } from '@babylonjs/core/Materials/material';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { ClusteredLightContainer } from '@babylonjs/core/Lights/Clustered/clusteredLightContainer';
 import '@babylonjs/core/Lights/Clustered/clusteredLightingSceneComponent';
 import {
+  LIGHT_FLASH,
+  LIGHT_ON,
+  boxQuat,
+  carriedTransform,
+  dynamicBlockIds,
+  lightBlinkOf,
+  quatRotate,
+  type MapDocument,
+  type MoverEntity,
+  type Movers,
   BUTTON,
   DESTRUCTIBLE_SPECS,
   rosterSize,
@@ -51,7 +61,26 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover'];
+
+/**
+ * Place an entity's visual root: at its position, turned to its facing.
+ * Tilted blocks turn about their centre (as in physics), so the root (at the
+ * base) is offset to match; movers draw their route in world offsets, unturned.
+ */
+export function placeScenarioNode(node: TransformNode, e: MapEntity): void {
+  node.position.set(e.position[0], e.position[1], e.position[2]);
+  if (e.kind === 'block' && (e.pitch || e.roll)) {
+    const q = boxQuat(e.yaw, e.pitch, e.roll);
+    const h = e.size[1] / 2;
+    const [ox, oy, oz] = quatRotate(q, 0, h, 0);
+    node.position.set(e.position[0] - ox, e.position[1] + h - oy, e.position[2] - oz);
+    node.rotationQuaternion = new Quaternion(q.x, q.y, q.z, q.w);
+  } else if ('yaw' in e && e.kind !== 'mover') {
+    node.rotationQuaternion = null;
+    node.rotation.y = e.yaw;
+  }
+}
 export const isScenarioEntity = (e: MapEntity): e is Extract<MapEntity, { kind: Kind }> => (SCENARIO_KINDS as readonly string[]).includes(e.kind);
 
 interface Visual {
@@ -75,16 +104,40 @@ export class ScenarioVisuals {
     private readonly opts: VisualOptions = {},
   ) {}
 
+  /** Solid blocks the scenario drives (logic, movers, hidden at start): drawn here, not in the level mesh. */
+  dynamicBlocks: ReadonlySet<string> = new Set();
+
   /** (Re)build visuals for every scenario entity in the list. Indices match map.entities. */
-  build(entities: readonly MapEntity[]): void {
+  build(entities: readonly MapEntity[], map?: MapDocument): void {
     this.clear();
+    this.dynamicBlocks = map ? dynamicBlockIds(map) : new Set();
     entities.forEach((e, i) => {
       if (!isScenarioEntity(e)) return;
       const v = this.create(e, `sc_${e.id}`);
-      v.root.position.set(e.position[0], e.position[1], e.position[2]);
-      if ('yaw' in e) v.root.rotation.y = e.yaw;
+      placeScenarioNode(v.root, e);
       for (const m of v.root.getChildMeshes()) m.isPickable = false;
       this.visuals.set(i, v);
+    });
+  }
+
+  /**
+   * Carried blocks follow their movers. `tick` is fractional (drawing runs
+   * between ticks); the game passes your own predicted tick so a platform
+   * stays under your feet.
+   */
+  applyMovers(movers: Movers, tick: number): void {
+    movers.defs.forEach((def, k) => {
+      const pose = movers.pose(k, tick);
+      for (const block of def.blocks) {
+        const v = this.visuals.get(block.i);
+        if (!v) continue;
+        const t = carriedTransform(def, block, pose);
+        // The visual's root is the block's base centre in its own frame.
+        const [ox, oy, oz] = quatRotate(t.rot, 0, block.half.y, 0);
+        v.root.position.set(t.center.x - ox, t.center.y - oy, t.center.z - oz);
+        const q = (v.root.rotationQuaternion ??= new Quaternion());
+        q.set(t.rot.x, t.rot.y, t.rot.z, t.rot.w);
+      }
     });
   }
 
@@ -195,7 +248,33 @@ export class ScenarioVisuals {
         return this.light(name, e);
       case 'airplane':
         return this.airplane(name, e);
+      case 'mover':
+        return this.mover(name, e);
     }
+  }
+
+  /**
+   * MapMaker's view of a mover: its hinge marker, the route its blocks take
+   * (numbered stops) and, for drawbridges, the hinge axis. In play the blocks
+   * themselves move; the mover draws nothing.
+   */
+  private mover(name: string, e: MoverEntity): Visual {
+    const root = new TransformNode(name, this.scene);
+    if (!this.opts.editor) return { root };
+    const teal = this.mat('moverMark', '#2ec4b6', { emissive: 0.6 });
+    this.box(`${name}_hub`, root, [0.5, 0.5, 0.5], [0, 0.25, 0], teal);
+    const colour = new Color4(0.18, 0.77, 0.71, 1);
+    const pts = e.points.map(([x, y, z]) => new Vector3(x, y + 0.3, z));
+    if (e.mode === 'loop' && pts.length > 2) pts.push(pts[0]!.clone());
+    const route = CreateLines(`${name}_route`, { points: pts, colors: pts.map(() => colour) }, this.scene);
+    route.parent = root;
+    e.points.forEach(([x, y, z], k) => this.box(`${name}_stop${k}`, root, [0.3, 0.3, 0.3], [x, y + 0.3, z], teal));
+    if (e.angles?.some((a) => a !== 0)) {
+      const ax = new Vector3(Math.cos(e.yaw), 0, -Math.sin(e.yaw)).scale(2.5);
+      const hinge = CreateLines(`${name}_hinge`, { points: [ax.scale(-1), ax], colors: [colour, colour] }, this.scene);
+      hinge.parent = root;
+    }
+    return { root };
   }
 
   /**
@@ -307,9 +386,32 @@ export class ScenarioVisuals {
     }
     // Without clustered lighting the fixture still glows, but casts no light: dozens of plain point lights
     // would each go into every material's shader (too big to compile, too slow to run).
+    // Lights logic drives get their own glow material, so one can change colour, dim or blink alone.
+    const ownGlow = this.opts.editor ? null : this.ownMat(e.color, 1.4);
+    if (ownGlow) {
+      ownGlow.disableLighting = true;
+      for (const m of root.getChildMeshes()) if (m.material === glow) m.material = ownGlow;
+    }
     const container = this.container();
-    if (!container) return { root };
-    const light = new PointLight(`${name}_light`, offset, this.scene);
+    let light: PointLight | null = null;
+    const update = (flags: number, rgb: number, now: number) => {
+      const blink = lightBlinkOf(flags);
+      const on = (flags & LIGHT_ON) !== 0 && (!blink || Math.floor((now / 1000) * blink * 2) % 2 === 0);
+      const flash = (flags & LIGHT_FLASH) !== 0;
+      const c = new Color3(((rgb >> 16) & 255) / 255, ((rgb >> 8) & 255) / 255, (rgb & 255) / 255);
+      const level = flash ? 2.5 : on ? 1 : 0;
+      if (ownGlow) {
+        ownGlow.emissiveColor = level ? c.scale(1.4 * Math.min(level, 1.6)) : c.scale(0.08);
+        ownGlow.diffuseColor = c;
+      }
+      if (light) {
+        light.diffuse = c;
+        light.specular = c.scale(0.25);
+        light.intensity = e.intensity * level;
+      }
+    };
+    if (!container) return { root, update };
+    light = new PointLight(`${name}_light`, offset, this.scene);
     light.parent = root;
     light.diffuse = color;
     light.specular = color.scale(0.25);
@@ -317,14 +419,18 @@ export class ScenarioVisuals {
     light.range = e.range;
     if (!ClusteredLightContainer.IsLightSupported(light)) {
       light.dispose();
-      return { root };
+      light = null;
+      return { root, update };
     }
     container.addLight(light);
+    const lit = light;
     root.onDisposeObservable.addOnce(() => {
-      container.removeLight(light);
-      light.dispose();
+      container.removeLight(lit);
+      lit.dispose();
     });
-    return { root };
+    // Off or blinking from the start: show that before the first update arrives.
+    if (e.off || e.blink) update((e.off ? 0 : LIGHT_ON) | (Math.round((e.blink ?? 0) * 10) << 2), parseInt(e.color.slice(1), 16), performance.now());
+    return { root, update };
   }
 
   /** Team colours for flag bases (MapMaker). */
@@ -360,7 +466,8 @@ export class ScenarioVisuals {
    */
   private block(name: string, e: Extract<MapEntity, { kind: 'block' }>): Visual {
     const root = new TransformNode(name, this.scene);
-    if (e.behaviour === 'solid' && !this.opts.editor) return { root };
+    const driven = this.dynamicBlocks.has(e.id);
+    if (e.behaviour === 'solid' && !this.opts.editor && !driven) return { root };
     const [w, h, d] = e.size;
     // Trapdoors hinge on their -X edge.
     const hinge = new TransformNode(`${name}_hinge`, this.scene);
@@ -384,9 +491,20 @@ export class ScenarioVisuals {
       }
     }
     // Solid blocks are already in the level mesh: in MapMaker this copy is only an invisible pick target.
-    if (e.behaviour === 'solid') {
+    // Logic-driven and carried ones are drawn here (in MapMaker too: they are not in its level mesh either).
+    if (e.behaviour === 'solid' && !driven && !(this.opts.editor && (e.startHidden || e.pitch || e.roll))) {
       body.visibility = 0;
       return { root };
+    }
+    if (e.behaviour === 'solid') {
+      if (this.opts.editor) {
+        if (e.startHidden) body.visibility = 0.45;
+        return { root };
+      }
+      return {
+        root,
+        update: (a) => hinge.setEnabled(a > 0),
+      };
     }
     let gone = 0;
     return {
@@ -417,11 +535,11 @@ export class ScenarioVisuals {
   private water(name: string, e: Extract<MapEntity, { kind: 'water' }>): Visual {
     const root = new TransformNode(name, this.scene);
     const [w, h, d] = e.size;
-    const look = LIQUID_LOOKS[e.liquid];
+    const look = e.tint ? { ...LIQUID_LOOKS[e.liquid], color: e.tint } : LIQUID_LOOKS[e.liquid];
     const surface = CreateGround(`${name}_surface`, { width: w, height: d, subdivisions: 1 }, this.scene);
     surface.parent = root;
     surface.position.y = h - 0.03;
-    surface.material = this.liquidMat(e.liquid, w, d);
+    surface.material = this.liquidMat(e.liquid, w, d, e.tint);
     const body = CreateBox(`${name}_body`, { width: w - 0.02, height: h - 0.06, depth: d - 0.02, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
     body.parent = root;
     body.position.y = h / 2 - 0.03;
@@ -429,8 +547,9 @@ export class ScenarioVisuals {
     return { root };
   }
 
-  private liquidMat(liquid: Liquid, w: number, d: number): StandardMaterial {
-    const look = LIQUID_LOOKS[liquid];
+  /** A liquid's surface; `tint` overrides its colour (green acid, murky sewer water). */
+  private liquidMat(liquid: Liquid, w: number, d: number, tint?: string): StandardMaterial {
+    const look = tint ? { ...LIQUID_LOOKS[liquid], color: tint } : LIQUID_LOOKS[liquid];
     const m = new StandardMaterial(`liquid_${liquid}_${this.mats.size}`, this.scene);
     const tex = this.ripples();
     const t = tex.clone();

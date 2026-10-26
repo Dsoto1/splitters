@@ -5,7 +5,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type TilePlacement, type WorldBox } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type TilePlacement, type WorldBox } from '@tiletrigger/shared';
 import { materialPixels } from './materials/patterns.ts';
 import { versioned } from './assetUrl.ts';
 
@@ -17,6 +17,18 @@ import { versioned } from './assetUrl.ts';
 type Face = [corners: number[][], normal: [number, number, number], flat: number[][], flatNormal: [number, number, number]];
 function boxFaces(b: WorldBox): Face[] {
   const faces = axisFaces(b);
+  if (b.pitch || b.roll) {
+    // Pitched blocks (ramps, roofs): turn and tilt about the box centre.
+    const q = boxQuat(b.yaw, b.pitch, b.roll);
+    const cx = (b.min[0] + b.max[0]) / 2;
+    const cy = (b.min[1] + b.max[1]) / 2;
+    const cz = (b.min[2] + b.max[2]) / 2;
+    const tilt = (p: number[]) => {
+      const [x, y, z] = quatRotate(q, p[0]! - cx, p[1]! - cy, p[2]! - cz);
+      return [cx + x, cy + y, cz + z];
+    };
+    return faces.map(([c, n]) => [c.map(tilt), quatRotate(q, n[0], n[1], n[2]), c, n]);
+  }
   if (!b.yaw) return faces.map(([c, n]) => [c, n, c, n]);
   const cx = (b.min[0] + b.max[0]) / 2;
   const cz = (b.min[2] + b.max[2]) / 2;
@@ -301,7 +313,7 @@ export function containedBoxes(boxes: readonly WorldBox[]): Set<number> {
   const out = new Set<number>();
   const eps = 1e-4;
   // Sort by x extent so only boxes overlapping in x are compared.
-  const order = boxes.map((_, i) => i).filter((i) => !boxes[i]!.yaw && boxes[i]!.kind !== 'prop' && boxes[i]!.kind !== 'barrier').sort((a, b) => boxes[a]!.min[0] - boxes[b]!.min[0]);
+  const order = boxes.map((_, i) => i).filter((i) => !boxes[i]!.yaw && !boxes[i]!.pitch && !boxes[i]!.roll && boxes[i]!.kind !== 'prop' && boxes[i]!.kind !== 'barrier').sort((a, b) => boxes[a]!.min[0] - boxes[b]!.min[0]);
   for (let a = 0; a < order.length; a++) {
     const i = order[a]!;
     const bi = boxes[i]!;

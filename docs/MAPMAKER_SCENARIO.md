@@ -57,11 +57,14 @@ Named ordered action lists with waits, reusable from multiple events.
 ### Variables
 Boolean, integer/float counter, simple enum/reference. No arbitrary creator code in initial release.
 
+### Kit v20 (lights, blocks, movers, team filters)
+Lights, free blocks and movers are logic targets: lights switch, recolour, flash and blink (alarms, trap tells, a cinema dimming); blocks drop, crumble, vanish and come back (trapdoors sprung from a lever, floors that collapse on cue, bridges that extend); movers (lifts, sliding walls, train cars, drawbridges) run on a loop or when logic sends them and carry whoever stands on them. Buttons, doors and zones take a team filter. Free blocks tilt (pitch and roll up to ±45°: ramps, roofs, wrecks) and liquids take a colour. MapMaker: Scenario palette **Lift**, **Sliding Wall**, **Drawbridge** (a mover and its block in one step), the mover inspector (mode, speed, turn speed, wait, points with hinge angles, carried blocks), block pitch/roll and *Starts hidden*, light *Starts off*/*Blinks*, liquid *Colour*, *Team only* on buttons/doors/zones, and a colour picker for "Set light colour". Details in [`SCENARIO.md`](SCENARIO.md) and [`SET_PIECES.md`](SET_PIECES.md).
+
 ## Destruction
 Destructible entities expose health, damage-type acceptance/resistance, states, debris/presentation policy, and Destroyed event. A door can therefore require explosives and trigger alarms/reinforcements when breached.
 
 ## 32-player-aware triggers
-Zone triggers support Any Player, Specific Faction, N Players, Percentage of living faction, All living players, NPC/object entry. This prevents one rushing co-op player from unintentionally advancing a 32-player scenario unless the creator wants that.
+Zone triggers support Any Player, Specific Faction (the zone's *Team only*, v20), N Players, Percentage of living faction, All living players, NPC/object entry. This prevents one rushing co-op player from unintentionally advancing a 32-player scenario unless the creator wants that.
 
 ## Road tool (race tracks)
 

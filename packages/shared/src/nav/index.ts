@@ -31,7 +31,7 @@ export class NavWorld {
   ) {}
 
   /** `extra` adds triangle geometry (terrain) to the boxes; `links` are one-way jumps (jump pads) bots can take. */
-  static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null, links: readonly { start: Vec3; end: Vec3 }[] = [], snapped = false): NavWorld {
+  static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null, links: readonly { start: Vec3; end: Vec3; reach?: Vec3 }[] = [], snapped = false): NavWorld {
     // The ground round a built map is for players to stand on, not somewhere bots go.
     const box = boxesToTriangles(boxes.filter((b) => b.sourceId !== 'ground'));
     let positions = box.positions;
@@ -68,8 +68,9 @@ export class NavWorld {
     if (!links.length || snapped) return world;
     // Jump links must start and end on the mesh: snap them to it, then build again with the links in.
     const onMesh = links.flatMap((l) => {
-      const start = world.closestPoint(l.start, { x: 1.5, y: 2, z: 1.5 });
-      const end = world.closestPoint(l.end, { x: 2.5, y: 3, z: 2.5 });
+      // Lift links say how far to look (level with the platform's stop, so the far end isn't snapped back onto the platform below).
+      const start = world.closestPoint(l.start, l.reach ?? { x: 1.5, y: 2, z: 1.5 });
+      const end = world.closestPoint(l.end, l.reach ?? { x: 2.5, y: 3, z: 2.5 });
       return start && end ? [{ start, end }] : [];
     });
     world.destroy();

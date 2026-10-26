@@ -1,5 +1,5 @@
 import { getProp } from '../content/props.ts';
-import { isBreakableProp } from '../map/geometry.ts';
+import { boxQuat, dynamicBlockIds, isBreakableProp, type Rot } from '../map/geometry.ts';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { DestructibleModel, MapDocument, MapEntity, TrapKind } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
@@ -17,6 +17,8 @@ export interface OBox {
   center: Vec3;
   half: Vec3;
   yaw: number;
+  /** Full rotation of tilted boxes (pitched blocks); tests that only know `yaw` treat them as level. */
+  rot?: Rot;
 }
 
 export interface Aabb {
@@ -172,10 +174,18 @@ export interface Breakable {
 /** A free block's box (centre, half size, turn). */
 export function blockOBox(e: Extract<MapEntity, { kind: 'block' }>): OBox {
   const [w, h, d] = e.size;
-  return { center: { x: e.position[0], y: e.position[1] + h / 2, z: e.position[2] }, half: { x: w / 2, y: h / 2, z: d / 2 }, yaw: e.yaw };
+  return { center: { x: e.position[0], y: e.position[1] + h / 2, z: e.position[2] }, half: { x: w / 2, y: h / 2, z: d / 2 }, yaw: e.yaw, ...(e.pitch || e.roll ? { rot: boxQuat(e.yaw, e.pitch, e.roll) } : {}) };
 }
 
-export function breakableOf(e: MapEntity): Breakable | null {
+/**
+ * Anything the scenario turns on and off: destructibles, breakable props and
+ * dynamic blocks. `dynamic` (dynamicBlockIds) adds the solid blocks logic
+ * drives or movers carry; they can't be shot away.
+ */
+export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>): Breakable | null {
+  if (e.kind === 'block' && e.behaviour === 'solid' && dynamic?.has(e.id)) {
+    return { box: blockOBox(e), health: 1, explosiveOnly: false, blocksPaths: false, shootable: false };
+  }
   if (e.kind === 'destructible') {
     const spec = DESTRUCTIBLE_SPECS[e.model];
     return { box: destructibleBox(e), health: e.health ?? spec.health, explosiveOnly: e.explosiveOnly, ...(spec.blast ? { blast: spec.blast } : {}), blocksPaths: !!spec.blocksPaths };
@@ -315,6 +325,7 @@ export class ScenarioBodies {
     private readonly physics: PhysicsWorld,
     private readonly map: MapDocument,
   ) {
+    const dynamic = dynamicBlockIds(map);
     map.entities.forEach((e, i) => {
       if (e.kind === 'door') {
         const [a, b] = doorLeaves(e, 0);
@@ -323,11 +334,13 @@ export class ScenarioBodies {
         this.doorOpen.set(i, 0);
         for (const c of leaves) this.byHandle.set(c.handle, i);
         this.setDoorOpen(i, e.startOpen ? 1 : 0);
-      } else if (breakableOf(e)) {
-        const box = breakableOf(e)!.box;
-        const c = physics.createBox(box.center, box.half, box.yaw);
+      } else {
+        const box = breakableOf(e, dynamic)?.box;
+        if (!box) return;
+        const c = physics.createBox(box.center, box.half, box.yaw, box.rot);
         this.solids.set(i, c);
         this.byHandle.set(c.handle, i);
+        if (e.kind === 'block' && e.startHidden) physics.setBoxEnabled(c, false);
       }
     });
     physics.commit();
@@ -347,6 +360,12 @@ export class ScenarioBodies {
     leaves.forEach((c, k) => this.physics.moveBox(c, boxes[k]!.center));
     // Fully open leaves sit inside the wall; disabling them keeps the doorway clean for movement and shots.
     for (const c of leaves) this.physics.setBoxEnabled(c, open < 0.999);
+  }
+
+  /** Move a carried block (movers). */
+  setTransform(index: number, center: Vec3, rot: Rot): void {
+    const c = this.solids.get(index);
+    if (c) this.physics.setBoxTransform(c, center, rot);
   }
 
   setSolid(index: number, present: boolean): void {

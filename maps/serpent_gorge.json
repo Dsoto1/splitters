@@ -1,11 +1,11 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 20,
   "metadata": {
     "id": "serpent_gorge",
     "name": "Serpent Gorge",
     "author": "Tile Trigger",
-    "description": "A jungle river canyon between an expedition camp and a stepped temple. Cross by the rope bridge (mind the rotten planks), the drawbridge (either winch swings both gates shut) or the river under the falls. Inside the temple: spike floors, serpent heads and a falling stone guard the idol; lift it and the room seals, leaving only the rotten floor down into the crypt. A cracked wall hides the treasure chamber.",
+    "description": "A jungle river canyon between an expedition camp and a stepped temple. Cross by the rope bridge (mind the rotten planks), the drawbridge (either winch shuts both gates and raises the bridge) or the river under the falls. Inside the temple: spike floors, serpent heads and a falling stone guard the idol; lift it and the room seals, leaving only the rotten floor down into the crypt. A cracked wall hides the treasure chamber.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -3991,17 +3991,17 @@
       "health": 120
     },
     {
-      "id": "block_168",
+      "id": "bridge_south",
       "position": [
         32,
         -0.6,
-        44
+        40
       ],
       "kind": "block",
       "size": [
         6,
         0.6,
-        16
+        8
       ],
       "yaw": 0,
       "material": "core.pbr_planks",
@@ -4013,20 +4013,226 @@
       "health": 120
     },
     {
-      "id": "block_169",
+      "id": "bridge_south_rail1",
       "position": [
         29.1,
         0,
-        44
+        40
       ],
       "kind": "block",
       "size": [
         0.2,
         0.9,
-        16
+        8
       ],
       "yaw": 0,
       "material": "core.dark_wood",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "bridge_south_rail2",
+      "position": [
+        34.9,
+        0,
+        40
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.9,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.dark_wood",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "drawbridge_south",
+      "position": [
+        32,
+        -0.3,
+        36
+      ],
+      "name": "Drawbridge (south leaf)",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "bridge_south",
+        "bridge_south_rail1",
+        "bridge_south_rail2"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "angles": [
+        0,
+        1.2
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 25,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "bridge_north",
+      "position": [
+        32,
+        -0.6,
+        48
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        0.6,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_planks",
+      "tint": "#7a5a3a",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "bridge_north_rail1",
+      "position": [
+        29.1,
+        0,
+        48
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.9,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.dark_wood",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "bridge_north_rail2",
+      "position": [
+        34.9,
+        0,
+        48
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        0.9,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.dark_wood",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "drawbridge_north",
+      "position": [
+        32,
+        -0.3,
+        52
+      ],
+      "name": "Drawbridge (north leaf)",
+      "kind": "mover",
+      "yaw": 3.141592653589793,
+      "blocks": [
+        "bridge_north",
+        "bridge_north_rail1",
+        "bridge_north_rail2"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "angles": [
+        0,
+        1.2
+      ],
+      "mode": "trigger",
+      "speed": 3,
+      "turnSpeed": 25,
+      "wait": 0,
+      "startActive": true
+    },
+    {
+      "id": "block_168",
+      "position": [
+        29.1,
+        0,
+        36.5
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        3.4,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.rusty_metal",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_169",
+      "position": [
+        34.9,
+        0,
+        36.5
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        3.4,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.rusty_metal",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
@@ -4036,72 +4242,6 @@
     },
     {
       "id": "block_170",
-      "position": [
-        34.9,
-        0,
-        44
-      ],
-      "kind": "block",
-      "size": [
-        0.2,
-        0.9,
-        16
-      ],
-      "yaw": 0,
-      "material": "core.dark_wood",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_171",
-      "position": [
-        29.1,
-        0,
-        36.5
-      ],
-      "kind": "block",
-      "size": [
-        0.4,
-        3.4,
-        0.4
-      ],
-      "yaw": 0,
-      "material": "core.rusty_metal",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_172",
-      "position": [
-        34.9,
-        0,
-        36.5
-      ],
-      "kind": "block",
-      "size": [
-        0.4,
-        3.4,
-        0.4
-      ],
-      "yaw": 0,
-      "material": "core.rusty_metal",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_173",
       "position": [
         29.1,
         0,
@@ -4123,7 +4263,7 @@
       "health": 120
     },
     {
-      "id": "block_174",
+      "id": "block_171",
       "position": [
         34.9,
         0,
@@ -4203,7 +4343,7 @@
       "startEnabled": true
     },
     {
-      "id": "water_175",
+      "id": "water_172",
       "position": [
         28,
         -8,
@@ -4218,7 +4358,7 @@
       "liquid": "water"
     },
     {
-      "id": "water_176",
+      "id": "water_173",
       "position": [
         36,
         -8,
@@ -4233,7 +4373,7 @@
       "liquid": "water"
     },
     {
-      "id": "water_177",
+      "id": "water_174",
       "position": [
         -3.75,
         -8,
@@ -4248,7 +4388,7 @@
       "liquid": "water"
     },
     {
-      "id": "water_178",
+      "id": "water_175",
       "position": [
         67.75,
         -8,
@@ -4263,7 +4403,7 @@
       "liquid": "water"
     },
     {
-      "id": "water_179",
+      "id": "water_176",
       "position": [
         9,
         -8,
@@ -4587,74 +4727,74 @@
       "explosiveOnly": false
     },
     {
+      "id": "block_177",
+      "position": [
+        39,
+        -0.3,
+        95
+      ],
+      "kind": "block",
+      "size": [
+        1.98,
+        0.3,
+        1.98
+      ],
+      "yaw": 0,
+      "material": "core.pbr_flagstone",
+      "tint": "#8a8670",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.7,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_178",
+      "position": [
+        41,
+        -0.3,
+        95
+      ],
+      "kind": "block",
+      "size": [
+        1.98,
+        0.3,
+        1.98
+      ],
+      "yaw": 0,
+      "material": "core.pbr_flagstone",
+      "tint": "#8a8670",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.7,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
+      "id": "block_179",
+      "position": [
+        39,
+        -0.3,
+        97
+      ],
+      "kind": "block",
+      "size": [
+        1.98,
+        0.3,
+        1.98
+      ],
+      "yaw": 0,
+      "material": "core.pbr_flagstone",
+      "tint": "#8a8670",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.7,
+      "respawnSeconds": 6,
+      "health": 120
+    },
+    {
       "id": "block_180",
       "position": [
-        39,
-        -0.3,
-        95
-      ],
-      "kind": "block",
-      "size": [
-        1.98,
-        0.3,
-        1.98
-      ],
-      "yaw": 0,
-      "material": "core.pbr_flagstone",
-      "tint": "#8a8670",
-      "behaviour": "crumble",
-      "trigger": "step",
-      "delaySeconds": 0.7,
-      "respawnSeconds": 6,
-      "health": 120
-    },
-    {
-      "id": "block_181",
-      "position": [
-        41,
-        -0.3,
-        95
-      ],
-      "kind": "block",
-      "size": [
-        1.98,
-        0.3,
-        1.98
-      ],
-      "yaw": 0,
-      "material": "core.pbr_flagstone",
-      "tint": "#8a8670",
-      "behaviour": "crumble",
-      "trigger": "step",
-      "delaySeconds": 0.7,
-      "respawnSeconds": 6,
-      "health": 120
-    },
-    {
-      "id": "block_182",
-      "position": [
-        39,
-        -0.3,
-        97
-      ],
-      "kind": "block",
-      "size": [
-        1.98,
-        0.3,
-        1.98
-      ],
-      "yaw": 0,
-      "material": "core.pbr_flagstone",
-      "tint": "#8a8670",
-      "behaviour": "crumble",
-      "trigger": "step",
-      "delaySeconds": 0.7,
-      "respawnSeconds": 6,
-      "health": 120
-    },
-    {
-      "id": "block_183",
-      "position": [
         41,
         -0.3,
         97
@@ -4675,7 +4815,7 @@
       "health": 120
     },
     {
-      "id": "spawn_184",
+      "id": "spawn_181",
       "position": [
         4,
         0,
@@ -4686,7 +4826,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_185",
+      "id": "spawn_182",
       "position": [
         12,
         0,
@@ -4697,7 +4837,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_186",
+      "id": "spawn_183",
       "position": [
         20,
         0,
@@ -4708,7 +4848,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_187",
+      "id": "spawn_184",
       "position": [
         28,
         0,
@@ -4719,7 +4859,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_188",
+      "id": "spawn_185",
       "position": [
         36,
         0,
@@ -4730,7 +4870,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_189",
+      "id": "spawn_186",
       "position": [
         44,
         0,
@@ -4741,7 +4881,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_190",
+      "id": "spawn_187",
       "position": [
         52,
         0,
@@ -4752,7 +4892,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_191",
+      "id": "spawn_188",
       "position": [
         60,
         0,
@@ -4763,7 +4903,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_192",
+      "id": "spawn_189",
       "position": [
         20,
         0,
@@ -4774,7 +4914,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_193",
+      "id": "spawn_190",
       "position": [
         44,
         0,
@@ -4785,7 +4925,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_194",
+      "id": "spawn_191",
       "position": [
         8,
         0,
@@ -4796,7 +4936,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_195",
+      "id": "spawn_192",
       "position": [
         56,
         0,
@@ -4807,7 +4947,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_196",
+      "id": "spawn_193",
       "position": [
         4,
         0,
@@ -4818,7 +4958,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_197",
+      "id": "spawn_194",
       "position": [
         60,
         0,
@@ -4829,7 +4969,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_198",
+      "id": "spawn_195",
       "position": [
         9,
         0,
@@ -4840,7 +4980,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_199",
+      "id": "spawn_196",
       "position": [
         52,
         0,
@@ -4851,7 +4991,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_200",
+      "id": "spawn_197",
       "position": [
         24,
         0,
@@ -4862,7 +5002,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_201",
+      "id": "spawn_198",
       "position": [
         40,
         0,
@@ -4873,7 +5013,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_202",
+      "id": "spawn_199",
       "position": [
         20,
         4,
@@ -4884,7 +5024,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_203",
+      "id": "spawn_200",
       "position": [
         44,
         4,
@@ -4895,7 +5035,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_204",
+      "id": "spawn_201",
       "position": [
         16,
         -8,
@@ -4906,7 +5046,7 @@
       "faction": null
     },
     {
-      "id": "spawn_205",
+      "id": "spawn_202",
       "position": [
         48,
         -8,
@@ -4917,7 +5057,7 @@
       "faction": null
     },
     {
-      "id": "spawn_206",
+      "id": "spawn_203",
       "position": [
         56,
         0,
@@ -4928,7 +5068,7 @@
       "faction": null
     },
     {
-      "id": "spawn_207",
+      "id": "spawn_204",
       "position": [
         4,
         0,
@@ -4939,7 +5079,7 @@
       "faction": null
     },
     {
-      "id": "spawn_208",
+      "id": "spawn_205",
       "position": [
         64,
         0,
@@ -4950,7 +5090,7 @@
       "faction": null
     },
     {
-      "id": "spawn_209",
+      "id": "spawn_206",
       "position": [
         0,
         0,
@@ -4961,7 +5101,7 @@
       "faction": null
     },
     {
-      "id": "spawn_210",
+      "id": "spawn_207",
       "position": [
         48,
         -4,
@@ -4972,7 +5112,7 @@
       "faction": null
     },
     {
-      "id": "spawn_211",
+      "id": "spawn_208",
       "position": [
         32,
         8,
@@ -4983,7 +5123,7 @@
       "faction": null
     },
     {
-      "id": "flag_212",
+      "id": "flag_209",
       "position": [
         16,
         0,
@@ -4994,7 +5134,7 @@
       "team": "embers"
     },
     {
-      "id": "flag_213",
+      "id": "flag_210",
       "position": [
         32,
         0,
@@ -5005,7 +5145,7 @@
       "team": "tide"
     },
     {
-      "id": "hill_214",
+      "id": "hill_211",
       "position": [
         32,
         0,
@@ -5015,7 +5155,7 @@
       "radius": 4
     },
     {
-      "id": "hill_215",
+      "id": "hill_212",
       "position": [
         32,
         8,
@@ -5025,7 +5165,7 @@
       "radius": 5
     },
     {
-      "id": "hill_216",
+      "id": "hill_213",
       "position": [
         28,
         0,
@@ -5035,7 +5175,7 @@
       "radius": 4
     },
     {
-      "id": "pickup_217",
+      "id": "pickup_214",
       "position": [
         16,
         0,
@@ -5046,7 +5186,7 @@
       "respawnSeconds": 60
     },
     {
-      "id": "pickup_218",
+      "id": "pickup_215",
       "position": [
         16,
         0,
@@ -5057,7 +5197,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_219",
+      "id": "pickup_216",
       "position": [
         32,
         0,
@@ -5068,7 +5208,7 @@
       "respawnSeconds": 90
     },
     {
-      "id": "pickup_220",
+      "id": "pickup_217",
       "position": [
         24,
         8,
@@ -5079,7 +5219,7 @@
       "respawnSeconds": 30
     },
     {
-      "id": "pickup_221",
+      "id": "pickup_218",
       "position": [
         40,
         8,
@@ -5090,7 +5230,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_222",
+      "id": "pickup_219",
       "position": [
         8,
         0,
@@ -5101,7 +5241,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_223",
+      "id": "pickup_220",
       "position": [
         8,
         0,
@@ -5112,7 +5252,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_224",
+      "id": "pickup_221",
       "position": [
         6,
         -8,
@@ -5123,7 +5263,7 @@
       "respawnSeconds": 40
     },
     {
-      "id": "pickup_225",
+      "id": "pickup_222",
       "position": [
         48,
         -8,
@@ -5134,7 +5274,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_226",
+      "id": "pickup_223",
       "position": [
         48,
         -4,
@@ -5145,7 +5285,7 @@
       "respawnSeconds": 40
     },
     {
-      "id": "pickup_227",
+      "id": "pickup_224",
       "position": [
         40,
         -4,
@@ -5156,7 +5296,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_228",
+      "id": "pickup_225",
       "position": [
         56,
         -8,
@@ -5167,7 +5307,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_229",
+      "id": "pickup_226",
       "position": [
         24,
         -8,
@@ -5178,7 +5318,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_230",
+      "id": "pickup_227",
       "position": [
         0,
         -8,
@@ -5189,7 +5329,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_231",
+      "id": "pickup_228",
       "position": [
         40,
         -8,
@@ -5200,7 +5340,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_232",
+      "id": "pickup_229",
       "position": [
         64,
         0,
@@ -5211,7 +5351,7 @@
       "respawnSeconds": 30
     },
     {
-      "id": "pickup_233",
+      "id": "pickup_230",
       "position": [
         28,
         0,
@@ -5222,7 +5362,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_234",
+      "id": "pickup_231",
       "position": [
         40,
         0,
@@ -5233,7 +5373,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_235",
+      "id": "pickup_232",
       "position": [
         8,
         0,
@@ -5244,7 +5384,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_236",
+      "id": "pickup_233",
       "position": [
         56,
         0,
@@ -5255,7 +5395,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_237",
+      "id": "pickup_234",
       "position": [
         24,
         0,
@@ -5266,7 +5406,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_238",
+      "id": "pickup_235",
       "position": [
         40,
         0,
@@ -5277,7 +5417,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_239",
+      "id": "pickup_236",
       "position": [
         64,
         0,
@@ -5288,7 +5428,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_240",
+      "id": "pickup_237",
       "position": [
         0,
         0,
@@ -5299,7 +5439,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_241",
+      "id": "pickup_238",
       "position": [
         16,
         0,
@@ -5310,7 +5450,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_242",
+      "id": "pickup_239",
       "position": [
         48,
         0,
@@ -5321,7 +5461,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_243",
+      "id": "pickup_240",
       "position": [
         16,
         4,
@@ -5332,7 +5472,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_244",
+      "id": "pickup_241",
       "position": [
         48,
         4,
@@ -5343,7 +5483,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_245",
+      "id": "pickup_242",
       "position": [
         64,
         0,
@@ -5354,7 +5494,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_246",
+      "id": "pickup_243",
       "position": [
         0,
         0,
@@ -5365,7 +5505,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_247",
+      "id": "pickup_244",
       "position": [
         32,
         0,
@@ -5376,7 +5516,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_248",
+      "id": "pickup_245",
       "position": [
         32,
         0,
@@ -5387,7 +5527,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "prop_249",
+      "id": "prop_246",
       "position": [
         6,
         0,
@@ -5401,7 +5541,7 @@
       "tint": null
     },
     {
-      "id": "prop_250",
+      "id": "prop_247",
       "position": [
         58,
         0,
@@ -5415,7 +5555,7 @@
       "tint": null
     },
     {
-      "id": "prop_251",
+      "id": "prop_248",
       "position": [
         26,
         0,
@@ -5429,7 +5569,7 @@
       "tint": null
     },
     {
-      "id": "prop_252",
+      "id": "prop_249",
       "position": [
         38,
         0,
@@ -5443,7 +5583,7 @@
       "tint": null
     },
     {
-      "id": "prop_253",
+      "id": "prop_250",
       "position": [
         32,
         0,
@@ -5457,7 +5597,7 @@
       "tint": null
     },
     {
-      "id": "prop_254",
+      "id": "prop_251",
       "position": [
         30,
         0,
@@ -5471,7 +5611,7 @@
       "tint": null
     },
     {
-      "id": "prop_255",
+      "id": "prop_252",
       "position": [
         34.5,
         0,
@@ -5485,7 +5625,7 @@
       "tint": null
     },
     {
-      "id": "prop_256",
+      "id": "prop_253",
       "position": [
         22,
         0,
@@ -5499,7 +5639,7 @@
       "tint": null
     },
     {
-      "id": "prop_257",
+      "id": "prop_254",
       "position": [
         23,
         0,
@@ -5513,7 +5653,7 @@
       "tint": null
     },
     {
-      "id": "prop_258",
+      "id": "prop_255",
       "position": [
         10.5,
         0,
@@ -5527,7 +5667,7 @@
       "tint": null
     },
     {
-      "id": "prop_259",
+      "id": "prop_256",
       "position": [
         10,
         0,
@@ -5541,7 +5681,7 @@
       "tint": null
     },
     {
-      "id": "prop_260",
+      "id": "prop_257",
       "position": [
         54,
         0,
@@ -5555,7 +5695,7 @@
       "tint": null
     },
     {
-      "id": "prop_261",
+      "id": "prop_258",
       "position": [
         62,
         0,
@@ -5569,7 +5709,7 @@
       "tint": null
     },
     {
-      "id": "prop_262",
+      "id": "prop_259",
       "position": [
         63,
         0,
@@ -5583,7 +5723,7 @@
       "tint": null
     },
     {
-      "id": "prop_263",
+      "id": "prop_260",
       "position": [
         46,
         0,
@@ -5597,7 +5737,7 @@
       "tint": null
     },
     {
-      "id": "prop_264",
+      "id": "prop_261",
       "position": [
         -1,
         0,
@@ -5611,7 +5751,7 @@
       "tint": null
     },
     {
-      "id": "prop_265",
+      "id": "prop_262",
       "position": [
         28,
         0,
@@ -5625,7 +5765,7 @@
       "tint": null
     },
     {
-      "id": "prop_266",
+      "id": "prop_263",
       "position": [
         12,
         0,
@@ -5639,7 +5779,7 @@
       "tint": null
     },
     {
-      "id": "prop_267",
+      "id": "prop_264",
       "position": [
         52,
         0,
@@ -5653,7 +5793,7 @@
       "tint": null
     },
     {
-      "id": "prop_268",
+      "id": "prop_265",
       "position": [
         20,
         0,
@@ -5667,7 +5807,7 @@
       "tint": null
     },
     {
-      "id": "prop_269",
+      "id": "prop_266",
       "position": [
         44,
         0,
@@ -5681,7 +5821,7 @@
       "tint": null
     },
     {
-      "id": "prop_270",
+      "id": "prop_267",
       "position": [
         0,
         0,
@@ -5695,7 +5835,7 @@
       "tint": null
     },
     {
-      "id": "prop_271",
+      "id": "prop_268",
       "position": [
         64,
         0,
@@ -5709,7 +5849,7 @@
       "tint": null
     },
     {
-      "id": "prop_272",
+      "id": "prop_269",
       "position": [
         64,
         0,
@@ -5723,7 +5863,7 @@
       "tint": null
     },
     {
-      "id": "prop_273",
+      "id": "prop_270",
       "position": [
         8,
         0,
@@ -5737,7 +5877,7 @@
       "tint": null
     },
     {
-      "id": "prop_274",
+      "id": "prop_271",
       "position": [
         12,
         0,
@@ -5751,7 +5891,7 @@
       "tint": null
     },
     {
-      "id": "prop_275",
+      "id": "prop_272",
       "position": [
         52,
         0,
@@ -5765,7 +5905,7 @@
       "tint": null
     },
     {
-      "id": "prop_276",
+      "id": "prop_273",
       "position": [
         0,
         0,
@@ -5779,7 +5919,7 @@
       "tint": null
     },
     {
-      "id": "prop_277",
+      "id": "prop_274",
       "position": [
         64,
         0,
@@ -5793,7 +5933,7 @@
       "tint": null
     },
     {
-      "id": "prop_278",
+      "id": "prop_275",
       "position": [
         20,
         -8,
@@ -5807,7 +5947,7 @@
       "tint": null
     },
     {
-      "id": "prop_279",
+      "id": "prop_276",
       "position": [
         44,
         -8,
@@ -5821,7 +5961,7 @@
       "tint": null
     },
     {
-      "id": "prop_280",
+      "id": "prop_277",
       "position": [
         60,
         -8,
@@ -5835,7 +5975,7 @@
       "tint": null
     },
     {
-      "id": "prop_281",
+      "id": "prop_278",
       "position": [
         36,
         -8,
@@ -5849,7 +5989,7 @@
       "tint": null
     },
     {
-      "id": "prop_282",
+      "id": "prop_279",
       "position": [
         10,
         -8,
@@ -5863,7 +6003,7 @@
       "tint": null
     },
     {
-      "id": "prop_283",
+      "id": "prop_280",
       "position": [
         26.4,
         0,
@@ -5877,7 +6017,7 @@
       "tint": null
     },
     {
-      "id": "prop_284",
+      "id": "prop_281",
       "position": [
         25,
         0,
@@ -5891,7 +6031,7 @@
       "tint": null
     },
     {
-      "id": "prop_285",
+      "id": "prop_282",
       "position": [
         29.6,
         0,
@@ -5905,7 +6045,7 @@
       "tint": null
     },
     {
-      "id": "prop_286",
+      "id": "prop_283",
       "position": [
         34,
         0,
@@ -5919,7 +6059,7 @@
       "tint": null
     },
     {
-      "id": "prop_287",
+      "id": "prop_284",
       "position": [
         21,
         0,
@@ -5933,7 +6073,7 @@
       "tint": null
     },
     {
-      "id": "prop_288",
+      "id": "prop_285",
       "position": [
         21,
         0,
@@ -5947,7 +6087,7 @@
       "tint": null
     },
     {
-      "id": "prop_289",
+      "id": "prop_286",
       "position": [
         16,
         0,
@@ -5961,7 +6101,7 @@
       "tint": null
     },
     {
-      "id": "prop_290",
+      "id": "prop_287",
       "position": [
         13.5,
         0,
@@ -5975,7 +6115,7 @@
       "tint": null
     },
     {
-      "id": "prop_291",
+      "id": "prop_288",
       "position": [
         42,
         -4,
@@ -5989,7 +6129,7 @@
       "tint": null
     },
     {
-      "id": "prop_292",
+      "id": "prop_289",
       "position": [
         42,
         -4,
@@ -6003,7 +6143,7 @@
       "tint": null
     },
     {
-      "id": "prop_293",
+      "id": "prop_290",
       "position": [
         52,
         -4,
@@ -6017,7 +6157,7 @@
       "tint": null
     },
     {
-      "id": "prop_294",
+      "id": "prop_291",
       "position": [
         52,
         -4,
@@ -6031,7 +6171,7 @@
       "tint": null
     },
     {
-      "id": "prop_295",
+      "id": "prop_292",
       "position": [
         26.4,
         1.1,
@@ -6045,7 +6185,7 @@
       "tint": "#e0b030"
     },
     {
-      "id": "prop_296",
+      "id": "prop_293",
       "position": [
         2,
         0,
@@ -6059,7 +6199,7 @@
       "tint": null
     },
     {
-      "id": "prop_297",
+      "id": "prop_294",
       "position": [
         10,
         0,
@@ -6073,7 +6213,7 @@
       "tint": null
     },
     {
-      "id": "prop_298",
+      "id": "prop_295",
       "position": [
         26,
         0,
@@ -6087,7 +6227,7 @@
       "tint": null
     },
     {
-      "id": "prop_299",
+      "id": "prop_296",
       "position": [
         38,
         0,
@@ -6101,7 +6241,7 @@
       "tint": null
     },
     {
-      "id": "prop_300",
+      "id": "prop_297",
       "position": [
         50,
         0,
@@ -6115,7 +6255,7 @@
       "tint": null
     },
     {
-      "id": "prop_301",
+      "id": "prop_298",
       "position": [
         62,
         0,
@@ -6129,7 +6269,7 @@
       "tint": null
     },
     {
-      "id": "prop_302",
+      "id": "prop_299",
       "position": [
         2,
         0,
@@ -6143,7 +6283,7 @@
       "tint": null
     },
     {
-      "id": "prop_303",
+      "id": "prop_300",
       "position": [
         14,
         0,
@@ -6157,7 +6297,7 @@
       "tint": null
     },
     {
-      "id": "prop_304",
+      "id": "prop_301",
       "position": [
         28,
         0,
@@ -6171,7 +6311,7 @@
       "tint": null
     },
     {
-      "id": "prop_305",
+      "id": "prop_302",
       "position": [
         46,
         0,
@@ -6185,7 +6325,7 @@
       "tint": null
     },
     {
-      "id": "prop_306",
+      "id": "prop_303",
       "position": [
         58,
         0,
@@ -6199,7 +6339,7 @@
       "tint": null
     },
     {
-      "id": "prop_307",
+      "id": "prop_304",
       "position": [
         66,
         0,
@@ -6213,7 +6353,7 @@
       "tint": null
     },
     {
-      "id": "prop_308",
+      "id": "prop_305",
       "position": [
         -2,
         0,
@@ -6227,7 +6367,7 @@
       "tint": null
     },
     {
-      "id": "prop_309",
+      "id": "prop_306",
       "position": [
         10,
         0,
@@ -6241,7 +6381,7 @@
       "tint": null
     },
     {
-      "id": "prop_310",
+      "id": "prop_307",
       "position": [
         -2,
         0,
@@ -6255,7 +6395,7 @@
       "tint": null
     },
     {
-      "id": "prop_311",
+      "id": "prop_308",
       "position": [
         10,
         0,
@@ -6269,7 +6409,7 @@
       "tint": null
     },
     {
-      "id": "prop_312",
+      "id": "prop_309",
       "position": [
         54,
         0,
@@ -6283,7 +6423,7 @@
       "tint": null
     },
     {
-      "id": "prop_313",
+      "id": "prop_310",
       "position": [
         66,
         0,
@@ -6297,7 +6437,7 @@
       "tint": null
     },
     {
-      "id": "prop_314",
+      "id": "prop_311",
       "position": [
         54,
         0,
@@ -6311,7 +6451,7 @@
       "tint": null
     },
     {
-      "id": "prop_315",
+      "id": "prop_312",
       "position": [
         66,
         0,
@@ -6325,7 +6465,7 @@
       "tint": null
     },
     {
-      "id": "prop_316",
+      "id": "prop_313",
       "position": [
         0,
         0,
@@ -6339,7 +6479,7 @@
       "tint": null
     },
     {
-      "id": "prop_317",
+      "id": "prop_314",
       "position": [
         64,
         0,
@@ -6353,7 +6493,7 @@
       "tint": null
     },
     {
-      "id": "prop_318",
+      "id": "prop_315",
       "position": [
         18,
         0,
@@ -6367,7 +6507,7 @@
       "tint": null
     },
     {
-      "id": "prop_319",
+      "id": "prop_316",
       "position": [
         46,
         0,
@@ -6381,7 +6521,7 @@
       "tint": null
     },
     {
-      "id": "prop_320",
+      "id": "prop_317",
       "position": [
         -2,
         0,
@@ -6395,7 +6535,7 @@
       "tint": null
     },
     {
-      "id": "prop_321",
+      "id": "prop_318",
       "position": [
         66,
         0,
@@ -6409,7 +6549,7 @@
       "tint": null
     },
     {
-      "id": "prop_322",
+      "id": "prop_319",
       "position": [
         -2,
         0,
@@ -6423,7 +6563,7 @@
       "tint": null
     },
     {
-      "id": "prop_323",
+      "id": "prop_320",
       "position": [
         66,
         0,
@@ -6437,7 +6577,7 @@
       "tint": null
     },
     {
-      "id": "prop_324",
+      "id": "prop_321",
       "position": [
         -2,
         0,
@@ -6451,7 +6591,7 @@
       "tint": null
     },
     {
-      "id": "prop_325",
+      "id": "prop_322",
       "position": [
         66,
         0,
@@ -6465,7 +6605,7 @@
       "tint": null
     },
     {
-      "id": "prop_326",
+      "id": "prop_323",
       "position": [
         -2,
         0,
@@ -6479,7 +6619,7 @@
       "tint": null
     },
     {
-      "id": "prop_327",
+      "id": "prop_324",
       "position": [
         66,
         0,
@@ -6493,7 +6633,7 @@
       "tint": null
     },
     {
-      "id": "prop_328",
+      "id": "prop_325",
       "position": [
         14,
         0,
@@ -6507,7 +6647,7 @@
       "tint": null
     },
     {
-      "id": "prop_329",
+      "id": "prop_326",
       "position": [
         50,
         0,
@@ -6521,7 +6661,7 @@
       "tint": null
     },
     {
-      "id": "light_330",
+      "id": "light_327",
       "position": [
         24,
         3.4,
@@ -6535,7 +6675,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_331",
+      "id": "light_328",
       "position": [
         40,
         3.4,
@@ -6549,7 +6689,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_332",
+      "id": "light_329",
       "position": [
         16,
         3.4,
@@ -6563,7 +6703,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_333",
+      "id": "light_330",
       "position": [
         48,
         3.4,
@@ -6577,7 +6717,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_334",
+      "id": "light_331",
       "position": [
         32,
         3.3,
@@ -6591,7 +6731,7 @@
       "fixture": "bulb"
     },
     {
-      "id": "light_335",
+      "id": "light_332",
       "position": [
         32,
         3.3,
@@ -6605,7 +6745,7 @@
       "fixture": "bulb"
     },
     {
-      "id": "light_336",
+      "id": "light_333",
       "position": [
         32,
         3.3,
@@ -6619,7 +6759,7 @@
       "fixture": "bulb"
     },
     {
-      "id": "light_337",
+      "id": "light_334",
       "position": [
         32,
         3.2,
@@ -6633,7 +6773,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_338",
+      "id": "light_335",
       "position": [
         16,
         3.2,
@@ -6647,7 +6787,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_339",
+      "id": "light_336",
       "position": [
         16,
         3.2,
@@ -6661,7 +6801,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_340",
+      "id": "light_337",
       "position": [
         40,
         -1,
@@ -6675,7 +6815,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_341",
+      "id": "light_338",
       "position": [
         40,
         -1,
@@ -6689,7 +6829,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_342",
+      "id": "light_339",
       "position": [
         48,
         -1,
@@ -6703,7 +6843,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_343",
+      "id": "light_340",
       "position": [
         48,
         -1,
@@ -6717,7 +6857,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_344",
+      "id": "light_341",
       "position": [
         48,
         -6,
@@ -6731,7 +6871,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_345",
+      "id": "light_342",
       "position": [
         8,
         -6,
@@ -6745,7 +6885,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_346",
+      "id": "light_343",
       "position": [
         64,
         -2,
@@ -6759,7 +6899,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_347",
+      "id": "light_344",
       "position": [
         0,
         -2,
@@ -6773,7 +6913,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_348",
+      "id": "light_345",
       "position": [
         32,
         1.4,
@@ -6787,7 +6927,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_349",
+      "id": "light_346",
       "position": [
         8,
         1.4,
@@ -6801,7 +6941,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_350",
+      "id": "light_347",
       "position": [
         56,
         1.4,
@@ -6815,7 +6955,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_351",
+      "id": "light_348",
       "position": [
         32,
         11,
@@ -6829,7 +6969,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_352",
+      "id": "light_349",
       "position": [
         32,
         3.6,
@@ -6843,7 +6983,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_353",
+      "id": "light_350",
       "position": [
         32,
         3.6,
@@ -6857,7 +6997,7 @@
       "fixture": "none"
     },
     {
-      "id": "prop_354",
+      "id": "prop_351",
       "position": [
         16,
         0,
@@ -6871,7 +7011,7 @@
       "tint": null
     },
     {
-      "id": "prop_355",
+      "id": "prop_352",
       "position": [
         16,
         0,
@@ -6885,7 +7025,7 @@
       "tint": null
     },
     {
-      "id": "prop_356",
+      "id": "prop_353",
       "position": [
         12.88,
         0,
@@ -6899,7 +7039,7 @@
       "tint": null
     },
     {
-      "id": "prop_357",
+      "id": "prop_354",
       "position": [
         12.95,
         0,
@@ -6913,7 +7053,7 @@
       "tint": null
     },
     {
-      "id": "prop_358",
+      "id": "prop_355",
       "position": [
         12.91,
         0,
@@ -6927,7 +7067,7 @@
       "tint": null
     },
     {
-      "id": "prop_359",
+      "id": "prop_356",
       "position": [
         18.48,
         1.2,
@@ -6941,7 +7081,7 @@
       "tint": null
     },
     {
-      "id": "prop_360",
+      "id": "prop_357",
       "position": [
         50.22,
         0,
@@ -6955,7 +7095,7 @@
       "tint": null
     },
     {
-      "id": "prop_361",
+      "id": "prop_358",
       "position": [
         50.82,
         1,
@@ -6969,7 +7109,7 @@
       "tint": null
     },
     {
-      "id": "prop_362",
+      "id": "prop_359",
       "position": [
         49.62,
         1,
@@ -6983,7 +7123,7 @@
       "tint": null
     },
     {
-      "id": "prop_363",
+      "id": "prop_360",
       "position": [
         46.77,
         0,
@@ -6997,7 +7137,7 @@
       "tint": null
     },
     {
-      "id": "prop_364",
+      "id": "prop_361",
       "position": [
         46.77,
         0,
@@ -7011,7 +7151,7 @@
       "tint": null
     },
     {
-      "id": "prop_365",
+      "id": "prop_362",
       "position": [
         46.72,
         0,
@@ -7025,7 +7165,7 @@
       "tint": null
     },
     {
-      "id": "prop_366",
+      "id": "prop_363",
       "position": [
         51.08,
         0,
@@ -7039,7 +7179,7 @@
       "tint": null
     },
     {
-      "id": "prop_367",
+      "id": "prop_364",
       "position": [
         44.92,
         0,
@@ -7053,7 +7193,7 @@
       "tint": null
     },
     {
-      "id": "prop_368",
+      "id": "prop_365",
       "position": [
         49.53,
         1.2,
@@ -7067,7 +7207,7 @@
       "tint": null
     },
     {
-      "id": "prop_369",
+      "id": "prop_366",
       "position": [
         19.19,
         0,
@@ -7081,7 +7221,7 @@
       "tint": null
     },
     {
-      "id": "prop_370",
+      "id": "prop_367",
       "position": [
         12.81,
         0,
@@ -7095,7 +7235,7 @@
       "tint": null
     },
     {
-      "id": "prop_371",
+      "id": "prop_368",
       "position": [
         17.53,
         0,
@@ -7109,7 +7249,7 @@
       "tint": null
     },
     {
-      "id": "prop_372",
+      "id": "prop_369",
       "position": [
         17.02,
         0,
@@ -7118,54 +7258,54 @@
       "kind": "prop",
       "model": "prop.chair",
       "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_370",
+      "position": [
+        17.02,
+        0,
+        80.8
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 3.1416,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_371",
+      "position": [
+        18.05,
+        0,
+        79.2
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_372",
+      "position": [
+        18.05,
+        0,
+        80.8
+      ],
+      "kind": "prop",
+      "model": "prop.chair",
+      "yaw": 3.1416,
       "scale": 1,
       "solid": false,
       "tint": null
     },
     {
       "id": "prop_373",
-      "position": [
-        17.02,
-        0,
-        80.8
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_374",
-      "position": [
-        18.05,
-        0,
-        79.2
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_375",
-      "position": [
-        18.05,
-        0,
-        80.8
-      ],
-      "kind": "prop",
-      "model": "prop.chair",
-      "yaw": 3.1416,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_376",
       "position": [
         17.53,
         0.8,
@@ -7179,7 +7319,7 @@
       "tint": null
     },
     {
-      "id": "prop_377",
+      "id": "prop_374",
       "position": [
         19.05,
         0,
@@ -7193,7 +7333,7 @@
       "tint": null
     },
     {
-      "id": "prop_378",
+      "id": "prop_375",
       "position": [
         5.48,
         0,
@@ -7207,7 +7347,7 @@
       "tint": null
     },
     {
-      "id": "prop_379",
+      "id": "prop_376",
       "position": [
         10.43,
         0,
@@ -7221,7 +7361,7 @@
       "tint": null
     },
     {
-      "id": "prop_380",
+      "id": "prop_377",
       "position": [
         10.92,
         0,
@@ -7235,7 +7375,7 @@
       "tint": null
     },
     {
-      "id": "prop_381",
+      "id": "prop_378",
       "position": [
         5.08,
         0,
@@ -7249,7 +7389,7 @@
       "tint": null
     },
     {
-      "id": "prop_382",
+      "id": "prop_379",
       "position": [
         56,
         0,
@@ -7263,7 +7403,7 @@
       "tint": null
     },
     {
-      "id": "prop_383",
+      "id": "prop_380",
       "position": [
         56,
         0,
@@ -7277,7 +7417,7 @@
       "tint": null
     },
     {
-      "id": "prop_384",
+      "id": "prop_381",
       "position": [
         56.38,
         0.8,
@@ -7291,7 +7431,7 @@
       "tint": null
     },
     {
-      "id": "prop_385",
+      "id": "prop_382",
       "position": [
         52.77,
         0,
@@ -7375,7 +7515,21 @@
             "type": "message",
             "target": null,
             "value": 3,
-            "text": "Chains rattle: the drawbridge gates slam shut.",
+            "text": "Chains rattle: the gates slam shut and the drawbridge rises!",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "drawbridge_south",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "drawbridge_north",
+            "value": 2,
+            "text": "",
             "state": ""
           },
           {
@@ -7452,7 +7606,21 @@
             "type": "message",
             "target": null,
             "value": 3,
-            "text": "Chains rattle: the drawbridge gates swing open.",
+            "text": "Chains rattle: the drawbridge comes down and the gates swing open.",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "drawbridge_south",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "drawbridge_north",
+            "value": 1,
+            "text": "",
             "state": ""
           },
           {
@@ -7529,7 +7697,21 @@
             "type": "message",
             "target": null,
             "value": 3,
-            "text": "Chains rattle: the drawbridge gates slam shut.",
+            "text": "Chains rattle: the gates slam shut and the drawbridge rises!",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "drawbridge_south",
+            "value": 2,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "drawbridge_north",
+            "value": 2,
+            "text": "",
             "state": ""
           },
           {
@@ -7606,7 +7788,21 @@
             "type": "message",
             "target": null,
             "value": 3,
-            "text": "Chains rattle: the drawbridge gates swing open.",
+            "text": "Chains rattle: the drawbridge comes down and the gates swing open.",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "drawbridge_south",
+            "value": 1,
+            "text": "",
+            "state": ""
+          },
+          {
+            "type": "mover_to",
+            "target": "drawbridge_north",
+            "value": 1,
+            "text": "",
             "state": ""
           },
           {

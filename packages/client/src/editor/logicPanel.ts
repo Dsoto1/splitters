@@ -6,7 +6,7 @@ import {
   CONDITION_TYPES,
   EVENT_INFO,
   EVENT_TYPES,
-  TOGGLEABLE_KINDS,
+  entityFitsTarget,
   PLAYERS_FACTION,
   RELATIONS,
   entityLabel,
@@ -280,12 +280,19 @@ export class LogicPanel {
         tag(k === 0 ? 'DO' : 'THEN'),
         select(ACTION_TYPES.map((t): [string, string] => [t, ACTION_INFO[t].label]), a.type, (v) => {
           const next = ACTION_INFO[v as ActionType];
-          set((x) => Object.assign(x, { type: v as ActionType, target: next.target === ai.target ? x.target : null, state: next.states?.[0] ?? '', value: v === 'message' ? 4 : v === 'wait' ? 1 : x.value }));
+          set((x) => Object.assign(x, { type: v as ActionType, target: next.target === ai.target ? x.target : null, state: next.states?.[0] ?? '', value: v === 'message' ? 4 : v === 'wait' ? 1 : v === 'light_flash' ? 0.5 : v === 'light_blink' ? 2 : v === 'mover_to' ? 1 : x.value, text: v === 'light_color' ? '#ff2020' : x.text }));
         }),
       );
       if (ai.target) line.append(this.targetSelect(doc, ai.target, a.target, (v) => set((x) => (x.target = v)), false));
       if (ai.states) line.append(select(ai.states.map((s): [string, string] => [s, s]), a.state || ai.states[0]!, (v) => set((x) => (x.state = v))));
-      if (ai.text) line.append(input(a.text, (v) => set((x) => (x.text = v.slice(0, 200))), 'Message text'));
+      if (a.type === 'light_color') {
+        // A colour picker for "Set light colour" (empty text: back to the light's own colour).
+        const c = document.createElement('input');
+        c.type = 'color';
+        c.value = /^#[0-9a-f]{6}$/i.test(a.text) ? a.text.toLowerCase() : '#ff2020';
+        c.addEventListener('change', () => set((x) => (x.text = c.value.toLowerCase())));
+        line.append(c);
+      } else if (ai.text) line.append(input(a.text, (v) => set((x) => (x.text = v.slice(0, 200))), a.type === 'next_map' ? 'Map ID' : 'Message text'));
       if (ai.value) line.append(labeled(ai.value, num(a.value, (v) => set((x) => (x.value = v)))));
       line.append(
         btn('↑', () => k > 0 && edit('Reorder actions', (r) => r.do.splice(k - 1, 0, ...r.do.splice(k, 1))), 'Move up'),
@@ -313,7 +320,7 @@ export class LogicPanel {
     else if (kind === 'objective') for (const o of logic.objectives) options.push([o.id, o.text]);
     else {
       for (const e of doc.entities) {
-        const ok = kind === 'toggleable' ? (TOGGLEABLE_KINDS as readonly string[]).includes(e.kind) : e.kind === kind;
+        const ok = entityFitsTarget(e.kind, kind);
         if (ok) options.push([e.id, entityLabel(doc, e)]);
       }
     }

@@ -2,7 +2,7 @@ import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { getProp } from '../content/props.ts';
-import { buildOccupancy, cellHasFloor, cellKey, yawXZ } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, dynamicBlockIds, yawXZ } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { floatingProps } from './settle.ts';
@@ -197,10 +197,10 @@ export const MAP_BUDGETS = {
   propModels: 80,
   /** Solid free blocks: merged into the level's meshes like tiles, so mostly a navmesh build-time cost. */
   blocks: 3000,
-  /** Breakable, crumbling and trapdoor blocks (each is simulated and sent to players). */
+  /** Breakable, crumbling and trapdoor blocks, and solid blocks logic drives or movers carry (each is simulated and sent to players). */
   dynamicBlocks: 150,
   liquids: 32,
-  /** Gameplay pieces that think every tick: doors, traps, zones, squads, mounts, pads. */
+  /** Gameplay pieces that think every tick: doors, traps, zones, squads, mounts, pads, buttons, movers. */
   active: 300,
 } as const;
 
@@ -214,10 +214,12 @@ function budgetIssues(map: MapDocument): ValidationIssue[] {
   over('tiles', map.classicStructure.tiles.length, MAP_BUDGETS.tiles, 'tiles');
   over('props', props.length, MAP_BUDGETS.props, 'props');
   over('prop_models', new Set(props.map((x) => x.model)).size, MAP_BUDGETS.propModels, 'different prop models');
-  over('blocks', e.filter((x) => x.kind === 'block' && x.behaviour === 'solid').length, MAP_BUDGETS.blocks, 'solid blocks');
-  over('dynamic_blocks', e.filter((x) => x.kind === 'block' && x.behaviour !== 'solid').length, MAP_BUDGETS.dynamicBlocks, 'breakable, crumbling or trapdoor blocks');
+  // Dynamic: breakable, crumbling and trapdoor blocks, and solid ones logic drives or movers carry (v20).
+  const dynamic = dynamicBlockIds(map);
+  over('blocks', e.filter((x) => x.kind === 'block' && !dynamic.has(x.id)).length, MAP_BUDGETS.blocks, 'solid blocks');
+  over('dynamic_blocks', dynamic.size, MAP_BUDGETS.dynamicBlocks, 'breakable, crumbling, trapdoor, logic-driven or moving blocks');
   over('liquids', e.filter((x) => x.kind === 'water').length, MAP_BUDGETS.liquids, 'bodies of water, lava, acid or swamp');
-  over('active', e.filter((x) => ['door', 'trap', 'zone', 'encounter', 'mount', 'pad', 'button'].includes(x.kind)).length, MAP_BUDGETS.active, 'doors, traps, zones, squads, vehicles, pads and buttons');
+  over('active', e.filter((x) => ['door', 'trap', 'zone', 'encounter', 'mount', 'pad', 'button', 'mover'].includes(x.kind)).length, MAP_BUDGETS.active, 'doors, traps, zones, squads, vehicles, pads, buttons and movers');
   const xs = e.map((x) => x.position[0]);
   const zs = e.map((x) => x.position[2]);
   const span = xs.length ? Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) : 0;

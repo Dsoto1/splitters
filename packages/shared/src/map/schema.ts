@@ -10,7 +10,8 @@ import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
  * Tile Trigger map document, format version 6 (v2 added per-surface tile styles, v3 pickup
  * entities, v4 scenario entities and logic, v5 factions and NPC encounters, v6 per-side
  * wall styles, trim and props, v7 terrain, v8 map boundary and team setup, v11 flag bases
- * and hills for Capture the Flag and King of the Hill, v18 the race `track`, v19 the transport plane and mount skins).
+ * and hills for Capture the Flag and King of the Hill, v18 the race `track`, v19 the transport plane and mount skins, v20 movers, logic-driven
+ * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -21,7 +22,7 @@ import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 19;
+export const MAP_FORMAT_VERSION = 20;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -135,6 +136,16 @@ export const PickupEntity = EntityBase.extend({
 /** Facing in radians. Doors snap to quarter turns in the editor. */
 const Yaw = z.number().finite().default(0);
 
+/**
+ * Team filter (v20) on buttons, doors and zones: only this team (a team or
+ * faction ID, as for spawns) can press it, open it or count in it. Absent:
+ * everyone.
+ */
+const TeamFilter = z
+  .string()
+  .regex(/^[a-z0-9_.]{2,64}$/)
+  .optional();
+
 /** A sliding double door, sized for a Classic Grid doorway (3 m × 3 m). */
 export const DoorEntity = EntityBase.extend({
   kind: z.literal('door'),
@@ -143,6 +154,8 @@ export const DoorEntity = EntityBase.extend({
   locked: z.boolean().default(false),
   /** Opens by itself when a player comes close (if unlocked). Otherwise players press E, or logic opens it. */
   auto: z.boolean().default(true),
+  /** Only this team opens it (by walking up or pressing E); logic still opens it for everyone. */
+  team: TeamFilter,
 });
 
 /** A wall button players press with E. Fires the "button pressed" logic event. */
@@ -154,6 +167,8 @@ export const ButtonEntity = EntityBase.extend({
   once: z.boolean().default(false),
   cooldownSeconds: z.number().min(0.2).max(60).default(1),
   startEnabled: z.boolean().default(true),
+  /** Only this team can press it. */
+  team: TeamFilter,
 });
 
 export const DESTRUCTIBLE_MODELS = ['crate', 'barrel', 'wall', 'glass', 'boards', 'gas', 'generator'] as const;
@@ -177,6 +192,8 @@ export const ZoneEntity = EntityBase.extend({
   who: z.enum(['any', 'count', 'all']).default('any'),
   count: z.number().int().min(1).max(32).default(1),
   startEnabled: z.boolean().default(true),
+  /** Only this team's players count (enter, leave, "all" means all of that team). */
+  team: TeamFilter,
 });
 
 export const TRAP_KINDS = ['spikes', 'flames', 'crusher', 'mine', 'laser', 'shock'] as const;
@@ -376,6 +393,15 @@ export const BlockEntity = EntityBase.extend({
   respawnSeconds: z.number().min(1).max(600).nullable().default(8),
   /** Breakable blocks: hit points. */
   health: z.number().min(1).max(5000).default(120),
+  /**
+   * Tilt (v20): pitch turns the block about its own X axis (its +Z end rises
+   * for positive values), roll about its own Z axis (+X end rises). Radians,
+   * at most 45° each; ramps, roofs, toppled wrecks. Absent = level.
+   */
+  pitch: z.number().min(-Math.PI / 4).max(Math.PI / 4).optional(),
+  roll: z.number().min(-Math.PI / 4).max(Math.PI / 4).optional(),
+  /** Starts gone (v20): logic "Rebuild block" or "Enable" makes it appear (a bridge that extends). */
+  startHidden: z.boolean().optional(),
 });
 
 /** A body of liquid (position: centre of its floor). Water is swum in; lava and acid hurt; swamp slows you down. */
@@ -384,6 +410,11 @@ export const WaterEntity = EntityBase.extend({
   kind: z.literal('water'),
   size: z.tuple([z.number().min(0.5).max(512), z.number().min(0.2).max(64), z.number().min(0.5).max(512)]).default([8, 2, 8]),
   liquid: z.enum(LIQUIDS).default('water'),
+  /** Colour override (v20): green acid, murky sewer water. Absent = the liquid's own colour. */
+  tint: z
+    .string()
+    .regex(/^#[0-9a-f]{6}$/)
+    .optional(),
 });
 
 /** Capture the Flag: a team's flag base (position: the floor under the flag). */
@@ -434,9 +465,43 @@ export const LightEntity = EntityBase.extend({
   intensity: z.number().min(0.1).max(5).default(1),
   range: z.number().min(1).max(30).default(10),
   fixture: z.enum(LIGHT_FIXTURES).default('ceiling'),
+  /** Starts switched off (v20; logic "Light on" switches it on). */
+  off: z.boolean().optional(),
+  /** Starts blinking this many times a second (v20; alarms, failing tubes). Absent = steady. */
+  blink: z.number().min(0.2).max(10).optional(),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity]);
+/** How a mover runs: round its points, back and forth, or only when logic sends it. */
+export const MOVER_MODES = ['loop', 'pingpong', 'trigger'] as const;
+export type MoverMode = (typeof MOVER_MODES)[number];
+
+/**
+ * A mover (v20): moving platforms. It carries a group of free blocks
+ * (`blocks`, by ID) between its `points`, offsets in metres from where the
+ * blocks are placed (the first point is usually [0, 0, 0]). Each point can
+ * also turn the group by `angles[k]` (radians) about a horizontal hinge
+ * through the mover's position, square to its facing `yaw`: drawbridges.
+ * Players standing on a carried block ride it. `loop` goes round the points,
+ * `pingpong` there and back, `trigger` only when logic sends it ("Send mover",
+ * "Move to point"). It waits `wait` seconds at each point.
+ */
+export const MoverEntity = EntityBase.extend({
+  kind: z.literal('mover'),
+  yaw: Yaw,
+  blocks: z.array(StableId).min(1).max(32),
+  points: z.array(Vec3Tuple).min(2).max(16),
+  angles: z.array(z.number().min(-Math.PI).max(Math.PI)).max(16).optional(),
+  mode: z.enum(MOVER_MODES).default('pingpong'),
+  /** Metres per second along the way. */
+  speed: z.number().min(0.2).max(40).default(3),
+  /** Degrees per second when turning (drawbridges). */
+  turnSpeed: z.number().min(5).max(360).default(45),
+  wait: z.number().min(0).max(120).default(2),
+  /** Loop and pingpong movers run from the start (logic Enable/Disable starts and parks them). */
+  startActive: z.boolean().default(true),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -614,6 +679,7 @@ export type HostageEntity = z.infer<typeof HostageEntity>;
 export type RescueEntity = z.infer<typeof RescueEntity>;
 export type LightEntity = z.infer<typeof LightEntity>;
 export type AirplaneEntity = z.infer<typeof AirplaneEntity>;
+export type MoverEntity = z.infer<typeof MoverEntity>;
 export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
 export type Liquid = (typeof LIQUIDS)[number];
 export type Faction = z.infer<typeof Faction>;
