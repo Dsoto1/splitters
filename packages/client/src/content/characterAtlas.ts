@@ -7,6 +7,7 @@ import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { GEAR_FINISH_SLOTS, gearFinishTexels } from './mergeParts.ts';
 
 /** Where a texture sits in the atlas: atlas UV = offset + UV × scale (UVs in [0, rep)). */
 interface Tile {
@@ -18,7 +19,7 @@ interface Tile {
   repV: number;
 }
 
-/** Atlas size, and its fixed slots: the two skins, two hair textures, and eye textures repeated twice across. */
+/** Atlas size, and its fixed slots: the two skins, two hair textures, and eye textures repeated twice across (the last slot is gear's, below). */
 const W = 2048;
 const H = 1536;
 const SLOTS: readonly { x: number; y: number; w: number; h: number }[] = [
@@ -29,19 +30,33 @@ const SLOTS: readonly { x: number; y: number; w: number; h: number }[] = [
   { x: 1024, y: 1024, w: 512, h: 256 },
   { x: 1024, y: 1280, w: 512, h: 256 },
   { x: 1536, y: 1024, w: 512, h: 256 },
-  { x: 1536, y: 1280, w: 512, h: 256 },
 ];
+/**
+ * Gear's slot: plain white (gear is coloured per vertex), with its finishes
+ * (metallic, roughness) in the matching texels of the small finish texture,
+ * one row per culling side. Gear UVs land in its middle, clear of the
+ * neighbouring tiles at all but the smallest mip levels.
+ */
+const GEAR = { x: 1536, y: 1280, w: 512, h: 256 };
+/** The finish texture: one texel per 32 × 32 atlas pixels (only gear's texels vary). */
+const MR_W = W / 32;
+const MR_H = H / 32;
+/** Gear finish texels: columns MR_X0 + slot, row per culling side. */
+const MR_X0 = GEAR.x / 32 + 4;
+const MR_ROW = { culled: GEAR.y / 32 + 1, both: GEAR.y / 32 + 5 };
 /** UV slack at a tile's edges (an exporter's 1.0001 is still inside). */
 const SLACK = 0.01;
 
 /**
  * One texture for every character's skin, hair and eyes in a scene (they share
  * a handful of textures and differ only in tint), so a character's head, arms,
- * eyes, eyebrows and hair are one draw: each part's UVs move into its
+ * eyes, eyebrows, hair and gear are one draw: each part's UVs move into its
  * texture's tile and its tint goes into its vertex colours (albedo × texture ×
- * vertex colour, the same product). Outfits (dyed per look) and gear keep
- * their own draws. Parts whose UVs leave their tile, or whose material
- * differs in anything but texture and tint, are left as they are.
+ * vertex colour, the same product); gear (coloured per vertex) samples a
+ * white tile, with its finishes in a small metallic/roughness texture laid
+ * over the atlas. Outfits (dyed per look) keep their own draw. Parts whose
+ * UVs leave their tile, or whose material differs in anything but texture
+ * and tint, are left as they are. Gear is drawn from both sides, as skin is.
  */
 export class CharacterAtlas {
   private readonly pixels = new Uint8Array(W * H * 4);
@@ -49,11 +64,53 @@ export class CharacterAtlas {
   private readonly tiles = new Map<string, Promise<Tile | null>>();
   private readonly used = new Set<number>();
   private pending = false;
+  /** Metallic (blue) and roughness (green) over the atlas, for gear's finishes; null until a character's surface sets the rest. */
+  private readonly finish = new Uint8Array(MR_W * MR_H * 4);
+  private finishTexture: RawTexture | null = null;
+  private surface: string | null = null;
 
   constructor(private readonly scene: Scene) {
+    for (let y = GEAR.y; y < GEAR.y + GEAR.h; y++) this.pixels.fill(255, (y * W + GEAR.x) * 4, (y * W + GEAR.x + GEAR.w) * 4);
     this.texture = RawTexture.CreateRGBATexture(this.pixels, W, H, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
     this.texture.name = 'characterAtlas';
     this.texture.wrapU = this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+  }
+
+  /**
+   * The finish texture, filled with the skin surface's metallic and roughness
+   * and the gear tables' finishes (refreshed whenever a table has grown).
+   */
+  private finishes(base: PBRMaterial): RawTexture | null {
+    const metal = base.metallic ?? 1;
+    const rough = base.roughness ?? 1;
+    const surface = `${metal}|${rough}`;
+    // Characters on another surface keep their gear apart (never so far: every skin is the same).
+    if (this.surface !== null && this.surface !== surface) return null;
+    if (this.surface === null) {
+      this.surface = surface;
+      for (let i = 0; i < MR_W * MR_H; i++) this.finish.set([255, Math.round(rough * 255), Math.round(metal * 255), 255], i * 4);
+    }
+    let changed = !this.finishTexture;
+    for (const [side, row] of [[true, MR_ROW.culled], [false, MR_ROW.both]] as const) {
+      const table = gearFinishTexels(this.scene, side);
+      if (!table) continue;
+      for (let i = 0; i < GEAR_FINISH_SLOTS; i++) {
+        const at = (row * MR_W + MR_X0 + i) * 4;
+        for (let k = 0; k < 4; k++) {
+          if (this.finish[at + k] === table[i * 4 + k]) continue;
+          this.finish[at + k] = table[i * 4 + k]!;
+          changed = true;
+        }
+      }
+    }
+    if (!this.finishTexture) {
+      this.finishTexture = RawTexture.CreateRGBATexture(this.finish, MR_W, MR_H, this.scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+      this.finishTexture.name = 'characterAtlasFinish';
+      this.finishTexture.wrapU = this.finishTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+      // Data, not colour.
+      this.finishTexture.gammaSpace = false;
+    } else if (changed) this.finishTexture.update(this.finish);
+    return this.finishTexture;
   }
 
   /**
@@ -75,15 +132,27 @@ export class CharacterAtlas {
       parts.push({ mesh: m, mat, tex, uv, rep });
     }
     if (!parts.length) return null;
+    // Gear (one skinned mesh per character, coloured per vertex, finishes from a table) joins them on the atlas's white tile.
+    const gear = meshes.filter((m): m is Mesh => m instanceof Mesh && !!m.skeleton && m.material instanceof PBRMaterial && m.material.metallicTexture?.name === 'gearFinishes' && !m.material.albedoTexture);
     const base = parts[0]!.mat;
     const key = surfaceKey(base);
     // A texture that doesn't wrap fits a tile made for wrapping across too (the eyes come both ways).
     const tileFor = async (tex: BaseTexture, [ru, rv]: [number, number]) => (await this.tile(tex, ru, rv)) ?? (ru === 1 ? this.tile(tex, 2, rv) : null);
     const tiles = await Promise.all(parts.map((p) => (surfaceKey(p.mat) === key ? tileFor(p.tex, p.rep) : Promise.resolve(null))));
     if (tiles.filter(Boolean).length < 2) return null;
+    const finish = gear.length ? this.finishes(base) : null;
     const material = base.clone(`${name}_atlas`) as PBRMaterial;
     material.albedoTexture = this.texture;
     material.albedoColor = Color3.White();
+    if (finish) {
+      // Metallic and roughness from the finish texture (the skin's own values everywhere but gear's texels).
+      material.metallic = 1;
+      material.roughness = 1;
+      material.metallicTexture = finish;
+      material.useRoughnessFromMetallicTextureAlpha = false;
+      material.useRoughnessFromMetallicTextureGreen = true;
+      material.useMetallnessFromMetallicTextureBlue = true;
+    }
     const old = new Set<PBRMaterial>();
     parts.forEach((p, i) => {
       const t = tiles[i];
@@ -114,6 +183,35 @@ export class CharacterAtlas {
       old.add(p.mat);
       m.material = material;
     });
+    if (finish) {
+      // Low-detail copies of the skin, hair and eyes are drawn past this distance: gear (which has none) merges with them.
+      const lodAs = parts.find((p) => p.mesh.material === material && p.mesh.getLODLevels().length)?.mesh.getLODLevels()[0]?.distanceOrScreenCoverage ?? undefined;
+      for (const m of gear) {
+        const uv = m.getVerticesData(VertexBuffer.UVKind);
+        if (!uv) continue;
+        const row = (m.material as PBRMaterial).backFaceCulling ? MR_ROW.culled : MR_ROW.both;
+        const out = new Float32Array(uv.length);
+        for (let k = 0; k < uv.length; k += 2) {
+          // The table's U is (slot + 0.5) / slots: the same slot's texel in the finish texture, at its centre.
+          const slot = Math.min(GEAR_FINISH_SLOTS - 1, Math.floor(uv[k]! * GEAR_FINISH_SLOTS));
+          out[k] = (MR_X0 + slot + 0.5) / MR_W;
+          out[k + 1] = (row + 0.5) / MR_H;
+        }
+        m.setVerticesData(VertexBuffer.UVKind, out, false, 2);
+        // The head's winding (the import's mirrored meshes count their faces the other way): the same faces, so it can merge.
+        const side = parts[0]!.mesh.sideOrientation;
+        const idx = m.getIndices();
+        if (side !== null && m.sideOrientation !== side && idx) {
+          const flipped = Array.from(idx);
+          for (let t = 0; t + 2 < flipped.length; t += 3) [flipped[t + 1], flipped[t + 2]] = [flipped[t + 2]!, flipped[t + 1]!];
+          m.setIndices(flipped);
+          m.sideOrientation = side;
+        }
+        // Drawn from both sides now, like the skin: closed shapes look the same.
+        m.material = material;
+        if (lodAs !== undefined) m.metadata = { ...(m.metadata as object | null), mergeLodAs: lodAs };
+      }
+    }
     // The parts' own (cloned) materials; the shared textures stay.
     for (const mat of old) if (!meshes.some((m) => m.material === mat)) mat.dispose(false, false);
     return material;

@@ -46,7 +46,8 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   gm.diffuseColor = new Color3(0.3, 0.32, 0.36);
   ground.material = gm;
 
-  const characters = new CharacterLibrary(scene);
+  // As in a match: skin, hair, eyes and gear on the shared atlas.
+  const characters = new CharacterLibrary(scene, { atlas: true });
   const models = new ModelLibrary(scene);
   const animators = await Promise.all(
     specs.map(async (s, i) => {

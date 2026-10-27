@@ -225,7 +225,9 @@ export class CharacterLibrary {
           torso: of(0).filter((m) => !/_lod/.test(m.name)),
         });
         // Skinned onto the body's skeleton and merged per finish: one or two draws however many pieces.
-        const skin = of(0).find((m): m is Mesh => !!m.skeleton && !/_lod/.test(m.name) && m.getTotalVertices() > 0);
+        // Bound in the head's place (it is skinned on the same skeleton): with the character atlas, gear then merges with the head and hair.
+        const skinned = (m: AbstractMesh): m is Mesh => !!m.skeleton && !/_lod/.test(m.name) && m.getTotalVertices() > 0;
+        const skin = of(headIndex).find(skinned) ?? of(0).find(skinned);
         meshes.push(...(skin ? skinGear(gear, skin, `${name}_gear`) : gear));
       }
       owned.push(...carrier.skeletons);
@@ -248,7 +250,9 @@ export class CharacterLibrary {
     meshes.splice(0, meshes.length, ...meshes.filter((m) => !m.isDisposed()));
     // Skin, hair and eyes onto the shared atlas: with their tints in the vertices they merge into one draw below.
     if (!spec.armsOnly && this.atlas) {
-      const mat = await this.atlas.apply(meshes, name, (m) => m.name === 'MI_Eyes' || materialTint(m.name) !== null);
+      // Only the shared skin and hair textures and the eyes: outfits (athlete bodies are tinted like skin) are dyed per look.
+      const shared = new Set([...this.textures].filter(([id]) => /^(skin|hair)_/.test(id)).map(([, t]) => t));
+      const mat = await this.atlas.apply(meshes, name, (m) => m.name === 'MI_Eyes' || (!!m.albedoTexture && shared.has(m.albedoTexture as Texture)));
       if (this.scene.isDisposed) return gone();
       if (mat) owned.push(mat);
     }

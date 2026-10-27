@@ -71,7 +71,9 @@ function mergeKey(m: AbstractMesh): string | null {
   // Skinned vertices land at (vertex × bones × the mesh's world matrix): parts can share a mesh while their world matrices agree.
   const local = matrixKey(m);
   if (lod && matrixKey(lod.mesh!) !== local) return null;
-  return [m.skeleton.uniqueId, local, materialKey(m.material), lod?.distanceOrScreenCoverage ?? '', m.sideOrientation, opaque(m) || m.hasVertexAlpha, m.useVertexColors, m.receiveShadows, m.renderingGroupId].join('|');
+  // A part with no low-detail copy may still join a group that has them (see mergeLodAs: gear on the character atlas).
+  const lodAs = (m.metadata as { mergeLodAs?: number } | null)?.mergeLodAs;
+  return [m.skeleton.uniqueId, local, materialKey(m.material), lod?.distanceOrScreenCoverage ?? lodAs ?? '', m.sideOrientation, opaque(m) || m.hasVertexAlpha, m.useVertexColors, m.receiveShadows, m.renderingGroupId].join('|');
 }
 
 /** An opaque material ignores vertex alpha (it only ever scales the alpha), so parts with and without it can share a mesh. */
@@ -133,7 +135,8 @@ function mergeGroup(group: Mesh[], name: string): Mesh | null {
   const merged = make(full, '');
   if (low) {
     const lowMesh = make(low, '_lod');
-    merged.addLODLevel(first.getLODLevels()[0]!.distanceOrScreenCoverage!, lowMesh);
+    const withLod = group.find((m) => m.getLODLevels().length)!;
+    merged.addLODLevel(withLod.getLODLevels()[0]!.distanceOrScreenCoverage!, lowMesh);
   }
   // The other parts' materials are identical clones of the kept one (see materialKey).
   const material = first.material;
@@ -217,6 +220,14 @@ function gearFinish(scene: Scene, src: PBRMaterial): { material: PBRMaterial; u:
   }
   return { material: look.material, u: (i + 0.5) / FINISH_SLOTS };
 }
+
+/** The live finish table of a scene's gear material (per culling side): metallic and roughness per slot, RGBA texels. */
+export function gearFinishTexels(scene: Scene, culled: boolean): Uint8Array | null {
+  return gearLooks.get(scene)?.get(culled)?.texels ?? null;
+}
+
+/** Slots in a gear finish table (a piece's U is (slot + 0.5) / FINISH_SLOTS). */
+export const GEAR_FINISH_SLOTS = FINISH_SLOTS;
 
 /**
  * Gear (hats, vests, packs: rigid shapes hung on the head and chest joints) as
