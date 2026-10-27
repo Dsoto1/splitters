@@ -1,4 +1,5 @@
 import { TICK_RATE, angleDelta, type PlayerSnapshot } from '@tiletrigger/shared';
+import { netProbe } from './perfProbe.ts';
 
 /** Remote actors render this far behind the newest snapshot so there are always two to blend between. */
 const INTERP_DELAY_TICKS = 6; // 100 ms at 60 Hz
@@ -77,6 +78,7 @@ export class Interpolator {
     const late = this.clockOffset !== null && offset < this.clockOffset - CLOCK_RESYNC_TICKS;
     this.lateRun = late ? this.lateRun + 1 : 0;
     if (this.clockOffset === null || offset > this.clockOffset + CLOCK_RESYNC_TICKS || this.lateRun > LATE_RUN_RESYNC) {
+      if (netProbe.on && this.clockOffset !== null) netProbe.resyncs++;
       this.clockOffset = offset;
       this.lateRun = 0;
     } else if (!late) this.clockOffset += (offset - this.clockOffset) * CLOCK_GAIN;
@@ -144,6 +146,10 @@ export class Interpolator {
     }
     // Past the newest snapshot: carry on along the last two (t above 1 extrapolates).
     const n = this.frames.length;
+    if (netProbe.on) {
+      netProbe.sampled++;
+      if (drawTick > this.latestTick) netProbe.extrapolated++;
+    }
     if (drawTick > this.latestTick && n > 1) {
       a = this.frames[n - 2]!;
       b = this.frames[n - 1]!;
@@ -154,18 +160,35 @@ export class Interpolator {
     const last = this.frames[this.frames.length - 1]!;
     // Big matches: players far away come in some snapshots only. Blend each between the frames that have them.
     const held = last.hold || b.hold ? [...last.players.keys(), ...(last.hold ?? [])].filter((slot) => !b.players.has(slot)) : [];
-    const pairs: [number, PlayerSnapshot | undefined, PlayerSnapshot, number][] = [...b.players].map(([slot, pb]) => [slot, a.players.get(slot), pb, t]);
+    const pairs: [number, PlayerSnapshot | undefined, PlayerSnapshot, number][] = [];
+    for (const [slot, pb] of b.players) {
+      // In b but held back from a (far away): blend between the frames that have them, like the rest held back.
+      if (a !== b && a.hold?.has(slot)) held.push(slot);
+      else pairs.push([slot, a.players.get(slot), pb, t]);
+    }
     for (const slot of held) {
+      let f0: Frame | undefined;
       let fa: Frame | undefined;
       let fb: Frame | undefined;
       for (const f of this.frames) {
         if (!f.players.has(slot)) continue;
-        if (f.tick <= renderTick) fa = f;
-        else {
+        if (f.tick <= renderTick) {
+          f0 = fa;
+          fa = f;
+        } else {
           fb = f;
           break;
         }
       }
+      // Far players come every fourth snapshot (133 ms), more than the 100 ms we draw behind: the next one
+      // isn't here yet. Carry them on along their last move (at most one gap's worth) instead of stopping
+      // them until it comes and then jumping them on.
+      if (!fb && fa && f0) {
+        const gap = fa.tick - f0.tick;
+        pairs.push([slot, f0.players.get(slot), fa.players.get(slot)!, gap > 0 ? Math.min(2, (renderTick - f0.tick) / gap) : 1]);
+        continue;
+      }
+      if (netProbe.on && !fb) netProbe.frozen++;
       const pa = (fa ?? fb)?.players.get(slot);
       const pb = (fb ?? fa)?.players.get(slot);
       if (!pa || !pb) continue;

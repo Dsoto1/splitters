@@ -17,6 +17,7 @@ import {
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
   encodeSnapshots,
+  SnapshotStream,
   initPhysics,
   loadMap,
   parseClientMessage,
@@ -90,6 +91,8 @@ export interface RunningServer {
 interface Client {
   ws: WebSocket;
   slot: number | null;
+  /** Delta snapshots: what this connection was last sent of each player (net/interest.ts). */
+  stream: SnapshotStream;
   bytesOut: number;
   /** Logged in with the server's ADMIN_TOKEN: may run the match (HostCommand). */
   admin: boolean;
@@ -212,7 +215,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const wss = new WebSocketServer({ server: http, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
 
   wss.on('connection', (ws) => {
-    const client: Client = { ws, slot: null, bytesOut: 0, admin: false, badTokens: 0, guard: new MessageGuard() };
+    const client: Client = { ws, slot: null, stream: new SnapshotStream(), bytesOut: 0, admin: false, badTokens: 0, guard: new MessageGuard() };
     clients.add(client);
     const helloTimer = setTimeout(() => ws.close(4000, 'hello timeout'), HELLO_TIMEOUT_MS);
 
@@ -320,7 +323,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     // encodeSnapshots serialises the pieces once and gives each client its own copy.
     const body = match.snapshot(ev);
     const to = [...clients].filter((c): c is Client & { slot: number } => c.slot !== null);
-    const texts = encodeSnapshots(body, to.map((c) => ({ slot: c.slot, ack: match.slots[c.slot]?.lastSeq ?? 0, me: match.privateState(c.slot) })));
+    const texts = encodeSnapshots(body, to.map((c) => ({ slot: c.slot, ack: match.slots[c.slot]?.lastSeq ?? 0, me: match.privateState(c.slot), stream: c.stream })));
     let total = 0;
     let n = 0;
     to.forEach((c, i) => {

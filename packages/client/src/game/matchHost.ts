@@ -7,6 +7,7 @@ import {
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
   encodeSnapshots,
+  SnapshotStream,
   getWeapon,
   initPhysics,
   parseClientMessage,
@@ -22,6 +23,7 @@ import {
   type PlayerInput,
   type ServerMessage,
 } from '@tiletrigger/shared';
+import { Zipper } from './peerZip.ts';
 
 /** Messages kept from a friend whose link opened before the match was ready. */
 const MAX_EARLY_MESSAGES = 64;
@@ -53,6 +55,8 @@ export interface MatchHostSink {
   local(msg: ServerMessage): void;
   /** Text for one friend's link. */
   send(id: number, text: string): void;
+  /** From now on, compress what goes to this friend's link (one deflate stream, peerZip.ts). */
+  compress?(id: number): void;
   /** Close a friend's link, after `delayMs` (time for a last message to arrive). */
   close(id: number, delayMs: number): void;
   /** A friend took a player's place (slot), or left (null). */
@@ -81,13 +85,16 @@ export const simWake = {
   maxBatch: 0,
   /** Ticks dropped to resync after falling behind. */
   dropped: 0,
+  /** Compressing friends' streams (ms), and the characters compressed. */
+  zipMs: 0,
+  zipChars: 0,
   /** Time spent ticking (ms) and the slowest single wake. */
   ms: 0,
   maxWakeMs: 0,
   /** Each tick's time (ms, the step and its snapshots), the latest 20,000: perf runs read percentiles. */
   tickMs: [] as number[],
   reset(): void {
-    this.wakes = this.ticks = this.maxBatch = this.dropped = this.ms = this.maxWakeMs = 0;
+    this.wakes = this.ticks = this.maxBatch = this.dropped = this.ms = this.maxWakeMs = this.zipMs = this.zipChars = 0;
     this.tickMs.length = 0;
   },
 };
@@ -104,6 +111,8 @@ interface Remote {
   early: string[] | null;
   /** The friend's own round-trip time to us (ms), from their pings: for everyone's scoreboard. */
   rtt?: number | undefined;
+  /** Delta snapshots: what this friend was last sent of each player (net/interest.ts). */
+  stream: SnapshotStream;
 }
 
 /**
@@ -196,7 +205,7 @@ export class MatchHost {
           const guests = [...this.remotes.values()].filter((r): r is Remote & { slot: number } => r.slot !== null);
           if (guests.length) {
             // Serialise the shared part once; each guest gets its own ack, private state and (big matches) nearby players.
-            const texts = encodeSnapshots(snap, guests.map((r) => ({ slot: r.slot, ack: match.slots[r.slot]?.lastSeq ?? 0, me: match.privateState(r.slot) })));
+            const texts = encodeSnapshots(snap, guests.map((r) => ({ slot: r.slot, ack: match.slots[r.slot]?.lastSeq ?? 0, me: match.privateState(r.slot), stream: r.stream })));
             guests.forEach((r, i) => this.sink.send(r.id, texts[i]!));
           }
           events = [];
@@ -309,10 +318,12 @@ export class MatchHost {
   }
 
   /** A friend's link opened (Host game). Before the match runs, what they say waits for it. */
-  open(id: number): void {
+  open(id: number, zip = false): void {
     // A test-mode match (fixed seed, maybe an invulnerable player) is offline only: nobody joins it.
     if (this.stopped || this.opts.test) return this.sink.close(id, 0);
-    this.remotes.set(id, { id, slot: null, early: this.match ? null : [] });
+    this.remotes.set(id, { id, slot: null, early: this.match ? null : [], stream: new SnapshotStream() });
+    // The friend's link compresses what it carries: here, where the match runs (a worker), not on the page.
+    if (zip) this.sink.compress?.(id);
   }
 
   /** Text from a friend's link. */
@@ -435,7 +446,8 @@ export type ToSimHost =
   | { k: 'cmd'; cmd: Exclude<HostCommand, { c: 'map' }> }
   | { k: 'drop'; reason: string }
   | { k: 'notice'; text: string; guestsOnly?: boolean }
-  | { k: 'open'; id: number }
+  /** `zip`: the link wants the compressed stream (the match host compresses it: see sinkTo). */
+  | { k: 'open'; id: number; zip?: boolean }
   | { k: 'msg'; id: number; text: string }
   | { k: 'closed'; id: number }
   | { k: 'hidden'; v: boolean }
@@ -449,18 +461,37 @@ export type ToSimHost =
 export type FromSimHost =
   | { k: 'local'; msg: ServerMessage }
   | { k: 'send'; id: number; text: string }
+  /** Compressed pieces for a friend's link, ready to go on the wire as they are. */
+  | { k: 'bytes'; id: number; pieces: Uint8Array[] }
   | { k: 'close'; id: number; delay: number }
   | { k: 'guest'; id: number; slot: number | null }
   | { k: 'facts'; facts: HostFacts }
   | { k: 'failed'; error: string }
   | { k: 'eval'; req: number; ok: boolean; value?: unknown; error?: string };
 
-/** A sink that turns everything the host says into messages for the page. */
-export function sinkTo(post: (m: FromSimHost) => void): MatchHostSink {
+/**
+ * A sink that turns everything the host says into messages for the page. Friends' links that
+ * compress get their stream compressed here, where the match runs (the sim worker): the page
+ * only puts the pieces on the wire (`transfer` hands their buffers over without a copy).
+ */
+export function sinkTo(post: (m: FromSimHost, transfer?: Transferable[]) => void): MatchHostSink {
+  const zips = new Map<number, Zipper>();
   return {
     local: (msg) => post({ k: 'local', msg }),
-    send: (id, text) => post({ k: 'send', id, text }),
-    close: (id, delay) => post({ k: 'close', id, delay }),
+    send: (id, text) => {
+      const zip = zips.get(id);
+      if (!zip) return post({ k: 'send', id, text });
+      const t0 = performance.now();
+      const pieces = zip.pieces(text);
+      simWake.zipMs += performance.now() - t0;
+      simWake.zipChars += text.length;
+      post({ k: 'bytes', id, pieces }, pieces.map((p) => p.buffer as ArrayBuffer));
+    },
+    compress: (id) => void zips.set(id, new Zipper()),
+    close: (id, delay) => {
+      zips.delete(id);
+      post({ k: 'close', id, delay });
+    },
     guest: (id, slot) => post({ k: 'guest', id, slot }),
     facts: (facts) => post({ k: 'facts', facts }),
   };
@@ -484,7 +515,7 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
     case 'notice':
       return host.notice(m.text, m.guestsOnly);
     case 'open':
-      return host.open(m.id);
+      return host.open(m.id, m.zip);
     case 'msg':
       return host.message(m.id, m.text);
     case 'closed':

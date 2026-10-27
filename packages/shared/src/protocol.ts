@@ -7,7 +7,7 @@ import type { GameMode, MatchRules } from './sim/rules.ts';
  * are kept compact so a binary encoding can replace JSON after measurement
  * without changing gameplay code.
  */
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 export type Tuple3 = [number, number, number];
 
@@ -419,6 +419,11 @@ export type ServerMessage =
       phase: MatchPhase;
       /** Seconds left in the round (0 when untimed). */
       timeLeft: number;
+      /**
+       * Players. On the wire (protocol 4) others may come as changes since the copy last sent on this
+       * connection (PlayerDelta, net/interest.ts); the receiving transport rebuilds them (SnapshotDecoder)
+       * before anything reads the snapshot.
+       */
       players: PlayerSnapshot[];
       score: ScoreEntry[];
       ev: GameEvent[];

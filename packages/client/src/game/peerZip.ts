@@ -11,12 +11,16 @@ export const CHUNK = 60_000;
  * binary pieces of at most CHUNK bytes, the first byte saying whether more
  * of the same message follow (0) or it's the last (1).
  */
+type ZipLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+export const ZIP_LEVEL: ZipLevel = 6;
+
 export class Zipper {
-  private readonly deflate = new Deflate({ raw: true, level: 6 });
+  private readonly deflate: Deflate;
   private out: Uint8Array[] = [];
   private readonly enc = new TextEncoder();
 
-  constructor() {
+  constructor(level: ZipLevel = ZIP_LEVEL) {
+    this.deflate = new Deflate({ raw: true, level });
     this.deflate.onData = (c) => this.out.push(c as Uint8Array);
   }
 
@@ -34,6 +38,20 @@ export class Zipper {
     }
     return list;
   }
+}
+
+/**
+ * A whole message sent as plain UTF-8 on a compressed link (first byte PLAIN_PIECE): what the
+ * host's page says itself (`travel` as the match stops) while the match host owns the deflate
+ * stream. It may only come between compressed messages, never inside one.
+ */
+export const PLAIN_PIECE = 2;
+export function plainPiece(text: string): Uint8Array {
+  const body = new TextEncoder().encode(text);
+  const piece = new Uint8Array(body.length + 1);
+  piece[0] = PLAIN_PIECE;
+  piece.set(body, 1);
+  return piece;
 }
 
 /**
@@ -65,6 +83,11 @@ export class Unzipper {
   /** A piece in; the whole message out once its last piece has arrived. Throws on bad or oversized data (the stream is then unusable). */
   piece(data: Uint8Array): string | null {
     if (this.broken) throw new Error(this.broken);
+    if (data[0] === PLAIN_PIECE) {
+      if (this.got.length) throw new Error((this.broken = 'plain message inside a compressed one'));
+      if (data.length - 1 > this.maxOutput) throw new Error((this.broken = `message over ${this.maxOutput} bytes`));
+      return this.dec.decode(data.subarray(1));
+    }
     try {
       this.inflate.push(data.subarray(1), zlib.Z_SYNC_FLUSH);
       // pako hands output over only when its buffer fills: take what a flushed message left in it.

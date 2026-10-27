@@ -87,7 +87,7 @@ import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
 import { LocalTransport } from './localTransport.ts';
-import { perfProbe } from './perfProbe.ts';
+import { netProbe, perfProbe } from './perfProbe.ts';
 import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
 import { loadSignaling, type HostLink } from './transport.ts';
@@ -1060,6 +1060,13 @@ export class GameSession {
         for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8], size: n[11] ?? 1 });
         this.interp.push(msg.tick, [...msg.players, ...msg.np.map(npcAsPlayer)], msg.pr, msg.hold);
+        if (netProbe.on) {
+          const at = netProbe.inputAt.get(msg.ack);
+          if (at !== undefined) {
+            netProbe.ackMs.push(performance.now() - at);
+            for (const seq of netProbe.inputAt.keys()) if (seq <= msg.ack) netProbe.inputAt.delete(seq);
+          }
+        }
         if (msg.ld) this.view.setLeaders(new Set(msg.ld.filter((s) => s >= 0)));
         this.hud.setLeaders(msg.ld);
         this.hud.setLife(msg.players);
@@ -1559,6 +1566,8 @@ export class GameSession {
     }
     const now = performance.now();
     if (perfProbe.on) perfProbe.beginFrame(now);
+    // Snapshots that came in a burst and wait merged: this frame draws the newest, not the one before it.
+    this.opts.transport.flush?.();
     const dt = Math.min(0.25, (now - this.last) / 1000);
     this.frameMs = now - this.last;
     this.last = now;
@@ -1640,6 +1649,7 @@ export class GameSession {
           if (!shot.alt && visual >= 0.8) this.view.shake(Math.min(0.25, visual * 0.15));
         }
       }
+      if (netProbe.on) for (const i of this.outbox) netProbe.inputAt.set(i.seq, now);
       this.opts.transport.sendInputs(this.outbox.splice(0));
       this.sfx.localWeapon(local);
       this.opts.audio.setListener(local.eye, this.input.yaw, this.input.pitch);

@@ -296,6 +296,8 @@ export class LocalTransport implements Transport {
         return;
       case 'send':
         return this.links.get(m.id)?.link.send(m.text);
+      case 'bytes':
+        return this.links.get(m.id)?.link.sendPieces?.(m.pieces);
       case 'close': {
         const r = this.links.get(m.id);
         this.links.delete(m.id);
@@ -331,12 +333,16 @@ export class LocalTransport implements Transport {
     if (this.stopped || this.testMode) return link.close();
     const id = this.nextLink++;
     this.links.set(id, { link, slot: null });
-    this.toHost({ k: 'open', id });
+    this.toHost({ k: 'open', id, ...(link.zip ? { zip: true } : {}) });
     link.onMessage((text) => this.toHost({ k: 'msg', id, text }));
     link.onClose(() => {
       if (!this.links.delete(id)) return;
       this.toHost({ k: 'closed', id });
     });
+  }
+
+  flush(): void {
+    this.snapshots?.flush();
   }
 
   sendInputs(inputs: PlayerInput[]): void {

@@ -482,3 +482,153 @@ have few kills.
 1.14 → 1.04; kills/min 276 → 292; spawn deaths 43.5 → 47.3 % (five regions
 for 32 players: everyone is in sight of a spawn); idle samples 17 → 29 %
 (campers holding spots).
+
+## Hosted 48 v 48: a browser host and its friends (27 Oct 2026)
+
+Owner report: a browser-hosted 48 v 48 bot match with one friend joining
+from another computer was unplayable, while 8 v 8 with two connections was
+smooth. Offline 48 v 48 had been measured and tuned; the hosted path (the
+host's page serving friends, the friend's page applying what it gets) never
+had.
+
+### Measuring
+
+- `pnpm build && node tools/perf/host96.mjs [map ...]` opens a browser host
+  with 96 players (`?offline=<map>&gamemode=core.tdm&bots=96`, Low graphics by
+  default), presses Host game, and joins 1–3 friends (`HOST96_GUESTS`) over the
+  real WebRTC path through a local hub's PeerJS broker (as e2e `hostgame`),
+  each page in its own browser. For bots spread and clumped (everyone into a
+  40 m square every 2 s) it reports per second: the host worker's tick p50/p95,
+  catch-up batch and dropped ticks, its time compressing friends' streams; the
+  host page's frames, long tasks and its time compressing/sending; per friend
+  the messages, characters before and bytes after compression; on the friend:
+  snapshot rate and arrival gaps, inflate/parse/apply time, frames drawn past
+  the newest snapshot, far players frozen, clock resyncs, input → acknowledged
+  latency, frame time and draw calls. `HOST96_PROFILE=dir` saves CPU profiles
+  of the host and first friend. `pnpm perf:host96` is a budget check (Frost
+  Basin clumped: a friend's stream ≤ 30 KB/s, the host page's compress+send
+  ≤ 15 ms/s).
+- The numbers come from opt-in probes (`window.__net`, `perfProbe.ts`
+  `netProbe`), off unless a perf run turns them on.
+- Unit guard (`shared/test/bigMatch.test.ts`, "a hosted 48 v 48 snapshot
+  stream"): clumped Frost Basin, 96 bots, 10 friends' streams: characters a
+  friend is sent a second (< 220 KB/s; measured 134, full snapshots 325) and
+  the time writing all ten copies (< 15 ms a snapshot; measured 1.7–2.8 ms).
+
+### What we found
+
+Same box as the rest of this file (4 cores, SwiftShader, other agents' jobs:
+load 14–19 throughout), so frame times are CPU-rendered and slowed; the
+network and per-message columns are the portable part. Frost Basin, Low, one
+friend, before (the release build with the probes) and after:
+
+| Frost Basin | Wire KB/s a friend | Raw KB/s a friend | Host page compress+send ms/s | Worker compress ms/s | Friend apply ms/s | Friend inflate+parse ms/s | Far players frozen a frame | Input → ack p50 |
+|---|---|---|---|---|---|---|---|---|
+| spread, before | 31.0 | 302 | 24.4 | 0 | 374 | 11.5 | 11.7 | 55 s |
+| spread, after | 15.5 | 96 | 2.9 | 28.8 | 12 | 3.8 | 0 | (frames of 2–12 s) |
+| clumped, before | 29.8 | 356 | 38.6 | 0 | 335 | 14.8 | 1.6 | 21 s |
+| clumped, after | 13.6 | 94 | 4.8 | 42.9 | 31 | 4.0 | 0 | 1.5 s |
+
+A second pair of runs with the host's page not drawing (`HOST96_HOST_RENDER=0`:
+a host whose GPU is far ahead of SwiftShader, so its page only serves; load
+5–7), Frost Basin, one friend:
+
+| Frost Basin, host not drawing | Wire KB/s | Raw KB/s | Host page send ms/s | Worker compress ms/s | Friend apply ms/s | Far players frozen a frame | Clock resyncs | Input → ack p50 |
+|---|---|---|---|---|---|---|---|---|
+| clumped, before | 33.8 | 366 | 31.7 | 0 | 72 | 13.7 | 189 | 5.5 s |
+| clumped, after | 17.7 | 112 | 7.8 | 16.1 | 67 | 0 | 13 | (1 sample) |
+| spread, before | 41.1 | 355 | 32.6 | 0 | 137 | 13.5 | 98 | 3.8 s |
+| spread, after | 22.6 | 143 | 7.8 | 20.5 | 34 | 0 | 1 | 1.1 s |
+
+The friend still draws at 1–2 fps here (96 characters in SwiftShader), so its
+input → acknowledged latency and the share of frames drawn past the newest
+snapshot are bounded by its own multi-second frames, not the network: read
+them on a GPU machine (`PERF_GPU=1`). Norman Shores did not finish loading in
+the browser within 10 minutes on this box (host and friend each loading it
+in SwiftShader), before or after; its numbers are the headless ones below.
+
+The same streams measured headless (the match in Node, three friends,
+`encodeSnapshots` + the host's deflate stream + the friend's inflate and
+rebuild; per friend, quieter numbers):
+
+| Map, layout | Raw KB/s full → delta | Wire KB/s full → delta | Compress a friend (ms a snapshot) full → delta |
+|---|---|---|---|
+| Norman Shores, spread | 271 → 86 | 26.3 → 11.9 | 0.70 → 0.31 |
+| Norman Shores, clumped | 512 → 172 | 53.0 → 29.3 | 0.84 → 0.50 |
+| Frost Basin, spread | 308 → 92 | 28.6 → 13.6 | 0.83 → 0.69 |
+| Frost Basin, clumped | 402 → 147 | 38.5 → 24.2 | 1.02 → 0.72 |
+
+Where the time and bytes went, before:
+
+1. **The friend's page never caught up once behind.** Every snapshot was a
+   message handled in full (scenario colliders, vehicles, prediction replay
+   of every unacknowledged input), 30 a second; the host's own page already
+   merged a backlog from its worker (`SnapshotCoalescer`), a friend's (and a
+   dedicated server's client's) did not. One long frame (shaders, a clump in
+   view) put it behind, the backlog made the replay longer, and inputs were
+   acknowledged tens of seconds late: unplayable, whatever the network. 8 v 8
+   is cheap enough per snapshot to recover; 96 players is not. This was the
+   dominant fault.
+2. **Far players stuttered on the friend's screen.** Past 32 players, far
+   players come in every fourth snapshot (133 ms apart) but remote players are
+   drawn 100 ms behind: the next copy hadn't arrived, so they stopped and then
+   jumped (12 a frame spread out). Players held back from the frame before the
+   drawn tick were also drawn at their newest copy (ahead of time).
+3. **Bytes**: players were 75–80 % of each snapshot and sent whole every time
+   (a bot's debug state, health, weapon… unchanged); the scoreboard and
+   vehicles another 20 %. 26–53 KB/s a friend after compression, 270–510 KB/s
+   of JSON to compress, inflate and parse.
+4. **The host's page compressed every friend's stream** (pako, level 6),
+   1–1.5 ms a snapshot a friend under load, on the thread that renders.
+5. Not a factor: interest management was applied on the browser host path
+   and snapshots were serialised once for every friend already; the host
+   worker's tick (2–4 ms p50) is the offline one.
+
+### What changed
+
+- **Friends coalesce** (`peerLink.ts`, `netTransport.ts`): snapshots waiting
+  are merged (`SnapshotCoalescer`, as the host's page does), and every frame
+  starts by delivering what is waiting (`Transport.flush`), so a frame after a
+  burst draws the newest state. Apply time 335–374 → 12–31 ms/s in the runs
+  above.
+- **Delta snapshots (protocol 4,** `shared/src/net/interest.ts`**)**: the
+  host's channel to each receiver is reliable and ordered, so each copy is
+  written against the previous one on it (`SnapshotStream` per connection,
+  `SnapshotDecoder` in the receiving transport): a player already sent goes as
+  `{s, d:[dx,dy,dz] cm, …changed fields}`; others' positions to the cm and
+  speeds to 1 cm/s, the receiver's own entry in full and exact (prediction).
+  The scoreboard, vehicles, taken pickups, cover and leaders go only when
+  changed (`same` names the ones repeated). Receivers who were last sent the
+  same copy of a player share one written delta. The dedicated server uses
+  the same streams. Raw −65–70 %, wire −45–55 %.
+- **Compression in the match worker** (`matchHost.ts` `sinkTo`): the page
+  only puts ready pieces on the data channel (transferred, not copied); its
+  own few messages (`travel`) go as plain pieces between them. Host page
+  24–39 → 3–5 ms/s a friend.
+- **Far players keep moving** (`interpolation.ts`): a player held back is
+  carried on along their last move (at most one gap) until their next copy,
+  and blended between the frames that have them.
+
+### Is 48 v 48 hosted in a browser realistic?
+
+Per friend now: 12–30 KB/s of upload (Norman Shores clumped is the worst),
+so 10 friends (`BROWSER_HOST_MAX_GUESTS`) is 0.12–0.3 MB/s, 1–2.4 Mbit/s: most
+home uplinks carry it. In the host's worker each friend costs ~0.3–0.7 ms a
+snapshot compressing plus ~0.2–0.3 ms writing (snapshots every other tick), on
+top of a 2.5–3 ms (p95 6–8 ms) tick: 1–3 friends add well under a millisecond
+a tick, 10 friends 2–4 ms, inside the 16.7 ms on a desktop core but tight on a
+laptop at p95. The host's page renders the same 96 characters as offline play
+plus a few ms a second of sending. So: **48 v 48 with 1–3 friends is
+realistic on a desktop-class host** (the render cost of PERF_96 above is what
+limits it, not hosting); with 10 friends it needs a strong host CPU and
+upload, and anything beyond (more humans, public lobbies, a host that can
+leave) belongs on the dedicated server / Host Service, which runs a match in
+~0.5–1.5 ms a tick without rendering.
+
+Left for later: a binary encoding of player entries (deflate already takes
+most of JSON's overhead; another ~30 % at best); a lower snapshot rate for
+far tiers or a per-friend bandwidth budget if 10-friend games show upload
+trouble; skipping the prediction replay when the server agrees with the
+predicted state at the acknowledged input (Rapier moves are most of a
+friend's per-snapshot cost once caught up); measuring frame times on real
+GPUs (`PERF_GPU=1`), which this box can't.

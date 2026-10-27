@@ -14,6 +14,8 @@ export interface Transport {
   sendInputs(inputs: PlayerInput[]): void;
   /** Everything for the match has loaded (the start countdown waits for it). */
   sendReady(): void;
+  /** Deliver snapshots waiting merged (SnapshotCoalescer) now: the session calls it as a frame begins. */
+  flush?(): void;
   /** Host commands and admin logins (dedicated servers; the host's own browser match runs them directly). */
   sendCommand?(msg: Extract<ClientMessage, { t: 'host' | 'admin' }>): void;
   close(): void;
@@ -22,6 +24,10 @@ export interface Transport {
 /** A friend's connection to a match this browser hosts (a data channel, or anything that moves text). */
 export interface RemoteLink {
   send(text: string): void;
+  /** The link carries a compressed stream (peerZip.ts): the match host compresses, and hands over pieces for sendPieces. */
+  readonly zip?: boolean;
+  /** Pieces of the compressed stream, in order, as they go on the wire. */
+  sendPieces?(pieces: Uint8Array[]): void;
   onMessage(cb: (text: string) => void): void;
   onClose(cb: () => void): void;
   close(): void;

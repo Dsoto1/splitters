@@ -320,8 +320,10 @@ want always-on official matches.
   content hash; the hub refuses a listing that claims to be one of our maps
   when it isn't. A listing checks in every 20 s, is hidden after a missed
   check-in (30 s) and drops off at 65 s.
-- Traffic per player is ~3 KB/s (8 players) to ~10 KB/s (16 players),
-  compressed, from the host's upload.
+- Traffic per player is ~3 KB/s (8 players) to ~10 KB/s (16 players), and
+  12–30 KB/s at 48 v 48 (delta snapshots), compressed, from the host's
+  upload. The host's match worker compresses each friend's stream; the page
+  only sends it. See PERF_96.md "Hosted 48 v 48".
 - **Host controls** (pause menu → Match): the host changes the players
   (free-for-all) or team size (4v4 → 8v8, presets up to 48v48), bot skill and
   style live, restarts or ends the match, and changes map (our suite's maps
@@ -358,9 +360,18 @@ Other settings (environment variables):
 - **Interest management** (`shared/src/net/interest.ts`): past 32 players each
   client gets players within 60 m in every snapshot (30 Hz), 60–150 m in every
   other one and farther ones in every fourth; the ones left out are listed in
-  `hold` and drawn from the snapshots that had them. Every player entry is
-  turned into JSON once per snapshot, not once per client. Dead/spectating
-  clients get everyone.
+  `hold` and drawn from the snapshots that had them (carried on along their
+  last move until their next copy). Dead/spectating clients get everyone.
+- **Delta snapshots** (protocol 4, `SnapshotStream`/`SnapshotDecoder`): each
+  connection is reliable and ordered, so every client's copy is written
+  against the one last sent to it: players as changes (position in cm), the
+  scoreboard, vehicles, pickups, cover and leaders only when they changed;
+  your own entry always in full. A third of the characters of full snapshots,
+  roughly half the compressed bytes. Each quantised entry and each delta is
+  written once per snapshot, shared by clients last sent the same copy.
+- **Clients merge a backlog** (`SnapshotCoalescer`, every transport): a page
+  that fell behind handles the snapshots waiting as one, so it catches up
+  instead of falling further behind.
 - **Bot think budget** (`Match.botBudget`): past 40 thinking bots, a bot with
   nobody to fight thinks every other tick and repeats its last move in
   between. Who-may-shoot-whom is worked out once per side a tick, not per bot.
