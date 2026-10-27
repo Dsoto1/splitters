@@ -55,12 +55,12 @@ export class ModelThumbnails {
     this.models = new ModelLibrary(this.scene);
   }
 
-  /** A thumbnail (PNG data URL) of a model file; cached. */
-  get(path: string, view: ThumbView = 'three-quarter'): Promise<string> {
-    const key = `${view}:${path}`;
+  /** A thumbnail (PNG data URL) of a model file; cached. `size` (square views) is in pixels. */
+  get(path: string, view: ThumbView = 'three-quarter', size = SIZE): Promise<string> {
+    const key = `${view}:${size}:${path}`;
     let p = this.cache.get(key);
     if (!p) {
-      p = (this.queue = this.queue.then(() => this.render(path, view))) as Promise<string>;
+      p = (this.queue = this.queue.then(() => this.render(path, view, size))) as Promise<string>;
       p.catch(() => this.cache.delete(key));
       this.cache.set(key, p);
     }
@@ -68,41 +68,48 @@ export class ModelThumbnails {
   }
 
   /** A thumbnail of a MapMaker building piece, drawn from its real geometry in the default theme; cached. */
-  getTile(def: TileDefinition): Promise<string> {
-    const key = `tile:${def.id}`;
+  getTile(def: TileDefinition, size = SIZE): Promise<string> {
+    const key = `tile:${size}:${def.id}`;
     let p = this.cache.get(key);
     if (!p) {
-      p = (this.queue = this.queue.then(() => this.renderTile(def))) as Promise<string>;
+      p = (this.queue = this.queue.then(() => this.renderTile(def, size))) as Promise<string>;
       p.catch(() => this.cache.delete(key));
       this.cache.set(key, p);
     }
     return p;
   }
 
-  private async renderTile(def: TileDefinition): Promise<string> {
+  /** How many pictures have been rendered here (MapMaker's palette uses its prebuilt atlas instead where it can). */
+  get rendered(): number {
+    return this.cache.size;
+  }
+
+  private async renderTile(def: TileDefinition, size: number): Promise<string> {
     const base = newMapDocument('thumb');
     const doc = { ...base, classicStructure: { ...base.classicStructure, tiles: [{ id: 'thumb_tile', tile: def.id, x: 0, y: 0, z: 0, rotation: 0 as const }] } };
     this.styler ??= new MapStyler(this.scene);
     const meshes = this.styler.build(doc, buildMapGeometry(doc), 'thumbtile');
     try {
-      return await this.renderMeshes(meshes, 'tile');
+      return await this.renderMeshes(meshes, 'tile', size);
     } finally {
       for (const m of meshes) m.setEnabled(false);
     }
   }
 
-  private async render(path: string, view: ThumbView): Promise<string> {
+  private async render(path: string, view: ThumbView, size: number): Promise<string> {
     const node = await this.models.instantiate(path, 'thumb');
     try {
       node.getHierarchyBoundingVectors(true); // brings every world matrix in the model up to date
-      return await this.renderMeshes(node.getChildMeshes(), view);
+      return await this.renderMeshes(node.getChildMeshes(), view, size);
     } finally {
       node.dispose();
     }
   }
 
-  private async renderMeshes(meshes: AbstractMesh[], view: AnyThumbView): Promise<string> {
-    const { dir: d, width: W, height: H } = VIEWS[view];
+  private async renderMeshes(meshes: AbstractMesh[], view: AnyThumbView, size: number): Promise<string> {
+    const { dir: d } = VIEWS[view];
+    const W = view === 'side' ? VIEWS.side.width : size;
+    const H = view === 'side' ? VIEWS.side.height : size;
     const aspect = W / H;
     this.camera.freezeProjectionMatrix(Matrix.PerspectiveFovLH(0.6, aspect, 0.02, 200, this.scene.getEngine().isNDCHalfZRange));
     {

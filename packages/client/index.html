@@ -167,66 +167,69 @@
         <button id="ed-test" class="primary" title="Play the map now with these bots (F5)">▶ PLAY TEST</button>
       </header>
       <aside id="ed-palette">
-        <div class="tabs ed-pal-tabs" id="ed-pal-tabs">
-          <button class="tab on" data-ws="build" data-pane="tiles">Tiles</button>
-          <button class="tab" data-ws="build" data-pane="advanced">Advanced</button>
-          <button class="tab" data-ws="build" data-pane="terrain">Terrain</button>
-          <button class="tab" data-ws="build" data-pane="props">Props</button>
-          <button class="tab" data-ws="entities" data-pane="npcs" hidden>NPCs</button>
-          <button class="tab" data-ws="entities" data-pane="entities" hidden>Gameplay</button>
-          <button class="tab" data-ws="entities" data-pane="vehicles" hidden>Vehicles</button>
-          <button class="tab" data-ws="entities" data-pane="road" hidden>Road</button>
-          <button class="tab" data-ws="entities" data-pane="scenario" hidden>Scenario</button>
-          <button class="tab" data-ws="environment" data-pane="paint" hidden>Paint</button>
-          <button class="tab" data-ws="environment" data-pane="plants" hidden>Plants</button>
-          <button class="tab" data-ws="environment" data-pane="terrain" hidden>Terrain</button>
-        </div>
-        <input id="ed-search" placeholder="Search tiles, props, NPCs…" autocomplete="off" />
-        <div id="ed-pack-row" class="ed-pack-row">
-          <select id="ed-pack" title="Style Pack: show only one pack's tiles, props, gameplay pieces, vehicles and pickups; mix packs freely"><option value="">All pieces</option></select>
-          <button id="ed-pack-theme" title="Use the pack's theme for this map" hidden>Use theme</button>
+        <div class="ed-pal-head">
+          <div class="tabs ed-pal-tabs" id="ed-pal-tabs" role="tablist" aria-label="Palette">
+            <button class="tab on" data-ws="build" data-pane="tiles" data-cat="structure" title="Structure: rooms, corridors, buildings, stairs and open ground">Tiles</button>
+            <button class="tab" data-ws="build" data-pane="advanced" data-cat="structure" title="Walls &amp; openings: build any side of a room as a wall, window, doorway or gap">Walls</button>
+            <button class="tab" data-ws="build" data-pane="props" data-cat="props" title="Props by theme: home &amp; town, industrial, sci-fi, medieval, dungeons, western, ancient">Props</button>
+            <button class="tab" data-ws="build" data-pane="plants" data-cat="nature" title="Nature: trees, rocks and plants, and the scatter brush">Nature</button>
+            <button class="tab" data-ws="build" data-pane="terrain" data-cat="terrain" title="Terrain: sculpt and paint open ground">Terrain</button>
+            <button class="tab" data-ws="entities" data-pane="entities" data-cat="gameplay" title="Gameplay: spawns, game-mode objectives and pickups" hidden>Gameplay</button>
+            <button class="tab" data-ws="entities" data-pane="npcs" data-cat="npcs" title="NPCs: soldiers, squads and spawners" hidden>NPCs</button>
+            <button class="tab" data-ws="entities" data-pane="vehicles" data-cat="vehicles" title="Vehicles &amp; turrets, parked vehicles and race tracks" hidden>Vehicles</button>
+            <button class="tab" data-ws="entities" data-pane="scenario" data-cat="objects" title="Objects &amp; logic: doors, buttons, triggers, lifts, platforms, destructibles and traps" hidden>Objects</button>
+            <button class="tab" data-ws="entities" data-pane="lights" data-cat="lights" title="Lights &amp; FX: lamps, neon, fire and liquids" hidden>Lights</button>
+            <button class="tab" data-ws="environment" data-pane="paint" data-cat="paint" title="Paint: materials and tints for any surface" hidden>Paint</button>
+            <button class="tab" data-ws="environment" data-pane="plants" data-cat="nature" title="Nature: trees, rocks and plants, and the scatter brush" hidden>Nature</button>
+            <button class="tab" data-ws="environment" data-pane="terrain" data-cat="terrain" title="Terrain: sculpt and paint open ground" hidden>Terrain</button>
+          </div>
+          <div class="ed-search-row">
+            <input id="ed-search" type="search" placeholder="Search all pieces… ( / )" autocomplete="off" spellcheck="false" aria-label="Search the palette: names, themes and packs" />
+            <button id="ed-pal-view" class="ed-pal-view" type="button" aria-label="Grid or card view"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="g" d="M1 1h6v6H1zM9 1h6v6H9zM1 9h6v6H1zM9 9h6v6H9z"/><path class="c" d="M1 1h14v4H1zM1 6.5h14v4H1zM1 12h14v3H1z"/></svg></button>
+          </div>
+          <div id="ed-pack-row" class="ed-pack-row">
+            <select id="ed-pack" title="Style Pack: show only one pack's tiles, props, gameplay pieces, vehicles and pickups; mix packs freely"><option value="">All pieces</option></select>
+            <button id="ed-pack-theme" title="Use the pack's theme for this map" hidden>Use theme</button>
+          </div>
         </div>
         <div id="ed-pack-note" class="ed-note" hidden></div>
-        <div class="ed-pane" data-pane="tiles">
-          <div id="ed-tiles" class="tiles"></div>
+        <div id="ed-pal-quick">
+          <div class="ed-quick-tabs"><button type="button" data-q="favs">★ Favourites <small></small></button><button type="button" data-q="recent">Recent <small></small></button></div>
+          <div class="ed-quick-row"></div>
+          <p class="ed-quick-empty ed-note"></p>
         </div>
-        <div class="ed-pane" data-pane="advanced" hidden>
-          <h3>Walls &amp; Openings</h3>
-          <p class="ed-note">Pick a style, then click any side of a room or corridor to build it that way (O cycles styles, right-click resets).</p>
-          <div id="ed-edges" class="tiles"></div>
+        <div id="ed-pal-results" hidden>
+          <div class="ed-results-head"></div>
+          <div class="tiles"></div>
         </div>
-        <div class="ed-pane" data-pane="props" hidden>
-          <div id="ed-props" class="tiles"></div>
+        <div class="ed-pane" data-pane="tiles" data-cat="structure">
+          <div id="ed-tiles"></div>
         </div>
-        <div class="ed-pane" data-pane="plants" hidden>
-          <h3>Scatter brush</h3>
-          <div id="ed-scatter" class="tiles"></div>
-          <label class="stack">Brush size <span id="ed-sc-radius-v">8 m</span><input id="ed-sc-radius" type="range" min="2" max="40" step="1" value="8" /></label>
-          <div class="ed-note">Click to plant a patch · Alt-click clears that kind of plant · [ ] resize</div>
+        <div class="ed-pane" data-pane="advanced" data-cat="structure" hidden>
+          <div id="ed-edges"></div>
         </div>
-        <div class="ed-pane" data-pane="entities" hidden>
-          <h3>Spawns, Pickups &amp; Game Modes</h3>
-          <div id="ed-entities" class="tiles"></div>
+        <div class="ed-pane" data-pane="props" data-cat="props" hidden>
+          <div id="ed-props"></div>
         </div>
-        <div class="ed-pane" data-pane="vehicles" hidden>
-          <h3>Vehicles &amp; Turrets</h3>
-          <div id="ed-mounts" class="tiles"></div>
+        <div class="ed-pane" data-pane="plants" data-cat="nature" hidden>
+          <div id="ed-nature"></div>
         </div>
-        <div class="ed-pane" data-pane="road" hidden>
-          <h3>Race Track</h3>
-          <div id="ed-road-tools" class="tiles"></div>
-          <div id="ed-road"></div>
+        <div class="ed-pane" data-pane="entities" data-cat="gameplay" hidden>
+          <div id="ed-entities"></div>
         </div>
-        <div class="ed-pane" data-pane="scenario" hidden>
-          <h3>Doors, Objects &amp; Traps</h3>
-          <div id="ed-scenario" class="tiles"></div>
+        <div class="ed-pane" data-pane="npcs" data-cat="npcs" hidden>
+          <div id="ed-npcs"></div>
         </div>
-        <div class="ed-pane" data-pane="npcs" hidden>
-          <h3>NPCs</h3>
-          <p class="ed-note">Click one, then click the map to drop it there. Each is an NPC squad marker: change its soldiers, faction, orders and skill in the inspector on the right.</p>
-          <div id="ed-npcs" class="tiles"></div>
+        <div class="ed-pane" data-pane="vehicles" data-cat="vehicles" hidden>
+          <div id="ed-mounts"></div>
         </div>
-        <div class="ed-pane" data-pane="terrain" hidden>
+        <div class="ed-pane" data-pane="scenario" data-cat="objects" hidden>
+          <div id="ed-scenario"></div>
+        </div>
+        <div class="ed-pane" data-pane="lights" data-cat="lights" hidden>
+          <div id="ed-lights"></div>
+        </div>
+        <div class="ed-pane" data-pane="terrain" data-cat="terrain" hidden>
           <h3>Terrain</h3>
           <div id="ed-tr-create">
             <p class="ed-note">Open ground you can sculpt into hills, ridges and canyons, then paint with grass, dirt, stone and more. Tiles and props sit on top.</p>
@@ -252,7 +255,7 @@
             <button id="ed-tr-remove" class="danger">Remove terrain</button>
           </div>
         </div>
-        <div class="ed-pane" data-pane="paint" hidden>
+        <div class="ed-pane" data-pane="paint" data-cat="paint" hidden>
           <h3>Paint</h3>
           <div id="ed-brush-row"><img id="ed-brush" alt="" /><span id="ed-brush-label"></span></div>
           <label class="stack">Apply to

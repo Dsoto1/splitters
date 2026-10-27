@@ -346,3 +346,108 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 /* Transport plane route points: X and Z side by side, with a remove button. */
 .route-point { display: flex; gap: 4px; align-items: center; }
 .route-point input { width: 4.5em; min-width: 0; }
+
+/* ------------------------------------------------------------------
+   Palette (palette.ts): colour-coded tabs (one colour per category, the
+   --cat-* tokens), a sticky head with search, favourites and recent,
+   collapsible groups, grid or card view, atlas pictures (paletteAtlas.ts).
+   ------------------------------------------------------------------ */
+[data-cat='structure'] { --cat: var(--cat-structure); }
+[data-cat='props'] { --cat: var(--cat-props); }
+[data-cat='nature'] { --cat: var(--cat-nature); }
+[data-cat='terrain'] { --cat: var(--cat-terrain); }
+[data-cat='gameplay'] { --cat: var(--cat-gameplay); }
+[data-cat='npcs'] { --cat: var(--cat-npcs); }
+[data-cat='vehicles'] { --cat: var(--cat-vehicles); }
+[data-cat='objects'] { --cat: var(--cat-objects); }
+[data-cat='lights'] { --cat: var(--cat-lights); }
+[data-cat='paint'] { --cat: var(--cat-paint); }
+#ed-palette { --cat: var(--cat-structure); padding-top: 0; overflow-x: hidden; }
+.ed-pal-head { position: sticky; top: 0; z-index: 3; margin: 0 -10px; padding: 10px 10px 4px; background: rgb(18, 24, 39); }
+.ed-pal-tabs { flex-wrap: wrap; gap: 2px; margin: 0 0 6px; }
+.ed-pal-tabs .tab { flex: 1 1 auto; min-width: 0; padding: 6px 5px 5px; font-size: 10.5px; letter-spacing: 0.05em; color: var(--muted); border-width: 2px 0 0; border-style: solid; border-color: color-mix(in srgb, var(--cat) 50%, transparent); border-radius: 3px 3px 0 0; }
+.ed-pal-tabs .tab:hover { color: var(--text); background: color-mix(in srgb, var(--cat) 12%, transparent); }
+.ed-pal-tabs .tab.on { color: #fff; background: color-mix(in srgb, var(--cat) 26%, var(--deep-space)); border-color: var(--cat); box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--cat) 60%, transparent); }
+.ed-search-row { display: flex; gap: 4px; margin-bottom: 4px; }
+#ed-search { flex: 1; min-width: 0; margin: 0; }
+#ed-search:focus { outline: none; border-color: var(--cat); box-shadow: 0 0 0 1px color-mix(in srgb, var(--cat) 50%, transparent); }
+.ed-pal-view { flex: none; width: 32px; padding: 0; display: grid; place-items: center; }
+.ed-pal-view svg { width: 14px; height: 14px; fill: currentColor; }
+.ed-pal-view[data-view='grid'] .c, .ed-pal-view[data-view='cards'] .g { display: none; }
+.ed-pack-row { margin-bottom: 0; }
+
+/* Favourites and recent: one compact row of the pieces. */
+#ed-pal-quick { margin: 6px 0 2px; padding: 4px; background: var(--deep-space); border: 1px solid var(--line); border-radius: 4px; }
+#ed-palette.searching #ed-pal-quick { display: none; }
+.ed-quick-tabs { display: flex; gap: 3px; margin-bottom: 4px; }
+.ed-quick-tabs button { flex: 1; padding: 3px 4px; font-size: 10px; letter-spacing: 0.06em; color: var(--muted); background: transparent; border-color: transparent; }
+.ed-quick-tabs button.on { color: var(--text); background: var(--surface-2); border-color: var(--line); }
+.ed-quick-tabs small { color: var(--muted); font: 600 10px var(--font-body); }
+.ed-quick-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; max-height: 82px; overflow: hidden; }
+.ed-quick-row:empty { display: none; }
+#ed-palette .ed-quick-row > * { padding: 2px; gap: 0; }
+#ed-palette .ed-quick-row .lbl, #ed-palette .ed-quick-row .fav { display: none; }
+#ed-palette .ed-quick-row .mat-btn img { width: 100%; height: auto; aspect-ratio: 1; }
+.ed-quick-empty { margin: 0 2px 2px; font-size: 10.5px; }
+
+/* Search results: ranked matches from every tab, each with its own category colour. */
+#ed-pal-results[hidden], #ed-palette .ed-pane.search-hide { display: none !important; }
+.ed-results-head { margin: 8px 0 6px; font: 600 11px var(--font-display); letter-spacing: 0.06em; color: var(--muted); }
+
+/* Groups: a head that folds the group, with its count. */
+.ed-group { margin: 4px 0 0; }
+#ed-palette .ed-group-head { display: flex; align-items: center; gap: 7px; width: 100%; padding: 7px 4px 6px; background: transparent; border: 0; border-bottom: 1px solid color-mix(in srgb, var(--cat) 40%, transparent); border-radius: 0; text-align: left; font: 700 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+#ed-palette .ed-group-head:hover { background: color-mix(in srgb, var(--cat) 8%, transparent); }
+#ed-palette .ed-group-head:focus-visible { outline: 2px solid var(--cat); outline-offset: -2px; }
+.ed-group-head .ttl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ed-group-head small { color: var(--muted); font: 600 11px var(--font-body); letter-spacing: 0; }
+.ed-group-head .chev { flex: none; width: 6px; height: 6px; margin: 0 2px 2px; border-right: 2px solid var(--cat); border-bottom: 2px solid var(--cat); transform: rotate(-45deg); transition: transform 0.15s; }
+.ed-group.open > .ed-group-head .chev { transform: rotate(45deg); margin-bottom: 4px; }
+.ed-group:not(.open) > .ed-group-body { display: none; }
+.ed-group[hidden] { display: none; }
+.ed-group-body { padding: 6px 0 4px; }
+.ed-group-body > .ed-note { margin: 0 0 6px; }
+#ed-palette .ed-pane h3 { color: var(--cat); }
+#ed-palette .tile-cat { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font: 600 10.5px var(--font-display); text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+#ed-palette .tile-cat::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 1px; background: var(--cat); }
+#ed-palette .tiles .tile-cat:first-child { margin-top: 0; }
+
+/* Cards: a thin accent in the category's colour; cyan still marks the active piece. */
+#ed-palette .tile-btn, #ed-palette .mat-btn { position: relative; box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--cat) 70%, transparent); }
+#ed-palette .tile-btn:hover, #ed-palette .mat-btn:hover { border-color: color-mix(in srgb, var(--cat) 70%, transparent); }
+#ed-palette .tile-btn.active, #ed-palette .mat-btn.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), inset 0 -2px 0 var(--cat); }
+#ed-palette [data-key]:focus-visible { outline: 2px solid var(--cat); outline-offset: 1px; }
+#ed-palette .tile-btn .thumb { position: relative; overflow: hidden; }
+.thumb > .spr { display: block; width: 100%; height: 100%; background-repeat: no-repeat; }
+#ed-palette .fav { position: absolute; top: 1px; right: 3px; font-size: 13px; line-height: 1; color: var(--muted); opacity: 0; cursor: pointer; text-shadow: 0 1px 2px #000; }
+#ed-palette [data-key]:hover .fav, #ed-palette [data-key]:focus-visible .fav { opacity: 0.75; }
+#ed-palette .faved .fav { opacity: 1; color: var(--warning); }
+#ed-palette .mat-btn .lbl { overflow: hidden; text-overflow: ellipsis; max-width: 100%; white-space: nowrap; }
+
+/* Card view: three to a row with names. Grid view: four pictures to a row, names on hover. */
+#ed-palette .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#ed-palette.grid .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+#ed-palette.grid .tile-btn.has-pic { padding: 3px; }
+#ed-palette.grid .tile-btn.has-pic .lbl { display: none; }
+#ed-palette.grid .tile-btn:not(.has-pic) { padding: 3px 2px 4px; gap: 2px; font-size: 10px; }
+#ed-palette.grid .tile-btn:not(.has-pic) .lbl { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#ed-palette .tile-btn > svg { flex: none; }
+
+/* Name card beside the palette for the piece under the pointer (or keyboard focus). */
+#editor > #ed-pal-tip {
+  position: fixed; z-index: 30; max-width: 250px; display: flex; flex-direction: column; gap: 2px; padding: 7px 10px; pointer-events: none;
+  background: rgba(11, 15, 26, 0.96); border: 1px solid color-mix(in srgb, var(--cat) 45%, transparent); border-left: 3px solid var(--cat); border-radius: 4px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4); font-size: 12px; color: var(--muted); white-space: pre-line;
+}
+#editor > #ed-pal-tip[hidden] { display: none; }
+#ed-pal-tip b { color: var(--text); font: 700 14px var(--font-display); letter-spacing: 0.02em; }
+#ed-pal-tip small { color: var(--cat); font: 600 10px var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; }
+#ed-pal-tip span:empty { display: none; }
+#ed-pal-tip em { margin-top: 2px; font-style: normal; font-size: 10.5px; opacity: 0.8; }
+
+@media (max-width: 900px) {
+  #ed-palette .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #ed-palette.grid .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ed-quick-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  #ed-materials, #ed-tr-materials { grid-template-columns: repeat(3, 1fr); }
+}

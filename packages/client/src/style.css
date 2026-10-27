@@ -26,6 +26,18 @@
   --surface-3: #2a3a55;
   --highlight: #4f6bff;
   --line: rgba(142, 162, 192, 0.18);
+  /* Categories (MapMaker palette tabs, headings and card accents): the accents above, plus one earth tone. */
+  --earth: #c9a36b;
+  --cat-structure: var(--cyan);
+  --cat-props: var(--orange);
+  --cat-nature: var(--success);
+  --cat-terrain: var(--earth);
+  --cat-gameplay: var(--pink);
+  --cat-npcs: var(--error);
+  --cat-vehicles: var(--info);
+  --cat-objects: var(--purple);
+  --cat-lights: var(--warning);
+  --cat-paint: var(--highlight);
   --glass: rgba(14, 20, 33, 0.86);
   --font-display: 'Chakra Petch', 'Barlow', system-ui, sans-serif;
   --font-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;

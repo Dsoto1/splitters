@@ -112,6 +112,7 @@ import {
   type EdgeStyle,
   type EdgeTarget,
   CORE_PROPS,
+  type PropDefinition,
   PROP_CATEGORIES,
   getProp,
   placementCells,
@@ -202,6 +203,9 @@ import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
 import { RoadTool } from './roadTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
+import { Palette } from './palette.ts';
+import { PaletteAtlas } from './paletteAtlas.ts';
+import { NATURE_PROP_CATEGORIES, PROP_GROUPS, propGroup, scenarioGroup } from './paletteCatalog.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { libraryThumb } from './libraryThumbs.ts';
 
@@ -309,11 +313,32 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'mover:tram': '<path d="M4 14h48" stroke="#5a5f68" stroke-width="3"/><rect x="10" y="18" width="34" height="18" rx="3" fill="#e0412f"/><rect x="14" y="22" width="8" height="7" fill="#bfe6f5"/><rect x="25" y="22" width="8" height="7" fill="#bfe6f5"/><rect x="36" y="22" width="5" height="7" fill="#bfe6f5"/><path d="M14 44h28M37 40l5 4-5 4" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
 };
 
-/** Scenario palette entries shown under Entities → Gameplay (game-mode objects) rather than Scenario. */
-const GAMEPLAY_OBJECTS: ReadonlySet<string> = new Set(['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'airplane']);
-
 /** Tools that put something new into the map (the toolbar's Place button lights up for them). */
 const PLACING: ReadonlySet<Tool['kind']> = new Set(['tile', 'spawn', 'pickup', 'scenario', 'prop', 'mount', 'scatter', 'npc']);
+
+/** A tool's palette key, as its card's `data-tool` (`tile:core.room`, `prop:prop.barrel`, `spawn`…). */
+function toolKey(tool: Tool): string {
+  switch (tool.kind) {
+    case 'tile':
+      return `tile:${tool.tile}`;
+    case 'pickup':
+      return `pickup:${tool.item}`;
+    case 'scenario':
+      return `scenario:${tool.key}`;
+    case 'edge':
+      return `edge:${tool.style}`;
+    case 'prop':
+      return `prop:${tool.model}`;
+    case 'mount':
+      return `mount:${tool.model}`;
+    case 'scatter':
+      return `scatter:${tool.set}`;
+    case 'npc':
+      return `npc:${tool.key}`;
+    default:
+      return tool.kind;
+  }
+}
 
 /** Display name of a level: Ground, Level 1, Basement… */
 export function levelName(level: number): string {
@@ -422,6 +447,9 @@ export class EditorApp {
   /** Facing for the next prop placed. */
   private propYaw = 0;
   private readonly thumbs: ModelThumbnails;
+  /** The palette's prebuilt pictures (public/thumbs) and its behaviour (groups, search, favourites, keys). */
+  readonly paletteAtlas = new PaletteAtlas();
+  palette!: Palette;
   private showPane: (pane: string) => void = () => {};
   /** Palette workspace: build, entities or environment. */
   private paletteWs = 'build';
@@ -625,10 +653,12 @@ export class EditorApp {
     this.tool = tool;
     if (PLACING.has(tool.kind)) this.lastPlace = tool;
     if (tool.kind === 'edge') this.edgeStyle = tool.style;
-    const pane: Partial<Record<Tool['kind'], string>> = { npc: 'npcs', paint: 'paint', edge: 'advanced', tile: 'tiles', prop: 'props', scatter: 'plants', terrain: 'terrain', spawn: 'entities', pickup: 'entities', scenario: 'scenario', mount: 'vehicles', road: 'road' };
+    const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain' };
     this.road.setActive(tool.kind === 'road');
-    if (tool.kind === 'scenario' && GAMEPLAY_OBJECTS.has(tool.key)) this.showPane('entities');
-    else if (pane[tool.kind]) this.showPane(pane[tool.kind]!);
+    // The pane holding the tool's card (props sit in Props, Nature or Vehicles; scenario pieces in several tabs).
+    const card = document.querySelector<HTMLElement>(`#ed-palette .ed-pane [data-tool="${CSS.escape(toolKey(tool))}"]`);
+    const at = card?.closest<HTMLElement>('.ed-pane')?.dataset.pane ?? pane[tool.kind];
+    if (at) this.showPane(at);
     if (tool.kind !== 'terrain') {
       this.terrainHover = null;
       this.view.setBrushRing(null, 0, 0, 0);
@@ -652,6 +682,7 @@ export class EditorApp {
           t === tool.kind,
       );
     }
+    this.palette?.syncActive();
     $('ed-tb-place-what').textContent = this.lastPlace ? this.toolName(this.lastPlace) : '';
     const hints: Record<Tool['kind'], [string, string]> = {
       select: ['Select', 'Left-click picks what is outlined in cyan · Shift+click adds · drag moves · Del deletes · R rotates · Ctrl+D duplicates'],
@@ -1390,6 +1421,11 @@ export class EditorApp {
         case 'KeyH':
           this.setShowAll(!this.showAll);
           break;
+        case 'Slash':
+          // Search the palette.
+          $<HTMLInputElement>('ed-search').focus();
+          $<HTMLInputElement>('ed-search').select();
+          break;
         case 'Delete':
         case 'Backspace':
           if (this.tool.kind === 'road' && this.road.deleteSelected()) break;
@@ -1488,16 +1524,18 @@ export class EditorApp {
 
   /** NPCs tab: lone soldiers and squads, each a preconfigured encounter. */
   private buildNpcPalette(): void {
-    const box = $('ed-npcs');
+    const box = this.palette.group($('ed-npcs'), 'npcs:squads', 'Soldiers & Squads', {
+      note: 'Click one, then click the map to drop it there. Each is an NPC squad marker: change its soldiers, faction, orders and skill in the inspector.',
+    });
     for (const entry of NPC_PALETTE) {
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `npc:${entry.key}`;
-      b.dataset.search = `${entry.label} ${entry.search}`.toLowerCase();
       b.title = `${entry.label}: ${entry.blurb}`;
       b.innerHTML = `${npcIcon(entry.key)}${escapeHtml(entry.label)}`;
       b.addEventListener('click', () => this.setTool({ kind: 'npc', key: entry.key }));
       box.append(b);
+      this.palette.register(b, { key: b.dataset.tool, name: entry.label, tags: `${entry.search} npc enemy ai` });
     }
   }
 
@@ -1512,7 +1550,7 @@ export class EditorApp {
       return;
     }
     if (this.logic.isOpen) this.logic.close();
-    const first: Record<string, string> = { build: 'tiles', entities: 'npcs', environment: 'paint' };
+    const first: Record<string, string> = { build: 'tiles', entities: 'entities', environment: 'paint' };
     this.paletteWs = ws;
     this.showPane(first[ws] ?? 'tiles');
     if (ws === 'environment' && (this.selection.tiles.length || this.selection.entities.length)) this.setSelection(emptySelection());
@@ -1527,70 +1565,95 @@ export class EditorApp {
 
   private buildPalette(): void {
     this.buildToolbar();
+    this.palette = new Palette($('ed-palette'), $<HTMLInputElement>('ed-search'), this.paletteAtlas, (key) => this.thumbFor(key));
     this.buildNpcPalette();
     this.buildPaintPalette();
 
-    const tiles = $('ed-tiles');
+    // Structure: tiles by kind of piece.
+    const tilePack = (id: string) => STYLE_PACKS.find((p) => id.startsWith(`${p.id}.`) || p.tiles.includes(id));
     for (const category of TILE_CATEGORIES) {
-      const head = document.createElement('div');
-      head.className = 'tile-cat';
-      head.textContent = category;
-      tiles.append(head, ...coreCatalog.all().filter((d) => d.category === category).map((d) => this.paletteButton(d)));
+      const grid = this.palette.group($('ed-tiles'), `tiles:${category}`, category);
+      for (const def of coreCatalog.all().filter((d) => d.category === category)) this.paletteButton(grid, def, tilePack(def.id));
     }
-    const edges = $('ed-edges');
+    const edges = this.palette.group($('ed-edges'), 'walls', 'Walls & Openings', { note: 'Pick a style, then click any side of a room or corridor to build it that way (O cycles styles, right-click resets).' });
     for (const style of EDGE_STYLES) {
       const b = document.createElement('button');
       b.className = 'tile-btn edge-btn';
       b.dataset.tool = `edge:${style}`;
-      b.dataset.search = `${EDGE_STYLE_LABELS[style]} wall side opening`.toLowerCase();
       b.innerHTML = `${edgeIcon(style)}${escapeHtml(EDGE_STYLE_LABELS[style])}`;
       b.title = style === 'auto' ? 'Back to the automatic wall or doorway' : `Build a side as: ${EDGE_STYLE_LABELS[style]}`;
       b.addEventListener('click', () => this.setTool({ kind: 'edge', style }));
       edges.append(b);
+      this.palette.register(b, { key: b.dataset.tool, name: EDGE_STYLE_LABELS[style], tags: 'wall side opening window door' });
     }
+
+    // Gameplay: spawns and game-mode objectives, then pickups by kind.
+    const objectives = this.palette.group($('ed-entities'), 'gameplay:objectives', 'Spawns & Objectives');
     const spawnBtn = document.createElement('button');
     spawnBtn.className = 'tile-btn';
     spawnBtn.dataset.tool = 'spawn';
-    spawnBtn.dataset.search = 'spawn player start';
     spawnBtn.innerHTML = `<svg viewBox="0 0 56 56"><circle cx="28" cy="30" r="12" fill="#4fb3ff"/><rect x="22" y="14" width="12" height="6" rx="2" fill="#1c1f26"/></svg>Player Spawn`;
+    spawnBtn.title = 'Player Spawn: where players start and come back in';
     spawnBtn.addEventListener('click', () => this.setTool({ kind: 'spawn' }));
-    $('ed-entities').append(spawnBtn);
+    objectives.append(spawnBtn);
+    this.palette.register(spawnBtn, { key: 'spawn', name: 'Player Spawn', tags: 'spawn player start respawn team' });
+    const scenarioGrids = new Map<string, HTMLElement>();
+    const scenarioGrid = (pane: string, group: string) => {
+      const id = `${pane}:${group}`;
+      let grid = scenarioGrids.get(id);
+      if (!grid) {
+        const box = ({ entities: 'ed-entities', scenario: 'ed-scenario', lights: 'ed-lights', npcs: 'ed-npcs' } as Record<string, string>)[pane]!;
+        grid = pane === 'entities' ? objectives : this.palette.group($(box), id, group);
+        scenarioGrids.set(id, grid);
+      }
+      return grid;
+    };
+    // Objects tab order: doors first, then logic, movers, platforms, destructibles, traps.
+    for (const g of ['Doors & Gates', 'Logic & Triggers', 'Lifts & Movers', 'Platforms & Climbing', 'Destructibles', 'Traps & Hazards']) scenarioGrid('scenario', g);
+    for (const g of ['Lights', 'Liquids']) scenarioGrid('lights', g);
+    const pickups = new Map<string, HTMLElement>();
+    const pickupGroup = (kind: string) => (kind === 'weapon' ? 'Weapons' : kind === 'ammo' || kind === 'throwable' ? 'Ammo & Grenades' : kind === 'health' || kind === 'armor' ? 'Health & Armour' : 'Power-ups & Gear');
+    for (const g of ['Health & Armour', 'Weapons', 'Ammo & Grenades', 'Power-ups & Gear']) pickups.set(g, this.palette.group($('ed-entities'), `gameplay:${g}`, g));
     for (const entry of SCENARIO_PALETTE) {
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `scenario:${entry.key}`;
-      b.dataset.search = `${entry.label} ${entry.search}`.toLowerCase();
       b.innerHTML = `<svg viewBox="0 0 56 56">${SCENARIO_ICONS[entry.key]}</svg>${escapeHtml(entry.label)}`;
       b.addEventListener('click', () => this.setTool({ kind: 'scenario', key: entry.key }));
-      // Game-mode objects sit with the spawns and pickups; the rest are scenario pieces.
-      $(GAMEPLAY_OBJECTS.has(entry.key) ? 'ed-entities' : 'ed-scenario').append(b);
+      const { pane, group } = scenarioGroup(entry.key);
+      scenarioGrid(pane, group).append(b);
+      this.palette.register(b, { key: b.dataset.tool, name: entry.label, tags: entry.search });
     }
     for (const item of CORE_ITEMS) {
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `pickup:${item.id}`;
-      b.dataset.search = `${item.displayName} ${item.id} pickup ${item.effect.kind}`.toLowerCase();
       b.innerHTML = `${itemIcon(item.id)}${escapeHtml(item.displayName)}`;
       b.addEventListener('click', () => this.setTool({ kind: 'pickup', item: item.id }));
-      $('ed-entities').append(b);
+      pickups.get(pickupGroup(item.effect.kind))!.append(b);
+      this.palette.register(b, { key: b.dataset.tool, name: item.displayName, tags: `${item.id} pickup item ${item.effect.kind}` });
     }
 
     this.buildScatterPalette();
     this.buildPropPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
+    const track = this.palette.group($('ed-mounts'), 'vehicles:track', 'Race Track');
     const roadBtn = document.createElement('button');
     roadBtn.className = 'tile-btn';
     roadBtn.dataset.tool = 'road';
-    roadBtn.dataset.search = 'road track race circuit lap checkpoint';
     roadBtn.innerHTML = '<svg viewBox="0 0 56 56"><path d="M8 50 C8 20 48 36 48 6" stroke="#3a3f48" stroke-width="12" fill="none"/><path d="M8 50 C8 20 48 36 48 6" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/><path d="M40 4h12v4H40zM40 8h4v4h-4zM48 8h4v4h-4z" fill="#f2f2f2"/></svg>Road / Track';
     roadBtn.title = 'Draw a race track: click road points, then set width, laps and the start grid';
     roadBtn.addEventListener('click', () => this.setTool({ kind: 'road' }));
-    $('ed-road-tools').append(roadBtn);
-    this.road.renderPane($('ed-road'));
+    track.append(roadBtn);
+    this.palette.register(roadBtn, { key: 'road', name: 'Road / Track', tags: 'road track race circuit lap checkpoint' });
+    const roadPane = document.createElement('div');
+    roadPane.id = 'ed-road';
+    track.after(roadPane);
+    this.road.renderPane(roadPane);
 
     // Palette (after the reference board): the top bar's workspace picks a row of sub-tabs, a sub-tab one pane;
-    // search looks across all of them.
+    // search shows ranked matches from all of them instead.
     const tabs = $('ed-pal-tabs');
     const showPane = (pane: string) => {
       // Stay in the current workspace if it has this pane, else move to the first one that does.
@@ -1601,8 +1664,10 @@ export class EditorApp {
       for (const b of all) {
         b.hidden = b.dataset.ws !== this.paletteWs;
         b.classList.toggle('on', b === btn);
+        b.setAttribute('aria-selected', String(b === btn));
       }
       for (const p of document.querySelectorAll<HTMLElement>('#ed-palette .ed-pane')) p.hidden = p.dataset.pane !== pane;
+      $('ed-palette').dataset.cat = btn.dataset.cat ?? '';
       this.syncWorkspaceTabs();
     };
     this.showPane = showPane;
@@ -1610,20 +1675,20 @@ export class EditorApp {
       const b = (e.target as HTMLElement).closest<HTMLElement>('.tab');
       if (!b?.dataset.pane) return;
       this.paletteWs = b.dataset.ws!;
+      // Picking a tab while searching goes back to browsing.
+      const search = $<HTMLInputElement>('ed-search');
+      if (search.value) {
+        search.value = '';
+        search.dispatchEvent(new Event('input'));
+      }
       showPane(b.dataset.pane);
     });
     $('ed-modes').addEventListener('click', (e) => {
       const ws = (e.target as HTMLElement).closest<HTMLElement>('.tab')?.dataset.ws;
       if (ws) this.setWorkspace(ws);
     });
-
-    $<HTMLInputElement>('ed-search').addEventListener('input', (e) => {
-      const q = (e.target as HTMLInputElement).value.trim().toLowerCase();
-      // While searching, every group is shown so matches anywhere turn up.
-      for (const p of document.querySelectorAll<HTMLElement>('#ed-palette .ed-pane')) p.hidden = q ? false : p.dataset.pane !== ($('ed-pal-tabs').querySelector<HTMLElement>('.tab.on')?.dataset.pane ?? 'tiles');
-      this.filterPalette();
-    });
     this.buildPackPicker();
+    this.palette.refresh();
     this.setTool({ kind: 'select' });
   }
 
@@ -1647,9 +1712,9 @@ export class EditorApp {
       themeBtn.textContent = pack ? `Use theme (${coreThemes.get(pack.themes[0]!)?.displayName ?? pack.themes[0]})` : 'Use theme';
       // Gameplay pieces say what they are for in this pack.
       for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn[data-tool^="scenario:"]')) {
-        if (b.dataset.baseTitle === undefined) b.dataset.baseTitle = b.title;
+        if (b.dataset.baseTip === undefined) b.dataset.baseTip = b.dataset.tip ?? '';
         const why = pack?.gameplayNotes?.[b.dataset.tool!.slice('scenario:'.length) as ScenarioPaletteKey];
-        b.title = why ?? b.dataset.baseTitle;
+        this.palette.setTip(b, why ?? b.dataset.baseTip);
       }
       this.filterPalette();
     });
@@ -1663,20 +1728,10 @@ export class EditorApp {
     });
   }
 
-  /** Show the palette entries matching the search and the chosen Style Pack; hide group headings left empty. */
+  /** Narrow the palette to the chosen Style Pack's pieces (search, favourites and recent follow it). */
   private filterPalette(): void {
-    const q = $<HTMLInputElement>('ed-search').value.trim().toLowerCase();
     const pack = this.stylePack;
-    for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn, #ed-palette .mat-btn')) {
-      const tool = b.dataset.tool;
-      const inPack = !pack || !tool || stylePackHas(pack, tool);
-      b.hidden = (!!q && !(b.dataset.search ?? '').includes(q)) || !inPack;
-    }
-    for (const head of document.querySelectorAll<HTMLElement>('#ed-palette .tile-cat')) {
-      let any = false;
-      for (let n = head.nextElementSibling; n && !n.classList.contains('tile-cat'); n = n.nextElementSibling) if (!(n as HTMLElement).hidden) any = true;
-      head.hidden = !any;
-    }
+    this.palette.filter(pack ? (b) => !b.dataset.tool || stylePackHas(pack, b.dataset.tool) : null);
   }
 
   // ---------------------------------------------------------------- teams
@@ -1979,10 +2034,11 @@ export class EditorApp {
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `terrain:${brush}`;
-      b.dataset.search = `terrain ${brush} ground sculpt`;
-      b.innerHTML = `<svg viewBox="0 0 56 56">${icons[brush]}</svg>${brush[0]!.toUpperCase()}${brush.slice(1)}`;
+      const label = `${brush[0]!.toUpperCase()}${brush.slice(1)}`;
+      b.innerHTML = `<svg viewBox="0 0 56 56">${icons[brush]}</svg>${label}`;
       b.addEventListener('click', () => this.setTerrainBrush(brush));
       brushes.append(b);
+      this.palette.register(b, { key: b.dataset.tool, name: `${label} terrain`, tags: 'terrain ground sculpt brush' });
     }
     const grounds = $('ed-tr-materials');
     for (const m of TERRAIN_MATERIALS) {
@@ -1990,20 +2046,19 @@ export class EditorApp {
       const b = document.createElement('button');
       b.className = 'mat-btn';
       b.dataset.ground = m;
-      b.dataset.search = `${TERRAIN_MATERIAL_LABELS[m]} ground terrain paint`.toLowerCase();
-      b.title = `Paint ${TERRAIN_MATERIAL_LABELS[m]}`;
-      b.innerHTML = `${def ? `<img alt="" src="${materialThumbnail(def)}">` : ''}<span>${TERRAIN_MATERIAL_LABELS[m]}</span>`;
+      b.title = `Paint the ground with ${TERRAIN_MATERIAL_LABELS[m]}`;
+      b.innerHTML = `${def ? `<img alt="" src="${materialThumbnail(def)}">` : ''}<span class="lbl">${TERRAIN_MATERIAL_LABELS[m]}</span>`;
       b.addEventListener('click', () => {
         this.terrainMaterial = m;
         this.setTerrainBrush('paint');
       });
       grounds.append(b);
+      this.palette.register(b, { key: `ground:${m}`, name: `${TERRAIN_MATERIAL_LABELS[m]} ground`, tags: 'ground terrain paint material' });
     }
     const levels = $('ed-tr-foliage');
     FOLIAGE_LEVELS.forEach((label, level) => {
       const b = document.createElement('button');
       b.dataset.foliage = String(level);
-      b.dataset.search = `plants foliage grass flowers bushes ${label}`.toLowerCase();
       b.textContent = label;
       b.title = ['No plants', 'A few tufts of grass', 'Grass and the odd flower', 'Thick grass, flowers and shrubs', 'Long grass, flowers and bushes'][level]!;
       b.addEventListener('click', () => {
@@ -2039,26 +2094,27 @@ export class EditorApp {
     this.syncTerrainUi();
   }
 
-  /** Vehicles and turrets in the Entities tab, with thumbnails from their models. */
+  /** Vehicles and turrets in the Entities tab (pictures from the atlas), then parked vehicles (props). */
   private buildMountPalette(): void {
-    const box = $('ed-mounts');
+    const groups = {
+      vehicle: this.palette.group($('ed-mounts'), 'vehicles:drive', 'Vehicles', { note: 'Players get in and out with E. Seats, team and paint in the inspector.' }),
+      turret: this.palette.group($('ed-mounts'), 'vehicles:turrets', 'Turrets & Sentries'),
+    };
     for (const id of MOUNT_MODELS) {
       const def = MOUNT_DEFS[id];
       const b = document.createElement('button');
       b.className = 'tile-btn prop-btn';
       b.dataset.tool = `mount:${id}`;
-      b.dataset.search = `${def.displayName} ${def.kind} vehicle turret mount seats`.toLowerCase();
       b.title = `${def.displayName}: ${def.blurb}\n${def.seats.length} seat${def.seats.length === 1 ? '' : 's'}`;
-      const img = document.createElement('img');
-      img.alt = '';
-      void this.thumbs.get(def.model).then((src) => (img.src = src), () => undefined);
-      b.append(img, document.createTextNode(`${def.displayName}${def.seats.length ? ` · ${def.seats.length}` : ''}`));
+      b.append(document.createTextNode(`${def.displayName}${def.seats.length ? ` · ${def.seats.length}` : ''}`));
       b.addEventListener('click', () => this.setTool({ kind: 'mount', model: id }));
-      box.append(b);
+      groups[def.kind === 'vehicle' ? 'vehicle' : 'turret'].append(b);
+      this.palette.register(b, { key: b.dataset.tool, name: def.displayName, tags: `${def.kind} vehicle turret mount seats drive`, picture: true });
     }
+    const parked = this.palette.group($('ed-mounts'), 'vehicles:parked', 'Parked Vehicles (scenery)', { open: false });
+    for (const def of CORE_PROPS.filter((d) => propGroup(d) === 'vehicles')) this.propButton(parked, def, 'parked car vehicle wreck');
   }
 
-  /** Props by category; thumbnails render from the real models as they scroll into view. */
   /** Plant a patch of the set round the pointer, or (clear) remove that set's props there. One undo step either way. */
   private scatterAtHover(set: ScatterSetId, clear: boolean): void {
     const p = this.hoverPoint;
@@ -2077,7 +2133,7 @@ export class EditorApp {
   }
 
   private buildScatterPalette(): void {
-    const box = $('ed-scatter');
+    const box = this.palette.group($('ed-nature'), 'nature:scatter', 'Scatter Brush', { note: 'Click to plant a patch · Alt-click clears that kind of plant · [ ] resize' });
     const icons: Record<ScatterSetId, string> = {
       forest: '<path d="M14 46 L22 14 L30 46Z M28 46 L36 8 L44 46Z" fill="#3f6b3a"/>',
       woods: '<circle cx="20" cy="22" r="11" fill="#5f9a46"/><circle cx="37" cy="26" r="10" fill="#4f8a3c"/><rect x="18" y="30" width="4" height="16" fill="#7a5232"/><rect x="35" y="32" width="4" height="14" fill="#7a5232"/>',
@@ -2088,49 +2144,63 @@ export class EditorApp {
       desert: '<path d="M26 46V14a4 4 0 0 1 8 0V46Z M26 30h-6V20a3 3 0 0 1 6 0 M34 26h6V16a3 3 0 0 0-6 0" fill="#5e8f4a"/><rect x="6" y="44" width="44" height="4" fill="#d9b77a"/>',
       rocks: '<path d="M8 46 L14 32 L26 28 L32 36 L30 46Z" fill="#8a8d92"/><path d="M30 46 L36 30 L46 32 L50 46Z" fill="#6c7076"/>',
     };
+    box.id = 'ed-scatter';
     for (const id of SCATTER_SET_IDS) {
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `scatter:${id}`;
-      b.dataset.search = `${SCATTER_SETS[id].label} scatter plants trees vegetation brush`.toLowerCase();
       b.innerHTML = `<svg viewBox="0 0 56 56">${icons[id]}</svg>${SCATTER_SETS[id].label}`;
       b.addEventListener('click', () => this.setTool({ kind: 'scatter', set: id }));
       box.append(b);
+      this.palette.register(b, { key: b.dataset.tool, name: SCATTER_SETS[id].label, tags: 'scatter plants trees vegetation brush patch' });
     }
+    const radius = document.createElement('label');
+    radius.className = 'stack';
+    radius.innerHTML = 'Brush size <span id="ed-sc-radius-v">8 m</span><input id="ed-sc-radius" type="range" min="2" max="40" step="1" value="8" />';
+    box.after(radius);
     $<HTMLInputElement>('ed-sc-radius').addEventListener('input', (e) => this.setBrushRadius(Number((e.target as HTMLInputElement).value)));
   }
 
+  /** A prop card; its picture comes from the atlas as it scrolls into view. */
+  private propButton(grid: HTMLElement, def: PropDefinition, tags = ''): void {
+    const b = document.createElement('button');
+    b.className = 'tile-btn prop-btn';
+    b.dataset.tool = `prop:${def.id}`;
+    b.title = `${def.displayName}\n${def.size.map((v) => v.toFixed(1)).join(' × ')} m${def.collision ? '' : ' · walk-through'}${def.breakable ? ' · breakable' : ''}`;
+    b.append(document.createTextNode(def.displayName));
+    b.addEventListener('click', () => this.setTool({ kind: 'prop', model: def.id }));
+    grid.append(b);
+    const packs = STYLE_PACKS.filter((p) => p.props.includes(def.id)).map((p) => p.displayName);
+    this.palette.register(b, {
+      key: b.dataset.tool,
+      name: def.displayName,
+      tags: `${def.category} prop ${tags} ${packs.join(' ')} ${def.breakable ? 'breakable destructible' : ''} ${def.collision ? '' : 'walk-through decoration'}`,
+      picture: true,
+    });
+  }
+
+  /** Props by theme group (each one atlas), then by their own category; Nature and parked vehicles have their own tabs. */
   private buildPropPalette(): void {
-    const box = $('ed-props');
-    const seen = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        const img = entry.target as HTMLImageElement;
-        seen.unobserve(img);
-        void this.thumbs.get(img.dataset.file!).then((src) => (img.src = src), () => undefined);
+    const byCategory = (cats: readonly string[]) => cats.map((c) => [c, CORE_PROPS.filter((d) => d.category === c)] as const).filter(([, list]) => list.length);
+    PROP_GROUPS.forEach((g, i) => {
+      const grid = this.palette.group($('ed-props'), `props:${g.id}`, g.label, { open: i === 0 });
+      for (const [cat, list] of byCategory(g.categories)) {
+        this.palette.heading(grid, cat);
+        for (const def of list) this.propButton(grid, def, g.label);
       }
     });
-    for (const category of PROP_CATEGORIES) {
-      const head = document.createElement('div');
-      head.className = 'tile-cat';
-      head.textContent = category;
-      box.append(head);
-      for (const def of CORE_PROPS.filter((d) => d.category === category)) {
-        const b = document.createElement('button');
-        b.className = 'tile-btn prop-btn';
-        b.dataset.tool = `prop:${def.id}`;
-        b.dataset.search = `${def.displayName} ${def.category} prop`.toLowerCase();
-        b.title = `${def.displayName}\n${def.size.map((v) => v.toFixed(1)).join(' × ')} m${def.collision ? '' : ' · walk-through'}`;
-        const img = document.createElement('img');
-        img.alt = '';
-        img.dataset.file = def.file;
-        b.append(img, document.createTextNode(def.displayName));
-        b.addEventListener('click', () => this.setTool({ kind: 'prop', model: def.id }));
-        box.append(b);
-        seen.observe(img);
-      }
+    // Props in a category no theme group lists yet still show, at the end.
+    const other = CORE_PROPS.filter((d) => propGroup(d) === 'other');
+    if (other.length) {
+      const grid = this.palette.group($('ed-props'), 'props:other', 'More Props', { open: false });
+      for (const def of other) this.propButton(grid, def);
+    }
+    for (const cat of NATURE_PROP_CATEGORIES) {
+      const grid = this.palette.group($('ed-nature'), `nature:${cat}`, cat);
+      for (const def of CORE_PROPS.filter((d) => d.category === cat)) this.propButton(grid, def, 'nature');
     }
   }
+
 
   private buildPaintPalette(): void {
     const mats = $('ed-materials');
@@ -2146,15 +2216,14 @@ export class EditorApp {
       const b = document.createElement('button');
       b.className = 'mat-btn';
       b.dataset.material = def.id;
-      b.dataset.search = `${def.displayName} ${def.category} ${def.id}`.toLowerCase();
-      b.title = def.displayName;
-      b.innerHTML = `<img alt="" src="${materialThumbnail(def)}"><span>${def.displayName}</span>`;
+      b.innerHTML = `<img alt="" src="${materialThumbnail(def)}"><span class="lbl">${escapeHtml(def.displayName)}</span>`;
       b.addEventListener('click', () => {
         this.paintStyle = { ...this.paintStyle, material: def.id };
         this.setTool({ kind: 'paint' });
         this.syncPaintUi();
       });
       mats.append(b);
+      this.palette.register(b, { key: `material:${def.id}`, name: def.displayName, tags: `${def.category} material paint surface ${def.id}` });
     }
     const tints = $('ed-tints');
     const none = document.createElement('button');
@@ -2197,46 +2266,50 @@ export class EditorApp {
     if (this.paintStyle.tint) $<HTMLInputElement>('ed-tint-custom').value = this.paintStyle.tint;
   }
 
-  private thumbObserver?: IntersectionObserver;
-  private readonly thumbLoaders = new WeakMap<Element, () => Promise<string>>();
-
-  /** Render a palette thumbnail the first time its card scrolls into view. */
-  private lazyThumb(slot: HTMLElement, load: () => Promise<string>): void {
-    this.thumbObserver ??= new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        this.thumbObserver!.unobserve(entry.target);
-        const loader = this.thumbLoaders.get(entry.target);
-        void loader?.().then(
-          (src) => {
-            const img = document.createElement('img');
-            img.alt = '';
-            img.src = src;
-            entry.target.replaceChildren(img);
-          },
-          () => undefined,
-        );
-      }
-    });
-    this.thumbLoaders.set(slot, load);
-    this.thumbObserver.observe(slot);
+  /**
+   * A palette picture rendered now from the real model (PNG data URL): for pieces the prebuilt atlas
+   * hasn't got, and for tools/content/build-palette-atlas.mjs, which renders every piece through this.
+   * Keys are the palette's: `tile:<id>`, `prop:<id>`, `mount:<id>`.
+   */
+  thumbFor(key: string, size?: number): Promise<string> | null {
+    const at = key.indexOf(':');
+    const kind = key.slice(0, at);
+    const id = key.slice(at + 1);
+    if (kind === 'tile') {
+      const def = coreCatalog.get(id);
+      return def ? this.thumbs.getTile(def, size) : null;
+    }
+    if (kind === 'prop') {
+      const def = getProp(id);
+      return def ? this.thumbs.get(def.file, 'three-quarter', size) : null;
+    }
+    if (kind === 'mount') {
+      const def = MOUNT_DEFS[id as MountModel];
+      return def ? this.thumbs.get(def.model, 'three-quarter', size) : null;
+    }
+    return null;
   }
 
-  private paletteButton(def: TileDefinition): HTMLButtonElement {
+  private paletteButton(grid: HTMLElement, def: TileDefinition, pack?: StylePack): void {
     const b = document.createElement('button');
     b.className = 'tile-btn';
     b.dataset.tool = `tile:${def.id}`;
-    b.dataset.search = `${def.displayName} ${def.id} ${def.category} ${def.blurb ?? ''}`.toLowerCase();
-    // The top-down icon stands in until the 3D thumbnail of the real piece has rendered.
+    // The top-down icon stands in until the picture from the atlas has loaded.
     b.innerHTML = `<span class="thumb">${tileIcon(def)}</span><span class="lbl">${escapeHtml(def.displayName)}</span>`;
-    this.lazyThumb(b.querySelector<HTMLElement>('.thumb')!, () => this.thumbs.getTile(def));
     const size = (() => {
       const span = (i: 0 | 1 | 2) => Math.max(...def.cells.map((c) => c[i])) - Math.min(...def.cells.map((c) => c[i])) + 1;
       return `${span(0)} × ${span(1)} × ${span(2)}`;
     })();
     b.title = `${def.displayName}\n${def.blurb ?? ''}\nSize ${size} cells · ${def.ports.length} connectors`.trim();
     b.addEventListener('click', () => this.setTool({ kind: 'tile', tile: def.id }));
-    return b;
+    grid.append(b);
+    this.palette.register(b, {
+      key: b.dataset.tool,
+      name: def.displayName,
+      tags: `${def.id} ${def.category} tile structure ${def.blurb ?? ''} ${pack ? pack.style : ''}`,
+      pack: pack?.displayName,
+      picture: true,
+    });
   }
 
   private bindUi(): void {
