@@ -206,6 +206,16 @@ for (const [id, pack, src, ratio, clips, fbx] of CREATURES) {
   if (fbx) {
     doc = await io.readBinary(await fbxRiggedToGlb(path, fbx));
     doc.setLogger(quiet);
+    // The FBX's UVs come out as three.js keeps them (V up, origin bottom left); glTF reads textures from the
+    // top left, so they are flipped for the palette to land where the pack paints it (pale green skin, blue jeans).
+    for (const m of doc.getRoot().listMeshes())
+      for (const p of m.listPrimitives()) {
+        const uv = p.getAttribute('TEXCOORD_0');
+        if (!uv) continue;
+        const a = uv.getArray().slice();
+        for (let i = 1; i < a.length; i += 2) a[i] = 1 - a[i];
+        uv.setArray(a);
+      }
     // Its palette (a 32 px strip of flat colours) goes in as it is, sampled without blur.
     const tex = doc.createTexture('palette').setImage(readFileSync(join(downloadDir(fbx.palette.split('/')[0]), fbx.palette.slice(fbx.palette.indexOf('/') + 1)))).setMimeType('image/png');
     for (const mat of doc.getRoot().listMaterials()) {
