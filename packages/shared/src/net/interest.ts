@@ -193,7 +193,7 @@ export function interestFor(body: SnapshotBody, viewer: number): { send: number[
  */
 export function encodeSnapshots(body: SnapshotBody, viewers: readonly SnapshotViewer[]): string[] {
   const { players, ...rest } = body;
-  const restJson = JSON.stringify(rest).slice(1);
+  let restJson: string | null = null;
   // Receivers with a stream: the repeatable fields apart, each sent only when it changed.
   let lean: { rest: string; fields: [string, string][] } | null = null;
   const leanRest = () => {
@@ -207,16 +207,19 @@ export function encodeSnapshots(body: SnapshotBody, viewers: readonly SnapshotVi
     }
     return (lean = { rest: JSON.stringify(r).slice(1), fields });
   };
-  const playerJson = players.map((p: PlayerSnapshot) => JSON.stringify(p));
+  // Each entry in full turned to JSON once, when first wanted (with streams, only receivers' own entries are).
+  const fullJson: (string | undefined)[] = [];
+  const pj = (i: number) => (fullJson[i] ??= JSON.stringify(players[i]));
   const big = players.length > INTEREST_MIN_PLAYERS;
-  const full = big ? null : `"players":[${playerJson.join(',')}],`;
+  let all: string | null = null;
+  const allJson = () => (all ??= `"players":[${players.map((_, i) => pj(i)).join(',')}],`);
   // Receivers with a stream: everyone else's entry quantised once, and its JSON once.
   let quant: { q: PlayerSnapshot; cm: [number, number, number] }[] | null = null;
   let quantJson: string[] | null = null;
   let here: Set<number> | null = null;
   let memos: Map<object, string>[] | null = null;
   return viewers.map((v) => {
-    let list = full;
+    let list: string | null = null;
     const { send, hold } = big ? interestFor(body, v.slot) : { send: null, hold: [] as number[] };
     if (v.stream) {
       quant ??= players.map(quantize);
@@ -226,7 +229,7 @@ export function encodeSnapshots(body: SnapshotBody, viewers: readonly SnapshotVi
       const entries: string[] = [];
       const one = (i: number) => {
         const p = players[i]!;
-        entries.push(p.s === v.slot ? playerJson[i]! : deltaJson(stream, quant![i]!, quantJson![i]!, memos![i]!));
+        entries.push(p.s === v.slot ? pj(i) : deltaJson(stream, quant![i]!, quantJson![i]!, memos![i]!));
       };
       if (send) send.forEach(one);
       else for (let i = 0; i < players.length; i++) one(i);
@@ -247,7 +250,8 @@ export function encodeSnapshots(body: SnapshotBody, viewers: readonly SnapshotVi
       // Fields this snapshot doesn't have at all are forgotten (the receiver does the same).
       if (stream.fields.size > l.fields.length) for (const k of stream.fields.keys()) if (!l.fields.some(([f]) => f === k)) stream.fields.delete(k);
       return `{"t":"snapshot","ack":${v.ack},${v.me ? `"me":${JSON.stringify(v.me)},` : ''}${list}${fields}${same.length ? `"same":${JSON.stringify(same)},` : ''}${l.rest}`;
-    } else if (list === null) list = `"players":[${send!.map((i) => playerJson[i]).join(',')}],${hold.length ? `"hold":${JSON.stringify(hold)},` : ''}`;
-    return `{"t":"snapshot","ack":${v.ack},${v.me ? `"me":${JSON.stringify(v.me)},` : ''}${list}${restJson}`;
+    } else if (!send) list = allJson();
+    else list = `"players":[${send.map((i) => pj(i)).join(',')}],${hold.length ? `"hold":${JSON.stringify(hold)},` : ''}`;
+    return `{"t":"snapshot","ack":${v.ack},${v.me ? `"me":${JSON.stringify(v.me)},` : ''}${list}${(restJson ??= JSON.stringify(rest).slice(1))}`;
   });
 }
