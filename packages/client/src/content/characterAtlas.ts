@@ -235,7 +235,7 @@ export class CharacterAtlas {
     await ready(tex);
     const { width: w, height: h } = tex.getSize();
     if ((tex as Texture).invertY || !SLOTS.some((s) => s.w === w * repU && s.h === h * repV)) return null;
-    const data = await tex.readPixels();
+    const data = await readWithoutStall(tex, w, h);
     if (!data || data.byteLength < w * h * 4) return null;
     const src = new Uint8Array(data.buffer, data.byteOffset, w * h * 4);
     let hash = 0x811c9dc5;
@@ -305,6 +305,47 @@ function repeats(uv: ArrayLike<number>): [number, number] | null {
 }
 
 const clamp = (x: number, rep: number) => Math.max(0, Math.min(rep, x));
+
+/** The WebGL2 engine internals an asynchronous texture read needs. */
+interface AsyncReadEngine {
+  _gl?: WebGL2RenderingContext;
+  _webGLVersion?: number;
+  _currentFramebuffer?: WebGLFramebuffer | null;
+  _readPixelsAsync?: (x: number, y: number, w: number, h: number, format: number, type: number, out: ArrayBufferView) => Promise<ArrayBufferView> | null;
+}
+
+/**
+ * A texture's pixels without waiting for the GPU. `readPixels` reads back at
+ * once: the page's thread waits until the GPU has drawn everything queued
+ * before it. A character's skin, hair and eye textures arrive while the first
+ * frames of a big match are still being drawn, and on a slow GPU (or a CPU
+ * renderer on a busy machine) dozens of those waits made seconds-long stalls
+ * in the warm-up (PERF_96.md, "Warm-up hang"). On WebGL2 the read goes into a
+ * buffer and is collected once a fence says the GPU got there; elsewhere, or
+ * if that fails, the plain read.
+ */
+async function readWithoutStall(tex: BaseTexture, w: number, h: number): Promise<ArrayBufferView | null> {
+  const engine = tex.getScene()?.getEngine() as unknown as AsyncReadEngine | undefined;
+  const gl = engine?._gl;
+  const handle = tex.getInternalTexture()?._hardwareTexture?.underlyingResource as WebGLTexture | undefined;
+  if (engine && gl && (engine._webGLVersion ?? 1) >= 2 && engine._readPixelsAsync && handle) {
+    let done: Promise<ArrayBufferView> | null = null;
+    const fb = gl.createFramebuffer();
+    try {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, handle, 0);
+      done = engine._readPixelsAsync(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(w * h * 4));
+    } catch {
+      done = null;
+    } finally {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, engine._currentFramebuffer ?? null);
+      gl.deleteFramebuffer(fb);
+    }
+    const data = done ? await done.catch(() => null) : null;
+    if (data) return data;
+  }
+  return tex.readPixels();
+}
 
 function ready(tex: BaseTexture): Promise<void> {
   if (tex.isReady()) return Promise.resolve();
