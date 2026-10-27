@@ -16,10 +16,10 @@
   "dependencies": {
     "@tiletrigger/shared": "workspace:*",
     "peer": "1.0.2",
+    "tsx": "^4.20.6",
     "ws": "^8.22.0"
   },
   "devDependencies": {
-    "@types/ws": "^8.18.1",
-    "tsx": "^4.20.6"
+    "@types/ws": "^8.18.1"
   }
 }

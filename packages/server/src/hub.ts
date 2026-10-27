@@ -47,7 +47,8 @@ const lobby = lobbyHandler(store, { trustProxy: proxied, ice, lan, isLive: (code
 const cognito = cognitoFromEnv();
 const account = accountHandler(cognito, proxied);
 const siteDir = process.env.SITE_DIR ?? fileURLToPath(new URL('../../client/dist', import.meta.url));
-const site = existsSync(`${siteDir}/index.html`) ? siteHandler(siteDir) : null;
+// SITE_DIR set (the Lightsail box: a link to the current build, switched by updates): always serve it.
+const site = process.env.SITE_DIR || existsSync(`${siteDir}/index.html`) ? siteHandler(siteDir) : null;
 
 server.on('request', (req, res) => {
   const notFound = () => {
