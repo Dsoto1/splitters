@@ -114,8 +114,8 @@ ahead of this CPU-rendered run). What dominates, in order:
 
 1. **Characters and skinning**: ~110 skeletons, and 720–930 skinned meshes
    drawn a frame on Norman Shores (7–8 skinned submeshes per character:
-   body parts, gear, weapon), each skinned and drawn separately (and again
-   into the shadow map). The clump puts all 96 in view at once.
+   body parts, gear, weapon), each skinned and drawn separately (and once more
+   for the shadow map where characters cast shadows). The clump puts all 96 in view at once.
 2. **Draw calls**: 5,500–6,400 a frame on Norman Shores (1,000–1,600 on Frost
    Basin) with 5,500–8,300 active meshes: the map's props and dressing plus
    the characters' submeshes. Frost Basin, a third of the draw calls, renders
