@@ -485,6 +485,24 @@ friend, before (the release build with the probes) and after:
 | clumped, before | 29.8 | 356 | 38.6 | 0 | 335 | 14.8 | 1.6 | 21 s |
 | clumped, after | 13.6 | 94 | 4.8 | 42.9 | 31 | 4.0 | 0 | 1.5 s |
 
+A second pair of runs with the host's page not drawing (`HOST96_HOST_RENDER=0`:
+a host whose GPU is far ahead of SwiftShader, so its page only serves; load
+5–7), Frost Basin, one friend:
+
+| Frost Basin, host not drawing | Wire KB/s | Raw KB/s | Host page send ms/s | Worker compress ms/s | Friend apply ms/s | Far players frozen a frame | Clock resyncs | Input → ack p50 |
+|---|---|---|---|---|---|---|---|---|
+| clumped, before | 33.8 | 366 | 31.7 | 0 | 72 | 13.7 | 189 | 5.5 s |
+| clumped, after | 17.7 | 112 | 7.8 | 16.1 | 67 | 0 | 13 | (1 sample) |
+| spread, before | 41.1 | 355 | 32.6 | 0 | 137 | 13.5 | 98 | 3.8 s |
+| spread, after | 22.6 | 143 | 7.8 | 20.5 | 34 | 0 | 1 | 1.1 s |
+
+The friend still draws at 1–2 fps here (96 characters in SwiftShader), so its
+input → acknowledged latency and the share of frames drawn past the newest
+snapshot are bounded by its own multi-second frames, not the network: read
+them on a GPU machine (`PERF_GPU=1`). Norman Shores did not finish loading in
+the browser within 10 minutes on this box (host and friend each loading it
+in SwiftShader), before or after; its numbers are the headless ones below.
+
 The same streams measured headless (the match in Node, three friends,
 `encodeSnapshots` + the host's deflate stream + the friend's inflate and
 rebuild; per friend, quieter numbers):
