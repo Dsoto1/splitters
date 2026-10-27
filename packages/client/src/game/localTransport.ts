@@ -341,6 +341,10 @@ export class LocalTransport implements Transport {
     });
   }
 
+  flush(): void {
+    this.snapshots?.flush();
+  }
+
   sendInputs(inputs: PlayerInput[]): void {
     if (inputs.length) this.toHost({ k: 'input', inputs });
   }

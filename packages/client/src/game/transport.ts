@@ -14,6 +14,8 @@ export interface Transport {
   sendInputs(inputs: PlayerInput[]): void;
   /** Everything for the match has loaded (the start countdown waits for it). */
   sendReady(): void;
+  /** Deliver snapshots waiting merged (SnapshotCoalescer) now: the session calls it as a frame begins. */
+  flush?(): void;
   /** Host commands and admin logins (dedicated servers; the host's own browser match runs them directly). */
   sendCommand?(msg: Extract<ClientMessage, { t: 'host' | 'admin' }>): void;
   close(): void;

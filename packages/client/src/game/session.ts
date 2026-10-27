@@ -1566,6 +1566,8 @@ export class GameSession {
     }
     const now = performance.now();
     if (perfProbe.on) perfProbe.beginFrame(now);
+    // Snapshots that came in a burst and wait merged: this frame draws the newest, not the one before it.
+    this.opts.transport.flush?.();
     const dt = Math.min(0.25, (now - this.last) / 1000);
     this.frameMs = now - this.last;
     this.last = now;

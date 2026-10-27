@@ -216,7 +216,7 @@ export class PeerTransport implements Transport {
     const peer = new Peer(peerOptions({ iceServers }));
     this.peer = peer;
     // A page that falls behind (a long frame, a slow machine with 96 players in view) handles the snapshots waiting for it as one.
-    const snapshots = new SnapshotCoalescer((m) => !this.closedByUs && onMessage(m));
+    const snapshots = (this.snapshots = new SnapshotCoalescer((m) => !this.closedByUs && onMessage(m)));
     const players = new SnapshotDecoder();
     let opened = false;
     let brokered = false;
@@ -292,6 +292,12 @@ export class PeerTransport implements Transport {
       );
       conn.on('close', () => fail(opened ? 'the host left the game' : noDirect));
     });
+  }
+
+  private snapshots?: SnapshotCoalescer;
+
+  flush(): void {
+    this.snapshots?.flush();
   }
 
   sendInputs(inputs: PlayerInput[]): void {

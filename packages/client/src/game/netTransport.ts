@@ -47,7 +47,7 @@ export class NetTransport implements Transport {
     const ws = new WebSocket(this.url);
     this.ws = ws;
     // A page that falls behind (a long frame, a slow machine with 96 players in view) handles the snapshots waiting for it as one.
-    const snapshots = new SnapshotCoalescer((m) => !this.closedByUs && onMessage(m));
+    const snapshots = (this.snapshots = new SnapshotCoalescer((m) => !this.closedByUs && onMessage(m)));
     const players = new SnapshotDecoder();
     ws.addEventListener('open', () => {
       const admin = adminToken(this.url);
@@ -71,6 +71,12 @@ export class NetTransport implements Transport {
       snapshots.flush();
       if (!this.closedByUs) onClose(e.reason || (e.code === 1006 ? 'could not reach server' : `closed (${e.code})`));
     });
+  }
+
+  private snapshots?: SnapshotCoalescer;
+
+  flush(): void {
+    this.snapshots?.flush();
   }
 
   sendInputs(inputs: PlayerInput[]): void {
