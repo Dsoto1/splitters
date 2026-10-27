@@ -65,4 +65,91 @@ battlefield, not waiting for animations.
 
 ## Weapon personality rule
 
-_(The owner's text was cut off at "Do not create"; the rest of this rule is pending.)_
+Do not create a large collection of statistically similar firearms. Every weapon should answer
+"Why would I want to pick this up?" within seconds of using it. Push differences aggressively.
+
+- A **heavy revolver** should feel almost absurdly powerful for a handgun, but punish misses
+  through recoil, capacity and firing rhythm.
+- An **SMG** should initially feel extremely controllable, then become increasingly inaccurate
+  during sustained fire.
+- A **shotgun** should make the player want to close distance.
+- A **precision rifle** should reward patience, prediction and long-range ballistic skill.
+- A **rocket launcher** should reward predicting where an opponent *will* be rather than simply
+  aiming at where they are.
+
+If two weapons feel too similar: make them more different.
+
+## Arena philosophy
+
+Weapons, ammunition, health, armor and powerups placed in maps are part of the strategy. Not every
+weapon must be equally powerful. Power can instead be balanced through:
+
+- Pickup location
+- Respawn timing
+- Ammo availability
+- Range
+- Handling difficulty
+- Projectile speed
+- Reload rhythm
+- Self-damage
+- Risk required to obtain it
+
+Players should gradually learn maps through their resource locations and movement routes.
+
+## Do not accidentally make
+
+Do not let the project drift into:
+
+- Modern military-simulator gunplay
+- Mandatory ADS
+- Excessive weapon sway
+- Severe movement penalties
+- Excessive inertia
+- Long uninterruptible reloads
+- Long equip animations
+- Slow sprint-to-fire behaviour
+- Suppression blur
+- Excessive flinch
+- Generic weapons differentiated by tiny percentage changes
+
+Also do not assume "classic arena shooter" means copying Quake movement, extreme bunny hopping,
+universal instant-hit weapons, rocket jumping or enormous health pools. This game should develop
+its own identity.
+
+## Implementation strategy
+
+Before expanding the weapon roster, create and polish these benchmark weapons:
+
+1. Service Pistol
+2. Heavy Revolver
+3. SMG
+4. Assault Rifle
+5. Shotgun
+6. Precision Rifle
+7. Rocket Launcher
+
+They deliberately occupy different parts of the combat spectrum. Do not prioritise weapon quantity
+until these weapons show that the underlying combat system is excellent.
+
+## Gunplay test arena
+
+A permanent internal test map for combat tuning, with:
+
+- Stationary targets; walking and sprinting lateral targets; approaching/receding targets;
+  elevated targets
+- Distance markers at 5, 10, 25, 50, 100 and 200 m
+- A recoil-testing wall
+- Penetration-testing walls: wood, glass, metal, concrete, dirt, water
+- Destructible objects
+- Moving bots
+- A close-range duel room, a medium-range combat lane and a long-range ballistic lane
+
+Use it to tune weapons systematically. The gunplay foundation is successful when the seven
+benchmark weapons are immediately distinguishable, responsive and enjoyable without needing a
+stat screen to explain their differences.
+
+## North star
+
+On picking up the game a player should think: "This is fast, responsive and fun." After playing
+longer they should discover: "There is actually a lot of skill here." That combination is the
+target.
