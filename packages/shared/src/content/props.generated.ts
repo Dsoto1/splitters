@@ -193,6 +193,7 @@ export const CORE_PROPS: readonly PropDefinition[] = [
   {id: 'prop.boulder_round', file: 'props/boulder_round.glb', displayName: 'Round Boulder', category: 'Rocks & Wood', size: [6.647,2.2,8.6], collision: [6.647,2.2,8.6]},
   {id: 'prop.boulder_jagged', file: 'props/boulder_jagged.glb', displayName: 'Jagged Boulder', category: 'Rocks & Wood', size: [4.89,2.6,4.714], collision: [4.89,2.6,4.714]},
   {id: 'prop.boulder_flat', file: 'props/boulder_flat.glb', displayName: 'Flat Boulder', category: 'Rocks & Wood', size: [3.202,1.4,2.628], collision: [3.202,1.4,2.628]},
+  {id: 'prop.rock_pile', file: 'props/rock_pile.glb', displayName: 'Rock Pile', category: 'Rocks & Wood', size: [1.916,1.3,1.793], collision: [1.916,1.3,1.793]},
   {id: 'prop.rock_spire_tall', file: 'props/rock_spire_tall.glb', displayName: 'Tall Rock', category: 'Rocks & Wood', size: [3.461,4,3.485], collision: [3.461,4,3.485]},
   {id: 'prop.stone_pillar', file: 'props/stone_pillar.glb', displayName: 'Stone Pillar', category: 'Rocks & Wood', size: [3.455,3.5,2.401], collision: [3.455,3.5,2.401]},
   {id: 'prop.stones', file: 'props/stones.glb', displayName: 'Stones', category: 'Rocks & Wood', size: [0.755,0.4,0.755], collision: null},

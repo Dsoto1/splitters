@@ -142,6 +142,15 @@ describe('creature NPC kinds', () => {
   });
 });
 
+describe('the Meshy rock pile', () => {
+  it('is a natural prop with a full collision box', () => {
+    const p = getProp('prop.rock_pile');
+    expect(p?.category).toBe('Rocks & Wood');
+    expect(p?.collision).toEqual(p?.size);
+    expect(p!.size[1]).toBeCloseTo(1.3);
+  });
+});
+
 describe('sci-fi kit set pieces', () => {
   it('come in their own categories with collision', () => {
     const kit = CORE_PROPS.filter((p) => p.id.startsWith('prop.sf_'));

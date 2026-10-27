@@ -441,6 +441,8 @@ async function convertPiece(dir, pack, p) {
     const tex = doc.createTexture(name).setImage(readFileSync(join(dir, file))).setMimeType('image/png');
     for (const m of mats) m.setBaseColorTexture(tex).setBaseColorFactor([1, 1, 1, 1]);
   }
+  // `dropEmissive`: Meshy's FBX give every material a white emissive colour (meant for its emission map).
+  if (pack.dropEmissive) for (const m of doc.getRoot().listMaterials()) m.setEmissiveFactor([0, 0, 0]).setEmissiveTexture(null);
   // Vertex colours some exports carry as painting masks, not colours.
   if (pack.dropVertexColors) for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) prim.setAttribute('COLOR_0', null);
   // `flatten` on a prop: only those pieces carry third-party photo maps (loafbrr's metal fence).

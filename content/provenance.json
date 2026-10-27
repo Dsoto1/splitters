@@ -7230,6 +7230,22 @@
       ]
     },
     {
+      "file": "props/rock_pile.glb",
+      "sha256": "566cb6cc48d2efd3",
+      "triangles": 5220,
+      "bytes": 275752,
+      "source": "meshy-owned-rock-pile/Meshy_AI_Rock_Pile_20260520_texture_remesh_tri.fbx",
+      "title": "Tile Trigger originals (made with Meshy): Rock Pile",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "embedded maps re-encoded as 1024 px JPEGs"
+      ]
+    },
+    {
       "file": "props/rock_spire_tall.glb",
       "sha256": "344aa5def5e34a41",
       "triangles": 172,
