@@ -945,6 +945,27 @@ export class Match {
    * size (as a share of it, so a 12-player team fills alongside 2-player ones).
    */
   private get playerFaction(): string | null {
+    return this.factionFor('bot');
+  }
+
+  /**
+   * The team a newcomer joins. People follow the rules' team assignment
+   * (fixed: the first person to `hostTeam`; random: any team with room);
+   * bots, and people under 'balanced', go where playerFaction puts them.
+   */
+  private factionFor(kind: Combatant['kind']): string | null {
+    if (this.teams && kind === 'human') {
+      const assign = this.rules.teamAssign;
+      const people = this.combatants().filter((c) => c.kind === 'human').length;
+      const fixed = this.rules.hostTeam;
+      if (assign === 'fixed' && people === 0 && fixed !== undefined && Number.isInteger(fixed) && this.teams[fixed]) return this.teams[fixed].id;
+      if (assign === 'random') {
+        const targets = this.teamTargets();
+        const open = this.teams.filter((t) => this.combatants().filter((c) => c.faction === t.id && c.kind === 'human').length < targets.get(t.id)!);
+        const pool = open.length ? open : this.teams;
+        return pool[Math.min(pool.length - 1, Math.floor(this.rng() * pool.length))]!.id;
+      }
+    }
     if (this.teams) {
       const targets = this.teamTargets();
       const count = (id: string) => this.combatants().filter((c) => c.faction === id).length;
@@ -1023,13 +1044,13 @@ export class Match {
     return id;
   }
 
-  private blankCombatant(slot: number, kind: Combatant['kind'], name: string): Combatant {
+  private blankCombatant(slot: number, kind: Combatant['kind'], name: string, team?: string | null): Combatant {
     return {
       slot,
       kind,
       name,
       look: DEFAULT_LOOK,
-      faction: kind === 'npc' ? null : this.playerFaction,
+      faction: kind === 'npc' ? null : (team !== undefined ? team : this.factionFor(kind)),
       speedMul: 1,
       size: 1,
       maxHealth: PLAYER.maxHealth,
@@ -1092,8 +1113,9 @@ export class Match {
     return this.slots.filter((c): c is Combatant => c !== null);
   }
 
-  addHuman(name: string, look?: string): Combatant | null {
-    const c = this.addCombatant('human', name);
+  /** `team`: the faction to join (default: the rules' team assignment). */
+  addHuman(name: string, look?: string, team?: string | null): Combatant | null {
+    const c = this.addCombatant('human', name, team);
     if (c) {
       c.look = validLookId(look);
       this.applyBodySize(c);
@@ -1129,13 +1151,16 @@ export class Match {
     const targets = this.teamTargets();
     const people = (team: string | null) => all.filter((c) => c.kind === 'human' && c.faction === team).length / (team ? (targets.get(team) ?? 1) : 1);
     const score = (c: Combatant) => c.kills - c.deaths;
-    bots.sort((a, b) => people(a.faction) - people(b.faction) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
+    // Random or fixed assignment: the team is chosen first and one of its bots makes room.
+    const want = this.teams && this.rules.teamAssign && this.rules.teamAssign !== 'balanced' ? this.factionFor('human') : undefined;
+    const mine = (c: Combatant) => (want !== undefined && c.faction === want ? 0 : 1);
+    bots.sort((a, b) => mine(a) - mine(b) || people(a.faction) - people(b.faction) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
     const out = bots[0]!;
     const from = out.name;
     this.botThought.delete(out.slot);
     this.raceBots.delete(out.slot);
     this.remove(out.slot);
-    const c = this.addHuman(name, look);
+    const c = this.addHuman(name, look, want !== undefined && out.faction === want ? want : out.faction);
     if (c) this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name });
     return c;
   }
@@ -1207,10 +1232,10 @@ export class Match {
     if (!c.alive) c.health = spec.health;
   }
 
-  private addCombatant(kind: Combatant['kind'], name: string): Combatant | null {
+  private addCombatant(kind: Combatant['kind'], name: string, team?: string | null): Combatant | null {
     const slot = this.slots.indexOf(null);
     if (slot < 0) return null;
-    const c = this.blankCombatant(slot, kind, name);
+    const c = this.blankCombatant(slot, kind, name, team);
     this.slots[slot] = c;
     this.spawn(c);
     return c;
@@ -4313,6 +4338,16 @@ export class BotFiller {
    * normally on the teams that need them.
    */
   rebalance(fill: number): void {
+    // Uneven teams resized: a team over its size gives up bots first (worst-scoring first), then the fill tops the others up.
+    if (this.match.teams) {
+      const targets = this.match.teamTargets();
+      const score = (c: Combatant) => c.kills - c.deaths;
+      for (const t of this.match.teams) {
+        const on = this.match.combatants().filter((c) => c.faction === t.id);
+        const spare = on.filter((c) => c.kind === 'bot').sort((a, b) => score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
+        for (let n = on.length; n > (targets.get(t.id) ?? n) && spare.length; n--) this.match.remove(spare.shift()!.slot);
+      }
+    }
     const all = this.match.combatants();
     const humans = all.filter((c) => c.kind === 'human').length;
     const bots = all.filter((c) => c.kind === 'bot');

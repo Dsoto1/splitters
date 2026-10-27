@@ -356,7 +356,7 @@ async function editoruxFlow(browser) {
   await page.click('#ed-dress');
   const dressed = async () => (await doc()).entities.filter((e) => e.kind === 'prop' && e.id.startsWith('dr_'));
   const first = await dressed();
-  check(first.length >= 3 && first.some((e) => e.model === 'prop.desk'), `Dress room furnishes it as an office (${first.length} props)`);
+  check(first.length >= 3 && first.some((e) => /^prop\.(hh_)?desk$/.test(e.model)), `Dress room furnishes it as an office (${first.length} props)`);
   await settle();
   await page.click('#ed-dress-reroll');
   const second = await dressed();
@@ -825,6 +825,72 @@ async function teamsFlow(browser) {
   check([...board.tables].sort((a, b) => a - b).join(',') === '2,2,2,2,2,2,12', `teams are filled to 2v2v2v2v2v2v12 (${board.tables.join(',')})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await customSetupFlow(browser);
+}
+
+/**
+ * Match setup on the smallest window (640 × 360): a custom uneven three-team
+ * setup (2v3v5, you on the third team) is saved by name, survives a reload
+ * and a change, loads back, and starts with those sizes.
+ */
+async function customSetupFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(CLIENT);
+  await page.evaluate(() => {
+    localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [4, 4] }));
+    localStorage.removeItem('cs.setups');
+  });
+  await page.reload();
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.click('#nav-play');
+  await page.waitForSelector('#arcade-team-cards');
+  const setSize = (i, v) =>
+    page.evaluate(([i, v]) => {
+      const input = document.getElementById(`arcade-team-size-${i}`);
+      input.value = String(v);
+      input.dispatchEvent(new Event('change'));
+    }, [i, v]);
+  await page.evaluate(() => document.getElementById('arcade-team-count-plus').click());
+  await setSize(0, 2);
+  await setSize(1, 3);
+  await setSize(2, 5);
+  await page.evaluate(() => document.querySelector('#arcade-team-cards .team-join[data-team="2"]').click());
+  const total = () => page.evaluate(() => document.getElementById('arcade-team-total')?.textContent ?? '');
+  const made = await total();
+  const mine = await page.evaluate(() => document.querySelector('#arcade-team-cards .team-card.mine')?.dataset.team);
+  check(made.startsWith('2v3v5') && mine === '2', `the team editor makes an uneven 2v3v5 with you on the third team (${made}, you on ${mine})`);
+  const fits = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: innerWidth, start: (() => { const r = document.getElementById('arcade-start').getBoundingClientRect(); return r.bottom <= innerHeight && r.right <= innerWidth && r.height > 0; })() }));
+  check(fits.sw <= fits.iw && fits.start, `match setup fits 640 × 360 without sideways scrolling, Start in view (${JSON.stringify(fits)})`);
+  // Save it by name, change the setup, reload: the changed one is remembered; the saved one loads back.
+  await page.evaluate(() => (document.getElementById('setup-saved').open = true));
+  await page.fill('#setup-save-name', 'Three way');
+  await page.evaluate(() => document.getElementById('setup-save').click());
+  await page.selectOption('#arcade-teams', '1,1');
+  const changed = await total();
+  await page.reload();
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.click('#nav-play');
+  await page.waitForSelector('#arcade-team-cards');
+  const remembered = await total();
+  check(changed.startsWith('1v1') && remembered.startsWith('1v1'), `the last setup is remembered across a reload (${changed} → ${remembered})`);
+  await page.evaluate(() => (document.getElementById('setup-saved').open = true));
+  const names = await page.evaluate(() => [...document.querySelectorAll('#setup-saved-list option')].map((o) => o.value).filter(Boolean));
+  await page.selectOption('#setup-saved-list', 'Three way');
+  await page.waitForFunction(() => document.getElementById('arcade-team-total')?.textContent.startsWith('2v3v5'), null, { timeout: T(5000) }).catch(() => {});
+  const loaded = await total();
+  check(names.includes('Three way') && loaded.startsWith('2v3v5'), `the saved setup reloads by name (${names.join(', ')}: ${loaded})`);
+  await page.click('#arcade-start');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match?.teams, null, { timeout: T(60000) });
+  await page.waitForTimeout(T(1000));
+  const teams = await page.evaluate(() => {
+    const m = window.__match;
+    return { sizes: m.teams.map((t) => m.combatants().filter((c) => c.faction === t.id).length), me: m.teams.findIndex((t) => t.id === m.slots[window.__cs.slot].faction) };
+  });
+  check(teams.sizes.join(',') === '2,3,5' && teams.me === 2, `the custom setup starts as 2v3v5 with you on the third team (${JSON.stringify(teams)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /** Capture the Flag offline: flags drawn, taking the enemy flag shows on the HUD, bringing it home scores. */
@@ -958,8 +1024,12 @@ async function fortsFlow(browser) {
   const ghost = await page.evaluate(() => ({ why: window.__cs.forts.why, ghost: window.__cs.view.scene.transformNodes.some((n) => n.name === 'fort_ghost' && n.isEnabled()) }));
   check(ghost.ghost && ghost.why === '', `the ghost shows where the wall will go, and it can (${JSON.stringify(ghost)})`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/forts-build.png`, timeout: T(60000) }).catch(() => {});
-  await page.evaluate(() => (window.__autoInput = { once: 2 }));
-  await page.waitForFunction(() => window.__match.mode.pieces.some((p) => p.by === window.__cs.slot) && [...window.__cs.forts.pieces.values()].some((p) => p.kind === 'metal_wall'), null, { timeout: T(8000) }).catch(() => {});
+  // One click can land before the ghost settles on a loaded runner: click again until the piece is built.
+  for (let tries = 0; tries < 3; tries++) {
+    await page.evaluate(() => (window.__autoInput = { once: 2 }));
+    const built = await page.waitForFunction(() => window.__match.mode.pieces.some((p) => p.by === window.__cs.slot) && [...window.__cs.forts.pieces.values()].some((p) => p.kind === 'metal_wall'), null, { timeout: T(8000) }).then(() => true, () => false);
+    if (built) break;
+  }
   const placed = await page.evaluate(() => ({
     server: window.__match.mode.pieces.filter((p) => p.by === window.__cs.slot).map((p) => p.kind),
     client: [...window.__cs.forts.pieces.values()].length,
@@ -1295,10 +1365,13 @@ async function raceFlow(browser) {
   await page.keyboard.press('Control+KeyZ');
   d = await doc();
   check(d.track && Math.hypot(d.track.points[1][0] - 16, d.track.points[1][2] + 6) < 1, 'undo puts it back');
-  await page.fill('#ed-road-laps', '5');
-  await page.dispatchEvent('#ed-road-laps', 'change');
-  // CI's software renderer can be a frame behind: give the edit a moment to land.
-  const laps = await page.waitForFunction(() => window.__editor.doc.track?.laps === 5, null, { timeout: T(2000) }).then(() => 5, async () => (await doc()).track?.laps);
+  // The pane is rebuilt after the undo; if the edit hit the old input, set it again on the new one.
+  let laps;
+  for (let tries = 0; tries < 3 && laps !== 5; tries++) {
+    await page.fill('#ed-road-laps', '5');
+    await page.dispatchEvent('#ed-road-laps', 'change');
+    laps = await page.waitForFunction(() => window.__editor.doc.track?.laps === 5, null, { timeout: T(2000) }).then(() => 5, async () => (await doc()).track?.laps);
+  }
   check(laps === 5, `the Road pane sets the laps (${laps})`);
   await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0), null, { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0)), 'MapMaker draws the road ribbon');
@@ -1541,7 +1614,7 @@ async function lobbyFlow(browser) {
   const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
-  await host.goto(`${CLIENT}/?offline=arena&${hub}`, { waitUntil: 'domcontentloaded' });
+  await host.goto(`${CLIENT}/?offline=sandgate&${hub}`, { waitUntil: 'domcontentloaded' });
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const offered = await host.evaluate(() => !document.getElementById('host-public').hidden);
   check(offered, 'hosting offers "List in the game browser" when a hub is set');
@@ -1585,7 +1658,7 @@ async function lobbyFlow(browser) {
   const solo = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   solo.on('pageerror', (e) => errors.push(`solo: ${e.message}`));
   await solo.addInitScript(() => localStorage.setItem('cs.name', 'Solo'));
-  await solo.goto(`${CLIENT}/?offline=arena&${hub}`, { waitUntil: 'domcontentloaded' });
+  await solo.goto(`${CLIENT}/?offline=sandgate&${hub}`, { waitUntil: 'domcontentloaded' });
   await solo.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !(document.getElementById('online-badge')?.hidden ?? true) }));
   check(offline.online && !offline.badge, 'an offline match stays offline and offers "Go online"');
@@ -1735,16 +1808,26 @@ async function hostcontrolsFlow(browser) {
   check(six && feed.includes('Host set the match to 6 players, bot skill to hard'), `Apply adds bots live, with a feed line (${feed})`);
   const hard = await page.evaluate(() => window.__match.combatants().filter((c) => c.bot).every((c) => c.bot.difficulty.id === 'hard'));
   check(hard, 'bot skill changes live');
+  // A rule change waits for the restart (the panel says so), then Restart match plays with it.
+  await page.evaluate(() => {
+    document.getElementById('hc-score-plus').click();
+    document.getElementById('hc-apply').click();
+  });
+  const waiting = await page.waitForFunction(() => window.__cs.host()?.pending?.scoreLimit === 16 && document.getElementById('hc-pending'), null, { timeout: T(5000) }).then(() => true, () => false);
+  const still = await page.evaluate(() => window.__match.rules.scoreLimit);
+  check(waiting && still === 15, `a score limit change waits for the restart (now ${still})`);
   await page.evaluate(() => document.getElementById('hc-end').click());
   const ended = await page.waitForFunction(() => window.__cs.phase() === 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
   check(ended, 'End match goes to the scoreboard');
   await page.evaluate(() => document.getElementById('hc-restart').click());
   const restarted = await page.waitForFunction(() => window.__cs.phase() !== 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
   check(restarted, 'Restart match starts it over');
-  await pickMap(page, 'm3_vault');
+  const applied = await page.evaluate(() => ({ score: window.__match.rules.scoreLimit, pending: window.__cs.host()?.pending }));
+  check(applied.score === 16 && !Object.keys(applied.pending ?? {}).length, `the restart plays with the waiting rule change (${JSON.stringify(applied)})`);
+  await pickMap(page, 'atomic_court');
   const toast = await page.evaluate(() => document.getElementById('message').textContent);
-  check(/Changing map to .*Vault/i.test(toast), `the change is announced (${toast})`);
-  const moved = await page.waitForFunction(() => window.__match?.map.metadata.id === 'm3_vault' && window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(/Changing map to .*Atomic Court/i.test(toast), `the change is announced (${toast})`);
+  const moved = await page.waitForFunction(() => window.__match?.map.metadata.id === 'atomic_court' && window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false);
   await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
   const after = await page.evaluate(() => ({ n: window.__match.combatants().length, skill: window.__cs.host()?.skill }));
   check(moved && after.n === 6 && after.skill === 'hard', `the match restarts on the new map with the same players and bots (${JSON.stringify(after)})`);
@@ -1782,10 +1865,10 @@ async function hostcontrolsFlow(browser) {
       new MutationObserver(() => window.__notes.push(document.getElementById('feed').textContent)).observe(document.getElementById('feed'), { childList: true, subtree: true });
     });
     await openPanel(host);
-    await pickMap(host, 'm3_vault');
-    const together = await host.waitForFunction(() => window.__match?.map.metadata.id === 'm3_vault' && window.__match.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, { timeout: T(90000) }).then(() => true, () => false);
+    await pickMap(host, 'atomic_court');
+    const together = await host.waitForFunction(() => window.__match?.map.metadata.id === 'atomic_court' && window.__match.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, { timeout: T(90000) }).then(() => true, () => false);
     check(together, "the friend rejoins the host's new map by themselves");
-    const friendThere = await friend.waitForFunction(() => window.__cs?.map === 'm3_vault' && window.__cs.local && document.getElementById('menu').hidden, null, { timeout: T(60000) }).then(() => true, () => false);
+    const friendThere = await friend.waitForFunction(() => window.__cs?.map === 'atomic_court' && window.__cs.local && document.getElementById('menu').hidden, null, { timeout: T(60000) }).then(() => true, () => false);
     const sameCode = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
     check(friendThere && sameCode === code, `the friend plays on with the same join code (${sameCode})`);
     const heard = await friend.evaluate(() => window.__notes.some((t) => t.includes('Changing map to')));

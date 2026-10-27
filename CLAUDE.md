@@ -8,6 +8,9 @@
 - Agents: run at most 2–3 at a time; commit at every milestone (a restart loses uncommitted work); run only the tests and e2e flows your change touches.
 - If `main` has moved, rebase the session branch onto `origin/main` first.
 
+## Gunplay
+- Before changing weapons, recoil, ballistics, damage, TTK or weapon animation, read `docs/GUNPLAY_SPEC.md` (technical design) and `docs/GUNPLAY_DIRECTION.md` (the feel it's tuned for: arcade responsiveness + ballistic depth + modern polish; responsiveness > realism, fun > simulation).
+
 ## Content rules
 - No in-game AI generation: players can't make content through an AI service or connector, and can't upload assets.
 - Models we generate ourselves on the owner's Meshy subscription are fine to ship (record them in content provenance as Meshy, owned).
