@@ -17,6 +17,10 @@ import { CharacterLibrary } from '../content/characters.ts';
 import { applyToneMapping } from '../game/atmosphere.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
+import { testMode } from '../testMode.ts';
+
+/** Browser tests (?test=1) compare screenshots: the drift and the hero's idle stop this far in, whatever the machine's speed. */
+const STILL_AT = testMode() ? 0.5 : Infinity;
 
 /**
  * The live backdrop behind the main menu: your own character, rifle in hand,
@@ -33,6 +37,8 @@ export class MenuScene {
   private look = '';
   private token = 0;
   private t = 0;
+  /** Seconds the current hero has been animated (for STILL_AT). */
+  private heroT = 0;
   /** Camera framing: hero right of centre (home) or far right, full length (screens with a big left panel). */
   private framing = { x: 0.2, tx: 0.55, y: 1.3, ty: 1.02, z: 3.3 };
   private goal = { ...this.framing };
@@ -149,6 +155,7 @@ export class MenuScene {
         this.anim?.dispose();
         const anim = new CreatureAnimator(this.scene, ch, true);
         this.anim = anim;
+        this.heroT = 0;
         // Players in creature skins carry guns, like everyone else.
         const w = getWeapon('core.rifle');
         return this.models.instantiate(w.view.model, `menuHeroRifle_${token}`).then(
@@ -166,6 +173,7 @@ export class MenuScene {
       this.hide(ch.meshes);
       this.anim?.dispose();
       this.anim = new CharacterAnimator(this.scene, ch);
+      this.heroT = 0;
       const w = getWeapon('core.rifle');
       const node = await this.models.instantiate(w.view.model, `menuHeroRifle_${token}`).catch(() => null);
       if (token !== this.token) return node?.dispose();
@@ -200,7 +208,7 @@ export class MenuScene {
   }
 
   frame(dt: number): void {
-    this.t += dt;
+    this.t += Math.max(0, Math.min(dt, STILL_AT - this.t));
     const f = this.framing;
     const k = 1 - Math.exp(-dt * 4);
     for (const key of ['x', 'tx', 'y', 'ty', 'z'] as const) f[key] += (this.goal[key] - f[key]) * k;
@@ -209,7 +217,11 @@ export class MenuScene {
     this.camera.position.set(f.x + sway * 0.15, f.y + Math.sin(this.t * 0.17) * 0.04, f.z);
     this.camera.setTarget(new Vector3(f.tx + sway * 0.08, f.ty, 0));
     this.state.pitch = 0.06 + Math.sin(this.t * 0.6) * 0.03;
-    this.anim?.update(dt, this.state);
+    if (this.anim) {
+      const step = Math.max(0, Math.min(dt, STILL_AT - this.heroT));
+      this.heroT += step;
+      if (step > 0) this.anim.update(step, this.state);
+    }
     if (this.fading) {
       const f = this.fading;
       f.t = Math.min(1, f.t + dt / 0.3);

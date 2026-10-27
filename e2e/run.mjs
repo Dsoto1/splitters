@@ -1781,7 +1781,7 @@ function frames(page, n = 10) {
 const VISUAL_PIXEL_DELTA = 48;
 const VISUAL_SCENES = [
   // The main menu with its hero, as a first visit sees it.
-  { name: 'menu', url: '/?test=1&name=Tester', ready: () => window.__front && document.fonts.status === 'loaded' && !document.getElementById('menu').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.08 },
+  { name: 'menu', url: '/?test=1&name=Tester', ready: () => window.__front && document.fonts.status === 'loaded' && [...document.images].every((i) => i.complete) && !document.getElementById('menu').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.08 },
   // MapMaker's blank starter map.
   { name: 'mapmaker', url: '/?mode=editor&test=1&name=Tester', ready: () => window.__editor && !document.getElementById('editor').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.06 },
   // A map in play, alone (bots=1: just you), at the seeded spawn (hidden: the pause menu headless pages open, and HUD messages such as the slow-device hint).
@@ -1845,6 +1845,14 @@ async function visualFlow(browser) {
         console.log(`visual ${scene.name}: differing pixels per cell, % (12×6 over the picture):`);
         for (let y = 0; y < GY; y++) console.log(`  ${grid.slice(y * GX, y * GX + GX).map((n) => String(Math.round((n / cell) * 100)).padStart(3)).join(' ')}`);
       }
+      // A quarter-size copy of the picture, in the log: `grep '^VISUALPNG <name> ' log | cut -d' ' -f3 | tr -d '\n' | base64 -d > x.png`.
+      const small = new PNG({ width: shot.width >> 2, height: shot.height >> 2 });
+      for (let y = 0; y < small.height; y++) for (let x = 0; x < small.width; x++) {
+        const o = (y * small.width + x) * 4, i = ((y << 2) * shot.width + (x << 2)) * 4;
+        for (let c = 0; c < 4; c++) small.data[o + c] = shot.data[i + c];
+      }
+      const b64 = PNG.sync.write(small).toString('base64');
+      for (let i = 0; i < b64.length; i += 4000) console.log(`VISUALPNG ${scene.name} ${b64.slice(i, i + 4000)}`);
     }
     console.log(`visual ${scene.name}: ${(share * 100).toFixed(2)} % of pixels differ (allowed ${(scene.share * 100).toFixed(0)} %)`);
     check(pass && errors.length === 0, `${scene.name} looks like its baseline (${same ? `${(share * 100).toFixed(1)} % of pixels differ, ${(scene.share * 100).toFixed(0)} % allowed` : `size ${shot.width}×${shot.height} vs ${base.width}×${base.height}`}${ready ? '' : '; the scene never got ready'})${errors.length ? ` (${errors.join('; ')})` : ''}`);
