@@ -337,6 +337,8 @@ export class BotBrain {
   private avoid: { pos: Vec3; until: number } | null = null;
   /** The squad goal last taken on (a new one replaces the bot's own goal). */
   private squadGoal: Vec3 | null = null;
+  /** Catching up with its squad's leader. */
+  private regrouping = false;
 
   constructor(
     readonly slot: number,
@@ -412,6 +414,7 @@ export class BotBrain {
     this.stuckLog.length = 0;
     this.avoid = null;
     this.squadGoal = null;
+    this.regrouping = false;
   }
 
   /** It killed someone: a sniper moves on to another spot soon after (they know where the shot came from). */
@@ -501,9 +504,9 @@ export class BotBrain {
     return hasTag(this.profile, 'COWARD');
   }
 
-  /** A coward who can see three or more enemies backs off (shooting) whatever its health. */
+  /** A coward who has been hurt and can see three or more enemies backs off (shooting). */
   private outnumbered(): boolean {
-    return this.coward && this.visibleSince.size >= 3;
+    return this.coward && this.visibleSince.size >= 3 && this.lastHealth < PLAYER.maxHealth * 0.85;
   }
 
   /** On its vantage spot and holding it. */
@@ -978,7 +981,8 @@ export class BotBrain {
         }
         // In a squad: its goal and route replace the bot's own whenever the squad picks a new one.
         const cl = view.plan?.cluster ?? null;
-        if (cl?.goal && !view.orderGoal) {
+        const av = this.avoid;
+        if (cl?.goal && !view.orderGoal && !(av && tick < av.until && horizontalDistance(av.pos, cl.goal) < 6)) {
           if (!this.squadGoal || horizontalDistance(this.squadGoal, cl.goal) > 3) {
             this.squadGoal = { ...cl.goal };
             this.roamGoal = { ...cl.goal };
@@ -999,11 +1003,15 @@ export class BotBrain {
         // A squad member far from its leader catches up first (regroups); one ahead of it waits.
         const follower = !!cl && cl.leader !== me.slot;
         const fromLeader = cl ? horizontalDistance(me.pos, cl.leaderPos) : 0;
-        const regroup = follower && fromLeader > 28;
+        // (Hysteresis: from 28 m out until back within 15 m, so it doesn't swap goals at the edge.)
+        this.regrouping = follower && (fromLeader > 28 || (this.regrouping && fromLeader > 15));
+        const regroup = this.regrouping;
         if (regroup) goal = cl!.leaderPos;
-        moveYaw = this.followPathTo(view, goal, regroup);
+        // A member already near the squad's goal waits there for the squad's next one (no crowding onto one spot).
+        const waiting = follower && !regroup && !!this.squadGoal && !!this.roamGoal && horizontalDistance(this.roamGoal, this.squadGoal) < 1 && horizontalDistance(me.pos, this.squadGoal) < 8;
+        moveYaw = waiting ? null : this.followPathTo(view, goal, regroup);
         // Arrived or unreachable: pick another goal next tick.
-        if (moveYaw === null && !regroup) {
+        if (moveYaw === null && !regroup && !waiting) {
           this.roamGoal = null;
           this.via = null;
         }
@@ -1011,6 +1019,8 @@ export class BotBrain {
         if (cl && moveYaw !== null && !regroup) {
           if (follower && cl.goal && fromLeader > cl.spacing * 2 && horizontalDistance(me.pos, cl.goal) < horizontalDistance(cl.leaderPos, cl.goal) - 5) moveScale = Math.min(moveScale, 0.35);
           else if (!follower && cl.lagging) moveScale = Math.min(moveScale, 0.7);
+          // Single file through doorways and onto bridges: a member right behind a teammate going the same way lets it through.
+          if (follower && this.squadmateAhead(view, moveYaw)) moveYaw = null;
         }
         break;
       }
@@ -1061,6 +1071,8 @@ export class BotBrain {
     }
 
     if (moveYaw !== null && this.hazardAhead(view, moveYaw)) moveYaw = null;
+    // Going somewhere (or fighting on the move), as opposed to only being nudged aside by a teammate: what stuck checks judge.
+    const meaning = moveYaw !== null || backOff || strafe;
     moveYaw = this.separate(view, moveYaw);
 
     let forward = 0;
@@ -1143,7 +1155,7 @@ export class BotBrain {
       this.jumpNext = true;
       this.nextHop = tick + Math.round(TICK_RATE * (0.5 + this.rng() * 0.6));
     }
-    if (this.checkStuck(view, forward !== 0 || right !== 0) || this.jumpNext) {
+    if (this.checkStuck(view, meaning && (forward !== 0 || right !== 0)) || this.jumpNext) {
       buttons |= BUTTON_JUMP;
       this.jumpNext = false;
     }
@@ -1723,8 +1735,11 @@ export class BotBrain {
       // each bot its own taste (explorers range far, lone wolves keep away from the rest) and its own route.
       const lone = plan.role === 'lone_wolf';
       const explore = this.profile.exploration / 100;
-      const o = { from: me.pos, tick: view.tick, rng: this.routeRng, ideal: 25 + explore * 50 + (lone ? 20 : 0), novelty: hasTag(this.profile, 'EXPLORER') ? 2 : 0.7 + explore, crowd: lone ? 2.5 : hasTag(this.profile, 'GRUNT') ? 0.2 : 0.8, towards: plan.towards, push: lone ? 0.8 : 1.2 - explore * 0.5, memory: this.memory };
-      let pick = plan.regions.pick(o);
+      const o = { from: me.pos, tick: view.tick, rng: this.routeRng, ideal: 25 + explore * 50 + (lone ? 20 : 0), novelty: hasTag(this.profile, 'EXPLORER') ? 2 : 0.7 + explore, crowd: lone ? 2.5 : hasTag(this.profile, 'GRUNT') ? 0.2 : 0.8, towards: plan.towards, push: lone ? 1 : 1.7 - explore * 0.6, contact: lone ? 0.3 : 1 - explore * 0.4, memory: this.memory };
+      // Team modes: often (more often the more aggressive) straight for the enemy's side, as before, by its own route;
+      // otherwise somewhere the side hasn't been. Fights keep happening; the map gets used.
+      const push = !lone && !!plan.towards?.length && this.routeRng() < 0.3 + this.profile.aggression / 250;
+      let pick = push ? { pos: { ...plan.towards![Math.floor(this.routeRng() * plan.towards!.length)]! }, region: -1 } : plan.regions.pick(o);
       const av = this.avoid;
       if (pick && av && view.tick < av.until && horizontalDistance(pick.pos, av.pos) < 6) pick = plan.regions.pick(o);
       if (pick) {
@@ -1890,6 +1905,23 @@ export class BotBrain {
     this.yaw += clamp(angleDelta(this.yaw, yaw), -maxStep, maxStep);
     this.pitch += clamp(pitch - this.pitch, -maxStep, maxStep);
     this.pitch = clamp(this.pitch, -1.5, 1.5);
+  }
+
+  /** A teammate within 2.6 m ahead along `moveYaw` (grid query in big matches). */
+  private squadmateAhead(view: BotWorldView, moveYaw: number): boolean {
+    if (!view.allies?.length) return false;
+    const me = view.self.pos;
+    const fx = Math.sin(moveYaw);
+    const fz = Math.cos(moveYaw);
+    const near = view.alliesGrid ? view.alliesGrid.near(me.x, me.z, 2.6, this.nearScratch) : view.allies;
+    for (const a of near) {
+      if (a.slot === view.self.slot || Math.abs(a.pos.y - me.y) > 1.5) continue;
+      const dx = a.pos.x - me.x;
+      const dz = a.pos.z - me.z;
+      const d = Math.hypot(dx, dz);
+      if (d < 2.6 && d > 1e-3 && (dx * fx + dz * fz) / d > 0.7) return true;
+    }
+    return false;
   }
 
   /**

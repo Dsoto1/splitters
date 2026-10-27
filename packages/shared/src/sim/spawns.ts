@@ -34,9 +34,15 @@ export const SPAWN_RECENT_TICKS = TICK_RATE * 3;
 /** Combatants a match must have before bots spawn in waves (smaller matches spawn everyone at once, as before). */
 export const WAVE_MIN_PLAYERS = 12;
 
-/** Bots that may (re)spawn in one tick: about a third of a 96-player match a second, everyone in well under a second. */
+/**
+ * Bots that may (re)spawn in one tick: an eighth of the match, so a whole
+ * roster is in within 8 ticks (0.13 s, quicker than any bot reacts: nobody
+ * spawns into a fight the earlier waves have had time to start), spread
+ * over ticks instead of all in one (one tick's worth of spawn scoring, first
+ * paths and thinking).
+ */
 export function spawnsPerTick(players: number): number {
-  return players < WAVE_MIN_PLAYERS ? Infinity : Math.max(1, Math.ceil(players / 32));
+  return players < WAVE_MIN_PLAYERS ? Infinity : Math.max(1, Math.ceil(players / 8));
 }
 
 // ------------------------------------------------------------------ choosing a spawn point
@@ -62,8 +68,12 @@ export interface SpawnChoice {
 /** Enemies within this range of a spawn point are checked for a sight line to it (m). */
 const SIGHT_CHECK = 50;
 /** Candidates whose sight lines are checked (the best few by the cheap score), and enemies per candidate. */
-const SIGHT_CANDIDATES = 4;
+const SIGHT_CANDIDATES = 6;
 const SIGHT_ENEMIES = 3;
+/** Each of those enemies with a clear line to the spawn point costs this much. */
+const SEEN_PENALTY = 30;
+/** A spawn point used a moment ago (fading over SPAWN_RECENT_TICKS): enough to break ties, not to send anyone nearer an enemy. */
+const RECENT_PENALTY = 20;
 
 /**
  * The cheap part of a spawn point's score: farther from the nearest enemy is
@@ -91,7 +101,7 @@ export function spawnScore(sp: SpawnSpot, c: SpawnChoice): number {
     }
   }
   const used = c.lastUsed.get(sp);
-  if (used !== undefined && c.tick - used < SPAWN_RECENT_TICKS) score -= 35 * (1 - (c.tick - used) / SPAWN_RECENT_TICKS);
+  if (used !== undefined && c.tick - used < SPAWN_RECENT_TICKS) score -= RECENT_PENALTY * (1 - (c.tick - used) / SPAWN_RECENT_TICKS);
   if (c.mates) {
     let near = 0;
     for (const m of c.mates) if (horizontalDistance(m, sp.pos) < 25 && ++near >= 3) break;
@@ -104,8 +114,9 @@ export function spawnScore(sp: SpawnSpot, c: SpawnChoice): number {
 /**
  * The spawn point to use (an index into `candidates`): the best cheap score,
  * after checking the best few for an enemy with a clear sight line to them
- * (a heavy penalty), with a little randomness between near-equal choices.
- * Bounded: at most SIGHT_CANDIDATES × SIGHT_ENEMIES rays.
+ * (a heavy penalty for each of its three nearest enemies that can see it),
+ * with a little randomness between near-equal choices. Bounded: at most
+ * SIGHT_CANDIDATES × SIGHT_ENEMIES rays.
  */
 export function pickSpawn(c: SpawnChoice): number {
   const n = c.candidates.length;
@@ -124,12 +135,7 @@ export function pickSpawn(c: SpawnChoice): number {
       }
       near.sort((a, b) => a.d - b.d);
       const head = { x: sp.pos.x, y: sp.pos.y + 1.6, z: sp.pos.z };
-      for (const e of near.slice(0, SIGHT_ENEMIES)) {
-        if (c.sees({ x: e.p.x, y: e.p.y + 1.6, z: e.p.z }, head)) {
-          s.s -= 45;
-          break;
-        }
-      }
+      for (const e of near.slice(0, SIGHT_ENEMIES)) if (c.sees({ x: e.p.x, y: e.p.y + 1.6, z: e.p.z }, head)) s.s -= SEEN_PENALTY;
     }
     scored.sort((a, b) => b.s - a.s || a.i - b.i);
   }
@@ -155,7 +161,9 @@ export function spawnShortfall(points: readonly SpawnSpot[], sides: readonly { i
   if (players < IMPROMPTU_MIN_PLAYERS) return out;
   const want = (n: number) => Math.ceil(n / SPAWN_SHARE);
   if (!sides) {
-    const short = want(players) - distinctSpots(points.map((p) => p.pos));
+    // Free-for-all spawns on the shared points when the map has any (Match.spawn), else on all of them.
+    const shared = points.filter((p) => p.team === null);
+    const short = want(players) - distinctSpots((shared.length ? shared : points).map((p) => p.pos));
     if (short > 0) out.set(null, short);
     return out;
   }

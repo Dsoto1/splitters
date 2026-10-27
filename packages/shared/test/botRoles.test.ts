@@ -54,7 +54,7 @@ describe('squads (clusters)', () => {
     for (let i = 0; i < 8; i++) members.push(member(i, { x: 10 + (i % 3) * 2, y: 0, z: 10 + Math.floor(i / 3) * 2 }));
     for (let i = 8; i < 16; i++) members.push(member(i, { x: 120 + (i % 3) * 2, y: 0, z: 120 + Math.floor(i / 3) * 2 }));
     members.push(member(16, { x: 12, y: 0, z: 12 }, { free: false }));
-    const towards = [{ x: 130, y: 0, z: 10 }];
+    const towards = [{ x: 130, y: 0, z: 10 }, { x: 130, y: 0, z: 60 }, { x: 100, y: 0, z: 10 }];
     d.update(TICK_RATE, 'red', members.map((m) => m.pos), members, towards, true, () => {});
     const squads = d.squads('red');
     expect(squads.length).toBeGreaterThanOrEqual(2);

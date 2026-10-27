@@ -55,6 +55,8 @@ export interface RegionPick {
   memory?: MapMemory | null;
   /** Leave out regions another squad of the side is heading for. */
   avoidClaimed?: boolean;
+  /** How much a region where the side met the enemy lately draws the bot (unless the side is crowding it already). */
+  contact?: number;
   /** Regions sampled (bounded work). */
   samples?: number;
 }
@@ -71,12 +73,28 @@ export class RegionMap {
   readonly lastVisit: Float64Array;
   readonly count: Uint16Array;
   readonly claimedUntil: Float64Array;
+  /** Until when each region counts as where the side last met the enemy. */
+  readonly contactUntil: Float64Array;
+  /** The regions of the latest contacts (a few, newest last): always among the candidates a pick looks at. */
+  private readonly contacts: number[] = [];
 
   constructor(readonly layout: RegionLayout) {
     const n = layout.spots.length;
     this.lastVisit = new Float64Array(n).fill(-Infinity);
     this.count = new Uint16Array(n);
     this.claimedUntil = new Float64Array(n);
+    this.contactUntil = new Float64Array(n);
+  }
+
+  /** Someone on the side is fighting an enemy seen at `p`. */
+  contact(p: Vec3, until: number): void {
+    const i = this.regionOf(p);
+    if (i < 0) return;
+    this.contactUntil[i] = until;
+    const at = this.contacts.indexOf(i);
+    if (at >= 0) this.contacts.splice(at, 1);
+    this.contacts.push(i);
+    if (this.contacts.length > 8) this.contacts.shift();
   }
 
   get size(): number {
@@ -116,8 +134,9 @@ export class RegionMap {
     let bestS = -Infinity;
     let fromTowards = Infinity;
     if (o.towards?.length && o.push) for (const t of o.towards) fromTowards = Math.min(fromTowards, horizontalDistance(t, o.from));
-    for (let s = 0; s < samples; s++) {
-      const i = Math.floor(o.rng() * n);
+    const extra = o.contact ? this.contacts.length : 0;
+    for (let s = 0; s < samples + extra; s++) {
+      const i = s < samples ? Math.floor(o.rng() * n) : this.contacts[s - samples]!;
       const p = this.layout.spots[i]!;
       const d = horizontalDistance(p, o.from) + Math.abs(p.y - o.from.y) * 2;
       if (d < 12) continue;
@@ -125,6 +144,8 @@ export class RegionMap {
       const ownAge = o.memory ? Math.min(90, o.memory.ageSeconds(p, o.tick)) / 90 : 1;
       let score = (sideAge * 0.6 + ownAge * 0.4) * 2 * o.novelty - Math.abs(d - o.ideal) / 40 - Math.min(this.count[i]!, 6) * 0.25 * o.crowd + o.rng() * 0.6;
       if (o.avoidClaimed && o.tick < this.claimedUntil[i]!) score -= 1.5;
+      // Where the side is meeting the enemy, unless plenty of the side are there already (not everyone into one fight).
+      if (o.contact && o.tick < this.contactUntil[i]! && this.count[i]! < 4) score += o.contact;
       if (o.towards?.length && o.push) {
         let near = Infinity;
         for (const t of o.towards) near = Math.min(near, horizontalDistance(t, p));

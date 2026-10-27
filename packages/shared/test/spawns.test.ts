@@ -25,7 +25,7 @@ describe('choosing a spawn point', () => {
     expect(pickSpawn(choice([a, b, c], { enemies, lastUsed: new Map([[a, 1000 - 10]]) }))).toBe(1);
     expect(pickSpawn(choice([a, b, c], { enemies, lastUsed: new Map([[b, 1000 - 10]]) }))).toBe(0);
     const base = spawnScore(a, choice([a, b, c], { enemies }));
-    expect(spawnScore(a, choice([a, b, c], { enemies, lastUsed: new Map([[a, 1000 - 10]]) }))).toBeLessThan(base - 30);
+    expect(spawnScore(a, choice([a, b, c], { enemies, lastUsed: new Map([[a, 1000 - 10]]) }))).toBeLessThan(base - 15);
     expect(spawnScore(a, choice([a, b, c], { enemies, lastUsed: new Map([[a, 1000 - SPAWN_RECENT_TICKS - 1]]) }))).toBe(base);
     // An enemy 45 m from a with a clear line to it, none to b: b (the sight check costs a handful of rays at most).
     let rays = 0;
@@ -34,13 +34,13 @@ describe('choosing a spawn point', () => {
       return Math.abs(to.x) < 1 && Math.abs(to.z) < 1 && Math.abs(from.x + 45) < 1;
     };
     expect(pickSpawn(choice([a, b], { enemies: [{ x: -45, y: 0, z: 15 }], sees }))).toBe(1);
-    expect(rays).toBeLessThanOrEqual(12);
+    expect(rays).toBeLessThanOrEqual(18);
   });
 
   it('spawns bots in waves in big matches, everyone at once in small ones', () => {
     expect(spawnsPerTick(WAVE_MIN_PLAYERS - 1)).toBe(Infinity);
-    expect(spawnsPerTick(32)).toBe(1);
-    expect(spawnsPerTick(96)).toBe(3);
+    expect(spawnsPerTick(32)).toBe(4);
+    expect(spawnsPerTick(96)).toBe(12);
     const map = loadMap(readFileSync(new URL('../../../maps/riot_junction.json', import.meta.url), 'utf8'));
     if (!map.ok) throw new Error('map');
     const match = new Match(map.map, { ...rulesForMode(map.map, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0, teamSizes: [24, 24] }, 3);

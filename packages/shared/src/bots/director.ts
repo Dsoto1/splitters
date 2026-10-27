@@ -167,6 +167,7 @@ export class BotDirector {
   update(tick: number, side: string, everyone: readonly Vec3[], members: readonly DirectorMember[], towards: readonly Vec3[] | null, squads: boolean, alert: (slot: number, at: Vec3) => void): void {
     const regions = this.regionsFor(side);
     regions.update(everyone, tick);
+    for (const m of members) if (m.enemyAt) regions.contact(m.enemyAt, tick + TICK_RATE * 20);
     for (const m of members) {
       const plan = this.planFor(m.slot);
       plan.regions = regions;
@@ -252,7 +253,10 @@ export class BotDirector {
       v.lagging = c.members.some((s) => horizontalDistance(free.get(s)!.pos, leader.pos) > 22);
       v.spacing = c.members.every((s) => hasTag(free.get(s)!.profile, 'GRUNT')) ? 2 : 3.5;
       if (!v.goal || horizontalDistance(leader.pos, v.goal) < 12 || tick >= c.goalUntil) {
-        const pick = regions.pick({ from: leader.pos, tick, rng: this.rng, ideal: 70, novelty: 1, crowd: 0.6, towards, push: 1.3, avoidClaimed: true, samples: 32 });
+        // Half the time straight for the enemy's side (a spawn point of theirs: fights keep happening), else a
+        // region the side hasn't seen lately; either way by a route of the squad's own.
+        const toEnemy = !!towards?.length && this.rng() < 0.5;
+        const pick = toEnemy ? this.enemySide(towards!, list, c) : regions.pick({ from: leader.pos, tick, rng: this.rng, ideal: 70, novelty: 1, crowd: 0.6, towards, push: 1.8, avoidClaimed: true, contact: 1.2, samples: 32 });
         if (pick) {
           v.goal = pick.pos;
           c.region = pick.region;
@@ -270,6 +274,20 @@ export class BotDirector {
         if (v.leaderBusy && s !== leader.slot && !mm.fighting && leader.enemyAt && horizontalDistance(mm.pos, leader.pos) < 45) alert(s, leader.enemyAt);
       }
     }
+  }
+
+  /** One of the enemy's spawn points no other squad of the side is heading for (if there is one), as a goal. */
+  private enemySide(towards: readonly Vec3[], squads: readonly Cluster[], self: Cluster): { pos: Vec3; region: number } {
+    const start = Math.floor(this.rng() * towards.length);
+    let p = towards[start]!;
+    for (let k = 0; k < towards.length; k++) {
+      const q = towards[(start + k) % towards.length]!;
+      if (!squads.some((o) => o !== self && o.view.goal && horizontalDistance(o.view.goal, q) < 3)) {
+        p = q;
+        break;
+      }
+    }
+    return { pos: { ...p }, region: -1 };
   }
 
   /** Squads on a side (tests and the debug overlay). */
