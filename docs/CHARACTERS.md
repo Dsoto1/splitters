@@ -281,6 +281,13 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
 - `?mode=characters` shows the five creatures and the zombie body in a row in front of the
   characters, driven by the same buttons.
 
+- **Not every creature download can be rigged.** The Meshy community "Spiky
+  Dinosaur" (a carnotaur-like theropod) is a biped, but its body is level with
+  a tail as long again and tiny arms: on the shared humanoid rig the clips
+  would stand it up like a person, it couldn't hold a weapon, and the
+  player-sized hit capsule would cover a fraction of its 5.8 m length. It
+  ships as a stone statue prop instead (`mp_dino_statue`, Jungle Ruins).
+
 ## Known gaps
 
 - The ranger boots barely simplify (their texture seams stop the simplifier),

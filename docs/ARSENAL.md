@@ -79,8 +79,14 @@ feel audit and the reasoning are in [GUNPLAY_AUDIT.md](GUNPLAY_AUDIT.md)):
 | Equip | 0.15 s | 0.27 s | 0.2 s | 0.33 s | 0.27 s | 0.5 s | 0.53 s |
 | Falloff | 18→45 m to 65% | 25→60 m to 70% | 12→35 m to 55% (steep) | 30→80 m to 75% | 6→22 m to 25% (steep) | 150→300 m to 90% | self-damage ×0.75 |
 
-The **Heavy Revolver** (slot 2, pickup `core.weapon_revolver`) uses the
-Quaternius Ultimate Gun Pack revolver (CC0).
+The **Heavy Revolver** (slot 2, pickup `core.weapon_revolver`) uses a Meshy
+community revolver (CC0 per the owner, `guns/ironclad_revolver.glb`, 5k
+triangles: a modern long-barrelled revolver with a ventilated rib and an olive
+grip; the lettering, skull decal and tally marks it came with were painted out
+of its colour map, see ASSET_SOURCES.md). The Quaternius Ultimate Gun Pack
+revolver (CC0) stays as its `fallback`. Its holds are read off the model's own
+grip (`grip` / `support` in `weapons.ts`); aiming down the sights lines the top
+of the front and rear sights up under the eye.
 
 **Training Range** (`maps/training_range.json`, built by
 `packages/server/src/tools/maps/training_range.ts`): the gunplay test arena
@@ -114,7 +120,11 @@ the model's own grip, handguard and stock) and Quaternius Ultimate Gun Pack
 guns (CC0). The assault rifle, sniper rifle, SMG, shotgun, rocket launcher and
 frag grenade use Styloo's Guns Asset Pack (CC0: AK-47, AWP, MAC-10, pump
 shotgun, RPG, frag; `content/guns.json`), each keeping its Quaternius model as
-`view.fallback` in case the pack's file is missing. Sounds come from our own synthesiser
+`view.fallback` in case the pack's file is missing. The Spin Gun is a Meshy
+community rotary-barrel gun with glowing blue barrels (CC0 per the owner,
+`guns/plasma_spin_gun.glb`, 6k triangles; no stock, so its rear handle sits in
+the shoulder), with its old rifle model as the fallback. No weapon stats
+changed with these models (GUNPLAY_DIRECTION.md: no roster growth for now). Sounds come from our own synthesiser
 recipes.
 
 | Slot | Weapon | How it fires |
