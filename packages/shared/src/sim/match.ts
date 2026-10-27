@@ -45,7 +45,7 @@ import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EM
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
-import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, type LiquidBox } from './liquids.ts';
+import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
 import { ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
@@ -63,8 +63,8 @@ import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
-  BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, MAX_RICOCHETS, NEAR_INSTANT_M,
-  RELOAD_KINDS, RICOCHET_MAX_ANGLE, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, spreadOf, stepAds, stepReload, surfaceMaterial,
+  BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, MAX_RICOCHETS, NEAR_INSTANT_M,
+  RELOAD_KINDS, RICOCHET_MAX_ANGLE, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
   type BallisticMaterial, type GunState, type Gunplay, type ReloadRun,
 } from './gunplay.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
@@ -2115,11 +2115,12 @@ export class Match {
     const gp = gunplayOf(getWeapon(def.id));
     let spread: number;
     if (gp.accuracy && !def.alt) {
-      // Gunplay spread (spec §14): base, movement, air and sustained fire, tightened by stance and the sights.
-      spread = spreadOf(gp.accuracy, shooter.gun, { run: shooter.moveSpeed / PLAYER.runSpeed, airborne: !shooter.move.grounded, stance: STANCE_SPREAD[stanceOf(shooter.move)] });
-      // A scoped rifle fired from the hip is a guess.
+      // Gunplay spread (spec §14): base, movement, air and sustained fire, tightened by stance and the sights,
+      // plus the pellet pattern of a shotgun.
+      spread = shotCone(def, gp.accuracy, shooter.gun, { run: shooter.moveSpeed / PLAYER.runSpeed, airborne: !shooter.move.grounded, stance: STANCE_SPREAD[stanceOf(shooter.move)] });
+      // A scoped rifle fired from the hip is a gamble: fine across a room, a guess further out (not a lottery: ADS is never mandatory).
       const zoom = getWeapon(def.id).view.zoomFov;
-      if (zoom && !shooter.npc && shooter.gun.ads < 0.5) spread += zoom < 0.5 ? 0.05 : 0.012;
+      if (zoom && !shooter.npc && shooter.gun.ads < 0.5) spread += zoom < 0.5 ? NO_SCOPE_SPREAD : 0.012;
     } else {
       // Bloom from sustained fire widens the spread; each shot adds more. So does
       // shooting on the run or in the air; aiming down a scope tightens it, and a
@@ -2657,6 +2658,20 @@ export class Match {
         best = d;
         victim = t;
       }
+    }
+    // Water soaks up energy on the way to whatever is hit (spec §8): a pistol round dies in a metre of it,
+    // a rifle round comes out the far side slower and weaker.
+    const wet = this.liquids.length ? waterSpan(this.liquids, a, u, Math.min(len, best)) : null;
+    if (wet) {
+      const left = penetrate(b.energy, 'water', wet.length);
+      if (left === null) {
+        const stop = wet.enter + Math.max(0, b.energy - PENETRATION_MIN_ENERGY) / MATERIAL_BALLISTICS.water.resist;
+        return { at: add(a, scale(u, stop)), victim: null, zone: 0, damage: 0, dir: u };
+      }
+      const kept = left / b.energy;
+      b.energy = left;
+      b.vel = scale(b.vel, Math.sqrt(kept));
+      b.scale *= kept;
     }
     if (victim) {
       const at = add(a, scale(u, best));
@@ -4405,6 +4420,8 @@ const COAST_BUTTONS = BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE;
 
 /** Crouching steadies your aim; lying prone steadies it more. */
 const STANCE_SPREAD = [1, 0.7, 0.5] as const;
+/** Extra cone (radians) of a scoped rifle fired before the scope is half up: 30 cm at 10 m. */
+export const NO_SCOPE_SPREAD = 0.03;
 
 /** Extra spread from moving and jumping (radians); multi-pellet guns already spray, so they care less. */
 function movementSpread(c: Combatant, def: Trigger): number {

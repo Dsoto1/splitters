@@ -225,8 +225,9 @@ function shellBoxes(size, tris) {
 /**
  * Collision as several boxes in the prop's own space, [minX, minY, minZ, maxX, maxY, maxZ]:
  * `stairs` climb toward +Z (or +X with `climbs: "+x"`) in steps a player can walk up (ramps too); `frame`
- * keeps a doorway open between its posts and under its lintel; `shell` follows
- * the footprint (see shellBoxes).
+ * keeps a doorway open between its posts and under its lintel; `openings` keeps
+ * every doorway along a wall open (Low Poly Wild West's shop fronts); `shell`
+ * follows the footprint (see shellBoxes).
  */
 function collisionBoxes(p, size, tris) {
   const [w, h, d] = size;
@@ -234,16 +235,59 @@ function collisionBoxes(p, size, tris) {
   const pts = tris.flat();
   if (p.collide === 'stairs') {
     const n = Math.max(1, Math.ceil(h / STEP_RISE));
+    // `climbs: "auto"`: toward whichever side the model is tallest at (the mean height of its outer quarter).
+    let climbs = p.climbs;
+    if (climbs === 'auto') {
+      const side = (axis, sign) => {
+        const half = (axis === 0 ? w : d) / 2;
+        const near = pts.filter((q) => sign * q[axis] > half / 2);
+        return near.length ? near.reduce((s, q) => s + q[1], 0) / near.length : 0;
+      };
+      climbs = [['+x', 0, 1], ['-x', 0, -1], ['+z', 2, 1], ['-z', 2, -1]].map(([k, a, sg]) => [k, side(a, sg)]).sort((a, b) => b[1] - a[1])[0][0];
+    }
+    if (climbs === '-x') return Array.from({ length: n }, (_, i) => [-w / 2, 0, -d / 2, w / 2 - (w * i) / n, (h * (i + 1)) / n, d / 2].map(round));
+    if (climbs === '-z') return Array.from({ length: n }, (_, i) => [-w / 2, 0, -d / 2, w / 2, (h * (i + 1)) / n, d / 2 - (d * i) / n].map(round));
     // `climbs: "+x"` for models whose steps rise along x instead of z.
-    if (p.climbs === '+x') return Array.from({ length: n }, (_, i) => [-w / 2 + (w * i) / n, 0, -d / 2, w / 2, (h * (i + 1)) / n, d / 2].map(round));
+    if (climbs === '+x') return Array.from({ length: n }, (_, i) => [-w / 2 + (w * i) / n, 0, -d / 2, w / 2, (h * (i + 1)) / n, d / 2].map(round));
     return Array.from({ length: n }, (_, i) => [-w / 2, 0, -d / 2 + (d * i) / n, w / 2, (h * (i + 1)) / n, d / 2].map(round));
+  }
+  if (p.collide === 'openings') {
+    // A wall piece along x with doorways anywhere in it: 10 cm columns are solid where any face crosses waist
+    // to head height (0.4–1.9 m; window sills count), open elsewhere, each opening under a lintel down to its top.
+    const bin = 0.1;
+    const nb = Math.max(1, Math.ceil(w / bin));
+    const solid = new Uint8Array(nb);
+    const ix = (x) => Math.min(nb - 1, Math.max(0, Math.floor((x + w / 2) / bin)));
+    for (const tri of tris) {
+      const ys = tri.map((q) => q[1]);
+      if (Math.max(...ys) < 0.4 || Math.min(...ys) > 1.9) continue;
+      const xs = tri.map((q) => q[0]);
+      for (let i = ix(Math.min(...xs) + 0.02); i <= ix(Math.max(...xs) - 0.02); i++) solid[i] = 1;
+    }
+    const t = Math.max(d, MIN_THICKNESS) / 2;
+    const out = [];
+    for (let i = 0; i < nb; ) {
+      let j = i;
+      while (j + 1 < nb && solid[j + 1] === solid[i]) j++;
+      const [x0, x1] = [-w / 2 + i * bin, Math.min(w / 2, -w / 2 + (j + 1) * bin)];
+      if (solid[i] || x1 - x0 < 0.6) out.push([x0, 0, -t, x1, h, t]);
+      else {
+        // The lintel: the lowest face over the opening (faces reaching across it, wherever their corners are).
+        const over = tris.filter((tri) => Math.min(...tri.map((q) => q[1])) > 1.9 && Math.max(...tri.map((q) => q[0])) > x0 + 0.05 && Math.min(...tri.map((q) => q[0])) < x1 - 0.05);
+        const top = Math.min(h, ...over.map((tri) => Math.min(...tri.map((q) => q[1]))));
+        if (top < h) out.push([x0, top, -t, x1, h, t]);
+      }
+      i = j + 1;
+    }
+    return out.map((b) => b.map(round));
   }
   if (p.collide === 'frame') {
     // The opening: the widest gap in x round the middle with no geometry below head height.
     const low = pts.filter((q) => q[1] > 0.3 && q[1] < 2);
     const inner = Math.min(...low.filter((q) => q[0] > 0).map((q) => q[0]), w / 2);
     const innerL = Math.max(...low.filter((q) => q[0] < 0).map((q) => q[0]), -w / 2);
-    const top = Math.min(...pts.filter((q) => q[0] > innerL + 0.05 && q[0] < inner - 0.05 && q[1] > 1).map((q) => q[1]), h);
+    // `frameTop`: the opening's height (metres), for lintels with no vertex inside the opening's width.
+    const top = p.frameTop ?? Math.min(...pts.filter((q) => q[0] > innerL + 0.05 && q[0] < inner - 0.05 && q[1] > 1).map((q) => q[1]), h);
     const t = Math.max(d, MIN_THICKNESS) / 2;
     return [
       [-w / 2, 0, -t, innerL, h, t],
@@ -277,6 +321,99 @@ async function normaliseGlb(src, p) {
   return { glb: Buffer.from(await io.writeBinary(doc)), size: [round((b.max[0] - b.min[0]) * s), round(p.height), round((b.max[2] - b.min[2]) * s)] };
 }
 
+const linear = (hex) => [1, 3, 5].map((i) => {
+  const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+});
+
+/** Cut a triangle ([{ p, n }] × 3) by the plane at height y: the pieces either side, each a triangle, winding kept. */
+function cutTriangle(tri, y) {
+  const side = tri.map((v) => v.p[1] > y);
+  const up = side.filter(Boolean).length;
+  if (up === 0 || up === 3) return [tri];
+  // Rotate so the lone vertex (the one on its own side) comes first.
+  const lone = side.findIndex((s) => s === (up === 1));
+  const [a, b, c] = [tri[lone], tri[(lone + 1) % 3], tri[(lone + 2) % 3]];
+  const at = (u, v) => {
+    const t = (y - u.p[1]) / (v.p[1] - u.p[1]);
+    const mix = (x, z) => x.map((q, i) => q + (z[i] - q) * t);
+    const n = mix(u.n, v.n);
+    const l = Math.hypot(...n) || 1;
+    return { p: mix(u.p, v.p), n: n.map((q) => q / l) };
+  };
+  const ab = at(a, b);
+  const ac = at(a, c);
+  return [[a, ab, ac], [ab, b, c], [ab, c, ac]];
+}
+
+/**
+ * Colours for a pack that ships untextured grey materials (madduck's hospital
+ * set): `colors` gives each material (by name) a flat colour, or
+ * `{ color, emissive, alpha }`; `meshColors` colours whole objects by a name
+ * regex (door handles); a prop's own `colors` override the pack's, and its
+ * `bands` ([[from, colour], …], `from` a fraction of the model's height) paint
+ * each face by the height of its centre (legs, seat, mattress; a wall's dado),
+ * as vertex colours on the opaque materials.
+ */
+async function paintFlat(doc, pack, p) {
+  const colors = { ...pack.colors, ...(p.colors ?? {}) };
+  const spec = (name) => {
+    const c = colors[name];
+    return typeof c === 'string' ? { color: c } : c;
+  };
+  for (const mat of doc.getRoot().listMaterials()) {
+    const c = spec(mat.getName());
+    if (!c) continue;
+    mat.setBaseColorFactor([...linear(c.color), c.alpha ?? 1]);
+    if (c.alpha !== undefined && c.alpha < 1) mat.setAlphaMode('BLEND');
+    if (c.emissive) mat.setEmissiveFactor(linear(c.emissive));
+  }
+  const byMesh = Object.entries(pack.meshColors ?? {}).map(([re, hex]) => [new RegExp(re), hex]);
+  if (!p.bands && !byMesh.some(([re]) => doc.getRoot().listMeshes().some((m) => re.test(m.getName())))) return;
+  await doc.transform(unweld());
+  const b = getBounds(doc.getRoot().listScenes()[0]);
+  const h = Math.max(1e-6, b.max[1] - b.min[1]);
+  const buffer = doc.getRoot().listBuffers()[0];
+  // Meshes painted whole get a material of their own (white, so the vertex colour shows as it is).
+  const painted = new Map();
+  for (const mesh of doc.getRoot().listMeshes()) {
+    const whole = byMesh.find(([re]) => re.test(mesh.getName()))?.[1];
+    for (const prim of mesh.listPrimitives()) {
+      const mat = prim.getMaterial();
+      if (!mat || mat.getAlphaMode() === 'BLEND') continue;
+      if (!whole && !p.bands) continue;
+      const base = mat.getBaseColorFactor();
+      const pos = prim.getAttribute('POSITION');
+      const nrm = prim.getAttribute('NORMAL');
+      // Faces that straddle a band's edge are cut along it, so each band is painted exactly where it starts.
+      const cuts = whole ? [] : p.bands.slice(1).map(([from]) => b.min[1] + from * h);
+      let tris = [];
+      for (let t = 0; t + 2 < pos.getCount(); t += 3) tris.push([0, 1, 2].map((k) => ({ p: pos.getElement(t + k, []), n: nrm ? nrm.getElement(t + k, []) : [0, 1, 0] })));
+      for (const y of cuts) tris = tris.flatMap((tri) => cutTriangle(tri, y));
+      const P = new Float32Array(tris.length * 9);
+      const N = new Float32Array(tris.length * 9);
+      const out = new Float32Array(tris.length * 12);
+      tris.forEach((tri, t) => {
+        const f = (tri.reduce((y, v) => y + v.p[1], 0) / 3 - b.min[1]) / h;
+        const hex = whole ?? [...p.bands].reverse().find(([from]) => f >= from)?.[1];
+        const c = hex ? [...linear(hex), 1] : base;
+        tri.forEach((v, k) => {
+          P.set(v.p, (t * 3 + k) * 3);
+          N.set(v.n, (t * 3 + k) * 3);
+          out.set(c, (t * 3 + k) * 4);
+        });
+      });
+      for (const sem of prim.listSemantics()) prim.setAttribute(sem, null);
+      prim.setIndices(null);
+      prim.setAttribute('POSITION', doc.createAccessor().setType('VEC3').setArray(P).setBuffer(buffer));
+      if (nrm) prim.setAttribute('NORMAL', doc.createAccessor().setType('VEC3').setArray(N).setBuffer(buffer));
+      prim.setAttribute('COLOR_0', doc.createAccessor().setType('VEC4').setArray(out).setBuffer(buffer));
+      if (!painted.has(mat)) painted.set(mat, mat.clone().setBaseColorFactor([1, 1, 1, base[3]]));
+      prim.setMaterial(painted.get(mat));
+    }
+  }
+}
+
 /** A prop from a `convert` pack: picked from its FBX/GLB, flattened if asked, turned, centred, stood on the ground and scaled. */
 async function convertPiece(dir, pack, p) {
   const [file, pickSrc] = p.src.split('#');
@@ -306,7 +443,9 @@ async function convertPiece(dir, pack, p) {
   }
   // Vertex colours some exports carry as painting masks, not colours.
   if (pack.dropVertexColors) for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) prim.setAttribute('COLOR_0', null);
-  if (pack.flatten) await flattenTextures(doc);
+  // `flatten` on a prop: only those pieces carry third-party photo maps (loafbrr's metal fence).
+  if (pack.flatten || p.flatten) await flattenTextures(doc);
+  if (pack.colors) await paintFlat(doc, pack, p);
   for (const mat of doc.getRoot().listMaterials()) {
     mat.setMetallicRoughnessTexture(null).setNormalTexture(null).setOcclusionTexture(null).setMetallicFactor(0).setRoughnessFactor(0.8);
     for (const ext of mat.listExtensions()) ext.dispose();

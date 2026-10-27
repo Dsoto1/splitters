@@ -1,0 +1,15 @@
+Low Poly Wild West
+Models by LowPolyAssets - https://lowpolyassets.itch.io/
+Source page: https://lowpolyassets.itch.io/low-poly-wild-west
+
+License: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication, as stated on
+the source page (researched by the owner, 2026-10-26).
+https://creativecommons.org/publicdomain/zero/1.0/
+No licence file ships in the download (154 FBX files in Clutter,
+Miscellaneous, Modular, Nature and Transportation folders, untextured: each
+material carries its own colour).
+
+Raw pack files are not kept in this repository. tools/content/prepare-props.mjs
+builds the game-ready ww_* props from the extracted download (the folder
+"Low Poly Wild West"; see docs/CONTENT_PIPELINE.md), and
+content/props.lock.json records what it wrote.

@@ -72,13 +72,15 @@ function mapPicture(map: MapDocument, cls: string, top = false, shots = true): {
     drawn = true;
   };
   if (!shots) return { el: wrap, draw };
-  const main = el('img', { className: 'shot', alt: '' });
+  // Decoded with the frame that shows it: a screen rebuilt around a cached shot never shows a frame without it.
+  const main = el('img', { className: 'shot', alt: '', decoding: 'sync' });
   main.addEventListener('load', () => wrap.classList.add('has-shot'));
   main.addEventListener('error', () => (main.remove(), draw()));
   main.src = shot(top ? 'top' : 'view');
+  if (main.complete && main.naturalWidth) wrap.classList.add('has-shot');
   wrap.append(main);
   if (!top) {
-    const inset = el('img', { className: 'shot-top', alt: '' });
+    const inset = el('img', { className: 'shot-top', alt: '', decoding: 'sync' });
     inset.addEventListener('error', () => inset.remove());
     inset.src = shot('top');
     wrap.append(inset);

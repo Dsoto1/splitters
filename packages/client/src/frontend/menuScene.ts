@@ -9,6 +9,7 @@ import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { PLAYER, getWeapon, isCreature, npcLookRole } from '@tiletrigger/shared';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
@@ -117,6 +118,19 @@ export class MenuScene {
     this.models = new ModelLibrary(this.scene);
   }
 
+  /** Settles when the hero being shown (or the latest one asked for) is standing there with its gun, or failed to load. */
+  private hero: Promise<unknown> = Promise.resolve();
+
+  /** The hero and everything the scene draws are ready: the menu's 3D can fade in without popping. */
+  async ready(): Promise<void> {
+    let hero: Promise<unknown>;
+    do {
+      hero = this.hero;
+      await hero.catch(() => undefined);
+    } while (hero !== this.hero);
+    if (!this.scene.isDisposed) await this.scene.whenReadyAsync();
+  }
+
   /** Show a look as the hero (rebuilt when it changes). */
   setLook(look: string): void {
     if (look === this.look) return;
@@ -125,32 +139,57 @@ export class MenuScene {
     const role = npcLookRole(look);
     if (role && isCreature(role)) {
       this.creatures ??= new CreatureLibrary(this.scene);
-      void this.creatures.create(role, `menuHero_${token}`).then((ch) => {
+      this.hero = this.creatures.create(role, `menuHero_${token}`).then((ch) => {
         if (token !== this.token) return ch.dispose();
         const { min, max } = ch.root.getHierarchyBoundingVectors(true);
         // Big ones shrink to fit the plinth; small ones stay their size.
         ch.root.scaling.scaleInPlace(Math.min(1, (PLAYER.height * 1.15) / Math.max(0.5, max.y - min.y)));
         ch.root.rotation.y = 0.45;
+        this.hide(ch.meshes);
         this.anim?.dispose();
         const anim = new CreatureAnimator(this.scene, ch, true);
         this.anim = anim;
         // Players in creature skins carry guns, like everyone else.
         const w = getWeapon('core.rifle');
-        void this.models.instantiate(w.view.model, `menuHeroRifle_${token}`).then((node) => (token === this.token ? anim.hold(node) : node.dispose()));
+        return this.models.instantiate(w.view.model, `menuHeroRifle_${token}`).then(
+          (node) => (token === this.token ? (anim.hold(node), this.appear([...ch.meshes, ...node.getChildMeshes()])) : node.dispose()),
+          () => this.appear(ch.meshes),
+        );
       });
       return;
     }
-    void this.characters.create({ look }, `menuHero_${token}`).then(async (ch) => {
+    this.hero = this.characters.create({ look }, `menuHero_${token}`).then(async (ch) => {
       if (token !== this.token) return ch.dispose();
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);
       ch.root.scaling.scaleInPlace(PLAYER.height / Math.max(0.5, max.y - min.y));
       ch.root.rotation.y = 0.45;
+      this.hide(ch.meshes);
       this.anim?.dispose();
       this.anim = new CharacterAnimator(this.scene, ch);
       const w = getWeapon('core.rifle');
-      const node = await this.models.instantiate(w.view.model, `menuHeroRifle_${token}`);
-      if (token === this.token) this.anim.hold(node, w.view.hold);
-      else node.dispose();
+      const node = await this.models.instantiate(w.view.model, `menuHeroRifle_${token}`).catch(() => null);
+      if (token !== this.token) return node?.dispose();
+      if (node) this.anim.hold(node, w.view.hold);
+      this.appear([...ch.meshes, ...(node?.getChildMeshes() ?? [])]);
+    });
+  }
+
+  /** Meshes fading in, and how far along (0..1). */
+  private fading: { meshes: AbstractMesh[]; t: number } | null = null;
+
+  /** A new hero stays out of sight while it loads its gun: never a bind-pose T for a frame, never a gun popping into empty hands. */
+  private hide(meshes: AbstractMesh[]): void {
+    for (const m of meshes) m.visibility = 0;
+  }
+
+  /** Fade a hero in once its clips have posed it (two animation ticks from now). */
+  private appear(meshes: AbstractMesh[]): void {
+    let ticks = 0;
+    const obs = this.scene.onAfterAnimationsObservable.add(() => {
+      if (++ticks < 2) return;
+      this.scene.onAfterAnimationsObservable.remove(obs);
+      this.fading = { meshes, t: 0 };
+      for (const m of meshes) m.visibility = 0.001;
     });
   }
 
@@ -171,6 +210,12 @@ export class MenuScene {
     this.camera.setTarget(new Vector3(f.tx + sway * 0.08, f.ty, 0));
     this.state.pitch = 0.06 + Math.sin(this.t * 0.6) * 0.03;
     this.anim?.update(dt, this.state);
+    if (this.fading) {
+      const f = this.fading;
+      f.t = Math.min(1, f.t + dt / 0.3);
+      for (const m of f.meshes) if (!m.isDisposed()) m.visibility = f.t;
+      if (f.t >= 1) this.fading = null;
+    }
     this.scene.render();
   }
 

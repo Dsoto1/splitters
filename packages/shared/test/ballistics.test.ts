@@ -121,7 +121,14 @@ describe('ballistic bullets', () => {
     expect(flightTo(pistol, 30).drop).toBeLessThan(0.05);
     expect(flightTo(pistol, 150).drop).toBeGreaterThan(0.6);
     expect(flightTo(pistol, 100).drop).toBeGreaterThan(flightTo(rifle, 100).drop * 3);
-    expect(flightTo(precision, 200).drop).toBeLessThan(flightTo(rifle, 200).drop);
+    // The precision rifle's heavy round is the fastest (least lead) but drops most at long range: negligible at 50 m,
+    // a head's height by 100 m, half a metre by 200 m (benchmark: patience and holdover, GUNPLAY_DIRECTION.md).
+    expect(flightTo(precision, 200).time).toBeLessThan(flightTo(rifle, 200).time);
+    expect(flightTo(precision, 50).drop).toBeLessThan(0.05);
+    expect(flightTo(precision, 100).drop).toBeGreaterThan(0.08);
+    expect(flightTo(precision, 200).drop).toBeGreaterThan(0.35);
+    expect(flightTo(precision, 200).drop).toBeLessThan(0.8);
+    expect(flightTo(precision, 200).drop).toBeGreaterThan(flightTo(rifle, 200).drop);
     // Arcade ballistics barely drop; advanced drop more (spec §5 creator control).
     expect(flightTo(rifle, 200, { ballistics: 'arcade' }).drop).toBeLessThan(flightTo(rifle, 200).drop * 0.2);
     expect(flightTo(rifle, 200, { ballistics: 'advanced' }).drop).toBeGreaterThan(flightTo(rifle, 200).drop * 2);

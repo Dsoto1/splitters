@@ -140,16 +140,17 @@ const kick = (pitch: number[], yaw: number[], variance: number, delay: number, s
 export const FAMILY_DEFAULTS: Readonly<Record<WeaponFamily, FamilyDefaults>> = {
   pistol: {
     ballistic: { velocity: 375, gravityScale: 1, energy: 450, tracerEvery: 0, tracerFinal: 0 },
-    accuracy: acc(0.002, 0.012, 0.03, 0.003, 1, 0.03, 10, 0.6, 8),
+    accuracy: acc(0.002, 0.006, 0.02, 0.003, 1, 0.03, 10, 0.6, 8),
     kick: kick([0.012], [0.002, -0.002], 0.003, 4, 12, 0.35, 0.5),
     falloff: { start: 18, end: 45, min: 0.65, curve: 'linear' },
     head: 2,
     legs: 0.8,
   },
   revolver: {
-    ballistic: { velocity: 300, gravityScale: 1, energy: 1400, tracerEvery: 1 },
-    accuracy: acc(0.0005, 0.02, 0.06, 0.012, 0, 0.05, 2.5, 0.5, 10),
-    kick: kick([0.1], [0.01, -0.006], 0.008, 10, 3.5, 0.06, 1.4),
+    ballistic: { velocity: 300, gravityScale: 1, energy: 1800, tracerEvery: 1 },
+    // A true first shot, but a round fired before the last one's spray has settled (about half a second) is a guess.
+    accuracy: acc(0.0005, 0.012, 0.06, 0.022, 0, 0.06, 3, 0.5, 10),
+    kick: kick([0.12], [0.012, -0.008], 0.008, 10, 3.5, 0.06, 1.5),
     falloff: { start: 25, end: 60, min: 0.7, curve: 'smooth' },
     head: 1.75,
     legs: 0.85,
@@ -164,15 +165,16 @@ export const FAMILY_DEFAULTS: Readonly<Record<WeaponFamily, FamilyDefaults>> = {
   },
   smg: {
     ballistic: { velocity: 400, gravityScale: 1, energy: 400, tracerEvery: 3, tracerFinal: 5 },
-    accuracy: acc(0.006, 0.006, 0.03, 0.0045, 4, 0.06, 18, 0.8, 10),
-    kick: kick([0.004, 0.004, 0.004, 0.004, 0.009], [0, 0.001, 0.002, 0.003, 0.003, 0.001, -0.002, -0.003, -0.003, -0.001], 0.003, 3, 14, 0.3, 0.45),
+    // Dead steady for five rounds, then it climbs and blooms hard; let go and it is steady again almost at once.
+    accuracy: acc(0.006, 0.004, 0.03, 0.0065, 5, 0.09, 40, 0.8, 10),
+    kick: kick([0.003, 0.003, 0.003, 0.003, 0.003, 0.006, 0.008, 0.01, 0.011], [0, 0.001, 0.002, 0.003, 0.004, 0.002, -0.002, -0.004, -0.004, -0.002], 0.004, 3, 14, 0.3, 0.45),
     falloff: { start: 12, end: 35, min: 0.55, curve: 'steep' },
     head: 1.5,
     legs: 0.85,
   },
   rifle: {
     ballistic: { velocity: 820, gravityScale: 1, energy: 1200, tracerEvery: 3, tracerFinal: 3 },
-    accuracy: acc(0.0015, 0.016, 0.05, 0.0012, 3, 0.025, 8, 0.4, 14),
+    accuracy: acc(0.0015, 0.008, 0.035, 0.0012, 3, 0.025, 8, 0.4, 14),
     kick: kick([0.01, 0.0085], [0, 0.001, 0.002, 0.002, 0.001, 0, -0.001, -0.002, -0.002, -0.001], 0.002, 5, 7, 0.12, 0.6),
     falloff: { start: 30, end: 80, min: 0.75, curve: 'smooth' },
     head: 2,
@@ -195,8 +197,10 @@ export const FAMILY_DEFAULTS: Readonly<Record<WeaponFamily, FamilyDefaults>> = {
     legs: 0.85,
   },
   precision: {
-    ballistic: { velocity: 1000, gravityScale: 1, energy: 3000, tracerEvery: 1 },
-    accuracy: acc(0, 0.04, 0.1, 0.01, 0, 0.05, 3, 0.2, 20),
+    // Fast (least lead of all) but heavy: 12 cm of drop at 100 m, half a metre at 200 m. A shot taken the moment
+    // the bolt closes is a little off; wait a beat and it is dead on (patience).
+    ballistic: { velocity: 950, gravityScale: 2.5, energy: 3000, tracerEvery: 1 },
+    accuracy: acc(0, 0.03, 0.1, 0.015, 0, 0.05, 1.2, 0.2, 18),
     kick: kick([0.07], [0.006, -0.004], 0.005, 8, 5, 0.08, 1.1),
     falloff: { start: 150, end: 300, min: 0.9, curve: 'linear' },
     head: 3,
@@ -213,9 +217,10 @@ export const FAMILY_DEFAULTS: Readonly<Record<WeaponFamily, FamilyDefaults>> = {
   shotgun: {
     // Pellets stay hitscan (spec §3.1 allows it for performance): damage loss comes from spread and per-pellet falloff.
     ballistic: null,
-    accuracy: acc(0, 0.01, 0.02, 0, 0, 0.04, 6, 0.9, 10),
+    // The pellet pattern is the weapon's own `spread` (pelletCone); this is aim error on top of it.
+    accuracy: acc(0, 0.006, 0.02, 0, 0, 0.04, 6, 0.9, 10),
     kick: kick([0.06], [0.006, -0.006], 0.004, 8, 5, 0.1, 1),
-    falloff: { start: 8, end: 25, min: 0.3, curve: 'steep' },
+    falloff: { start: 6, end: 22, min: 0.25, curve: 'steep' },
     head: 1.25,
     legs: 0.85,
   },
@@ -430,6 +435,16 @@ export function spreadOf(a: AccuracySpec, g: GunState, ctx: SpreadContext): numb
   const moving = ctx.run > 0.25 ? a.move * Math.min(1, ctx.run) : 0;
   const cone = Math.min(a.max, a.base + moving + (ctx.airborne ? a.air : 0) + sustained);
   return cone * (1 + (a.ads - 1) * g.ads) * ctx.stance;
+}
+
+/**
+ * Cone for a weapon's primary trigger: the gunplay spread, plus the pellet
+ * pattern (the weapon's own `spread`) for multi-pellet weapons. The pattern
+ * is fixed, so a shotgun's reach is learnable: the sights and stance tighten
+ * your aim, not the pattern.
+ */
+export function shotCone(def: Pick<WeaponDefinition, 'pellets' | 'spread'>, a: AccuracySpec, g: GunState, ctx: SpreadContext): number {
+  return spreadOf(a, g, ctx) + (def.pellets > 1 ? def.spread : 0);
 }
 
 // ---------------------------------------------------------------- reloads

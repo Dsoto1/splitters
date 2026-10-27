@@ -72,3 +72,34 @@ export const JET = {
 
 /** One tick of fuel: thrusting burns it, otherwise it trickles back. */
 export const stepJetFuel = (fuel: number, thrusting: boolean): number => (thrusting ? Math.max(0, fuel - JET.burn) : Math.min(JET.max, fuel + JET.regen));
+
+/**
+ * Where a straight path from `a` along unit `u` for `len` m runs through
+ * water or swamp (spec §8: water soaks up a bullet's energy): the first
+ * entry along the path and the total length under water, or null.
+ */
+export function waterSpan(liquids: readonly LiquidBox[], a: Vec3, u: Vec3, len: number): { enter: number; length: number } | null {
+  let enter = Infinity;
+  let length = 0;
+  for (const l of liquids) {
+    if (l.liquid !== 'water' && l.liquid !== 'swamp') continue;
+    let t0 = 0;
+    let t1 = len;
+    for (const k of ['x', 'y', 'z'] as const) {
+      const d = u[k];
+      if (Math.abs(d) < 1e-12) {
+        if (a[k] < l.min[k] || a[k] > l.max[k]) t1 = -1;
+        continue;
+      }
+      const ta = (l.min[k] - a[k]) / d;
+      const tb = (l.max[k] - a[k]) / d;
+      t0 = Math.max(t0, Math.min(ta, tb));
+      t1 = Math.min(t1, Math.max(ta, tb));
+    }
+    if (t1 > t0) {
+      enter = Math.min(enter, t0);
+      length += t1 - t0;
+    }
+  }
+  return length > 0 ? { enter, length } : null;
+}

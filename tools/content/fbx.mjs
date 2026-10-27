@@ -37,6 +37,70 @@ async function textureBytes(url, fbxPath) {
   return null;
 }
 
+// GLTFExporter reads its output blobs with a FileReader, which Node lacks.
+globalThis.FileReader ??= class FileReader {
+  readAsArrayBuffer(blob) {
+    void blob.arrayBuffer().then((b) => {
+      this.result = b;
+      this.onloadend?.();
+      this.onload?.();
+    });
+  }
+  readAsDataURL(blob) {
+    void blob.arrayBuffer().then((b) => {
+      this.result = `data:${blob.type || 'application/octet-stream'};base64,${Buffer.from(b).toString('base64')}`;
+      this.onloadend?.();
+      this.onload?.();
+    });
+  }
+};
+
+/**
+ * A rigged, animated FBX (Quaternius' Zombie) as a GLB with its skeleton,
+ * skin and the clips asked for, renamed: `clips` is [[our name, its clip name
+ * (matched at the end, after Blender's "Armature|"), first frame, last frame]]
+ * with the frame range optional (frames at `fps`). The model stands on y = 0
+ * at `height` metres tall in the first clip's first frame, facing as it does
+ * in the file (+Z for Quaternius' characters).
+ */
+export async function fbxRiggedToGlb(fbxPath, { clips, height, fps = 24 }) {
+  const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
+  const buf = readFileSync(fbxPath);
+  const group = new FBXLoader().parse(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), dirname(fbxPath) + '/');
+  const animations = clips.map(([ours, theirs, from, to]) => {
+    const src = group.animations.find((a) => a.name === theirs || a.name.endsWith(`|${theirs}`));
+    if (!src) throw new Error(`${basename(fbxPath)} has no clip ${theirs} (has ${group.animations.map((a) => a.name).join(', ')})`);
+    const clip = from !== undefined ? THREE.AnimationUtils.subclip(src, ours, from, to, fps) : src.clone();
+    clip.name = ours;
+    // Scale tracks, and position tracks that never move (every bone but the hips), cost bytes and do nothing.
+    const still = (t) => t.values.every((v, i) => Math.abs(v - t.values[i % 3]) < 1e-4);
+    clip.tracks = clip.tracks.filter((t) => !/\.scale$/.test(t.name) && !(/\.position$/.test(t.name) && still(t)));
+    return clip;
+  });
+  // Measure the posed body: the skinned bounds in the first clip's first frame.
+  const mixer = new THREE.AnimationMixer(group);
+  mixer.clipAction(animations[0]).play();
+  mixer.setTime(0);
+  group.updateMatrixWorld(true);
+  const box = new THREE.Box3();
+  group.traverse((o) => {
+    if (!o.isSkinnedMesh) return;
+    o.computeBoundingBox();
+    box.union(o.boundingBox.clone().applyMatrix4(o.matrixWorld));
+  });
+  mixer.stopAllAction();
+  mixer.uncacheRoot(group);
+  const s = height / (box.max.y - box.min.y);
+  const root = new THREE.Group();
+  root.name = 'creature';
+  root.scale.setScalar(s);
+  root.position.y = -box.min.y * s;
+  root.add(group);
+  root.updateMatrixWorld(true);
+  const glb = await new GLTFExporter().parseAsync(root, { binary: true, animations, onlyVisible: false });
+  return new Uint8Array(glb);
+}
+
 /**
  * Parse an FBX and return { doc, names }: a glTF document with one node per
  * mesh object (world transform baked in, metres, +Y up) and the object names.
@@ -69,7 +133,9 @@ export async function fbxToDocument(fbxPath, { pick = null, keepUv = false } = {
       }
       out.setBaseColorFactor([1, 1, 1, out.getBaseColorFactor()[3]]).setBaseColorTexture(textures.get(key));
     }
-    if (m.emissive && (m.emissive.r || m.emissive.g || m.emissive.b)) out.setEmissiveFactor([m.emissive.r, m.emissive.g, m.emissive.b]);
+    // The emissive colour counts only at its intensity: madduck's hospital set pairs a white emissive colour with factor 0.
+    const glow = m.emissiveIntensity ?? 1;
+    if (m.emissive && glow > 0 && (m.emissive.r || m.emissive.g || m.emissive.b)) out.setEmissiveFactor([m.emissive.r * glow, m.emissive.g * glow, m.emissive.b * glow]);
     if (m.transparent && m.opacity < 1) out.setAlphaMode('BLEND');
     materials.set(m, out);
     return out;
