@@ -161,8 +161,15 @@ Training Range's tank behind glass, a pool's wall); for water and swamp it has
 no top, so the surface shader alone colours the water seen from above. Same two
 draw calls per body as the old material (surface and volume).
 
-**Cost** (measured with SwiftShader in headless Chromium, so frame times are
-relative): see the table in the change notes below.
+**Cost**: no render target on Medium or Low (the shader samples the sky's own
+texture); High adds one reduced-resolution mirror pass (big static meshes only,
+for the biggest body of water) and the scene depth pass. A surface is a grid of
+about 2 m cells (at most 128 × 128) carrying its baked depth. Draw calls per
+body are unchanged (surface and volume). Measured together with the instanced
+glass on Norman Shores (lake and 104 Window panes), Medium, three fixed views
+with no characters, headless Chromium: 1,562 → 1,287 draw calls from the
+shore, 2,033 → 1,587 in the town, 1,878 → 1,377 from above; 534 → 431
+materials. See [`PERF_96.md`](PERF_96.md#glass-and-water-october-2026).
 
 ## Jetpack (pickup)
 
