@@ -1529,6 +1529,7 @@
     {
       "file": "props/mp_control_cabinet.glb",
       "source": "meshy-community-props",
+      "title": "Industrial Control Panel (download dated 2026-03-24)",
       "src": "Meshy_AI_Industrial_Control_Panel_20260324_texture.fbx",
       "triangles": 4657,
       "bytes": 214656,
@@ -3718,6 +3719,7 @@
     {
       "file": "props/mp_dino_statue.glb",
       "source": "meshy-community-props",
+      "title": "Spiky Dinosaur (download dated 2025-12-29)",
       "src": "Meshy_AI_Spiky_Dinosaur_20251229_texture.fbx",
       "triangles": 4980,
       "bytes": 231036,
@@ -5724,6 +5726,7 @@
     {
       "file": "props/mp_burnt_car.glb",
       "source": "meshy-community-props",
+      "title": "Wreckage (download dated 2025-12-21)",
       "src": "Meshy_AI_Wreckage_20251221_texture.fbx",
       "triangles": 5774,
       "bytes": 341288,
@@ -12007,6 +12010,146 @@
         0.257,
         1.366,
         0.261
+      ]
+    },
+    {
+      "file": "props/mn_oak.glb",
+      "source": "meshy-community-nature",
+      "title": "a tree (download dated 2025-05-10)",
+      "src": "Meshy_AI_a_tree_20250510_texture_fbx/Meshy_AI_a_tree_20250510_texture.fbx",
+      "triangles": 4966,
+      "lodTriangles": [
+        1554,
+        2
+      ],
+      "bytes": 364540,
+      "sha256": "85c9765842305edd",
+      "size": [
+        8.919,
+        6.93,
+        9.545
+      ]
+    },
+    {
+      "file": "props/mn_birch.glb",
+      "source": "meshy-community-nature",
+      "title": "A tall slender birch tree distinguished … (download dated 2025-09-23)",
+      "src": "Meshy_AI_A_tall_slender_birch_tree_distinguished_20250923_texture_fbx/Meshy_AI_A_tall_slender_birch_tree_distinguished_20250923_texture.fbx",
+      "triangles": 4482,
+      "lodTriangles": [
+        1486,
+        2
+      ],
+      "bytes": 336984,
+      "sha256": "a0869a3287aa8c73",
+      "size": [
+        4.564,
+        9.899,
+        3.674
+      ]
+    },
+    {
+      "file": "props/mn_fir.glb",
+      "source": "meshy-community-nature",
+      "title": "fir tree (download dated 2025-07-30)",
+      "src": "Meshy_AI_fir_tree_20250730_texture_fbx/Meshy_AI_fir_tree_20250730_texture.fbx",
+      "triangles": 3992,
+      "lodTriangles": [
+        1396,
+        2
+      ],
+      "bytes": 306044,
+      "sha256": "355d7790325280d6",
+      "size": [
+        4.16,
+        8.672,
+        3.695
+      ]
+    },
+    {
+      "file": "props/mn_banana.glb",
+      "source": "meshy-community-nature",
+      "title": "Banana Plant (download dated 2026-03-24)",
+      "src": "Meshy_AI_Banana_Plant_20260324_texture_fbx/Meshy_AI_Banana_Plant_20260324_texture.fbx",
+      "triangles": 1992,
+      "lodTriangles": [
+        682,
+        2
+      ],
+      "bytes": 157008,
+      "sha256": "dd5e826a95aaa02d",
+      "size": [
+        2.497,
+        3.156,
+        2.572
+      ]
+    },
+    {
+      "file": "props/mn_shrub.glb",
+      "source": "meshy-community-nature",
+      "title": "A dense forest shrub with woody … (download dated 2025-09-23)",
+      "src": "Meshy_AI_A_dense_forest_shrub_with_woody_20250923_texture_fbx/Meshy_AI_A_dense_forest_shrub_with_woody_20250923_texture.fbx",
+      "triangles": 1180,
+      "lodTriangles": [
+        366
+      ],
+      "bytes": 85604,
+      "sha256": "fb76b4065de134a6",
+      "size": [
+        1.468,
+        1.089,
+        1.441
+      ]
+    },
+    {
+      "file": "props/mn_fern.glb",
+      "source": "meshy-community-nature",
+      "title": "A majestic forest fern featuring broad … (download dated 2025-09-23)",
+      "src": "Meshy_AI_A_majestic_forest_fern_featuring_broad_20250923_texture_fbx/Meshy_AI_A_majestic_forest_fern_featuring_broad_20250923_texture.fbx",
+      "triangles": 1440,
+      "lodTriangles": [
+        410
+      ],
+      "bytes": 102020,
+      "sha256": "cf515ff6593a47b6",
+      "size": [
+        0.597,
+        0.969,
+        0.578
+      ]
+    },
+    {
+      "file": "props/mn_eelgrass.glb",
+      "source": "meshy-community-nature",
+      "title": "Vallisneria (download dated 2026-09-09)",
+      "src": "Meshy_AI_Vallisneria_20260909_texture_fbx/Meshy_AI_Vallisneria_20260909_texture.fbx",
+      "triangles": 751,
+      "lodTriangles": [
+        266
+      ],
+      "bytes": 57052,
+      "sha256": "732dd67041130b16",
+      "size": [
+        0.64,
+        0.783,
+        0.663
+      ]
+    },
+    {
+      "file": "props/mn_rock_spires.glb",
+      "source": "meshy-community-nature",
+      "title": "Red Rock Spires (remeshed) (download dated 2026-06-03)",
+      "src": "Meshy_AI_Red_Rock_Spires_20260603_texture_remesh_tri_fbx/Meshy_AI_Red_Rock_Spires_20260603_texture_remesh_tri.fbx",
+      "triangles": 2992,
+      "lodTriangles": [
+        998
+      ],
+      "bytes": 217592,
+      "sha256": "32cec8c72c993e77",
+      "size": [
+        13.729,
+        7.96,
+        4.852
       ]
     }
   ]

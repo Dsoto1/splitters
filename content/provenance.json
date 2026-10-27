@@ -7371,7 +7371,7 @@
       "triangles": 4657,
       "bytes": 214656,
       "source": "meshy-community-props/Meshy_AI_Industrial_Control_Panel_20260324_texture.fbx",
-      "title": "Meshy community models (props)",
+      "title": "Meshy community models (props): Industrial Control Panel (download dated 2026-03-24)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
@@ -11473,7 +11473,7 @@
       "triangles": 4980,
       "bytes": 231036,
       "source": "meshy-community-props/Meshy_AI_Spiky_Dinosaur_20251229_texture.fbx",
-      "title": "Meshy community models (props)",
+      "title": "Meshy community models (props): Spiky Dinosaur (download dated 2025-12-29)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
@@ -14891,7 +14891,7 @@
       "triangles": 5774,
       "bytes": 341288,
       "source": "meshy-community-props/Meshy_AI_Wreckage_20251221_texture.fbx",
-      "title": "Meshy community models (props)",
+      "title": "Meshy community models (props): Wreckage (download dated 2025-12-21)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
@@ -22789,6 +22789,150 @@
         "read from the glTF in the download",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "embedded maps re-encoded as 256 px JPEGs"
+      ]
+    },
+    {
+      "file": "props/mn_oak.glb",
+      "sha256": "85c9765842305edd",
+      "triangles": 4966,
+      "bytes": 364540,
+      "source": "meshy-community-nature/Meshy_AI_a_tree_20250510_texture_fbx/Meshy_AI_a_tree_20250510_texture.fbx",
+      "title": "Meshy community models (nature): a tree (download dated 2025-05-10)",
+      "creator": "Meshy community (CC0 per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned, centred, stood on the ground and scaled to metres",
+        "decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance",
+        "colour map baked into one colour per face (no image shipped but the card's)",
+        "emissive and metal/roughness/normal maps dropped"
+      ]
+    },
+    {
+      "file": "props/mn_birch.glb",
+      "sha256": "a0869a3287aa8c73",
+      "triangles": 4482,
+      "bytes": 336984,
+      "source": "meshy-community-nature/Meshy_AI_A_tall_slender_birch_tree_distinguished_20250923_texture_fbx/Meshy_AI_A_tall_slender_birch_tree_distinguished_20250923_texture.fbx",
+      "title": "Meshy community models (nature): A tall slender birch tree distinguished … (download dated 2025-09-23)",
+      "creator": "Meshy community (CC0 per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned, centred, stood on the ground and scaled to metres",
+        "decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance",
+        "colour map baked into one colour per face (no image shipped but the card's)",
+        "emissive and metal/roughness/normal maps dropped"
+      ]
+    },
+    {
+      "file": "props/mn_fir.glb",
+      "sha256": "355d7790325280d6",
+      "triangles": 3992,
+      "bytes": 306044,
+      "source": "meshy-community-nature/Meshy_AI_fir_tree_20250730_texture_fbx/Meshy_AI_fir_tree_20250730_texture.fbx",
+      "title": "Meshy community models (nature): fir tree (download dated 2025-07-30)",
+      "creator": "Meshy community (CC0 per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned, centred, stood on the ground and scaled to metres",
+        "decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance",
+        "colour map baked into one colour per face (no image shipped but the card's)",
+        "emissive and metal/roughness/normal maps dropped"
+      ]
+    },
+    {
+      "file": "props/mn_banana.glb",
+      "sha256": "dd5e826a95aaa02d",
+      "triangles": 1992,
+      "bytes": 157008,
+      "source": "meshy-community-nature/Meshy_AI_Banana_Plant_20260324_texture_fbx/Meshy_AI_Banana_Plant_20260324_texture.fbx",
+      "title": "Meshy community models (nature): Banana Plant (download dated 2026-03-24)",
+      "creator": "Meshy community (CC0 per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned, centred, stood on the ground and scaled to metres",
+        "decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance",
+        "colour map baked into one colour per face (no image shipped but the card's)",
+        "emissive and metal/roughness/normal maps dropped"
+      ]
+    },
+    {
+      "file": "props/mn_shrub.glb",
+      "sha256": "fb76b4065de134a6",
+      "triangles": 1180,
+      "bytes": 85604,
+      "source": "meshy-community-nature/Meshy_AI_A_dense_forest_shrub_with_woody_20250923_texture_fbx/Meshy_AI_A_dense_forest_shrub_with_woody_20250923_texture.fbx",
+      "title": "Meshy community models (nature): A dense forest shrub with woody … (download dated 2025-09-23)",
+      "creator": "Meshy community (CC0 per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned, centred, stood on the ground and scaled to metres",
+        "decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance",
+        "colour map baked into one colour per face (no image shipped but the card's)",
+        "emissive and metal/roughness/normal maps dropped"
+      ]
+    },
+    {
+      "file": "props/mn_fern.glb",
+      "sha256": "cf515ff6593a47b6",
+      "triangles": 1440,
+      "bytes": 102020,
+      "source": "meshy-community-nature/Meshy_AI_A_majestic_forest_fern_featuring_broad_20250923_texture_fbx/Meshy_AI_A_majestic_forest_fern_featuring_broad_20250923_texture.fbx",
+      "title": "Meshy community models (nature): A majestic forest fern featuring broad … (download dated 2025-09-23)",
+      "creator": "Meshy community (CC0 per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned, centred, stood on the ground and scaled to metres",
+        "decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance",
+        "colour map baked into one colour per face (no image shipped but the card's)",
+        "emissive and metal/roughness/normal maps dropped"
+      ]
+    },
+    {
+      "file": "props/mn_eelgrass.glb",
+      "sha256": "732dd67041130b16",
+      "triangles": 751,
+      "bytes": 57052,
+      "source": "meshy-community-nature/Meshy_AI_Vallisneria_20260909_texture_fbx/Meshy_AI_Vallisneria_20260909_texture.fbx",
+      "title": "Meshy community models (nature): Vallisneria (download dated 2026-09-09)",
+      "creator": "Meshy community (CC0 per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned, centred, stood on the ground and scaled to metres",
+        "decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance",
+        "colour map baked into one colour per face (no image shipped but the card's)",
+        "emissive and metal/roughness/normal maps dropped"
+      ]
+    },
+    {
+      "file": "props/mn_rock_spires.glb",
+      "sha256": "32cec8c72c993e77",
+      "triangles": 2992,
+      "bytes": 217592,
+      "source": "meshy-community-nature/Meshy_AI_Red_Rock_Spires_20260603_texture_remesh_tri_fbx/Meshy_AI_Red_Rock_Spires_20260603_texture_remesh_tri.fbx",
+      "title": "Meshy community models (nature): Red Rock Spires (remeshed) (download dated 2026-06-03)",
+      "creator": "Meshy community (CC0 per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "turned, centred, stood on the ground and scaled to metres",
+        "decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance",
+        "colour map baked into one colour per face (no image shipped but the card's)",
+        "emissive and metal/roughness/normal maps dropped"
       ]
     },
     {

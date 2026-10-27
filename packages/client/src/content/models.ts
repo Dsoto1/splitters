@@ -7,6 +7,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import type { Material } from '@babylonjs/core/Materials/material';
+import '@babylonjs/core/Meshes/meshLODLevel';
 import '@babylonjs/core/Meshes/instancedMesh';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 // Side-effect import: registers the glTF 2.0 loader plugin.
@@ -35,7 +36,10 @@ export class ModelLibrary {
       this.containers.set(path, p);
     }
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(/^(props|creatures|city|packs)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB);
+      p = LoadAssetContainerAsync(versioned(/^(props|creatures|city|packs)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB).then((c) => {
+        this.lods.set(path, takeLods(c));
+        return c;
+      });
       // Models from pack downloads (content/guns.json) fall back to the ones they replaced.
       const fallback = MODEL_FALLBACKS[path];
       if (fallback) p = p.catch(() => this.load(fallback));
@@ -45,6 +49,16 @@ export class ModelLibrary {
   }
 
   private readonly merged = new Map<string, Promise<Mesh[] | null>>();
+  /** Lower levels of detail a model carries (tools/content/nature.mjs), taken out of its container by `load`. */
+  private readonly lods = new Map<string, LodLevel[]>();
+
+  /**
+   * The lightest mesh level of a loaded model (not its impostor card), in the model's space, or null when it
+   * has none: terrain plants draw thousands of a plant, so they use it.
+   */
+  lightestLod(path: string): LodLevel | null {
+    return (this.lods.get(path) ?? []).filter((l) => !l.billboard).at(-1) ?? null;
+  }
 
   /**
    * A static copy of a model (placed props in the game): GPU instances of
@@ -127,6 +141,21 @@ export class ModelLibrary {
       for (const m of out) m.dispose(false, false);
       return null;
     }
+    // Levels of detail (one-material models only: every level is one mesh): GPU instances pick theirs by distance.
+    const levels = this.lods.get(path) ?? [];
+    if (out.length === 1 && levels.length) {
+      let i = 0;
+      for (const l of levels) {
+        const lod = new Mesh(`static_${path}_lod${++i}`, this.scene);
+        l.data.applyToMesh(lod, false);
+        lod.material = l.material;
+        lod.sideOrientation = l.billboard ? out[0]!.sideOrientation : l.sideOrientation;
+        if (l.billboard) lod.billboardMode = Mesh.BILLBOARDMODE_Y;
+        lod.isPickable = false;
+        lod.position.y = -10000;
+        out[0]!.addLODLevel(l.distance, lod);
+      }
+    }
     return out;
   }
 
@@ -146,6 +175,40 @@ export class ModelLibrary {
     for (const m of root.getChildMeshes()) m.isPickable = false;
     return root;
   }
+}
+
+/** A lower level of detail of a model: its geometry in the model's space, where it takes over, and its material. */
+export interface LodLevel {
+  data: VertexData;
+  /** Camera distance (m) from which this level is drawn. */
+  distance: number;
+  material: Material | null;
+  sideOrientation: number;
+  /** A picture on a card that turns to face the camera about its upright axis (the farthest level). */
+  billboard: boolean;
+}
+
+/**
+ * Take the lower levels of detail out of a loaded model (nodes whose glTF extras carry `lod` and `distance`,
+ * written by tools/content/nature.mjs), so everything that copies the model sees only its full-detail mesh.
+ */
+function takeLods(container: AssetContainer): LodLevel[] {
+  const levels: (LodLevel & { lod: number })[] = [];
+  for (const m of [...container.meshes]) {
+    const extras = (m.metadata?.gltf?.extras ?? m.parent?.metadata?.gltf?.extras) as { lod?: number; distance?: number; billboard?: boolean } | undefined;
+    if (!extras?.lod || !(m instanceof Mesh)) continue;
+    container.meshes.splice(container.meshes.indexOf(m), 1);
+    if (m.getTotalVertices()) {
+      m.computeWorldMatrix(true);
+      const data = VertexData.ExtractFromMesh(m, true, true);
+      // Into the model's space, like the merged full-detail mesh (the import mirrors the model).
+      data.transform(m.getWorldMatrix());
+      levels.push({ lod: extras.lod, data, distance: extras.distance ?? 50, material: m.material, sideOrientation: m.sideOrientation, billboard: !!extras.billboard });
+    }
+    m.parent = null;
+    m.dispose(false, false);
+  }
+  return levels.sort((a, b) => a.lod - b.lod);
 }
 
 /** Swap an empty mesh for a transform node in its place (same transform, same children). */

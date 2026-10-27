@@ -15,9 +15,11 @@ const KINDS = {
   grass: ['prop.grass_patch', 'prop.grass_leafy'],
   tall: ['prop.grass_tall'],
   flower: ['prop.flower_red', 'prop.flower_yellow', 'prop.flower_purple'],
-  shrub: ['prop.bush_small', 'prop.fern', 'prop.plant_low'],
-  bush: ['prop.bush', 'prop.bush_leafy'],
+  shrub: ['prop.bush_small', 'prop.fern', 'prop.plant_low', 'prop.mn_fern'],
+  bush: ['prop.bush', 'prop.bush_leafy', 'prop.mn_shrub'],
   pebbles: ['prop.stones'],
+  /** Eelgrass in shallow water (see WATER_DEPTH). */
+  reed: ['prop.mn_eelgrass'],
 } as const;
 type Kind = keyof typeof KINDS;
 
@@ -48,7 +50,16 @@ function recipe(material: TerrainMaterial, level: number): Partial<Record<Kind, 
 }
 
 /** Draw distance (m) per kind: grass pops in close, bushes further out. */
-const RANGE: Record<Kind, number> = { grass: 60, tall: 70, flower: 70, shrub: 90, pebbles: 50, bush: 130 };
+const RANGE: Record<Kind, number> = { grass: 60, tall: 70, flower: 70, shrub: 90, pebbles: 50, bush: 130, reed: 80 };
+/** Water plants grow where water or swamp over the terrain is this deep (m), about every other cell. */
+const WATER_DEPTH: readonly [number, number] = [0.08, 0.6];
+const REEDS_PER_CELL = 0.6;
+
+/** A body of water or swamp over the terrain (`mapLiquids`' boxes). */
+export interface FoliageWater {
+  min: { x: number; y: number; z: number };
+  max: { x: number; y: number; z: number };
+}
 /** Decoration only, thinned by distance and graphics setting; shrubs and bushes always grow in full. */
 const THINNED: ReadonlySet<Kind> = new Set<Kind>(['grass', 'tall', 'flower', 'pebbles']);
 /**
@@ -115,11 +126,11 @@ export class FoliageVisuals {
   ) {}
 
   /** (Re)grow everything for this terrain; `boxes` are floors and walls plants must not poke through. */
-  async grow(t: TerrainData | null, boxes: readonly WorldBox[], seed: string): Promise<void> {
+  async grow(t: TerrainData | null, boxes: readonly WorldBox[], seed: string, water: readonly FoliageWater[] = []): Promise<void> {
     const build = ++this.build;
     this.clear();
     if (!t) return;
-    const placements = place(t, boxes, seed);
+    const placements = place(t, boxes, seed, water);
     if (!placements.size) return;
     const geometry = new Map<string, Mesh[]>();
     await Promise.all(
@@ -232,9 +243,32 @@ export class FoliageVisuals {
     this.materials = [];
   }
 
-  /** The model's meshes with its own transform baked in, hidden, ready to be cloned per chunk. */
+  /**
+   * The model's meshes with its own transform baked in, hidden, ready to be cloned per chunk. Models with
+   * levels of detail (the painted mn_* plants) grow as their lightest level: thousands of them cover the ground.
+   */
   private async bake(file: string, model: string): Promise<Mesh[]> {
     const container = await this.models.load(file);
+    const light = this.models.lightestLod(file);
+    if (light) {
+      const m = new Mesh(`foliage_${model}_lod`, this.scene);
+      // The colours are linear (glTF); the lambert material below works in gamma space.
+      const data = light.data.clone();
+      if (data.colors) data.colors = data.colors.map((c, i) => (i % 4 === 3 ? c : c ** (1 / 2.2)));
+      data.applyToMesh(m, false);
+      m.sideOrientation = light.sideOrientation;
+      m.isPickable = false;
+      m.setEnabled(false);
+      const mat = new StandardMaterial(`foliage_${model}_painted`, this.scene);
+      // Painted per face (vertex colours): no tint, no specular, few lights.
+      mat.diffuseColor = Color3.White();
+      mat.specularColor = Color3.Black();
+      mat.backFaceCulling = light.material?.backFaceCulling ?? true;
+      mat.maxSimultaneousLights = 2;
+      m.material = mat;
+      this.materials.push(mat);
+      return [m];
+    }
     const inst = container.instantiateModelsToScene((n) => `foliage_${model}_${n}`, false, { doNotInstantiate: true });
     const out: Mesh[] = [];
     for (const root of inst.rootNodes) {
@@ -277,7 +311,7 @@ export class FoliageVisuals {
 }
 
 /** Every plant's model and matrix, grouped by `kind:chunkX:chunkZ`. Deterministic for a given terrain and seed. */
-export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string): Map<string, Map<string, number[]>> {
+export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, water: readonly FoliageWater[] = []): Map<string, Map<string, number[]>> {
   const out = new Map<string, Map<string, number[]>>();
   const rand = seeded(seed);
   const covered = coverage(boxes);
@@ -286,13 +320,28 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string):
   const q = new Quaternion();
   const s = new Vector3();
   const p = new Vector3();
+  /** Depth of water over the ground at a point (0: dry). */
+  const depthAt = (x: number, y: number, z: number): number => {
+    let d = 0;
+    for (const b of water) if (x >= b.min.x && x <= b.max.x && z >= b.min.z && z <= b.max.z && y >= b.min.y - 0.5 && y < b.max.y) d = Math.max(d, b.max.y - y);
+    return d;
+  };
   for (let i = 0; i < t.materials.length; i++) {
     const level = cellFoliage(t, i);
-    if (!level) continue;
-    const material = TERRAIN_MATERIALS[t.materials[i]!] ?? 'grass';
     const c = i % w;
     const r = Math.floor(i / w);
-    for (const [kind, amount] of Object.entries(recipe(material, level)) as [Kind, number][]) {
+    // Shallow water grows eelgrass, unless the map painted this cell bare.
+    let wet: Partial<Record<Kind, number>> | null = null;
+    if (water.length && (level || !t.foliage.length)) {
+      const cx = t.origin[0] + (c + 0.5) * t.spacing;
+      const cz = t.origin[1] + (r + 0.5) * t.spacing;
+      const cy = terrainHeightAt(t, cx, cz);
+      const d = cy === null ? 0 : depthAt(cx, cy, cz);
+      if (d >= WATER_DEPTH[0] && d <= WATER_DEPTH[1]) wet = { reed: REEDS_PER_CELL };
+    }
+    if (!level && !wet) continue;
+    const material = TERRAIN_MATERIALS[t.materials[i]!] ?? 'grass';
+    for (const [kind, amount] of Object.entries(wet ?? recipe(material, level)) as [Kind, number][]) {
       let n = Math.floor(amount) + (rand() < amount % 1 ? 1 : 0);
       while (n-- > 0) {
         const x = t.origin[0] + (c + rand()) * t.spacing;
@@ -302,7 +351,7 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string):
         const model = models[Math.floor(rand() * models.length)]!;
         const yaw = rand() * Math.PI * 2;
         // Kept low (ankle to shin height) so plants never hide a player.
-        const size = kind === 'grass' ? 0.45 + rand() * 0.35 : kind === 'tall' ? 0.5 + rand() * 0.25 : kind === 'bush' ? 0.7 + rand() * 0.4 : 0.6 + rand() * 0.3;
+        const size = kind === 'grass' ? 0.45 + rand() * 0.35 : kind === 'tall' ? 0.5 + rand() * 0.25 : kind === 'bush' ? 0.7 + rand() * 0.4 : kind === 'reed' ? 0.85 + rand() * 0.45 : 0.6 + rand() * 0.3;
         if (y === null || covered(x, y, z)) continue;
         // Steep slopes (cliff faces) stay bare.
         const dy = Math.abs((terrainHeightAt(t, x + 0.5, z) ?? y) - y) + Math.abs((terrainHeightAt(t, x, z + 0.5) ?? y) - y);

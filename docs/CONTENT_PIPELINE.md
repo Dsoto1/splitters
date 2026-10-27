@@ -90,6 +90,7 @@ folder can sit directly in it or one level down), and run:
 | Meshy community T-pose characters (CC0 per owner; the unzipped `Meshy_AI_Elder_T_POSE_…`, `Meshy_AI_T_Pose_{Alien,Cat,Pilot,Pirate,Titan}_…_texture_fbx` folders) anywhere inside the same dir | `ONLY=meshy_elder,meshy_alien,meshy_cat,meshy_pilot,meshy_pirate,meshy_titan node tools/content/prepare-meshy-characters.mjs <dir>` | `public/characters/meshy_{elder,alien,cat,pilot,pirate,titan}.glb`, `content/meshy.lock.json` (with the model name and download date) |
 | Meshy rock pile (`Meshy_AI_Rock_Pile_…_texture_remesh_tri_fbx`, owned like the above) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `rock_pile` prop (colour map attached by material name, 1024 px JPEG, `dropEmissive`) |
 | Meshy community weapons and props (CC0 per owner; the unzipped `Meshy_AI_ANACONDA_44_…`, `Meshy_AI_Plasma_Annihilator_X_…`, `Meshy_AI_Nebula_Arc_Cannon_…`, `Meshy_AI_Industrial_Control_Panel_…`, `Meshy_AI_Wreckage_…` and `Meshy_AI_Spiky_Dinosaur_…_texture_fbx` folders, each named in its entry's `download`) | `node tools/content/prepare-guns.mjs --downloads <dir>` and `node tools/content/prepare-props.mjs --downloads <dir>` | `public/models/guns/{ironclad_revolver,plasma_spin_gun,arc_cannon_turret}.glb`, `content/guns.lock.json`; the `mp_*` props, `content/props.lock.json` (both through `tools/content/meshy-mesh.mjs`, below) |
+| Meshy community nature models (Meshy community, CC0 per owner; each `Meshy_AI_<name>_…_texture_fbx` zip unzipped into a folder named `meshy-community-nature`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `mn_*` Nature props, built by `tools/content/nature.mjs` (below) |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 
 Locomotion clips (walk, run, sprint) come from Library 1: the Standard edition
@@ -165,6 +166,25 @@ are dropped first and each face gets its own again), and `flatten` packs lose
 their textures for one colour per face. `maps` attaches colour maps a download leaves
 unlinked (by material name), `textureSize` keeps them as JPEGs of that size, and
 `dropVertexColors` drops painting masks exported as vertex colours. Vertices are quantized.
+
+Packs with `nature: true` (the Meshy community trees, plants and rocks) are
+dense scanned-style meshes with a fragmented UV atlas, which neither the
+triangles nor the texture survive a normal decimation. `tools/content/nature.mjs`
+welds them by position alone, rebuilds clouds of separate leaves on a voxel grid
+(`remesh` cells, `shell` for open leaves; meshoptimizer's remesher), simplifies
+each level of detail to its triangle count, and paints every face with the
+area-weighted colour of the original faces nearest it (one colour per face, as
+8-bit vertex colours: no image ships). A prop's `nature` field lists its levels
+(`lods`: `[triangles, distance]`, LOD0 first) and, for trees, an `impostor`
+distance: a 128 × 256 picture of the model, rendered at build time by the small
+software rasteriser in `tools/content/raster.mjs`, on a card that turns about
+its upright axis to face the camera. The extra levels are glTF nodes whose
+`extras` carry `{ lod, distance, billboard }`; `ModelLibrary` takes them out of
+the loaded container (everything that copies a model sees LOD0 only) and gives
+the instanced copy of a placed prop Babylon LOD levels, so every copy picks its
+own level by distance. The lock file counts LOD0 against the prop budget and
+lists the other levels as `lodTriangles`. Terrain plants use a model's lightest
+mesh level.
 
 ### Starting budgets (to be tuned by profiling)
 

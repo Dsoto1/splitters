@@ -332,7 +332,7 @@ export class GameView {
     this.scenario.surface = (m, t) => styler.surfaceMaterial(doc, m, t);
     // Water bakes its depth (clear shallows, foam on the shore) from the level under it.
     this.scenario.liquids.levelBoxes = boxes;
-    void this.foliage.grow(doc.terrain, boxes, doc.metadata.id);
+    void this.foliage.grow(doc.terrain, boxes, doc.metadata.id, this.liquids.filter((l) => l.liquid === 'water' || l.liquid === 'swamp'));
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));

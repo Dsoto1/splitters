@@ -531,7 +531,8 @@ const clear = (x: number, z: number, r: number) =>
   keepOut.every(([kx, kz, kr]) => Math.hypot(kx - x, kz - z) > kr + r) && FENCES.every((f) => lineDist(x, z, f) > 1.5 + r) &&
   trees.every(([tx, tz, tr]) => Math.hypot(tx - x, tz - z) > tr + r + 1.2);
 const woodsAt = (x: number, z: number) => z < -55 || z > 58 || x < -60 || x > 56;
-const TREES = ['pine', 'nt_pine_tall', 'pine_tall', 'nt_birch', 'pine_round', 'pine_crooked', 'nt_common_tree', 'oak', 'nt_pine_tall', 'nt_birch'];
+// The painted fir, birch and oak (mn_*: Meshy community, with levels of detail and far picture cards) among the low-poly pines.
+const TREES = ['pine', 'mn_fir', 'pine_tall', 'mn_birch', 'pine_round', 'pine_crooked', 'nt_common_tree', 'mn_oak', 'mn_fir', 'mn_birch'];
 for (let n = 0; n < 6000 && trees.length < 230; n++) {
   const x = -76 + rand() * 144;
   const z = -96 + rand() * 176;
@@ -544,7 +545,7 @@ for (let n = 0; n < 6000 && trees.length < 230; n++) {
   const model = TREES[Math.floor(rand() * TREES.length)]!;
   prop(model, [+x.toFixed(2), ground(x, z), +z.toFixed(2)], +(rand() * 6.28).toFixed(2), +(0.85 + rand() * 0.45).toFixed(2));
 }
-const UNDERGROWTH = ['bush', 'nt_bush_leafy', 'fern', 'nt_bush_berries', 'grass_tall', 'nt_fern_wide'];
+const UNDERGROWTH = ['mn_shrub', 'nt_bush_leafy', 'fern', 'nt_bush_berries', 'grass_tall', 'mn_fern'];
 let under = 0;
 for (let n = 0; n < 4000 && under < 150; n++) {
   const x = -76 + rand() * 144;
