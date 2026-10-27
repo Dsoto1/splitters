@@ -1,8 +1,8 @@
 import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
-import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
+import { MessageGuard, PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { RemoteLink } from './localTransport.ts';
 import type { Transport } from './transport.ts';
-import { CHUNK, Unzipper, Zipper } from './peerZip.ts';
+import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, Zipper, type ReassemblyLimits } from './peerZip.ts';
 import { fetchIce, hubAddress, hubSetting } from './hub.ts';
 import { makeJoinCode } from './joinCode.ts';
 
@@ -112,29 +112,37 @@ function sendText(conn: DataConnection, text: string, zip?: Zipper): void {
   for (let i = 0; i < n; i++) conn.send(`\u0001${id}|${i}|${n}|${text.slice(i * CHUNK, (i + 1) * CHUNK)}`);
 }
 
-/** Calls `cb` with whole texts, putting chunked ones back together (and unzipping compressed ones). `wire` counts bytes received. */
-function onText(conn: DataConnection, cb: (text: string) => void, wire?: (bytes: number) => void): void {
-  const parts = new Map<string, string[]>();
+/**
+ * Calls `cb` with whole texts, putting chunked ones back together (and unzipping compressed ones). `wire` counts bytes received.
+ * Nothing the other side sends is trusted: pieces and inflated output are capped (`limits`, peerZip.ts), and with a
+ * `guard` (the host, for each friend) messages past the rate budget are dropped. A link that breaks a limit is closed.
+ */
+function onText(conn: DataConnection, cb: (text: string) => void, o: { limits: ReassemblyLimits; guard?: MessageGuard; wire?: (bytes: number) => void }): void {
+  const parts = new Reassembler(o.limits);
   let unzip: Unzipper | null = null;
+  const abuse = (why: string) => {
+    console.warn(`closing a connection: ${why}`);
+    conn.close();
+  };
   conn.on('data', (data) => {
-    if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
-      const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-      wire?.(bytes.length);
-      const text = (unzip ??= new Unzipper()).piece(bytes);
-      if (text !== null) cb(text);
-      return;
-    }
-    const text = String(data);
-    wire?.(text.length);
-    if (!text.startsWith('\u0001')) return cb(text);
-    const [id, i, n] = text.slice(1).split('|', 3) as [string, string, string];
-    const body = text.slice(1 + id.length + i.length + n.length + 3);
-    const list = parts.get(id) ?? new Array<string>(Number(n));
-    list[Number(i)] = body;
-    parts.set(id, list);
-    if (list.filter((x) => x !== undefined).length === Number(n)) {
-      parts.delete(id);
-      cb(list.join(''));
+    if (!conn.open) return;
+    const verdict = o.guard?.check() ?? 'ok';
+    if (verdict === 'kick') return abuse('too many messages');
+    if (verdict === 'drop') return;
+    try {
+      if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+        const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+        o.wire?.(bytes.length);
+        const text = (unzip ??= new Unzipper(o.limits.maxBytes)).piece(bytes);
+        if (text !== null) cb(text);
+        return;
+      }
+      const text = String(data);
+      o.wire?.(text.length);
+      const whole = parts.add(text);
+      if (whole !== null) cb(whole);
+    } catch (e) {
+      abuse((e as Error).message);
     }
   });
 }
@@ -144,7 +152,8 @@ function linkFor(conn: DataConnection): RemoteLink {
   const zip = (conn.metadata as { z?: number } | undefined)?.z === 1 ? new Zipper() : undefined;
   return {
     send: (text) => sendText(conn, text, zip),
-    onMessage: (cb) => onText(conn, cb),
+    // A friend's messages are small and rate-limited (the same budget as the dedicated server's clients).
+    onMessage: (cb) => onText(conn, cb, { limits: GUEST_TO_HOST_LIMITS, guard: new MessageGuard() }),
     onClose: (cb) => {
       conn.on('close', cb);
       conn.on('error', cb);
@@ -291,7 +300,7 @@ export class PeerTransport implements Transport {
           }
           onMessage(msg);
         },
-        (bytes) => (this.bytesIn += bytes),
+        { limits: HOST_TO_GUEST_LIMITS, wire: (bytes) => (this.bytesIn += bytes) },
       );
       conn.on('close', () => fail(opened ? 'the host left the game' : noDirect));
     });

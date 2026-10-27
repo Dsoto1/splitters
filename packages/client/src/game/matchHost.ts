@@ -23,6 +23,9 @@ import {
   type ServerMessage,
 } from '@tiletrigger/shared';
 
+/** Messages kept from a friend whose link opened before the match was ready. */
+const MAX_EARLY_MESSAGES = 64;
+
 export interface LocalMatchOptions {
   name: string;
   /** Character look for the local player. */
@@ -312,7 +315,8 @@ export class MatchHost {
     const r = this.remotes.get(id);
     const { match, bots, control } = this;
     if (!r) return;
-    if (r.early || !match || !bots || !control) return void r.early?.push(text);
+    // While the match loads, a friend's first few messages wait for it (hello, ready, a ping or two); the rest are dropped.
+    if (r.early || !match || !bots || !control) return void (r.early && r.early.length < MAX_EARLY_MESSAGES && r.early.push(text));
     const msg = parseClientMessage(text);
     if (!msg) return;
     if (msg.t === 'hello' && r.slot === null) {
