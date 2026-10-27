@@ -85,6 +85,7 @@ import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
 import { LocalTransport } from './localTransport.ts';
+import { perfProbe } from './perfProbe.ts';
 import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
 import type { PeerHost } from './peerLink.ts';
@@ -474,7 +475,12 @@ export class GameSession {
     );
 
     opts.transport.start(
-      (m) => this.onMessage(m),
+      (m) => {
+        if (!perfProbe.on) return this.onMessage(m);
+        const t0 = performance.now();
+        this.onMessage(m);
+        perfProbe.msg += performance.now() - t0;
+      },
       (reason) => this.exit(reason),
     );
   }
@@ -847,6 +853,24 @@ export class GameSession {
     } catch {
       // No hub here: the localhost warning above stands.
     }
+  }
+
+  /** Seconds in a row this browser's own match fell behind or rendered slowly (see noteIfSlow); -1 once noted. */
+  private slowSeconds = 0;
+
+  /**
+   * A big match in this browser (offline, Host game) on a device that can't keep
+   * up: after a few seconds of the match falling behind real time or frames
+   * crawling, one quiet line says what helps. Nothing otherwise.
+   */
+  private noteIfSlow(stats: Extract<ServerMessage, { t: 'stats' }>): void {
+    if (this.slowSeconds < 0 || !(this.opts.transport instanceof LocalTransport)) return;
+    const slow = !document.hidden && (stats.lateTicks > 12 || this.frameMs > 50);
+    this.slowSeconds = slow ? this.slowSeconds + 1 : 0;
+    if (this.slowSeconds < 5) return;
+    this.slowSeconds = -1;
+    const players = stats.humans + stats.bots;
+    this.hud.showMessage(`This device is finding ${players} players heavy: fewer bots, or lower graphics in Options, will help.`, 6);
   }
 
   /** Set when a chain moves on (see Travel). */
@@ -1266,6 +1290,7 @@ export class GameSession {
         break;
       case 'stats':
         this.serverStats = msg;
+        this.noteIfSlow(msg);
         break;
       case 'pings':
         this.hud.setPings(msg.p);
@@ -1506,6 +1531,7 @@ export class GameSession {
       this.drawPause();
     }
     const now = performance.now();
+    if (perfProbe.on) perfProbe.beginFrame(now);
     const dt = Math.min(0.25, (now - this.last) / 1000);
     this.frameMs = now - this.last;
     this.last = now;
@@ -1852,7 +1878,12 @@ export class GameSession {
       this.serverStats,
       this.botStates,
     );
+    if (!perfProbe.on) return this.view.render();
+    const r0 = performance.now();
     this.view.render();
+    const end = performance.now();
+    perfProbe.render = end - r0;
+    perfProbe.endFrame(end);
   }
 }
 

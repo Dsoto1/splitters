@@ -20,4 +20,6 @@ export default defineConfig({
   optimizeDeps: { exclude: ['@babylonjs/core', '@babylonjs/loaders', '@babylonjs/materials'] },
   define: { __APP_VERSION__: JSON.stringify(pkg.version ?? '0.0.0'), __ASSET_VERSION__: JSON.stringify(assetVersion()) },
   build: { target: 'es2022', chunkSizeWarningLimit: 4096 },
+  // The offline match's worker (game/simWorker.ts) loads the simulation lazily: ES module workers split like the page.
+  worker: { format: 'es' },
 });

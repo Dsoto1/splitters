@@ -18,7 +18,7 @@ import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/atmosphere.ts';
 import { EditorApp, type TestRequest } from './editor/editorApp.ts';
-import { LocalTransport } from './game/localTransport.ts';
+import { LocalTransport, prewarmSimWorker } from './game/localTransport.ts';
 import { NetTransport } from './game/netTransport.ts';
 import { PeerTransport, cleanJoinCode } from './game/peerLink.ts';
 import { CharacterDesigner } from './designer/characterDesigner.ts';
@@ -243,6 +243,8 @@ class App {
     this.editor.show();
     // The first time, its sky, ground and shaders are still on their way: fade the view in when they are.
     if (first) revealWhenReady(capped(this.editor.view.scene.whenReadyAsync(), 2000));
+    // TEST starts a match in a worker: have one load the simulation while the map is being made.
+    prewarmSimWorker();
     // Automation hook for browser tests.
     (window as unknown as { __editor: EditorApp }).__editor = this.editor;
   }
@@ -261,6 +263,7 @@ class App {
       onExit: (reason) => {
         this.mode = 'editor';
         this.editor!.show();
+        prewarmSimWorker();
         if (reason) this.editor!.toast(`Test ended: ${reason}`, true);
       },
     });

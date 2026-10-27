@@ -1,27 +1,9 @@
-import {
-  BOT_DIFFICULTIES,
-  rulesForMap,
-  MAX_PLAYER_SLOTS,
-  PROTOCOL_VERSION,
-  SNAPSHOT_INTERVAL_TICKS,
-  TICK_RATE,
-  encodeSnapshots,
-  getWeapon,
-  initPhysics,
-  parseClientMessage,
-  sanitizeName,
-  weaponCode,
-  type BotDifficulty,
-  type CarryOver,
-  type GameEvent,
-  type HostCommand,
-  type HostState,
-  type MapDocument,
-  type MatchRules,
-  type PlayerInput,
-  type ServerMessage,
-} from '@tiletrigger/shared';
+import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
+import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
+import { perfProbe } from './perfProbe.ts';
 import type { Transport } from './transport.ts';
+
+export type { LocalMatchOptions } from './matchHost.ts';
 
 /** A friend's connection to a match this browser hosts (a WebRTC data channel, or anything that moves text). */
 export interface RemoteLink {
@@ -31,317 +13,338 @@ export interface RemoteLink {
   close(): void;
 }
 
-export interface LocalMatchOptions {
-  name: string;
-  /** Character look for the local player. */
-  look?: string;
-  /** Total players to fill with Player Bots. */
-  botFill: number;
-  difficulty: BotDifficulty['id'];
-  rules?: MatchRules;
-  /** Scenario chains: the score and weapons the local player brings from the previous map. */
-  carry?: CarryOver;
+/** Where this browser's match runs: a worker (the default), or the page's own thread. */
+export type SimThread = 'worker' | 'main';
+
+const SIM_KEY = 'tiletrigger.sim';
+
+/**
+ * The page's thread instead of a worker: browsers without module workers, `?sim=main`,
+ * or `localStorage['tiletrigger.sim'] = 'main'` (browser tests that reach into the
+ * match synchronously through `window.__match`).
+ */
+export function simThreadWanted(): SimThread {
+  if (typeof Worker === 'undefined') return 'main';
+  try {
+    if (new URLSearchParams(location.search).get('sim') === 'main') return 'main';
+    if (localStorage.getItem(SIM_KEY) === 'main') return 'main';
+  } catch {
+    // No storage: the default.
+  }
+  return 'worker';
+}
+
+/** A match worker started ahead of time (prewarmSimWorker), taken by the next match. */
+let spare: Worker | null = null;
+
+function newSimWorker(): Worker {
+  return new Worker(new URL('./simWorker.ts', import.meta.url), { type: 'module', name: 'match' });
 }
 
 /**
- * Runs the authoritative Match inside the browser and speaks the same message
- * protocol as the dedicated server. Used by MapMaker TEST and offline play, so
- * "test" exercises exactly the code a hosted match runs.
+ * Start a match worker loading the simulation and its WebAssembly (physics,
+ * navigation) ahead of time, so the next local match (MapMaker TEST) doesn't
+ * wait for it. Harmless when unused; does nothing without workers.
+ */
+export function prewarmSimWorker(): void {
+  if (spare || simThreadWanted() !== 'worker') return;
+  try {
+    const w = newSimWorker();
+    w.onerror = () => {
+      w.terminate();
+      if (spare === w) spare = null;
+    };
+    w.postMessage({ k: 'warm' } satisfies ToSimHost);
+    spare = w;
+  } catch {
+    spare = null;
+  }
+}
+
+/** Test hooks (browser tests, perf runs): the same in both threads, async because a worker answers later. */
+export interface SimHook {
+  mode: SimThread;
+  /** Run `(match, me, arg, module) => value` (its source) where the match runs; resolves with a value that can be copied. */
+  eval(src: string, arg?: unknown): Promise<unknown>;
+}
+
+/**
+ * Runs the authoritative Match for this browser and speaks the same message
+ * protocol as the dedicated server. Used by MapMaker TEST, offline play and
+ * Host game, so "test" exercises exactly the code a hosted match runs.
+ *
+ * The match itself (MatchHost) runs in a Web Worker, so bots, navigation and
+ * physics don't share a core with rendering: snapshots and events come back
+ * as messages, inputs and host commands go to it, and friends' links are
+ * relayed through. Without workers (or asked: see simThreadWanted) the same
+ * MatchHost runs on the page's thread, with the same messages.
  */
 export class LocalTransport implements Transport {
   readonly label = 'local';
   rttMs = 0;
   bytesIn = 0;
-  private stopped = false;
-  private timer?: number;
-  private queueInputs?: (inputs: PlayerInput[]) => void;
-  private markReady?: () => void;
-  private teardown?: () => void;
-  private carryNow?: () => CarryOver;
-  /** What the local player would take into the next map of a chain (score and weapons), or null before the match runs. */
-  carry(): CarryOver | null {
-    return this.stopped ? null : (this.carryNow?.() ?? null);
-  }
   /** Time from start() to the welcome message, for the TEST transition budget. */
   startupMs = 0;
-  /** Friends playing in this match (Host game), and the hook that lets them in once it's running. */
-  private remotes = new Set<{ link: RemoteLink; slot: number | null; rtt?: number | undefined }>();
-  private admit?: (link: RemoteLink) => void;
-  /** Friends who connected before the match had loaded (after a map change, they come straight back): let in once it runs. */
-  private waiting: RemoteLink[] = [];
-  /** The host's controls over this match (pause menu → Match): bots, skill, style, restart, end. */
-  private control?: import('@tiletrigger/shared/match').HostControl;
-  private announce?: (msg: ServerMessage) => void;
-  /** How many people can play: friends take bots' places up to the match's size. */
-  get capacity(): number {
-    return Math.max(1, Math.min(this.control?.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS));
-  }
-
-  /** The match's host settings now (null before it runs). */
-  hostState(): HostState | null {
-    return this.stopped ? null : (this.control?.state() ?? null);
-  }
-
-  /** The rules the match plays now (the host may have changed team sizes and bot style), or null before it runs. */
-  liveRules(): MatchRules | null {
-    return this.stopped ? null : (this.control?.match.rules ?? null);
-  }
-
-  /**
-   * The host runs the match (this browser's player: offline, or Host game).
-   * A map change is the session's (it restarts the match on the new map);
-   * everything else happens here, live. Friends can't: their commands are refused.
-   */
-  host(cmd: Exclude<HostCommand, { c: 'map' }>): string | null {
-    const c = this.control;
-    if (!c || this.stopped) return 'The match has not started';
-    const r = c.apply(cmd);
-    if (r.error) return r.error;
-    if (r.notice) this.announce?.({ t: 'notice', text: r.notice });
-    this.announce?.({ t: 'roster', players: c.match.roster() });
-    this.announce?.({ t: 'host', state: c.state() });
-    return null;
-  }
-
-  /**
-   * Go offline: every friend is told why and disconnected, and bots take
-   * their places again (the match itself carries on).
-   */
-  dropGuests(reason: string): void {
-    const c = this.control;
-    const text = JSON.stringify({ t: 'reject', reason } satisfies ServerMessage);
-    for (const r of [...this.remotes]) {
-      if (r.slot !== null) {
-        r.link.send(text);
-        if (c && !this.stopped) c.bots.leave(r.slot, c.fill);
-        r.slot = null;
-      }
-      this.remotes.delete(r);
-      const link = r.link;
-      // A moment for the message to get there before the link closes.
-      window.setTimeout(() => link.close(), 500);
-    }
-    if (c && !this.stopped) this.announce?.({ t: 'roster', players: c.match.roster() });
-  }
-
-  /** Tell everyone the map is about to change ("Changing map to …"). */
-  notice(text: string): void {
-    this.announce?.({ t: 'notice', text });
-  }
-
-  /**
-   * Host game, map change: friends get `travel` and reconnect by themselves
-   * to the same join code, where the next match lets them in.
-   */
-  travelGuests(mapName: string): void {
-    const text = JSON.stringify({ t: 'travel', map: mapName } satisfies ServerMessage);
-    for (const r of this.remotes) if (r.slot !== null) r.link.send(text);
-    this.departing = true;
-  }
-
+  /** Where the match runs (known once started). */
+  thread: SimThread | null = null;
+  private stopped = false;
+  private worker?: Worker;
+  private inThread?: MatchHost;
+  /** What we've told the host before it existed (and, with a worker, until it welcomed us: replayed if it fails). */
+  private early: ToSimHost[] = [];
+  private welcomed = false;
+  private facts: HostFacts | null = null;
+  /** Friends playing in this match (Host game), by the id the host knows them by. */
+  private links = new Map<number, { link: RemoteLink; slot: number | null }>();
+  private nextLink = 1;
   /** Friends were sent `travel`: give it time to arrive before their links close. */
   private departing = false;
-
-  /** Players connected from elsewhere (Host game). */
-  get guests(): number {
-    return [...this.remotes].filter((r) => r.slot !== null).length;
-  }
+  private evals = new Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
+  private nextEval = 1;
+  private onVisibility?: () => void;
+  private onMessage?: (m: ServerMessage) => void;
+  private onClose?: (reason: string) => void;
 
   constructor(
     private readonly map: MapDocument,
     private readonly opts: LocalMatchOptions,
   ) {}
 
-  start(onMessage: (m: ServerMessage) => void, onClose: (reason: string) => void): void {
-    const t0 = performance.now();
-    void this.run(onMessage, t0).catch((e: Error) => onClose(`local match failed: ${e.message}`));
+  /** What the local player would take into the next map of a chain (score and weapons), or null before the match runs. */
+  carry(): CarryOver | null {
+    if (this.stopped) return null;
+    return this.inThread ? this.inThread.carry() : (this.facts?.carry ?? null);
   }
 
-  private async run(onMessage: (m: ServerMessage) => void, t0: number): Promise<void> {
-    // The match module pulls in Recast; load it only when a local match starts.
-    const [{ Match, BotFiller, HostControl, initNavigation }] = await Promise.all([import('@tiletrigger/shared/match'), initPhysics()]);
-    await initNavigation();
-    if (this.stopped) return;
-    const rules = this.opts.rules ?? rulesForMap(this.map);
-    const match = new Match(this.map, rules, Math.floor(Math.random() * 1e6), { startGate: true });
-    const me = match.addHuman(this.opts.name, this.opts.look)!;
-    if (this.opts.carry) match.applyCarry(me, this.opts.carry);
-    this.carryNow = () => match.carryOf(me);
-    // Automation hook for browser tests (give weapons, place players).
-    (window as unknown as { __match: unknown; __give: (id: string) => void }).__match = match;
-    (window as unknown as { __give: (id: string) => void }).__give = (id) => {
-      const def = getWeapon(id);
-      me.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: def.reserveMax, alt: def.alt?.max ?? 0 });
-      me.current = weaponCode(def);
-      me.raiseTicks = 0;
-    };
-    const bots = new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]);
-    const control = new HostControl(match, bots, Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));
-    this.control = control;
-    bots.rebalance(control.fill);
-    // Host game: friends join like they would a dedicated server (same messages, same checks).
-    const rosterToAll = () => {
-      const msg: ServerMessage = { t: 'roster', players: match.roster() };
-      onMessage(msg);
-      const text = JSON.stringify(msg);
-      for (const r of this.remotes) if (r.slot !== null) r.link.send(text);
-    };
-    this.admit = (link) => {
-      const r = { link, slot: null as number | null, rtt: undefined as number | undefined };
-      this.remotes.add(r);
-      link.onMessage((text) => {
-        const msg = parseClientMessage(text);
-        if (!msg) return;
-        if (msg.t === 'hello' && r.slot === null) {
-          if (msg.protocol !== PROTOCOL_VERSION) {
-            link.send(JSON.stringify({ t: 'reject', reason: `protocol ${msg.protocol} unsupported (host speaks ${PROTOCOL_VERSION})` }));
-            return link.close();
-          }
-          // The friend takes over a bot where it stands, on the team that needs a player.
-          const player = bots.join(sanitizeName(msg.name), msg.look, control.fill);
-          if (!player) {
-            link.send(JSON.stringify({ t: 'reject', reason: 'match full' }));
-            return link.close();
-          }
-          r.slot = player.slot;
-          link.send(JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState() } satisfies ServerMessage));
-          rosterToAll();
-        } else if (msg.t === 'input' && r.slot !== null) match.queueInputs(r.slot, msg.inputs);
-        else if (msg.t === 'ready' && r.slot !== null) match.ready(r.slot);
-        else if (msg.t === 'ping') {
-          if (msg.rtt !== undefined) r.rtt = msg.rtt;
-          link.send(JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
-        }
-        // Only the host runs the match: a friend's host commands (or admin logins) are refused.
-        else if ((msg.t === 'host' || msg.t === 'admin') && r.slot !== null) link.send(JSON.stringify({ t: 'host', state: null, error: 'Only the host can change the match' } satisfies ServerMessage));
-      });
-      link.onClose(() => {
-        this.remotes.delete(r);
-        if (r.slot === null || this.stopped) return;
-        // A bot takes their place where they were.
-        bots.leave(r.slot, control.fill);
-        rosterToAll();
-      });
-    };
-    // Notices, rosters and the host's settings: to this player, and (except the settings) to every friend.
-    this.announce = (msg) => {
-      onMessage(msg);
-      if (msg.t === 'host') return;
-      const text = JSON.stringify(msg);
-      for (const r of this.remotes) if (r.slot !== null) r.link.send(text);
-    };
-    this.queueInputs = (inputs) => match.queueInputs(me.slot, inputs);
-    this.markReady = () => match.ready(me.slot);
-    this.teardown = () => match.destroy();
+  /**
+   * How many people can play: friends take bots' places up to the match's size,
+   * and the host's browser takes BROWSER_HOST_MAX_GUESTS friends at most (its upload carries their snapshots).
+   */
+  get capacity(): number {
+    return Math.max(1, Math.min(this.facts?.state.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS, 1 + BROWSER_HOST_MAX_GUESTS));
+  }
 
-    onMessage({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() });
-    onMessage({ t: 'roster', players: match.roster() });
-    onMessage({ t: 'host', state: control.state() });
-    this.startupMs = performance.now() - t0;
-    // Friends who came back from a map change before the match had loaded.
-    for (const link of this.waiting.splice(0)) this.admit(link);
+  /** The match's host settings now (null before it runs). */
+  hostState(): HostState | null {
+    return this.stopped ? null : (this.facts?.state ?? null);
+  }
 
-    let events: GameEvent[] = [];
-    const tickMs = 1000 / TICK_RATE;
-    let next = performance.now();
-    let statsAt = next;
-    let pingRounds = 0;
-    let tickTotal = 0;
-    let tickMax = 0;
-    let aiTotal = 0;
-    let ticks = 0;
-    const loop = () => {
+  /** The rules the match plays now (the host may have changed team sizes and bot style), or null before it runs. */
+  liveRules(): MatchRules | null {
+    return this.stopped ? null : (this.facts?.rules ?? null);
+  }
+
+  /**
+   * The host runs the match (this browser's player: offline, or Host game).
+   * A map change is the session's (it restarts the match on the new map);
+   * everything else happens there, live. A refused command comes back as a
+   * `host` message with its error. Friends can't: their commands are refused.
+   */
+  host(cmd: Exclude<HostCommand, { c: 'map' }>): string | null {
+    if (this.stopped || !this.facts) return 'The match has not started';
+    this.toHost({ k: 'cmd', cmd });
+    return null;
+  }
+
+  /** Go offline: every friend is told why and disconnected, and bots take their places again (the match carries on). */
+  dropGuests(reason: string): void {
+    this.toHost({ k: 'drop', reason });
+  }
+
+  /** Tell everyone the map is about to change ("Changing map to …"). */
+  notice(text: string): void {
+    // This player sees it now (the map change follows at once); friends get it from the match.
+    if (!this.stopped) this.onMessage?.({ t: 'notice', text });
+    this.toHost({ k: 'notice', text, guestsOnly: true });
+  }
+
+  /** Host game, map change: friends get `travel` and reconnect by themselves to the same join code, where the next match lets them in. */
+  travelGuests(mapName: string): void {
+    // Sent from here: the match (and its worker) stops right after, before it could answer.
+    const text = JSON.stringify({ t: 'travel', map: mapName } satisfies ServerMessage);
+    for (const r of this.links.values()) if (r.slot !== null) r.link.send(text);
+    this.departing = true;
+  }
+
+  /** Players connected from elsewhere (Host game). */
+  get guests(): number {
+    return [...this.links.values()].filter((r) => r.slot !== null).length;
+  }
+
+  start(onMessage: (m: ServerMessage) => void, onClose: (reason: string) => void): void {
+    const t0 = performance.now();
+    this.onMessage = (m) => {
+      if (m.t === 'welcome' && !this.welcomed) {
+        this.welcomed = true;
+        this.early = [];
+        this.startupMs = performance.now() - t0;
+      }
+      onMessage(m);
+    };
+    this.onClose = onClose;
+    this.onVisibility = () => this.toHost({ k: 'hidden', v: document.hidden });
+    // (Unit tests run this without a real document.)
+    if (typeof document.addEventListener === 'function') document.addEventListener('visibilitychange', this.onVisibility);
+    const start: ToSimHost = { k: 'start', map: this.map, opts: this.opts, hidden: document.hidden };
+    if (simThreadWanted() === 'worker' && this.startWorker(start)) return;
+    this.startHere(start);
+  }
+
+  /** The match in a module worker. False when one can't be made here. */
+  private startWorker(start: ToSimHost): boolean {
+    let worker: Worker;
+    try {
+      worker = spare ?? newSimWorker();
+      spare = null;
+    } catch {
+      return false;
+    }
+    this.worker = worker;
+    this.thread = 'worker';
+    worker.onmessage = (e: MessageEvent<FromSimHost>) => this.receive(e.data);
+    // A worker that can't run (it failed to load) before the match began: run it here instead.
+    worker.onerror = (e) => {
+      e.preventDefault();
       if (this.stopped) return;
-      const now = performance.now();
-      // A background tab only wakes us about once a second: then catch up to real time, so the
-      // match (and the bots shooting an idle or tabbed-out player) keeps going at full speed.
-      const hidden = document.hidden;
-      for (let n = 0; now >= next && n < (hidden ? 150 : 5); n++) {
-        const s = performance.now();
-        events.push(...match.step());
-        if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
-          const snap = match.snapshot(events);
-          onMessage({ t: 'snapshot', ack: me.lastSeq, me: match.privateState(me.slot), ...snap });
-          if (this.remotes.size) {
-            // Serialise the shared part once; each guest gets its own ack, private state and (big matches) nearby players.
-            const guests = [...this.remotes].filter((r): r is { link: RemoteLink; slot: number } => r.slot !== null);
-            const texts = encodeSnapshots(snap, guests.map((r) => ({ slot: r.slot, ack: match.slots[r.slot]?.lastSeq ?? 0, me: match.privateState(r.slot) })));
-            guests.forEach((r, i) => r.link.send(texts[i]!));
-          }
-          events = [];
-        }
-        const ms = performance.now() - s;
-        tickTotal += ms;
-        tickMax = Math.max(tickMax, ms);
-        aiTotal += match.lastAiMs;
-        ticks++;
-        next += tickMs;
+      if (!this.welcomed) {
+        console.warn('match worker failed, running the match on the page instead', e.message);
+        return this.fallBack(start);
       }
-      if (now - next > tickMs * (hidden ? 300 : 10)) next = now;
-      if (now - statsAt >= 1000) {
-        statsAt = now;
-        const all = match.combatants();
-        onMessage({
-          t: 'stats',
-          tickMsAvg: ticks ? tickTotal / ticks : 0,
-          tickMsMax: tickMax,
-          aiMsAvg: ticks ? aiTotal / ticks : 0,
-          snapshotBytes: 0,
-          bytesPerSecPerClient: 0,
-          humans: all.filter((c) => c.kind === 'human').length,
-          bots: all.filter((c) => c.kind === 'bot').length,
-          lateTicks: 0,
-        });
-        tickTotal = tickMax = aiTotal = ticks = 0;
-        // Host game, every other second: each friend's ping (the host's own is 0) for everyone's scoreboard.
-        if (this.remotes.size && ++pingRounds % 2 === 0) {
-          const p = [me.slot, 0, ...[...this.remotes].flatMap((r) => (r.slot !== null && r.rtt !== undefined ? [r.slot, r.rtt] : []))];
-          this.announce?.({ t: 'pings', p });
-        }
-      }
-      this.timer = window.setTimeout(loop, Math.max(0, next - performance.now()));
+      // A running match's error stays an error of this page (as it was when the match ran here): tests and the console see it.
+      const error = new Error(`match worker: ${e.message || 'error'}`);
+      window.setTimeout(() => {
+        throw error;
+      });
     };
-    loop();
+    worker.postMessage(start);
+    // What came before (a friend reconnecting after a map change): kept until the welcome, in case we fall back.
+    for (const m of this.early) worker.postMessage(m);
+    this.installHooks();
+    return true;
+  }
+
+  /** The match on the page's own thread (no workers, or asked for). */
+  private startHere(start: ToSimHost): void {
+    if (start.k !== 'start') return;
+    this.thread = 'main';
+    const post = (m: FromSimHost) => this.receive(m);
+    const host = new MatchHost(start.map, start.opts, sinkTo(post));
+    this.inThread = host;
+    host.setHidden(start.hidden);
+    host.onWake = (ms, ticks) => perfProbe.on && perfProbe.addSim(ms, ticks);
+    // Automation hook for browser tests (give weapons, place players): the match itself, synchronously.
+    host.onMatch = (match) => ((window as unknown as { __match: unknown }).__match = match);
+    const early = this.early.splice(0);
+    for (const m of early) if (m.k !== 'start') dispatchToHost(host, m, post);
+    this.installHooks();
+    host.start().catch((e: Error) => post({ k: 'failed', error: e.message }));
+  }
+
+  private fallBack(start: ToSimHost): void {
+    this.worker?.terminate();
+    this.worker = undefined;
+    this.startHere(start);
+  }
+
+  private installHooks(): void {
+    const hook: SimHook = {
+      mode: this.thread ?? 'main',
+      eval: (src, arg) =>
+        new Promise((resolve, reject) => {
+          const req = this.nextEval++;
+          this.evals.set(req, { resolve, reject });
+          this.toHost({ k: 'eval', req, src, arg });
+        }),
+    };
+    const w = window as unknown as { __sim: SimHook; __give: (id: string) => void };
+    w.__sim = hook;
+    w.__give = (id) => this.toHost({ k: 'give', id });
+  }
+
+  /** To the match: posted to the worker, called on this thread, or kept until there is a match. */
+  private toHost(m: ToSimHost): void {
+    if (this.stopped) return;
+    if (this.worker) {
+      if (!this.welcomed) this.early.push(m);
+      this.worker.postMessage(m);
+    } else if (this.inThread) dispatchToHost(this.inThread, m as Exclude<ToSimHost, { k: 'start' }>, (r) => this.receive(r));
+    else this.early.push(m);
+  }
+
+  /** From the match. */
+  private receive(m: FromSimHost): void {
+    if (this.stopped) return;
+    switch (m.k) {
+      case 'local':
+        return this.onMessage?.(m.msg);
+      case 'facts':
+        this.facts = m.facts;
+        return;
+      case 'send':
+        return this.links.get(m.id)?.link.send(m.text);
+      case 'close': {
+        const r = this.links.get(m.id);
+        this.links.delete(m.id);
+        if (r) window.setTimeout(() => r.link.close(), m.delay);
+        return;
+      }
+      case 'guest': {
+        const r = this.links.get(m.id);
+        if (r) r.slot = m.slot;
+        return;
+      }
+      case 'failed':
+        return this.fail(`local match failed: ${m.error}`);
+      case 'eval': {
+        const p = this.evals.get(m.req);
+        this.evals.delete(m.req);
+        if (m.ok) p?.resolve(m.value);
+        else p?.reject(new Error(m.error));
+        return;
+      }
+    }
+  }
+
+  private fail(reason: string): void {
+    const cb = this.onClose;
+    this.close();
+    cb?.(reason);
   }
 
   /** Let a friend into this match (Host game). Links arriving while the match loads wait for it (a map change brings everyone back at once). */
   accept(link: RemoteLink): void {
     if (this.stopped) return link.close();
-    if (this.admit) return this.admit(link);
-    // Keep what they say meanwhile (their hello comes at once) for when they're let in.
-    const early: string[] = [];
-    let deliver: ((text: string) => void) | null = null;
-    link.onMessage((text) => (deliver ? deliver(text) : early.push(text)));
-    const held: RemoteLink = {
-      send: (text) => link.send(text),
-      close: () => link.close(),
-      onClose: (cb) => link.onClose(cb),
-      onMessage: (cb) => {
-        deliver = cb;
-        for (const text of early.splice(0)) cb(text);
-      },
-    };
-    this.waiting.push(held);
-    link.onClose(() => (this.waiting = this.waiting.filter((l) => l !== held)));
+    const id = this.nextLink++;
+    this.links.set(id, { link, slot: null });
+    this.toHost({ k: 'open', id });
+    link.onMessage((text) => this.toHost({ k: 'msg', id, text }));
+    link.onClose(() => {
+      if (!this.links.delete(id)) return;
+      this.toHost({ k: 'closed', id });
+    });
   }
 
   sendInputs(inputs: PlayerInput[]): void {
-    if (inputs.length) this.queueInputs?.(inputs);
+    if (inputs.length) this.toHost({ k: 'input', inputs });
   }
 
   sendReady(): void {
-    this.markReady?.();
+    this.toHost({ k: 'ready' });
   }
 
   close(): void {
     if (this.stopped) return;
-    const links = [...this.remotes].map((r) => r.link);
+    const links = [...this.links.values()].map((r) => r.link);
     if (this.departing) window.setTimeout(() => links.forEach((l) => l.close()), 3000);
     else links.forEach((l) => l.close());
-    this.remotes.clear();
-    for (const l of this.waiting.splice(0)) l.close();
+    this.links.clear();
+    this.toHost({ k: 'stop' });
     this.stopped = true;
-    clearTimeout(this.timer);
-    this.teardown?.();
+    this.worker?.terminate();
+    this.worker = undefined;
+    this.inThread = undefined;
+    if (this.onVisibility && typeof document.removeEventListener === 'function') document.removeEventListener('visibilitychange', this.onVisibility);
+    for (const p of this.evals.values()) p.reject(new Error('The match ended'));
+    this.evals.clear();
   }
 }

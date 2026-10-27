@@ -1,7 +1,8 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, PROTOCOL_VERSION, type ServerMessage } from '@tiletrigger/shared';
+import { BROWSER_HOST_MAX_GUESTS, DEFAULT_RULES, PROTOCOL_VERSION, type ServerMessage } from '@tiletrigger/shared';
 import { makeMap } from '../../shared/test/helpers.ts';
 import { LocalTransport, type RemoteLink } from '../src/game/localTransport.ts';
+import { MAX_CATCH_UP_TICKS, simWake } from '../src/game/matchHost.ts';
 
 // The browser match runs on timers and reads the tab's visibility: enough of a window for it.
 beforeAll(() => {
@@ -71,8 +72,45 @@ describe('host controls in a browser match (offline, Host game)', () => {
     expect(got.some((m) => m.t === 'notice' && m.text === 'Host set teams to 8v8')).toBe(true);
     expect(f.got.some((m) => m.t === 'notice' && m.text === 'Host set teams to 8v8')).toBe(true);
     expect(f.got.some((m) => m.t === 'host' && m.state)).toBe(false);
-    expect(t.capacity).toBe(16);
+    expect(t.capacity).toBe(Math.min(16, 1 + BROWSER_HOST_MAX_GUESTS));
     expect(t.liveRules()!.teamSizes).toEqual([8, 8]);
+  });
+
+  it('a browser host keeps 48 v 48 with friends in, and takes up to BROWSER_HOST_MAX_GUESTS of them', async () => {
+    const t = new LocalTransport(yard(), { name: 'Host', botFill: 96, difficulty: 'normal', rules: { ...DEFAULT_RULES['core.tdm'], teamSizes: [48, 48] } });
+    open.push(t);
+    const got: ServerMessage[] = [];
+    t.start((m) => got.push(m), () => undefined);
+    await until(() => got.some((m) => m.t === 'host'));
+    expect(t.hostState()).toMatchObject({ fill: 96, max: 96 });
+    // Seats for people: the host and its friends (the host's upload carries their snapshots).
+    expect(t.capacity).toBe(1 + BROWSER_HOST_MAX_GUESTS);
+    const friends = Array.from({ length: BROWSER_HOST_MAX_GUESTS + 1 }, () => friend());
+    friends.forEach((f, i) => {
+      t.accept(f.link);
+      f.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: `Friend${i}` });
+    });
+    // Friends take bots' places: still 48 v 48.
+    for (const f of friends.slice(0, -1)) expect(f.got.find((m) => m.t === 'welcome')).toBeTruthy();
+    expect(t.guests).toBe(BROWSER_HOST_MAX_GUESTS);
+    expect(t.hostState()).toMatchObject({ fill: 96, teamSize: 48, max: 96 });
+    const last = friends[friends.length - 1]!;
+    expect(last.got.find((m) => m.t === 'welcome')).toBeUndefined();
+    expect(last.got.find((m) => m.t === 'reject')).toMatchObject({ reason: expect.stringContaining('match full') });
+  }, 60_000);
+
+  it('a slow moment does not snowball: the loop catches up a few ticks at most, then drops the backlog', async () => {
+    const { got } = await host(4);
+    await until(() => got.some((m) => m.t === 'snapshot'));
+    simWake.reset();
+    // Half a second with the thread busy (a long frame, a GC pause).
+    const end = Date.now() + 500;
+    while (Date.now() < end) {
+      // busy
+    }
+    await new Promise((r) => setTimeout(r, 200));
+    expect(simWake.maxBatch).toBeLessThanOrEqual(MAX_CATCH_UP_TICKS);
+    expect(simWake.dropped).toBeGreaterThan(15);
   });
 
   it('going offline tells friends why, disconnects them and hands their places back to bots', async () => {
