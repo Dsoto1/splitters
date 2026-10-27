@@ -68,8 +68,9 @@ texture, and a simple collision box (`collide: box`, `trunk` or `none` in
 
 ## Keeping it fast
 
-- Props use GPU instancing; tinted props get their own materials, so tint sparingly.
-- Terrain plants are instanced in 32 m chunks (culled per chunk) and drawn only near the camera, in a plain lambert material, casting no shadows. Grass, tall grass, flowers and pebbles thin out with distance (all of them close by, a third at the edge of their range) and by graphics setting (Low: half the range and a third as many; Medium: 80% of the range, three quarters as many); shrubs and bushes always grow in full.
+- Props use GPU instancing: in a match every copy of an untinted prop is an instance of its model with the model's meshes merged per material (one draw per material for all copies however many parts the model has); tinted props get their own materials, so tint sparingly.
+- Destructibles (crates, barrels, panes, boards, walls) are GPU thin instances: one draw per part shape and material for the whole map; a body darkens with damage through its instance colour and a broken one's instances collapse. Pickups' shapes are instances too.
+- Terrain plants are thinned in 32 m chunks and drawn in 64 m sectors (one draw per plant mesh per sector, culled per sector) only near the camera, in a plain lambert material, casting no shadows. Grass, tall grass, flowers and pebbles thin out with distance (all of them close by, a third at the edge of their range) and by graphics setting (Low: half the range and a third as many; Medium: 80% of the range, three quarters as many); shrubs and bushes always grow in full.
 - Distant scenery is built from a few large meshes and fades into haze.
 - Bots path on a navmesh built once per map.
 - City facades are GPU thin instances: one draw per piece and material, however many bays use it.

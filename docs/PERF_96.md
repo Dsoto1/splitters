@@ -197,12 +197,103 @@ Draws per character in view (everything else included): Norman Shores
 61 → 43, Frost Basin 46 → 12. `PERF_MAX_DRAWS=n` makes `perf96.mjs` exit 1
 when a clumped frame averages more draws than `n`.
 
-Left for later: the map side (Norman Shores' own 400–1,100 draws: scenario
-pieces such as the 106 destructibles at 3–6 meshes each, foliage chunks,
-prop instances evaluated one by one), a character's remaining 3–5 materials
-(outfit, skin, hair, eyes, gear: an atlas would make it one), and animation
-LOD that steps far, visible characters' clips (Babylon evaluates every
-playing clip every frame; only the state machine runs less often).
+Left for later (done in the next pass, below): the map side, a character's
+remaining 3–5 materials, and animation LOD for far, visible characters.
+
+## Render pass 2: map side, character atlas, animation LOD (27 Oct 2026)
+
+Where a clumped Norman Shores frame's draws went before this pass (Medium,
+everyone held round the middle, the player 30 m off looking in, 95 characters
+in view; draws attributed per mesh with `scene.render` instrumented):
+
+| Pass | Draws | of which characters | scenario pieces | pickups | the rest |
+|---|---|---|---|---|---|
+| Main | 1,057 | 411 | 189 | 83 | 374 |
+| Ground-mist depth map | 1,004 | 411 | 140 | 83 | 370 |
+| Shadow map | 713 | 338 | 93 | 52 | 230 |
+
+The second row was the surprise: maps with ground mist (`backdrop.mist`,
+Norman Shores has it; Frost Basin doesn't) render the whole view again into
+a depth map for the height-fog post effect on Medium and High, so every
+draw saved counts twice there.
+
+What changed:
+
+- **Destructibles are thin instances** (`ScenarioVisuals.batchDestructibles`,
+  in the game; MapMaker keeps meshes): every part of the same shape and
+  material, on every destructible on the map, is a GPU thin instance of one
+  mesh. Bodies share a material per colour and darken with damage through
+  their instance colour (the same product the per-body material made); a
+  broken one's instances collapse to nothing. Norman Shores' 104 panes and 2
+  gas cylinders went from 318 meshes to a handful.
+- **Pickups' shapes are GPU instances** of one mesh per shape and material;
+  their guns are instances of the gun model.
+- **Placed props are instances of their model merged per material**
+  (`ModelLibrary.instantiateStatic`): a model of many parts (a dresser of
+  drawers, a kitchen unit) is one mesh per material, so one draw per material
+  for every copy on the map and far fewer meshes for Babylon to look at every
+  frame. Tinted props, and models that animate, skin or morph, keep the old
+  path. The loader's empty `__root__` mesh becomes a plain node for instanced
+  models and characters (a thousand fewer meshes on Norman Shores).
+- **Foliage draws per 64 m sector**: plants are still thinned per 32 m chunk
+  (the same plants drawn, the same density by distance), but each plant mesh
+  draws per 2 × 2 chunks: a quarter of the meshes.
+- **Character atlas** (`content/characterAtlas.ts`, game and character
+  viewer): skin, hair and eyes share a handful of textures and differ only
+  in tint, so they go on one 2048 × 1536 atlas per scene (each part's UVs
+  move into its texture's tile, its tint into its vertex colours: albedo ×
+  texture × vertex colour, the same product). Gear joins them on a white
+  tile, with its finishes (metallic, roughness) in a small texture laid over
+  the atlas. A character is now its outfit (dyed per look) and one atlas
+  draw: **4.1 → 2.0 meshes per look on average, max 7 → 3** (character
+  viewer, all 36 looks). Eye textures every head file carries a copy of are
+  recognised by their pixels and share one tile. Gear is now drawn from both
+  sides, as skin is (closed shapes look the same).
+- **Crowds only (more than 24 players)**:
+  - *True animation LOD*: characters in view past 35 m have their clips
+    sampled, bones and aim computed at 15 Hz, past 70 m at 10 Hz, each on its
+    own phase (`CharacterAnimator.stepAt`; a gate on the animated nodes makes
+    Babylon skip their clips between steps, and their skeletons keep last
+    step's matrices). Clips are sampled at the current time when they step,
+    so nothing slows down. A death, a ragdoll and anyone nearer than 35 m
+    animate every frame, and small matches exactly as before.
+  - *Far characters cast no shadow*: past 30 m a crowd's characters drop
+    out of the shadow map (they still catch shadows).
+
+Before and after, same placement (`PERF` probe: the player 30 m or 60 m off
+the middle of a held clump, Medium, SwiftShader at box load 5–20):
+
+| Norman Shores, clumped | Draws | main / depth / shadow | Characters' draws (main) | Scene meshes | Triangles |
+|---|---|---|---|---|---|
+| 30 m, before | 2,775 | 1,057 / 1,004 / 713 | 411 | 6,631 | 4.21 M |
+| 30 m, after | **1,559** | 596 / 588 / 373 | **192** | **4,009** | 3.97 M |
+| 60 m, before | 2,934 | 1,118 / 1,063 / 751 | 411 | 6,631 | 4.43 M |
+| 60 m, after | **1,616** | 678 / 655 / 282 | **192** | **4,033** | 4.15 M |
+
+Draws fall by 44–45 %, characters' by 53 %, shadow-map draws by half to
+two-thirds, the meshes Babylon evaluates every frame by 40 %.
+
+Animation, measured on its own (JavaScript only, so it carries over to real
+hardware better than SwiftShader frame times: 120 steps of a 60 Hz timeline
+of Babylon's clip evaluation, the after-animation aim and grip, and the
+skeletons' bone matrices for the 95 characters in view, every frame vs.
+stepped):
+
+| View | Characters ≤ 35 m / 35–70 m / > 70 m | ms a frame, every frame | stepped |
+|---|---|---|---|
+| 30 m off the clump | 63 / 32 / 0 | 70–76 | 59–61 (−19 %) |
+| 60 m off the clump | 0 / 79 / 16 | 67–70 | 17–21 (−71 %) |
+
+(On a box this loaded these milliseconds are several times a desktop's; the
+ratio is the point. In SwiftShader's 1–4 fps frames every character is due
+every frame, so the LOD can't show in frame times here.)
+
+Quality: the character viewer's close-ups before and after differ by
+0.3–1.1 / 255 per pixel on average (idle-pose timing; 3.5 where a creature's
+clip was mid-swing); Norman Shores from fixed cameras with the map's
+destructibles, props and plants in view by 0.01–0.41 / 255, no pixel off by
+more than 24 in 0.01 %. Close and mid shots of a 96-player crowd look the
+same.
 
 ## Not covered
 
