@@ -200,6 +200,9 @@ export const edgeKey = (local: readonly [number, number, number], localSide: Sid
 /** The tile-local side that faces `worldSide` after the placement's rotation. */
 export const localSide = (worldSide: Side, rotation: number): Side => SIDES[(SIDES.indexOf(worldSide) - (rotation % 4) + 4) % 4]!;
 
+/** A cell's four sides as [tile-local edge key, world side]. */
+export const cellSides = (occ: CellOccupant): [string, Side][] => SIDES.map((side) => [edgeKey(occ.local, localSide(side, occ.placement.rotation)), side]);
+
 /** Whether a cell has walkable floor of its own (a full slab or partial floors). */
 export function cellHasFloor(occ: CellOccupant): boolean {
   return occ.def.floors.includes(occ.level) || !!occ.def.extraFloors?.length;
@@ -444,8 +447,8 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
 /**
  * Blocks the scenario runtime owns (v20): breakable, crumbling and trapdoor
  * blocks, plus solid blocks that logic targets, that start hidden or that a
- * mover carries, and force fields (they stop movement only, so they are
- * never level geometry). Everything else is static level geometry.
+ * mover carries, force fields (they stop movement only, so they are
+ * never level geometry) and glass blocks (sim/glass.ts). Everything else is static level geometry.
  */
 export function dynamicBlockIds(map: MapDocument): Set<string> {
   const out = new Set<string>();
@@ -453,7 +456,7 @@ export function dynamicBlockIds(map: MapDocument): Set<string> {
   const carried = new Set(map.entities.flatMap((e) => (e.kind === 'mover' ? e.blocks : [])));
   for (const e of map.entities) {
     if (e.kind !== 'block') continue;
-    if (e.behaviour !== 'solid' || e.startHidden || e.field || targets.has(e.id) || carried.has(e.id)) out.add(e.id);
+    if (e.behaviour !== 'solid' || e.startHidden || e.field || e.glass || targets.has(e.id) || carried.has(e.id)) out.add(e.id);
   }
   return out;
 }

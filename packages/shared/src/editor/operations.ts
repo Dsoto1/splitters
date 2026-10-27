@@ -4,7 +4,7 @@ import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { ELECTRIC_FENCE } from '../map/border.ts';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance } from '../map/schema.ts';
+import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance, type GlassKind } from '../map/schema.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
@@ -281,6 +281,8 @@ export const SCENARIO_PALETTE = [
   { key: 'barrel', label: 'Explosive Barrel', search: 'barrel explosive destructible red boom' },
   { key: 'wall', label: 'Breakable Wall', search: 'wall breakable destructible breach' },
   { key: 'glass', label: 'Window Pane', search: 'glass window pane breakable shatter destructible' },
+  { key: 'block:glass', label: 'Glass Panel', search: 'glass panel pane window partition see through breakable shatter block wall' },
+  { key: 'block:glass_reinforced', label: 'Bulletproof Glass', search: 'glass bulletproof reinforced armoured panel window see through cracks block wall bank teller' },
   { key: 'boards', label: 'Board Barricade', search: 'boards planks barricade doorway breakable destructible' },
   { key: 'gas', label: 'Gas Cylinder', search: 'gas cylinder tank explosive destructible boom' },
   { key: 'generator', label: 'Generator', search: 'generator machine objective destroy explosive destructible' },
@@ -354,7 +356,7 @@ export const SCENARIO_PALETTE = [
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 
 /** Entities that sit in a doorway and snap to cell edges. */
-export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field' || key === 'mover:bookcase' || key === 'mover:garage_door' || key === 'mover:portcullis';
+export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field' || key === 'block:glass' || key === 'block:glass_reinforced' || key === 'mover:bookcase' || key === 'mover:garage_door' || key === 'mover:portcullis';
 
 /** Palette entries that place several entities at once (movers with their blocks, rope bridges, roofs). */
 const MULTI_KEYS = new Set<string>(['block:rope_bridge', 'block:roof']);
@@ -649,6 +651,10 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('light'), kind: 'light', position, yaw, color: '#ff4fd8', intensity: 1.2, range: 8, fixture: 'sign', text: 'OPEN' };
     case 'light:billboard':
       return { id: newId('light'), kind: 'light', position, yaw, color: '#4fe0ff', intensity: 1.5, range: 14, fixture: 'billboard', text: 'TILE TRIGGER' };
+    case 'block:glass':
+    case 'block:glass_reinforced':
+      // A doorway-sized pane: 3 m wide, 3 m high, 6 cm thick, along its facing's X.
+      return { id: newId('glass'), kind: 'block', position, yaw, size: [3, 3, 0.06], material: null, tint: null, behaviour: 'solid', trigger: 'logic', delaySeconds: 0.8, respawnSeconds: null, health: 120, glass: key === 'block:glass' ? 'breakable' : 'reinforced' };
     case 'block:field':
       // A doorway-sized sheet: 3 m wide, 3 m high, 0.2 m thick, along its facing's X.
       return { id: newId('field'), kind: 'block', position, yaw, size: [3, 3, 0.2], material: null, tint: '#5ad8ff', behaviour: 'solid', trigger: 'logic', delaySeconds: 0.8, respawnSeconds: null, health: 120, field: true };
@@ -787,3 +793,47 @@ export function edgeChoiceAt(doc: MapDocument, target: EdgeTarget, catalog: Tile
   return (there && there.placement.edges?.[edgeKey(there.local, localSide(OPPOSITE_SIDE[target.side], there.placement.rotation))]) ?? 'auto';
 }
 
+
+/**
+ * Put glass in a window side (or take it out with null): breakable panes
+ * shatter, reinforced ones stop shots and crack. Stored on the tile that owns
+ * the cell, like edge styles; the neighbour's glass for the same wall is
+ * cleared so the wall has one pane.
+ */
+export function setEdgeGlassCommand(doc: MapDocument, target: EdgeTarget, glass: GlassKind | null, catalog: TileCatalog = coreCatalog): EditCommand | { error: string } {
+  const { cells } = buildOccupancy(doc, catalog);
+  const here = cells.get(cellKey(...target.cell));
+  if (!here) return { error: 'no tile there' };
+  const [dx, dy] = SIDE_DIRS[target.side];
+  const there = cells.get(cellKey(target.cell[0] + dx, target.cell[1] + dy, target.cell[2]));
+  if (there?.placement === here.placement) return { error: 'that side is inside one piece' };
+  const withGlass = (t: TilePlacement, key: string, value: GlassKind | null): TilePlacement => {
+    const glass = { ...(t.glass ?? {}) };
+    if (value === null) delete glass[key];
+    else glass[key] = value;
+    const { glass: _old, ...rest } = t;
+    return Object.keys(glass).length ? { ...rest, glass } : rest;
+  };
+  const before: TilePlacement[] = [here.placement];
+  const after: TilePlacement[] = [withGlass(here.placement, edgeKey(here.local, localSide(target.side, here.placement.rotation)), glass)];
+  if (there) {
+    const key = edgeKey(there.local, localSide(OPPOSITE_SIDE[target.side], there.placement.rotation));
+    if (there.placement.glass?.[key] !== undefined) {
+      before.push(there.placement);
+      after.push(withGlass(there.placement, key, null));
+    }
+  }
+  return { kind: 'updateTiles', before, after };
+}
+
+/** The glass in a cell side (its own, else the neighbour's for the same wall), or null. */
+export function edgeGlassAt(doc: MapDocument, target: EdgeTarget, catalog: TileCatalog = coreCatalog): GlassKind | null {
+  const { cells } = buildOccupancy(doc, catalog);
+  const here = cells.get(cellKey(...target.cell));
+  if (!here) return null;
+  const own = here.placement.glass?.[edgeKey(here.local, localSide(target.side, here.placement.rotation))];
+  if (own) return own;
+  const [dx, dy] = SIDE_DIRS[target.side];
+  const there = cells.get(cellKey(target.cell[0] + dx, target.cell[1] + dy, target.cell[2]));
+  return (there && there.placement.glass?.[edgeKey(there.local, localSide(OPPOSITE_SIDE[target.side], there.placement.rotation))]) ?? null;
+}

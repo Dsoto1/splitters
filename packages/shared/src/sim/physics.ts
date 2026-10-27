@@ -26,10 +26,18 @@ const PLAYER_COLLIDER_GROUPS = groups(GROUP_PLAYER, 0xffff);
 /** Queries that should only see static map geometry (movement, line of sight, shot occlusion). */
 const WORLD_ONLY_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN);
 const FIELD_COLLIDER_GROUPS = groups(GROUP_FIELD, 0xffff);
-/** Movement queries: static geometry and force fields. */
-const MOVE_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_TERRAIN);
+/** Breakable glass panes: they stop bodies moving, never shots or sight (shots break them on the way, see sim/glass.ts). */
+const GROUP_GLASS = 0x0010;
+/** Reinforced (bulletproof) glass: stops bodies and shots, never sight. */
+const GROUP_ARMOR_GLASS = 0x0020;
+const GLASS_COLLIDER_GROUPS = groups(GROUP_GLASS, 0xffff);
+const ARMOR_GLASS_COLLIDER_GROUPS = groups(GROUP_ARMOR_GLASS, 0xffff);
+/** Movement queries: static geometry, force fields and glass. */
+const MOVE_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS);
 /** Coarse moves (moveCharacter with a ground function): everything but the terrain, which the function stands in for. */
-const MOVE_NO_TERRAIN_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD);
+const MOVE_NO_TERRAIN_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_GLASS | GROUP_ARMOR_GLASS);
+/** Shots and thrown things: static geometry and bulletproof glass. */
+const SHOT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_ARMOR_GLASS);
 const MAX_SLOPE_TAN = Math.tan((PLAYER.maxSlopeDegrees * Math.PI) / 180);
 
 /**
@@ -151,6 +159,35 @@ export class PhysicsWorld {
     this.dirty = true;
     this.structureVersion++;
     return this.world.createCollider(desc);
+  }
+
+  /**
+   * A glass pane (sim/glass.ts): it stops movement and never sight; a
+   * `reinforced` pane also stops shots (raycastHit and raycastNormal hit it,
+   * raycastWorld and lineOfSight don't).
+   */
+  createGlassBox(center: Vec3, half: Vec3, yaw = 0, reinforced = false, rotation?: Rot): RAPIER.Collider {
+    const desc = RAPIER.ColliderDesc.cuboid(half.x, half.y, half.z)
+      .setTranslation(center.x, center.y, center.z)
+      .setRotation(rotation ?? { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) })
+      .setCollisionGroups(reinforced ? ARMOR_GLASS_COLLIDER_GROUPS : GLASS_COLLIDER_GROUPS);
+    this.dirty = true;
+    if (reinforced) this.armorGlass++;
+    return this.world.createCollider(desc);
+  }
+
+  /** How many bulletproof panes the world has (bots only check shot lines when there are some). */
+  armorGlass = 0;
+
+  /**
+   * True when a shot from a to b isn't stopped by anything static (sight
+   * lines go through bulletproof glass; shots don't).
+   */
+  shotLine(a: Vec3, b: Vec3): boolean {
+    const d = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
+    const len = Math.hypot(d.x, d.y, d.z);
+    if (len < 1e-6) return true;
+    return this.raycastHit(a, { x: d.x / len, y: d.y / len, z: d.z / len }, len) === null;
   }
 
   moveBox(collider: RAPIER.Collider, center: Vec3): void {
@@ -305,15 +342,15 @@ export class PhysicsWorld {
     return this.staticBoxes.get(handle);
   }
 
-  /** Like raycastWorld, but also returns the collider handle that was hit. */
+  /** Like raycastWorld, but also returns the collider handle that was hit (shots: bulletproof glass stops them too). */
   raycastHit(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number } | null {
-    const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
+    const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, SHOT_QUERY);
     return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle } : null;
   }
 
   /** Like raycastHit, plus the surface normal (for bouncing grenades and sticking mines). */
   raycastNormal(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number; normal: Vec3 } | null {
-    const hit = this.world.castRayAndGetNormal(this.rayFrom(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
+    const hit = this.world.castRayAndGetNormal(this.rayFrom(origin, dir), maxDist, true, undefined, SHOT_QUERY);
     return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z } } : null;
   }
 

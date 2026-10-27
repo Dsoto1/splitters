@@ -913,6 +913,20 @@
           "file": "360942_splat.ogg"
         }
       ]
+    },
+    "water.splash": {
+      "synth": "splash",
+      "variants": 3,
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.1
+    },
+    "glass.crack": {
+      "synth": "crack",
+      "variants": 3,
+      "gain": 0.55,
+      "range": "mid",
+      "jitter": 0.08
     }
   }
 }

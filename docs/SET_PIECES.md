@@ -118,6 +118,59 @@ Swimming is predicted on the client like walking, so it feels the same online.
 *Colour* (v20) overrides a liquid's colour (green acid, murky sewer water,
 black tar); it changes only the look, never the effect.
 
+### How liquids look (`client/src/game/waterVisuals.ts`)
+
+On medium and high graphics, water and swamp (tinted or not) use one small
+shader:
+
+- **Waves**: two scrolling normal maps (a tileable wave texture made in code,
+  no files), flattening out with distance so far water doesn't shimmer.
+- **Reflection and refraction**: a Fresnel blend of the reflection over the
+  see-through water behind it (alpha blending is the refraction: no distortion
+  pass). Face on you look into the water; at a grazing angle it is a mirror.
+- **Depth colour**: clear in the shallows, dark and opaque in the deep. The
+  depth under each vertex is baked when the map loads from the terrain and the
+  level boxes under the surface (no extra render pass). On high the scene's
+  camera-space depth (the depth renderer the height fog uses) refines it per
+  pixel, so players, props and pillars standing in the water get it too.
+- **Foam**: soft, broken-up foam where the water is shallow: the shore, and on
+  high anything standing in it.
+- **Sun glint**: a sharp sparkle and a softer sheen along the sun's reflection.
+
+| Graphics | Reflection | Depth |
+|---|---|---|
+| High | a planar mirror (`MirrorTexture`, 40 % of screen resolution) of the sky and the big static meshes (level, terrain, border, backdrop) for the biggest body of water; other bodies reflect the sky picture | baked + scene depth |
+| Medium | the map's sky picture, sampled along the reflected ray (shares the sky's texture; no render target) | baked |
+| Low | the old scrolling ripple material | none |
+
+Lava and acid get a flowing emissive version of the same shader: two layers of
+noise drifting against each other, a dark crust over glowing seams that pulse,
+brighter along the bank. They keep their glowing volume for side views.
+
+**Splashes and ripples**: a player, NPC or projectile going in throws up
+droplets and a ring (and a synthesised splash, `water.splash`); wading or
+swimming at the surface leaves rings behind; a shot hitting the surface makes a
+small splash. Rings and droplets are each one thin-instanced mesh (one draw
+call each), recycled. Under the surface the view keeps its tinted haze (scene
+fog, which the shader applies too), and the surface seen from below is a
+rippling ceiling in the water's own colour, brighter straight up where the sky
+shows through.
+
+**Volume**: every liquid keeps its see-through volume box for side views (the
+Training Range's tank behind glass, a pool's wall); for water and swamp it has
+no top, so the surface shader alone colours the water seen from above. Same two
+draw calls per body as the old material (surface and volume).
+
+**Cost**: no render target on Medium or Low (the shader samples the sky's own
+texture); High adds one reduced-resolution mirror pass (big static meshes only,
+for the biggest body of water) and the scene depth pass. A surface is a grid of
+about 2 m cells (at most 128 × 128) carrying its baked depth. Draw calls per
+body are unchanged (surface and volume). Measured together with the instanced
+glass on Norman Shores (lake and 104 Window panes), Medium, three fixed views
+with no characters, headless Chromium: 1,562 → 1,287 draw calls from the
+shore, 2,033 → 1,587 in the town, 1,878 → 1,377 from above; 534 → 431
+materials. See [`PERF_96.md`](PERF_96.md#glass-and-water-october-2026).
+
 ## Jetpack (pickup)
 
 `core.jetpack` straps a jetpack on: hold jump in the air to fly. A full tank

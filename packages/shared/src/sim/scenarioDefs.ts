@@ -6,6 +6,7 @@ import type { Vec3 } from '../math.ts';
 import { PLAYER, TICK_RATE } from './constants.ts';
 import { ELECTRIC_FENCE } from '../map/border.ts';
 import type { PhysicsWorld } from './physics.ts';
+import { GLASS, isGlassBlock, windowPanes, type GlassPane } from './glass.ts';
 
 /**
  * Shapes and tuning for scenario entities, shared by the simulation, client
@@ -169,7 +170,21 @@ export interface Breakable {
   blocksPaths: boolean;
   /** Shots and blasts can break it (crumbling floors and trapdoors can't be shot away). */
   shootable?: boolean;
+  /** A glass pane (sim/glass.ts): breakable glass shatters, reinforced glass only cracks. */
+  glass?: GlassPane['kind'];
 }
+
+/** A glass pane as a breakable: bots path round it while it stands (a broken pane is an opening). */
+export function glassBreakable(p: Pick<GlassPane, 'box' | 'kind'>): Breakable {
+  return { box: p.box, health: p.kind === 'reinforced' ? GLASS.reinforcedHealth : GLASS.breakableHealth, explosiveOnly: false, blocksPaths: true, glass: p.kind };
+}
+
+/**
+ * Window panes live in the scenario after the map's entities: pane k of
+ * windowPanes(map) has index `map.entities.length + k` (in replicated entity
+ * states and `broken` events too).
+ */
+export const windowPaneIndex = (map: MapDocument, k: number): number => map.entities.length + k;
 
 /** A free block's box (centre, half size, turn). */
 export function blockOBox(e: Extract<MapEntity, { kind: 'block' }>): OBox {
@@ -183,6 +198,7 @@ export function blockOBox(e: Extract<MapEntity, { kind: 'block' }>): OBox {
  * drives or movers carry; they can't be shot away.
  */
 export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>): Breakable | null {
+  if (isGlassBlock(e)) return glassBreakable({ box: blockOBox(e), kind: e.glass });
   if (e.kind === 'block' && e.behaviour === 'solid' && dynamic?.has(e.id)) {
     return { box: blockOBox(e), health: 1, explosiveOnly: false, blocksPaths: false, shootable: false };
   }
@@ -337,11 +353,18 @@ export class ScenarioBodies {
       } else {
         const box = breakableOf(e, dynamic)?.box;
         if (!box) return;
-        const c = physics.createBox(box.center, box.half, box.yaw, box.rot, e.kind === 'block' && !!e.field);
+        const c = isGlassBlock(e) ? physics.createGlassBox(box.center, box.half, box.yaw, e.glass === 'reinforced', box.rot) : physics.createBox(box.center, box.half, box.yaw, box.rot, e.kind === 'block' && !!e.field);
         this.solids.set(i, c);
         this.byHandle.set(c.handle, i);
         if (e.kind === 'block' && e.startHidden) physics.setBoxEnabled(c, false);
       }
+    });
+    // Glass in windows, after the entities (see windowPaneIndex).
+    windowPanes(map).forEach((p, k) => {
+      const c = physics.createGlassBox(p.box.center, p.box.half, p.box.yaw, p.kind === 'reinforced');
+      const i = windowPaneIndex(map, k);
+      this.solids.set(i, c);
+      this.byHandle.set(c.handle, i);
     });
     physics.commit();
   }

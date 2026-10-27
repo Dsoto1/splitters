@@ -245,6 +245,8 @@ export class EditorView {
     this.setGrid(doc, level);
     this.setBoundsOutline(doc);
     this.setEntities(doc, level, showAll, new Set());
+    // Glass in glazed windows (after the backdrop, whose sky it reflects).
+    this.scenario.glass.build(visible, { windowsOnly: true });
     // Trim is pickable too, so it can be painted.
     return drawn;
   }

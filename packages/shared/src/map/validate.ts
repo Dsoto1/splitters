@@ -2,7 +2,7 @@ import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { getProp } from '../content/props.ts';
-import { buildOccupancy, cellHasFloor, cellKey, dynamicBlockIds, yawXZ } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, resolveEdge, yawXZ } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { floatingProps } from './settle.ts';
@@ -11,6 +11,7 @@ import { MapDocument, type MapEntity } from './schema.ts';
 import { validateScenario } from './validateScenario.ts';
 import { validateTrack } from './track.ts';
 import { airplaneIssues } from '../sim/airplane.ts';
+import { GLASS_EDGES } from '../sim/glass.ts';
 
 export type IssueSeverity = 'error' | 'warning' | 'suggestion';
 
@@ -162,6 +163,7 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     if (e.kind === 'prop' && !getProp(e.model)) issues.push({ severity: 'error', code: 'prop.unknown', message: `prop ${e.id} uses unknown model "${e.model}"`, targetId: e.id });
   }
 
+  issues.push(...glassIssues(map, catalog));
   issues.push(...validateScenario(map));
   issues.push(...validateTrack(map));
   const terrain = map.terrain;
@@ -171,6 +173,36 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   if (min > max) issues.push({ severity: 'error', code: 'meta.players', message: `recommended players min ${min} > max ${max}` });
 
   return issues;
+}
+
+/** Glass options that do nothing: glass on a side with no window, glass on a block that isn't plain solid. */
+export function glassIssues(map: MapDocument, catalog: TileCatalog = coreCatalog): ValidationIssue[] {
+  const out: ValidationIssue[] = [];
+  for (const e of map.entities) {
+    if (e.kind !== 'block' || !e.glass) continue;
+    if (e.behaviour !== 'solid' || e.field) out.push({ severity: 'warning', code: 'glass.block', message: `block ${e.id} is glass but ${e.field ? 'a force field' : e.behaviour}: glass needs a plain solid block`, targetId: e.id });
+  }
+  if (!map.classicStructure.tiles.some((t) => t.glass)) return out;
+  const { cells } = buildOccupancy(map, catalog);
+  for (const [key, occ] of cells) {
+    const glass = occ.placement.glass;
+    if (!glass) continue;
+    const [x, y, z] = key.split(',').map(Number) as [number, number, number];
+    for (const [edge, worldSide] of cellSides(occ)) {
+      if (!glass[edge]) continue;
+      const style = resolveEdge(cells, x, y, z, worldSide);
+      if (!GLASS_EDGES.has(style)) out.push({ severity: 'warning', code: 'glass.edge', message: `tile ${occ.placement.id} has glass on side ${edge} but no window there (${style === 'none' ? 'no wall' : style})`, targetId: occ.placement.id });
+    }
+  }
+  // Glass keys naming cells the tile doesn't have.
+  for (const t of map.classicStructure.tiles) {
+    for (const edge of Object.keys(t.glass ?? {})) {
+      const [dx, dy, dz] = edge.split(':')[0]!.split(',').map(Number) as [number, number, number];
+      const has = [...cells.values()].some((o) => o.placement === t && o.local[0] === dx && o.local[1] === dy && o.local[2] === dz);
+      if (!has) out.push({ severity: 'warning', code: 'glass.edge', message: `tile ${t.id} has glass on ${edge}, which isn't one of its cells`, targetId: t.id });
+    }
+  }
+  return out;
 }
 
 /** Serialise with stable key order and trailing newline so map files diff cleanly. */

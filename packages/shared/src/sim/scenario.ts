@@ -8,6 +8,7 @@ import { distance, viewDirection, type Vec3 } from '../math.ts';
 import { TRAP_ACTIVE, TRAP_ENABLED, TRAP_SPENT, TRAP_WARNING, type GameEvent, type ScenarioSnapshot } from '../protocol.ts';
 import { PLAYER, TICK_RATE } from './constants.ts';
 import type { PhysicsWorld } from './physics.ts';
+import { rayOBox, windowPanes, type GlassPane } from './glass.ts';
 import {
   BUTTON,
   DESTRUCTIBLE_SPECS,
@@ -16,6 +17,8 @@ import {
   ScenarioBodies,
   TRAP_SPECS,
   breakableOf,
+  glassBreakable,
+  windowPaneIndex,
   type Breakable,
   doorway,
   entityPos,
@@ -94,6 +97,8 @@ interface DestructibleRt {
   alive: boolean;
   /** Free blocks: what sets them off, when they were stood on, and when they come back. */
   block?: { e: BlockEntity; triggeredAt: number | null; respawnAt: number | null };
+  /** Shattered glass: when it comes back (the map's glass respawn time; null: next round). */
+  glassBack?: number | null;
 }
 
 interface ZoneRt {
@@ -227,6 +232,10 @@ export class Scenario {
   /** The border's electric fence (none without one) and when it last zapped each victim. */
   private readonly borderShocks: ShockLine[];
   private readonly borderZappedAt = new Map<number, number>();
+  /** Glass in window edges (they follow the entities: see windowPaneIndex). */
+  private readonly panes: GlassPane[];
+  /** Every pane (window glass and glass blocks), so shots and the respawn clock look at glass only. */
+  private glass: DestructibleRt[] = [];
 
   constructor(
     readonly map: MapDocument,
@@ -239,6 +248,7 @@ export class Scenario {
     this.movers = new Movers(map);
     this.lifts = liftLinks(map);
     this.portals = mapPortals(map.entities);
+    this.panes = windowPanes(map);
     map.entities.forEach((e, i) => this.index.set(e.id, i));
     const targets = new Set(map.logic.rules.flatMap((r) => r.do.map((a) => a.target)));
     map.entities.forEach((e, i) => {
@@ -302,6 +312,13 @@ export class Scenario {
           break;
       }
     });
+    this.panes.forEach((p, k) => {
+      const i = windowPaneIndex(this.map, k);
+      const b = glassBreakable(p);
+      this.destructibles.set(i, { i, id: p.id, b, health: b.health, max: b.health, alive: true });
+      this.bodies.setSolid(i, true);
+    });
+    this.glass = [...this.destructibles.values()].filter((d) => d.b.glass);
     const logic = this.map.logic;
     this.vars = new Map(logic.variables.map((v) => [v.id, v.initial]));
     this.objectives = new Map(logic.objectives.map((o) => [o.id, o.startActive ? 'active' : 'inactive']));
@@ -404,6 +421,7 @@ export class Scenario {
     this.stepMovers(tick);
     this.stepDoors(tick);
     this.stepBlocks(tick);
+    this.stepGlass(tick);
     this.stepZones();
     this.stepTraps(tick);
     this.stepBorderFence(tick);
@@ -438,6 +456,48 @@ export class Scenario {
         this.bodies.setSolid(d.i, true);
       }
     }
+  }
+
+  /** Shattered panes come back after the map's glass respawn time, once nobody stands in the way. */
+  private stepGlass(tick: number): void {
+    let actors: readonly { slot: number; alive: boolean; pos: Vec3 }[] | null = null;
+    for (const d of this.glass) {
+      if (d.alive || d.glassBack == null || tick < d.glassBack) continue;
+      actors ??= this.host.actors().filter((a) => a.alive);
+      if (actors.some((a) => playerInOBox(d.b.box, a.pos))) continue;
+      d.alive = true;
+      d.health = d.max;
+      d.glassBack = null;
+      if (d.block) d.block.respawnAt = null;
+      this.bodies.setSolid(d.i, true);
+    }
+  }
+
+  /**
+   * A shot along origin + dir (normalised) for `dist` metres: breakable glass
+   * on the way shatters (shots go through it; bulletproof glass stops them
+   * before they get here, as a body they hit). Returns how many panes broke.
+   */
+  shootGlass(origin: Vec3, dir: Vec3, dist: number, instigator: number | null): number {
+    let broke = 0;
+    for (const d of this.glass) {
+      if (!d.alive || d.b.glass !== 'breakable') continue;
+      if (rayOBox(origin, dir, dist, d.b.box) === null) continue;
+      this.destroy(d, instigator);
+      broke++;
+    }
+    return broke;
+  }
+
+  /** Distances along a shot (origin + dir, normalised, for `dist` m) to the standing breakable panes it crosses. */
+  glassAlong(origin: Vec3, dir: Vec3, dist: number): number[] {
+    const out: number[] = [];
+    for (const d of this.glass) {
+      if (!d.alive || d.b.glass !== 'breakable') continue;
+      const t = rayOBox(origin, dir, dist, d.b.box);
+      if (t !== null) out.push(t);
+    }
+    return out;
   }
 
   private stepDoors(tick: number): void {
@@ -718,6 +778,13 @@ export class Scenario {
 
   private damageDestructible(d: DestructibleRt, amount: number, explosive: boolean, instigator: number | null): void {
     if (!d.alive || (d.b.explosiveOnly && !explosive) || d.b.shootable === false) return;
+    // Bulletproof glass cracks (its health shows how badly) but never gives way.
+    if (d.b.glass === 'reinforced') {
+      const before = d.health;
+      d.health = Math.max(1, d.health - amount);
+      if (d.health < before) this.host.emit({ e: 'crack', i: d.i });
+      return;
+    }
     d.health -= amount;
     if (d.health <= 0) this.destroy(d, instigator);
   }
@@ -728,6 +795,11 @@ export class Scenario {
     d.health = 0;
     // Hidden solid blocks stay gone until logic puts them back.
     if (d.block?.e.respawnSeconds && d.block.e.behaviour !== 'solid') d.block.respawnAt = this.host.tick + Math.round(d.block.e.respawnSeconds * TICK_RATE);
+    // Glass comes back after the map's glass time (next round without one).
+    if (d.b.glass) {
+      const back = this.map.glass?.respawnSeconds;
+      d.glassBack = back ? this.host.tick + Math.round(back * TICK_RATE) : null;
+    }
     this.bodies.setSolid(d.i, false);
     this.bodies.commit();
     this.host.emit({ e: 'broken', i: d.i });

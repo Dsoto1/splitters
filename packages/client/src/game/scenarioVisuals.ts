@@ -34,6 +34,8 @@ import {
   BUTTON,
   DESTRUCTIBLE_SPECS,
   rosterSize,
+  mapLiquids,
+  GLASS,
   DOOR,
   ELECTRIC_FENCE,
   TRAP_ACTIVE,
@@ -48,6 +50,9 @@ import {
 } from '@tiletrigger/shared';
 import { createFlagBase, createFlagModel, createHillModel, createBombsiteModel } from './flagVisuals.ts';
 import { buildFence } from '../borderVisuals.ts';
+import { GlassVisuals, glassMaterial } from './glassVisuals.ts';
+import { WaterVisuals } from './waterVisuals.ts';
+import { loadGraphicsQuality } from './atmosphere.ts';
 
 /** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */
 export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: number; depthAlpha: number; shine: number; flow: number }> = {
@@ -116,10 +121,23 @@ export class ScenarioVisuals {
   constructor(
     private readonly scene: Scene,
     private readonly opts: VisualOptions = {},
-  ) {}
+  ) {
+    this.glass = new GlassVisuals(scene);
+    // MapMaker shows the medium look (no mirror, no extra depth pass).
+    this.liquids = new WaterVisuals(scene, opts.editor ? 'medium' : loadGraphicsQuality(), !!opts.editor);
+  }
+
+  /** Liquid surfaces (water shader, lava and acid flow), splashes and ripples. */
+  readonly liquids: WaterVisuals;
 
   /** Solid blocks the scenario drives (logic, movers, hidden at start): drawn here, not in the level mesh. */
   dynamicBlocks: ReadonlySet<string> = new Set();
+
+  /** Every pane of glass (windows, glass blocks, Window pane destructibles), instanced; see glassVisuals.ts. */
+  readonly glass: GlassVisuals;
+
+  /** Blocks movers carry (they follow their mover, so they can't be instanced with the static glass). */
+  private carriedBlocks: ReadonlySet<string> = new Set();
 
   /** (Re)build visuals for every scenario entity in the list. Indices match map.entities. */
   build(entities: readonly MapEntity[], map?: MapDocument): void {
@@ -130,6 +148,13 @@ export class ScenarioVisuals {
     const targets = map && !this.opts.editor ? logicTargets(map.logic) : null;
     this.fixedLights = new Set(targets ? entities.filter((e) => e.kind === 'light' && !targets.has(e.id) && !e.off && !e.blink).map((e) => e.id) : []);
     const fixtures: Mesh[] = [];
+    // Glass blocks a mover carries move with it, so they are drawn one by one (block()); every other pane is instanced.
+    this.carriedBlocks = new Set(map ? map.entities.flatMap((e) => (e.kind === 'mover' ? e.blocks : [])) : []);
+    if (map) this.glass.build(map, { windowsOnly: !!this.opts.editor, skip: this.carriedBlocks });
+    if (map) {
+      this.liquids.map = map;
+      this.liquids.fx.liquids = mapLiquids(map.entities);
+    }
     entities.forEach((e, i) => {
       if (!isScenarioEntity(e)) return;
       const v = this.create(e, `sc_${e.id}`);
@@ -307,6 +332,7 @@ export class ScenarioVisuals {
       const s = states.get(i);
       if (s && v.update) v.update(s[0], s[1], now, dt);
     }
+    this.glass.apply(states);
   }
 
   clear(): void {
@@ -316,10 +342,12 @@ export class ScenarioVisuals {
     this.merged = [];
     for (const m of this.batches) m.dispose();
     this.batches = [];
+    this.glass.dispose();
   }
 
   dispose(): void {
     this.clear();
+    this.liquids.dispose();
     this.lights?.dispose();
     this.lights = undefined;
     for (const m of this.mats.values()) m.dispose();
@@ -816,6 +844,7 @@ export class ScenarioVisuals {
    */
   private block(name: string, e: Extract<MapEntity, { kind: 'block' }>): Visual {
     if (e.field && e.behaviour === 'solid') return this.field(name, e);
+    if (e.glass && e.behaviour === 'solid') return this.glassBlock(name, e);
     const root = new TransformNode(name, this.scene);
     const driven = this.dynamicBlocks.has(e.id);
     if (e.behaviour === 'solid' && !this.opts.editor && !driven) return { root };
@@ -882,11 +911,66 @@ export class ScenarioVisuals {
     };
   }
 
+  /**
+   * A glass block. In play the instanced glass draws it (GlassVisuals), unless
+   * a mover carries it; then, and in MapMaker, it is its own box in the shared
+   * glass material (its own tint if it has one), frosting as bulletproof glass
+   * cracks, gone when breakable glass shatters.
+   */
+  private glassBlock(name: string, e: Extract<MapEntity, { kind: 'block' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    if (!this.opts.editor && !this.carriedBlocks.has(e.id)) return { root };
+    const [w, h, d] = e.size;
+    const body = CreateBox(`${name}_body`, { width: w, height: h, depth: d }, this.scene);
+    body.parent = root;
+    body.position.y = h / 2;
+    body.material = glassMaterial(this.scene, e.tint ?? undefined);
+    let shown = 100;
+    return {
+      root,
+      update: (a) => {
+        if (a === shown) return;
+        shown = a;
+        body.setEnabled(a > 0);
+        const c = Math.max(0, Math.min(1, 1 - a / 100));
+        body.material = c > 0.05 ? this.frosted(e.tint ?? undefined, c) : glassMaterial(this.scene, e.tint ?? undefined);
+      },
+    };
+  }
+
+  /** Cracked glass, in four steps of frosting (shared per step and tint). */
+  private frosted(tint: string | undefined, c: number): Material {
+    const step = Math.min(4, Math.ceil(c * 4));
+    const key = `frost|${tint ?? ''}|${step}`;
+    let m = this.mats.get(key);
+    if (!m) {
+      m = glassMaterial(this.scene, tint).clone(`glassFrost_${tint ?? 'clear'}_${step}`) as StandardMaterial;
+      m.alpha = 0.1 + step * 0.12;
+      m.diffuseColor = m.diffuseColor.add(new Color3(0.08, 0.08, 0.08).scale(step));
+      this.mats.set(key, m);
+    }
+    return m;
+  }
+
   /** Water, lava, acid or swamp: a rippling surface over a tinted volume. */
   private water(name: string, e: Extract<MapEntity, { kind: 'water' }>): Visual {
     const root = new TransformNode(name, this.scene);
     const [w, h, d] = e.size;
     const look = e.tint ? { ...LIQUID_LOOKS[e.liquid], color: e.tint } : LIQUID_LOOKS[e.liquid];
+    if (this.liquids.shaded(e.liquid)) {
+      // Medium and high graphics: the liquid shader (waves, reflection, depth colour, foam; lava and acid flow).
+      const { mesh } = this.liquids.surface(name, e, look.color);
+      mesh.parent = root;
+      // The volume, for side views (a tank behind glass, a pool's wall): lava and acid glow; water and swamp leave out
+      // the top, which the surface shader colours by depth. Same draw count as before the shader.
+      const body = CreateBox(`${name}_body`, { width: w - 0.02, height: h - 0.06, depth: d - 0.02, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
+      if (e.liquid === 'water' || e.liquid === 'swamp') dropBoxTop(body);
+      body.parent = root;
+      body.position.y = h / 2 - 0.03;
+      body.material = this.mat(`liquidBody${e.liquid}`, look.color, { emissive: look.glow * 0.6, alpha: look.depthAlpha });
+      body.isPickable = false;
+      return { root };
+    }
     const surface = CreateGround(`${name}_surface`, { width: w, height: d, subdivisions: 1 }, this.scene);
     surface.parent = root;
     surface.position.y = h - 0.03;
@@ -1468,17 +1552,16 @@ export class ScenarioVisuals {
         band.material = this.mat('barrelBand', '#f2c14e');
       }
     } else if (e.model === 'glass') {
-      // A pane in a window: translucent, with a thin frame.
+      // A pane in a window: in play the instanced glass draws it with its frame (GlassVisuals); MapMaker draws it here.
+      if (!this.opts.editor) return { root };
       const lift = spec.lift ?? 0;
-      base = '#bfe6f5';
-      bodyMat = bodyMaterial(base);
-      bodyMat.alpha = 0.35;
-      bodyMat.specularColor = new Color3(0.9, 0.9, 0.9);
-      bodyMat.specularPower = 96;
+      base = GLASS.tint;
+      bodyMat = glassMaterial(this.scene, base);
       body = this.box(`${name}_body`, root, [h.x * 2, h.y * 2, h.z * 2], [0, lift + h.y, 0], bodyMat);
       const frame = this.mat('paneFrame', '#d9d6cf');
       this.box(`${name}_mullion`, root, [0.05, h.y * 2, h.z * 2 + 0.02], [0, lift + h.y, 0], frame);
       this.box(`${name}_transom`, root, [h.x * 2, 0.05, h.z * 2 + 0.02], [0, lift + h.y, 0], frame);
+      return { root, update: (health) => root.setEnabled(health > 0) };
     } else if (e.model === 'boards') {
       // Planks nailed across a doorway at slight angles.
       base = '#8a5d33';
@@ -1778,4 +1861,24 @@ function candleFlicker(t: number, blink: number, seed: number): number {
     k *= r < 0.45 ? 0.08 + 0.25 * r : 1.1;
   }
   return k;
+}
+
+/**
+ * Leave out a box's top face (CreateBox: six faces of two triangles each, the
+ * fifth is +Y; double-sided boxes repeat the list back-facing).
+ */
+function dropBoxTop(box: Mesh): void {
+  const idx = box.getIndices();
+  const pos = box.getVerticesData('position');
+  if (!idx || !pos) return;
+  const keep: number[] = [];
+  for (let t = 0; t < idx.length; t += 3) {
+    const a = idx[t]!;
+    const b = idx[t + 1]!;
+    const c = idx[t + 2]!;
+    // A triangle whose corners are all at the top.
+    const top = pos[a * 3 + 1]! > 0 && pos[b * 3 + 1]! > 0 && pos[c * 3 + 1]! > 0;
+    if (!top) keep.push(a, b, c);
+  }
+  box.setIndices(keep);
 }

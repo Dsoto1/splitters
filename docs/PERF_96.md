@@ -335,7 +335,33 @@ Left for later:
   PhysicsWorld.commit on a message from the sim worker) and never returns.
   `perf96.mjs` then waits forever; a rerun usually gets through.
 
-## Not covered
+## Glass and water (October 2026)
+
+Glass and water got new looks (BUILDING_KIT.md "Glass", SET_PIECES.md "How
+liquids look"); the render budget had to hold. Every pane of glass is now a
+thin instance (one mesh per 32 m square and tint, one shared material), where
+each Window pane destructible was three meshes and a material of its own; water
+is one shader per body with no render target on Medium or Low.
+
+Norman Shores (a 330 m lake, 104 Window panes), Medium, the same three views
+with nobody in sight (characters hidden), averaged over three frames
+(SwiftShader; draw calls and triangles are what count):
+
+| View | Draw calls before | after | Active meshes before | after | Triangles before | after |
+|---|---|---|---|---|---|---|
+| Shore, looking over the lake | 1,562 | 1,287 | 1,802 | 1,669 | 2.12 M | 2.16 M |
+| Town, glazed houses | 2,033 | 1,587 | 3,082 | 2,838 | 2.57 M | 2.60 M |
+| From above, the whole map | 1,878 | 1,377 | 3,593 | 3,299 | 2.52 M | 2.55 M |
+
+Scene totals: 5,046 → 4,751 meshes, 534 → 431 materials, no render targets
+either way. Triangles rise ~1.5 % (the lake's surface grid). `perf96.mjs
+norman_shores` (Medium, worker, clumped) was too noisy on the shared box to
+compare (characters in view varied 16 vs 7 between runs; 1,715 vs 1,656
+draws). On High the biggest body of water adds a 40 %-resolution mirror pass of
+the level, terrain, border and backdrop, and the scene depth pass (already
+there on maps with ground mist).
+
+
 
 - Snapshot handling on the page (`msg`) is now the largest sim-related cost
   there; structured-cloned objects from the worker could become transferable
