@@ -12,7 +12,7 @@ import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { MirrorTexture } from '@babylonjs/core/Materials/Textures/mirrorTexture';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Plane } from '@babylonjs/core/Maths/math.plane';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
@@ -389,7 +389,8 @@ export class WaterVisuals {
     if (area < 64) return null;
     const mirror = new MirrorTexture('waterMirror', { ratio: 0.4 }, this.scene, false);
     mirror.mirrorPlane = new Plane(0, -1, 0, top);
-    mirror.clearColor.set(0, 0, 0, 0);
+    // Transparent where it draws nothing, so the sky picture shows there (the shader mixes by alpha).
+    mirror.clearColor = new Color4(0, 0, 0, 0);
     mirror.refreshRate = 1;
     // A shader material doesn't hand its render targets to the scene: render it with the frame ourselves.
     this.scene.customRenderTargets.push(mirror);
