@@ -903,7 +903,9 @@ async function physicsfxFlow(browser) {
   // stop as soon as it has dropped, before the bot gets up again 2-3 s later.
   const track = standing === null ? [] : [standing];
   let ragdolled = false;
-  for (let i = 0; i < 12 && !(ragdolled && track.length && track[0] - Math.min(...track) > 0.5); i++) {
+  // The push can throw the body up first and land it on something higher than it stood: measure the fall from its peak.
+  const fell = () => { const top = track.indexOf(Math.max(...track)); return track.length ? track[top] - Math.min(...track.slice(top)) : 0; };
+  for (let i = 0; i < 12 && !(ragdolled && fell() > 0.5); i++) {
     await page.waitForTimeout(T(150) / 2);
     const s = await page.evaluate(() => {
       // A killed body leaves the live avatars for the corpse list as soon as it ragdolls.
@@ -919,7 +921,7 @@ async function physicsfxFlow(browser) {
   // The sampling above stops once the body is down: give the blood time to land.
   await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'bloodSplat'), null, { timeout: T(2500) }).catch(() => {});
   const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat').length }));
-  check(ragdolled && track[0] - Math.min(...track) > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
+  check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
   await page.waitForFunction(() => !!window.__cs.view.physics, null, { timeout: T(3000) }).catch(() => {});

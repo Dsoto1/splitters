@@ -236,7 +236,8 @@ export class CharacterAtlas {
     const { width: w, height: h } = tex.getSize();
     if ((tex as Texture).invertY || !SLOTS.some((s) => s.w === w * repU && s.h === h * repV)) return null;
     const data = await readWithoutStall(tex, w, h);
-    if (!data || data.byteLength < w * h * 4) return null;
+    // The read finishes a frame or more later: the match (and this atlas) may be gone by then.
+    if (this.disposed || !data || data.byteLength < w * h * 4) return null;
     const src = new Uint8Array(data.buffer, data.byteOffset, w * h * 4);
     let hash = 0x811c9dc5;
     for (let i = 0; i < src.length; i += 7) hash = Math.imul(hash ^ src[i]!, 16777619);
@@ -265,11 +266,14 @@ export class CharacterAtlas {
     this.pending = true;
     queueMicrotask(() => {
       this.pending = false;
-      this.texture.update(this.pixels);
+      if (!this.disposed) this.texture.update(this.pixels);
     });
   }
 
+  private disposed = false;
+
   dispose(): void {
+    this.disposed = true;
     this.texture.dispose();
   }
 }
