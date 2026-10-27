@@ -45,6 +45,8 @@ export function siteHandler(dir: string) {
     const path = decodeURIComponent(new URL(req.url ?? '/', 'http://site').pathname);
     let file = normalize(join(root, path));
     if (!file.startsWith(root)) return next();
+    // A folder with its own page (/privacy, /privacy/) gets that page.
+    if (existsSync(file) && statSync(file).isDirectory() && file !== root && existsSync(join(file, 'index.html'))) file = join(file, 'index.html');
     if (!existsSync(file) || statSync(file).isDirectory()) {
       // Pages without a file of their own (and the root) get the game.
       if (extname(path)) return next();

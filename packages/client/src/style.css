@@ -107,6 +107,10 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .menu-footer { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 44px; background: rgba(8, 11, 19, 0.92); border-top: 1px solid var(--line); }
 .menu-footer .news { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .menu-footer .news b { color: var(--orange); font: 700 13px var(--font-display); letter-spacing: 0.1em; margin-right: 8px; }
+.menu-footer .menu-links { display: flex; align-items: center; gap: 14px; font-size: 13px; white-space: nowrap; }
+.menu-footer .menu-links a, .menu-footer .menu-links button.link { color: var(--text); opacity: 0.75; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
+.menu-footer .menu-links a:hover, .menu-footer .menu-links button.link:hover { opacity: 1; }
+.menu-footer .menu-links .account { opacity: 0.8; }
 .screen-head { display: flex; align-items: center; gap: 18px; }
 .screen-head h2 { margin: 0; font: italic 700 34px var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
 .screen-head h2 em { color: var(--cyan); font-style: italic; }
@@ -602,6 +606,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .gb-tags { display: flex; gap: 6px; margin-top: 4px; }
 .gb-tag { padding: 1px 6px; font: 600 10px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); border: 1px solid rgba(255, 179, 71, 0.45); cursor: help; }
 .gb-tag.relay { color: var(--success); border-color: rgba(46, 204, 113, 0.45); }
+.gb-tag.community { color: #7fc4ff; border-color: rgba(127, 196, 255, 0.45); }
 .gb-map, .gb-mode { color: var(--text); font: 500 13px var(--font-body); }
 .gb-map { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .gb-thumbs { gap: 4px; }

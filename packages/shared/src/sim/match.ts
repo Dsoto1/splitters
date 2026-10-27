@@ -41,6 +41,7 @@ import {
   type CoverSnapshot,
 } from '../protocol.ts';
 import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
+import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
@@ -186,6 +187,8 @@ export interface Combatant {
   padFlight?: boolean;
   /** Tick it last took damage (squad spawns avoid teammates in a fight). */
   hurtAt?: number;
+  /** Takes no damage (the browser's test mode, offline only); falling out of the map still kills. */
+  invulnerable?: boolean;
   /** Kills since this one last died (kill-streak rewards). */
   streak?: number;
   /** A teammate's order to a bot: follow them, or hold a spot, until `until`. */
@@ -599,6 +602,7 @@ export class Match {
         else if (order) this.encounters.setOrder(id, order);
       },
       encounterAlive: (id) => this.encounters.alive(id),
+      budgetWarning: (text) => this.budgetWarning(`logic:${text}`, text),
       setPickupEnabled: (id, enabled) => {
         const p = this.pickups.find((q) => q.id === id);
         if (p) p.enabled = enabled;
@@ -1030,7 +1034,25 @@ export class Match {
     return id >= NPC_ID_BASE ? this.npcs.get(id) : (this.slots[id] ?? undefined);
   }
 
+  /** Recent NPC spawn ticks (the per-second and per-minute spawn budgets). */
+  private npcSpawnTicks: number[] = [];
+
   private spawnNpc(e: EncounterEntity, role: NpcRole, pos: Vec3, yaw: number): number | null {
+    // Map-wide NPC budgets: alive at once, and spawned per second and per minute. Callers try again later.
+    let alive = 0;
+    for (const n of this.npcs.values()) if (n.alive) alive++;
+    if (alive >= RESOURCE_BUDGETS.activeNpcs) {
+      this.budgetWarning('npcs', `${RESOURCE_BUDGETS.activeNpcs} NPCs alive at once: more wait until some fall`);
+      return null;
+    }
+    const t = this.tick;
+    this.npcSpawnTicks = this.npcSpawnTicks.filter((x) => x > t - 60 * TICK_RATE);
+    const lastSecond = this.npcSpawnTicks.filter((x) => x > t - TICK_RATE).length;
+    if (lastSecond >= RESOURCE_BUDGETS.npcSpawnsPerSecond || this.npcSpawnTicks.length >= RESOURCE_BUDGETS.npcSpawnsPerMinute) {
+      this.budgetWarning('npcSpawns', `NPCs spawning faster than ${RESOURCE_BUDGETS.npcSpawnsPerSecond} a second or ${RESOURCE_BUDGETS.npcSpawnsPerMinute} a minute: spawns wait`);
+      return null;
+    }
+    this.npcSpawnTicks.push(t);
     const spec = NPC_ROLE_SPECS[role];
     const id = this.nextNpcId++;
     const def = getWeapon(spec.weapon);
@@ -2622,6 +2644,32 @@ export class Match {
       keep.push(p);
     }
     this.projectiles = keep;
+    if (keep.length > RESOURCE_BUDGETS.activeProjectiles) this.capProjectiles();
+  }
+
+  /** Over the projectile budget: the oldest bots' and NPCs' projectiles go first, then the oldest of all (no blast). */
+  private capProjectiles(): void {
+    let excess = this.projectiles.length - RESOURCE_BUDGETS.activeProjectiles;
+    this.budgetWarning('projectiles', `over ${RESOURCE_BUDGETS.activeProjectiles} projectiles in flight: the oldest are removed`);
+    const human = (p: Projectile) => this.slots[p.owner]?.kind === 'human';
+    const drop = new Set<Projectile>();
+    for (const pass of [false, true]) {
+      for (const p of this.projectiles) {
+        if (excess <= 0) break;
+        if (drop.has(p) || (!pass && human(p))) continue;
+        drop.add(p);
+        excess--;
+      }
+    }
+    this.projectiles = this.projectiles.filter((p) => !drop.has(p));
+  }
+
+  /** Runtime budget warnings (map/budgets.ts), logged once per kind and match. */
+  private readonly budgetWarned = new Set<string>();
+  budgetWarning(kind: string, text: string): void {
+    if (this.budgetWarned.has(kind)) return;
+    this.budgetWarned.add(kind);
+    console.warn(`[map budget] ${this.map.metadata.name}: ${text}`);
   }
 
   // ---------------------------------------------------------------- bullets (GUNPLAY_SPEC §3-6, §8, §38)
@@ -3833,7 +3881,7 @@ export class Match {
 
   /** Apply damage through armor and the attacker's damage boost. */
   private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string, head = false): void {
-    if (!victim.alive || this.phase !== 'playing') return;
+    if (!victim.alive || this.phase !== 'playing' || victim.invulnerable) return;
     if (this.mode?.blocksDamage?.(victim, attacker)) return;
     if (this.classes) amount = this.classes.adjustDamage(victim, attacker, weapon, amount);
     // Lethality (spec §10): one systemic multiple, so every weapon keeps its identity.

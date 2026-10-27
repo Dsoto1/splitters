@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { VISIBLE_IMPORTED_MAPS, initPhysics, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { VISIBLE_IMPORTED_MAPS, initPhysics, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
@@ -21,7 +21,6 @@ import { EditorApp, type TestRequest } from './editor/editorApp.ts';
 import { LocalTransport, prewarmSimWorker } from './game/localTransport.ts';
 import { FramePacer } from './game/framePacer.ts';
 import { NetTransport } from './game/netTransport.ts';
-import { PeerTransport, cleanJoinCode } from './game/peerLink.ts';
 import { CharacterDesigner } from './designer/characterDesigner.ts';
 import { FrontEnd, type ArcadeMap } from './frontend/frontEnd.ts';
 import { MenuScene } from './frontend/menuScene.ts';
@@ -32,10 +31,27 @@ import { GameSession, type SessionOptions, type Travel } from './game/session.ts
 import { listLibrary, openFromLibrary } from './editor/storage.ts';
 import { PLAYLISTS, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
-import type { Transport } from './game/transport.ts';
+import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
+import { loadSignaling, type Transport } from './game/transport.ts';
+import { seededRng, testMode } from './testMode.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
+// Browser tests' deterministic mode (?test=1): offline only, see testMode.ts.
+const TEST = testMode();
+if (TEST) {
+  // Seeded per page load in this browser profile: the same steps give the same ids in a fresh profile (a test's
+  // own context), and a reload doesn't hand out ids already saved in the library before it.
+  let loads = 1;
+  try {
+    loads = Number(localStorage.getItem('tiletrigger.test.loads') ?? 0) + 1;
+    localStorage.setItem('tiletrigger.test.loads', String(loads));
+  } catch {
+    // No storage: nothing saved to collide with either.
+  }
+  setIdRandom(seededRng(Math.imul(TEST.seed, 1000003) + loads));
+}
+(window as unknown as { __testMode: typeof TEST }).__testMode = TEST;
 function storage(key: string, value?: string): string | null {
   try {
     if (value !== undefined) localStorage.setItem(key, value);
@@ -253,7 +269,7 @@ class App {
   private startTest(req: TestRequest): void {
     const t0 = performance.now();
     this.editor!.hide();
-    this.startSession(new LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty }), {
+    this.startSession(new LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Back to MapMaker',
       exitOnF5: true,
       onReady: () => {
@@ -293,7 +309,7 @@ class App {
   /** `hosting`: Host game carried over a map change (the same join code; friends rejoin it). */
   /** `autoHost`: open a join code for friends as soon as the match starts (Play → Host). */
   playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false): void {
-    this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}) }), {
+    this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
@@ -362,7 +378,8 @@ class App {
   async joinCode(code: string, name: string): Promise<void> {
     await this.init();
     this.front!.setStatus('Connecting…');
-    this.startSession(new PeerTransport(cleanJoinCode(code), name, this.front!.look), {
+    const signaling = await loadSignaling();
+    this.startSession(signaling.join(code, name, this.front!.look), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       onExit: (reason, travel) => {
@@ -415,7 +432,9 @@ class App {
 }
 
 const app = new App();
-if (params.get('mode') === 'assets') {
+// Back from the sign-in page (account.ts): finish signing in, then the menu.
+if (location.pathname === CALLBACK_PATH) void handleAuthCallback().then((message) => app.showMenu(message ?? ''));
+else if (params.get('mode') === 'assets') {
   // Team tool: inspect imported models (orientation, scale, colour, licence).
   void (async () => {
     $('menu').hidden = true;

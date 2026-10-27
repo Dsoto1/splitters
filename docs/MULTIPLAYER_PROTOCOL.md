@@ -288,12 +288,29 @@ budgets and asset IDs on the hub before accepting.
 
 | Today | Becomes | Note |
 |---|---|---|
-| `GET /lobby/games` | `GET /api/v1/servers` | listings stop carrying join codes |
-| `POST/PUT/DELETE /lobby/games[/id]` + `X-Lobby-Secret` | `session.create` / `host.heartbeat` / `session.close` on the session socket + `hostToken` | |
-| `GET /lobby/ice` (anonymous) | `GET /api/v1/ice` with ticket/hostToken | TTL 1 h already set by the new deploy |
-| PeerJS `/broker` + code `tiletrigger-<CODE>` | `POST /api/v1/join` + session socket signaling | keep PeerJS as a transport until replaced |
+| `GET /lobby/games` | `GET /api/v1/servers` | listings stop carrying join codes. **Now:** rate-limited, stale listings hidden after 30 s, `community` flag on every listing |
+| `POST/PUT/DELETE /lobby/games[/id]` + `X-Lobby-Secret` | `session.create` / `host.heartbeat` / `session.close` on the session socket + `hostToken` | **Now:** JSON ≤ 4 KB, schema-checked, constant-time secret, suite-or-community rule (`community`, `versionId`, `contentHash` fields) |
+| `GET /lobby/ice?session=<CODE>&role=host\|guest` | `GET /api/v1/ice` with ticket/hostToken | **Now:** per-game username `<expiry>:s_<CODE>.<host\|p_…>`, only for a live code, TTL 1 h by default |
+| PeerJS `/broker` + code `tiletrigger-<CODE>` | `POST /api/v1/join` + session socket signaling | keep PeerJS as a transport until replaced. **Now:** behind the client's `Signaling`/`HostLink` interface (`client/src/game/transport.ts`); broker rate-limited per address (`server/src/broker.ts`) |
+| — | `GET /api/v1/me` | **Now:** Cognito token check (no user records); `GET /api/v1/health` too |
 | `GET /lobby/health` | unchanged (also `GET /api/v1/health`) | used by the deploy script |
 | `GET /lobby/lan` | unchanged | home networks only |
 
 Keep the old endpoints serving the previous `PROTOCOL_VERSION` for one
-release so cached clients keep working.
+release so cached clients keep working. (Clients from before the
+per-session relay change call `/lobby/ice` without a session and get STUN
+only: they still connect directly.)
+
+### Implemented limits (Phase 1 pass) vs this document
+
+The gameplay channel and today's `/lobby` endpoints enforce the limits in
+MULTIPLAYER_REVIEW.md section 0. Where they differ from section 2 above,
+section 2 is the target for the session socket (`/api/v1/session`), which
+doesn't exist yet: gameplay connections allow 100 messages/s (burst 200)
+because a client sends 60 inputs a second; the PeerJS broker allows 20/s
+(burst 100) per socket and 16 KB frames; `/lobby/games` reads are 120/min
+per address (the game browser refreshes every 10 s and households share an
+address). Map data (section 10): 2 MiB before parsing is enforced by
+`loadMap` everywhere; content hashes are `sha256:` over the canonical JSON
+with the picture, `updatedAt` and the `release` block left out
+(`shared/src/map/identity.ts`).

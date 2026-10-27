@@ -36,9 +36,13 @@ describe('game browser list', () => {
     const store = new LobbyStore(() => now);
     store.add(advert(), '1.1.1.1');
     now += (LOBBY_EXPIRY_SECONDS - 5) * 1000;
-    expect(store.list().length).toBe(1);
+    // Hidden from the game browser after a missed check-in, still known (its host may come back) until it expires.
+    expect(store.list().length).toBe(0);
+    expect(store.size).toBe(1);
     now += 10_000;
     expect(store.list().length).toBe(0);
+    expect(store.hasCode('ABC234')).toBe(false);
+    expect(store.size).toBe(0);
   });
 
   it('rejects bad listings and limits each address', () => {

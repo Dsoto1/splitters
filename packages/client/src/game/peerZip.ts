@@ -36,30 +36,129 @@ export class Zipper {
   }
 }
 
+/**
+ * The most one message may inflate to: the welcome carries the whole map
+ * (at most MAP_MAX_BYTES, 2 MiB) plus rules and scenario state. A stream
+ * that inflates past it (a "zip bomb", or a broken host) is refused before
+ * it can fill the tab's memory.
+ */
+export const MAX_INFLATED_MESSAGE = 4 * 1024 * 1024;
+
 export class Unzipper {
   private readonly inflate = new Inflate({ raw: true });
   private got: Uint8Array[] = [];
+  private size = 0;
+  private broken: string | null = null;
   private readonly dec = new TextDecoder();
 
-  constructor() {
-    this.inflate.onData = (c) => this.got.push((c as Uint8Array).slice());
+  constructor(private readonly maxOutput = MAX_INFLATED_MESSAGE) {
+    // Throwing here stops pako in the middle of a push, so a bomb never inflates past the cap.
+    this.inflate.onData = (c) => this.take((c as Uint8Array).slice());
   }
 
-  /** A piece in; the whole message out once its last piece has arrived. */
+  private take(c: Uint8Array): void {
+    this.size += c.length;
+    if (this.size > this.maxOutput) throw new Error(`message inflates past ${this.maxOutput} bytes`);
+    this.got.push(c);
+  }
+
+  /** A piece in; the whole message out once its last piece has arrived. Throws on bad or oversized data (the stream is then unusable). */
   piece(data: Uint8Array): string | null {
-    this.inflate.push(data.subarray(1), zlib.Z_SYNC_FLUSH);
-    // pako hands output over only when its buffer fills: take what a flushed message left in it.
-    const st = (this.inflate as unknown as { strm: { output: Uint8Array; next_out: number; avail_out: number } }).strm;
-    if (st.next_out) {
-      this.got.push(st.output.slice(0, st.next_out));
-      st.next_out = 0;
-      st.avail_out = st.output.length;
+    if (this.broken) throw new Error(this.broken);
+    try {
+      this.inflate.push(data.subarray(1), zlib.Z_SYNC_FLUSH);
+      // pako hands output over only when its buffer fills: take what a flushed message left in it.
+      const st = (this.inflate as unknown as { strm: { output: Uint8Array; next_out: number; avail_out: number } }).strm;
+      if (st.next_out) {
+        const rest = st.output.slice(0, st.next_out);
+        st.next_out = 0;
+        st.avail_out = st.output.length;
+        this.take(rest);
+      }
+      if (this.inflate.err) throw new Error(`bad compressed data (${this.inflate.msg})`);
+    } catch (e) {
+      this.broken = (e as Error).message;
+      this.got = [];
+      throw e;
     }
-    if (this.inflate.err) throw new Error(`bad compressed data (${this.inflate.msg})`);
     if (data[0] !== 1) return null;
     const text = this.dec.decode(concat(this.got));
     this.got = [];
+    this.size = 0;
     return text;
+  }
+}
+
+/** Limits on putting chunked text messages back together (see Reassembler). */
+export interface ReassemblyLimits {
+  /** Most pieces one message may claim to have. */
+  maxChunks: number;
+  /** Most characters one message may add up to. */
+  maxBytes: number;
+  /** Most messages half-received at once. */
+  maxPartials: number;
+  /** A half-received message older than this is dropped. */
+  timeoutMs: number;
+}
+
+/**
+ * What a host accepts from a friend: game messages are small (inputs ≤ 32 a
+ * message, like the dedicated server's 64 KiB WebSocket frames), so a guest
+ * can never make the host hold more than 4 × 64 KiB of partial messages.
+ */
+export const GUEST_TO_HOST_LIMITS: ReassemblyLimits = { maxChunks: 4, maxBytes: 64 * 1024, maxPartials: 4, timeoutMs: 10_000 };
+/** What a friend accepts from the host (the welcome carries the map; uncompressed links only). */
+export const HOST_TO_GUEST_LIMITS: ReassemblyLimits = { maxChunks: Math.ceil(MAX_INFLATED_MESSAGE / CHUNK), maxBytes: MAX_INFLATED_MESSAGE, maxPartials: 4, timeoutMs: 60_000 };
+
+/**
+ * Puts chunked text messages ("\u0001id|i|n|body") back together, trusting
+ * nothing the sender says: the piece count, the total size and the number of
+ * half-finished messages are capped, and stale halves expire. Throws when the
+ * sender breaks a limit (the caller closes the link).
+ */
+export class Reassembler {
+  private readonly parts = new Map<string, { list: (string | undefined)[]; got: number; size: number; at: number }>();
+
+  constructor(
+    private readonly limits: ReassemblyLimits,
+    private readonly now: () => number = Date.now,
+  ) {}
+
+  /** A whole message, or null while pieces are missing. */
+  add(text: string): string | null {
+    if (!text.startsWith('\u0001')) {
+      if (text.length > this.limits.maxBytes) throw new Error(`message of ${text.length} characters is over ${this.limits.maxBytes}`);
+      return text;
+    }
+    const m = /^\u0001(\d{1,10})\|(\d{1,6})\|(\d{1,6})\|/.exec(text);
+    if (!m) throw new Error('malformed message piece');
+    const [head, id, si, sn] = m as unknown as [string, string, string, string];
+    const i = Number(si);
+    const n = Number(sn);
+    if (n < 1 || n > this.limits.maxChunks || i >= n) throw new Error(`message piece ${i}/${n} out of range`);
+    const body = text.slice(head.length);
+    const t = this.now();
+    for (const [k, p] of this.parts) if (t - p.at > this.limits.timeoutMs) this.parts.delete(k);
+    let p = this.parts.get(id);
+    if (!p) {
+      if (this.parts.size >= this.limits.maxPartials) throw new Error('too many half-sent messages');
+      p = { list: new Array<string | undefined>(n), got: 0, size: 0, at: t };
+      this.parts.set(id, p);
+    }
+    if (p.list.length !== n) throw new Error('message pieces disagree on their count');
+    if (p.list[i] !== undefined) throw new Error('message piece sent twice');
+    p.size += body.length;
+    if (p.size > this.limits.maxBytes) throw new Error(`message over ${this.limits.maxBytes} characters`);
+    p.list[i] = body;
+    p.got++;
+    if (p.got < n) return null;
+    this.parts.delete(id);
+    return p.list.join('');
+  }
+
+  /** Messages half-received right now. */
+  get pending(): number {
+    return this.parts.size;
   }
 }
 

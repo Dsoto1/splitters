@@ -39,7 +39,7 @@
 #   --zone DOMAIN           hosted zone (toshiroplay.com)
 #   --hostname HOST         site + hub hostname (trigger.toshiroplay.com)
 #   --branch NAME           Git branch to build (main);  --ref SHA  pin a commit;  --repo URL
-#   --app-client-id ID      Cognito app client ID for Trigger (pool us-east-1_VdMsuDJ59)
+#   --app-client-id ID      Cognito app client ID for Trigger (pool us-east-1_VdMsuDJ59; default 2lrej6nsacfag8a7taeu3u6sc2, the public "trigger" SPA client)
 #   --admin-ssh-cidr CIDR   keep SSH open to this CIDR permanently (default: Lightsail console only)
 #   --budget-warn USD       first budget alert (15);  --budget-limit USD  budget (25)
 #   --infra-only            stop after the stack (no SSH bootstrap, no checks)
@@ -66,7 +66,7 @@ ICE_TTL=3600
 INFRA_ONLY=0
 YES=0
 # Explicitly set options (empty = keep the stack's value, or the template default on create).
-EMAIL='' DNS_MODE='' ROOT='' TURN_RECORD='' INSTANCE='' AZ='' BUNDLE='' APP_CLIENT='' ADMIN_SSH='' BUDGET_WARN='' BUDGET_LIMIT=''
+EMAIL='' DNS_MODE='' ROOT='' TURN_RECORD='' INSTANCE='' AZ='' BUNDLE='' APP_CLIENT='2lrej6nsacfag8a7taeu3u6sc2' ADMIN_SSH='' BUDGET_WARN='' BUDGET_LIMIT=''
 
 die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 log() { printf '\n== %s\n' "$*"; }

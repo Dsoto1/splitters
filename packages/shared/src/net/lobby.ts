@@ -27,6 +27,15 @@ export interface LobbyListing {
   version: number;
   /** The host set up a relay (so players on strict networks can likely connect). */
   relay: boolean;
+  /**
+   * A community map (not one of our suite): shown with a "Community map"
+   * label, never official or featured. Such a listing names the exact map
+   * version (versionId + contentHash, map/identity.ts); the hub refuses a
+   * listing that claims a suite map it doesn't have.
+   */
+  community?: boolean;
+  versionId?: string;
+  contentHash?: string;
   /** Seconds since the host last checked in. */
   age?: number;
 }
@@ -34,8 +43,9 @@ export interface LobbyListing {
 /** What a host sends to list or refresh its game. */
 export type LobbyAdvert = Omit<LobbyListing, 'id' | 'age'>;
 
-/** Hosts check in this often; a listing that misses a few drops off. */
+/** Hosts check in this often; a listing that misses one is hidden (stale), one that misses a few drops off. */
 export const LOBBY_HEARTBEAT_SECONDS = 20;
+export const LOBBY_STALE_SECONDS = 30;
 export const LOBBY_EXPIRY_SECONDS = 65;
 
 const CODE_RE = /^[A-HJKMNP-Z2-9]{6}$/;
@@ -56,5 +66,22 @@ export function parseAdvert(v: unknown): LobbyAdvert | null {
   const version = int(o.version, 0, 1_000_000);
   if (!code || !name || !host || !map || !mode || max === null || players === null || version === null) return null;
   const mapId = typeof o.mapId === 'string' && /^[A-Za-z0-9_-]{4,64}$/.test(o.mapId) ? o.mapId : undefined;
-  return { code, name, host, map, ...(mapId ? { mapId } : {}), mode, players: Math.min(players, max), max, version, relay: o.relay === true };
+  const community = o.community === true;
+  const versionId = typeof o.versionId === 'string' && /^v_[a-z2-7]{16}$/.test(o.versionId) ? o.versionId : undefined;
+  const contentHash = typeof o.contentHash === 'string' && /^sha256:[0-9a-f]{64}$/.test(o.contentHash) ? o.contentHash : undefined;
+  return {
+    code,
+    name,
+    host,
+    map,
+    ...(mapId ? { mapId } : {}),
+    mode,
+    players: Math.min(players, max),
+    max,
+    version,
+    relay: o.relay === true,
+    ...(community ? { community } : {}),
+    ...(versionId ? { versionId } : {}),
+    ...(contentHash ? { contentHash } : {}),
+  };
 }

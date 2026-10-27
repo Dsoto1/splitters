@@ -1,25 +1,100 @@
 name: CI
 
-# Branch pushes are covered by their pull request; main is checked on every push.
-# check/* branches are merge candidates: the full suite runs there on GitHub's
-# runners, and only a green candidate is fast-forwarded to main.
+# check/* branches are merge candidates: CI runs what the change needs there (tools/ci/select.mjs maps the
+# changed files to e2e flows and unit tests; e2e/flowMap.mjs is the map), and only a green candidate is
+# fast-forwarded to main. A push to main whose commit already went green on a check branch runs nothing again.
+# Everything runs nightly on main, for v* tags, and from "Run workflow" (workflow_dispatch, full on by default).
 on:
   push:
     branches: [main, 'check/**']
+    tags: ['v*']
   pull_request:
+  schedule:
+    # Nightly, full suite on main (03:17 UTC).
+    - cron: '17 3 * * *'
   workflow_dispatch:
+    inputs:
+      full:
+        description: Run everything (no skip for an already-green commit, no change-based selection)
+        type: boolean
+        default: true
 
-# A newer commit makes the run for the older one pointless.
+# The plan job reads earlier runs of this workflow (the green-on-a-check-branch lookup).
+permissions:
+  contents: read
+  actions: read
+
+# A newer commit makes the run for the older one pointless (the nightly run has its own group).
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'schedule' && 'nightly' || 'push' }}
   cancel-in-progress: true
 
 jobs:
-  check:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      skip: ${{ steps.plan.outputs.skip }}
+      full: ${{ steps.plan.outputs.full }}
+      e2e: ${{ steps.plan.outputs.e2e }}
+      shards: ${{ steps.plan.outputs.shards }}
+      unit: ${{ steps.plan.outputs.unit }}
+      perf: ${{ steps.plan.outputs.perf }}
+      docs_only: ${{ steps.plan.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The merge base with main, for the changed files.
+          fetch-depth: 0
+      # main is fast-forwarded only to commits that went green on a check branch: don't test them twice.
+      - name: Already green on a check branch?
+        id: prior
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head_sha: context.sha,
+              status: 'success',
+              per_page: 100,
+            });
+            const green = runs.find((r) => r.path === '.github/workflows/ci.yml' && r.event === 'push' && (r.head_branch ?? '').startsWith('check/') && r.id !== context.runId);
+            core.setOutput('green', green ? 'true' : 'false');
+            if (green) core.notice(`Commit ${context.sha.slice(0, 7)} already passed CI on ${green.head_branch}: ${green.html_url}`);
+      - name: Plan
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          BASE_REF: ${{ github.base_ref }}
+          DISPATCH_FULL: ${{ github.event_name == 'workflow_dispatch' && inputs.full }}
+          GREEN: ${{ steps.prior.outputs.green }}
+        run: |
+          if [ "$GREEN" = "true" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "### CI plan"$'\n\n'"- Already green on a check branch: nothing to run again." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          base=origin/main
+          [ "$EVENT" = "pull_request" ] && base="origin/$BASE_REF"
+          full=""
+          case "$EVENT" in
+            schedule) full=--full ;;
+            workflow_dispatch) [ "$DISPATCH_FULL" = "true" ] && full=--full ;;
+            push) case "$REF" in refs/tags/*|refs/heads/main) full=--full ;; esac ;;
+          esac
+          node tools/ci/select.mjs --github --base "$base" $full
+
+  # The built site for the browser tests and the perf check (they don't build it again).
+  build:
+    needs: plan
+    if: needs.plan.outputs.skip != 'true' && (needs.plan.outputs.e2e == 'true' || needs.plan.outputs.perf == 'true')
     # Pinned: Playwright 1.56 has no browser builds for newer Ubuntu images.
     runs-on: ubuntu-24.04
-    # A hung step fails the run instead of holding it for GitHub's 6 h default.
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -28,32 +103,64 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm content:check
-      - run: pnpm test
-      - run: pnpm validate-map maps/phase0_arena.json
-      - run: pnpm validate-map maps/m3_vault.json
-      - run: pnpm validate-map maps/m4_outpost.json
-      - run: pnpm bench 32 15 -- --npcs=32
-      - run: pnpm bench 32 30
       - run: pnpm build
-      # The built site, for the browser tests below (they don't build it again).
       - uses: actions/upload-artifact@v4
         with:
           name: client-dist
           path: packages/client/dist
           retention-days: 1
 
+  check:
+    needs: plan
+    if: needs.plan.outputs.skip != 'true'
+    runs-on: ubuntu-24.04
+    # A hung step fails the run instead of holding it for GitHub's 6 h default.
+    timeout-minutes: 30
+    env:
+      UNIT: ${{ needs.plan.outputs.unit }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # No new fixed sleeps in the browser tests (tools/ci/lint-e2e-waits.mjs).
+      - run: node tools/ci/lint-e2e-waits.mjs
+      - if: needs.plan.outputs.docs_only != 'true'
+        run: pnpm typecheck
+      - if: needs.plan.outputs.docs_only != 'true'
+        run: pnpm content:check
+      # Unit tests: all of them, or the packages the change touches ('none': no tests to run).
+      - if: env.UNIT == 'all'
+        run: pnpm test
+      - if: env.UNIT != 'all' && env.UNIT != 'none' && env.UNIT != ''
+        run: |
+          # shellcheck disable=SC2086 # one argument per test folder
+          pnpm exec vitest run $UNIT
+      - if: env.UNIT == 'all'
+        run: |
+          pnpm validate-map maps/phase0_arena.json
+          pnpm validate-map maps/m3_vault.json
+          pnpm validate-map maps/m4_outpost.json
+      - if: env.UNIT == 'all'
+        run: pnpm bench 32 15 -- --npcs=32
+      - if: env.UNIT == 'all'
+        run: pnpm bench 32 30
+
   e2e:
-    needs: check
+    needs: [plan, build]
+    if: needs.plan.outputs.skip != 'true' && needs.plan.outputs.e2e == 'true'
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
+      # Flows balanced over up to 8 shards by measured time (e2e/timings.json, e2e/shards.mjs).
       matrix:
-        shard: [1, 2, 3, 4]
-    name: e2e (${{ matrix.shard }}/4)
-    # The slowest shard takes about 35 minutes.
-    timeout-minutes: 75
+        shard: ${{ fromJSON(needs.plan.outputs.shards) }}
+    name: e2e (${{ matrix.shard.index }}/${{ matrix.shard.of }})
+    # A shard is planned at about 10 minutes; a failed flow runs twice.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -66,18 +173,88 @@ jobs:
         with:
           name: client-dist
           path: packages/client/dist
+      - id: pw
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      # The browser, kept between runs (keyed by the Playwright version that wants it).
+      - id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
       # The browser install (apt + download) normally takes ~20 s but has hung for hours on a runner: cap each try and retry.
-      - run: for i in 1 2 3; do timeout 300 pnpm exec playwright install --with-deps chromium && exit 0; echo "playwright install try $i failed"; sleep 10; done; exit 1
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: for i in 1 2 3; do timeout 300 pnpm exec playwright install --with-deps chromium && exit 0; echo "playwright install try $i failed"; sleep 10; done; exit 1
+        timeout-minutes: 17
+      # Cached browser: the runner image has its libraries; install them only if it doesn't start.
+      - if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: |
+          node -e "require('playwright').chromium.launch().then((b) => b.close())" && exit 0
+          for i in 1 2 3; do timeout 300 pnpm exec playwright install-deps chromium && exit 0; echo "playwright install-deps try $i failed"; sleep 10; done; exit 1
         timeout-minutes: 17
       - run: pnpm e2e
         env:
-          E2E_SHARD: ${{ matrix.shard }}/4
+          E2E_ONLY: ${{ matrix.shard.flows }}
+          E2E_SHARD_LABEL: ${{ matrix.shard.index }}/${{ matrix.shard.of }}
+          # A failed flow runs once more; passing then, it's reported as FLAKY (job summary, flaky log) and doesn't fail the run.
+          E2E_RETRIES: '1'
+          E2E_TIMINGS_OUT: e2e-artifacts/timings-${{ matrix.shard.index }}.json
           E2E_STACKS: '1' # page errors come with their stacks, to trace CI-only failures
-      # What the pages showed when a check failed.
+      # Per-flow times, for refreshing e2e/timings.json (tools/ci/timings.mjs).
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-timings-${{ matrix.shard.index }}
+          path: e2e-artifacts/timings-*.json
+          retention-days: 14
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-flaky-${{ matrix.shard.index }}
+          path: e2e-artifacts/flaky.log
+          retention-days: 14
+          if-no-files-found: ignore
+      # What the pages showed when a check failed (and the visual flow's new pictures and diffs).
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-screenshots-${{ matrix.shard }}
+          name: e2e-screenshots-${{ matrix.shard.index }}
           path: e2e-artifacts
           retention-days: 7
           if-no-files-found: ignore
+
+  # Draw-call budget (docs/PERF_96.md): 96 players clumped on Frost Basin at Medium and Low. It counts draw
+  # calls, not frame times, so CPU rendering on the runner doesn't matter.
+  perf:
+    needs: [plan, build]
+    if: needs.plan.outputs.skip != 'true' && needs.plan.outputs.perf == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-dist
+          path: packages/client/dist
+      - id: pw
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      - id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: for i in 1 2 3; do timeout 300 pnpm exec playwright install --with-deps chromium && exit 0; echo "playwright install try $i failed"; sleep 10; done; exit 1
+        timeout-minutes: 17
+      - if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: |
+          node -e "require('playwright').chromium.launch().then((b) => b.close())" && exit 0
+          for i in 1 2 3; do timeout 300 pnpm exec playwright install-deps chromium && exit 0; echo "playwright install-deps try $i failed"; sleep 10; done; exit 1
+        timeout-minutes: 17
+      - run: pnpm perf:budget

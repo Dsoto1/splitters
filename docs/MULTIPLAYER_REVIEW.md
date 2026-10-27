@@ -19,6 +19,34 @@ lists are for the implementation task.
 Legend: **Complies** · **Partly** (works, but a rule is not fully met) ·
 **Must change** · **Blocker** (stops a phase of the direction until fixed).
 
+## 0. Phase 1 hardening: done (implementation pass, 27 Oct 2026)
+
+The tables below are the review as written; this is what the implementation
+pass changed since. Items marked ✔ in section 4 are done.
+
+| Area | Done | Where |
+|---|---|---|
+| Guest → host input bounds | Chunked text from a friend: ≤ 4 pieces, ≤ 64 KiB a message, ≤ 4 half-sent messages, 10 s timeout (host → friend: 4 MiB, 60 s). Inflated output ≤ 4 MiB a message, aborted mid-inflate. Early messages before the match loads ≤ 64. | `client/src/game/peerZip.ts` (`Reassembler`, `Unzipper`), `peerLink.ts` `onText`, `matchHost.ts` |
+| Message rate limits | Per connection, browser host and dedicated server: token bucket 100/s, burst 200 (a client sends 60 inputs + 1 ping a second); over it dropped; 250 drops in 5 s → disconnected (server close `4008`). | `shared/src/net/rateLimit.ts` (`MessageGuard`), `peerLink.ts` `linkFor`, `server/src/server.ts` |
+| Hub rate limits | Per address: `GET /lobby/games` 120/min (burst 60), POST/PUT/DELETE 60/min (burst 30), new listings 10/min, `/lobby/ice` 12/min and 30 per game (then 1/min), `/lobby/lan` 12/min, `/api/v1/me` 30/min and 10 failed tokens/min → 15 min block. Broker: ≤ 16 sockets and 30 connects/min per address, 2,000 sockets in all, 20 messages/s (burst 100) per socket, 30 OFFERs (joins, i.e. join-code guesses)/min per address, 16 KB frames, 60 HTTP requests/min. | `server/src/lobby.ts` (`LOBBY_LIMITS`), `broker.ts` (`BROKER_LIMITS`), `auth.ts` |
+| Hub validation | JSON bodies only (415), ≤ 4 KB (413, checked from Content-Length and while reading), schema-checked adverts, `v` query checked, 405 on other methods; listing secrets compared in constant time. | `lobby.ts` |
+| Heartbeats | Listing hidden after 30 s without a check-in (stale), removed at 65 s. | `shared/src/net/lobby.ts`, `lobby.ts` |
+| Client IP | `TRUST_PROXY=1` believes `X-Forwarded-For` only from loopback (Caddy on the box), last entry only; IPv6 keyed by /64. | `server/src/clientIp.ts` |
+| Per-session relay credentials | `/lobby/ice?session=<CODE>&role=host\|guest`: only for a game live on the hub's broker (or listed); username `<expiry>:s_<CODE>.<host\|p_xxxxxxxx>`, HMAC-SHA1 with the TURN secret; `ICE_TTL` default 3600 (floor 600). Without a session: STUN only. Hosts renew at half life; new connections use the fresh ones. | `server/src/ice.ts`, `lobby.ts`, `client/src/game/relay.ts`, `peerLink.ts` |
+| Join codes | `crypto.getRandomValues`, rejection sampling (no modulo bias), 31^6 ≈ 29.7 bits; 666/rude-word filter kept. Guessing is bounded by the broker's OFFER limit. | `client/src/game/joinCode.ts` |
+| Transport | `RemoteLink`, `HostLink`, `Signaling`, `loadSignaling()`; session.ts and main.ts no longer construct PeerJS classes; relay settings moved out of the PeerJS file. | `client/src/game/transport.ts`, `relay.ts` |
+| Map safety | 2 MiB before parsing (`loadMap`), `dependencies` ≤ 16; load budgets (errors): vehicles/mounts ≤ 32, destructibles + breakable blocks ≤ 1,024; warnings: encounter caps over 64 NPCs, rule loops (A → B → A within a tick). Runtime: 2,000 scenario actions and 256 rule firings a tick (rest deferred, ≤ 1,024 waiting events), one rule ≤ 30 firings/s, 64 NPCs alive, 32 NPC spawns/s and 256/min, 512 projectiles (oldest bot/NPC ones removed first); one warning per kind per match. | `shared/src/map/budgets.ts` (`RESOURCE_BUDGETS`), `validate.ts`, `sim/scenario.ts`, `sim/match.ts` |
+| Map identity | Optional `metadata.release` {mapId `m_`+16, versionId `v_`+16, revision, `sha256:` content hash of canonical JSON (picture, last-saved time and release excluded), schemaVersion, releasedAt}; stamped by MapMaker Export (new version only when the content changed); unstamped maps get a derived identity. No format bump (optional field). | `shared/src/map/identity.ts`, `client/src/editor/storage.ts` |
+| Listings | Non-suite maps may be listed only as `community: true` with map ID, version ID and content hash ("Community map" tag in the game browser and the host's badge); a non-community listing must name a suite map (hub reads `maps/`). Official/featured: browser hosts are never either. | `lobby.ts`, `hub.ts`, `client/src/game/session.ts`, `frontend/frontEnd.ts` |
+| Sign-in | Cognito managed login, authorization code + PKCE, public client `2lrej6nsacfag8a7taeu3u6sc2`, `/auth/callback`, tokens in sessionStorage, sign-out; hub verifies ID/access tokens (JWKS cached; iss, aud/client_id, token_use, exp) at `GET /api/v1/me`. No user records. | `client/src/account.ts`, `server/src/auth.ts` |
+| Privacy page | `/privacy` (static), linked from the menu footer; contact is a placeholder for the owner. | `client/public/privacy/index.html`, `server/src/site.ts` |
+
+Not done in this pass (Phase 1 remainder → next): hub-issued join tickets
+and join authorization (so relay credentials and joins need a ticket rather
+than a live code), hub-issued join codes, origin allow-list for
+authenticated endpoints, and an active-vehicle (24) runtime cap. Phase 2 and
+3 items are unchanged.
+
 ## 1. What exists today
 
 - **Simulation**: `packages/shared/src/sim` (Match, bots, NPCs, vehicles,
@@ -128,27 +156,27 @@ Phase 1 (secure foundation):
 1. **Join authorization**: the hub issues short-lived signed join tickets
    (MULTIPLAYER_PROTOCOL.md section 7); the host admits only valid tickets;
    join-code lookups rate-limited per address (10 a minute, 50 an hour).
-2. **TURN credentials per session**: `/lobby/ice` only with a join ticket or
+2. ✔ partly (per game, by live join code; tickets come with item 1) **TURN credentials per session**: `/lobby/ice` only with a join ticket or
    a host registration token; username `<expiry>:<sessionId>.<playerId>` so
    coturn logs attribute usage; keep 1 h TTL; cap credentials per account.
-3. **Join codes from a CSPRNG** (`crypto.getRandomValues`) and issued by the
+3. ✔ CSPRNG (hub-issued codes come with item 1) **Join codes from a CSPRNG** (`crypto.getRandomValues`) and issued by the
    hub, which knows which codes exist (`joinCode.ts:18`).
-4. **Browser-host input bounds**: cap chunk count/size and pending partial
+4. ✔ **Browser-host input bounds**: cap chunk count/size and pending partial
    messages in `onText` (`peerLink.ts:116-139`, e.g. ≤ 64 chunks, ≤ 1 MiB a
    message, ≤ 4 partials a connection), cap inflated output in `Unzipper`
    (`peerZip.ts:39-60`, ≤ 1 MiB), and per-connection message-rate limits on
    both hosts (token bucket: 60 messages/s burst 120; close on sustained abuse).
-5. **Dedicated server message-rate limit** (`server.ts:216`), same bucket.
-6. **Hub hardening**: rate-limit `GET/PUT /lobby/games` (60/min/address),
+5. ✔ **Dedicated server message-rate limit** (`server.ts:216`), same bucket.
+6. ✔ (origin allow-list waits for authenticated endpoints) **Hub hardening**: rate-limit `GET/PUT /lobby/games` (60/min/address),
    constant-time secret compare (`lobby.ts:57,68`), PeerJS broker
    `concurrent_limit` and per-address connection caps, origin allow-list for
    authenticated endpoints (keep `*` on anonymous reads).
-7. **Signaling behind an interface**: `HostLink`/`Signaling` abstraction so
+7. ✔ **Signaling behind an interface**: `HostLink`/`Signaling` abstraction so
    PeerJS can be swapped for the hub's own signaling (`session.ts:622`,
    `main.ts:365`).
-8. **Map budgets** (section 5.3): per-tick trigger action budget, global
+8. ✔ **Map budgets** (section 5.3): per-tick trigger action budget, global
    NPC/projectile/spawn caps, byte cap before parsing, `dependencies` max.
-9. **Hub-side listing rules**: verify `mapId` against the suite manifest for
+9. ✔ **Hub-side listing rules**: verify `mapId` against the suite manifest for
    official/featured listings; allow community maps only with a
    `community: true` label plus map/version/hash (section 5.5).
 
@@ -194,10 +222,10 @@ primitives keyed on account IDs.
 
 ### Blockers
 
-- **Cognito app client ID** (pending from the owner) blocks account sign-in,
-  host pairing and authenticated join tickets. Infra takes it as a parameter
-  (`--app-client-id`); nothing else waits on it.
-- **Privacy page** (below) blocks enabling Google sign-in/consent.
+- ~~**Cognito app client ID**~~ resolved: `2lrej6nsacfag8a7taeu3u6sc2`
+  (public SPA client), the default in the client, the hub and
+  `infra/deploy-multiplayer.sh --app-client-id`.
+- ~~**Privacy page**~~ done (`/privacy`); the owner fills in the contact link.
 - No other blockers for Phase 1. Phase 2 needs a code-signing key decision
   (SECURITY section 7) before the first Host Service release.
 
@@ -367,7 +395,7 @@ and `sudo tiletrigger-relay off` stops it in seconds.
 Google sign-in (via Cognito) and Google's consent screen need a public
 privacy policy URL: **https://trigger.toshiroplay.com/privacy**.
 
-Plan (implementation task, not done here):
+Done in the implementation pass (`packages/client/public/privacy/index.html`, linked from the menu footer; the hub serves folder pages, `site.ts`). As planned:
 
 1. Add `packages/client/public/privacy/index.html` (static, no scripts),
    served by the hub's site handler at `/privacy` and `/privacy/` (the SPA

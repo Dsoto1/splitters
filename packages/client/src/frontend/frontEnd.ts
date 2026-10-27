@@ -40,7 +40,8 @@ import {
   mapInspiration,
 } from '@tiletrigger/shared';
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
-import { loadRelay, saveRelay } from '../game/peerLink.ts';
+import { loadRelay, saveRelay } from '../game/relay.ts';
+import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
 import { installTooltips } from './tooltip.ts';
 import { FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadGraphicsQuality, loadRenderScale, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/atmosphere.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
@@ -236,7 +237,13 @@ export class FrontEnd {
     root.replaceChildren(
       this.body,
       this.status,
-      el('footer', { class: 'menu-footer' }, el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Sandgate, Team Deathmatch and the Character Designer.'), this.footerHints),
+      el(
+        'footer',
+        { class: 'menu-footer' },
+        el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Sandgate, Team Deathmatch and the Character Designer.'),
+        this.footerLinks(),
+        this.footerHints,
+      ),
     );
     window.addEventListener('keydown', this.keyHandler);
     this.go('home');
@@ -1027,10 +1034,30 @@ export class FrontEnd {
     return el('div', { class: 'form panel lan-panel' }, el('div', { class: 'gb-top' }, el('h4', { textContent: 'On your network (LAN)' }), status, scan), list, el('div', { class: 'gb-hub' }, add, addBtn));
   }
 
+  /** Sign in / out (optional: playing never needs an account) and the privacy page. */
+  private footerLinks(): HTMLElement {
+    const box = el('div', { class: 'menu-links' });
+    if (signInAvailable()) {
+      const who = currentAccount();
+      if (who) {
+        const out = el('button', { class: 'link', id: 'sign-out', textContent: 'Sign out' });
+        out.addEventListener('click', () => signOut());
+        box.append(el('span', { class: 'account', textContent: `Signed in as ${who.name}` }), out);
+      } else {
+        const inBtn = el('button', { class: 'link', id: 'sign-in', textContent: 'Sign in' });
+        inBtn.dataset.tip = 'Optional: a ToshiroPlay account (Google). Playing never needs one.';
+        inBtn.addEventListener('click', () => void signIn());
+        box.append(inBtn);
+      }
+    }
+    box.append(el('a', { href: '/privacy/', target: '_blank', rel: 'noopener', id: 'privacy-link', textContent: 'Privacy' }));
+    return box;
+  }
+
   /** A listing's map: its picture and plan when it is one of the built-in maps, and its name. */
   private listingMap(g: LobbyListing): HTMLElement {
     const name = el('span', { class: 'gb-map-name', textContent: g.map });
-    const known = g.mapId ? this.maps.find((m) => !m.group && m.map.metadata.id === g.mapId) : undefined;
+    const known = g.mapId && !g.community ? this.maps.find((m) => !m.group && m.map.metadata.id === g.mapId) : undefined;
     if (!known) return el('span', { class: 'gb-map' }, name);
     const thumbs = mapThumbs(known.map, true);
     requestAnimationFrame(thumbs.draw);
@@ -1049,9 +1076,19 @@ export class FrontEnd {
       const join = el('button', { class: 'primary', textContent: g.players >= g.max ? 'Full' : 'Join' });
       join.disabled = g.players >= g.max;
       join.addEventListener('click', () => this.hooks.joinCode(g.code, this.displayName));
-      const tags = [el('span', { class: 'gb-tag', textContent: 'Player-hosted' }), ...(g.relay ? [el('span', { class: 'gb-tag relay', textContent: 'Relay' })] : [])];
-      tags[0]!.dataset.tip = "Runs in the host's browser: it ends if they leave, and the host's game decides what happens (play with people you trust for anything serious).";
-      if (tags[1]) tags[1].dataset.tip = 'The host set up a relay, so players on strict networks can usually still connect.';
+      const hosted = el('span', { class: 'gb-tag', textContent: 'Player-hosted' });
+      hosted.dataset.tip = "Runs in the host's browser: it ends if they leave, and the host's game decides what happens (play with people you trust for anything serious).";
+      const tags = [hosted];
+      if (g.community) {
+        const community = el('span', { class: 'gb-tag community', textContent: 'Community map' });
+        community.dataset.tip = "Made by a player in MapMaker, not one of the game's own maps (checked when it loads: it can't run code or bring outside files).";
+        tags.push(community);
+      }
+      if (g.relay) {
+        const relay = el('span', { class: 'gb-tag relay', textContent: 'Relay' });
+        relay.dataset.tip = 'The host set up a relay, so players on strict networks can usually still connect.';
+        tags.push(relay);
+      }
       return el(
         'div',
         { class: 'gb-row' },

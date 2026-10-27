@@ -23,6 +23,9 @@ import {
   type ServerMessage,
 } from '@tiletrigger/shared';
 
+/** Messages kept from a friend whose link opened before the match was ready. */
+const MAX_EARLY_MESSAGES = 64;
+
 export interface LocalMatchOptions {
   name: string;
   /** Character look for the local player. */
@@ -33,6 +36,8 @@ export interface LocalMatchOptions {
   rules?: MatchRules;
   /** Scenario chains: the score and weapons the local player brings from the previous map. */
   carry?: CarryOver;
+  /** Browser tests' deterministic mode (testMode.ts): a fixed seed, optionally an invulnerable player. Offline only. */
+  test?: { seed: number; god: boolean };
 }
 
 /** What the page reads synchronously about a match that may run elsewhere (a worker): kept up to date by the host. */
@@ -138,8 +143,10 @@ export class MatchHost {
     if (this.stopped) return;
     const { Match, BotFiller, HostControl } = mod;
     const rules = this.opts.rules ?? rulesForMap(this.map);
-    const match = new Match(this.map, rules, Math.floor(Math.random() * 1e6), { startGate: true });
+    const test = this.opts.test;
+    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true });
     const me = match.addHuman(this.opts.name, this.opts.look)!;
+    if (test?.god) me.invulnerable = true;
     if (this.opts.carry) match.applyCarry(me, this.opts.carry);
     const bots = new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]);
     const control = new HostControl(match, bots, Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));
@@ -303,7 +310,8 @@ export class MatchHost {
 
   /** A friend's link opened (Host game). Before the match runs, what they say waits for it. */
   open(id: number): void {
-    if (this.stopped) return this.sink.close(id, 0);
+    // A test-mode match (fixed seed, maybe an invulnerable player) is offline only: nobody joins it.
+    if (this.stopped || this.opts.test) return this.sink.close(id, 0);
     this.remotes.set(id, { id, slot: null, early: this.match ? null : [] });
   }
 
@@ -312,7 +320,8 @@ export class MatchHost {
     const r = this.remotes.get(id);
     const { match, bots, control } = this;
     if (!r) return;
-    if (r.early || !match || !bots || !control) return void r.early?.push(text);
+    // While the match loads, a friend's first few messages wait for it (hello, ready, a ping or two); the rest are dropped.
+    if (r.early || !match || !bots || !control) return void (r.early && r.early.length < MAX_EARLY_MESSAGES && r.early.push(text));
     const msg = parseClientMessage(text);
     if (!msg) return;
     if (msg.t === 'hello' && r.slot === null) {

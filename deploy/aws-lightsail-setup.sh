@@ -30,7 +30,7 @@ echo "== Tile Trigger setup ${DOMAIN:+for $DOMAIN} (branch $BRANCH)"
 
 # Building the game needs more memory than the smallest instances have: add swap once.
 if ! swapon --show | grep -q /swapfile; then
-  fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile
+  fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile
   grep -q /swapfile /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
 
@@ -62,7 +62,7 @@ else
   as_app "git clone -q --branch '$BRANCH' '$REPO' ."
 fi
 echo "== Building the game (a few minutes)…"
-as_app "corepack pnpm install --frozen-lockfile && VITE_HUB=self corepack pnpm build"
+as_app "corepack pnpm install --frozen-lockfile && VITE_HUB=self NODE_OPTIONS=--max-old-space-size=3072 corepack pnpm build"
 
 # The relay (coturn), with time-limited passwords the hub hands out.
 PUBLIC_IP="$(curl -fsS https://checkip.amazonaws.com | tr -d '[:space:]')"
@@ -136,7 +136,7 @@ systemctl enable -q caddy && systemctl reload-or-restart caddy
 cat > /usr/local/bin/tiletrigger-update <<UPD
 #!/usr/bin/env bash
 set -euo pipefail
-sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && git fetch -q origin $BRANCH && git reset -q --hard origin/$BRANCH && corepack pnpm install --frozen-lockfile && VITE_HUB=self corepack pnpm build"
+sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && git fetch -q origin $BRANCH && git reset -q --hard origin/$BRANCH && corepack pnpm install --frozen-lockfile && VITE_HUB=self NODE_OPTIONS=--max-old-space-size=3072 corepack pnpm build"
 systemctl restart tiletrigger-hub
 echo "Tile Trigger updated to \$(sudo -u tiletrigger git -C $APP log -1 --format='%h %s')"
 UPD

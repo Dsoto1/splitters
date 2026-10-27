@@ -236,5 +236,9 @@ stop();
 const budget = Number(process.env.PERF_MAX_DRAWS ?? 0);
 const over = budget ? results.filter((r) => (r.clump?.scene.draws ?? 0) > budget) : [];
 for (const r of over) console.log(`OVER BUDGET: ${r.map} ${r.graphics} clumped draws ${r.clump.scene.draws} > ${budget}`);
+// A budget check needs something measured: a map that never started, or no frame drawn in the window, fails it.
+const unmeasured = budget ? maps.flatMap((id) => GRAPHICS.filter((g) => !results.some((r) => r.map === id && r.graphics === g && (r.stalled || r.clump?.scene.frames > 0))).map((g) => `${id}/${g}`)) : [];
+for (const u of unmeasured) console.log(`NOT MEASURED: ${u} (the match didn't start or no clumped frame was drawn)`);
 const stalled = results.filter((r) => r.stalled);
-process.exit(over.length || stalled.length ? 1 : 0);
+if (budget && !over.length && !unmeasured.length && !stalled.length) console.log(`draw budget: every clumped frame within ${budget} draws (${results.map((r) => `${r.map} ${r.graphics} ${r.clump.scene.draws}`).join(', ')})`);
+process.exit(over.length || stalled.length || unmeasured.length ? 1 : 0);
