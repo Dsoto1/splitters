@@ -121,8 +121,11 @@ export class ScenarioVisuals {
   /** Solid blocks the scenario drives (logic, movers, hidden at start): drawn here, not in the level mesh. */
   dynamicBlocks: ReadonlySet<string> = new Set();
 
-  /** Glass in windows (instanced panes after the entities; see windowPaneIndex). */
+  /** Every pane of glass (windows, glass blocks, Window pane destructibles), instanced; see glassVisuals.ts. */
   readonly glass: GlassVisuals;
+
+  /** Blocks movers carry (they follow their mover, so they can't be instanced with the static glass). */
+  private carriedBlocks: ReadonlySet<string> = new Set();
 
   /** (Re)build visuals for every scenario entity in the list. Indices match map.entities. */
   build(entities: readonly MapEntity[], map?: MapDocument): void {
@@ -133,7 +136,9 @@ export class ScenarioVisuals {
     const targets = map && !this.opts.editor ? logicTargets(map.logic) : null;
     this.fixedLights = new Set(targets ? entities.filter((e) => e.kind === 'light' && !targets.has(e.id) && !e.off && !e.blink).map((e) => e.id) : []);
     const fixtures: Mesh[] = [];
-    if (map) this.glass.build(map);
+    // Glass blocks a mover carries move with it, so they are drawn one by one (block()); every other pane is instanced.
+    this.carriedBlocks = new Set(map ? map.entities.flatMap((e) => (e.kind === 'mover' ? e.blocks : [])) : []);
+    if (map) this.glass.build(map, { windowsOnly: !!this.opts.editor, skip: this.carriedBlocks });
     if (map) {
       this.liquids.map = map;
       this.liquids.fx.liquids = mapLiquids(map.entities);
@@ -804,11 +809,14 @@ export class ScenarioVisuals {
   }
 
   /**
-   * A glass block: the shared glass material (its own tint if it has one),
-   * frosting as bulletproof glass cracks, gone when breakable glass shatters.
+   * A glass block. In play the instanced glass draws it (GlassVisuals), unless
+   * a mover carries it; then, and in MapMaker, it is its own box in the shared
+   * glass material (its own tint if it has one), frosting as bulletproof glass
+   * cracks, gone when breakable glass shatters.
    */
   private glassBlock(name: string, e: Extract<MapEntity, { kind: 'block' }>): Visual {
     const root = new TransformNode(name, this.scene);
+    if (!this.opts.editor && !this.carriedBlocks.has(e.id)) return { root };
     const [w, h, d] = e.size;
     const body = CreateBox(`${name}_body`, { width: w, height: h, depth: d }, this.scene);
     body.parent = root;
@@ -1436,17 +1444,16 @@ export class ScenarioVisuals {
         band.material = this.mat('barrelBand', '#f2c14e');
       }
     } else if (e.model === 'glass') {
-      // A pane in a window: translucent, with a thin frame.
+      // A pane in a window: in play the instanced glass draws it with its frame (GlassVisuals); MapMaker draws it here.
+      if (!this.opts.editor) return { root };
       const lift = spec.lift ?? 0;
-      base = '#bfe6f5';
-      bodyMat = this.ownMat(base);
-      bodyMat.alpha = 0.35;
-      bodyMat.specularColor = new Color3(0.9, 0.9, 0.9);
-      bodyMat.specularPower = 96;
+      base = '#cfe6ee';
+      bodyMat = glassMaterial(this.scene, base);
       body = this.box(`${name}_body`, root, [h.x * 2, h.y * 2, h.z * 2], [0, lift + h.y, 0], bodyMat);
       const frame = this.mat('paneFrame', '#d9d6cf');
       this.box(`${name}_mullion`, root, [0.05, h.y * 2, h.z * 2 + 0.02], [0, lift + h.y, 0], frame);
       this.box(`${name}_transom`, root, [h.x * 2, 0.05, h.z * 2 + 0.02], [0, lift + h.y, 0], frame);
+      return { root, update: (health) => root.setEnabled(health > 0) };
     } else if (e.model === 'boards') {
       // Planks nailed across a doorway at slight angles.
       base = '#8a5d33';

@@ -188,6 +188,12 @@ export class MapBuilder {
     return this;
   }
 
+  /** How long shattered glass stays out before it comes back (null: until the next round). */
+  glassRespawn(seconds: number | null): this {
+    this.run('Glass settings', { kind: 'setGlass', before: this.doc.glass ?? null, after: seconds === null ? null : { respawnSeconds: seconds } });
+    return this;
+  }
+
   /** Queue an entity (added in one step at save, like a MapMaker paste). */
   add(e: NewEntity): this {
     this.pending.push({ ...e, id: e.id ?? this.newId(e.kind) } as MapEntity);
@@ -332,7 +338,7 @@ export class MapBuilder {
   }
 
   /** A free block (`size` [x, thickness, z], base at `at`): solid, breakable, crumble or trapdoor. */
-  block(at: V3, size: V3, behaviour: 'solid' | 'breakable' | 'crumble' | 'trapdoor' = 'solid', o: { material?: string; tint?: string; yaw?: number; delay?: number; respawn?: number | null; health?: number; trigger?: 'step' | 'logic'; id?: string; pitch?: number; roll?: number; hidden?: boolean; field?: boolean } = {}): this {
+  block(at: V3, size: V3, behaviour: 'solid' | 'breakable' | 'crumble' | 'trapdoor' = 'solid', o: { material?: string; tint?: string; yaw?: number; delay?: number; respawn?: number | null; health?: number; trigger?: 'step' | 'logic'; id?: string; pitch?: number; roll?: number; hidden?: boolean; field?: boolean; glass?: GlassKind } = {}): this {
     return this.add({
       kind: 'block',
       position: at,
@@ -351,6 +357,8 @@ export class MapBuilder {
       ...(o.hidden ? { startHidden: true } : {}),
       // Style Packs: a force field (blocks players and vehicles, not shots; logic switches it).
       ...(o.field ? { field: true } : {}),
+      // Glass panes (sim/glass.ts): see-through, breakable or bulletproof.
+      ...(o.glass ? { glass: o.glass } : {}),
       ...(o.id ? { id: o.id } : {}),
     });
   }

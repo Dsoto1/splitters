@@ -19,7 +19,8 @@ export function skyReflection(scene: Scene): BaseTexture | null {
   if (cached && cached.src === src) return cached.tex;
   const tex = src.clone();
   tex.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
-  tex.level = 1;
+  // As bright as the sky looks (night skies are dimmed).
+  tex.level = src.level;
   reflections.set(scene, { src, tex });
   scene.onDisposeObservable.addOnce(() => reflections.delete(scene));
   return tex;

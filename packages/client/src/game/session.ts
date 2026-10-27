@@ -1246,11 +1246,10 @@ export class GameSession {
             this.objectiveChanged.set(ev.i, performance.now());
           } else if (ev.e === 'broken') {
             const e = this.map?.entities[ev.i];
-            // Glass (window panes past the entities, glass blocks): a shower of shards.
-            const pane = this.map ? glassAt(this.map, ev.i) : null;
+            // Glass (window panes past the entities, glass blocks, Window panes): a shower of shards.
+            const pane = this.view.scenario.glass.paneAt(ev.i) ?? (this.map ? glassAt(this.map, ev.i) : null);
             if (pane) {
-              const h = pane.box.half;
-              this.view.debris(pane.box.center, pane.tint ?? '#d4eef2', Math.max(0.35, Math.min(1.2, Math.max(h.x, h.y, h.z) * 0.6)), Math.round(Math.min(18, 8 + (h.x + h.z) * h.y * 4)), 0.6);
+              this.view.glassShards(pane.box, pane.tint ?? '#d4eef2');
             } else if (e?.kind === 'destructible') {
               const spec = DESTRUCTIBLE_SPECS[e.model];
               const h = spec.half;
