@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { VISIBLE_IMPORTED_MAPS, initPhysics, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { VISIBLE_IMPORTED_MAPS, initPhysics, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
@@ -58,7 +58,7 @@ function arcadeEntries(files: Record<string, unknown>, group?: string): ArcadeMa
   return Object.entries(files)
     .flatMap(([path, json]): ArcadeMap[] => {
       const key = path.replace(/^.*\/|\.json$/g, '');
-      if (key in OFFLINE_MAPS) return [];
+      if (key in OFFLINE_MAPS || isRetiredMap(key)) return [];
       const r = loadMap(json);
       if (!r.ok) return [];
       const blurb = r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? '';
@@ -78,10 +78,8 @@ function arcadeMaps(): ArcadeMap[] {
     ...entry('canyon', 'Outdoor canyon: two bases, boulder fields, hills and a ridge ledge.', ['core.tdm', 'core.deathmatch'], 9),
     ...entry('citadel', 'Castle keep in an outer bailey: a two-storey atrium, roof terraces, every weapon.', ['core.deathmatch', 'core.tdm'], 9),
     ...entry('sandgate', 'Desert town: long street, mid doors, tunnels.', ['core.tdm', 'core.deathmatch'], 9),
-    ...entry('arena', 'Duel arena: a tight graybox loop with an upper floor, for 2–4 players.', ['core.deathmatch', 'core.tdm'], 3),
-    ...entry('vault', 'Crack the vault: doors, traps, and loops round the heist route.', ['core.deathmatch'], 5),
-    ...entry('outpost', 'Take the outpost from the Syndicate: flank the courtyard, hold the uplink, reach evac.', ['core.coop'], 2),
-    // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata.
+    // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata;
+    // arena, vault and outpost are retired (RETIRED_MAPS) and stay reachable only by ?offline= for tests.
     ...arcadeEntries(EXTRA_MAPS),
   ];
 }

@@ -182,10 +182,8 @@ import {
   NPC_PALETTE,
   placeNpcCommand,
   type LightFixture,
+  isRetiredMap,
 } from '@tiletrigger/shared';
-import arenaTemplate from '../../../../maps/phase0_arena.json';
-import vaultTemplate from '../../../../maps/m3_vault.json';
-import outpostTemplate from '../../../../maps/m4_outpost.json';
 import sandgateTemplate from '../../../../maps/sandgate.json';
 import citadelTemplate from '../../../../maps/citadel.json';
 import canyonTemplate from '../../../../maps/canyon.json';
@@ -3291,18 +3289,6 @@ export class EditorApp {
         } else this.toast(`Could not open: ${r.issues[0]?.message}`, true);
       }, () => deleteFromLibrary(entry.id));
     }
-    add('Phase 0 Arena', 'Template', () => {
-      const r = loadMap(arenaTemplate);
-      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Arena Remix', parentId: r.map.metadata.id } });
-    });
-    add('The Vault', 'Template · scenario with doors, traps and logic', () => {
-      const r = loadMap(vaultTemplate);
-      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Vault Remix', parentId: r.map.metadata.id } });
-    });
-    add('Outpost Siege', 'Template · co-op mission with NPC squads and factions', () => {
-      const r = loadMap(outpostTemplate);
-      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Outpost Remix', parentId: r.map.metadata.id } });
-    });
     add('Sandgate', 'Template · desert town for Team Deathmatch, with open courtyards', () => {
       const r = loadMap(sandgateTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Sandgate Remix', parentId: r.map.metadata.id } });
@@ -3318,7 +3304,8 @@ export class EditorApp {
     // Every other shipped map (the homage maps and later additions) is a template too.
     const known = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
     for (const [path, json] of Object.entries(SHIPPED_MAPS)) {
-      if (known.has(path.replace(/^.*\/|\.json$/g, ''))) continue;
+      const id = path.replace(/^.*\/|\.json$/g, '');
+      if (known.has(id) || isRetiredMap(id)) continue;
       const r = loadMap(json);
       if (!r.ok) continue;
       add(r.map.metadata.name, `Template · ${r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? ''}`, () => {
