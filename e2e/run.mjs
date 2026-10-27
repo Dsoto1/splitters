@@ -1324,6 +1324,8 @@ async function arsenalFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__give, null, { timeout: T(60000) });
+  // Splash, fire and bots can down you mid-spree, and a respawn empties the weapon bar: stay standing.
+  await sim(page, (m, me) => { me.health = 1e6; });
   // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
   for (const id of ['core.flamethrower', 'core.oil_slicker', 'core.laser_rifle', 'core.railgun', 'core.bubble_blaster', 'core.swarm', 'core.disc_launcher', 'core.arc_caster', 'core.goo_gun', 'core.burst_rifle']) {
     await page.evaluate((w) => {
