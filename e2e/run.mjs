@@ -1780,8 +1780,9 @@ function frames(page, n = 10) {
  */
 const VISUAL_PIXEL_DELTA = 48;
 const VISUAL_SCENES = [
-  // The main menu with its hero, as a first visit sees it.
-  { name: 'menu', url: '/?test=1&name=Tester', ready: () => window.__front && document.fonts.status === 'loaded' && [...document.images].every((i) => i.complete) && !document.getElementById('menu').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.08 },
+  // The main menu with its hero, as a first visit sees it. The featured-map card is hidden: it is map data (it
+  // changes with the featured map) and it lays out about 10 px taller on CI's runners than locally.
+  { name: 'menu', url: '/?test=1&name=Tester', ready: () => window.__front && document.fonts.status === 'loaded' && [...document.images].every((i) => i.complete) && !document.getElementById('menu').hidden && !document.getElementById('view').classList.contains('veiled'), css: '.featured { visibility: hidden !important; }', share: 0.08 },
   // MapMaker's blank starter map.
   { name: 'mapmaker', url: '/?mode=editor&test=1&name=Tester', ready: () => window.__editor && !document.getElementById('editor').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.06 },
   // A map in play, alone (bots=1: just you), at the seeded spawn (hidden: the pause menu headless pages open, and HUD messages such as the slow-device hint).
