@@ -375,19 +375,24 @@ async function editoruxFlow(browser) {
   await page.fill('#ed-search', 'jump pad');
   await page.press('#ed-search', 'Enter');
   check(await page.evaluate(() => window.__editor.tool.kind === 'scenario' && window.__editor.tool.key === 'pad'), 'Enter in the search box picks the best match');
+  await page.fill('#ed-search', 'pad');
   await page.press('#ed-search', 'ArrowDown');
   const focused = await page.evaluate(() => document.activeElement?.dataset.pick);
   await page.keyboard.press('ArrowRight');
   const moved = await page.evaluate(() => document.activeElement?.dataset.pick);
-  check(focused === 'scenario:pad' && moved && moved !== focused, `arrow keys move from the search box through the results (${focused} → ${moved})`);
+  const firstPick = await page.evaluate(() => document.querySelector('#ed-pal-results [data-pick]')?.dataset.pick);
+  check(focused && focused === firstPick && moved && moved !== focused, `arrow keys move from the search box through the results (${focused} → ${moved})`);
   await page.keyboard.press('KeyF');
   check(await page.evaluate((k) => JSON.parse(localStorage.getItem('tt.palette.favs') ?? '[]').includes(k), moved), 'F adds the focused piece to the favourites');
   await page.focus('#ed-search');
   await page.press('#ed-search', 'Escape');
   check(await page.evaluate(() => document.getElementById('ed-pal-results').hidden && !!document.querySelector('#ed-pal-quick .ed-quick-row [data-pick]')), 'Escape clears the search; the favourite is in the quick row');
   // Hover card names the piece under the pointer (the grid view shows pictures only).
-  await page.hover('[data-tool="prop:prop.crate_small"]');
-  check((await page.textContent('#ed-pal-tip')).includes('Small Crate') && (await page.isVisible('#ed-pal-tip')), 'hovering a picture shows its name');
+  await page.evaluate(() => document.querySelector('[data-tool="scenario:pad"]').scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(100);
+  await page.hover('[data-tool="scenario:pad"]');
+  const tip = await page.evaluate(() => ({ text: document.getElementById('ed-pal-tip')?.textContent ?? '', shown: !document.getElementById('ed-pal-tip')?.hidden }));
+  check(tip.text.includes('Jump Pad') && tip.shown, `hovering a piece shows its name (${JSON.stringify(tip)})`);
   // Fits at 1280×720 without sideways scrolling.
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.waitForTimeout(200);

@@ -96,7 +96,7 @@ export function matchScore(query: string, f: SearchFields): number {
     if (!s) return 0;
     total += s;
   }
-  // The whole query as the start of the name ranks first; shorter names win ties.
-  if (f.name.startsWith(q)) total += 40;
+  // The query at the start of the name breaks ties (a whole word still beats a word start); shorter names win ties.
+  if (f.name.startsWith(q)) total += 15;
   return total - f.name.length * 0.05;
 }
