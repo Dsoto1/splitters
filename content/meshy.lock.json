@@ -147,10 +147,10 @@
       "src": "Meshy_AI_Hyena_Warrior_20250425_texture.fbx",
       "sourceTriangles": 31876,
       "file": "characters/meshy_hyena.glb",
-      "sha256": "955de5694a298a79",
-      "triangles": 9990,
-      "lodTriangles": 2848,
-      "bytes": 618112
+      "sha256": "a4025b01e9eddfd0",
+      "triangles": 9988,
+      "lodTriangles": 2950,
+      "bytes": 619632
     }
   ]
 }

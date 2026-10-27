@@ -78,6 +78,11 @@ const HANDS_OFF: ReadonlySet<OneShot> = new Set(['reload', 'melee', 'melee_heavy
 const LONG_GUN_BLADE = 0.45;
 /** Half the width of a rifle stock (m): torso skin within this of the barrel line is in its way. */
 const STOCK_RADIUS = 0.035;
+/** Short arms slide the support hand back along the handguard, but keep it this far ahead of the grip (model m). */
+const SUPPORT_MIN_AHEAD = 0.12;
+/** Furthest (model m) a stock the arms can't hold clear of the chest tucks out past the shoulder. */
+const TUCK_MAX = 0.12;
+const TUCK_FROM = 0.04;
 
 /** An arm for the IK solver. */
 interface Arm {
@@ -519,6 +524,7 @@ export class CharacterAnimator {
 
     // Where the weapon goes when gripped (world space).
     let gripped: { pos: Vector3; rot: Quaternion } | null = null;
+    let support = grip.support;
     if (grip.style === 'pistol') {
       gripped = { rot: aim, pos: palmWorld(arms.r).subtract(new Vector3(...grip.grip).scale(scale).applyRotationQuaternion(aim)) };
     } else if (grip.style === 'long' && grip.shoulder) {
@@ -528,14 +534,38 @@ export class CharacterAnimator {
       // The stock sits just inside the shoulder joint, a little in front and below.
       const pocket = shoulder.add(inward.normalize().scale(0.07 * scale)).add(new Vector3(0, -0.03, 0.05).scale(scale).applyRotationQuaternion(aim));
       // Out along the barrel onto the body's own surface: armour or a big chest stands well in front of the joint.
-      if (this.torso === undefined) this.torso = TorsoSurface.measure(this.ch);
+      // Measured once the body is fully in its aim (the chest turned across the gun), so the surface ahead of the shoulder is the one the barrel crosses.
+      if (this.torso === undefined && this.ik >= 0.999 && Math.abs(this.blade - LONG_GUN_BLADE) < 0.01) this.torso = TorsoSurface.measure(this.ch);
       const barrel = new Vector3(0, 0, 1).applyRotationQuaternion(aim);
-      const clear = this.torso?.clearance(pocket, barrel, STOCK_RADIUS * scale, 0.01 * scale) ?? 0;
-      if (clear > 0) {
-        // ...but no further than both hands still reach their points on the gun.
-        const on = (p: ModelPoint) => point(pocket, aim, [p[0] - grip.shoulder![0], p[1] - grip.shoulder![1], p[2] - grip.shoulder![2]]);
-        const reach = (arm: Arm, p: ModelPoint) => reachAlong(pos(arm.upper), on(p), barrel, armReach(arm.upper, arm.lower, arm.hand, arm.palm));
-        pocket.addInPlace(barrel.scale(Math.min(clear, reach(arms.r, grip.grip), grip.support ? reach(arms.l, grip.support) : clear)));
+      const on = (p: ModelPoint) => point(pocket, aim, [p[0] - grip.shoulder![0], p[1] - grip.shoulder![1], p[2] - grip.shoulder![2]]);
+      // Short arms (an otter's) hold the handguard nearer the grip rather than pull the gun back into the body.
+      const slid = (shift: number): ModelPoint => [grip.support![0], grip.support![1], grip.support![2] - shift];
+      const room = grip.support ? Math.max(0, grip.support[2] - grip.grip[2] - SUPPORT_MIN_AHEAD) : 0;
+      const reach = (arm: Arm, p: ModelPoint) => reachAlong(pos(arm.upper), on(p), barrel, armReach(arm.upper, arm.lower, arm.hand, arm.palm));
+      // ...but no further than the hands still reach their points on the gun (the support hand slid back as far as it goes).
+      const clearOut = () => {
+        const clear = this.torso?.clearance(pocket, barrel, STOCK_RADIUS * scale, 0.01 * scale) ?? 0;
+        const push = clear > 0 ? Math.min(clear, reach(arms.r, grip.grip), grip.support ? reach(arms.l, slid(room)) : clear) : 0;
+        pocket.addInPlace(barrel.scale(push));
+        return clear - push;
+      };
+      const buried = clearOut();
+      if (buried > TUCK_FROM * scale) {
+        // Arms too short to hold it clear of a deep chest: the stock tucks out past the shoulder and a little lower,
+        // by as much as it was still in (past a few centimetres a cheek weld hides), then out along the barrel again.
+        const out = pos(arms.r.upper).subtract(pos(arms.l.upper));
+        out.y = 0;
+        const tuck = Math.min(buried - TUCK_FROM * scale, TUCK_MAX * scale);
+        pocket.addInPlace(out.normalize().scale(tuck)).addInPlace(new Vector3(0, -0.4 * tuck, 0));
+        clearOut();
+      }
+      if (grip.support && room > 0) {
+        // The least slide that brings the support point within the left arm's reach.
+        const shoulderL = pos(arms.l.upper);
+        const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm);
+        let shift = 0;
+        while (shift < room && Vector3.Distance(shoulderL, on(slid(shift))) > reachL) shift = Math.min(room, shift + 0.01);
+        support = slid(shift);
       }
       gripped = { rot: aim, pos: pocket.subtract(new Vector3(...grip.shoulder).scale(scale).applyRotationQuaternion(aim)) };
     }
@@ -548,8 +578,8 @@ export class CharacterAnimator {
         solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, grip.grip), scale), pos(arms.r.upper).add(outward.scale(0.35)).add(down.scale(0.3)), w);
         closeHand(space, arms.r, w);
       } else closeHand(space, arms.r, w);
-      if (grip.support) {
-        solveArm(space, arms.l, palmOnGrip(arms.l, point(gripped.pos, gripped.rot, grip.support), scale), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
+      if (support) {
+        solveArm(space, arms.l, palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
         closeHand(space, arms.l, w * 0.7);
       }
     }
