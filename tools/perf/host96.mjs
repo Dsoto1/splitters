@@ -85,7 +85,7 @@ const WAKE = `() => {
   const t = [...w.tickMs].sort((a, b) => a - b);
   const q = (p) => (t.length ? +t[Math.min(t.length - 1, Math.floor(p * t.length))].toFixed(2) : 0);
   const now = performance.now();
-  const out = { wall: (now - (globalThis.__wakeT0 ?? now)) / 1000, ticks: w.ticks, tickP50: q(0.5), tickP95: q(0.95), maxBatch: w.maxBatch, dropped: w.dropped, zipMs: w.zipMs ?? 0 };
+  const out = { wall: (now - (globalThis.__wakeT0 ?? now)) / 1000, ticks: w.ticks, tickP50: q(0.5), tickP95: q(0.95), maxBatch: w.maxBatch, dropped: w.dropped, zipMs: w.zipMs ?? 0, zipChars: w.zipChars ?? 0 };
   w.reset();
   globalThis.__wakeT0 = now;
   return out;
@@ -267,7 +267,7 @@ for (const id of maps) {
         droppedPerS: wake.dropped / wake.wall,
         workerZipPerS: wake.zipMs / wake.wall,
         sentPerS: h.net.sent / wall,
-        kbRawPerGuest: h.net.sentChars / wall / 1024 / GUESTS,
+        kbRawPerGuest: (h.net.sentChars ? h.net.sentChars / wall : wake.zipChars / wake.wall) / 1024 / GUESTS,
         kbWirePerGuest: h.net.sentBytes / wall / 1024 / GUESTS,
         sendPerS: h.net.sendMs / wall,
         longPerS: h.long / wall,

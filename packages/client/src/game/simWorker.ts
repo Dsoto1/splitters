@@ -6,8 +6,8 @@ import { initPhysics } from '@tiletrigger/shared';
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type ToSimHost } from './matchHost.ts';
 
 /** The worker's global scope (typed by hand: the client is typed for the page). */
-const scope = self as unknown as { postMessage(m: FromSimHost): void; onmessage: ((e: MessageEvent<ToSimHost>) => void) | null; close(): void };
-const post = (m: FromSimHost) => scope.postMessage(m);
+const scope = self as unknown as { postMessage(m: FromSimHost, transfer?: Transferable[]): void; onmessage: ((e: MessageEvent<ToSimHost>) => void) | null; close(): void };
+const post = (m: FromSimHost, transfer?: Transferable[]) => scope.postMessage(m, transfer ?? []);
 let host: MatchHost | null = null;
 
 scope.onmessage = (e: MessageEvent<ToSimHost>) => {

@@ -1,5 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { GUEST_TO_HOST_LIMITS, Reassembler, Unzipper, Zipper } from '../src/game/peerZip.ts';
+import { GUEST_TO_HOST_LIMITS, Reassembler, Unzipper, Zipper, plainPiece } from '../src/game/peerZip.ts';
+import { sinkTo, type FromSimHost } from '../src/game/matchHost.ts';
+
+describe('host game stream', () => {
+  it('the match host compresses a friend\'s stream; the page slips its own plain messages in between', () => {
+    const out: FromSimHost[] = [];
+    const sink = sinkTo((m) => out.push(m));
+    sink.compress!(1);
+    const snap = JSON.stringify({ t: 'snapshot', players: Array.from({ length: 20 }, (_, s) => ({ s, p: [s, 0, s] })) });
+    sink.send(1, snap);
+    sink.send(2, 'plain link');
+    sink.send(1, snap);
+    expect(out.map((m) => m.k)).toEqual(['bytes', 'send', 'bytes']);
+    const unzip = new Unzipper();
+    const got: (string | null)[] = [];
+    const feed = (m: FromSimHost) => m.k === 'bytes' && m.pieces.forEach((p) => got.push(unzip.piece(p)));
+    feed(out[0]!);
+    got.push(unzip.piece(plainPiece('{"t":"travel","map":"Frost Basin"}')));
+    feed(out[2]!);
+    expect(got).toEqual([snap, '{"t":"travel","map":"Frost Basin"}', snap]);
+    // The second copy compressed against the first: a fraction of its size.
+    const size = (m: FromSimHost) => (m.k === 'bytes' ? m.pieces.reduce((n, p) => n + p.length, 0) : 0);
+    expect(size(out[2]!)).toBeLessThan(size(out[0]!) / 4);
+  });
+});
 
 describe('host game input bounds', () => {
   it('refuses a stream that inflates past the cap, before holding it all', () => {

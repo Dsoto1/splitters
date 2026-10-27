@@ -1,7 +1,7 @@
 import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
 import { MessageGuard, PROTOCOL_VERSION, SnapshotDecoder, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { HostLink, RemoteLink, Signaling, Transport } from './transport.ts';
-import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, Zipper, type ReassemblyLimits } from './peerZip.ts';
+import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, plainPiece, type ReassemblyLimits } from './peerZip.ts';
 import { hubAddress, hubSetting } from './hub.ts';
 import { baseIceServers, loadRelay, sessionIce } from './relay.ts';
 import { makeJoinCode } from './joinCode.ts';
@@ -37,20 +37,20 @@ function peerOptions(config: RTCConfiguration): PeerOptions {
 
 let chunkIds = 0;
 
-function sendText(conn: DataConnection, text: string, zip?: Zipper): void {
+/** Pieces of a compressed stream (the match host compressed them: matchHost.ts sinkTo), as they are. */
+function sendPieces(conn: DataConnection, pieces: Uint8Array[]): void {
   if (!conn.open) return;
-  if (zip) {
-    const t0 = netProbe.on ? performance.now() : 0;
-    const pieces = zip.pieces(text);
-    for (const piece of pieces) conn.send(piece);
-    if (netProbe.on) {
-      netProbe.sent++;
-      netProbe.sentChars += text.length;
-      for (const piece of pieces) netProbe.sentBytes += piece.length;
-      netProbe.sendMs += performance.now() - t0;
-    }
-    return;
+  const t0 = netProbe.on ? performance.now() : 0;
+  for (const piece of pieces) conn.send(piece);
+  if (netProbe.on) {
+    netProbe.sent++;
+    for (const piece of pieces) netProbe.sentBytes += piece.length;
+    netProbe.sendMs += performance.now() - t0;
   }
+}
+
+function sendText(conn: DataConnection, text: string): void {
+  if (!conn.open) return;
   if (text.length <= CHUNK) return void conn.send(text);
   const id = ++chunkIds;
   const n = Math.ceil(text.length / CHUNK);
@@ -99,10 +99,13 @@ function onText(conn: DataConnection, cb: (text: string) => void, o: { limits: R
 }
 
 function linkFor(conn: DataConnection): RemoteLink {
-  // Friends that ask for it (every current client) get the compressed stream.
-  const zip = (conn.metadata as { z?: number } | undefined)?.z === 1 ? new Zipper() : undefined;
+  // Friends that ask for it (every current client) get the compressed stream: the match host compresses it
+  // (in its worker) and hands over pieces; what the page says itself goes as a plain piece between them.
+  const zip = (conn.metadata as { z?: number } | undefined)?.z === 1;
   return {
-    send: (text) => sendText(conn, text, zip),
+    zip,
+    send: (text) => (zip ? sendPieces(conn, [plainPiece(text)]) : sendText(conn, text)),
+    sendPieces: (pieces) => sendPieces(conn, pieces),
     // A friend's messages are small and rate-limited (the same budget as the dedicated server's clients).
     onMessage: (cb) => onText(conn, cb, { limits: GUEST_TO_HOST_LIMITS, guard: new MessageGuard() }),
     onClose: (cb) => {
