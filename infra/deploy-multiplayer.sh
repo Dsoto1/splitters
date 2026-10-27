@@ -412,9 +412,14 @@ if [ "$RESOLVED" = "$STATIC_IP" ]; then
     curl -fsS --max-time 10 "https://$HUB_HOST/lobby/health" >/dev/null 2>&1 && { ok=yes; break; }; sleep 5
   done
   if [ "$ok" = yes ]; then note "https://$HUB_HOST/lobby/health: $(curl -fsS "https://$HUB_HOST/lobby/health")"; else note "FAIL https://$HUB_HOST/lobby/health (certificate or hub)"; FAIL=1; fi
-  if curl -fsS --max-time 10 "https://$HUB_HOST/lobby/ice" | python3 -c 'import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get("relay") and any("turn:" in str(s.get("urls")) for s in d.get("iceServers",[])) else 1)'; then
-    note "/lobby/ice hands out TURN credentials (not printed)"
-  else note "FAIL /lobby/ice has no TURN server"; FAIL=1; fi
+  # The hub hands TURN credentials only to a live game (/lobby/ice?session=<CODE>, lobby.ts): check that the
+  # relay is configured (health) and that a request without a live game gets none.
+  if curl -fsS --max-time 10 "https://$HUB_HOST/lobby/health" | python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin).get("relay") else 1)'; then
+    note "hub relay configured (TURN credentials go to live games only)"
+  else note "FAIL the hub has no relay configured (TURN_SECRET/TURN_URLS)"; FAIL=1; fi
+  if curl -fsS --max-time 10 "https://$HUB_HOST/lobby/ice" | python3 -c 'import json,sys; d=json.load(sys.stdin); sys.exit(0 if not d.get("relay") and not any(s.get("username") for s in d.get("iceServers",[])) else 1)'; then
+    note "/lobby/ice without a live game hands out no TURN credentials"
+  else note "FAIL /lobby/ice gave TURN credentials without a live game"; FAIL=1; fi
   headers="$(curl -fsSI --max-time 10 "https://$HUB_HOST/")"
   if grep -qi '^strict-transport-security' <<<"$headers"; then note "security headers present"; else note "FAIL no HSTS header"; FAIL=1; fi
 else
