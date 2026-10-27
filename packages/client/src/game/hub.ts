@@ -50,13 +50,16 @@ function lobbyUrl(rest = ''): string | null {
   return a ? `${a.secure ? 'https' : 'http'}://${a.host}:${a.port}${a.path}lobby/games${rest}` : null;
 }
 
-/** Relay credentials from the hub ({ iceServers, relay }), or null when there's no hub or it doesn't answer quickly. */
-export async function fetchIce(): Promise<{ iceServers: RTCIceServer[]; relay: boolean } | null> {
+/**
+ * Relay credentials from the hub for one game ({ iceServers, relay, ttl }): the hub gives them only for a game
+ * open on it (its join code), scoped to it. Null when there's no hub, no such game, or no quick answer.
+ */
+export async function fetchIce(code: string, role: 'host' | 'guest'): Promise<{ iceServers: RTCIceServer[]; relay: boolean; ttl?: number } | null> {
   const url = lobbyUrl();
   if (!url) return null;
   try {
-    const res = await fetch(url.replace(/games$/, 'ice'), { cache: 'no-store', signal: AbortSignal.timeout(8000) });
-    return res.ok ? ((await res.json()) as { iceServers: RTCIceServer[]; relay: boolean }) : null;
+    const res = await fetch(`${url.replace(/games$/, 'ice')}?${new URLSearchParams({ session: code, role })}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+    return res.ok ? ((await res.json()) as { iceServers: RTCIceServer[]; relay: boolean; ttl?: number }) : null;
   } catch {
     return null;
   }

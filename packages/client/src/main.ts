@@ -21,7 +21,6 @@ import { EditorApp, type TestRequest } from './editor/editorApp.ts';
 import { LocalTransport, prewarmSimWorker } from './game/localTransport.ts';
 import { FramePacer } from './game/framePacer.ts';
 import { NetTransport } from './game/netTransport.ts';
-import { PeerTransport, cleanJoinCode } from './game/peerLink.ts';
 import { CharacterDesigner } from './designer/characterDesigner.ts';
 import { FrontEnd, type ArcadeMap } from './frontend/frontEnd.ts';
 import { MenuScene } from './frontend/menuScene.ts';
@@ -32,7 +31,7 @@ import { GameSession, type SessionOptions, type Travel } from './game/session.ts
 import { listLibrary, openFromLibrary } from './editor/storage.ts';
 import { PLAYLISTS, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
-import type { Transport } from './game/transport.ts';
+import { loadSignaling, type Transport } from './game/transport.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
@@ -362,7 +361,8 @@ class App {
   async joinCode(code: string, name: string): Promise<void> {
     await this.init();
     this.front!.setStatus('Connecting…');
-    this.startSession(new PeerTransport(cleanJoinCode(code), name, this.front!.look), {
+    const signaling = await loadSignaling();
+    this.startSession(signaling.join(code, name, this.front!.look), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       onExit: (reason, travel) => {
