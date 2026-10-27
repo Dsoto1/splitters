@@ -7,7 +7,8 @@
 //   PERF_GRAPHICS=medium,low (each is measured), PERF_SIM=worker|main (where the offline
 //   match runs; default: the game's own choice), PERF_SECONDS=8 per scenario, PERF_PORT=4296,
 //   PERF_GPU=1 (the machine's GPU instead of SwiftShader), PERF_JSON=file (raw results),
-//   PERF_DIST=dir (serve that build instead of packages/client/dist).
+//   PERF_DIST=dir (serve that build instead of packages/client/dist), PERF_MAX_DRAWS=n (exit 1 when a
+//   clumped frame averages more draw calls than n: a budget check for render changes).
 // SwiftShader renders on the CPU, so render times are far above a real GPU's: compare runs
 // on the same machine, and read the sim and JS columns as the portable part.
 import { spawn } from 'node:child_process';
@@ -149,7 +150,9 @@ for (const id of maps) {
         sc.onAfterRenderObservable.remove(after);
         if (counter && add) counter.addCount = add;
         const avg = (a) => Math.round(a.reduce((x, v) => x + v, 0) / Math.max(1, a.length));
-        return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length };
+        // Characters drawn (in view) now, for draws per character.
+        const shown = [...window.__cs.view.avatars.values()].filter((a) => a.anim && !a.culled).length;
+        return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length };
       });
       const prof = await sim(PROFILE, false);
       const wall = (Date.now() - t0) / 1000;
@@ -195,4 +198,7 @@ for (const id of maps) {
 if (process.env.PERF_JSON) writeFileSync(process.env.PERF_JSON, JSON.stringify(results, null, 2));
 await browser.close();
 stop();
-process.exit(0);
+const budget = Number(process.env.PERF_MAX_DRAWS ?? 0);
+const over = budget ? results.filter((r) => (r.clump?.scene.draws ?? 0) > budget) : [];
+for (const r of over) console.log(`OVER BUDGET: ${r.map} ${r.graphics} clumped draws ${r.clump.scene.draws} > ${budget}`);
+process.exit(over.length ? 1 : 0);
