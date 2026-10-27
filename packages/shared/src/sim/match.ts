@@ -53,6 +53,7 @@ import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_P
 import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
 import { liftLinks } from './movers.ts';
+import { IMPROMPTU_MIN_PLAYERS, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnSpot } from './spawns.ts';
 import { applyPortals, portalCarry, portalSegment } from './portals.ts';
 import { Encounters } from './encounters.ts';
 import { ZombieSurvival } from './zombies.ts';
@@ -400,7 +401,8 @@ export class Match {
   /** Rebuilt mid-match only by Fort Wars (when the forts are done). */
   nav: NavWorld;
   readonly slots: (Combatant | null)[] = new Array(MAX_PLAYER_SLOTS).fill(null);
-  readonly spawnPoints: { pos: Vec3; yaw: number; team: string | null }[];
+  /** The map's spawn points, then any made up for this match (see ensureSpawnCapacity). */
+  readonly spawnPoints: SpawnSpot[];
   readonly pickups: PickupState[];
   /** Doors, buttons, destructibles, zones, traps and the map's logic rules. */
   readonly scenario: Scenario;
@@ -1238,7 +1240,7 @@ export class Match {
     if (slot < 0) return null;
     const c = this.blankCombatant(slot, kind, name, team);
     this.slots[slot] = c;
-    this.spawn(c);
+    this.spawnOrQueue(c);
     return c;
   }
 
@@ -1289,6 +1291,8 @@ export class Match {
         }
         this.applyInputs(c);
       }
+      // Bots waiting for their spawn wave take their places during the wait.
+      this.spawnDue();
       const humans = this.combatants().filter((c) => c.kind === 'human');
       if (this.phase === 'waiting' && ((humans.length > 0 && humans.every((c) => this.readySlots.has(c.slot))) || this.tick >= this.phaseEndTick)) this.startCountdown();
       else if (this.phase === 'countdown' && this.tick >= this.phaseEndTick) this.beginPlay();
@@ -1324,9 +1328,7 @@ export class Match {
       if (this.phase === 'playing') this.zombies?.step();
       if (this.phase === 'playing') this.classes?.step();
       if (this.phase === 'playing') this.race?.step();
-      for (const c of this.combatants()) {
-        if (!c.alive && this.tick >= c.respawnTick) this.spawn(c);
-      }
+      this.spawnDue();
       for (const c of this.npcs.values()) if (!c.alive && this.tick >= c.npc!.removeAt) this.removeNpc(c.slot);
       if (this.tick >= this.phaseEndTick) this.endRound();
       if (prof) lap('scenario');
@@ -3885,37 +3887,37 @@ export class Match {
   // ---------------------------------------------------------------- lifecycle
 
   /**
-   * Spawn at the point farthest from living opponents, with a little randomness
-   * among near-equal choices. In Team Deathmatch a team uses its own spawns
-   * when the map has any.
+   * Spawn at the best spawn point (sim/spawns.ts pickSpawn: far from living
+   * enemies, out of their sight, nobody standing on it, not used in the last
+   * few seconds), with a little randomness among near-equal choices. In team
+   * modes a team uses its own spawns when the map has any, and usually
+   * spawns beside a teammate out of the fight (squad spawn).
    */
   private spawn(c: Combatant): void {
-    const enemies = this.actors().filter((o) => o.alive && this.hostile(c, o));
+    this.ensureSpawnCapacity();
+    const enemies: Vec3[] = [];
+    const occupants: Vec3[] = [];
+    for (const o of this.actors()) {
+      if (!o.alive || o === c) continue;
+      occupants.push(o.move.pos);
+      if (this.hostile(c, o)) enemies.push(o.move.pos);
+    }
     const own = this.teams && c.faction ? this.spawnPoints.filter((sp) => sp.team === c.faction) : [];
     const shared = this.spawnPoints.filter((sp) => sp.team === null);
     // A team without spawns of its own (more teams than the map has bases) uses the shared ones, else anyone's, farthest from enemies.
     const candidates = own.length ? own : shared.length ? shared : this.spawnPoints;
-    let best = candidates[0];
-    let bestScore = -Infinity;
     // Team modes on shared spawns: the sides rotate. Spawns near your teammates and out of
     // enemy sight win, so each team keeps an area of its own wherever the fight has moved.
     const rotating = !!this.teams && c.faction !== null && !own.length;
-    const mates = rotating ? this.combatants().filter((o) => o !== c && o.alive && o.faction === c.faction) : [];
-    for (const sp of candidates) {
-      const nearest = enemies.reduce((m, e) => Math.min(m, horizontalDistance(sp.pos, e.move.pos) + Math.abs(sp.pos.y - e.move.pos.y) * 2), 100);
-      let score = nearest + this.rng() * 3;
-      if (rotating) {
-        score += Math.min(3, mates.filter((m) => horizontalDistance(m.move.pos, sp.pos) < 25).length) * 8;
-        const head = { x: sp.pos.x, y: sp.pos.y + 1.6, z: sp.pos.z };
-        if (enemies.some((e) => horizontalDistance(e.move.pos, sp.pos) < 45 && this.physics.lineOfSight({ x: e.move.pos.x, y: e.move.pos.y + 1.6, z: e.move.pos.z }, head))) score -= 40;
-      }
-      if (score > bestScore) {
-        bestScore = score;
-        best = sp;
-      }
-    }
+    const mates = rotating ? this.combatants().filter((o) => o !== c && o.alive && o.faction === c.faction).map((o) => o.move.pos) : undefined;
+    // Made-up spawn points on a side: the ones nearer the side's base are preferred (they are on its own third anyway).
+    const home = own.length && own.some((sp) => sp.generated) && c.faction ? this.sideHome(c.faction) : null;
+    const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), home, sees: (a, b) => this.physics.lineOfSight(a, b), rng: this.rng });
+    const best = candidates[pick];
     // Team modes: usually beside a teammate who's out of the fight, else the safest spawn point.
-    const sp = (this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null) ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 };
+    const squad = this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null;
+    if (!squad && best) this.spawnUsed.set(best, this.tick);
+    const sp = squad ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 };
     c.streak = 0;
     c.order = undefined;
     c.move = { pos: { ...sp.pos }, velY: 0, grounded: false };
@@ -3935,14 +3937,7 @@ export class Match {
     c.semiLatch = false;
     c.gun = newGunState();
     c.reload = null;
-    c.weapons = new Map();
-    for (const id of this.rules.weapons === 'spears' ? ['core.spear'] : this.rules.weapons === 'discs' ? [ARENA_DISC] : this.rules.startingWeapons) {
-      const def = getWeapon(id);
-      c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
-      c.current = weaponCode(def);
-    }
-    // Everyone starts with a frag grenade (TimeSplitters-style loadouts are pickups after that).
-    c.throwable = this.rules.startingGrenades > 0 && !restrictedWeapons(this.rules) ? { kind: 'frag', count: this.rules.startingGrenades } : null;
+    this.loadout(c);
     c.discPower = undefined;
     c.knockedBy = undefined;
     c.spawnedAt = this.tick;
@@ -3961,6 +3956,120 @@ export class Match {
     this.race?.onSpawn(c.slot);
     // Air drop maps start you (or always spawn you) in the transport plane.
     if (this.mounts.some((m) => m.route && m.airdrop && m.airdrop !== 'off')) this.boardPlane(c);
+  }
+
+  /** The starting weapons and grenades (a bot waiting for its spawn wave carries them already). */
+  private loadout(c: Combatant): void {
+    c.weapons = new Map();
+    for (const id of this.rules.weapons === 'spears' ? ['core.spear'] : this.rules.weapons === 'discs' ? [ARENA_DISC] : this.rules.startingWeapons) {
+      const def = getWeapon(id);
+      c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
+      c.current = weaponCode(def);
+    }
+    // Everyone starts with a frag grenade (TimeSplitters-style loadouts are pickups after that).
+    c.throwable = this.rules.startingGrenades > 0 && !restrictedWeapons(this.rules) ? { kind: 'frag', count: this.rules.startingGrenades } : null;
+  }
+
+  /** Spawn points used lately (tick), for the recent-use penalty. */
+  private readonly spawnUsed = new Map<SpawnSpot, number>();
+  /** Players the made-up spawn points were last worked out for. */
+  private impromptuFor = 0;
+
+  /**
+   * Big matches on maps with too few (or too bunched) spawn points for the
+   * players in it: extra points made up from the navmesh (sim/spawns.ts
+   * generateSpawns), added to `spawnPoints` for this match only (the map is
+   * never changed). Worked out again only when the match grows past the
+   * players they were made for; the same map and seed give the same points.
+   */
+  private ensureSpawnCapacity(): void {
+    const sized = this.teams && this.rules.teamSizes?.length ? this.rules.teamSizes.reduce((a, b) => a + b, 0) : 0;
+    const players = Math.min(MAX_PLAYER_SLOTS, Math.max(sized, this.combatants().length));
+    if (players <= this.impromptuFor || players < IMPROMPTU_MIN_PLAYERS) return;
+    // In steps of eight players (a match filling up one bot at a time works this out a few times, not every time).
+    const target = Math.min(MAX_PLAYER_SLOTS, Math.ceil(players / 8) * 8);
+    this.impromptuFor = target;
+    const mapSpots = this.spawnPoints.filter((sp) => !sp.generated);
+    const targets = this.teamTargets();
+    const planned = [...targets.values()].reduce((a, b) => a + b, 0);
+    const sides = this.teams ? this.teams.map((t) => ({ id: t.id, players: Math.ceil((targets.get(t.id) ?? 1) * (sized ? 1 : target / Math.max(1, planned))) })) : null;
+    const short = spawnShortfall(mapSpots, sides, target);
+    if (!short.size) return;
+    const avoid = this.map.entities.filter((e) => e.kind === 'trap' || e.kind === 'zone' || e.kind === 'pad' || e.kind === 'portal').map((e) => ({ x: e.position[0], y: e.position[1], z: e.position[2] }));
+    const valid = (p: Vec3): boolean => {
+      if (p.y < this.killY + 3) return false;
+      if (avoid.some((a) => horizontalDistance(a, p) < 4.5 && Math.abs(a.y - p.y) < 4)) return false;
+      if (this.liquids.length && (liquidAt(this.liquids, { x: p.x, y: p.y + 0.3, z: p.z }) || liquidAt(this.liquids, { x: p.x, y: p.y - 0.6, z: p.z }))) return false;
+      if (!this.physics.headroom({ x: p.x, y: p.y + 0.05, z: p.z }, PLAYER.height)) return false;
+      if (this.physics.raycastWorld({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0, y: -1, z: 0 }, 1.5) === null) return false;
+      // Not at the edge of a drop: walkable ground all round.
+      let around = 0;
+      for (const [dx, dz] of [[2.5, 0], [-2.5, 0], [0, 2.5], [0, -2.5]] as const) {
+        const q = this.nav.closestPoint({ x: p.x + dx, y: p.y + 0.5, z: p.z + dz }, { x: 0.6, y: 1.2, z: 0.6 });
+        if (q && Math.abs(q.y - p.y) < 1) around++;
+      }
+      return around >= 3;
+    };
+    const made: SpawnSpot[] = [];
+    const allCentre = centroid(mapSpots.map((sp) => sp.pos)) ?? { x: 0, y: 0, z: 0 };
+    let k = 0;
+    for (const [side, count] of short) {
+      const home = side ? this.sideHome(side) : null;
+      const away = side ? centroid(mapSpots.filter((sp) => sp.team !== null && sp.team !== side).map((sp) => sp.pos)) : null;
+      made.push(
+        ...generateSpawns({
+          places: this.nav.places(),
+          existing: [...mapSpots, ...made],
+          side,
+          count,
+          seed: (this.seed * 2654435761 + 977 * ++k) >>> 0,
+          home,
+          away,
+          faceTo: away ?? allCentre,
+          valid,
+          reachable: (a, b) => this.nav.findPath(a, b) !== null,
+        }),
+      );
+    }
+    this.spawnPoints.length = 0;
+    this.spawnPoints.push(...mapSpots, ...made);
+  }
+
+  /** The middle of a side's own spawn points (the map's), or null when it has none. */
+  private sideHome(side: string): Vec3 | null {
+    return centroid(this.spawnPoints.filter((sp) => sp.team === side && !sp.generated).map((sp) => sp.pos));
+  }
+
+  /**
+   * Big matches: a bot joining (or starting a round) waits for its spawn wave
+   * instead of spawning on the spot (Match.spawnDue): its loadout now, its place
+   * when its turn comes, a few bots a tick.
+   */
+  private queueSpawn(c: Combatant): void {
+    c.alive = false;
+    c.respawnTick = this.tick;
+    this.loadout(c);
+  }
+
+  /** Spawn everyone due: people at once, bots a few a tick in big matches (spawnsPerTick), longest-waiting first. */
+  private spawnDue(): void {
+    const all = this.combatants();
+    const budget = spawnsPerTick(all.length);
+    let due: Combatant[] | null = null;
+    for (const c of all) {
+      if (c.alive || this.tick < c.respawnTick) continue;
+      if (c.kind === 'human' || budget === Infinity) this.spawn(c);
+      else (due ??= []).push(c);
+    }
+    if (!due) return;
+    due.sort((a, b) => a.respawnTick - b.respawnTick || a.slot - b.slot);
+    for (let i = 0; i < due.length && i < budget; i++) this.spawn(due[i]!);
+  }
+
+  /** In a big match a bot waits for its spawn wave; otherwise it spawns now. */
+  private spawnOrQueue(c: Combatant): void {
+    if (c.kind === 'bot' && this.combatants().length >= WAVE_MIN_PLAYERS) this.queueSpawn(c);
+    else this.spawn(c);
   }
 
   /**
@@ -4060,7 +4169,7 @@ export class Match {
     this.zombies?.reset();
     this.classes?.reset();
     this.race?.reset(!this.opts.startGate);
-    for (const c of this.combatants()) this.spawn(c);
+    for (const c of this.combatants()) this.spawnOrQueue(c);
     if (this.opts.startGate) {
       // Every round opens with the countdown (round_start comes when it ends).
       this.startCountdown();
