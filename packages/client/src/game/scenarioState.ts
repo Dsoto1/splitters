@@ -30,7 +30,8 @@ export class ScenarioState {
       this.entities.set(i, [a, b]);
       const kind = this.map.entities[i]?.kind;
       if (kind === 'door') this.bodies.setDoorOpen(i, a / 100);
-      else if (kind === 'destructible' || kind === 'prop' || kind === 'block') this.bodies.setSolid(i, a > 0);
+      // Past the entities: glass panes in windows (see windowPaneIndex).
+      else if (kind === 'destructible' || kind === 'prop' || kind === 'block' || i >= this.map.entities.length) this.bodies.setSolid(i, a > 0);
       else if (kind === 'mover') {
         this.movers.decode(i, a, b);
         this.posedTick = NaN;

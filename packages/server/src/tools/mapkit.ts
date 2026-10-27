@@ -39,6 +39,8 @@ import {
   applyCommand,
   settlePropsCommand,
   setEdgeCommand,
+  setEdgeGlassCommand,
+  type GlassKind,
   setThemeCommand,
   validateMap,
   type BackdropGround,
@@ -175,6 +177,14 @@ export class MapBuilder {
     const cmd = setEdgeCommand(this.doc, { cell: [x, y, z], side }, style);
     if ('error' in cmd) throw new Error(`${this.id}: edge ${x},${y},${z}:${side}: ${cmd.error}`);
     this.run('Wall', cmd);
+    return this;
+  }
+
+  /** Glass in the window on one side (window, twin windows or firing slit): breakable or reinforced (bulletproof). */
+  glass(x: number, y: number, z: number, side: Side, kind: GlassKind = 'breakable'): this {
+    const cmd = setEdgeGlassCommand(this.doc, { cell: [x, y, z], side }, kind);
+    if ('error' in cmd) throw new Error(`${this.id}: glass ${x},${y},${z}:${side}: ${cmd.error}`);
+    this.run('Glass', cmd);
     return this;
   }
 

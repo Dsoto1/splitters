@@ -118,6 +118,45 @@ Swimming is predicted on the client like walking, so it feels the same online.
 *Colour* (v20) overrides a liquid's colour (green acid, murky sewer water,
 black tar); it changes only the look, never the effect.
 
+### How liquids look (`client/src/game/waterVisuals.ts`)
+
+On medium and high graphics, water and swamp (tinted or not) use one small
+shader:
+
+- **Waves**: two scrolling normal maps (a tileable wave texture made in code,
+  no files), flattening out with distance so far water doesn't shimmer.
+- **Reflection and refraction**: a Fresnel blend of the reflection over the
+  see-through water behind it (alpha blending is the refraction: no distortion
+  pass). Face on you look into the water; at a grazing angle it is a mirror.
+- **Depth colour**: clear in the shallows, dark and opaque in the deep. The
+  depth under each vertex is baked when the map loads from the terrain and the
+  level boxes under the surface (no extra render pass). On high the scene's
+  camera-space depth (the depth renderer the height fog uses) refines it per
+  pixel, so players, props and pillars standing in the water get it too.
+- **Foam**: soft, broken-up foam where the water is shallow: the shore, and on
+  high anything standing in it.
+- **Sun glint**: a sharp sparkle and a softer sheen along the sun's reflection.
+
+| Graphics | Reflection | Depth |
+|---|---|---|
+| High | a planar mirror (`MirrorTexture`, 40 % of screen resolution) of the sky and the big static meshes (level, terrain, border, backdrop) for the biggest body of water; other bodies reflect the sky picture | baked + scene depth |
+| Medium | the map's sky picture, sampled along the reflected ray (shares the sky's texture; no render target) | baked |
+| Low | the old scrolling ripple material | none |
+
+Lava and acid get a flowing emissive version of the same shader: two layers of
+noise drifting against each other, a dark crust over glowing seams that pulse,
+brighter along the bank. They keep their glowing volume for side views.
+
+**Splashes and ripples**: a player, NPC or projectile going in throws up
+droplets and a ring (and a synthesised splash, `water.splash`); wading or
+swimming at the surface leaves rings behind; a shot hitting the surface makes a
+small splash. Rings and droplets are each one thin-instanced mesh (one draw
+call each), recycled. Under the surface the view keeps its tinted haze, and the
+surface seen from below is a bright, rippling ceiling.
+
+**Cost** (measured with SwiftShader in headless Chromium, so frame times are
+relative): see the table in the change notes below.
+
 ## Jetpack (pickup)
 
 `core.jetpack` straps a jetpack on: hold jump in the air to fly. A full tank

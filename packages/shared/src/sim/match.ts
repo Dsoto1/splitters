@@ -63,10 +63,11 @@ import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
-  BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, MAX_RICOCHETS, NEAR_INSTANT_M,
+  BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
   RELOAD_KINDS, RICOCHET_MAX_ANGLE, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
   type BallisticMaterial, type GunState, type Gunplay, type ReloadRun,
 } from './gunplay.ts';
+import { GLASS, glassAt } from './glass.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -2161,6 +2162,8 @@ export class Match {
         const dir = viewDirection(shooter.yaw + yawOffset, shooter.pitch);
         const world = this.physics.raycastHit(eye, dir, def.range);
         const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
+        // A swing at a window smashes it.
+        if (yawOffset === 0) this.scenario.shootGlass(eye, dir, shot.distance, shooter.slot);
         if (shot.hitSlot !== null) {
           hit = shot.hitSlot;
           break;
@@ -2182,7 +2185,7 @@ export class Match {
     const hits: (number | null)[] = [];
     const zones: number[] = [];
     const bodies: number[] = [];
-    const struck: { slot: number; dir: Vec3; zone: HitZone; dist: number }[] = [];
+    const struck: { slot: number; dir: Vec3; zone: HitZone; dist: number; keep: number }[] = [];
     const feetOf = (slot: number) => targets.find((t) => t.slot === slot)!.feet;
     const heightOf = (slot: number) => targets.find((t) => t.slot === slot)!.height;
     for (let p = 0; p < def.pellets; p++) {
@@ -2196,7 +2199,10 @@ export class Match {
           .filter((t): t is { slot: number; d: number } => t.d !== null && t.d < wallAt)
           .sort((a, b) => a.d - b.d)
           .slice(0, def.pierce + 1);
-        for (const t of along) struck.push({ slot: t.slot, dir, zone: hitZone(feetOf(t.slot), eye.y + dir.y * t.d, heightOf(t.slot)), dist: t.d });
+        // Breakable glass on the way shatters; a round that went through some hits a little softer (GLASS.passDamage).
+        const panes = this.scenario.glassAlong(eye, dir, wallAt);
+        this.scenario.shootGlass(eye, dir, wallAt, shooter.slot);
+        for (const t of along) struck.push({ slot: t.slot, dir, zone: hitZone(feetOf(t.slot), eye.y + dir.y * t.d, heightOf(t.slot)), dist: t.d, keep: GLASS.passDamage ** panes.filter((d) => d < t.d).length });
         to.push(tuple(add(eye, scale(dir, wallAt))));
         hits.push(along[0]?.slot ?? null);
         zones.push(along[0] ? hitZone(feetOf(along[0].slot), eye.y + dir.y * along[0].d, heightOf(along[0].slot)) : 0);
@@ -2204,17 +2210,19 @@ export class Match {
         continue;
       }
       const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
+      // Shots go through breakable glass, shattering it on the way (sim/glass.ts), and lose a little for each pane.
+      const broke = this.scenario.shootGlass(eye, dir, Math.hypot(shot.end.x - eye.x, shot.end.y - eye.y, shot.end.z - eye.z), shooter.slot);
       to.push(tuple(shot.end));
       hits.push(shot.hitSlot);
       const zone = shot.hitSlot !== null ? hitZone(feetOf(shot.hitSlot), shot.end.y, heightOf(shot.hitSlot)) : 0;
       zones.push(zone);
-      if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir, zone, dist: shot.distance });
+      if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir, zone, dist: shot.distance, keep: GLASS.passDamage ** broke });
       else if (world) bodies.push(world.handle);
     }
     this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(zones.some((z) => z) ? { z: zones } : {}), ...(def.alt ? { alt: 1 as const } : {}) });
-    for (const { slot, dir, zone, dist } of struck) {
+    for (const { slot, dir, zone, dist, keep } of struck) {
       const victim = this.actor(slot)!;
-      this.damage(victim, def.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, dist), shooter, def.id, zone === 1);
+      this.damage(victim, def.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, dist) * keep, shooter, def.id, zone === 1);
       if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
       if (def.knockback) this.push(victim, dir, def.knockback);
     }
@@ -2414,6 +2422,8 @@ export class Match {
         keep.push(p);
         continue;
       }
+      // Grenades and rockets fly through breakable glass, shattering it (sim/glass.ts).
+      if (len > 0) this.scenario.shootGlass(p.pos, dir, wall?.dist ?? len, p.owner);
       let hitDist = wall?.dist ?? null;
       let victim: Combatant | null = null;
       for (const c of this.actors()) {
@@ -2675,6 +2685,12 @@ export class Match {
       b.vel = scale(b.vel, Math.sqrt(kept));
       b.scale *= kept;
     }
+    // Breakable glass before whatever stops it shatters, and the round goes on a little weaker (GLASS.passDamage).
+    const panes = this.scenario.shootGlass(a, u, Math.min(best, len), b.owner);
+    if (panes) {
+      b.scale *= GLASS.passDamage ** panes;
+      b.energy = Math.max(PENETRATION_MIN_ENERGY, b.energy - penetrationLoss('glass', GLASS.thickness) * panes);
+    }
     if (victim) {
       const at = add(a, scale(u, best));
       const zone = hitZone(victim.feet, at.y, victim.height);
@@ -2745,6 +2761,8 @@ export class Match {
     if (this.covers.some((c) => c.body.handle === handle)) return 'soil';
     const i = this.scenario.bodies.entityAt(handle);
     if (i !== undefined) {
+      // Bulletproof glass (shots only ever strike that kind: breakable panes are shot through).
+      if (glassAt(this.map, i)) return 'armor';
       const e = this.map.entities[i];
       return e ? entityMaterial(e) : 'concrete';
     }
@@ -3517,6 +3535,7 @@ export class Match {
       .filter((c) => c.alive && c.slot !== m.builtBy && (m.faction === null || relation(this.factions, m.faction, c.faction) === 'enemy'))
       .map((c) => ({ slot: c.slot, feet: c.move.pos }));
     const shot = resolveHitscan(muzzle, dir, def.range, world && world.handle !== m.body.handle ? world.dist : null, targets);
+    this.scenario.shootGlass(muzzle, dir, shot.distance, m.builtBy ?? null);
     this.pendingEvents.push({ e: 'shot', s: -1, w: def.id, from: tuple(muzzle), to: [tuple(shot.end)], hit: [shot.hitSlot] });
     // A built sentry's kills are its builder's.
     if (shot.hitSlot !== null) this.damage(this.actor(shot.hitSlot)!, def.damage, m.builtBy === undefined ? null : (this.slots[m.builtBy] ?? null), def.id);

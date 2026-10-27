@@ -74,7 +74,7 @@ function paint(x: number, y: number, z: number, surfaces: TileSurfaces): void {
   m.history.execute('Paint', { kind: 'updateTiles', before: [t], after: [{ ...t, surfaces: { ...t.surfaces, ...surfaces } }] });
 }
 const ROOF: RoomOptions = { ceiling: 'roof', corners: 'posts' };
-/** Windows with glass in them (the test blows them all in). */
+/** Windows with glass in them (glass blocks, so the test's logic can blow them all in). */
 const PANES: string[] = [];
 function room(x: number, y: number, z: number, surf: TileSurfaces, sides: Partial<Record<Side, EdgeStyle>>, opts?: RoomOptions): void {
   m.tile('room', x, y, z, 0, opts);
@@ -85,7 +85,8 @@ function room(x: number, y: number, z: number, surf: TileSurfaces, sides: Partia
     const [dx, dy] = { N: [0, 4], S: [0, -4], E: [4, 0], W: [-4, 0] }[side];
     const id = `pane_${String(PANES.length + 1).padStart(2, '0')}`;
     PANES.push(id);
-    m.add({ kind: 'destructible', id, name: 'Window pane', model: 'glass', position: at(x, y, z, dx, dy), yaw: side === 'N' || side === 'S' ? 0 : P, health: null, explosiveOnly: false });
+    // A glass block filling the window (sill 0.9 m, 1.6 m tall): breakable glass the test's logic can still blow in.
+    m.add({ kind: 'block', id, name: 'Window pane', position: at(x, y, z, dx, dy, 0.9), yaw: side === 'N' || side === 'S' ? 0 : P, size: [2.6, 1.6, 0.06], material: null, tint: null, behaviour: 'solid', trigger: 'logic', delaySeconds: 0.8, respawnSeconds: null, health: 120, glass: 'breakable' });
   }
 }
 

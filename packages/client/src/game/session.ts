@@ -34,6 +34,7 @@ import {
   type CarryOver,
   weaponByCode,
   DESTRUCTIBLE_SPECS,
+  glassAt,
   NPC_ROLES,
   NPC_ROLE_SPECS,
   isCreature,
@@ -433,6 +434,7 @@ export class GameSession {
     );
     this.sfx.bloodOn = () => this.view.blood.on;
     this.sfx.blockPresent = (i) => this.scenario?.present(i) ?? true;
+    this.view.scenario.liquids.fx.onSplash = (at) => this.sfx.splash(at);
     // Bodies: stay all match, or sink away after a while.
     const bodiesSel = $('bodies-setting') as HTMLSelectElement;
     bodiesSel.value = this.view.bodies;
@@ -1116,6 +1118,7 @@ export class GameSession {
                 }
                 return;
               }
+              this.view.scenario.liquids.fx.shot(eye, to);
               const victim = ev.hit[i] ?? null;
               const zone = ev.z?.[i] ?? 0;
               if (victim === this.slot) this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
@@ -1243,7 +1246,12 @@ export class GameSession {
             this.objectiveChanged.set(ev.i, performance.now());
           } else if (ev.e === 'broken') {
             const e = this.map?.entities[ev.i];
-            if (e?.kind === 'destructible') {
+            // Glass (window panes past the entities, glass blocks): a shower of shards.
+            const pane = this.map ? glassAt(this.map, ev.i) : null;
+            if (pane) {
+              const h = pane.box.half;
+              this.view.debris(pane.box.center, pane.tint ?? '#d4eef2', Math.max(0.35, Math.min(1.2, Math.max(h.x, h.y, h.z) * 0.6)), Math.round(Math.min(18, 8 + (h.x + h.z) * h.y * 4)), 0.6);
+            } else if (e?.kind === 'destructible') {
               const spec = DESTRUCTIBLE_SPECS[e.model];
               const h = spec.half;
               const colors: Record<string, string> = { crate: '#8a5d33', barrel: '#9c2f22', glass: '#bfe6f5', boards: '#7a5430', gas: '#d8d8d0', generator: '#5a6066' };
@@ -1775,7 +1783,8 @@ export class GameSession {
       this.view.applyPropStates(this.scenario.entities);
     }
     this.view.updatePickups(this.taken, now);
-    this.view.updateProjectiles(this.interp.sampleProjectiles(now));
+    const shells = this.interp.sampleProjectiles(now);
+    this.view.updateProjectiles(shells);
     this.view.updateZones(this.zones, now);
     if (this.mounts) {
       const manned = this.seat ? this.mounts.mounts.get(this.seat[0]) : undefined;
@@ -1795,6 +1804,8 @@ export class GameSession {
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
+    // Splashes and ripples where players and projectiles meet water.
+    this.view.scenario.liquids.fx.track(poses, shells);
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
     this.forts?.frame(local?.alive ? local.eye : null, this.input.yaw, this.input.pitch, !!local?.alive && building, poses.filter((p) => p.slot !== this.slot), local?.alive ? local.state.pos : null);
     this.raceHud?.frame(this.view.camera.position, this.view.camera.rotation.y);

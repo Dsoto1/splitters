@@ -247,6 +247,8 @@ export type GameEvent =
   | { e: 'door'; i: number; open: 0 | 1 }
   /** A destructible broke. */
   | { e: 'broken'; i: number }
+  /** Bulletproof glass at scenario index `i` took a hit and cracked further (sim/glass.ts). */
+  | { e: 'crack'; i: number }
   /** A player pressed a button, or was refused (locked door, disabled button). */
   | { e: 'use'; s: number; i: number; ok: 0 | 1 }
   /** Team leaders: `s` now leads `team` ('lead'), or `team`'s leader went down ('down'; Leader variant: `n` points to the killer's side). */

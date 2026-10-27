@@ -33,6 +33,7 @@ import {
   BUTTON,
   DESTRUCTIBLE_SPECS,
   rosterSize,
+  mapLiquids,
   DOOR,
   ELECTRIC_FENCE,
   TRAP_ACTIVE,
@@ -47,6 +48,9 @@ import {
 } from '@tiletrigger/shared';
 import { createFlagBase, createFlagModel, createHillModel, createBombsiteModel } from './flagVisuals.ts';
 import { buildFence } from '../borderVisuals.ts';
+import { GlassVisuals, glassMaterial } from './glassVisuals.ts';
+import { WaterVisuals } from './waterVisuals.ts';
+import { loadGraphicsQuality } from './atmosphere.ts';
 
 /** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */
 export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: number; depthAlpha: number; shine: number; flow: number }> = {
@@ -105,10 +109,20 @@ export class ScenarioVisuals {
   constructor(
     private readonly scene: Scene,
     private readonly opts: VisualOptions = {},
-  ) {}
+  ) {
+    this.glass = new GlassVisuals(scene);
+    // MapMaker shows the medium look (no mirror, no extra depth pass).
+    this.liquids = new WaterVisuals(scene, opts.editor ? 'medium' : loadGraphicsQuality(), !!opts.editor);
+  }
+
+  /** Liquid surfaces (water shader, lava and acid flow), splashes and ripples. */
+  readonly liquids: WaterVisuals;
 
   /** Solid blocks the scenario drives (logic, movers, hidden at start): drawn here, not in the level mesh. */
   dynamicBlocks: ReadonlySet<string> = new Set();
+
+  /** Glass in windows (instanced panes after the entities; see windowPaneIndex). */
+  readonly glass: GlassVisuals;
 
   /** (Re)build visuals for every scenario entity in the list. Indices match map.entities. */
   build(entities: readonly MapEntity[], map?: MapDocument): void {
@@ -119,6 +133,11 @@ export class ScenarioVisuals {
     const targets = map && !this.opts.editor ? logicTargets(map.logic) : null;
     this.fixedLights = new Set(targets ? entities.filter((e) => e.kind === 'light' && !targets.has(e.id) && !e.off && !e.blink).map((e) => e.id) : []);
     const fixtures: Mesh[] = [];
+    if (map) this.glass.build(map);
+    if (map) {
+      this.liquids.map = map;
+      this.liquids.fx.liquids = mapLiquids(map.entities);
+    }
     entities.forEach((e, i) => {
       if (!isScenarioEntity(e)) return;
       const v = this.create(e, `sc_${e.id}`);
@@ -207,6 +226,7 @@ export class ScenarioVisuals {
       const s = states.get(i);
       if (s && v.update) v.update(s[0], s[1], now, dt);
     }
+    this.glass.apply(states);
   }
 
   clear(): void {
@@ -214,10 +234,12 @@ export class ScenarioVisuals {
     this.visuals.clear();
     for (const m of this.merged) m.dispose();
     this.merged = [];
+    this.glass.dispose();
   }
 
   dispose(): void {
     this.clear();
+    this.liquids.dispose();
     this.lights?.dispose();
     this.lights = undefined;
     for (const m of this.mats.values()) m.dispose();
@@ -714,6 +736,7 @@ export class ScenarioVisuals {
    */
   private block(name: string, e: Extract<MapEntity, { kind: 'block' }>): Visual {
     if (e.field && e.behaviour === 'solid') return this.field(name, e);
+    if (e.glass && e.behaviour === 'solid') return this.glassBlock(name, e);
     const root = new TransformNode(name, this.scene);
     const driven = this.dynamicBlocks.has(e.id);
     if (e.behaviour === 'solid' && !this.opts.editor && !driven) return { root };
@@ -780,11 +803,62 @@ export class ScenarioVisuals {
     };
   }
 
+  /**
+   * A glass block: the shared glass material (its own tint if it has one),
+   * frosting as bulletproof glass cracks, gone when breakable glass shatters.
+   */
+  private glassBlock(name: string, e: Extract<MapEntity, { kind: 'block' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const [w, h, d] = e.size;
+    const body = CreateBox(`${name}_body`, { width: w, height: h, depth: d }, this.scene);
+    body.parent = root;
+    body.position.y = h / 2;
+    body.material = glassMaterial(this.scene, e.tint ?? undefined);
+    let shown = 100;
+    return {
+      root,
+      update: (a) => {
+        if (a === shown) return;
+        shown = a;
+        body.setEnabled(a > 0);
+        const c = Math.max(0, Math.min(1, 1 - a / 100));
+        body.material = c > 0.05 ? this.frosted(e.tint ?? undefined, c) : glassMaterial(this.scene, e.tint ?? undefined);
+      },
+    };
+  }
+
+  /** Cracked glass, in four steps of frosting (shared per step and tint). */
+  private frosted(tint: string | undefined, c: number): Material {
+    const step = Math.min(4, Math.ceil(c * 4));
+    const key = `frost|${tint ?? ''}|${step}`;
+    let m = this.mats.get(key);
+    if (!m) {
+      m = glassMaterial(this.scene, tint).clone(`glassFrost_${tint ?? 'clear'}_${step}`) as StandardMaterial;
+      m.alpha = 0.1 + step * 0.12;
+      m.diffuseColor = m.diffuseColor.add(new Color3(0.08, 0.08, 0.08).scale(step));
+      this.mats.set(key, m);
+    }
+    return m;
+  }
+
   /** Water, lava, acid or swamp: a rippling surface over a tinted volume. */
   private water(name: string, e: Extract<MapEntity, { kind: 'water' }>): Visual {
     const root = new TransformNode(name, this.scene);
     const [w, h, d] = e.size;
     const look = e.tint ? { ...LIQUID_LOOKS[e.liquid], color: e.tint } : LIQUID_LOOKS[e.liquid];
+    if (this.liquids.shaded(e.liquid)) {
+      // Medium and high graphics: the liquid shader (waves, reflection, depth colour, foam; lava and acid flow).
+      const { mesh } = this.liquids.surface(name, e, look.color);
+      mesh.parent = root;
+      // Lava and acid keep their glowing volume (seen from the side); water and swamp colour by depth instead.
+      if (e.liquid === 'lava' || e.liquid === 'acid') {
+        const body = CreateBox(`${name}_body`, { width: w - 0.02, height: h - 0.06, depth: d - 0.02, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
+        body.parent = root;
+        body.position.y = h / 2 - 0.03;
+        body.material = this.mat(`liquidBody${e.liquid}`, look.color, { emissive: look.glow * 0.6, alpha: look.depthAlpha });
+      }
+      return { root };
+    }
     const surface = CreateGround(`${name}_surface`, { width: w, height: d, subdivisions: 1 }, this.scene);
     surface.parent = root;
     surface.position.y = h - 0.03;

@@ -93,6 +93,16 @@ export const TileSurfaces = z.object({
 /** One side of one tile cell, in the tile's own frame: "dx,dy,dz:N". */
 export const EdgeKey = z.string().regex(/^-?\d+,-?\d+,-?\d+:[NESW]$/, 'edge keys look like "0,0,0:N"');
 
+/**
+ * Real glass in a window (glass panes): `breakable` panes shatter at the
+ * first shot or blast (they come back next round, or after the map's glass
+ * respawn time); `reinforced` (bulletproof) panes stop shots and only crack.
+ * Either kind stops players and lets sight through.
+ */
+export const GLASS_KINDS = ['breakable', 'reinforced'] as const;
+export type GlassKind = (typeof GLASS_KINDS)[number];
+export const GLASS_KIND_LABELS: Record<GlassKind, string> = { breakable: 'Breakable', reinforced: 'Reinforced (bulletproof)' };
+
 export const Rotation = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]);
 
 /**
@@ -110,6 +120,8 @@ export const TilePlacement = z.object({
   surfaces: TileSurfaces.optional(),
   /** Per-side wall choices (window, archway, half wall, no wall…); absent sides are `auto`. */
   edges: z.record(EdgeKey, z.enum(EDGE_STYLES)).optional(),
+  /** Glass in window edges (window, twin windows, firing slit), per side; absent sides have none. */
+  glass: z.record(EdgeKey, z.enum(GLASS_KINDS)).optional(),
   /** Room options on rooms that take them (catalog `configurable`); absent fields leave the tile as designed. */
   options: z
     .object({
@@ -445,7 +457,8 @@ export const LadderEntity = EntityBase.extend({
 export const BLOCK_BEHAVIOURS = ['solid', 'breakable', 'crumble', 'trapdoor'] as const;
 export const BlockEntity = EntityBase.extend({
   kind: z.literal('block'),
-  size: z.tuple([z.number().min(0.2).max(64), z.number().min(0.1).max(32), z.number().min(0.2).max(64)]).default([4, 0.5, 4]),
+  /** Width and depth down to 5 cm (glass panes); sheets that thin collide like any block. */
+  size: z.tuple([z.number().min(0.05).max(64), z.number().min(0.1).max(32), z.number().min(0.05).max(64)]).default([4, 0.5, 4]),
   yaw: Yaw,
   /** A material from the library (null: the theme's solid material). */
   material: ContentId.nullable().default(null),
@@ -477,6 +490,12 @@ export const BlockEntity = EntityBase.extend({
    * "Rebuild block" or Enable on). Solid behaviour only.
    */
   field: z.boolean().optional(),
+  /**
+   * Glass (glass panes): a see-through panel that stops players but lets
+   * sight through. Breakable glass shatters when shot; reinforced glass stops
+   * shots and cracks. Solid behaviour only.
+   */
+  glass: z.enum(GLASS_KINDS).optional(),
 });
 
 /** A body of liquid (position: centre of its floor). Water is swum in; lava and acid hurt; swamp slows you down. */
@@ -735,6 +754,12 @@ export const MapPhysics = z.object({
 });
 export type MapPhysics = z.infer<typeof MapPhysics>;
 
+/** Map-wide glass settings: how long a shattered pane stays out (null: until the next round). */
+export const GlassSettings = z.object({
+  respawnSeconds: z.number().min(1).max(600).nullable().default(null),
+});
+export type GlassSettings = z.infer<typeof GlassSettings>;
+
 export const MapDocument = z.object({
   format: z.literal(MAP_FORMAT),
   formatVersion: z.literal(MAP_FORMAT_VERSION),
@@ -757,6 +782,8 @@ export const MapDocument = z.object({
   physics: MapPhysics.nullable().default(null),
   /** Blood colour and amount, or none (dark red, light). */
   blood: BloodSettings.nullable().default(null),
+  /** Glass panes: when shattered panes come back (absent: next round). */
+  glass: GlassSettings.optional(),
   /** Recommended teams for team modes, or none (two even teams). */
   teamSetup: TeamSetup.nullable().default(null),
   /** Content packs this map needs, beyond the always-present core pack. */

@@ -1600,6 +1600,8 @@ export class BotBrain {
         clear = view.physics.lineOfSight(myEye, theirEye);
       } else clear = view.sight ? view.sight.lineOfSight(tick, me.slot, myEye, o.slot, theirEye) : view.physics.lineOfSight(myEye, theirEye);
       if (!clear) continue;
+      // Behind bulletproof glass: seen, but not worth a bullet.
+      if (view.physics.armorGlass && !view.physics.shotLine(myEye, theirEye)) continue;
       if (!this.visibleSince.has(o.slot)) this.visibleSince.set(o.slot, tick);
       this.confirmed.set(o.slot, tick);
       if (!best) best = c;

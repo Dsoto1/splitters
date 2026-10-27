@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum' | 'hithead' | 'hitarmor' | 'killconfirm';
+export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum' | 'hithead' | 'hitarmor' | 'killconfirm' | 'splash' | 'crack';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum', 'hithead', 'hitarmor', 'killconfirm'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum', 'hithead', 'hitarmor', 'killconfirm', 'splash', 'crack'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -446,6 +446,30 @@ function renderSplat(seed: number): Float32Array<ArrayBuffer> {
   return render(0.25, seed, (t, _u, rnd) => (lp.run(rnd()) * 2.5 + o(110 - 200 * t) * 0.6) * Math.exp(-t / 0.06) * Math.min(1, t / 0.004));
 }
 
+/** Splash: a hollow plunge into water (a falling "bloop" under a spray of filtered noise). */
+function renderSplash(seed: number): Float32Array<ArrayBuffer> {
+  const o = osc();
+  const bp = new Biquad('bandpass');
+  const lp = new Biquad('lowpass').set(2400, 0.7);
+  return render(0.55, seed, (t, _u, rnd) => {
+    bp.set(1800 - 1200 * Math.min(1, t / 0.4), 1.2);
+    const spray = bp.run(rnd()) * 2.2 * Math.exp(-t / 0.16) * Math.min(1, t / 0.008);
+    const plunge = o(320 * Math.exp(-t * 9) + 90) * Math.exp(-t / 0.07) * 0.7;
+    return lp.run(spray) + plunge;
+  });
+}
+
+/** Glass crack: a sharp, bright tick with a short ring (bulletproof glass taking a hit). */
+function renderCrack(seed: number): Float32Array<ArrayBuffer> {
+  const ring = osc();
+  const hp = new Biquad('highpass').set(2600, 0.9);
+  let pitch: number | null = null;
+  return render(0.16, seed, (t, _u, rnd) => {
+    pitch ??= 4300 + rnd() * 600;
+    return hp.run(rnd()) * Math.exp(-t / 0.004) * 1.6 + ring(pitch) * Math.exp(-t / 0.035) * 0.35;
+  });
+}
+
 /** Disc launch: a spinning whoosh over a deep thoom. */
 function renderDisc(seed: number): Float32Array<ArrayBuffer> {
   const o = osc();
@@ -539,6 +563,10 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
       return renderBubble(seed);
     case 'splat':
       return renderSplat(seed);
+    case 'splash':
+      return renderSplash(seed);
+    case 'crack':
+      return renderCrack(seed);
     case 'disc':
       return renderDisc(seed);
     case 'nail':

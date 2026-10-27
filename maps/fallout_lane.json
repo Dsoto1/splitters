@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 22,
   "metadata": {
     "id": "fallout_lane",
     "name": "Fallout Lane",
@@ -592,281 +592,481 @@
       "id": "pane_01",
       "position": [
         -16,
-        0,
+        0.9,
         20
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_02",
       "position": [
         -20,
-        0,
+        0.9,
         24
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_03",
       "position": [
         0,
-        0,
+        0.9,
         20
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_04",
       "position": [
         -20,
-        0,
+        0.9,
         32
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_05",
       "position": [
         -16,
-        0,
+        0.9,
         36
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_06",
       "position": [
         4,
-        0,
+        0.9,
         32
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_07",
       "position": [
         -16,
-        4,
+        4.9,
         20
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_08",
       "position": [
         -20,
-        4,
+        4.9,
         24
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_09",
       "position": [
         -8,
-        4,
+        4.9,
         20
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_10",
       "position": [
         0,
-        4,
+        4.9,
         20
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_11",
       "position": [
         4,
-        4,
+        4.9,
         24
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_12",
       "position": [
         -16,
-        4,
+        4.9,
         36
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_13",
       "position": [
         0,
-        4,
+        4.9,
         36
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_14",
       "position": [
         4,
-        4,
+        4.9,
         32
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_15",
       "position": [
         -4,
-        0,
+        0.9,
         -24
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_16",
       "position": [
         8,
-        0,
+        0.9,
         -20
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_17",
       "position": [
         -4,
-        0,
+        0.9,
         -32
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_18",
       "position": [
         0,
-        0,
+        0.9,
         -36
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_19",
       "position": [
         20,
-        0,
+        0.9,
         -24
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "pane_20",
       "position": [
         20,
-        0,
+        0.9,
         -32
       ],
       "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
+      "kind": "block",
+      "size": [
+        2.6,
+        1.6,
+        0.06
+      ],
       "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "block_018",

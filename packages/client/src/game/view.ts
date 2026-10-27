@@ -324,6 +324,8 @@ export class GameView {
     const blood = doc.blood ?? DEFAULT_BLOOD;
     this.blood.setLook(blood.color, blood.amount);
     this.scenario.surface = (m, t) => styler.surfaceMaterial(doc, m, t);
+    // Water bakes its depth (clear shallows, foam on the shore) from the level under it.
+    this.scenario.liquids.levelBoxes = boxes;
     void this.foliage.grow(doc.terrain, boxes, doc.metadata.id);
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.

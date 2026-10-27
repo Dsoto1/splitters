@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp } from '@tiletrigger/shared';
+import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt } from '@tiletrigger/shared';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import type { LocalPlayer } from './prediction.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -21,6 +21,7 @@ const tuple = (p: readonly number[]): Vec3 => ({ x: p[0]!, y: p[1]!, z: p[2]! })
 export class SessionAudio {
   private readonly pickupAt = new Map<string, Vec3>();
   private entities: MapDocument['entities'] = [];
+  private doc: MapDocument | null = null;
   private readonly strides = new Map<number, { x: number; z: number; acc: number }>();
   private localStride = 0;
   private wasGrounded = true;
@@ -51,6 +52,7 @@ export class SessionAudio {
 
   setMap(doc: MapDocument): void {
     this.entities = doc.entities;
+    this.doc = doc;
     // Electric fences hum: the border's, and placed ones that are always on.
     this.fences = Object.values(borderStyles(doc)).includes('fence') ? borderShockLines(doc, 0) : [];
     for (const e of doc.entities) {
@@ -69,6 +71,11 @@ export class SessionAudio {
       const [x, , z] = e.position;
       this.fields.push({ i, line: { a: [x - ax * along, z - az * along], b: [x + ax * along, z + az * along], y0: e.position[1], height: h, push: null, entity: null } });
     });
+  }
+
+  /** Someone or something going into water (the view's splash effects call this). */
+  splash(at: Vec3): void {
+    this.audio.play('water.splash', { at });
   }
 
   joined(): void {
@@ -347,8 +354,19 @@ export class SessionAudio {
         else if (e.trap !== 'mine') this.audio.play(`trap.${e.trap}` as SoundId, { at });
         break;
       }
+      case 'crack': {
+        const pane = this.doc && glassAt(this.doc, ev.i);
+        if (pane) this.audio.play('glass.crack', { at: pane.box.center });
+        break;
+      }
       case 'broken': {
         const e = this.entities[ev.i];
+        // Window panes (past the entities) and glass blocks shatter.
+        const pane = this.doc && glassAt(this.doc, ev.i);
+        if (pane) {
+          this.audio.play('break.glass', { at: pane.box.center });
+          break;
+        }
         // A force field switching off crackles out.
         if (e?.kind === 'block' && e.field) {
           this.audio.play('trap.shock', { at: this.entityAt(ev.i, e.size[1] / 2), gain: 0.6 });
