@@ -854,6 +854,8 @@ export class GameView {
       if (out !== !!a.culled) {
         a.culled = out;
         a.root.setEnabled(!out);
+        // Its bones aren't drawn: pause its clips and skip the aim and grip until it is back in view.
+        if (a.anim instanceof CharacterAnimator) a.anim.setDormant(out);
       }
       a.placeholder.setEnabled(p.alive && !a.anim);
       const glowColor = p.powerups & POWERUP_DAMAGE_BIT ? '#c03cff' : p.powerups & POWERUP_SPEED_BIT ? '#36d6ff' : null;
@@ -1053,6 +1055,7 @@ export class GameView {
       fitCharacter(ch);
       if (spec.size && spec.size !== 1) ch.root.scaling.scaleInPlace(spec.size);
       a.anim = new CharacterAnimator(this.scene, ch);
+      if (a.culled) a.anim.setDormant(true);
       placeholder.setEnabled(false);
       // Move the held weapon from the capsule to the hand.
       const slotNow = a.weaponSlot;

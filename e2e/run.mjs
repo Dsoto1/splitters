@@ -1601,8 +1601,12 @@ async function charactersFlow(browser) {
   await page.waitForFunction(() => window.__charsReady === true, null, { timeout: T(30000) });
   const [n, want] = await page.evaluate(() => [window.__charAnimators.length, window.__charSpecs]);
   check(n === want && n >= 20, `character viewer builds every look and NPC (${n} of ${want})`);
-  const lod = await page.evaluate(() => window.__charAnimators.flatMap((a) => a.ch.meshes).filter((m) => m.getLODLevels?.().length).length);
-  check(lod > 100, `character meshes have low-detail levels (${lod})`);
+  const lod = await page.evaluate(() => window.__charAnimators.filter((a) => a.ch.meshes.some((m) => m.getLODLevels?.().length)).length);
+  check(lod === n, `every character has low-detail levels (${lod} of ${n})`);
+  // Parts sharing a material are merged, and gear is merged per finish: a character is a handful of draws, not one per part.
+  const draws = await page.evaluate(() => window.__charAnimators.map((a) => a.ch.meshes.filter((m) => !m.isDisposed() && m.getTotalVertices() > 0).length));
+  const most = Math.max(...draws);
+  check(most <= 8 && draws.reduce((s, d) => s + d, 0) / draws.length <= 5, `characters draw a few merged meshes each (at most ${most}, ${(draws.reduce((s, d) => s + d, 0) / draws.length).toFixed(1)} on average)`);
   for (const label of ['Rifle', 'Run', 'shoot', 'Death', 'Idle']) {
     await page.click(`button:text-is("${label}")`);
     await page.waitForTimeout(300);

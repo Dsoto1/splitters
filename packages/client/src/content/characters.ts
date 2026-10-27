@@ -241,6 +241,8 @@ export class CharacterLibrary {
     for (const m of meshes) {
       m.isPickable = false;
       m.alwaysSelectAsActiveMesh = true;
+      // Eyes sit inside the head: their shadow would land on the inside of the skull.
+      if (m.material?.name === 'MI_Eyes') m.metadata = { ...(m.metadata as object | null), castsNoShadow: true };
     }
     return {
       root: holder,

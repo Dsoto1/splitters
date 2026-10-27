@@ -246,11 +246,37 @@ export class CharacterAnimator {
     this.ik += Math.sign(ikTarget - this.ik) * Math.min(Math.abs(ikTarget - this.ik), dt * 6);
     const bladeTarget = this.grip?.style === 'long' && !s.celebrate ? LONG_GUN_BLADE * this.ik : 0;
     this.blade += (bladeTarget - this.blade) * Math.min(1, dt * 8);
+    // Clips the state machine started while asleep wait too.
+    if (this.dormant) for (const g of this.groups()) if (g.isPlaying) g.pause();
+  }
+
+  /** Out of view in a crowd: clips paused where they are and no aiming or gripping until it is seen again. */
+  private dormant = false;
+
+  /**
+   * Put the character to sleep while nobody can see it (a crowd's characters
+   * behind the camera): its clips pause, so the bones cost nothing, and the
+   * after-animation aim and grip are skipped. Waking resumes the clips where
+   * they were; the state machine (update) keeps running all along.
+   */
+  setDormant(on: boolean): void {
+    if (on === this.dormant) return;
+    this.dormant = on;
+    for (const g of this.groups()) {
+      if (on && g.isPlaying) g.pause();
+      else if (!on && g.isStarted && !g.isPlaying) g.restart();
+    }
+  }
+
+  private groups(): Set<AnimationGroup> {
+    const all = new Set(this.ch.clips.values());
+    if (this.aimUpper) all.add(this.aimUpper);
+    return all;
   }
 
   /** Play an upper-body action once, over whatever the legs are doing. */
   trigger(action: OneShot): void {
-    if (this.dead) return;
+    if (this.dead || this.dormant) return;
     const g = this.ch.clips.get(action);
     if (!g) return;
     this.overlay?.clip.stop();
@@ -338,7 +364,7 @@ export class CharacterAnimator {
 
   /** Bend the spine for aim pitch and counter-twist the hip turn, then put the weapon in the hands. */
   private afterAnimations(): void {
-    if (this.dead || !this.spine.length) return;
+    if (this.dead || this.dormant || !this.spine.length) return;
     const root = this.ch.root;
     root.computeWorldMatrix(true);
     const rootRot = Quaternion.FromRotationMatrix(root.getWorldMatrix().getRotationMatrix());

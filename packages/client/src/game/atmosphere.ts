@@ -191,6 +191,8 @@ export class Atmosphere {
       if (mat && mat.alpha !== undefined && mat.alpha < 0.99) continue;
       // Ankle-high terrain plants (thousands of them) catch shadows but cast none worth drawing.
       if (m.name.startsWith('foliage')) continue;
+      // Parts whose shadow falls inside their own body (a character's eyes): a draw for nothing.
+      if ((m.metadata as { castsNoShadow?: boolean } | null)?.castsNoShadow) continue;
       map.renderList?.push(m);
       m.onDisposeObservable.addOnce(() => {
         const list = map.renderList;
