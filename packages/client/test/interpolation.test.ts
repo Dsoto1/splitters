@@ -61,6 +61,29 @@ describe('snapshot interpolation', () => {
     for (const v of after.slice(0, 60)) expect(Math.abs(v / SPEED - 1)).toBeLessThan(0.12);
   });
 
+  it('keeps far players (sent every fourth snapshot in big matches) moving between their snapshots', () => {
+    const interp = new Interpolator();
+    const near = (tick: number): PlayerSnapshot => ({ ...snap(tick), s: 2, p: [0, 0, 0] });
+    const speeds: number[] = [];
+    let last: number | null = null;
+    let tick = 0;
+    for (let now = 0; now < 3000; now += 1000 / 60) {
+      // Snapshots on time, every 2 ticks; player 1 only in every fourth, held back in the rest.
+      while ((tick / TICK_RATE) * 1000 <= now) {
+        const far = (tick / SNAPSHOT_INTERVAL_TICKS) % 4 === 0;
+        interp.push(tick, far ? [near(tick), snap(tick)] : [near(tick)], [], far ? [] : [1], (tick / TICK_RATE) * 1000);
+        tick += SNAPSHOT_INTERVAL_TICKS;
+      }
+      const x = interp.sample(now).find((p) => p.slot === 1)?.x;
+      if (x === undefined || now < 500) continue;
+      if (last !== null) speeds.push((x - last) * 60);
+      last = x;
+    }
+    // Before: stopped for a frame or two in every gap, then jumped on (0 and ~2x speed).
+    expect(Math.min(...speeds)).toBeGreaterThan(SPEED * 0.9);
+    expect(Math.max(...speeds)).toBeLessThan(SPEED * 1.1);
+  });
+
   it('is exact when snapshots arrive on time', () => {
     for (const v of frameSpeeds(0)) expect(v).toBeCloseTo(SPEED, 6);
   });
