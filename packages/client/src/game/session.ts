@@ -243,6 +243,8 @@ export class GameSession {
   private tpClose = false;
   /** Your position as drawn this frame (blended between prediction ticks). */
   private drawnPos: Vec3 = { x: 0, y: 0, z: 0 };
+  /** Smoothed ground speed of drawnPos (m/s). */
+  private drawnSpeed = 0;
   /** Seconds your minimap stays jammed (enemy Counter-UAV), and your kill streak. */
   private jam = 0;
   private streak = 0;
@@ -1688,6 +1690,9 @@ export class GameSession {
         const offset = eye.y - local.state.pos.y;
         this.eyeOffset = this.eyeOffset === null || !local.alive ? offset : this.eyeOffset + (offset - this.eyeOffset) * Math.min(1, dt * 12);
         const drawn = local.renderPos(this.acc / TICK_DT);
+        // How fast you're going on screen (the weapon bob keeps pace with it).
+        const v = dt > 0 ? Math.hypot(drawn.x - this.drawnPos.x, drawn.z - this.drawnPos.z) / dt : 0;
+        this.drawnSpeed += ((v > 20 ? 0 : v) - this.drawnSpeed) * Math.min(1, dt * 10);
         this.drawnPos = drawn;
         const head = { x: drawn.x, y: drawn.y + this.eyeOffset, z: drawn.z };
         const watch = !local.alive ? this.spectateTarget(now) : null;
@@ -1724,7 +1729,7 @@ export class GameSession {
       }
       this.view.setViewmodel(weapon);
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride), ads: this.adsAmount });
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride), ads: this.adsAmount, speed: this.drawnSpeed });
       this.hud.setScope(zoomed);
       this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount);
       this.updateScopeSway(dt, zoomed);
@@ -1795,7 +1800,7 @@ export class GameSession {
     this.raceHud?.frame(this.view.camera.position, this.view.camera.rotation.y);
     // Third person: your own character drawn where prediction has you (not the delayed server copy).
     const self = this.thirdPerson && !this.tpClose && local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
-    if (self && local) Object.assign(self, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0 });
+    if (self && local) Object.assign(self, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint });
     // Your own canopy in first person (third person draws it over your character).
     this.view.updateLocalCanopy(local?.alive && !self && !this.seat && local.state.chute ? this.drawnPos : null, this.input.yaw, local?.state.chute ?? 0);
     // Hostage Rescue: the hostages walk about like everyone else.

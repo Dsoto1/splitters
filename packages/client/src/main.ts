@@ -19,6 +19,7 @@ import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/atmosphere.ts';
 import { EditorApp, type TestRequest } from './editor/editorApp.ts';
 import { LocalTransport, prewarmSimWorker } from './game/localTransport.ts';
+import { FramePacer } from './game/framePacer.ts';
 import { NetTransport } from './game/netTransport.ts';
 import { PeerTransport, cleanJoinCode } from './game/peerLink.ts';
 import { CharacterDesigner } from './designer/characterDesigner.ts';
@@ -152,6 +153,7 @@ class App {
   front?: FrontEnd;
   private ready?: Promise<void>;
   private last = performance.now();
+  private readonly pacer = new FramePacer();
 
   init(): Promise<void> {
     this.ready ??= (async () => {
@@ -195,9 +197,8 @@ class App {
 
   private frame(): void {
     const now = performance.now();
-    // Frame cap: skip this display refresh if it comes too soon (ProMotion screens refresh at 120 Hz).
-    const cap = currentFrameCap();
-    if (cap && now - this.last < 1000 / cap - 1.5) return;
+    // Frame cap: skip this display refresh if the next frame isn't due yet (ProMotion screens refresh at 120 Hz).
+    if (!this.pacer.tick(now, currentFrameCap())) return;
     const dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
     if (this.mode === 'menu') this.menuScene?.frame(dt);
