@@ -4,12 +4,19 @@
 #
 #   sudo bash host-setup.sh /path/to/bootstrap.env
 #
+# tiletrigger-update.sh must sit next to this script (the deploy script copies both).
+#
 # bootstrap.env (written by the deploy script, mode 0600, deleted after use):
 #   DOMAIN=trigger.toshiroplay.com      site + hub hostname (Caddy, HTTPS/WSS)
 #   ROOT_DOMAIN=toshiroplay.com         optional: Caddy redirects it to DOMAIN
 #   TURN_HOST=trigger.toshiroplay.com   hostname in the TURN URLs players get
 #   STATIC_IP=203.0.113.10              the Lightsail static IP (coturn external-ip)
-#   REPO=https://github.com/…  BRANCH=main  REF=<commit, optional>
+#   REPO=https://github.com/…           the hub's code (git; the hub runs from source)
+#   Which site build (the box downloads the one CI built and tested; it never builds it unless asked):
+#   RELEASE=vX.Y.Z  REF=<commit>  BRANCH=check/<name>  CHANNEL=main|stable   (first one set wins; default main)
+#   BUILD_HERE=1                        build the site on the box instead (slow; explicit only)
+#   AUTO_UPDATE=on|off                  hourly `tiletrigger-update --auto` timer (unset: left as it is; new box: off)
+#   PROVENANCE=required|off             build-provenance check of downloads (default required)
 #   ICE_TTL=3600                        TURN credential lifetime (seconds)
 #   TURN_SECRET=…  HUB_SIGNING_SECRET=… (from SSM SecureStrings; never in Git)
 #   COGNITO_REGION=… COGNITO_USER_POOL_ID=… COGNITO_APP_CLIENT_ID=… COGNITO_DOMAIN=…
@@ -31,25 +38,43 @@ CONF="${1:?usage: host-setup.sh <bootstrap.env>}"
 TURN_HOST="${TURN_HOST:-$DOMAIN}"
 ROOT_DOMAIN="${ROOT_DOMAIN:-}"
 REPO="${REPO:-https://github.com/Dsoto1/splitters.git}"
+CHANNEL="${CHANNEL:-main}"
+RELEASE="${RELEASE:-}"
 BRANCH="${BRANCH:-main}"
 REF="${REF:-}"
+BUILD_HERE="${BUILD_HERE:-0}"
+AUTO_UPDATE="${AUTO_UPDATE:-}"
+PROVENANCE="${PROVENANCE:-required}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "$HERE/tiletrigger-update.sh" ] || { echo "tiletrigger-update.sh must be next to host-setup.sh"; exit 1; }
 ICE_TTL="${ICE_TTL:-3600}"
 HOST_FIREWALL="${HOST_FIREWALL:-1}"
 APP=/opt/tiletrigger
+SITE_ROOT=/opt/tiletrigger-site
 ENV_FILE=/etc/tiletrigger.env
 
 export DEBIAN_FRONTEND=noninteractive
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 log() { printf '== %s\n' "$*"; }
-log "Tile Trigger host setup for $DOMAIN (branch $BRANCH${REF:+ @ $REF})"
+# What tiletrigger-update installs (the first of these that is set).
+UPDATE_ARGS=()
+if [ -n "$RELEASE" ]; then UPDATE_ARGS=(--release "$RELEASE")
+elif [ -n "$REF" ]; then UPDATE_ARGS=(--sha "$REF")
+elif [ "$BUILD_HERE" = 1 ] || [ "$BRANCH" != main ]; then UPDATE_ARGS=(--branch "$BRANCH")
+else UPDATE_ARGS=(--channel "$CHANNEL"); fi
+[ "$BUILD_HERE" = 1 ] && UPDATE_ARGS+=(--build-here)
+[ "$PROVENANCE" = off ] && UPDATE_ARGS+=(--no-provenance)
+log "Tile Trigger host setup for $DOMAIN (site: ${UPDATE_ARGS[*]})"
 
 # ---------------------------------------------------------------- base system
-# Grow an older 2 GB swapfile to 4 GB (the client build needs ~1.5 GB of heap on a 2 GB box).
-if swapon --show | grep -q /swapfile && [ "$(stat -c %s /swapfile)" -lt 4000000000 ]; then
+# Swap as headroom: 2 GB. The box doesn't build the site any more; an explicit on-box build (BUILD_HERE=1)
+# needs ~1.5 GB of heap, so then it grows to 4 GB (an existing larger swapfile is kept).
+SWAP_GB=2; [ "$BUILD_HERE" = 1 ] && SWAP_GB=4
+if swapon --show | grep -q /swapfile && [ "$(stat -c %s /swapfile)" -lt $((SWAP_GB * 1000000000)) ]; then
   swapoff /swapfile && rm -f /swapfile
 fi
 if ! swapon --show | grep -q /swapfile; then
-  fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile
+  fallocate -l "${SWAP_GB}G" /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile
   grep -q /swapfile /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
 
@@ -64,7 +89,7 @@ mkdir -p /etc/systemd/journald.conf.d
 printf '[Journal]\nSystemMaxUse=300M\nMaxRetentionSec=14day\n' > /etc/systemd/journald.conf.d/tiletrigger.conf
 systemctl restart systemd-journald
 
-# Node 22 (NodeSource) and pnpm (corepack).
+# Node 22 (NodeSource; it runs the hub) and pnpm (corepack; the hub's production dependencies).
 if ! node -v 2>/dev/null | grep -q '^v22'; then
   curl -fsSL https://deb.nodesource.com/setup_22.x | bash - >/dev/null
   apt-get install -y -qq nodejs >/dev/null
@@ -79,17 +104,31 @@ if ! command -v caddy >/dev/null; then
 fi
 
 # ---------------------------------------------------------------- the game
+# The hub's code: a git checkout owned by the hub's user (tiletrigger-update moves it to the commit of the
+# site build it installs). The site builds live apart, root-owned: $SITE_ROOT/releases/<sha>/site, with
+# $SITE_ROOT/current pointing at the one served (the hub reads SITE_DIR=$SITE_ROOT/current/site).
 id tiletrigger >/dev/null 2>&1 || useradd --system --home "$APP" --shell /usr/sbin/nologin tiletrigger
 mkdir -p "$APP" && chown tiletrigger:tiletrigger "$APP"
-as_app() { sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && $1"; }
+mkdir -p "$SITE_ROOT" && chmod 755 "$SITE_ROOT"
+as_app() { sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 "$@"; }
 if [ -d "$APP/.git" ]; then
-  as_app "git remote set-url origin '$REPO' && git fetch -q origin '$BRANCH' && git checkout -q -B '$BRANCH' 'origin/$BRANCH'"
+  as_app git -C "$APP" remote set-url origin "$REPO"
 else
-  as_app "git clone -q --branch '$BRANCH' '$REPO' ."
+  as_app git clone -q "$REPO" "$APP"
 fi
-[ -n "$REF" ] && as_app "git fetch -q origin '$REF' 2>/dev/null || true; git reset -q --hard '$REF'"
-log "Building $(as_app 'git log -1 --format="%h %s"') (a few minutes)…"
-as_app "corepack pnpm install --frozen-lockfile && VITE_HUB=self NODE_OPTIONS=--max-old-space-size=3072 corepack pnpm build"
+
+# The updater and its settings.
+install -m 755 "$HERE/tiletrigger-update.sh" /usr/local/bin/tiletrigger-update
+cat > /etc/tiletrigger-update.conf <<CONF
+# Managed by infra/host-setup.sh (re-run the deploy script to change it).
+APP=$APP
+SITE_ROOT=$SITE_ROOT
+REPO=$REPO
+AUTO_CHANNEL=$CHANNEL
+PROVENANCE=$PROVENANCE
+HEALTH_URL=http://127.0.0.1:8080
+KEEP=3
+CONF
 
 # ---------------------------------------------------------------- hub runtime config
 # The hub reads TURN_SECRET/TURN_URLS/ICE_TTL today (packages/server/src/ice.ts);
@@ -181,6 +220,7 @@ RestartMaxDelaySec=300
 UNIT
 done
 
+HUB_UNIT_BEFORE="$(cat /etc/systemd/system/tiletrigger-hub.service 2>/dev/null || true)"
 cat > /etc/systemd/system/tiletrigger-hub.service <<UNIT
 [Unit]
 Description=Tile Trigger hub (site, signaling, game browser, TURN credentials)
@@ -190,10 +230,11 @@ Wants=network-online.target
 [Service]
 User=tiletrigger
 Group=tiletrigger
-WorkingDirectory=$APP
-Environment=PORT=8080 HOST=127.0.0.1 TRUST_PROXY=1 COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_ENV=production
+WorkingDirectory=$APP/packages/server
+Environment=PORT=8080 HOST=127.0.0.1 TRUST_PROXY=1 NODE_ENV=production SITE_DIR=$SITE_ROOT/current/site
 EnvironmentFile=$ENV_FILE
-ExecStart=/usr/bin/corepack pnpm --filter @tiletrigger/server hub
+# One process: Node with tsx's loader (no pnpm or tsx wrapper processes in between).
+ExecStart=/usr/bin/node --import tsx src/hub.ts
 KillSignal=SIGTERM
 TimeoutStopSec=15
 # Hardening: the hub needs nothing but its own folder and the network.
@@ -214,6 +255,37 @@ LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
+UNIT
+HUB_UNIT_CHANGED=0
+[ "$HUB_UNIT_BEFORE" = "$(cat /etc/systemd/system/tiletrigger-hub.service)" ] || HUB_UNIT_CHANGED=1
+
+# Optional hourly auto-update (off unless AUTO_UPDATE=on): installs a new green main build, verified like
+# any update (a build that was rolled back from is not retried). Low priority, so it never competes with
+# the hub; a check with nothing new is one small HTTPS request.
+cat > /etc/systemd/system/tiletrigger-update.service <<UNIT
+[Unit]
+Description=Tile Trigger: install a new verified site build if one was published
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/tiletrigger-update --auto
+Nice=10
+IOSchedulingClass=idle
+CPUWeight=20
+UNIT
+cat > /etc/systemd/system/tiletrigger-update.timer <<UNIT
+[Unit]
+Description=Tile Trigger: hourly check for a new site build
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
 UNIT
 
 # ---------------------------------------------------------------- Caddy
@@ -261,18 +333,23 @@ else
   systemctl enable -q coturn
   systemctl restart coturn
 fi
-systemctl restart tiletrigger-hub
+case "$AUTO_UPDATE" in
+  on) systemctl enable -q --now tiletrigger-update.timer; log "Auto-update: on (hourly, main-latest)" ;;
+  off) systemctl disable -q --now tiletrigger-update.timer 2>/dev/null || true ;;
+esac
 systemctl reload-or-restart caddy
 
-# One-line code updates later (secrets/config only change through the deploy script).
-cat > /usr/local/bin/tiletrigger-update <<UPD
-#!/usr/bin/env bash
-set -euo pipefail
-sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && git fetch -q origin $BRANCH && git reset -q --hard origin/$BRANCH && corepack pnpm install --frozen-lockfile && VITE_HUB=self NODE_OPTIONS=--max-old-space-size=3072 corepack pnpm build"
-systemctl restart tiletrigger-hub
-echo "Tile Trigger updated to \$(sudo -u tiletrigger git -C $APP log -1 --format='%h %s')"
-UPD
-chmod 755 /usr/local/bin/tiletrigger-update
+# The site build and the hub's code at its commit: downloaded, verified, switched (restarts the hub only
+# if its code changed; health-checked, rolled back on failure). Later code updates: sudo tiletrigger-update.
+log "Installing the site build (tiletrigger-update ${UPDATE_ARGS[*]})"
+/usr/local/bin/tiletrigger-update "${UPDATE_ARGS[@]}"
+# A changed hub unit (or a hub that isn't running) needs a restart of its own.
+if [ "$HUB_UNIT_CHANGED" = 1 ] || ! systemctl is-active --quiet tiletrigger-hub; then
+  log "Hub service changed: restarting it"
+  systemctl restart tiletrigger-hub
+fi
+# The site the box used to build in its checkout: served from $SITE_ROOT now.
+[ "$BUILD_HERE" = 1 ] || rm -rf "$APP/packages/client/dist"
 
 # Relay kill switch for abuse or a cost spike: `sudo tiletrigger-relay off` (on, status).
 # Direct connections keep working; players behind strict NATs can't join until it is back on.
@@ -299,4 +376,5 @@ if [ "$up" != yes ]; then
   exit 1
 fi
 log "Hub healthy: $(curl -fsS http://127.0.0.1:8080/lobby/health)"
-log "Deployed $(as_app 'git log -1 --format="%h %s"')"
+log "Deployed $(as_app git -C "$APP" log -1 --format="%h %s")"
+/usr/local/bin/tiletrigger-update --status | sed 's/^/   /'
