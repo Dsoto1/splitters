@@ -1548,7 +1548,7 @@ async function lobbyFlow(browser) {
   const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
-  await host.goto(`${CLIENT}/?offline=arena&${hub}`, { waitUntil: 'domcontentloaded' });
+  await host.goto(`${CLIENT}/?offline=sandgate&${hub}`, { waitUntil: 'domcontentloaded' });
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const offered = await host.evaluate(() => !document.getElementById('host-public').hidden);
   check(offered, 'hosting offers "List in the game browser" when a hub is set');
@@ -1592,7 +1592,7 @@ async function lobbyFlow(browser) {
   const solo = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   solo.on('pageerror', (e) => errors.push(`solo: ${e.message}`));
   await solo.addInitScript(() => localStorage.setItem('cs.name', 'Solo'));
-  await solo.goto(`${CLIENT}/?offline=arena&${hub}`, { waitUntil: 'domcontentloaded' });
+  await solo.goto(`${CLIENT}/?offline=sandgate&${hub}`, { waitUntil: 'domcontentloaded' });
   await solo.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !(document.getElementById('online-badge')?.hidden ?? true) }));
   check(offline.online && !offline.badge, 'an offline match stays offline and offers "Go online"');
