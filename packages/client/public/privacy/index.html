@@ -23,77 +23,91 @@
   </head>
   <body>
     <main>
-      <h1>Privacy</h1>
-      <p class="muted">Trigger, a browser game by ToshiroPlay (trigger.toshiroplay.com). Last updated 27 October 2026.</p>
-
+      <h1>Privacy Policy</h1>
+      <p class="muted">Trigger, a browser game by ToshiroPlay, at trigger.toshiroplay.com. Effective 27 October 2026.</p>
       <p>
-        Trigger is free to play in your browser, and playing never needs an account. We collect as little as we can: no
-        advertising, no tracking, no analytics, and we never sell or share your data.
+        This policy explains what Trigger collects and why. We keep it to the minimum the game needs. Trigger is free, plays in your
+        browser, and never requires an account. We use no advertising, no analytics and no tracking cookies, and we never sell, rent or
+        share your information.
       </p>
 
-      <h2>What we collect, and why</h2>
+      <h2>Playing without signing in</h2>
+      <p>
+        Offline matches, MapMaker and the character designer run entirely in your browser. Your settings, saved setups and the maps you make are kept
+        in your browser's own storage on your device. We do not receive them.
+      </p>
+
+      <h2>Signing in with Google (optional)</h2>
+      <p>Signing in is only needed for features tied to an account, such as managing a server you host. When you choose Sign in with Google, Google shares the following with us through Amazon Cognito, our sign-in service:</p>
+      <ul>
+        <li>your Google account identifier (a number that tells accounts apart)</li>
+        <li>your name</li>
+        <li>your email address</li>
+      </ul>
+      <p>We ask only for the basic openid, email and profile permissions. We cannot see your password, contacts, files or anything else in your Google account.</p>
+
+      <h2>What we keep</h2>
       <table>
         <tr><th>What</th><th>Why</th><th>How long</th></tr>
-        <tr>
-          <td><b>Your Google account ID and name</b> (and the email address Google shares), only if you choose <i>Sign in</i></td>
-          <td>To know it is you when you use features that need an account (for example, managing a server you host). Sign-in is optional.</td>
-          <td>Held by the sign-in service (Amazon Cognito, run for ToshiroPlay) while you have an account. Your browser keeps the sign-in only for the open tab. We keep no other user records.</td>
-        </tr>
-        <tr>
-          <td><b>Your IP address</b></td>
-          <td>Needed to connect you to games and to our servers, and used briefly to limit abuse (rate limits).</td>
-          <td>Kept in memory only while needed (minutes). Server logs, which can include addresses, are deleted after at most 14 days.</td>
-        </tr>
-        <tr>
-          <td><b>Game settings</b> (name, controls, graphics, maps you make)</td>
-          <td>So the game remembers your choices.</td>
-          <td>Stored in your own browser (local storage), not on our servers. Clearing your browser data removes them.</td>
-        </tr>
-        <tr>
-          <td><b>Game listings</b> (game name, host name, map, player count) when you list a game you host</td>
-          <td>To show your game in the game browser.</td>
-          <td>Removed when you stop hosting, or about a minute after your game stops checking in.</td>
-        </tr>
+        <tr><td>Your sign-in account (Google identifier, name, email)</td><td>To recognise you when you use account features.</td><td>Held by Amazon Cognito until you ask us to delete it. We keep no other user records.</td></tr>
+        <tr><td>Your sign-in session</td><td>So you stay signed in while you play.</td><td>In your browser for the open tab only; gone when you close it or sign out.</td></tr>
+        <tr><td>Your IP address</td><td>To connect you to games and our servers, and to limit abuse (rate limits).</td><td>In memory for minutes. Server logs, which can include IP addresses, are deleted after 14 days.</td></tr>
+        <tr><td>Game listings (game name, host name, map, player count)</td><td>To show a game you host in the game browser.</td><td>Removed when you stop hosting, or about a minute after your game stops checking in.</td></tr>
+        <tr><td>Relay credentials</td><td>To connect players whose networks block direct connections.</td><td>Expire after about an hour.</td></tr>
       </table>
 
-      <h2>Playing with others</h2>
+      <h2>What other players see</h2>
       <p>
-        Online games run in a player's browser or on a player's computer and connect players directly (peer to peer). Like
-        any direct connection, the players in a match can see each other's IP addresses, unless the connection goes through
-        our relay. Trigger has no chat. The names you choose are shown to the other players.
+        The player name you choose, your character, the games you host or join, and what happens in a match. Your email address is never shown
+        to other players. Trigger has no chat.
+      </p>
+      <p>
+        Online matches run in a player's browser or on a player's computer and connect players directly (peer to peer). As with any direct
+        connection, players in a match can see each other's IP addresses, unless the connection goes through our relay.
       </p>
 
-      <h2>Cookies</h2>
+      <h2>How we use it</h2>
       <p>
-        Trigger sets no cookies of its own. If you sign in, the sign-in service (login.toshiroplay.com) uses cookies needed
-        for signing in and out, and nothing else.
+        Only to run the game: to sign you in, list and connect games, keep matches fair and prevent abuse. We do not use it for advertising and we
+        do not send marketing email.
       </p>
 
-      <h2>Services we use</h2>
-      <ul>
-        <li>Amazon Web Services (hosting, and Amazon Cognito for sign-in), and Google as the sign-in provider you choose.</li>
-        <li>Public STUN servers (for example Google's) that help browsers find a direct connection: they see your IP address.</li>
-      </ul>
+      <h2>Where it is stored</h2>
+      <p>
+        Trigger's servers run on Amazon Web Services in the United States (us-east-1): Amazon Lightsail for the site and game browser, and Amazon
+        Cognito for sign-in. Browsers use public STUN servers (for example Google's) to find a direct connection; those see your IP address.
+        The game's fonts and files are served from our own server.
+      </p>
+
+      <h2>Cookies and your browser</h2>
+      <p>
+        Trigger sets no cookies of its own. If you sign in, the sign-in service at login.toshiroplay.com uses cookies needed for signing in and out,
+        and nothing else. The game uses your browser's storage for your settings and your sign-in session; you can clear it at any time in
+        your browser settings.
+      </p>
 
       <h2>Your choices</h2>
       <ul>
-        <li>Play without signing in: nothing about you is stored beyond the short-lived items above.</li>
+        <li>Play without signing in: nothing about you is kept beyond the short-lived items above.</li>
         <li>Sign out at any time from the main menu.</li>
-        <li>Ask us to delete your account, or ask what we hold about you, using the contact below.</li>
+        <li>To see or delete your account and everything tied to it, email us from the address you sign in with (below). We will act on your request within 30 days.</li>
+        <li>You can remove Trigger's access to your Google account at any time at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
       </ul>
 
-      <h2>Children</h2>
-      <p>Trigger is not directed at children under 13, and we don't knowingly collect their personal information.</p>
-
-      <h2>Changes</h2>
-      <p>If this policy changes, we update this page and its date.</p>
-
-      <h2>Contact</h2>
+      <h2>Google user data</h2>
       <p>
-        ToshiroPlay: contact us through
-        <span class="placeholder">[contact page link — to be added by the owner]</span>.
+        Trigger's use and transfer of information received from Google APIs adheres to the
+        <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.
       </p>
 
+      <h2>Children</h2>
+      <p>Trigger is not intended for children under 13, and we do not knowingly collect information from them. If you believe a child has signed in, contact us and we will delete the account.</p>
+
+      <h2>Changes</h2>
+      <p>If this policy changes, we will update this page and its effective date. Significant changes will also be noted in the game.</p>
+
+      <h2>Contact</h2>
+      <p>ToshiroPlay: <span class="placeholder">CONTACT_EMAIL</span></p>
       <p class="muted"><a href="/">Back to the game</a></p>
     </main>
   </body>
