@@ -94,6 +94,26 @@ async function clickTool(page, selector) {
   await page.click(selector);
 }
 
+/** An image element that has loaded. */
+function thumbLoaded(page, sel) {
+  return page.evaluate((sel) => {
+    const img = document.querySelector(sel);
+    return !!img && img.complete && img.naturalWidth > 0;
+  }, sel);
+}
+
+/** A map plan canvas with something drawn on it (not just the backdrop). */
+function planDrawn(page, sel) {
+  return page.evaluate((sel) => {
+    const c = document.querySelector(sel);
+    if (!c?.width || !c.height) return false;
+    const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let n = 0;
+    for (let i = 0; i < d.length; i += 16) if (Math.abs(d[i] - 13) + Math.abs(d[i + 1] - 19) + Math.abs(d[i + 2] - 34) > 60) n++;
+    return n > 20;
+  }, sel);
+}
+
 async function editorFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
@@ -243,10 +263,40 @@ async function editorFlow(browser) {
   const lib = await page.$$eval('#ed-library li', (ls) => ls.map((l) => l.textContent));
   check(lib.some((t) => t.includes('Untitled Map') && t.includes('Saved')), 'saved map is listed in the library');
   check(lib.some((t) => t.startsWith('Unsaved draft (Draft Edit,')), `the unsaved edit is offered as a draft in Open (${lib.slice(0, 3).join(' / ')})`);
-  await page.click('#ed-library li.draft > button:first-child');
+  // Each row shows the map's picture and plan, side by side (templates: the automatic picture).
+  const tplRow = '#ed-library li:not(.draft):last-child';
+  await page.evaluate((sel) => document.querySelector(sel)?.scrollIntoView(), tplRow);
+  await page.waitForFunction((sel) => document.querySelector(`${sel} .map-thumbs .pic img`)?.naturalWidth > 0, tplRow, { timeout: T(15000) }).catch(() => {});
+  check(await thumbLoaded(page, `${tplRow} .map-thumbs .pic img`), "the Open list shows a template's picture");
+  check(await planDrawn(page, `${tplRow} .map-thumbs .plan canvas`), 'and its plan beside it, drawn separately');
+  await page.click('#ed-library li.draft > button:first-of-type');
   d = await doc();
   check(d.metadata.id === id && d.metadata.name === 'Draft Edit' && d.classicStructure.tiles.length === 3 && d.classicStructure.tiles[0].surfaces?.floor?.material === 'core.checker', 'opening the draft brings back the painted map with the edit');
   check(await page.evaluate(() => document.getElementById('ed-dirty').classList.contains('on')), 'an opened draft still counts as unsaved');
+
+  // Set thumbnail: frame the editor camera's view and capture it as the map's own picture.
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#ed-thumb-set', { timeout: T(5000) }).catch(() => {});
+  check(await page.evaluate(() => document.querySelector('.ed-map-thumbs .pic')?.classList.contains('none')), 'Map properties: a new map has no picture yet');
+  check(await planDrawn(page, '.ed-map-thumbs .plan canvas'), 'Map properties shows the plan, separate from the picture');
+  await page.evaluate(() => window.__editor.view.focus({ x: 8, y: 0, z: 0 }));
+  await page.click('#ed-thumb-set');
+  check(await page.isVisible('#ed-thumb-frame .ed-thumb-crop'), 'Set thumbnail shows the 16:9 framing guide over the view');
+  await page.click('#ed-thumb-capture');
+  const pic = await page.waitForFunction(() => window.__editor.doc.metadata.thumbnail ?? null, null, { timeout: T(15000) }).then((h) => h.jsonValue(), () => null);
+  check(!!pic && pic.startsWith('data:image/jpeg;base64,') && pic.length > 3000 && pic.length <= 48000, `Capture sets the map's picture: a small JPEG with something in it (${pic?.length ?? 'none'} chars)`);
+  const cam = await page.evaluate(() => window.__editor.doc.metadata.thumbnailCamera);
+  check(cam?.position?.length === 3 && cam?.target?.length === 3, `and records the camera it was taken from (${JSON.stringify(cam)})`);
+  await page.waitForFunction(() => document.querySelector('.ed-map-thumbs .pic img')?.naturalWidth > 0, null, { timeout: T(10000) }).catch(() => {});
+  check(await thumbLoaded(page, '.ed-map-thumbs .pic img'), 'Map properties shows the new picture beside the plan');
+  check(!(await page.$('#ed-thumb-frame')) && !(await page.$('#editor input[type=file][accept*="image"]')), 'the guide closes; there is no image upload anywhere');
+  await page.click('#ed-thumb-clear');
+  check((await doc()).metadata.thumbnail === undefined, 'Clear removes it');
+  await page.keyboard.press('Control+KeyZ');
+  check((await doc()).metadata.thumbnail === pic, 'undo brings it back');
+  // It is kept with the map (the draft store saves the whole document, as Save and Export do).
+  const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
+  check(kept, 'the picture is saved with the map');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
   await page.click('#ed-home');
   await page.click('#ed-quit-discard');
@@ -450,6 +500,30 @@ async function offlineFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  // Map select: each card shows the map's picture and, separately, its plan; the setup panel shows both side by side.
+  await page.setViewportSize({ width: 1400, height: 820 });
+  await page.goto(CLIENT);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.click('#nav-play');
+  await page.waitForSelector('.map-card');
+  const cards = () =>
+    page.$$eval('.map-card', (cs) =>
+      cs.map((c) => ({ map: c.dataset.map, pic: c.querySelector('.map-thumb.pic'), plan: c.querySelector('.map-thumb.plan canvas') })).map((x) => ({ map: x.map, img: !!x.pic?.querySelector('img'), loaded: !!x.pic?.querySelector('img')?.naturalWidth, plan: !!x.plan, inPic: !!x.pic?.querySelector('canvas, .map-thumb') })),
+    );
+  await page.waitForFunction(() => [...document.querySelectorAll('.map-card .map-thumb.pic img')].every((i) => i.complete), null, { timeout: T(20000) }).catch(() => {});
+  const all = await cards();
+  // Built-in maps (maps/*.json; retired ones aren't listed) ship a picture; imported ones show their plan alone.
+  const { readdirSync } = await import('node:fs');
+  const builtIn = new Set(readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)));
+  const missing = all.filter((c) => builtIn.has(c.map) && !c.loaded).map((c) => c.map);
+  check(all.length > 20 && missing.length === 0, `every map card shows its picture (${all.length} cards; missing: ${missing.join(', ') || 'none'})`);
+  check(all.every((c) => c.plan && !c.inPic) && !(await page.$('.shot-top')), 'and its plan as a separate box, nothing composited into the picture');
+  await page.evaluate(() => document.querySelector('.map-card')?.scrollIntoView());
+  await page.waitForTimeout(500);
+  check(await planDrawn(page, '.map-card .map-thumb.plan canvas'), 'the plan is drawn top-down');
+  await page.waitForFunction(() => document.querySelector('.setup-preview .pic img')?.naturalWidth > 0, null, { timeout: T(10000) }).catch(() => {});
+  check((await thumbLoaded(page, '.setup-preview .pic img')) && (await planDrawn(page, '.setup-preview .plan canvas')), 'match setup shows the picture and the plan side by side');
+  await page.setViewportSize({ width: 960, height: 540 });
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const inv = await page.evaluate(() => [...window.__cs.local.inventory.keys()]);

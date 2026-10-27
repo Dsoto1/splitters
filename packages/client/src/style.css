@@ -109,7 +109,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .map-thumb { position: relative; overflow: hidden; background: #0d1322; }
 .map-thumb > img, .map-thumb > canvas { display: block; width: 100%; height: 100%; object-fit: cover; }
 .map-thumb.pic.none { display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(135deg, #0d1322 0 10px, #111a2c 10px 20px); }
-.map-thumb.pic.none span { color: var(--muted); font: 700 10px var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; }
+.map-thumb.pic.none::after { content: 'No picture'; color: var(--muted); font: 700 10px var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; }
 .map-thumb.plan { border: 1px solid var(--line); border-radius: 3px; }
 .map-thumbs { display: flex; gap: 6px; }
 .map-thumbs .map-thumb { flex: none; aspect-ratio: 16 / 9; border: 1px solid var(--line); border-radius: 3px; }

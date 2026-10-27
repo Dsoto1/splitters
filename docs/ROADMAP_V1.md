@@ -139,7 +139,7 @@ sounds (needs new CC0 sounds and a grip pose).
 - ✅ **TDM spawns on maps without team bases now rotate** (Oct 24): you spawn away from enemies, out of their sight, and near your teammates, so each side keeps a working area wherever the fight is. Teammates can also spawn beside a teammate who is out of the fight (Sprint 2 #15).
 - ✅ Interiors: **thoughtful prop placement** (furniture against walls, rooms that read as kitchens/offices) instead of random scatter. Build an interior-dressing helper per room type. (Oct 26: `map/dressing.ts`, 21 room-type recipes placed against walls, in corners and as centre groups, doorways, windows and a 2 m lane between doors kept clear; `m.dress()` in map scripts; "Dress room" and "Dress all bare rooms" in MapMaker. Snowline Offices, Crossroads and Pump Tower dressed; see BUILDING_KIT.md.)
 - Crossfire homage: remake it from the original's layout reference.
-- Map cards: show **one image** per map — a real aerial/player-camera screenshot — and let the user cycle to the grid layout.
+- ✅ Map cards: show **one image** per map — a real aerial/player-camera screenshot — and let the user cycle to the grid layout. (Oct 27: every map has a picture and a separate plan, shown side by side, never composited; automatic pictures chosen by raycast and image scoring so they don't face walls or sky; makers set their own picture in MapMaker with Set thumbnail. See CONTENT_PIPELINE.md, Official maps.)
 
 ### 6b. Imported TimeSplitters maps
 - ✅ Hide them until each one is verified (your call). (Oct 26: only verified maps show, `VISIBLE_IMPORTED_MAPS` in `shared/map/imported.ts`: Clover, Core, Archives, Bunker, Stack; `?imported` lists all 116.)

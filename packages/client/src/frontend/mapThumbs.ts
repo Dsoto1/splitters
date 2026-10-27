@@ -43,9 +43,10 @@ export function mapThumbs(map: MapDocument, shipped: boolean): MapThumbs {
   const plan = box('plan', 'Plan', `${map.metadata.name}: top-down plan (layout, spawns, pickups)`);
   const canvas = document.createElement('canvas');
   plan.append(canvas);
+  // The placeholder's words are drawn by CSS (::after), so lists' text stays the maps' own.
   const none = () => {
     pic.classList.add('none');
-    pic.replaceChildren(Object.assign(document.createElement('span'), { textContent: 'No picture' }));
+    pic.replaceChildren();
   };
   const src = pictureSource(map, shipped);
   if (src) {

@@ -449,6 +449,39 @@ const gunCount = checkLocked(
 );
 console.log(`checked ${textureCount} texture files, ${propCount} props, ${skyCount} skies, ${cityCount} city files, ${packFileCount} style pack files and ${gunCount} gun models`);
 
+// Map pictures (tools/content/capture-map-shots.mjs): one 640×360 JPEG per shipped (not retired) map, within budget, nothing else.
+const SHOTS_DIR = join(ROOT, 'packages/client/public/maps/shots');
+const SHOT_MAX_BYTES = 60 * 1024;
+/** Width and height from a JPEG's start-of-frame marker. */
+function jpegSize(buf) {
+  for (let i = 2; i + 9 < buf.length; ) {
+    if (buf[i] !== 0xff) return null;
+    const marker = buf[i + 1];
+    const len = buf.readUInt16BE(i + 2);
+    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) return { width: buf.readUInt16BE(i + 7), height: buf.readUInt16BE(i + 5) };
+    i += 2 + len;
+  }
+  return null;
+}
+const retiredSrc = readFileSync(join(ROOT, 'packages/shared/src/map/retired.ts'), 'utf8');
+const retiredMaps = new Set([...retiredSrc.slice(retiredSrc.indexOf('new Set([')).matchAll(/'([a-z0-9_]+)'/g)].map((m) => m[1]));
+const shotNames = new Set(readdirSync(join(ROOT, 'maps')).filter((f) => f.endsWith('.json') && !retiredMaps.has(f.slice(0, -5))).map((f) => `${f.slice(0, -5)}.jpg`));
+let shotBytes = 0;
+for (const name of shotNames) {
+  const path = join(SHOTS_DIR, name);
+  if (!existsSync(path)) {
+    problems.push(`maps/shots/${name}: missing (run tools/content/capture-map-shots.mjs)`);
+    continue;
+  }
+  const buf = readFileSync(path);
+  shotBytes += buf.length;
+  const size = jpegSize(buf);
+  if (!size || size.width !== 640 || size.height !== 360) problems.push(`maps/shots/${name}: must be a 640×360 JPEG`);
+  if (buf.length > SHOT_MAX_BYTES) problems.push(`maps/shots/${name}: ${buf.length} bytes exceeds budget ${SHOT_MAX_BYTES}`);
+}
+for (const f of existsSync(SHOTS_DIR) ? readdirSync(SHOTS_DIR) : []) if (!shotNames.has(f)) problems.push(`maps/shots/${f}: not a shipped map's picture`);
+console.log(`checked ${shotNames.size} map pictures (${(shotBytes / 1024).toFixed(0)} KB)`);
+
 const ledgerText = `${JSON.stringify(ledger, null, 2)}\n`;
 if (check) {
   if (!existsSync(LEDGER) || readFileSync(LEDGER, 'utf8') !== ledgerText) problems.push('content/provenance.json is out of date (run pnpm content:build)');

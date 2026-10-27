@@ -140,9 +140,9 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
       z1 = Math.max(z1, b.max[2]);
     }
   }
-  // A boundary drawn well round the built part (open ground beyond a town) would shrink the plan to
-  // a speck: frame what's built and placed instead when it fills much less of the boundary.
-  if (map.bounds) {
+  // A boundary (or terrain) reaching well round the built part (open ground beyond a town) would shrink
+  // the plan to a speck: frame what's built and placed instead when it fills much less of the area.
+  {
     let [bx0, bz0, bx1, bz1] = [Infinity, Infinity, -Infinity, -Infinity];
     const grow = (x: number, z: number) => {
       bx0 = Math.min(bx0, x);
