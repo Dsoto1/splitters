@@ -1,4 +1,4 @@
-import { HOST_BOT_SKILLS, HOST_BOT_STYLES, type ClientMessage, type HostCommand } from '../protocol.ts';
+import { HOST_BOT_SKILLS, HOST_BOT_STYLES, type ClientMessage, type HostCommand, type HostRulesPatch } from '../protocol.ts';
 import { isGameMode } from '../sim/rules.ts';
 import type { PlayerInput } from '../sim/movement.ts';
 
@@ -74,11 +74,35 @@ function parseHostCommand(raw: unknown): HostCommand | null {
     case 'bots': {
       if (o.fill !== undefined && !count(o.fill)) return null;
       if (o.teamSize !== undefined && !count(o.teamSize)) return null;
+      if (o.teamSizes !== undefined && !(Array.isArray(o.teamSizes) && o.teamSizes.length >= 2 && o.teamSizes.length <= 8 && o.teamSizes.every(count))) return null;
       if (o.skill !== undefined && !(HOST_BOT_SKILLS as readonly unknown[]).includes(o.skill)) return null;
       if (o.style !== undefined && !(HOST_BOT_STYLES as readonly unknown[]).includes(o.style)) return null;
-      const cmd = { c: 'bots', fill: o.fill, teamSize: o.teamSize, skill: o.skill, style: o.style } as Extract<HostCommand, { c: 'bots' }>;
-      for (const k of ['fill', 'teamSize', 'skill', 'style'] as const) if (cmd[k] === undefined) delete cmd[k];
+      const cmd = { c: 'bots', fill: o.fill, teamSize: o.teamSize, teamSizes: Array.isArray(o.teamSizes) ? [...(o.teamSizes as number[])] : undefined, skill: o.skill, style: o.style } as Extract<HostCommand, { c: 'bots' }>;
+      for (const k of ['fill', 'teamSize', 'teamSizes', 'skill', 'style'] as const) if (cmd[k] === undefined) delete cmd[k];
       return cmd;
+    }
+    case 'rules': {
+      const r = o.rules;
+      if (typeof r !== 'object' || r === null) return null;
+      const p = r as Record<string, unknown>;
+      const rules: HostRulesPatch = {};
+      if (p.scoreLimit !== undefined) {
+        if (!count(p.scoreLimit)) return null;
+        rules.scoreLimit = p.scoreLimit;
+      }
+      if (p.timeLimitSeconds !== undefined) {
+        if (!(typeof p.timeLimitSeconds === 'number' && Number.isInteger(p.timeLimitSeconds) && p.timeLimitSeconds >= 0 && p.timeLimitSeconds <= 7200)) return null;
+        rules.timeLimitSeconds = p.timeLimitSeconds;
+      }
+      if (p.respawnDelayTicks !== undefined) {
+        if (!count(p.respawnDelayTicks)) return null;
+        rules.respawnDelayTicks = p.respawnDelayTicks;
+      }
+      if (p.friendlyFire !== undefined) {
+        if (p.friendlyFire !== 'off' && p.friendlyFire !== 'half' && p.friendlyFire !== 'on') return null;
+        rules.friendlyFire = p.friendlyFire;
+      }
+      return { c: 'rules', rules };
     }
     case 'map':
       if (typeof o.map !== 'string' || !o.map || o.map.length > 80) return null;

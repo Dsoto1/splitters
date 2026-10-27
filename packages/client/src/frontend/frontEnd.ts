@@ -13,8 +13,21 @@ import {
   isTeamMode,
   LOOK_BIOS,
   MAX_PLAYER_SLOTS,
-  MAX_TEAMS,
   TEAM_PRESETS,
+  SETUP_PRESETS,
+  BIG_MATCH,
+  HUGE_MATCH,
+  isCoopMode,
+  isTwoTeamMode,
+  modeOptions,
+  normalizeSetup,
+  presetPlayers,
+  rulesFromSetup,
+  setupNotes,
+  setupPlayers,
+  setupTeams,
+  type MatchSetup,
+  type TeamAssign,
   getLook,
   mapTeams,
   teamLayoutLabel,
@@ -34,6 +47,8 @@ import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { drawMapPlan } from './mapPlan.ts';
+import { choice, fold as foldEl, infoTip, noteList, settingRow, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
+import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
 import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
@@ -88,62 +103,14 @@ export interface ArcadeMap {
   group?: string;
 }
 
-export interface ArcadeSetup {
-  map: string;
-  mode: GameMode;
-  bots: number;
-  skill: 'easy' | 'normal' | 'hard';
-  scoreLimit: number;
-  minutes: number;
-  /** Team modes: players per team (2–8 teams; Capture the Flag uses the first two); bots fill every team. */
-  teams?: number[];
-  /** Team names and colours by team order (empty entries: the map's). */
-  teamNames?: string[];
-  teamColors?: string[];
-  /** Co-op: play a playlist (scenario chain) instead of just this map. */
-  playlist?: string;
-  /** Team leaders (team modes): on, or the Leader variant (downing a leader scores extra in Team Deathmatch). */
-  leaders?: 'on' | 'vip';
-  /** Small and large characters play differently (false: everyone standard). Absent = on. */
-  sizes?: boolean;
-  /** Quick messages and emotes allowed. Absent = on. */
-  emotes?: boolean;
-  /** How bots play. Absent = mixed (each character its own way). */
-  botStyle?: 'arena' | 'tactical';
-  /** Kill-streak rewards and spawning beside teammates. Absent = on. */
-  killstreaks?: boolean;
-  squadSpawn?: boolean;
-  /** Gravity multiple and fall damage over the map's own (absent: the map's); friendly fire (absent: off). */
-  gravity?: number;
-  fallDamage?: boolean;
-  friendlyFire?: 'half' | 'on';
-  /** Spears only (absent: normal weapons). */
-  spears?: boolean;
-  /** Vehicles take half damage, or none (absent: normal). */
-  vehicleDamage?: 'tough' | 'off';
-  /** Lethality and ballistics (GUNPLAY_SPEC §10, §5; absent: standard). */
-  lethality?: 'arcade' | 'tactical';
-  ballistics?: 'arcade' | 'advanced';
-  /** Fort Wars: build and combat minutes, build/combat cycles and build points per team (absent: the defaults). */
-  fortBuild?: number;
-  fortCombat?: number;
-  fortCycles?: number;
-  fortBudget?: number;
-  /** Discs only: arena discs that knock players off instead of hurting them (absent: normal weapons). */
-  discs?: boolean;
-  /** Classes: everyone picks a class (absent: off), and at most this many per team in one class (absent: no limit). */
-  classes?: boolean;
-  classLimit?: number;
-  /** Race: laps, the vehicle and combat on or off (absent: the track's own). */
-  raceLaps?: number;
-  raceVehicle?: 'kart' | 'speeder' | 'buggy';
-  raceCombat?: boolean;
-}
+/** Play → match setup's settings (saved as `cs.arcade`; older saves load too). */
+export type ArcadeSetup = MatchSetup;
 
 export interface FrontEndHooks {
   openEditor(): void;
   openDesigner(look: string): void;
-  playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill']): void;
+  /** `host`: open a join code for friends as soon as the match starts. */
+  playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill'], host?: boolean): void;
   playOnline(server: string, name: string): void;
   /** Play a scenario chain (maps/playlists): its maps in order, each once the one before is won. */
   playPlaylist(id: string, botFill: number, skill: ArcadeSetup['skill']): void;
@@ -153,10 +120,6 @@ export interface FrontEndHooks {
 
 type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options';
 
-/** Arcade team layouts: MapMaker's, plus the big ones (up to 48 v 48; players joining take bots' places). */
-const ARCADE_TEAM_PRESETS: readonly (readonly number[])[] = [...TEAM_PRESETS, [16, 16], [24, 24], [48, 48]];
-/** Largest team the Arcade sets up (two of these fill MAX_PLAYER_SLOTS). */
-const ARCADE_MAX_TEAM = 48;
 const MODE_LABEL = MODE_LABELS;
 const BASE_RULES = DEFAULT_RULES;
 /** The score limit row per mode: its label and stepper (step, min, max). */
@@ -169,6 +132,21 @@ const SCORE_ROW: Partial<Record<GameMode, { label: string; step: number; min: nu
   'core.bomb': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
   'core.hostage': { label: 'Rounds to win', step: 1, min: 1, max: 15 },
   'core.discs': { label: 'Knock-offs', step: 1, min: 3, max: 50 },
+};
+/** A short line on each mode, under its name in the mode picker. */
+const MODE_LINES: Record<GameMode, string> = {
+  'core.deathmatch': 'Everyone for themselves; most kills wins.',
+  'core.tdm': 'Teams score a point per kill.',
+  'core.ctf': 'Bring the enemy flag home to score.',
+  'core.forts': 'Build a fort, then Capture the Flag.',
+  'core.koth': 'Hold the moving hill to score.',
+  'core.elim': 'Rounds, no respawns: last team standing.',
+  'core.bomb': 'Plant the bomb or defuse it; rounds.',
+  'core.hostage': 'Rescue the hostages or guard them; rounds.',
+  'core.coop': "Your squad against the map's mission.",
+  'core.zombies': 'Hold out against endless zombie waves.',
+  'core.discs': 'Knock rivals into the void with discs.',
+  'core.race': 'Checkpoints and laps, in vehicles.',
 };
 /** One line on each mode, for its (i). */
 const MODE_TIPS: Partial<Record<GameMode, string>> = {
@@ -185,14 +163,6 @@ const MODE_TIPS: Partial<Record<GameMode, string>> = {
   'core.discs': 'Ricochet-style: everyone throws three bouncing discs that come back. A hit knocks you about without hurting; knock someone into the void to score. Power discs (fast, triple, splitting, freeze) lie about the arena.',
   'core.race': 'Everyone starts on the grid in a vehicle: drive the checkpoints in order, lap after lap. First over the line wins. Combat races turn the guns and sideline sentries on.',
 };
-
-/** A small (i) that explains something when hovered or focused (see the tooltip in FrontEnd). */
-function infoTip(text: string): HTMLElement {
-  const i = el('span', { class: 'info', tabIndex: 0, textContent: 'i' });
-  i.dataset.tip = text;
-  i.setAttribute('aria-label', text);
-  return i;
-}
 
 const FAMILY_LABEL = { ranger: 'Ranger', peasant: 'Peasant', athlete: 'Sportswear' } as const;
 
@@ -256,9 +226,17 @@ export class FrontEnd {
     installTooltips();
     this.server = params.get('server') ?? storage('cs.server') ?? `ws://${location.hostname || 'localhost'}:7777`;
     this.look = validLookId(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK);
-    const saved = JSON.parse(storage('cs.arcade') ?? 'null') as ArcadeSetup | null;
+    // The setup used last (this version's or an older one's), if its map is still here.
+    let raw: unknown = null;
+    try {
+      raw = JSON.parse(storage('cs.arcade') ?? 'null');
+    } catch {
+      raw = null;
+    }
+    const savedMap = maps.find((m) => m.key === (raw as { map?: unknown } | null)?.map);
+    const saved = savedMap ? normalizeSetup(raw, savedMap.modes) : null;
     const first = maps.find((m) => m.key === 'sandgate') ?? maps[0]!;
-    this.setup = saved && maps.some((m) => m.key === saved.map) ? saved : { map: first.key, mode: first.modes[0]!, bots: first.bots, skill: 'normal', scoreLimit: BASE_RULES[first.modes[0]!].scoreLimit, minutes: 10 };
+    this.setup = saved ?? { map: first.key, mode: first.modes[0]!, bots: first.bots, skill: 'normal', scoreLimit: BASE_RULES[first.modes[0]!].scoreLimit, minutes: 10 };
     root.replaceChildren(
       this.body,
       this.status,
@@ -401,26 +379,58 @@ export class FrontEnd {
     return listCustomLooks().find((s) => s.id === id)?.name ?? getLook(id).name;
   }
 
-  // ---------------------------------------------------------------- arcade
+  // ---------------------------------------------------------------- match setup (Play)
 
-  /** Scroll position of the map list, kept across redraws of the play screen. */
+  /** Scroll positions of the map list and the setup panel, kept across redraws. */
   private mapScroll = 0;
+  private setupScroll = 0;
   /** Refreshes the game browser while the Online screen is open. */
   private browserTimer?: number;
-  /** The Arcade panel's "More rules" fold is open. */
-  private moreRules = false;
+  /** The match setup's folds that are open (by id). */
+  private readonly folds = new Set<string>(['setup-mode']);
+  /** The setup panel, redrawn on every change (the map list stays). */
+  private setupPanel: HTMLElement | null = null;
+  /** The saved setup loaded last (its name), to show whether the setup still matches it. */
+  private setupName: string | null = lastSetup();
+
+  private currentMap(): ArcadeMap {
+    return this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
+  }
 
   private pickMap(key: string): void {
     const m = this.maps.find((x) => x.key === key);
     if (!m) return;
     const mode = m.modes.includes(this.setup.mode) ? this.setup.mode : m.modes[0]!;
-    this.setup = { ...this.setup, map: key, mode, bots: m.bots, scoreLimit: BASE_RULES[mode].scoreLimit };
+    this.setup = { ...this.setup, map: key, mode, bots: m.bots, scoreLimit: mode === this.setup.mode ? this.setup.scoreLimit : BASE_RULES[mode].scoreLimit };
+  }
+
+  /** Change the setup, remember it and redraw the panel. */
+  private change(f: (s: ArcadeSetup) => void): void {
+    f(this.setup);
+    this.saveSetup();
+    this.refreshSetup();
+  }
+
+  private refreshSetup(): void {
+    if (!this.setupPanel?.isConnected) return void this.go('play');
+    this.setupScroll = this.setupPanel.querySelector('.setup-body')?.scrollTop ?? this.setupScroll;
+    // Keep the keyboard where it was (a stepper's +, a tab) across the redraw.
+    const focus = document.activeElement?.id;
+    this.fillSetup(this.setupPanel);
+    if (focus) (document.getElementById(focus) as HTMLElement | null)?.focus({ preventScroll: true });
+  }
+
+  private setMode(m: GameMode): void {
+    this.change((s) => {
+      s.mode = m;
+      s.scoreLimit = BASE_RULES[m].scoreLimit;
+    });
   }
 
   private arcade(): HTMLElement {
-    const current = this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
+    const current = this.currentMap();
     const cards = el('div', { class: 'map-cards' });
-    // Picking a map redraws this screen: keep the list where it was instead of jumping to the top.
+    // Picking a map redraws the setup only: the list stays where it was.
     cards.addEventListener('scroll', () => (this.mapScroll = cards.scrollTop), { passive: true });
     requestAnimationFrame(() => (cards.scrollTop = this.mapScroll));
     // Grouped maps (many, e.g. imported ones) draw their plans only once they scroll into view.
@@ -449,203 +459,348 @@ export class FrontEnd {
       card.dataset.map = m.key;
       card.addEventListener('click', () => {
         this.pickMap(m.key);
-        this.go('play');
+        this.saveSetup();
+        cards.querySelectorAll('.map-card.on').forEach((c) => c.classList.remove('on'));
+        card.classList.add('on');
+        this.setupScroll = 0;
+        this.refreshSetup();
       });
       cards.append(card);
       if (m.group && lazy) lazy.observe(card);
       else requestAnimationFrame(pic.draw);
     }
-    const stepper = (value: number, step: number, min: number, max: number, set: (v: number) => void, fmt = (v: number) => String(v)) => {
-      const minus = el('button', { textContent: '−' });
-      const plus = el('button', { textContent: '+' });
-      minus.addEventListener('click', () => (set(Math.max(min, value - step)), this.saveSetup(), this.go('play')));
-      plus.addEventListener('click', () => (set(Math.min(max, value + step)), this.saveSetup(), this.go('play')));
-      return el('div', { class: 'stepper' }, minus, el('b', { textContent: fmt(value) }), plus);
-    };
-    const tabs = (options: readonly [string, string][], value: string, set: (v: string) => void) =>
-      el(
-        'div',
-        { class: 'tabs' },
-        ...options.map(([v, label]) => {
-          const b = el('button', { class: `tab${v === value ? ' on' : ''}`, textContent: label });
-          b.addEventListener('click', () => (set(v), this.saveSetup(), this.go('play')));
-          return b;
-        }),
-      );
+    const panel = el('div', { class: 'setup panel', id: 'match-setup' });
+    this.setupPanel = panel;
+    this.fillSetup(panel);
+    return el('div', { class: 'screen play' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Match <em>Setup</em>' })), el('div', { class: 'arcade' }, cards, panel));
+  }
+
+  /** The setup panel: map preview, the core settings (mode, players, bots), folded extras, saved setups, Start and Host. */
+  private fillSetup(panel: HTMLElement): void {
+    const current = this.currentMap();
+    const map = current.map;
     const s = this.setup;
-    const coop = s.mode === 'core.coop' || s.mode === 'core.zombies';
-    const twoTeams = s.mode === 'core.ctf' || s.mode === 'core.forts' || s.mode === 'core.bomb' || s.mode === 'core.hostage';
+    const team = isTeamMode(s.mode);
+    const coop = isCoopMode(s.mode);
+    const two = isTwoTeamMode(s.mode);
     const forts = s.mode === 'core.forts';
-    const start = el('button', { class: 'primary go', id: 'arcade-start' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
-    start.addEventListener('click', () => this.start());
-    // A setting row: its name with an (i) explaining it on hover, then the control.
-    const row = (label: string, tip: string | null, control: HTMLElement) => el('div', { class: 'row' }, el('span', { class: 'row-label' }, label, ...(tip ? [infoTip(tip)] : [])), control);
-    // Extra rules sit folded away; the fold says how many differ from the defaults.
-    const extras: { label: string; tip: string; changed: boolean; value: string; control: HTMLElement }[] = [
-      { label: 'Weapons', tip: 'Spears only: everyone holds one throwing spear. One hit kills; go and fetch it back. Discs only: everyone throws bouncing arena discs that knock players about without hurting (Disc Arena rules: knock them into the void). No other weapons, ammo or grenades either way.', changed: !!s.spears || !!s.discs, value: s.discs ? 'Discs only' : 'Spears only', control: tabs([['normal', 'Normal'], ['spears', 'Spears only'], ['discs', 'Discs only']], s.spears ? 'spears' : s.discs ? 'discs' : 'normal', (v) => ((this.setup.spears = v === 'spears' || undefined), (this.setup.discs = v === 'discs' || undefined))) },
-      { label: 'Classes', tip: 'Everyone picks one of nine classes (L or , in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (G: sentry that heals and restocks), Medic (medi-beam, G: overcharge), Marksman and Shade (G: cloak, backstabs). Limits cap how many on a team play the same class. Not with spears or discs only.', changed: !!s.classes, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: tabs([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => ((this.setup.classes = v !== 'off' || undefined), (this.setup.classLimit = v === '1' || v === '2' ? Number(v) : undefined))) },
-      { label: 'Bot style', tip: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', changed: !!s.botStyle, value: `${s.botStyle === 'arena' ? 'Arena' : 'Tactical'} bots`, control: tabs([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => (this.setup.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical'))) },
-      { label: 'Character sizes', tip: 'Matter: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. All equal: everyone plays at standard size.', changed: s.sizes === false, value: 'Equal sizes', control: tabs([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => (this.setup.sizes = v === 'on')) },
-      { label: 'Gravity', tip: "Map: whatever the map was built with (normal unless its maker changed it).", changed: s.gravity !== undefined, value: `${s.gravity === 0.4 ? 'Low' : s.gravity === 1.6 ? 'Heavy' : 'Normal'} gravity`, control: tabs([['map', 'Map'], ['0.4', 'Low'], ['1', 'Normal'], ['1.6', 'Heavy']], s.gravity === undefined ? 'map' : String(s.gravity), (v) => (this.setup.gravity = v === 'map' ? undefined : Number(v))) },
-      { label: 'Fall damage', tip: "Drops past about 5 m hurt; about 16 m kills. Map: the map's own setting.", changed: s.fallDamage !== undefined, value: `Fall damage ${s.fallDamage ? 'on' : 'off'}`, control: tabs([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => (this.setup.fallDamage = v === 'map' ? undefined : v === 'on')) },
-      { label: 'Friendly fire', tip: 'Team modes and co-op: whether your shots and blasts hurt teammates. A team kill earns nothing.', changed: !!s.friendlyFire, value: `Friendly fire ${s.friendlyFire === 'half' ? 'half' : 'full'}`, control: tabs([['off', 'Off'], ['half', 'Half'], ['on', 'Full']], s.friendlyFire ?? 'off', (v) => (this.setup.friendlyFire = v === 'off' ? undefined : (v as 'half' | 'on'))) },
-      { label: 'Vehicle damage', tip: 'Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can\'t be destroyed (except by falling off the map). Turrets and sentries always take full damage.', changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: tabs([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => (this.setup.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off'))) },
-      { label: 'Lethality', tip: 'How quickly fights end, for every weapon alike. Arcade: everyone soaks about 40% more (longer fights, tracking matters). Standard: the official balance. Tactical: everyone soaks about 30% less (very lethal).', changed: !!s.lethality, value: `${s.lethality === 'arcade' ? 'Arcade' : 'Tactical'} lethality`, control: tabs([['arcade', 'Arcade'], ['standard', 'Standard'], ['tactical', 'Tactical']], s.lethality ?? 'standard', (v) => (this.setup.lethality = v === 'standard' ? undefined : (v as 'arcade' | 'tactical'))) },
-      { label: 'Ballistics', tip: 'How much bullets behave like projectiles. Arcade: faster bullets that barely drop and don\'t pass through cover. Standard: the official default (lead and drop matter at long range). Advanced: slower bullets that drop more: lead and hold over further.', changed: !!s.ballistics, value: `${s.ballistics === 'arcade' ? 'Arcade' : 'Advanced'} ballistics`, control: tabs([['arcade', 'Arcade'], ['standard', 'Standard'], ['advanced', 'Advanced']], s.ballistics ?? 'standard', (v) => (this.setup.ballistics = v === 'standard' ? undefined : (v as 'arcade' | 'advanced'))) },
-      { label: 'Kill streaks', tip: 'Rewards for kills without dying: 3 UAV, 5 Supply Pulse (heal + ammo for nearby teammates), 7 Counter-UAV (jams enemy minimaps), 9 Airstrike.', changed: s.killstreaks === false, value: 'No kill streaks', control: tabs([['on', 'On'], ['off', 'Off']], s.killstreaks === false ? 'off' : 'on', (v) => (this.setup.killstreaks = v === 'on')) },
-      { label: 'Spawn on teammates', tip: 'Team modes: respawn beside a teammate who is out of the fight, when one is free.', changed: s.squadSpawn === false, value: 'No squad spawns', control: tabs([['on', 'On'], ['off', 'Off']], s.squadSpawn === false ? 'off' : 'on', (v) => (this.setup.squadSpawn = v === 'on')) },
-      { label: 'Team leaders', tip: 'Team modes: each team has a leader (you lead yours; bots lead the others), marked with a gold star. The leader\'s "Follow me!" and "Hold here!" (B, then 1 or 7) order every bot on the team, wherever they are. Leader hunt: in Team Deathmatch, downing the enemy leader scores 3 extra.', changed: !!s.leaders, value: s.leaders === 'vip' ? 'Leader hunt' : 'Team leaders', control: tabs([['off', 'Off'], ['on', 'On'], ['vip', 'Leader hunt']], s.leaders ?? 'off', (v) => (this.setup.leaders = v === 'off' ? undefined : (v as 'on' | 'vip'))) },
-      { label: 'Emotes & messages', tip: 'Quick messages (B, then 1-7; 1 "Follow me!" and 7 "Hold here!" also order your team\'s bots), the dance emote (N). Pings (T) always work.', changed: s.emotes === false, value: 'No emotes', control: tabs([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => (this.setup.emotes = v === 'on')) },
-    ];
-    const changed = extras.filter((x) => x.changed);
-    const more = el('details', { class: 'setup-more' }) as HTMLDetailsElement;
-    more.open = this.moreRules;
-    more.addEventListener('toggle', () => (this.moreRules = more.open));
-    const reset = el('button', { class: 'link', textContent: 'Reset', title: 'Back to the standard rules' });
-    reset.hidden = !changed.length;
-    reset.addEventListener('click', (e) => {
-      e.preventDefault();
-      for (const k of ['spears', 'discs', 'classes', 'classLimit', 'botStyle', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'vehicleDamage', 'leaders', 'lethality', 'ballistics'] as const) delete this.setup[k];
+    const race = s.mode === 'core.race';
+    const players = setupPlayers(s, map);
+    const fold = (id: string, title: string, badge: string | undefined, ...children: HTMLElement[]) =>
+      foldEl({ id, title, badge, open: this.folds.has(id), onToggle: (open) => (open ? this.folds.add(id) : this.folds.delete(id)) }, ...children);
+
+    // ---- header: the map's picture and top-down plan, name, what you're about to play
+    const shot = el('img', { className: 'setup-shot', alt: '' });
+    shot.addEventListener('error', () => shot.remove());
+    if (!current.group) shot.src = `${import.meta.env.BASE_URL}maps/shots/${map.metadata.id}-view.jpg`;
+    else shot.remove();
+    const plan = el('canvas', { className: 'setup-plan-canvas', title: 'Top-down plan' });
+    requestAnimationFrame(() => drawMapPlan(plan, map));
+    const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.map.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
+    mapSelect.addEventListener('change', () => {
+      this.pickMap(mapSelect.value);
       this.saveSetup();
+      this.setupScroll = 0;
       this.go('play');
     });
-    more.append(
-      el('summary', {}, el('span', { textContent: 'More rules' }), el('small', { textContent: changed.length ? `${changed.length} changed` : 'standard' }), reset),
-      ...extras.map((x) => row(x.label, x.tip, x.control)),
-    );
-    const players = isTeamMode(s.mode) ? this.teamSizes(current.map, twoTeams).reduce((a, b) => a + b, 0) : s.bots + 1;
-    const modeTabs = el(
+    const about = [map.metadata.description, map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(map.metadata.author) ? `Map by ${map.metadata.author}` : '', `Made for ${map.metadata.recommendedPlayers.min}–${map.metadata.recommendedPlayers.max} players; ${map.entities.filter((e) => e.kind === 'spawn').length} spawn points.`].filter(Boolean).join('\n\n');
+    const summary = `${MODE_LABEL[s.mode]} · ${team ? `${setupTeams(s, map).join('v')} · ` : ''}${players} player${players === 1 ? '' : 's'}${coop ? '' : forts ? ` · ${s.fortCycles ?? 1} × (${s.fortBuild ?? 2.5} + ${s.fortCombat ?? 5} min)` : ` · ${s.minutes ? `${s.minutes} min` : 'no time limit'}`}`;
+    const head = el(
       'div',
-      { class: 'mode-pick' },
+      { class: 'setup-head' },
+      el('div', { class: 'setup-preview' }, shot, plan),
+      el('div', { class: 'setup-title' }, el('small', { textContent: 'Map' }), el('h3', {}, map.metadata.name, infoTip(about)), ...inspired(current.key), mapSelect, el('p', { class: 'setup-sub', id: 'setup-summary', textContent: summary })),
+    );
+
+    // ---- mode: the map's modes with a line each; the rest greyed with why
+    const options = modeOptions(map, current.modes);
+    const modeChips = el(
+      'div',
+      { class: 'mode-pick', id: 'arcade-modes' },
       ...current.modes.map((m) => {
-        const b = el('button', { class: `mode-chip${m === s.mode ? ' on' : ''}` }, el('b', { textContent: MODE_LABEL[m] }), infoTip(MODE_TIPS[m] ?? MODE_LABEL[m]));
-        b.addEventListener('click', () => {
-          this.setup.mode = m;
-          this.setup.scoreLimit = BASE_RULES[m].scoreLimit;
-          this.saveSetup();
-          this.go('play');
-        });
+        const b = el('button', { type: 'button', class: `mode-chip${m === s.mode ? ' on' : ''}` }, el('b', { textContent: MODE_LABEL[m] }), el('small', { textContent: MODE_LINES[m] }));
+        b.dataset.mode = m;
+        b.dataset.tip = MODE_TIPS[m] ?? MODE_LABEL[m];
+        b.addEventListener('click', () => m !== s.mode && this.setMode(m));
         return b;
       }),
     );
-    const about = [current.map.metadata.description, current.map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(current.map.metadata.author) ? `Map by ${current.map.metadata.author}` : ''].filter(Boolean).join('\n\n');
-    const setupPic = mapPicture(current.map, 'setup-plan', true);
-    const plan = setupPic.el;
-    requestAnimationFrame(setupPic.draw);
-    const panel = el(
+    const off = options.filter((o) => !o.ok);
+    const unavailable = off.length
+      ? [el('div', { class: 'mode-off' }, el('span', { textContent: 'Not on this map:' }), ...off.map((o) => {
+          const t = el('span', { class: 'mode-tag-off', tabIndex: 0, textContent: MODE_LABEL[o.mode] });
+          t.dataset.tip = o.reason ?? '';
+          t.dataset.mode = o.mode;
+          t.setAttribute('aria-label', `${MODE_LABEL[o.mode]}: ${o.reason}`);
+          return t;
+        }))]
+      : [];
+
+    // ---- players: a quick preset, then the teams (or the player count)
+    const quick = this.quickSetup(current);
+    const playerRows: HTMLElement[] = [quick];
+    if (team) {
+      const sizes = setupTeams(s, map);
+      const sides = mapTeams(map, sizes.length);
+      const assign = s.assign ?? 'balanced';
+      const you = assign === 'fixed' ? Math.min(sizes.length - 1, s.playerTeam ?? 0) : assign === 'balanced' ? 0 : null;
+      playerRows.push(
+        settingRow(
+          'Your team',
+          'Balanced: people spread evenly over the teams (they usually outplay bots), bots fill the rest; offline you start on the first team. Random: a random team with room. Fixed: the team you pick (drag "You" or press Join).',
+          choice<TeamAssign>([['balanced', 'Balanced'], ['random', 'Random'], ['fixed', 'Fixed']], assign, (v) => this.change((x) => {
+            x.assign = v === 'balanced' ? undefined : v;
+            if (v === 'fixed') x.playerTeam = x.playerTeam ?? 0;
+          }), 'arcade-assign'),
+        ),
+        teamEditor({
+          id: 'arcade',
+          state: { sizes, names: sizes.map((_, i) => s.teamNames?.[i] || sides[i]!.name), colors: sizes.map((_, i) => s.teamColors?.[i] || sides[i]!.color), you },
+          countLocked: two ? `${MODE_LABEL[s.mode]} is always two teams.` : null,
+          youLabel: 'You',
+          onChange: (next) => this.change((x) => {
+            x.teams = next.sizes;
+            // Only names and colours changed from the map's are kept.
+            x.teamNames = next.names.map((n, i) => (n && n !== sides[i]?.name ? n : ''));
+            x.teamColors = next.colors.map((c, i) => (c && c !== sides[i]?.color ? c : ''));
+            if (!x.teamNames.some(Boolean)) delete x.teamNames;
+            if (!x.teamColors.some(Boolean)) delete x.teamColors;
+            if (next.you !== you && next.you !== null) {
+              x.assign = 'fixed';
+              x.playerTeam = next.you;
+            }
+          }),
+        }),
+      );
+    } else {
+      playerRows.push(settingRow(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper({ value: s.bots, min: 0, max: MAX_PLAYER_SLOTS - 1, id: 'arcade-bots', label: coop ? 'squadmates' : 'bots', onChange: (v) => this.change((x) => (x.bots = v)) })));
+      playerRows.push(el('p', { class: 'setup-hint', textContent: `You + ${s.bots} bot${s.bots === 1 ? '' : 's'} = ${players} player${players === 1 ? '' : 's'}${coop ? ' on your side' : ''}` }));
+    }
+    if (s.mode === 'core.coop' && PLAYLISTS.length) {
+      playerRows.push(settingRow('Playlist', `Play a chain of co-op maps: win one and you go on to the next${PLAYLISTS.map((p) => `\n\n${p.name} (${p.maps.length} maps): ${p.description}`).join('')}`, choice([['', 'Just this map'], ...PLAYLISTS.map((p): ChoiceOption<string> => [p.id, `${p.name} (${p.maps.length})`])], s.playlist ?? '', (v) => this.change((x) => (x.playlist = v || undefined)))));
+    }
+    const notes = setupNotes(s, map);
+
+    // ---- extras, folded: rules, bots, arsenal, the mode's own settings, performance
+    const scoreRow = SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 };
+    const timeRow = settingRow('Time limit', 'When time runs out the highest score (or the race leader) wins. ∞: no limit.', stepper({ value: s.minutes, min: 0, max: 60, id: 'arcade-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => this.change((x) => (x.minutes = v)) }), { disabled: forts ? 'Fort Wars ends after its last combat phase.' : coop ? 'Co-op and Zombies end through the mission.' : null });
+    const noTeams = team ? null : `No teams in ${MODE_LABEL[s.mode]}.`;
+    const respawnDefault = Math.round(BASE_RULES[s.mode].respawnDelayTicks / 60);
+    const extras: { id: string; label: string; tip: string; changed: boolean; value: string; control: HTMLElement; disabled?: string | null }[] = [
+      { id: 'ff', label: 'Friendly fire', tip: 'Team modes and co-op: whether your shots and blasts hurt teammates. A team kill earns nothing.', changed: !!s.friendlyFire, value: `Friendly fire ${s.friendlyFire === 'half' ? 'half' : 'full'}`, control: choice([['off', 'Off'], ['half', 'Half'], ['on', 'Full']], s.friendlyFire ?? 'off', (v) => this.change((x) => (x.friendlyFire = v === 'off' ? undefined : (v as 'half' | 'on')))), disabled: team || coop ? null : `No teammates in ${MODE_LABEL[s.mode]}.` },
+      { id: 'respawn', label: 'Respawn delay', tip: `Seconds before you are back in. Rounds modes (Elimination, Bomb, Hostage) and Zombies wait for the next round or wave instead. Default here: ${respawnDefault} s.`, changed: s.respawn !== undefined, value: `Respawn ${s.respawn} s`, control: stepper({ value: s.respawn ?? respawnDefault, min: 0, max: 30, id: 'arcade-respawn', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.respawn = v === respawnDefault ? undefined : v)) }) },
+      { id: 'leaders', label: 'Team leaders', tip: 'Team modes: each team has a leader (you lead yours; bots lead the others), marked with a gold star. The leader\'s "Follow me!" and "Hold here!" (B, then 1 or 7) order every bot on the team, wherever they are. Leader hunt: in Team Deathmatch, downing the enemy leader scores 3 extra.', changed: !!s.leaders && team, value: s.leaders === 'vip' ? 'Leader hunt' : 'Team leaders', control: choice([['off', 'Off'], ['on', 'On'], ['vip', 'Leader hunt', s.mode === 'core.tdm' ? null : 'Leader hunt is a Team Deathmatch variant.']], s.leaders ?? 'off', (v) => this.change((x) => (x.leaders = v === 'off' ? undefined : (v as 'on' | 'vip')))), disabled: noTeams },
+      { id: 'squad', label: 'Spawn on teammates', tip: 'Team modes: respawn beside a teammate who is out of the fight, when one is free.', changed: s.squadSpawn === false && team, value: 'No squad spawns', control: choice([['on', 'On'], ['off', 'Off']], s.squadSpawn === false ? 'off' : 'on', (v) => this.change((x) => (x.squadSpawn = v === 'on'))), disabled: noTeams },
+      { id: 'streaks', label: 'Kill streaks', tip: 'Rewards for kills without dying: 3 UAV, 5 Supply Pulse (heal + ammo for nearby teammates), 7 Counter-UAV (jams enemy minimaps), 9 Airstrike.', changed: s.killstreaks === false, value: 'No kill streaks', control: choice([['on', 'On'], ['off', 'Off']], s.killstreaks === false ? 'off' : 'on', (v) => this.change((x) => (x.killstreaks = v === 'on'))) },
+      { id: 'sizes', label: 'Character sizes', tip: 'Matter: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. All equal: everyone plays at standard size.', changed: s.sizes === false, value: 'Equal sizes', control: choice([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => this.change((x) => (x.sizes = v === 'on'))) },
+      { id: 'gravity', label: 'Gravity', tip: 'Map: whatever the map was built with (normal unless its maker changed it).', changed: s.gravity !== undefined, value: `${s.gravity === 0.4 ? 'Low' : s.gravity === 1.6 ? 'Heavy' : 'Normal'} gravity`, control: choice([['map', 'Map'], ['0.4', 'Low'], ['1', 'Normal'], ['1.6', 'Heavy']], s.gravity === undefined ? 'map' : String(s.gravity), (v) => this.change((x) => (x.gravity = v === 'map' ? undefined : Number(v)))) },
+      { id: 'fall', label: 'Fall damage', tip: "Drops past about 5 m hurt; about 16 m kills. Map: the map's own setting.", changed: s.fallDamage !== undefined, value: `Fall damage ${s.fallDamage ? 'on' : 'off'}`, control: choice([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => this.change((x) => (x.fallDamage = v === 'map' ? undefined : v === 'on'))) },
+      { id: 'lethality', label: 'Lethality', tip: 'How quickly fights end, for every weapon alike. Arcade: everyone soaks about 40% more (longer fights, tracking matters). Standard: the official balance. Tactical: everyone soaks about 30% less (very lethal).', changed: !!s.lethality, value: `${s.lethality === 'arcade' ? 'Arcade' : 'Tactical'} lethality`, control: choice([['arcade', 'Arcade'], ['standard', 'Standard'], ['tactical', 'Tactical']], s.lethality ?? 'standard', (v) => this.change((x) => (x.lethality = v === 'standard' ? undefined : (v as 'arcade' | 'tactical')))) },
+      { id: 'ballistics', label: 'Ballistics', tip: "How much bullets behave like projectiles. Arcade: faster bullets that barely drop and don't pass through cover. Standard: the official default (lead and drop matter at long range). Advanced: slower bullets that drop more: lead and hold over further.", changed: !!s.ballistics, value: `${s.ballistics === 'arcade' ? 'Arcade' : 'Advanced'} ballistics`, control: choice([['arcade', 'Arcade'], ['standard', 'Standard'], ['advanced', 'Advanced']], s.ballistics ?? 'standard', (v) => this.change((x) => (x.ballistics = v === 'standard' ? undefined : (v as 'arcade' | 'advanced')))) },
+      { id: 'emotes', label: 'Emotes & messages', tip: 'Quick messages (B, then 1-7; 1 "Follow me!" and 7 "Hold here!" also order your team\'s bots), the dance emote (N). Pings (T) always work.', changed: s.emotes === false, value: 'No emotes', control: choice([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => this.change((x) => (x.emotes = v === 'on'))) },
+    ];
+    const restricted = s.spears ? 'Spears only' : s.discs ? 'Discs only' : null;
+    const arsenal: typeof extras = [
+      { id: 'weapons', label: 'Weapons & pickups', tip: 'Normal: the map\'s weapons, ammo and grenades lie about. Spears only: everyone holds one throwing spear (one hit kills; go and fetch it back). Discs only: everyone throws bouncing arena discs that knock players about without hurting (Disc Arena rules). No weapon, ammo or grenade pickups either way.', changed: !!s.spears || !!s.discs, value: s.discs ? 'Discs only' : 'Spears only', control: choice([['normal', 'Normal'], ['spears', 'Spears only'], ['discs', 'Discs only']], s.spears ? 'spears' : s.discs ? 'discs' : 'normal', (v) => this.change((x) => ((x.spears = v === 'spears' || undefined), (x.discs = v === 'discs' || undefined)))) },
+      { id: 'classes', label: 'Classes', tip: 'Everyone picks one of nine classes (L or , in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (G: sentry that heals and restocks), Medic (medi-beam, G: overcharge), Marksman and Shade (G: cloak, backstabs). Limits cap how many on a team play the same class.', changed: !!s.classes && !restricted, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: choice([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => this.change((x) => ((x.classes = v !== 'off' || undefined), (x.classLimit = v === '1' || v === '2' ? Number(v) : undefined)))), disabled: restricted ? `Classes don't mix with ${restricted.toLowerCase()}.` : null },
+      { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || race ? null : 'This map has no vehicles.' },
+    ];
+    const bots: typeof extras = [
+      { id: 'style', label: 'Bot style', tip: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', changed: !!s.botStyle, value: `${s.botStyle === 'arena' ? 'Arena' : 'Tactical'} bots`, control: choice([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => this.change((x) => (x.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical'))), 'arcade-style') },
+    ];
+    const rowOf = (x: (typeof extras)[number]) => settingRow(x.label, x.tip, x.control, { disabled: x.disabled });
+    const live = (xs: typeof extras) => xs.filter((x) => x.changed && !x.disabled);
+    const changed = [...live(extras), ...live(arsenal), ...live(bots)];
+    const reset = el('button', { type: 'button', class: 'link', textContent: 'Reset', title: 'Back to the standard rules' });
+    reset.hidden = !changed.length;
+    reset.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.change((x) => {
+        for (const k of ['spears', 'discs', 'classes', 'classLimit', 'botStyle', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+      });
+    });
+    const count = (xs: typeof extras) => {
+      const n = live(xs).length;
+      return n ? `${n} changed` : 'standard';
+    };
+    const toWin = race
+      ? []
+      : [settingRow(scoreRow.label, coop ? 'Co-op and Zombies end through the mission.' : 'The match ends when someone reaches this.', stepper({ value: s.scoreLimit, min: scoreRow.min, max: scoreRow.max, step: scoreRow.step, id: 'arcade-score', onChange: (v) => this.change((x) => (x.scoreLimit = v)) }), { disabled: coop ? `${MODE_LABEL[s.mode]} ends through the mission, not a score.` : null })];
+    const rulesFold = fold('setup-rules', 'Rules', count(extras), ...toWin, timeRow, ...extras.map(rowOf));
+    rulesFold.querySelector('summary')!.append(reset);
+    const sizes = team ? setupTeams(s, map) : [];
+    const perTeam = team
+      ? [el('p', { class: 'setup-hint', textContent: `Bots per team: ${mapTeams(map, sizes.length).map((t, i) => `${s.teamNames?.[i] || t.name} ${sizes[i]! - ((s.assign === 'fixed' ? Math.min(sizes.length - 1, s.playerTeam ?? 0) : 0) === i && s.assign !== 'random' ? 1 : 0)}`).join(' · ')}${s.assign === 'random' ? ' (one less wherever you land)' : ''}. Move bots by dragging their pips between teams.` })]
+      : [];
+    const modeRows: HTMLElement[] = [];
+    if (forts) {
+      modeRows.push(
+        settingRow('Build phase', 'Minutes to build before the barrier drops.', stepper({ value: s.fortBuild ?? 2.5, min: 1, max: 6, step: 0.5, id: 'arcade-fort-build', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => (x.fortBuild = v)) })),
+        settingRow('Combat phase', 'Minutes of Capture the Flag after each build phase.', stepper({ value: s.fortCombat ?? 5, min: 2, max: 20, id: 'arcade-fort-combat', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => (x.fortCombat = v)) })),
+        settingRow('Cycles', 'Build-then-fight rounds before the match ends. Pieces stand until they are broken; each build phase you can rebuild with the points they cost.', stepper({ value: s.fortCycles ?? 1, min: 1, max: 5, id: 'arcade-fort-cycles', onChange: (v) => this.change((x) => (x.fortCycles = v)) })),
+        settingRow('Build points', "Each team's budget: a block costs 2, a wall 4, a metal wall 8.", stepper({ value: s.fortBudget ?? 420, min: 100, max: 800, step: 20, id: 'arcade-fort-budget', onChange: (v) => this.change((x) => (x.fortBudget = v)) })),
+      );
+    }
+    if (s.mode === 'core.ctf' || forts) modeRows.push(settingRow('Flag return', 'Seconds a dropped flag lies before it goes home on its own.', stepper({ value: s.flagReturn ?? 30, min: 5, max: 120, step: 5, id: 'arcade-flag-return', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.flagReturn = v === 30 ? undefined : v)) })));
+    if (s.mode === 'core.koth') modeRows.push(settingRow('Hill moves', 'Seconds before the hill moves to the next spot.', stepper({ value: s.hill ?? 60, min: 15, max: 300, step: 15, id: 'arcade-hill', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.hill = v === 60 ? undefined : v)) })));
+    if (race) {
+      modeRows.push(
+        settingRow('Laps', 'Laps of the circuit (a point-to-point track is always one run).', stepper({ value: s.raceLaps ?? map.track?.laps ?? 3, min: 1, max: 10, id: 'arcade-laps', onChange: (v) => this.change((x) => (x.raceLaps = v)) })),
+        settingRow('Vehicle', "What everyone races in. Map: the track's own choice.", choice([['map', 'Map'], ['kart', 'Go-Kart'], ['speeder', 'Speeder'], ['buggy', 'Buggy']], s.raceVehicle ?? 'map', (v) => this.change((x) => (x.raceVehicle = v === 'map' ? undefined : (v as ArcadeSetup['raceVehicle']))))),
+        settingRow('Combat', 'Combat race: weapons and vehicle guns are live and the sentries by the track shoot. Clean: nobody can hurt anybody.', choice([['map', 'Map'], ['off', 'Clean'], ['on', 'Combat']], s.raceCombat === undefined ? 'map' : s.raceCombat ? 'on' : 'off', (v) => this.change((x) => (x.raceCombat = v === 'map' ? undefined : v === 'on')))),
+      );
+    }
+    const perf = players > BIG_MATCH
+      ? [fold('setup-perf', 'Performance', players > HUGE_MATCH ? 'very big match' : 'big match',
+          el('p', { class: 'setup-hint', textContent: `${players} players. Every bot thinks on your computer: past ${BIG_MATCH}, idle bots think every other tick. If it stutters: Low graphics, a lower render scale (Options), fewer bots, or Classes and vehicles off.` }),
+          settingRow('Graphics', 'Low: no shadows or post effects, the fastest. Saved for every match (Options has the rest).', choice(GRAPHICS_QUALITIES.map((q): ChoiceOption<GraphicsQuality> => [q, q[0]!.toUpperCase() + q.slice(1)]), loadGraphicsQuality(), (v) => {
+            saveGraphicsQuality(v);
+            this.refreshSetup();
+          }, 'arcade-graphics')))]
+      : [];
+
+    // ---- saved setups
+    const saved = listSetups();
+    const pick = el('select', { id: 'setup-saved-list', title: 'Saved setups' }, el('option', { value: '', textContent: saved.length ? 'Load a saved setup…' : 'No saved setups yet' }), ...saved.map((x) => el('option', { value: x.name, textContent: x.name, selected: x.name === this.setupName })));
+    pick.addEventListener('change', () => pick.value && this.loadSaved(pick.value));
+    const nameIn = el('input', { id: 'setup-save-name', placeholder: 'Name this setup', maxLength: 40, value: this.setupName ?? '' });
+    const save = el('button', { type: 'button', id: 'setup-save', textContent: 'Save' });
+    const del = el('button', { type: 'button', id: 'setup-delete', class: 'link', textContent: 'Delete', disabled: !this.setupName || !saved.some((x) => x.name === this.setupName), title: 'Delete the selected saved setup' });
+    save.addEventListener('click', () => {
+      const name = nameIn.value.trim() || `${map.metadata.name} ${MODE_LABEL[s.mode]}`;
+      if (!saveSetupAs(name, this.setup)) return this.setStatus("Couldn't save: this browser isn't keeping data for the game.");
+      this.setupName = name;
+      this.setStatus('');
+      this.refreshSetup();
+    });
+    nameIn.addEventListener('keydown', (e) => e.key === 'Enter' && (e.preventDefault(), save.click()));
+    del.addEventListener('click', () => {
+      if (!this.setupName) return;
+      deleteSetup(this.setupName);
+      this.setupName = null;
+      this.refreshSetup();
+    });
+    const match = saved.find((x) => x.name === this.setupName);
+    const same = !!match && JSON.stringify(match.setup) === JSON.stringify(this.setup);
+    const savedFold = fold('setup-saved', 'Saved setups', this.setupName ? `${this.setupName}${same ? '' : ' (changed)'}` : `${saved.length} saved`, el('div', { class: 'saved-row' }, pick, del), el('div', { class: 'saved-row' }, nameIn, save));
+
+    const body = el(
       'div',
-      { class: 'setup panel' },
-      el('div', { class: 'setup-head' }, plan, el('div', {}, el('small', { textContent: 'Map' }), el('h3', {}, current.map.metadata.name, ...(about ? [infoTip(about)] : [])), ...inspired(current.key), el('p', { class: 'setup-sub', textContent: `${MODE_LABEL[s.mode]} · ${players} players${coop ? '' : forts ? ` · ${s.fortCycles ?? 1} × (${s.fortBuild ?? 2.5} + ${s.fortCombat ?? 5} min)` : ` · ${s.minutes ? `${s.minutes} min` : 'no time limit'}`}` }))),
-      el('div', { class: 'setup-body' },
-        el('section', {}, el('h4', { textContent: 'Mode' }), modeTabs),
-        el('section', {}, el('h4', { textContent: coop ? 'Squad' : 'Players' }),
-          ...(isTeamMode(s.mode) ? this.teamRows(current.map, stepper, twoTeams) : [row(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper(s.bots, 1, 0, coop ? 15 : 47, (v) => (this.setup.bots = v)))]),
-          ...(coop && PLAYLISTS.length
-            ? [row('Playlist', `Play a chain of co-op maps: win one and you go on to the next${PLAYLISTS.map((p) => `\n\n${p.name} (${p.maps.length} maps): ${p.description}`).join('')}`, tabs([['', 'Just this map'], ...PLAYLISTS.map((p): [string, string] => [p.id, `${p.name} (${p.maps.length})`])], s.playlist ?? '', (v) => (this.setup.playlist = v || undefined)))]
-            : []),
-          row('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', tabs([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => (this.setup.skill = v as ArcadeSetup['skill'])))),
-        ...(coop
-          ? []
-          : s.mode === 'core.race'
-            ? [
-                el('section', {}, el('h4', { textContent: 'Race' }),
-                  row('Laps', 'Laps of the circuit (a point-to-point track is always one run).', stepper(s.raceLaps ?? current.map.track?.laps ?? 3, 1, 1, 10, (v) => (this.setup.raceLaps = v))),
-                  row('Vehicle', 'What everyone races in. Map: the track\'s own choice.', tabs([['map', 'Map'], ['kart', 'Go-Kart'], ['speeder', 'Speeder'], ['buggy', 'Buggy']], s.raceVehicle ?? 'map', (v) => (this.setup.raceVehicle = v === 'map' ? undefined : (v as ArcadeSetup['raceVehicle'])))),
-                  row('Combat', 'Combat race: weapons and vehicle guns are live and the sentries by the track shoot. Clean: nobody can hurt anybody.', tabs([['map', 'Map'], ['off', 'Clean'], ['on', 'Combat']], s.raceCombat === undefined ? 'map' : s.raceCombat ? 'on' : 'off', (v) => (this.setup.raceCombat = v === 'map' ? undefined : v === 'on'))),
-                  row('Time limit', 'When time runs out the leader wins. ∞: no limit.', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v} min` : '∞')))),
-              ]
-            : [
-              el('section', {}, el('h4', { textContent: 'To win' }),
-                ((r) => row(r.label, 'The match ends when someone reaches this.', stepper(s.scoreLimit, r.step, r.min, r.max, (v) => (this.setup.scoreLimit = v)))) (SCORE_ROW[s.mode] ?? { label: 'Score limit', step: 5, min: 5, max: 200 }),
-                ...(forts ? [] : [row('Time limit', 'When time runs out the highest score wins. ∞: no limit.', stepper(s.minutes, 1, 0, 30, (v) => (this.setup.minutes = v), (v) => (v ? `${v} min` : '∞')))])),
-            ]),
-        ...(forts
-          ? [
-              el('section', {}, el('h4', { textContent: 'Fort Wars' }),
-                row('Build phase', 'Minutes to build before the barrier drops.', stepper(s.fortBuild ?? 2.5, 0.5, 1, 6, (v) => (this.setup.fortBuild = v), (v) => `${v} min`)),
-                row('Combat phase', 'Minutes of Capture the Flag after each build phase.', stepper(s.fortCombat ?? 5, 1, 2, 20, (v) => (this.setup.fortCombat = v), (v) => `${v} min`)),
-                row('Cycles', 'Build-then-fight rounds before the match ends. Pieces stand until they are broken; each build phase you can rebuild with the points they cost.', stepper(s.fortCycles ?? 1, 1, 1, 5, (v) => (this.setup.fortCycles = v))),
-                row('Build points', "Each team's budget: a block costs 2, a wall 4, a metal wall 8.", stepper(s.fortBudget ?? 420, 20, 100, 800, (v) => (this.setup.fortBudget = v)))),
-            ]
-          : []),
-        more,
-      ),
-      el('div', { class: 'setup-foot' }, ...(changed.length ? [el('div', { class: 'rule-chips' }, ...changed.map((x) => el('span', { textContent: x.value })))] : []), start),
+      { class: 'setup-body' },
+      el('section', {}, el('h4', { textContent: 'Mode' }), modeChips, ...unavailable),
+      el('section', { id: 'setup-players' }, el('h4', { textContent: coop ? 'Squad' : 'Players' }), ...playerRows, ...(notes.length ? [noteList(notes)] : [])),
+      el('section', {}, el('h4', { textContent: 'Bots' }), settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill'))),
+      ...(modeRows.length ? [fold('setup-mode', MODE_LABEL[s.mode], 'mode settings', ...modeRows)] : []),
+      rulesFold,
+      fold('setup-bots', 'More bot options', count(bots), ...bots.map(rowOf), ...perTeam),
+      fold('setup-arsenal', 'Weapons, pickups & vehicles', count(arsenal), ...arsenal.map(rowOf)),
+      ...perf,
+      savedFold,
     );
-    return el('div', { class: 'screen play' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Arcade <em>Match</em>' })), el('div', { class: 'arcade' }, cards, panel));
+    requestAnimationFrame(() => (body.scrollTop = this.setupScroll));
+    body.addEventListener('scroll', () => (this.setupScroll = body.scrollTop), { passive: true });
+    const start = el('button', { type: 'button', class: 'primary go', id: 'arcade-start', title: 'Start the match offline: you and the bots (Enter)' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
+    start.addEventListener('click', () => this.start());
+    const host = el('button', { type: 'button', class: 'go host', id: 'arcade-host', title: 'Start the match and open a join code so friends can play from their browsers (they take bots\' places). Esc → Host tab shows the code and invite link.' }, el('span', { textContent: 'Host' }));
+    const playlist = s.mode === 'core.coop' && !!s.playlist;
+    host.disabled = playlist;
+    if (playlist) host.title = 'Playlists are played offline; pick "Just this map" to host.';
+    host.addEventListener('click', () => this.start(true));
+    panel.replaceChildren(head, body, el('div', { class: 'setup-foot' }, ...(changed.length ? [el('div', { class: 'rule-chips' }, ...changed.map((x) => el('span', { textContent: x.value })))] : []), el('div', { class: 'go-row' }, host, start)));
+  }
+
+  /**
+   * The quick presets: the common shapes (1v1 … 48v48, 2v2v2v2, 4×4, FFA 8/16)
+   * and MapMaker's other layouts. Each starts an editable setup; a team
+   * layout moves a free-for-all to Team Deathmatch (and an FFA preset back)
+   * when the map has it. Options that can't work here say why.
+   */
+  private quickSetup(current: ArcadeMap): HTMLElement {
+    const s = this.setup;
+    const teamModes = current.modes.filter((m) => isTeamMode(m));
+    const anyTeams = teamModes.filter((m) => !isTwoTeamMode(m));
+    const ffaModes = current.modes.filter((m) => !isTeamMode(m) && !isCoopMode(m));
+    const select = el('select', { id: 'arcade-teams', title: 'Quick setup: a starting point you can then change' }) as HTMLSelectElement;
+    select.append(new Option('Quick setup…', ''));
+    const teamWhy = (sizes: readonly number[]): string | null => {
+      if (isTeamMode(s.mode)) return isTwoTeamMode(s.mode) && sizes.length > 2 ? `${MODE_LABEL[s.mode]} is two teams` : null;
+      if (sizes.length > 2 ? !anyTeams.length : !teamModes.length) return 'no team mode on this map';
+      return null;
+    };
+    const add = (group: HTMLOptGroupElement, value: string, label: string, players: number, off: string | null) => {
+      const o = new Option(`${label} · ${players} players${off ? ` (${off})` : ''}`, value);
+      o.disabled = !!off;
+      group.append(o);
+    };
+    const shown = new Set<string>();
+    const teams = el('optgroup', { label: 'Teams' });
+    const ffa = el('optgroup', { label: 'Free-for-all' });
+    for (const p of SETUP_PRESETS) {
+      if (p.sizes) {
+        shown.add(p.sizes.join(','));
+        add(teams, p.sizes.join(','), p.label, presetPlayers(p), teamWhy(p.sizes));
+      } else add(ffa, `ffa:${p.ffa}`, p.label, presetPlayers(p), isTeamMode(s.mode) || isCoopMode(s.mode) ? (ffaModes.length ? null : 'no free-for-all on this map') : null);
+    }
+    const more = el('optgroup', { label: 'More layouts' });
+    for (const p of TEAM_PRESETS) if (!shown.has(p.join(','))) add(more, p.join(','), teamLayoutLabel(p), p.reduce((a, b) => a + b, 0), teamWhy(p));
+    select.append(teams, ffa, more);
+    select.addEventListener('change', () => {
+      const v = select.value;
+      if (!v) return;
+      this.change((x) => {
+        if (v.startsWith('ffa:')) {
+          if (isTeamMode(x.mode) || isCoopMode(x.mode)) {
+            x.mode = ffaModes.includes('core.deathmatch') ? 'core.deathmatch' : ffaModes[0]!;
+            x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
+          }
+          x.bots = Number(v.slice(4)) - 1;
+          return;
+        }
+        const sizes = v.split(',').map(Number);
+        if (!isTeamMode(x.mode)) {
+          const pool = sizes.length > 2 ? anyTeams : teamModes;
+          x.mode = pool.includes('core.tdm') ? 'core.tdm' : pool[0]!;
+          x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
+        }
+        x.teams = sizes;
+        if (x.playerTeam !== undefined && x.playerTeam >= sizes.length) x.playerTeam = sizes.length - 1;
+      });
+    });
+    return settingRow('Quick setup', 'A starting point: pick one, then change any team, size, name or colour. FFA presets set the bots for a free-for-all.', select);
+  }
+
+  /** Load a saved setup by name (its map must still exist). */
+  private loadSaved(name: string): void {
+    const found = listSetups().find((x) => x.name === name);
+    const map = found && this.maps.find((m) => m.key === (found.setup as { map?: unknown }).map);
+    const setup = found && map ? normalizeSetup(found.setup, map.modes) : null;
+    if (!setup) {
+      this.setStatus(`"${name}" can't be loaded: its map isn't here any more.`);
+      return void this.refreshSetup();
+    }
+    this.setup = setup;
+    this.setupName = name;
+    setLastSetup(name);
+    this.saveSetup();
+    this.setStatus('');
+    this.setupScroll = 0;
+    this.go('play');
   }
 
   private saveSetup(): void {
     storage('cs.arcade', JSON.stringify(this.setup));
   }
 
-  private start(): void {
-    const m = this.maps.find((x) => x.key === this.setup.map) ?? this.maps[0]!;
-    const base = BASE_RULES[this.setup.mode];
-    const rules: MatchRules = { ...(this.setup.mode === 'core.coop' || this.setup.mode === 'core.zombies' ? base : { ...base, scoreLimit: this.setup.scoreLimit, timeLimitSeconds: this.setup.minutes * 60 }), ...(this.setup.sizes === false ? { bodySizes: false } : {}), ...(this.setup.emotes === false ? { emotes: false } : {}), ...(this.setup.botStyle ? { botStyle: this.setup.botStyle } : {}), ...(this.setup.killstreaks === false ? { killstreaks: false } : {}), ...(this.setup.squadSpawn === false ? { squadSpawn: false } : {}), ...(this.setup.gravity !== undefined ? { gravity: this.setup.gravity } : {}), ...(this.setup.fallDamage !== undefined ? { fallDamage: this.setup.fallDamage } : {}), ...(this.setup.friendlyFire ? { friendlyFire: this.setup.friendlyFire } : {}), ...(this.setup.spears ? { weapons: 'spears' as const } : this.setup.discs ? { weapons: 'discs' as const } : {}), ...(this.setup.classes ? { classes: true, ...(this.setup.classLimit ? { classLimit: this.setup.classLimit } : {}) } : {}), ...(this.setup.vehicleDamage ? { vehicleDamage: this.setup.vehicleDamage } : {}), ...(this.setup.lethality ? { lethality: this.setup.lethality } : {}), ...(this.setup.ballistics ? { ballistics: this.setup.ballistics } : {}), ...(this.setup.leaders && isTeamMode(this.setup.mode) ? { leaders: this.setup.leaders === 'vip' ? ('vip' as const) : true } : {}), ...(this.setup.mode === 'core.forts' ? { timeLimitSeconds: 0, fortBuildSeconds: Math.round((this.setup.fortBuild ?? 2.5) * 60), fortCombatSeconds: Math.round((this.setup.fortCombat ?? 5) * 60), fortCycles: this.setup.fortCycles ?? 1, fortBudget: this.setup.fortBudget ?? 420 } : {}), ...(this.setup.mode === 'core.race' ? { ...(this.setup.raceLaps ? { raceLaps: this.setup.raceLaps } : {}), ...(this.setup.raceVehicle ? { raceVehicle: this.setup.raceVehicle } : {}), ...(this.setup.raceCombat !== undefined ? { raceCombat: this.setup.raceCombat } : {}) } : {}) };
+  /** Start the match (`host`: and open a join code for friends). */
+  private start(host = false): void {
+    const m = this.currentMap();
     this.saveSetup();
-    if (isTeamMode(this.setup.mode)) {
-      // Bots fill every team to its size; you take a place on one of them.
-      const teams = this.teamSizes(m.map, this.setup.mode === 'core.ctf' || this.setup.mode === 'core.forts' || this.setup.mode === 'core.bomb' || this.setup.mode === 'core.hostage');
-      const names = (this.setup.teamNames ?? []).slice(0, teams.length);
-      const colors = (this.setup.teamColors ?? []).slice(0, teams.length);
-      this.hooks.playLocal(m.map, { ...rules, teamSizes: teams, ...(names.some(Boolean) ? { teamNames: names } : {}), ...(colors.some(Boolean) ? { teamColors: colors } : {}) }, Math.min(MAX_PLAYER_SLOTS, teams.reduce((a, b) => a + b, 0)), this.setup.skill);
-      return;
-    }
+    const { rules, fill } = rulesFromSetup(this.setup, m.map);
     // A co-op playlist starts on its own first map; the chain carries on from there.
-    if (this.setup.mode === 'core.coop' && this.setup.playlist && PLAYLISTS.some((p) => p.id === this.setup.playlist)) return this.hooks.playPlaylist(this.setup.playlist, this.setup.bots + 1, this.setup.skill);
-    // The bot filler counts the player too.
-    this.hooks.playLocal(m.map, rules, this.setup.bots + 1, this.setup.skill);
+    if (this.setup.mode === 'core.coop' && this.setup.playlist && PLAYLISTS.some((p) => p.id === this.setup.playlist)) return this.hooks.playPlaylist(this.setup.playlist, fill, this.setup.skill);
+    // Team modes: bots fill every team to its size and you take a place on one; otherwise the bot filler counts you too.
+    this.hooks.playLocal(m.map, rules, fill, this.setup.skill, host);
   }
-
-  /** The team layout for team modes: your last choice, else the map's, else two teams of four (`two`: just the first two teams, for CTF). */
-  private teamSizes(map: MapDocument, two = false): number[] {
-    const sizes = this.setup.teams ?? (map.teamSetup ? [...map.teamSetup.sizes] : [4, 4]);
-    return two ? sizes.slice(0, 2) : sizes;
-  }
-
-  /** Arcade rows for teams: a layout preset, then a stepper per team in its colour. */
-  private teamRows(map: MapDocument, stepper: (value: number, step: number, min: number, max: number, set: (v: number) => void) => HTMLElement, twoTeams = false): HTMLElement[] {
-    const sizes = this.teamSizes(map, twoTeams);
-    const teams = mapTeams(map, sizes.length);
-    const set = (next: number[]) => {
-      this.setup.teams = next;
-      this.saveSetup();
-      this.go('play');
-    };
-    const preset = el('select', { id: 'arcade-teams' }) as HTMLSelectElement;
-    const label = teamLayoutLabel(sizes);
-    preset.append(new Option(`${label} (${sizes.reduce((a, b) => a + b, 0)} players)`, ''));
-    for (const p of ARCADE_TEAM_PRESETS) if (teamLayoutLabel(p) !== label) preset.append(new Option(`${teamLayoutLabel(p)} (${p.reduce((a, b) => a + b, 0)} players)`, p.join(',')));
-    preset.addEventListener('change', () => preset.value && set(preset.value.split(',').map(Number)));
-    const plus = el('button', { class: 'tab', textContent: '+ Team' });
-    plus.addEventListener('click', () => sizes.length < MAX_TEAMS && set([...sizes, sizes[sizes.length - 1] ?? 2]));
-    const minus = el('button', { class: 'tab', textContent: '− Team' });
-    minus.addEventListener('click', () => sizes.length > 2 && set(sizes.slice(0, -1)));
-    const all = this.teamSizes(map);
-    // Each team: its colour (click to change), its name (type to rename) and its size.
-    const steppers = teams.map((t, i) => {
-      const color = el('input', { type: 'color', value: this.setup.teamColors?.[i] || t.color, title: 'Team colour', class: 'team-color' });
-      color.addEventListener('change', () => {
-        const list = [...(this.setup.teamColors ?? [])];
-        list[i] = color.value;
-        this.setup.teamColors = list;
-        this.saveSetup();
-      });
-      const name = el('input', { value: this.setup.teamNames?.[i] || t.name, maxLength: 24, title: 'Team name', class: 'team-name' });
-      name.addEventListener('change', () => {
-        const list = [...(this.setup.teamNames ?? [])];
-        list[i] = name.value.trim();
-        this.setup.teamNames = list;
-        this.saveSetup();
-      });
-      return el('div', { class: 'team-size' }, color, name, stepper(sizes[i]!, 1, 1, ARCADE_MAX_TEAM, (v) => (this.setup.teams = all.map((s, j) => (j === i ? v : s)))));
-    });
-    // Capture the Flag is always two teams: just their sizes.
-    if (twoTeams) return [el('div', { class: 'team-grid' }, ...steppers)];
-    return [el('div', { class: 'row' }, 'Teams', el('div', { class: 'team-layout' }, preset, plus, minus)), el('div', { class: 'team-grid' }, ...steppers)];
-  }
-
   // ---------------------------------------------------------------- host: change map mid-match
 
   /**
@@ -1103,15 +1258,13 @@ export class FrontEnd {
     } else if (this.screen === 'home' && e.key === 'Enter') {
       e.preventDefault();
       this.navItems[this.navIndex]!.act();
-    } else if (this.screen === 'play' && e.key === 'Enter') {
+    } else if (this.screen === 'play' && e.key === 'Enter' && !(e.target instanceof HTMLButtonElement || e.target instanceof HTMLSelectElement || (e.target as HTMLElement | null)?.tagName === 'SUMMARY')) {
       e.preventDefault();
       this.start();
-    } else if (this.screen === 'play' && (e.key === 'q' || e.key === 'e')) {
-      const m = this.maps.find((x) => x.key === this.setup.map)!;
+    } else if (this.screen === 'play' && (e.key === 'q' || e.key === 'e') && !(e.target instanceof HTMLSelectElement)) {
+      const m = this.currentMap();
       const i = m.modes.indexOf(this.setup.mode);
-      const mode = m.modes[(i + (e.key === 'e' ? 1 : m.modes.length - 1)) % m.modes.length]!;
-      this.setup = { ...this.setup, mode, scoreLimit: BASE_RULES[mode].scoreLimit };
-      this.go('play');
+      this.setMode(m.modes[(i + (e.key === 'e' ? 1 : m.modes.length - 1)) % m.modes.length]!);
     } else if (this.screen === 'characters' && (e.key === 'q' || e.key === 'e')) {
       const order = ['all', 'originals', 'ranger', 'peasant', 'athlete', 'npc', 'mine'];
       this.charFilter = order[(order.indexOf(this.charFilter) + (e.key === 'e' ? 1 : order.length - 1)) % order.length]!;

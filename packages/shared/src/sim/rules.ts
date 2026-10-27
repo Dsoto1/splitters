@@ -47,6 +47,16 @@ export interface MatchRules {
    */
   teamSizes?: number[];
   /**
+   * Team modes: how people are put on teams. 'balanced' (default): each
+   * person joins the team with the fewest people for its size, so people
+   * (who outplay bots) spread evenly. 'random': a random team with room.
+   * 'fixed': the first person (offline you, the Host game host) joins
+   * `hostTeam`; anyone after is balanced.
+   */
+  teamAssign?: 'balanced' | 'random' | 'fixed';
+  /** Team modes with teamAssign 'fixed': the team (by order, from 0) the first person joins. */
+  hostTeam?: number;
+  /**
    * Team leaders (team modes): each team's first person (else a bot) leads,
    * marked for everyone; the leader's "Follow me!" / "Hold here!" orders the
    * whole team's bots, wherever they are. 'vip': Leader variant of Team
