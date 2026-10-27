@@ -8,6 +8,7 @@ import { iceFromEnv } from './ice.ts';
 import { discoverLan, lanInterfaces } from './lan.ts';
 import { LobbyStore, lobbyHandler } from './lobby.ts';
 import { siteHandler } from './site.ts';
+import { TicketSigner } from './tickets.ts';
 
 /**
  * The community hub: the one always-on piece player-hosted games need, and
@@ -45,7 +46,9 @@ const lanHttp = () => lanInterfaces().map((i) => `http://${i.address}:${port}`);
 const lan = proxied || process.env.LAN_DISCOVERY === '0' ? undefined : async () => ({ addresses: lanHttp(), servers: await discoverLan({ timeoutMs: 350, targets: ['127.0.0.1'] }) });
 const lobby = lobbyHandler(store, { trustProxy: proxied, ice, lan, isLive: (code) => broker.isLive(code) });
 const cognito = cognitoFromEnv();
-const account = accountHandler(cognito, proxied);
+// Account tickets (tickets.ts): signed-in players prove their account to game hosts. HUB_TICKET_KEY (PEM) keeps the key across restarts.
+const tickets = new TicketSigner(process.env.HUB_TICKET_KEY || undefined);
+const account = accountHandler(cognito, proxied, undefined, tickets);
 const siteDir = process.env.SITE_DIR ?? fileURLToPath(new URL('../../client/dist', import.meta.url));
 // SITE_DIR set (the Lightsail box: a link to the current build, switched by updates): always serve it.
 const site = process.env.SITE_DIR || existsSync(`${siteDir}/index.html`) ? siteHandler(siteDir) : null;

@@ -1,7 +1,7 @@
 import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
 import { MessageGuard, PROTOCOL_VERSION, SnapshotDecoder, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { HostLink, RemoteLink, Signaling, Transport } from './transport.ts';
-import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, plainPiece, type ReassemblyLimits } from './peerZip.ts';
+import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, plainPiece, type ReassemblyLimits } from '@tiletrigger/shared/peerZip';
 import { hubAddress, hubSetting } from './hub.ts';
 import { baseIceServers, loadRelay, sessionIce } from './relay.ts';
 import { makeJoinCode } from './joinCode.ts';
@@ -59,7 +59,7 @@ function sendText(conn: DataConnection, text: string): void {
 
 /**
  * Calls `cb` with whole texts, putting chunked ones back together (and unzipping compressed ones). `wire` counts bytes received.
- * Nothing the other side sends is trusted: pieces and inflated output are capped (`limits`, peerZip.ts), and with a
+ * Nothing the other side sends is trusted: pieces and inflated output are capped (`limits`, shared/net/peerZip.ts), and with a
  * `guard` (the host, for each friend) messages past the rate budget are dropped. A link that breaks a limit is closed.
  */
 function onText(conn: DataConnection, cb: (text: string) => void, o: { limits: ReassemblyLimits; guard?: MessageGuard; wire?: (bytes: number) => void }): void {

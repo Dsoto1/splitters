@@ -23,7 +23,7 @@ import {
   type PlayerInput,
   type ServerMessage,
 } from '@tiletrigger/shared';
-import { Zipper } from './peerZip.ts';
+import { Zipper } from '@tiletrigger/shared/peerZip';
 
 /** Messages kept from a friend whose link opened before the match was ready. */
 const MAX_EARLY_MESSAGES = 64;
@@ -55,7 +55,7 @@ export interface MatchHostSink {
   local(msg: ServerMessage): void;
   /** Text for one friend's link. */
   send(id: number, text: string): void;
-  /** From now on, compress what goes to this friend's link (one deflate stream, peerZip.ts). */
+  /** From now on, compress what goes to this friend's link (one deflate stream, shared/net/peerZip.ts). */
   compress?(id: number): void;
   /** Close a friend's link, after `delayMs` (time for a last message to arrive). */
   close(id: number, delayMs: number): void;
@@ -113,6 +113,8 @@ interface Remote {
   rtt?: number | undefined;
   /** Delta snapshots: what this friend was last sent of each player (net/interest.ts). */
   stream: SnapshotStream;
+  /** The friend's browser key (hello.pk), for a ban. */
+  pk?: string;
 }
 
 /**
@@ -131,6 +133,8 @@ export class MatchHost {
   private control?: InstanceType<MatchModule['HostControl']>;
   private bots?: InstanceType<MatchModule['BotFiller']>;
   private remotes = new Map<number, Remote>();
+  /** Browser keys the host banned (this game only). */
+  private readonly banned = new Set<string>();
   private hidden = false;
   private factsSent = '';
   /** Called with the match once it runs (the page's test hooks). */
@@ -288,6 +292,21 @@ export class MatchHost {
   command(cmd: Exclude<HostCommand, { c: 'map' }>): string | null {
     const c = this.control;
     if (!c || this.stopped) return 'The match has not started';
+    if (cmd.c === 'kick' || cmd.c === 'ban') {
+      const r = [...this.remotes.values()].find((x) => x.slot === cmd.slot);
+      if (!r || r.slot === null) return cmd.slot === this.me?.slot ? "You can't remove yourself" : 'Only friends who joined can be removed (bots come and go by themselves)';
+      const name = this.match?.slots[r.slot]?.name ?? 'A player';
+      // Host game bans last while this game runs, by the friend's browser key (weak: there is no account to hold on to here).
+      if (cmd.c === 'ban' && r.pk) this.banned.add(r.pk);
+      const why = cmd.reason ? `: ${cmd.reason}` : '';
+      this.sink.send(r.id, JSON.stringify({ t: 'reject', reason: cmd.c === 'ban' ? `You were banned from this game${why}` : `The host removed you from the game${why}` } satisfies ServerMessage));
+      this.leave(r);
+      this.remotes.delete(r.id);
+      this.sink.close(r.id, 500);
+      this.announce({ t: 'notice', text: `${name} was ${cmd.c === 'ban' ? 'banned' : 'kicked'}` });
+      this.rosterToAll();
+      return null;
+    }
     const r = c.apply(cmd);
     if (r.error) return r.error;
     if (r.notice) this.announce({ t: 'notice', text: r.notice });
@@ -340,6 +359,11 @@ export class MatchHost {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: `protocol ${msg.protocol} unsupported (host speaks ${PROTOCOL_VERSION})` }));
         return this.drop(id);
       }
+      if (msg.pk && this.banned.has(msg.pk)) {
+        this.sink.send(id, JSON.stringify({ t: 'reject', reason: 'You were banned from this game' }));
+        return this.drop(id);
+      }
+      r.pk = msg.pk;
       // The host's upload carries every friend's snapshots: BROWSER_HOST_MAX_GUESTS of them at most (bots fill the rest).
       if (this.guests >= BROWSER_HOST_MAX_GUESTS) {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: `match full (a player-hosted game takes up to ${BROWSER_HOST_MAX_GUESTS} friends)` }));

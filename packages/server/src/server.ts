@@ -36,14 +36,18 @@ import {
   type GameMode,
   type ServerInfo,
   type ServerMessage,
+  type ServerStats,
 } from '@tiletrigger/shared';
 import { BotFiller, HostControl, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 import { answerDiscovery, lanAddresses } from './lan.ts';
 import { StatsWindow } from './stats.ts';
 
 export interface ServerOptions {
-  port: number;
+  /** WebSocket/HTTP port (0: any free one), or null for no listener: players arrive through `accept` (the Host Service's WebRTC links). */
+  port: number | null;
   host?: string;
+  /** People (not bots) who may play at once (default MAX_PLAYER_SLOTS): a home upload carries every player's stream. */
+  maxPlayers?: number;
   /** Map file path or an already-parsed document. */
   map: string | MapDocument;
   /** Fill the match with Player Bots up to this many total players (players joining take over bots). */
@@ -60,7 +64,7 @@ export interface ServerOptions {
   /** Hold the start until the first players have loaded, then count down (default on; tests turn it off). */
   startGate?: boolean;
   /** Called once per second with instrumentation. */
-  onStats?: (line: string) => void;
+  onStats?: (line: string, stats: ServerStats) => void;
   /** Server name in LAN discovery and /info (default "<map> server"). */
   name?: string;
   /**
@@ -77,19 +81,75 @@ export interface ServerOptions {
    * admin) runs the match: bots, map (our suite only), restart, end. Unset: nobody can.
    */
   adminToken?: string;
+  /** Who may not join (a ban list): the reason to turn them away, or null. Checked at every hello. */
+  admission?: (who: PlayerIdentity) => string | null;
+  /** An admin banned a player (in-game or console): the ban list's owner records it (the player is then kicked). */
+  onBan?: (who: PlayerIdentity, minutes: number, reason: string, by: string) => void;
+  /** Checks a hello's account ticket (tickets.ts) for this server's join code: the account (Cognito sub), or null. */
+  verifyTicket?: (ticket: string) => string | null;
+  /** Joins, leaves, kicks, bans, admin changes and match results, as lines for a server console. */
+  onEvent?: (line: string) => void;
+}
+
+/** What a server knows of who a player is (for bans). Only `sub` is proof (a hub-signed ticket); `pk` and `address` are best effort. */
+export interface PlayerIdentity {
+  name: string;
+  /** Cognito account, from a verified ticket. */
+  sub?: string;
+  /** The browser's random key (hello.pk). */
+  pk?: string;
+  /** The player's address, when the link is direct (not relayed). */
+  address?: string;
+}
+
+/** One person in the match, for a console or admin page. */
+export interface PlayerInfo extends PlayerIdentity {
+  slot: number;
+  team: string | null;
+  kills: number;
+  deaths: number;
+  ping: number | null;
+  admin: boolean;
+}
+
+/**
+ * One player's connection, whatever carries it: a WebSocket (this server's own
+ * listener) or a WebRTC data channel (the Host Service, packages/host). Text
+ * messages in both directions; the transport handles compression and size caps.
+ */
+export interface PlayerConn {
+  /** Send one message. Returns the bytes it put on the wire, when it knows (a compressed link), for the stats. */
+  send(text: string): number | void;
+  /** Close the link; a message sent just before should still arrive. */
+  close(code: number, reason: string): void;
+  onMessage(cb: (text: string) => void): void;
+  onClose(cb: () => void): void;
+  /** The player's address when known and direct (a WebSocket's peer, a WebRTC link's non-relay candidate). */
+  address?(): string | undefined;
 }
 
 export interface RunningServer {
+  /** The listener's port (0 without one). */
   port: number;
+  /** Take a player's connection (the same join flow, limits and admin rules as the WebSocket listener's). */
+  accept(conn: PlayerConn): void;
   /** The running match (a new one after a scenario chain moves on to the next map). */
   readonly match: Match;
   /** What /info and LAN discovery say about this server right now. */
   info(): ServerInfo;
+  /** A line for every player's feed and a toast ("The server is shutting down"). */
+  notice(text: string): void;
+  /** People in the match now. */
+  players(): PlayerInfo[];
+  /** Run an admin command for `by` (a console, the /host page): the same commands in-game admins have. Returns the error, or null. */
+  command(cmd: HostCommand, by: string): string | null;
+  /** A new ADMIN_TOKEN from now on (undefined: nobody new can log in). */
+  setAdminToken(token: string | undefined): void;
   close(): Promise<void>;
 }
 
 interface Client {
-  ws: WebSocket;
+  conn: PlayerConn;
   slot: number | null;
   /** Delta snapshots: what this connection was last sent of each player (net/interest.ts). */
   stream: SnapshotStream;
@@ -102,6 +162,7 @@ interface Client {
   rtt?: number;
   /** Message budget (MESSAGE_RATE): over it, messages are dropped; well over it, the client is disconnected. */
   guard: MessageGuard;
+  who?: PlayerIdentity;
 }
 
 /** Wrong admin tokens a connection may send before it is closed. */
@@ -157,13 +218,12 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   /** A won map with somewhere to go: travel at this tick (late in the intermission). */
   let travel: { atTick: number; map: MapDocument; rules: MatchRules; index: number; carry: { score: boolean; loadout: boolean }; fill?: number } | null = null;
   /** The token compared in constant time (as hashes, so lengths don't matter). */
-  const adminHash = opts.adminToken ? createHash('sha256').update(opts.adminToken).digest() : null;
+  let adminHash = opts.adminToken ? createHash('sha256').update(opts.adminToken).digest() : null;
   const isAdminToken = (token: string | undefined) => !!adminHash && !!token && timingSafeEqual(adminHash, createHash('sha256').update(token).digest());
 
   const send = (c: Client, msg: ServerMessage | string) => {
     const data = typeof msg === 'string' ? msg : JSON.stringify(msg);
-    c.bytesOut += data.length;
-    c.ws.send(data);
+    c.bytesOut += c.conn.send(data) ?? data.length;
   };
   const broadcast = (msg: ServerMessage) => {
     const data = JSON.stringify(msg);
@@ -177,71 +237,109 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     console.log(`[admin] ${text}`);
     broadcast({ t: 'notice', text });
   };
-  /** An admin's command: run it, tell everyone what changed and every admin the new settings. */
-  const hostCommand = (client: Client, cmd: HostCommand) => {
-    if (!client.admin) return send(client, { t: 'host', state: null, error: adminHash ? 'Only the server admin can change the match (pause menu → Server admin)' : 'This server has no admin (ADMIN_TOKEN is not set)' });
+  const event = (line: string) => opts.onEvent?.(line);
+  const clientAt = (slot: number) => [...clients].find((c) => c.slot === slot);
+  /** Remove a player: they are told why, their place goes back to a bot. */
+  const kick = (target: Client, reason: string) => {
+    send(target, { t: 'reject', reason });
+    target.conn.close(4003, 'kicked');
+  };
+  /** Any admin's command (in-game, console, /host): run it and tell everyone what changed. Returns the error, or null. */
+  const runCommand = (cmd: HostCommand, by: string): string | null => {
     if (cmd.c === 'map') {
       const m = suiteMap(cmd.map);
-      if (!m) return send(client, { t: 'host', state: control.state(), error: `"${cmd.map}" is not a map of our suite` });
-      if (travel) return send(client, { t: 'host', state: control.state(), error: 'Already changing map' });
+      if (!m) return `"${cmd.map}" is not a map of our suite`;
+      if (travel) return 'Already changing map';
       const next = rulesForTravel(match.rules, m, control.fill, cmd.mode, control.state().teamSize);
       travel = { atTick: match.tick + HOST_TRAVEL_TICKS, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
-      return notice(travelNotice(m.metadata.name, next.rules.mode));
+      notice(travelNotice(m.metadata.name, next.rules.mode));
+      return null;
+    }
+    if (cmd.c === 'kick' || cmd.c === 'ban') {
+      const target = clientAt(cmd.slot);
+      if (!target?.who) return 'No such player (bots come and go by themselves: change the players instead)';
+      const why = cmd.reason ? `: ${cmd.reason}` : '';
+      if (cmd.c === 'ban') {
+        opts.onBan?.(target.who, cmd.minutes ?? 0, cmd.reason ?? '', by);
+        event(`${by} banned ${target.who.name}${cmd.minutes ? ` for ${cmd.minutes} min` : ''}${why}`);
+        kick(target, `You were banned from this server${why}`);
+      } else {
+        event(`${by} kicked ${target.who.name}${why}`);
+        kick(target, `You were kicked by the admin${why}`);
+      }
+      notice(`${target.who.name} was ${cmd.c === 'ban' ? 'banned' : 'kicked'}`);
+      return null;
     }
     const r = control.apply(cmd);
-    if (r.error) return send(client, { t: 'host', state: control.state(), error: r.error });
+    if (r.error) return r.error;
     if (r.notice) notice(r.notice);
     broadcast({ t: 'roster', players: match.roster() });
     for (const c of clients) if (c.admin && c.slot !== null) hostState(c);
+    return null;
+  };
+  /** An in-game admin's command. */
+  const hostCommand = (client: Client, cmd: HostCommand) => {
+    if (!client.admin) return send(client, { t: 'host', state: null, error: adminHash ? 'Only the server admin can change the match (pause menu → Server admin)' : 'This server has no admin (ADMIN_TOKEN is not set)' });
+    if ((cmd.c === 'kick' || cmd.c === 'ban') && cmd.slot === client.slot) return send(client, { t: 'host', state: control.state(), error: "You can't kick yourself" });
+    const error = runCommand(cmd, `Admin ${client.who?.name ?? ''}`.trim());
+    if (error) return send(client, { t: 'host', state: control.state(), error });
   };
 
-  // Snapshots are JSON with lots of repetition: compressing them cuts the traffic several times over
-  // (browsers decompress on their own). Small messages aren't worth it.
-  // One port for both: WebSocket play, and plain HTTP GET /info so browsers on the LAN can find the game.
-  const http = createServer((req, res) => {
-    const path = new URL(req.url ?? '/', 'http://server').pathname;
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    // Chrome asks before a public page may reach a private address (Private Network Access).
-    res.setHeader('Access-Control-Allow-Private-Network', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Cache-Control', 'no-store');
-    if (req.method === 'OPTIONS') return void res.writeHead(204).end();
-    if (req.method === 'GET' && path === '/info') {
-      res.setHeader('Content-Type', 'application/json');
-      return void res.end(JSON.stringify(info()));
-    }
-    res.writeHead(404, { 'Content-Type': 'text/plain' }).end('Tile Trigger game server: join with the game (Online → Server), or GET /info.');
-  });
-  const wss = new WebSocketServer({ server: http, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
+  let stopped = false;
+  /** Humans playing now (not bots). */
+  const humans = () => [...clients].filter((c) => c.slot !== null).length;
+  const maxPlayers = Math.max(1, Math.min(opts.maxPlayers ?? MAX_PLAYER_SLOTS, MAX_PLAYER_SLOTS));
 
-  wss.on('connection', (ws) => {
-    const client: Client = { ws, slot: null, stream: new SnapshotStream(), bytesOut: 0, admin: false, badTokens: 0, guard: new MessageGuard() };
+  /** A player's connection, from the WebSocket listener or the Host Service's WebRTC links: hello, then play. */
+  function accept(conn: PlayerConn): void {
+    if (stopped) return conn.close(1001, 'server stopping');
+    const client: Client = { conn, slot: null, stream: new SnapshotStream(), bytesOut: 0, admin: false, badTokens: 0, guard: new MessageGuard() };
     clients.add(client);
-    const helloTimer = setTimeout(() => ws.close(4000, 'hello timeout'), HELLO_TIMEOUT_MS);
+    const helloTimer = setTimeout(() => conn.close(4000, 'hello timeout'), HELLO_TIMEOUT_MS);
 
-    ws.on('message', (data, isBinary) => {
+    conn.onMessage((text) => {
+      if (!clients.has(client)) return;
       // A flood (a ping or input spam) is dropped, and a client that keeps it up is disconnected.
       const verdict = client.guard.check();
-      if (verdict === 'kick') return void ws.close(4008, 'too many messages');
-      if (verdict === 'drop' || isBinary) return;
-      const msg = parseClientMessage(data.toString());
+      if (verdict === 'kick') return void conn.close(4008, 'too many messages');
+      if (verdict === 'drop') return;
+      const msg = parseClientMessage(text);
       if (!msg) return;
       if (msg.t === 'hello') {
         if (client.slot !== null) return;
         clearTimeout(helloTimer);
         if (msg.protocol !== PROTOCOL_VERSION) {
           send(client, { t: 'reject', reason: `protocol ${msg.protocol} unsupported (server speaks ${PROTOCOL_VERSION})` });
-          ws.close(4001, 'protocol');
+          conn.close(4001, 'protocol');
+          return;
+        }
+        // The host's own cap on people (its upload carries every player's stream); bots fill the rest.
+        if (humans() >= maxPlayers) {
+          send(client, { t: 'reject', reason: `server full (${maxPlayers} players)` });
+          conn.close(4002, 'full');
+          return;
+        }
+        const name = sanitizeName(msg.name);
+        const sub = msg.ticket ? (opts.verifyTicket?.(msg.ticket) ?? undefined) : undefined;
+        const address = conn.address?.();
+        const who: PlayerIdentity = { name, ...(sub ? { sub } : {}), ...(msg.pk ? { pk: msg.pk } : {}), ...(address ? { address } : {}) };
+        const banned = opts.admission?.(who);
+        if (banned) {
+          event(`refused ${name}${sub ? ' (signed in)' : ''}: ${banned}`);
+          send(client, { t: 'reject', reason: banned });
+          conn.close(4004, 'banned');
           return;
         }
         // Take over a bot where it stands (team that needs a player), or a free slot.
-        const player = bots.join(sanitizeName(msg.name), msg.look, control.fill);
+        const player = bots.join(name, msg.look, control.fill);
         if (!player) {
           send(client, { t: 'reject', reason: 'server full' });
-          ws.close(4002, 'full');
+          conn.close(4002, 'full');
           return;
         }
         client.slot = player.slot;
+        client.who = who;
+        event(`${name} joined (${sub ? 'signed in' : 'guest'}${address ? `, ${address}` : ''}) as slot ${player.slot}`);
         // Back from a map change: pick up your score and weapons.
         const carry = carried.get(player.name);
         if (carry) {
@@ -258,6 +356,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           map,
           rules: match.rules,
           sc: match.scenario.fullState(),
+          dedicated: true,
           ...(lan.length ? { lan } : {}),
         });
         broadcast({ t: 'roster', players: match.roster() });
@@ -269,7 +368,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           hostState(client);
         } else {
           send(client, { t: 'host', state: null, error: 'Wrong admin token' });
-          if (++client.badTokens >= MAX_BAD_TOKENS) ws.close(4006, 'admin');
+          if (++client.badTokens >= MAX_BAD_TOKENS) conn.close(4006, 'admin');
         }
       } else if (msg.t === 'host' && client.slot !== null) {
         hostCommand(client, msg.cmd);
@@ -283,23 +382,21 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       }
     });
 
-    ws.on('close', () => {
+    conn.onClose(() => {
       clearTimeout(helloTimer);
-      clients.delete(client);
-      if (client.slot !== null) {
+      if (!clients.delete(client)) return;
+      if (client.slot !== null && !stopped) {
+        event(`${client.who?.name ?? 'a player'} left`);
         // A bot takes the leaver's place where they were (unless botTakeBack is off).
         bots.leave(client.slot, control.fill);
         broadcast({ t: 'roster', players: match.roster() });
       }
     });
-  });
+  }
 
-  await new Promise<void>((resolve, reject) => {
-    http.once('error', reject);
-    http.listen(opts.port, opts.host, () => resolve());
-  });
-  const port = (http.address() as AddressInfo).port;
-  const lan = lanAddresses(port);
+  const listener =opts.port === null ? null : await listen(opts.port, opts.host, () => info(), accept);
+  const port = listener?.port ?? 0;
+  const lan = listener ? lanAddresses(port) : [];
   function info(): ServerInfo {
     const all = match.combatants();
     return {
@@ -311,7 +408,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       players: all.filter((c) => c.kind === 'human').length,
       bots: all.filter((c) => c.kind === 'bot').length,
       max: MAX_PLAYER_SLOTS,
-      addresses: lan.length ? lan : [`ws://localhost:${port}`],
+      addresses: lan.length ? lan : listener ? [`ws://localhost:${port}`] : [],
     };
   }
   const discovery = opts.lanDiscovery ? await answerDiscovery(info, typeof opts.lanDiscovery === 'number' ? opts.lanDiscovery : undefined).catch((e: Error) => (console.warn(`[lan] no LAN discovery: ${e.message}`), null)) : null;
@@ -339,7 +436,6 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   let nextTickAt = performance.now();
   let lastStatsAt = performance.now();
   let pingRounds = 0;
-  let stopped = false;
   let timer: NodeJS.Timeout;
 
   /** A won co-op map moves on: the "Next map" it named (checked against our suite), else the playlist's next. */
@@ -372,7 +468,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     for (const c of clients) {
       if (c.slot !== null) send(c, { t: 'travel', map: t.map.metadata.name });
       c.slot = null;
-      c.ws.close(4005, 'travel');
+      c.conn.close(4005, 'travel');
     }
     pendingEvents = [];
     match.destroy();
@@ -393,7 +489,12 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       const t0 = performance.now();
       const events = match.step();
       pendingEvents.push(...events);
-      for (const ev of events) if (ev.e === 'round_end' && ev.outcome === 'victory') planTravel(ev.next);
+      for (const ev of events) {
+        if (ev.e !== 'round_end') continue;
+        if (ev.outcome === 'victory') planTravel(ev.next);
+        const top = [...match.combatants()].filter((c) => c.kind !== 'npc').sort((a, b) => b.kills - a.kills)[0];
+        event(`match over on ${map.metadata.name}: ${ev.team ? `team ${ev.team} wins` : ev.winner !== null ? `${match.slots[ev.winner]?.name ?? 'someone'} wins` : 'a draw'}${top ? ` (top: ${top.name}, ${top.kills} kills)` : ''}`);
+      }
       if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) sendSnapshots();
       if (travel && match.tick >= travel.atTick) doTravel();
       stats.recordTick(performance.now() - t0, match.lastAiMs);
@@ -417,7 +518,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         bots: all.filter((c) => c.kind === 'bot').length,
       });
       broadcast({ t: 'stats', ...summary });
-      opts.onStats?.(StatsWindow.format(summary));
+      opts.onStats?.(StatsWindow.format(summary), summary);
       // Every other second: each human's ping, for the scoreboard.
       if (++pingRounds % 2 === 0) {
         const p = connected.flatMap((c) => (c.rtt !== undefined ? [c.slot!, c.rtt] : []));
@@ -430,19 +531,79 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
 
   return {
     port,
+    accept,
     get match() {
       return match;
     },
     info,
+    notice: (text: string) => broadcast({ t: 'notice', text }),
+    command: runCommand,
+    setAdminToken: (token) => {
+      adminHash = token ? createHash('sha256').update(token).digest() : null;
+      // Admins logged in with the old token stay admin until they leave.
+    },
+    players: () =>
+      [...clients].flatMap((c) => {
+        const p = c.slot === null ? undefined : match.slots[c.slot];
+        if (c.slot === null || !c.who) return [];
+        return [{ ...c.who, slot: c.slot, team: match.teams && p ? (p.faction ?? null) : null, kills: p?.kills ?? 0, deaths: p?.deaths ?? 0, ping: c.rtt ?? null, admin: c.admin }];
+      }),
     close: async () => {
       stopped = true;
       clearTimeout(timer);
       discovery?.close();
-      for (const c of clients) c.ws.terminate();
-      await new Promise<void>((resolve) => wss.close(() => resolve()));
-      await new Promise<void>((resolve) => http.close(() => resolve()));
+      for (const c of clients) c.conn.close(1001, 'server stopping');
+      await listener?.close();
       match.destroy();
     },
+  };
+}
+
+/**
+ * The dedicated server's own listener: WebSocket play and plain HTTP GET /info
+ * (so browsers on the LAN can find the game) on one port.
+ */
+async function listen(port: number, host: string | undefined, info: () => ServerInfo, accept: (conn: PlayerConn) => void): Promise<{ port: number; close(): Promise<void> }> {
+  const http = createServer((req, res) => {
+    const path = new URL(req.url ?? '/', 'http://server').pathname;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Chrome asks before a public page may reach a private address (Private Network Access).
+    res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Cache-Control', 'no-store');
+    if (req.method === 'OPTIONS') return void res.writeHead(204).end();
+    if (req.method === 'GET' && path === '/info') {
+      res.setHeader('Content-Type', 'application/json');
+      return void res.end(JSON.stringify(info()));
+    }
+    res.writeHead(404, { 'Content-Type': 'text/plain' }).end('Tile Trigger game server: join with the game (Online → Server), or GET /info.');
+  });
+  // Snapshots are JSON with lots of repetition: compressing them cuts the traffic several times over
+  // (browsers decompress on their own). Small messages aren't worth it.
+  const wss = new WebSocketServer({ server: http, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
+  wss.on('connection', (ws, req) => accept(wsConn(ws, req.socket.remoteAddress)));
+  await new Promise<void>((resolve, reject) => {
+    http.once('error', reject);
+    http.listen(port, host, () => resolve());
+  });
+  return {
+    port: (http.address() as AddressInfo).port,
+    close: async () => {
+      for (const ws of wss.clients) ws.terminate();
+      await new Promise<void>((resolve) => wss.close(() => resolve()));
+      await new Promise<void>((resolve) => http.close(() => resolve()));
+    },
+  };
+}
+
+/** A WebSocket as a PlayerConn (text frames only; binary ones are ignored). */
+function wsConn(ws: WebSocket, address?: string): PlayerConn {
+  return {
+    address: () => address,
+    send: (text) => ws.send(text),
+    close: (code, reason) => ws.close(code, reason),
+    onMessage: (cb) => ws.on('message', (data, isBinary) => void (!isBinary && cb(data.toString()))),
+    onClose: (cb) => ws.on('close', cb),
   };
 }
 

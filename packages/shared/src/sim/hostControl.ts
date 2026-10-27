@@ -1,5 +1,5 @@
 import { BOT_DIFFICULTIES } from '../bots/profile.ts';
-import type { HostCommand, HostRulesPatch, HostState } from '../protocol.ts';
+import type { HostRulesPatch, HostState, MatchCommand } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { teamCount, teamsLabel } from './hostRules.ts';
 import { validateTeamSizes } from './matchSetup.ts';
@@ -52,7 +52,7 @@ export class HostControl {
    * Run a bots / restart / end command. Returns the line everyone's feed shows
    * ("Host set teams to 8v8"), or an error for the host alone.
    */
-  apply(cmd: Exclude<HostCommand, { c: 'map' }>): { notice?: string; error?: string } {
+  apply(cmd: MatchCommand): { notice?: string; error?: string } {
     const who = this.title;
     if (cmd.c === 'rules') {
       const p: HostRulesPatch = {};

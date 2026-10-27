@@ -1,5 +1,6 @@
 import { createPublicKey, createVerify, type JsonWebKey, type KeyObject } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import type { TicketSigner } from './tickets.ts';
 import { KeyedLimiter } from '@tiletrigger/shared';
 import { clientIp } from './clientIp.ts';
 
@@ -132,9 +133,11 @@ export async function verifyCognitoToken(token: string, config: CognitoConfig, j
  * The account API, under /api/v1 (MULTIPLAYER_PROTOCOL.md section 1):
  *   GET /api/v1/me   (Authorization: Bearer <Cognito ID or access token>) → { sub, name?, email?, tokenUse, exp }
  *   GET /api/v1/health → { ok, auth }
+ *   GET /api/v1/ticket?code=<CODE> (Authorization as /me) → { ticket, exp }: an account ticket for joining that game (tickets.ts)
+ *   GET /api/v1/ticket-keys → { keys: [{ kid, x }] }: the public keys hosts check tickets with
  * 30 requests a minute per address; 10 failed tokens a minute per address, then 429 for a quarter of an hour.
  */
-export function accountHandler(config: CognitoConfig | null, trustProxy: boolean, jwks?: JwksCache) {
+export function accountHandler(config: CognitoConfig | null, trustProxy: boolean, jwks?: JwksCache, tickets?: TicketSigner) {
   const keys = config ? (jwks ?? new JwksCache(`${issuerOf(config)}/.well-known/jwks.json`)) : null;
   const asks = new KeyedLimiter({ perMinute: 30 });
   const failures = new KeyedLimiter({ perMinute: 10 });
@@ -154,7 +157,11 @@ export function accountHandler(config: CognitoConfig | null, trustProxy: boolean
     if (req.method === 'OPTIONS') return void ((res.statusCode = 204), res.end());
     if (req.method !== 'GET') return send(405, { error: 'method not allowed' });
     if (path === '/api/v1/health') return send(200, { ok: true, auth: !!config });
-    if (path !== '/api/v1/me') return send(404, { error: 'not found' });
+    if (path === '/api/v1/ticket-keys') return tickets ? send(200, tickets.keys()) : send(404, { error: 'no account tickets on this hub' });
+    const wantsTicket = path === '/api/v1/ticket';
+    if (path !== '/api/v1/me' && !wantsTicket) return send(404, { error: 'not found' });
+    const code = (new URL(req.url ?? '/', 'http://hub').searchParams.get('code') ?? '').toUpperCase();
+    if (wantsTicket && (!tickets || !/^[A-HJKMNP-Z2-9]{6}$/.test(code))) return send(tickets ? 400 : 404, { error: tickets ? 'bad code' : 'no account tickets on this hub' });
     if (!config || !keys) return send(404, { error: 'sign-in is not set up on this hub' });
     const ip = clientIp(req, trustProxy);
     const t = Date.now();
@@ -163,6 +170,7 @@ export function accountHandler(config: CognitoConfig | null, trustProxy: boolean
     if (!m) return send(401, { error: 'sign in first' });
     try {
       const user = await verifyCognitoToken(m[1]!, config, keys);
+      if (wantsTicket) return send(200, tickets!.sign(user.sub, code));
       return send(200, { sub: user.sub, tokenUse: user.tokenUse, exp: user.exp, ...(user.name ? { name: user.name } : {}), ...(user.email ? { email: user.email } : {}) });
     } catch (e) {
       if (!failures.allow(ip)) {

@@ -1,6 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { KeyedLimiter, LOBBY_EXPIRY_SECONDS, LOBBY_STALE_SECONDS, parseAdvert, type LobbyAdvert, type LobbyListing, type ServerInfo } from '@tiletrigger/shared';
+import { KeyedLimiter, LOBBY_EXPIRY_SECONDS, LOBBY_STALE_SECONDS, claimsOfficial, parseAdvert, type LobbyAdvert, type LobbyListing, type ServerInfo } from '@tiletrigger/shared';
 import type { IceConfig } from './ice.ts';
 import { clientIp } from './clientIp.ts';
 
@@ -69,6 +69,8 @@ export class LobbyStore {
 
   /** Why this advert's map can't be listed, or null. */
   private mapProblem(a: LobbyAdvert): string | null {
+    // Nobody's listing is official, and none may look it: names can't claim to be ours.
+    if (claimsOfficial(a.name) || claimsOfficial(a.host)) return "a listing's name can't claim to be official (ToshiroPlay, Tile Trigger): pick another";
     if (a.community) return a.mapId && a.versionId && a.contentHash ? null : 'a community map listing needs its map ID, version ID and content hash';
     if (this.policy.suite && !(a.mapId && this.policy.suite.has(a.mapId))) return "that map isn't one of the game's own: list it as a community map";
     return null;

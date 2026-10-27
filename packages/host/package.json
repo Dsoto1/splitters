@@ -1,0 +1,16 @@
+{
+  "name": "@tiletrigger/host",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --import tsx src/main.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@tiletrigger/server": "workspace:*",
+    "@tiletrigger/shared": "workspace:*",
+    "node-datachannel": "0.33.4",
+    "peerjs": "1.5.4",
+    "tsx": "^4.20.6"
+  }
+}

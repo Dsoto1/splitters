@@ -13,7 +13,12 @@ export type Tuple3 = [number, number, number];
 
 export type ClientMessage =
   /** `admin`: a dedicated server's ADMIN_TOKEN (?admin=… in the page address): this player may run the match (HostCommand). */
-  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string }
+  /**
+   * `pk`: a random key per browser ("p_…", kept in its storage): not proof of anything, only what a guest
+   * ban can hold on to. `ticket`: the hub's signed account ticket for this join code (signed-in players;
+   * server/src/tickets.ts), so a host knows the account without seeing the player's sign-in token.
+   */
+  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string; pk?: string; ticket?: string }
   | { t: 'input'; inputs: PlayerInput[] }
   /** `rtt`: the sender's measured round trip (ms), shown on everyone's scoreboard. */
   | { t: 'ping'; id: number; ct: number; rtt?: number }
@@ -43,7 +48,16 @@ export type HostCommand =
   | { c: 'rules'; rules: HostRulesPatch }
   | { c: 'map'; map: string; mode?: GameMode }
   | { c: 'restart' }
-  | { c: 'end' };
+  | { c: 'end' }
+  /** Remove a player (not a bot) from the match; they may rejoin. */
+  | { c: 'kick'; slot: number; reason?: string }
+  /** Remove a player and keep them out: their account when signed in, else their browser key and address (weak). `minutes`: 0 or absent, for good. */
+  | { c: 'ban'; slot: number; minutes?: number; reason?: string };
+
+/** Commands about one player (kick, ban): the host's connections handle them, not the match. */
+export type PlayerCommand = Extract<HostCommand, { c: 'kick' | 'ban' }>;
+/** Commands the match itself runs (HostControl). */
+export type MatchCommand = Exclude<HostCommand, { c: 'map' } | PlayerCommand>;
 
 /** Rules a host can change mid-match; they wait for the next restart. */
 export interface HostRulesPatch {
@@ -408,6 +422,11 @@ export type ServerMessage =
       sc?: ScenarioSnapshot;
       /** Dedicated servers: their LAN join addresses (ws://192.168.…:7777), for the pause menu to share. */
       lan?: string[];
+      /**
+       * A dedicated server or Host Service (not a player's browser): it may have an admin
+       * (ADMIN_TOKEN), so the pause menu offers the Server admin login, also to players who joined by code.
+       */
+      dedicated?: boolean;
     }
   | { t: 'reject'; reason: string }
   | { t: 'roster'; players: RosterEntry[] }

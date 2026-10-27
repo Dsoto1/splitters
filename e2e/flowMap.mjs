@@ -93,7 +93,7 @@ const RULES = [
   [/^packages\/client\/src\/frontend\//, ['offline', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'designer', 'characters', 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'hostgame', 'hostcontrols', 'lobby'], ['client']],
-  [/^packages\/client\/src\/game\/(peerLink|peerZip|relay|hub|lan|netTransport|joinCode)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'lobby'], ['client']],
+  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'lobby'], ['client']],
   [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera)\.ts$/, ['vehicles', 'race'], ['client']],
   [/^packages\/client\/src\/(game\/raceHud\.ts|roadMeshes\.ts)$/, ['race'], ['client']],
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
