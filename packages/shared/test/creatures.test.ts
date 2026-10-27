@@ -2,7 +2,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   rosterSize,
   BUTTON_FIRE,
+  CORE_LOOKS,
   CORE_PROPS,
+  NPC_LOOKS,
   CREATURE_ROLES,
   CREATURE_SPECS,
   DEFAULT_COOP_RULES,
@@ -13,6 +15,7 @@ import {
   getWeapon,
   initPhysics,
   loadMap,
+  npcLookRole,
   propBoxes,
   type GameEvent,
   type MapDocument,
@@ -67,6 +70,30 @@ describe('creature NPC kinds', () => {
     expect(NPC_ROLES.slice(0, 3)).toEqual(['trooper', 'gunner', 'heavy']);
   });
 
+  it('the creature originals are NPC roles drawn as their own look, with no separate npc: skin', () => {
+    const looked = NPC_ROLES.filter((r) => NPC_ROLE_SPECS[r].look);
+    expect(looked).toEqual(['goblin', 'otter', 'boglurker', 'warlord', 'hyena']);
+    for (const role of looked) {
+      const spec = NPC_ROLE_SPECS[role];
+      expect(CORE_LOOKS.find((l) => l.id === spec.look)?.whole, role).toBeDefined();
+      expect(spec.creature, role).toBeUndefined();
+      if (spec.melee) expect(getWeapon(spec.weapon).kind, role).toBe('melee');
+      expect(NPC_LOOKS.some((l) => l.role === role), role).toBe(false);
+      expect(npcLookRole(`npc:${role}`), role).toBeNull();
+    }
+  });
+
+  it('a squad of creature originals spawns and fights with its weapons', () => {
+    const loaded = loadMap(hall({ trooper: 0, gunner: 0, heavy: 0, goblin: 1, boglurker: 1, hyena: 1 }));
+    expect(loaded.ok).toBe(true);
+    if (!loaded.ok) return;
+    const match = new Match(loaded.map, DEFAULT_COOP_RULES, 5);
+    match.addHuman('me');
+    for (let i = 0; i < 5; i++) match.step();
+    const roles = match.npcSnapshots().map((n) => NPC_ROLES[n[7]]).sort();
+    expect(roles).toEqual(['boglurker', 'goblin', 'hyena']);
+  });
+
   it('maps saved before creatures existed load with no creatures in their squads', () => {
     const loaded = loadMap(hall({ trooper: 2, gunner: 1, heavy: 0 }));
     expect(loaded.ok).toBe(true);
@@ -112,6 +139,15 @@ describe('creature NPC kinds', () => {
     const far: PlayerInput = { seq: 2, forward: 0.3, right: 0, yaw: 1, pitch: 0, buttons: 0 };
     chargeIntoMelee(far, { x: 0, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }, 2.2);
     expect(far).toEqual({ seq: 2, forward: 0.3, right: 0, yaw: 1, pitch: 0, buttons: 0 });
+  });
+});
+
+describe('the Meshy rock pile', () => {
+  it('is a natural prop with a full collision box', () => {
+    const p = getProp('prop.rock_pile');
+    expect(p?.category).toBe('Rocks & Wood');
+    expect(p?.collision).toEqual(p?.size);
+    expect(p!.size[1]).toBeCloseTo(1.3);
   });
 });
 

@@ -33,7 +33,7 @@ describe('character looks', () => {
     expect(whole.length).toBeGreaterThan(0);
     for (const l of whole) {
       expect(l.parts, l.id).toHaveLength(1);
-      expect(meshy.files.find((f) => f.id === l.parts[0])?.role, l.id).toBe('meshy');
+      expect(meshy.files.find((f) => f.id === l.parts[0])?.role, l.id).toMatch(/^meshy(-autorig)?$/);
       // First person: the universal arms (a base-body arms part for its body), dyed to match.
       expect(partInfo(l.whole!.arms), l.id).toMatchObject({ slot: 'arms', body: l.body });
       for (const c of [l.whole!.skin, l.whole!.cloth, l.whole!.trim]) expect(c, l.id).toMatch(/^#[0-9a-f]{6}$/);

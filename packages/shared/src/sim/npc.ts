@@ -26,6 +26,12 @@ export interface NpcRoleSpec {
   melee?: boolean;
   /** Multiplier on the damage its attacks do. */
   damage?: number;
+  /**
+   * Drawn as this whole-body character look (a creature original on the
+   * soldiers' rig, CORE_LOOKS) holding its weapon, instead of a uniformed
+   * mannequin. Players pick the look itself, so it gets no `npc:` skin.
+   */
+  look?: string;
 }
 
 /**
@@ -47,6 +53,13 @@ export const NPC_ROLE_SPECS: Record<NpcRole, NpcRoleSpec> = {
   scolitex: { label: 'Scolitex', health: 320, weapon: 'core.knife', speed: 0.8, scale: 1, creature: true, melee: true, damage: 1.5 },
   // Shambles on the soldiers' rig with its own clips; claws, never shoots. Head shots drop it fast.
   zombie: { label: 'Zombie', health: 90, weapon: 'core.knife', speed: 0.68, scale: 1, melee: true, damage: 0.55 },
+  // The creature originals, on the soldiers' rig with their weapons: goblins dart in with blades, the otter
+  // snipes from the back, the boglurker soaks up fire, the warlord shells you, hyenas run you down in packs.
+  goblin: { label: 'Goblin', health: 55, weapon: 'core.knife', speed: 1.1, scale: 0.9, melee: true, damage: 0.6, look: 'core.goblin' },
+  otter: { label: 'Wealthy Otter', health: 60, weapon: 'core.marksman', speed: 0.85, scale: 1, look: 'core.otter' },
+  boglurker: { label: 'Boglurker', health: 200, weapon: 'core.shotgun', speed: 0.72, scale: 1.1, look: 'core.boglurker' },
+  warlord: { label: 'Salamander Warlord', health: 260, weapon: 'core.launcher', speed: 0.7, scale: 1.15, look: 'core.warlord' },
+  hyena: { label: 'Hyena Warrior', health: 85, weapon: 'core.smg', speed: 1.05, scale: 1, look: 'core.hyena' },
 };
 
 /** How many NPCs an encounter roster fields in its first wave. */
@@ -95,6 +108,11 @@ export const NPC_ROLE_PROFILES: Record<NpcRole, BotProfile> = {
   oculus: { ...NPC_PROFILE, id: 'core.npc_oculus', displayName: 'Oculus', aggression: 60, rangePreference: 50, tacticalAwareness: 30, tags: ['NPC'] },
   scolitex: { ...NPC_PROFILE, id: 'core.npc_scolitex', displayName: 'Scolitex', aggression: 90, selfPreservation: 5, rangePreference: 5, tacticalAwareness: 10, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
   zombie: { ...NPC_PROFILE, id: 'core.npc_zombie', displayName: 'Zombie', aggression: 100, selfPreservation: 0, pursuitPersistence: 100, rangePreference: 0, tacticalAwareness: 0, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
+  goblin: { ...NPC_PROFILE, id: 'core.npc_goblin', displayName: 'Goblin', aggression: 95, selfPreservation: 20, rangePreference: 5, tacticalAwareness: 20, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
+  otter: { ...NPC_PROFILE, id: 'core.npc_otter', displayName: 'Wealthy Otter', accuracy: 45, aggression: 25, rangePreference: 90, pursuitPersistence: 15, tacticalAwareness: 60, tags: ['NPC', 'SNIPER'] },
+  boglurker: { ...NPC_PROFILE, id: 'core.npc_boglurker', displayName: 'Boglurker', aggression: 80, selfPreservation: 10, rangePreference: 15, tags: ['NPC', 'GRUNT'] },
+  warlord: { ...NPC_PROFILE, id: 'core.npc_warlord', displayName: 'Salamander Warlord', aggression: 50, rangePreference: 60, pursuitPersistence: 30, tags: ['NPC', 'SUPPRESSOR'] },
+  hyena: { ...NPC_PROFILE, id: 'core.npc_hyena', displayName: 'Hyena Warrior', aggression: 85, rangePreference: 25, pursuitPersistence: 80, tags: ['NPC', 'GRUNT'] },
 };
 
 /** The enemy faction every map has unless it defines its own. */
@@ -161,16 +179,17 @@ export const NPC_LOOK_PREFIX = 'npc:';
 export const npcLookRole = (look: string | undefined): NpcRole | null => {
   if (!look?.startsWith(NPC_LOOK_PREFIX)) return null;
   const role = look.slice(NPC_LOOK_PREFIX.length);
-  return role in NPC_ROLE_SPECS ? (role as NpcRole) : null;
+  // Roles drawn as a character look have no skin of their own (the look is the skin).
+  return role in NPC_ROLE_SPECS && !NPC_ROLE_SPECS[role as NpcRole].look ? (role as NpcRole) : null;
 };
-export const NPC_LOOKS: readonly { id: string; name: string; role: NpcRole }[] = (Object.keys(NPC_ROLE_SPECS) as NpcRole[]).map((role) => ({ id: `${NPC_LOOK_PREFIX}${role}`, name: NPC_ROLE_SPECS[role].label, role }));
+export const NPC_LOOKS: readonly { id: string; name: string; role: NpcRole }[] = (Object.keys(NPC_ROLE_SPECS) as NpcRole[]).filter((role) => !NPC_ROLE_SPECS[role].look).map((role) => ({ id: `${NPC_LOOK_PREFIX}${role}`, name: NPC_ROLE_SPECS[role].label, role }));
 /** Soldier NPC skins: a uniform colour per role so they read apart. */
 export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56703c', gunner: '#9a7440', heavy: '#474d58', sniper: '#3f5a36', zombie: '#5f6f55' };
 /** A look ID kept as is when valid (presets, custom looks, NPC skins), else the default. */
 export const validLookId = (id: string | undefined): string => (npcLookRole(id) ? id! : getLook(id).id);
 
 /** First-person arm colour for each NPC skin (creature hide, soldier uniform). */
-const NPC_ARM_COLORS: Record<NpcRole, string> = { trooper: '#4f7a2c', gunner: '#a8782c', heavy: '#3c4450', sniper: '#3a6a28', imp: '#e0302a', puglin: '#7ab830', cyclops: '#3a7cf0', oculus: '#f07020', scolitex: '#20c8b0', zombie: '#7d9a6a' };
+const NPC_ARM_COLORS: Record<NpcRole, string> = { trooper: '#4f7a2c', gunner: '#a8782c', heavy: '#3c4450', sniper: '#3a6a28', imp: '#e0302a', puglin: '#7ab830', cyclops: '#3a7cf0', oculus: '#f07020', scolitex: '#20c8b0', zombie: '#7d9a6a', goblin: '#4f9a2f', otter: '#3e3d3f', boglurker: '#6a8a35', warlord: '#c8c0ae', hyena: '#8a6a48' };
 
 /**
  * The look whose arms you see in first person: your own, or for an NPC skin

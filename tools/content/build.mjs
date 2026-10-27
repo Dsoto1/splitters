@@ -283,6 +283,7 @@ const CHAR_MODS = {
   fparms: ['arms cut from the base body', 'rebound to the regular body pose', 'simplified'],
   meshy: ['re-posed to the rig\'s T-pose', 'rebound to the rig\'s skeleton', 'simplified', 'base colour only, downscaled to a JPEG', 'vertices quantized'],
   'meshy-fparms': ['arms cut from the body', 're-posed to the rig\'s T-pose', 'rebound to the rig\'s skeleton', 'vertices quantized'],
+  'meshy-autorig': ['rigged in-house (joints placed by hand, skin weights computed from the mesh)', 're-posed to the rig\'s T-pose', 'bound to the rig\'s skeleton', 'simplified', 'base colour only, downscaled to a JPEG', 'vertices quantized'],
   texture: ['downscaled to a JPEG'],
 };
 const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));

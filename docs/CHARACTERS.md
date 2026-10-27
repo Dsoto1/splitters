@@ -134,7 +134,7 @@ How the hands close on the weapon:
 
 Your own view shows your look's arms holding the viewmodel:
 - **Which arms:** the arms part of your look. Under a sportswear top it's `athlete_fparms_m/f`, bare arms cut from the base body for this view only.
-- **Whole-body characters** (Iron Knight, Capt. Nova, The Dapper) wear the universal arms in first person: a base-body arms part on the shared rig (so every gun's grip fits), with the sleeves dyed and the hands tinted to match the character (`whole.cloth`/`trim`/`skin` in `looks.ts`; a glove colour goes in `skin`).
+- **Whole-body characters** (Iron Knight, Capt. Nova, The Dapper, and the creature originals: Goblin, Wealthy Otter, Boglurker, Salamander Warlord, Hyena Warrior) wear the universal arms in first person: a base-body arms part on the shared rig (so every gun's grip fits), with the sleeves dyed and the hands tinted to match the character (`whole.cloth`/`trim`/`skin` in `looks.ts`; a glove colour goes in `skin`). The bare-armed creatures wear the peasant arms with the sleeves dyed to their skin.
 - **Placement:** they hang from the camera a little in front of the eyes. The shoulders are never in view, and long guns stay within reach.
 - **Grip:** the gun keeps its tuned viewmodel placement, with bob, recoil and the reload dip. `gripExternal` IKs the palms onto its grip and support points with the same solver as third person.
 
@@ -193,6 +193,18 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   not a creature role: `zombieHasCreatureBody` puts two in three zombies (in
   Zombies and in co-op squads) in this body, the rest shamble on the
   soldiers' rig with their zombie clips.
+- **The creature originals** (goblin, otter, toad, salamander, hyena: models the
+  owner generated on their Meshy subscription and downloaded as textured FBX,
+  unrigged) are not creature-library bodies: `prepare-meshy-characters.mjs`
+  rigs them onto our rig (joints placed by hand from front and side views,
+  skin weights computed from the mesh, tails on the hips), so they are
+  whole-body looks with every rig clip, and the NPC roles `goblin`, `otter`,
+  `boglurker`, `warlord` and `hyena` draw them through their spec's `look`,
+  holding the role's weapon like a soldier. Goblins rush in with blades, the
+  otter snipes, the boglurker soaks fire with a shotgun, the warlord shells
+  you with a grenade launcher, hyenas run you down with SMGs. They have no
+  `npc:` skin of their own (players pick the look). `SKIN_DEBUG=<dir>` on the
+  script writes each rest mesh coloured by joint to check the weights.
 - In game, `content/creatures.ts` (`CreatureLibrary`) loads and instances
   them and `game/creatureAnimator.ts` drives them; `view.ts` uses them when an
   avatar's spec names a creature. No ragdoll: their death plays and the body
