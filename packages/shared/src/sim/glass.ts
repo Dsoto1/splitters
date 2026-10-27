@@ -121,30 +121,41 @@ export function glassBlocks(map: MapDocument): GlassPane[] {
  * treated as level.
  */
 export function rayOBox(origin: Vec3, dir: Vec3, maxDist: number, b: OBox): number | null {
+  // Every shot tests every standing pane: no allocations here.
   const c = Math.cos(b.yaw);
   const s = Math.sin(b.yaw);
   // Into the box's frame (the inverse of localToWorld's turn).
   const ox = origin.x - b.center.x;
   const oz = origin.z - b.center.z;
-  const o = { x: ox * c - oz * s, y: origin.y - b.center.y, z: ox * s + oz * c };
-  const d = { x: dir.x * c - dir.z * s, y: dir.y, z: dir.x * s + dir.z * c };
-  let t0 = 0;
-  let t1 = maxDist;
-  for (const k of ['x', 'y', 'z'] as const) {
-    const h = b.half[k];
-    if (Math.abs(d[k]) < 1e-9) {
-      if (o[k] < -h || o[k] > h) return null;
-      continue;
+  const lo = slab(0, maxDist, ox * c - oz * s, dir.x * c - dir.z * s, b.half.x);
+  if (lo === null) return null;
+  const lo2 = slab(lo[0], lo[1], origin.y - b.center.y, dir.y, b.half.y);
+  if (lo2 === null) return null;
+  const lo3 = slab(lo2[0], lo2[1], ox * s + oz * c, dir.x * s + dir.z * c, b.half.z);
+  return lo3 === null ? null : lo3[0];
+}
+
+/** One axis of a ray against a slab of half width h: the narrowed [t0, t1], or null when it misses. Reuses one pair. */
+function slab(t0: number, t1: number, o: number, d: number, h: number): readonly [number, number] | null {
+  if (Math.abs(d) < 1e-9) {
+    if (o < -h || o > h) return null;
+  } else {
+    let u = (-h - o) / d;
+    let w = (h - o) / d;
+    if (u > w) {
+      const x = u;
+      u = w;
+      w = x;
     }
-    let u = (-h - o[k]) / d[k];
-    let w = (h - o[k]) / d[k];
-    if (u > w) [u, w] = [w, u];
-    t0 = Math.max(t0, u);
-    t1 = Math.min(t1, w);
+    if (u > t0) t0 = u;
+    if (w < t1) t1 = w;
     if (t0 > t1) return null;
   }
-  return t0;
+  span[0] = t0;
+  span[1] = t1;
+  return span;
 }
+const span: [number, number] = [0, 0];
 
 /** Crack level (0 clean .. 1 fully cracked) of a pane from its replicated health percentage. */
 export const glassCracks = (healthPct: number): number => Math.max(0, Math.min(1, 1 - healthPct / 100));

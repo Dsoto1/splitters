@@ -6,7 +6,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { FresnelParameters } from '@babylonjs/core/Materials/fresnelParameters';
-import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
+import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { GLASS, destructibleBox, glassBlocks, glassCracks, rayOBox, windowPanes, type GlassKind, type MapDocument, type OBox, type Vec3 } from '@tiletrigger/shared';
@@ -56,110 +56,120 @@ export function glassMaterial(scene: Scene, tint: string = GLASS.tint): Standard
   m.useReflectionOverAlpha = true;
   m.backFaceCulling = false;
   // Babylon adds the Fresnel opacity on top: about nothing face on ("right"), most of the way to opaque edge on ("left").
-  m.opacityFresnelParameters = new FresnelParameters({ leftColor: new Color3(0.62, 0.62, 0.62), rightColor: new Color3(0.0, 0.0, 0.0), bias: 0, power: 2.2 });
+  m.opacityFresnelParameters = new FresnelParameters({ leftColor: new Color3(0.48, 0.48, 0.48), rightColor: new Color3(0.0, 0.0, 0.0), bias: 0, power: 2.6 });
   const sky = skyReflection(scene);
   if (sky) {
     m.reflectionTexture = sky;
     // About 6 % face on (real glass is ~4 %), a mirror at grazing angles.
-    m.reflectionFresnelParameters = new FresnelParameters({ leftColor: new Color3(0.85, 0.85, 0.85), rightColor: new Color3(0.06, 0.06, 0.06), bias: 0, power: 2.5 });
+    m.reflectionFresnelParameters = new FresnelParameters({ leftColor: new Color3(0.72, 0.72, 0.72), rightColor: new Color3(0.06, 0.06, 0.06), bias: 0, power: 3 });
   }
   return m;
 }
 
-/** A pane's rim: a soft frame of more opaque, darker glass (64 px, made once per scene). */
+/** A pane's rim: a soft frame of more opaque, darker glass (64 px, made in code once per scene). */
 function edgeTexture(scene: Scene): Texture {
   const have = scene.getTextureByName('glassEdgeTex') as Texture | null;
   if (have) return have;
   const n = 64;
-  const tex = new DynamicTexture('glassEdgeTex', { width: n, height: n }, scene, true);
-  const ctx = tex.getContext() as CanvasRenderingContext2D;
-  const img = ctx.createImageData(n, n);
+  const px = new Uint8Array(n * n * 4);
   for (let y = 0; y < n; y++) {
     for (let x = 0; x < n; x++) {
       const u = (x + 0.5) / n;
       const v = (y + 0.5) / n;
       const d = Math.min(u, 1 - u, v, 1 - v);
-      // 0 at the rim to 1 a few percent in.
+      // 1 at the rim, easing to 0 a few percent in.
       const t = Math.min(1, d / 0.045);
       const rim = 1 - t * t * (3 - 2 * t);
       const i = (y * n + x) * 4;
-      img.data[i] = Math.round(255 * (1 - rim * 0.45));
-      img.data[i + 1] = Math.round(255 * (1 - rim * 0.3));
-      img.data[i + 2] = Math.round(255 * (1 - rim * 0.38));
-      // Face-on alpha ×0.32 (material alpha): ~0.1 in the middle, ~0.3 at the rim.
-      img.data[i + 3] = Math.round(255 * (0.32 + rim * 0.6));
+      px[i] = Math.round(255 * (1 - rim * 0.45));
+      px[i + 1] = Math.round(255 * (1 - rim * 0.3));
+      px[i + 2] = Math.round(255 * (1 - rim * 0.38));
+      // Times the material's alpha (0.32): about 0.1 in the middle, 0.3 at the rim.
+      px[i + 3] = Math.round(255 * (0.32 + rim * 0.6));
     }
   }
-  ctx.putImageData(img, 0, 0);
-  tex.update(false);
+  const tex = RawTexture.CreateRGBATexture(px, n, n, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+  tex.name = 'glassEdgeTex';
   tex.wrapU = tex.wrapV = Texture.CLAMP_ADDRESSMODE;
   return tex;
 }
 
-/** A star crack with a punched hole in the middle (white cracks on clear, 128 px, made once per scene). */
+/**
+ * A star crack round a punched hole (white cracks on clear, 128 px): jagged
+ * radial cracks that thin out, broken rings of the spider web between them,
+ * and a crushed, dark spot where the round struck. Drawn in code once per
+ * scene (anti-aliased lines into a pixel buffer).
+ */
 function crackTexture(scene: Scene): Texture {
   const have = scene.getTextureByName('glassCrackTex') as Texture | null;
   if (have) return have;
   const n = 128;
-  const tex = new DynamicTexture('glassCrackTex', { width: n, height: n }, scene, true);
-  const ctx = tex.getContext() as CanvasRenderingContext2D;
-  ctx.clearRect(0, 0, n, n);
+  const alpha = new Float32Array(n * n);
   const c = n / 2;
   let seed = 917;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  ctx.lineCap = 'round';
+  const line = (x0: number, y0: number, x1: number, y1: number, width: number, a: number) => {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const len2 = dx * dx + dy * dy || 1;
+    const r = width / 2 + 1;
+    for (let y = Math.max(0, Math.floor(Math.min(y0, y1) - r)); y <= Math.min(n - 1, Math.ceil(Math.max(y0, y1) + r)); y++) {
+      for (let x = Math.max(0, Math.floor(Math.min(x0, x1) - r)); x <= Math.min(n - 1, Math.ceil(Math.max(x0, x1) + r)); x++) {
+        const t = Math.max(0, Math.min(1, ((x + 0.5 - x0) * dx + (y + 0.5 - y0) * dy) / len2));
+        const d = Math.hypot(x + 0.5 - (x0 + dx * t), y + 0.5 - (y0 + dy * t));
+        const cover = Math.max(0, Math.min(1, width / 2 + 0.5 - d)) * a;
+        const i = y * n + x;
+        if (cover > alpha[i]!) alpha[i] = cover;
+      }
+    }
+  };
   // Radial cracks, each a jagged line that thins out.
   const rays = 11;
-  const ends: [number, number][] = [];
   for (let k = 0; k < rays; k++) {
-    const a0 = (k / rays) * Math.PI * 2 + rnd() * 0.4;
     const len = c * (0.55 + rnd() * 0.42);
     let x = c;
     let y = c;
-    let a = a0;
+    let ang = (k / rays) * Math.PI * 2 + rnd() * 0.4;
     const steps = 6;
-    for (let s = 1; s <= steps; s++) {
-      a += (rnd() - 0.5) * 0.35;
-      const r = (len * s) / steps;
-      const nx = c + Math.cos(a) * r;
-      const ny = c + Math.sin(a) * r;
-      ctx.strokeStyle = `rgba(255,255,255,${0.95 - s * 0.1})`;
-      ctx.lineWidth = Math.max(0.6, 2.2 - s * 0.3);
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(nx, ny);
-      ctx.stroke();
+    for (let st = 1; st <= steps; st++) {
+      ang += (rnd() - 0.5) * 0.35;
+      const r = (len * st) / steps;
+      const nx = c + Math.cos(ang) * r;
+      const ny = c + Math.sin(ang) * r;
+      line(x, y, nx, ny, Math.max(0.7, 2.2 - st * 0.28), 0.95 - st * 0.1);
       x = nx;
       y = ny;
-      if (s === 3) ends.push([a, r]);
     }
   }
-  // Concentric crack segments between neighbouring rays (the spider web).
-  ctx.lineWidth = 1;
+  // Broken rings between neighbouring rays (the spider web).
   for (const ring of [0.22, 0.4]) {
     for (let k = 0; k < rays; k++) {
       if (rnd() < 0.3) continue;
       const a0 = (k / rays) * Math.PI * 2 + rnd() * 0.2;
       const a1 = a0 + ((Math.PI * 2) / rays) * (0.7 + rnd() * 0.3);
       const r = c * ring * (0.85 + rnd() * 0.3);
-      ctx.strokeStyle = `rgba(255,255,255,${0.7 - ring * 0.6})`;
-      ctx.beginPath();
-      ctx.moveTo(c + Math.cos(a0) * r, c + Math.sin(a0) * r);
-      ctx.lineTo(c + Math.cos(a1) * r * (0.9 + rnd() * 0.2), c + Math.sin(a1) * r * (0.9 + rnd() * 0.2));
-      ctx.stroke();
+      line(c + Math.cos(a0) * r, c + Math.sin(a0) * r, c + Math.cos(a1) * r * (0.9 + rnd() * 0.2), c + Math.sin(a1) * r * (0.9 + rnd() * 0.2), 1, 0.75 - ring * 0.6);
     }
   }
-  // The crushed spot where the round struck: frosted, with a dark hole.
-  const g = ctx.createRadialGradient(c, c, 0, c, c, c * 0.16);
-  g.addColorStop(0, 'rgba(40,44,46,1)');
-  g.addColorStop(0.35, 'rgba(70,76,80,0.95)');
-  g.addColorStop(0.5, 'rgba(235,240,242,0.9)');
-  g.addColorStop(1, 'rgba(235,240,242,0)');
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(c, c, c * 0.16, 0, Math.PI * 2);
-  ctx.fill();
-  tex.update(false);
+  const px = new Uint8Array(n * n * 4);
+  const hole = c * 0.16;
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      const i = y * n + x;
+      const d = Math.hypot(x + 0.5 - c, y + 0.5 - c) / hole;
+      // The crushed spot: a dark hole inside a frosted ring that fades out.
+      const dark = d < 0.4 ? 1 : d < 0.55 ? (0.55 - d) / 0.15 : 0;
+      const frost = d < 1 ? Math.min(1, (1 - d) / 0.5) * 0.9 : 0;
+      const a = Math.max(alpha[i]!, frost, dark);
+      const v = Math.round(255 * (0.93 - dark * 0.77));
+      px[i * 4] = v;
+      px[i * 4 + 1] = Math.min(255, v + 4);
+      px[i * 4 + 2] = Math.min(255, v + 6);
+      px[i * 4 + 3] = Math.round(255 * a);
+    }
+  }
+  const tex = RawTexture.CreateRGBATexture(px, n, n, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+  tex.name = 'glassCrackTex';
   tex.hasAlpha = true;
   tex.wrapU = tex.wrapV = Texture.CLAMP_ADDRESSMODE;
   return tex;
@@ -226,7 +236,7 @@ export class GlassVisuals {
         looks.push({ index: p.entity, box: p.box, kind: p.kind, tint: p.tint ?? GLASS.tint, framed: false, start: e?.kind === 'block' && e.startHidden ? 0 : 100 });
       }
       map.entities.forEach((e, i) => {
-        if (e.kind === 'destructible' && e.model === 'glass') looks.push({ index: i, box: destructibleBox(e), kind: 'pane', tint: '#cfe6ee', framed: true, start: 100 });
+        if (e.kind === 'destructible' && e.model === 'glass') looks.push({ index: i, box: destructibleBox(e), kind: 'pane', tint: GLASS.tint, framed: true, start: 100 });
       });
     }
     if (!looks.length) return;

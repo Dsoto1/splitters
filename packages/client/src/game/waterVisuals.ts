@@ -91,6 +91,7 @@ uniform float glow;
 uniform vec4 fog;
 uniform vec3 fogColor;
 uniform float toneMap;
+uniform float skyLevel;
 uniform sampler2D waveSampler;
 #ifdef SKY
 uniform sampler2D skySampler;
@@ -156,7 +157,7 @@ void main(void) {
 #ifdef SKY
   float lon = atan(R.z, R.x);
   float lat = acos(clamp(R.y, -1.0, 1.0));
-  refl = texture2D(skySampler, vec2(lon / ${(2 * PI).toFixed(6)} + 0.5, lat / ${PI.toFixed(6)})).rgb;
+  refl = texture2D(skySampler, vec2(lon / ${(2 * PI).toFixed(6)} + 0.5, lat / ${PI.toFixed(6)})).rgb * skyLevel;
 #endif
 #ifdef MIRROR
   // Where the mirror drew nothing (alpha 0) the sky picture shows.
@@ -169,9 +170,10 @@ void main(void) {
   float alpha = mix(0.12, alphaMax, deep);
   vec3 col = body;
   if (under) {
-    // From below, the surface is a bright, rippling ceiling (total reflection away from the window overhead).
-    col = mix(horizon * 0.9, deepColor * ambient, fres);
-    alpha = 0.85;
+    // From below: a rippling ceiling in the water's own colour (the underwater haze tints it like everything else),
+    // brighter straight up where the sky shows through, the deep colour where it reflects the water below.
+    col = mix(shallowColor * ambient * 1.35 + refl * 0.2, deepColor * ambient, fres);
+    alpha = 0.9;
   } else {
     col = mix(body, refl, fres * reflectivity);
     alpha = mix(alpha, 1.0, fres * reflectivity);
@@ -301,7 +303,8 @@ export class WaterVisuals {
         const t = terrainHeightAt(terrain, x, z);
         if (t !== null) g = Math.max(g, t);
       }
-      for (const b of boxes) if (x >= b.min[0] && x <= b.max[0] && z >= b.min[2] && z <= b.max[2]) g = Math.max(g, Math.min(top, b.max[1]));
+      // Strictly inside (a pool's rim vertices lie on the edge of the ground round it: that isn't under the water).
+      for (const b of boxes) if (x > b.min[0] + 0.05 && x < b.max[0] - 0.05 && z > b.min[2] + 0.05 && z < b.max[2] - 0.05) g = Math.max(g, Math.min(top, b.max[1]));
       return Math.min(g, top);
     };
   }
@@ -316,7 +319,7 @@ export class WaterVisuals {
     const samplers = ['waveSampler', ...(sky ? ['skySampler'] : []), ...(mirror ? ['mirrorSampler'] : []), ...(sceneDepth ? ['depthSampler'] : [])];
     const m = new ShaderMaterial(`liquid_${liquid}_${this.materials.length}`, this.scene, { vertex: 'ttLiquid', fragment: 'ttLiquid' }, {
       attributes: ['position', 'depth'],
-      uniforms: ['world', 'view', 'viewProjection', 'eye', 'time', 'shallowColor', 'deepColor', 'sunDir', 'sunColor', 'ambient', 'horizon', 'clarity', 'reflectivity', 'flow', 'waveScale', 'foamWidth', 'alphaMax', 'glow', 'fog', 'fogColor', 'toneMap'],
+      uniforms: ['world', 'view', 'viewProjection', 'eye', 'time', 'shallowColor', 'deepColor', 'sunDir', 'sunColor', 'ambient', 'horizon', 'clarity', 'reflectivity', 'flow', 'waveScale', 'foamWidth', 'alphaMax', 'glow', 'fog', 'fogColor', 'toneMap', 'skyLevel'],
       samplers,
       defines,
       needAlphaBlending: look.alpha < 1 || !emissive,
@@ -337,6 +340,8 @@ export class WaterVisuals {
     m.setFloat('glow', look.glow);
     m.setTexture('waveSampler', this.waveTexture());
     if (sky) m.setTexture('skySampler', sky);
+    // As bright as the sky looks (night skies are dimmed).
+    m.setFloat('skyLevel', sky?.level ?? 1);
     if (mirror) m.setTexture('mirrorSampler', mirror);
     if (sceneDepth) m.setTexture('depthSampler', sceneDepth.getDepthMap());
     m.onBindObservable.add(() => this.bind(m));

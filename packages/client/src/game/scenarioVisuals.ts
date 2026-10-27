@@ -34,6 +34,7 @@ import {
   DESTRUCTIBLE_SPECS,
   rosterSize,
   mapLiquids,
+  GLASS,
   DOOR,
   ELECTRIC_FENCE,
   TRAP_ACTIVE,
@@ -858,13 +859,14 @@ export class ScenarioVisuals {
       // Medium and high graphics: the liquid shader (waves, reflection, depth colour, foam; lava and acid flow).
       const { mesh } = this.liquids.surface(name, e, look.color);
       mesh.parent = root;
-      // Lava and acid keep their glowing volume (seen from the side); water and swamp colour by depth instead.
-      if (e.liquid === 'lava' || e.liquid === 'acid') {
-        const body = CreateBox(`${name}_body`, { width: w - 0.02, height: h - 0.06, depth: d - 0.02, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
-        body.parent = root;
-        body.position.y = h / 2 - 0.03;
-        body.material = this.mat(`liquidBody${e.liquid}`, look.color, { emissive: look.glow * 0.6, alpha: look.depthAlpha });
-      }
+      // The volume, for side views (a tank behind glass, a pool's wall): lava and acid glow; water and swamp leave out
+      // the top, which the surface shader colours by depth. Same draw count as before the shader.
+      const body = CreateBox(`${name}_body`, { width: w - 0.02, height: h - 0.06, depth: d - 0.02, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
+      if (e.liquid === 'water' || e.liquid === 'swamp') dropBoxTop(body);
+      body.parent = root;
+      body.position.y = h / 2 - 0.03;
+      body.material = this.mat(`liquidBody${e.liquid}`, look.color, { emissive: look.glow * 0.6, alpha: look.depthAlpha });
+      body.isPickable = false;
       return { root };
     }
     const surface = CreateGround(`${name}_surface`, { width: w, height: d, subdivisions: 1 }, this.scene);
@@ -1447,7 +1449,7 @@ export class ScenarioVisuals {
       // A pane in a window: in play the instanced glass draws it with its frame (GlassVisuals); MapMaker draws it here.
       if (!this.opts.editor) return { root };
       const lift = spec.lift ?? 0;
-      base = '#cfe6ee';
+      base = GLASS.tint;
       bodyMat = glassMaterial(this.scene, base);
       body = this.box(`${name}_body`, root, [h.x * 2, h.y * 2, h.z * 2], [0, lift + h.y, 0], bodyMat);
       const frame = this.mat('paneFrame', '#d9d6cf');
@@ -1752,4 +1754,24 @@ function candleFlicker(t: number, blink: number, seed: number): number {
     k *= r < 0.45 ? 0.08 + 0.25 * r : 1.1;
   }
   return k;
+}
+
+/**
+ * Leave out a box's top face (CreateBox: six faces of two triangles each, the
+ * fifth is +Y; double-sided boxes repeat the list back-facing).
+ */
+function dropBoxTop(box: Mesh): void {
+  const idx = box.getIndices();
+  const pos = box.getVerticesData('position');
+  if (!idx || !pos) return;
+  const keep: number[] = [];
+  for (let t = 0; t < idx.length; t += 3) {
+    const a = idx[t]!;
+    const b = idx[t + 1]!;
+    const c = idx[t + 2]!;
+    // A triangle whose corners are all at the top.
+    const top = pos[a * 3 + 1]! > 0 && pos[b * 3 + 1]! > 0 && pos[c * 3 + 1]! > 0;
+    if (!top) keep.push(a, b, c);
+  }
+  box.setIndices(keep);
 }

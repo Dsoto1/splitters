@@ -60,18 +60,36 @@ glass block can be as thin as 5 cm).
   breakable panes they pass (`Scenario.shootGlass`); blasts break them too.
 - **Bots** see through all glass, path round intact panes (they are blockers
   until broken) and through the window once a pane is gone.
-- **Rendering** (`client/src/game/glassVisuals.ts`): one material for all
-  glass (a slight tint, Fresnel opacity and Fresnel reflection of the map's sky
-  picture or the scene's environment texture, a sharp specular glint) and every
-  window pane a thin instance of one box: a building full of glass is one draw
-  call, with no render targets. Cracks frost a pane (whiter, more opaque);
-  broken panes drop out of the instance list.
+- **Rendering** (`client/src/game/glassVisuals.ts`): every pane in play
+  (window glass, glass blocks and the older *Window pane* destructibles, with
+  its cross frame) is a thin instance of one box in one shared material per
+  tint: a slight sea-green tint, clear face on and more opaque towards grazing
+  angles (Fresnel opacity), a little darker and greener at each pane's rim (a
+  64 px edge texture made in code, like the thickness of float glass seen at
+  its edge), a Fresnel reflection of the map's sky picture (about 6 % face on,
+  a mirror at grazing angles; it shares the backdrop's texture, at the sky's
+  own brightness, so night glass stays dark) and a sharp specular glint. No
+  render targets, on any graphics setting. Panes are grouped in 32 m squares
+  (one mesh per square and tint), so the transparent pass sorts glass against
+  water and effects square by square and squares out of view are culled. A
+  round that stops on a pane (bulletproof glass, or a Window pane about to
+  break) leaves a star crack with a punched hole where it struck (one
+  thin-instanced decal mesh, up to 192, cleared when the pane is whole again
+  or gone) and a few glints; bulletproof glass also frosts as it cracks (whiter,
+  more opaque, per-instance colour). A pane that breaks drops out (zero scale)
+  and throws 6–16 flat, see-through shards spread over its whole face, falling
+  mostly straight down (effects physics, like debris). Glass blocks a mover
+  carries are drawn one by one in the same material; MapMaker draws window
+  glass instanced and entities on their own.
 - **Validation**: glass on a side with no window (`glass.edge`) and glass on a
   block that isn't plain solid (`glass.block`) are warnings.
 
-Converted maps: *Glasswork Office* and *Riot Junction* (window edge glass) and
-*Fallout Lane* (glass blocks, which its nuclear-test logic still blows in). The
-older *Window pane* destructible still works for maps that place panes by hand.
+Converted maps: *Glasswork Office* and *Riot Junction* (window edge glass),
+*Fallout Lane* (glass blocks, which its nuclear-test logic still blows in) and
+the *Training Range* (its glass penetration panel and the water tank's walls are
+breakable glass blocks, back 4 s after they are shot out, and a bulletproof
+panel stands after the tank). The older *Window pane* destructible still works
+for maps that place panes by hand, and is drawn with the same glass.
 
 ## Room options (format v16)
 
