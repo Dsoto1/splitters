@@ -142,7 +142,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .setup-body h4, .setup-more summary { margin: 0; color: var(--text); font: 700 12px var(--font-display); letter-spacing: 0.18em; text-transform: uppercase; }
 .setup-body h4::before { content: ''; display: inline-block; width: 3px; height: 11px; margin-right: 8px; background: var(--orange); transform: skewX(-15deg); vertical-align: -1px; }
 .row-label { display: inline-flex; align-items: center; gap: 6px; }
-.mode-pick { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.mode-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
 .mode-chip { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 14px 8px 10px; text-align: left; background: var(--surface-1); clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); min-width: 0; }
 .mode-chip small { color: var(--muted); font: 500 12px/1.25 var(--font-body); text-transform: none; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .mode-chip b { font: 700 13px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
@@ -217,6 +217,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
   .arcade { grid-template-columns: minmax(0, 1fr); }
   .arcade .map-cards { display: none; }
   #arcade-map { display: block; }
+  .setup-title h3, .setup-title > small { display: none; }
 }
 /* Little room (down to 640 × 360): tighter screen, header and rows; the setup body scrolls. */
 @media (max-height: 600px), (max-width: 700px) {
