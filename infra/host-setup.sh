@@ -110,7 +110,9 @@ fi
 id tiletrigger >/dev/null 2>&1 || useradd --system --home "$APP" --shell /usr/sbin/nologin tiletrigger
 mkdir -p "$APP" && chown tiletrigger:tiletrigger "$APP"
 mkdir -p "$SITE_ROOT" && chmod 755 "$SITE_ROOT"
-as_app() { sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 "$@"; }
+# As the hub's user, in the checkout (the folder this runs from may not be readable for that user).
+# shellcheck disable=SC2016 # expanded by that shell
+as_app() { sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 sh -c 'cd "$0" && exec "$@"' "$APP" "$@"; }
 if [ -d "$APP/.git" ]; then
   as_app git -C "$APP" remote set-url origin "$REPO"
 else

@@ -203,6 +203,16 @@ checksum mismatch, missing attestation, unsafe tarball, missing build,
 health-check failure and automatic rollback, `--rollback`, `--release`,
 `--channel stable`, pruning.
 
+**Moving the live box to this (once).** Fast-forward `main` to this change
+and wait for its CI run to publish `main-latest` (the release job; the
+repository's Releases page then shows it). Then re-run
+`infra/deploy-multiplayer.sh` from CloudShell: it installs the new updater,
+switches the hub to one process serving `/opt/tiletrigger-site/current/site`,
+installs the build, and removes the old on-box build and development
+dependencies. Don't run the old box's `sudo tiletrigger-update` for this: that
+is the old updater, which builds on the box. If the run stops at the site
+build step, the old hub keeps serving; fix the cause and re-run.
+
 **Not changed by updates**: systemd units, Caddy, coturn, the firewall and
 secrets. Those change only through `infra/deploy-multiplayer.sh` (it runs
 the updater as its last step).
