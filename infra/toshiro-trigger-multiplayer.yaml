@@ -118,12 +118,13 @@ Parameters:
     Description: Monthly budget (USD). Alerts at 100% actual and 100% forecast.
   NetworkOutAlarmBytes:
     Type: Number
-    Default: 1500000000
+    Default: 300000000
     MinValue: 10000000
     Description: >-
       Lightsail NetworkOut alarm: bytes sent in 5 minutes, three periods in a
-      row. 1.5 GB / 5 min is ~5 MB/s sustained, a pace that would use the
-      2 GB plan's 3 TB allowance in about a week. Normal play is far below.
+      row. 300 MB / 5 min is ~1 MB/s sustained for 15 minutes, the pace that
+      would use the 2 GB plan's 3 TB monthly allowance. Normal play (site
+      downloads, signaling, a few relayed players) is far below.
 
   SsmPrefix:
     Type: String

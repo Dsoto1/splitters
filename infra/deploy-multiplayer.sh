@@ -340,7 +340,7 @@ scp -q "${SSH_OPTS[@]}" "$HERE/host-setup.sh" "$HERE/turn-check.py" "$WORK/boots
 rm -f "$WORK/bootstrap.env"
 
 log "Bootstrapping the instance (packages, build, Caddy, hub, coturn; 5-10 minutes the first time)"
-rssh "sudo bash $REMOTE/host-setup.sh $REMOTE/bootstrap.env; rc=\$?; if [ \$rc = 0 ]; then echo; echo '== TURN check on the box (config)'; sudo python3 $REMOTE/turn-check.py --host 127.0.0.1 --secret-file $REMOTE/turn-secret || rc=\$?; fi; sudo rm -rf $REMOTE; exit \$rc" \
+rssh "sudo bash $REMOTE/host-setup.sh $REMOTE/bootstrap.env; rc=\$?; if [ -f /etc/tiletrigger-relay-off ]; then echo '== Relay switched off (tiletrigger-relay off): TURN check skipped'; elif [ \$rc = 0 ]; then echo; echo '== TURN check on the box (config)'; sudo python3 $REMOTE/turn-check.py --host 127.0.0.1 --secret-file $REMOTE/turn-secret || rc=\$?; fi; sudo rm -rf $REMOTE; exit \$rc" \
   || die "bootstrap or on-box TURN check failed (see above); SSH: Lightsail console → Connect, then sudo journalctl -u tiletrigger-hub -n 80"
 
 # ------------------------------------------------------------------ 7. checks from outside

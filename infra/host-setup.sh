@@ -126,11 +126,14 @@ no-dtls
 no-multicast-peers
 # Game traffic is WebRTC data channels over UDP: no TCP relay allocations.
 no-tcp-relay
-# Bounds: allocations in total and per credential, bandwidth per session and in total.
-total-quota=100
+# Bounds (docs/MULTIPLAYER_SECURITY.md): allocations in total (= the 41 relay ports) and per
+# credential; bytes/s per session (a relayed player needs ~3-10 KB/s) and for the whole relay
+# (2 MB/s out = at most ~5 TB/month even if abused around the clock; the NetworkOut alarm fires
+# at 1 MB/s sustained).
+total-quota=40
 user-quota=8
-max-bps=200000
-bps-capacity=6000000
+max-bps=48000
+bps-capacity=2000000
 max-allocate-lifetime=3600
 # Relay only to the internet: never to loopback, private networks (this box's private IP is in
 # 172.16/12) or cloud metadata. The static IP itself stays allowed: two players who both need
@@ -247,8 +250,13 @@ fi
 
 # ---------------------------------------------------------------- start everything
 systemctl daemon-reload
-systemctl enable -q coturn caddy tiletrigger-hub
-systemctl restart coturn
+systemctl enable -q caddy tiletrigger-hub
+if [ -f /etc/tiletrigger-relay-off ]; then
+  log "Relay was switched off (tiletrigger-relay off): leaving coturn stopped"
+else
+  systemctl enable -q coturn
+  systemctl restart coturn
+fi
 systemctl restart tiletrigger-hub
 systemctl reload-or-restart caddy
 
@@ -261,6 +269,20 @@ systemctl restart tiletrigger-hub
 echo "Tile Trigger updated to \$(sudo -u tiletrigger git -C $APP log -1 --format='%h %s')"
 UPD
 chmod 755 /usr/local/bin/tiletrigger-update
+
+# Relay kill switch for abuse or a cost spike: `sudo tiletrigger-relay off` (on, status).
+# Direct connections keep working; players behind strict NATs can't join until it is back on.
+cat > /usr/local/bin/tiletrigger-relay <<'RELAY'
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-status}" in
+  off) systemctl disable --now coturn && echo "relay OFF (coturn stopped; stays off across reboots and deploys until 'on')" && touch /etc/tiletrigger-relay-off ;;
+  on) rm -f /etc/tiletrigger-relay-off && systemctl enable --now coturn && echo "relay ON" ;;
+  status) echo "coturn: $(systemctl is-active coturn || true)"; journalctl -u coturn --since today -o cat | grep -c 'session.*closed' | xargs echo "sessions closed today:" ;;
+  *) echo "usage: tiletrigger-relay on|off|status"; exit 2 ;;
+esac
+RELAY
+chmod 755 /usr/local/bin/tiletrigger-relay
 
 # ---------------------------------------------------------------- local health
 up=no
