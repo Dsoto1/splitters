@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { VISIBLE_IMPORTED_MAPS, initPhysics, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { VISIBLE_IMPORTED_MAPS, initPhysics, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
@@ -33,9 +33,25 @@ import { PLAYLISTS, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
 import { loadSignaling, type Transport } from './game/transport.ts';
+import { seededRng, testMode } from './testMode.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
+// Browser tests' deterministic mode (?test=1): offline only, see testMode.ts.
+const TEST = testMode();
+if (TEST) {
+  // Seeded per page load in this browser profile: the same steps give the same ids in a fresh profile (a test's
+  // own context), and a reload doesn't hand out ids already saved in the library before it.
+  let loads = 1;
+  try {
+    loads = Number(localStorage.getItem('tiletrigger.test.loads') ?? 0) + 1;
+    localStorage.setItem('tiletrigger.test.loads', String(loads));
+  } catch {
+    // No storage: nothing saved to collide with either.
+  }
+  setIdRandom(seededRng(Math.imul(TEST.seed, 1000003) + loads));
+}
+(window as unknown as { __testMode: typeof TEST }).__testMode = TEST;
 function storage(key: string, value?: string): string | null {
   try {
     if (value !== undefined) localStorage.setItem(key, value);
@@ -253,7 +269,7 @@ class App {
   private startTest(req: TestRequest): void {
     const t0 = performance.now();
     this.editor!.hide();
-    this.startSession(new LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty }), {
+    this.startSession(new LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Back to MapMaker',
       exitOnF5: true,
       onReady: () => {
@@ -293,7 +309,7 @@ class App {
   /** `hosting`: Host game carried over a map change (the same join code; friends rejoin it). */
   /** `autoHost`: open a join code for friends as soon as the match starts (Play → Host). */
   playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false): void {
-    this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}) }), {
+    this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,

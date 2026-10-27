@@ -1,10 +1,18 @@
 // Browser end-to-end checks: MapMaker edit -> TEST -> edit loop, persistence,
 // and two online clients against the dedicated server.
-// Usage: pnpm build && pnpm e2e
+// Usage: pnpm build && pnpm e2e   (pnpm e2e:changed: the flows e2e/flowMap.mjs maps your changes to)
+//   E2E_ONLY=a,b (those flows), E2E_SHARD=i/n (one of n shards balanced by e2e/timings.json),
+//   E2E_RETRIES=1 (a failed flow runs again; passing then it's FLAKY, not a failure), E2E_TIMINGS_OUT=file
+//   (per-flow seconds), E2E_SEED (the imported maps' pick), E2E_UPDATE_BASELINES=1 (visual flow: new pictures).
+// Flows that need determinism open pages with ?test=1 (fixed sim seed, seeded MapMaker ids; &god=1 an
+// invulnerable player): see packages/client/src/testMode.ts. Wait on conditions, not fixed sleeps
+// (tools/ci/lint-e2e-waits.mjs).
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium } from 'playwright';
+import { COVERED_MAPS, FLOWS, IMPORTED_PART, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
+import { assignShards, loadTimings } from './shards.mjs';
 
 // E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
 const CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? '4173';
@@ -13,16 +21,6 @@ const SERVER_PORT = +(process.env.E2E_SERVER_PORT ?? 7787);
 const procs = [];
 /** CI renders in software on a shared runner, several times slower than a desk: every wait stretches there. */
 const SLOW = process.env.CI ? 3 : 1;
-/**
- * CI runs the flows in parallel groups, balanced by how long they take there
- * (the map tour alone is the longest). Each flow is in exactly one group.
- */
-const SHARDS = [
-  ['maps', 'online', 'webgpu'],
-  ['editor', 'editorux', 'designer', 'characters', 'offline', 'hostgame', 'lobby', 'hostcontrols'],
-  ['maps2', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'zombies'],
-  ['setpieces', 'physicsfx', 'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'classes', 'race'],
-];
 const T = (ms) => ms * SLOW;
 let failures = 0;
 /**
@@ -31,7 +29,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'zombies', 'classes', 'vehicles', 'race', 'maps', 'maps2']);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'zombies', 'classes', 'vehicles', 'race', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -43,6 +41,16 @@ async function simWait(page, fn, arg, ms) {
   const until = Date.now() + ms;
   while (Date.now() < until) {
     if (await sim(page, fn, arg).catch(() => false)) return true;
+    await sleep(100);
+  }
+  return false;
+}
+
+/** Poll `pred()` (async, node side) until it holds; true if it did within `ms`. */
+async function until(pred, ms) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    if (await pred().catch(() => false)) return true;
     await sleep(100);
   }
   return false;
@@ -61,11 +69,14 @@ const livePages = new Set();
 const shots = [];
 const ARTIFACTS = process.env.E2E_ARTIFACTS ?? 'e2e-artifacts';
 let currentFlow = 'setup';
+/** The failed checks of the flow attempt running now (for the flaky report). */
+let attemptFails = [];
 
 function check(cond, message) {
   console.log(`${cond ? 'PASS' : 'FAIL'} ${message}`);
   if (cond) return;
   failures++;
+  attemptFails.push(message);
   // What every open page showed when the check failed (uploaded by CI).
   let i = 0;
   for (const page of livePages) {
@@ -122,7 +133,7 @@ async function editorFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?mode=editor`);
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
@@ -237,7 +248,7 @@ async function editorFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(20000) });
   const ms = await page.evaluate(() => window.__testStartMs);
   check(ms < 3000, `TEST starts within the 3 s budget (${ms.toFixed(0)} ms)`);
-  await page.waitForTimeout(1500);
+  await frames(page, 10);
   await page.keyboard.press('Escape');
   // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
@@ -321,7 +332,7 @@ async function editoruxFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
-  await page.goto(`${CLIENT}/?mode=editor`);
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
@@ -334,7 +345,7 @@ async function editoruxFlow(browser) {
     await page.mouse.click(p.x, p.y);
   };
   // Let the editor catch up on a frame (panels and hover refresh per frame).
-  const settle = () => page.waitForTimeout(250);
+  const settle = () => frames(page, 3);
 
   check(await page.isVisible('#ed-toolbar #ed-tb-erase') && (await page.textContent('#ed-tb-erase')).includes('X'), 'tool bar shows Erase with its key');
   check((await page.getAttribute('#ed-tb-select', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Select'), 'Select is the lit tool and the hint says what it does');
@@ -362,7 +373,7 @@ async function editoruxFlow(browser) {
 
   // Search: fuzzy over names, tags and packs, ranked across every tab; Enter picks the best match.
   await page.fill('#ed-search', 'sandbg');
-  await page.waitForTimeout(100);
+  await page.waitForFunction(() => !!document.querySelector('#ed-pal-results [data-pick="prop:prop.sandbag_wall"]'), null, { timeout: T(5000) }).catch(() => {});
   const found = await page.evaluate(() => ({
     first: document.querySelector('#ed-pal-results [data-pick]')?.dataset.pick,
     picks: [...document.querySelectorAll('#ed-pal-results [data-pick]')].map((b) => b.dataset.pick),
@@ -370,7 +381,7 @@ async function editoruxFlow(browser) {
   }));
   check(found.picks.includes('prop:prop.sandbag_wall') && found.panes === 0, `search with a typo finds the sandbag wall and shows only results (${found.picks.slice(0, 4).join(', ')})`);
   await page.fill('#ed-search', 'kenney barrel');
-  await page.waitForTimeout(100);
+  await page.waitForFunction(() => !!document.querySelector('#ed-pal-results [data-pick="prop:prop.barrel"]'), null, { timeout: T(5000) }).catch(() => {});
   check((await page.$$eval('#ed-pal-results [data-pick]', (b) => b.map((x) => x.dataset.pick))).includes('prop:prop.barrel'), 'search matches the pack a prop comes from');
   await page.fill('#ed-search', 'jump pad');
   await page.press('#ed-search', 'Enter');
@@ -389,13 +400,13 @@ async function editoruxFlow(browser) {
   check(await page.evaluate(() => document.getElementById('ed-pal-results').hidden && !!document.querySelector('#ed-pal-quick .ed-quick-row [data-pick]')), 'Escape clears the search; the favourite is in the quick row');
   // Hover card names the piece under the pointer (the grid view shows pictures only).
   await page.evaluate(() => document.querySelector('[data-tool="scenario:pad"]').scrollIntoView({ block: 'center' }));
-  await page.waitForTimeout(100);
+  await frames(page, 2);
   await page.hover('[data-tool="scenario:pad"]');
   const tip = await page.evaluate(() => ({ text: document.getElementById('ed-pal-tip')?.textContent ?? '', shown: !document.getElementById('ed-pal-tip')?.hidden }));
   check(tip.text.includes('Jump Pad') && tip.shown, `hovering a piece shows its name (${JSON.stringify(tip)})`);
   // Fits at 1280×720 without sideways scrolling.
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.waitForTimeout(200);
+  await frames(page, 3);
   const fit = await page.evaluate(() => {
     const p = document.getElementById('ed-palette');
     const tabs = [...document.querySelectorAll('#ed-pal-tabs .tab:not([hidden])')];
@@ -586,7 +597,7 @@ async function offlineFlow(browser) {
   check(all.length > 20 && missing.length === 0, `every map card shows its picture (${all.length} cards; missing: ${missing.join(', ') || 'none'})`);
   check(all.every((c) => c.plan && !c.inPic) && !(await page.$('.shot-top')), 'and its plan as a separate box, nothing composited into the picture');
   await page.evaluate(() => document.querySelector('.map-card')?.scrollIntoView());
-  await page.waitForTimeout(500);
+  await until(() => planDrawn(page, '.map-card .map-thumb.plan canvas'), T(5000));
   check(await planDrawn(page, '.map-card .map-thumb.plan canvas'), 'the plan is drawn top-down');
   await page.waitForFunction(() => document.querySelector('.setup-preview .pic img')?.naturalWidth > 0, null, { timeout: T(10000) }).catch(() => {});
   check((await thumbLoaded(page, '.setup-preview .pic img')) && (await planDrawn(page, '.setup-preview .plan canvas')), 'match setup shows the picture and the plan side by side');
@@ -598,7 +609,7 @@ async function offlineFlow(browser) {
   // The match runs in its own worker (rendering keeps the page's thread): it ticks there, and the page only hears about it.
   const where = await page.evaluate(() => ({ mode: window.__sim?.mode, match: '__match' in window }));
   const t0 = await sim(page, (m) => m.tick);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(1000); // wait-ok: measures the tick rate over one second
   const t1 = await sim(page, (m) => m.tick);
   check(where.mode === 'worker' && !where.match && t1 - t0 > 20, `the offline match runs in a Web Worker (${where.mode}, ${t1 - t0} ticks in 1 s)`);
   // Wait for the ammo readout (it blanks while you're down after an early death).
@@ -623,7 +634,7 @@ async function vaultFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=vault`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  await page.waitForTimeout(1500);
+  await page.waitForFunction(() => (document.getElementById('objectives')?.textContent ?? '').includes('Find the vault control'), null, { timeout: T(10000) }).catch(() => {});
   const objectives = await page.textContent('#objectives');
   check((objectives ?? '').includes('Find the vault control'), `scenario demo shows its first objective (${objectives})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -636,7 +647,7 @@ async function outpostFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=outpost`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  await page.waitForTimeout(2500);
+  await page.waitForFunction(() => (document.getElementById('objectives')?.textContent ?? '').includes('Clear the courtyard'), null, { timeout: T(10000) }).catch(() => {});
   const objectives = await page.textContent('#objectives');
   check((objectives ?? '').includes('Clear the courtyard'), `co-op mission shows its first objective (${objectives})`);
   // Player, two bot teammates and at least one NPC squad, all as animated characters.
@@ -653,7 +664,7 @@ async function sandgateFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=sandgate`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  await page.waitForTimeout(2000);
+  await page.waitForFunction(() => /Embers/.test(document.getElementById('scorebar')?.textContent ?? '') && /Tide/.test(document.getElementById('scorebar')?.textContent ?? ''), null, { timeout: T(10000) }).catch(() => {});
   const score = (await page.textContent('#scorebar')) ?? '';
   check(score.includes('Embers') && score.includes('Tide'), `team deathmatch shows both team scores (${score})`);
   await page.waitForFunction(() => window.__cs.view.characterCount() >= 8, null, { timeout: T(20000) }).catch(() => {});
@@ -669,7 +680,7 @@ async function citadelFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=citadel`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  await page.waitForTimeout(4000);
+  await page.waitForFunction(() => window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.includes('_model')).length >= 35, null, { timeout: T(15000) }).catch(() => {});
   const props = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.includes('_model')).length);
   check(props >= 35, `Citadel's props are placed (${props})`);
   // A bot can down you in the first seconds (the HUD blanks until you respawn): wait for it to show again.
@@ -687,7 +698,7 @@ async function canyonFlow(browser) {
   // The game: terrain meshes per ground material, and players stand on the ground.
   await page.goto(`${CLIENT}/?offline=canyon`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  await page.waitForTimeout(3000);
+  await page.waitForFunction(() => window.__cs.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).length >= 5, null, { timeout: T(15000) }).catch(() => {});
   const grounds = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.includes('_terrain_')).map((m) => m.name.split('_terrain_')[1]));
   check(grounds.length >= 5 && grounds.includes('grass') && grounds.includes('stone'), `canyon terrain is drawn in its ground materials (${grounds.join(', ')})`);
   const y = await page.evaluate(() => window.__cs.local.eye.y);
@@ -743,7 +754,7 @@ async function sceneryFlow(browser) {
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
   await page.selectOption('#ed-bd-sky', 'sunset');
-  await page.waitForTimeout(300);
+  await page.waitForFunction(() => window.__editor.doc.backdrop?.sky === 'sunset' && window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky'), null, { timeout: T(5000) }).catch(() => {});
   const bd = await page.evaluate(() => ({ sky: window.__editor.doc.backdrop?.sky, mesh: window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky') }));
   check(bd.sky === 'sunset' && bd.mesh, `MapMaker sets the map's sky (${bd.sky})`);
   await page.click('#ed-blood-amount');
@@ -768,7 +779,7 @@ async function sceneryFlow(browser) {
   let p = await at(0, 0);
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(300); // wait-ok: a held brush stroke
   await page.mouse.up();
   const lush = await page.evaluate(() => window.__editor.doc.terrain.foliage.filter((v) => v === 4).length);
   check(lush > 5, `the plants brush paints overgrown cells (${lush})`);
@@ -816,9 +827,12 @@ async function setpiecesFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=sky_islands`);
+  await page.goto(`${CLIENT}/?offline=sky_islands&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
-  await page.waitForTimeout(1000);
+  await page.waitForFunction(() => {
+    const ms = window.__cs.view.scene.meshes;
+    return ms.filter((m) => /^sc_block_.*_body$/.test(m.name)).length >= 20 && ms.filter((m) => /_surface$/.test(m.name)).length === 2;
+  }, null, { timeout: T(10000) }).catch(() => {});
   const drawn = await page.evaluate(() => {
     const ms = window.__cs.view.scene.meshes;
     return { blocks: ms.filter((m) => /^sc_block_.*_body$/.test(m.name)).length, liquids: ms.filter((m) => /_surface$/.test(m.name)).length };
@@ -830,7 +844,6 @@ async function setpiecesFlow(browser) {
     const e = m.map.entities.find((x) => x.kind === 'block' && x.behaviour === 'crumble');
     const me = m.slots[window.__cs.slot];
     for (const c of m.slots) if (c && c !== me) c.alive = false;
-    window.__pin = setInterval(() => { me.health = 100; }, 50);
     me.move = { pos: { x: e.position[0], y: e.position[1] + e.size[1] + 0.3, z: e.position[2] }, velY: 0, grounded: false };
     return e.id;
   });
@@ -864,9 +877,9 @@ async function physicsfxFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=canyon`);
+  await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
-  await page.waitForTimeout(2500);
+  await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model') && n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01), null, { timeout: T(15000) }).catch(() => {});
   // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats.
   const props = await page.evaluate(() => {
     const roots = window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model'));
@@ -878,7 +891,6 @@ async function physicsfxFlow(browser) {
   await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    window.__pin = setInterval(() => { me.health = 100; }, 50);
     const bot = m.slots.find((c) => c && c !== me && c.alive);
     for (const c of m.slots) if (c && c !== me && c !== bot) c.alive = false;
     const f = window.__cs.view.camera.getForwardRay(1).direction;
@@ -887,7 +899,12 @@ async function physicsfxFlow(browser) {
     window.__botSlot = bot.slot;
     window.__autoInput = { buttons: 0 };
   });
-  await page.waitForTimeout(T(1200));
+  // The bot lands where it was put and its avatar stands there.
+  await page.waitForFunction(() => {
+    const bot = window.__match.slots[window.__botSlot];
+    return bot?.move.grounded && !!window.__cs.view.avatars.get(bot.slot)?.anim?.ch.joints.get('Head');
+  }, null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 5);
   const standing = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
@@ -906,7 +923,7 @@ async function physicsfxFlow(browser) {
   // The push can throw the body up first and land it on something higher than it stood: measure the fall from its peak.
   const fell = () => { const top = track.indexOf(Math.max(...track)); return track.length ? track[top] - Math.min(...track.slice(top)) : 0; };
   for (let i = 0; i < 12 && !(ragdolled && fell() > 0.5); i++) {
-    await page.waitForTimeout(T(150) / 2);
+    await page.waitForTimeout(T(150) / 2); // wait-ok: sampling interval of the fall
     const s = await page.evaluate(() => {
       // A killed body leaves the live avatars for the corpse list as soon as it ragdolls.
       const v = window.__cs.view;
@@ -937,7 +954,7 @@ async function physicsfxFlow(browser) {
     for (let i = 0; i < 180; i++) view.physics.step(1 / 60);
     return view.debrisBodies.map((d) => ({ y: d.body.translation().y, v: Math.hypot(...Object.values(d.body.linvel())) }));
   });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(300); // wait-ok: the optional screenshot below shows the settled debris
   check(chunks.length === 10 && chunks.every((c) => c.v < 1.5), `debris chunks land and come to rest (${chunks.length}, fastest ${Math.max(...chunks.map((c) => c.v)).toFixed(2)} m/s)`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-debris.png` });
   // Destructibles are thin instances shared by every copy (one draw per shape): one darkens as it takes damage and is gone once broken.
@@ -983,7 +1000,7 @@ async function glassChecks(browser) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=training_range`);
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   const drawn = await page.evaluate(() => {
     const g = window.__cs.view.scenario.glass.counts;
@@ -1005,7 +1022,6 @@ async function glassChecks(browser) {
       for (const c of m.slots) if (c && c !== me) c.alive = false;
       clearInterval(window.__pin);
       window.__pin = setInterval(() => {
-        me.health = 100;
         me.move = { ...me.move, pos: { x: 11, y: 0, z }, velY: 0, grounded: true };
       }, 30);
       const w = me.weapons.get(me.current);
@@ -1013,13 +1029,13 @@ async function glassChecks(browser) {
       window.__cs.input.yaw = Math.PI / 2;
       window.__cs.input.pitch = -0.02;
     }, z);
-    await page.waitForTimeout(T(600));
+    await page.waitForTimeout(T(600)); // wait-ok: the view turns to the panel
     for (let k = 0; k < n; k++) {
       if (await page.evaluate(done)) break;
       await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
-      await page.waitForTimeout(T(200));
+      await page.waitForTimeout(T(200)); // wait-ok: holds the trigger for a shot
       await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-      await page.waitForTimeout(T(250));
+      await page.waitForTimeout(T(250)); // wait-ok: between shots
     }
   };
   const z = (i) => -8 - i * 2.6;
@@ -1082,9 +1098,8 @@ async function teamsFlow(browser) {
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   // Every team's table fills in once the roster for all 24 has arrived.
-  await page.waitForTimeout(T(2500));
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length >= 7 && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 24, null, { timeout: T(8000) }).catch(() => {});
+  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length >= 7 && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 24, null, { timeout: T(10500) }).catch(() => {});
   const board = await page.evaluate(() => ({
     many: document.getElementById('scoreboard').classList.contains('sb-tn'),
     tables: [...document.querySelectorAll('#scoreboard .sb-group')].map((t) => t.querySelectorAll('.sb-row[data-slot]').length),
@@ -1157,7 +1172,7 @@ async function customSetupFlow(browser) {
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(60000) });
   await simWait(page, (m) => !!m.teams, null, T(60000));
-  await page.waitForTimeout(T(1000));
+  await simWait(page, (m) => m.teams.map((t) => m.combatants().filter((c) => c.faction === t.id).length).join(',') === '2,3,5', null, T(10000));
   const teams = await sim(page, (m, me) => ({ sizes: m.teams.map((t) => m.combatants().filter((c) => c.faction === t.id).length), me: m.teams.findIndex((t) => t.id === me.faction) }));
   check(teams.sizes.join(',') === '2,3,5' && teams.me === 2, `the custom setup starts as 2v3v5 with you on the third team (${JSON.stringify(teams)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -1169,9 +1184,9 @@ async function ctfFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=bunker_cross&gamemode=core.ctf`);
+  await page.goto(`${CLIENT}/?offline=bunker_cross&gamemode=core.ctf&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match && window.__cs.mode?.state, null, { timeout: T(60000) });
-  await page.waitForTimeout(1500);
+  await page.waitForFunction(() => document.getElementById('mode-label')?.textContent === 'Capture the Flag', null, { timeout: T(10000) }).catch(() => {});
   const label = await page.textContent('#mode-label');
   check(label === 'Capture the Flag', `the match runs Capture the Flag (${label})`);
   const drawn = await page.evaluate(() => ({ flags: window.__cs.mode.flagCount, nodes: window.__cs.view.scene.transformNodes.filter((n) => /^flag_[a-z]+$/.test(n.name)).length, bases: window.__cs.view.scene.transformNodes.filter((n) => /^flagbase_/.test(n.name)).length }));
@@ -1182,7 +1197,6 @@ async function ctfFlow(browser) {
     // Look at the enemy flag from a few metres off (the pause overlay is up in headless runs: hide it for the picture).
     await page.evaluate(() => {
       const me = window.__match.slots[window.__cs.slot];
-      me.health = 1e6;
       const theirs = window.__match.mode.flags.find((f) => f.team !== me.faction);
       const own = window.__match.mode.flags.find((f) => f.team === me.faction);
       const d = Math.hypot(own.base.x - theirs.base.x, own.base.z - theirs.base.z) || 1;
@@ -1192,15 +1206,13 @@ async function ctfFlow(browser) {
       window.__cs.input.pitch = -0.15;
       document.getElementById('pause').style.visibility = 'hidden';
     });
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(1500); // wait-ok: E2E_SHOTS picture only
     await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-flag.png`, timeout: T(60000) }).catch(() => {});
   }
   // Stand on the enemy flag: it is ours to carry.
   await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const theirs = window.__match.mode.flags.find((f) => f.team !== me.faction);
-    // Bots are shooting: make the test player sturdy enough to make the run.
-    me.health = 1e6;
     // If a bot already has it, put it back on its base so the test starts clean.
     if (theirs.state === 1) {
       const c = window.__match.slots[theirs.carrier];
@@ -1261,9 +1273,9 @@ async function fortsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=fort_meadow&gamemode=core.forts`);
+  await page.goto(`${CLIENT}/?offline=fort_meadow&gamemode=core.forts&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__match && window.__cs.forts?.fo, null, { timeout: T(60000) });
-  await page.waitForTimeout(1000);
+  await page.waitForFunction(() => document.getElementById('mode-label')?.textContent === 'Fort Wars' && document.querySelectorAll('#fort-panel .fp-pieces span').length === 8, null, { timeout: T(10000) }).catch(() => {});
   const start = await page.evaluate(() => ({
     label: document.getElementById('mode-label')?.textContent,
     held: window.__cs.local.weapon?.id,
@@ -1279,7 +1291,6 @@ async function fortsFlow(browser) {
   await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    me.health = 1e6;
     const f = m.mode;
     const t = f.teamIndex(me.faction);
     const home = f.bases[t];
@@ -1324,10 +1335,8 @@ async function arsenalFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=canyon`);
+  await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__give, null, { timeout: T(60000) });
-  // Splash, fire and bots can down you mid-spree, and a respawn empties the weapon bar: stay standing.
-  await sim(page, (m, me) => { me.health = 1e6; });
   // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
   for (const id of ['core.flamethrower', 'core.oil_slicker', 'core.laser_rifle', 'core.railgun', 'core.bubble_blaster', 'core.swarm', 'core.disc_launcher', 'core.arc_caster', 'core.goo_gun', 'core.burst_rifle']) {
     await page.evaluate((w) => {
@@ -1335,7 +1344,7 @@ async function arsenalFlow(browser) {
       window.__cs.input.pitch = -0.25;
       window.__autoInput = { buttons: 2 };
     }, id);
-    await page.waitForTimeout(T(500));
+    await page.waitForTimeout(T(500)); // wait-ok: fires the weapon for half a second
     // Fire, oil and goo leave hazards a while; note any that show up (slow machines draw them late).
     await page.evaluate(() => {
       window.__zonesSeen ??= new Set();
@@ -1356,7 +1365,7 @@ async function zombiesFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=sandgate&gamemode=core.zombies`);
+  await page.goto(`${CLIENT}/?offline=sandgate&gamemode=core.zombies&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   const squad = await page.evaluate(() => window.__match.combatants().map((c) => c.faction));
   check(squad.length === 4 && squad.every((f) => f === 'players'), `you and three bots hold out together (${squad.join(', ')})`);
@@ -1364,8 +1373,6 @@ async function zombiesFlow(browser) {
   await page.evaluate(() => {
     for (let i = 0; i < 60 * 14; i++) {
       window.__match.step();
-      const me = window.__match.slots[window.__cs.slot];
-      if (me) me.health = 100;
     }
   });
   const state = await page.evaluate(() => ({ wave: window.__match.zombies.wave, up: window.__match.actors().filter((a) => a.npc?.role === 'zombie' && a.alive).length }));
@@ -1452,7 +1459,7 @@ async function classesFlow(browser) {
     return n;
   });
   check(kills > 0, `bots knock each other into the void (${kills} in a minute)`);
-  await arena.waitForTimeout(500);
+  await frames(arena, 5);
   check(errs.length === 0, `no page errors (${errs.join('; ')})`);
   await arena.context().close();
 }
@@ -1461,7 +1468,7 @@ async function vehiclesFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=canyon`);
+  await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   const mounts = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => /^mount_[0-9]+$/.test(n.name)).length);
   check(mounts >= 9, `canyon's vehicles and turrets are drawn (${mounts})`);
@@ -1469,11 +1476,6 @@ async function vehiclesFlow(browser) {
   // keep them out of them for this test, and pick a buggy nobody is in.
   await page.evaluate(() => {
     for (const c of window.__match.slots) if (c?.bot) c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
-    // Enemy bots drive over now and then: don't let a stray shot end the test drive.
-    setInterval(() => {
-      const p = window.__match.slots[window.__cs.slot];
-      if (p) p.health = 100;
-    }, 50);
     const me = window.__match.slots[window.__cs.slot];
     const free = window.__match.mounts.filter((m) => m.def.id === 'buggy' && m.alive && m.seats.every((s) => s === null));
     const home = me.faction === 'tide' ? 60 : -60;
@@ -1514,7 +1516,7 @@ async function vehiclesFlow(browser) {
       return { view: cs.rideView(), local, eye, half, inBox, clear: phys.boxClear(at, { x: 0.12, y: 0.12, z: 0.12 }), sight: phys.lineOfSight(pivot, at), dist: Math.hypot(d.x, d.z) };
     });
   // First person is the default: the eye sits at the driver's seat, inside the vehicle's footprint.
-  await page.waitForTimeout(T(600));
+  await page.waitForTimeout(T(600)); // wait-ok: the camera eases into the seat
   const cockpit = await rideCam();
   const off = cockpit.eye ? Math.hypot(...cockpit.local.map((v, i) => v - cockpit.eye[i])) : Infinity;
   check(cockpit.view === 'cockpit' && off < 0.5 && Math.abs(cockpit.local[0]) < cockpit.half[0] && Math.abs(cockpit.local[2]) < cockpit.half[2], `in the cockpit the eye is in the buggy at the driver's seat (${cockpit.view}, ${off.toFixed(2)} m from the seat eye, at ${cockpit.local?.map((v) => v.toFixed(2)).join(', ')})`);
@@ -1532,12 +1534,12 @@ async function vehiclesFlow(browser) {
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
   // H switches to the chase camera (remembered for ground vehicles): behind the buggy, outside it and clear of walls.
   await page.keyboard.press('KeyH');
-  await page.waitForTimeout(T(800));
+  await page.waitForTimeout(T(800)); // wait-ok: the camera eases out to the chase view
   let worst = null;
   for (let i = 0; i < 5; i++) {
     const c = await rideCam();
     if (!worst || c.inBox || !c.clear || !c.sight || c.view !== 'chase') worst = c;
-    await page.waitForTimeout(T(150));
+    await page.waitForTimeout(T(150)); // wait-ok: sampling interval
   }
   const saved = await page.evaluate(() => localStorage.getItem('tiletrigger.vehicleCamera'));
   check(worst.view === 'chase' && !worst.inBox && worst.clear && worst.sight && worst.dist > 1, `H gives a chase camera outside the buggy and not in a wall (${JSON.stringify({ view: worst.view, inBox: worst.inBox, clear: worst.clear, sight: worst.sight, dist: worst.dist?.toFixed(1) })})`);
@@ -1551,7 +1553,7 @@ async function vehiclesFlow(browser) {
   check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
   // Out of the chase camera: back at your own eye, level.
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-  await page.waitForTimeout(T(500));
+  await page.waitForTimeout(T(500)); // wait-ok: the camera eases back to your eye
   const foot = await page.evaluate(() => {
     const cs = window.__cs;
     const c = cs.view.camera.position;
@@ -1569,11 +1571,11 @@ async function vehiclesFlow(browser) {
     window.__match.pendingEvents.push({ e: 'explode', s: -1, p: [at.x, at.y, at.z], r: 5 });
     window.__match.splash(at, 5, 20, 0.3, null, undefined, 1);
   });
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(1200); // wait-ok: the blast's shake plays out (what's checked is that it leaves no roll)
   let roll = 0;
   for (const [yaw, pitch] of [[1.2, 0], [0.8, 0.4], [1.5, -0.3]]) {
     await page.evaluate(([yaw, pitch]) => { window.__cs.input.yaw += yaw; window.__cs.input.pitch = pitch; }, [yaw, pitch]);
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(250); // wait-ok: the turn plays out
     roll = Math.max(roll, await page.evaluate(() => {
       // How far a node's right axis leaves the horizontal: its roll, in degrees.
       const deg = (n) => { n.computeWorldMatrix(true); const m = n.getWorldMatrix().m; return (Math.asin(Math.abs(m[1]) / Math.hypot(m[0], m[1], m[2])) * 180) / Math.PI; };
@@ -1599,7 +1601,7 @@ async function vehiclesFlow(browser) {
     return { wreck: m?.wreck, alive: m?.alive, solid: m?.body.isEnabled(), enter: !!window.__cs.mounts.enterable(m.pos) };
   }, boom);
   check(wreck.wreck && !wreck.alive && wreck.solid && !wreck.enter, `it blows up and leaves a solid wreck nobody can board (${JSON.stringify(wreck)})`);
-  await page.waitForTimeout(800);
+  await frames(page, 5);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -1624,7 +1626,7 @@ async function raceFlow(browser) {
   };
   await clickTool(page, '[data-tool="road"]');
   // Let the new map settle (its first frame resets the view), then look at where the road goes.
-  await page.waitForTimeout(500);
+  await frames(page, 3);
   await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: -2 }));
   await clickWorld(8, -6);
   await clickWorld(16, -6);
@@ -1697,46 +1699,59 @@ async function raceFlow(browser) {
   await page.context().close();
 }
 
-/** Every homage map (and any other map without a flow of its own) starts a match cleanly. */
-async function mapsFlow(browser, half = 0) {
-  const { readdirSync } = await import('node:fs');
-  const covered = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
+/** A seeded shuffle (mulberry32), so a run's picks can be repeated from its seed. */
+function seededShuffle(items, seed) {
+  let a = seed >>> 0;
+  const rand = () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), a | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  return items.map((x) => [rand(), x]).sort((p, q) => p[0] - q[0]).map(([, x]) => x);
+}
+
+/**
+ * Every homage map (and any other map without a flow of its own) starts a match cleanly. The tour is long: CI runs
+ * it in MAP_PARTS parts ('maps', 'maps2', ...), part i taking every MAP_PARTS-th map by name (flowMap.mapPartOf).
+ * E2E_MAPS=id1,id2 checks those maps in 'maps' alone.
+ */
+async function mapsFlow(browser, part = 0) {
+  const { readdirSync, readFileSync } = await import('node:fs');
   const only = process.env.E2E_MAPS?.split(',');
-  // The tour is long: CI splits it in two (every other map), 'maps' and 'maps2'. E2E_MAPS picks maps for 'maps' alone.
-  const all = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !covered.has(id));
-  const ids = only ? (half ? [] : all.filter((id) => only.includes(id))) : all.filter((_, i) => i % 2 === half);
-  // Imported maps (maps/imported/, converted from TimeSplitters MapMaker saves) are many: spot-check 5 at random
-  // (E2E_IMPORTED=all checks every one, E2E_IMPORTED=id1,id2 checks those).
+  const all = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !COVERED_MAPS.has(id)).sort();
+  const ids = only ? (part ? [] : all.filter((id) => only.includes(id))) : all.filter((_, i) => i % MAP_PARTS === part);
+  // Imported maps (maps/imported/, converted from TimeSplitters MapMaker saves) are many: one part spot-checks 5,
+  // picked by E2E_SEED (default: the day, so the picks rotate but a run can be repeated); E2E_IMPORTED=all checks
+  // every one, E2E_IMPORTED=id1,id2 checks those.
   let imported = [];
   try {
-    imported = readdirSync(new URL('../maps/imported/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
+    imported = readdirSync(new URL('../maps/imported/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort();
   } catch {}
   const pick = process.env.E2E_IMPORTED;
-  const chosen = half ? [] : pick === 'all' ? imported : pick ? pick.split(',') : imported.map((id) => [Math.random(), id]).sort((a, b) => a[0] - b[0]).slice(0, 5).map(([, id]) => id);
-  if (imported.length) console.log(`imported maps checked: ${chosen.join(', ')}`);
+  const seed = Number(process.env.E2E_SEED ?? Math.floor(Date.now() / 86400000));
+  const chosen = part !== IMPORTED_PART ? [] : pick === 'all' ? imported : pick ? pick.split(',') : seededShuffle(imported, seed).slice(0, 5);
+  if (chosen.length) console.log(`imported maps checked (E2E_SEED=${seed}): ${chosen.join(', ')}`);
   for (const id of [...ids, ...chosen]) {
     const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-    // Bots can be in sight the moment the match starts: keep the player alive from the first frame we can reach them.
-    await page.addInitScript(() => {
-      setInterval(() => {
-        const me = window.__match?.slots?.[window.__cs?.slot];
-        if (me) me.health = Math.max(me.health, 1e6); // one rocket or revolver head shot can top 100
-      }, 25);
-    });
-    await page.goto(`${CLIENT}/?offline=${id}`);
+    // Test mode: a fixed seed, and the player takes no damage (bots can be in sight the moment the match starts);
+    // falling out of the map still kills, which is what this checks.
+    await page.goto(`${CLIENT}/?offline=${id}&test=1&god=1`);
     const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) }).then(() => true, () => false);
-    await page.waitForTimeout(1500);
+    // A second and a half of play (90 ticks): long enough to fall through a missing floor.
+    if (ok) {
+      const t0 = await sim(page, (m) => m.tick).catch(() => 0);
+      await simWait(page, (m, _me, t) => m.tick >= t, t0 + 90, T(15000));
+    }
     // Imported maps can have floors below level 0: "solid ground" there means not below the lowest floor.
     let floor = -5;
     if (!chosen.includes(id)) {
       // Maps with basements (sewers, cisterns) spawn players below 0: below the lowest spawn is falling.
-      const { readFileSync } = await import('node:fs');
       const m = JSON.parse(readFileSync(new URL(`../maps/${id}.json`, import.meta.url), 'utf8'));
       floor = Math.min(floor, ...m.entities.filter((e) => e.kind === 'spawn').map((e) => e.position[1] - 2));
     } else {
-      const { readFileSync } = await import('node:fs');
       const m = JSON.parse(readFileSync(new URL(`../maps/imported/${id}.json`, import.meta.url), 'utf8'));
       floor = Math.min(0, ...m.classicStructure.tiles.map((t) => t.z)) * m.classicStructure.levelHeight - 1;
     }
@@ -1744,6 +1759,83 @@ async function mapsFlow(browser, half = 0) {
     const where = ok ? await page.evaluate(() => window.__cs.local.state.pos.y.toFixed(1)) : 'no match';
     const why = !ok ? 'no match' : !alive ? `down or fell: y ${where}, floor ${floor.toFixed(1)}` : '';
     check(ok && alive && errors.length === 0, `${id}: match starts and you spawn on solid ground${chosen.includes(id) ? ` (y ${where})` : ''}${why ? ` (${why})` : ''}${errors.length ? ` (${errors.join('; ')})` : ''}`);
+    await page.context().close();
+  }
+}
+
+/** Draw `n` more frames (a page's own clock, whatever the machine's speed). */
+function frames(page, n = 10) {
+  return page.evaluate((n) => new Promise((done) => {
+    let left = n;
+    const tick = () => (--left <= 0 ? done() : requestAnimationFrame(tick));
+    requestAnimationFrame(tick);
+  }), n);
+}
+
+/**
+ * Key scenes against committed pictures (e2e/baselines/), tolerant of software rendering's small differences:
+ * a pixel differs when a channel is off by more than VISUAL_PIXEL_DELTA, and a scene fails when more than its
+ * share of pixels differ. Regenerate after an intended change: `pnpm e2e:baselines` (then look at the pictures
+ * and commit them). A failure leaves the new picture and a diff in e2e-artifacts/.
+ */
+const VISUAL_PIXEL_DELTA = 48;
+const VISUAL_SCENES = [
+  // The main menu with its hero, as a first visit sees it.
+  { name: 'menu', url: '/?test=1&name=Tester', ready: () => window.__front && !document.getElementById('menu').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.08 },
+  // MapMaker's blank starter map.
+  { name: 'mapmaker', url: '/?mode=editor&test=1&name=Tester', ready: () => window.__editor && !document.getElementById('editor').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.06 },
+  // A map in play, alone (bots=1: just you), at the seeded spawn (hidden: the pause menu headless pages open, and HUD messages such as the slow-device hint).
+  { name: 'arena', url: '/?offline=arena&test=1&god=1&bots=1&name=Tester', ready: () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), css: '#pause, #message { display: none !important; }', share: 0.08 },
+  // Outdoors: terrain, sky, foliage.
+  { name: 'canyon', url: '/?offline=canyon&test=1&god=1&bots=1&name=Tester', ready: () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), css: '#pause, #message { display: none !important; }', share: 0.1 },
+];
+
+async function visualFlow(browser) {
+  const { existsSync, readFileSync } = await import('node:fs');
+  const { PNG } = await import('pngjs');
+  const update = !!process.env.E2E_UPDATE_BASELINES;
+  const dir = new URL('./baselines/', import.meta.url);
+  mkdirSync(dir, { recursive: true });
+  for (const scene of VISUAL_SCENES) {
+    const page = await (await browser.newContext({ viewport: { width: 960, height: 540 }, deviceScaleFactor: 1 })).newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(`${CLIENT}${scene.url}`);
+    const ready = await page.waitForFunction(scene.ready, null, { timeout: T(60000) }).then(() => true, () => false);
+    if (scene.css) await page.addStyleTag({ content: scene.css });
+    // Shaders, textures and streamed props settle over the first frames.
+    if (ready) await frames(page, 30);
+    const shot = PNG.sync.read(await page.screenshot({ animations: 'disabled', caret: 'hide' }));
+    const file = new URL(`${scene.name}.png`, dir);
+    if (update || !existsSync(file)) {
+      writeFileSync(file, PNG.sync.write(shot));
+      check(ready && errors.length === 0, `${scene.name}: baseline ${update ? 'updated' : 'written (none yet)'}${ready ? '' : ' (scene never got ready)'}${errors.length ? ` (${errors.join('; ')})` : ''}`);
+      await page.context().close();
+      continue;
+    }
+    const base = PNG.sync.read(readFileSync(file));
+    let differ = 0;
+    const diff = new PNG({ width: shot.width, height: shot.height });
+    const same = base.width === shot.width && base.height === shot.height;
+    if (same) {
+      for (let i = 0; i < shot.data.length; i += 4) {
+        const d = Math.max(Math.abs(shot.data[i] - base.data[i]), Math.abs(shot.data[i + 1] - base.data[i + 1]), Math.abs(shot.data[i + 2] - base.data[i + 2]));
+        const off = d > VISUAL_PIXEL_DELTA;
+        if (off) differ++;
+        diff.data[i] = off ? 255 : shot.data[i] >> 2;
+        diff.data[i + 1] = off ? 0 : shot.data[i + 1] >> 2;
+        diff.data[i + 2] = off ? 255 : shot.data[i + 2] >> 2;
+        diff.data[i + 3] = 255;
+      }
+    }
+    const share = same ? differ / (shot.width * shot.height) : 1;
+    const pass = ready && same && share <= scene.share;
+    if (!pass) {
+      writeFileSync(`${ARTIFACTS}/visual-${scene.name}-actual.png`, PNG.sync.write(shot));
+      if (same) writeFileSync(`${ARTIFACTS}/visual-${scene.name}-diff.png`, PNG.sync.write(diff));
+    }
+    console.log(`visual ${scene.name}: ${(share * 100).toFixed(2)} % of pixels differ (allowed ${(scene.share * 100).toFixed(0)} %)`);
+    check(pass && errors.length === 0, `${scene.name} looks like its baseline (${same ? `${(share * 100).toFixed(1)} % of pixels differ, ${(scene.share * 100).toFixed(0)} % allowed` : `size ${shot.width}×${shot.height} vs ${base.width}×${base.height}`}${ready ? '' : '; the scene never got ready'})${errors.length ? ` (${errors.join('; ')})` : ''}`);
     await page.context().close();
   }
 }
@@ -1857,7 +1949,7 @@ async function charactersFlow(browser) {
   check(most <= 4 && draws.reduce((s, d) => s + d, 0) / draws.length <= 2.5, `characters draw a few merged meshes each (at most ${most}, ${(draws.reduce((s, d) => s + d, 0) / draws.length).toFixed(1)} on average)`);
   for (const label of ['Rifle', 'Run', 'shoot', 'Death', 'Idle']) {
     await page.click(`button:text-is("${label}")`);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(300); // wait-ok: plays each clip a moment (page errors are what's checked)
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -1876,7 +1968,7 @@ async function onlineFlow(browser) {
   const b = await open('Bob');
   const slots = [await a.page.evaluate(() => window.__cs.slot), await b.page.evaluate(() => window.__cs.slot)];
   check(slots[0] !== slots[1], `two online clients get distinct slots (${slots})`);
-  await a.page.waitForTimeout(1500);
+  await a.page.waitForTimeout(1500); // wait-ok: 1.5 s of snapshots, and the player must not have fallen through
   const alive = await a.page.evaluate(() => window.__cs.local.state.pos.y > -1);
   check(alive, 'client receives snapshots and reconciles its position');
   check(a.errors.length + b.errors.length === 0, `no page errors (${[...a.errors, ...b.errors].join('; ')})`);
@@ -1995,7 +2087,7 @@ async function hostgameFlow(browser) {
   const screen = joined ? '' : await friend.evaluate(() => (document.body.innerText.match(/Disconnected[^\n]*/) ?? [''])[0]).catch(() => '');
   check(joined, `a friend joins the hosted match by its link${screen ? ` (${screen})` : ''}`);
   if (joined) {
-    await friend.waitForTimeout(2500);
+    await simWait(host, (m) => m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, T(10000));
     const seen = await sim(host, (m) => m.combatants().filter((c) => c.kind === 'human').map((c) => c.name));
     check(seen.length === 2 && seen.includes('Friend'), `the host's match has both players (${seen.join(', ')})`);
     // The friend takes over a bot where it stands, maybe mid-fight: keep them alive while they walk.
@@ -2026,7 +2118,7 @@ async function hostgameFlow(browser) {
     // The host's stream to a friend is compressed: a few KB/s, not the ~40 KB/s of raw snapshots.
     const bytes = () => friend.evaluate(() => window.__cs.transport.bytesIn);
     const b0 = await bytes();
-    await friend.waitForTimeout(5000);
+    await friend.waitForTimeout(5000); // wait-ok: measures five seconds of the stream
     const rate = ((await bytes()) - b0) / 5 / 1024;
     // Raw snapshots run ~40 KB/s; compressed, a few (bursty frames on CI push it up, but well under raw).
     check(rate > 0.2 && rate < 20, `the friend's stream is compressed (${rate.toFixed(1)} KB/s)`);
@@ -2161,6 +2253,37 @@ async function hostcontrolsFlow(browser) {
   await friend.context().close();
 }
 
+/** Each flow's outcome: { flow, status PASS | FLAKY | FAIL, seconds, attempts, fails (failed checks per failed attempt) }. */
+const results = [];
+
+/**
+ * Per-flow timings (E2E_TIMINGS_OUT=file: JSON merged into e2e/timings.json by tools/ci/timings.mjs), flaky
+ * flows (e2e-artifacts/flaky.log) and a table for the CI job summary ($GITHUB_STEP_SUMMARY).
+ */
+function report() {
+  if (!results.length) return;
+  try {
+    if (process.env.E2E_TIMINGS_OUT) writeFileSync(process.env.E2E_TIMINGS_OUT, JSON.stringify({ flows: Object.fromEntries(results.filter((r) => r.status === 'PASS').map((r) => [r.flow, Math.round(r.seconds)])) }, null, 2));
+  } catch {}
+  const flaky = results.filter((r) => r.status === 'FLAKY');
+  for (const r of flaky) console.log(`FLAKY ${r.flow}: ${r.fails.flat().join(' | ')}`);
+  if (flaky.length) {
+    try {
+      mkdirSync(ARTIFACTS, { recursive: true });
+      writeFileSync(`${ARTIFACTS}/flaky.log`, flaky.map((r) => `${r.flow}: failed, then passed on retry\n${r.fails.map((f, i) => `  attempt ${i + 1}: ${f.join(' | ')}`).join('\n')}\n`).join('\n'));
+    } catch {}
+  }
+  const summary = process.env.GITHUB_STEP_SUMMARY;
+  if (summary) {
+    const esc = (t) => String(t).replace(/\|/g, '\\|').replace(/\s+/g, ' ').slice(0, 300);
+    const label = { PASS: 'pass', FLAKY: '**FLAKY** (passed on retry)', FAIL: '**FAIL**' };
+    const rows = results.map((r) => `| ${r.flow} | ${label[r.status]} | ${r.seconds.toFixed(0)} s | ${esc(r.fails.flat().join('; '))} |`);
+    try {
+      appendFileSync(summary, `### e2e ${process.env.E2E_SHARD_LABEL ?? ''}\n\n| Flow | Result | Time | Failed checks |\n|---|---|---|---|\n${rows.join('\n')}\n\n`);
+    } catch {}
+  }
+}
+
 try {
   start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
   start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1' });
@@ -2198,23 +2321,54 @@ try {
     ctx.setDefaultNavigationTimeout(T(30000));
     return ctx;
   };
-  // E2E_ONLY=editor,characters runs a subset of the flows; E2E_SHARD=2/4 one of CI's parallel groups.
-  const shard = process.env.E2E_SHARD ? SHARDS[Number(process.env.E2E_SHARD.split('/')[0]) - 1] : null;
-  if (process.env.E2E_SHARD && !shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
-  const only = process.env.E2E_ONLY?.split(',') ?? shard;
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, maps: mapsFlow, maps2: (b) => mapsFlow(b, 1), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, webgpu: webgpuFlow };
-  // Every flow belongs to exactly one shard, so CI's parallel jobs between them run everything.
-  const sharded = SHARDS.flat();
-  const lost = Object.keys(flows).filter((f) => sharded.filter((x) => x === f).length !== 1);
-  if (lost.length) throw new Error(`flows not in exactly one shard: ${lost.join(', ')}`);
+  // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
+  // CI's plan job passes each shard's flows in E2E_ONLY itself).
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, webgpu: webgpuFlow, visual: visualFlow };
+  // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
+  const known = new Set(FLOWS);
+  const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];
+  if (drift.length) throw new Error(`flows missing from e2e/flowMap.mjs FLOWS or from run.mjs: ${drift.join(', ')}`);
+  let only = process.env.E2E_ONLY?.split(',').filter(Boolean);
+  if (!only && process.env.E2E_SHARD) {
+    const [i, n] = process.env.E2E_SHARD.split('/').map(Number);
+    const shard = assignShards(FLOWS, loadTimings(), n, FLOWS)[i - 1];
+    if (!shard) throw new Error(`no shard ${process.env.E2E_SHARD}`);
+    only = shard.flows;
+  }
+  const unknown = (only ?? []).filter((f) => !(f in flows));
+  if (unknown.length) throw new Error(`unknown flows: ${unknown.join(', ')}`);
   mkdirSync(ARTIFACTS, { recursive: true });
+  // E2E_RETRIES=1 (CI): a failed flow runs once more; passing then, it is reported as flaky and doesn't fail the run.
+  const retries = Number(process.env.E2E_RETRIES ?? 0);
   for (const [name, flow] of Object.entries(flows)) {
     if (only && !only.includes(name)) continue;
     currentFlow = name;
-    await flow(browser);
-    await Promise.all(shots.splice(0));
-    // Pages a flow left open (a running match keeps rendering) would slow every flow after it.
-    for (const ctx of [...open]) await ctx.close().catch(() => {});
+    const t0 = Date.now();
+    const before = failures;
+    const tries = [];
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      attemptFails = [];
+      failures = before;
+      if (attempt) console.log(`RETRY ${name} (attempt ${attempt + 1}) after: ${tries.at(-1).join(' | ')}`);
+      try {
+        await flow(browser);
+      } catch (e) {
+        // A flow that throws fails as a whole (where in it: the run.mjs frames); the run goes on to the next flow.
+        console.log(`FAIL ${name}: ${e.message}`);
+        console.log((e.stack ?? '').split('\n').filter((l) => l.includes('run.mjs')).join('\n'));
+        failures++;
+        attemptFails.push(`threw: ${e.message.split('\n')[0]}`);
+      }
+      await Promise.all(shots.splice(0));
+      // Pages a flow left open (a running match keeps rendering) would slow every flow after it.
+      for (const ctx of [...open]) await ctx.close().catch(() => {});
+      tries.push(attemptFails);
+      if (failures === before) break;
+    }
+    const status = failures > before ? 'FAIL' : tries.length > 1 ? 'FLAKY' : 'PASS';
+    const seconds = (Date.now() - t0) / 1000;
+    results.push({ flow: name, status, seconds, attempts: tries.length, fails: tries.filter((t) => t.length) });
+    console.log(`FLOW ${name} ${status} in ${seconds.toFixed(0)} s${tries.length > 1 ? ` (${tries.length} attempts)` : ''}`);
   }
   await browser.close();
 } catch (e) {
@@ -2229,5 +2383,6 @@ try {
     } catch {}
   }
 }
+report();
 console.log(failures ? `${failures} check(s) failed` : 'all e2e checks passed');
 process.exit(failures ? 1 : 0);

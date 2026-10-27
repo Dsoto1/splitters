@@ -183,6 +183,8 @@ export interface Combatant {
   padFlight?: boolean;
   /** Tick it last took damage (squad spawns avoid teammates in a fight). */
   hurtAt?: number;
+  /** Takes no damage (the browser's test mode, offline only); falling out of the map still kills. */
+  invulnerable?: boolean;
   /** Kills since this one last died (kill-streak rewards). */
   streak?: number;
   /** A teammate's order to a bot: follow them, or hold a spot, until `until`. */
@@ -3774,7 +3776,7 @@ export class Match {
 
   /** Apply damage through armor and the attacker's damage boost. */
   private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string, head = false): void {
-    if (!victim.alive || this.phase !== 'playing') return;
+    if (!victim.alive || this.phase !== 'playing' || victim.invulnerable) return;
     if (this.mode?.blocksDamage?.(victim, attacker)) return;
     if (this.classes) amount = this.classes.adjustDamage(victim, attacker, weapon, amount);
     // Lethality (spec §10): one systemic multiple, so every weapon keeps its identity.
