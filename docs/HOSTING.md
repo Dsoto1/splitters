@@ -3,10 +3,91 @@
 ## Live site: trigger.toshiroplay.com (one AWS Lightsail instance)
 
 The official site is **https://trigger.toshiroplay.com**. Everything runs on
-one small Lightsail server: the site, the hub (broker + game browser), a relay
-for strict networks (coturn) and HTTPS (Caddy, certificates fetched and renewed
-automatically). The domain `toshiroplay.com` is registered in AWS, so its DNS
-is a Route 53 hosted zone. Script: `deploy/aws-lightsail-setup.sh`.
+one small Lightsail server: the site, the hub (signaling + game browser +
+relay credentials), a relay for strict networks (coturn) and HTTPS (Caddy,
+certificates fetched and renewed automatically). Matches run on players'
+machines, never on AWS (docs/MULTIPLAYER_DIRECTION.md). The domain
+`toshiroplay.com` is registered in AWS, so its DNS is a Route 53 hosted zone.
+
+The server is described by a CloudFormation template and set up by one
+script, run from **AWS CloudShell** (no local tools, no keys to manage):
+
+| File | What |
+|---|---|
+| `infra/toshiro-trigger-multiplayer.yaml` | Lightsail instance (Ubuntu 24.04, 2 GB), static IP, firewall, Route 53 records, alarms, monthly budget |
+| `infra/deploy-multiplayer.sh` | validates, creates secrets in SSM, deploys the stack, bootstraps the box over SSH, checks it |
+| `infra/host-setup.sh` | runs on the box: Caddy, hub, coturn, systemd restarts, ufw, log limits |
+| `infra/turn-check.py` | proves the relay refuses anyone without fresh credentials and won't reach private addresses |
+
+Security and costs: docs/MULTIPLAYER_SECURITY.md, docs/MULTIPLAYER_REVIEW.md
+(section 6: about 13 USD a month).
+
+### First deployment (moving from the hand-made server)
+
+In the AWS console (us-east-1), open **CloudShell** (the `>_` icon), then:
+
+```
+git clone https://github.com/Dsoto1/splitters.git && cd splitters
+infra/deploy-multiplayer.sh --email you@example.com --dns skip
+```
+
+This creates the stack beside the current server without touching DNS:
+instance `toshiro-trigger-hub`, its static IP, the SSM secrets
+`/toshiro/trigger/turn-secret` and `/toshiro/trigger/hub-signing-secret`, a
+budget alerting at 15 and 25 USD, and Lightsail alarms. It builds and starts
+the game on the new box and checks it (the HTTPS check waits for DNS). Lightsail
+emails a verification link for alarm notifications: click it, or alarms stay
+silent (budget alerts need no confirmation).
+
+When it reports the hub healthy, move the name over:
+
+```
+infra/deploy-multiplayer.sh --dns replace
+```
+
+It shows the current record (the old server's IP), asks, deletes it and
+lets the stack create its own pointing at the new static IP; Caddy fetches
+the certificate within a minute or two, and the script checks
+`https://trigger.toshiroplay.com/lobby/health`, `/lobby/ice` and the relay.
+Players may reach either server for up to 5 minutes (DNS TTL). Then delete
+the old instance and **release its static IP** in the Lightsail console
+(an unattached static IP is billed).
+
+Options worth knowing (`infra/deploy-multiplayer.sh --help` for all):
+
+- `--root` also points `toshiroplay.com` at this server (Caddy redirects it
+  to trigger.toshiroplay.com). The apex holds a `192.0.2.1` placeholder now;
+  replacing it is the owner's call, so it's off unless asked (`--root` with
+  `--dns replace` replaces the placeholder).
+- `--app-client-id <id>` stores the Cognito app client ID for Trigger (user
+  pool `us-east-1_VdMsuDJ59`, login at `login.toshiroplay.com`; the pool is
+  shared and is not managed by this stack).
+- `--branch <name>` / `--ref <commit>` build another branch or a pinned commit.
+- `--admin-ssh-cidr <your-ip>/32` keeps SSH open to your own address;
+  otherwise SSH is only open to the Lightsail console's **Connect** button
+  (and to CloudShell for the length of a deploy).
+- `--bundle medium_3_0` for a 4 GB box (24 USD/month); changing the bundle
+  replaces the instance (the script rebuilds it; the static IP stays).
+
+### Later
+
+- **New code on `main`**: re-run `infra/deploy-multiplayer.sh` (same settings
+  are kept), or for a quick code-only update: Lightsail console → instance →
+  **Connect** → `sudo tiletrigger-update`.
+- **Relay abuse or a bandwidth alarm**: Connect → `sudo tiletrigger-relay off`
+  (direct connections keep working; `on` to restore, `status` to look).
+- **Rotate the relay secret**: `aws ssm put-parameter --name /toshiro/trigger/turn-secret --type SecureString --overwrite --value "$(openssl rand -hex 32)"`, then re-run the deploy.
+- **Logs**: Connect → `sudo journalctl -u tiletrigger-hub -f` (hub),
+  `-u coturn` (relay), `-u caddy` (HTTPS).
+- **Remove everything**: `aws cloudformation delete-stack --stack-name toshiro-trigger-multiplayer`
+  (instance, static IP, records, alarms, budget); the SSM parameters stay
+  until deleted with `aws ssm delete-parameter`.
+
+### The old one-command setup (still works)
+
+`deploy/aws-lightsail-setup.sh` sets up a hand-made instance in one go, as
+the live server was originally built. Kept for other domains and for
+reference; the infra/ flow above replaces it for trigger.toshiroplay.com.
 
 1. **Instance:** Lightsail → Create instance → Linux/Unix → OS only →
    **Ubuntu 24.04**. Plan: 2 GB (~$12/month) builds the game comfortably; the
@@ -56,8 +137,8 @@ want always-on official matches.
   - Metered: `METERED_DOMAIN` (yourapp.metered.live) + `METERED_API_KEY`
   - Your own coturn (`use-auth-secret`): `TURN_URLS` + `TURN_SECRET`
 
-  Credentials last `ICE_TTL` seconds (default 6 h); each address can ask
-  12 times a minute. Relayed play is about 3 KB/s per player. Without a
+  Credentials last `ICE_TTL` seconds (default 6 h; the live server uses 1 h,
+  set by `infra/host-setup.sh`); each address can ask 12 times a minute. Relayed play is about 3 KB/s per player. Without a
   provider, players can still enter their own relay in Options → Relay.
 - **Matches** run in the host player's browser, in a Web Worker (its own
   core, apart from rendering; the page's thread where workers aren't

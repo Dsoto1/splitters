@@ -110,7 +110,7 @@ PREV_ADMIN_SSH=''
 
 cleanup() {
   local rc=$?
-  if [ "$SSH_OPENED" = 1 ]; then
+  if [ "$SSH_OPENED" = 1 ] && stack_exists; then
     printf '\n== Closing SSH to this shell again (AdminSshCidr=%s)\n' "${PREV_ADMIN_SSH:-<console only>}"
     aws cloudformation deploy --stack-name "$STACK" --template-file "$TEMPLATE" \
       --parameter-overrides "AdminSshCidr=$PREV_ADMIN_SSH" --no-fail-on-empty-changeset >/dev/null \
