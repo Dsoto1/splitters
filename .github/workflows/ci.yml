@@ -18,6 +18,8 @@ jobs:
   check:
     # Pinned: Playwright 1.56 has no browser builds for newer Ubuntu images.
     runs-on: ubuntu-24.04
+    # A hung step fails the run instead of holding it for GitHub's 6 h default.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -50,6 +52,8 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     name: e2e (${{ matrix.shard }}/4)
+    # The slowest shard takes about 35 minutes.
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -62,7 +66,9 @@ jobs:
         with:
           name: client-dist
           path: packages/client/dist
-      - run: pnpm exec playwright install --with-deps chromium
+      # The browser install (apt + download) normally takes ~20 s but has hung for hours on a runner: cap each try and retry.
+      - run: for i in 1 2 3; do timeout 300 pnpm exec playwright install --with-deps chromium && exit 0; echo "playwright install try $i failed"; sleep 10; done; exit 1
+        timeout-minutes: 17
       - run: pnpm e2e
         env:
           E2E_SHARD: ${{ matrix.shard }}/4
