@@ -91,6 +91,66 @@
       "sha256": "8e956b93762b42a4",
       "triangles": 1931,
       "bytes": 301580
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_goblin",
+      "source": "meshy-owned",
+      "src": "Meshy_AI_Goblin_1026113732_texture.fbx",
+      "sourceTriangles": 1326047,
+      "file": "characters/meshy_goblin.glb",
+      "sha256": "ec93a57ab67aab6d",
+      "triangles": 19708,
+      "lodTriangles": 5814,
+      "bytes": 1147588
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_otter",
+      "source": "meshy-owned",
+      "src": "Meshy_AI_Wealthy_Otter_20260307_texture.fbx",
+      "sourceTriangles": 486780,
+      "file": "characters/meshy_otter.glb",
+      "sha256": "2a1ce05d6838cba9",
+      "triangles": 10999,
+      "lodTriangles": 3197,
+      "bytes": 708168
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_toad",
+      "source": "meshy-owned",
+      "src": "Meshy_AI_Boglurker_the_toad_20260325_texture.fbx",
+      "sourceTriangles": 852756,
+      "file": "characters/meshy_toad.glb",
+      "sha256": "be063a25fc9551a2",
+      "triangles": 11741,
+      "lodTriangles": 3415,
+      "bytes": 758728
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_salamander",
+      "source": "meshy-owned",
+      "src": "Meshy_AI_Salamander_Warlord_20260421_texture.fbx",
+      "sourceTriangles": 774825,
+      "file": "characters/meshy_salamander.glb",
+      "sha256": "5d99cad1aaec2c03",
+      "triangles": 11114,
+      "lodTriangles": 3201,
+      "bytes": 879608
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_hyena",
+      "source": "meshy-owned",
+      "src": "Meshy_AI_Hyena_Warrior_20250425_texture.fbx",
+      "sourceTriangles": 31876,
+      "file": "characters/meshy_hyena.glb",
+      "sha256": "f99da2a464fdb2b6",
+      "triangles": 9990,
+      "lodTriangles": 2906,
+      "bytes": 619776
     }
   ]
 }

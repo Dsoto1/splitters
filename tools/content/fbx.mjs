@@ -37,6 +37,9 @@ async function textureBytes(url, fbxPath) {
   return null;
 }
 
+// FBXLoader turns embedded images into blob URLs through window.URL (Meshy's FBX embed theirs).
+globalThis.window ??= { URL };
+
 // GLTFExporter reads its output blobs with a FileReader, which Node lacks.
 globalThis.FileReader ??= class FileReader {
   readAsArrayBuffer(blob) {

@@ -2533,6 +2533,106 @@
       ]
     },
     {
+      "file": "characters/meshy_goblin.glb",
+      "sha256": "ec93a57ab67aab6d",
+      "triangles": 19708,
+      "bytes": 1147588,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added"
+      ]
+    },
+    {
+      "file": "characters/meshy_otter.glb",
+      "sha256": "2a1ce05d6838cba9",
+      "triangles": 10999,
+      "bytes": 708168,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added"
+      ]
+    },
+    {
+      "file": "characters/meshy_toad.glb",
+      "sha256": "be063a25fc9551a2",
+      "triangles": 11741,
+      "bytes": 758728,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added"
+      ]
+    },
+    {
+      "file": "characters/meshy_salamander.glb",
+      "sha256": "5d99cad1aaec2c03",
+      "triangles": 11114,
+      "bytes": 879608,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added"
+      ]
+    },
+    {
+      "file": "characters/meshy_hyena.glb",
+      "sha256": "f99da2a464fdb2b6",
+      "triangles": 9990,
+      "bytes": 619776,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Tile Trigger (generated with Meshy)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added"
+      ]
+    },
+    {
       "file": "creatures/imp.glb",
       "sha256": "70ad9e3a0ca7db81",
       "triangles": 8640,
