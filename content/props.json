@@ -455,6 +455,16 @@
       "maps": {
         "Material.001": "Meshy_AI_Rock_Pile_20260520_texture_remesh_tri.png"
       }
+    },
+    "meshy-community-nature": {
+      "title": "Meshy community models (nature)",
+      "creator": "Meshy community (CC0 per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/meshy-community/License.txt",
+      "retrieved": "2026-10-27",
+      "download": "meshy-community-nature",
+      "nature": true
     }
   },
   "budgets": {
@@ -11715,6 +11725,239 @@
       "name": "Picket Post",
       "category": "Fences & Walls",
       "collide": "box"
+    },
+    {
+      "id": "mn_oak",
+      "pack": "meshy-community-nature",
+      "src": "Meshy_AI_a_tree_20250510_texture_fbx/Meshy_AI_a_tree_20250510_texture.fbx",
+      "name": "Broad Oak",
+      "category": "Trees",
+      "height": 7.0,
+      "collide": "trunk",
+      "source": {
+        "model": "a tree",
+        "date": "2025-05-10"
+      },
+      "nature": {
+        "lods": [
+          [
+            5000,
+            30
+          ],
+          [
+            1600,
+            90
+          ]
+        ],
+        "impostor": 90,
+        "remesh": 48,
+        "shell": true,
+        "doubleSided": true,
+        "cut": 0.05
+      }
+    },
+    {
+      "id": "mn_birch",
+      "pack": "meshy-community-nature",
+      "src": "Meshy_AI_A_tall_slender_birch_tree_distinguished_20250923_texture_fbx/Meshy_AI_A_tall_slender_birch_tree_distinguished_20250923_texture.fbx",
+      "name": "Slender Birch",
+      "category": "Trees",
+      "height": 10.0,
+      "collide": "trunk",
+      "source": {
+        "model": "A tall slender birch tree distinguished …",
+        "date": "2025-09-23"
+      },
+      "nature": {
+        "lods": [
+          [
+            4500,
+            30
+          ],
+          [
+            1500,
+            90
+          ]
+        ],
+        "impostor": 90,
+        "remesh": 64,
+        "shell": true,
+        "doubleSided": true
+      }
+    },
+    {
+      "id": "mn_fir",
+      "pack": "meshy-community-nature",
+      "src": "Meshy_AI_fir_tree_20250730_texture_fbx/Meshy_AI_fir_tree_20250730_texture.fbx",
+      "name": "Fir Tree",
+      "category": "Trees",
+      "height": 9.0,
+      "collide": "trunk",
+      "source": {
+        "model": "fir tree",
+        "date": "2025-07-30"
+      },
+      "nature": {
+        "lods": [
+          [
+            4000,
+            30
+          ],
+          [
+            1400,
+            90
+          ]
+        ],
+        "impostor": 90,
+        "remesh": 48,
+        "shell": true,
+        "doubleSided": true
+      }
+    },
+    {
+      "id": "mn_banana",
+      "pack": "meshy-community-nature",
+      "src": "Meshy_AI_Banana_Plant_20260324_texture_fbx/Meshy_AI_Banana_Plant_20260324_texture.fbx",
+      "name": "Banana Plant (leafy)",
+      "category": "Trees",
+      "height": 3.2,
+      "collide": "trunk",
+      "source": {
+        "model": "Banana Plant",
+        "date": "2026-03-24"
+      },
+      "nature": {
+        "lods": [
+          [
+            2000,
+            25
+          ],
+          [
+            700,
+            70
+          ]
+        ],
+        "impostor": 70,
+        "remesh": 48,
+        "shell": true,
+        "doubleSided": true,
+        "cut": 0.04
+      }
+    },
+    {
+      "id": "mn_shrub",
+      "pack": "meshy-community-nature",
+      "src": "Meshy_AI_A_dense_forest_shrub_with_woody_20250923_texture_fbx/Meshy_AI_A_dense_forest_shrub_with_woody_20250923_texture.fbx",
+      "name": "Forest Shrub",
+      "category": "Plants & Flowers",
+      "height": 1.2,
+      "collide": "none",
+      "source": {
+        "model": "A dense forest shrub with woody …",
+        "date": "2025-09-23"
+      },
+      "nature": {
+        "lods": [
+          [
+            1200,
+            25
+          ],
+          [
+            400,
+            60
+          ]
+        ],
+        "remesh": 48,
+        "shell": true,
+        "doubleSided": true
+      }
+    },
+    {
+      "id": "mn_fern",
+      "pack": "meshy-community-nature",
+      "src": "Meshy_AI_A_majestic_forest_fern_featuring_broad_20250923_texture_fbx/Meshy_AI_A_majestic_forest_fern_featuring_broad_20250923_texture.fbx",
+      "name": "Forest Fern",
+      "category": "Plants & Flowers",
+      "height": 1.0,
+      "collide": "none",
+      "source": {
+        "model": "A majestic forest fern featuring broad …",
+        "date": "2025-09-23"
+      },
+      "nature": {
+        "lods": [
+          [
+            1500,
+            20
+          ],
+          [
+            450,
+            50
+          ]
+        ],
+        "remesh": 128,
+        "shell": true,
+        "doubleSided": true,
+        "cut": 0.06
+      }
+    },
+    {
+      "id": "mn_eelgrass",
+      "pack": "meshy-community-nature",
+      "src": "Meshy_AI_Vallisneria_20260909_texture_fbx/Meshy_AI_Vallisneria_20260909_texture.fbx",
+      "name": "Eelgrass (water plant)",
+      "category": "Plants & Flowers",
+      "height": 0.8,
+      "collide": "none",
+      "source": {
+        "model": "Vallisneria",
+        "date": "2026-09-09"
+      },
+      "nature": {
+        "lods": [
+          [
+            800,
+            20
+          ],
+          [
+            280,
+            45
+          ]
+        ],
+        "flags": [
+          "Permissive"
+        ],
+        "doubleSided": true,
+        "cut": 0.03
+      }
+    },
+    {
+      "id": "mn_rock_spires",
+      "pack": "meshy-community-nature",
+      "src": "Meshy_AI_Red_Rock_Spires_20260603_texture_remesh_tri_fbx/Meshy_AI_Red_Rock_Spires_20260603_texture_remesh_tri.fbx",
+      "name": "Red Rock Spires",
+      "category": "Rocks & Wood",
+      "height": 8.0,
+      "collide": "shell",
+      "source": {
+        "model": "Red Rock Spires (remeshed)",
+        "date": "2026-06-03"
+      },
+      "nature": {
+        "lods": [
+          [
+            3000,
+            40
+          ],
+          [
+            1000,
+            110
+          ]
+        ],
+        "flags": [
+          "Permissive"
+        ]
+      }
     }
   ]
 }

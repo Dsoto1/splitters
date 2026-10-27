@@ -1,0 +1,27 @@
+Meshy community models (https://www.meshy.ai)
+
+Licence: CC0 1.0 (public domain dedication), per the owner.
+
+The owner downloaded these models from Meshy's community gallery and states
+they are published there under CC0. The community page URL for each model is
+pending from the owner; until it arrives the licence rests on the owner's
+statement (recorded here and in docs/ASSET_SOURCES.md as "Meshy community,
+CC0 (per owner)").
+
+Models (name as on the download, download file date):
+
+- "A dense forest shrub with woody …" (2025-09-23)  -> prop mn_shrub
+- "A majestic forest fern featuring broad …" (2025-09-23)  -> prop mn_fern
+- "A tall slender birch tree distinguished …" (2025-09-23)  -> prop mn_birch
+- "a tree" (2025-05-10)  -> prop mn_oak
+- "Banana Plant" (2026-03-24)  -> prop mn_banana
+- "fir tree" (2025-07-30)  -> prop mn_fir
+- "Red Rock Spires" (remeshed, 2026-06-03)  -> prop mn_rock_spires
+- "Vallisneria" (2026-09-09)  -> prop mn_eelgrass
+- "Sunlit Pathway Through the Grass" (2026-01-25): looked at, not used (a
+  whole 8-million-triangle grass scene that doesn't reduce to a light clump)
+
+tools/content/prepare-props.mjs (pack meshy-community-nature in
+content/props.json, built by tools/content/nature.mjs) turns the textured FBX
+downloads into the shipped props. The raw downloads (FBX, PNG) are not kept
+in the repo; content/props.lock.json checks the built files.

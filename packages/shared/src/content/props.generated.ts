@@ -1187,4 +1187,12 @@ export const CORE_PROPS: readonly PropDefinition[] = [
   {id: 'prop.lf_picket_fence_open_left', file: 'props/lf_picket_fence_open_left.glb', displayName: 'Picket Fence Open Left', category: 'Fences & Walls', size: [2.164,1.266,0.062], collision: [2.164,1.266,0.2]},
   {id: 'prop.lf_picket_fence_open_right', file: 'props/lf_picket_fence_open_right.glb', displayName: 'Picket Fence Open Right', category: 'Fences & Walls', size: [2.164,1.266,0.062], collision: [2.164,1.266,0.2]},
   {id: 'prop.lf_picket_post', file: 'props/lf_picket_post.glb', displayName: 'Picket Post', category: 'Fences & Walls', size: [0.257,1.366,0.261], collision: [0.257,1.366,0.261]},
+  {id: 'prop.mn_oak', file: 'props/mn_oak.glb', displayName: 'Broad Oak', category: 'Trees', size: [8.919,6.93,9.545], collision: [0.5,6.93,0.5]},
+  {id: 'prop.mn_birch', file: 'props/mn_birch.glb', displayName: 'Slender Birch', category: 'Trees', size: [4.564,9.899,3.674], collision: [0.5,9.899,0.5]},
+  {id: 'prop.mn_fir', file: 'props/mn_fir.glb', displayName: 'Fir Tree', category: 'Trees', size: [4.16,8.672,3.695], collision: [0.5,8.672,0.5]},
+  {id: 'prop.mn_banana', file: 'props/mn_banana.glb', displayName: 'Banana Plant (leafy)', category: 'Trees', size: [2.497,3.156,2.572], collision: [0.5,3.156,0.5]},
+  {id: 'prop.mn_shrub', file: 'props/mn_shrub.glb', displayName: 'Forest Shrub', category: 'Plants & Flowers', size: [1.468,1.089,1.441], collision: null},
+  {id: 'prop.mn_fern', file: 'props/mn_fern.glb', displayName: 'Forest Fern', category: 'Plants & Flowers', size: [0.597,0.969,0.578], collision: null},
+  {id: 'prop.mn_eelgrass', file: 'props/mn_eelgrass.glb', displayName: 'Eelgrass (water plant)', category: 'Plants & Flowers', size: [0.64,0.783,0.663], collision: null},
+  {id: 'prop.mn_rock_spires', file: 'props/mn_rock_spires.glb', displayName: 'Red Rock Spires', category: 'Rocks & Wood', size: [13.729,7.96,4.852], collision: [13.729,7.96,4.852], boxes: [[3.264,0,-2.426,6.464,7.388,1.574],[1.664,0,-2.426,2.064,7.96,2.374],[-3.536,0,-2.426,-0.336,7.087,2.374],[-4.736,0,-2.426,-3.936,6.781,2.374],[2.064,0,-2.026,3.264,7.946,1.974],[-0.336,0,-2.026,1.664,7.403,1.974],[-3.936,0,-2.026,-3.536,6.706,1.974],[-5.936,0,-2.026,-4.736,6.13,2.374],[6.464,0,-1.626,6.864,1.449,0.374],[-6.336,0,-1.626,-5.936,3.655,1.574],[-6.736,0,-1.226,-6.336,1.911,1.174],[-6.865,0,-0.426,-6.736,0.573,0.374],[3.264,0,1.574,6.064,2.185,1.974],[3.664,0,1.974,4.864,0.959,2.374],[1.264,0,1.974,1.664,0.865,2.374],[-0.336,0,1.974,0.064,0.21,2.374],[-5.536,0,2.374,-4.736,0.333,2.426]]},
 ];

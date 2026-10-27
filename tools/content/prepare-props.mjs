@@ -33,6 +33,7 @@ import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
 import { flattenTextures } from './flatten.mjs';
+import { buildNatureDocument, cutBelow, normalise, readSoup } from './nature.mjs';
 
 await MeshoptSimplifier.ready;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -154,6 +155,8 @@ const yawQuat = (deg) => [0, Math.sin((deg * Math.PI) / 360), 0, Math.cos((deg *
 function sceneTriangles(scene) {
   const tris = [];
   const visit = (node) => {
+    // Lower levels of detail (nature.mjs) are not the model's shape.
+    if (node.getExtras()?.lod) return;
     const m = node.getWorldMatrix();
     const mesh = node.getMesh();
     if (mesh)
@@ -486,6 +489,44 @@ async function convertPiece(dir, pack, p) {
   return Buffer.from(await io.writeBinary(doc));
 }
 
+/**
+ * A prop from a `nature` pack (the Meshy community plants, trees and rocks):
+ * decimated, painted per face and given levels of detail by tools/content/nature.mjs.
+ * `nature` on the prop: `lods` [[triangles, distance], …] (LOD0 first; distance where
+ * it gives way to the next), `impostor` (distance of the camera-facing card, or
+ * none), `remesh` (voxel cells; `shell` for open leaves), `flags` for the
+ * simplifier, `cut` (share of the raw height to cut off the bottom: a scene's
+ * ground plate), `doubleSided`.
+ */
+async function natureProp(dir, pack, p) {
+  const n = p.nature;
+  let soup = await readSoup(join(dir, p.src));
+  const cut = n.cut ?? 0;
+  const total = p.height / (1 - cut);
+  normalise(soup.P, { yaw: p.yaw ?? 0, height: total });
+  if (cut) {
+    soup = cutBelow(soup, total * cut);
+    for (let i = 1; i < soup.P.length; i += 3) soup.P[i] -= total * cut;
+  }
+  const lods = n.lods.map(([triangles, distance]) => ({ triangles, distance }));
+  const { doc } = await buildNatureDocument(soup, {
+    lods,
+    impostor: n.impostor ? { distance: n.impostor, size: 256 } : null,
+    remesh: n.remesh ?? 0,
+    shell: !!n.shell,
+    flags: n.flags ?? ['Prune'],
+    doubleSided: !!n.doubleSided,
+    name: p.id,
+  });
+  // Centred on LOD0's footprint after the cut.
+  const lod0 = doc.getRoot().listNodes()[0];
+  const b = getBounds(lod0);
+  for (const node of doc.getRoot().listNodes()) node.setTranslation([-(b.min[0] + b.max[0]) / 2, -b.min[1], -(b.min[2] + b.max[2]) / 2]);
+  // Face normals need no more than 8 bits.
+  await doc.transform(dedup(), prune(), quantize({ quantizeNormal: 8 }));
+  return { glb: Buffer.from(await io.writeBinary(doc)), size: [round(b.max[0] - b.min[0]), round(b.max[1] - b.min[1]), round(b.max[2] - b.min[2])] };
+}
+
 for (const p of manifest.props) {
   const pack = manifest.packs[p.pack];
   const file = `props/${p.id}.glb`;
@@ -497,7 +538,7 @@ for (const p of manifest.props) {
   // Packs with an `images` folder (the MegaKit's glTF, the Orbital and Neon Kenney kits) get their materials
   // baked and shrunk; other GLB kits are normalised as they are.
   const gltfKit = external && !!pack.images;
-  const converted = external && !!pack.convert;
+  const converted = external && (!!pack.convert || !!pack.nature);
   const dir = external && downloads ? downloadDir(pack.download) : null;
   let glb;
   let size;
@@ -521,6 +562,9 @@ for (const p of manifest.props) {
     await doc.transform(weld(), dedup(), ...(p.simplify ? [simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.002 })] : []), prune());
     glb = Buffer.from(await io.writeBinary(doc));
     writeFileSync(path, glb);
+  } else if (external && pack.nature && dir) {
+    ({ glb, size } = await natureProp(dir, pack, p));
+    writeFileSync(path, glb);
   } else if (converted && dir) {
     glb = await convertPiece(dir, pack, p);
     writeFileSync(path, glb);
@@ -542,7 +586,14 @@ for (const p of manifest.props) {
   const doc = await io.readBinary(new Uint8Array(glb));
   const scene = doc.getRoot().listScenes()[0];
   let triangles = 0;
-  for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) triangles += (prim.getIndices()?.getCount() ?? prim.getAttribute('POSITION').getCount()) / 3;
+  // Lower levels of detail (nature.mjs) are counted apart: the budget is for the full-detail model.
+  const lodTriangles = [];
+  for (const mesh of doc.getRoot().listMeshes()) {
+    let t = 0;
+    for (const prim of mesh.listPrimitives()) t += (prim.getIndices()?.getCount() ?? prim.getAttribute('POSITION').getCount()) / 3;
+    if (mesh.listParents().some((n) => n.propertyType === 'Node' && n.getExtras()?.lod)) lodTriangles.push(t);
+    else triangles += t;
+  }
   if (!size) {
     const b = getBounds(scene);
     // Flat pieces (floor plates, decals) are lifted a little off the floor; their footprint still starts at 0.
@@ -553,7 +604,7 @@ for (const p of manifest.props) {
   // The game draws glTF models mirrored in x (Babylon's import into its left-handed space), so the boxes are too.
   const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene))?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
   defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}) });
-  lock.files.push({ file, source: p.pack, src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
+  lock.files.push({ file, source: p.pack, ...(p.source ? { title: `${p.source.model} (download dated ${p.source.date})` } : {}), src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, ...(lodTriangles.length ? { lodTriangles } : {}), bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
 }
 
 // Files left behind by renamed or removed props.
