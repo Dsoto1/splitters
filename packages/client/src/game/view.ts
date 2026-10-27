@@ -113,7 +113,7 @@ interface Avatar {
   anim?: CharacterAnimator | CreatureAnimator;
   specKey: string;
   /** Team-colour marker over a teammate's head (Team Deathmatch). */
-  tag?: { mesh: Mesh; color: string };
+  tag?: { mesh: AbstractMesh; color: string };
   last?: { x: number; y: number; z: number; t: number };
   vel: { x: number; z: number };
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
@@ -417,7 +417,7 @@ export class GameView {
   private toCorpse(slot: number, a: Avatar): void {
     this.avatars.delete(slot);
     this.lyingDead.add(slot);
-    a.tag?.mesh.dispose(false, true);
+    a.tag?.mesh.dispose(false, !a.tag.mesh.isAnInstance);
     a.tag = undefined;
     a.aura?.setEnabled(false);
     a.jet?.setEnabled(false);
@@ -1088,23 +1088,44 @@ export class GameView {
 
   private setTag(a: Avatar, color: string | null): void {
     if (a.tag && a.tag.color !== color) {
-      a.tag.mesh.dispose(false, true);
+      a.tag.mesh.dispose(false, !a.tag.mesh.isAnInstance);
       a.tag = undefined;
     }
     if (!color || a.tag) return;
-    // Allies: a diamond; enemies (red by default): a downward triangle, so the two read apart at a glance.
-    const enemy = color.toLowerCase() === '#ff3b3b';
-    const mesh = CreateDisc(`${a.root.name}_tag`, { radius: enemy ? 0.13 : 0.11, tessellation: enemy ? 3 : 4 }, this.scene);
-    if (enemy) mesh.rotation.z = -Math.PI / 2;
-    const mat = new StandardMaterial(`${a.root.name}_tagmat`, this.scene);
-    mat.emissiveColor = Color3.FromHexString(color);
-    mat.disableLighting = true;
-    mesh.material = mat;
+    // Crowds: every marker of a colour is a GPU instance of one disc (one draw per colour, not per player).
+    const mesh = this.crowd ? this.tagSource(color).createInstance(`${a.root.name}_tag`) : this.tagDisc(`${a.root.name}_tag`, color);
     mesh.billboardMode = MeshClass.BILLBOARDMODE_ALL;
     mesh.parent = a.root;
     mesh.position.y = PLAYER.height + 0.35;
     mesh.isPickable = false;
     a.tag = { mesh, color };
+  }
+
+  /** A marker disc in a team colour. Allies: a diamond; enemies (red by default): a downward triangle, so the two read apart at a glance. */
+  private tagDisc(name: string, color: string): Mesh {
+    const enemy = color.toLowerCase() === '#ff3b3b';
+    const mesh = CreateDisc(name, { radius: enemy ? 0.13 : 0.11, tessellation: enemy ? 3 : 4 }, this.scene);
+    if (enemy) mesh.rotation.z = -Math.PI / 2;
+    const mat = new StandardMaterial(`${name}mat`, this.scene);
+    mat.emissiveColor = Color3.FromHexString(color);
+    mat.disableLighting = true;
+    mesh.material = mat;
+    return mesh;
+  }
+
+  private readonly tagSources = new Map<string, Mesh>();
+
+  /** The shared disc a colour's crowd markers are instances of (parked out of sight; only its instances draw). */
+  private tagSource(color: string): Mesh {
+    let src = this.tagSources.get(color);
+    if (!src) {
+      src = this.tagDisc(`tag_${color}`, color);
+      src.isPickable = false;
+      src.position.y = -10000;
+      src.freezeWorldMatrix();
+      this.tagSources.set(color, src);
+    }
+    return src;
   }
 
   private disposeAvatar(a: Avatar): void {
