@@ -1,4 +1,5 @@
 import { TICK_RATE, angleDelta, type PlayerSnapshot } from '@tiletrigger/shared';
+import { netProbe } from './perfProbe.ts';
 
 /** Remote actors render this far behind the newest snapshot so there are always two to blend between. */
 const INTERP_DELAY_TICKS = 6; // 100 ms at 60 Hz
@@ -77,6 +78,7 @@ export class Interpolator {
     const late = this.clockOffset !== null && offset < this.clockOffset - CLOCK_RESYNC_TICKS;
     this.lateRun = late ? this.lateRun + 1 : 0;
     if (this.clockOffset === null || offset > this.clockOffset + CLOCK_RESYNC_TICKS || this.lateRun > LATE_RUN_RESYNC) {
+      if (netProbe.on && this.clockOffset !== null) netProbe.resyncs++;
       this.clockOffset = offset;
       this.lateRun = 0;
     } else if (!late) this.clockOffset += (offset - this.clockOffset) * CLOCK_GAIN;
@@ -144,6 +146,10 @@ export class Interpolator {
     }
     // Past the newest snapshot: carry on along the last two (t above 1 extrapolates).
     const n = this.frames.length;
+    if (netProbe.on) {
+      netProbe.sampled++;
+      if (drawTick > this.latestTick) netProbe.extrapolated++;
+    }
     if (drawTick > this.latestTick && n > 1) {
       a = this.frames[n - 2]!;
       b = this.frames[n - 1]!;
@@ -166,6 +172,7 @@ export class Interpolator {
           break;
         }
       }
+      if (netProbe.on && !fb) netProbe.frozen++;
       const pa = (fa ?? fb)?.players.get(slot);
       const pb = (fb ?? fa)?.players.get(slot);
       if (!pa || !pb) continue;

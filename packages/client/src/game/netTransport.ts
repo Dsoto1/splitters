@@ -1,5 +1,6 @@
 import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { Transport } from './transport.ts';
+import { SnapshotCoalescer } from './snapshotMerge.ts';
 
 const ADMIN_KEY = 'tiletrigger.admin.';
 
@@ -45,6 +46,8 @@ export class NetTransport implements Transport {
   start(onMessage: (m: ServerMessage) => void, onClose: (reason: string) => void): void {
     const ws = new WebSocket(this.url);
     this.ws = ws;
+    // A page that falls behind (a long frame, a slow machine with 96 players in view) handles the snapshots waiting for it as one.
+    const snapshots = new SnapshotCoalescer((m) => !this.closedByUs && onMessage(m));
     ws.addEventListener('open', () => {
       const admin = adminToken(this.url);
       this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, ...(admin ? { admin } : {}) });
@@ -59,10 +62,11 @@ export class NetTransport implements Transport {
         this.rttMs = this.rttMs ? this.rttMs * 0.8 + sample * 0.2 : sample;
         return;
       }
-      onMessage(msg);
+      snapshots.push(msg);
     });
     ws.addEventListener('close', (e) => {
       clearInterval(this.pingTimer);
+      snapshots.flush();
       if (!this.closedByUs) onClose(e.reason || (e.code === 1006 ? 'could not reach server' : `closed (${e.code})`));
     });
   }

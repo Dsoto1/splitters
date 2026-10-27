@@ -5,6 +5,8 @@ import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzippe
 import { hubAddress, hubSetting } from './hub.ts';
 import { baseIceServers, loadRelay, sessionIce } from './relay.ts';
 import { makeJoinCode } from './joinCode.ts';
+import { netProbe } from './perfProbe.ts';
+import { SnapshotCoalescer } from './snapshotMerge.ts';
 
 /**
  * Host game / Join by code over PeerJS: friends connect straight to the
@@ -38,7 +40,15 @@ let chunkIds = 0;
 function sendText(conn: DataConnection, text: string, zip?: Zipper): void {
   if (!conn.open) return;
   if (zip) {
-    for (const piece of zip.pieces(text)) conn.send(piece);
+    const t0 = netProbe.on ? performance.now() : 0;
+    const pieces = zip.pieces(text);
+    for (const piece of pieces) conn.send(piece);
+    if (netProbe.on) {
+      netProbe.sent++;
+      netProbe.sentChars += text.length;
+      for (const piece of pieces) netProbe.sentBytes += piece.length;
+      netProbe.sendMs += performance.now() - t0;
+    }
     return;
   }
   if (text.length <= CHUNK) return void conn.send(text);
@@ -68,7 +78,13 @@ function onText(conn: DataConnection, cb: (text: string) => void, o: { limits: R
       if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
         const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
         o.wire?.(bytes.length);
+        const t0 = netProbe.on ? performance.now() : 0;
         const text = (unzip ??= new Unzipper(o.limits.maxBytes)).piece(bytes);
+        if (netProbe.on) {
+          netProbe.inflateMs += performance.now() - t0;
+          netProbe.recvBytes += bytes.length;
+          if (text !== null) netProbe.recvChars += text.length;
+        }
         if (text !== null) cb(text);
         return;
       }
@@ -196,11 +212,14 @@ export class PeerTransport implements Transport {
   private open(onMessage: (m: ServerMessage) => void, onClose: (reason: string) => void, iceServers: RTCIceServer[]): void {
     const peer = new Peer(peerOptions({ iceServers }));
     this.peer = peer;
+    // A page that falls behind (a long frame, a slow machine with 96 players in view) handles the snapshots waiting for it as one.
+    const snapshots = new SnapshotCoalescer((m) => !this.closedByUs && onMessage(m));
     let opened = false;
     let brokered = false;
     const fail = (reason: string) => {
       if (this.closedByUs) return;
       this.closedByUs = true;
+      snapshots.clear();
       clearInterval(this.pingTimer);
       clearTimeout(timeout);
       peer.destroy();
@@ -247,13 +266,22 @@ export class PeerTransport implements Transport {
       onText(
         conn,
         (text) => {
+          const t0 = netProbe.on ? performance.now() : 0;
           const msg = JSON.parse(text) as ServerMessage;
+          if (netProbe.on) {
+            const t1 = performance.now();
+            netProbe.parseMs += t1 - t0;
+            if (msg.t === 'snapshot') {
+              netProbe.arrivals.push(t1);
+              netProbe.ticks.push(msg.tick);
+            }
+          }
           if (msg.t === 'pong') {
             const sample = performance.now() - msg.ct;
             this.rttMs = this.rttMs ? this.rttMs * 0.8 + sample * 0.2 : sample;
             return;
           }
-          onMessage(msg);
+          snapshots.push(msg);
         },
         { limits: HOST_TO_GUEST_LIMITS, wire: (bytes) => (this.bytesIn += bytes) },
       );
