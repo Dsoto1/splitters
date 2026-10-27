@@ -236,6 +236,8 @@ export class GameView {
   private muzzleZ = 0.2;
   private kickAmount = 0;
   private bobPhase = 0;
+  /** Weapon bob strength (0..1), eased so starting or stopping doesn't pop the gun. */
+  private bobAmount = 0;
   private readonly flash: Mesh;
   private flashUntil = 0;
   /** The ambient light, briefly brightened by your own shots (a real point light costs every pixel). */
@@ -740,16 +742,19 @@ export class GameView {
   }
 
   /** Position the viewmodel: offset, bob while moving, recoil, and dips for raising/reloading. */
-  updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean; ads?: number }): void {
+  updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean; ads?: number; speed?: number }): void {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     this.viewRoot.setEnabled(!o.hidden && !!def);
     this.fpArms?.root.setEnabled(!o.hidden && !!def);
     if (def && this.fpArms?.anim) this.fpArms.anim.update(dt, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
     if (!def) return;
     this.kickAmount = Math.max(0, this.kickAmount - dt * 6);
-    if (o.moving) this.bobPhase += dt * 9;
+    // The bob keeps pace with how fast you're actually going (a wall stops it; a sprint quickens it).
+    const pace = o.moving ? (o.speed === undefined ? 1 : Math.min(1.5, o.speed / PLAYER.runSpeed)) : 0;
+    this.bobPhase += dt * 9 * pace;
+    this.bobAmount += (Math.min(1, pace) - this.bobAmount) * Math.min(1, dt * 8);
     const ads = o.ads ?? 0;
-    const bob = (o.moving ? 1 : 0) * (1 - ads * 0.8);
+    const bob = this.bobAmount * (1 - ads * 0.8);
     const [vx, vy, vz] = def.view.viewOffset;
     // Aiming down the sights: the gun comes to the centre with the top of the receiver (where
     // the sight sits) just under the eye line, and far enough forward that the stock stays

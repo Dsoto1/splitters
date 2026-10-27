@@ -7,6 +7,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
+import { GAIT, GAIT_CLIPS, gaitCycleRate, gaitWeights, matchPhase, type GaitClip } from './gait.ts';
 
 /** What the animator needs to know each frame (from interpolated snapshots). */
 export interface MotionState {
@@ -28,9 +29,29 @@ export interface MotionState {
 
 export type OneShot = 'shoot' | 'melee' | 'melee_heavy' | 'reload' | 'hit' | 'throw' | 'interact';
 
-const LOOPS: readonly Clip[] = ['idle', 'aim_idle', 'walk', 'run', 'sprint', 'jump_air', 'dance', 'crouch_idle', 'crouch_walk', 'prone_idle', 'prone_crawl'];
-/** Natural ground speed of each locomotion clip (m/s), used to match foot speed. */
-const CLIP_SPEED: Partial<Record<Clip, number>> = { walk: 1.6, run: 4.2, sprint: 6.5, crouch_walk: 1.5, prone_crawl: 0.9 };
+/**
+ * States crossfaded over time. 'run' stands for the whole upright gait: walk,
+ * run and sprint blended by speed and kept in step (see gait.ts and driveGait).
+ */
+const LOOPS: readonly Clip[] = ['idle', 'aim_idle', 'run', 'jump_air', 'dance', 'crouch_idle', 'crouch_walk', 'prone_idle', 'prone_crawl'];
+/** Natural ground speed of the low locomotion clips (m/s), used to match foot speed. */
+const CLIP_SPEED: Partial<Record<Clip, number>> = { crouch_walk: 1.5, prone_crawl: 0.9 };
+/** Moving faster than this starts the gait; it stops below the lower figure (no flicker at the edge). */
+const MOVE_START = 0.6;
+const MOVE_STOP = 0.45;
+/** Sprinting shows from this speed even without the flag (speed boosts). */
+const SPRINT_SPEED = 7.4;
+/** speedRatio changes smaller than this are not applied (each change walks every animatable in the group). */
+const RATIO_EPSILON = 0.004;
+/**
+ * Strafing: the hips turn toward the direction of travel by up to this much (radians), and the
+ * spine turns back by the same. Without strafe clips, legs running straight ahead while the body
+ * goes sideways slid the planted foot at the full ground speed.
+ */
+const HIP_TURN_MAX = 1.35;
+/** Moving more than this share of a half turn away from facing plays the gait backwards (and stops below the second). */
+const BACK_START = 0.6;
+const BACK_STAY = 0.52;
 /** Lying prone: the body tips forward onto its front around the hips (radians, metres). */
 const PRONE_TILT = 1.45;
 const HIP_HEIGHT = 0.95;
@@ -88,6 +109,9 @@ export class CharacterAnimator {
   private readonly observer: Observer<Scene>;
   private pitch = 0;
   private twist = 0;
+  /** Moving backwards (the gait plays in reverse); kept with a margin so it doesn't flicker at a sideways strafe. */
+  private backing = false;
+  private readonly pelvis?: TransformNode;
   private readonly spine: TransformNode[];
   private readonly hand?: TransformNode;
   private weapon: TransformNode | null = null;
@@ -125,6 +149,7 @@ export class CharacterAnimator {
     const [r, l] = [arm('r'), arm('l')];
     this.arms = r && l ? { r, l } : null;
     this.skelRoot = ch.joints.get('root');
+    this.pelvis = ch.joints.get('pelvis');
     for (const c of LOOPS) this.weights.set(c, 0);
     for (const c of ['walk', 'run', 'sprint', 'jump_air'] as const) {
       const g = ch.clips.get(c);
@@ -189,11 +214,16 @@ export class CharacterAnimator {
     this.maskLegs(this.armed);
     this.pitch = this.armed ? s.pitch : 0;
 
-    // Backpedal by playing the run in reverse; strafe by turning the hips toward the motion.
-    const back = s.speed > 0.5 && Math.abs(s.moveAngle) > Math.PI * 0.6;
-    const side = s.speed > 0.5 && !back ? Math.max(-0.7, Math.min(0.7, s.moveAngle)) : back ? Math.max(-0.5, Math.min(0.5, Math.PI - Math.abs(s.moveAngle))) * -Math.sign(s.moveAngle) : 0;
-    // Eased slowly: bots dodging left and right while they shoot would otherwise swing their hips back and forth.
-    this.twist += (side - this.twist) * Math.min(1, dt * 4);
+    // Backpedal by playing the gait in reverse; strafe by turning the hips (and so the legs) toward
+    // the motion while the spine turns back, so the shoulders and the gun stay on the aim. Moving
+    // mostly backwards, the hips turn toward the opposite of the motion and the gait runs backwards.
+    const moving = s.speed > 0.5;
+    this.backing = moving && Math.abs(s.moveAngle) > Math.PI * (this.backing ? BACK_STAY : BACK_START);
+    const back = this.backing;
+    const legs = back ? s.moveAngle - Math.PI * Math.sign(s.moveAngle) : s.moveAngle;
+    const side = moving ? Math.max(-HIP_TURN_MAX, Math.min(HIP_TURN_MAX, legs)) : 0;
+    // Eased: bots dodging left and right while they shoot would otherwise swing their hips back and forth.
+    this.twist += (side - this.twist) * Math.min(1, dt * 6);
 
     let want: Clip;
     const low = (s.stance ?? 0) > 0;
@@ -203,10 +233,11 @@ export class CharacterAnimator {
     else if (s.airborne) want = 'jump_air';
     else if (proneClips) want = s.speed < 0.3 ? 'prone_idle' : 'prone_crawl';
     else if (low) want = s.speed < 0.4 ? 'crouch_idle' : 'crouch_walk';
-    else if (s.speed < 0.6) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
-    else if (s.speed < 3) want = 'walk';
-    else if (s.sprinting || s.speed >= 7.4) want = 'sprint';
+    else if (s.speed < (this.current === 'run' ? MOVE_STOP : MOVE_START)) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
     else want = 'run';
+    // Sprinting fades in over the run (both loops in step) rather than switching.
+    const sprintTarget = s.sprinting || s.speed >= SPRINT_SPEED ? 1 : 0;
+    this.sprintMix += Math.sign(sprintTarget - this.sprintMix) * Math.min(Math.abs(sprintTarget - this.sprintMix), dt * FADE_PER_SEC);
     // Prone: tip the whole body forward onto its front, pivoting at the hips over the feet.
     const tilt = s.stance === 2 && !s.celebrate && !proneClips ? PRONE_TILT : 0;
     // Lying down, the standing aim pose would pull the arms upright: leave the arms to the clip and the grip.
@@ -216,13 +247,17 @@ export class CharacterAnimator {
     this.applyProne();
     if (want !== this.current) {
       this.current = want;
-      this.play(want, this.weights.get(want) ?? 0);
+      if (want !== 'run') this.play(want, this.weights.get(want) ?? 0);
     }
     for (const c of LOOPS) {
       const target = c === this.current ? 1 : 0;
       let w = this.weights.get(c)!;
       w += Math.sign(target - w) * Math.min(Math.abs(target - w), dt * FADE_PER_SEC);
       this.weights.set(c, w);
+      if (c === 'run') {
+        this.driveGait(w, s.speed, back);
+        continue;
+      }
       const g = this.ch.clips.get(c);
       if (!g) continue;
       if (w <= 0.001 && c !== this.current) {
@@ -248,6 +283,74 @@ export class CharacterAnimator {
     this.blade += (bladeTarget - this.blade) * Math.min(1, dt * 8);
     // Clips the state machine started while asleep wait too.
     if (this.dormant) for (const g of this.groups()) if (g.isPlaying) g.pause();
+  }
+
+  /** 0..1: how far the gait has faded from the run into the sprint. */
+  private sprintMix = 0;
+  /** Gait cycles per second last applied to the loops (negative backwards). */
+  private gaitRate = 0;
+
+  /**
+   * The upright gait: walk, run and sprint weighted by speed (gaitWeights),
+   * all at the one cycle rate that keeps the planted foot still for this
+   * speed and body size, and phase-locked: a loop joining the blend starts
+   * where the one already playing is in its stride, so feet never swap or
+   * skip as the speed crosses from walk to run or into a sprint.
+   */
+  private driveGait(weight: number, speed: number, back: boolean): void {
+    const loops: [GaitClip, AnimationGroup][] = [];
+    for (const c of GAIT_CLIPS) {
+      const g = this.ch.clips.get(c);
+      if (g) loops.push([c, g]);
+    }
+    if (!loops.length) return;
+    // isStarted, not isPlaying: a sleeping crowd member's loops are paused, not stopped.
+    if (weight <= 0.001 && this.current !== 'run') {
+      for (const [, g] of loops) if (g.isStarted) g.stop();
+      this.gaitRate = 0;
+      return;
+    }
+    const mix = gaitWeights(speed, this.sprintMix);
+    // A rig without one of the loops: the run (or whatever there is) takes its share.
+    for (const c of GAIT_CLIPS) {
+      if (this.ch.clips.has(c) || !mix[c]) continue;
+      const to = this.ch.clips.has('run') ? 'run' : loops[0]![0];
+      mix[to] += mix[c];
+      mix[c] = 0;
+    }
+    const seconds: Record<GaitClip, number> = { walk: 0, run: 0, sprint: 0 };
+    for (const [c, g] of loops) seconds[c] = (g.to - g.from) / (g.targetedAnimations[0]?.animation.framePerSecond || 60);
+    const scale = Math.abs(this.ch.root.scaling.y) || 1;
+    const rate = gaitCycleRate(speed, mix, seconds, scale) * (back ? -1 : 1);
+    // The heaviest loop already playing sets the stride the others join at.
+    let lead: { clip: GaitClip; phase: number } | null = null;
+    for (const [c, g] of loops) {
+      const frame = g.animatables[0]?.masterFrame;
+      if (!g.isStarted || frame === undefined || (lead && mix[c] <= mix[lead.clip])) continue;
+      const p = (frame - g.from) / (g.to - g.from || 1);
+      lead = { clip: c, phase: p - Math.floor(p) };
+    }
+    let joined = false;
+    for (const [c, g] of loops) {
+      const w = weight * mix[c];
+      if (w <= 0.001) {
+        if (g.isStarted) g.stop();
+        continue;
+      }
+      if (!g.isStarted) {
+        joined = true;
+        g.start(true);
+        // In step with the loop already playing, or from a left footfall.
+        const phase = lead ? matchPhase(lead.clip, lead.phase, c) : GAIT[c].footDown;
+        g.goToFrame(g.from + phase * (g.to - g.from));
+      }
+      g.weight = w;
+    }
+    // One cycle rate for every loop, changed on all of them together so they stay in step.
+    if (joined || Math.abs(rate - this.gaitRate) > RATIO_EPSILON * Math.max(1, Math.abs(rate))) {
+      this.gaitRate = rate;
+      for (const [c, g] of loops) if (g.isStarted) g.speedRatio = rate * seconds[c];
+    }
   }
 
   /** Out of view in a crowd: clips paused where they are and no aiming or gripping until it is seen again. */
@@ -370,7 +473,18 @@ export class CharacterAnimator {
     const rootRot = Quaternion.FromRotationMatrix(root.getWorldMatrix().getRotationMatrix());
     const right = Vector3.TransformNormal(Vector3.Right(), Matrix.FromQuaternionToRef(rootRot, new Matrix()));
     const up = Vector3.Up();
-    const twist = this.twist - this.blade;
+    // The hips (and with them the legs) turn toward the motion; the spine above turns back by as
+    // much. Joint space is mirrored from the game's yaw (glTF import), hence the minus.
+    const hipTurn = -this.twist;
+    const twist = hipTurn - this.blade;
+    const hips = this.pelvis;
+    const hipsParent = hips?.parent as TransformNode | null | undefined;
+    if (hips?.rotationQuaternion && hipsParent && Math.abs(hipTurn) > 1e-4) {
+      hipsParent.computeWorldMatrix(true);
+      const inv = Quaternion.FromRotationMatrix(hipsParent.getWorldMatrix().getRotationMatrix()).invert();
+      const axis = Vector3.TransformNormal(up, Matrix.FromQuaternionToRef(inv, new Matrix())).normalize();
+      hips.rotationQuaternion = Quaternion.RotationAxis(axis, hipTurn).multiply(hips.rotationQuaternion);
+    }
     for (const bone of this.spine) {
       const parent = bone.parent as TransformNode | null;
       if (!parent || !bone.rotationQuaternion) continue;

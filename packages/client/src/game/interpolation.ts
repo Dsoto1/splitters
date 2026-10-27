@@ -3,6 +3,16 @@ import { TICK_RATE, angleDelta, type PlayerSnapshot } from '@tiletrigger/shared'
 /** Remote actors render this far behind the newest snapshot so there are always two to blend between. */
 const INTERP_DELAY_TICKS = 6; // 100 ms at 60 Hz
 const BUFFER_TICKS = TICK_RATE * 2;
+/**
+ * The server clock is estimated from snapshot arrivals. Each arrival only
+ * nudges the estimate (by this share of its error): snapshots reach us a few
+ * milliseconds early or late (network, or a busy main thread), and setting the
+ * clock from every one moved remote players in little jerks at the snapshot
+ * rate, which also made their running animation's speed flicker.
+ */
+const CLOCK_GAIN = 0.05;
+/** An estimate this far out (ticks) is reset instead (a stall, a hidden tab). */
+const CLOCK_RESYNC_TICKS = 6;
 
 interface Frame {
   tick: number;
@@ -41,21 +51,24 @@ export interface RemotePose {
 export class Interpolator {
   private frames: Frame[] = [];
   private latestTick = 0;
-  private latestAt = 0;
+  /** Smoothed server tick minus local time in ticks (null before the first snapshot). */
+  private clockOffset: number | null = null;
 
   /** `hold`: slots left out of this snapshot to save bandwidth; they are drawn from the frames that had them. */
-  push(tick: number, players: PlayerSnapshot[], projectiles: [number, number, number, number, number][] = [], hold?: readonly number[]): void {
+  push(tick: number, players: PlayerSnapshot[], projectiles: [number, number, number, number, number][] = [], hold?: readonly number[], now: number = performance.now()): void {
     if (tick <= this.latestTick && this.frames.length) return;
     this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])), projectiles: new Map(projectiles.map(([id, x, y, z, v]) => [id, [x, y, z, v ?? 0]])), ...(hold?.length ? { hold: new Set(hold) } : {}) });
     this.latestTick = tick;
-    this.latestAt = performance.now();
+    const offset = tick - (now / 1000) * TICK_RATE;
+    if (this.clockOffset === null || Math.abs(offset - this.clockOffset) > CLOCK_RESYNC_TICKS) this.clockOffset = offset;
+    else this.clockOffset += (offset - this.clockOffset) * CLOCK_GAIN;
     while (this.frames.length > 2 && this.frames[0]!.tick < tick - BUFFER_TICKS) this.frames.shift();
   }
 
   /** The (fractional) server tick remote players are currently drawn at. Sent with inputs for lag compensation. */
   renderTick(now: number = performance.now()): number {
     if (!this.frames.length) return 0;
-    const estServerTick = this.latestTick + ((now - this.latestAt) / 1000) * TICK_RATE;
+    const estServerTick = (now / 1000) * TICK_RATE + (this.clockOffset ?? this.latestTick);
     return Math.min(estServerTick - INTERP_DELAY_TICKS, this.latestTick);
   }
 
