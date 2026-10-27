@@ -132,7 +132,8 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     id: 'turret_rocket',
     displayName: 'Rocket Turret',
     kind: 'turret',
-    model: 'turrets/rocket.glb',
+    // A Meshy community cannon on a pedestal (CC0 per the owner; content/guns.json, centred on its pedestal).
+    model: 'guns/arc_cannon_turret.glb',
     health: 400,
     half: [0.6, 0.5, 0.6],
     seats: [{ role: 'gunner', label: 'Gunner', offset: [0, 0, -1.1], weapon: 'core.mount_rockets', arc: 1.2 }],

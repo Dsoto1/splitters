@@ -1527,6 +1527,20 @@
       ]
     },
     {
+      "file": "props/mp_control_cabinet.glb",
+      "source": "meshy-community-props",
+      "title": "Industrial Control Panel (download dated 2026-03-24)",
+      "src": "Meshy_AI_Industrial_Control_Panel_20260324_texture.fbx",
+      "triangles": 4657,
+      "bytes": 214656,
+      "sha256": "620569d17cb01dc5",
+      "size": [
+        1.11,
+        1.4,
+        0.765
+      ]
+    },
+    {
       "file": "props/rock_spire_tall.glb",
       "source": "kenney-nature-kit",
       "src": "rock_tallB.glb",
@@ -3703,6 +3717,20 @@
       "sha256": "f095d214cedd4619"
     },
     {
+      "file": "props/mp_dino_statue.glb",
+      "source": "meshy-community-props",
+      "title": "Spiky Dinosaur (download dated 2025-12-29)",
+      "src": "Meshy_AI_Spiky_Dinosaur_20251229_texture.fbx",
+      "triangles": 4980,
+      "bytes": 231036,
+      "sha256": "768e8589f3da410a",
+      "size": [
+        1.465,
+        2.6,
+        5.787
+      ]
+    },
+    {
       "file": "props/sb_microwave.glb",
       "source": "tiletrigger-styleprops",
       "src": "sb_microwave.glb",
@@ -5693,6 +5721,20 @@
         0.472,
         2.972,
         1.229
+      ]
+    },
+    {
+      "file": "props/mp_burnt_car.glb",
+      "source": "meshy-community-props",
+      "title": "Wreckage (download dated 2025-12-21)",
+      "src": "Meshy_AI_Wreckage_20251221_texture.fbx",
+      "triangles": 5774,
+      "bytes": 341288,
+      "sha256": "9b2d2700415e67a7",
+      "size": [
+        1.972,
+        1.3,
+        4.657
       ]
     },
     {

@@ -99,10 +99,10 @@
       "src": "Meshy_AI_Goblin_1026113732_texture.fbx",
       "sourceTriangles": 1326047,
       "file": "characters/meshy_goblin.glb",
-      "sha256": "ec93a57ab67aab6d",
-      "triangles": 19708,
-      "lodTriangles": 5814,
-      "bytes": 1147588
+      "sha256": "3bec8f82e7bd4d38",
+      "triangles": 11703,
+      "lodTriangles": 3308,
+      "bytes": 868672
     },
     {
       "role": "meshy-autorig",
@@ -111,10 +111,10 @@
       "src": "Meshy_AI_Wealthy_Otter_20260307_texture.fbx",
       "sourceTriangles": 486780,
       "file": "characters/meshy_otter.glb",
-      "sha256": "2a1ce05d6838cba9",
-      "triangles": 10999,
-      "lodTriangles": 3197,
-      "bytes": 708168
+      "sha256": "5090aecdf19ff4a2",
+      "triangles": 11000,
+      "lodTriangles": 3218,
+      "bytes": 708388
     },
     {
       "role": "meshy-autorig",
@@ -123,10 +123,10 @@
       "src": "Meshy_AI_Boglurker_the_toad_20260325_texture.fbx",
       "sourceTriangles": 852756,
       "file": "characters/meshy_toad.glb",
-      "sha256": "be063a25fc9551a2",
-      "triangles": 11741,
-      "lodTriangles": 3415,
-      "bytes": 758728
+      "sha256": "d27efab1dc297cc3",
+      "triangles": 11619,
+      "lodTriangles": 3451,
+      "bytes": 755964
     },
     {
       "role": "meshy-autorig",
@@ -135,10 +135,10 @@
       "src": "Meshy_AI_Salamander_Warlord_20260421_texture.fbx",
       "sourceTriangles": 774825,
       "file": "characters/meshy_salamander.glb",
-      "sha256": "5d99cad1aaec2c03",
-      "triangles": 11114,
-      "lodTriangles": 3201,
-      "bytes": 879608
+      "sha256": "5b6edb92ec42c160",
+      "triangles": 11094,
+      "lodTriangles": 3238,
+      "bytes": 880080
     },
     {
       "role": "meshy-autorig",
@@ -147,10 +147,94 @@
       "src": "Meshy_AI_Hyena_Warrior_20250425_texture.fbx",
       "sourceTriangles": 31876,
       "file": "characters/meshy_hyena.glb",
-      "sha256": "f99da2a464fdb2b6",
-      "triangles": 9990,
-      "lodTriangles": 2906,
-      "bytes": 619776
+      "sha256": "a4025b01e9eddfd0",
+      "triangles": 9988,
+      "lodTriangles": 2950,
+      "bytes": 619632
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_elder",
+      "source": "meshy-community-characters",
+      "model": "Elder T-pose",
+      "date": "2025-11-14",
+      "src": "Meshy_AI_Elder_T_POSE_20251114_texture.fbx",
+      "sourceTriangles": 598236,
+      "file": "characters/meshy_elder.glb",
+      "sha256": "edc37b115b0448aa",
+      "triangles": 11000,
+      "lodTriangles": 3225,
+      "bytes": 732640
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_alien",
+      "source": "meshy-community-characters",
+      "model": "T Pose Alien",
+      "date": "2026-07-21",
+      "src": "Meshy_AI_T_Pose_Alien_20260721_texture.fbx",
+      "sourceTriangles": 144758,
+      "file": "characters/meshy_alien.glb",
+      "sha256": "34e334f47e8aafbd",
+      "triangles": 9998,
+      "lodTriangles": 2971,
+      "bytes": 485428
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_cat",
+      "source": "meshy-community-characters",
+      "model": "T Pose Cat",
+      "date": "2026-03-11",
+      "src": "Meshy_AI_T_Pose_Cat_20260311_texture.fbx",
+      "sourceTriangles": 151127,
+      "file": "characters/meshy_cat.glb",
+      "sha256": "dbbd1d443f6abdc7",
+      "triangles": 9994,
+      "lodTriangles": 2902,
+      "bytes": 609544
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_pilot",
+      "source": "meshy-community-characters",
+      "model": "T Pose Pilot",
+      "date": "2026-05-10",
+      "src": "Meshy_AI_T_Pose_Pilot_20260510_texture.fbx",
+      "sourceTriangles": 33601,
+      "file": "characters/meshy_pilot.glb",
+      "sha256": "46f820ba0edfb2f4",
+      "triangles": 10999,
+      "lodTriangles": 3259,
+      "bytes": 752512
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_pirate",
+      "source": "meshy-community-characters",
+      "model": "T Pose Pirate",
+      "date": "2026-07-14",
+      "src": "Meshy_AI_T_Pose_Pirate_20260714_texture.fbx",
+      "sourceTriangles": 285308,
+      "file": "characters/meshy_pirate.glb",
+      "sha256": "b5dafaa7762dabb1",
+      "triangles": 11000,
+      "lodTriangles": 3113,
+      "bytes": 586908
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_titan",
+      "source": "meshy-community-characters",
+      "model": "T Pose Titan",
+      "date": "2026-05-03",
+      "src": "Meshy_AI_T_Pose_Titan_20260503_texture.fbx",
+      "sourceTriangles": 189282,
+      "file": "characters/meshy_titan.glb",
+      "sha256": "d099d69b3b2bdbf9",
+      "triangles": 11000,
+      "lodTriangles": 3148,
+      "bytes": 655836
     }
   ]
 }

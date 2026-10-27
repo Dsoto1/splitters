@@ -6,9 +6,44 @@ The owner downloaded these models from Meshy's community gallery and states
 they are published there under CC0. The community page URL for each model is
 pending from the owner; until it arrives the licence rests on the owner's
 statement (recorded here and in docs/ASSET_SOURCES.md as "Meshy community,
-CC0 (per owner)").
+CC0 (per owner)"). The community characters are listed in
+assets-src/meshy-community-characters/License.txt.
 
 Models (name as on the download, download file date):
+
+Weapons and turrets (pack meshy-community-guns in content/guns.json, built by
+tools/content/prepare-guns.mjs):
+
+- "ANACONDA 44" (2026-01-26)  -> guns/ironclad_revolver.glb, the Heavy
+  Revolver's model. The download is named after a real revolver product and
+  its texture carried lettering (a garbled version of that name, a serial and
+  a warning line), a skull decal with "NO MERCY" and orange tally marks on the
+  grip: all painted out of the colour map at build time (`paintOut` in
+  content/guns.json). The name is used nowhere in the game; the asset is
+  called "Ironclad revolver" there.
+- "Plasma Annihilator X" (2026-01-18)  -> guns/plasma_spin_gun.glb, the Spin
+  Gun's model (a rotary-barrel gun).
+- "Nebula Arc Cannon" (2026-07-03)  -> guns/arc_cannon_turret.glb, the Rocket
+  Turret's model (a cannon on a pedestal, so not a hand-held weapon).
+
+Props (pack meshy-community-props in content/props.json, built by
+tools/content/prepare-props.mjs):
+
+- "Industrial Control Panel" (2026-03-24)  -> prop mp_control_cabinet
+  (Control Cabinet, Industrial)
+- "Wreckage" (2025-12-21)  -> prop mp_burnt_car (Burnt-Out Car, Vehicles). No
+  badge, plate or maker's mark on it.
+- "Spiky Dinosaur" (2025-12-29)  -> prop mp_dino_statue (Dinosaur Statue,
+  Jungle Ruins), its colours turned to stone. A generic carnotaur-like
+  theropod: a biped, but with a level body, a tail as long again and tiny
+  arms, so it doesn't fit the humanoid rig the NPCs share.
+
+tools/content/meshy-mesh.mjs turns the textured FBX downloads into the shipped
+files. The raw downloads (FBX, PNG) are not kept in the repo;
+content/guns.lock.json and content/props.lock.json check the built files.
+
+Nature (pack meshy-community-nature in content/props.json, built by
+tools/content/nature.mjs through tools/content/prepare-props.mjs):
 
 - "A dense forest shrub with woody …" (2025-09-23)  -> prop mn_shrub
 - "A majestic forest fern featuring broad …" (2025-09-23)  -> prop mn_fern
@@ -20,8 +55,3 @@ Models (name as on the download, download file date):
 - "Vallisneria" (2026-09-09)  -> prop mn_eelgrass
 - "Sunlit Pathway Through the Grass" (2026-01-25): looked at, not used (a
   whole 8-million-triangle grass scene that doesn't reduce to a light clump)
-
-tools/content/prepare-props.mjs (pack meshy-community-nature in
-content/props.json, built by tools/content/nature.mjs) turns the textured FBX
-downloads into the shipped props. The raw downloads (FBX, PNG) are not kept
-in the repo; content/props.lock.json checks the built files.

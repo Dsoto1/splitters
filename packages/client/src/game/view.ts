@@ -52,6 +52,7 @@ import {
   mapLiquids,
   type Liquid,
   type LiquidBox,
+  type OBox,
   DEFAULT_BLOOD,
   EffectsWorld,
   mapTerrainMesh,
@@ -98,6 +99,8 @@ interface Fx {
   ttl: number;
   /** Per-frame update with age fraction 0..1. */
   update?: (f: number) => void;
+  /** Its material is shared: leave it when the effect ends. */
+  shared?: boolean;
 }
 
 interface Avatar {
@@ -327,6 +330,8 @@ export class GameView {
     const blood = doc.blood ?? DEFAULT_BLOOD;
     this.blood.setLook(blood.color, blood.amount);
     this.scenario.surface = (m, t) => styler.surfaceMaterial(doc, m, t);
+    // Water bakes its depth (clear shallows, foam on the shore) from the level under it.
+    this.scenario.liquids.levelBoxes = boxes;
     void this.foliage.grow(doc.terrain, boxes, doc.metadata.id, this.liquids.filter((l) => l.liquid === 'water' || l.liquid === 'swamp'));
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
@@ -499,6 +504,12 @@ export class GameView {
     }
     if (o.victim !== null) {
       this.blood.hit(o.to, dir, o.zone === 1 ? o.strength * 1.8 : o.strength);
+      return;
+    }
+    // A round stopped by a pane (bulletproof glass, a pane about to break): a star crack and a few glints, no dust.
+    const pane = this.scenario.glass.strike(o.eye, o.to);
+    if (pane) {
+      this.impacts.sparkBurst(pane.point, 3, 1.2);
       return;
     }
     const wall = this.impacts.surfaceHit(o.eye, o.to);
@@ -1412,6 +1423,59 @@ export class GameView {
     }
   }
 
+  /**
+   * A pane of glass shattering: flat, see-through shards spread over the
+   * pane's whole face (not from one point), falling mostly straight down with
+   * a little outward burst, and a glint of sparkle. One shared material.
+   */
+  glassShards(box: OBox, tint: string): void {
+    const h = box.half;
+    // The pane's face: its two longer axes; the thin one is its normal.
+    const thin = h.z <= h.x && h.z <= h.y ? 'z' : h.x <= h.y ? 'x' : 'y';
+    const [ua, va] = thin === 'z' ? (['x', 'y'] as const) : thin === 'x' ? (['z', 'y'] as const) : (['x', 'z'] as const);
+    const area = h[ua] * h[va] * 4;
+    const count = Math.round(Math.min(16, 6 + area * 3));
+    const q = box.rot ? new Quaternion(box.rot.x, box.rot.y, box.rot.z, box.rot.w) : Quaternion.RotationYawPitchRoll(box.yaw, 0, 0);
+    const axis = (k: 'x' | 'y' | 'z') => new Vector3(k === 'x' ? 1 : 0, k === 'y' ? 1 : 0, k === 'z' ? 1 : 0).rotateByQuaternionToRef(q, new Vector3());
+    const U = axis(ua);
+    const V = axis(va);
+    const N = axis(thin);
+    const mat = (this.scene.getMaterialByName(`glassShardMat_${tint}`) as StandardMaterial | null) ?? glassShardMaterial(this.scene, tint);
+    const centre = new Vector3(box.center.x, box.center.y, box.center.z);
+    for (let k = 0; k < count; k++) {
+      const w = 0.08 + Math.random() * Math.min(0.3, h[ua] * 0.35);
+      const l = 0.06 + Math.random() * Math.min(0.26, h[va] * 0.4);
+      const shard = CreateBox('glassShard', { width: w, height: l, depth: 0.012 }, this.scene);
+      shard.material = mat;
+      shard.isPickable = false;
+      const start = centre.add(U.scale((Math.random() * 2 - 1) * h[ua] * 0.9)).add(V.scale((Math.random() * 2 - 1) * h[va] * 0.9));
+      const out = (Math.random() < 0.5 ? -1 : 1) * (0.4 + Math.random() * 1.4);
+      const v = N.scale(out).add(new Vector3((Math.random() - 0.5) * 0.8, Math.random() * 1.2, (Math.random() - 0.5) * 0.8));
+      const spin = new Vector3((Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14);
+      const rot = q.multiply(Quaternion.RotationYawPitchRoll(Math.random() * 0.6, Math.random() * 0.6, Math.random() * Math.PI));
+      shard.rotationQuaternion = rot;
+      shard.position.copyFrom(start);
+      if (this.physics) {
+        const body = this.physics.addBody({ kind: 'box', half: { x: w / 2, y: l / 2, z: 0.006 } }, start, { x: rot.x, y: rot.y, z: rot.z, w: rot.w }, 'debris', { vel: v, spin, density: 2.5 });
+        this.debrisBodies.push({ mesh: shard, body, born: performance.now(), shared: true });
+        continue;
+      }
+      this.effects.push({
+        mesh: shard,
+        born: performance.now(),
+        ttl: 1200,
+        shared: true,
+        update: (f) => {
+          const t = f * 1.2;
+          shard.position.set(start.x + v.x * t, Math.max(box.center.y - h.y - 1, start.y + v.y * t - 10 * t * t), start.z + v.z * t);
+          shard.scaling.setAll(f > 0.7 ? (1 - f) / 0.3 : 1);
+        },
+      });
+    }
+    // A glitter of tiny sparkles where it burst.
+    this.impacts.sparkBurst(box.center, 6, 2);
+  }
+
   /** Screen position (CSS px) of a world point, or null when it is behind the camera. */
   project(p: Vec3): { x: number; y: number } | null {
     const engine = this.scene.getEngine();
@@ -1731,7 +1795,7 @@ export class GameView {
     this.effects = this.effects.filter((fx) => {
       const f = (now - fx.born) / fx.ttl;
       if (f >= 1) {
-        fx.mesh.material?.dispose();
+        if (!fx.shared) fx.mesh.material?.dispose();
         fx.mesh.dispose();
         return false;
       }
@@ -1761,5 +1825,17 @@ function solid(scene: Scene, name: string, hex: string): StandardMaterial {
 function glow(scene: Scene, name: string, hex: string, strength = 1): StandardMaterial {
   const m = solid(scene, name, hex);
   m.emissiveColor = Color3.FromHexString(hex).scale(strength);
+  return m;
+}
+
+/** See-through shards of a broken pane (one per tint, shared by every shard). */
+function glassShardMaterial(scene: Scene, tint: string): StandardMaterial {
+  const m = new StandardMaterial(`glassShardMat_${tint}`, scene);
+  m.diffuseColor = Color3.FromHexString(tint);
+  m.emissiveColor = Color3.FromHexString(tint).scale(0.15);
+  m.specularColor = new Color3(1, 1, 1);
+  m.specularPower = 200;
+  m.alpha = 0.55;
+  m.backFaceCulling = false;
   return m;
 }

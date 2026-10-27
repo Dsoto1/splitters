@@ -438,12 +438,13 @@ export class LocalPlayer {
       const dir = viewDirection(yaw, pitch);
       if (phys) {
         // A bullet: it flies (and drops) until it meets the level.
-        const t = traceBullet(eye, dir, phys, def.range, (o, d, len) => this.physics.raycastWorld(o, d, len));
+        // Shot rays: bulletproof glass stops them where sight goes on.
+        const t = traceBullet(eye, dir, phys, def.range, (o, d, len) => this.physics.raycastHit(o, d, len)?.dist ?? null);
         ends.push(t.end);
         times.push(t.time);
         continue;
       }
-      const d = this.physics.raycastWorld(eye, dir, def.range) ?? def.range;
+      const d = this.physics.raycastHit(eye, dir, def.range)?.dist ?? def.range;
       ends.push({ x: eye.x + dir.x * d, y: eye.y + dir.y * d, z: eye.z + dir.z * d });
     }
     return { def, ends, ...(alt ? { alt } : {}), ...(phys ? { speed: phys.speed, times } : {}) };

@@ -21,6 +21,13 @@
 // `file.fbx#<regex>` to keep only the scene's objects whose name (or a parent's)
 // matches. `flatten` packs lose their (third-party photo) textures for a flat
 // colour per face (tools/content/flatten.mjs).
+//
+// Packs with `meshy: true` (Meshy community downloads, CC0 per the owner) are
+// Meshy's textured FBX folders, one per prop (the prop's own `download`):
+// tools/content/meshy-mesh.mjs cuts each to `triangles` and paints its colour
+// map afresh onto new charts (`surface`, default `rebake`), dropping what can't
+// be seen from outside first where `dropHidden` says so; `stone` turns the
+// colour map to weathered stone of that colour (a statue).
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -34,6 +41,7 @@ import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
 import { flattenTextures } from './flatten.mjs';
 import { buildNatureDocument, cutBelow, normalise, readSoup } from './nature.mjs';
+import { meshyDocument } from './meshy-mesh.mjs';
 
 await MeshoptSimplifier.ready;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -417,13 +425,29 @@ async function paintFlat(doc, pack, p) {
   }
 }
 
+/**
+ * `stone`: a colour map turned to weathered stone of the given colour, keeping its light and shade (each pixel's
+ * brightness against the map's average) so carved detail still reads.
+ */
+function stone({ data }, hex) {
+  const tint = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  let mean = 0;
+  for (let i = 0; i < data.length; i += 3) mean += data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11;
+  mean /= data.length / 3;
+  for (let i = 0; i < data.length; i += 3) {
+    const l = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11) / mean;
+    for (let ch = 0; ch < 3; ch++) data[i + ch] = Math.min(255, Math.round(tint[ch] * (0.45 + 0.55 * l)));
+  }
+}
+
 /** A prop from a `convert` pack: picked from its FBX/GLB, flattened if asked, turned, centred, stood on the ground and scaled. */
 async function convertPiece(dir, pack, p) {
   const [file, pickSrc] = p.src.split('#');
   const path = join(dir, pack.models ?? '.', file);
   const pick = pickSrc ? new RegExp(pickSrc) : null;
   let doc;
-  if (/\.fbx$/i.test(file)) ({ doc } = await fbxToDocument(path, { pick }));
+  if (pack.meshy) ({ doc } = await meshyDocument(path, { triangles: p.triangles, maxError: p.maxError, surface: p.surface ?? 'rebake', dropHidden: p.dropHidden, recolor: p.stone ? (map) => stone(map, p.stone) : null }));
+  else if (/\.fbx$/i.test(file)) ({ doc } = await fbxToDocument(path, { pick }));
   else {
     doc = await io.read(path);
     doc.setLogger(quiet);
@@ -534,12 +558,13 @@ for (const p of manifest.props) {
   // A pack with a `download` folder is rebuilt only from a downloads directory (it stays out of the
   // repo), except for pieces of it already kept in assets-src/ (older imports of the same kit).
   const local = !Array.isArray(p.src) && existsSync(join(ROOT, 'assets-src', p.pack, p.src));
-  const external = !!pack.download && !local;
+  // Meshy packs name each prop's own download folder (`download` on the prop).
+  const external = !!(p.download ?? pack.download) && !local;
   // Packs with an `images` folder (the MegaKit's glTF, the Orbital and Neon Kenney kits) get their materials
   // baked and shrunk; other GLB kits are normalised as they are.
   const gltfKit = external && !!pack.images;
   const converted = external && (!!pack.convert || !!pack.nature);
-  const dir = external && downloads ? downloadDir(pack.download) : null;
+  const dir = external && downloads ? downloadDir(p.download ?? pack.download) : null;
   let glb;
   let size;
   if (gltfKit && dir) {

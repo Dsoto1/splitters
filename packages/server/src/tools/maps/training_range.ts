@@ -11,8 +11,9 @@
  *   z +22  lateral boards at sprinting pace (7.8 m/s) at 25, 50, 100 and 200 m
  *   z +12  lateral boards at walking pace (3.9 m/s, aiming) at 25, 50 and 100 m
  *   z   0  long ballistic lane: static boards at 5, 10, 25, 50, 100 and 200 m, a sign over each
- *   z  -8…-31  penetration walls at 15 m (glass, drywall, planks, heavy wood, sheet metal,
- *              steel plate, brick, concrete, dirt, water tank), a board behind each
+ *   z  -8…-34  penetration walls at 15 m (glass, drywall, planks, heavy wood, sheet metal,
+ *              steel plate, brick, concrete, dirt, a water tank behind glass, bulletproof
+ *              glass), a board behind each; shot-out glass is back in 4 s
  *   z -38  recoil wall (concrete, 8 m) at 20 m, destructibles row at 28-44 m
  *   z -48…-64  medium combat lane, 0-70 m: walled, cover every 15 m, harmless range
  *              troopers patrolling it (moving bots that strafe and take cover)
@@ -75,7 +76,7 @@ for (const [d, h] of [[25, 3], [50, 6], [100, 10], [150, 14]] as const) {
 
 // ---------------------------------------------------------------- penetration walls (spec §8) at 15 m, a board behind each
 const panels: [string, string, number][] = [
-  ['glass', 'pbr_glass_facade', 0.2],
+  ['glass', '', 0.06],
   ['drywall', 'pbr_plaster_white', 0.2],
   ['planks', 'oak_planks', 0.2],
   ['heavy wood', 'dark_wood', 0.4],
@@ -88,19 +89,30 @@ const panels: [string, string, number][] = [
 const panelZ = (i: number) => -8 - i * 2.6;
 panels.forEach(([label, material, thick], i) => {
   const z = panelZ(i);
-  m.block([15, 0, z], [thick, 2.2, 2], 'solid', { material, id: `panel_${i}` });
+  // The glass panel is real glass (it shatters and lets the round through); the rest are solid walls of their material.
+  m.block([15, 0, z], [thick, 2.2, 2], 'solid', material ? { material, id: `panel_${i}` } : { id: `panel_${i}`, trigger: 'logic', respawn: null, glass: 'breakable' });
   board(`behind_${i}`, [17.5, 0, z], { width: 1.4 });
   sign([15, 2.9, z], label, '#fff1d6', 2);
 });
 // Water: a metre-deep tank between two glass panes (a pistol round dies in it; a rifle round comes out weaker).
+// The panes are glass you can see the water through; the first round shatters them (back in 4 s).
 {
   const z = panelZ(panels.length);
-  m.block([14.4, 0, z], [0.2, 2.2, 2], 'solid', { material: 'pbr_glass_facade', id: 'tank_front' });
+  const pane = { trigger: 'logic', respawn: null, glass: 'breakable' } as const;
+  m.block([14.4, 0, z], [0.2, 2.2, 2], 'solid', { ...pane, id: 'tank_front' });
   m.water([15.1, 0, z], [1, 2.1, 2], 'water');
-  m.block([15.8, 0, z], [0.2, 2.2, 2], 'solid', { material: 'pbr_glass_facade', id: 'tank_back' });
+  m.block([15.8, 0, z], [0.2, 2.2, 2], 'solid', { ...pane, id: 'tank_back' });
   board(`behind_${panels.length}`, [17.5, 0, z], { width: 1.4 });
   sign([15, 2.9, z], 'water', '#7ad6ff', 2);
 }
+// Bulletproof glass: stops every round and cracks where each one strikes (it never breaks).
+{
+  const z = panelZ(panels.length + 1);
+  m.block([15, 0, z], [0.06, 2.2, 2], 'solid', { id: 'panel_bulletproof', trigger: 'logic', respawn: null, glass: 'reinforced' });
+  board(`behind_${panels.length + 1}`, [17.5, 0, z], { width: 1.4 });
+  sign([15, 2.9, z], 'bulletproof', '#9fe3ff', 2.4);
+}
+m.glassRespawn(4);
 
 // ---------------------------------------------------------------- recoil wall and destructibles (z -38)
 // A big concrete slab where every spray leaves its pattern in bullet holes.
@@ -167,7 +179,7 @@ m.light([-4, 6, 0], { fixture: 'none', intensity: 1.2, range: 30 });
 m.light([-28, 3.5, -4], { fixture: 'none', intensity: 1, range: 14 });
 m.meta({
   description:
-    'The gunplay test arena: static boards and distance markers at 5 to 200 m, walking and sprinting boards to learn lead, approaching and elevated targets, penetration walls from glass to concrete, dirt and water, a recoil wall, destructibles, a medium combat lane with patrolling range troopers, and a close duel room. Every benchmark gun waits at the firing line.',
+    'The gunplay test arena: static boards and distance markers at 5 to 200 m, walking and sprinting boards to learn lead, approaching and elevated targets, penetration walls from glass to concrete, dirt, a water tank and bulletproof glass, a recoil wall, destructibles, a medium combat lane with patrolling range troopers, and a close duel room. Every benchmark gun waits at the firing line.',
   modes: ['core.deathmatch'],
   players: [1, 8],
 });

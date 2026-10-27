@@ -51,6 +51,16 @@ How it's drawn (`packages/client/src/backdrop.ts`):
 
 Map format 9 adds `backdrop` (null = the theme's). Older maps load unchanged.
 
+The sky picture is also what shiny things reflect (`client/src/game/reflections.ts`):
+glass panes and, on medium graphics, water sample it along the reflected view
+ray, sharing the sky's texture (no extra memory or render pass); a scene
+environment texture, if one is ever set, takes its place. On high graphics the
+biggest body of water renders a reduced-resolution planar mirror of the sky,
+the level, the terrain, the border and the backdrop scenery (`map_*`,
+`backdrop_*`, `border_*` meshes; foliage and props stay out). See
+[`SET_PIECES.md`](SET_PIECES.md#how-liquids-look-clientsrcgamewatervisualsts)
+and [`BUILDING_KIT.md`](BUILDING_KIT.md#glass-glass-panes).
+
 ## Borders
 
 A border is what stands just outside the boundary, so the map's edge reads as

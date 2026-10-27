@@ -89,6 +89,14 @@
       "licenseFile": "assets-src/meshy-owned/License.txt",
       "retrieved": "2026-10-25"
     },
+    "meshy-community-characters": {
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/meshy-community-characters/License.txt",
+      "retrieved": "2026-10-27"
+    },
     "quaternius-modular-scifi-guns": {
       "title": "Modular Sci Fi Guns",
       "creator": "Quaternius",

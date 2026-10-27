@@ -1,11 +1,11 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 21,
+  "formatVersion": 22,
   "metadata": {
     "id": "training_range",
     "name": "Training Range",
     "author": "Tile Trigger",
-    "description": "The gunplay test arena: static boards and distance markers at 5 to 200 m, walking and sprinting boards to learn lead, approaching and elevated targets, penetration walls from glass to concrete, dirt and water, a recoil wall, destructibles, a medium combat lane with patrolling range troopers, and a close duel room. Every benchmark gun waits at the firing line.",
+    "description": "The gunplay test arena: static boards and distance markers at 5 to 200 m, walking and sprinting boards to learn lead, approaching and elevated targets, penetration walls from glass to concrete, dirt, a water tank and bulletproof glass, a recoil wall, destructibles, a medium combat lane with patrolling range troopers, and a close duel room. Every benchmark gun waits at the firing line.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -4990,18 +4990,19 @@
       ],
       "kind": "block",
       "size": [
-        0.2,
+        0.06,
         2.2,
         2
       ],
       "yaw": 0,
-      "material": "core.pbr_glass_facade",
+      "material": null,
       "tint": null,
       "behaviour": "solid",
-      "trigger": "step",
+      "trigger": "logic",
       "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "behind_0",
@@ -5562,13 +5563,14 @@
         2
       ],
       "yaw": 0,
-      "material": "core.pbr_glass_facade",
+      "material": null,
       "tint": null,
       "behaviour": "solid",
-      "trigger": "step",
+      "trigger": "logic",
       "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "water_473",
@@ -5599,13 +5601,14 @@
         2
       ],
       "yaw": 0,
-      "material": "core.pbr_glass_facade",
+      "material": null,
       "tint": null,
       "behaviour": "solid",
-      "trigger": "step",
+      "trigger": "logic",
       "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "breakable"
     },
     {
       "id": "behind_9",
@@ -5649,6 +5652,70 @@
       ]
     },
     {
+      "id": "panel_bulletproof",
+      "position": [
+        15,
+        0,
+        -34
+      ],
+      "kind": "block",
+      "size": [
+        0.06,
+        2.2,
+        2
+      ],
+      "yaw": 0,
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "logic",
+      "delaySeconds": 0.8,
+      "respawnSeconds": null,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "behind_10",
+      "position": [
+        17.5,
+        0,
+        -34
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_475",
+      "position": [
+        15,
+        2.9,
+        -34
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#9fe3ff",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "bulletproof",
+      "size": [
+        2.4,
+        0.8
+      ]
+    },
+    {
       "id": "recoil_wall",
       "position": [
         20,
@@ -5671,7 +5738,7 @@
       "health": 120
     },
     {
-      "id": "light_475",
+      "id": "light_476",
       "position": [
         20,
         5.6,
@@ -5690,7 +5757,7 @@
       ]
     },
     {
-      "id": "destructible_476",
+      "id": "destructible_477",
       "position": [
         28,
         0,
@@ -5703,7 +5770,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_477",
+      "id": "destructible_478",
       "position": [
         30.6,
         0,
@@ -5716,7 +5783,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_478",
+      "id": "destructible_479",
       "position": [
         33.2,
         0,
@@ -5729,7 +5796,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_479",
+      "id": "destructible_480",
       "position": [
         35.8,
         0,
@@ -5742,7 +5809,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_480",
+      "id": "destructible_481",
       "position": [
         38.4,
         0,
@@ -5755,7 +5822,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_481",
+      "id": "destructible_482",
       "position": [
         41,
         0,
@@ -5768,7 +5835,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "destructible_482",
+      "id": "destructible_483",
       "position": [
         43.6,
         0,
@@ -5781,7 +5848,7 @@
       "explosiveOnly": false
     },
     {
-      "id": "light_483",
+      "id": "light_484",
       "position": [
         35,
         3.2,
@@ -5910,7 +5977,7 @@
       "health": 120
     },
     {
-      "id": "prop_484",
+      "id": "prop_485",
       "position": [
         15,
         0,
@@ -5924,7 +5991,7 @@
       "tint": null
     },
     {
-      "id": "prop_485",
+      "id": "prop_486",
       "position": [
         15,
         0,
@@ -5960,7 +6027,7 @@
       "health": 120
     },
     {
-      "id": "prop_486",
+      "id": "prop_487",
       "position": [
         45,
         0,
@@ -5974,7 +6041,7 @@
       "tint": null
     },
     {
-      "id": "prop_487",
+      "id": "prop_488",
       "position": [
         45,
         0,
@@ -5988,7 +6055,7 @@
       "tint": null
     },
     {
-      "id": "prop_488",
+      "id": "prop_489",
       "position": [
         60,
         0,
@@ -6002,7 +6069,7 @@
       "tint": null
     },
     {
-      "id": "prop_489",
+      "id": "prop_490",
       "position": [
         60,
         0,
@@ -6016,7 +6083,7 @@
       "tint": null
     },
     {
-      "id": "light_490",
+      "id": "light_491",
       "position": [
         15,
         3.6,
@@ -6035,7 +6102,7 @@
       ]
     },
     {
-      "id": "light_491",
+      "id": "light_492",
       "position": [
         30,
         3.6,
@@ -6054,7 +6121,7 @@
       ]
     },
     {
-      "id": "light_492",
+      "id": "light_493",
       "position": [
         45,
         3.6,
@@ -6073,7 +6140,7 @@
       ]
     },
     {
-      "id": "light_493",
+      "id": "light_494",
       "position": [
         60,
         3.6,
@@ -6133,7 +6200,7 @@
       "damage": 0
     },
     {
-      "id": "prop_494",
+      "id": "prop_495",
       "position": [
         -28,
         0,
@@ -6147,7 +6214,7 @@
       "tint": null
     },
     {
-      "id": "prop_495",
+      "id": "prop_496",
       "position": [
         -24,
         0,
@@ -6161,7 +6228,7 @@
       "tint": null
     },
     {
-      "id": "prop_496",
+      "id": "prop_497",
       "position": [
         -32,
         0,
@@ -6175,7 +6242,7 @@
       "tint": null
     },
     {
-      "id": "light_497",
+      "id": "light_498",
       "position": [
         -19.5,
         3.4,
@@ -6194,7 +6261,7 @@
       ]
     },
     {
-      "id": "pickup_498",
+      "id": "pickup_499",
       "position": [
         -28,
         0,
@@ -6205,7 +6272,7 @@
       "respawnSeconds": 10
     },
     {
-      "id": "pickup_499",
+      "id": "pickup_500",
       "position": [
         -28,
         0,
@@ -6216,7 +6283,7 @@
       "respawnSeconds": 10
     },
     {
-      "id": "pickup_500",
+      "id": "pickup_501",
       "position": [
         -34,
         0,
@@ -6227,7 +6294,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_501",
+      "id": "pickup_502",
       "position": [
         -2,
         0,
@@ -6238,7 +6305,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_502",
+      "id": "pickup_503",
       "position": [
         -2,
         0,
@@ -6249,7 +6316,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_503",
+      "id": "pickup_504",
       "position": [
         -2,
         0,
@@ -6260,7 +6327,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_504",
+      "id": "pickup_505",
       "position": [
         -2,
         0,
@@ -6271,7 +6338,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_505",
+      "id": "pickup_506",
       "position": [
         -2,
         0,
@@ -6282,7 +6349,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_506",
+      "id": "pickup_507",
       "position": [
         -2,
         0,
@@ -6293,7 +6360,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_507",
+      "id": "pickup_508",
       "position": [
         -2,
         0,
@@ -6304,7 +6371,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_508",
+      "id": "pickup_509",
       "position": [
         -2,
         0,
@@ -6315,7 +6382,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_509",
+      "id": "pickup_510",
       "position": [
         -2,
         0,
@@ -6326,22 +6393,11 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_510",
-      "position": [
-        -5,
-        0,
-        -16
-      ],
-      "kind": "pickup",
-      "item": "core.ammo",
-      "respawnSeconds": 5
-    },
-    {
       "id": "pickup_511",
       "position": [
         -5,
         0,
-        -8
+        -16
       ],
       "kind": "pickup",
       "item": "core.ammo",
@@ -6352,7 +6408,7 @@
       "position": [
         -5,
         0,
-        0
+        -8
       ],
       "kind": "pickup",
       "item": "core.ammo",
@@ -6363,7 +6419,7 @@
       "position": [
         -5,
         0,
-        8
+        0
       ],
       "kind": "pickup",
       "item": "core.ammo",
@@ -6374,7 +6430,7 @@
       "position": [
         -5,
         0,
-        16
+        8
       ],
       "kind": "pickup",
       "item": "core.ammo",
@@ -6385,6 +6441,17 @@
       "position": [
         -5,
         0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": 5
+    },
+    {
+      "id": "pickup_516",
+      "position": [
+        -5,
+        0,
         24
       ],
       "kind": "pickup",
@@ -6392,7 +6459,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_516",
+      "id": "pickup_517",
       "position": [
         -5,
         0,
@@ -6403,7 +6470,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_517",
+      "id": "pickup_518",
       "position": [
         -4,
         0,
@@ -6414,7 +6481,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_518",
+      "id": "pickup_519",
       "position": [
         -6,
         0,
@@ -6425,7 +6492,7 @@
       "respawnSeconds": 10
     },
     {
-      "id": "pickup_519",
+      "id": "pickup_520",
       "position": [
         -6,
         0,
@@ -6436,7 +6503,7 @@
       "respawnSeconds": 10
     },
     {
-      "id": "pickup_520",
+      "id": "pickup_521",
       "position": [
         100,
         0,
@@ -6447,7 +6514,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_521",
+      "id": "pickup_522",
       "position": [
         100,
         0,
@@ -6458,7 +6525,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "spawn_522",
+      "id": "spawn_523",
       "position": [
         -8,
         0,
@@ -6469,7 +6536,7 @@
       "faction": null
     },
     {
-      "id": "spawn_523",
+      "id": "spawn_524",
       "position": [
         -8,
         0,
@@ -6480,7 +6547,7 @@
       "faction": null
     },
     {
-      "id": "spawn_524",
+      "id": "spawn_525",
       "position": [
         -8,
         0,
@@ -6491,7 +6558,7 @@
       "faction": null
     },
     {
-      "id": "spawn_525",
+      "id": "spawn_526",
       "position": [
         -8,
         0,
@@ -6502,7 +6569,7 @@
       "faction": null
     },
     {
-      "id": "spawn_526",
+      "id": "spawn_527",
       "position": [
         -8,
         0,
@@ -6513,7 +6580,7 @@
       "faction": null
     },
     {
-      "id": "spawn_527",
+      "id": "spawn_528",
       "position": [
         -8,
         0,
@@ -6524,7 +6591,7 @@
       "faction": null
     },
     {
-      "id": "spawn_528",
+      "id": "spawn_529",
       "position": [
         190,
         0,
@@ -6535,7 +6602,7 @@
       "faction": null
     },
     {
-      "id": "spawn_529",
+      "id": "spawn_530",
       "position": [
         190,
         0,
@@ -6546,7 +6613,7 @@
       "faction": null
     },
     {
-      "id": "light_530",
+      "id": "light_531",
       "position": [
         -4,
         6,
@@ -6560,7 +6627,7 @@
       "fixture": "none"
     },
     {
-      "id": "light_531",
+      "id": "light_532",
       "position": [
         -28,
         3.5,
@@ -6605,6 +6672,9 @@
   "backdrop": null,
   "physics": null,
   "blood": null,
+  "glass": {
+    "respawnSeconds": 4
+  },
   "teamSetup": null,
   "dependencies": []
 }

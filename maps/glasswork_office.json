@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 22,
   "metadata": {
     "id": "glasswork_office",
     "name": "Glasswork Office",
@@ -1011,6 +1011,9 @@
           "0,0,0:N": "open",
           "0,0,0:W": "window"
         },
+        "glass": {
+          "0,0,0:W": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -1049,6 +1052,9 @@
           "0,0,0:E": "door",
           "0,0,0:N": "open",
           "0,0,0:W": "window"
+        },
+        "glass": {
+          "0,0,0:W": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -1127,6 +1133,10 @@
           "0,0,0:E": "door",
           "0,0,0:W": "window",
           "0,0,0:N": "window"
+        },
+        "glass": {
+          "0,0,0:W": "breakable",
+          "0,0,0:N": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -1262,6 +1272,9 @@
           "0,0,0:E": "door",
           "0,0,0:N": "door",
           "0,0,0:S": "window"
+        },
+        "glass": {
+          "0,0,0:S": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -1452,6 +1465,9 @@
         "edges": {
           "0,0,0:E": "wall",
           "0,0,0:N": "window"
+        },
+        "glass": {
+          "0,0,0:N": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -1743,6 +1759,9 @@
           "0,0,0:E": "open",
           "0,0,0:N": "window"
         },
+        "glass": {
+          "0,0,0:N": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -1780,6 +1799,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:N": "window"
+        },
+        "glass": {
+          "0,0,0:N": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -2392,6 +2414,9 @@
           "0,0,0:E": "open",
           "0,0,0:N": "window"
         },
+        "glass": {
+          "0,0,0:N": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -2429,6 +2454,9 @@
         "edges": {
           "0,0,0:E": "wall",
           "0,0,0:N": "window"
+        },
+        "glass": {
+          "0,0,0:N": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -2568,6 +2596,9 @@
           "0,0,0:N": "door",
           "0,0,0:S": "window"
         },
+        "glass": {
+          "0,0,0:S": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -2682,6 +2713,9 @@
           "0,0,0:E": "window",
           "0,0,0:N": "door"
         },
+        "glass": {
+          "0,0,0:E": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -2757,6 +2791,9 @@
         "edges": {
           "0,0,0:E": "door",
           "0,0,0:N": "window"
+        },
+        "glass": {
+          "0,0,0:N": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -3010,6 +3047,9 @@
           "0,0,0:E": "open",
           "0,0,0:N": "window"
         },
+        "glass": {
+          "0,0,0:N": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -3085,6 +3125,9 @@
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:N": "window"
+        },
+        "glass": {
+          "0,0,0:N": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -3221,6 +3264,10 @@
           "0,0,0:E": "window",
           "0,0,0:S": "window"
         },
+        "glass": {
+          "0,0,0:E": "breakable",
+          "0,0,0:S": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -3257,6 +3304,9 @@
         },
         "edges": {
           "0,0,0:N": "window"
+        },
+        "glass": {
+          "0,0,0:N": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -3296,6 +3346,9 @@
           "0,0,0:N": "open",
           "0,0,0:E": "window"
         },
+        "glass": {
+          "0,0,0:E": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -3333,6 +3386,9 @@
         "edges": {
           "0,0,0:N": "door",
           "0,0,0:E": "window"
+        },
+        "glass": {
+          "0,0,0:E": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -3409,6 +3465,10 @@
         "edges": {
           "0,0,0:E": "window",
           "0,0,0:N": "window"
+        },
+        "glass": {
+          "0,0,0:E": "breakable",
+          "0,0,0:N": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -3726,6 +3786,9 @@
           "0,0,0:N": "wall",
           "0,0,0:E": "door"
         },
+        "glass": {
+          "0,0,0:S": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -3764,6 +3827,9 @@
           "0,0,0:S": "window",
           "0,0,0:N": "wall",
           "0,0,0:E": "open"
+        },
+        "glass": {
+          "0,0,0:S": "breakable"
         },
         "options": {
           "ceiling": "roof",
@@ -3804,6 +3870,9 @@
           "0,0,0:N": "wall",
           "0,0,0:E": "door"
         },
+        "glass": {
+          "0,0,0:S": "breakable"
+        },
         "options": {
           "ceiling": "roof",
           "facade": "brick"
@@ -3835,20 +3904,6 @@
   },
   "entities": [
     {
-      "id": "pane_01",
-      "position": [
-        40,
-        0,
-        60
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
       "id": "door_1",
       "position": [
         48,
@@ -3861,34 +3916,6 @@
       "startOpen": false,
       "locked": false,
       "auto": true
-    },
-    {
-      "id": "pane_02",
-      "position": [
-        56,
-        0,
-        60
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_03",
-      "position": [
-        68,
-        0,
-        48
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
     },
     {
       "id": "door_2",
@@ -3905,34 +3932,6 @@
       "auto": true
     },
     {
-      "id": "pane_04",
-      "position": [
-        72,
-        0,
-        52
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_05",
-      "position": [
-        80,
-        0,
-        36
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
       "id": "door_3",
       "position": [
         80,
@@ -3945,118 +3944,6 @@
       "startOpen": false,
       "locked": false,
       "auto": true
-    },
-    {
-      "id": "pane_06",
-      "position": [
-        20,
-        0,
-        40
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_07",
-      "position": [
-        20,
-        0,
-        48
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_08",
-      "position": [
-        20,
-        0,
-        64
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_09",
-      "position": [
-        84,
-        0,
-        24
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_10",
-      "position": [
-        84,
-        0,
-        40
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_11",
-      "position": [
-        84,
-        0,
-        48
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_12",
-      "position": [
-        84,
-        0,
-        64
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 1.5707963267948966,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_13",
-      "position": [
-        32,
-        0,
-        20
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
     },
     {
       "id": "door_4",
@@ -4087,76 +3974,6 @@
       "auto": true
     },
     {
-      "id": "pane_14",
-      "position": [
-        64,
-        0,
-        20
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_15",
-      "position": [
-        80,
-        0,
-        20
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_16",
-      "position": [
-        24,
-        0,
-        68
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_17",
-      "position": [
-        32,
-        0,
-        68
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_18",
-      "position": [
-        40,
-        0,
-        68
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
       "id": "door_6",
       "position": [
         48,
@@ -4169,104 +3986,6 @@
       "startOpen": false,
       "locked": false,
       "auto": true
-    },
-    {
-      "id": "pane_19",
-      "position": [
-        56,
-        0,
-        68
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_20",
-      "position": [
-        64,
-        0,
-        68
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_21",
-      "position": [
-        72,
-        0,
-        68
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_22",
-      "position": [
-        80,
-        0,
-        68
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_23",
-      "position": [
-        64,
-        4,
-        20
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_24",
-      "position": [
-        72,
-        4,
-        20
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
-    },
-    {
-      "id": "pane_25",
-      "position": [
-        80,
-        4,
-        20
-      ],
-      "name": "Window pane",
-      "kind": "destructible",
-      "model": "glass",
-      "yaw": 0,
-      "health": null,
-      "explosiveOnly": false
     },
     {
       "id": "prop_137",

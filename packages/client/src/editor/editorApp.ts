@@ -109,6 +109,13 @@ import {
   edgeSegments,
   edgeTargetAt,
   setEdgeCommand,
+  setEdgeGlassCommand,
+  applyCommand,
+  edgeGlassAt,
+  GLASS_EDGES,
+  GLASS_KINDS,
+  GLASS_KIND_LABELS,
+  type GlassKind,
   type EdgeStyle,
   type EdgeTarget,
   CORE_PROPS,
@@ -300,6 +307,8 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'block:roof': '<path d="M4 34L28 12l24 22" fill="none" stroke="#3e403d" stroke-width="7"/><rect x="12" y="34" width="32" height="16" fill="#cac19c"/><rect x="24" y="40" width="8" height="10" fill="#5a3a24"/>',
   'water:pool': '<rect x="6" y="18" width="44" height="28" fill="#f0ece4"/><rect x="10" y="22" width="36" height="20" fill="#3fc8e8"/><path d="M14 30q4-3 8 0t8 0t8 0" stroke="#d8f6ff" stroke-width="2" fill="none"/><path d="M40 10v14M44 10v14M40 14h4M40 19h4" stroke="#8c9298" stroke-width="2"/>',
   'water:swamp': '<rect x="6" y="24" width="44" height="22" fill="#5a6a32"/><path d="M14 24q2-10 4-14M38 24q-1-9 2-13" stroke="#6fbf4a" stroke-width="2" fill="none"/>',
+  'block:glass': '<rect x="8" y="8" width="40" height="40" fill="#bfe3e8" fill-opacity=".45" stroke="#8aa8b0" stroke-width="3"/><path d="M16 38l12-24M26 40l10-20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>',
+  'block:glass_reinforced': '<rect x="8" y="8" width="40" height="40" fill="#9cc4cc" fill-opacity=".55" stroke="#5a6a70" stroke-width="5"/><path d="M28 28l-9-7M28 28l10-5M28 28l-3 12M28 28l8 9" stroke="#fff" stroke-width="1.6"/>',
   'block:field': '<rect x="6" y="8" width="5" height="40" fill="#2a2f3a"/><rect x="45" y="8" width="5" height="40" fill="#2a2f3a"/><rect x="11" y="10" width="34" height="36" fill="#5ad8ff" fill-opacity=".35"/><path d="M11 16h34M11 24h34M11 32h34M11 40h34" stroke="#5ad8ff" stroke-width="2"/>',
   'zone:lowgrav': '<rect x="10" y="10" width="36" height="38" fill="#8f7bff" fill-opacity=".15" stroke="#8f7bff" stroke-width="2" stroke-dasharray="4 3"/><circle cx="28" cy="24" r="6" fill="#d8e6ff"/><path d="M20 44v-8M28 44v-10M36 44v-8" stroke="#8fc4ff" stroke-width="2"/><path d="M17 38l3-4 3 4M25 36l3-4 3 4M33 38l3-4 3 4" stroke="#8fc4ff" stroke-width="2" fill="none"/>',
   'light:sign': '<rect x="6" y="16" width="44" height="22" rx="2" fill="#15101e" stroke="#ff4fd8" stroke-width="2.5"/><text x="28" y="32" font-size="12" font-weight="bold" text-anchor="middle" fill="#ff4fd8">OPEN</text>',
@@ -895,13 +904,21 @@ export class EditorApp {
     this.run(label, paintCommand(this.doc, target.tile.id, target.slot, clear ? null : this.paintStyle, this.paintScope));
   }
 
-  /** Wall tool: build the hovered cell side in the given style. */
+  /** Glass the wall tool puts in windows, twin windows and firing slits (none, breakable or reinforced). */
+  private edgeGlass: GlassKind | null = null;
+
+  /** Wall tool: build the hovered cell side in the given style (windows get the chosen glass, or none). */
   private edgeAtHover(style: EdgeStyle): void {
     const target = this.hoverEdge;
     if (!target) return;
     const cmd = setEdgeCommand(this.doc, target, style);
     if ('error' in cmd) return this.toast(cmd.error, true);
-    this.run(style === 'auto' ? 'Reset wall' : `Wall: ${EDGE_STYLE_LABELS[style]}`, cmd);
+    // Glass goes with the window: set (or clear) it in the same undo step.
+    const glazed = GLASS_EDGES.has(style as never) ? this.edgeGlass : null;
+    const glass = setEdgeGlassCommand(applyCommand(this.doc, cmd), target, glazed);
+    const label = style === 'auto' ? 'Reset wall' : `Wall: ${EDGE_STYLE_LABELS[style]}${glazed ? ` (${GLASS_KIND_LABELS[glazed].toLowerCase()} glass)` : ''}`;
+    const had = edgeGlassAt(this.doc, target);
+    this.run(label, 'error' in glass || (!glazed && !had) ? cmd : { kind: 'batch', commands: [cmd, glass] });
   }
 
   /** Eyedropper: copy the hovered surface's effective style into the brush. */
@@ -1586,6 +1603,16 @@ export class EditorApp {
       edges.append(b);
       this.palette.register(b, { key: b.dataset.tool, name: EDGE_STYLE_LABELS[style], tags: 'wall side opening window door' });
     }
+    // Glass for the windows the wall tool builds.
+    const glass = document.createElement('select');
+    glass.id = 'ed-edge-glass';
+    glass.title = 'Glass the Window, Twin windows and Firing slit styles put in: breakable panes shatter when shot, reinforced (bulletproof) panes stop shots and crack. Both stop players; everyone sees through.';
+    glass.append(new Option('Glass: none', ''), ...GLASS_KINDS.map((k) => new Option(`Glass: ${GLASS_KIND_LABELS[k].toLowerCase()}`, k)));
+    glass.addEventListener('change', () => (this.edgeGlass = (glass.value || null) as GlassKind | null));
+    const glassRow = document.createElement('div');
+    glassRow.className = 'ed-row';
+    glassRow.append(glass);
+    edges.after(glassRow);
 
     // Gameplay: spawns and game-mode objectives, then pickups by kind.
     const objectives = this.palette.group($('ed-entities'), 'gameplay:objectives', 'Spawns & Objectives');
@@ -1914,6 +1941,13 @@ export class EditorApp {
     fall.addEventListener('change', () => set({ ...p, fallDamage: fall.value === 'on' }));
     el.append(row('Gravity', gravity), row('Fall damage', fall));
     el.append(small('Gravity changes jumps, falls and jump-pad arcs. With fall damage on, drops past about 5 m hurt and about 16 m kill (jump pads, ladders and water are safe). Match settings can override both.'));
+    // Glass: when shattered panes come back.
+    const back = document.createElement('select');
+    back.id = 'ed-glass-respawn';
+    const now = this.doc.glass?.respawnSeconds ?? null;
+    for (const [v, label] of [[null, 'Next round'], [15, 'After 15 s'], [30, 'After 30 s'], [60, 'After 1 min'], [120, 'After 2 min']] as const) back.append(new Option(label, v === null ? '' : String(v), false, now === v));
+    back.addEventListener('change', () => this.run('Glass respawn', { kind: 'setGlass', before: this.doc.glass ?? null, after: back.value ? { respawnSeconds: Number(back.value) } : null }));
+    el.append(row('Broken glass returns', back));
   }
 
   // ---------------------------------------------------------------- boundary
@@ -2653,9 +2687,9 @@ export class EditorApp {
         break;
       }
       case 'block': {
-        number('Width (X)', e.size[0], 0.5, (v) => ({ size: [clamp(v, 0.2, 64), e.size[1], e.size[2]] }));
+        number('Width (X)', e.size[0], 0.5, (v) => ({ size: [clamp(v, e.glass ? 0.05 : 0.2, 64), e.size[1], e.size[2]] }));
         number('Thickness', e.size[1], 0.25, (v) => ({ size: [e.size[0], clamp(v, 0.1, 32), e.size[2]] }));
-        number('Depth (Z)', e.size[2], 0.5, (v) => ({ size: [e.size[0], e.size[1], clamp(v, 0.2, 64)] }));
+        number('Depth (Z)', e.size[2], 0.5, (v) => ({ size: [e.size[0], e.size[1], clamp(v, e.glass ? 0.05 : 0.2, 64)] }));
         const labels: Record<(typeof BLOCK_BEHAVIOURS)[number], string> = { solid: 'Solid (sky block)', breakable: 'Breakable (shoot it)', crumble: 'Crumbles when stood on', trapdoor: 'Trapdoor (drops away)' };
         choose('Behaviour', BLOCK_BEHAVIOURS.map((b) => [b, labels[b]] as const), e.behaviour, (v) => ({ behaviour: v as typeof e.behaviour }));
         const mats = document.createElement('select');
@@ -2683,7 +2717,12 @@ export class EditorApp {
         if (e.pitch || e.roll) el.append(small(`Pitch lifts its far (+Z) end, roll its +X side. Players walk up slopes of ${PLAYER.maxSlopeDegrees}° or less; steeper ones are slides and walls (bots treat them so too).`));
         toggle('Starts hidden', !!e.startHidden, (v) => ({ startHidden: v || undefined }));
         if (e.startHidden) el.append(small('Appears when a rule rebuilds or enables it (a bridge that extends).'));
-        if (e.behaviour === 'solid') {
+        if (e.behaviour === 'solid' && !e.field) {
+          // Glass as the block's material: see-through, stops players; breakable shatters, reinforced cracks.
+          choose('Glass', [['', 'None'], ...GLASS_KINDS.map((k) => [k, GLASS_KIND_LABELS[k]] as const)], e.glass ?? '', (v) => ({ glass: (v || undefined) as GlassKind | undefined }));
+          if (e.glass) el.append(small(e.glass === 'breakable' ? 'A glass panel: players can\'t pass, everyone sees through, and the first shot or blast shatters it (shots carry on through). It comes back next round, or after the map\'s glass time (Map settings).' : 'Bulletproof glass: players can\'t pass and shots stop at it, but everyone sees through. Hits crack and frost it; it never breaks.'));
+        }
+        if (e.behaviour === 'solid' && !e.glass) {
           toggle('Force field', !!e.field, (v) => ({ field: v || undefined, ...(v && !e.tint ? { tint: '#5ad8ff' } : {}) }));
           if (e.field) {
             const glow = document.createElement('input');

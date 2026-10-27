@@ -3,6 +3,11 @@
 # (broker + game browser), its own relay (coturn) and HTTPS (Caddy).
 # Matches run in players' browsers, so a $5 instance is plenty.
 #
+# For trigger.toshiroplay.com this is superseded by the CloudFormation flow in
+# infra/ (infra/deploy-multiplayer.sh from AWS CloudShell; docs/HOSTING.md),
+# which adds SSM-held secrets, 1 h relay credentials, relay caps, alarms and a
+# budget. This script still works for a hand-made instance or another domain.
+#
 # In the Lightsail console: create an Ubuntu 24.04 instance, attach a static IP,
 # point your domain's A record at it, open the firewall ports listed at the end,
 # then in the browser SSH window:

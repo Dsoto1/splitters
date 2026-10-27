@@ -60,6 +60,11 @@ export const NPC_ROLE_SPECS: Record<NpcRole, NpcRoleSpec> = {
   boglurker: { label: 'Boglurker', health: 200, weapon: 'core.shotgun', speed: 0.72, scale: 1.1, look: 'core.boglurker' },
   warlord: { label: 'Salamander Warlord', health: 260, weapon: 'core.launcher', speed: 0.7, scale: 1.15, look: 'core.warlord' },
   hyena: { label: 'Hyena Warrior', health: 85, weapon: 'core.smg', speed: 1.05, scale: 1, look: 'core.hyena' },
+  // The Meshy community originals: grey visitors pick you off with lasers from mid range, pirates board with
+  // sawed-offs, and the strongman walks a spin gun straight at you, hard to put down.
+  alien: { label: 'Visitor', health: 65, weapon: 'core.laser_rifle', speed: 0.95, scale: 1, look: 'core.visitor' },
+  pirate: { label: 'Pirate', health: 90, weapon: 'core.sawed_off', speed: 0.92, scale: 1, look: 'core.barnacle' },
+  titan: { label: 'Strongman', health: 300, weapon: 'core.lmg', speed: 0.66, scale: 1.18, look: 'core.bogdan' },
 };
 
 /** How many NPCs an encounter roster fields in its first wave. */
@@ -113,6 +118,9 @@ export const NPC_ROLE_PROFILES: Record<NpcRole, BotProfile> = {
   boglurker: { ...NPC_PROFILE, id: 'core.npc_boglurker', displayName: 'Boglurker', aggression: 80, selfPreservation: 10, rangePreference: 15, tags: ['NPC', 'GRUNT'] },
   warlord: { ...NPC_PROFILE, id: 'core.npc_warlord', displayName: 'Salamander Warlord', aggression: 50, rangePreference: 60, pursuitPersistence: 30, tags: ['NPC', 'SUPPRESSOR'] },
   hyena: { ...NPC_PROFILE, id: 'core.npc_hyena', displayName: 'Hyena Warrior', aggression: 85, rangePreference: 25, pursuitPersistence: 80, tags: ['NPC', 'GRUNT'] },
+  alien: { ...NPC_PROFILE, id: 'core.npc_alien', displayName: 'Visitor', accuracy: 40, aggression: 45, rangePreference: 65, tacticalAwareness: 55, tags: ['NPC'] },
+  pirate: { ...NPC_PROFILE, id: 'core.npc_pirate', displayName: 'Pirate', aggression: 85, selfPreservation: 20, rangePreference: 10, tags: ['NPC', 'GRUNT', 'RECKLESS'] },
+  titan: { ...NPC_PROFILE, id: 'core.npc_titan', displayName: 'Strongman', aggression: 70, selfPreservation: 5, rangePreference: 30, pursuitPersistence: 60, tags: ['NPC', 'SUPPRESSOR'] },
 };
 
 /** The enemy faction every map has unless it defines its own. */
@@ -189,7 +197,7 @@ export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56
 export const validLookId = (id: string | undefined): string => (npcLookRole(id) ? id! : getLook(id).id);
 
 /** First-person arm colour for each NPC skin (creature hide, soldier uniform). */
-const NPC_ARM_COLORS: Record<NpcRole, string> = { trooper: '#4f7a2c', gunner: '#a8782c', heavy: '#3c4450', sniper: '#3a6a28', imp: '#e0302a', puglin: '#7ab830', cyclops: '#3a7cf0', oculus: '#f07020', scolitex: '#20c8b0', zombie: '#7d9a6a', goblin: '#4f9a2f', otter: '#3e3d3f', boglurker: '#6a8a35', warlord: '#c8c0ae', hyena: '#8a6a48' };
+const NPC_ARM_COLORS: Record<NpcRole, string> = { trooper: '#4f7a2c', gunner: '#a8782c', heavy: '#3c4450', sniper: '#3a6a28', imp: '#e0302a', puglin: '#7ab830', cyclops: '#3a7cf0', oculus: '#f07020', scolitex: '#20c8b0', zombie: '#7d9a6a', goblin: '#4f9a2f', otter: '#3e3d3f', boglurker: '#6a8a35', warlord: '#c8c0ae', hyena: '#8a6a48', alien: '#b4b6a0', pirate: '#7aa688', titan: '#c48a62' };
 
 /**
  * The look whose arms you see in first person: your own, or for an NPC skin

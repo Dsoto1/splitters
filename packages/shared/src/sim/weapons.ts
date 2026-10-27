@@ -605,7 +605,13 @@ function gunplayWeapons(): Record<string, WeaponDefinition> {
       damage: 90, spread: 0.0005, fireIntervalTicks: 40, range: 300, magazine: 5, reserveMax: 30, pickupAmmo: 10,
       reloadTicks: 118, reload: { type: 'shell', start: 18, each: 18, end: 10 }, raiseTicks: 16,
       ammo: 'light', knockback: 4, botDesirability: 0.6, botRange: [3, 40],
-      view: sidearm('revolver', 0.28, '#ffcf7a', { sound: 'fire.revolver' }),
+      // Model: a Meshy community revolver (CC0 per the owner, markings painted out; content/guns.json), held on its own grip.
+      view: sidearm('revolver', 0.28, '#ffcf7a', {
+        model: 'guns/ironclad_revolver.glb',
+        fallback: 'weapons/revolver.glb',
+        hold: { style: 'pistol', grip: [0, -0.03, -0.108], support: [-0.02, -0.04, -0.098] },
+        sound: 'fire.revolver',
+      }),
     }),
   ];
   return Object.fromEntries(list.map((w) => [w.id, w]));
@@ -675,7 +681,7 @@ function mountWeapons(): Record<string, WeaponDefinition> {
       heat: { perShot: 0.3, coolPerTick: 0.004 },
       projectile: { speed: 34, gravity: 0, fuseSeconds: 4, splashRadius: 5, splashDamage: 110, splashEdgeDamage: 20, selfDamageScale: 0.6, visual: 'rocket', impactDamage: 30 },
       botDesirability: 0, botRange: [0, 80],
-      view: { model: 'turrets/rocket.glb', viewOffset: [0, -0.35, 0.7], tracer: '#ffb347', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.rockets' },
+      view: { model: 'guns/arc_cannon_turret.glb', fallback: 'turrets/rocket.glb', viewOffset: [0, -0.35, 0.7], tracer: '#ffb347', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.rockets' },
     }),
     weapon({
       id: 'core.tank_cannon', displayName: 'Tank Cannon', kind: 'projectile', slot: 0,
@@ -834,7 +840,15 @@ function arsenal(): Record<string, WeaponDefinition> {
       // Huge belt, poor handling: slow to draw and a long, dangerous reload.
       damage: 9, spread: 0.035, fireIntervalTicks: 3, range: 300, magazine: 120, reserveMax: 240, pickupAmmo: 120, reloadTicks: 210, raiseTicks: 48,
       ammo: 'rifle', recoil: { kick: 0.006, bloom: 0.002, maxBloom: 0.04, recover: 0.001 }, botDesirability: 0.72, botRange: [3, 40],
-      view: longarm('lmg', 1.0, '#ffd36b', { sound: 'fire.smg' }),
+      // Model: a Meshy community rotary-barrel gun (CC0 per the owner; content/guns.json): no stock, so the rear handle sits at the shoulder.
+      view: longarm('lmg', 1.0, '#ffd36b', {
+        model: 'guns/plasma_spin_gun.glb',
+        fallback: 'weapons/lmg.glb',
+        // Chunky (side drums, a tall top): further out and lower than a rifle, so it doesn't fill the view.
+        viewOffset: [0.25, -0.28, 0.74],
+        hold: { style: 'long', grip: [0, -0.09, -0.36], support: [0, -0.075, 0.1], shoulder: [0, 0.06, -0.48] },
+        sound: 'fire.smg',
+      }),
     }),
     weapon({
       id: 'core.nailgun', displayName: 'Nailgun', kind: 'projectile', slot: 7, spread: 0.02,

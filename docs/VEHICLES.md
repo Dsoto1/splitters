@@ -9,7 +9,7 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
 | Mount | Seats | What it does |
 |---|---|---|
 | Heavy MG Turret | 1 gunner | Twin machine gun on a pedestal, ±80° arc, overheats instead of reloading |
-| Rocket Turret | 1 gunner | Slow, heavy rockets, ±70° arc |
+| Rocket Turret | 1 gunner | Slow, heavy rockets, ±70° arc (model: a Meshy community cannon on a pedestal, CC0 per the owner, `guns/arc_cannon_turret.glb`, centred on its pedestal so it turns about it) |
 | Sentry Gun | none | Aims and fires on its own at its team's enemies (no team: everyone) |
 | Go-Kart | 1 driver | Very quick, no gun: run people over |
 | Speeder | 2 (pilot, passenger) | Hovering; the pilot fires twin blasters ahead, the passenger shoots their own weapon |

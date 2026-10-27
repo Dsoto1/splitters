@@ -54,14 +54,13 @@ function paint(x: number, y: number, z: number, surfaces: TileSurfaces): void {
   m.history.execute('Paint', { kind: 'updateTiles', before: [t], after: [{ ...t, surfaces: { ...t.surfaces, ...surfaces } }] });
 }
 const OFFSET: Record<Side, [number, number]> = { N: [0, 4], S: [0, -4], E: [4, 0], W: [-4, 0] };
-let panes = 0;
 let doors = 0;
-/** A wall style on one side; windows get a pane of glass that shoots out, `slide` doorways a sliding door. */
+/** A wall style on one side; windows get breakable glass (it shoots out), `slide` doorways a sliding door. */
 function edge(x: number, y: number, z: number, side: Side, style: EdgeStyle | 'slide'): void {
   m.edge(x, y, z, side, style === 'slide' ? 'door' : style);
   const [dx, dy] = OFFSET[side];
   const yaw = side === 'N' || side === 'S' ? 0 : P;
-  if (style === 'window') m.add({ kind: 'destructible', id: `pane_${String(++panes).padStart(2, '0')}`, name: 'Window pane', model: 'glass', position: at(x, y, z, dx, dy), yaw, health: null, explosiveOnly: false });
+  if (style === 'window') m.glass(x, y, z, side, 'breakable');
   if (style === 'slide') m.add({ kind: 'door', id: `door_${++doors}`, name: 'Glass double door', position: at(x, y, z, dx, dy), yaw, startOpen: false, locked: false, auto: true });
 }
 

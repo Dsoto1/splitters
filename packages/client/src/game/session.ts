@@ -34,6 +34,7 @@ import {
   type CarryOver,
   weaponByCode,
   DESTRUCTIBLE_SPECS,
+  glassAt,
   NPC_ROLES,
   NPC_ROLE_SPECS,
   isCreature,
@@ -104,14 +105,13 @@ import { Interpolator, type RemotePose } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
 import { ScenarioState } from './scenarioState.ts';
+import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 
-/** Match events that only make effects, skipped while the tab is hidden. */
 /** Field of view while aiming down the sights, as a fraction of the normal one. */
 const ADS_FOV = 0.72;
-const HIDDEN_SKIP = new Set(['shot', 'impact', 'melee', 'arc', 'explode', 'crash', 'throw']);
 /** Kills this close together escalate the kill marker (and its sound). */
 const MULTI_KILL_MS = 4000;
 
@@ -433,6 +433,7 @@ export class GameSession {
     );
     this.sfx.bloodOn = () => this.view.blood.on;
     this.sfx.blockPresent = (i) => this.scenario?.present(i) ?? true;
+    this.view.scenario.liquids.fx.onSplash = (at) => this.sfx.splash(at);
     // Bodies: stay all match, or sink away after a while.
     const bodiesSel = $('bodies-setting') as HTMLSelectElement;
     bodiesSel.value = this.view.bodies;
@@ -1084,7 +1085,7 @@ export class GameSession {
         for (const ev of msg.ev) {
           // In a background tab nothing draws, so effects would only pile up (blood, bullets,
           // sounds) and all land at once when you come back: skip the purely visual ones.
-          if (document.hidden && HIDDEN_SKIP.has(ev.e)) continue;
+          if (document.hidden && VISUAL_EVENTS.has(ev.e)) continue;
           if (!document.hidden) this.sfx.event(ev, posesNow, performance.now());
           this.modeHud?.event(ev);
           this.raceHud?.event(ev);
@@ -1111,11 +1112,12 @@ export class GameSession {
                   const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
                   const len = Math.hypot(d.x, d.y, d.z) || 1;
                   const physics = this.local.physics;
-                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: 0 }, def?.range ?? 300, (o, dir, l) => physics.raycastWorld(o, dir, l));
+                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: 0 }, def?.range ?? 300, (o, dir, l) => physics.raycastHit(o, dir, l)?.dist ?? null);
                   this.view.shotVisual({ eye, muzzle, to: flight.end, color, victim: null, zone: 0, strength, def, speed: ev.v, land: false });
                 }
                 return;
               }
+              this.view.scenario.liquids.fx.shot(eye, to);
               const victim = ev.hit[i] ?? null;
               const zone = ev.z?.[i] ?? 0;
               if (victim === this.slot) this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
@@ -1243,7 +1245,11 @@ export class GameSession {
             this.objectiveChanged.set(ev.i, performance.now());
           } else if (ev.e === 'broken') {
             const e = this.map?.entities[ev.i];
-            if (e?.kind === 'destructible') {
+            // Glass (window panes past the entities, glass blocks, Window panes): a shower of shards.
+            const pane = this.view.scenario.glass.paneAt(ev.i) ?? (this.map ? glassAt(this.map, ev.i) : null);
+            if (pane) {
+              this.view.glassShards(pane.box, pane.tint ?? '#d4eef2');
+            } else if (e?.kind === 'destructible') {
               const spec = DESTRUCTIBLE_SPECS[e.model];
               const h = spec.half;
               const colors: Record<string, string> = { crate: '#8a5d33', barrel: '#9c2f22', glass: '#bfe6f5', boards: '#7a5430', gas: '#d8d8d0', generator: '#5a6066' };
@@ -1775,7 +1781,8 @@ export class GameSession {
       this.view.applyPropStates(this.scenario.entities);
     }
     this.view.updatePickups(this.taken, now);
-    this.view.updateProjectiles(this.interp.sampleProjectiles(now));
+    const shells = this.interp.sampleProjectiles(now);
+    this.view.updateProjectiles(shells);
     this.view.updateZones(this.zones, now);
     if (this.mounts) {
       const manned = this.seat ? this.mounts.mounts.get(this.seat[0]) : undefined;
@@ -1795,6 +1802,8 @@ export class GameSession {
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
     const poses = this.interp.sample(now);
+    // Splashes and ripples where players and projectiles meet water.
+    this.view.scenario.liquids.fx.track(poses, shells);
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
     this.forts?.frame(local?.alive ? local.eye : null, this.input.yaw, this.input.pitch, !!local?.alive && building, poses.filter((p) => p.slot !== this.slot), local?.alive ? local.state.pos : null);
     this.raceHud?.frame(this.view.camera.position, this.view.camera.rotation.y);

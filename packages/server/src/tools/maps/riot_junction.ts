@@ -61,13 +61,10 @@ function paint(x: number, y: number, z: number, surfaces: TileSurfaces): void {
   if (!t) throw new Error(`no tile at ${x},${y},${z}`);
   m.history.execute('Paint', { kind: 'updateTiles', before: [t], after: [{ ...t, surfaces: { ...t.surfaces, ...surfaces } }] });
 }
-let panes = 0;
-/** A wall style on one side; windows get a pane of glass that shoots out. */
+/** A wall style on one side; windows get breakable glass (it shoots out). */
 function edge(x: number, y: number, z: number, side: Side, style: EdgeStyle): void {
   m.edge(x, y, z, side, style);
-  if (style !== 'window') return;
-  const [dx, dy] = SIDE_D[side];
-  m.add({ kind: 'destructible', id: `pane_${String(++panes).padStart(3, '0')}`, name: 'Window pane', model: 'glass', position: at(x, y, z, dx * 4, dy * 4), yaw: side === 'N' || side === 'S' ? 0 : P, health: null, explosiveOnly: false });
+  if (style === 'window') m.glass(x, y, z, side, 'breakable');
 }
 /** Several edges at once: "x,y,z,Side" -> style. */
 function edges(list: Record<string, EdgeStyle>): void {
