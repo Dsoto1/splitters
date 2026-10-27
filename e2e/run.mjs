@@ -1741,10 +1741,10 @@ async function hostcontrolsFlow(browser) {
   await page.evaluate(() => document.getElementById('hc-restart').click());
   const restarted = await page.waitForFunction(() => window.__cs.phase() !== 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
   check(restarted, 'Restart match starts it over');
-  await pickMap(page, 'clockwork');
+  await pickMap(page, 'atomic_court');
   const toast = await page.evaluate(() => document.getElementById('message').textContent);
-  check(/Changing map to .*Clockwork/i.test(toast), `the change is announced (${toast})`);
-  const moved = await page.waitForFunction(() => window.__match?.map.metadata.id === 'clockwork' && window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(/Changing map to .*Atomic Court/i.test(toast), `the change is announced (${toast})`);
+  const moved = await page.waitForFunction(() => window.__match?.map.metadata.id === 'atomic_court' && window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false);
   await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
   const after = await page.evaluate(() => ({ n: window.__match.combatants().length, skill: window.__cs.host()?.skill }));
   check(moved && after.n === 6 && after.skill === 'hard', `the match restarts on the new map with the same players and bots (${JSON.stringify(after)})`);
@@ -1782,10 +1782,10 @@ async function hostcontrolsFlow(browser) {
       new MutationObserver(() => window.__notes.push(document.getElementById('feed').textContent)).observe(document.getElementById('feed'), { childList: true, subtree: true });
     });
     await openPanel(host);
-    await pickMap(host, 'clockwork');
-    const together = await host.waitForFunction(() => window.__match?.map.metadata.id === 'clockwork' && window.__match.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, { timeout: T(90000) }).then(() => true, () => false);
+    await pickMap(host, 'atomic_court');
+    const together = await host.waitForFunction(() => window.__match?.map.metadata.id === 'atomic_court' && window.__match.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, { timeout: T(90000) }).then(() => true, () => false);
     check(together, "the friend rejoins the host's new map by themselves");
-    const friendThere = await friend.waitForFunction(() => window.__cs?.map === 'clockwork' && window.__cs.local && document.getElementById('menu').hidden, null, { timeout: T(60000) }).then(() => true, () => false);
+    const friendThere = await friend.waitForFunction(() => window.__cs?.map === 'atomic_court' && window.__cs.local && document.getElementById('menu').hidden, null, { timeout: T(60000) }).then(() => true, () => false);
     const sameCode = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
     check(friendThere && sameCode === code, `the friend plays on with the same join code (${sameCode})`);
     const heard = await friend.evaluate(() => window.__notes.some((t) => t.includes('Changing map to')));
