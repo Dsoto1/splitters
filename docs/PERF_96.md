@@ -133,6 +133,77 @@ scale with the slow frames and should be re-read on a GPU machine
 textures with instancing for distant characters, impostors or lower LODs for
 far bots, and fewer distinct prop draws on Norman Shores.
 
+## Render pass: characters (27 Oct 2026)
+
+Characters were most of the draw calls in a clump: each look is 8–12
+skinned parts (torso, belts, legs, feet, arms, hood, head, eyebrows,
+eyes, hair), 2–15 rigid gear pieces (hats, goggles, vests, bandoliers), a
+cloned gun of 1–5 meshes and a team marker with its own material, every one
+drawn again into the shadow map.
+
+What changed:
+
+- **Parts merged per material** (`content/mergeParts.ts`, every match): the
+  parts of a character that share the skeleton, world matrix and material
+  (which `dress` already made identical: all outfit pieces of a family share
+  one texture, the head and arm skin share the skin texture) become one
+  skinned mesh, their low-detail copies likewise (one LOD level kept per
+  merged mesh). Missing vertex colours fill in white, missing extra bone
+  influences with zero weight, the exporter's unused extra UV sets are
+  dropped, and vertex alpha is ignored for opaque materials. Same triangles,
+  bones and materials: nothing changes on screen.
+- **Gear in one draw**: every gear piece is bound wholly to the joint it hung
+  on (vertices moved into the skin's bind space through that bone's
+  current matrix, faces flipped back where the import mirrors), coloured per
+  vertex, and merged into one skinned mesh with one shared material whose
+  metallic/roughness come from a small finish table texture by UV.
+- **Crowds only** (more than 24 players, as the existing animation LOD):
+  held guns are GPU instances (one draw per gun model and part for everyone),
+  team markers are instances of one disc per colour, and characters outside
+  the view (already left out of drawing) pause their clips and skip the
+  after-animation aim and grip until they are seen again.
+- Character eyes cast no shadow (it fell inside the head).
+
+Per look (character viewer, all 36 looks): **11.4 → 4.1 meshes on average,
+max 25 → 7**. `e2e characters` keeps at most 8 and 5 on average.
+
+**Norman Shores, clumped, Medium**, the same placement for both builds
+(every player held on the same spots round one centre by a step hook in the
+match, the player 7 m and 30 m off it looking in, blood off; SwiftShader at
+box load 6–20):
+
+| View | Build | Draw calls | of which characters | Active meshes | Skinned | Frame ms |
+|---|---|---|---|---|---|---|
+| 7 m (55 in view) | before | 2,914 | 2,515 | 1,055 | 419 | 7,284 |
+| | after | 1,111–1,464 | 600–611 | 671–1,119 | 214–218 | 1,353–2,318 |
+| 30 m (all 95 in view) | before | 5,539 | 5,035 | 2,099 | 809 | 9,680 |
+| | after | 1,894–2,290 | 1,173–1,375 | 1,235–1,968 | 411–422 | 4,618–4,936 |
+
+(Two after runs; the map's own draws varied between them, characters' did
+not.) Characters' draw calls fall by 73–79 %, skinned meshes by half, and
+the CPU-rendered frame takes a half to a fifth as long.
+
+`perf96.mjs` (the player's own view, so how many characters are in view
+varies; now reported as `shown`), clumped, Medium:
+
+| Map | Build | Draws | Active meshes | Triangles | Skinned (characters in view) | Skinned per character |
+|---|---|---|---|---|---|---|
+| Norman Shores | before | 4,800 | 5,446 | 4.04 M | 595 (79) | 7.5 |
+| | after | 2,436 | 3,642 | 3.22 M | 236 (57) | 4.1 |
+| Frost Basin | before | 1,049 | 737 | 0.69 M | 239 (23) | 10.4 |
+| | after | 313 | 384 | 0.48 M | 86 (27) | 3.2 |
+
+Draws per character in view (everything else included): Norman Shores
+61 → 43, Frost Basin 46 → 12. `PERF_MAX_DRAWS=n` makes `perf96.mjs` exit 1
+when a clumped frame averages more draws than `n`.
+
+Left for later: the map side (Norman Shores' own 400–1,100 draws: scenario
+pieces such as the 106 destructibles at 3–6 meshes each, foliage chunks,
+prop instances evaluated one by one), a character's remaining 3–5 materials
+(outfit, skin, hair, eyes, gear: an atlas would make it one), and animation
+LOD that steps far, visible characters' clips (Babylon evaluates every
+playing clip every frame; only the state machine runs less often).
+
 ## Not covered
 
 - Snapshot handling on the page (`msg`) is now the largest sim-related cost
