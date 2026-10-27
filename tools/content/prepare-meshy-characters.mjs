@@ -25,14 +25,15 @@
 // the unzipped "Meshy_AI_<name>_..._texture_fbx" folders, anywhere under the
 // downloads dir, 2.5–61 MB each). Those are rigged here first: the mesh is
 // welded and pre-simplified, the joints go where FBX_CHARACTERS places them
-// (by hand, read off front and side views, in units of the model's height),
-// and each vertex follows the bone nearest to it along the surface (measured
-// from vertices close to the bone's middle, so an arm hanging by the body
-// doesn't take the torso with it; see autoSkin), blended across the joints by
-// smoothing the weights over the mesh; a tail rides on the hips and the feet
+// (by hand, read off front and side views and side profiles, in units of the
+// model's height), and the skin weights come from autoskin.mjs (bone heat with
+// sight tests through a voxel fill of the body; cloth below the hips follows
+// the pelvis, the chest stays off the clavicles and arms; four influences);
+// a tail rides on the hips, hunched bodies lean back (`lean`), and the feet
 // are turned to the rig's too (bent knees leave toes pointing down once the
 // legs are straightened). SKIN_DEBUG=<dir> writes each rest mesh coloured by
-// its joints, to check the weights. Then it goes through the same
+// its joints (and <id>.cloth.glb: red where no bone is in sight, green what
+// counts as cloth), to check the weights; ONLY=<ids> rebuilds just those. Then it goes through the same
 // steps as the rest. Their first-person arms are the universal ones (looks.ts),
 // so they get no _fparms file. A character whose download isn't there is kept
 // as built (checked against the lock).

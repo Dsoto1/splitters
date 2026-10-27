@@ -189,7 +189,8 @@ in the background were seen to stall in the browser.
 - `?mode=characters`: viewer with every look and the male and female NPC
   trooper and heavy in two rows, with buttons for each motion, one-shot and
   weapon, and an aim-pitch slider. `&alpha=`, `&dist=`, `&x=` and `&z=` set
-  the camera.
+  the camera; `&looks=core.goblin,core.otter` shows just those looks and
+  `&creatures=0` hides the creature row.
 - `node tools/content/prepare-characters.mjs <downloads dir>` rebuilds the parts
   from the original pack downloads (the free "Standard" editions; about 500 MB,
   so they are not in the repo). The script records every change made to them.
@@ -230,7 +231,7 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   owner generated on their Meshy subscription and downloaded as textured FBX,
   unrigged) are not creature-library bodies: `prepare-meshy-characters.mjs`
   rigs them onto our rig (joints placed by hand from front and side views,
-  skin weights computed from the mesh, tails on the hips), so they are
+  tails on the hips), so they are
   whole-body looks with every rig clip, and the NPC roles `goblin`, `otter`,
   `boglurker`, `warlord` and `hyena` draw them through their spec's `look`,
   holding the role's weapon like a soldier. Goblins rush in with blades, the
@@ -238,6 +239,27 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   you with a grenade launcher, hyenas run you down with SMGs. They have no
   `npc:` skin of their own (players pick the look). `SKIN_DEBUG=<dir>` on the
   script writes each rest mesh coloured by joint to check the weights.
+- **Their skin weights** (`tools/content/autoskin.mjs`) are bone heat: each
+  vertex is tied to the nearest bone it can see (the line to it stays inside a
+  voxel fill of the body, and the bone is the nearest along the surface too, so
+  a hand resting on a thigh stays the hand's), and the weights diffuse over the
+  surface from there, at most four per vertex. Rules on top: cloth hanging
+  below the hips (aprons, rags, loincloths: `cloth: true`) follows the pelvis,
+  with a little of the nearer thigh towards the hem; the clavicles keep only
+  the top of the shoulder and the upper arms keep off the chest, so the chest
+  stays rigid when the arms move; a head hung low over the chest keeps off it.
+- **Stance:** hunched bodies (goblin, boglurker) lean back per spine joint when
+  re-posed (`lean`), the head keeping the way it faced, so the shared clips
+  stand them up. The hyena's digitigrade legs have their joints on the leg's
+  centre line (hock as the ankle, paw as the foot), so straightening them
+  turns the thigh and shin only a little. The goblin's rags are hundreds of
+  small texture islands: its simplification collapses across seams only where
+  the texture matches on both sides (and between them), 19.7k to 11.7k triangles.
+- **Long guns on deep or short-armed bodies:** the stock's clearance also counts
+  the chest straight ahead of the shoulder (a deep chest turned across the
+  aim), the support hand slides back along the handguard when the arms can't
+  reach, and a stock the arms still can't hold clear tucks out past the
+  shoulder (the otter, the warlord) instead of into the chest.
 - In game, `content/creatures.ts` (`CreatureLibrary`) loads and instances
   them and `game/creatureAnimator.ts` drives them; `view.ts` uses them when an
   avatar's spec names a creature. No ragdoll: their death plays and the body
