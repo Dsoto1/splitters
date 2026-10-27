@@ -6,6 +6,13 @@ and a patch bump a fix-only release. The version shows on the main menu
 (`packages/client/package.json`). Each release is a git tag `vX.Y.Z` on `main`,
 made only on a commit that passed CI on a check branch.
 
+## Unreleased
+
+**Hosting**
+- The Lightsail box no longer builds the site. CI packages each green build (reproducible tarball, build.json, SHA-256 sums), attests it with Sigstore build provenance and publishes it to GitHub Releases (`main-latest`, `vX.Y.Z`, `check-builds`); `sudo tiletrigger-update` downloads the build for the exact commit, verifies it, switches to it in seconds and rolls back on a failed health check (`--rollback`, `--release`, `--status`; optional hourly timer). `--build-here` is the only way to build on the box.
+- The hub restarts only when its own code changes; a site-only update is served at once. It runs as one Node process with production dependencies only.
+- The hub only serves files inside the site folder (a sibling folder whose name starts the same is no longer reachable).
+
 ## 0.2.0 (2026-10-27)
 
 **Gunplay**

@@ -4,7 +4,8 @@
 #   git clone https://github.com/Dsoto1/splitters.git && cd splitters
 #   infra/deploy-multiplayer.sh --email you@example.com --dns skip      # first run, new box beside the old one
 #   infra/deploy-multiplayer.sh --dns replace                           # cut trigger.toshiroplay.com over to it
-#   infra/deploy-multiplayer.sh                                         # later: update (same settings, latest main)
+#   infra/deploy-multiplayer.sh                                         # later: update (same settings, latest green main build)
+#   infra/deploy-multiplayer.sh --release v0.3.0                        # a release
 #
 # What one run does (idempotent; re-run any time):
 #   1. checks prerequisites (aws, python3, curl, ssh/scp; credentials; stack state)
@@ -15,7 +16,10 @@
 #   5. deploys/updates the stack (instance, static IP, firewall, DNS, alarms, budget)
 #   6. bootstraps the instance over SSH with Lightsail's temporary SSH credentials:
 #      SSH is opened to this shell's IP for the run only and closed again afterwards
-#      (infra/host-setup.sh: Caddy, hub, coturn, restart policies, ufw, journald limits)
+#      (infra/host-setup.sh: Caddy, hub, coturn, restart policies, ufw, journald limits; then
+#      infra/tiletrigger-update.sh installs the site build CI made and tested for the chosen commit,
+#      downloaded from GitHub Releases and verified: SHA-256 + Sigstore build provenance. The box never
+#      builds the site unless --build-here; docs/HOSTING.md, "Updates")
 #   7. verifies the hub health endpoint (on the box and over the internet),
 #      that /lobby/ice hands out relay credentials, and that TURN is NOT an open relay
 #      (infra/turn-check.py, from here and on the box)
@@ -38,7 +42,17 @@
 #   --bundle ID             micro_3_0 | small_3_0 (2 GB, default) | medium_3_0  (changing it replaces the box)
 #   --zone DOMAIN           hosted zone (toshiroplay.com)
 #   --hostname HOST         site + hub hostname (trigger.toshiroplay.com)
-#   --branch NAME           Git branch to build (main);  --ref SHA  pin a commit;  --repo URL
+#   Which build (default: the latest green build of main, release main-latest):
+#   --channel main|stable   main: latest green main build; stable: the newest release vX.Y.Z
+#   --release vX.Y.Z        a release
+#   --ref SHA               a commit CI published (main-latest or check-builds)
+#   --branch NAME           testing: the head of a check/** branch, from its green CI build (check-builds);
+#                           with --build-here, any branch
+#   --build-here            build the site on the box instead (slow: ~5 min at full CPU on the 2 GB box;
+#                           drains its CPU burst credits). Never done without this flag.
+#   --auto-update on|off    hourly check for a new green main build on the box (default: off; later runs keep it)
+#   --no-provenance         skip the Sigstore build-provenance check (emergencies; SHA-256 is still checked)
+#   --repo URL              the repository (https://github.com/Dsoto1/splitters.git)
 #   --app-client-id ID      Cognito app client ID for Trigger (pool us-east-1_VdMsuDJ59; default 2lrej6nsacfag8a7taeu3u6sc2, the public "trigger" SPA client)
 #   --admin-ssh-cidr CIDR   keep SSH open to this CIDR permanently (default: Lightsail console only)
 #   --budget-warn USD       first budget alert (15);  --budget-limit USD  budget (25)
@@ -61,6 +75,11 @@ SSM_PREFIX=/toshiro/trigger
 PROJECT=toshiro-trigger
 BRANCH=main
 REF=''
+CHANNEL=main
+RELEASE=''
+BUILD_HERE=0
+AUTO_UPDATE=''
+PROVENANCE=required
 REPO=https://github.com/Dsoto1/splitters.git
 ICE_TTL=3600
 INFRA_ONLY=0
@@ -89,18 +108,27 @@ while [ $# -gt 0 ]; do
     --branch) BRANCH="${2:?}"; shift ;;
     --ref) REF="${2:?}"; shift ;;
     --repo) REPO="${2:?}"; shift ;;
+    --channel) CHANNEL="${2:?}"; shift ;;
+    --release) RELEASE="${2:?}"; shift ;;
+    --build-here) BUILD_HERE=1 ;;
+    --auto-update) AUTO_UPDATE="${2:?}"; shift ;;
+    --no-provenance) PROVENANCE=off ;;
     --app-client-id) APP_CLIENT="${2:?}"; shift ;;
     --admin-ssh-cidr) ADMIN_SSH="${2:?}"; shift ;;
     --budget-warn) BUDGET_WARN="${2:?}"; shift ;;
     --budget-limit) BUDGET_LIMIT="${2:?}"; shift ;;
     --infra-only) INFRA_ONLY=1 ;;
     --yes) YES=1 ;;
-    -h|--help) sed -n '2,51p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,64p' "$0"; exit 0 ;;
     *) die "unknown option $1 (see --help)" ;;
   esac
   shift
 done
 case "$DNS_MODE" in ''|skip|manage|replace) ;; *) die "--dns must be skip, manage or replace" ;; esac
+case "$CHANNEL" in main|stable) ;; *) die "--channel must be main or stable" ;; esac
+case "$AUTO_UPDATE" in ''|on|off) ;; *) die "--auto-update must be on or off" ;; esac
+[ -z "$RELEASE" ] || [[ "$RELEASE" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]] || die "--release takes a version tag (vX.Y.Z)"
+[ -z "$REF" ] || [[ "$REF" =~ ^[0-9a-f]{40}$ ]] || die "--ref takes a full commit SHA (40 hex characters)"
 
 export AWS_REGION="$REGION" AWS_DEFAULT_REGION="$REGION" AWS_PAGER=''
 WORK="$(mktemp -d)"
@@ -128,6 +156,36 @@ if [ "$INFRA_ONLY" = 0 ]; then for cmd in ssh scp; do command -v "$cmd" >/dev/nu
 [ -f "$TEMPLATE" ] || die "template not found: $TEMPLATE"
 ACCOUNT="$(aws sts get-caller-identity --query Account --output text)" || die "no AWS credentials (run this in CloudShell)"
 note "account $ACCOUNT, region $REGION, stack $STACK"
+
+# The site build to install: check it is published before touching anything (the box checks it again,
+# with its SHA-256 sums and build provenance).
+SLUG="$(sed -E 's#^(https://|git@)github\.com[:/]##; s#\.git$##' <<<"$REPO")"
+RELEASES_URL="https://github.com/$SLUG/releases"
+published() { curl -fsSL -r 0-0 -o /dev/null --max-time 20 "$1"; } # a 1-byte GET (signed redirects may refuse HEAD)
+if [ "$INFRA_ONLY" = 0 ]; then
+  if [ "$BUILD_HERE" = 1 ]; then
+    note "site: built on the box from ${REF:-branch $BRANCH} (--build-here: slow, uses the CPU burst credits)"
+  elif [ -n "$RELEASE" ]; then
+    published "$RELEASES_URL/download/$RELEASE/build.json" || die "release $RELEASE has no site build ($RELEASES_URL/tag/$RELEASE)"
+    note "site: release $RELEASE"
+  elif [ -n "$REF" ]; then
+    published "$RELEASES_URL/download/main-latest/tiletrigger-client-$REF.tar.gz" || published "$RELEASES_URL/download/check-builds/tiletrigger-client-$REF.tar.gz" \
+      || die "no CI build of $REF is published (main-latest keeps the last 20 main commits; check-builds the last 8 check/** ones). Pick a published one, or add --build-here"
+    note "site: CI build of $REF"
+  elif [ "$BRANCH" != main ]; then
+    command -v git >/dev/null || die "git is not installed"
+    head="$(git ls-remote "$REPO" "refs/heads/$BRANCH" | cut -f1)"
+    [ -n "$head" ] || die "no branch $BRANCH in $REPO"
+    published "$RELEASES_URL/download/check-builds/tiletrigger-client-$head.tar.gz" \
+      || die "no CI build of $BRANCH's head ($head). Push it to a check/** branch and wait for green CI (CI publishes check/** builds to the check-builds release), or add --build-here"
+    note "site: CI build of $BRANCH @ ${head:0:12}"
+  else
+    rel=main-latest; [ "$CHANNEL" = stable ] && rel=latest
+    url="$RELEASES_URL/download/$rel/build.json"; [ "$rel" = latest ] && url="$RELEASES_URL/latest/download/build.json"
+    info="$(curl -fsSL --max-time 20 "$url" 2>/dev/null)" || die "no site build published on $CHANNEL yet ($url). CI publishes one after a green run on main (or a v* tag); or add --build-here"
+    note "site: $CHANNEL, $(python3 -c 'import json,sys; d=json.loads(sys.argv[1]); print(d["sha"][:12], "version", d.get("version","?"), "committed", d.get("commitTime","?"))' "$info")"
+  fi
+fi
 
 stack_exists() { aws cloudformation describe-stacks --stack-name "$STACK" >/dev/null 2>&1; }
 stack_param() { aws cloudformation describe-stacks --stack-name "$STACK" --query "Stacks[0].Parameters[?ParameterKey=='$1'].ParameterValue" --output text 2>/dev/null | sed 's/^None$//'; }
@@ -328,7 +386,8 @@ for i in $(seq 1 30); do rssh true 2>/dev/null && break; [ "$i" = 30 ] && die "S
 # Settings + secrets for host-setup.sh: a root-only file, removed after use.
 {
   printf '%s=%q\n' DOMAIN "$HUB_HOST" ROOT_DOMAIN "$ROOT_DOMAIN" TURN_HOST "$TURN_HOST" STATIC_IP "$STATIC_IP" \
-    REPO "$REPO" BRANCH "$BRANCH" REF "$REF" ICE_TTL "$ICE_TTL" \
+    REPO "$REPO" BRANCH "$BRANCH" REF "$REF" CHANNEL "$CHANNEL" RELEASE "$RELEASE" BUILD_HERE "$BUILD_HERE" \
+    AUTO_UPDATE "$AUTO_UPDATE" PROVENANCE "$PROVENANCE" ICE_TTL "$ICE_TTL" \
     TURN_SECRET "$(cat "$WORK/turn-secret")" HUB_SIGNING_SECRET "$(cat "$WORK/hub-signing-secret")" \
     COGNITO_REGION "$(stack_param CognitoRegion)" COGNITO_USER_POOL_ID "$(stack_param CognitoUserPoolId)" \
     COGNITO_APP_CLIENT_ID "$(stack_param CognitoAppClientId)" COGNITO_DOMAIN "$(stack_param CognitoDomain)" HOST_FIREWALL 1
@@ -336,10 +395,10 @@ for i in $(seq 1 30); do rssh true 2>/dev/null && break; [ "$i" = 30 ] && die "S
 chmod 600 "$WORK/bootstrap.env"
 
 REMOTE="$(rssh 'umask 077; mktemp -d')"
-scp -q "${SSH_OPTS[@]}" "$HERE/host-setup.sh" "$HERE/turn-check.py" "$WORK/bootstrap.env" "$WORK/turn-secret" "$SSH_USER@$STATIC_IP:$REMOTE/"
+scp -q "${SSH_OPTS[@]}" "$HERE/host-setup.sh" "$HERE/tiletrigger-update.sh" "$HERE/turn-check.py" "$WORK/bootstrap.env" "$WORK/turn-secret" "$SSH_USER@$STATIC_IP:$REMOTE/"
 rm -f "$WORK/bootstrap.env"
 
-log "Bootstrapping the instance (packages, build, Caddy, hub, coturn; 5-10 minutes the first time)"
+log "Bootstrapping the instance (packages, Caddy, hub, coturn, the site build; a few minutes the first time, under a minute later)"
 rssh "sudo bash $REMOTE/host-setup.sh $REMOTE/bootstrap.env; rc=\$?; if [ -f /etc/tiletrigger-relay-off ]; then echo '== Relay switched off (tiletrigger-relay off): TURN check skipped'; elif [ \$rc = 0 ]; then echo; echo '== TURN check on the box (config)'; sudo python3 $REMOTE/turn-check.py --host 127.0.0.1 --secret-file $REMOTE/turn-secret || rc=\$?; fi; sudo rm -rf $REMOTE; exit \$rc" \
   || die "bootstrap or on-box TURN check failed (see above); SSH: Lightsail console → Connect, then sudo journalctl -u tiletrigger-hub -n 80"
 
@@ -386,7 +445,8 @@ cat <<DONE
    DNS             $DNS_MANAGED
    Secrets         SSM $SSM_PREFIX/turn-secret, $SSM_PREFIX/hub-signing-secret (SecureString)
    Budget          $(stack_output BudgetName), alerts to $EMAIL
-   Code updates    Lightsail console → Connect → sudo tiletrigger-update (or re-run this script)
+   Code updates    Lightsail console → Connect → sudo tiletrigger-update (latest green main build;
+                   --release vX.Y.Z, --rollback, --status), or re-run this script
 DONE
 [ "$FAIL" = 0 ] || die "some checks failed (above)"
 log "All checks passed"

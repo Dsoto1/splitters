@@ -1,7 +1,7 @@
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, realpathSync, statSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { extname, join, normalize, resolve } from 'node:path';
+import { extname, join, normalize, resolve, sep } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
 const TYPES: Record<string, string> = {
@@ -36,21 +36,42 @@ const TEXT = new Set(['.html', '.js', '.mjs', '.css', '.json', '.svg', '.gltf', 
  * Serves the built game (packages/client/dist) from the hub, so one address
  * is the whole site: pages, assets, broker and game browser. Text files are
  * gzipped once and kept in memory; Vite's hashed files are cached for a year.
+ * `dir` may be a symlink that an update switches to another build while the
+ * hub runs (infra/host-setup.sh, tiletrigger-update): it is resolved on every
+ * request, so a request is served from one build, and the gzipped copies of
+ * the build before are dropped.
  */
 export function siteHandler(dir: string) {
   const root = resolve(dir);
   const zipped = new Map<string, Buffer>();
+  let served = '';
   return async (req: IncomingMessage, res: ServerResponse, next: () => void): Promise<void> => {
     if (req.method !== 'GET' && req.method !== 'HEAD') return next();
-    const path = decodeURIComponent(new URL(req.url ?? '/', 'http://site').pathname);
-    let file = normalize(join(root, path));
-    if (!file.startsWith(root)) return next();
+    let base: string;
+    try {
+      base = realpathSync(root);
+    } catch {
+      return next();
+    }
+    if (base !== served) {
+      zipped.clear();
+      served = base;
+    }
+    let path: string;
+    try {
+      path = decodeURIComponent(new URL(req.url ?? '/', 'http://site').pathname);
+    } catch {
+      return next();
+    }
+    let file = normalize(join(base, path));
+    // Inside the build only (not a sibling folder whose name starts the same).
+    if (file !== base && !file.startsWith(base + sep)) return next();
     // A folder with its own page (/privacy, /privacy/) gets that page.
-    if (existsSync(file) && statSync(file).isDirectory() && file !== root && existsSync(join(file, 'index.html'))) file = join(file, 'index.html');
+    if (existsSync(file) && statSync(file).isDirectory() && file !== base && existsSync(join(file, 'index.html'))) file = join(file, 'index.html');
     if (!existsSync(file) || statSync(file).isDirectory()) {
       // Pages without a file of their own (and the root) get the game.
       if (extname(path)) return next();
-      file = join(root, 'index.html');
+      file = join(base, 'index.html');
     }
     const ext = extname(file).toLowerCase();
     res.setHeader('Content-Type', TYPES[ext] ?? 'application/octet-stream');

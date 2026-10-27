@@ -59,6 +59,8 @@ const RULES = [
   [/^CLAUDE\.md$/, NONE, []],
   [/^packages\/[^/]+\/[^/]*\.md$/, NONE, []],
   [/^LICENSE|^\.gitignore$|^\.editorconfig$/, NONE, []],
+  // The Lightsail box's scripts: no flow or unit test runs them (the check job lints them; infra/test/ by hand).
+  [/^(infra|deploy)\//, NONE, []],
 
   // Unit tests alone: their package's tests, no browser.
   [/^packages\/client\/test\//, NONE, ['client']],

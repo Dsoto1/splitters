@@ -17,7 +17,10 @@ script, run from **AWS CloudShell** (no local tools, no keys to manage):
 | `infra/toshiro-trigger-multiplayer.yaml` | Lightsail instance (Ubuntu 24.04, 2 GB), static IP, firewall, Route 53 records, alarms, monthly budget |
 | `infra/deploy-multiplayer.sh` | validates, creates secrets in SSM, deploys the stack, bootstraps the box over SSH, checks it |
 | `infra/host-setup.sh` | runs on the box: Caddy, hub, coturn, systemd restarts, ufw, log limits |
+| `infra/tiletrigger-update.sh` | runs on the box (`sudo tiletrigger-update`): installs the site build CI made, verified; rollback (see [Updates](#updates-how-new-code-reaches-the-box)) |
+| `tools/ci/client-release.sh` | CI: packages the site build and publishes it to GitHub Releases |
 | `infra/turn-check.py` | proves the relay refuses anyone without fresh credentials and won't reach private addresses |
+| `infra/test/update-dry-run.sh` | a local rehearsal of updates, refusals and rollbacks (no AWS, no GitHub) |
 
 Security and costs: docs/MULTIPLAYER_SECURITY.md, docs/MULTIPLAYER_REVIEW.md
 (section 6: about 13 USD a month).
@@ -34,8 +37,10 @@ infra/deploy-multiplayer.sh --email you@example.com --dns skip
 This creates the stack beside the current server without touching DNS:
 instance `toshiro-trigger-hub`, its static IP, the SSM secrets
 `/toshiro/trigger/turn-secret` and `/toshiro/trigger/hub-signing-secret`, a
-budget alerting at 15 and 25 USD, and Lightsail alarms. It builds and starts
-the game on the new box and checks it (the HTTPS check waits for DNS). Lightsail
+budget alerting at 15 and 25 USD, and Lightsail alarms. It installs the latest
+site build CI published for `main` (the box doesn't build it; see
+[Updates](#updates-how-new-code-reaches-the-box)), starts the game on the new box
+and checks it (the HTTPS check waits for DNS). Lightsail
 emails a verification link for alarm notifications: click it, or alarms stay
 silent (budget alerts need no confirmation).
 
@@ -62,7 +67,11 @@ Options worth knowing (`infra/deploy-multiplayer.sh --help` for all):
 - `--app-client-id <id>` stores the Cognito app client ID for Trigger (user
   pool `us-east-1_VdMsuDJ59`, login at `login.toshiroplay.com`; the pool is
   shared and is not managed by this stack).
-- `--branch <name>` / `--ref <commit>` build another branch or a pinned commit.
+- Which build: by default the latest green build of `main`; `--release vX.Y.Z`
+  a release, `--channel stable` the newest release, `--ref <commit>` a commit
+  CI published, `--branch check/<name>` (testing) the head of a check branch
+  from its green CI build. `--build-here` builds on the box instead (slow;
+  only when asked). `--auto-update on` turns on the hourly update timer.
 - `--admin-ssh-cidr <your-ip>/32` keeps SSH open to your own address;
   otherwise SSH is only open to the Lightsail console's **Connect** button
   (and to CloudShell for the length of a deploy).
@@ -71,9 +80,10 @@ Options worth knowing (`infra/deploy-multiplayer.sh --help` for all):
 
 ### Later
 
-- **New code on `main`**: re-run `infra/deploy-multiplayer.sh` (same settings
-  are kept), or for a quick code-only update: Lightsail console → instance →
-  **Connect** → `sudo tiletrigger-update`.
+- **New code on `main`**: once CI is green it publishes the build; then
+  Lightsail console → instance → **Connect** → `sudo tiletrigger-update`
+  (seconds), or re-run `infra/deploy-multiplayer.sh` (same settings are kept;
+  also applies config changes). Back out with `sudo tiletrigger-update --rollback`.
 - **Relay abuse or a bandwidth alarm**: Connect → `sudo tiletrigger-relay off`
   (direct connections keep working; `on` to restore, `status` to look).
 - **Rotate the relay secret**: `aws ssm put-parameter --name /toshiro/trigger/turn-secret --type SecureString --overwrite --value "$(openssl rand -hex 32)"`, then re-run the deploy.
@@ -82,6 +92,148 @@ Options worth knowing (`infra/deploy-multiplayer.sh --help` for all):
 - **Remove everything**: `aws cloudformation delete-stack --stack-name toshiro-trigger-multiplayer`
   (instance, static IP, records, alarms, budget); the SSM parameters stay
   until deleted with `aws ssm delete-parameter`.
+
+### Updates: how new code reaches the box
+
+The box never builds the site. A `vite build` on the 2 GB instance took ~5
+minutes at 100% CPU and ~1.5 GB of heap: it drained the CPU burst credits (the
+CPU-burst alarm fired) and once ran out of memory. Now CI builds and tests the
+site, and the box downloads that build for the exact commit, checks it and
+switches to it in seconds.
+
+**In CI** (`.github/workflows/ci.yml`, `tools/ci/client-release.sh`): every
+push builds the site with `VITE_HUB=self` (the site is served by its hub; the
+only difference from the e2e build), packages it as a reproducible
+`tiletrigger-client-<sha>.tar.gz` (sorted, fixed owner, modes and times: the
+same commit gives the same bytes) with `tiletrigger-client-<sha>.json`
+(build.json: commit, version, times, Node/pnpm versions, CI run) and
+`tiletrigger-client-<sha>.sha256`, and smoke-tests it through the hub. When the
+run is green, the release job attests it (Sigstore build provenance, below)
+and publishes it to GitHub Releases:
+
+| Push | Release | |
+|---|---|---|
+| `main` | `main-latest` (prerelease, rolling) | `build.json` + `SHA256SUMS` name the newest green commit; each commit's files stay for the last 20 commits |
+| `vX.Y.Z` tag | `vX.Y.Z` | notes = its CHANGELOG section; the tag must match `packages/client/package.json` |
+| `check/**` | `check-builds` (prerelease) | for `--branch` testing; last 8 commits |
+
+A `main` commit that already went green on a check branch isn't tested again:
+the release job publishes that check run's package (kept 14 days), so `main`
+ships the very bytes the check run tested (it builds again only if that
+package has expired).
+
+**On the box** (`sudo tiletrigger-update`, from `infra/tiletrigger-update.sh`):
+
+1. Which commit: `main-latest`'s `build.json` (default), `--release vX.Y.Z`,
+   `--channel stable` (the newest release), `--sha <commit>`, or
+   `--branch check/<name>` (its head; its build from `check-builds`).
+2. Download `tiletrigger-client-<sha>.tar.gz`, `.json`, `.sha256` and
+   `.sigstore.json` (HTTPS only; ~50 MB, seconds).
+3. Verify: SHA-256 sums; the build-provenance attestation (made by this
+   repository's `ci.yml` on `main`, a `v*` tag or, for `--branch`, a
+   `check/**` branch, for this very commit); only plain files and folders,
+   all inside the site. Anything off: refused, nothing changes.
+4. Unpack into `/opt/tiletrigger-site/releases/<sha>/site` (root-owned; the
+   hub can read it, not change it).
+5. Move the hub's code (`/opt/tiletrigger`, git) to the same commit;
+   reinstall its dependencies only if they changed, production ones only
+   (`pnpm install --prod --filter @tiletrigger/server...`: ~56 MB instead of
+   ~300 MB; no Vite, Playwright or sharp on the box).
+6. Switch `/opt/tiletrigger-site/current` to it (an atomic rename). The hub
+   follows the link on every request, so a site-only update needs **no hub
+   restart**. If the hub's code changed (`packages/server`, `packages/shared`,
+   `maps`, the lockfile), the hub restarts (systemd, SIGTERM; players' browsers
+   reconnect and hosts re-list within one 20 s check-in; running matches are
+   peer-to-peer and carry on).
+7. Health check: `/lobby/health`, the page is this build's `index.html`, one
+   of its scripts loads. If not within 45 s: the link and the code go back
+   to the previous build (and the hub restarts if needed); the failed build is
+   marked as rolled back from, so the timer won't retry it.
+8. Keep the last 3 builds on disk (instant rollback); remove older ones.
+
+Commands on the box (Lightsail console → **Connect**):
+
+```
+sudo tiletrigger-update                  # latest green main build
+sudo tiletrigger-update --release v0.3.0 # a release
+sudo tiletrigger-update --rollback       # the build before this one (repeat to go further back)
+sudo tiletrigger-update --status         # what runs, what is kept, the timer
+sudo tiletrigger-update --build-here     # no CI build: build on the box (slow, ~5 min at full CPU)
+```
+
+Without a published build the updater stops with a message instead of
+building (wait for CI, pick a published build, or pass `--build-here`
+deliberately; `infra/deploy-multiplayer.sh --build-here` also grows the swap
+to the 4 GB such a build needs).
+
+**Automatic updates (off by default).** `sudo systemctl enable --now
+tiletrigger-update.timer` (or `infra/deploy-multiplayer.sh --auto-update on`)
+checks `main-latest` hourly (one small HTTPS request; random delay up to 15
+minutes; low CPU and I/O priority) and installs a new verified build with the
+same checks and rollback. `systemctl disable --now tiletrigger-update.timer`
+turns it off; `journalctl -u tiletrigger-update` shows what it did. It
+follows `main`; set `AUTO_CHANNEL=stable` in `/etc/tiletrigger-update.conf`
+(or deploy with `--channel stable`) to follow releases only.
+
+**Signing: Sigstore build provenance (no setup).** The release job runs
+`actions/attest-build-provenance`: GitHub's OIDC token for this workflow run
+gets a short-lived certificate from Sigstore (public good instance, since the
+repository is public) and signs an in-toto SLSA provenance statement over the
+tarball and build.json; the signature goes into Sigstore's public
+transparency log. There is no key to create, store, rotate or leak, and no
+repository secret. The box verifies it with `cosign verify-blob-attestation`
+(cosign v3.0.2, downloaded once from its GitHub release and checked against a
+pinned SHA-256 in the updater): the certificate must say the
+`Dsoto1/splitters` repository, workflow `.github/workflows/ci.yml` on
+`refs/heads/main` or a `v*` tag (or `check/**` for `--branch`), and this
+exact commit; GitHub's issuer; and the tarball's digest. A tampered release
+asset, a build from a fork, another workflow or another commit is refused.
+The attestations are also listed on the repository's Attestations page
+(`gh attestation verify <file> --repo Dsoto1/splitters` checks one by hand).
+`--no-provenance` skips the check for an emergency (Sigstore unreachable);
+the SHA-256 check still runs. What it does not cover: someone who can push
+to `main` (or change `ci.yml` there) can still ship code, so branch
+protection on `main` is the remaining control.
+
+**Rehearsal.** `infra/test/update-dry-run.sh` runs the whole box side locally
+(a throwaway origin with five commits, CI-style packages served over local
+HTTP, the real hub behind a stand-in `systemctl`): first install, no-op,
+site-only update without a restart, hub restart on hub changes, `--auto`,
+checksum mismatch, missing attestation, unsafe tarball, missing build,
+health-check failure and automatic rollback, `--rollback`, `--release`,
+`--channel stable`, pruning.
+
+**Moving the live box to this (once).** Fast-forward `main` to this change
+and wait for its CI run to publish `main-latest` (the release job; the
+repository's Releases page then shows it). Then re-run
+`infra/deploy-multiplayer.sh` from CloudShell: it installs the new updater,
+switches the hub to one process serving `/opt/tiletrigger-site/current/site`,
+installs the build, and removes the old on-box build and development
+dependencies. Don't run the old box's `sudo tiletrigger-update` for this: that
+is the old updater, which builds on the box. If the run stops at the site
+build step, the old hub keeps serving; fix the cause and re-run.
+
+**Not changed by updates**: systemd units, Caddy, coturn, the firewall and
+secrets. Those change only through `infra/deploy-multiplayer.sh` (it runs
+the updater as its last step).
+
+**Idle CPU and memory** (checked October 2026). The burst credits went to
+the on-box builds; at idle the box does little:
+
+- The hub ran as three Node processes (`corepack pnpm --filter … hub` → pnpm
+  → tsx's CLI → Node: ~345 MB resident); it is now one (`node --import tsx
+  src/hub.ts`, ~190 MB). Its only timers are PeerJS's broker sweeps (300 ms
+  and 1 s, a few microseconds with nobody connected); the lobby prunes on
+  requests, not on a timer. Startup compiles TypeScript once (~2 s).
+- coturn: logs to journald only (no verbose logging, no CLI, no TLS
+  listeners, no Prometheus), so idle relay threads just wait on sockets.
+- Caddy: no access logs; compresses only text the hub hasn't already
+  gzipped.
+- The update timer is off by default; on, it makes one small HTTPS request
+  an hour at low priority.
+
+Nothing else polls. If the CPU-burst alarm fires now, look at real traffic
+(`tiletrigger-relay status`, `journalctl -u tiletrigger-hub`).
 
 ### The old one-command setup (still works)
 

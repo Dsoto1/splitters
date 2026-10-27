@@ -165,6 +165,19 @@ refuse replays.
 Applies to the Host Service (executable code). The website is ordinary web
 deployment (HTTPS from our box), not this pipeline.
 
+**Status (site and hub on the Lightsail box): done**, with the same shape
+and keyless signing (HOSTING.md, "Updates"): CI builds the site once, attests
+it with Sigstore build provenance (GitHub's OIDC identity of `ci.yml` on
+`main` or a `v*` tag; no key to keep), publishes it to GitHub Releases;
+`tiletrigger-update` on the box checks SHA-256 and the attestation (cosign,
+pinned by hash; the certificate must name this repository, `ci.yml`, an
+allowed ref and the exact commit), unpacks into a versioned folder, switches
+a link, health-checks and rolls back on failure. The hub runs from the git
+checkout at the same commit with production dependencies from the lockfile.
+For the Host Service, Sigstore keyless signing can replace the Ed25519 CI
+key below (the service would embed the expected identity instead of a public
+key); a key is still needed if it must verify offline.
+
 - **Signing key**: Ed25519 release key generated offline; the private key
   lives in the release CI's secret store (GitHub Actions environment with
   required reviewers) or offline, never on the hub. The public key is

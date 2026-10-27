@@ -4,6 +4,9 @@ name: CI
 # changed files to e2e flows and unit tests; e2e/flowMap.mjs is the map), and only a green candidate is
 # fast-forwarded to main. A push to main whose commit already went green on a check branch runs nothing again.
 # Everything runs nightly on main, for v* tags, and from "Run workflow" (workflow_dispatch, full on by default).
+# Pushes also package the deployable site (site job) and, once everything is green, publish it to GitHub
+# Releases (release job): main → main-latest, v* → vX.Y.Z, check/** → check-builds. The Lightsail box
+# downloads and verifies that build instead of building (infra/tiletrigger-update.sh, docs/HOSTING.md).
 on:
   push:
     branches: [main, 'check/**']
@@ -19,7 +22,8 @@ on:
         type: boolean
         default: true
 
-# The plan job reads earlier runs of this workflow (the green-on-a-check-branch lookup).
+# The plan job reads earlier runs of this workflow (the green-on-a-check-branch lookup). Only the release
+# job may write (releases, attestations): its own permissions below.
 permissions:
   contents: read
   actions: read
@@ -35,6 +39,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       skip: ${{ steps.plan.outputs.skip }}
+      green_run: ${{ steps.prior.outputs.run_id }}
       full: ${{ steps.plan.outputs.full }}
       e2e: ${{ steps.plan.outputs.e2e }}
       shards: ${{ steps.plan.outputs.shards }}
@@ -62,6 +67,8 @@ jobs:
             });
             const green = runs.find((r) => r.path === '.github/workflows/ci.yml' && r.event === 'push' && (r.head_branch ?? '').startsWith('check/') && r.id !== context.runId);
             core.setOutput('green', green ? 'true' : 'false');
+            // Its packaged site (client-release), so main publishes that very build instead of building again.
+            core.setOutput('run_id', green ? String(green.id) : '');
             if (green) core.notice(`Commit ${context.sha.slice(0, 7)} already passed CI on ${green.head_branch}: ${green.html_url}`);
       - name: Plan
         id: plan
@@ -110,6 +117,45 @@ jobs:
           path: packages/client/dist
           retention-days: 1
 
+  # The deployable site: built with VITE_HUB=self (the site is served by its hub; the only difference from
+  # the e2e build), packaged reproducibly (tools/ci/client-release.sh) and smoke-tested through the hub the
+  # way the box runs it. Kept 14 days, so a fast-forward of main publishes this run's package.
+  site:
+    needs: plan
+    if: github.event_name == 'push' && needs.plan.outputs.skip != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        env:
+          VITE_HUB: self
+      - run: tools/ci/client-release.sh package packages/client/dist client-release
+        env:
+          VITE_HUB: self
+      - name: Smoke test (the hub serves the unpacked package)
+        run: |
+          site="$RUNNER_TEMP/site" && mkdir -p "$site"
+          tar -xzf "client-release/tiletrigger-client-$GITHUB_SHA.tar.gz" -C "$site"
+          (cd packages/server && PORT=8099 HOST=127.0.0.1 SITE_DIR="$site" node --import tsx src/hub.ts > "$RUNNER_TEMP/hub.log" 2>&1 &)
+          for _ in $(seq 1 60); do curl -fsS http://127.0.0.1:8099/lobby/health >/dev/null 2>&1 && break; sleep 0.5; done
+          curl -fsS http://127.0.0.1:8099/ -o "$RUNNER_TEMP/index.html"
+          cmp "$RUNNER_TEMP/index.html" "$site/index.html"
+          asset="$(grep -o 'src="/assets/[^"]*\.js"' "$site/index.html" | head -1 | sed 's/^src="//; s/"$//')"
+          curl -fsS -o /dev/null "http://127.0.0.1:8099$asset"
+          echo "hub served the page and $asset"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client-release
+          path: client-release
+          retention-days: 14
+
   check:
     needs: plan
     if: needs.plan.outputs.skip != 'true'
@@ -128,6 +174,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # No new fixed sleeps in the browser tests (tools/ci/lint-e2e-waits.mjs).
       - run: node tools/ci/lint-e2e-waits.mjs
+      # The deploy and release scripts (shellcheck comes with the runner image).
+      - run: shellcheck -S warning infra/*.sh infra/test/*.sh deploy/*.sh tools/ci/*.sh
       - if: needs.plan.outputs.docs_only != 'true'
         run: pnpm typecheck
       - if: needs.plan.outputs.docs_only != 'true'
@@ -258,3 +306,79 @@ jobs:
           for i in 1 2 3; do timeout 300 pnpm exec playwright install-deps chromium && exit 0; echo "playwright install-deps try $i failed"; sleep 10; done; exit 1
         timeout-minutes: 17
       - run: pnpm perf:budget
+
+  # Publishes the site package once everything this run needed is green (or the commit already went green on
+  # a check branch: then that run's package, the very bytes it tested). Signs it with a Sigstore build-provenance
+  # attestation (keyless: GitHub's OIDC identity of this workflow; no key to manage), which the box verifies.
+  release:
+    needs: [plan, site, check, build, e2e, perf]
+    if: >-
+      always() && github.event_name == 'push' && needs.plan.result == 'success' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/check/')) &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    # One publisher at a time per release (main-latest, tags, check-builds); never cancelled half-way.
+    concurrency:
+      group: client-release-${{ startsWith(github.ref, 'refs/tags/') && 'tags' || github.ref == 'refs/heads/main' && 'main' || 'check' }}
+      cancel-in-progress: false
+    permissions:
+      contents: write # the release and its assets
+      id-token: write # Sigstore signing identity
+      attestations: write # the build-provenance attestation
+      actions: read # the check run's package
+    steps:
+      - uses: actions/checkout@v4
+      - if: needs.site.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: client-release
+          path: client-release
+      # Fast-forwarded main: the check run's package of this commit.
+      - id: reuse
+        if: needs.site.result != 'success' && needs.plan.outputs.green_run != ''
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: client-release
+          path: client-release
+          run-id: ${{ needs.plan.outputs.green_run }}
+          github-token: ${{ github.token }}
+      - id: have
+        run: |
+          if [ -s "client-release/tiletrigger-client-$GITHUB_SHA.tar.gz" ]; then echo "package=true" >> "$GITHUB_OUTPUT"
+          else echo "package=false" >> "$GITHUB_OUTPUT"; echo "::notice::No package of $GITHUB_SHA from this run or its check run (expired?): building it again"; fi
+      - if: steps.have.outputs.package != 'true'
+        uses: pnpm/action-setup@v4
+      - if: steps.have.outputs.package != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - if: steps.have.outputs.package != 'true'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+          rm -rf client-release
+          tools/ci/client-release.sh package packages/client/dist client-release
+        env:
+          VITE_HUB: self
+      - name: Check the package
+        run: |
+          cd client-release
+          sha256sum --strict -c "tiletrigger-client-$GITHUB_SHA.sha256"
+          # Built for this commit, for a site served by its hub.
+          node -e 'const b = require(process.argv[1]); if (b.sha !== process.env.GITHUB_SHA || b.hub !== "self") { console.error("package is for", b.sha, "hub", b.hub); process.exit(1); }' "$PWD/tiletrigger-client-$GITHUB_SHA.json"
+      - id: attest
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            client-release/tiletrigger-client-${{ github.sha }}.tar.gz
+            client-release/tiletrigger-client-${{ github.sha }}.json
+      - name: Publish
+        run: |
+          cp "$BUNDLE" "client-release/tiletrigger-client-$GITHUB_SHA.sigstore.json"
+          tools/ci/client-release.sh publish client-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
