@@ -366,7 +366,7 @@ export class GameSession {
     // Host game: open a join code so friends' browsers can connect to this match.
     const hostBtn = $('host-game') as HTMLButtonElement;
     const hostInfo = $('host-info');
-    hostBtn.hidden = !opts.hostable || !(opts.transport instanceof LocalTransport);
+    hostBtn.hidden = !opts.hostable || !(opts.transport instanceof LocalTransport) || this.offlineOnly;
     hostInfo.hidden = true;
     hostBtn.textContent = 'Host with code only (not listed)';
     hostBtn.disabled = false;
@@ -616,7 +616,7 @@ export class GameSession {
   /** Open a join code for this match and show it (with an invite link) in the pause menu. */
   private async startHosting(btn: HTMLButtonElement, info: HTMLElement): Promise<void> {
     const local = this.opts.transport;
-    if (!(local instanceof LocalTransport) || this.peerHost) return;
+    if (!(local instanceof LocalTransport) || this.peerHost || this.offlineOnly) return;
     btn.disabled = true;
     btn.textContent = 'Opening a join code…';
     try {
@@ -657,7 +657,12 @@ export class GameSession {
 
   /** Any valid map may be listed publicly: our suite's as they are, others (imported, MapMaker) labelled "Community map". */
   private get listable(): boolean {
-    return !!this.map;
+    return !!this.map && !this.offlineOnly;
+  }
+
+  /** A browser test's deterministic match (testMode.ts): never hosted, listed or joined. */
+  private get offlineOnly(): boolean {
+    return this.opts.transport instanceof LocalTransport && this.opts.transport.testMode;
   }
 
   /** Not one of our suite's maps: listed as a community map, with its exact version (map/identity.ts). */
@@ -676,7 +681,7 @@ export class GameSession {
   /** The online controls and status badge, after any change (hosting, friends, listing). */
   private updateOnline(): void {
     const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
-    const can = !!this.opts.hostable && !!local && !!this.map;
+    const can = !!this.opts.hostable && !!local && !!this.map && !this.offlineOnly;
     const online = !!this.peerHost;
     const goOn = $('go-online') as HTMLButtonElement;
     const goOff = $('go-offline') as HTMLButtonElement;

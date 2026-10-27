@@ -110,6 +110,11 @@ export class LocalTransport implements Transport {
     private readonly opts: LocalMatchOptions,
   ) {}
 
+  /** A browser test's deterministic match (testMode.ts): offline only. */
+  get testMode(): boolean {
+    return !!this.opts.test;
+  }
+
   /** What the local player would take into the next map of a chain (score and weapons), or null before the match runs. */
   carry(): CarryOver | null {
     if (this.stopped) return null;
@@ -322,7 +327,8 @@ export class LocalTransport implements Transport {
 
   /** Let a friend into this match (Host game). Links arriving while the match loads wait for it (a map change brings everyone back at once). */
   accept(link: RemoteLink): void {
-    if (this.stopped) return link.close();
+    // Test mode is offline only (MatchHost refuses too).
+    if (this.stopped || this.testMode) return link.close();
     const id = this.nextLink++;
     this.links.set(id, { link, slot: null });
     this.toHost({ k: 'open', id });
