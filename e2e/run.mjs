@@ -842,16 +842,14 @@ async function setpiecesFlow(browser) {
   await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.swim === true && window.__cs.view.scene.fogDensity > 0.05, null, { timeout: T(5000) }).catch(() => {});
   const under = await page.evaluate(() => ({ swim: window.__match.slots[window.__cs.slot].move.swim === true, fog: window.__cs.view.scene.fogDensity }));
   check(under.swim && under.fog > 0.05, `you swim in the pond and the view hazes under water (fog ${under.fog.toFixed(3)})`);
-  // The pond is drawn with the water shader (medium graphics: waves, sky reflection, depth colour, no render target),
-  // and a shot across its surface splashes.
+  // Low graphics (the e2e default) keep the plain ripple material and no render target; a shot across the pond splashes.
   const pond = await page.evaluate(() => {
     const v = window.__cs.view;
-    const surfaces = v.scenario.liquids.surfaces();
-    const water = surfaces.find((m) => m.material.name.startsWith('liquid_water'));
     v.scenario.liquids.fx.shot({ x: 0, y: 4, z: -3 }, { x: 0, y: -2, z: 3 });
-    return { shaded: !!water, mirror: v.scenario.liquids.mirrored, fx: v.scenario.liquids.fx.active, targets: v.scene.customRenderTargets.length };
+    return { quality: v.scenario.liquids.quality, shaded: v.scenario.liquids.surfaces().length, mirror: v.scenario.liquids.mirrored, fx: v.scenario.liquids.fx.active, targets: v.scene.customRenderTargets.length };
   });
-  check(pond.shaded && !pond.mirror && pond.fx > 0, `the pond has the water shader without a mirror on medium, and shots splash it (${JSON.stringify(pond)})`);
+  check(pond.quality !== 'low' || (pond.shaded === 0 && !pond.mirror && pond.targets === 0), `low graphics keep the plain water and no render target (${JSON.stringify(pond)})`);
+  check(pond.fx > 0, `a shot across the pond splashes (${pond.fx} rings and drops)`);
   // Jetpack: fly up while holding jump.
   await page.evaluate(() => { const me = window.__match.slots[window.__cs.slot]; me.move = { pos: { x: 8, y: 3, z: 8 }, velY: 0, grounded: true }; me.jetFuel = 720; window.__autoInput = { buttons: 1 }; });
   await page.waitForFunction(() => window.__match.slots[window.__cs.slot].move.pos.y > 7, null, { timeout: T(8000) }).catch(() => {});
@@ -956,7 +954,10 @@ async function physicsfxFlow(browser) {
 
 /** Glass on the Training Range: one instanced material, bulletproof glass cracks where it is shot, glass shatters into shards. */
 async function glassChecks(browser) {
-  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  // Medium graphics (the game's default): the water shader is on.
+  const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
+  await ctx.addInitScript(() => localStorage.setItem('tiletrigger.graphics', 'medium'));
+  const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=training_range`);
@@ -968,8 +969,13 @@ async function glassChecks(browser) {
   });
   // Glass panel, two tank walls, bulletproof panel, the Window pane destructible: one or two 32 m squares.
   check(drawn.panes >= 5 && drawn.meshes <= 3, `the range's glass is instanced (${drawn.panes} panes in ${drawn.meshes} meshes)`);
-  // Stand 4 m in front of a panel (x 15, z of panel i) and fire `n` times at it.
-  const fireAt = async (z, n) => {
+  const tank = await page.evaluate(() => {
+    const l = window.__cs.view.scenario.liquids;
+    return { quality: l.quality, water: l.surfaces().filter((m) => m.material.name.startsWith('liquid_water')).length, mirror: l.mirrored, targets: window.__cs.view.scene.customRenderTargets.length };
+  });
+  check(tank.quality === 'medium' && tank.water === 1 && !tank.mirror && tank.targets === 0, `on medium the tank's water has the water shader and no render target (${JSON.stringify(tank)})`);
+  // Stand 4 m in front of a panel (x 15, z of panel i) and fire `n` times at it (or until `done` holds).
+  const fireAt = async (z, n, done = () => false) => {
     await page.evaluate((z) => {
       const m = window.__match;
       const me = m.slots[window.__cs.slot];
@@ -986,6 +992,7 @@ async function glassChecks(browser) {
     }, z);
     await page.waitForTimeout(T(600));
     for (let k = 0; k < n; k++) {
+      if (await page.evaluate(done)) break;
       await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
       await page.waitForTimeout(T(200));
       await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
@@ -1002,7 +1009,7 @@ async function glassChecks(browser) {
     return { health: s ? s[1] : null, cracks: window.__cs.view.scenario.glass.counts.cracks };
   });
   check(proof.health !== null && proof.health > 0 && proof.health < 100 && proof.cracks > 0, `bulletproof glass stops the rounds, cracks where they strike and holds (${JSON.stringify(proof)})`);
-  await fireAt(z(0), 1);
+  await fireAt(z(0), 5, () => window.__match.scenario.destructibleAlive('panel_0') === false);
   await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'glassShard'), null, { timeout: T(5000) }).catch(() => {});
   const broke = await page.evaluate(() => ({ alive: window.__match.scenario.destructibleAlive('panel_0'), shards: window.__cs.view.scene.meshes.filter((m) => m.name === 'glassShard').length }));
   check(broke.alive === false && broke.shards > 0, `the glass panel shatters into shards (${JSON.stringify(broke)})`);
