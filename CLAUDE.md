@@ -6,6 +6,7 @@
 - The full suite runs on GitHub, not locally: push a merge candidate to a `check/<name>` branch (`git push origin HEAD:check/<name>`); CI (unit tests, build, all 4 e2e shards) runs there. Fast-forward `main` only to a commit that went green on a check branch.
 - Push the session branch, then fast-forward `main` to it: `git push origin HEAD:main`. CI runs on every push to `main`; if it goes red, fix forward on `main` the same way.
 - Agents: run at most 2–3 at a time; commit at every milestone (a restart loses uncommitted work); run only the tests and e2e flows your change touches.
+- Releases: semantic versions (see CHANGELOG.md). When main is fast-forwarded to a release, bump `packages/client/package.json` (shown on the menu), add a CHANGELOG entry, and tag `vX.Y.Z` on that green commit (`git push origin vX.Y.Z`). Minor for features, patch for fixes; 1.0.0 is the public launch.
 - If `main` has moved, rebase the session branch onto `origin/main` first.
 
 ## Gunplay
