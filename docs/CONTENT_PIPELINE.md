@@ -217,6 +217,31 @@ unlinked (by material name), `textureSize` keeps them as JPEGs of that size, and
     automatic picture; **Clear** goes back to it. There is no way to pick an image file: players can't
     upload assets.
 
+### Palette pictures (MapMaker)
+
+MapMaker's palette shows a picture of every shipped tile, prop and vehicle/turret (about 1,350
+pieces) without rendering 3D thumbnails in the browser: they are pre-rendered into sprite sheets.
+
+- `packages/client/public/thumbs/<group>.<hash>.webp`: one atlas per palette group
+  (`editor/paletteCatalog.ts`: tiles, vehicles, nature and the seven prop themes), 80 px cells
+  (rendered at 160 px and shrunk), 16 to a row, transparent background, WebP.
+- `packages/client/public/thumbs/palette.json`: piece key (`tile:core.room`, `prop:prop.barrel`,
+  `mount:tank`) → atlas, cell, a hash of what the picture was made from (the tile's definition or the
+  model file) and the content pack a prop comes from (for search).
+- MapMaker loads an atlas the first time one of its pieces is shown and draws the cells as CSS
+  sprites (`editor/paletteAtlas.ts`); a piece missing from the atlas is rendered at runtime by
+  `ModelThumbnails`, as before.
+- `content:check` fails when a shipped piece has no picture, its hash no longer matches (the model
+  or tile changed), a piece in the atlas isn't shipped, an atlas has the wrong size or isn't a
+  WebP, an atlas is over 400 KB or all of them over 3 MB, or another file sits in `thumbs/`.
+
+After adding or changing tiles, props or vehicles, rebuild them with the game's own renderer: `pnpm
+build`, serve it (`pnpm --filter @tiletrigger/client exec vite preview --port 4799`), then
+`node tools/content/build-palette-atlas.mjs http://localhost:4799` (`--all` re-renders everything;
+`ATLAS_JOBS=2` uses two pages). Pieces whose hash is unchanged keep their cells, and groups with no
+change keep their file. The tool and the check list the pieces with
+`tools/content/palette-items.ts` (run by Node with `--experimental-transform-types`).
+
 ## 5. In-house tools to build
 
 These are tools for the team's artists and designers. The player-facing creation tools are MapMaker itself (PHASE1.md).

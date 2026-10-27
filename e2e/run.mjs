@@ -88,8 +88,12 @@ async function waitForHttp(url, ms = 20000) {
 /** Click a MapMaker palette tool, opening the palette tab that holds it first. */
 async function clickTool(page, selector) {
   await page.evaluate((sel) => {
-    const pane = document.querySelector(sel)?.closest('.ed-pane');
+    const el = document.querySelector(sel);
+    const pane = el?.closest('.ed-pane');
     if (pane) document.querySelector(`#ed-pal-tabs [data-pane="${pane.dataset.pane}"]`)?.click();
+    // Prop theme groups start folded: open the one holding it.
+    const group = el?.closest('.ed-group');
+    if (group && !group.classList.contains('open')) group.querySelector('.ed-group-head')?.click();
   }, selector);
   await page.click(selector);
 }
@@ -335,9 +339,67 @@ async function editoruxFlow(browser) {
   check(await page.isVisible('#ed-toolbar #ed-tb-erase') && (await page.textContent('#ed-tb-erase')).includes('X'), 'tool bar shows Erase with its key');
   check((await page.getAttribute('#ed-tb-select', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Select'), 'Select is the lit tool and the hint says what it does');
 
-  await page.waitForFunction(() => document.querySelector('#ed-tiles .thumb img'), null, { timeout: T(30000) }).catch(() => {});
-  check(await page.evaluate(() => !!document.querySelector('#ed-tiles .thumb img')?.src.startsWith('data:image/png')), 'tile cards get 3D thumbnails of the real pieces');
   check(parseFloat(await page.evaluate(() => getComputedStyle(document.getElementById('ed-palette')).width)) >= 300, 'the palette is wide (300 px or more)');
+  // Palette pictures come from the prebuilt atlases, one image per group, loaded as a group is shown.
+  await page.waitForFunction(() => document.querySelector('#ed-tiles .thumb.atlas .spr'), null, { timeout: T(30000) }).catch(() => {});
+  const tilePics = await page.evaluate(() => ({
+    bg: getComputedStyle(document.querySelector('#ed-tiles .thumb.atlas .spr') ?? document.body).backgroundImage,
+    loaded: [...window.__editor.paletteAtlas.loaded],
+    rendered: window.__editor.thumbs.rendered,
+  }));
+  check(/\/thumbs\/tiles\.[0-9a-f]+\.webp/.test(tilePics.bg), `tile cards show pictures from the tiles atlas (${tilePics.bg.slice(0, 80)})`);
+  check(!tilePics.loaded.includes('western') && !tilePics.loaded.includes('scifi') && tilePics.rendered === 0, `only the shown groups' atlases load, nothing is rendered at runtime (${tilePics.loaded.join(', ')}; ${tilePics.rendered} rendered)`);
+  // A piece the atlas lacks (new or user content) falls back to the runtime renderer.
+  await page.evaluate(async () => {
+    const m = await window.__editor.paletteAtlas.manifest;
+    delete m.items['prop:prop.barrel'];
+  });
+  await clickTool(page, '[data-tool="prop:prop.crate_small"]');
+  await page.waitForFunction(() => document.querySelector('[data-tool="prop:prop.barrel"] .thumb img')?.src.startsWith('data:image/png'), null, { timeout: T(30000) }).catch(() => {});
+  const propPics = await page.evaluate(() => ({ barrel: !!document.querySelector('[data-tool="prop:prop.barrel"] .thumb img')?.src.startsWith('data:image/png'), crate: document.querySelector('[data-tool="prop:prop.crate_small"] .thumb')?.dataset.atlas, loaded: [...window.__editor.paletteAtlas.loaded] }));
+  check(propPics.barrel && propPics.crate === 'industrial', `a prop missing from the atlas is rendered at runtime, the rest come from its group's atlas (${JSON.stringify(propPics)})`);
+  check(!propPics.loaded.includes('western'), 'closed prop groups load nothing');
+
+  // Search: fuzzy over names, tags and packs, ranked across every tab; Enter picks the best match.
+  await page.fill('#ed-search', 'sandbg');
+  await page.waitForTimeout(100);
+  const found = await page.evaluate(() => ({
+    first: document.querySelector('#ed-pal-results [data-pick]')?.dataset.pick,
+    picks: [...document.querySelectorAll('#ed-pal-results [data-pick]')].map((b) => b.dataset.pick),
+    panes: [...document.querySelectorAll('#ed-palette .ed-pane')].filter((p) => p.offsetParent !== null).length,
+  }));
+  check(found.picks.includes('prop:prop.sandbag_wall') && found.panes === 0, `search with a typo finds the sandbag wall and shows only results (${found.picks.slice(0, 4).join(', ')})`);
+  await page.fill('#ed-search', 'kenney barrel');
+  await page.waitForTimeout(100);
+  check((await page.$$eval('#ed-pal-results [data-pick]', (b) => b.map((x) => x.dataset.pick))).includes('prop:prop.barrel'), 'search matches the pack a prop comes from');
+  await page.fill('#ed-search', 'jump pad');
+  await page.press('#ed-search', 'Enter');
+  check(await page.evaluate(() => window.__editor.tool.kind === 'scenario' && window.__editor.tool.key === 'pad'), 'Enter in the search box picks the best match');
+  await page.press('#ed-search', 'ArrowDown');
+  const focused = await page.evaluate(() => document.activeElement?.dataset.pick);
+  await page.keyboard.press('ArrowRight');
+  const moved = await page.evaluate(() => document.activeElement?.dataset.pick);
+  check(focused === 'scenario:pad' && moved && moved !== focused, `arrow keys move from the search box through the results (${focused} → ${moved})`);
+  await page.keyboard.press('KeyF');
+  check(await page.evaluate((k) => JSON.parse(localStorage.getItem('tt.palette.favs') ?? '[]').includes(k), moved), 'F adds the focused piece to the favourites');
+  await page.focus('#ed-search');
+  await page.press('#ed-search', 'Escape');
+  check(await page.evaluate(() => document.getElementById('ed-pal-results').hidden && !!document.querySelector('#ed-pal-quick .ed-quick-row [data-pick]')), 'Escape clears the search; the favourite is in the quick row');
+  // Hover card names the piece under the pointer (the grid view shows pictures only).
+  await page.hover('[data-tool="prop:prop.crate_small"]');
+  check((await page.textContent('#ed-pal-tip')).includes('Small Crate') && (await page.isVisible('#ed-pal-tip')), 'hovering a picture shows its name');
+  // Fits at 1280×720 without sideways scrolling.
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.waitForTimeout(200);
+  const fit = await page.evaluate(() => {
+    const p = document.getElementById('ed-palette');
+    const tabs = [...document.querySelectorAll('#ed-pal-tabs .tab:not([hidden])')];
+    return { over: p.scrollWidth - p.clientWidth, doc: document.documentElement.scrollWidth - innerWidth, clipped: tabs.filter((t) => t.scrollWidth > t.clientWidth + 1).length };
+  });
+  check(fit.over <= 0 && fit.doc <= 0 && fit.clipped === 0, `the palette fits at 1280×720 with no sideways scroll or clipped tabs (${JSON.stringify(fit)})`);
+  await shot('palette-1280');
+  await page.setViewportSize({ width: 1400, height: 820 });
+  await page.evaluate(() => document.activeElement?.blur());
   // Build: a corridor east, a barrel on it, a pickup and a squad from the NPCs tab.
   await clickTool(page, '[data-tool="tile:core.corridor"]');
   await page.click('#ed-tb-rotate');
