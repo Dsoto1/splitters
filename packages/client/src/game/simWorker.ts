@@ -2,6 +2,7 @@
 // worker: the simulation (bots, navigation, physics, rules) runs on its own core
 // while the page renders. Physics (Rapier) and navigation (Recast) load their
 // WebAssembly here. LocalTransport is the page's side.
+import { initPhysics } from '@tiletrigger/shared';
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type ToSimHost } from './matchHost.ts';
 
 /** The worker's global scope (typed by hand: the client is typed for the page). */
@@ -11,6 +12,11 @@ let host: MatchHost | null = null;
 
 scope.onmessage = (e: MessageEvent<ToSimHost>) => {
   const m = e.data;
+  if (m.k === 'warm') {
+    // Started ahead of time: load what a match needs now (MatchHost.start finds it ready).
+    void Promise.all([import('@tiletrigger/shared/match').then((mod) => mod.initNavigation()), initPhysics()]).catch(() => undefined);
+    return;
+  }
   if (m.k === 'start') {
     host = new MatchHost(m.map, m.opts, sinkTo(post));
     host.setHidden(m.hidden);

@@ -34,6 +34,33 @@ export function simThreadWanted(): SimThread {
   return 'worker';
 }
 
+/** A match worker started ahead of time (prewarmSimWorker), taken by the next match. */
+let spare: Worker | null = null;
+
+function newSimWorker(): Worker {
+  return new Worker(new URL('./simWorker.ts', import.meta.url), { type: 'module', name: 'match' });
+}
+
+/**
+ * Start a match worker loading the simulation and its WebAssembly (physics,
+ * navigation) ahead of time, so the next local match (MapMaker TEST) doesn't
+ * wait for it. Harmless when unused; does nothing without workers.
+ */
+export function prewarmSimWorker(): void {
+  if (spare || simThreadWanted() !== 'worker') return;
+  try {
+    const w = newSimWorker();
+    w.onerror = () => {
+      w.terminate();
+      if (spare === w) spare = null;
+    };
+    w.postMessage({ k: 'warm' } satisfies ToSimHost);
+    spare = w;
+  } catch {
+    spare = null;
+  }
+}
+
 /** Test hooks (browser tests, perf runs): the same in both threads, async because a worker answers later. */
 export interface SimHook {
   mode: SimThread;
@@ -167,7 +194,8 @@ export class LocalTransport implements Transport {
   private startWorker(start: ToSimHost): boolean {
     let worker: Worker;
     try {
-      worker = new Worker(new URL('./simWorker.ts', import.meta.url), { type: 'module', name: 'match' });
+      worker = spare ?? newSimWorker();
+      spare = null;
     } catch {
       return false;
     }

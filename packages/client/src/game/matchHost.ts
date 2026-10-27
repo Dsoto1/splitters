@@ -432,7 +432,9 @@ export type ToSimHost =
   | { k: 'hidden'; v: boolean }
   | { k: 'eval'; req: number; src: string; arg?: unknown }
   | { k: 'give'; id: string }
-  | { k: 'stop' };
+  | { k: 'stop' }
+  /** Load the simulation now, before a match is asked for (a worker started ahead of time). */
+  | { k: 'warm' };
 
 /** The match host → the page. */
 export type FromSimHost =
@@ -491,5 +493,7 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return;
     case 'stop':
       return host.stop();
+    case 'warm':
+      return;
   }
 }
