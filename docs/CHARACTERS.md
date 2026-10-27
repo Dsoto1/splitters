@@ -97,9 +97,27 @@ Mixing rules (`lookProblems`; the designer shows them and won't save until they'
 
 `CharacterAnimator` (client) drives each character from interpolated snapshots:
 
-- **Legs:** crossfaded loops chosen by speed and airtime (aim idle, walk, run,
-  sprint, airborne). Playback rate matches ground speed; backpedalling plays
-  the loop in reverse.
+- **Legs:** crossfaded loops chosen by speed and airtime (aim idle, the
+  upright gait, crouch, prone, airborne). Moving starts above 0.6 m/s and
+  stops below 0.45 m/s, so the legs don't flicker at the edge.
+- **Gait (`gait.ts`):** walk, run and sprint are one blend. Walk turns into run
+  by speed (all walk below 1.2 m/s, all run from 3.6 m/s), and the sprint fades
+  in over the run while sprinting (or from 7.4 m/s). All three play at the one
+  cycle rate that keeps the planted foot still for the speed and body size, and
+  a loop joining the blend starts in step with the one already playing (left
+  feet down together), so the feet never skip or swap. Each loop's
+  planted-foot speed and left-touchdown point are measured from `rig.glb`
+  (walk 0.95 m/s, run 5.9 m/s, sprint 9.0 m/s at speedRatio 1).
+  `test/gait.test.ts` measures them again from the file, so re-exporting the
+  rig with other clips fails the test until the numbers are updated. Running
+  pace (5.2 m/s) plays the run at 0.88×, a sprint (7.8 m/s) the sprint at 0.87×.
+  The old fixed guesses (run 4.2, sprint 6.5, walk 1.6 m/s) slid the planted
+  foot about 40% of the ground speed (measured in the viewer).
+- **Strafing and backpedalling:** there are no strafe clips, so the hips (and
+  legs) turn toward the direction of travel, up to 77°, and the spine turns
+  back by as much, keeping the shoulders and the gun on the aim. Moving more
+  than 108° from facing (staying until under 94°) turns the hips toward the
+  opposite of the motion and plays the gait backwards.
 - **Upper body:** holds the aim pose while moving, so the weapon stays up.
   One-shots (shooting, melee, reloads) play over it through an upper-body mask.
 - **After the clips:**
@@ -109,6 +127,21 @@ Mixing rules (`lookProblems`; the designer shows them and won't save until they'
 
 Clips are retargeted from the rig onto each character's joints by name. The
 hip track is offset per body type.
+
+Remote characters move as smoothly as the snapshots allow (`interpolation.ts`):
+the server clock is estimated from snapshot arrivals and each arrival only
+nudges the estimate, so snapshots arriving unevenly (network, or the sim
+worker running ticks in bursts) don't jerk them about. A late snapshot is
+ridden out by carrying on along the last motion for up to 5 ticks, and drawing
+never goes back in time. Their speed, and so the gait, comes from these drawn
+positions. Crowd animation LOD (more than 24 remote characters) still steps
+characters past 45 m every other frame and past 120 m every fourth; nearer
+ones animate every frame.
+
+Universal Animation Library 2 (Standard, checked 2026-10-27) has no jog, run,
+sprint, strafe or locomotion transition clips (its 43 clips are carry, zombie,
+slide, ninja jump, sword, farming and idle variants), so locomotion stays on
+Library 1's walk, jog and sprint.
 
 ## Holding weapons
 

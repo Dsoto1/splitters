@@ -249,7 +249,11 @@ a tick or two longer before re-pathing; they recover as before).
   laptops). Performance draws 0.75. Applies at once.
 - **Frame cap** (default 60 fps): ProMotion displays refresh at 120 Hz and the
   game would otherwise draw every refresh; 30 fps for battery, Unlimited to
-  follow the screen. Applies at once.
+  follow the screen. Applies at once. Frames fall due on a steady beat
+  (`FramePacer`): a refresh within a few milliseconds of the due time draws,
+  so a 60 Hz screen draws every refresh under the 60 cap (skipping any refresh
+  that came 1.5 ms early dropped about one frame in ten when callbacks wander
+  by a few milliseconds).
 - **Graphics** (Low / Medium / High): shadows, then far shadows, ambient
   occlusion, bloom and light shafts; the border's detailed trees and facades
   are drawn to 160 m on Low and 260 m on Medium (the low-poly rows behind

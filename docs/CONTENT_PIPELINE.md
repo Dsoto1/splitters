@@ -90,6 +90,13 @@ folder can sit directly in it or one level down), and run:
 | Meshy rock pile (`Meshy_AI_Rock_Pile_…_texture_remesh_tri_fbx`, owned like the above) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `rock_pile` prop (colour map attached by material name, 1024 px JPEG, `dropEmissive`) |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 
+Locomotion clips (walk, run, sprint) come from Library 1: the Standard edition
+of Library 2 (43 clips, listed 2026-10-27) has no jog, run, sprint, strafe or
+aim-run loops, only `Walk_Carry_Loop`, the zombie walk and a slide, so nothing
+there replaces them. If a later rig changes those clips, update the measured
+gait numbers in `packages/client/src/game/gait.ts` (`test/gait.test.ts`
+re-measures them from `rig.glb` and fails until they match).
+
 Then `pnpm content:build` (provenance) and `pnpm content:check`. Without
 `--downloads` (or when a pack's folder is not in the downloads directory),
 `prepare-props.mjs` rebuilds the in-repo packs and keeps the kit props as
