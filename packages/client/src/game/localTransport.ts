@@ -1,6 +1,7 @@
 import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
 import { perfProbe } from './perfProbe.ts';
+import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 
 export type { LocalMatchOptions } from './matchHost.ts';
@@ -66,6 +67,8 @@ export interface SimHook {
   mode: SimThread;
   /** Run `(match, me, arg, module) => value` (its source) where the match runs; resolves with a value that can be copied. */
   eval(src: string, arg?: unknown): Promise<unknown>;
+  /** How the page has kept up with the worker's snapshots (null with the match on the page). */
+  backlog: SnapshotBacklog | null;
 }
 
 /**
@@ -104,6 +107,8 @@ export class LocalTransport implements Transport {
   private onVisibility?: () => void;
   private onMessage?: (m: ServerMessage) => void;
   private onClose?: (reason: string) => void;
+  /** With the match in a worker: a page that fell behind handles the snapshots waiting for it as one. */
+  private snapshots?: SnapshotCoalescer;
 
   constructor(
     private readonly map: MapDocument,
@@ -201,6 +206,9 @@ export class LocalTransport implements Transport {
     }
     this.worker = worker;
     this.thread = 'worker';
+    this.snapshots = new SnapshotCoalescer((m) => {
+      if (!this.stopped) this.onMessage?.(m);
+    });
     worker.onmessage = (e: MessageEvent<FromSimHost>) => this.receive(e.data);
     // A worker that can't run (it failed to load) before the match began: run it here instead.
     worker.onerror = (e) => {
@@ -243,12 +251,17 @@ export class LocalTransport implements Transport {
   private fallBack(start: ToSimHost): void {
     this.worker?.terminate();
     this.worker = undefined;
+    this.snapshots = undefined;
     this.startHere(start);
   }
 
   private installHooks(): void {
+    const transport = this;
     const hook: SimHook = {
       mode: this.thread ?? 'main',
+      get backlog() {
+        return transport.snapshots?.backlog ?? null;
+      },
       eval: (src, arg) =>
         new Promise((resolve, reject) => {
           const req = this.nextEval++;
@@ -276,6 +289,7 @@ export class LocalTransport implements Transport {
     if (this.stopped) return;
     switch (m.k) {
       case 'local':
+        if (this.snapshots) return this.snapshots.push(m.msg);
         return this.onMessage?.(m.msg);
       case 'facts':
         this.facts = m.facts;
@@ -340,6 +354,7 @@ export class LocalTransport implements Transport {
     this.links.clear();
     this.toHost({ k: 'stop' });
     this.stopped = true;
+    this.snapshots?.clear();
     this.worker?.terminate();
     this.worker = undefined;
     this.inThread = undefined;

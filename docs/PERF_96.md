@@ -329,11 +329,81 @@ Left for later:
   atlas would cost a texture per look).
 - Materials are not frozen (`material.freeze()`): their checks are cheap when
   nothing changed, and freezing breaks when lights or shadows change.
-- A pre-existing hang, seen with and without this pass: sometimes, while a
-  96-player offline match on Norman Shores is still in its warm-up, the page
-  stops inside Rapier's `PhysicsPipeline.step` (ScenarioState.apply →
-  PhysicsWorld.commit on a message from the sim worker) and never returns.
-  `perf96.mjs` then waits forever; a rerun usually gets through.
+- The warm-up "hang" seen in this pass is not a hang in the physics: see the
+  next section.
+
+## Warm-up hang (27 Oct 2026)
+
+Reported: sometimes, while a 96-player offline match on Norman Shores is in
+its warm-up, the page stops inside Rapier's `PhysicsPipeline.step`
+(`ScenarioState.apply` → `PhysicsWorld.commit`, on a message from the sim
+worker) and never returns; `perf96.mjs` then waits for ever.
+
+**What it is**: the page's main thread stalls for tens of seconds, sometimes
+minutes, waiting on the GPU, and the debugger's pause lands in Rapier only
+because that is the first JavaScript to run when a stall ends: the queued
+worker snapshots, whose hottest part is the scenario and vehicle colliders'
+`commit` and the prediction replay. No Rapier call is slow:
+
+- **Node**: the sim and a copy of the page's prediction physics
+  (ScenarioState, MountState, covers, LocalPlayer fed every snapshot through
+  structured clone), Norman Shores, 96 players, start gate as in the
+  browser, 100 seeds × 30–40 s with a worker-thread watchdog: no hang (one
+  seed's setup outran the 30 s watchdog on the loaded box; it replayed fine
+  twice). Rapier 0.21 fuzzed (330 worlds × 3,000 random creates, removes,
+  moves, enables, shape changes, NaN/∞/1e30 transforms, steps): no hang.
+- **The page**: every commit and character move timed through the stalls:
+  commits 0.14–0.25 ms on average, the slowest 8.6 ms, no move over 100 ms.
+  Every Rapier call the page made (up to 1.6 M, queries included) recorded
+  at a stall and replayed in Node, in Chromium and in the game's own bundle:
+  each finished in milliseconds. A stalled page answers again: three times
+  out of four within five more minutes.
+- **A Chrome trace** of the page's thread over the first 150 s (box load 16–
+  20, SwiftShader): busy 135 s, of it 89 s waiting on the GPU process
+  (`WaitForGetOffset`, `WaitForToken`); 74 synchronous `readPixels` (the
+  character atlas reading skin, hair and eye textures back, 36 in one task)
+  took 54 s, each draining everything the GPU had queued; image-load tasks
+  waited 25–27 s for command-buffer space; tasks over 10 s: 19, 25, 52 s.
+  Worker messages took 13.5 s, and after each stall hundreds of queued
+  snapshots were handled one by one (~6 ms each: colliders, vehicles,
+  prediction replay), which made the page fall further behind.
+
+**What changed**:
+
+- **The character atlas reads back without waiting**
+  (`content/characterAtlas.ts`): on WebGL2 the read goes into a pixel buffer
+  and is collected after a fence (Babylon's `_readPixelsAsync`); the plain
+  read stays as the fallback.
+- **A page that fell behind handles the waiting snapshots as one**
+  (`game/snapshotMerge.ts`, worker mode): the first snapshot of a burst goes
+  straight through, those queued behind it are merged (events in order,
+  scenario changes and Fort Wars pieces combined, everything else from the
+  newest) and delivered once the queue is through. Past a second behind,
+  their purely visual events (the hidden-tab list) are dropped. Merges are
+  counted in `window.__sim.backlog`, and the first time the page is over a
+  second behind it says so in the console.
+- **`perf96.mjs` has a watchdog**: a page that doesn't answer for
+  `PERF_STALL_S` (300 s) ends that map's run, reported as stalled (exit 1),
+  instead of waiting for ever.
+- **`tools/perf/hang96.mjs`** reproduces it: a 96-player offline match opened
+  again and again, probed every second from loading through the warm-up;
+  reports stalls (`STALL_S`, 10 s), hangs (`HANG_S`, 120 s, with the paused
+  stack) and the catch-up merges; `HANG_DIAG=1` logs the page's time in
+  worker messages, animation frames and tasks over 2 s.
+
+Same trace, same box (load 16–20), before → after: synchronous readbacks
+54 s → 0.8 s (54 reads, now asynchronous); worker messages 1,036 in 13.5 s
+→ 1,858 in 5.7 s (the page kept up); tasks over 10 s 19, 25, 52 s → 12, 11,
+25 s. Time waiting on the GPU stayed at ~90 s: SwiftShader on a box at load
+15–20 is that slow, so `hang96.mjs` still sees stalls past 120 s there (2 of
+3 runs before, 2 of 2 after; at a 30 s threshold 5 of 5 both). Unit tests:
+`client/test/snapshotMerge.test.ts` (twenty seconds of snapshots behind a
+long frame cost two deliveries, nothing lost).
+
+Left: the remaining stalls are the GPU process itself (texture uploads and
+frames queued behind it). On a quiet box or a real GPU (`PERF_GPU=1`) they
+should vanish; rerun `hang96.mjs` there before reading anything into its
+counts.
 
 ## Glass and water (October 2026)
 

@@ -105,14 +105,13 @@ import { Interpolator, type RemotePose } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
 import { ScenarioState } from './scenarioState.ts';
+import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 
-/** Match events that only make effects, skipped while the tab is hidden. */
 /** Field of view while aiming down the sights, as a fraction of the normal one. */
 const ADS_FOV = 0.72;
-const HIDDEN_SKIP = new Set(['shot', 'impact', 'melee', 'arc', 'explode', 'crash', 'throw']);
 /** Kills this close together escalate the kill marker (and its sound). */
 const MULTI_KILL_MS = 4000;
 
@@ -1086,7 +1085,7 @@ export class GameSession {
         for (const ev of msg.ev) {
           // In a background tab nothing draws, so effects would only pile up (blood, bullets,
           // sounds) and all land at once when you come back: skip the purely visual ones.
-          if (document.hidden && HIDDEN_SKIP.has(ev.e)) continue;
+          if (document.hidden && VISUAL_EVENTS.has(ev.e)) continue;
           if (!document.hidden) this.sfx.event(ev, posesNow, performance.now());
           this.modeHud?.event(ev);
           this.raceHud?.event(ev);
