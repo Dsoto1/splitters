@@ -16,6 +16,7 @@ import '@babylonjs/loaders/glTF/2.0';
 import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
 import { dyeTexture } from './dye.ts';
+import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
 import { buildGear } from './gear.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes. */
@@ -205,16 +206,17 @@ export class CharacterLibrary {
         const of = (i: number) => meshes.filter((m) => (partOf.get(m) ?? 0) === i);
         const headIndex = look.parts.length;
         const head = of(headIndex).filter((m) => !/_lod/.test(m.name));
-        meshes.push(
-          ...buildGear(this.scene, look, {
-            root: holder,
-            joints,
-            head: head.filter((m) => !/Eye/.test(m.material?.name ?? '')),
-            eyes: head.filter((m) => (m.material?.name ?? '') === 'MI_Eyes'),
-            hair: meshes.filter((m) => (partOf.get(m) ?? 0) > headIndex && !/_lod/.test(m.name)),
-            torso: of(0).filter((m) => !/_lod/.test(m.name)),
-          }),
-        );
+        const gear = buildGear(this.scene, look, {
+          root: holder,
+          joints,
+          head: head.filter((m) => !/Eye/.test(m.material?.name ?? '')),
+          eyes: head.filter((m) => (m.material?.name ?? '') === 'MI_Eyes'),
+          hair: meshes.filter((m) => (partOf.get(m) ?? 0) > headIndex && !/_lod/.test(m.name)),
+          torso: of(0).filter((m) => !/_lod/.test(m.name)),
+        });
+        // Skinned onto the body's skeleton and merged per finish: one or two draws however many pieces.
+        const skin = of(0).find((m): m is Mesh => !!m.skeleton && !/_lod/.test(m.name) && m.getTotalVertices() > 0);
+        meshes.push(...(skin ? skinGear(gear, skin, `${name}_gear`) : gear));
       }
       owned.push(...carrier.skeletons);
       body = look.body;
@@ -234,6 +236,8 @@ export class CharacterLibrary {
       full.addLODLevel(LOD_DISTANCE, m as Mesh);
     }
     meshes.splice(0, meshes.length, ...meshes.filter((m) => !m.isDisposed()));
+    // One draw per material instead of one per part (a look is 8–12 skinned parts, most sharing the outfit's or the skin's material).
+    if (!spec.armsOnly) meshes.splice(0, meshes.length, ...mergeSkinnedParts(meshes, `${name}_body`));
     for (const m of meshes) {
       m.isPickable = false;
       m.alwaysSelectAsActiveMesh = true;

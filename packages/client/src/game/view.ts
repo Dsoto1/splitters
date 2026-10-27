@@ -217,6 +217,8 @@ export class GameView {
   readonly characters: CharacterLibrary;
   readonly creatures: CreatureLibrary;
   private readonly avatars = new Map<number, Avatar>();
+  /** More remote players than ANIM_LOD_CROWD (the last updateAvatars): big-match savings apply. */
+  private crowd = false;
   private readonly pickups = new Map<string, PickupVisual>();
   private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
@@ -785,6 +787,7 @@ export class GameView {
   updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set()): void {
     const now = performance.now();
     const crowd = poses.length > ANIM_LOD_CROWD;
+    this.crowd = crowd;
     const cam = crowd ? this.scene.activeCamera?.globalPosition : undefined;
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
     const seen = new Set<number>();
@@ -921,7 +924,11 @@ export class GameView {
       // Applied every frame while see-through: the model may finish loading under it.
       if (shown !== 1 || (a.shown ?? 1) !== 1) {
         a.shown = shown;
-        for (const m of a.root.getChildMeshes()) m.visibility = shown;
+        // A crowd's held guns are GPU instances, which can't fade on their own: hidden while see-through.
+        for (const m of a.root.getChildMeshes()) {
+          if (m.isAnInstance) m.isVisible = shown === 1;
+          else m.visibility = shown;
+        }
       }
     }
     for (const [slot, a] of this.avatars) {
@@ -961,7 +968,8 @@ export class GameView {
     // Unarmed (hostages, zombies): nothing in hand.
     const def = slot > 0 && !a.unarmed ? weaponByCode(slot) : undefined;
     if (!def) return;
-    void this.models.instantiate(def.view.model, `held_${slot}`).then((node) => {
+    // Crowds: everyone's copy of a gun is a GPU instance of one mesh (one draw per gun model and part, not per player).
+    void this.models.instantiate(def.view.model, `held_${slot}`, this.crowd).then((node) => {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
       // The muzzle is the front of the gun along its forward axis, measured before it's put in a hand.
       const { min, max } = node.getHierarchyBoundingVectors(true);
