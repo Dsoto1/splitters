@@ -189,7 +189,7 @@ export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56
 export const validLookId = (id: string | undefined): string => (npcLookRole(id) ? id! : getLook(id).id);
 
 /** First-person arm colour for each NPC skin (creature hide, soldier uniform). */
-const NPC_ARM_COLORS: Record<NpcRole, string> = { trooper: '#4f7a2c', gunner: '#a8782c', heavy: '#3c4450', sniper: '#3a6a28', imp: '#e0302a', puglin: '#7ab830', cyclops: '#3a7cf0', oculus: '#f07020', scolitex: '#20c8b0', zombie: '#7d9a6a', goblin: '#7a9a45', otter: '#3e3d3f', boglurker: '#7c8446', warlord: '#c8c0ae', hyena: '#8a6a48' };
+const NPC_ARM_COLORS: Record<NpcRole, string> = { trooper: '#4f7a2c', gunner: '#a8782c', heavy: '#3c4450', sniper: '#3a6a28', imp: '#e0302a', puglin: '#7ab830', cyclops: '#3a7cf0', oculus: '#f07020', scolitex: '#20c8b0', zombie: '#7d9a6a', goblin: '#4f9a2f', otter: '#3e3d3f', boglurker: '#6a8a35', warlord: '#c8c0ae', hyena: '#8a6a48' };
 
 /**
  * The look whose arms you see in first person: your own, or for an NPC skin
