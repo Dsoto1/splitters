@@ -16,7 +16,19 @@
     "supportedModes": [
       "core.deathmatch",
       "core.tdm"
-    ]
+    ],
+    "thumbnailCamera": {
+      "position": [
+        8,
+        2.9,
+        -8
+      ],
+      "target": [
+        8,
+        1.78,
+        1.94
+      ]
+    }
   },
   "classicStructure": {
     "cellSize": 8,

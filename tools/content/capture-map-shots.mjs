@@ -258,6 +258,13 @@ async function judge(png) {
   return { score, parts };
 }
 
+/** A view as a thumbnailCamera (position and a point 10 m ahead), e.g. to fix in a map script. */
+function camera(v) {
+  const r = (n) => +n.toFixed(2);
+  const ahead = [Math.sin(v.yaw) * Math.cos(v.pitch), Math.sin(v.pitch), Math.cos(v.yaw) * Math.cos(v.pitch)];
+  return { position: [v.eye.x, v.eye.y, v.eye.z].map(r), target: [v.eye.x + ahead[0] * 10, v.eye.y + ahead[1] * 10, v.eye.z + ahead[2] * 10].map(r) };
+}
+
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const results = [];
 async function captureOne(id) {
@@ -294,6 +301,7 @@ async function captureOne(id) {
         a.placeholder?.setEnabled(false);
         a.ragdoll?.root?.setEnabled?.(false);
       }
+      view.clearCorpses?.();
       window.__photo = view.photoCamera();
     });
     const fixed = map.metadata.thumbnailCamera;
@@ -335,7 +343,7 @@ async function captureOne(id) {
       const img = await judge(png);
       const total = v.score + 1.6 * img.score;
       if (CANDS) await sharp(png).resize(480, 270).jpeg({ quality: 70 }).toFile(join(CANDS, `${id}-${i}.jpg`));
-      const line = `  #${i} ${v.tag} rays ${v.score.toFixed(2)} image ${img.score.toFixed(2)} (edge ${img.parts.edge.toFixed(1)} std ${img.parts.std.toFixed(0)} flat ${img.parts.flat.toFixed(2)}) = ${total.toFixed(2)}`;
+      const line = `  #${i} ${v.tag} ${JSON.stringify(camera(v))} rays ${v.score.toFixed(2)} image ${img.score.toFixed(2)} (edge ${img.parts.edge.toFixed(1)} std ${img.parts.std.toFixed(0)} flat ${img.parts.flat.toFixed(2)}) = ${total.toFixed(2)}`;
       if (!best || total > best.total) best = { total, png, v, i, line };
       console.log(`${id}${line}`);
     }
@@ -343,7 +351,7 @@ async function captureOne(id) {
     await sharp(best.png).resize(640, 360).jpeg({ quality: 74, mozjpeg: true }).toFile(file);
     const kb = statSync(file).size / 1024;
     const v = best.v;
-    const cam = { position: [v.eye.x, v.eye.y, v.eye.z].map((n) => +n.toFixed(2)), target: [v.eye.x + Math.sin(v.yaw) * Math.cos(v.pitch) * 10, v.eye.y + Math.sin(v.pitch) * 10, v.eye.z + Math.cos(v.yaw) * Math.cos(v.pitch) * 10].map((n) => +n.toFixed(2)) };
+    const cam = camera(v);
     results.push({ id, pick: best.i, cam });
     console.log(`${id}: ok #${best.i} ${kb.toFixed(0)} KB (${info}; ${((Date.now() - t0) / 1000).toFixed(0)} s) camera ${JSON.stringify(cam)}`);
   } catch (e) {

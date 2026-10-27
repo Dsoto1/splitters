@@ -454,4 +454,6 @@ m.meta({
   modes: ['core.coop', 'core.tdm', 'core.ctf', 'core.koth', 'core.deathmatch'],
   players: [4, 20],
 });
+// The map's picture: the automatic camera frames a poor view here (tools/content/capture-map-shots.mjs).
+m.thumbnailCamera([34, 24, 2], [34, 4, 60]);
 await m.save();
