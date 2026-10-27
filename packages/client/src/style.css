@@ -141,7 +141,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .setup-body section { display: flex; flex-direction: column; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .setup-body h4, .setup-more summary { margin: 0; color: var(--text); font: 700 12px var(--font-display); letter-spacing: 0.18em; text-transform: uppercase; }
 .setup-body h4::before { content: ''; display: inline-block; width: 3px; height: 11px; margin-right: 8px; background: var(--orange); transform: skewX(-15deg); vertical-align: -1px; }
-.row-label { display: inline-flex; align-items: center; gap: 6px; }
+.row-label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
 .mode-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
 .mode-chip { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 14px 8px 10px; text-align: left; background: var(--surface-1); clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); min-width: 0; }
 .mode-chip small { color: var(--muted); font: 500 12px/1.25 var(--font-body); text-transform: none; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
@@ -633,7 +633,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .host-controls summary { cursor: pointer; font: 600 15px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
 .host-controls summary small { font-size: 12px; letter-spacing: 0.02em; text-transform: none; opacity: 0.7; }
 .host-controls h4 { margin: 8px 0 4px; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
-.host-controls .row { display: grid; grid-template-columns: minmax(84px, 120px) minmax(0, 1fr); align-items: center; gap: 8px; margin: 6px 0; color: var(--muted); font: 600 12px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
+.host-controls .row { display: grid; grid-template-columns: minmax(120px, 170px) minmax(0, 1fr); align-items: center; gap: 8px; margin: 6px 0; color: var(--muted); font: 600 12px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
 .host-controls .row.off { opacity: 0.5; }
 .host-controls .row.off > *:last-child { pointer-events: none; }
 .host-controls .tabs .tab { padding: 4px 9px; font-size: 12px; }
