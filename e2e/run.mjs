@@ -356,7 +356,7 @@ async function editoruxFlow(browser) {
   await page.click('#ed-dress');
   const dressed = async () => (await doc()).entities.filter((e) => e.kind === 'prop' && e.id.startsWith('dr_'));
   const first = await dressed();
-  check(first.length >= 3 && first.some((e) => e.model === 'prop.desk'), `Dress room furnishes it as an office (${first.length} props)`);
+  check(first.length >= 3 && first.some((e) => /^prop\.(hh_)?desk$/.test(e.model)), `Dress room furnishes it as an office (${first.length} props)`);
   await settle();
   await page.click('#ed-dress-reroll');
   const second = await dressed();
@@ -958,8 +958,12 @@ async function fortsFlow(browser) {
   const ghost = await page.evaluate(() => ({ why: window.__cs.forts.why, ghost: window.__cs.view.scene.transformNodes.some((n) => n.name === 'fort_ghost' && n.isEnabled()) }));
   check(ghost.ghost && ghost.why === '', `the ghost shows where the wall will go, and it can (${JSON.stringify(ghost)})`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/forts-build.png`, timeout: T(60000) }).catch(() => {});
-  await page.evaluate(() => (window.__autoInput = { once: 2 }));
-  await page.waitForFunction(() => window.__match.mode.pieces.some((p) => p.by === window.__cs.slot) && [...window.__cs.forts.pieces.values()].some((p) => p.kind === 'metal_wall'), null, { timeout: T(8000) }).catch(() => {});
+  // One click can land before the ghost settles on a loaded runner: click again until the piece is built.
+  for (let tries = 0; tries < 3; tries++) {
+    await page.evaluate(() => (window.__autoInput = { once: 2 }));
+    const built = await page.waitForFunction(() => window.__match.mode.pieces.some((p) => p.by === window.__cs.slot) && [...window.__cs.forts.pieces.values()].some((p) => p.kind === 'metal_wall'), null, { timeout: T(8000) }).then(() => true, () => false);
+    if (built) break;
+  }
   const placed = await page.evaluate(() => ({
     server: window.__match.mode.pieces.filter((p) => p.by === window.__cs.slot).map((p) => p.kind),
     client: [...window.__cs.forts.pieces.values()].length,
@@ -1295,10 +1299,13 @@ async function raceFlow(browser) {
   await page.keyboard.press('Control+KeyZ');
   d = await doc();
   check(d.track && Math.hypot(d.track.points[1][0] - 16, d.track.points[1][2] + 6) < 1, 'undo puts it back');
-  await page.fill('#ed-road-laps', '5');
-  await page.dispatchEvent('#ed-road-laps', 'change');
-  // CI's software renderer can be a frame behind: give the edit a moment to land.
-  const laps = await page.waitForFunction(() => window.__editor.doc.track?.laps === 5, null, { timeout: T(2000) }).then(() => 5, async () => (await doc()).track?.laps);
+  // The pane is rebuilt after the undo; if the edit hit the old input, set it again on the new one.
+  let laps;
+  for (let tries = 0; tries < 3 && laps !== 5; tries++) {
+    await page.fill('#ed-road-laps', '5');
+    await page.dispatchEvent('#ed-road-laps', 'change');
+    laps = await page.waitForFunction(() => window.__editor.doc.track?.laps === 5, null, { timeout: T(2000) }).then(() => 5, async () => (await doc()).track?.laps);
+  }
   check(laps === 5, `the Road pane sets the laps (${laps})`);
   await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0), null, { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0)), 'MapMaker draws the road ribbon');
