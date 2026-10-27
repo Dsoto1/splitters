@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 22,
   "metadata": {
     "id": "backwoods",
     "name": "Backwoods Lodge",
@@ -6915,7 +6915,7 @@
         -90.3
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 0.92,
       "scale": 1.26,
       "solid": true,
@@ -6971,7 +6971,7 @@
         -61.61
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 0.59,
       "scale": 1.13,
       "solid": true,
@@ -6999,7 +6999,7 @@
         73.62
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 4,
       "scale": 1.02,
       "solid": true,
@@ -7027,7 +7027,7 @@
         54.53
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 0.14,
       "scale": 0.93,
       "solid": true,
@@ -7083,7 +7083,7 @@
         -59.3
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 2.78,
       "scale": 1.11,
       "solid": true,
@@ -7125,7 +7125,7 @@
         71.15
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 4.91,
       "scale": 0.88,
       "solid": true,
@@ -7153,7 +7153,7 @@
         -92.07
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 4.17,
       "scale": 0.98,
       "solid": true,
@@ -7195,7 +7195,7 @@
         17.27
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 3.06,
       "scale": 1.12,
       "solid": true,
@@ -7237,7 +7237,7 @@
         -16.35
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 1.06,
       "scale": 1.16,
       "solid": true,
@@ -7251,7 +7251,7 @@
         67.7
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 2.06,
       "scale": 1.13,
       "solid": true,
@@ -7265,7 +7265,7 @@
         69.75
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 1.52,
       "scale": 0.89,
       "solid": true,
@@ -7279,7 +7279,7 @@
         48.89
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 0.37,
       "scale": 1.1,
       "solid": true,
@@ -7293,7 +7293,7 @@
         -93.28
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.99,
       "scale": 1.11,
       "solid": true,
@@ -7335,7 +7335,7 @@
         64.5
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.34,
       "scale": 0.85,
       "solid": true,
@@ -7377,7 +7377,7 @@
         77.28
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 5.94,
       "scale": 1.01,
       "solid": true,
@@ -7419,7 +7419,7 @@
         -76.37
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 5.87,
       "scale": 1.1,
       "solid": true,
@@ -7503,7 +7503,7 @@
         77.77
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.46,
       "scale": 1.16,
       "solid": true,
@@ -7545,7 +7545,7 @@
         70.93
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 6.14,
       "scale": 1,
       "solid": true,
@@ -7573,7 +7573,7 @@
         -13.85
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 0.52,
       "scale": 1.07,
       "solid": true,
@@ -7587,7 +7587,7 @@
         1.89
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 0.46,
       "scale": 1.27,
       "solid": true,
@@ -7629,7 +7629,7 @@
         17.76
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 4.68,
       "scale": 0.88,
       "solid": true,
@@ -7643,7 +7643,7 @@
         72.11
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 0.63,
       "scale": 1.07,
       "solid": true,
@@ -7657,7 +7657,7 @@
         70.36
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 4.95,
       "scale": 1,
       "solid": true,
@@ -7685,7 +7685,7 @@
         -72.24
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 5.62,
       "scale": 1.26,
       "solid": true,
@@ -7713,7 +7713,7 @@
         71.43
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 1.58,
       "scale": 1.13,
       "solid": true,
@@ -7727,7 +7727,7 @@
         11.26
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 2.36,
       "scale": 1.02,
       "solid": true,
@@ -7811,7 +7811,7 @@
         66.52
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 1.04,
       "scale": 1.07,
       "solid": true,
@@ -7839,7 +7839,7 @@
         75.92
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 1.26,
       "scale": 0.88,
       "solid": true,
@@ -7853,7 +7853,7 @@
         77.56
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 4.08,
       "scale": 0.93,
       "solid": true,
@@ -7895,7 +7895,7 @@
         22.27
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 1.44,
       "scale": 0.94,
       "solid": true,
@@ -7923,7 +7923,7 @@
         -92.68
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 4.77,
       "scale": 1,
       "solid": true,
@@ -7951,7 +7951,7 @@
         -83.84
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.61,
       "scale": 1.3,
       "solid": true,
@@ -7965,7 +7965,7 @@
         66.32
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 2.11,
       "scale": 0.86,
       "solid": true,
@@ -7979,7 +7979,7 @@
         -84.21
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 4.77,
       "scale": 1.15,
       "solid": true,
@@ -7993,7 +7993,7 @@
         -73.03
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.44,
       "scale": 0.99,
       "solid": true,
@@ -8007,7 +8007,7 @@
         74.55
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 4.48,
       "scale": 1.01,
       "solid": true,
@@ -8021,7 +8021,7 @@
         77.27
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 5.51,
       "scale": 1.17,
       "solid": true,
@@ -8077,7 +8077,7 @@
         33.63
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.45,
       "scale": 1.06,
       "solid": true,
@@ -8091,7 +8091,7 @@
         43.49
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 1.72,
       "scale": 1.2,
       "solid": true,
@@ -8105,7 +8105,7 @@
         72.45
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 1.95,
       "scale": 1.26,
       "solid": true,
@@ -8119,7 +8119,7 @@
         49.66
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 5.65,
       "scale": 0.92,
       "solid": true,
@@ -8175,7 +8175,7 @@
         60.71
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 5.08,
       "scale": 1.22,
       "solid": true,
@@ -8189,7 +8189,7 @@
         -28.64
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 1.37,
       "scale": 0.86,
       "solid": true,
@@ -8217,7 +8217,7 @@
         -60.64
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.87,
       "scale": 1.11,
       "solid": true,
@@ -8231,7 +8231,7 @@
         -70.08
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 5.11,
       "scale": 1.02,
       "solid": true,
@@ -8245,7 +8245,7 @@
         73.11
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.9,
       "scale": 1.01,
       "solid": true,
@@ -8259,7 +8259,7 @@
         -78.9
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 6.14,
       "scale": 0.88,
       "solid": true,
@@ -8287,7 +8287,7 @@
         -82.26
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 0.14,
       "scale": 0.86,
       "solid": true,
@@ -8301,7 +8301,7 @@
         38.11
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 6.11,
       "scale": 1.04,
       "solid": true,
@@ -8315,7 +8315,7 @@
         -63.05
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 0.87,
       "scale": 1.24,
       "solid": true,
@@ -8329,7 +8329,7 @@
         -91.31
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 0.96,
       "scale": 1.28,
       "solid": true,
@@ -8343,7 +8343,7 @@
         -15.05
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 1.58,
       "scale": 1.24,
       "solid": true,
@@ -8371,7 +8371,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 4.66,
       "scale": 0.99,
       "solid": true,
@@ -8483,7 +8483,7 @@
         -83.77
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 5.7,
       "scale": 1.29,
       "solid": true,
@@ -8497,7 +8497,7 @@
         64.43
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 1.76,
       "scale": 1.1,
       "solid": true,
@@ -8525,7 +8525,7 @@
         -77.16
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.59,
       "scale": 0.97,
       "solid": true,
@@ -8553,7 +8553,7 @@
         68.69
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 0.15,
       "scale": 1.2,
       "solid": true,
@@ -8567,7 +8567,7 @@
         -3.89
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 5.64,
       "scale": 1.08,
       "solid": true,
@@ -8581,7 +8581,7 @@
         -57.85
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 3.02,
       "scale": 1,
       "solid": true,
@@ -8595,7 +8595,7 @@
         -59.02
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 5.99,
       "scale": 1.14,
       "solid": true,
@@ -8609,7 +8609,7 @@
         77.93
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 4.13,
       "scale": 0.95,
       "solid": true,
@@ -8623,7 +8623,7 @@
         -90.63
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 4.8,
       "scale": 0.86,
       "solid": true,
@@ -8679,7 +8679,7 @@
         27.91
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 1.69,
       "scale": 1.25,
       "solid": true,
@@ -8693,7 +8693,7 @@
         -79.14
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.79,
       "scale": 1.28,
       "solid": true,
@@ -8707,7 +8707,7 @@
         -60.26
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 1.15,
       "scale": 1.28,
       "solid": true,
@@ -8735,7 +8735,7 @@
         -79.4
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 0.27,
       "scale": 1.15,
       "solid": true,
@@ -8763,7 +8763,7 @@
         -84.67
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.86,
       "scale": 0.92,
       "solid": true,
@@ -8805,7 +8805,7 @@
         77.06
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 5.73,
       "scale": 1.13,
       "solid": true,
@@ -8819,7 +8819,7 @@
         43.31
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.57,
       "scale": 1.03,
       "solid": true,
@@ -8847,7 +8847,7 @@
         58.54
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.55,
       "scale": 1.17,
       "solid": true,
@@ -8875,7 +8875,7 @@
         -90.32
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 1.56,
       "scale": 1.28,
       "solid": true,
@@ -8917,7 +8917,7 @@
         -17.49
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 5.78,
       "scale": 1.17,
       "solid": true,
@@ -8945,7 +8945,7 @@
         66.28
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 4.39,
       "scale": 0.97,
       "solid": true,
@@ -9057,7 +9057,7 @@
         58.31
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 5.95,
       "scale": 1.22,
       "solid": true,
@@ -9071,7 +9071,7 @@
         7.22
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 0.27,
       "scale": 1.11,
       "solid": true,
@@ -9085,7 +9085,7 @@
         77.53
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 0.63,
       "scale": 1.23,
       "solid": true,
@@ -9099,7 +9099,7 @@
         -70.41
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 3.28,
       "scale": 0.97,
       "solid": true,
@@ -9113,7 +9113,7 @@
         -79.74
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 2.86,
       "scale": 1.28,
       "solid": true,
@@ -9127,7 +9127,7 @@
         71.63
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 1.89,
       "scale": 1.1,
       "solid": true,
@@ -9141,7 +9141,7 @@
         -90.94
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 3.73,
       "scale": 1.01,
       "solid": true,
@@ -9183,7 +9183,7 @@
         66.38
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 5.65,
       "scale": 1.29,
       "solid": true,
@@ -9225,7 +9225,7 @@
         -59.14
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.66,
       "scale": 1.09,
       "solid": true,
@@ -9239,7 +9239,7 @@
         -6.01
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.82,
       "scale": 1.28,
       "solid": true,
@@ -9253,7 +9253,7 @@
         59.27
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.98,
       "scale": 1.01,
       "solid": true,
@@ -9295,7 +9295,7 @@
         55.2
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 0.1,
       "scale": 0.87,
       "solid": true,
@@ -9323,7 +9323,7 @@
         -83.88
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 4.38,
       "scale": 1.03,
       "solid": true,
@@ -9337,7 +9337,7 @@
         -75.87
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 0.32,
       "scale": 1.27,
       "solid": true,
@@ -9351,7 +9351,7 @@
         70.86
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 6.26,
       "scale": 1.26,
       "solid": true,
@@ -9365,7 +9365,7 @@
         58.75
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 5.56,
       "scale": 1.12,
       "solid": true,
@@ -9407,7 +9407,7 @@
         77.92
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 0.92,
       "scale": 1.05,
       "solid": true,
@@ -9463,7 +9463,7 @@
         -89.51
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 1.36,
       "scale": 0.9,
       "solid": true,
@@ -9505,7 +9505,7 @@
         77.44
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 3.23,
       "scale": 1.1,
       "solid": true,
@@ -9533,7 +9533,7 @@
         59.91
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.94,
       "scale": 0.96,
       "solid": true,
@@ -9589,7 +9589,7 @@
         66.04
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 4.39,
       "scale": 1.08,
       "solid": true,
@@ -9603,7 +9603,7 @@
         -83.59
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 0.67,
       "scale": 1.21,
       "solid": true,
@@ -9617,7 +9617,7 @@
         77.64
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 1.92,
       "scale": 1.02,
       "solid": true,
@@ -9631,7 +9631,7 @@
         -81.8
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 3.85,
       "scale": 1.17,
       "solid": true,
@@ -9645,7 +9645,7 @@
         -93.69
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.71,
       "scale": 1.17,
       "solid": true,
@@ -9659,7 +9659,7 @@
         -57.99
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 4.11,
       "scale": 1.15,
       "solid": true,
@@ -9673,7 +9673,7 @@
         70.28
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 3.86,
       "scale": 0.95,
       "solid": true,
@@ -9729,7 +9729,7 @@
         49.01
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 2.24,
       "scale": 0.92,
       "solid": true,
@@ -9743,7 +9743,7 @@
         72.97
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "prop.mn_fir",
       "yaw": 2.46,
       "scale": 0.89,
       "solid": true,
@@ -9813,7 +9813,7 @@
         45.49
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "prop.mn_birch",
       "yaw": 4.61,
       "scale": 1.05,
       "solid": true,
@@ -9827,7 +9827,7 @@
         -58.47
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "prop.mn_oak",
       "yaw": 2.47,
       "scale": 1.14,
       "solid": true,
@@ -9851,11 +9851,11 @@
       "id": "prop_663",
       "position": [
         27.6,
-        4,
+        4.08,
         63.63
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 1.61,
       "scale": 0.97,
       "solid": false,
@@ -9907,11 +9907,11 @@
       "id": "prop_667",
       "position": [
         58.41,
-        3.39,
+        3.4,
         -22.87
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 0.25,
       "scale": 1.09,
       "solid": false,
@@ -9921,11 +9921,11 @@
       "id": "prop_668",
       "position": [
         -68.6,
-        8.22,
+        8.59,
         72.68
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 1.46,
       "scale": 1.34,
       "solid": false,
@@ -9949,11 +9949,11 @@
       "id": "prop_670",
       "position": [
         -1.3,
-        4.76,
+        4.92,
         67.21
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 1.61,
       "scale": 0.93,
       "solid": false,
@@ -10005,11 +10005,11 @@
       "id": "prop_674",
       "position": [
         -70.62,
-        5.46,
+        5.58,
         7.55
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 5.5,
       "scale": 1,
       "solid": false,
@@ -10019,11 +10019,11 @@
       "id": "prop_675",
       "position": [
         35.06,
-        4.21,
+        4.31,
         64.83
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 3.06,
       "scale": 0.8,
       "solid": false,
@@ -10061,11 +10061,11 @@
       "id": "prop_678",
       "position": [
         -73.22,
-        7.87,
+        7.9,
         -83.22
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 1.87,
       "scale": 1.23,
       "solid": false,
@@ -10215,11 +10215,11 @@
       "id": "prop_689",
       "position": [
         -60.48,
-        3.53,
+        3.58,
         15.93
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 3.11,
       "scale": 1.12,
       "solid": false,
@@ -10257,11 +10257,11 @@
       "id": "prop_692",
       "position": [
         -25.27,
-        3.81,
+        3.82,
         -58.62
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 5.35,
       "scale": 0.99,
       "solid": false,
@@ -10299,11 +10299,11 @@
       "id": "prop_695",
       "position": [
         18.97,
-        7.73,
+        8,
         75.1
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 1.5,
       "scale": 1.39,
       "solid": false,
@@ -10341,11 +10341,11 @@
       "id": "prop_698",
       "position": [
         -64.95,
-        4.56,
+        4.73,
         22.6
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 5.06,
       "scale": 1.22,
       "solid": false,
@@ -10453,11 +10453,11 @@
       "id": "prop_706",
       "position": [
         -25.37,
-        3.9,
+        3.91,
         -62.08
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 3.94,
       "scale": 1.05,
       "solid": false,
@@ -10509,11 +10509,11 @@
       "id": "prop_710",
       "position": [
         58.25,
-        3.32,
+        3.39,
         -29.03
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 1.9,
       "scale": 1.29,
       "solid": false,
@@ -10537,11 +10537,11 @@
       "id": "prop_712",
       "position": [
         61.98,
-        4.32,
+        4.37,
         7.41
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 2.94,
       "scale": 1.34,
       "solid": false,
@@ -10551,11 +10551,11 @@
       "id": "prop_713",
       "position": [
         65.75,
-        8.53,
+        8.82,
         75.09
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 1.72,
       "scale": 1.05,
       "solid": false,
@@ -10621,11 +10621,11 @@
       "id": "prop_718",
       "position": [
         65.4,
-        4.15,
+        4.27,
         -34.34
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 4.19,
       "scale": 1.34,
       "solid": false,
@@ -10649,11 +10649,11 @@
       "id": "prop_720",
       "position": [
         -17.24,
-        6.58,
+        6.69,
         -85.66
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 0.74,
       "scale": 0.93,
       "solid": false,
@@ -10691,11 +10691,11 @@
       "id": "prop_723",
       "position": [
         -37.73,
-        4.28,
+        4.3,
         -71.31
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 1.64,
       "scale": 1.12,
       "solid": false,
@@ -10719,11 +10719,11 @@
       "id": "prop_725",
       "position": [
         -67.27,
-        5.16,
+        5.36,
         18.89
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 4.7,
       "scale": 1.31,
       "solid": false,
@@ -10831,11 +10831,11 @@
       "id": "prop_733",
       "position": [
         59.6,
-        3.37,
+        3.39,
         -34.89
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 3.66,
       "scale": 1.34,
       "solid": false,
@@ -10873,11 +10873,11 @@
       "id": "prop_736",
       "position": [
         64.02,
-        5.18,
+        5.24,
         51.89
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 2.2,
       "scale": 0.94,
       "solid": false,
@@ -10887,11 +10887,11 @@
       "id": "prop_737",
       "position": [
         -71.35,
-        5.78,
+        5.96,
         40.45
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 5.71,
       "scale": 1.39,
       "solid": false,
@@ -10943,11 +10943,11 @@
       "id": "prop_741",
       "position": [
         -25.9,
-        4.46,
+        4.47,
         -88.42
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 3.62,
       "scale": 0.8,
       "solid": false,
@@ -10999,11 +10999,11 @@
       "id": "prop_745",
       "position": [
         -61.24,
-        4.35,
+        4.36,
         39.85
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 1.59,
       "scale": 1.13,
       "solid": false,
@@ -11153,11 +11153,11 @@
       "id": "prop_756",
       "position": [
         63.54,
-        4.37,
+        4.41,
         -5.54
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 0.65,
       "scale": 0.93,
       "solid": false,
@@ -11167,11 +11167,11 @@
       "id": "prop_757",
       "position": [
         -67.39,
-        6.35,
+        6.54,
         67.38
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 6.03,
       "scale": 0.97,
       "solid": false,
@@ -11181,11 +11181,11 @@
       "id": "prop_758",
       "position": [
         63.19,
-        5.75,
+        6.13,
         -86.63
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 2.75,
       "scale": 1.33,
       "solid": false,
@@ -11265,11 +11265,11 @@
       "id": "prop_764",
       "position": [
         -71.6,
-        8.49,
+        8.57,
         71.31
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 2.75,
       "scale": 1.19,
       "solid": false,
@@ -11321,11 +11321,11 @@
       "id": "prop_768",
       "position": [
         65.44,
-        5.58,
+        5.73,
         50.76
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 3.39,
       "scale": 0.81,
       "solid": false,
@@ -11335,11 +11335,11 @@
       "id": "prop_769",
       "position": [
         -39.88,
-        3.59,
+        3.69,
         -56.63
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 4.11,
       "scale": 1.03,
       "solid": false,
@@ -11405,11 +11405,11 @@
       "id": "prop_774",
       "position": [
         65.44,
-        6.84,
+        6.91,
         -86.55
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 2.31,
       "scale": 0.91,
       "solid": false,
@@ -11461,11 +11461,11 @@
       "id": "prop_778",
       "position": [
         56.36,
-        3.78,
+        3.79,
         -8.35
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 3.93,
       "scale": 0.82,
       "solid": false,
@@ -11475,11 +11475,11 @@
       "id": "prop_779",
       "position": [
         -12.78,
-        6.71,
+        6.73,
         -93.88
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 1.58,
       "scale": 0.8,
       "solid": false,
@@ -11489,11 +11489,11 @@
       "id": "prop_780",
       "position": [
         38.15,
-        6.13,
+        6.35,
         72.69
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 2.33,
       "scale": 1.3,
       "solid": false,
@@ -11503,11 +11503,11 @@
       "id": "prop_781",
       "position": [
         58.17,
-        3.37,
+        3.44,
         -31.47
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 4.1,
       "scale": 1.07,
       "solid": false,
@@ -11545,11 +11545,11 @@
       "id": "prop_784",
       "position": [
         65.11,
-        5.37,
+        5.58,
         15.12
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 2.48,
       "scale": 0.84,
       "solid": false,
@@ -11573,11 +11573,11 @@
       "id": "prop_786",
       "position": [
         -62.66,
-        5.68,
+        5.74,
         -75.16
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 3.96,
       "scale": 0.81,
       "solid": false,
@@ -11727,11 +11727,11 @@
       "id": "prop_797",
       "position": [
         -66.67,
-        9.07,
+        9.13,
         75.62
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 3.69,
       "scale": 0.8,
       "solid": false,
@@ -11797,11 +11797,11 @@
       "id": "prop_802",
       "position": [
         -37.51,
-        5.75,
+        5.96,
         71.17
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 0.27,
       "scale": 1.34,
       "solid": false,
@@ -11839,11 +11839,11 @@
       "id": "prop_805",
       "position": [
         -59.2,
-        4.46,
+        4.51,
         64.37
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 2.2,
       "scale": 1.08,
       "solid": false,
@@ -11867,11 +11867,11 @@
       "id": "prop_807",
       "position": [
         -46.22,
-        4.5,
+        4.63,
         -72.99
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "prop.mn_fern",
       "yaw": 1.58,
       "scale": 1.16,
       "solid": false,
@@ -11881,11 +11881,11 @@
       "id": "prop_808",
       "position": [
         -68.15,
-        5.3,
+        5.37,
         15.74
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 2.98,
       "scale": 1.24,
       "solid": false,
@@ -11909,11 +11909,11 @@
       "id": "prop_810",
       "position": [
         -23.87,
-        4.61,
+        4.63,
         -87.63
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 1.13,
       "scale": 1.13,
       "solid": false,
@@ -11923,11 +11923,11 @@
       "id": "prop_811",
       "position": [
         -15.95,
-        6.87,
+        6.89,
         -78.64
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "prop.mn_shrub",
       "yaw": 4.13,
       "scale": 0.88,
       "solid": false,

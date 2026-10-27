@@ -237,6 +237,9 @@ const triArea = (V, a, b, c) => {
 };
 const triAreaSoup = (P, t) => triArea(P, t * 3, t * 3 + 1, t * 3 + 2);
 
+/** Indices 0…n−1: every corner its own vertex (flat faces), but indexed, which the game's merging of static props needs. */
+const sequence = (n) => (n > 65535 ? Uint32Array : Uint16Array).from({ length: n }, (_, i) => i);
+
 /** Linear rgb floats as normalised rgba bytes (a quarter of the size; colours per face need no more). */
 function toBytes(C) {
   const out = new Uint8Array((C.length / 3) * 4);
@@ -294,6 +297,7 @@ export async function buildNatureDocument(soup, { lods, impostor = null, grade =
     if (i === 0) lod0 = { P, C };
     const prim = doc
       .createPrimitive()
+      .setIndices(doc.createAccessor().setType('SCALAR').setArray(sequence(P.length / 3)).setBuffer(buffer))
       .setAttribute('POSITION', doc.createAccessor().setType('VEC3').setArray(P).setBuffer(buffer))
       .setAttribute('NORMAL', doc.createAccessor().setType('VEC3').setArray(N).setBuffer(buffer))
       .setAttribute('COLOR_0', doc.createAccessor().setType('VEC4').setArray(toBytes(C)).setNormalized(true).setBuffer(buffer))
@@ -350,6 +354,7 @@ export async function buildNatureDocument(soup, { lods, impostor = null, grade =
     const UVs = new Float32Array([0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0]);
     const prim = doc
       .createPrimitive()
+      .setIndices(doc.createAccessor().setType('SCALAR').setArray(sequence(6)).setBuffer(buffer))
       .setAttribute('POSITION', doc.createAccessor().setType('VEC3').setArray(P).setBuffer(buffer))
       .setAttribute('NORMAL', doc.createAccessor().setType('VEC3').setArray(N).setBuffer(buffer))
       .setAttribute('TEXCOORD_0', doc.createAccessor().setType('VEC2').setArray(UVs).setBuffer(buffer))

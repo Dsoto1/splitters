@@ -252,7 +252,10 @@ export class FoliageVisuals {
     const light = this.models.lightestLod(file);
     if (light) {
       const m = new Mesh(`foliage_${model}_lod`, this.scene);
-      light.data.applyToMesh(m, false);
+      // The colours are linear (glTF); the lambert material below works in gamma space.
+      const data = light.data.clone();
+      if (data.colors) data.colors = data.colors.map((c, i) => (i % 4 === 3 ? c : c ** (1 / 2.2)));
+      data.applyToMesh(m, false);
       m.sideOrientation = light.sideOrientation;
       m.isPickable = false;
       m.setEnabled(false);

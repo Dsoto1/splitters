@@ -121,6 +121,11 @@ ground paint:
 | Lush | thick grass, flowers, low shrubs |
 | Overgrown | long grass, flowers, shrubs and bushes |
 
+Shallow water and swamp over the terrain (0.08–0.6 m deep) grow eelgrass, the
+Meshy community water plant, about every other cell, unless the map painted that
+cell Bare. The shrubs and bushes mix in the painted fern and forest shrub (their
+lighter level of detail).
+
 Sand grows scrub and stone gets pebbles instead of grass. Steep slopes stay
 bare, and nothing grows through floors or walls built on the terrain. The first
 plants stroke turns the automatic cover into a painted layer; **Plants follow
@@ -143,10 +148,13 @@ sizes, standing on the terrain:
 | Pine forest | tall, round and small pines |
 | Leafy woods | oaks and round, leafy, bushy and thin trees |
 | Autumn woods | autumn oaks and round trees |
-| Jungle | palms, flat-top trees, ferns, big bushes |
+| Fir & birch forest | the painted fir, birch and oak, with forest shrubs and ferns under them |
+| Jungle | palms, flat-top trees, painted banana plants, ferns, big bushes |
+| Undergrowth | forest shrubs and ferns (walk-through) |
 | Bushes | five kinds of bush |
 | Flowers & grass | red, yellow and purple flowers, tall grass, mushrooms |
 | Desert scrub | cacti, low plants, stones |
+| Water plants | eelgrass, for shallow water edges |
 | Rocks | boulders, rocks, stones |
 
 **Brush size** (or `[` `]`) sets the patch radius. **Alt-click** clears that
@@ -162,6 +170,15 @@ solid (bots path round them); bushes, flowers and grass can be walked through.
   JPEGs (25–125 KB each) and records them in `content/skies.lock.json`.
 - **Plants and trees:** Kenney Nature Kit 2.1 (CC0), 55 models added to
   `content/props.json` under Trees, Plants & Flowers, and Rocks & Wood.
+- **Painted trees and plants (`mn_*`):** eight Meshy community models (CC0 per
+  the owner, page URLs pending; see ASSET_SOURCES.md): Broad Oak, Slender Birch,
+  Fir Tree, Banana Plant, Forest Shrub, Forest Fern, Eelgrass and Red Rock
+  Spires, decimated and painted per face by `tools/content/nature.mjs`. Trees
+  have a lighter level from 30 m and a picture card from 90 m (the banana plant
+  25 m / 70 m), so a forest of them costs little in the distance. Trunks (and
+  the rock spires, by their footprint) are solid; leaves, shrubs, ferns and
+  eelgrass are walk-through. Backwoods Lodge's woods use the fir, birch, oak,
+  shrub and fern.
 - Scenery shapes, the starfield and the window texture are generated in code.
 - Borders: cliffs, blocks, sea, wires and the far-row conifers are generated in
   code; the forest's front row is the Quaternius Ultimate Nature pack (CC0,
