@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, DEFAULT_RULES, INTEREST_MIN_PLAYERS, MAX_PLAYER_SLOTS, SNAPSHOT_INTERVAL_TICKS, encodeSnapshots, initPhysics, interestFor, loadMap, rulesForMode, type GameEvent, type PlayerSnapshot, type SnapshotBody } from '../src/index.ts';
-import { BotFiller, Match, initNavigation } from '../src/match.ts';
+import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, DEFAULT_RULES, INTEREST_MIN_PLAYERS, MAX_PLAYER_SLOTS, SNAPSHOT_INTERVAL_TICKS, SnapshotDecoder, SnapshotStream, encodeSnapshots, initPhysics, interestFor, loadMap, rulesForMode, type GameEvent, type PlayerSnapshot, type ServerMessage, type SnapshotBody } from '../src/index.ts';
+import { BotFiller, Match, clumpArea, clumpInto, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -123,6 +123,54 @@ describe('interest management', () => {
     const dead = players.map((p) => (p.s === 0 ? player(0, 0, 0) : p));
     expect(interestFor(body(dead, 2), 0).hold).toHaveLength(0);
   });
+
+  it('delta snapshots rebuild every player as sent (others to the centimetre, yourself exactly), through joins, leaves, held players and changing fields', () => {
+    let seed = 7;
+    const rand = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+    for (const size of [8, 96]) {
+      let players = Array.from({ length: size }, (_, i) => player(i, rand() * 400));
+      const streams = [new SnapshotStream(), new SnapshotStream()];
+      const decoders = [new SnapshotDecoder(), new SnapshotDecoder()];
+      const seen = new Map<number, PlayerSnapshot>();
+      let bytes = 0;
+      for (let k = 0; k < 60; k++) {
+        players = players.map((p) => {
+          const q: PlayerSnapshot = { ...p, p: [p.p[0] + rand() * 0.37 - 0.15, p.p[1] + (rand() < 0.1 ? 0.5 : 0), p.p[2] + rand() * 0.2], yaw: Math.round(rand() * 6000) / 1000, vy: rand() < 0.2 ? rand() * 3 : 0 };
+          if (rand() < 0.1) q.hp = Math.ceil(rand() * 100);
+          if (rand() < 0.1) q.sn = 1;
+          else if (rand() < 0.1) delete q.sn;
+          if (rand() < 0.05) q.st = rand() < 0.5 ? 'engage' : 'cover';
+          return q;
+        });
+        // Someone leaves now and then, and someone else takes the slot a few snapshots later.
+        if (k % 10 === 3) players = players.filter((p) => p.s !== 5);
+        if (k % 10 === 6) players = [...players, player(5, rand() * 400)];
+        const b: SnapshotBody = { ...body(players, k * SNAPSHOT_INTERVAL_TICKS), score: [{ s: 0, k: Math.floor(k / 20), d: 0 }], ...(k % 7 < 3 ? { mt: [[1, 2, 3]] } : {}) };
+        const texts = encodeSnapshots(b, [0, 1].map((slot) => ({ slot, ack: k, stream: streams[slot]! })));
+        texts.forEach((text, viewer) => {
+          bytes += text.length;
+          const msg = decoders[viewer]!.snapshot(JSON.parse(text) as Extract<ServerMessage, { t: 'snapshot' }>);
+          expect(msg.score).toEqual(b.score);
+          expect(msg.mt).toEqual(b.mt);
+          expect((msg as { same?: unknown }).same).toBeUndefined();
+          for (const got of msg.players) {
+            const want = players.find((p) => p.s === got.s)!;
+            if (got.s === viewer) expect(got).toEqual(want);
+            else {
+              expect(Math.max(...got.p.map((x, i) => Math.abs(x - want.p[i]!)))).toBeLessThan(0.0051);
+              expect({ ...got, p: 0, vy: 0 }).toEqual({ ...want, p: 0, vy: 0 });
+              expect(Math.abs(got.vy - want.vy)).toBeLessThan(0.0051);
+            }
+            seen.set(got.s, got);
+          }
+          expect(msg.players.length + (msg.hold?.length ?? 0)).toBe(players.length);
+        });
+      }
+      const full = encodeSnapshots(body(players, 0), [{ slot: 0, ack: 0 }])[0]!.length;
+      // Changes only: well under half the size of full snapshots.
+      expect(bytes / 120).toBeLessThan(full * 0.5);
+    }
+  });
 });
 
 describe('96 players', () => {
@@ -151,6 +199,49 @@ describe('96 players', () => {
     // Generous: shared CI runners are slow and noisy. The real budget is 16.7 ms a tick.
     expect(avg).toBeLessThan(30);
     for (const c of match.combatants()) expect(c.move.pos.y).toBeGreaterThan(match.killY);
+    match.destroy();
+  }, 180_000);
+
+  // A browser host's friends at 48 v 48: what one friend is sent a second (characters before compression,
+  // which is also what host and friend spend compressing and parsing), and the host's time writing them.
+  it('a hosted 48 v 48 snapshot stream stays within its byte and time budget per friend (clumped Frost Basin)', () => {
+    const loaded = loadMap(readFileSync(fileURLToPath(new URL('../../../maps/frost_basin.json', import.meta.url)), 'utf8'));
+    if (!loaded.ok) throw new Error('Frost Basin failed to load');
+    const map = loaded.map;
+    const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), teamSizes: [48, 48], scoreLimit: 0, timeLimitSeconds: 0 }, 42);
+    for (let i = 0; i < MAX_PLAYER_SLOTS; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
+    const friends = 10;
+    for (let s = 0; s < friends; s++) match.watchers.add(s);
+    run(match, 120);
+    const area = clumpArea(match, 20);
+    clumpInto(match, area, undefined, 7);
+    const streams = Array.from({ length: friends }, () => new SnapshotStream());
+    const decoder = new SnapshotDecoder();
+    let chars = 0;
+    let fullChars = 0;
+    let ms = 0;
+    let snaps = 0;
+    let pending: GameEvent[] = [];
+    const seconds = 4;
+    for (let i = 0; i < seconds * 60; i++) {
+      pending.push(...match.step());
+      if (match.tick % SNAPSHOT_INTERVAL_TICKS) continue;
+      const b = match.snapshot(pending);
+      pending = [];
+      const t0 = performance.now();
+      const texts = encodeSnapshots(b, streams.map((stream, s) => ({ slot: s, ack: 0, me: match.privateState(s), stream })));
+      ms += performance.now() - t0;
+      snaps++;
+      chars += texts[1]!.length;
+      fullChars += encodeSnapshots(b, [{ slot: 1, ack: 0, me: match.privateState(1) }])[0]!.length;
+      const msg = decoder.snapshot(JSON.parse(texts[1]!));
+      expect(msg.players.length + (msg.hold?.length ?? 0)).toBe(MAX_PLAYER_SLOTS);
+    }
+    const perSecond = chars / seconds / 1024;
+    console.log(`hosted 48 v 48, clumped Frost Basin: ${perSecond.toFixed(0)} KB/s a friend before compression (full snapshots: ${(fullChars / seconds / 1024).toFixed(0)} KB/s); writing ${friends} friends' copies ${(ms / snaps).toFixed(2)} ms a snapshot`);
+    // Measured ~120 KB/s (full snapshots ~450); generous for noisy runners.
+    expect(perSecond).toBeLessThan(220);
+    expect(ms / snaps).toBeLessThan(15);
     match.destroy();
   }, 180_000);
 });

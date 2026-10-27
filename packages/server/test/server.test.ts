@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import WebSocket from 'ws';
-import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, MAX_PLAYER_SLOTS, PLAYER, PROTOCOL_VERSION, lookAngles, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
+import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, MAX_PLAYER_SLOTS, PLAYER, PROTOCOL_VERSION, SnapshotDecoder, lookAngles, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
 import { startServer, type RunningServer } from '../src/server.ts';
 import { parseClientMessage } from '@tiletrigger/shared';
 
@@ -44,6 +44,8 @@ class TestClient {
   readonly messages: ServerMessage[] = [];
   latest?: Snapshot;
   seq = 0;
+  /** Snapshots come as deltas on the connection (protocol 4): rebuilt as the game's transports do. */
+  private readonly decoder = new SnapshotDecoder();
 
   constructor(port: number, name: string) {
     this.ws = new WebSocket(`ws://127.0.0.1:${port}`);
@@ -51,7 +53,7 @@ class TestClient {
     this.ws.on('message', (d) => {
       const m = JSON.parse(d.toString()) as ServerMessage;
       this.messages.push(m);
-      if (m.t === 'snapshot') this.latest = m;
+      if (m.t === 'snapshot') this.latest = this.decoder.snapshot(m);
     });
   }
 

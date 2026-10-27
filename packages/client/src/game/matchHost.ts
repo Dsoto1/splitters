@@ -7,6 +7,7 @@ import {
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
   encodeSnapshots,
+  SnapshotStream,
   getWeapon,
   initPhysics,
   parseClientMessage,
@@ -104,6 +105,8 @@ interface Remote {
   early: string[] | null;
   /** The friend's own round-trip time to us (ms), from their pings: for everyone's scoreboard. */
   rtt?: number | undefined;
+  /** Delta snapshots: what this friend was last sent of each player (net/interest.ts). */
+  stream: SnapshotStream;
 }
 
 /**
@@ -196,7 +199,7 @@ export class MatchHost {
           const guests = [...this.remotes.values()].filter((r): r is Remote & { slot: number } => r.slot !== null);
           if (guests.length) {
             // Serialise the shared part once; each guest gets its own ack, private state and (big matches) nearby players.
-            const texts = encodeSnapshots(snap, guests.map((r) => ({ slot: r.slot, ack: match.slots[r.slot]?.lastSeq ?? 0, me: match.privateState(r.slot) })));
+            const texts = encodeSnapshots(snap, guests.map((r) => ({ slot: r.slot, ack: match.slots[r.slot]?.lastSeq ?? 0, me: match.privateState(r.slot), stream: r.stream })));
             guests.forEach((r, i) => this.sink.send(r.id, texts[i]!));
           }
           events = [];
@@ -312,7 +315,7 @@ export class MatchHost {
   open(id: number): void {
     // A test-mode match (fixed seed, maybe an invulnerable player) is offline only: nobody joins it.
     if (this.stopped || this.opts.test) return this.sink.close(id, 0);
-    this.remotes.set(id, { id, slot: null, early: this.match ? null : [] });
+    this.remotes.set(id, { id, slot: null, early: this.match ? null : [], stream: new SnapshotStream() });
   }
 
   /** Text from a friend's link. */

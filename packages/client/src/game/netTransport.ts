@@ -1,4 +1,4 @@
-import { PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
+import { PROTOCOL_VERSION, SnapshotDecoder, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { Transport } from './transport.ts';
 import { SnapshotCoalescer } from './snapshotMerge.ts';
 
@@ -48,6 +48,7 @@ export class NetTransport implements Transport {
     this.ws = ws;
     // A page that falls behind (a long frame, a slow machine with 96 players in view) handles the snapshots waiting for it as one.
     const snapshots = new SnapshotCoalescer((m) => !this.closedByUs && onMessage(m));
+    const players = new SnapshotDecoder();
     ws.addEventListener('open', () => {
       const admin = adminToken(this.url);
       this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, ...(admin ? { admin } : {}) });
@@ -62,6 +63,7 @@ export class NetTransport implements Transport {
         this.rttMs = this.rttMs ? this.rttMs * 0.8 + sample * 0.2 : sample;
         return;
       }
+      if (msg.t === 'snapshot') players.snapshot(msg);
       snapshots.push(msg);
     });
     ws.addEventListener('close', (e) => {

@@ -1,5 +1,5 @@
 import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
-import { MessageGuard, PROTOCOL_VERSION, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
+import { MessageGuard, PROTOCOL_VERSION, SnapshotDecoder, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { HostLink, RemoteLink, Signaling, Transport } from './transport.ts';
 import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, Zipper, type ReassemblyLimits } from './peerZip.ts';
 import { hubAddress, hubSetting } from './hub.ts';
@@ -214,6 +214,7 @@ export class PeerTransport implements Transport {
     this.peer = peer;
     // A page that falls behind (a long frame, a slow machine with 96 players in view) handles the snapshots waiting for it as one.
     const snapshots = new SnapshotCoalescer((m) => !this.closedByUs && onMessage(m));
+    const players = new SnapshotDecoder();
     let opened = false;
     let brokered = false;
     const fail = (reason: string) => {
@@ -281,6 +282,7 @@ export class PeerTransport implements Transport {
             this.rttMs = this.rttMs ? this.rttMs * 0.8 + sample * 0.2 : sample;
             return;
           }
+          if (msg.t === 'snapshot') players.snapshot(msg);
           snapshots.push(msg);
         },
         { limits: HOST_TO_GUEST_LIMITS, wire: (bytes) => (this.bytesIn += bytes) },
