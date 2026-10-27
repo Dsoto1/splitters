@@ -1113,7 +1113,7 @@ export class GameSession {
                   const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
                   const len = Math.hypot(d.x, d.y, d.z) || 1;
                   const physics = this.local.physics;
-                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: 0 }, def?.range ?? 300, (o, dir, l) => physics.raycastWorld(o, dir, l));
+                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: 0 }, def?.range ?? 300, (o, dir, l) => physics.raycastHit(o, dir, l)?.dist ?? null);
                   this.view.shotVisual({ eye, muzzle, to: flight.end, color, victim: null, zone: 0, strength, def, speed: ev.v, land: false });
                 }
                 return;

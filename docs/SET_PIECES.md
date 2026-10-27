@@ -151,8 +151,15 @@ brighter along the bank. They keep their glowing volume for side views.
 droplets and a ring (and a synthesised splash, `water.splash`); wading or
 swimming at the surface leaves rings behind; a shot hitting the surface makes a
 small splash. Rings and droplets are each one thin-instanced mesh (one draw
-call each), recycled. Under the surface the view keeps its tinted haze, and the
-surface seen from below is a bright, rippling ceiling.
+call each), recycled. Under the surface the view keeps its tinted haze (scene
+fog, which the shader applies too), and the surface seen from below is a
+rippling ceiling in the water's own colour, brighter straight up where the sky
+shows through.
+
+**Volume**: every liquid keeps its see-through volume box for side views (the
+Training Range's tank behind glass, a pool's wall); for water and swamp it has
+no top, so the surface shader alone colours the water seen from above. Same two
+draw calls per body as the old material (surface and volume).
 
 **Cost** (measured with SwiftShader in headless Chromium, so frame times are
 relative): see the table in the change notes below.

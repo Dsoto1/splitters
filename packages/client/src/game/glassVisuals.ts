@@ -388,6 +388,9 @@ export class GlassVisuals {
       mesh.material = m;
       mesh.isPickable = false;
       mesh.alwaysSelectAsActiveMesh = true;
+      // Its bounds are a unit plane at the origin, so distance sorting would put it anywhere: draw the cracks after
+      // the other see-through things (glass, water). Depth testing still hides them behind walls.
+      mesh.alphaIndex = 1000;
       const matrices = new Float32Array(MAX_CRACKS * 16);
       mesh.thinInstanceSetBuffer('matrix', matrices, 16, false);
       mesh.thinInstanceCount = 0;
