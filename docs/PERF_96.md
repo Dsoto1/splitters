@@ -438,3 +438,47 @@ there on maps with ground mist).
   buffers if it shows up on real hardware.
 - Friends' snapshots are still encoded in the host's worker and relayed by
   the page (data channels live on the page).
+
+## Bot behaviour pass (27 Oct 2026)
+
+Spawning, squads, roles and routes (docs/BOTS.md). Before = f5a7f9c with the
+same bench (behaviour measures copied in), after = this pass; both
+`pnpm bench:96:clump`, two runs each, interleaved, on the shared 4-core box
+(load 1.4–2.9). Behaviour numbers are deterministic (identical across runs).
+
+CPU a tick (ms, mean of two runs) and bot think:
+
+| Map | layout | before CPU | after CPU | before think | after think |
+|---|---|---|---|---|---|
+| norman_shores | spread | 6.60 | 6.54 | 1.60 | 1.75 |
+| norman_shores | clumped | 7.97 | 7.50 | 1.70 | 1.60 |
+| frost_basin | spread | 5.81 | 4.08 | 1.67 | 1.07 |
+| frost_basin | clumped | 5.06 | 5.30 | 1.64 | 1.71 |
+| riot_junction | spread | 5.70 | 5.21 | 1.58 | 1.41 |
+| riot_junction | clumped | 5.03 | 5.04 | 1.45 | 1.39 |
+
+Clumped total over the three maps 18.06 → 17.84 ms; Frost Basin clumped is
+within noise of before (+0.24 ms, all in movement, which the change doesn't
+touch; the after runs had the higher load). `clumpPerf.test.ts`: 9.16 ms vs
+11.43 spread (x0.80).
+
+Behaviour, 96 bots, 30 s after a 10 s warm-up (spread layout):
+
+| Map | coverage / min | spread | crowd | kills/min | stuck |
+|---|---|---|---|---|---|
+| norman_shores | 18.0 → 21.3 % | 0.615 → 0.657 | 14.5 → 8.0 | 2 → 6 | 29 → 35 |
+| frost_basin | 18.3 → 17.8 % | 0.621 → 0.587 | 11.4 → 10.0 | 38 → 4 | 30 → 23 |
+| riot_junction | 26.7 → 31.8 % | 0.653 → 0.690 | 10.7 → 9.8 | 100 → 76 | 114 → 69 |
+
+The same over 120 s (`bench 96 120 … --warmup=10`): Frost Basin coverage
+21.4 → 23.0 %, spread 0.657 → 0.680, crowd 9.3 → 8.0, kills/min 66 → 53,
+stuck recoveries 211 → 137; Norman Shores coverage 21.6 → 26.2 %, spread
+0.634 → 0.682, crowd 13.7 → 9.1, kills/min 8 → 20, stuck 200 → 166. Spawn
+deaths in big team matches stay under 1 %. Frost Basin's first fights come
+later (squads travel together and spread over the map), so its first 30 s
+have few kills.
+
+32 bots on the small arena (`bench 32 30`): CPU 3.05 → 2.90 ms, bot think
+1.14 → 1.04; kills/min 276 → 292; spawn deaths 43.5 → 47.3 % (five regions
+for 32 players: everyone is in sight of a spawn); idle samples 17 → 29 %
+(campers holding spots).
