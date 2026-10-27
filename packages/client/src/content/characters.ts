@@ -1,7 +1,7 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { Node } from '@babylonjs/core/node';
 import type { Skeleton } from '@babylonjs/core/Bones/skeleton';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -19,6 +19,7 @@ import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
 import { buildGear } from './gear.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
+import { asNode } from './models.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes. */
 export const LOD_DISTANCE = 18;
@@ -258,6 +259,9 @@ export class CharacterLibrary {
     }
     // One draw per material instead of one per part (a look is 8–12 skinned parts, most sharing the outfit's or the skin's material).
     if (!spec.armsOnly) meshes.splice(0, meshes.length, ...mergeSkinnedParts(meshes, `${name}_body`));
+    // The import's empty __root__ mesh (holding the skeleton's nodes and the parts): a plain node, one mesh fewer for the scene to check every frame.
+    for (const n of holder.getChildren()) if (n instanceof Mesh && !n.isAnInstance && !n.getTotalVertices() && !n.skeleton) asNode(n);
+    meshes.splice(0, meshes.length, ...meshes.filter((m) => !m.isDisposed()));
     for (const m of meshes) {
       m.isPickable = false;
       m.alwaysSelectAsActiveMesh = true;

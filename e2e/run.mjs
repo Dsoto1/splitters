@@ -786,6 +786,25 @@ async function physicsfxFlow(browser) {
   await page.waitForTimeout(300);
   check(chunks.length === 10 && chunks.every((c) => c.v < 1.5), `debris chunks land and come to rest (${chunks.length}, fastest ${Math.max(...chunks.map((c) => c.v)).toFixed(2)} m/s)`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-debris.png` });
+  // Destructibles are thin instances shared by every copy (one draw per shape): one darkens as it takes damage and is gone once broken.
+  const batches = () => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('sc_destructibles_'));
+  const crate = await page.evaluate((src) => {
+    const batches = eval(src);
+    const sc = window.__match.scenario;
+    const d = [...sc.destructibles.values()].find((x) => x.alive && !x.block && x.b.shootable !== false);
+    window.__crate = d;
+    const shown = batches().reduce((n, m) => n + m.thinInstanceGetWorldMatrices().filter((w) => w.m.some((v) => v !== 0)).length, 0);
+    sc.damageDestructible(d, d.health * 0.6, true, null);
+    return { draws: batches().length, shown };
+  }, `(${batches})`);
+  const darkest = `Math.min(1, ...(${batches})().flatMap((m) => Array.from(m._userThinInstanceBuffersStorage?.data?.color ?? [])))`;
+  await page.waitForFunction((src) => eval(src) < 0.9, darkest, { timeout: T(5000) }).catch(() => {});
+  const hurt = await page.evaluate((src) => eval(src), darkest);
+  await page.evaluate(() => window.__match.scenario.damageDestructible(window.__crate, 1e6, true, null));
+  const shownNow = `(${batches})().reduce((n, m) => n + m.thinInstanceGetWorldMatrices().filter((w) => w.m.some((v) => v !== 0)).length, 0)`;
+  await page.waitForFunction(([src, was]) => eval(src) < was, [shownNow, crate.shown], { timeout: T(5000) }).catch(() => {});
+  const after = await page.evaluate((src) => eval(src), shownNow);
+  check(crate.draws > 0 && crate.draws < crate.shown && hurt < 0.9 && after < crate.shown, `destructibles are shared thin instances that darken with damage and go when broken (${crate.draws} meshes for ${crate.shown} parts, darkest ${hurt.toFixed(2)}, ${crate.shown} → ${after} parts shown)`);
   // Custom blood colour from the map.
   const green = await page.evaluate(() => {
     const view = window.__cs.view;
@@ -1603,10 +1622,11 @@ async function charactersFlow(browser) {
   check(n === want && n >= 20, `character viewer builds every look and NPC (${n} of ${want})`);
   const lod = await page.evaluate(() => window.__charAnimators.filter((a) => a.ch.meshes.some((m) => m.getLODLevels?.().length)).length);
   check(lod === n, `every character has low-detail levels (${lod} of ${n})`);
-  // Parts sharing a material are merged, and gear is merged per finish: a character is a handful of draws, not one per part.
+  // Parts sharing a material are merged, and skin, hair, eyes and gear share the character atlas: a character is
+  // its outfit and its atlas draw (2 on average, 3 where a look mixes outfit families), not one per part.
   const draws = await page.evaluate(() => window.__charAnimators.map((a) => a.ch.meshes.filter((m) => !m.isDisposed() && !m.isBlocked && m.getTotalVertices() > 0).length));
   const most = Math.max(...draws);
-  check(most <= 8 && draws.reduce((s, d) => s + d, 0) / draws.length <= 5, `characters draw a few merged meshes each (at most ${most}, ${(draws.reduce((s, d) => s + d, 0) / draws.length).toFixed(1)} on average)`);
+  check(most <= 4 && draws.reduce((s, d) => s + d, 0) / draws.length <= 2.5, `characters draw a few merged meshes each (at most ${most}, ${(draws.reduce((s, d) => s + d, 0) / draws.length).toFixed(1)} on average)`);
   for (const label of ['Rifle', 'Run', 'shoot', 'Death', 'Idle']) {
     await page.click(`button:text-is("${label}")`);
     await page.waitForTimeout(300);
