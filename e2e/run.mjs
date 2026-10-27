@@ -1449,7 +1449,7 @@ async function mapsFlow(browser, half = 0) {
     await page.addInitScript(() => {
       setInterval(() => {
         const me = window.__match?.slots?.[window.__cs?.slot];
-        if (me) me.health = Math.max(me.health, 100);
+        if (me) me.health = Math.max(me.health, 1e6); // one rocket or revolver head shot can top 100
       }, 25);
     });
     await page.goto(`${CLIENT}/?offline=${id}`);
