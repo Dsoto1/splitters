@@ -167,7 +167,7 @@ How the hands close on the weapon:
 
 Your own view shows your look's arms holding the viewmodel:
 - **Which arms:** the arms part of your look. Under a sportswear top it's `athlete_fparms_m/f`, bare arms cut from the base body for this view only.
-- **Whole-body characters** (Iron Knight, Capt. Nova, The Dapper, and the creature originals: Goblin, Wealthy Otter, Boglurker, Salamander Warlord, Hyena Warrior) wear the universal arms in first person: a base-body arms part on the shared rig (so every gun's grip fits), with the sleeves dyed and the hands tinted to match the character (`whole.cloth`/`trim`/`skin` in `looks.ts`; a glove colour goes in `skin`). The bare-armed creatures wear the peasant arms with the sleeves dyed to their skin.
+- **Whole-body characters** (Iron Knight, Capt. Nova, The Dapper, the creature originals: Goblin, Wealthy Otter, Boglurker, Salamander Warlord, Hyena Warrior, and the community originals: Elder Tomo, The Visitor, Biscuit, Flt. Lt. Ember, Cap'n Barnacle, Big Bogdan) wear the universal arms in first person: a base-body arms part on the shared rig (so every gun's grip fits), with the sleeves dyed and the hands tinted to match the character (`whole.cloth`/`trim`/`skin` in `looks.ts`; a glove colour goes in `skin`). The bare-armed creatures wear the peasant arms with the sleeves dyed to their skin.
 - **Placement:** they hang from the camera a little in front of the eyes. The shoulders are never in view, and long guns stay within reach.
 - **Grip:** the gun keeps its tuned viewmodel placement, with bob, recoil and the reload dip. `gripExternal` IKs the palms onto its grip and support points with the same solver as third person.
 
@@ -239,6 +239,20 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   you with a grenade launcher, hyenas run you down with SMGs. They have no
   `npc:` skin of their own (players pick the look). `SKIN_DEBUG=<dir>` on the
   script writes each rest mesh coloured by joint to check the weights.
+- **The community originals** (Meshy community T-pose downloads, CC0 per the
+  owner; see ASSET_SOURCES.md) go through the same in-house rig. Modelled in a
+  T-pose, their arm joints sit on one level line, read off slab profiles of
+  each limb. Looks: Elder Tomo (robed monk, the robe skinned as cloth), The
+  Visitor (grey alien), Biscuit (a tabby cat on its hind legs: tail on the
+  hips, digitigrade legs on their centre line; `size: 'small'`), Flt. Lt.
+  Ember (flight suit), Cap'n Barnacle (pirate with a peg leg; no foot turn,
+  so the peg stays straight) and Big Bogdan (circus strongman;
+  `size: 'large'`). NPC roles (appended to `NPC_ROLES`): `alien` (Visitor,
+  laser rifle), `pirate` (sawed-off) and `titan` (Strongman, spin gun, 300
+  health). The cat's hips sit at 60% of the rig's height, so a body whose hip
+  height differs from the rig's by more than 10% has its hip track scaled,
+  not shifted (`retarget` in `characters.ts`): with a plain offset its death
+  pose lay 0.8 m under the floor.
 - **Their skin weights** (`tools/content/autoskin.mjs`) are bone heat: each
   vertex is tied to the nearest bone it can see (the line to it stays inside a
   voxel fill of the body, and the bone is the nearest along the surface too, so

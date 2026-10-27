@@ -315,7 +315,8 @@ for (const f of charEntries) {
     triangles: f.triangles,
     bytes: f.bytes,
     source: f.source,
-    title: packs.map((p) => p.title).join(' + '),
+    // Community downloads name the model and the download's file date.
+    title: `${packs.map((p) => p.title).join(' + ')}${f.model ? `: ${f.model} (download dated ${f.date})` : ''}`,
     creator: [...new Set(packs.map((p) => p.creator))].join(', '),
     url: packs.map((p) => p.url).join(' '),
     license: [...new Set(packs.map((p) => p.license))].join(', '),

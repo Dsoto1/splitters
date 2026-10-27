@@ -36,7 +36,9 @@
 // counts as cloth), to check the weights; ONLY=<ids> rebuilds just those. Then it goes through the same
 // steps as the rest. Their first-person arms are the universal ones (looks.ts),
 // so they get no _fparms file. A character whose download isn't there is kept
-// as built (checked against the lock).
+// as built (checked against the lock). The Meshy community T-pose downloads
+// (CC0 per the owner) are FBX_CHARACTERS too, with their own `source` pack and
+// the model's name and download date (`community`) recorded in the lock.
 
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -178,6 +180,106 @@ const FBX_CHARACTERS = [
       spine: [[0, 0.53, -0.02], [0, 0.6, -0.02], [0, 0.67, 0], [0, 0.74, 0], [0, 0.83, 0], [0, 0.87, 0.03], [0, 0.99, 0.05]],
       L: [[0.04, 0.8, 0], [0.11, 0.78, 0], [0.158, 0.642, 0], [0.175, 0.508, 0.02], [0.183, 0.442, 0.03], [0.06, 0.51, 0.05], [0.105, 0.33, 0.055], [0.11, 0.15, -0.01], [0.11, 0.03, 0.09], [0.11, 0.02, 0.14]],
       R: [[-0.04, 0.8, 0], [-0.11, 0.78, 0], [-0.158, 0.642, 0], [-0.175, 0.508, 0.02], [-0.183, 0.442, 0.03], [-0.06, 0.51, 0.05], [-0.105, 0.33, 0.055], [-0.11, 0.15, -0.01], [-0.11, 0.03, 0.09], [-0.11, 0.02, 0.14]],
+    }),
+  },
+  // Meshy community downloads (CC0 per the owner; `community`: the model's name and the download's file date), all
+  // modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm.
+  {
+    id: 'meshy_elder',
+    source: 'meshy-community-characters',
+    community: { model: 'Elder T-pose', date: '2025-11-14' },
+    fbx: /^Meshy_AI_Elder_T_POSE_.*_texture\.fbx$/,
+    // Its robe hangs below the hips (autoskin.mjs: it follows the pelvis more than the legs).
+    cloth: true,
+    triangles: 11000,
+    feet: true,
+    metallic: 0,
+    roughness: 0.75,
+    joints: landmarks({
+      spine: [[0, 0.52, 0], [0, 0.585, 0], [0, 0.65, 0], [0, 0.72, -0.005], [0, 0.825, -0.01], [0, 0.865, 0], [0, 1, 0]],
+      L: [[0.035, 0.79, 0], [0.115, 0.775, -0.01], [0.26, 0.772, 0], [0.4, 0.768, 0.012], [0.49, 0.768, 0.015], [0.085, 0.5, 0], [0.09, 0.28, 0], [0.093, 0.065, -0.015], [0.1, 0.02, 0.06], [0.1, 0.015, 0.11]],
+      R: [[-0.035, 0.79, 0], [-0.115, 0.775, -0.01], [-0.26, 0.772, 0], [-0.4, 0.768, 0.012], [-0.49, 0.768, 0.015], [-0.085, 0.5, 0], [-0.09, 0.28, 0], [-0.093, 0.065, -0.015], [-0.1, 0.02, 0.06], [-0.1, 0.015, 0.11]],
+    }),
+  },
+  {
+    id: 'meshy_alien',
+    source: 'meshy-community-characters',
+    community: { model: 'T Pose Alien', date: '2026-07-21' },
+    fbx: /^Meshy_AI_T_Pose_Alien_.*_texture\.fbx$/,
+    triangles: 10000,
+    feet: true,
+    metallic: 0,
+    roughness: 0.55,
+    joints: landmarks({
+      spine: [[0, 0.5, -0.025], [0, 0.565, -0.02], [0, 0.63, -0.015], [0, 0.7, -0.02], [0, 0.775, -0.025], [0, 0.815, -0.02], [0, 1, 0]],
+      L: [[0.025, 0.755, -0.02], [0.075, 0.75, -0.045], [0.2, 0.733, -0.062], [0.33, 0.722, -0.055], [0.41, 0.71, -0.06], [0.04, 0.48, -0.02], [0.042, 0.3, -0.03], [0.048, 0.08, -0.054], [0.055, 0.02, 0], [0.06, 0.01, 0.05]],
+      R: [[-0.025, 0.755, -0.02], [-0.075, 0.75, -0.045], [-0.2, 0.733, -0.062], [-0.33, 0.722, -0.055], [-0.41, 0.71, -0.06], [-0.04, 0.48, -0.02], [-0.042, 0.3, -0.03], [-0.048, 0.08, -0.054], [-0.055, 0.02, 0], [-0.06, 0.01, 0.05]],
+    }),
+  },
+  {
+    id: 'meshy_cat',
+    source: 'meshy-community-characters',
+    community: { model: 'T Pose Cat', date: '2026-03-11' },
+    fbx: /^Meshy_AI_T_Pose_Cat_.*_texture\.fbx$/,
+    // Digitigrade hind legs: joints on the leg's centre line (hock as the ankle, paw as the foot), as for the hyena.
+    tail: [[0, 0.27, 0], [0, 0.17, -0.1], [0, 0.07, -0.27]],
+    triangles: 10000,
+    feet: true,
+    metallic: 0,
+    roughness: 0.8,
+    joints: landmarks({
+      spine: [[0, 0.3, 0.06], [0, 0.42, 0.08], [0, 0.54, 0.09], [0, 0.66, 0.085], [0, 0.79, 0.08], [0, 0.83, 0.1], [0, 0.97, 0.13]],
+      L: [[0.04, 0.775, 0.07], [0.13, 0.765, 0.06], [0.26, 0.755, 0.085], [0.38, 0.763, 0.11], [0.45, 0.762, 0.12], [0.1, 0.27, 0.08], [0.13, 0.16, 0.1], [0.145, 0.07, 0.07], [0.17, 0.025, 0.15], [0.19, 0.01, 0.21]],
+      R: [[-0.04, 0.775, 0.07], [-0.13, 0.765, 0.06], [-0.26, 0.755, 0.085], [-0.38, 0.763, 0.11], [-0.45, 0.762, 0.12], [-0.1, 0.27, 0.08], [-0.13, 0.16, 0.1], [-0.145, 0.07, 0.07], [-0.17, 0.025, 0.15], [-0.19, 0.01, 0.21]],
+    }),
+  },
+  {
+    id: 'meshy_pilot',
+    source: 'meshy-community-characters',
+    community: { model: 'T Pose Pilot', date: '2026-05-10' },
+    fbx: /^Meshy_AI_T_Pose_Pilot_.*_texture\.fbx$/,
+    // The suit's blue sleeve patch (a red swoosh on a blue field) goes to the suit's orange.
+    scrubBlue: '#a8582a',
+    triangles: 11000,
+    feet: true,
+    metallic: 0.05,
+    roughness: 0.65,
+    joints: landmarks({
+      spine: [[0, 0.5, -0.005], [0, 0.57, 0], [0, 0.64, 0], [0, 0.72, -0.005], [0, 0.83, -0.01], [0, 0.87, 0], [0, 1, 0]],
+      L: [[0.035, 0.79, -0.01], [0.11, 0.78, -0.02], [0.25, 0.76, -0.02], [0.385, 0.753, -0.013], [0.475, 0.748, -0.012], [0.07, 0.48, 0], [0.075, 0.28, -0.01], [0.088, 0.07, -0.03], [0.095, 0.02, 0.05], [0.095, 0.015, 0.095]],
+      R: [[-0.035, 0.79, -0.01], [-0.11, 0.78, -0.02], [-0.25, 0.76, -0.02], [-0.385, 0.753, -0.013], [-0.475, 0.748, -0.012], [-0.07, 0.48, 0], [-0.075, 0.28, -0.01], [-0.088, 0.07, -0.03], [-0.095, 0.02, 0.05], [-0.095, 0.015, 0.095]],
+    }),
+  },
+  {
+    id: 'meshy_pirate',
+    source: 'meshy-community-characters',
+    community: { model: 'T Pose Pirate', date: '2026-07-14' },
+    fbx: /^Meshy_AI_T_Pose_Pirate_.*_texture\.fbx$/,
+    // Long coat tails below the hips.
+    cloth: true,
+    triangles: 11000,
+    // No foot turn: the left leg is a wooden peg (its "foot" bones run down the peg).
+    metallic: 0.05,
+    roughness: 0.7,
+    joints: landmarks({
+      spine: [[0, 0.5, 0], [0, 0.57, -0.005], [0, 0.64, -0.005], [0, 0.72, -0.01], [0, 0.815, -0.01], [0, 0.85, 0], [0, 0.97, 0]],
+      L: [[0.035, 0.77, -0.02], [0.115, 0.758, -0.045], [0.22, 0.748, -0.05], [0.33, 0.74, -0.05], [0.424, 0.732, -0.047], [0.07, 0.48, 0], [0.065, 0.25, -0.013], [0.068, 0.07, -0.007], [0.069, 0.02, -0.005], [0.069, 0, -0.004]],
+      R: [[-0.035, 0.77, -0.02], [-0.115, 0.758, -0.045], [-0.22, 0.748, -0.05], [-0.33, 0.74, -0.05], [-0.424, 0.732, -0.047], [-0.07, 0.48, 0], [-0.065, 0.26, -0.02], [-0.075, 0.07, -0.04], [-0.085, 0.02, 0.02], [-0.085, 0.015, 0.06]],
+    }),
+  },
+  {
+    id: 'meshy_titan',
+    source: 'meshy-community-characters',
+    community: { model: 'T Pose Titan', date: '2026-05-03' },
+    fbx: /^Meshy_AI_T_Pose_Titan_.*_texture\.fbx$/,
+    triangles: 11000,
+    feet: true,
+    metallic: 0,
+    roughness: 0.6,
+    joints: landmarks({
+      spine: [[0, 0.48, -0.01], [0, 0.56, -0.01], [0, 0.64, -0.01], [0, 0.73, -0.02], [0, 0.855, -0.02], [0, 0.89, -0.005], [0, 1, -0.005]],
+      L: [[0.045, 0.83, -0.02], [0.14, 0.8, -0.03], [0.29, 0.795, -0.045], [0.44, 0.79, -0.03], [0.565, 0.784, -0.03], [0.085, 0.46, 0], [0.095, 0.27, -0.015], [0.125, 0.07, -0.04], [0.14, 0.02, 0.04], [0.14, 0.015, 0.085]],
+      R: [[-0.045, 0.83, -0.02], [-0.14, 0.8, -0.03], [-0.29, 0.795, -0.045], [-0.44, 0.79, -0.03], [-0.565, 0.784, -0.03], [-0.085, 0.46, 0], [-0.095, 0.27, -0.015], [-0.125, 0.07, -0.04], [-0.14, 0.02, 0.04], [-0.14, 0.015, 0.085]],
     }),
   },
 ];
@@ -919,7 +1021,7 @@ for (const c of FBX_CHARACTERS) {
   }
   const { src, sourceTriangles, workTriangles } = await readFbx(file, c, ual);
   const built = await build(c, src, `${c.id}.glb`, { ratio: c.triangles / workTriangles });
-  lock.files.push({ role: 'meshy-autorig', id: c.id, source: 'meshy-owned', src: basename(file), sourceTriangles, ...built });
+  lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.source ?? 'meshy-owned', ...(c.community ?? {}), src: basename(file), sourceTriangles, ...built });
 }
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
 console.log(`wrote ${lock.files.length} files and content/meshy.lock.json`);
