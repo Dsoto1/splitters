@@ -18,8 +18,8 @@
 // Run against a built client being served (pnpm build, then vite preview):
 //   pnpm --filter @tiletrigger/client exec vite preview --port 4799
 //   node tools/content/capture-map-shots.mjs http://localhost:4799 [map ids…]
-// SHOT_JOBS=2 captures maps in parallel; SHOT_CANDIDATES=<dir> also saves every rendered candidate there.
-import { mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
+// SHOT_JOBS=2 captures maps in parallel; SHOT_MISSING=1 only maps without a picture; SHOT_CANDIDATES=<dir> also saves every rendered candidate there.
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
@@ -35,7 +35,9 @@ const RETIRED = new Set([...retiredSrc.slice(retiredSrc.indexOf('new Set([')).ma
 const ids = readdirSync(join(ROOT, 'maps'))
   .filter((f) => f.endsWith('.json'))
   .map((f) => f.slice(0, -5))
-  .filter((id) => (only.length ? only.includes(id) : !RETIRED.has(id)));
+  .filter((id) => (only.length ? only.includes(id) : !RETIRED.has(id)))
+  // SHOT_MISSING=1: only maps without a picture yet (resuming an interrupted run).
+  .filter((id) => !process.env.SHOT_MISSING || !existsSync(join(OUT, `${id}.jpg`)));
 mkdirSync(OUT, { recursive: true });
 if (CANDS) mkdirSync(CANDS, { recursive: true });
 /** Vertical field of view of the picture (radians). */
@@ -260,7 +262,7 @@ const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=sw
 const results = [];
 async function captureOne(id) {
   const map = JSON.parse(readFileSync(join(ROOT, 'maps', `${id}.json`), 'utf8'));
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
   await ctx.addInitScript(() => {
     try {
       localStorage.setItem('tiletrigger.graphics', 'medium');
@@ -284,8 +286,15 @@ async function captureOne(id) {
     const f0 = await page.evaluate(() => window.__cs.view.scene.getFrameId());
     await page.waitForFunction((f0) => window.__cs.view.scene.getFrameId() > f0 + 3, f0, { timeout: 90000 }).catch(() => {});
     await page.evaluate(() => {
-      window.__cs.view.scene.getEngine().stopRenderLoop();
-      window.__photo = window.__cs.view.photoCamera();
+      const view = window.__cs.view;
+      view.scene.getEngine().stopRenderLoop();
+      // No people in the picture (you, bots and their bodies, NPC squads).
+      for (const a of view.avatars?.values() ?? []) {
+        a.root.setEnabled(false);
+        a.placeholder?.setEnabled(false);
+        a.ragdoll?.root?.setEnabled?.(false);
+      }
+      window.__photo = view.photoCamera();
     });
     const fixed = map.metadata.thumbnailCamera;
     let views;

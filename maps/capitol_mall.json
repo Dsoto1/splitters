@@ -19,7 +19,19 @@
       "core.koth",
       "core.deathmatch",
       "core.elim"
-    ]
+    ],
+    "thumbnailCamera": {
+      "position": [
+        80,
+        22,
+        30
+      ],
+      "target": [
+        0,
+        6,
+        0
+      ]
+    }
   },
   "classicStructure": {
     "cellSize": 8,
