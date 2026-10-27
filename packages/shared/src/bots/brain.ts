@@ -11,6 +11,8 @@ import { findCover, stillCovered, type CoverSpot } from './cover.ts';
 import type { SightCache } from './sight.ts';
 import type { ViewGrid } from './grid.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
+import type { BotPlan } from './director.ts';
+import type { VantageBoard, VantageKind } from './vantage.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
 import { fanPoints, isDoorway, solveThrow, turnAngle } from './tactics.ts';
@@ -122,6 +124,8 @@ export interface BotWorldView {
   crowded?: boolean;
   /** `allies` on a grid (big matches): keeping apart reads the cells around the bot. */
   alliesGrid?: ViewGrid | undefined;
+  /** The match's planning for this bot (role, squad, side knowledge: director.ts); undefined without one. */
+  plan?: BotPlan | undefined;
 }
 
 /** What aiming reads (BotBrain.steer reads the whole view, like think). */
@@ -316,6 +320,23 @@ export class BotBrain {
   private holdStill = false;
   /** Last tick's act was aiming and shooting at the target (nothing else on): steer() can stand in for a think. */
   private steerable = false;
+  /** Route variety and roles (seeded per bot): a stream of its own, so the bot's other choices stay as they were. */
+  private readonly routeRng: () => number;
+  /**
+   * Holding a vantage spot (camper and sniper roles, director.ts): which spot,
+   * when it got there (-1: on the way), how long it holds once there, until when.
+   */
+  private post: { board: VantageBoard; spot: number; kind: VantageKind; arrived: number; hold: number; until: number } | null = null;
+  private nextPost = 0;
+  private lastSpot = -1;
+  /** Recent stuck recoveries (when and where), to notice being stuck in a loop. */
+  private readonly stuckLog: { tick: number; x: number; z: number }[] = [];
+  /** Times it gave up on a goal it kept getting stuck on (debug and bench). */
+  stuckLoops = 0;
+  /** A goal it kept getting stuck on: left alone until then. */
+  private avoid: { pos: Vec3; until: number } | null = null;
+  /** The squad goal last taken on (a new one replaces the bot's own goal). */
+  private squadGoal: Vec3 | null = null;
 
   constructor(
     readonly slot: number,
@@ -324,6 +345,7 @@ export class BotBrain {
     seed: number,
   ) {
     this.rng = createRng(seed * 7919 + slot);
+    this.routeRng = createRng((seed * 104729 + slot * 7919 + 17) >>> 0);
     this.aim = new AimModel(this.rng, difficulty, profile);
   }
 
@@ -385,6 +407,28 @@ export class BotBrain {
     this.strafing = false;
     this.moveX = this.moveZ = 0;
     this.steerable = false;
+    if (this.post) this.post.board.release(this.post.spot, this.slot);
+    this.post = null;
+    this.stuckLog.length = 0;
+    this.avoid = null;
+    this.squadGoal = null;
+  }
+
+  /** It killed someone: a sniper moves on to another spot soon after (they know where the shot came from). */
+  onKill(tick: number): void {
+    const p = this.post;
+    if (p?.kind === 'sniper' && p.arrived >= 0) p.until = Math.min(p.until, tick + Math.round(TICK_RATE * (0.6 + this.routeRng() * 0.8)));
+  }
+
+  /** The role the match gave it (director.ts), 'squad' without one. */
+  role(view: Pick<BotWorldView, 'plan'>): string {
+    return view.plan?.role ?? 'squad';
+  }
+
+  /** Holding (or heading for) a vantage spot: its kind and position (debug and tests). */
+  get vantage(): { kind: VantageKind; pos: Vec3; arrived: boolean } | null {
+    const p = this.post;
+    return p ? { kind: p.kind, pos: p.board.spots[p.spot]!.pos, arrived: p.arrived >= 0 } : null;
   }
 
   // ------------------------------------------------------------------ main loop
@@ -454,7 +498,122 @@ export class BotBrain {
 
   /** Low on health by this bot's standards. */
   private hurt(view: BotWorldView): boolean {
-    return view.self.health < (this.profile.selfPreservation / 100) * PLAYER.maxHealth * 0.6;
+    return view.self.health < (this.profile.selfPreservation / 100) * PLAYER.maxHealth * (this.coward ? 0.8 : 0.6);
+  }
+
+  /** COWARD: gives up a fight sooner, and won't take on several at once. */
+  private get coward(): boolean {
+    return hasTag(this.profile, 'COWARD');
+  }
+
+  /** A coward who can see three or more enemies backs off (shooting) whatever its health. */
+  private outnumbered(): boolean {
+    return this.coward && this.visibleSince.size >= 3;
+  }
+
+  /** On its vantage spot and holding it. */
+  private posted(me: Vec3): boolean {
+    const p = this.post;
+    return !!p && p.arrived >= 0 && horizontalDistance(me, p.board.spots[p.spot]!.pos) < 1.6;
+  }
+
+  /** Done with the vantage spot (time up, flushed out, no way there): roam for a while before the next. */
+  private leavePost(tick: number, cooldownSeconds: number): void {
+    const p = this.post;
+    if (!p) return;
+    p.board.release(p.spot, this.slot);
+    this.post = null;
+    this.nextPost = tick + Math.round(TICK_RATE * cooldownSeconds);
+    this.roamGoal = null;
+    this.via = null;
+  }
+
+  /** How long a camper or sniper rests between spots (s): campers roam a good while (fun over camping), snipers relocate. */
+  private postCooldown(kind: VantageKind): number {
+    if (kind === 'sniper') return 4 + this.routeRng() * 6;
+    return (this.arena ? 60 : this.methodical ? 35 : 45) + this.routeRng() * 30;
+  }
+
+  /** A scoped gun with rounds in it. */
+  private hasScope(view: BotWorldView): boolean {
+    for (const w of view.inventory) if (w.def.view.zoomFov && !w.def.alt && (w.def.magazine === 0 || w.mag + w.reserve > 0)) return true;
+    return false;
+  }
+
+  /**
+   * Camper and sniper roles, out of a fight with nowhere it was sent: take up
+   * a free vantage spot (a camp spot with cover; a sniper spot with a long
+   * view, only with a scoped gun) for a limited time. Team modes prefer spots
+   * between the bases (not deep in its own, not in the enemy's).
+   */
+  private considerPost(view: BotWorldView): void {
+    const plan = view.plan;
+    const board = plan?.vantage;
+    const tick = view.tick;
+    if (!board || this.post || tick < this.nextPost || view.orderGoal) return;
+    if (plan.role !== 'camper' && plan.role !== 'sniper') return;
+    const kind: VantageKind = plan.role === 'camper' ? 'camp' : 'sniper';
+    if (kind === 'sniper' && !this.hasScope(view)) {
+      this.nextPost = tick + TICK_RATE * 5;
+      return;
+    }
+    const towards = plan.towards;
+    const prefer = towards?.length
+      ? (p: Vec3) => {
+          let near = Infinity;
+          for (const t of towards) near = Math.min(near, horizontalDistance(t, p));
+          return near < 35 ? -2 : near < 130 ? 0.4 : 0;
+        }
+      : undefined;
+    const i = board.pick(kind, view.self.pos, tick, kind === 'sniper' ? 110 : 75, this.routeRng, prefer, this.lastSpot);
+    if (i < 0) {
+      this.nextPost = tick + TICK_RATE * 8;
+      return;
+    }
+    const hold = kind === 'sniper' ? 25 + this.routeRng() * 25 : this.arena ? 10 + this.routeRng() * 8 : this.methodical ? 25 + this.routeRng() * 20 : 18 + this.routeRng() * 17;
+    // Getting there gets a generous allowance; the hold starts on arrival.
+    this.post = { board, spot: i, kind, arrived: -1, hold: Math.round(TICK_RATE * hold), until: tick + TICK_RATE * 40 };
+    board.claim(i, this.slot, this.post.until);
+    this.lastSpot = i;
+  }
+
+  /**
+   * Going to or holding a vantage spot: get there, then stay on it (crouched,
+   * or prone for a sniper with a scope) watching its sightline with a slow
+   * sweep. Null when the post is over (time up, no way there).
+   */
+  private actPost(view: BotWorldView): { moveYaw: number | null; stance: Stance; moveScale: number } | null {
+    const p = this.post!;
+    const spot = p.board.spots[p.spot]!;
+    const me = view.self.pos;
+    const tick = view.tick;
+    if (tick >= p.until) {
+      this.leavePost(tick, this.postCooldown(p.kind));
+      return null;
+    }
+    const d = horizontalDistance(me, spot.pos);
+    if (p.arrived < 0) {
+      if (d < 1.2 && Math.abs(me.y - spot.pos.y) < 1.5) {
+        p.arrived = tick;
+        p.until = tick + p.hold;
+        p.board.claim(p.spot, this.slot, p.until);
+      } else {
+        const moveYaw = this.followPathTo(view, spot.pos, false);
+        if (moveYaw === null) {
+          // No way there (a roof, a shut door): leave that spot alone for a couple of minutes.
+          p.board.unreachable(p.spot, this.slot, tick, TICK_RATE * 120);
+          this.post = null;
+          this.nextPost = tick + TICK_RATE * 3;
+          return null;
+        }
+        return { moveYaw, stance: 0, moveScale: 1 };
+      }
+    }
+    const sweep = Math.sin((tick + this.slot * 53) / (p.kind === 'sniper' ? 90 : 55)) * (p.kind === 'sniper' ? 0.35 : 0.7);
+    this.turnToward(spot.yaw + sweep, spot.height > 2 ? -0.08 : 0);
+    const scoped = !!this.heldDef(view)?.view.zoomFov;
+    const settled = view.tick - this.underFireTick > TICK_RATE * 2;
+    return { moveYaw: d > 0.6 ? Math.atan2(spot.pos.x - me.x, spot.pos.z - me.z) : null, stance: p.kind === 'sniper' && scoped && settled ? 2 : 1, moveScale: 0.5 };
   }
 
   private get berserker(): boolean {
@@ -498,6 +657,12 @@ export class BotBrain {
     const tick = view.tick;
     const hurt = this.hurt(view);
     const underFire = tick - this.underFireTick < TICK_RATE * 1.5 || tick - this.hurtTick < TICK_RATE * 1.5;
+    // Flushed off a vantage spot: hurt there, or shot at by someone it can't see.
+    const post = this.post;
+    if (post && post.arrived >= 0 && (this.hurtTick > post.arrived || (underFire && !target))) this.leavePost(tick, this.postCooldown(post.kind));
+    // Holding a spot: an enemy who slipped out of view isn't worth leaving it for, unless close.
+    const holding = this.posted(me.pos);
+    const stayPut = (p: Vec3) => holding && horizontalDistance(me.pos, p) > 10;
 
     // A lift from a teammate is worth taking even when hurt or with someone about.
     if (this.mountPlan && (this.mountPlan.ride || (!hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)))) this.state = 'mount';
@@ -513,9 +678,9 @@ export class BotBrain {
       this.via = null;
     } else if (this.state === 'retreat' && this.lastKnown && tick - this.lastKnown.tick < TICK_RATE * 3) {
       // Keep running for a moment after losing sight of the threat.
-    } else if (this.lastKnown && !hurt && tick - this.lastKnown.tick < TICK_RATE * (1 + (this.profile.pursuitPersistence / 100) * 7) && horizontalDistance(me.pos, this.lastKnown.pos) > 1.5) {
+    } else if (this.lastKnown && !hurt && !stayPut(this.lastKnown.pos) && tick - this.lastKnown.tick < TICK_RATE * (1 + (this.profile.pursuitPersistence / 100) * 7) && horizontalDistance(me.pos, this.lastKnown.pos) > 1.5) {
       this.state = 'chase';
-    } else if (this.heard && tick - this.heard.tick < TICK_RATE * 10 && horizontalDistance(me.pos, this.heard.pos) > 2) {
+    } else if (this.heard && !stayPut(this.heard.pos) && tick - this.heard.tick < TICK_RATE * 10 && horizontalDistance(me.pos, this.heard.pos) > 2) {
       this.state = 'investigate';
     } else {
       if (this.state === 'chase' && this.lastKnown && horizontalDistance(me.pos, this.lastKnown.pos) <= 1.5) {
@@ -526,13 +691,14 @@ export class BotBrain {
       if (this.state === 'investigate') this.heard = null;
       if (this.state === 'chase') this.lastKnown = null;
       this.state = this.mountPlan ? 'mount' : view.orderGoal ? 'hold' : 'advance';
+      if (this.state === 'advance') this.considerPost(view);
     }
 
     // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
     const threat = target?.pos ?? (underFire ? this.threatFrom : null);
     // Better bots take cover far more often; arena bots mostly keep moving instead.
     const coverChance = this.arena ? this.tactical * 0.4 : 0.15 + this.tactical * 1.7 + (this.methodical ? 0.3 : 0);
-    if (threat && !this.berserker && this.rng() < coverChance) {
+    if (threat && !this.berserker && !holding && this.rng() < coverChance) {
       const dist = horizontalDistance(me.pos, threat);
       const held = this.heldWeapon(view);
       const lowAmmo = !!held && held.def.magazine > 0 && held.mag <= Math.ceil(held.def.magazine * 0.25);
@@ -693,6 +859,7 @@ export class BotBrain {
             if (dist > preferred - 1.5) this.spacing = 'hold';
           } else if (dist > preferred + 4 || (squadAdvance && dist > 8)) this.spacing = 'close';
           else if (dist < preferred - 4) this.spacing = 'back';
+          if (this.outnumbered() && dist < preferred + 6) this.spacing = 'back';
           this.strafing = this.strafing ? dist < 15.5 : dist < 13;
           if (this.spacing === 'close') {
             moveYaw = this.followPathTo(view, t.pos, true);
@@ -702,6 +869,13 @@ export class BotBrain {
           // Holding at range: crouch to steady the aim; snipers lie down.
           if (moveYaw === null && !backOff && !strafe) {
             stance = this.wantsProne(view, dist) ? 2 : dist > 13 && !this.arena && this.tactical > 0.25 ? 1 : 0;
+          }
+          // On a vantage spot: fight from it (unless they're right on top of it).
+          if (dist > 7 && this.posted(me.pos)) {
+            moveYaw = null;
+            backOff = false;
+            strafe = false;
+            stance = this.wantsProne(view, dist) || (this.post!.kind === 'sniper' && !!def?.view.zoomFov && dist > 15) ? 2 : 1;
           }
         }
         if (!sprint) aimAtTarget(t);
@@ -795,6 +969,26 @@ export class BotBrain {
       case 'advance':
       case 'roam':
       default: {
+        // Camper and sniper roles: a vantage spot to hold.
+        if (this.post) {
+          const r = this.actPost(view);
+          if (r) {
+            moveYaw = r.moveYaw;
+            stance = r.stance;
+            moveScale = r.moveScale;
+            lookDone = r.moveYaw === null || horizontalDistance(me.pos, this.post!.board.spots[this.post!.spot]!.pos) < 1.6;
+            break;
+          }
+        }
+        // In a squad: its goal and route replace the bot's own whenever the squad picks a new one.
+        const cl = view.plan?.cluster ?? null;
+        if (cl?.goal && !view.orderGoal) {
+          if (!this.squadGoal || horizontalDistance(this.squadGoal, cl.goal) > 3) {
+            this.squadGoal = { ...cl.goal };
+            this.roamGoal = { ...cl.goal };
+            this.via = cl.via ? { ...cl.via } : null;
+          }
+        } else this.squadGoal = null;
         if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 2 || (tick + this.slot) % (TICK_RATE * 2) === 0) {
           // Re-evaluate pickups now and then; otherwise keep advancing on the current goal.
           const pick = this.pickupGoal(view);
@@ -806,13 +1000,22 @@ export class BotBrain {
           if (horizontalDistance(me.pos, this.via) < 4) this.via = null;
           else goal = this.via;
         }
-        moveYaw = this.followPathTo(view, goal, false);
+        // A squad member far from its leader catches up first (regroups); one ahead of it waits.
+        const follower = !!cl && cl.leader !== me.slot;
+        const fromLeader = cl ? horizontalDistance(me.pos, cl.leaderPos) : 0;
+        const regroup = follower && fromLeader > 28;
+        if (regroup) goal = cl!.leaderPos;
+        moveYaw = this.followPathTo(view, goal, regroup);
         // Arrived or unreachable: pick another goal next tick.
-        if (moveYaw === null) {
+        if (moveYaw === null && !regroup) {
           this.roamGoal = null;
           this.via = null;
         }
         moveScale = this.careful() && this.clearing ? 0.7 : 1;
+        if (cl && moveYaw !== null && !regroup) {
+          if (follower && cl.goal && fromLeader > cl.spacing * 2 && horizontalDistance(me.pos, cl.goal) < horizontalDistance(cl.leaderPos, cl.goal) - 5) moveScale = Math.min(moveScale, 0.35);
+          else if (!follower && cl.lagging) moveScale = Math.min(moveScale, 0.7);
+        }
         break;
       }
     }
@@ -1518,6 +1721,25 @@ export class BotBrain {
     const pts = view.spawnPoints;
     const places = view.nav.places();
     this.via = null;
+    const plan = view.plan;
+    if (plan?.regions && !view.orderGoal) {
+      // The side's knowledge: regions nobody has been to lately, toward the enemy, not crowded with teammates;
+      // each bot its own taste (explorers range far, lone wolves keep away from the rest) and its own route.
+      const lone = plan.role === 'lone_wolf';
+      const explore = this.profile.exploration / 100;
+      const o = { from: me.pos, tick: view.tick, rng: this.routeRng, ideal: 25 + explore * 50 + (lone ? 20 : 0), novelty: hasTag(this.profile, 'EXPLORER') ? 2 : 0.7 + explore, crowd: lone ? 2.5 : hasTag(this.profile, 'GRUNT') ? 0.2 : 0.8, towards: plan.towards, push: lone ? 0.8 : 1.2 - explore * 0.5, memory: this.memory };
+      let pick = plan.regions.pick(o);
+      const av = this.avoid;
+      if (pick && av && view.tick < av.until && horizontalDistance(pick.pos, av.pos) < 6) pick = plan.regions.pick(o);
+      if (pick) {
+        this.roamGoal = pick.pos;
+        const r = this.routeRng();
+        // Lone wolves flank wide; the rest take the left, the right or the straight way.
+        const lane = lone ? (r < 0.5 ? -1.6 : 1.6) : r < 0.35 ? -1 : r < 0.7 ? 1 : 0;
+        if (lane !== 0) this.via = laneWaypoint(places, me.pos, pick.pos, lane);
+        return;
+      }
+    }
     if (this.rng() * 100 < this.profile.exploration * 0.6 || pts.length === 0) {
       this.roamGoal = pickExploreGoal(places, pts, me.pos, this.memory, view.tick, this.rng, this.profile.exploration) ?? { ...(pts[0] ?? me.pos) };
     } else {
@@ -1633,6 +1855,14 @@ export class BotBrain {
         if (d > n.range || d < 3) continue;
         if (this.unreachable && view.tick < this.unreachable.until && horizontalDistance(n.pos, this.unreachable.pos) < 8) continue;
         if (!loud || d < loud.d) loud = { pos: n.pos, tick: n.tick, d };
+      }
+      // Big matches: a fight plenty of the side are already in (four or more within 12 m of it) is theirs, unless it's close.
+      if (loud && view.crowded && view.alliesGrid && loud.d > 18) {
+        let there = 0;
+        for (const a of view.alliesGrid.near(loud.pos.x, loud.pos.z, 12, this.nearScratch)) {
+          if (a.slot !== me.slot && horizontalDistance(a.pos, loud.pos) < 12 && ++there >= 4) break;
+        }
+        if (there >= 4) loud = null;
       }
       if (loud && (!this.heard || loud.tick > this.heard.tick + TICK_RATE)) {
         // Roughly where it came from (hearing isn't exact).
@@ -1884,6 +2114,24 @@ export class BotBrain {
     this.goal = null;
     this.lastPathTick = -Infinity;
     this.cover = null;
+    // Stuck three times in ten seconds in the same spot: whatever it is after can't be had from here. Give it up.
+    const log = this.stuckLog;
+    log.push({ tick: view.tick, x: pos.x, z: pos.z });
+    while (log.length && view.tick - log[0]!.tick > TICK_RATE * 10) log.shift();
+    if (log.length >= 3 && log.every((l) => Math.hypot(l.x - pos.x, l.z - pos.z) < 4)) {
+      log.length = 0;
+      this.stuckLoops++;
+      if (this.roamGoal) this.avoid = { pos: { ...this.roamGoal }, until: view.tick + TICK_RATE * 20 };
+      this.roamGoal = null;
+      this.via = null;
+      this.heard = null;
+      if (this.state === 'chase') this.lastKnown = null;
+      if (this.post) {
+        this.post.board.unreachable(this.post.spot, this.slot, view.tick, TICK_RATE * 120);
+        this.post = null;
+        this.nextPost = view.tick + TICK_RATE * 5;
+      }
+    }
     return true;
   }
 }

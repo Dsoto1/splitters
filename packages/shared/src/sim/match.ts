@@ -4,6 +4,9 @@ import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, ty
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
 import { SightCache } from '../bots/sight.ts';
 import { ViewGrid } from '../bots/grid.ts';
+import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, type DirectorMember } from '../bots/director.ts';
+import { regionLayout } from '../bots/regions.ts';
+import { VantageBoard, vantageFor } from '../bots/vantage.ts';
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
@@ -1136,6 +1139,7 @@ export class Match {
       c.bot.onSpawn(c.yaw);
       // Bots choose routes from the navmesh's sample places: build them now, not mid-match.
       this.nav.places();
+      this.refreshRoles();
     }
     return c;
   }
@@ -1184,6 +1188,7 @@ export class Match {
     c.bot = new BotBrain(c.slot, asCharacter ? profileFor(c.look, profile, this.rules.botStyle) : profile, difficulty, this.seed);
     c.bot.onSpawn(c.yaw);
     this.nav.places();
+    this.refreshRoles();
     this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name, bot: 1 });
     return c;
   }
@@ -1201,6 +1206,8 @@ export class Match {
       c.bot.onSpawn(c.yaw);
       this.botThought.delete(c.slot);
     }
+    this.rolesFor = -1;
+    this.refreshRoles();
   }
 
   /**
@@ -1253,6 +1260,8 @@ export class Match {
     this.leaveMount(c, false);
     this.physics.removeCollider(c.collider);
     this.slots[slot] = null;
+    this.director?.forget(slot);
+    this.rolesFor = -1;
   }
 
   /** Queue untrusted client inputs. Out-of-order or duplicate sequence numbers are dropped. */
@@ -1444,6 +1453,8 @@ export class Match {
       return list;
     };
     const anySentries = this.mounts.some((m) => m.def.sentry && m.alive);
+    this.directBots(actors);
+    const director = this.director;
     const every = this.botBudget(actors);
     // Big matches: each side's living members on a grid over the ground, for keeping apart.
     const alliesGrids = new Map<string, ViewGrid>();
@@ -1523,6 +1534,7 @@ export class Match {
         squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
         // (Always present, so every view has one shape: bot code reading it stays monomorphic.)
         alliesGrid: every > 1 && c.faction !== null ? alliesGrids.get(c.faction) : undefined,
+        plan: npc || !director || c.kind !== 'bot' ? undefined : director.planFor(c.slot),
       };
       // Big matches: between its full thinks a fighting bot steers: perception runs when due, its aim
       // follows the target and the trigger discipline runs, its move carries on (see BotBrain.steer).
@@ -1583,6 +1595,70 @@ export class Match {
   private botDeferred = new Set<number>();
   /** Grids reused tick to tick (runBots). */
   private readonly grids: ViewGrid[] = [];
+
+  /** Squads, roles and each side's map knowledge for Player Bots (bots/director.ts); made with the first bot. */
+  private director: BotDirector | null = null;
+  /** Player Bots the roles were last handed out for (-1: hand them out again). */
+  private rolesFor = -1;
+
+  /**
+   * Roles for the Player Bots (director.ts assignRoles: campers, snipers and
+   * lone wolves a small share each, by the match's bot style), when the roster
+   * has changed. The first time a camper or sniper turns up, the map's vantage
+   * spots are worked out (once per map: vantage.ts), at setup, not mid-tick.
+   */
+  private refreshRoles(): void {
+    const bots = this.combatants().filter((c) => c.kind === 'bot' && c.bot);
+    if (!bots.length || bots.length === this.rolesFor) return;
+    this.rolesFor = bots.length;
+    const places = this.nav.places();
+    this.director ??= new BotDirector(this.seed, regionLayout(places), places);
+    const roles = assignRoles(
+      bots.map((c) => ({ slot: c.slot, profile: c.bot!.profile })),
+      this.rules.botStyle ?? 'mixed',
+      this.seed,
+    );
+    for (const [slot, role] of roles) this.director.setRole(slot, role);
+    if (!this.director.vantage && [...roles.values()].some((r) => r === 'camper' || r === 'sniper')) {
+      this.director.vantage = new VantageBoard(vantageFor(places, (o, d, max) => this.physics.raycastWorld(o, d, max)));
+      for (const c of bots) this.director.planFor(c.slot).vantage = this.director.vantage;
+    }
+  }
+
+  /**
+   * The director's low-rate pass (once a second per side, sides staggered):
+   * each team's region knowledge, and squads in big team matches without an
+   * objective mode (objective modes send bots where the objective is).
+   */
+  private directBots(actors: readonly Combatant[]): void {
+    const d = this.director;
+    const teams = this.teams;
+    if (!d || !teams) return;
+    const squads = actors.length >= CLUSTER_MIN_PLAYERS && !this.mode && this.rules.mode !== 'core.coop' && this.rules.mode !== 'core.zombies';
+    teams.forEach((t, i) => {
+      if ((this.tick + i * 29) % TICK_RATE !== 0) return;
+      const everyone: Vec3[] = [];
+      const members: DirectorMember[] = [];
+      for (const c of actors) {
+        if (c.faction !== t.id || !c.alive) continue;
+        everyone.push(c.move.pos);
+        if (!c.bot || c.npc || c.kind !== 'bot') continue;
+        const fighting = c.bot.target !== null;
+        const seen = c.bot.lastSeen;
+        members.push({
+          slot: c.slot,
+          pos: c.move.pos,
+          fighting,
+          enemyAt: fighting && seen ? seen.pos : null,
+          free: !c.mount && !c.order && d.planFor(c.slot).role === 'squad',
+          teamLeader: this.isLeader(c),
+          profile: c.bot.profile,
+        });
+      }
+      const towards = this.spawnPoints.filter((s) => s.team !== null && s.team !== t.id && !s.generated).map((s) => s.pos);
+      d.update(this.tick, t.id, everyone, members, towards.length ? towards : null, squads, (slot, at) => this.slots[slot]?.bot?.alert(at, this.tick));
+    });
+  }
 
   /** Where a bot is told to go (squad orders, teammates' orders, co-op and mode goals), or null to roam. */
   private botGoal(c: Combatant, hostiles: Combatant[], zombies: boolean, coop: boolean): { pos: Vec3; radius: number } | null {
@@ -3765,6 +3841,7 @@ export class Match {
     // Kills never go down: a team kill just earns nothing (no kill, no streak).
     const teamKill = !!killer && killer !== victim && !this.hostile(killer, victim);
     if (killer && !killer.npc && !teamKill) killer.kills++;
+    if (killer && killer !== victim && !teamKill) killer.bot?.onKill(this.tick);
     victim.streak = 0;
     if (killer && killer !== victim && !killer.npc && killer.alive && !teamKill) {
       killer.streak = (killer.streak ?? 0) + 1;

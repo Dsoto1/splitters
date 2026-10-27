@@ -22,9 +22,12 @@ export interface BotProfile {
   rangePreference: number;
   /**
    * Behaviour tags the brain acts on: BERSERKER (rushes across open ground),
-   * SNIPER (scoped weapons from range, prone), COWARD, SUPPRESSOR (keeps
+   * SNIPER (scoped weapons from range, prone; holds long sightlines), CAMPER
+   * (holds a covered spot for a while), LONE_WOLF (no squad, flanks), COWARD
+   * (gives up fights early, backs off when outnumbered), SUPPRESSOR (keeps
    * firing at where an enemy went into cover), GRUNT (squad infantry that
-   * advances in pairs), NPC.
+   * advances in pairs, keeps close), EXPLORER (seeks unvisited places), NPC.
+   * Roles from them: docs/BOTS.md.
    */
   tags: string[];
   /** Weapon IDs this personality favours when choosing what to hold. */
@@ -150,10 +153,10 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     character('core.warden', 'Warden', { teamLoyalty: 85, objectivePriority: 80, tacticalAwareness: 80, selfPreservation: 60, tags: ['TACTICAL', 'SUPPRESSOR'], weaponPreferences: ['core.rifle', 'core.lmg', 'core.shotgun'] }),
     character('core.scout', 'Scout', { objectivePriority: 90, aggression: 60, exploration: 70, rangePreference: 35, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.sawed_off', 'core.pulse_pistol'] }),
     character('core.farmhand', 'Farmhand', { aggression: 75, meleePreference: 55, rangePreference: 15, accuracy: 40, riskTolerance: 70, tags: ['BERSERKER'], weaponPreferences: ['core.shotgun', 'core.sawed_off', 'core.auto_shotgun'] }),
-    character('core.miller', 'Miller', { aggression: 30, selfPreservation: 75, tacticalAwareness: 75, pursuitPersistence: 25, rangePreference: 60, tags: ['TACTICAL'], weaponPreferences: ['core.marksman', 'core.launcher', 'core.rifle'] }),
-    character('core.tracker', 'Tracker', { exploration: 85, pursuitPersistence: 85, tacticalAwareness: 60, tags: ['EXPLORER'], weaponPreferences: ['core.burst_rifle', 'core.rifle', 'core.laser_rifle'] }),
+    character('core.miller', 'Miller', { aggression: 30, selfPreservation: 75, tacticalAwareness: 75, pursuitPersistence: 25, rangePreference: 60, tags: ['TACTICAL', 'CAMPER'], weaponPreferences: ['core.marksman', 'core.launcher', 'core.rifle'] }),
+    character('core.tracker', 'Tracker', { exploration: 85, pursuitPersistence: 85, tacticalAwareness: 60, tags: ['EXPLORER', 'LONE_WOLF'], weaponPreferences: ['core.burst_rifle', 'core.rifle', 'core.laser_rifle'] }),
     character('core.pathfinder', 'Pathfinder', { exploration: 95, itemGreed: 75, aggression: 55, tags: ['EXPLORER', 'ARENA'], weaponPreferences: ['core.disc_launcher', 'core.plasma', 'core.railgun'] }),
-    character('core.drifter', 'Drifter', { aggression: 45, selfPreservation: 70, riskTolerance: 30, rangePreference: 65, tags: ['SURVIVOR'], weaponPreferences: ['core.hand_cannon', 'core.marksman', 'core.flare_gun'] }),
+    character('core.drifter', 'Drifter', { aggression: 45, selfPreservation: 70, riskTolerance: 30, rangePreference: 65, tags: ['SURVIVOR', 'LONE_WOLF'], weaponPreferences: ['core.hand_cannon', 'core.marksman', 'core.flare_gun'] }),
     character('core.wayfarer', 'Wayfarer', { tacticalAwareness: 65, teamLoyalty: 70, objectivePriority: 70, tags: [], weaponPreferences: ['core.rifle', 'core.launcher', 'core.smg'] }),
     character('core.brawler', 'Brawler', { aggression: 95, meleePreference: 80, selfPreservation: 15, rangePreference: 5, riskTolerance: 90, accuracy: 35, tags: ['BERSERKER', 'RECKLESS'], weaponPreferences: ['core.shotgun', 'core.flamethrower', 'core.knife'] }),
     character('core.sprinter', 'Sprinter', { aggression: 80, itemGreed: 85, reactionSpeed: 75, rangePreference: 30, tacticalAwareness: 30, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.plasma', 'core.disc_launcher'] }),
@@ -168,7 +171,7 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     // Darts in close, grabs what's lying about, never fights fair.
     character('core.goblin', 'Goblin', { aggression: 80, itemGreed: 90, selfPreservation: 35, rangePreference: 15, meleePreference: 60, tags: ['ARENA', 'RECKLESS'], weaponPreferences: ['core.sawed_off', 'core.machine_pistol', 'core.knife'] }),
     // Keeps his distance and his fur clean: a gilded pistol and a good rifle.
-    character('core.otter', 'Wealthy Otter', { aggression: 35, accuracy: 75, selfPreservation: 80, itemGreed: 85, rangePreference: 70, tags: ['TACTICAL'], weaponPreferences: ['core.marksman', 'core.gilded_pistol', 'core.sniper'] }),
+    character('core.otter', 'Wealthy Otter', { aggression: 35, accuracy: 75, selfPreservation: 80, itemGreed: 85, rangePreference: 70, tags: ['TACTICAL', 'CAMPER'], weaponPreferences: ['core.marksman', 'core.gilded_pistol', 'core.sniper'] }),
     // Slow, stubborn and hard to shift.
     character('core.boglurker', 'Boglurker', { aggression: 70, selfPreservation: 30, riskTolerance: 80, rangePreference: 20, pursuitPersistence: 70, tags: ['SUPPRESSOR'], weaponPreferences: ['core.auto_shotgun', 'core.flamethrower', 'core.lmg'] }),
     // Commands the field with heavy ordnance.

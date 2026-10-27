@@ -2,6 +2,7 @@ import type { MapDocument } from '../map/schema.ts';
 import { MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
 import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
+import { IMPROMPTU_MIN_PLAYERS } from './spawns.ts';
 
 /**
  * Match setup (Play → match setup, saved setups): everything the player
@@ -187,7 +188,10 @@ export function setupNotes(setup: MatchSetup, map: MapDocument): SetupNote[] {
   const players = setupPlayers(setup, map);
   const spawns = map.entities.filter((e) => e.kind === 'spawn');
   const team = isTeamMode(setup.mode);
-  if (spawns.length && players > spawns.length && setup.mode !== 'core.race') out.push({ level: 'warn', text: `${players} players, ${spawns.length} spawn points: spawns will be shared, so players may appear close together.` });
+  if (spawns.length && players > spawns.length && setup.mode !== 'core.race') {
+    const extra = players >= IMPROMPTU_MIN_PLAYERS ? ' The match adds spawn points of its own on open ground.' : '';
+    out.push({ level: 'warn', text: `${players} players, ${spawns.length} spawn points: spawns will be shared, so players may appear close together.${extra}` });
+  }
   const rec = map.metadata.recommendedPlayers;
   if (players > rec.max) out.push({ level: 'warn', text: `The map is made for ${rec.min === rec.max ? rec.max : `${rec.min}–${rec.max}`} players; ${players} will be crowded.` });
   if (team) {

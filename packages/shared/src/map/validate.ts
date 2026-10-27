@@ -8,6 +8,7 @@ import { borderRect, hasBorder } from './border.ts';
 import { floatingProps } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
+import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
 import { validateScenario } from './validateScenario.ts';
 import { validateTrack } from './track.ts';
 import { airplaneIssues } from '../sim/airplane.ts';
@@ -129,8 +130,22 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     issues.push({
       severity: 'warning',
       code: 'spawn.few',
-      message: `${spawns.length} spawn points for up to ${map.metadata.recommendedPlayers.max} players; spawns will be shared`,
+      message: `${spawns.length} spawn points for up to ${map.metadata.recommendedPlayers.max} players; spawns will be shared (matches of ${IMPROMPTU_MIN_PLAYERS}+ players add spawn points of their own on open ground, but placed ones play better)`,
     });
+  } else {
+    // Team maps: each side's own spawns for its share of the recommended players (a point per SPAWN_SHARE players).
+    const sides = [...new Set(spawns.map((s) => s.faction).filter((f): f is string => !!f))];
+    if (sides.length >= 2) {
+      const want = Math.ceil(map.metadata.recommendedPlayers.max / sides.length / SPAWN_SHARE);
+      const short = sides.filter((t) => spawns.filter((s) => s.faction === t).length < want);
+      if (short.length) {
+        issues.push({
+          severity: 'warning',
+          code: 'spawn.few',
+          message: `${short.join(', ')} ${short.length === 1 ? 'has' : 'have'} fewer than ${want} spawn points of ${short.length === 1 ? 'its' : 'their'} own for up to ${map.metadata.recommendedPlayers.max} players (matches of ${IMPROMPTU_MIN_PLAYERS}+ players add spawn points of their own on the team's side, but placed ones play better)`,
+        });
+      }
+    }
   }
 
   const { cellSize, levelHeight } = map.classicStructure;
