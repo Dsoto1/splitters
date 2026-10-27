@@ -99,10 +99,10 @@
       "src": "Meshy_AI_Goblin_1026113732_texture.fbx",
       "sourceTriangles": 1326047,
       "file": "characters/meshy_goblin.glb",
-      "sha256": "913d7ae20d8879d8",
-      "triangles": 19655,
-      "lodTriangles": 5807,
-      "bytes": 1146956
+      "sha256": "3bec8f82e7bd4d38",
+      "triangles": 11703,
+      "lodTriangles": 3308,
+      "bytes": 868672
     },
     {
       "role": "meshy-autorig",
