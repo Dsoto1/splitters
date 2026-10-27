@@ -190,6 +190,8 @@ import canyonTemplate from '../../../../maps/canyon.json';
 
 /** Every map file shipped in maps/. */
 const SHIPPED_MAPS = import.meta.glob<unknown>('../../../../maps/*.json', { eager: true, import: 'default' });
+/** IDs of the built-in maps (they have automatic pictures). */
+const SHIPPED_IDS: ReadonlySet<string> = new Set(Object.keys(SHIPPED_MAPS).map((p) => p.replace(/^.*\/|\.json$/g, '')));
 import { EditorView } from './editorView.ts';
 import { LIQUID_LOOKS } from '../game/scenarioVisuals.ts';
 import { clearDraft, deleteFromLibrary, exportMap, importMapFile, inLibrary, listDrafts, listLibrary, openFromLibrary, saveToLibrary, writeDraft } from './storage.ts';
@@ -200,7 +202,8 @@ import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
 import { RoadTool } from './roadTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
-import { drawMapPlan } from '../frontend/mapPlan.ts';
+import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
+import { libraryThumb } from './libraryThumbs.ts';
 
 /** Small palette icon for a pickup item, coloured by item type. */
 function itemIcon(itemId: string): string {
@@ -513,6 +516,19 @@ export class EditorApp {
   get doc(): MapDocument {
     return this.history.doc;
   }
+
+  /** What Set thumbnail (makerThumb.ts) needs from the editor. */
+  private readonly thumbHost: ThumbHost = {
+    view: () => this.view,
+    current: () => this.doc,
+    shipped: () => SHIPPED_IDS.has(this.doc.metadata.id),
+    setThumbnail: (thumbnail, camera) => {
+      const m = this.doc.metadata;
+      if (thumbnail === m.thumbnail) return;
+      this.run(thumbnail ? 'Set thumbnail' : 'Clear thumbnail', { kind: 'setMetadata', before: { thumbnail: m.thumbnail, thumbnailCamera: m.thumbnailCamera }, after: { thumbnail, thumbnailCamera: thumbnail ? camera : undefined } });
+    },
+    toast: (message, error) => this.toast(message, error),
+  };
 
   show(): void {
     this.active = true;
@@ -2304,13 +2320,8 @@ export class EditorApp {
     const doc = this.doc;
     if (tiles.length + entities.length === 0) {
       el.append(h2('Map properties'));
-      // Plan preview and size (reference board: map properties).
-      const plan = document.createElement('canvas');
-      plan.className = 'ed-map-plan';
-      plan.width = 236;
-      plan.height = 148;
-      drawMapPlan(plan, doc);
-      el.append(plan);
+      // The map's picture (Set thumbnail) and plan (reference board: map properties).
+      el.append(thumbnailSection(this.thumbHost));
       const name = document.createElement('input');
       name.type = 'text';
       name.id = 'ed-prop-name';
@@ -3255,9 +3266,12 @@ export class EditorApp {
     const dialog = $<HTMLDialogElement>('ed-open-dialog');
     const list = $('ed-library');
     list.replaceChildren();
-    const add = (label: string, sub: string, open: () => void, remove?: () => void, cls = '') => {
+    // Each row shows the map's picture and plan (loaded and drawn as it scrolls into view).
+    const tpl = (json: unknown) => ({ load: () => ((r) => (r.ok ? r.map : null))(loadMap(json)), shipped: true });
+    const add = (label: string, sub: string, open: () => void, remove?: () => void, cls = '', preview?: { load: () => MapDocument | null; shipped: boolean }) => {
       const li = document.createElement('li');
       if (cls) li.className = cls;
+      if (preview) li.append(libraryThumb(preview.load, preview.shipped));
       const b = button('', () => {
         dialog.close();
         this.keepDraft();
@@ -3278,7 +3292,7 @@ export class EditorApp {
         this.savedRevision = -1;
         this.updateTopBar();
         this.toast(`Opened the unsaved draft of "${draft.map.metadata.name}"`);
-      }, () => clearDraft(draft.map.metadata.id), 'draft');
+      }, () => clearDraft(draft.map.metadata.id), 'draft', { load: () => draft.map, shipped: SHIPPED_IDS.has(draft.map.metadata.id) });
     }
     for (const entry of listLibrary()) {
       add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {
@@ -3287,20 +3301,20 @@ export class EditorApp {
           this.replaceDocument(r.map);
           this.toast(`Opened "${r.map.metadata.name}"`);
         } else this.toast(`Could not open: ${r.issues[0]?.message}`, true);
-      }, () => deleteFromLibrary(entry.id));
+      }, () => deleteFromLibrary(entry.id), '', { load: () => ((r) => ('map' in r ? r.map : null))(openFromLibrary(entry.id)), shipped: SHIPPED_IDS.has(entry.id) });
     }
     add('Sandgate', 'Template · desert town for Team Deathmatch, with open courtyards', () => {
       const r = loadMap(sandgateTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Sandgate Remix', parentId: r.map.metadata.id } });
-    });
+    }, undefined, '', tpl(sandgateTemplate));
     add('Citadel', 'Template · castle keep with a two-storey atrium, roof terraces, props and breakables', () => {
       const r = loadMap(citadelTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Citadel Remix', parentId: r.map.metadata.id } });
-    });
+    }, undefined, '', tpl(citadelTemplate));
     add('Rockfall Canyon', 'Template · sculpted terrain canyon with two bases, boulders and a ridge ledge', () => {
       const r = loadMap(canyonTemplate);
       if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Canyon Remix', parentId: r.map.metadata.id } });
-    });
+    }, undefined, '', tpl(canyonTemplate));
     // Every other shipped map (the homage maps and later additions) is a template too.
     const known = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
     for (const [path, json] of Object.entries(SHIPPED_MAPS)) {
@@ -3310,7 +3324,7 @@ export class EditorApp {
       if (!r.ok) continue;
       add(r.map.metadata.name, `Template · ${r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? ''}`, () => {
         this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: `${r.map.metadata.name} Remix`, parentId: r.map.metadata.id } });
-      });
+      }, undefined, '', { load: () => r.map, shipped: true });
     }
     dialog.showModal();
   }

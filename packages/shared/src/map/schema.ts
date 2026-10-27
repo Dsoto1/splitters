@@ -11,7 +11,8 @@ import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
  * entities, v4 scenario entities and logic, v5 factions and NPC encounters, v6 per-side
  * wall styles, trim and props, v7 terrain, v8 map boundary and team setup, v11 flag bases
  * and hills for Capture the Flag and King of the Hill, v18 the race `track`, v19 the transport plane and mount skins, v20 movers, logic-driven
- * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids, v21 vehicles that ride on water).
+ * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids, v21 vehicles that ride on water, v22 the map's picture: `metadata.thumbnail`
+ * and the camera it was taken from, `metadata.thumbnailCamera`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -22,7 +23,7 @@ import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 21;
+export const MAP_FORMAT_VERSION = 22;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -30,6 +31,18 @@ export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4
 export const ContentId = z.string().regex(/^[a-z0-9_]+(\.[a-z0-9_]+)+$/, 'content IDs look like "pack.name"');
 
 const Vec3Tuple = z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]);
+
+/** Map picture size cap (data URL characters, about 36 KB of image): small enough to ride along in every map transfer. */
+export const MAX_THUMBNAIL_CHARS = 48_000;
+/** Map pictures set in MapMaker are 16:9 images this size (MapMaker → Set thumbnail). */
+export const THUMBNAIL_SIZE = { width: 384, height: 216 } as const;
+/** A map picture: a JPEG or WebP data URL captured in-engine, nothing else (no links to outside images). */
+export const MapThumbnail = z
+  .string()
+  .max(MAX_THUMBNAIL_CHARS, 'the map picture is too large')
+  .regex(/^data:image\/(jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/, 'the map picture must be an image captured in MapMaker');
+/** Where a map's picture is taken from: the camera position and the point it looks at (world metres). */
+export const ThumbnailCamera = z.object({ position: Vec3Tuple, target: Vec3Tuple });
 
 export const MapMetadata = z.object({
   id: StableId,
@@ -44,6 +57,18 @@ export const MapMetadata = z.object({
     .object({ min: z.number().int().min(1).max(32), max: z.number().int().min(1).max(32) })
     .default({ min: 2, max: 8 }),
   supportedModes: z.array(ContentId).default(['core.deathmatch']),
+  /**
+   * The map's own picture (v22), captured in MapMaker from the editor camera
+   * (never uploaded): a small JPEG/WebP data URL. Map cards show it instead of
+   * the automatic picture. Absent = the automatic one (built-in maps) or none.
+   */
+  thumbnail: MapThumbnail.optional(),
+  /**
+   * The camera the picture is taken from (v22): Set thumbnail records it, and
+   * for built-in maps it overrides the automatic camera choice
+   * (tools/content/capture-map-shots.mjs; map scripts: `m.thumbnailCamera()`).
+   */
+  thumbnailCamera: ThumbnailCamera.optional(),
 });
 
 /** A material from the library plus an optional tint, applied to one surface slot. */

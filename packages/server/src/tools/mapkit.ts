@@ -466,6 +466,17 @@ export class MapBuilder {
     return this;
   }
 
+  /**
+   * Where the map's picture is taken from (`metadata.thumbnailCamera`): the
+   * camera position and the point it looks at. Only for maps where the
+   * automatic camera choice (tools/content/capture-map-shots.mjs) frames a
+   * poor view; without it the tool picks the camera itself.
+   */
+  thumbnailCamera(position: V3, target: V3): this {
+    this.run('Set thumbnail camera', { kind: 'setMetadata', before: { thumbnailCamera: this.doc.metadata.thumbnailCamera }, after: { thumbnailCamera: { position, target } } });
+    return this;
+  }
+
   private flush(): void {
     if (!this.pending.length) return;
     this.run('Add entities', { kind: 'addEntities', entities: this.pending.splice(0) });

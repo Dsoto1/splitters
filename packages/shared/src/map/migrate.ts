@@ -49,6 +49,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [19, (doc) => ({ ...doc })],
   // v20 -> v21: optional `onWater` on mounts (vehicles that float). Absent = sinks, as before: v20 data is valid as is.
   [20, (doc) => ({ ...doc })],
+  // v21 -> v22: optional `metadata.thumbnail` (the map's picture) and `metadata.thumbnailCamera`. Additive.
+  [21, (doc) => ({ ...doc })],
 ]);
 
 export class MapMigrationError extends Error {}

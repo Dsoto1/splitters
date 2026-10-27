@@ -23,6 +23,14 @@ describe('game browser list', () => {
     now += 1;
   });
 
+  it('keeps a well-formed map ID (for the map picture and plan) and drops anything else', () => {
+    const store = new LobbyStore(() => 0);
+    store.add(advert({ code: 'ABC234', mapId: 'sandgate' }), 'a');
+    store.add(advert({ code: 'DEF567', mapId: '../../etc/passwd' }), 'b');
+    const byCode = Object.fromEntries(store.list().map((g) => [g.code, g.mapId]));
+    expect(byCode).toEqual({ ABC234: 'sandgate', DEF567: undefined });
+  });
+
   it('drops a game whose host stops checking in', () => {
     let now = 0;
     const store = new LobbyStore(() => now);

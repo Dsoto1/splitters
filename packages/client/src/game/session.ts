@@ -914,6 +914,7 @@ export class GameSession {
         name: ($('host-name') as HTMLInputElement).value.trim() || `${me}'s game`,
         host: me,
         map: this.map?.metadata.name ?? 'Unknown map',
+        mapId: this.map?.metadata.id,
         mode: this.rules?.mode ?? 'core.deathmatch',
         players: 1 + local.guests,
         max: local.capacity,
