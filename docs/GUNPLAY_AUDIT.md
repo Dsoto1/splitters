@@ -154,6 +154,32 @@ Unchanged and already within the doc: trigger latency (same input), sprint
 to fire (0 ms), no aim flinch, no suppression blur, no movement inertia,
 scope-only sway (3.5 mrad), every reload interruptible.
 
+## Gunplay test arena
+
+`maps/training_range.json`, built by
+`packages/server/src/tools/maps/training_range.ts` from kit tiles, library
+materials, existing props, destructibles, movers and an encounter (nothing
+new). Deathmatch, 1-8 players; the firing line is x 0, downrange is +x.
+
+| Band (z) | What | Tests |
+|---|---|---|
+| +38 | Boards on concrete towers: 25 m (3 m up), 50 m (6 m), 100 m (10 m), 150 m (14 m) | elevated shots, drop on an incline |
+| +31 | Boards driving toward you and away: 15 ↔ 75 m at running pace, 100 ↔ 180 m sprinting | approaching / receding targets, falloff as range changes |
+| +22 | Boards sliding 8 m side to side at sprinting pace (7.8 m/s) at 25, 50, 100, 200 m | lead |
+| +12 | The same at walking pace (3.9 m/s, aim-walk) at 25, 50, 100 m | lead |
+| 0 | Long ballistic lane: static boards at 5, 10, 25, 50, 100, 200 m, a sign over each; hazard-striped floor markers at those distances run across the whole range | drop, travel, falloff, first-shot accuracy |
+| -8 to -31 | Penetration walls at 15 m with a board behind each: glass, drywall, planks, heavy wood (0.4 m), sheet metal, steel plate, brick, concrete, dirt (0.6 m packed sand) and a 1 m water tank between glass panes | material penetration |
+| -38 | Concrete recoil wall (8 × 5 m) at 20 m; destructibles row (crate, barrel, window, boards, breakable wall, gas cylinder, generator) at 28-44 m | recoil patterns, environmental damage |
+| -48 to -64 | Medium combat lane, walled, 0-70 m: sandbags, a concrete block, crates and barriers every 15 m; three range troopers (easy, their rounds do no damage) patrol it between 42 and 14 m, strafe, take cover and respawn | moving bots, medium-range fights |
+| x -36 to -20 | Close duel room (Large Room kit tile, four columns, low cover) behind the firing line, with a shotgun and revolver inside | point-blank duels |
+
+The seven benchmark guns (and the Marksman, Burst Rifle and Spin Gun for
+comparison) lie at the firing line with typed ammo. Spawns are along the
+firing line plus two at the far end, so lobby bots spread out as live
+targets. The troopers only wake when someone is within 70 m (anywhere at the
+south end of the firing line); killing them counts toward the score limit
+like any kill.
+
 ### Out of scope (left for later passes)
 
 - Per-weapon movement speed (spec §27 `movementModifier`, G2): everyone runs

@@ -1,11 +1,11 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 21,
   "metadata": {
     "id": "training_range",
     "name": "Training Range",
     "author": "Tile Trigger",
-    "description": "A long open firing range: static boards at 10, 25, 50, 100 and 200 m to learn drop and travel, boards sliding side to side to learn lead, penetration panels from glass to concrete, and a recoil wall that keeps your spray pattern. Every benchmark gun waits at the firing line.",
+    "description": "The gunplay test arena: static boards and distance markers at 5 to 200 m, walking and sprinting boards to learn lead, approaching and elevated targets, penetration walls from glass to concrete, dirt and water, a recoil wall, destructibles, a medium combat lane with patrolling range troopers, and a close duel room. Every benchmark gun waits at the firing line.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -25,1477 +25,3197 @@
       {
         "id": "tile_001",
         "tile": "core.platform",
-        "x": -1,
-        "y": -3,
+        "x": -5,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_002",
         "tile": "core.platform",
-        "x": -1,
-        "y": -2,
+        "x": -5,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_003",
         "tile": "core.platform",
-        "x": -1,
-        "y": -1,
+        "x": -5,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_004",
         "tile": "core.platform",
-        "x": -1,
-        "y": 0,
+        "x": -5,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_005",
         "tile": "core.platform",
-        "x": -1,
-        "y": 1,
+        "x": -5,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_006",
         "tile": "core.platform",
-        "x": -1,
-        "y": 2,
+        "x": -5,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_007",
         "tile": "core.platform",
-        "x": -1,
-        "y": 3,
+        "x": -5,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_008",
         "tile": "core.platform",
-        "x": 0,
-        "y": -3,
+        "x": -5,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_009",
         "tile": "core.platform",
-        "x": 0,
-        "y": -2,
+        "x": -5,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_010",
         "tile": "core.platform",
-        "x": 0,
-        "y": -1,
+        "x": -5,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_011",
         "tile": "core.platform",
-        "x": 0,
-        "y": 0,
+        "x": -5,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_012",
         "tile": "core.platform",
-        "x": 0,
-        "y": 1,
+        "x": -5,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_013",
         "tile": "core.platform",
-        "x": 0,
-        "y": 2,
+        "x": -5,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_014",
         "tile": "core.platform",
-        "x": 0,
-        "y": 3,
+        "x": -5,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_015",
         "tile": "core.platform",
-        "x": 1,
-        "y": -3,
+        "x": -2,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_016",
         "tile": "core.platform",
-        "x": 1,
-        "y": -2,
+        "x": -2,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_017",
         "tile": "core.platform",
-        "x": 1,
-        "y": -1,
+        "x": -2,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_018",
         "tile": "core.platform",
-        "x": 1,
-        "y": 0,
+        "x": -2,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_019",
         "tile": "core.platform",
-        "x": 1,
-        "y": 1,
+        "x": -2,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_020",
         "tile": "core.platform",
-        "x": 1,
-        "y": 2,
+        "x": -2,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_021",
         "tile": "core.platform",
-        "x": 1,
-        "y": 3,
+        "x": -2,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_022",
         "tile": "core.platform",
-        "x": 2,
-        "y": -3,
+        "x": -2,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_023",
         "tile": "core.platform",
-        "x": 2,
-        "y": -2,
+        "x": -2,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_024",
         "tile": "core.platform",
-        "x": 2,
-        "y": -1,
+        "x": -2,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_025",
         "tile": "core.platform",
-        "x": 2,
-        "y": 0,
+        "x": -2,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_026",
         "tile": "core.platform",
-        "x": 2,
-        "y": 1,
+        "x": -2,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_027",
         "tile": "core.platform",
-        "x": 2,
-        "y": 2,
+        "x": -2,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_028",
         "tile": "core.platform",
-        "x": 2,
-        "y": 3,
+        "x": -2,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_029",
         "tile": "core.platform",
-        "x": 3,
-        "y": -3,
+        "x": -1,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_030",
         "tile": "core.platform",
-        "x": 3,
-        "y": -2,
+        "x": -1,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_031",
         "tile": "core.platform",
-        "x": 3,
-        "y": -1,
+        "x": -1,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_032",
         "tile": "core.platform",
-        "x": 3,
-        "y": 0,
+        "x": -1,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_033",
         "tile": "core.platform",
-        "x": 3,
-        "y": 1,
+        "x": -1,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_034",
         "tile": "core.platform",
-        "x": 3,
-        "y": 2,
+        "x": -1,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_035",
         "tile": "core.platform",
-        "x": 3,
-        "y": 3,
+        "x": -1,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_036",
         "tile": "core.platform",
-        "x": 4,
-        "y": -3,
+        "x": -1,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_037",
         "tile": "core.platform",
-        "x": 4,
-        "y": -2,
+        "x": -1,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_038",
         "tile": "core.platform",
-        "x": 4,
-        "y": -1,
+        "x": -1,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_039",
         "tile": "core.platform",
-        "x": 4,
-        "y": 0,
+        "x": -1,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_040",
         "tile": "core.platform",
-        "x": 4,
-        "y": 1,
+        "x": -1,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_041",
         "tile": "core.platform",
-        "x": 4,
-        "y": 2,
+        "x": -1,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_042",
         "tile": "core.platform",
-        "x": 4,
-        "y": 3,
+        "x": -1,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_043",
         "tile": "core.platform",
-        "x": 5,
-        "y": -3,
+        "x": 0,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_044",
         "tile": "core.platform",
-        "x": 5,
-        "y": -2,
+        "x": 0,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_045",
         "tile": "core.platform",
-        "x": 5,
-        "y": -1,
+        "x": 0,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_046",
         "tile": "core.platform",
-        "x": 5,
-        "y": 0,
+        "x": 0,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_047",
         "tile": "core.platform",
-        "x": 5,
-        "y": 1,
+        "x": 0,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_048",
         "tile": "core.platform",
-        "x": 5,
-        "y": 2,
+        "x": 0,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_049",
         "tile": "core.platform",
-        "x": 5,
-        "y": 3,
+        "x": 0,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_050",
         "tile": "core.platform",
-        "x": 6,
-        "y": -3,
+        "x": 0,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_051",
         "tile": "core.platform",
-        "x": 6,
-        "y": -2,
+        "x": 0,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_052",
         "tile": "core.platform",
-        "x": 6,
-        "y": -1,
+        "x": 0,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_053",
         "tile": "core.platform",
-        "x": 6,
-        "y": 0,
+        "x": 0,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_054",
         "tile": "core.platform",
-        "x": 6,
-        "y": 1,
+        "x": 0,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_055",
         "tile": "core.platform",
-        "x": 6,
-        "y": 2,
+        "x": 0,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_056",
         "tile": "core.platform",
-        "x": 6,
-        "y": 3,
+        "x": 0,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_057",
         "tile": "core.platform",
-        "x": 7,
-        "y": -3,
+        "x": 1,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_058",
         "tile": "core.platform",
-        "x": 7,
-        "y": -2,
+        "x": 1,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_059",
         "tile": "core.platform",
-        "x": 7,
-        "y": -1,
+        "x": 1,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_060",
         "tile": "core.platform",
-        "x": 7,
-        "y": 0,
+        "x": 1,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_061",
         "tile": "core.platform",
-        "x": 7,
-        "y": 1,
+        "x": 1,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_062",
         "tile": "core.platform",
-        "x": 7,
-        "y": 2,
+        "x": 1,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_063",
         "tile": "core.platform",
-        "x": 7,
-        "y": 3,
+        "x": 1,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_064",
         "tile": "core.platform",
-        "x": 8,
-        "y": -3,
+        "x": 1,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_065",
         "tile": "core.platform",
-        "x": 8,
-        "y": -2,
+        "x": 1,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_066",
         "tile": "core.platform",
-        "x": 8,
-        "y": -1,
+        "x": 1,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_067",
         "tile": "core.platform",
-        "x": 8,
-        "y": 0,
+        "x": 1,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_068",
         "tile": "core.platform",
-        "x": 8,
-        "y": 1,
+        "x": 1,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_069",
         "tile": "core.platform",
-        "x": 8,
-        "y": 2,
+        "x": 1,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_070",
         "tile": "core.platform",
-        "x": 8,
-        "y": 3,
+        "x": 1,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_071",
         "tile": "core.platform",
-        "x": 9,
-        "y": -3,
+        "x": 2,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_072",
         "tile": "core.platform",
-        "x": 9,
-        "y": -2,
+        "x": 2,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_073",
         "tile": "core.platform",
-        "x": 9,
-        "y": -1,
+        "x": 2,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_074",
         "tile": "core.platform",
-        "x": 9,
-        "y": 0,
+        "x": 2,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_075",
         "tile": "core.platform",
-        "x": 9,
-        "y": 1,
+        "x": 2,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_076",
         "tile": "core.platform",
-        "x": 9,
-        "y": 2,
+        "x": 2,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_077",
         "tile": "core.platform",
-        "x": 9,
-        "y": 3,
+        "x": 2,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_078",
         "tile": "core.platform",
-        "x": 10,
-        "y": -3,
+        "x": 2,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_079",
         "tile": "core.platform",
-        "x": 10,
-        "y": -2,
+        "x": 2,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_080",
         "tile": "core.platform",
-        "x": 10,
-        "y": -1,
+        "x": 2,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_081",
         "tile": "core.platform",
-        "x": 10,
-        "y": 0,
+        "x": 2,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_082",
         "tile": "core.platform",
-        "x": 10,
-        "y": 1,
+        "x": 2,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_083",
         "tile": "core.platform",
-        "x": 10,
-        "y": 2,
+        "x": 2,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_084",
         "tile": "core.platform",
-        "x": 10,
-        "y": 3,
+        "x": 2,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_085",
         "tile": "core.platform",
-        "x": 11,
-        "y": -3,
+        "x": 3,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_086",
         "tile": "core.platform",
-        "x": 11,
-        "y": -2,
+        "x": 3,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_087",
         "tile": "core.platform",
-        "x": 11,
-        "y": -1,
+        "x": 3,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_088",
         "tile": "core.platform",
-        "x": 11,
-        "y": 0,
+        "x": 3,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_089",
         "tile": "core.platform",
-        "x": 11,
-        "y": 1,
+        "x": 3,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_090",
         "tile": "core.platform",
-        "x": 11,
-        "y": 2,
+        "x": 3,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_091",
         "tile": "core.platform",
-        "x": 11,
-        "y": 3,
+        "x": 3,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_092",
         "tile": "core.platform",
-        "x": 12,
-        "y": -3,
+        "x": 3,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_093",
         "tile": "core.platform",
-        "x": 12,
-        "y": -2,
+        "x": 3,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_094",
         "tile": "core.platform",
-        "x": 12,
-        "y": -1,
+        "x": 3,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_095",
         "tile": "core.platform",
-        "x": 12,
-        "y": 0,
+        "x": 3,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_096",
         "tile": "core.platform",
-        "x": 12,
-        "y": 1,
+        "x": 3,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_097",
         "tile": "core.platform",
-        "x": 12,
-        "y": 2,
+        "x": 3,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_098",
         "tile": "core.platform",
-        "x": 12,
-        "y": 3,
+        "x": 3,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_099",
         "tile": "core.platform",
-        "x": 13,
-        "y": -3,
+        "x": 4,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_100",
         "tile": "core.platform",
-        "x": 13,
-        "y": -2,
+        "x": 4,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_101",
         "tile": "core.platform",
-        "x": 13,
-        "y": -1,
+        "x": 4,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_102",
         "tile": "core.platform",
-        "x": 13,
-        "y": 0,
+        "x": 4,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_103",
         "tile": "core.platform",
-        "x": 13,
-        "y": 1,
+        "x": 4,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_104",
         "tile": "core.platform",
-        "x": 13,
-        "y": 2,
+        "x": 4,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_105",
         "tile": "core.platform",
-        "x": 13,
-        "y": 3,
+        "x": 4,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_106",
         "tile": "core.platform",
-        "x": 14,
-        "y": -3,
+        "x": 4,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_107",
         "tile": "core.platform",
-        "x": 14,
-        "y": -2,
+        "x": 4,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_108",
         "tile": "core.platform",
-        "x": 14,
-        "y": -1,
+        "x": 4,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_109",
         "tile": "core.platform",
-        "x": 14,
-        "y": 0,
+        "x": 4,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_110",
         "tile": "core.platform",
-        "x": 14,
-        "y": 1,
+        "x": 4,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_111",
         "tile": "core.platform",
-        "x": 14,
-        "y": 2,
+        "x": 4,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_112",
         "tile": "core.platform",
-        "x": 14,
-        "y": 3,
+        "x": 4,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_113",
         "tile": "core.platform",
-        "x": 15,
-        "y": -3,
+        "x": 5,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_114",
         "tile": "core.platform",
-        "x": 15,
-        "y": -2,
+        "x": 5,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_115",
         "tile": "core.platform",
-        "x": 15,
-        "y": -1,
+        "x": 5,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_116",
         "tile": "core.platform",
-        "x": 15,
-        "y": 0,
+        "x": 5,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_117",
         "tile": "core.platform",
-        "x": 15,
-        "y": 1,
+        "x": 5,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_118",
         "tile": "core.platform",
-        "x": 15,
-        "y": 2,
+        "x": 5,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_119",
         "tile": "core.platform",
-        "x": 15,
-        "y": 3,
+        "x": 5,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_120",
         "tile": "core.platform",
-        "x": 16,
-        "y": -3,
+        "x": 5,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_121",
         "tile": "core.platform",
-        "x": 16,
-        "y": -2,
+        "x": 5,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_122",
         "tile": "core.platform",
-        "x": 16,
-        "y": -1,
+        "x": 5,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_123",
         "tile": "core.platform",
-        "x": 16,
-        "y": 0,
+        "x": 5,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_124",
         "tile": "core.platform",
-        "x": 16,
-        "y": 1,
+        "x": 5,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_125",
         "tile": "core.platform",
-        "x": 16,
-        "y": 2,
+        "x": 5,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_126",
         "tile": "core.platform",
-        "x": 16,
-        "y": 3,
+        "x": 5,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_127",
         "tile": "core.platform",
-        "x": 17,
-        "y": -3,
+        "x": 6,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_128",
         "tile": "core.platform",
-        "x": 17,
-        "y": -2,
+        "x": 6,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_129",
         "tile": "core.platform",
-        "x": 17,
-        "y": -1,
+        "x": 6,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_130",
         "tile": "core.platform",
-        "x": 17,
-        "y": 0,
+        "x": 6,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_131",
         "tile": "core.platform",
-        "x": 17,
-        "y": 1,
+        "x": 6,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_132",
         "tile": "core.platform",
-        "x": 17,
-        "y": 2,
+        "x": 6,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_133",
         "tile": "core.platform",
-        "x": 17,
-        "y": 3,
+        "x": 6,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_134",
         "tile": "core.platform",
-        "x": 18,
-        "y": -3,
+        "x": 6,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_135",
         "tile": "core.platform",
-        "x": 18,
-        "y": -2,
+        "x": 6,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_136",
         "tile": "core.platform",
-        "x": 18,
-        "y": -1,
+        "x": 6,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_137",
         "tile": "core.platform",
-        "x": 18,
-        "y": 0,
+        "x": 6,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_138",
         "tile": "core.platform",
-        "x": 18,
-        "y": 1,
+        "x": 6,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_139",
         "tile": "core.platform",
-        "x": 18,
-        "y": 2,
+        "x": 6,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_140",
         "tile": "core.platform",
-        "x": 18,
-        "y": 3,
+        "x": 6,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_141",
         "tile": "core.platform",
-        "x": 19,
-        "y": -3,
+        "x": 7,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_142",
         "tile": "core.platform",
-        "x": 19,
-        "y": -2,
+        "x": 7,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_143",
         "tile": "core.platform",
-        "x": 19,
-        "y": -1,
+        "x": 7,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_144",
         "tile": "core.platform",
-        "x": 19,
-        "y": 0,
+        "x": 7,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_145",
         "tile": "core.platform",
-        "x": 19,
-        "y": 1,
+        "x": 7,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_146",
         "tile": "core.platform",
-        "x": 19,
-        "y": 2,
+        "x": 7,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_147",
         "tile": "core.platform",
-        "x": 19,
-        "y": 3,
+        "x": 7,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_148",
         "tile": "core.platform",
-        "x": 20,
-        "y": -3,
+        "x": 7,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_149",
         "tile": "core.platform",
-        "x": 20,
-        "y": -2,
+        "x": 7,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_150",
         "tile": "core.platform",
-        "x": 20,
-        "y": -1,
+        "x": 7,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_151",
         "tile": "core.platform",
-        "x": 20,
-        "y": 0,
+        "x": 7,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_152",
         "tile": "core.platform",
-        "x": 20,
-        "y": 1,
+        "x": 7,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_153",
         "tile": "core.platform",
-        "x": 20,
-        "y": 2,
+        "x": 7,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_154",
         "tile": "core.platform",
-        "x": 20,
-        "y": 3,
+        "x": 7,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_155",
         "tile": "core.platform",
-        "x": 21,
-        "y": -3,
+        "x": 8,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_156",
         "tile": "core.platform",
-        "x": 21,
-        "y": -2,
+        "x": 8,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_157",
         "tile": "core.platform",
-        "x": 21,
-        "y": -1,
+        "x": 8,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_158",
         "tile": "core.platform",
-        "x": 21,
-        "y": 0,
+        "x": 8,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_159",
         "tile": "core.platform",
-        "x": 21,
-        "y": 1,
+        "x": 8,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_160",
         "tile": "core.platform",
-        "x": 21,
-        "y": 2,
+        "x": 8,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_161",
         "tile": "core.platform",
-        "x": 21,
-        "y": 3,
+        "x": 8,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_162",
         "tile": "core.platform",
-        "x": 22,
-        "y": -3,
+        "x": 8,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_163",
         "tile": "core.platform",
-        "x": 22,
-        "y": -2,
+        "x": 8,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_164",
         "tile": "core.platform",
-        "x": 22,
-        "y": -1,
+        "x": 8,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_165",
         "tile": "core.platform",
-        "x": 22,
-        "y": 0,
+        "x": 8,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_166",
         "tile": "core.platform",
-        "x": 22,
-        "y": 1,
+        "x": 8,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_167",
         "tile": "core.platform",
-        "x": 22,
-        "y": 2,
+        "x": 8,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_168",
         "tile": "core.platform",
-        "x": 22,
-        "y": 3,
+        "x": 8,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_169",
         "tile": "core.platform",
-        "x": 23,
-        "y": -3,
+        "x": 9,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_170",
         "tile": "core.platform",
-        "x": 23,
-        "y": -2,
+        "x": 9,
+        "y": -7,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_171",
         "tile": "core.platform",
-        "x": 23,
-        "y": -1,
+        "x": 9,
+        "y": -6,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_172",
         "tile": "core.platform",
-        "x": 23,
-        "y": 0,
+        "x": 9,
+        "y": -5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_173",
         "tile": "core.platform",
-        "x": 23,
-        "y": 1,
+        "x": 9,
+        "y": -4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_174",
         "tile": "core.platform",
-        "x": 23,
-        "y": 2,
+        "x": 9,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_175",
         "tile": "core.platform",
-        "x": 23,
-        "y": 3,
+        "x": 9,
+        "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_176",
         "tile": "core.platform",
-        "x": 24,
-        "y": -3,
+        "x": 9,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_177",
         "tile": "core.platform",
-        "x": 24,
-        "y": -2,
+        "x": 9,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_178",
         "tile": "core.platform",
-        "x": 24,
-        "y": -1,
+        "x": 9,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_179",
         "tile": "core.platform",
-        "x": 24,
-        "y": 0,
+        "x": 9,
+        "y": 2,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_180",
         "tile": "core.platform",
-        "x": 24,
-        "y": 1,
+        "x": 9,
+        "y": 3,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_181",
         "tile": "core.platform",
-        "x": 24,
-        "y": 2,
+        "x": 9,
+        "y": 4,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_182",
         "tile": "core.platform",
-        "x": 24,
-        "y": 3,
+        "x": 9,
+        "y": 5,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_183",
         "tile": "core.platform",
-        "x": 25,
-        "y": -3,
+        "x": 10,
+        "y": -8,
         "z": 0,
         "rotation": 0
       },
       {
         "id": "tile_184",
         "tile": "core.platform",
+        "x": 10,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_185",
+        "tile": "core.platform",
+        "x": 10,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_186",
+        "tile": "core.platform",
+        "x": 10,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_187",
+        "tile": "core.platform",
+        "x": 10,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_188",
+        "tile": "core.platform",
+        "x": 10,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_189",
+        "tile": "core.platform",
+        "x": 10,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_190",
+        "tile": "core.platform",
+        "x": 10,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_191",
+        "tile": "core.platform",
+        "x": 10,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_192",
+        "tile": "core.platform",
+        "x": 10,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_193",
+        "tile": "core.platform",
+        "x": 10,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_194",
+        "tile": "core.platform",
+        "x": 10,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_195",
+        "tile": "core.platform",
+        "x": 10,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_196",
+        "tile": "core.platform",
+        "x": 10,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_197",
+        "tile": "core.platform",
+        "x": 11,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_198",
+        "tile": "core.platform",
+        "x": 11,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_199",
+        "tile": "core.platform",
+        "x": 11,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_200",
+        "tile": "core.platform",
+        "x": 11,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_201",
+        "tile": "core.platform",
+        "x": 11,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_202",
+        "tile": "core.platform",
+        "x": 11,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_203",
+        "tile": "core.platform",
+        "x": 11,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_204",
+        "tile": "core.platform",
+        "x": 11,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_205",
+        "tile": "core.platform",
+        "x": 11,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_206",
+        "tile": "core.platform",
+        "x": 11,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_207",
+        "tile": "core.platform",
+        "x": 11,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_208",
+        "tile": "core.platform",
+        "x": 11,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_209",
+        "tile": "core.platform",
+        "x": 11,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_210",
+        "tile": "core.platform",
+        "x": 11,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_211",
+        "tile": "core.platform",
+        "x": 12,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_212",
+        "tile": "core.platform",
+        "x": 12,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_213",
+        "tile": "core.platform",
+        "x": 12,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_214",
+        "tile": "core.platform",
+        "x": 12,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_215",
+        "tile": "core.platform",
+        "x": 12,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_216",
+        "tile": "core.platform",
+        "x": 12,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_217",
+        "tile": "core.platform",
+        "x": 12,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_218",
+        "tile": "core.platform",
+        "x": 12,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_219",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_220",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_221",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_222",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_223",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_224",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_225",
+        "tile": "core.platform",
+        "x": 13,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_226",
+        "tile": "core.platform",
+        "x": 13,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_227",
+        "tile": "core.platform",
+        "x": 13,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_228",
+        "tile": "core.platform",
+        "x": 13,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_229",
+        "tile": "core.platform",
+        "x": 13,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_230",
+        "tile": "core.platform",
+        "x": 13,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_231",
+        "tile": "core.platform",
+        "x": 13,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_232",
+        "tile": "core.platform",
+        "x": 13,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_233",
+        "tile": "core.platform",
+        "x": 13,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_234",
+        "tile": "core.platform",
+        "x": 13,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_235",
+        "tile": "core.platform",
+        "x": 13,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_236",
+        "tile": "core.platform",
+        "x": 13,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_237",
+        "tile": "core.platform",
+        "x": 13,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_238",
+        "tile": "core.platform",
+        "x": 13,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_239",
+        "tile": "core.platform",
+        "x": 14,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_240",
+        "tile": "core.platform",
+        "x": 14,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_241",
+        "tile": "core.platform",
+        "x": 14,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_242",
+        "tile": "core.platform",
+        "x": 14,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_243",
+        "tile": "core.platform",
+        "x": 14,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_244",
+        "tile": "core.platform",
+        "x": 14,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_245",
+        "tile": "core.platform",
+        "x": 14,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_246",
+        "tile": "core.platform",
+        "x": 14,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_247",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_248",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_249",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_250",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_251",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_252",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_253",
+        "tile": "core.platform",
+        "x": 15,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_254",
+        "tile": "core.platform",
+        "x": 15,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_255",
+        "tile": "core.platform",
+        "x": 15,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_256",
+        "tile": "core.platform",
+        "x": 15,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_257",
+        "tile": "core.platform",
+        "x": 15,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_258",
+        "tile": "core.platform",
+        "x": 15,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_259",
+        "tile": "core.platform",
+        "x": 15,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_260",
+        "tile": "core.platform",
+        "x": 15,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_261",
+        "tile": "core.platform",
+        "x": 15,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_262",
+        "tile": "core.platform",
+        "x": 15,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_263",
+        "tile": "core.platform",
+        "x": 15,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_264",
+        "tile": "core.platform",
+        "x": 15,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_265",
+        "tile": "core.platform",
+        "x": 15,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_266",
+        "tile": "core.platform",
+        "x": 15,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_267",
+        "tile": "core.platform",
+        "x": 16,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_268",
+        "tile": "core.platform",
+        "x": 16,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_269",
+        "tile": "core.platform",
+        "x": 16,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_270",
+        "tile": "core.platform",
+        "x": 16,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_271",
+        "tile": "core.platform",
+        "x": 16,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_272",
+        "tile": "core.platform",
+        "x": 16,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_273",
+        "tile": "core.platform",
+        "x": 16,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_274",
+        "tile": "core.platform",
+        "x": 16,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_275",
+        "tile": "core.platform",
+        "x": 16,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_276",
+        "tile": "core.platform",
+        "x": 16,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_277",
+        "tile": "core.platform",
+        "x": 16,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_278",
+        "tile": "core.platform",
+        "x": 16,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_279",
+        "tile": "core.platform",
+        "x": 16,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_280",
+        "tile": "core.platform",
+        "x": 16,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_281",
+        "tile": "core.platform",
+        "x": 17,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_282",
+        "tile": "core.platform",
+        "x": 17,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_283",
+        "tile": "core.platform",
+        "x": 17,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_284",
+        "tile": "core.platform",
+        "x": 17,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_285",
+        "tile": "core.platform",
+        "x": 17,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_286",
+        "tile": "core.platform",
+        "x": 17,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_287",
+        "tile": "core.platform",
+        "x": 17,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_288",
+        "tile": "core.platform",
+        "x": 17,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_289",
+        "tile": "core.platform",
+        "x": 17,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_290",
+        "tile": "core.platform",
+        "x": 17,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_291",
+        "tile": "core.platform",
+        "x": 17,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_292",
+        "tile": "core.platform",
+        "x": 17,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_293",
+        "tile": "core.platform",
+        "x": 17,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_294",
+        "tile": "core.platform",
+        "x": 17,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_295",
+        "tile": "core.platform",
+        "x": 18,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_296",
+        "tile": "core.platform",
+        "x": 18,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_297",
+        "tile": "core.platform",
+        "x": 18,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_298",
+        "tile": "core.platform",
+        "x": 18,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_299",
+        "tile": "core.platform",
+        "x": 18,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_300",
+        "tile": "core.platform",
+        "x": 18,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_301",
+        "tile": "core.platform",
+        "x": 18,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_302",
+        "tile": "core.platform",
+        "x": 18,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_303",
+        "tile": "core.platform",
+        "x": 18,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_304",
+        "tile": "core.platform",
+        "x": 18,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_305",
+        "tile": "core.platform",
+        "x": 18,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_306",
+        "tile": "core.platform",
+        "x": 18,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_307",
+        "tile": "core.platform",
+        "x": 18,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_308",
+        "tile": "core.platform",
+        "x": 18,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_309",
+        "tile": "core.platform",
+        "x": 19,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_310",
+        "tile": "core.platform",
+        "x": 19,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_311",
+        "tile": "core.platform",
+        "x": 19,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_312",
+        "tile": "core.platform",
+        "x": 19,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_313",
+        "tile": "core.platform",
+        "x": 19,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_314",
+        "tile": "core.platform",
+        "x": 19,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_315",
+        "tile": "core.platform",
+        "x": 19,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_316",
+        "tile": "core.platform",
+        "x": 19,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_317",
+        "tile": "core.platform",
+        "x": 19,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_318",
+        "tile": "core.platform",
+        "x": 19,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_319",
+        "tile": "core.platform",
+        "x": 19,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_320",
+        "tile": "core.platform",
+        "x": 19,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_321",
+        "tile": "core.platform",
+        "x": 19,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_322",
+        "tile": "core.platform",
+        "x": 19,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_323",
+        "tile": "core.platform",
+        "x": 20,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_324",
+        "tile": "core.platform",
+        "x": 20,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_325",
+        "tile": "core.platform",
+        "x": 20,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_326",
+        "tile": "core.platform",
+        "x": 20,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_327",
+        "tile": "core.platform",
+        "x": 20,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_328",
+        "tile": "core.platform",
+        "x": 20,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_329",
+        "tile": "core.platform",
+        "x": 20,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_330",
+        "tile": "core.platform",
+        "x": 20,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_331",
+        "tile": "core.platform",
+        "x": 20,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_332",
+        "tile": "core.platform",
+        "x": 20,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_333",
+        "tile": "core.platform",
+        "x": 20,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_334",
+        "tile": "core.platform",
+        "x": 20,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_335",
+        "tile": "core.platform",
+        "x": 20,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_336",
+        "tile": "core.platform",
+        "x": 20,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_337",
+        "tile": "core.platform",
+        "x": 21,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_338",
+        "tile": "core.platform",
+        "x": 21,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_339",
+        "tile": "core.platform",
+        "x": 21,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_340",
+        "tile": "core.platform",
+        "x": 21,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_341",
+        "tile": "core.platform",
+        "x": 21,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_342",
+        "tile": "core.platform",
+        "x": 21,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_343",
+        "tile": "core.platform",
+        "x": 21,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_344",
+        "tile": "core.platform",
+        "x": 21,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_345",
+        "tile": "core.platform",
+        "x": 21,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_346",
+        "tile": "core.platform",
+        "x": 21,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_347",
+        "tile": "core.platform",
+        "x": 21,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_348",
+        "tile": "core.platform",
+        "x": 21,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_349",
+        "tile": "core.platform",
+        "x": 21,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_350",
+        "tile": "core.platform",
+        "x": 21,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_351",
+        "tile": "core.platform",
+        "x": 22,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_352",
+        "tile": "core.platform",
+        "x": 22,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_353",
+        "tile": "core.platform",
+        "x": 22,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_354",
+        "tile": "core.platform",
+        "x": 22,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_355",
+        "tile": "core.platform",
+        "x": 22,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_356",
+        "tile": "core.platform",
+        "x": 22,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_357",
+        "tile": "core.platform",
+        "x": 22,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_358",
+        "tile": "core.platform",
+        "x": 22,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_359",
+        "tile": "core.platform",
+        "x": 22,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_360",
+        "tile": "core.platform",
+        "x": 22,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_361",
+        "tile": "core.platform",
+        "x": 22,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_362",
+        "tile": "core.platform",
+        "x": 22,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_363",
+        "tile": "core.platform",
+        "x": 22,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_364",
+        "tile": "core.platform",
+        "x": 22,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_365",
+        "tile": "core.platform",
+        "x": 23,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_366",
+        "tile": "core.platform",
+        "x": 23,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_367",
+        "tile": "core.platform",
+        "x": 23,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_368",
+        "tile": "core.platform",
+        "x": 23,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_369",
+        "tile": "core.platform",
+        "x": 23,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_370",
+        "tile": "core.platform",
+        "x": 23,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_371",
+        "tile": "core.platform",
+        "x": 23,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_372",
+        "tile": "core.platform",
+        "x": 23,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_373",
+        "tile": "core.platform",
+        "x": 23,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_374",
+        "tile": "core.platform",
+        "x": 23,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_375",
+        "tile": "core.platform",
+        "x": 23,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_376",
+        "tile": "core.platform",
+        "x": 23,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_377",
+        "tile": "core.platform",
+        "x": 23,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_378",
+        "tile": "core.platform",
+        "x": 23,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_379",
+        "tile": "core.platform",
+        "x": 24,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_380",
+        "tile": "core.platform",
+        "x": 24,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_381",
+        "tile": "core.platform",
+        "x": 24,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_382",
+        "tile": "core.platform",
+        "x": 24,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_383",
+        "tile": "core.platform",
+        "x": 24,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_384",
+        "tile": "core.platform",
+        "x": 24,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_385",
+        "tile": "core.platform",
+        "x": 24,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_386",
+        "tile": "core.platform",
+        "x": 24,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_387",
+        "tile": "core.platform",
+        "x": 24,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_388",
+        "tile": "core.platform",
+        "x": 24,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_389",
+        "tile": "core.platform",
+        "x": 24,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_390",
+        "tile": "core.platform",
+        "x": 24,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_391",
+        "tile": "core.platform",
+        "x": 24,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_392",
+        "tile": "core.platform",
+        "x": 24,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_393",
+        "tile": "core.platform",
+        "x": 25,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_394",
+        "tile": "core.platform",
+        "x": 25,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_395",
+        "tile": "core.platform",
+        "x": 25,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_396",
+        "tile": "core.platform",
+        "x": 25,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_397",
+        "tile": "core.platform",
+        "x": 25,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_398",
+        "tile": "core.platform",
+        "x": 25,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_399",
+        "tile": "core.platform",
         "x": 25,
         "y": -2,
         "z": 0,
         "rotation": 0
       },
       {
-        "id": "tile_185",
+        "id": "tile_400",
         "tile": "core.platform",
         "x": 25,
         "y": -1,
@@ -1503,7 +3223,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_186",
+        "id": "tile_401",
         "tile": "core.platform",
         "x": 25,
         "y": 0,
@@ -1511,7 +3231,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_187",
+        "id": "tile_402",
         "tile": "core.platform",
         "x": 25,
         "y": 1,
@@ -1519,7 +3239,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_188",
+        "id": "tile_403",
         "tile": "core.platform",
         "x": 25,
         "y": 2,
@@ -1527,7 +3247,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_189",
+        "id": "tile_404",
         "tile": "core.platform",
         "x": 25,
         "y": 3,
@@ -1535,7 +3255,63 @@
         "rotation": 0
       },
       {
-        "id": "tile_190",
+        "id": "tile_405",
+        "tile": "core.platform",
+        "x": 25,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_406",
+        "tile": "core.platform",
+        "x": 25,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_407",
+        "tile": "core.platform",
+        "x": 26,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_408",
+        "tile": "core.platform",
+        "x": 26,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_409",
+        "tile": "core.platform",
+        "x": 26,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_410",
+        "tile": "core.platform",
+        "x": 26,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_411",
+        "tile": "core.platform",
+        "x": 26,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_412",
         "tile": "core.platform",
         "x": 26,
         "y": -3,
@@ -1543,7 +3319,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_191",
+        "id": "tile_413",
         "tile": "core.platform",
         "x": 26,
         "y": -2,
@@ -1551,7 +3327,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_192",
+        "id": "tile_414",
         "tile": "core.platform",
         "x": 26,
         "y": -1,
@@ -1559,7 +3335,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_193",
+        "id": "tile_415",
         "tile": "core.platform",
         "x": 26,
         "y": 0,
@@ -1567,7 +3343,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_194",
+        "id": "tile_416",
         "tile": "core.platform",
         "x": 26,
         "y": 1,
@@ -1575,7 +3351,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_195",
+        "id": "tile_417",
         "tile": "core.platform",
         "x": 26,
         "y": 2,
@@ -1583,16 +3359,322 @@
         "rotation": 0
       },
       {
-        "id": "tile_196",
+        "id": "tile_418",
         "tile": "core.platform",
         "x": 26,
         "y": 3,
         "z": 0,
         "rotation": 0
+      },
+      {
+        "id": "tile_419",
+        "tile": "core.platform",
+        "x": 26,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_420",
+        "tile": "core.platform",
+        "x": 26,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_421",
+        "tile": "core.platform",
+        "x": -4,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_422",
+        "tile": "core.platform",
+        "x": -4,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_423",
+        "tile": "core.platform",
+        "x": -4,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_424",
+        "tile": "core.platform",
+        "x": -4,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_425",
+        "tile": "core.platform",
+        "x": -4,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_426",
+        "tile": "core.platform",
+        "x": -4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_427",
+        "tile": "core.platform",
+        "x": -4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_428",
+        "tile": "core.platform",
+        "x": -3,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_429",
+        "tile": "core.platform",
+        "x": -3,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_430",
+        "tile": "core.platform",
+        "x": -3,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_431",
+        "tile": "core.platform",
+        "x": -3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_432",
+        "tile": "core.platform",
+        "x": -3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_433",
+        "tile": "core.platform",
+        "x": -3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_434",
+        "tile": "core.platform",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_435",
+        "tile": "core.platform",
+        "x": -4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_436",
+        "tile": "core.platform",
+        "x": -4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_437",
+        "tile": "core.platform",
+        "x": -4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_438",
+        "tile": "core.platform",
+        "x": -4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_439",
+        "tile": "core.platform",
+        "x": -4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_440",
+        "tile": "core.platform",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_441",
+        "tile": "core.platform",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_442",
+        "tile": "core.platform",
+        "x": -3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_443",
+        "tile": "core.platform",
+        "x": -3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_444",
+        "tile": "core.platform",
+        "x": -3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_445",
+        "tile": "core.room_large",
+        "x": -4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "1,0,0:E": "wide",
+          "1,1,0:E": "door",
+          "0,1,0:W": "door"
+        }
       }
     ]
   },
   "entities": [
+    {
+      "id": "static_5",
+      "position": [
+        5,
+        0,
+        0
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_446",
+      "position": [
+        5,
+        3.2,
+        0
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffd36b",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "5 m",
+      "size": [
+        2.4,
+        0.8
+      ]
+    },
+    {
+      "id": "mark_5_s",
+      "position": [
+        5,
+        0,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mark_5_n",
+      "position": [
+        5,
+        0,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
     {
       "id": "static_10",
       "position": [
@@ -1616,7 +3698,7 @@
       "health": 600
     },
     {
-      "id": "light_197",
+      "id": "light_447",
       "position": [
         10,
         3.2,
@@ -1633,6 +3715,50 @@
         2.4,
         0.8
       ]
+    },
+    {
+      "id": "mark_10_s",
+      "position": [
+        10,
+        0,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mark_10_n",
+      "position": [
+        10,
+        0,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
     },
     {
       "id": "static_25",
@@ -1657,7 +3783,7 @@
       "health": 600
     },
     {
-      "id": "light_198",
+      "id": "light_448",
       "position": [
         25,
         3.2,
@@ -1674,6 +3800,50 @@
         2.4,
         0.8
       ]
+    },
+    {
+      "id": "mark_25_s",
+      "position": [
+        25,
+        0,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mark_25_n",
+      "position": [
+        25,
+        0,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
     },
     {
       "id": "static_50",
@@ -1698,7 +3868,7 @@
       "health": 600
     },
     {
-      "id": "light_199",
+      "id": "light_449",
       "position": [
         50,
         3.2,
@@ -1715,6 +3885,50 @@
         2.4,
         0.8
       ]
+    },
+    {
+      "id": "mark_50_s",
+      "position": [
+        50,
+        0,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mark_50_n",
+      "position": [
+        50,
+        0,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
     },
     {
       "id": "static_100",
@@ -1739,7 +3953,7 @@
       "health": 600
     },
     {
-      "id": "light_200",
+      "id": "light_450",
       "position": [
         100,
         3.2,
@@ -1756,6 +3970,50 @@
         2.4,
         0.8
       ]
+    },
+    {
+      "id": "mark_100_s",
+      "position": [
+        100,
+        0,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mark_100_n",
+      "position": [
+        100,
+        0,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
     },
     {
       "id": "static_200",
@@ -1780,7 +4038,7 @@
       "health": 600
     },
     {
-      "id": "light_201",
+      "id": "light_451",
       "position": [
         200,
         3.2,
@@ -1799,7 +4057,51 @@
       ]
     },
     {
-      "id": "mover_25_board",
+      "id": "mark_200_s",
+      "position": [
+        200,
+        0,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "mark_200_n",
+      "position": [
+        200,
+        0,
+        21
+      ],
+      "kind": "block",
+      "size": [
+        0.3,
+        0.1,
+        42
+      ],
+      "yaw": 0,
+      "material": "core.hazard",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "walk_25_board",
       "position": [
         25,
         0,
@@ -1821,17 +4123,17 @@
       "health": 600
     },
     {
-      "id": "mover_25",
+      "id": "walk_25",
       "position": [
         25,
         0,
         8
       ],
-      "name": "Runner 25 m",
+      "name": "walking 25 m",
       "kind": "mover",
       "yaw": 0,
       "blocks": [
-        "mover_25_board"
+        "walk_25_board"
       ],
       "points": [
         [
@@ -1846,13 +4148,13 @@
         ]
       ],
       "mode": "pingpong",
-      "speed": 5,
+      "speed": 3.9,
       "turnSpeed": 45,
       "wait": 0.4,
       "startActive": true
     },
     {
-      "id": "light_202",
+      "id": "light_452",
       "position": [
         25,
         3.2,
@@ -1864,14 +4166,14 @@
       "intensity": 1,
       "range": 10,
       "fixture": "sign",
-      "text": "25 m moving",
+      "text": "25 m walking",
       "size": [
         3.6,
         0.8
       ]
     },
     {
-      "id": "mover_50_board",
+      "id": "walk_50_board",
       "position": [
         50,
         0,
@@ -1893,17 +4195,17 @@
       "health": 600
     },
     {
-      "id": "mover_50",
+      "id": "walk_50",
       "position": [
         50,
         0,
         8
       ],
-      "name": "Runner 50 m",
+      "name": "walking 50 m",
       "kind": "mover",
       "yaw": 0,
       "blocks": [
-        "mover_50_board"
+        "walk_50_board"
       ],
       "points": [
         [
@@ -1918,13 +4220,13 @@
         ]
       ],
       "mode": "pingpong",
-      "speed": 5,
+      "speed": 3.9,
       "turnSpeed": 45,
       "wait": 0.4,
       "startActive": true
     },
     {
-      "id": "light_203",
+      "id": "light_453",
       "position": [
         50,
         3.2,
@@ -1936,14 +4238,14 @@
       "intensity": 1,
       "range": 10,
       "fixture": "sign",
-      "text": "50 m moving",
+      "text": "50 m walking",
       "size": [
         3.6,
         0.8
       ]
     },
     {
-      "id": "mover_100_board",
+      "id": "walk_100_board",
       "position": [
         100,
         0,
@@ -1965,17 +4267,17 @@
       "health": 600
     },
     {
-      "id": "mover_100",
+      "id": "walk_100",
       "position": [
         100,
         0,
         8
       ],
-      "name": "Runner 100 m",
+      "name": "walking 100 m",
       "kind": "mover",
       "yaw": 0,
       "blocks": [
-        "mover_100_board"
+        "walk_100_board"
       ],
       "points": [
         [
@@ -1990,13 +4292,13 @@
         ]
       ],
       "mode": "pingpong",
-      "speed": 5,
+      "speed": 3.9,
       "turnSpeed": 45,
       "wait": 0.4,
       "startActive": true
     },
     {
-      "id": "light_204",
+      "id": "light_454",
       "position": [
         100,
         3.2,
@@ -2008,7 +4310,672 @@
       "intensity": 1,
       "range": 10,
       "fixture": "sign",
-      "text": "100 m moving",
+      "text": "100 m walking",
+      "size": [
+        3.6,
+        0.8
+      ]
+    },
+    {
+      "id": "sprint_25_board",
+      "position": [
+        25,
+        0,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "sprint_25",
+      "position": [
+        25,
+        0,
+        18
+      ],
+      "name": "sprinting 25 m",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "sprint_25_board"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 7.8,
+      "turnSpeed": 45,
+      "wait": 0.4,
+      "startActive": true
+    },
+    {
+      "id": "light_455",
+      "position": [
+        25,
+        3.2,
+        22
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ff9a5a",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "25 m sprinting",
+      "size": [
+        3.6,
+        0.8
+      ]
+    },
+    {
+      "id": "sprint_50_board",
+      "position": [
+        50,
+        0,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "sprint_50",
+      "position": [
+        50,
+        0,
+        18
+      ],
+      "name": "sprinting 50 m",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "sprint_50_board"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 7.8,
+      "turnSpeed": 45,
+      "wait": 0.4,
+      "startActive": true
+    },
+    {
+      "id": "light_456",
+      "position": [
+        50,
+        3.2,
+        22
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ff9a5a",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "50 m sprinting",
+      "size": [
+        3.6,
+        0.8
+      ]
+    },
+    {
+      "id": "sprint_100_board",
+      "position": [
+        100,
+        0,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "sprint_100",
+      "position": [
+        100,
+        0,
+        18
+      ],
+      "name": "sprinting 100 m",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "sprint_100_board"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 7.8,
+      "turnSpeed": 45,
+      "wait": 0.4,
+      "startActive": true
+    },
+    {
+      "id": "light_457",
+      "position": [
+        100,
+        3.2,
+        22
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ff9a5a",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "100 m sprinting",
+      "size": [
+        3.6,
+        0.8
+      ]
+    },
+    {
+      "id": "sprint_200_board",
+      "position": [
+        200,
+        0,
+        18
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "sprint_200",
+      "position": [
+        200,
+        0,
+        18
+      ],
+      "name": "sprinting 200 m",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "sprint_200_board"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 7.8,
+      "turnSpeed": 45,
+      "wait": 0.4,
+      "startActive": true
+    },
+    {
+      "id": "light_458",
+      "position": [
+        200,
+        3.2,
+        22
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ff9a5a",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "200 m sprinting",
+      "size": [
+        3.6,
+        0.8
+      ]
+    },
+    {
+      "id": "approach_near_board",
+      "position": [
+        15,
+        0,
+        31
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "approach_near",
+      "position": [
+        15,
+        0,
+        31
+      ],
+      "name": "Approach 15-75 m",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "approach_near_board"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          60,
+          0,
+          0
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 5.2,
+      "turnSpeed": 45,
+      "wait": 1,
+      "startActive": true
+    },
+    {
+      "id": "approach_far_board",
+      "position": [
+        100,
+        0,
+        31
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "approach_far",
+      "position": [
+        100,
+        0,
+        31
+      ],
+      "name": "Approach 100-180 m",
+      "kind": "mover",
+      "yaw": 0,
+      "blocks": [
+        "approach_far_board"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          80,
+          0,
+          0
+        ]
+      ],
+      "mode": "pingpong",
+      "speed": 7.8,
+      "turnSpeed": 45,
+      "wait": 1,
+      "startActive": true
+    },
+    {
+      "id": "light_459",
+      "position": [
+        8,
+        3.2,
+        31
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#b9f27a",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "approach / recede",
+      "size": [
+        4,
+        0.8
+      ]
+    },
+    {
+      "id": "tower_25",
+      "position": [
+        25,
+        0,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        3,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "high_25",
+      "position": [
+        25,
+        3,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_460",
+      "position": [
+        25,
+        6.2,
+        38
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#d8b4ff",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "25 m, 3 m up",
+      "size": [
+        3.6,
+        0.8
+      ]
+    },
+    {
+      "id": "tower_50",
+      "position": [
+        50,
+        0,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        6,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "high_50",
+      "position": [
+        50,
+        6,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_461",
+      "position": [
+        50,
+        9.2,
+        38
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#d8b4ff",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "50 m, 6 m up",
+      "size": [
+        3.6,
+        0.8
+      ]
+    },
+    {
+      "id": "tower_100",
+      "position": [
+        100,
+        0,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        10,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "high_100",
+      "position": [
+        100,
+        10,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_462",
+      "position": [
+        100,
+        13.2,
+        38
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#d8b4ff",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "100 m, 10 m up",
+      "size": [
+        3.6,
+        0.8
+      ]
+    },
+    {
+      "id": "tower_150",
+      "position": [
+        150,
+        0,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        14,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "high_150",
+      "position": [
+        150,
+        14,
+        38
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_463",
+      "position": [
+        150,
+        17.2,
+        38
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#d8b4ff",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "150 m, 14 m up",
       "size": [
         3.6,
         0.8
@@ -2019,7 +4986,7 @@
       "position": [
         15,
         0,
-        -6
+        -8
       ],
       "kind": "block",
       "size": [
@@ -2041,7 +5008,7 @@
       "position": [
         17.5,
         0,
-        -6
+        -8
       ],
       "kind": "block",
       "size": [
@@ -2059,22 +5026,22 @@
       "health": 600
     },
     {
-      "id": "light_205",
+      "id": "light_464",
       "position": [
         15,
         2.9,
-        -6
+        -8
       ],
       "kind": "light",
       "yaw": -1.5707963267948966,
       "color": "#fff1d6",
       "intensity": 1,
-      "range": 6,
+      "range": 10,
       "fixture": "sign",
       "text": "glass",
       "size": [
         2,
-        0.6
+        0.8
       ]
     },
     {
@@ -2082,7 +5049,7 @@
       "position": [
         15,
         0,
-        -8.4
+        -10.6
       ],
       "kind": "block",
       "size": [
@@ -2104,7 +5071,7 @@
       "position": [
         17.5,
         0,
-        -8.4
+        -10.6
       ],
       "kind": "block",
       "size": [
@@ -2122,22 +5089,22 @@
       "health": 600
     },
     {
-      "id": "light_206",
+      "id": "light_465",
       "position": [
         15,
         2.9,
-        -8.4
+        -10.6
       ],
       "kind": "light",
       "yaw": -1.5707963267948966,
       "color": "#fff1d6",
       "intensity": 1,
-      "range": 6,
+      "range": 10,
       "fixture": "sign",
       "text": "drywall",
       "size": [
         2,
-        0.6
+        0.8
       ]
     },
     {
@@ -2145,7 +5112,7 @@
       "position": [
         15,
         0,
-        -10.8
+        -13.2
       ],
       "kind": "block",
       "size": [
@@ -2167,7 +5134,7 @@
       "position": [
         17.5,
         0,
-        -10.8
+        -13.2
       ],
       "kind": "block",
       "size": [
@@ -2185,22 +5152,22 @@
       "health": 600
     },
     {
-      "id": "light_207",
+      "id": "light_466",
       "position": [
         15,
         2.9,
-        -10.8
+        -13.2
       ],
       "kind": "light",
       "yaw": -1.5707963267948966,
       "color": "#fff1d6",
       "intensity": 1,
-      "range": 6,
+      "range": 10,
       "fixture": "sign",
       "text": "planks",
       "size": [
         2,
-        0.6
+        0.8
       ]
     },
     {
@@ -2208,7 +5175,70 @@
       "position": [
         15,
         0,
-        -13.2
+        -15.8
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        2.2,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.dark_wood",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "behind_3",
+      "position": [
+        17.5,
+        0,
+        -15.8
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_467",
+      "position": [
+        15,
+        2.9,
+        -15.8
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "heavy wood",
+      "size": [
+        2,
+        0.8
+      ]
+    },
+    {
+      "id": "panel_4",
+      "position": [
+        15,
+        0,
+        -18.4
       ],
       "kind": "block",
       "size": [
@@ -2226,11 +5256,11 @@
       "health": 120
     },
     {
-      "id": "behind_3",
+      "id": "behind_4",
       "position": [
         17.5,
         0,
-        -13.2
+        -18.4
       ],
       "kind": "block",
       "size": [
@@ -2248,30 +5278,93 @@
       "health": 600
     },
     {
-      "id": "light_208",
+      "id": "light_468",
       "position": [
         15,
         2.9,
-        -13.2
+        -18.4
       ],
       "kind": "light",
       "yaw": -1.5707963267948966,
       "color": "#fff1d6",
       "intensity": 1,
-      "range": 6,
+      "range": 10,
       "fixture": "sign",
       "text": "sheet metal",
       "size": [
         2,
-        0.6
+        0.8
       ]
     },
     {
-      "id": "panel_4",
+      "id": "panel_5",
       "position": [
         15,
         0,
-        -15.6
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        2.2,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.steel_plate",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "behind_5",
+      "position": [
+        17.5,
+        0,
+        -21
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_469",
+      "position": [
+        15,
+        2.9,
+        -21
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "steel plate",
+      "size": [
+        2,
+        0.8
+      ]
+    },
+    {
+      "id": "panel_6",
+      "position": [
+        15,
+        0,
+        -23.6
       ],
       "kind": "block",
       "size": [
@@ -2289,11 +5382,11 @@
       "health": 120
     },
     {
-      "id": "behind_4",
+      "id": "behind_6",
       "position": [
         17.5,
         0,
-        -15.6
+        -23.6
       ],
       "kind": "block",
       "size": [
@@ -2311,30 +5404,30 @@
       "health": 600
     },
     {
-      "id": "light_209",
+      "id": "light_470",
       "position": [
         15,
         2.9,
-        -15.6
+        -23.6
       ],
       "kind": "light",
       "yaw": -1.5707963267948966,
       "color": "#fff1d6",
       "intensity": 1,
-      "range": 6,
+      "range": 10,
       "fixture": "sign",
       "text": "brick",
       "size": [
         2,
-        0.6
+        0.8
       ]
     },
     {
-      "id": "panel_5",
+      "id": "panel_7",
       "position": [
         15,
         0,
-        -18
+        -26.2
       ],
       "kind": "block",
       "size": [
@@ -2352,11 +5445,11 @@
       "health": 120
     },
     {
-      "id": "behind_5",
+      "id": "behind_7",
       "position": [
         17.5,
         0,
-        -18
+        -26.2
       ],
       "kind": "block",
       "size": [
@@ -2374,30 +5467,193 @@
       "health": 600
     },
     {
-      "id": "light_210",
+      "id": "light_471",
       "position": [
         15,
         2.9,
-        -18
+        -26.2
       ],
       "kind": "light",
       "yaw": -1.5707963267948966,
       "color": "#fff1d6",
       "intensity": 1,
-      "range": 6,
+      "range": 10,
       "fixture": "sign",
       "text": "concrete",
       "size": [
         2,
-        0.6
+        0.8
+      ]
+    },
+    {
+      "id": "panel_8",
+      "position": [
+        15,
+        0,
+        -28.8
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        2.2,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_sand",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "behind_8",
+      "position": [
+        17.5,
+        0,
+        -28.8
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_472",
+      "position": [
+        15,
+        2.9,
+        -28.8
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "dirt",
+      "size": [
+        2,
+        0.8
+      ]
+    },
+    {
+      "id": "tank_front",
+      "position": [
+        14.4,
+        0,
+        -31.400000000000002
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        2.2,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "water_473",
+      "position": [
+        15.1,
+        0,
+        -31.400000000000002
+      ],
+      "kind": "water",
+      "size": [
+        1,
+        2.1,
+        2
+      ],
+      "liquid": "water"
+    },
+    {
+      "id": "tank_back",
+      "position": [
+        15.8,
+        0,
+        -31.400000000000002
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        2.2,
+        2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_glass_facade",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "behind_9",
+      "position": [
+        17.5,
+        0,
+        -31.400000000000002
+      ],
+      "kind": "block",
+      "size": [
+        0.2,
+        1.9,
+        1.4
+      ],
+      "yaw": 0,
+      "material": "core.crate_wood",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 4,
+      "health": 600
+    },
+    {
+      "id": "light_474",
+      "position": [
+        15,
+        2.9,
+        -31.400000000000002
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#7ad6ff",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "water",
+      "size": [
+        2,
+        0.8
       ]
     },
     {
       "id": "recoil_wall",
       "position": [
-        22,
+        20,
         0,
-        -21
+        -38
       ],
       "kind": "block",
       "size": [
@@ -2415,11 +5671,11 @@
       "health": 120
     },
     {
-      "id": "light_211",
+      "id": "light_475",
       "position": [
-        22,
+        20,
         5.6,
-        -21
+        -38
       ],
       "kind": "light",
       "yaw": -1.5707963267948966,
@@ -2434,95 +5690,643 @@
       ]
     },
     {
-      "id": "pickup_212",
+      "id": "destructible_476",
+      "position": [
+        28,
+        0,
+        -38
+      ],
+      "kind": "destructible",
+      "model": "crate",
+      "yaw": -1.5707963267948966,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_477",
+      "position": [
+        30.6,
+        0,
+        -38
+      ],
+      "kind": "destructible",
+      "model": "barrel",
+      "yaw": -1.5707963267948966,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_478",
+      "position": [
+        33.2,
+        0,
+        -38
+      ],
+      "kind": "destructible",
+      "model": "glass",
+      "yaw": -1.5707963267948966,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_479",
+      "position": [
+        35.8,
+        0,
+        -38
+      ],
+      "kind": "destructible",
+      "model": "boards",
+      "yaw": -1.5707963267948966,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_480",
+      "position": [
+        38.4,
+        0,
+        -38
+      ],
+      "kind": "destructible",
+      "model": "wall",
+      "yaw": -1.5707963267948966,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_481",
+      "position": [
+        41,
+        0,
+        -38
+      ],
+      "kind": "destructible",
+      "model": "gas",
+      "yaw": -1.5707963267948966,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "destructible_482",
+      "position": [
+        43.6,
+        0,
+        -38
+      ],
+      "kind": "destructible",
+      "model": "generator",
+      "yaw": -1.5707963267948966,
+      "health": null,
+      "explosiveOnly": false
+    },
+    {
+      "id": "light_483",
+      "position": [
+        35,
+        3.2,
+        -38
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ff8a3d",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "destructibles",
+      "size": [
+        3.6,
+        0.8
+      ]
+    },
+    {
+      "id": "lane_wall_n1",
+      "position": [
+        17.5,
+        0,
+        -46
+      ],
+      "kind": "block",
+      "size": [
+        35,
+        3,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_bunker_panels",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "lane_wall_n2",
+      "position": [
+        52.5,
+        0,
+        -46
+      ],
+      "kind": "block",
+      "size": [
+        35,
+        3,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_bunker_panels",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "lane_wall_s1",
+      "position": [
+        17.5,
+        0,
+        -65
+      ],
+      "kind": "block",
+      "size": [
+        35,
+        3,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_bunker_panels",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "lane_wall_s2",
+      "position": [
+        52.5,
+        0,
+        -65
+      ],
+      "kind": "block",
+      "size": [
+        35,
+        3,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_bunker_panels",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "lane_wall_e",
+      "position": [
+        70,
+        0,
+        -55.5
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        3,
+        19
+      ],
+      "yaw": 0,
+      "material": "core.pbr_bunker_panels",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_484",
+      "position": [
+        15,
+        0,
+        -51
+      ],
+      "kind": "prop",
+      "model": "prop.sandbag_wall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_485",
+      "position": [
+        15,
+        0,
+        -60
+      ],
+      "kind": "prop",
+      "model": "prop.sandbag_wall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "lane_cover_30",
+      "position": [
+        30,
+        0,
+        -55.5
+      ],
+      "kind": "block",
+      "size": [
+        1,
+        1.2,
+        3
+      ],
+      "yaw": 0,
+      "material": "core.concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_486",
+      "position": [
+        45,
+        0,
+        -51
+      ],
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_487",
+      "position": [
+        45,
+        0,
+        -60
+      ],
+      "kind": "prop",
+      "model": "prop.cargo_crate",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_488",
+      "position": [
+        60,
+        0,
+        -53
+      ],
+      "kind": "prop",
+      "model": "prop.jersey_barrier",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_489",
+      "position": [
+        60,
+        0,
+        -59
+      ],
+      "kind": "prop",
+      "model": "prop.jersey_barrier",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_490",
+      "position": [
+        15,
+        3.6,
+        -48
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffd36b",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "15 m",
+      "size": [
+        1.6,
+        0.8
+      ]
+    },
+    {
+      "id": "light_491",
+      "position": [
+        30,
+        3.6,
+        -48
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffd36b",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "30 m",
+      "size": [
+        1.6,
+        0.8
+      ]
+    },
+    {
+      "id": "light_492",
+      "position": [
+        45,
+        3.6,
+        -48
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffd36b",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "45 m",
+      "size": [
+        1.6,
+        0.8
+      ]
+    },
+    {
+      "id": "light_493",
+      "position": [
+        60,
+        3.6,
+        -48
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ffd36b",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "60 m",
+      "size": [
+        1.6,
+        0.8
+      ]
+    },
+    {
+      "id": "lane_patrol_point",
+      "position": [
+        14,
+        0.2,
+        -56
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 0.2,
+      "range": 4,
+      "fixture": "none"
+    },
+    {
+      "id": "enc_lane",
+      "position": [
+        42,
+        0,
+        -56
+      ],
+      "name": "Range troopers",
+      "kind": "encounter",
+      "yaw": -1.5707963267948966,
+      "faction": "range_bots",
+      "roster": {
+        "trooper": 2,
+        "gunner": 1,
+        "heavy": 0
+      },
+      "activeCap": 3,
+      "reinforcements": 500,
+      "perPlayer": 0,
+      "respawnSeconds": 4,
+      "radius": 3,
+      "order": "patrol",
+      "orderTarget": "lane_patrol_point",
+      "startActive": true,
+      "difficulty": "easy",
+      "damage": 0
+    },
+    {
+      "id": "prop_494",
+      "position": [
+        -28,
+        0,
+        -4
+      ],
+      "kind": "prop",
+      "model": "prop.sandbag_wall_low",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_495",
+      "position": [
+        -24,
+        0,
+        1
+      ],
+      "kind": "prop",
+      "model": "prop.barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_496",
+      "position": [
+        -32,
+        0,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.barrier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_497",
+      "position": [
+        -19.5,
+        3.4,
+        -6
+      ],
+      "kind": "light",
+      "yaw": -1.5707963267948966,
+      "color": "#ff6a6a",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "sign",
+      "text": "duel room",
+      "size": [
+        2.4,
+        0.8
+      ]
+    },
+    {
+      "id": "pickup_498",
+      "position": [
+        -28,
+        0,
+        -10
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": 10
+    },
+    {
+      "id": "pickup_499",
+      "position": [
+        -28,
+        0,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_revolver",
+      "respawnSeconds": 10
+    },
+    {
+      "id": "pickup_500",
+      "position": [
+        -34,
+        0,
+        -4
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_501",
       "position": [
         -2,
         0,
-        -14
+        -16
       ],
       "kind": "pickup",
       "item": "core.weapon_revolver",
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_213",
+      "id": "pickup_502",
       "position": [
         -2,
         0,
-        -10
+        -12
       ],
       "kind": "pickup",
       "item": "core.weapon_smg",
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_214",
+      "id": "pickup_503",
       "position": [
         -2,
         0,
-        -6
+        -8
       ],
       "kind": "pickup",
       "item": "core.weapon_rifle",
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_215",
+      "id": "pickup_504",
       "position": [
         -2,
         0,
-        -2
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_sniper",
-      "respawnSeconds": 5
-    },
-    {
-      "id": "pickup_216",
-      "position": [
-        -2,
-        0,
-        2
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_marksman",
-      "respawnSeconds": 5
-    },
-    {
-      "id": "pickup_217",
-      "position": [
-        -2,
-        0,
-        6
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_burst_rifle",
-      "respawnSeconds": 5
-    },
-    {
-      "id": "pickup_218",
-      "position": [
-        -2,
-        0,
-        10
+        -4
       ],
       "kind": "pickup",
       "item": "core.weapon_shotgun",
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_219",
+      "id": "pickup_505",
       "position": [
         -2,
         0,
-        14
+        0
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "respawnSeconds": 5
+    },
+    {
+      "id": "pickup_506",
+      "position": [
+        -2,
+        0,
+        4
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "respawnSeconds": 5
+    },
+    {
+      "id": "pickup_507",
+      "position": [
+        -2,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": 5
+    },
+    {
+      "id": "pickup_508",
+      "position": [
+        -2,
+        0,
+        12
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_burst_rifle",
+      "respawnSeconds": 5
+    },
+    {
+      "id": "pickup_509",
+      "position": [
+        -2,
+        0,
+        16
       ],
       "kind": "pickup",
       "item": "core.weapon_lmg",
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_220",
+      "id": "pickup_510",
       "position": [
         -5,
         0,
@@ -2533,7 +6337,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_221",
+      "id": "pickup_511",
       "position": [
         -5,
         0,
@@ -2544,7 +6348,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_222",
+      "id": "pickup_512",
       "position": [
         -5,
         0,
@@ -2555,7 +6359,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_223",
+      "id": "pickup_513",
       "position": [
         -5,
         0,
@@ -2566,7 +6370,7 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_224",
+      "id": "pickup_514",
       "position": [
         -5,
         0,
@@ -2577,29 +6381,62 @@
       "respawnSeconds": 5
     },
     {
-      "id": "pickup_225",
+      "id": "pickup_515",
+      "position": [
+        -5,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_explosive",
+      "respawnSeconds": 5
+    },
+    {
+      "id": "pickup_516",
+      "position": [
+        -5,
+        0,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_sniper",
+      "respawnSeconds": 5
+    },
+    {
+      "id": "pickup_517",
+      "position": [
+        -4,
+        0,
+        -52
+      ],
+      "kind": "pickup",
+      "item": "core.ammo",
+      "respawnSeconds": 5
+    },
+    {
+      "id": "pickup_518",
       "position": [
         -6,
         0,
-        20
+        28
       ],
       "kind": "pickup",
       "item": "core.armor_large",
       "respawnSeconds": 10
     },
     {
-      "id": "pickup_226",
+      "id": "pickup_519",
       "position": [
         -6,
         0,
-        -20
+        -28
       ],
       "kind": "pickup",
       "item": "core.health_large",
       "respawnSeconds": 10
     },
     {
-      "id": "pickup_227",
+      "id": "pickup_520",
       "position": [
         100,
         0,
@@ -2610,7 +6447,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_228",
+      "id": "pickup_521",
       "position": [
         100,
         0,
@@ -2621,9 +6458,9 @@
       "respawnSeconds": null
     },
     {
-      "id": "spawn_229",
+      "id": "spawn_522",
       "position": [
-        -6,
+        -8,
         0,
         -18
       ],
@@ -2632,9 +6469,9 @@
       "faction": null
     },
     {
-      "id": "spawn_230",
+      "id": "spawn_523",
       "position": [
-        -6,
+        -8,
         0,
         -10
       ],
@@ -2643,9 +6480,9 @@
       "faction": null
     },
     {
-      "id": "spawn_231",
+      "id": "spawn_524",
       "position": [
-        -6,
+        -8,
         0,
         -2
       ],
@@ -2654,9 +6491,9 @@
       "faction": null
     },
     {
-      "id": "spawn_232",
+      "id": "spawn_525",
       "position": [
-        -6,
+        -8,
         0,
         6
       ],
@@ -2665,9 +6502,9 @@
       "faction": null
     },
     {
-      "id": "spawn_233",
+      "id": "spawn_526",
       "position": [
-        -6,
+        -8,
         0,
         14
       ],
@@ -2676,9 +6513,9 @@
       "faction": null
     },
     {
-      "id": "spawn_234",
+      "id": "spawn_527",
       "position": [
-        -6,
+        -8,
         0,
         20
       ],
@@ -2687,7 +6524,7 @@
       "faction": null
     },
     {
-      "id": "spawn_235",
+      "id": "spawn_528",
       "position": [
         190,
         0,
@@ -2698,18 +6535,18 @@
       "faction": null
     },
     {
-      "id": "spawn_236",
+      "id": "spawn_529",
       "position": [
         190,
         0,
-        16
+        8
       ],
       "kind": "spawn",
       "yaw": -1.5707963267948966,
       "faction": null
     },
     {
-      "id": "light_237",
+      "id": "light_530",
       "position": [
         -4,
         6,
@@ -2721,9 +6558,30 @@
       "intensity": 1.2,
       "range": 30,
       "fixture": "none"
+    },
+    {
+      "id": "light_531",
+      "position": [
+        -28,
+        3.5,
+        -4
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 14,
+      "fixture": "none"
     }
   ],
-  "factions": [],
+  "factions": [
+    {
+      "id": "range_bots",
+      "name": "Range Bots",
+      "color": "#ffb000",
+      "relations": {}
+    }
+  ],
   "logic": {
     "variables": [],
     "timers": [],
@@ -2733,12 +6591,12 @@
   "terrain": null,
   "bounds": {
     "min": [
-      -14,
-      -30
+      -46,
+      -70
     ],
     "max": [
       214,
-      30
+      46
     ],
     "style": "fence",
     "height": 8

@@ -281,7 +281,7 @@ camera-shake / flash reduction, toggle ADS, vibration ❌ (G5).
 ### §44–45 Training range, tuning tools
 | Item | Before | Now |
 |---|---|---|
-| Range: static targets at marked distances, moving targets, penetration materials, recoil wall | ❌ | ✅ `maps/training_range.json` |
+| Range: static targets at marked distances, moving targets, penetration materials, recoil wall | ❌ | ✅ `maps/training_range.json`, now the full test arena of GUNPLAY_DIRECTION.md (walking/sprinting, approaching and elevated targets, 5-200 m markers, water and dirt walls, destructibles, patrolling bots, duel room, medium lane; see GUNPLAY_AUDIT.md) |
 | Armor targets, damage readout, trajectory toggle | ❌ | ❌ (G2) |
 | Tuning UI (recoil path, cones, damage over distance, side by side) | ❌ | 🟡 the data and pure functions (`kickOf`, `spreadOf`, `falloffAt`, `flightTo`, `settleTicks`) are there for it; no UI |
 
