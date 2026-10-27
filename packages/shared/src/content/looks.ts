@@ -173,6 +173,13 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.boglurker', name: 'Boglurker', body: 'male', head: '', parts: ['meshy_toad'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#6a8a35', cloth: '#7c8446', trim: '#5a4632' } },
   { id: 'core.warlord', name: 'Salamander Warlord', body: 'male', head: '', parts: ['meshy_salamander'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#c8c0ae', cloth: '#4f5c5a', trim: '#7a5a3a' } },
   { id: 'core.hyena', name: 'Hyena Warrior', body: 'male', head: '', parts: ['meshy_hyena'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#8a6a48', cloth: '#7a3328', trim: '#2e2e30' } },
+  // Meshy community originals (CC0 per the owner), rigged onto the game rig by prepare-meshy-characters.mjs; three are NPC bodies too.
+  { id: 'core.elder', name: 'Elder Tomo', body: 'male', head: '', parts: ['meshy_elder'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#c99a76', cloth: '#5f5a4c', trim: '#3b3731' } },
+  { id: 'core.visitor', name: 'The Visitor', body: 'male', head: '', parts: ['meshy_alien'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#b4b6a0', cloth: '#b4b6a0', trim: '#94967f' } },
+  { id: 'core.biscuit', name: 'Biscuit', body: 'male', head: '', parts: ['meshy_cat'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'peasant_arms_m', skin: '#cfcfca', cloth: '#7c7c7a', trim: '#4e4e4c' } },
+  { id: 'core.ember', name: 'Flt. Lt. Ember', body: 'male', head: '', parts: ['meshy_pilot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#2f3136', cloth: '#a8582a', trim: '#2f3136' } },
+  { id: 'core.barnacle', name: "Cap'n Barnacle", body: 'male', head: '', parts: ['meshy_pirate'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#9a6a48', cloth: '#7aa688', trim: '#5a3a22' } },
+  { id: 'core.bogdan', name: 'Big Bogdan', body: 'male', head: '', parts: ['meshy_titan'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'peasant_arms_m', skin: '#c48a62', cloth: '#c48a62', trim: '#a06c4c' } },
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'] },
 ];
 
@@ -206,6 +213,12 @@ export const LOOK_BIOS: Readonly<Record<string, string>> = {
   'core.boglurker': 'Crawled out of the marsh for the noise and stayed for the shooting. Smells exactly as you fear.',
   'core.warlord': 'Lord of a sunken fortress, armoured in rust and spite. Expects the arena to kneel.',
   'core.hyena': 'Laughs at everything, especially the last thing you tried.',
+  'core.elder': 'Has meditated on this map for forty years. Knows where you will peek before you do.',
+  'core.visitor': 'Came a very long way to study human culture. Stayed for the deathmatches.',
+  'core.biscuit': 'Stood up on his hind legs one morning and never went back down. Knocks things off ledges, you included.',
+  'core.ember': 'Ejected over the arena on a test flight and decided to stay. Still logs every kill as a sortie.',
+  'core.barnacle': 'Lost a leg to a cannonball and his ship to a card game. Wants both back, in that order.',
+  'core.bogdan': 'Bent iron bars at the travelling circus until the circus ran out of bars.',
   'core.engineer': 'Hard hat, fuel tank, short temper. Builds things; breaks more.',
   'core.desperado': 'Wanted in three maps. The poster doesn\'t do him justice.',
   'core.raider': 'Goggles down, bandolier full, already halfway across the map.',

@@ -72,7 +72,7 @@ describe('creature NPC kinds', () => {
 
   it('the creature originals are NPC roles drawn as their own look, with no separate npc: skin', () => {
     const looked = NPC_ROLES.filter((r) => NPC_ROLE_SPECS[r].look);
-    expect(looked).toEqual(['goblin', 'otter', 'boglurker', 'warlord', 'hyena']);
+    expect(looked).toEqual(['goblin', 'otter', 'boglurker', 'warlord', 'hyena', 'alien', 'pirate', 'titan']);
     for (const role of looked) {
       const spec = NPC_ROLE_SPECS[role];
       expect(CORE_LOOKS.find((l) => l.id === spec.look)?.whole, role).toBeDefined();
@@ -92,6 +92,20 @@ describe('creature NPC kinds', () => {
     for (let i = 0; i < 5; i++) match.step();
     const roles = match.npcSnapshots().map((n) => NPC_ROLES[n[7]]).sort();
     expect(roles).toEqual(['boglurker', 'goblin', 'hyena']);
+  });
+
+  it('visitors, pirates and the strongman spawn as their community-original looks', () => {
+    const loaded = loadMap(hall({ trooper: 0, gunner: 0, heavy: 0, alien: 1, pirate: 1, titan: 1 }));
+    expect(loaded.ok).toBe(true);
+    if (!loaded.ok) return;
+    const match = new Match(loaded.map, DEFAULT_COOP_RULES, 5);
+    match.addHuman('me');
+    for (let i = 0; i < 5; i++) match.step();
+    const roles = match.npcSnapshots().map((n) => NPC_ROLES[n[7]]).sort();
+    expect(roles).toEqual(['alien', 'pirate', 'titan']);
+    // Appended after the earlier roles, so older snapshots and maps keep their indices.
+    expect(NPC_ROLES.indexOf('alien')).toBe(NPC_ROLES.indexOf('hyena') + 1);
+    expect(CORE_LOOKS.find((l) => l.id === NPC_ROLE_SPECS.titan.look)?.size).toBe('large');
   });
 
   it('maps saved before creatures existed load with no creatures in their squads', () => {

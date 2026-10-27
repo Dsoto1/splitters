@@ -291,7 +291,7 @@ export const PLAYERS_FACTION = 'players';
  * NPC kinds an encounter can field: the soldiers, then the creatures (see
  * sim/npc.ts and sim/creatures.ts). Order matters: snapshots send the index.
  */
-export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper', 'imp', 'puglin', 'cyclops', 'oculus', 'scolitex', 'zombie', 'goblin', 'otter', 'boglurker', 'warlord', 'hyena'] as const;
+export const NPC_ROLES = ['trooper', 'gunner', 'heavy', 'sniper', 'imp', 'puglin', 'cyclops', 'oculus', 'scolitex', 'zombie', 'goblin', 'otter', 'boglurker', 'warlord', 'hyena', 'alien', 'pirate', 'titan'] as const;
 /** The creature kinds among NPC_ROLES (their own bodies and clips, not the soldier rig). */
 export const CREATURE_ROLES = ['imp', 'puglin', 'cyclops', 'oculus', 'scolitex'] as const satisfies readonly (typeof NPC_ROLES)[number][];
 const squadCount = z.number().int().min(0).max(16);
@@ -332,6 +332,9 @@ export const EncounterEntity = EntityBase.extend({
       boglurker: squadCount.optional(),
       warlord: squadCount.optional(),
       hyena: squadCount.optional(),
+      alien: squadCount.optional(),
+      pirate: squadCount.optional(),
+      titan: squadCount.optional(),
     })
     .default({ trooper: 2, gunner: 1, heavy: 0 }),
   activeCap: z.number().int().min(1).max(32).default(4),

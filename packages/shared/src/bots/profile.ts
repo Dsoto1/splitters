@@ -175,6 +175,18 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     character('core.warlord', 'Salamander Warlord', { aggression: 65, tacticalAwareness: 75, objectivePriority: 80, rangePreference: 50, tags: ['SUPPRESSOR', 'TACTICAL'], weaponPreferences: ['core.launcher', 'core.rockets', 'core.lmg'] }),
     // Hunts in packs and never lets a wounded target go.
     character('core.hyena', 'Hyena Warrior', { aggression: 80, pursuitPersistence: 95, teamLoyalty: 80, rangePreference: 35, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.shotgun', 'core.burst_rifle'] }),
+    // Patient, unhurried, and somehow always in the right place.
+    character('core.elder', 'Elder Tomo', { aggression: 30, accuracy: 80, selfPreservation: 75, tacticalAwareness: 85, rangePreference: 60, tags: ['TACTICAL'], weaponPreferences: ['core.marksman', 'core.revolver', 'core.burst_rifle'] }),
+    // Curious about everything, armed with things that glow.
+    character('core.visitor', 'The Visitor', { aggression: 55, exploration: 90, itemGreed: 70, rangePreference: 50, tags: ['EXPLORER'], weaponPreferences: ['core.laser_rifle', 'core.plasma', 'core.pulse_pistol'] }),
+    // Small, quick and easily distracted by shiny pickups.
+    character('core.biscuit', 'Biscuit', { aggression: 70, itemGreed: 95, reactionSpeed: 80, exploration: 75, rangePreference: 25, tags: ['ARENA', 'RECKLESS'], weaponPreferences: ['core.smg', 'core.machine_pistol', 'core.bubble_blaster'] }),
+    // Flies the map like an airfield: fast passes, rockets on the way through.
+    character('core.ember', 'Flt. Lt. Ember', { aggression: 70, reactionSpeed: 80, exploration: 65, rangePreference: 45, tags: ['ARENA'], weaponPreferences: ['core.rockets', 'core.burst_rifle', 'core.flare_gun'] }),
+    // Boards at close range with a short gun and a long grudge.
+    character('core.barnacle', "Cap'n Barnacle", { aggression: 80, itemGreed: 85, riskTolerance: 75, rangePreference: 20, meleePreference: 45, tags: ['ARENA', 'RECKLESS'], weaponPreferences: ['core.sawed_off', 'core.hand_cannon', 'core.flak'] }),
+    // Walks through the front door carrying the heaviest thing in the building.
+    character('core.bogdan', 'Big Bogdan', { aggression: 75, selfPreservation: 25, riskTolerance: 85, rangePreference: 25, pursuitPersistence: 70, tags: ['SUPPRESSOR'], weaponPreferences: ['core.lmg', 'core.auto_shotgun', 'core.launcher'] }),
     character('core.frost', 'Frost', { rangePreference: 90, accuracy: 82, aggression: 30, selfPreservation: 70, tags: ['SNIPER'], weaponPreferences: ['core.sniper', 'core.railgun', 'core.marksman'] }),
     character('core.operative', 'Operative', { accuracy: 75, reactionSpeed: 75, tacticalAwareness: 80, aggression: 45, tags: ['TACTICAL'], weaponPreferences: ['core.smg', 'core.hand_cannon', 'core.marksman'] }),
     character('core.medic', 'Medic', { teamLoyalty: 95, selfPreservation: 70, objectivePriority: 70, aggression: 35, tags: ['SURVIVOR'], weaponPreferences: ['core.smg', 'core.rifle', 'core.pulse_pistol'] }),

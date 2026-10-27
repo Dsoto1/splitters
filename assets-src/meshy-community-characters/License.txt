@@ -1,0 +1,32 @@
+Meshy community models: characters (https://www.meshy.ai)
+
+Licence: CC0 1.0 (public domain dedication), per the owner.
+
+The owner downloaded these models from Meshy's community gallery and states
+they are published there under CC0. The community page URL for each model is
+pending from the owner; until it arrives the licence rests on the owner's
+statement (recorded here and in docs/ASSET_SOURCES.md as "Meshy community,
+CC0 (per owner)").
+
+Models (name as on the download, download file date):
+
+- "Elder T-pose" (2025-11-14)  -> character meshy_elder (look Elder Tomo)
+- "T Pose Alien" (2026-07-21)  -> character meshy_alien (look The Visitor)
+- "T Pose Cat" (2026-03-11)  -> character meshy_cat (look Biscuit)
+- "T Pose Pilot" (2026-05-10)  -> character meshy_pilot (look Flt. Lt. Ember)
+- "T Pose Pirate" (2026-07-14)  -> character meshy_pirate (look Cap'n Barnacle)
+- "T Pose Titan" (2026-05-03)  -> character meshy_titan (look Big Bogdan)
+
+Looked at and not used (they closely resemble real people, so they fail the
+likeness screen):
+
+- "T Pose Hero" (2026-05-19): a caricature of a recognisable musician's look,
+  with a portrait of a real person printed on the shirt
+- "T Pose Model" (2025-11-05): a photo-real likeness of a real person
+- "T Pose Portrait" (2026-07-27): a photo-real likeness of a real person,
+  made from a portrait photograph
+
+tools/content/prepare-meshy-characters.mjs (FBX_CHARACTERS) rigs the textured
+FBX downloads onto the game's skeleton and builds the shipped character files.
+The raw downloads (FBX, PNG) are not kept in the repo; content/meshy.lock.json
+checks the built files.
