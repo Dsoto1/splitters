@@ -16,6 +16,8 @@ export * from './map/retired.ts';
 export * from './map/imported.ts';
 export * from './map/migrate.ts';
 export * from './map/validate.ts';
+export * from './map/identity.ts';
+export * from './map/budgets.ts';
 export * from './sim/constants.ts';
 export * from './sim/physics.ts';
 export * from './sim/movement.ts';
