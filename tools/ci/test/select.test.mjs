@@ -13,6 +13,10 @@ describe('change-based selection', () => {
     expect(s).toMatchObject({ full: false, flows: [], unit: [], docsOnly: true, perf: false });
   });
 
+  it('the box\'s deploy scripts run no flows', () => {
+    expect(sel('infra/tiletrigger-update.sh', 'infra/toshiro-trigger-multiplayer.yaml', 'deploy/aws-lightsail-setup.sh')).toMatchObject({ full: false, flows: [], unit: [] });
+  });
+
   it('anything unmapped runs everything', () => {
     const s = sel('docs/UI.md', 'somewhere/new/file.txt');
     expect(s.full).toBe(true);

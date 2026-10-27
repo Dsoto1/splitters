@@ -156,7 +156,7 @@ install_deps() { # production dependencies of the hub, only when they changed (o
     as_app rm -rf "$APP/node_modules" "$APP/packages/server/node_modules" "$APP/packages/shared/node_modules" "$APP/packages/client/node_modules"
   fi
   note "installing the hub's production dependencies"
-  pnpm_app install --frozen-lockfile --prod --filter '@tiletrigger/server...' --reporter=silent
+  pnpm_app install --frozen-lockfile --prod --filter '@tiletrigger/server...' --config.confirmModulesPurge=false
   echo "$want" > "$STATE/deps"
 }
 
@@ -235,8 +235,10 @@ download_build() { # sha release(s)...: fetch and check into $STAGE; prints noth
 build_here() { # sha: the slow path, by request only
   local mem; mem="$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo 2>/dev/null || echo 0)"
   say "Building the site on this box (--build-here): several minutes at full CPU, ~1.5 GB of memory (${mem} MB here)"
+  local swap; swap="$(awk '/SwapTotal/ {print int($2/1024)}' /proc/meminfo 2>/dev/null || echo 0)"
+  [ $((mem + swap)) -ge 5000 ] || note "WARNING: ${mem} MB of memory + ${swap} MB of swap may not be enough (infra/deploy-multiplayer.sh --build-here grows the swap to 4 GB)"
   git_app reset -q --hard "$1"
-  pnpm_app install --frozen-lockfile --reporter=silent
+  pnpm_app install --frozen-lockfile --config.confirmModulesPurge=false
   echo "full" > "$STATE/deps"
   local p; read -ra p <<<"$PNPM"
   as_app env VITE_HUB=self NODE_OPTIONS=--max-old-space-size=3072 "${p[@]}" --dir "$APP" build
@@ -342,7 +344,7 @@ case "$MODE" in
 esac
 [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || die "could not tell which commit to install (got '$SHA')"
 
-if [ "$SHA" = "$CUR" ] && [ "$FORCE" = 0 ]; then
+if [ "$SHA" = "$CUR" ] && [ "$FORCE" = 0 ] && [ ! -e "$RELEASES/$SHA/withdrawn" ]; then
   [ "$AUTO" = 1 ] || say "Already on ${SHA:0:12} ($SOURCE): nothing to do (--force to reinstall)"
   exit 0
 fi
