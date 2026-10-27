@@ -51,6 +51,7 @@ import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { autoSkin } from './autoskin.mjs';
 import { fbxToDocument } from './fbx.mjs';
+import { seamAwareSimplify } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -780,86 +781,6 @@ function addLowDetail(doc) {
     }
     (node.getParentNode() ?? scene).addChild(doc.createNode(`${node.getName()}_lod`).setMesh(low).setSkin(node.getSkin()));
   }
-}
-
-/** Texture seams whose two sides, or the texture between them, differ by more than this (0-255 RGB distance, averaged over a few texels) stay put. */
-const SEAM_COLOUR = 18;
-
-/**
- * Simplify a mesh whose texture is cut into many small islands (the goblin's rags): the careful simplifier won't
- * collapse across a texture seam, so hundreds of islands stop it far short of the target. Here a seam may be
- * collapsed across where the texture matches on both sides of it (sampled round each side's UV, so a stretched
- * triangle there still samples the same colour), and is protected where it doesn't; texture coordinates weigh in the
- * error so the collapse keeps to where it shows least.
- */
-async function seamAwareSimplify(prim, jpeg, targetTris) {
-  const { data, info } = await sharp(jpeg).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-  const P = prim.getAttribute('POSITION').getArray();
-  const UV = prim.getAttribute('TEXCOORD_0').getArray();
-  const N = prim.getAttribute('NORMAL').getArray();
-  const n = P.length / 3;
-  // The colour round a texture coordinate (5 x 5 texels, 2 apart).
-  const colour = (u, v) => {
-    const out = [0, 0, 0];
-    let k = 0;
-    for (let dy = -4; dy <= 4; dy += 2) {
-      for (let dx = -4; dx <= 4; dx += 2) {
-        const x = Math.min(info.width - 1, Math.max(0, Math.round(u * info.width) + dx));
-        const y = Math.min(info.height - 1, Math.max(0, Math.round(v * info.height) + dy));
-        const i = (y * info.width + x) * 3;
-        out[0] += data[i];
-        out[1] += data[i + 1];
-        out[2] += data[i + 2];
-        k++;
-      }
-    }
-    return out.map((x) => x / k);
-  };
-  // Vertices at one position with different texture coordinates are the sides of a seam.
-  const byPos = new Map();
-  for (let v = 0; v < n; v++) {
-    const key = `${P[v * 3].toFixed(5)},${P[v * 3 + 1].toFixed(5)},${P[v * 3 + 2].toFixed(5)}`;
-    (byPos.get(key) ?? byPos.set(key, []).get(key)).push(v);
-  }
-  const lock = new Uint8Array(n);
-  let [seams, kept] = [0, 0];
-  for (const group of byPos.values()) {
-    if (group.length < 2) continue;
-    seams++;
-    // Each pair of sides, and the texture on the way between them (a triangle stretched across the seam samples that).
-    let worst = 0;
-    const diff = (x, y) => Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]);
-    for (let a = 0; a < group.length && worst <= SEAM_COLOUR; a++) {
-      for (let b = a + 1; b < group.length && worst <= SEAM_COLOUR; b++) {
-        const [ua, va, ub, vb] = [UV[group[a] * 2], UV[group[a] * 2 + 1], UV[group[b] * 2], UV[group[b] * 2 + 1]];
-        const ca = colour(ua, va);
-        const steps = Math.min(16, Math.ceil(Math.hypot(ub - ua, vb - va) * info.width / 8));
-        for (let k = 1; k <= steps; k++) worst = Math.max(worst, diff(ca, colour(ua + ((ub - ua) * k) / steps, va + ((vb - va) * k) / steps)));
-      }
-    }
-    if (worst > SEAM_COLOUR) {
-      kept++;
-      // meshopt_SimplifyVertex_Protect: no collapse across the seam here.
-      for (const v of group) lock[v] = 2;
-    }
-  }
-  const attrs = new Float32Array(n * 5);
-  for (let v = 0; v < n; v++) attrs.set([UV[v * 2], UV[v * 2 + 1], N[v * 3], N[v * 3 + 1], N[v * 3 + 2]], v * 5);
-  const [out, error] = MeshoptSimplifier.simplifyWithAttributes(
-    new Uint32Array(prim.getIndices().getArray()),
-    new Float32Array(P),
-    3,
-    attrs,
-    5,
-    [1, 1, 0.3, 0.3, 0.3],
-    lock,
-    targetTris * 3,
-    0.02,
-    ['Permissive'],
-  );
-  prim.getIndices().setArray(out);
-  compactPrimitive(prim);
-  console.log(`  seams: ${seams} vertices on a seam, ${kept} kept apart (texture differs), ${out.length / 3} triangles, error ${error.toFixed(4)}`);
 }
 
 /**

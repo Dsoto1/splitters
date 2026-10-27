@@ -56,6 +56,30 @@
       "triangles": 736,
       "bytes": 46512,
       "sha256": "f27f417bba8bb528"
+    },
+    {
+      "file": "models/guns/ironclad_revolver.glb",
+      "source": "meshy-community-guns",
+      "src": "Meshy community revolver (2026-01-26), markings painted out",
+      "triangles": 4992,
+      "bytes": 254956,
+      "sha256": "2a643cacf9d91df7"
+    },
+    {
+      "file": "models/guns/plasma_spin_gun.glb",
+      "source": "meshy-community-guns",
+      "src": "Plasma Annihilator X (2026-01-18)",
+      "triangles": 5981,
+      "bytes": 336176,
+      "sha256": "794274b8f8376449"
+    },
+    {
+      "file": "models/guns/arc_cannon_turret.glb",
+      "source": "meshy-community-guns",
+      "src": "Nebula Arc Cannon (2026-07-03)",
+      "triangles": 4994,
+      "bytes": 270280,
+      "sha256": "4814d25364de9599"
     }
   ]
 }
