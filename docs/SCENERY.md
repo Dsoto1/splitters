@@ -178,7 +178,10 @@ solid (bots path round them); bushes, flowers and grass can be walked through.
   25 m / 70 m), so a forest of them costs little in the distance. Trunks (and
   the rock spires, by their footprint) are solid; leaves, shrubs, ferns and
   eelgrass are walk-through. Backwoods Lodge's woods use the fir, birch, oak,
-  shrub and fern.
+  shrub and fern (128 trees and 44 plants swapped from the Quaternius pines
+  and birches, Kenney oaks, bushes and ferns): from four fixed views with
+  nobody about (Medium), draws 511–811 → 524–844 (+1–4 %), triangles within
+  1 %, active meshes 7–14 % fewer.
 - Scenery shapes, the starfield and the window texture are generated in code.
 - Borders: cliffs, blocks, sea, wires and the far-row conifers are generated in
   code; the forest's front row is the Quaternius Ultimate Nature pack (CC0,
