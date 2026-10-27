@@ -1493,7 +1493,9 @@ export class Match {
         self: views.get(c.slot)!,
         others,
         physics: this.physics,
-        sight: this.sight,
+        // Shared sight lines and bounded perception only in big matches: smaller ones see exactly as before.
+        sight: every > 1 ? this.sight : undefined,
+        crowded: every > 1,
         nav: this.nav,
         spawnPoints: orderGoal === undefined ? spawnPoints : npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
         pickups: npc ? npcPickups : pickups,

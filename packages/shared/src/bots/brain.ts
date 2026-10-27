@@ -117,7 +117,9 @@ export interface BotWorldView {
   /** Squad tactics (NPCs): advance now (bounding) or hold and cover the one that is. */
   squad?: { advance: boolean } | null;
   /** Line of sight between actors shared by all bots in the match (perception uses it when given). */
-  sight?: SightCache;
+  sight?: SightCache | undefined;
+  /** A big match (past BOT_FULL_RATE bots): perception casts a bounded number of sight lines. */
+  crowded?: boolean;
   /** `allies` on a grid (big matches): keeping apart reads the cells around the bot. */
   alliesGrid?: ViewGrid | undefined;
 }
@@ -1583,7 +1585,7 @@ export class BotBrain {
     let rays = 0;
     const theirEye = this.eyeTo;
     for (const c of live) {
-      if (rays >= (best ? SIGHT_TRACK : SIGHT_SEARCH)) break;
+      if (view.crowded && rays >= (best ? SIGHT_TRACK : SIGHT_SEARCH)) break;
       const o = c.o;
       theirEye.x = o.pos.x;
       theirEye.y = o.pos.y + STANCES[o.stance ?? 0].eye;
