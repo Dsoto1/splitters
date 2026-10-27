@@ -7366,6 +7366,23 @@
       ]
     },
     {
+      "file": "props/mp_control_cabinet.glb",
+      "sha256": "620569d17cb01dc5",
+      "triangles": 4657,
+      "bytes": 214656,
+      "source": "meshy-community-props/Meshy_AI_Industrial_Control_Panel_20260324_texture.fbx",
+      "title": "Meshy community models (props)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "map re-encoded as a 512 px JPEG"
+      ]
+    },
+    {
       "file": "props/rock_spire_tall.glb",
       "sha256": "344aa5def5e34a41",
       "triangles": 172,
@@ -11451,6 +11468,24 @@
       ]
     },
     {
+      "file": "props/mp_dino_statue.glb",
+      "sha256": "768e8589f3da410a",
+      "triangles": 4980,
+      "bytes": 231036,
+      "source": "meshy-community-props/Meshy_AI_Spiky_Dinosaur_20251229_texture.fbx",
+      "title": "Meshy community models (props)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "colour map turned to stone",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "map re-encoded as a 512 px JPEG"
+      ]
+    },
+    {
       "file": "props/sb_microwave.glb",
       "sha256": "e25c68e5612ae585",
       "triangles": 60,
@@ -14848,6 +14883,24 @@
         "converted to glTF (FBX via three.js FBXLoader)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
         "palette texture embedded"
+      ]
+    },
+    {
+      "file": "props/mp_burnt_car.glb",
+      "sha256": "9b2d2700415e67a7",
+      "triangles": 5774,
+      "bytes": 341288,
+      "source": "meshy-community-props/Meshy_AI_Wreckage_20251221_texture.fbx",
+      "title": "Meshy community models (props)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "triangles nothing outside can see dropped",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "map re-encoded as a 512 px JPEG"
       ]
     },
     {
@@ -23195,6 +23248,58 @@
       "modifications": [
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, normal map to 256 px, matte material"
+      ]
+    },
+    {
+      "file": "models/guns/ironclad_revolver.glb",
+      "sha256": "2a643cacf9d91df7",
+      "triangles": 4992,
+      "bytes": 254956,
+      "source": "meshy-community-guns/Meshy community revolver (2026-01-26), markings painted out",
+      "title": "Meshy community models (weapons)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "lettering and logos painted out of the colour map",
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, matte material"
+      ]
+    },
+    {
+      "file": "models/guns/plasma_spin_gun.glb",
+      "sha256": "794274b8f8376449",
+      "triangles": 5981,
+      "bytes": 336176,
+      "source": "meshy-community-guns/Plasma Annihilator X (2026-01-18)",
+      "title": "Meshy community models (weapons)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, matte material"
+      ]
+    },
+    {
+      "file": "models/guns/arc_cannon_turret.glb",
+      "sha256": "4814d25364de9599",
+      "triangles": 4994,
+      "bytes": 270280,
+      "source": "meshy-community-guns/Nebula Arc Cannon (2026-07-03)",
+      "title": "Meshy community models (weapons)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, matte material"
       ]
     }
   ]
