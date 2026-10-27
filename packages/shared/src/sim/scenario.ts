@@ -7,6 +7,7 @@ import { OBJECTIVE_STATES, type CompareOp, type EventType, type LogicAction, typ
 import { distance, viewDirection, type Vec3 } from '../math.ts';
 import { TRAP_ACTIVE, TRAP_ENABLED, TRAP_SPENT, TRAP_WARNING, type GameEvent, type ScenarioSnapshot } from '../protocol.ts';
 import { PLAYER, TICK_RATE } from './constants.ts';
+import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import type { PhysicsWorld } from './physics.ts';
 import { rayOBox, windowPanes, type GlassPane } from './glass.ts';
 import {
@@ -66,6 +67,8 @@ export interface ScenarioHost {
   encounterAlive(id: string): number;
   setPickupEnabled(id: string, enabled: boolean): void;
   emit(ev: GameEvent): void;
+  /** A runtime budget was hit (once per kind and match): the host logs it. */
+  budgetWarning?(text: string): void;
 }
 
 interface DoorRt {
@@ -225,6 +228,13 @@ export class Scenario {
   private started = false;
   private roundStart = 0;
   private depth = 0;
+  /** Runtime budgets (RESOURCE_BUDGETS): work done this tick, events waiting for the next, recent firings per rule. */
+  private budgetTick = -1;
+  private actionsThisTick = 0;
+  private firingsThisTick = 0;
+  private deferredEvents: { event: EventType; target: string | null; instigator: number | null; from: number }[] = [];
+  private readonly ruleWindow = new Map<string, { start: number; n: number }>();
+  private readonly budgetWarned = new Set<string>();
   private lastSent = new Map<number, string>();
   private obSent = '';
   private tmSent = '';
@@ -325,6 +335,8 @@ export class Scenario {
     this.timers = new Map(logic.timers.map((t) => [t.id, null]));
     this.spentRules.clear();
     this.sequences = [];
+    this.deferredEvents = [];
+    this.ruleWindow.clear();
     this.started = false;
     this.roundStart = tick;
     this.movers.reset(tick);
@@ -426,6 +438,7 @@ export class Scenario {
     this.stepTraps(tick);
     this.stepBorderFence(tick);
     this.stepTimers(tick);
+    this.stepDeferred();
     this.stepSequences(tick);
     this.bodies.commit();
   }
@@ -823,16 +836,57 @@ export class Scenario {
 
   // ---------------------------------------------------------------- logic
 
+  /** Per-tick budgets start again each tick (events also fire between steps, from Match). */
+  private budgetNow(): void {
+    const tick = this.host.tick;
+    if (tick === this.budgetTick) return;
+    this.budgetTick = tick;
+    this.actionsThisTick = 0;
+    this.firingsThisTick = 0;
+  }
+
+  private overBudget(kind: string, text: string): void {
+    if (this.budgetWarned.has(kind)) return;
+    this.budgetWarned.add(kind);
+    this.host.budgetWarning?.(text);
+  }
+
+  /** Events put off from an earlier tick by the per-tick budget, oldest first. */
+  private stepDeferred(): void {
+    if (!this.deferredEvents.length) return;
+    const list = this.deferredEvents;
+    this.deferredEvents = [];
+    for (const d of list) this.fire(d.event, d.target, d.instigator, d.from);
+  }
+
   /** Run every rule listening for this event. */
-  fire(event: EventType, target: string | null, instigator: number | null): void {
+  fire(event: EventType, target: string | null, instigator: number | null, from = 0): void {
     if (this.depth >= MAX_EVENT_DEPTH) return;
+    this.budgetNow();
+    const tick = this.host.tick;
     this.depth++;
     try {
-      for (const rule of this.map.logic.rules) {
+      const rules = this.map.logic.rules;
+      for (let ri = from; ri < rules.length; ri++) {
+        const rule = rules[ri]!;
         if (!rule.enabled || this.spentRules.has(rule.id) || rule.when.event !== event) continue;
         if (rule.when.target !== null && rule.when.target !== target) continue;
+        // Too much this tick: the rest of this event's rules wait for the next one (dropped when too much already waits).
+        if (this.firingsThisTick >= RESOURCE_BUDGETS.ruleFiringsPerTick) {
+          if (this.deferredEvents.length < RESOURCE_BUDGETS.deferredEvents) this.deferredEvents.push({ event, target, instigator, from: ri });
+          this.overBudget('firings', `map logic fired over ${RESOURCE_BUDGETS.ruleFiringsPerTick} rules in one tick: later events wait for the next tick`);
+          return;
+        }
+        // One rule firing over and over (a rule loop) is held to a few dozen times a second.
+        const w = this.ruleWindow.get(rule.id);
+        if (!w || tick - w.start >= TICK_RATE) this.ruleWindow.set(rule.id, { start: tick, n: 1 });
+        else if (++w.n > RESOURCE_BUDGETS.ruleFiringsPerSecond) {
+          this.overBudget(`rate:${rule.id}`, `rule "${rule.name || rule.id}" fired over ${RESOURCE_BUDGETS.ruleFiringsPerSecond} times in a second: the extra firings are skipped`);
+          continue;
+        }
         if (!rule.if.every((c) => this.check(c))) continue;
         if (rule.once) this.spentRules.add(rule.id);
+        this.firingsThisTick++;
         this.run({ actions: rule.do, pc: 0, resumeTick: 0, instigator });
       }
     } finally {
@@ -841,8 +895,18 @@ export class Scenario {
   }
 
   private run(seq: Sequence): void {
+    this.budgetNow();
     while (seq.pc < seq.actions.length) {
+      // Out of actions for this tick: the rest of the sequence carries on next tick.
+      if (this.actionsThisTick >= RESOURCE_BUDGETS.triggerActionsPerTick) {
+        this.overBudget('actions', `map logic ran over ${RESOURCE_BUDGETS.triggerActionsPerTick} actions in one tick: the rest carries on next tick`);
+        if (this.sequences.length >= MAX_SEQUENCES) return;
+        seq.resumeTick = this.host.tick + 1;
+        this.sequences.push(seq);
+        return;
+      }
       const a = seq.actions[seq.pc++]!;
+      this.actionsThisTick++;
       if (a.type === 'wait') {
         if (a.value <= 0) continue;
         if (this.sequences.length >= MAX_SEQUENCES) return;

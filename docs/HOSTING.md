@@ -137,8 +137,10 @@ want always-on official matches.
   - Metered: `METERED_DOMAIN` (yourapp.metered.live) + `METERED_API_KEY`
   - Your own coturn (`use-auth-secret`): `TURN_URLS` + `TURN_SECRET`
 
-  Credentials last `ICE_TTL` seconds (default 6 h; the live server uses 1 h,
-  set by `infra/host-setup.sh`); each address can ask 12 times a minute. Relayed play is about 3 KB/s per player. Without a
+  Credentials last `ICE_TTL` seconds (default 1 h) and are only given for a
+  game open on the hub (its join code), one per game and player (coturn
+  usernames `<expiry>:s_<CODE>.<host|p_…>`); each address can ask 12 times a
+  minute and each game 30 times, then once a minute. Relayed play is about 3 KB/s per player. Without a
   provider, players can still enter their own relay in Options → Relay.
 - **Matches** run in the host player's browser, in a Web Worker (its own
   core, apart from rendering; the page's thread where workers aren't
@@ -161,10 +163,11 @@ want always-on official matches.
   and closes the code; the match itself carries on (no restart).
   **Host with code only (not listed)** opens a code without restarting or
   listing (the "List in the game browser" box can still list it later).
-  Only maps of our suite can be listed: on an imported or MapMaker map,
-  listing is disabled with a note and code-only hosting still works. A
-  listing checks in every 20 s and drops off within about a minute of the
-  host leaving.
+  Imported and MapMaker maps are listed as a **Community map** (a tag in the
+  game browser and on the host's badge), with the map's ID, version and
+  content hash; the hub refuses a listing that claims to be one of our maps
+  when it isn't. A listing checks in every 20 s, is hidden after a missed
+  check-in (30 s) and drops off at 65 s.
 - Traffic per player is ~3 KB/s (8 players) to ~10 KB/s (16 players),
   compressed, from the host's upload.
 - **Host controls** (pause menu → Match): the host changes the players

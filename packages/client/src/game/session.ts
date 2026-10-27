@@ -77,6 +77,7 @@ import {
   travelNotice,
   type GameMode,
   type HostState,
+  mapIdentity,
 } from '@tiletrigger/shared';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
@@ -89,7 +90,8 @@ import { LocalTransport } from './localTransport.ts';
 import { perfProbe } from './perfProbe.ts';
 import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
-import type { PeerHost } from './peerLink.ts';
+import { loadSignaling, type HostLink } from './transport.ts';
+import { loadRelay, relayParams } from './relay.ts';
 import { inSuite } from '../playlists.ts';
 import { PauseMenu } from './pauseMenu.ts';
 import type { ScreenMarker } from './hud.ts';
@@ -140,7 +142,7 @@ export interface SessionOptions {
   /** Your character's portrait for the HUD (rendered by the menus). */
   portrait?: Promise<string>;
   /** Host game across a map change: the join code already open (friends come back to it), and the game browser listing's name when it was listed. */
-  hosting?: { peer: PeerHost; listing?: string };
+  hosting?: { peer: HostLink; listing?: string };
   /** Open a join code as soon as the match starts (Play → Host). */
   autoHost?: boolean;
   /** The map picker for the host's Change map (pause menu → Match): the front end's map cards. */
@@ -155,7 +157,7 @@ export interface Travel {
   /** The host changed map (offline, Host game): play `map` with these rules, players and bot skill. */
   host?: { map: MapDocument; rules: MatchRules; fill: number; skill: HostState['skill'] };
   /** Host game: the join code, handed on to the next match (friends were sent `travel` and rejoin it). */
-  hosting?: { peer: PeerHost; listing?: string };
+  hosting?: { peer: HostLink; listing?: string };
 }
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -229,7 +231,7 @@ export class GameSession {
   /** The riding view this frame (cockpit, chase or a rider's seat), null on foot: for tests. */
   private rideView: 'cockpit' | 'chase' | 'seat' | null = null;
   /** The join code's registration while this match is hosted for friends. */
-  private peerHost?: PeerHost;
+  private peerHost?: HostLink;
   /** The pause menu's Match section (bots, map, restart, end) and the match's settings while you run it. */
   private readonly hostPanel: HostPanel;
   private hostState: HostState | null = null;
@@ -618,8 +620,7 @@ export class GameSession {
     btn.disabled = true;
     btn.textContent = 'Opening a join code…';
     try {
-      const { PeerHost } = await import('./peerLink.ts');
-      const host = new PeerHost((link) => local.accept(link));
+      const host = (await loadSignaling()).host((link) => local.accept(link));
       this.peerHost = host;
       const code = await host.start();
       if (this.closed) return host.close();
@@ -634,12 +635,9 @@ export class GameSession {
 
   /** The join code and invite link in the pause menu (a new code, or one carried over a map change). */
   private async showHostInfo(btn: HTMLButtonElement, info: HTMLElement, code: string): Promise<void> {
-    const peerLink = await import('./peerLink.ts');
-    const { loadRelay, relayParams } = peerLink;
     if (this.closed) return;
-    // A slow first answer from the hub left us without its relay: ask once more before telling anyone.
-    if (!peerLink.hubRelay) await peerLink.prepareIce();
-    this.relayOn = !!loadRelay() || peerLink.hubRelay;
+    const hubRelay = !!this.peerHost?.relay;
+    this.relayOn = !!loadRelay() || hubRelay;
     const q = new URLSearchParams(location.search);
     const peer = q.get('peer');
     // Friends must use the same broker: carry the hub unless it's the site's built-in one.
@@ -650,16 +648,29 @@ export class GameSession {
     const hubHere = /^(\w+:\/\/)?(localhost|127\.|\[::1\])/.test(hubSetting());
     btn.hidden = true;
     info.hidden = false;
-    info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${peerLink.hubRelay ? ' The hub provides a relay, so friends on strict networks can connect too.' : loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options and send a new link.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
+    info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${hubRelay ? ' The hub provides a relay, so friends on strict networks can connect too.' : loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options and send a new link.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
     info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
     if (onlyHere) void this.lanInvite(info, code, link);
     this.hud.showMessage(`Hosting: join code ${code}`, 5);
     this.updateListing();
   }
 
-  /** Our suite's maps may be listed publicly; imported and MapMaker maps only by code. */
+  /** Any valid map may be listed publicly: our suite's as they are, others (imported, MapMaker) labelled "Community map". */
   private get listable(): boolean {
-    return !!this.map && inSuite(this.map.metadata.id);
+    return !!this.map;
+  }
+
+  /** Not one of our suite's maps: listed as a community map, with its exact version (map/identity.ts). */
+  private get community(): boolean {
+    return !!this.map && !inSuite(this.map.metadata.id);
+  }
+
+  private identityFor?: { map: MapDocument; id: ReturnType<typeof mapIdentity> };
+  /** The map's ID, version and content hash (hashed once per map). */
+  private mapIdentity(): ReturnType<typeof mapIdentity> | null {
+    if (!this.map) return null;
+    if (this.identityFor?.map !== this.map) this.identityFor = { map: this.map, id: mapIdentity(this.map) };
+    return this.identityFor.id;
   }
 
   /** The online controls and status badge, after any change (hosting, friends, listing). */
@@ -675,8 +686,8 @@ export class GameSession {
     goOn.hidden = !can || online || !hubSetting();
     goOn.disabled = !this.listable;
     goOff.hidden = !can || !online;
-    note.hidden = !can || this.listable || !hubSetting();
-    note.textContent = this.listable ? '' : "This map isn't one of our suite's, so it can't be listed publicly: host with a code instead.";
+    note.hidden = !can || !this.community || !hubSetting();
+    note.textContent = this.community ? 'Not one of our own maps: it is listed as a "Community map".' : '';
     ($('host-list') as HTMLInputElement).disabled = !this.listable;
     ($('host-name') as HTMLInputElement).hidden = !($('host-list') as HTMLInputElement).checked;
     let badge = document.getElementById('online-badge');
@@ -686,7 +697,7 @@ export class GameSession {
       $('hud').append(badge);
     }
     badge.hidden = !online || !local;
-    if (online && local && this.peerHost) badge.textContent = `${listed ? 'Online · listed' : 'Online · code only'} · ${1 + local.guests}/${local.capacity} · ${this.peerHost.code}`;
+    if (online && local && this.peerHost) badge.textContent = `${listed ? 'Online · listed' : 'Online · code only'} · ${1 + local.guests}/${local.capacity} · ${this.peerHost.code}${this.community ? ' · Community map' : ''}`;
     // The Match tab says where you stand; the Host tab has the controls.
     const state = $('pause-online-state');
     state.hidden = !can;
@@ -904,7 +915,7 @@ export class GameSession {
     if (!box.checked || !host?.code || !(local instanceof LocalTransport) || !this.listable) {
       this.advertiser?.stop();
       this.advertiser = undefined;
-      status.textContent = !this.listable && this.map ? 'Not listed: only our own maps go in the game browser.' : box.checked ? 'Will be listed once you host (Go online, or Host with code).' : 'Friends only: share the code or link.';
+      status.textContent = !this.listable && this.map ? 'Not listed.' : box.checked ? 'Will be listed once you host (Go online, or Host with code).' : 'Friends only: share the code or link.';
       this.updateOnline();
       return;
     }
@@ -917,7 +928,9 @@ export class GameSession {
         name: ($('host-name') as HTMLInputElement).value.trim() || `${me}'s game`,
         host: me,
         map: this.map?.metadata.name ?? 'Unknown map',
-        mapId: this.map?.metadata.id,
+        ...(this.community && this.mapIdentity()
+          ? { community: true, mapId: this.mapIdentity()!.mapId, versionId: this.mapIdentity()!.versionId, contentHash: this.mapIdentity()!.contentHash }
+          : { mapId: this.map?.metadata.id }),
         mode: this.rules?.mode ?? 'core.deathmatch',
         players: 1 + local.guests,
         max: local.capacity,

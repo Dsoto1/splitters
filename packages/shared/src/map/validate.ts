@@ -9,6 +9,8 @@ import { floatingProps } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { validateScenario } from './validateScenario.ts';
+import { RESOURCE_BUDGETS, resourceBudgetIssues, utf8Length } from './budgets.ts';
+import { mapContentHash } from './identity.ts';
 import { validateTrack } from './track.ts';
 import { airplaneIssues } from '../sim/airplane.ts';
 import { GLASS_EDGES } from '../sim/glass.ts';
@@ -34,6 +36,11 @@ export type LoadResult =
  */
 export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatalog): LoadResult {
   let raw: unknown = json;
+  // Size first, before any parsing: a map is at most RESOURCE_BUDGETS.mapBytes of JSON wherever it comes from.
+  const bytes = typeof json === 'string' ? utf8Length(json) : utf8Length(JSON.stringify(json) ?? '');
+  if (bytes > RESOURCE_BUDGETS.mapBytes) {
+    return { ok: false, issues: [{ severity: 'error', code: 'budget.bytes', message: `the map is ${(bytes / 1048576).toFixed(1)} MB: at most ${RESOURCE_BUDGETS.mapBytes / 1048576} MB` }] };
+  }
   if (typeof json === 'string') {
     try {
       raw = JSON.parse(json);
@@ -165,6 +172,10 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
 
   issues.push(...glassIssues(map, catalog));
   issues.push(...validateScenario(map));
+  issues.push(...resourceBudgetIssues(map));
+  if (map.metadata.release && map.metadata.release.contentHash !== mapContentHash(map)) {
+    issues.push({ severity: 'warning', code: 'release.changed', message: 'changed since it was exported: the next export gives it a new version' });
+  }
   issues.push(...validateTrack(map));
   const terrain = map.terrain;
   issues.push(...airplaneIssues(map, (x, z) => (terrain ? terrainHeightAt(terrain, x, z) : null)));

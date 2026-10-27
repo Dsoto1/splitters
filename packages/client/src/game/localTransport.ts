@@ -2,17 +2,12 @@ import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type HostCom
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
 import { perfProbe } from './perfProbe.ts';
 import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
-import type { Transport } from './transport.ts';
+import type { RemoteLink, Transport } from './transport.ts';
+
+export type { RemoteLink } from './transport.ts';
 
 export type { LocalMatchOptions } from './matchHost.ts';
 
-/** A friend's connection to a match this browser hosts (a WebRTC data channel, or anything that moves text). */
-export interface RemoteLink {
-  send(text: string): void;
-  onMessage(cb: (text: string) => void): void;
-  onClose(cb: () => void): void;
-  close(): void;
-}
 
 /** Where this browser's match runs: a worker (the default), or the page's own thread. */
 export type SimThread = 'worker' | 'main';

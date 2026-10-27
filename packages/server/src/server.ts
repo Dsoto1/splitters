@@ -6,6 +6,7 @@ import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { WebSocketServer, type WebSocket } from 'ws';
 import {
+  MessageGuard,
   BOT_DIFFICULTIES,
   rulesForMap,
   rulesForMode,
@@ -96,6 +97,8 @@ interface Client {
   badTokens: number;
   /** The round trip the client last reported (ms), for everyone's scoreboard. */
   rtt?: number;
+  /** Message budget (MESSAGE_RATE): over it, messages are dropped; well over it, the client is disconnected. */
+  guard: MessageGuard;
 }
 
 /** Wrong admin tokens a connection may send before it is closed. */
@@ -209,12 +212,15 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const wss = new WebSocketServer({ server: http, maxPayload: 64 * 1024, perMessageDeflate: { threshold: 256, zlibDeflateOptions: { level: 3 }, serverNoContextTakeover: false, clientNoContextTakeover: true } });
 
   wss.on('connection', (ws) => {
-    const client: Client = { ws, slot: null, bytesOut: 0, admin: false, badTokens: 0 };
+    const client: Client = { ws, slot: null, bytesOut: 0, admin: false, badTokens: 0, guard: new MessageGuard() };
     clients.add(client);
     const helloTimer = setTimeout(() => ws.close(4000, 'hello timeout'), HELLO_TIMEOUT_MS);
 
     ws.on('message', (data, isBinary) => {
-      if (isBinary) return;
+      // A flood (a ping or input spam) is dropped, and a client that keeps it up is disconnected.
+      const verdict = client.guard.check();
+      if (verdict === 'kick') return void ws.close(4008, 'too many messages');
+      if (verdict === 'drop' || isBinary) return;
       const msg = parseClientMessage(data.toString());
       if (!msg) return;
       if (msg.t === 'hello') {

@@ -24,6 +24,8 @@ export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
 export const MAP_FORMAT_VERSION = 22;
+/** Content packs a map may name in `dependencies`. */
+export const MAX_MAP_DEPENDENCIES = 16;
 
 /** Stable entity/tile ID. Generated once, never derived from array position. */
 export const StableId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
@@ -43,6 +45,22 @@ export const MapThumbnail = z
   .regex(/^data:image\/(jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/, 'the map picture must be an image captured in MapMaker');
 /** Where a map's picture is taken from: the camera position and the point it looks at (world metres). */
 export const ThumbnailCamera = z.object({ position: Vec3Tuple, target: Vec3Tuple });
+
+/**
+ * A map's published identity (map/identity.ts): stamped on export (later on
+ * publish), never edited by hand. Optional: maps made before it load as they
+ * were, and get one the first time they are exported.
+ */
+export const MapRelease = z.object({
+  mapId: z.string().regex(/^m_[a-z2-7]{16}$/),
+  versionId: z.string().regex(/^v_[a-z2-7]{16}$/),
+  revision: z.number().int().min(1).max(1_000_000),
+  contentHash: z.string().regex(/^sha256:[0-9a-f]{64}$/),
+  /** MAP_FORMAT_VERSION when it was stamped. */
+  schemaVersion: z.number().int().min(1).max(10_000),
+  releasedAt: z.iso.datetime(),
+});
+export type MapRelease = z.infer<typeof MapRelease>;
 
 export const MapMetadata = z.object({
   id: StableId,
@@ -69,6 +87,8 @@ export const MapMetadata = z.object({
    * (tools/content/capture-map-shots.mjs; map scripts: `m.thumbnailCamera()`).
    */
   thumbnailCamera: ThumbnailCamera.optional(),
+  /** Map ID, version ID and content hash, stamped when the map is exported (map/identity.ts). */
+  release: MapRelease.optional(),
 });
 
 /** A material from the library plus an optional tint, applied to one surface slot. */
@@ -790,7 +810,7 @@ export const MapDocument = z.object({
   /** Recommended teams for team modes, or none (two even teams). */
   teamSetup: TeamSetup.nullable().default(null),
   /** Content packs this map needs, beyond the always-present core pack. */
-  dependencies: z.array(z.object({ pack: ContentId, version: z.string() })).default([]),
+  dependencies: z.array(z.object({ pack: ContentId, version: z.string().max(32) })).max(MAX_MAP_DEPENDENCIES).default([]),
 });
 
 export type MapDocument = z.infer<typeof MapDocument>;

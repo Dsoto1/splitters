@@ -203,3 +203,20 @@ describe('client message parsing', () => {
     });
   });
 });
+
+describe('dedicated server message budget', () => {
+  it('disconnects a client that floods it with pings, and keeps answering a normal one', async () => {
+    server = await startServer({ port: 0, map: room, botFill: 0, seed: 1 });
+    const flood = new TestClient(server.port, 'Flood');
+    const calm = new TestClient(server.port, 'Calm');
+    await Promise.all([flood.waitFor('welcome'), calm.waitFor('welcome')]);
+    const closed = new Promise<number>((resolve) => flood.ws.on('close', (code) => resolve(code)));
+    for (let i = 0; i < 5000 && flood.ws.readyState === WebSocket.OPEN; i++) flood.ws.send(JSON.stringify({ t: 'ping', id: i, ct: 0 }));
+    expect(await closed).toBe(4008);
+    // Far fewer answers than pings: the excess was dropped.
+    expect(flood.messages.filter((m) => m.t === 'pong').length).toBeLessThan(1000);
+    calm.ws.send(JSON.stringify({ t: 'ping', id: 1, ct: 5 }));
+    await calm.waitFor('pong', (m) => m.ct === 5);
+    calm.ws.close();
+  }, 30000);
+});
