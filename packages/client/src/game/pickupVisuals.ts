@@ -1,6 +1,7 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Mesh as MeshClass, type Mesh } from '@babylonjs/core/Meshes/mesh';
+import '@babylonjs/core/Meshes/instancedMesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -36,7 +37,7 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
  * simple in-house shapes for health, armor, ammo and powerups.
  * The returned root is centred on the item; place it PICKUP_HOVER above the floor.
  */
-export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string): TransformNode {
+export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false): TransformNode {
   const root = new TransformNode(name, scene);
   const item = getItem(itemId);
   const part = (m: Mesh, material: StandardMaterial) => {
@@ -49,7 +50,7 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
   if (!fx) {
     part(CreateBox(`${name}_unknown`, { size: 0.4 }, scene), mat(scene, '#ff00ff', 0.5));
   } else if (fx.kind === 'weapon') {
-    void models.instantiate(getWeapon(fx.weapon).view.model, `${name}_gun`).then((model) => {
+    void models.instantiate(getWeapon(fx.weapon).view.model, `${name}_gun`, instanced).then((model) => {
       if (root.isDisposed()) return model.dispose();
       model.parent = root;
       model.rotation.y = Math.PI / 2;
@@ -120,7 +121,49 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
   } else {
     part(CreateSphere(`${name}_pu`, { diameter: 0.5, segments: 12 }, scene), mat(scene, fx.powerup === 'speed' ? '#36d6ff' : '#c03cff', 0.9));
   }
+  if (instanced) instanceParts(scene, root);
   return root;
+}
+
+const sources = new WeakMap<Scene, Map<string, Mesh>>();
+
+/**
+ * In the game, a pickup's shapes are GPU instances of one mesh per shape and
+ * material, shared by every pickup on the map (a map's dozens of pickups were
+ * a draw call per box, ring and cross, drawn again into the shadow map).
+ */
+function instanceParts(scene: Scene, root: TransformNode): void {
+  let cache = sources.get(scene);
+  if (!cache) sources.set(scene, (cache = new Map()));
+  for (const m of root.getChildMeshes(false)) {
+    if (!(m instanceof MeshClass) || m.isAnInstance || !m.material) continue;
+    const pos = m.getVerticesData('position');
+    if (!pos) continue;
+    let h = pos.length;
+    for (let k = 0; k < pos.length; k++) h = (Math.imul(h, 31) + Math.round(pos[k]! * 1000)) | 0;
+    const key = `${m.material.uniqueId}|${pos.length}|${h}`;
+    let src = cache.get(key);
+    if (!src || src.isDisposed()) {
+      src = m.clone(`pickupShape_${cache.size}`, null, true, false)!;
+      src.parent = null;
+      // Parked out of sight: only its instances draw.
+      src.position.set(0, -10000, 0);
+      src.rotationQuaternion = null;
+      src.rotation.setAll(0);
+      src.scaling.setAll(1);
+      src.isPickable = false;
+      src.freezeWorldMatrix();
+      cache.set(key, src);
+    }
+    const inst = src.createInstance(m.name);
+    inst.parent = m.parent;
+    inst.position.copyFrom(m.position);
+    if (m.rotationQuaternion) inst.rotationQuaternion = m.rotationQuaternion.clone();
+    else inst.rotation.copyFrom(m.rotation);
+    inst.scaling.copyFrom(m.scaling);
+    inst.isPickable = false;
+    m.dispose(false, false);
+  }
 }
 
 /** Power disc colours (pickups, MapMaker icons and the HUD). */

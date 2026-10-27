@@ -70,20 +70,37 @@ interface Chunk {
   x: number;
   z: number;
   kind: Kind;
-  /** Each mesh and how many plants its buffer holds (they are shuffled, so drawing the first n thins evenly). */
-  meshes: { mesh: Mesh; total: number }[];
+  /** The sectors drawing this chunk's plants (one per model mesh). */
+  sectors: Sector[];
   /** Plants drawn now, as a share of the chunk's (0: hidden). */
   shown: number;
 }
 
 /**
+ * One draw: a model mesh's plants in SECTOR × SECTOR chunks, as thin
+ * instances. Each chunk keeps its own thinning; the sector's buffer holds the
+ * shown part of each of its chunks, rebuilt when one of them changes.
+ */
+interface Sector {
+  mesh: Mesh;
+  buffer: Float32Array;
+  /** Each chunk's plants (shuffled, so drawing the first n thins evenly). */
+  parts: { chunk: Chunk; matrices: Float32Array }[];
+  dirty: boolean;
+}
+
+/** Chunks per sector side: plants are thinned per 32 m chunk but drawn per 64 m sector (a quarter of the meshes). */
+const SECTOR = 2;
+
+/**
  * Grass, flowers and bushes growing on the terrain from its foliage layer
  * (painted in MapMaker, or chosen from each cell's material). Drawn only, and
  * the same on every machine (placement is seeded by the map). Plants are
- * instanced in 32 m chunks and drawn only near the camera.
+ * instanced in 64 m sectors, thinned per 32 m chunk, and drawn only near the camera.
  */
 export class FoliageVisuals {
   private chunks: Chunk[] = [];
+  private sectors: Sector[] = [];
   private bases: Mesh[] = [];
   private materials: StandardMaterial[] = [];
   private build = 0;
@@ -116,25 +133,41 @@ export class FoliageVisuals {
       return;
     }
     for (const list of geometry.values()) this.bases.push(...list);
+    const byKey = new Map<string, { base: Mesh; parts: Sector['parts'] }>();
     for (const [key, byModel] of placements) {
       const [kind, cx, cz] = key.split(':') as [Kind, string, string];
-      const chunk: Chunk = { x: (+cx + 0.5) * CHUNK, z: (+cz + 0.5) * CHUNK, kind, meshes: [], shown: 1 };
+      const chunk: Chunk = { x: (+cx + 0.5) * CHUNK, z: (+cz + 0.5) * CHUNK, kind, sectors: [], shown: 1 };
+      const sector = `${Math.floor(+cx / SECTOR)}:${Math.floor(+cz / SECTOR)}`;
       for (const [model, matrices] of byModel) {
         const buf = shuffled(matrices, key + model);
-        for (const base of geometry.get(model) ?? []) {
-          // Instance buffers live on the geometry, so each chunk needs its own copy (a few hundred vertices).
-          const mesh = base.clone(`${base.name}_${key}`, null, true)!;
-          mesh.makeGeometryUnique();
-          mesh.setEnabled(true);
-          mesh.thinInstanceSetBuffer('matrix', buf, 16, true);
-          // Bounds over every plant in the chunk, so the chunk is culled when out of view.
-          mesh.thinInstanceRefreshBoundingInfo(false);
-          mesh.freezeWorldMatrix();
-          mesh.doNotSyncBoundingInfo = true;
-          chunk.meshes.push({ mesh, total: buf.length / 16 });
-        }
+        (geometry.get(model) ?? []).forEach((base, b) => {
+          const k = `${model}|${b}|${sector}`;
+          let s = byKey.get(k);
+          if (!s) byKey.set(k, (s = { base, parts: [] }));
+          s.parts.push({ chunk, matrices: buf });
+        });
       }
       this.chunks.push(chunk);
+    }
+    for (const [k, { base, parts }] of byKey) {
+      const buffer = new Float32Array(parts.reduce((n, p) => n + p.matrices.length, 0));
+      let at = 0;
+      for (const p of parts) {
+        buffer.set(p.matrices, at);
+        at += p.matrices.length;
+      }
+      // Instance buffers live on the geometry, so each sector needs its own copy (a few hundred vertices).
+      const mesh = base.clone(`${base.name}_${k}`, null, true)!;
+      mesh.makeGeometryUnique();
+      mesh.setEnabled(true);
+      mesh.thinInstanceSetBuffer('matrix', buffer, 16, false);
+      // Bounds over every plant in the sector, so it is culled when out of view.
+      mesh.thinInstanceRefreshBoundingInfo(false);
+      mesh.freezeWorldMatrix();
+      mesh.doNotSyncBoundingInfo = true;
+      const sector: Sector = { mesh, buffer, parts, dirty: false };
+      for (const p of parts) p.chunk.sectors.push(sector);
+      this.sectors.push(sector);
     }
     this.lastX = this.lastZ = Infinity;
   }
@@ -163,9 +196,23 @@ export class FoliageVisuals {
       }
       if (shown === c.shown) continue;
       c.shown = shown;
-      for (const { mesh, total } of c.meshes) {
-        mesh.setEnabled(shown > 0);
-        if (shown > 0) mesh.thinInstanceCount = Math.max(1, Math.round(total * shown));
+      for (const s of c.sectors) s.dirty = true;
+    }
+    for (const s of this.sectors) {
+      if (!s.dirty) continue;
+      s.dirty = false;
+      let at = 0;
+      for (const p of s.parts) {
+        const total = p.matrices.length / 16;
+        const n = p.chunk.shown > 0 ? Math.max(1, Math.round(total * p.chunk.shown)) : 0;
+        s.buffer.set(p.matrices.subarray(0, n * 16), at);
+        at += n * 16;
+      }
+      const count = at / 16;
+      s.mesh.setEnabled(count > 0);
+      if (count > 0) {
+        s.mesh.thinInstanceCount = count;
+        s.mesh.thinInstanceBufferUpdated('matrix');
       }
     }
   }
@@ -176,10 +223,11 @@ export class FoliageVisuals {
   }
 
   private clear(): void {
-    for (const c of this.chunks) for (const m of c.meshes) m.mesh.dispose();
+    for (const s of this.sectors) s.mesh.dispose();
     for (const m of this.bases) m.dispose();
     for (const m of this.materials) m.dispose();
     this.chunks = [];
+    this.sectors = [];
     this.bases = [];
     this.materials = [];
   }

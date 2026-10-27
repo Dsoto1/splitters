@@ -1,9 +1,13 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { AssetContainer } from '@babylonjs/core/assetContainer';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import type { Material } from '@babylonjs/core/Materials/material';
+import '@babylonjs/core/Meshes/instancedMesh';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 // Side-effect import: registers the glTF 2.0 loader plugin.
 import '@babylonjs/loaders/glTF/2.0';
@@ -40,6 +44,92 @@ export class ModelLibrary {
     return p;
   }
 
+  private readonly merged = new Map<string, Promise<Mesh[] | null>>();
+
+  /**
+   * A static copy of a model (placed props in the game): GPU instances of
+   * the model with its meshes merged per material, so a model of many parts
+   * (a dresser of drawers, a kitchen) is one draw per material for every copy
+   * on the map, and one mesh per material for the scene to look at. Falls
+   * back to `instantiate` (instanced) for models that animate, skin or morph.
+   */
+  async instantiateStatic(path: string, name: string): Promise<TransformNode> {
+    let p = this.merged.get(path);
+    if (!p) {
+      p = this.mergeModel(path).catch(() => null);
+      this.merged.set(path, p);
+    }
+    const sources = await p;
+    if (!sources) return this.instantiate(path, name, true);
+    const root = new TransformNode(name, this.scene);
+    for (const src of sources) {
+      const inst = src.createInstance(`${name}_${src.name}`);
+      // An instance starts at its source's place (parked far below): it sits at the model's origin instead.
+      inst.position.setAll(0);
+      inst.parent = root;
+      inst.isPickable = false;
+    }
+    return root;
+  }
+
+  /** The model's meshes merged per material (in the model's own space), parked out of sight as instance sources. */
+  private async mergeModel(path: string): Promise<Mesh[] | null> {
+    const container = await this.load(path);
+    if (container.animationGroups.length || container.skeletons.length) return null;
+    const inst = container.instantiateModelsToScene((n) => `static_${n}`, false, { doNotInstantiate: true });
+    const holder = new TransformNode(`static_${path}`, this.scene);
+    for (const n of inst.rootNodes) n.parent = holder;
+    const meshes = holder.getChildMeshes(false).filter((m): m is Mesh => m instanceof Mesh && m.getTotalVertices() > 0);
+    const groups = new Map<Material | null, Mesh[]>();
+    let ok = meshes.length > 0;
+    for (const m of meshes) {
+      if (m.skeleton || m.morphTargetManager || m.hasThinInstances || !m.getIndices()) ok = false;
+      let g = groups.get(m.material);
+      if (!g) groups.set(m.material, (g = []));
+      g.push(m);
+    }
+    // Faces' winding must agree within a merged mesh (the import mirrors the model, and marks which way its faces turn).
+    if (ok && new Set(meshes.map((m) => m.sideOrientation)).size > 1) ok = false;
+    const out: Mesh[] = [];
+    if (ok) {
+      holder.computeWorldMatrix(true);
+      let i = 0;
+      for (const [material, group] of groups) {
+        const datas = group.map((m) => {
+          m.computeWorldMatrix(true);
+          const d = VertexData.ExtractFromMesh(m, true, true);
+          // Into the model's space (flipping faces where a part is mirrored).
+          d.transform(m.getWorldMatrix());
+          return d;
+        });
+        const total = datas.reduce((n, d) => n + (d.positions?.length ?? 0) / 3, 0);
+        let data: VertexData;
+        try {
+          data = datas.length > 1 ? datas[0]!.merge(datas.slice(1), total > 65535, false, false, true) : datas[0]!;
+        } catch {
+          ok = false;
+          break;
+        }
+        const mesh = new Mesh(`static_${path}_${i++}`, this.scene);
+        data.applyToMesh(mesh, false);
+        mesh.material = material;
+        mesh.sideOrientation = group[0]!.sideOrientation;
+        mesh.hasVertexAlpha = group.some((m) => m.hasVertexAlpha);
+        mesh.isPickable = false;
+        // Parked out of sight: only its instances draw.
+        mesh.position.y = -10000;
+        mesh.freezeWorldMatrix();
+        out.push(mesh);
+      }
+    }
+    holder.dispose(false, false);
+    if (!ok) {
+      for (const m of out) m.dispose(false, false);
+      return null;
+    }
+    return out;
+  }
+
   /**
    * A new copy of the model under its own root node. With `instanced`, its
    * meshes are GPU instances of the first copy (one draw call for all of
@@ -50,9 +140,26 @@ export class ModelLibrary {
     const entries = container.instantiateModelsToScene((n) => `${name}_${n}`, false, { doNotInstantiate: !instanced });
     const root = new TransformNode(name, this.scene);
     for (const node of entries.rootNodes) node.parent = root;
+    // The glTF loader's __root__ is an empty mesh (it turns the model into Babylon's handedness): a plain node
+    // does the same without being one more mesh the scene checks for drawing every frame (a map's props had a thousand).
+    for (const node of entries.rootNodes) if (node instanceof Mesh && !node.isAnInstance && !node.getTotalVertices() && !node.skeleton && !node.hasThinInstances) asNode(node);
     for (const m of root.getChildMeshes()) m.isPickable = false;
     return root;
   }
+}
+
+/** Swap an empty mesh for a transform node in its place (same transform, same children). */
+export function asNode(mesh: Mesh): TransformNode {
+  const node = new TransformNode(mesh.name, mesh.getScene());
+  node.parent = mesh.parent;
+  node.position.copyFrom(mesh.position);
+  if (mesh.rotationQuaternion) node.rotationQuaternion = mesh.rotationQuaternion.clone();
+  else node.rotation.copyFrom(mesh.rotation);
+  node.scaling.copyFrom(mesh.scaling);
+  node.setEnabled(mesh.isEnabled(false));
+  for (const child of mesh.getChildren()) child.parent = node;
+  mesh.dispose(true);
+  return node;
 }
 
 /**

@@ -1,7 +1,7 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { Node } from '@babylonjs/core/node';
 import type { Skeleton } from '@babylonjs/core/Bones/skeleton';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -18,6 +18,8 @@ import { GLB, versioned } from '../assetUrl.ts';
 import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
 import { buildGear } from './gear.ts';
+import { CharacterAtlas } from './characterAtlas.ts';
+import { asNode } from './models.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes. */
 export const LOD_DISTANCE = 18;
@@ -95,7 +97,16 @@ export class CharacterLibrary {
   /** Hip offsets between the rig's rest pose and each body's, per clip. */
   private readonly hipAnims = new Map<string, Animation>();
 
-  constructor(private readonly scene: Scene) {}
+  /** Skin, hair and eyes on one shared texture (see CharacterAtlas), when the owner asks for it (the game). */
+  private readonly atlas: CharacterAtlas | null;
+
+  constructor(
+    private readonly scene: Scene,
+    opts: { atlas?: boolean } = {},
+  ) {
+    this.atlas = opts.atlas ? new CharacterAtlas(scene) : null;
+    if (this.atlas) scene.onDisposeObservable.addOnce(() => this.atlas?.dispose());
+  }
 
   private load(file: string): Promise<AssetContainer> {
     let p = this.files.get(file);
@@ -215,7 +226,9 @@ export class CharacterLibrary {
           torso: of(0).filter((m) => !/_lod/.test(m.name)),
         });
         // Skinned onto the body's skeleton and merged per finish: one or two draws however many pieces.
-        const skin = of(0).find((m): m is Mesh => !!m.skeleton && !/_lod/.test(m.name) && m.getTotalVertices() > 0);
+        // Bound in the head's place (it is skinned on the same skeleton): with the character atlas, gear then merges with the head and hair.
+        const skinned = (m: AbstractMesh): m is Mesh => !!m.skeleton && !/_lod/.test(m.name) && m.getTotalVertices() > 0;
+        const skin = of(headIndex).find(skinned) ?? of(0).find(skinned);
         meshes.push(...(skin ? skinGear(gear, skin, `${name}_gear`) : gear));
       }
       owned.push(...carrier.skeletons);
@@ -236,8 +249,19 @@ export class CharacterLibrary {
       full.addLODLevel(LOD_DISTANCE, m as Mesh);
     }
     meshes.splice(0, meshes.length, ...meshes.filter((m) => !m.isDisposed()));
+    // Skin, hair and eyes onto the shared atlas: with their tints in the vertices they merge into one draw below.
+    if (!spec.armsOnly && this.atlas) {
+      // Only the shared skin and hair textures and the eyes: outfits (athlete bodies are tinted like skin) are dyed per look.
+      const shared = new Set([...this.textures].filter(([id]) => /^(skin|hair)_/.test(id)).map(([, t]) => t));
+      const mat = await this.atlas.apply(meshes, name, (m) => m.name === 'MI_Eyes' || (!!m.albedoTexture && shared.has(m.albedoTexture as Texture)));
+      if (this.scene.isDisposed) return gone();
+      if (mat) owned.push(mat);
+    }
     // One draw per material instead of one per part (a look is 8–12 skinned parts, most sharing the outfit's or the skin's material).
     if (!spec.armsOnly) meshes.splice(0, meshes.length, ...mergeSkinnedParts(meshes, `${name}_body`));
+    // The import's empty __root__ mesh (holding the skeleton's nodes and the parts): a plain node, one mesh fewer for the scene to check every frame.
+    for (const n of holder.getChildren()) if (n instanceof Mesh && !n.isAnInstance && !n.getTotalVertices() && !n.skeleton) asNode(n);
+    meshes.splice(0, meshes.length, ...meshes.filter((m) => !m.isDisposed()));
     for (const m of meshes) {
       m.isPickable = false;
       m.alwaysSelectAsActiveMesh = true;
