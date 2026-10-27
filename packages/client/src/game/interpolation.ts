@@ -13,6 +13,15 @@ const BUFFER_TICKS = TICK_RATE * 2;
 const CLOCK_GAIN = 0.05;
 /** An estimate this far out (ticks) is reset instead (a stall, a hidden tab). */
 const CLOCK_RESYNC_TICKS = 6;
+/**
+ * A snapshot running late (a busy sim worker or network) would freeze remote
+ * players on the newest one and then jump them on: for up to this many ticks
+ * past it they carry on along their last motion instead. Lag compensation
+ * still uses the clamped renderTick.
+ */
+const EXTRAPOLATE_TICKS = 5;
+/** This many snapshots in a row far later than expected (about 0.4 s) and the clock estimate moves to them. */
+const LATE_RUN_RESYNC = 12;
 
 interface Frame {
   tick: number;
@@ -53,6 +62,8 @@ export class Interpolator {
   private latestTick = 0;
   /** Smoothed server tick minus local time in ticks (null before the first snapshot). */
   private clockOffset: number | null = null;
+  /** Snapshots in a row that came far later than the estimate. */
+  private lateRun = 0;
 
   /** `hold`: slots left out of this snapshot to save bandwidth; they are drawn from the frames that had them. */
   push(tick: number, players: PlayerSnapshot[], projectiles: [number, number, number, number, number][] = [], hold?: readonly number[], now: number = performance.now()): void {
@@ -60,17 +71,34 @@ export class Interpolator {
     this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])), projectiles: new Map(projectiles.map(([id, x, y, z, v]) => [id, [x, y, z, v ?? 0]])), ...(hold?.length ? { hold: new Set(hold) } : {}) });
     this.latestTick = tick;
     const offset = tick - (now / 1000) * TICK_RATE;
-    if (this.clockOffset === null || Math.abs(offset - this.clockOffset) > CLOCK_RESYNC_TICKS) this.clockOffset = offset;
-    else this.clockOffset += (offset - this.clockOffset) * CLOCK_GAIN;
+    // Far ahead of the estimate: we fell behind (a stall here), catch up at once. Far behind it: one
+    // late snapshot or burst is waited out (drawing carries on), but a run of them means the server
+    // clock really slipped (it dropped a backlog) and the estimate moves to it.
+    const late = this.clockOffset !== null && offset < this.clockOffset - CLOCK_RESYNC_TICKS;
+    this.lateRun = late ? this.lateRun + 1 : 0;
+    if (this.clockOffset === null || offset > this.clockOffset + CLOCK_RESYNC_TICKS || this.lateRun > LATE_RUN_RESYNC) {
+      this.clockOffset = offset;
+      this.lateRun = 0;
+    } else if (!late) this.clockOffset += (offset - this.clockOffset) * CLOCK_GAIN;
     while (this.frames.length > 2 && this.frames[0]!.tick < tick - BUFFER_TICKS) this.frames.shift();
   }
 
   /** The (fractional) server tick remote players are currently drawn at. Sent with inputs for lag compensation. */
   renderTick(now: number = performance.now()): number {
     if (!this.frames.length) return 0;
-    const estServerTick = (now / 1000) * TICK_RATE + (this.clockOffset ?? this.latestTick);
-    return Math.min(estServerTick - INTERP_DELAY_TICKS, this.latestTick);
+    return Math.min(this.drawTick(now), this.latestTick);
   }
+
+  /** The tick players are drawn at: renderTick, but allowed a little past the newest snapshot. */
+  private drawTick(now: number): number {
+    const estServerTick = (now / 1000) * TICK_RATE + (this.clockOffset ?? this.latestTick);
+    const tick = Math.min(estServerTick - INTERP_DELAY_TICKS, this.latestTick + EXTRAPOLATE_TICKS);
+    // Never backwards (after the clock estimate moves back to a slipped server): wait for it instead.
+    if (now >= this.lastDraw.at) this.lastDraw = { at: now, tick: Math.max(tick, this.lastDraw.tick) };
+    return Math.min(this.lastDraw.tick, this.latestTick + EXTRAPOLATE_TICKS);
+  }
+
+  private lastDraw = { at: -Infinity, tick: -Infinity };
 
   /** The two buffered frames around `renderTick` and the blend factor between them. */
   private bracket(renderTick: number): { a: Frame; b: Frame; t: number } {
@@ -102,7 +130,8 @@ export class Interpolator {
 
   sample(now: number = performance.now()): RemotePose[] {
     if (!this.frames.length) return [];
-    const renderTick = this.renderTick(now);
+    const drawTick = this.drawTick(now);
+    const renderTick = Math.min(drawTick, this.latestTick);
     let a = this.frames[0]!;
     let b = a;
     for (const f of this.frames) {
@@ -113,8 +142,14 @@ export class Interpolator {
       }
       b = f;
     }
+    // Past the newest snapshot: carry on along the last two (t above 1 extrapolates).
+    const n = this.frames.length;
+    if (drawTick > this.latestTick && n > 1) {
+      a = this.frames[n - 2]!;
+      b = this.frames[n - 1]!;
+    }
     const span = b.tick - a.tick;
-    const t = span > 0 ? Math.max(0, Math.min(1, (renderTick - a.tick) / span)) : 1;
+    const t = span > 0 ? Math.max(0, Math.min(1 + EXTRAPOLATE_TICKS / span, (drawTick - a.tick) / span)) : 1;
     const out: RemotePose[] = [];
     const last = this.frames[this.frames.length - 1]!;
     // Big matches: players far away come in some snapshots only. Blend each between the frames that have them.
