@@ -88,3 +88,78 @@ weapons were added.
    equip), though its 30 m/s rocket rightly asks you to predict.
 8. Equip times, reload interrupts, sprint-to-fire, flinch, sway, inertia and
    suppression are all within the direction doc already.
+
+## After this pass
+
+What changed, by benchmark (all data in `sim/weapons.ts` and the family
+defaults in `sim/gunplay.ts`; tests in `packages/shared/test/benchmarks.test.ts`):
+
+- **Shotgun: makes you close in.** The pellet pattern is back: a
+  multi-pellet weapon's cone is now the gunplay cone plus its own pellet
+  `spread` (`shotCone`, used by the server and client prediction alike;
+  fixes the Sawed-Off and Auto Shotgun too). Ten 12-damage pellets in a fixed
+  75 mrad pattern: one shot kills out to about 5 m, a few pellets land at
+  15 m, a scratch (under 35) at 20 m; falloff 6→22 m to 25 %. Pump a touch
+  quicker (0.75 s), equip 0.27 s, both barrels 16 × 12.
+- **Heavy Revolver: absurd and punishing.** 90 damage (a head shot kills at
+  any range even after falloff; a body shot takes 90 % of a life), knockback
+  4 m/s, penetration energy 1800 (through wood that stops a pistol). Five
+  rounds, 90 rpm, first kick 120 mrad. Rhythm: a round fired the instant the
+  hammer is back goes 22.5 mrad wide (a coin toss on a body at 25 m); wait
+  about a second between shots and it is dead on again. Five-round reload
+  round by round, 0.3 s + 0.3 s a round.
+- **SMG: steady, then wild.** First five rounds at the 6 mrad base with
+  3 mrad kicks (a quarter of the pistol's), then the climb builds to 11 mrad a
+  round and the cone opens to 39 mrad by round 10 and 90 by round 20. Let go
+  and even a 20-round spray is forgotten in half a second.
+- **Precision Rifle: patience and holdover.** Still the fastest round (least
+  lead: 1 m on a runner at 200 m) but heavy: 950 m/s with 2.5 × gravity, so
+  2 cm of drop at 50 m, 12 cm at 100 m, 50 cm at 200 m. 80 damage (body
+  shot plus any other hit kills; head ×3 kills). A scoped shot taken the
+  moment the bolt closes is 3 mrad off (more than a head at 100 m); wait
+  about 0.8 s and it is exact. The no-scope cone drops to 30 mrad: a hip shot
+  across a room works, past that it is a guess.
+- **Rocket Launcher: prediction.** Same slow 30 m/s rocket (lead a runner
+  3.5 m at 20 m), 5 m blast, 40 direct + 120 splash (a direct hit kills),
+  self-damage up to ×0.75. A rocket every 1.5 s with the trigger held (was
+  2.4 s), equip 0.53 s (was 0.7).
+- **Assault Rifle:** equip 0.33 s; otherwise the reference it was.
+- **Service Pistol:** unchanged handling; less movement penalty.
+- **Moving and shooting (everyone in a family):** full-speed movement adds
+  pistol 6 (was 12), revolver 12 (20), SMG 4 (6), rifle 8 (16), sniper 30
+  (40), shotgun 6 (10) mrad. Every sidearm, SMG and rifle shot fired on the
+  run stays on a body at 25 m. Airborne cones for pistol (20) and rifle (35)
+  eased a little too.
+- **Water soaks up bullets** (G1 material work the arena needed): a bullet's
+  path under water or swamp costs it energy (400 a metre), slowing it and
+  weakening it; a metre stops a pistol round, a rifle round comes out at two
+  thirds. Server only (client tracers stay cosmetic).
+
+| | Pistol | Revolver | SMG | Rifle | Shotgun | Sniper | Rockets |
+|---|---|---|---|---|---|---|---|
+| Rate | 360 rpm | **90 rpm** | 900 rpm | 600 rpm | **80 rpm** | 48 rpm | **1 per 1.5 s** |
+| Magazine | 12 | **5** | 32 | 30 | 6 | 5 | 1 |
+| Damage | 24 | **90** | 11 | 18 | **10 × 12** | **80** | **40** + 120 |
+| Body shots to kill | 5 | 2 | 10 | 6 | **1 up close** | 2 | 1 |
+| Equip | 0.15 s | 0.27 s | 0.2 s | **0.33 s** | **0.27 s** | 0.5 s | **0.53 s** |
+| Hip cone still / running | 2 / **8** | 0.5 / **12.5** | 6 / **10** | 1.5 / **9.5** | **75 pattern** / +6 | **30** / **60** | 0 |
+| Spray cone round 10 / 20 | n/a | n/a | **39 / 90** | 10 / 22 | n/a | n/a | n/a |
+| Second shot at full rate | 2 | **22.5** | n/a | n/a | n/a | **3 (ADS)** | n/a |
+| First kick | 12 | **120** | **3** | 10 | 60 | 70 | none |
+| Velocity | 375 | 300 | 400 | 820 | hitscan | **950** | 30 |
+| Drop at 50 / 100 / 200 m | 6 / 30 / 129 cm | 10 / 46 / 201 | 5 / 26 / 113 | 1 / 6 / 27 | n/a | **2 / 12 / 50** | n/a |
+| Falloff | 18→45 m to 65 % | 25→60 m to 70 % | 12→35 m to 55 % | 30→80 m to 75 % | **6→22 m to 25 %** | 150→300 m to 90 % | self ×**0.75** |
+
+Unchanged and already within the doc: trigger latency (same input), sprint
+to fire (0 ms), no aim flinch, no suppression blur, no movement inertia,
+scope-only sway (3.5 mrad), every reload interruptible.
+
+### Out of scope (left for later passes)
+
+- Per-weapon movement speed (spec §27 `movementModifier`, G2): everyone runs
+  at the same pace whatever they carry, which suits arcade play for now.
+- Auto-reload when a magazine runs dry: reloads still start on the next
+  trigger pull (or R), as before; the rocket cycle was fixed by tuning.
+- Client tracers do not know about water; the authoritative impact does.
+- Weapons outside the seven (Hand Cannon, Marksman, LMG, launcher variants)
+  only got the family changes (movement spread, shotgun pattern fix).

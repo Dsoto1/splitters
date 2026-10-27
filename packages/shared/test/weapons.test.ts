@@ -103,7 +103,7 @@ describe('weapons', () => {
       d.input(b, {});
     });
     const shot = d.events.find((e) => e.e === 'shot' && e.w === 'core.shotgun');
-    expect(shot && shot.e === 'shot' && shot.to.length).toBe(8);
+    expect(shot && shot.e === 'shot' && shot.to.length).toBe(getWeapon('core.shotgun').pellets);
     expect(shot && shot.e === 'shot' && shot.hit.filter((h) => h === b.slot).length).toBeGreaterThan(4);
   });
 

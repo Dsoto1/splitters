@@ -63,29 +63,28 @@ code.
   real speed and only on tracer rounds (`tracerEvery`, plus the magazine's
   last rounds).
 
-**Benchmark weapons** (spec §51):
+**Benchmark weapons** (spec §51 and the seven of GUNPLAY_DIRECTION.md; the
+feel audit and the reasoning are in [GUNPLAY_AUDIT.md](GUNPLAY_AUDIT.md)):
 
-| | Service Pistol | Heavy Revolver | SMG | Assault Rifle |
-|---|---|---|---|---|
-| Damage (body) | 24 | 70 (head ×1.75 kills) | 11 | 18 |
-| Rate | 360 rpm | 106 rpm, semi | 900 rpm | 600 rpm |
-| Magazine | 12 | 6 | 32 | 30 |
-| Velocity | 375 m/s | 300 m/s | 400 m/s | 820 m/s |
-| First kick | 0.012 rad | 0.10 rad | 0.004 rad, 0.009 from round 5 | 0.010, then 0.0085 per round |
-| Recovery | fast | slow (≈0.6 s) | very fast | medium |
-| Spread | true first shot | true first shot | tight 4 rounds, then +0.0045/round | tight 3, then +0.0012 |
-| Reload tactical / empty | 0.83 / 1.1 s | round by round: 0.3 s + 0.27 s a round + 0.17 s | 0.9 / 1.2 s | 1.4 / 1.8 s |
-| Equip | 0.15 s | 0.27 s | 0.2 s | 0.37 s |
-| Falloff | 18→45 m to 65% | 25→60 m to 70% | 12→35 m to 55% (steep) | 30→80 m to 75% |
+| | Service Pistol | Heavy Revolver | SMG | Assault Rifle | Shotgun | Precision (Sniper Rifle) | Rocket Launcher |
+|---|---|---|---|---|---|---|---|
+| Weapon | `core.pistol` | `core.revolver` | `core.smg` | `core.rifle` | `core.shotgun` | `core.sniper` | `core.rockets` |
+| Damage (body) | 24 | 90 (head kills at any range) | 11 | 18 | 10 pellets × 12 | 80 (head ×3) | 40 hit + 120 splash, 5 m |
+| Rate | 360 rpm, semi | 90 rpm, semi | 900 rpm | 600 rpm | 80 rpm | 48 rpm | a rocket per 1.5 s |
+| Magazine | 12 | 5 | 32 | 30 | 6 | 5 | 1 |
+| Velocity | 375 m/s | 300 m/s | 400 m/s | 820 m/s | hitscan pellets | 950 m/s, 2.5 × gravity | 30 m/s |
+| First kick | 0.012 rad | 0.12 rad | 0.003 rad, climbing to 0.011 | 0.010, then 0.0085 per round | 0.06 rad | 0.07 rad | — |
+| Spread | true first shot | true first shot; 0.022 if fanned | tight 5 rounds, then +0.0065/round | tight 3, then +0.0012 | fixed 0.075 pattern | exact once settled; 0.03 no-scope | — |
+| Reload tactical / empty | 0.83 / 1.1 s | round by round: 0.3 s + 0.3 s a round + 0.17 s | 0.9 / 1.2 s | 1.4 / 1.8 s | shell by shell | 1.5 / 1.83 s | 0.9 s |
+| Equip | 0.15 s | 0.27 s | 0.2 s | 0.33 s | 0.27 s | 0.5 s | 0.53 s |
+| Falloff | 18→45 m to 65% | 25→60 m to 70% | 12→35 m to 55% (steep) | 30→80 m to 75% | 6→22 m to 25% (steep) | 150→300 m to 90% | self-damage ×0.75 |
 
 The **Heavy Revolver** (slot 2, pickup `core.weapon_revolver`) uses the
 Quaternius Ultimate Gun Pack revolver (CC0).
 
 **Training Range** (`maps/training_range.json`, built by
-`packages/server/src/tools/maps/training_range.ts`): boards at 10, 25, 50,
-100 and 200 m, boards sliding side to side at 25, 50 and 100 m, penetration
-panels (glass, drywall, planks, sheet metal, brick, concrete) with a board
-behind each, and a concrete recoil wall.
+`packages/server/src/tools/maps/training_range.ts`): the gunplay test arena
+of GUNPLAY_DIRECTION.md, described in [GUNPLAY_AUDIT.md](GUNPLAY_AUDIT.md#gunplay-test-arena).
 
 **Ammo pickups.** The general Ammo Box gives half a pickup to every weapon and
 one underbarrel grenade. Typed boxes (Light, Rifle, Shells, Sniper, Explosives,

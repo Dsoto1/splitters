@@ -19,7 +19,7 @@ import {
   recoilIdle,
   recoilShot,
   roundsReady,
-  spreadOf,
+  shotCone,
   stepAds,
   stepReload,
   traceBullet,
@@ -416,7 +416,7 @@ export class LocalPlayer {
     const gp = gunplayOf(def);
     const aim = this.aimAngles(input.yaw, input.pitch);
     const run = this.prevPos ? Math.hypot(this.state.pos.x - this.prevPos.x, this.state.pos.z - this.prevPos.z) / TICK_DT / PLAYER.runSpeed : 0;
-    const spread = gp.accuracy ? spreadOf(gp.accuracy, this.gun, { run, airborne: !this.state.grounded, stance: STANCE_SPREAD[this.state.stance ?? 0] ?? 1 }) : def.spread;
+    const spread = gp.accuracy ? shotCone(def, gp.accuracy, this.gun, { run, airborne: !this.state.grounded, stance: STANCE_SPREAD[this.state.stance ?? 0] ?? 1 }) : def.spread;
     if (def.kind !== 'melee') recoilShot(this.gun, gp.kick);
     if (def.kind !== 'hitscan') return { def, ends: [] };
     const shot = this.hitscanShot(def, aim, def.pellets, spread, false);
