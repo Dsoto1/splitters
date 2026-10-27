@@ -1781,7 +1781,7 @@ function frames(page, n = 10) {
 const VISUAL_PIXEL_DELTA = 48;
 const VISUAL_SCENES = [
   // The main menu with its hero, as a first visit sees it.
-  { name: 'menu', url: '/?test=1&name=Tester', ready: () => window.__front && !document.getElementById('menu').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.08 },
+  { name: 'menu', url: '/?test=1&name=Tester', ready: () => window.__front && document.fonts.status === 'loaded' && !document.getElementById('menu').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.08 },
   // MapMaker's blank starter map.
   { name: 'mapmaker', url: '/?mode=editor&test=1&name=Tester', ready: () => window.__editor && !document.getElementById('editor').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.06 },
   // A map in play, alone (bots=1: just you), at the seeded spawn (hidden: the pause menu headless pages open, and HUD messages such as the slow-device hint).
@@ -1815,13 +1815,20 @@ async function visualFlow(browser) {
     }
     const base = PNG.sync.read(readFileSync(file));
     let differ = 0;
+    // Where the differences are, for the log (CI artifacts are not always at hand): a 12×6 grid of shares.
+    const GX = 12, GY = 6;
+    const grid = new Array(GX * GY).fill(0);
     const diff = new PNG({ width: shot.width, height: shot.height });
     const same = base.width === shot.width && base.height === shot.height;
     if (same) {
       for (let i = 0; i < shot.data.length; i += 4) {
         const d = Math.max(Math.abs(shot.data[i] - base.data[i]), Math.abs(shot.data[i + 1] - base.data[i + 1]), Math.abs(shot.data[i + 2] - base.data[i + 2]));
         const off = d > VISUAL_PIXEL_DELTA;
-        if (off) differ++;
+        if (off) {
+          differ++;
+          const p = i >> 2;
+          grid[Math.floor(((p / shot.width) | 0) * GY / shot.height) * GX + Math.floor((p % shot.width) * GX / shot.width)]++;
+        }
         diff.data[i] = off ? 255 : shot.data[i] >> 2;
         diff.data[i + 1] = off ? 0 : shot.data[i + 1] >> 2;
         diff.data[i + 2] = off ? 255 : shot.data[i + 2] >> 2;
@@ -1833,6 +1840,11 @@ async function visualFlow(browser) {
     if (!pass) {
       writeFileSync(`${ARTIFACTS}/visual-${scene.name}-actual.png`, PNG.sync.write(shot));
       if (same) writeFileSync(`${ARTIFACTS}/visual-${scene.name}-diff.png`, PNG.sync.write(diff));
+      if (same) {
+        const cell = (shot.width / GX) * (shot.height / GY);
+        console.log(`visual ${scene.name}: differing pixels per cell, % (12×6 over the picture):`);
+        for (let y = 0; y < GY; y++) console.log(`  ${grid.slice(y * GX, y * GX + GX).map((n) => String(Math.round((n / cell) * 100)).padStart(3)).join(' ')}`);
+      }
     }
     console.log(`visual ${scene.name}: ${(share * 100).toFixed(2)} % of pixels differ (allowed ${(scene.share * 100).toFixed(0)} %)`);
     check(pass && errors.length === 0, `${scene.name} looks like its baseline (${same ? `${(share * 100).toFixed(1)} % of pixels differ, ${(scene.share * 100).toFixed(0)} % allowed` : `size ${shot.width}×${shot.height} vs ${base.width}×${base.height}`}${ready ? '' : '; the scene never got ready'})${errors.length ? ` (${errors.join('; ')})` : ''}`);
