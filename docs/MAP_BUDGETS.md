@@ -162,7 +162,8 @@ breakdown: bot think (perception, decisions, paths, aim, sight rays), movement
 spread match's CPU a tick, with fewer than 90 sight rays a tick.
 
 **What changed** (big matches only, past `BOT_FULL_RATE` bots; smaller
-matches are unchanged):
+matches think and see exactly as before, only cheaper rays and fewer
+allocations reach them):
 
 - Bots think in full at 20 Hz (`BOT_THINK_EVERY` = 3 ticks, staggered by
   slot). In between, a fighting bot *steers* (`BotBrain.steer`): perception
