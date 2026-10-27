@@ -44,8 +44,12 @@ log() { printf '== %s\n' "$*"; }
 log "Tile Trigger host setup for $DOMAIN (branch $BRANCH${REF:+ @ $REF})"
 
 # ---------------------------------------------------------------- base system
+# Grow an older 2 GB swapfile to 4 GB (the client build needs ~1.5 GB of heap on a 2 GB box).
+if swapon --show | grep -q /swapfile && [ "$(stat -c %s /swapfile)" -lt 4000000000 ]; then
+  swapoff /swapfile && rm -f /swapfile
+fi
 if ! swapon --show | grep -q /swapfile; then
-  fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile
+  fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile
   grep -q /swapfile /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
 
@@ -85,7 +89,7 @@ else
 fi
 [ -n "$REF" ] && as_app "git fetch -q origin '$REF' 2>/dev/null || true; git reset -q --hard '$REF'"
 log "Building $(as_app 'git log -1 --format="%h %s"') (a few minutes)…"
-as_app "corepack pnpm install --frozen-lockfile && VITE_HUB=self corepack pnpm build"
+as_app "corepack pnpm install --frozen-lockfile && VITE_HUB=self NODE_OPTIONS=--max-old-space-size=3072 corepack pnpm build"
 
 # ---------------------------------------------------------------- hub runtime config
 # The hub reads TURN_SECRET/TURN_URLS/ICE_TTL today (packages/server/src/ice.ts);
@@ -264,7 +268,7 @@ systemctl reload-or-restart caddy
 cat > /usr/local/bin/tiletrigger-update <<UPD
 #!/usr/bin/env bash
 set -euo pipefail
-sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && git fetch -q origin $BRANCH && git reset -q --hard origin/$BRANCH && corepack pnpm install --frozen-lockfile && VITE_HUB=self corepack pnpm build"
+sudo -u tiletrigger -H env COREPACK_ENABLE_DOWNLOAD_PROMPT=0 bash -c "cd $APP && git fetch -q origin $BRANCH && git reset -q --hard origin/$BRANCH && corepack pnpm install --frozen-lockfile && VITE_HUB=self NODE_OPTIONS=--max-old-space-size=3072 corepack pnpm build"
 systemctl restart tiletrigger-hub
 echo "Tile Trigger updated to \$(sudo -u tiletrigger git -C $APP log -1 --format='%h %s')"
 UPD
