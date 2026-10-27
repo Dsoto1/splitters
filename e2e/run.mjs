@@ -791,17 +791,19 @@ async function physicsfxFlow(browser) {
   const crate = await page.evaluate((src) => {
     const batches = eval(src);
     const sc = window.__match.scenario;
-    const d = [...sc.destructibles.values()].find((x) => x.alive && !x.block && x.b.shootable !== false);
+    // A destructible entity (breakable props and crumbling blocks are destructibles too, drawn elsewhere).
+    const d = [...sc.destructibles.values()].find((x) => x.alive && window.__match.map.entities[x.i]?.kind === 'destructible' && x.b.shootable !== false);
     window.__crate = d;
-    const shown = batches().reduce((n, m) => n + m.thinInstanceGetWorldMatrices().filter((w) => w.m.some((v) => v !== 0)).length, 0);
+    const live = (m) => { const d = m._thinInstanceDataStorage.matrixData; let n = 0; for (let i = 0; i < m.thinInstanceCount; i++) if (d[i * 16] || d[i * 16 + 1] || d[i * 16 + 5]) n++; return n; };
+    const shown = batches().reduce((n, m) => n + live(m), 0);
     sc.damageDestructible(d, d.health * 0.6, true, null);
     return { draws: batches().length, shown };
   }, `(${batches})`);
-  const darkest = `Math.min(1, ...(${batches})().flatMap((m) => Array.from(m._userThinInstanceBuffersStorage?.data?.color ?? [])))`;
+  const darkest = `Math.min(1, ...(${batches})().flatMap((m) => Array.from(m._userThinInstanceBuffersStorage?.data?.instanceColor ?? [])))`;
   await page.waitForFunction((src) => eval(src) < 0.9, darkest, { timeout: T(5000) }).catch(() => {});
   const hurt = await page.evaluate((src) => eval(src), darkest);
   await page.evaluate(() => window.__match.scenario.damageDestructible(window.__crate, 1e6, true, null));
-  const shownNow = `(${batches})().reduce((n, m) => n + m.thinInstanceGetWorldMatrices().filter((w) => w.m.some((v) => v !== 0)).length, 0)`;
+  const shownNow = `(${batches})().reduce((n, m) => { const d = m._thinInstanceDataStorage.matrixData; let k = 0; for (let i = 0; i < m.thinInstanceCount; i++) if (d[i * 16] || d[i * 16 + 1] || d[i * 16 + 5]) k++; return n + k; }, 0)`;
   await page.waitForFunction(([src, was]) => eval(src) < was, [shownNow, crate.shown], { timeout: T(5000) }).catch(() => {});
   const after = await page.evaluate((src) => eval(src), shownNow);
   check(crate.draws > 0 && crate.draws < crate.shown && hurt < 0.9 && after < crate.shown, `destructibles are shared thin instances that darken with damage and go when broken (${crate.draws} meshes for ${crate.shown} parts, darkest ${hurt.toFixed(2)}, ${crate.shown} → ${after} parts shown)`);
