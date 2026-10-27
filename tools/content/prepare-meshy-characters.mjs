@@ -36,7 +36,9 @@
 // counts as cloth), to check the weights; ONLY=<ids> rebuilds just those. Then it goes through the same
 // steps as the rest. Their first-person arms are the universal ones (looks.ts),
 // so they get no _fparms file. A character whose download isn't there is kept
-// as built (checked against the lock).
+// as built (checked against the lock). The Meshy community T-pose downloads
+// (CC0 per the owner) are FBX_CHARACTERS too, with their own `source` pack and
+// the model's name and download date (`community`) recorded in the lock.
 
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';

@@ -327,6 +327,11 @@ export class CharacterLibrary {
     const rigPelvis = rig.transformNodes.find((n) => n.name === 'pelvis');
     const pelvis = joints.get('pelvis');
     const offset = rigPelvis && pelvis ? pelvis.position.subtract(rigPelvis.position) : Vector3.Zero();
+    // Hips far lower or higher than the rig's (a short-legged cat): the hip track is scaled by the hip height
+    // instead of shifted, so lying down (death) and crouching put the hips on the ground, not under it.
+    const ratio = rigPelvis && pelvis ? pelvis.position.length() / Math.max(1e-6, rigPelvis.position.length()) : 1;
+    const scale = Math.abs(ratio - 1) > 0.1 ? ratio : 1;
+    if (scale !== 1) offset.copyFrom(pelvis!.position.subtract(rigPelvis!.position.scale(scale)));
     const out = new Map<Clip, AnimationGroup>();
     for (const src of rig.animationGroups) {
       const g = new AnimationGroup(`${name}_${src.name}`, this.scene);
@@ -334,7 +339,7 @@ export class CharacterLibrary {
         const target = joints.get((ta.target as TransformNode).name);
         if (!target) continue;
         let anim = ta.animation;
-        if (target.name === 'pelvis' && anim.targetProperty === 'position') anim = this.hipAnim(anim, body, offset, src.name);
+        if (target.name === 'pelvis' && anim.targetProperty === 'position') anim = this.hipAnim(anim, body, offset, src.name, scale);
         g.addTargetedAnimation(anim, target);
       }
       g.normalize(src.from, src.to);
@@ -343,13 +348,13 @@ export class CharacterLibrary {
     return out;
   }
 
-  private hipAnim(anim: Animation, body: BodyType, offset: Vector3, clip: string): Animation {
+  private hipAnim(anim: Animation, body: BodyType, offset: Vector3, clip: string, scale = 1): Animation {
     // Keyed by the hip offset too: whole-body characters share a body type but not a hip height.
-    const key = `${body}:${clip}:${offset.x.toFixed(3)},${offset.y.toFixed(3)},${offset.z.toFixed(3)}`;
+    const key = `${body}:${clip}:${offset.x.toFixed(3)},${offset.y.toFixed(3)},${offset.z.toFixed(3)}:${scale.toFixed(3)}`;
     let a = this.hipAnims.get(key);
     if (!a) {
       a = anim.clone();
-      a.setKeys(anim.getKeys().map((k) => ({ ...k, value: (k.value as Vector3).add(offset) })));
+      a.setKeys(anim.getKeys().map((k) => ({ ...k, value: (k.value as Vector3).scale(scale).add(offset) })));
       this.hipAnims.set(key, a);
     }
     return a;
