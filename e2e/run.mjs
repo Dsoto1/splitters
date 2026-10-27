@@ -1779,10 +1779,10 @@ function frames(page, n = 10) {
  * and commit them). A failure leaves the new picture and a diff in e2e-artifacts/.
  */
 const VISUAL_PIXEL_DELTA = 48;
+// 1280 × 720: a common real window. Below 600 px tall the menus switch to their compact small-screen layout.
 const VISUAL_SCENES = [
-  // The main menu with its hero, as a first visit sees it. The featured-map card is hidden: it is map data (it
-  // changes with the featured map) and it lays out about 10 px taller on CI's runners than locally.
-  { name: 'menu', url: '/?test=1&name=Tester', ready: () => window.__front && document.fonts.status === 'loaded' && [...document.images].every((i) => i.complete) && !document.getElementById('menu').hidden && !document.getElementById('view').classList.contains('veiled'), css: '.featured { visibility: hidden !important; }', share: 0.08 },
+  // The main menu with its hero, as a first visit sees it.
+  { name: 'menu', url: '/?test=1&name=Tester', ready: () => window.__front && document.fonts.status === 'loaded' && [...document.images].every((i) => i.complete) && !document.getElementById('menu').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.08 },
   // MapMaker's blank starter map.
   { name: 'mapmaker', url: '/?mode=editor&test=1&name=Tester', ready: () => window.__editor && !document.getElementById('editor').hidden && !document.getElementById('view').classList.contains('veiled'), share: 0.06 },
   // A map in play, alone (bots=1: just you), at the seeded spawn (hidden: the pause menu headless pages open, and HUD messages such as the slow-device hint).
@@ -1798,7 +1798,7 @@ async function visualFlow(browser) {
   const dir = new URL('./baselines/', import.meta.url);
   mkdirSync(dir, { recursive: true });
   for (const scene of VISUAL_SCENES) {
-    const page = await (await browser.newContext({ viewport: { width: 960, height: 540 }, deviceScaleFactor: 1 })).newPage();
+    const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 })).newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(`${CLIENT}${scene.url}`);
