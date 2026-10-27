@@ -81,7 +81,11 @@ describe('a page that falls behind its match (the 96-player warm-up stall)', () 
     const { got, q, runTasks } = harness();
     // The page was busy for 20 s (a frame while models and shaders load): 600 snapshots are waiting.
     // Each opens or closes a door, and carries an event.
-    const queued = Array.from({ length: 600 }, (_, i) => snap(2 * (i + 1), { sc: { es: [[i % 7, i % 2 ? 100 : 0, 0]] } }));
+    const shot = (tick: number) => ({ e: 'shot', s: 3, w: 1, tick }) as unknown as GameEvent;
+    const queued = Array.from({ length: 600 }, (_, i) => {
+      const m = snap(2 * (i + 1), { sc: { es: [[i % 7, i % 2 ? 100 : 0, 0]] } });
+      return { ...m, ev: [...m.ev, shot(m.tick)] };
+    });
     for (const m of queued) q.push(m);
     runTasks();
     // Before: 600 full snapshot handlings (scenario colliders, vehicles, prediction replay each), while
@@ -90,7 +94,11 @@ describe('a page that falls behind its match (the 96-player warm-up stall)', () 
     const last = got[1] as Snapshot;
     expect(last.tick).toBe(1200);
     expect(last.ack).toBe(1200);
-    expect([...(got[0] as Snapshot).ev, ...last.ev]).toEqual(queued.flatMap((m) => m.ev));
+    // Every lasting event (spawns here) arrives, in order; of the shots, only the ones still current play:
+    // twenty seconds of tracers and sounds all at once would be another long frame.
+    const all = [...(got[0] as Snapshot).ev, ...last.ev];
+    expect(all.filter((e) => e.e === 'spawn')).toEqual(queued.flatMap((m) => m.ev.filter((e) => e.e === 'spawn')));
+    expect(all.filter((e) => e.e === 'shot').map((e) => (e as unknown as { tick: number }).tick)).toEqual([2, 1200]);
     // Every door ends as the last snapshot that mentioned it left it.
     for (let d = 0; d < 7; d++) {
       const lastFor = queued.filter((m) => m.sc!.es![0]![0] === d).pop()!;
@@ -109,12 +117,13 @@ describe('a page that falls behind its match (the 96-player warm-up stall)', () 
     const { got, q, runTasks } = harness();
     q.push(snap(2));
     q.push(snap(4));
-    q.push(snap(6));
+    q.push(snap(6, { ev: [{ e: 'shot', s: 1 } as unknown as GameEvent] }));
     q.push({ t: 'roster', players: [] });
     q.push(snap(8));
     runTasks();
     expect(got.map((m) => (m.t === 'snapshot' ? m.tick : m.t))).toEqual([2, 6, 'roster', 8]);
-    expect((got[1] as Snapshot).ev).toHaveLength(2);
+    // A short backlog keeps its effects.
+    expect((got[1] as Snapshot).ev.map((e) => e.e)).toEqual(['spawn', 'shot']);
   });
 });
 

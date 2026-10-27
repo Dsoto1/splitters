@@ -2,6 +2,9 @@ import { SNAPSHOT_INTERVAL_TICKS, TICK_RATE, type ScenarioSnapshot, type ServerM
 
 type Snapshot = Extract<ServerMessage, { t: 'snapshot' }>;
 
+/** Events that only show or sound something (tracers, impacts, blasts): skipped where nobody would see them in time. */
+export const VISUAL_EVENTS: ReadonlySet<string> = new Set(['shot', 'impact', 'melee', 'arc', 'explode', 'crash', 'throw']);
+
 /** Two scenario deltas as one: entity states by index (the later wins), objectives and timers the latest sent. */
 function mergeScenario(a: ScenarioSnapshot | undefined, b: ScenarioSnapshot | undefined): ScenarioSnapshot | undefined {
   if (!a) return b;
@@ -71,8 +74,10 @@ export const LATE_SNAPSHOTS = PER_SECOND;
  * behind for good. Here the first snapshot of a burst is delivered at once;
  * any that arrive before the page's next free moment (`later`, a task queued
  * behind the ones already waiting) are merged and delivered as one, so a
- * backlog costs one snapshot's work, not hundreds. Other messages first
- * flush what is waiting, so the order between them is kept.
+ * backlog costs one snapshot's work, not hundreds. Past a second's worth,
+ * the purely visual events of what is waiting are dropped (as in a hidden
+ * tab), so catching up doesn't fire every shot of the last minute at once.
+ * Other messages first flush what is waiting, so the order between them is kept.
  */
 export class SnapshotCoalescer {
   readonly backlog: SnapshotBacklog = { merged: 0, most: 0, late: 0 };
@@ -102,7 +107,9 @@ export class SnapshotCoalescer {
       this.deliver(m);
       return;
     }
-    this.held = this.held ? mergeSnapshots(this.held, m) : m;
+    // Over a second behind: the shots and blasts of what is waiting are history; they would only all go off at once.
+    const held = this.held && this.count >= LATE_SNAPSHOTS ? { ...this.held, ev: this.held.ev.filter((e) => !VISUAL_EVENTS.has(e.e)) } : this.held;
+    this.held = held ? mergeSnapshots(held, m) : m;
     this.count++;
   }
 
