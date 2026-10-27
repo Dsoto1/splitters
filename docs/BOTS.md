@@ -18,20 +18,24 @@ and bots read the results from objects the match updates in place.
 
 - distance to the nearest living enemy (capped at 100 m; height counts double);
 - someone standing on it (within 1.5 m): −60; a few people within 4 m: −6 each;
-- used in the last 3 s: up to −35, fading;
+- used in the last 3 s: up to −20, fading (enough to break ties, not to send
+  anyone nearer an enemy);
 - team modes on shared spawns: +8 per teammate within 25 m (each side keeps an
   area of its own), as before;
 - made-up points (below): a small pull toward the side's own base.
 
-Then the best four are checked for an enemy within 50 m with a clear sight
-line to the spawn (the three nearest enemies each): −45. At most 12 rays a
-spawn. A little randomness (0–3) separates near-equal choices. Squad spawn
+Then the best six are checked for enemies within 50 m with a clear sight
+line to the spawn (the three nearest each): −30 for every one that can see
+it. At most 18 rays a spawn. A little randomness (0–3) separates near-equal choices. Squad spawn
 (beside a teammate out of the fight, 70 % of team spawns) is unchanged.
 Spawn protection is unchanged: there is none outside Disc Arena's 2 s guard.
 
 **Spawn waves.** Matches of 12 players or more spawn bots a few a tick
-(`spawnsPerTick`: players / 32, at least one; 3 a tick at 96, so everyone is
-in within about half a second), longest-waiting first. A bot joining a big
+(`spawnsPerTick`: an eighth of the players, 12 a tick at 96), longest-waiting
+first, so a whole roster is in within 8 ticks (0.13 s). That is quicker than
+any bot reacts (220 ms at Hard): slower waves (a third of a second and more)
+let the first ones shoot the last ones as they appeared, measurably more
+deaths in the first seconds of a free-for-all. A bot joining a big
 match, or starting a round in one, waits for its wave with its loadout
 already on (`Match.queueSpawn`). People always spawn at once. Waves also run
 during the start gate's wait and countdown. Smaller matches spawn everyone at
@@ -39,8 +43,10 @@ once, as before.
 
 **Made-up spawn points** (`generateSpawns`, `Match.ensureSpawnCapacity`). A
 match of 12+ players on a map whose spawns are too few or too bunched for it
-(a spawn point per 3 players a side; points within 5 m of each other count as
-one) gets extra points for that match only; the map file is never touched.
+(a spawn point per 3 players a side, counting the pool the side actually
+spawns from: its own points, or the shared ones in free-for-all; points
+within 5 m of each other count as one) gets extra points for that match
+only; the map file is never touched.
 From the navmesh's sample places (`NavWorld.places()`), a point must:
 
 - have standing room (`headroom`) and solid floor under it, be above the kill
@@ -56,9 +62,11 @@ Points are picked by farthest-point sampling (spread enough past 24 m; past
 that, nearer the side's base and level with it wins, which keeps them off
 roofs and cliffs), with a seeded jitter: the same map and seed give the same
 points. Worked out at the first spawn of the match, again only if the match
-grows past the players they were made for (in steps of 8). Measured: Frost
-Basin 48 v 48 gets 10 a side, Canyon 11, Norman Shores 3–4; Riot Junction
-(16 a side) none.
+grows past the players they were made for (in steps of 8), while the match
+is being set up (a bot that will wait for its wave triggers it as it joins),
+not in a tick. Measured: Frost Basin 48 v 48 gets 10 a side, Canyon 11,
+Norman Shores 3–4; Riot Junction (16 a side) none. To see it for a map:
+`pnpm --filter @tiletrigger/server spawn-points 96 core.tdm maps/<map>.json`.
 
 MapMaker's validator says so too: `spawn.few` now also fires per team (a team
 with fewer spawn points than a third of its half of the recommended players),
@@ -79,8 +87,15 @@ regions sampled, bounded):
 - about the distance the bot likes (25–75 m by its exploration, lone wolves
   further);
 - toward the enemy's side in team modes (so fights still happen);
+- where the side has met the enemy in the last 20 s (from its fighting
+  members, once a second), unless four or more of the side are already there;
 - fewer teammates already there (lone wolves care a lot, grunts hardly);
 - not a region another squad of the side is heading for.
+
+In team modes a bot on its own still often goes straight for the enemy's
+side as before (a random enemy spawn point: 30 % of picks, plus up to 40 %
+more by aggression; never lone wolves), by its own route: fights keep
+happening and the rest of the picks spread the side over the map.
 
 **Routes.** Each bot then takes its own way there: a waypoint off to the left
 or right of the straight line (35 % each, 30 % straight), from a seeded
@@ -95,8 +110,10 @@ four or more of its side are already within 12 m of, unless it's within
 18 m (`perceive`, one grid query).
 
 **Stuck loops.** Three stuck recoveries within 10 s in the same 4 m: the bot
-gives up the goal (avoided for 20 s), the noise or chase it was after, or the
-vantage spot (avoided for 2 minutes) (`checkStuck`, `stuckLoops`).
+gives up the goal (avoided for 20 s, the squad's too), the noise or chase it
+was after, or the vantage spot (avoided for 2 minutes) (`checkStuck`,
+`stuckLoops`). A bot only being nudged aside by a teammate (no move of its
+own) doesn't count as stuck.
 
 ## Squads (clusters)
 
@@ -113,15 +130,20 @@ director groups each side's free bots into squads once a second
 - the leader is the member with the most team loyalty and tactical sense
   (TACTICAL +20, COWARD −60); the team's leader (rules.leaders) always leads
   its squad; a member more than 60 m from its leader leaves;
-- the squad picks a goal (a region the side hasn't seen lately, toward the
-  enemy, not another squad's; claimed for its duration) and a route (left,
-  straight or right, different between squads), and picks again when the
-  leader is within 12 m of it or after 20–35 s.
+- the squad picks a goal, half the time an enemy spawn point no other squad
+  of the side is heading for, otherwise a region the side hasn't seen lately
+  (toward the enemy, where the side met the enemy, not another squad's;
+  claimed for its duration), and a route (left, straight or right, different
+  between squads); it picks again when the leader is within 12 m of it or
+  after 20–35 s.
 
 Members take the squad's goal and route as their own (`BotBrain`, advance).
-A member more than 28 m from its leader goes to the leader first (regroups);
-one that has got ahead of the leader eases off; the leader slows when
-someone lags. Fights break the squad up naturally (engaging, cover, chase
+A member more than 28 m from its leader goes to the leader first (regroups,
+until back within 15 m); one that has got ahead of the leader eases off; the
+leader slows when someone lags. Squads go single file: a member with a
+teammate within 2.6 m ahead of it waits a moment (doorways and bridges
+jammed otherwise), and members within 8 m of the squad's goal wait there
+for the next one instead of crowding onto the spot. Fights break the squad up naturally (engaging, cover, chase
 are per bot); when the leader is fighting, members within 45 m who aren't
 are told where its enemy is (`alert`) and close in. Squads keep 3.5 m apart
 (grunts 2 m).
@@ -155,20 +177,22 @@ each, 14 m apart. A bot claims a spot while it uses it.
   spawn), holds it crouched, sweeping its sightline, for 18–35 s (tactical
   25–45, arena 10–18), fights from it, doesn't chase anyone who slips away
   unless they're within 10 m, and leaves when the time is up or when
-  flushed (hurt there, or shot at by someone it can't see). Then it roams
+  flushed (hurt there, or shot at by someone it can't see). On the way there
+  it doesn't chase noises or enemies that slipped away (beyond 10 m). Then
+  it roams
   for 45–75 s (tactical 35–65, arena 60–90) before camping again: campers
   are a minority and never camp all match.
 - **Sniper**: the same with sniper spots (within 110 m), only while carrying
-  a scoped gun with rounds; prone with the scope, holds 25–50 s, and moves to
-  another spot (never the same) within a second or so of a kill, 4–10 s
-  later.
+  a scoped gun with rounds; prone with the scope, holds 25–50 s, and leaves
+  its spot within a second or so of a kill (mid-fight too), taking another
+  one (never the same) 4–10 s later.
 - **Lone wolf**: never in a squad; picks far, uncrowded regions, flanks wide.
 - **Squad**: the rest; in squads in big team matches.
 
 Existing tags now each play differently: BERSERKER rushes and never takes
 cover (as before); COWARD gives up a fight at 80 % of its self-preservation
-threshold (others 60 %), backs off shooting when it sees three or more
-enemies, and is never a squad leader; SUPPRESSOR keeps firing where an enemy
+threshold (others 60 %), once hurt backs off shooting when it sees three or
+more enemies, and is never a squad leader; SUPPRESSOR keeps firing where an enemy
 went into cover (as before); GRUNT keeps tight squad spacing and doesn't mind
 crowded regions; EXPLORER weighs unseen regions double; SNIPER and CAMPER
 above.
@@ -189,5 +213,15 @@ above.
 
 Clumped runs put everyone back in the clump when they respawn, so their spawn
 deaths and coverage say nothing about spawning or routes.
+
+**Cost.** All of the above in a 96-bot match is a director update once a
+second per side (a few hundred distance checks), a few comparisons per bot
+think, one extra grid query for big-match hearing and one for single file,
+and region picks (24–40 samples) only when a bot needs a new goal. Vantage
+spots and made-up spawn points are worked out at setup. The same pass made
+the per-tick bot pipeline cheaper to pay for it: every bot view of an actor
+has one object shape and is refilled each tick instead of made anew, the
+movement environment is one reused object, and the near-miss check every
+shot runs against every bot does scalar maths.
 
 Numbers: PERF_96.md, "Bot behaviour pass".
