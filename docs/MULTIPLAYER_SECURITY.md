@@ -45,16 +45,19 @@ loopback.
 - **Method:** coturn `use-auth-secret` (the "TURN REST API" scheme). The hub
   holds the shared secret and mints credentials: username
   `"<unix-expiry>:<id>"`, password `base64(HMAC-SHA1(secret, username))`
-  (`packages/server/src/ice.ts:29-33`). coturn recomputes the HMAC and
-  refuses expired usernames. No user database on the relay.
-- **Lifetime:** `ICE_TTL=3600` (1 h; the code's default is 6 h and its floor
-  10 min, `ice.ts:43`). An ICE session only needs the credential while
+  (`packages/server/src/ice.ts`, `coturnCredentials`). coturn recomputes the
+  HMAC and refuses expired usernames. No user database on the relay.
+  **Done:** the username is `<expiry>:s_<CODE>.<host|p_xxxxxxxx>`, one per
+  game and peer, so coturn's logs attribute relay use to a game.
+- **Lifetime:** `ICE_TTL=3600` (1 h, now also the code's default; floor
+  10 min). Browser hosts renew at half life. An ICE session only needs the credential while
   allocating and refreshing; established relays outlive it until
   `max-allocate-lifetime` (1 h) and must refresh with a fresh credential.
-- **Issued to whom:** today any caller of `GET /lobby/ice`, 12 a minute per
-  address (`lobby.ts:90-98`). **To change** (protocol section 8): only with a
-  valid join ticket or host session; username `<expiry>:<sessionId>.<playerId>`
-  so usage in coturn's logs maps to a session; at most 3 credentials per
+- **Issued to whom:** `GET /lobby/ice?session=<CODE>&role=host|guest`, only
+  for a game that is live on the hub's broker (or listed): 12 a minute per
+  address and 30 per game (then 1 a minute). Without a session the hub
+  answers STUN only. **Still to do** (protocol section 8): require a join
+  ticket or host token instead of a live code; at most 3 credentials per
   ticket.
 - **Bounds (coturn):** `total-quota=40`, `user-quota=8` allocations per
   credential, `max-bps=48000` per session, `bps-capacity=2000000` for the
@@ -76,7 +79,7 @@ loopback.
 |---|---|---|---|
 | TURN shared secret | SSM SecureString `/toshiro/trigger/turn-secret` (standard tier, `aws/ssm` KMS key: free) | deploy script (owner's AWS credentials in CloudShell) → `/etc/tiletrigger.env` (root:tiletrigger 0640) and `/etc/turnserver.conf` (root:turnserver 0640) | `aws ssm put-parameter --name /toshiro/trigger/turn-secret --type SecureString --overwrite --value "$(openssl rand -hex 32)"`, then re-run the deploy. Relayed sessions reconnect with new credentials. |
 | Hub signing secret (join tickets, host session tokens, pairing codes) | SSM `/toshiro/trigger/hub-signing-secret` | same path → `HUB_SIGNING_SECRET` in the hub env | Rotate the same way; support two keys (`kid`) in the hub so tokens signed with the old one stay valid for their (short) life. |
-| Cognito app client ID, pool ID, domain | template parameters (not secret; public client, no client secret) | hub env `COGNITO_*` | — |
+| Cognito app client ID, pool ID, domain | template parameters (not secret; public client `2lrej6nsacfag8a7taeu3u6sc2`, no client secret; also the default compiled into the client, `VITE_COGNITO_CLIENT_ID`) | hub env `COGNITO_*` | — |
 | Admin token for a dedicated server | that server's own env (`ADMIN_TOKEN`) | the server | Owner's choice; constant-time compare already (`server.ts:153-155`). |
 | Host Service device keys | generated on the user's machine, private key never leaves it (section 6) | Host Service | Re-pair. |
 | Release signing key (Host Service updates) | offline / CI secret, never on the hub (section 7) | release CI | Key rollover via a signed key-transition manifest. |
@@ -105,7 +108,13 @@ Three kinds of caller, three credentials (formats in MULTIPLAYER_PROTOCOL.md):
    `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_VdMsuDJ59/.well-known/jwks.json`,
    cached; check `iss`, `aud`/`client_id`, `token_use`, `exp`) once when the
    WebSocket opens, then issues its own short session (15 min, renewed while
-   connected). Needed for: pairing a Host Service, managing persistent hosts,
+   connected). **Done:** the client's sign-in (`client/src/account.ts`:
+   `/auth/callback`, tokens in sessionStorage, no refresh token kept,
+   sign-out through `/logout`) and the hub's verification
+   (`server/src/auth.ts`, `GET /api/v1/me`: RS256 against the cached JWKS,
+   `iss`, `aud` for ID tokens / `client_id` for access tokens, `token_use`,
+   `exp`, `iat` not in the future; 10 failures a minute per address → 15 min
+   block). The hub session token comes with the session socket. Needed for: pairing a Host Service, managing persistent hosts,
    private games for friends, later moderation.
 3. **Hosts**: browser hosts get a `hostToken` when they register a session
    (HMAC-signed by the hub signing secret, scoped to that session ID, 2 h,
@@ -186,7 +195,18 @@ deployment (HTTPS from our box), not this pipeline.
 ## 8. Hub defensive limits (summary)
 
 Per-message sizes and rates are in MULTIPLAYER_PROTOCOL.md (section 2 and
-each message). Infra already gives: TLS only (Caddy, HSTS), request bodies
+each message). Implemented in the hub (MULTIPLAYER_REVIEW.md section 0 has
+the numbers): per-address limits on every `/lobby` route and `/api/v1/me`;
+JSON bodies only, ≤ 4 KB, schema-checked; constant-time listing secrets;
+listings hidden after 30 s without a heartbeat and removed at 65 s; the
+PeerJS broker behind our own HTTP server with per-address socket and connect
+caps, a per-socket message budget, an OFFER (join) limit per address against
+join-code guessing and 16 KB frames; client addresses from
+`X-Forwarded-For` only when `TRUST_PROXY=1` and the request came from
+loopback (Caddy), last entry only (`server/src/clientIp.ts`). Game hosts
+(browser host and dedicated server) give each connection a message budget
+(100/s, burst 200; sustained abuse disconnects) and cap message reassembly
+and decompression. Infra already gives: TLS only (Caddy, HSTS), request bodies
 ≤ 1 MB at Caddy and 4 KB in `/lobby` (`lobby.ts:88`), the hub sandboxed by
 systemd (`NoNewPrivileges`, `ProtectSystem=full`, `PrivateTmp`,
 `MemoryMax=768M`), restarts with backoff, journald capped at 300 MB / 14
