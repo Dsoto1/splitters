@@ -101,6 +101,25 @@ describe('squads (clusters)', () => {
     expect(d.squads('blue').length).toBe(0);
     expect(d.planFor(leader).cluster).toBeNull();
   });
+  it('play the tags: a coward never leads, the team leader always does, grunts keep tight spacing', () => {
+    const places = grid();
+    const d = new BotDirector(5, regionLayout(places), places);
+    const coward = CORE_BOT_PROFILES.find((p) => p.tags.includes('COWARD'))!;
+    const grunt: BotProfile = { ...CORE_BOT_PROFILES[3]!, tags: ['GRUNT'] };
+    // Squad A: a coward with the best loyalty and tactics of the group still doesn't lead.
+    const a = Array.from({ length: 4 }, (_, i) => member(i, { x: 10 + i * 2, y: 0, z: 10 }, i === 0 ? { profile: { ...coward, teamLoyalty: 100, tacticalAwareness: 100 } } : {}));
+    // Squad B: all grunts, one the team's leader (with the worst numbers).
+    const b = Array.from({ length: 4 }, (_, i) => member(10 + i, { x: 120 + i * 2, y: 0, z: 120 }, { profile: i === 3 ? { ...grunt, teamLoyalty: 0, tacticalAwareness: 0 } : grunt, teamLeader: i === 3 }));
+    const all = [...a, ...b];
+    d.update(TICK_RATE, 'red', all.map((m) => m.pos), all, null, true, () => {});
+    const squads = d.squads('red');
+    const sa = squads.find((s) => s.members.includes(0))!;
+    const sb = squads.find((s) => s.members.includes(13))!;
+    expect(sa.leader).not.toBe(0);
+    expect(sb.leader).toBe(13);
+    expect(d.planFor(13).cluster?.spacing).toBe(2);
+    expect(d.planFor(1).cluster?.spacing).toBe(3.5);
+  });
 });
 
 describe('route variety', () => {

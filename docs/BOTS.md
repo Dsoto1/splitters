@@ -128,7 +128,7 @@ director groups each side's free bots into squads once a second
   free bots within 25 m into a new one; 4–6 a squad by the side's size; a
   squad of one breaks up;
 - the leader is the member with the most team loyalty and tactical sense
-  (TACTICAL +20, COWARD −60); the team's leader (rules.leaders) always leads
+  (TACTICAL +20; a COWARD leads only a squad of cowards); the team's leader (rules.leaders) always leads
   its squad; a member more than 60 m from its leader leaves;
 - the squad picks a goal, half the time an enemy spawn point no other squad
   of the side is heading for, otherwise a region the side hasn't seen lately

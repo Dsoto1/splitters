@@ -296,4 +296,5 @@ export class BotDirector {
   }
 }
 
-const leadScore = (m: DirectorMember): number => (m.teamLeader ? 1000 : 0) + m.profile.teamLoyalty + m.profile.tacticalAwareness + (hasTag(m.profile, 'TACTICAL') ? 20 : 0) - (hasTag(m.profile, 'COWARD') ? 60 : 0);
+/** Who leads a squad: the team's leader always; a coward only when nobody else is in it. */
+const leadScore = (m: DirectorMember): number => (m.teamLeader ? 1000 : 0) + m.profile.teamLoyalty + m.profile.tacticalAwareness + (hasTag(m.profile, 'TACTICAL') ? 20 : 0) - (hasTag(m.profile, 'COWARD') ? 500 : 0);

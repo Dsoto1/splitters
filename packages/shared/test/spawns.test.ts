@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, DEFAULT_RULES, PLAYER, TICK_RATE, createRng, horizontalDistance, initPhysics, loadMap, rulesForMode, type MapDocument, type Vec3 } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 import { SPAWN_RECENT_TICKS, WAVE_MIN_PLAYERS, distinctSpots, generateSpawns, pickSpawn, spawnScore, spawnShortfall, spawnsPerTick, type SpawnSpot } from '../src/sim/spawns.ts';
+import { validateMap } from '../src/map/validate.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -134,5 +135,27 @@ describe('made-up spawn points', () => {
     m.destroy();
     // Direct: a count of zero, or no places, makes nothing.
     expect(generateSpawns({ places: [], existing: [], side: null, count: 4, seed: 1, faceTo: { x: 0, y: 0, z: 0 }, valid: () => true, reachable: () => true })).toEqual([]);
+  });
+
+  it("MapMaker's validator warns when a team has too few spawn points of its own", () => {
+    const tiles = [{ id: 'y0', tile: 'core.yard', x: 0, y: 0, z: 0, rotation: 0 as const }];
+    // 24 players, two teams: a point per 3 players a side wants 4 each.
+    const teamMap = (red: number, blue: number): MapDocument => {
+      const map = makeMap(tiles, []);
+      map.metadata.recommendedPlayers = { min: 2, max: 24 };
+      map.entities = [
+        ...Array.from({ length: red }, (_, i) => ({ id: `r${i}`, kind: 'spawn' as const, position: [i, 0, 0] as [number, number, number], yaw: 0, faction: 'red' })),
+        ...Array.from({ length: blue }, (_, i) => ({ id: `b${i}`, kind: 'spawn' as const, position: [i, 0, 6] as [number, number, number], yaw: 0, faction: 'blue' })),
+      ];
+      return map;
+    };
+    const few = (map: MapDocument) => validateMap(map).filter((i) => i.code === 'spawn.few');
+    // Enough points overall (24), but blue has only 2 of its own.
+    const short = few(teamMap(22, 2));
+    expect(short.length).toBe(1);
+    expect(short[0]!.severity).toBe('warning');
+    expect(short[0]!.message).toMatch(/^blue has fewer than 4 spawn points/);
+    expect(short[0]!.message).toContain('add spawn points of their own');
+    expect(few(teamMap(12, 12))).toEqual([]);
   });
 });
