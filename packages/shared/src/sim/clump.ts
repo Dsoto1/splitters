@@ -19,10 +19,12 @@ export interface ClumpArea {
 export function clumpArea(match: Match, radius = 20): ClumpArea {
   const teams = [...new Set(match.combatants().map((c) => c.faction ?? ''))];
   const centroid = (pts: readonly Vec3[]): Vec3 => ({ x: pts.reduce((s, p) => s + p.x, 0) / pts.length, y: pts.reduce((s, p) => s + p.y, 0) / pts.length, z: pts.reduce((s, p) => s + p.z, 0) / pts.length });
-  const all = match.spawnPoints.map((s) => s.pos);
+  // The map's own spawn points (not ones a big match made up), so the clump is in the same place whatever the match size.
+  const own = match.spawnPoints.filter((s) => !s.generated);
+  const all = own.map((s) => s.pos);
   const mid = centroid(all);
-  const a = centroid(match.spawnPoints.filter((s) => s.team === teams[0]).map((s) => s.pos).concat(all.length ? [] : [mid]));
-  const b = centroid(match.spawnPoints.filter((s) => s.team === teams[1]).map((s) => s.pos).concat(all.length ? [] : [mid]));
+  const a = centroid(own.filter((s) => s.team === teams[0]).map((s) => s.pos).concat(all.length ? [] : [mid]));
+  const b = centroid(own.filter((s) => s.team === teams[1]).map((s) => s.pos).concat(all.length ? [] : [mid]));
   let ax = b.x - a.x;
   let az = b.z - a.z;
   const al = Math.hypot(ax, az);

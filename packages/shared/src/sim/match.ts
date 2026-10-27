@@ -45,7 +45,7 @@ import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STRE
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
 import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
-  padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveState, type PlayerInput } from './movement.ts';
+  padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
@@ -383,7 +383,9 @@ interface PickupState {
 
 const r3 = (v: number): number => Math.round(v * 1000) / 1000;
 const tuple = (v: Vec3): Tuple3 => [r3(v.x), r3(v.y), r3(v.z)];
-const chest = (p: Vec3): Vec3 => ({ x: p.x, y: p.y + PLAYER.height * 0.55, z: p.z });
+/** Chest height above the feet (m). */
+const CHEST = PLAYER.height * 0.55;
+const chest = (p: Vec3): Vec3 => ({ x: p.x, y: p.y + CHEST, z: p.z });
 
 export const heldWeapon = (c: Combatant): WeaponState => c.weapons.get(c.current)!;
 
@@ -457,6 +459,8 @@ export class Match {
    * bots in for players with it; see relaxedMove).
    */
   readonly watchers = new Set<number>();
+  /** The movement environment handed to stepMovement, refilled per actor (applyInputs). */
+  private readonly moveEnv: MoveEnv = { liquids: undefined, jet: false, ladders: undefined, scale: 1, gravity: 1, gravityZones: undefined, airJumps: undefined, jetpack: undefined, glider: undefined, autoChute: undefined, ground: undefined };
   /** Where the people (and watchers) are this tick, in big matches only (relaxedMove). */
   private watched: Vec3[] | null = null;
   /** The terrain's height, for coarse moves (relaxedMove), on maps with terrain. */
@@ -1402,7 +1406,14 @@ export class Match {
   private runBots(): void {
     const t0 = performance.now();
     const actors = this.actors();
-    const views = new Map(actors.map((c) => [c.slot, toView(c, this.concealed(c))]));
+    // Actors as bots see them: one view object per actor, refilled every tick (no 96 new objects a tick).
+    const views = this.views;
+    if (views.size > actors.length * 2 + 16) views.clear();
+    for (const c of actors) {
+      const v = views.get(c.slot);
+      if (v) fillView(v, c, this.concealed(c));
+      else views.set(c.slot, toView(c, this.concealed(c)));
+    }
     const spearItem = getItem('core.weapon_spear');
     const lyingSpears: PickupView[] = spearItem ? this.projectiles.filter((p) => p.stuck && p.spec.retrievable).map((p) => ({ id: `spear_${p.id}`, item: spearItem, pos: p.pos, available: true })) : [];
     const pickups: PickupView[] = [...lyingSpears, ...this.pickups.filter((p) => !restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
@@ -1589,6 +1600,8 @@ export class Match {
     this.lastAiMs = performance.now() - t0;
   }
 
+  /** Bots' views of the actors, by actor ID, refilled each tick (runBots). */
+  private readonly views = new Map<number, CombatantView>();
   /** Each bot's last thought-out (or steered) input and its tick (only kept in big matches, see coastBot). */
   private readonly botThought = new Map<number, { input: PlayerInput; tick: number }>();
   /** Bots whose think the budget put off last tick: they think first this tick. */
@@ -1736,7 +1749,7 @@ export class Match {
       if (!spec || !m.alive || m.builtBy === c.slot) continue;
       if (m.faction !== null && relation(this.factions, m.faction, c.faction) !== 'enemy') continue;
       if (horizontalDistance(m.pos, c.move.pos) > spec.range + 10) continue;
-      out.push({ slot: SENTRY_VIEW_BASE + m.index, pos: m.pos, yaw: m.aimYaw, pitch: 0, health: Math.max(0, m.health), armor: 0, alive: true, stance: 2, grounded: true, object: true });
+      out.push({ slot: SENTRY_VIEW_BASE + m.index, pos: m.pos, yaw: m.aimYaw, pitch: 0, health: Math.max(0, m.health), armor: 0, alive: true, stance: 2, human: false, mounted: false, grounded: true, object: true, concealed: false });
     }
     return out;
   }
@@ -1774,6 +1787,7 @@ export class Match {
    */
   private noteCombat(events: readonly GameEvent[]): void {
     this.noises = this.noises.filter((n) => this.tick - n.tick < TICK_RATE);
+    let actors: Combatant[] | undefined;
     for (const ev of events) {
       if (ev.e === 'explode') this.noises.push({ pos: { x: ev.p[0], y: ev.p[1], z: ev.p[2] }, tick: this.tick, by: ev.s, range: 60 });
       if (ev.e === 'impact') {
@@ -1781,7 +1795,7 @@ export class Match {
         const shooter = this.actor(ev.s);
         const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
         const to = { x: ev.to[0], y: ev.to[1], z: ev.to[2] };
-        if (shooter) for (const c of this.actors()) if (c.bot && c.alive && this.hostile(shooter, c) && (ev.hit === c.slot || segmentDistance(chest(c.move.pos), from, to) < 1.6)) c.shotAt = { tick: this.tick, from };
+        if (shooter) for (const c of (actors ??= this.actors())) if (c.bot && c.alive && this.hostile(shooter, c) && (ev.hit === c.slot || segmentDistance(c.move.pos, from, to, CHEST) < 1.6)) c.shotAt = { tick: this.tick, from };
         continue;
       }
       if (ev.e !== 'shot' || ev.s < 0) continue;
@@ -1792,9 +1806,9 @@ export class Match {
       const end = ev.to[0];
       if (!shooter || !end) continue;
       const to = { x: end[0], y: end[1], z: end[2] };
-      for (const c of this.actors()) {
+      for (const c of (actors ??= this.actors())) {
         if (!c.bot || !c.alive || !this.hostile(shooter, c)) continue;
-        if (ev.hit.includes(c.slot) || segmentDistance(chest(c.move.pos), from, to) < 1.6) c.shotAt = { tick: this.tick, from };
+        if (ev.hit.includes(c.slot) || segmentDistance(c.move.pos, from, to, CHEST) < 1.6) c.shotAt = { tick: this.tick, from };
       }
     }
     if (this.noises.length > 48) this.noises.splice(0, this.noises.length - 48);
@@ -1994,7 +2008,20 @@ export class Match {
         else {
           const dt = c.moveOwed ? TICK_DT * 2 : TICK_DT;
           c.moveOwed = false;
-          const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), { liquids: this.liquids, jet: c.jetFuel !== null && c.jetFuel >= JET.burn, ladders: this.ladders, scale: c.size, gravity: this.phys.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(c.cls ? { airJumps: this.classes?.airJumps(c) ?? 0 } : {}), ...(c.jetFuel !== null ? { jetpack: true } : {}), ...(c.glider ? { glider: true } : {}), ...(c.kind !== 'human' ? { autoChute: true } : {}), ...(detail !== 'full' && this.groundAt ? { ground: this.groundAt } : {}) });
+          // One movement environment object, refilled per actor (no objects made per move; one shape for stepMovement to read).
+          const env = this.moveEnv;
+          env.liquids = this.liquids;
+          env.jet = c.jetFuel !== null && c.jetFuel >= JET.burn;
+          env.ladders = this.ladders;
+          env.scale = c.size;
+          env.gravity = this.phys.gravity;
+          env.gravityZones = this.gravityZones.length ? this.gravityZones : undefined;
+          env.airJumps = c.cls ? (this.classes?.airJumps(c) ?? 0) : undefined;
+          env.jetpack = c.jetFuel !== null ? true : undefined;
+          env.glider = c.glider ? true : undefined;
+          env.autoChute = c.kind !== 'human' ? true : undefined;
+          env.ground = detail !== 'full' && this.groundAt ? this.groundAt : undefined;
+          const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), env);
           c.move = applyPads(this.pads, stepped);
           // Into a portal: out of its partner, turned by the difference in their facings (as client prediction does).
           const through = this.scenario.portals.length ? applyPortals(this.scenario.portals, before, c.move, this.scenario.portalOn, c.size, bodyHeightOf(c.move, c.size)) : null;
@@ -4126,6 +4153,8 @@ export class Match {
     c.alive = false;
     c.respawnTick = this.tick;
     this.loadout(c);
+    // Made-up spawn points now, while the match is being set up, not in its first tick.
+    this.ensureSpawnCapacity();
   }
 
   /** Spawn everyone due: people at once, bots a few a tick in big matches (spawnsPerTick), longest-waiting first. */
@@ -4475,23 +4504,44 @@ export class Match {
   }
 }
 
+/**
+ * An actor as bots see it. Every view has every field (one object shape):
+ * perception reads dozens of them a look, and views of mixed shapes made those
+ * reads polymorphic.
+ */
 function toView(c: Combatant, concealed = false): CombatantView {
-  const v: CombatantView = { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive };
-  if (concealed) v.concealed = true;
-  const stance = stanceOf(c.move);
-  if (stance) v.stance = stance;
-  if (c.kind === 'human') v.human = true;
-  if (c.mount) v.mounted = true;
-  if (c.move.grounded) v.grounded = true;
-  return v;
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed };
+}
+
+/** Refill a view made by toView for this tick. */
+function fillView(v: CombatantView, c: Combatant, concealed: boolean): void {
+  v.slot = c.slot;
+  v.pos = c.move.pos;
+  v.yaw = c.yaw;
+  v.pitch = c.pitch;
+  v.health = c.health;
+  v.armor = c.armor;
+  v.alive = c.alive;
+  v.stance = stanceOf(c.move);
+  v.human = c.kind === 'human';
+  v.mounted = !!c.mount;
+  v.grounded = c.move.grounded;
+  v.concealed = concealed;
 }
 
 /** Distance from point p to the segment a-b. */
-function segmentDistance(p: Vec3, a: Vec3, b: Vec3): number {
-  const ab = sub(b, a);
-  const len2 = dot(ab, ab);
-  const t = len2 > 1e-9 ? Math.max(0, Math.min(1, dot(sub(p, a), ab) / len2)) : 0;
-  return distance(p, add(a, scale(ab, t)));
+function segmentDistance(p: Vec3, a: Vec3, b: Vec3, lift = 0): number {
+  // Scalar maths (the same numbers as the vector version, no objects: noteCombat calls this for every bot on every shot).
+  const abx = b.x - a.x;
+  const aby = b.y - a.y;
+  const abz = b.z - a.z;
+  const py = p.y + lift;
+  const len2 = abx * abx + aby * aby + abz * abz;
+  const t = len2 > 1e-9 ? Math.max(0, Math.min(1, ((p.x - a.x) * abx + (py - a.y) * aby + (p.z - a.z) * abz) / len2)) : 0;
+  const dx = p.x - (a.x + abx * t);
+  const dy = py - (a.y + aby * t);
+  const dz = p.z - (a.z + abz * t);
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 const BOT_NAMES = ['Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash', 'Nub', 'Quill'];

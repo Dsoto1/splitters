@@ -420,11 +420,6 @@ export class BotBrain {
     if (p?.kind === 'sniper' && p.arrived >= 0) p.until = Math.min(p.until, tick + Math.round(TICK_RATE * (0.6 + this.routeRng() * 0.8)));
   }
 
-  /** The role the match gave it (director.ts), 'squad' without one. */
-  role(view: Pick<BotWorldView, 'plan'>): string {
-    return view.plan?.role ?? 'squad';
-  }
-
   /** Holding (or heading for) a vantage spot: its kind and position (debug and tests). */
   get vantage(): { kind: VantageKind; pos: Vec3; arrived: boolean } | null {
     const p = this.post;
@@ -657,12 +652,13 @@ export class BotBrain {
     const tick = view.tick;
     const hurt = this.hurt(view);
     const underFire = tick - this.underFireTick < TICK_RATE * 1.5 || tick - this.hurtTick < TICK_RATE * 1.5;
-    // Flushed off a vantage spot: hurt there, or shot at by someone it can't see.
+    // Flushed off a vantage spot: hurt there, or shot at by someone it can't see. Or its time there is up (mid-fight too:
+    // a sniper moves on after a kill).
     const post = this.post;
-    if (post && post.arrived >= 0 && (this.hurtTick > post.arrived || (underFire && !target))) this.leavePost(tick, this.postCooldown(post.kind));
-    // Holding a spot: an enemy who slipped out of view isn't worth leaving it for, unless close.
+    if (post && ((post.arrived >= 0 && (this.hurtTick > post.arrived || (underFire && !target))) || tick >= post.until)) this.leavePost(tick, this.postCooldown(post.kind));
+    // Holding a spot (or on the way to one): an enemy who slipped out of view, or a noise, isn't worth leaving it for, unless close.
     const holding = this.posted(me.pos);
-    const stayPut = (p: Vec3) => holding && horizontalDistance(me.pos, p) > 10;
+    const stayPut = (p: Vec3) => !!this.post && horizontalDistance(me.pos, p) > 10;
 
     // A lift from a teammate is worth taking even when hurt or with someone about.
     if (this.mountPlan && (this.mountPlan.ride || (!hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)))) this.state = 'mount';

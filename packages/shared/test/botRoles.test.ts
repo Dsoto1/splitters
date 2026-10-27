@@ -219,6 +219,41 @@ describe('role behaviour in a match', () => {
     expect(longest).toBeLessThan(80);
     expect(wolvesInSquads.size).toBe(0);
   }, 120_000);
+
+  it('snipers with a scope hold long sightlines and move to another spot soon after a kill', () => {
+    const r = loadMap(readFileSync(new URL('../../../maps/riot_junction.json', import.meta.url), 'utf8'));
+    if (!r.ok) throw new Error('map');
+    const rules = rulesForMode(r.map, 'core.tdm');
+    const match = new Match(r.map, { ...rules, scoreLimit: 0, timeLimitSeconds: 0, teamSizes: [16, 16], startingWeapons: [...rules.startingWeapons, 'core.sniper'] }, 4);
+    for (let i = 0; i < 32; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % 4 === 1 ? 1 : (i % 2) * 3]!, BOT_DIFFICULTIES.normal);
+    const director = (match as unknown as { director: BotDirector }).director;
+    const snipers = match.combatants().filter((c) => director.planFor(c.slot).role === 'sniper');
+    expect(snipers.length).toBeGreaterThan(0);
+    let posted = 0;
+    const kills: { slot: number; at: Vec3; tick: number }[] = [];
+    let moved = 0;
+    for (let t = 0; t < TICK_RATE * 120; t++) {
+      const events = match.step();
+      for (const e of events) {
+        if (e.e !== 'kill' || e.killer === null) continue;
+        const k = match.actor(e.killer);
+        const v = k?.bot?.vantage;
+        if (v?.arrived && v.kind === 'sniper') kills.push({ slot: e.killer, at: { ...v.pos }, tick: match.tick });
+      }
+      for (const c of snipers) if (c.alive && c.bot!.vantage?.arrived && c.bot!.vantage.kind === 'sniper') posted++;
+      // Two and a half seconds after a kill from a spot, the sniper is off it (or dead).
+      for (const k of kills) {
+        if (match.tick !== k.tick + Math.round(TICK_RATE * 2.5)) continue;
+        const c = match.actor(k.slot)!;
+        const v = c.bot!.vantage;
+        if (!c.alive || !v || horizontalDistance(v.pos, k.at) > 1) moved++;
+      }
+    }
+    match.destroy();
+    expect(posted).toBeGreaterThan(TICK_RATE * 10);
+    const due = kills.filter((k) => k.tick + TICK_RATE * 2.5 < TICK_RATE * 120).length;
+    expect(moved).toBe(due);
+  }, 180_000);
 });
 
 void createRng;

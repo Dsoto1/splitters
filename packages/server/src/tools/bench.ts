@@ -218,6 +218,7 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   let idleSamples = 0;
   let idleChecks = 0;
   const stuckBefore = match.combatants().reduce((s, c) => s + (c.bot?.stuckCount ?? 0), 0);
+  const loopsBefore = match.combatants().reduce((s, c) => s + ((c.bot as { stuckLoops?: number } | undefined)?.stuckLoops ?? 0), 0);
   simProfile.reset();
   simProfile.on = true;
   const start = performance.now();
@@ -288,6 +289,7 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   const avg = (a: number[]) => a.reduce((s, v) => s + v, 0) / a.length;
   const budget = 1000 / TICK_RATE;
   const stuck = match.combatants().reduce((s, c) => s + (c.bot?.stuckCount ?? 0), 0) - stuckBefore;
+  const loops = match.combatants().reduce((s, c) => s + ((c.bot as { stuckLoops?: number } | undefined)?.stuckLoops ?? 0), 0) - loopsBefore;
   const per = (k: string) => (simProfile.ms.get(k) ?? 0) / ticks;
   const n = (k: string) => simProfile.n.get(k) ?? 0;
   const idlePct = idleChecks ? (idleSamples / idleChecks) * 100 : 0;
@@ -310,7 +312,7 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   console.log(`CPU per tick avg ${(cpuMs / ticks).toFixed(3)} p95 ${cpuP95.toFixed(3)} | breakdown (CPU-scaled, x${k.toFixed(2)}): bot think ${c2(think)} [setup ${c2(think - per('botThink'))}, perception ${c2(per('botPerceive'))} (${(n('botPerceive') / ticks).toFixed(1)}/tick), ${(n('botThink') / ticks).toFixed(0)} bots a tick (${(n('botSteer') / ticks).toFixed(0)} only steering, ${(n('botDeferred') / ticks).toFixed(1)} put off by the think budget), decisions ${c2(per('botDecide'))}, paths ${c2(per('botPath'))} (nav ${c2(per('nav'))}), aim ${c2(per('botAim'))}; LOS rays ${c2(per('los'))}] | movement ${c2(movement)} | combat ${c2(combat)} (firing ${c2(fire)}, ${(n('fire') / ticks).toFixed(1)} shots/tick) | rest ${c2(rest)}`);
   console.log(`nav: ${n('nav')} path queries (${(n('nav') / seconds).toFixed(0)}/s), ${n('navFail')} failed | line-of-sight rays ${(n('los') / ticks).toFixed(0)}/tick (+ ${(n('losShared') / ticks).toFixed(0)}/tick answered from the shared sight cache)`);
   console.log(`accuracy (rounds that hit / fired): ${[...aim].sort(([a], [b]) => SKILLS.indexOf(a as never) - SKILLS.indexOf(b as never)).map(([k, a]) => `${k} ${((a.hits / Math.max(1, a.rounds)) * 100).toFixed(1)}% of ${a.rounds}`).join(' | ')}`);
-  console.log(`kills ${kills} | bot stuck recoveries ${stuck} | idle (moved < 2 m in 5 s) ${idlePct.toFixed(1)}% of samples, ${idleNow} at the end`);
+  console.log(`kills ${kills} | bot stuck recoveries ${stuck} (goals given up after getting stuck in a loop: ${loops}) | idle (moved < 2 m in 5 s) ${idlePct.toFixed(1)}% of samples, ${idleNow} at the end`);
   console.log(behaviour.report(match, seconds, kills));
   behaviourRows.push(behaviour.row(map.metadata.id, clump, seconds, kills, stuck));
   if (mode) {
