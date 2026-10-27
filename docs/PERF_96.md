@@ -288,12 +288,52 @@ stepped):
 ratio is the point. In SwiftShader's 1–4 fps frames every character is due
 every frame, so the LOD can't show in frame times here.)
 
+`perf96.mjs` (the player's own view, so how many characters are in view
+varies a lot run to run; worker sim, Medium, box load 1–10):
+
+| Map, scenario | Build | Draws | Active meshes | Triangles | Skinned (characters in view) | Draws per character in view |
+|---|---|---|---|---|---|---|
+| Norman Shores, clumped | before | 1,443 | 1,352 | 3.22 M | 101 (26) | 56 |
+| | after | 1,835 | 2,701 | 4.09 M | 236 (81) | **23** |
+| Norman Shores, spread | before | 3,071 | 4,324 | 4.38 M | 338 (79) | 39 |
+| | after | 2,183 | 3,969 | 4.56 M | 236 (84) | **26** |
+| Frost Basin, clumped | before | 347 | 496 | 0.53 M | 116 (30) | 12 |
+| | after | 229 | 471 | 0.64 M | 98 (43) | **5** |
+| Frost Basin, spread | before | 614 | 1,309 | 0.78 M | 179 (56) | 11 |
+| | after | 388 | 904 | 0.51 M | 56 (38) | **10** |
+
+`PERF_MAX_DRAWS=2000` passes on both maps after (the clumped Norman Shores
+frame with 81 characters in view draws 1,835); before, the same view with
+three times the characters showed 2,400–2,800 (first pass's table above and
+the probe's). Use 2,000 as the budget for Medium on Norman Shores, 400 on
+Frost Basin.
+
 Quality: the character viewer's close-ups before and after differ by
 0.3–1.1 / 255 per pixel on average (idle-pose timing; 3.5 where a creature's
 clip was mid-swing); Norman Shores from fixed cameras with the map's
 destructibles, props and plants in view by 0.01–0.41 / 255, no pixel off by
 more than 24 in 0.01 %. Close and mid shots of a 96-player crowd look the
 same.
+
+Left for later:
+
+- **The ground-mist depth pass** re-renders the whole view (a third of a
+  misty map's draws). Sharing the main pass's depth (a depth texture on the
+  post-process input) needs the view model's depth clear (rendering group 1)
+  moved or the depth copied before it; or the mist could move into the
+  materials.
+- **Props**: merging per material cut the scene's meshes but not their draws
+  much (Kenney models are a material per colour); a per-kit palette atlas
+  (one material per kit) would make most props one draw per model.
+- Character outfits stay a draw of their own (dyed per look; a per-look
+  atlas would cost a texture per look).
+- Materials are not frozen (`material.freeze()`): their checks are cheap when
+  nothing changed, and freezing breaks when lights or shadows change.
+- A pre-existing hang, seen with and without this pass: sometimes, while a
+  96-player offline match on Norman Shores is still in its warm-up, the page
+  stops inside Rapier's `PhysicsPipeline.step` (ScenarioState.apply →
+  PhysicsWorld.commit on a message from the sim worker) and never returns.
+  `perf96.mjs` then waits forever; a rerun usually gets through.
 
 ## Not covered
 
