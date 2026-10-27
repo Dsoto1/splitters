@@ -46,6 +46,38 @@ function storage(key: string, value?: string): string | null {
 
 type Mode = 'menu' | 'editor' | 'game' | 'designer';
 
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+/** `p`, or nothing after `ms`: waits that must never hold the app back for long. */
+const capped = (p: Promise<unknown>, ms: number): Promise<unknown> => Promise.race([p.catch(() => undefined), wait(ms)]);
+
+/**
+ * The UI fonts, fetched alongside the engine so the first menu draws in them
+ * rather than in a fallback that then swaps and shifts every line (capped:
+ * a slow font never holds the menu back for long).
+ */
+function loadFonts(): Promise<unknown> {
+  const faces = ['italic 700 16px "Chakra Petch"', '700 16px "Chakra Petch"', '600 16px "Chakra Petch"', '500 16px "Chakra Petch"', '400 16px Barlow', '500 16px Barlow', '600 16px Barlow'];
+  return capped(Promise.all(faces.map((f) => document.fonts?.load(f))), 1500);
+}
+
+/**
+ * Hide the 3D view until its scene can draw everything it has (shaders
+ * compiled, textures in, the menu's hero standing there), then fade it in:
+ * no half-built frames, grey before the sky or pop-in on a first visit. The
+ * page behind is the menu's own colour. Callers cap `ready`, so this never adds a wait of its own.
+ */
+let revealing = 0;
+function revealWhenReady(ready: Promise<unknown>): void {
+  const token = ++revealing;
+  const view = $('view');
+  view.classList.add('veiled');
+  void ready.catch(() => undefined).then(() => {
+    if (token !== revealing) return;
+    // One more frame drawn with everything in, then fade.
+    requestAnimationFrame(() => requestAnimationFrame(() => token === revealing && view.classList.remove('veiled')));
+  });
+}
+
 const OFFLINE_MAPS = { arena: arenaJson, vault: vaultJson, outpost: outpostJson, sandgate: sandgateJson, citadel: citadelJson, canyon: canyonJson } as const;
 type OfflineMap = keyof typeof OFFLINE_MAPS;
 /** Every map file shipped in maps/ (loaded up front; they are small). */
@@ -126,7 +158,7 @@ class App {
   init(): Promise<void> {
     this.ready ??= (async () => {
       // Physics is needed by every session for client prediction, online or local.
-      const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), initPhysics()]);
+      const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), initPhysics(), loadFonts()]);
       this.engine = created.engine;
       this.applyRenderScale();
       window.addEventListener('tiletrigger:render-scale', () => this.applyRenderScale());
@@ -177,6 +209,8 @@ class App {
   }
 
   async showMenu(status = ''): Promise<void> {
+    // Only the first visit has anything to wait for: coming back, the menu scene is already loaded.
+    if (!this.ready) revealWhenReady(this.init().then(() => capped(this.menuScene!.ready(), 2500)));
     await this.init();
     this.mode = 'menu';
     this.editor?.hide();
@@ -197,6 +231,7 @@ class App {
 
   async openEditor(): Promise<void> {
     await this.init();
+    const first = !this.editor;
     this.editor ??= new EditorApp({
       engine: this.engine,
       canvas: this.canvas,
@@ -208,6 +243,8 @@ class App {
     // Always a blank starter map; the user opens what they want from Open….
     this.editor.startFresh();
     this.editor.show();
+    // The first time, its sky, ground and shaders are still on their way: fade the view in when they are.
+    if (first) revealWhenReady(capped(this.editor.view.scene.whenReadyAsync(), 2000));
     // Automation hook for browser tests.
     (window as unknown as { __editor: EditorApp }).__editor = this.editor;
   }
