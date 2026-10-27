@@ -1604,7 +1604,7 @@ async function charactersFlow(browser) {
   const lod = await page.evaluate(() => window.__charAnimators.filter((a) => a.ch.meshes.some((m) => m.getLODLevels?.().length)).length);
   check(lod === n, `every character has low-detail levels (${lod} of ${n})`);
   // Parts sharing a material are merged, and gear is merged per finish: a character is a handful of draws, not one per part.
-  const draws = await page.evaluate(() => window.__charAnimators.map((a) => a.ch.meshes.filter((m) => !m.isDisposed() && m.getTotalVertices() > 0).length));
+  const draws = await page.evaluate(() => window.__charAnimators.map((a) => a.ch.meshes.filter((m) => !m.isDisposed() && !m.isBlocked && m.getTotalVertices() > 0).length));
   const most = Math.max(...draws);
   check(most <= 8 && draws.reduce((s, d) => s + d, 0) / draws.length <= 5, `characters draw a few merged meshes each (at most ${most}, ${(draws.reduce((s, d) => s + d, 0) / draws.length).toFixed(1)} on average)`);
   for (const label of ['Rifle', 'Run', 'shoot', 'Death', 'Idle']) {

@@ -7,6 +7,8 @@ import type { Node } from '@babylonjs/core/node';
 import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
+import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 
 /**
@@ -46,34 +48,40 @@ export function mergeSkinnedParts(meshes: readonly AbstractMesh[], name: string)
     else if (item.length < 2) out.push(...item);
     else {
       const merged = mergeGroup(item, `${name}_${n++}`);
-      if (merged) out.push(merged);
+      if (merged) out.push(merged, ...merged.getLODLevels().flatMap((l) => (l.mesh ? [l.mesh] : [])));
       else out.push(...item);
     }
   }
-  return out;
+  // Low-detail copies of merged parts went with them.
+  return out.filter((m) => !m.isDisposed());
 }
 
 /** What has to match for two parts to share a mesh, or null when a part can't be merged. */
 function mergeKey(m: AbstractMesh): string | null {
-  if (!(m instanceof Mesh) || m.isAnInstance || !m.skeleton || !m.material || m.morphTargetManager || m.hasThinInstances) return null;
+  // A low-detail copy (blocked: drawn only through its full mesh) is merged along with that mesh.
+  if (!(m instanceof Mesh) || m.isAnInstance || m.isBlocked || !m.skeleton || !m.material || m.morphTargetManager || m.hasThinInstances) return null;
   if (!m.getTotalVertices() || !m.getIndices()) return null;
+  // Merging keeps only the first UV set (see mergeVertexData).
+  if (m.material.getActiveTextures().some((t) => (t as { coordinatesIndex?: number }).coordinatesIndex)) return null;
   // Low-detail copies hang off their full mesh as LOD levels and are merged with it.
   const lods = m.getLODLevels();
   if (lods.length > 1) return null;
   const lod = lods[0];
   if (lod && (!lod.mesh || lod.mesh.material !== m.material || lod.mesh.skeleton !== m.skeleton || lod.mesh.morphTargetManager)) return null;
+  // Skinned vertices land at (vertex × bones × the mesh's world matrix): parts can share a mesh while their world matrices agree.
   const local = matrixKey(m);
-  if (lod && (lod.mesh!.parent !== m.parent || matrixKey(lod.mesh!) !== local)) return null;
-  return [m.skeleton.uniqueId, m.parent?.uniqueId ?? -1, local, materialKey(m.material), kinds(m), lod ? kinds(lod.mesh!) : '', lod?.distanceOrScreenCoverage ?? '', m.sideOrientation, m.numBoneInfluencers, m.receiveShadows, m.renderingGroupId].join('|');
+  if (lod && matrixKey(lod.mesh!) !== local) return null;
+  return [m.skeleton.uniqueId, local, materialKey(m.material), lod?.distanceOrScreenCoverage ?? '', m.sideOrientation, opaque(m) || m.hasVertexAlpha, m.useVertexColors, m.receiveShadows, m.renderingGroupId].join('|');
+}
+
+/** An opaque material ignores vertex alpha (it only ever scales the alpha), so parts with and without it can share a mesh. */
+function opaque(m: AbstractMesh): boolean {
+  return (m.material as { transparencyMode?: number | null } | null)?.transparencyMode === 0;
 }
 
 function matrixKey(m: AbstractMesh): string {
   m.computeWorldMatrix(true);
   return Array.from(m.getWorldMatrix().asArray(), (v) => v.toFixed(4)).join(',');
-}
-
-function kinds(m: Mesh): string {
-  return [...m.getVerticesDataKinds()].sort().join(',');
 }
 
 /** Everything about a material that shows, so two clones of one material made identical by `dress` compare equal. */
@@ -113,8 +121,10 @@ function mergeGroup(group: Mesh[], name: string): Mesh | null {
     mesh.scaling.copyFrom(first.scaling);
     mesh.material = first.material;
     mesh.skeleton = first.skeleton;
-    mesh.numBoneInfluencers = first.numBoneInfluencers;
+    mesh.numBoneInfluencers = Math.max(...group.map((m) => m.numBoneInfluencers));
     mesh.sideOrientation = first.sideOrientation;
+    mesh.hasVertexAlpha = group.some((m) => m.hasVertexAlpha);
+    mesh.useVertexColors = first.useVertexColors;
     mesh.receiveShadows = first.receiveShadows;
     mesh.renderingGroupId = first.renderingGroupId;
     mesh.isPickable = first.isPickable;
@@ -137,40 +147,82 @@ function mergeGroup(group: Mesh[], name: string): Mesh | null {
   return merged;
 }
 
+/**
+ * The parts' vertices in one buffer. Attributes some parts lack are filled in
+ * (white vertex colour, no extra bone influences); the extra UV sets the
+ * exporter left on some parts are dropped: character materials only read the
+ * first.
+ */
 function mergeVertexData(meshes: Mesh[]): VertexData | null {
   try {
-    const datas = meshes.map((m) => VertexData.ExtractFromMesh(m, true, true));
+    const datas = meshes.map((m) => {
+      const d = VertexData.ExtractFromMesh(m, true, true);
+      d.uvs2 = d.uvs3 = d.uvs4 = d.uvs5 = d.uvs6 = null;
+      return d;
+    });
     const total = datas.reduce((s, d) => s + (d.positions?.length ?? 0) / 3, 0);
-    return datas[0]!.merge(datas.slice(1), total > 65535);
+    return datas[0]!.merge(datas.slice(1), total > 65535, false, false, true);
   } catch {
     return null;
   }
 }
 
-const gearMaterials = new WeakMap<Scene, Map<string, PBRMaterial>>();
+/** Gear finishes (metallic, roughness) in a scene, one texel each in the finish table. */
+const FINISH_SLOTS = 8;
+interface GearLook {
+  material: PBRMaterial;
+  table: RawTexture;
+  texels: Uint8Array;
+  finishes: string[];
+}
+const gearLooks = new WeakMap<Scene, Map<boolean, GearLook>>();
 
-/** One white material per gear finish, coloured per vertex (shared by every character in the scene). */
-function gearMaterial(scene: Scene, src: PBRMaterial): PBRMaterial {
-  let cache = gearMaterials.get(scene);
-  if (!cache) gearMaterials.set(scene, (cache = new Map()));
-  const key = `${src.metallic}|${src.roughness}|${src.backFaceCulling}`;
-  let m = cache.get(key);
-  if (!m) {
-    m = new PBRMaterial(`gear_merged_${key}`, scene);
-    m.albedoColor = Color3.White();
-    m.metallic = src.metallic;
-    m.roughness = src.roughness;
-    m.backFaceCulling = src.backFaceCulling;
-    cache.set(key, m);
+/**
+ * One material for all gear of a scene (per culling side), coloured per vertex,
+ * with each piece's metallic and roughness looked up from a small table
+ * texture by its UV: cloth, hard plastic, glass and metal pieces share a draw.
+ * Returns the material and the U coordinate of the piece's finish (null when
+ * the table is full).
+ */
+function gearFinish(scene: Scene, src: PBRMaterial): { material: PBRMaterial; u: number } | null {
+  let cache = gearLooks.get(scene);
+  if (!cache) gearLooks.set(scene, (cache = new Map()));
+  let look = cache.get(src.backFaceCulling);
+  if (!look) {
+    const texels = new Uint8Array(FINISH_SLOTS * 4);
+    const table = RawTexture.CreateRGBATexture(texels, FINISH_SLOTS, 1, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+    table.name = 'gearFinishes';
+    table.wrapU = table.wrapV = Texture.CLAMP_ADDRESSMODE;
+    const material = new PBRMaterial(`gear_merged_${src.backFaceCulling ? 'culled' : 'both'}`, scene);
+    material.albedoColor = Color3.White();
+    material.metallic = 1;
+    material.roughness = 1;
+    material.metallicTexture = table;
+    material.useRoughnessFromMetallicTextureAlpha = false;
+    material.useRoughnessFromMetallicTextureGreen = true;
+    material.useMetallnessFromMetallicTextureBlue = true;
+    material.backFaceCulling = src.backFaceCulling;
+    look = { material, table, texels, finishes: [] };
+    cache.set(src.backFaceCulling, look);
   }
-  return m;
+  const metallic = src.metallic ?? 1;
+  const roughness = src.roughness ?? 1;
+  const key = `${metallic}|${roughness}`;
+  let i = look.finishes.indexOf(key);
+  if (i < 0) {
+    if (look.finishes.length >= FINISH_SLOTS) return null;
+    i = look.finishes.push(key) - 1;
+    look.texels.set([255, Math.round(roughness * 255), Math.round(metallic * 255), 255], i * 4);
+    look.table.update(look.texels);
+  }
+  return { material: look.material, u: (i + 0.5) / FINISH_SLOTS };
 }
 
 /**
  * Gear (hats, vests, packs: rigid shapes hung on the head and chest joints) as
- * skinned meshes on the character's own skeleton, merged per finish with the
- * colours in the vertices: a commando's helmet, goggles and vest are one or two
- * draws instead of a dozen. Each vertex is bound wholly to the joint its piece
+ * one skinned mesh on the character's own skeleton, with each piece's colour in
+ * its vertices and its finish in the shared table (gearFinish): a commando's
+ * helmet, goggles and vest are one draw instead of a dozen. Each vertex is bound wholly to the joint its piece
  * hung on, so it moves exactly as before. `body` is a skinned mesh of the same
  * character (its place in the hierarchy and its bone matrices are used).
  */
@@ -197,7 +249,8 @@ export function skinGear(gear: readonly Mesh[], body: Mesh, name: string): Mesh[
     const pos = m.getVerticesData(VertexBuffer.PositionKind);
     const nor = m.getVerticesData(VertexBuffer.NormalKind);
     const idx = m.getIndices();
-    if (!(mat instanceof PBRMaterial) || mat.albedoTexture || bone < 0 || !pos || !nor || !idx || m.skeleton || m.hasThinInstances) {
+    const finish = mat instanceof PBRMaterial && !mat.albedoTexture && !mat.metallicTexture && mat.alpha >= 1 ? gearFinish(scene, mat) : null;
+    if (!finish || !(mat instanceof PBRMaterial) || bone < 0 || !pos || !nor || !idx || m.skeleton || m.hasThinInstances) {
       keep.push(m);
       continue;
     }
@@ -221,18 +274,19 @@ export function skinGear(gear: readonly Mesh[], body: Mesh, name: string): Mesh[
     if (W.determinant() < 0 !== flipBody) for (let t = 0; t + 2 < indices.length; t += 3) [indices[t + 1], indices[t + 2]] = [indices[t + 2]!, indices[t + 1]!];
     const c = mat.albedoColor;
     const colors = new Float32Array(n * 4);
+    const uvs = new Float32Array(n * 2);
     const matricesIndices = new Float32Array(n * 4);
     const matricesWeights = new Float32Array(n * 4);
     for (let i = 0; i < n; i++) {
       colors.set([c.r, c.g, c.b, 1], i * 4);
+      uvs.set([finish.u, 0.5], i * 2);
       matricesIndices[i * 4] = bone;
       matricesWeights[i * 4] = 1;
     }
     const data = new VertexData();
-    Object.assign(data, { positions, normals, indices, colors, matricesIndices, matricesWeights });
-    const target = gearMaterial(scene, mat);
-    let list = groups.get(target);
-    if (!list) groups.set(target, (list = []));
+    Object.assign(data, { positions, normals, indices, colors, uvs, matricesIndices, matricesWeights });
+    let list = groups.get(finish.material);
+    if (!list) groups.set(finish.material, (list = []));
     list.push(data);
     m.dispose(false, false);
   }

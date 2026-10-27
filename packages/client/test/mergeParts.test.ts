@@ -66,10 +66,12 @@ describe('mergeSkinnedParts', () => {
     legs.addLODLevel(18, lowL);
     const verts = torso.getTotalVertices() + legs.getTotalVertices();
     const lowVerts = lowT.getTotalVertices() + lowL.getTotalVertices();
-    const out = mergeSkinnedParts([torso, legs, skin], 'char');
-    expect(out).toHaveLength(2);
+    const out = mergeSkinnedParts([torso, legs, lowT, skin, lowL], 'char');
+    // The merged mesh, its low-detail copy, and the skin part.
+    expect(out).toHaveLength(3);
     expect(out).toContain(skin);
-    const merged = out.find((m) => m !== skin) as Mesh;
+    const merged = out[0] as Mesh;
+    expect(out[1]).toBe(merged.getLODLevels()[0]!.mesh);
     expect(merged.getTotalVertices()).toBe(verts);
     expect(merged.skeleton).toBe(skin.skeleton);
     expect(merged.material?.name).toBe('MI_Ranger');
@@ -79,6 +81,20 @@ describe('mergeSkinnedParts', () => {
     expect(lods[0]!.mesh!.getTotalVertices()).toBe(lowVerts);
     for (const m of [torso, legs, lowT, lowL]) expect(m.isDisposed()).toBe(true);
     expect(skin.isDisposed()).toBe(false);
+  });
+
+  it('merges parts whose vertex attributes differ (missing colours come in white)', () => {
+    const { part, cloth } = rig();
+    const a = part('a', cloth('MI_Hair_2'));
+    const b = part('b', cloth('MI_Hair_2'));
+    b.setVerticesData(VertexBuffer.ColorKind, new Float32Array(b.getTotalVertices() * 4).fill(0.5), false, 4);
+    b.setVerticesData(VertexBuffer.UV2Kind, new Float32Array(b.getTotalVertices() * 2));
+    const out = mergeSkinnedParts([a, b], 'hair');
+    expect(out).toHaveLength(1);
+    const colors = out[0]!.getVerticesData(VertexBuffer.ColorKind)!;
+    expect(colors[0]).toBe(1);
+    expect(colors[colors.length - 1]).toBe(0.5);
+    expect(out[0]!.isVerticesDataPresent(VertexBuffer.UV2Kind)).toBe(false);
   });
 
   it('leaves rigid meshes and lone parts as they are', () => {
@@ -100,8 +116,9 @@ describe('skinGear', () => {
       const material = (hex: string) => {
         const m = new PBRMaterial(`gear_${hex}`, scene);
         m.albedoColor = Color3.FromHexString(hex);
-        m.roughness = 0.9;
-        m.metallic = 0;
+        // Cloth and metal: different finishes still share the one gear mesh.
+        m.roughness = hex === '#ff0000' ? 0.9 : 0.35;
+        m.metallic = hex === '#ff0000' ? 0 : 0.7;
         return m;
       };
       const hang = (m: Mesh, at: Vector3, hex: string) => {
@@ -120,6 +137,10 @@ describe('skinGear', () => {
       const merged = out[0]!;
       expect(cap.isDisposed() && brim.isDisposed()).toBe(true);
       expect(merged.getTotalVertices()).toBe(refs[0]!.getTotalVertices() + refs[1]!.getTotalVertices());
+      const uvs = merged.getVerticesData(VertexBuffer.UVKind)!;
+      expect(uvs[0]).not.toBeCloseTo(uvs[uvs.length - 2]!, 5);
+      const table = (merged.material as PBRMaterial).metallicTexture!;
+      expect(table).toBeTruthy();
       const colors = merged.getVerticesData(VertexBuffer.ColorKind)!;
       expect(colors[0]).toBeCloseTo(1, 5);
       expect(colors[(merged.getTotalVertices() - 1) * 4 + 1]).toBeCloseTo(1, 5);
