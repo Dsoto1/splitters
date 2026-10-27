@@ -48,6 +48,13 @@ describe('TorsoSurface', () => {
     expect(bulky - slim).toBeCloseTo(0.1, 2);
   });
 
+  it('sees a deep chest standing far ahead of the shoulder', () => {
+    const butt = new Vector3(0.1, 1.45, 0);
+    // A barrel-chested body: the plate's front face 0.35 ahead of the shoulder joint, beyond the sphere round it.
+    const deep = TorsoSurface.measure(body(0.8).ch)!;
+    expect(deep.clearance(butt, new Vector3(0, 0, 1), 0.04, 0)).toBeCloseTo(0.4, 2);
+  });
+
   it('follows the chest joint as the body turns', () => {
     const { ch, chest } = body(0.3);
     const torso = TorsoSurface.measure(ch)!;

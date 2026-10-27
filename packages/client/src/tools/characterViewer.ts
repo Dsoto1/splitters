@@ -22,19 +22,23 @@ import { CharacterAnimator, type MotionState, type OneShot } from '../game/chara
 export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCanvasElement): Promise<() => void> {
   const scene = new Scene(engine);
   scene.clearColor = new Color4(0.16, 0.18, 0.21, 1);
-  const specs: (CharacterSpec & { label: string })[] = [
-    ...CORE_LOOKS.map((l) => ({ look: l.id, label: l.name })),
-    { npc: { color: '#d04a3a', scale: NPC_ROLE_SPECS.trooper.scale }, label: 'NPC Trooper' },
-    { npc: { color: '#d04a3a', scale: NPC_ROLE_SPECS.trooper.scale, female: true }, label: 'NPC Trooper (F)' },
-    { npc: { color: '#5cc77a', scale: NPC_ROLE_SPECS.heavy.scale }, label: 'NPC Heavy' },
-    { npc: { color: '#5cc77a', scale: NPC_ROLE_SPECS.heavy.scale, female: true }, label: 'NPC Heavy (F)' },
-  ];
+  const params = new URLSearchParams(location.search);
+  // `&looks=core.goblin,core.otter` shows just those looks (one row); `&creatures=0` hides the creature row.
+  const only = params.get('looks')?.split(',');
+  const specs: (CharacterSpec & { label: string })[] = only
+    ? CORE_LOOKS.filter((l) => only.includes(l.id)).map((l) => ({ look: l.id, label: l.name }))
+    : [
+        ...CORE_LOOKS.map((l) => ({ look: l.id, label: l.name })),
+        { npc: { color: '#d04a3a', scale: NPC_ROLE_SPECS.trooper.scale }, label: 'NPC Trooper' },
+        { npc: { color: '#d04a3a', scale: NPC_ROLE_SPECS.trooper.scale, female: true }, label: 'NPC Trooper (F)' },
+        { npc: { color: '#5cc77a', scale: NPC_ROLE_SPECS.heavy.scale }, label: 'NPC Heavy' },
+        { npc: { color: '#5cc77a', scale: NPC_ROLE_SPECS.heavy.scale, female: true }, label: 'NPC Heavy (F)' },
+      ];
   // Two rows, the back one offset so every character shows.
   const spacing = 1.3;
-  const perRow = Math.ceil(specs.length / 2);
+  const perRow = only ? specs.length : Math.ceil(specs.length / 2);
   const place = (i: number) => ({ x: (i % perRow) * spacing + (i >= perRow ? spacing / 2 : 0), z: i >= perRow ? -1.6 : 0 });
   const mid = ((perRow - 1) * spacing) / 2;
-  const params = new URLSearchParams(location.search);
   const camera = new ArcRotateCamera('cam', Number(params.get('alpha') ?? Math.PI / 2), 1.25, Number(params.get('dist') ?? 12), new Vector3(Number(params.get('x') ?? mid), 1, Number(params.get('z') ?? 0)), scene);
   camera.minZ = 0.05;
   camera.wheelPrecision = 40;
@@ -63,7 +67,7 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   );
   // Creature NPCs in a row in front (2.5 m apart), driven by the same buttons.
   const creatureLib = new CreatureLibrary(scene);
-  const bodies = [...CREATURE_ROLES, 'zombie'] as const;
+  const bodies = params.get('creatures') === '0' ? [] : ([...CREATURE_ROLES, 'zombie'] as const);
   const creatures = await Promise.all(
     bodies.map(async (kind, i) => {
       const ch = await creatureLib.create(kind, `creature_${kind}`);
@@ -110,7 +114,7 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   panel.append(' Aim pitch ', pitch, ` ${specs.map((s) => s.label).join(' · ')} · front: ${bodies.join(', ')}`);
   document.body.append(panel);
   (window as unknown as { __charsReady: boolean; __charState: MotionState; __charAnimators: CharacterAnimator[] }).__charsReady = true;
-  Object.assign(window, { __charState: state, __charAnimators: animators, __creatureAnimators: creatures, __charSpecs: specs.length });
+  Object.assign(window, { __charCamera: camera, __charState: state, __charAnimators: animators, __creatureAnimators: creatures, __charSpecs: specs.length });
 
   let last = performance.now();
   engine.runRenderLoop(() => {

@@ -99,10 +99,10 @@
       "src": "Meshy_AI_Goblin_1026113732_texture.fbx",
       "sourceTriangles": 1326047,
       "file": "characters/meshy_goblin.glb",
-      "sha256": "ec93a57ab67aab6d",
-      "triangles": 19708,
-      "lodTriangles": 5814,
-      "bytes": 1147588
+      "sha256": "3bec8f82e7bd4d38",
+      "triangles": 11703,
+      "lodTriangles": 3308,
+      "bytes": 868672
     },
     {
       "role": "meshy-autorig",
@@ -111,10 +111,10 @@
       "src": "Meshy_AI_Wealthy_Otter_20260307_texture.fbx",
       "sourceTriangles": 486780,
       "file": "characters/meshy_otter.glb",
-      "sha256": "2a1ce05d6838cba9",
-      "triangles": 10999,
-      "lodTriangles": 3197,
-      "bytes": 708168
+      "sha256": "5090aecdf19ff4a2",
+      "triangles": 11000,
+      "lodTriangles": 3218,
+      "bytes": 708388
     },
     {
       "role": "meshy-autorig",
@@ -123,10 +123,10 @@
       "src": "Meshy_AI_Boglurker_the_toad_20260325_texture.fbx",
       "sourceTriangles": 852756,
       "file": "characters/meshy_toad.glb",
-      "sha256": "be063a25fc9551a2",
-      "triangles": 11741,
-      "lodTriangles": 3415,
-      "bytes": 758728
+      "sha256": "d27efab1dc297cc3",
+      "triangles": 11619,
+      "lodTriangles": 3451,
+      "bytes": 755964
     },
     {
       "role": "meshy-autorig",
@@ -135,10 +135,10 @@
       "src": "Meshy_AI_Salamander_Warlord_20260421_texture.fbx",
       "sourceTriangles": 774825,
       "file": "characters/meshy_salamander.glb",
-      "sha256": "5d99cad1aaec2c03",
-      "triangles": 11114,
-      "lodTriangles": 3201,
-      "bytes": 879608
+      "sha256": "5b6edb92ec42c160",
+      "triangles": 11094,
+      "lodTriangles": 3238,
+      "bytes": 880080
     },
     {
       "role": "meshy-autorig",
@@ -147,10 +147,10 @@
       "src": "Meshy_AI_Hyena_Warrior_20250425_texture.fbx",
       "sourceTriangles": 31876,
       "file": "characters/meshy_hyena.glb",
-      "sha256": "f99da2a464fdb2b6",
-      "triangles": 9990,
-      "lodTriangles": 2906,
-      "bytes": 619776
+      "sha256": "a4025b01e9eddfd0",
+      "triangles": 9988,
+      "lodTriangles": 2950,
+      "bytes": 619632
     }
   ]
 }

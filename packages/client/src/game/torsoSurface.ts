@@ -10,6 +10,9 @@ const TORSO = new Set(['pelvis', 'spine_01', 'spine_02', 'spine_03', 'neck_01', 
 const LIMBS = /^(upperarm|lowerarm|hand|Head|thigh|calf|foot|index|middle|ring|pinky|thumb)/;
 /** Only skin within this distance of the right shoulder joint (model metres) can be in a stock's way. */
 const NEAR_SHOULDER = 0.3;
+/** ...or within this of the line straight ahead of the joint, up to this far out. */
+const TUBE = 0.15;
+const FAR_AHEAD = 0.5;
 /** Most points kept (one per small cell), to bound the per-frame test. */
 const CELL = 0.02;
 
@@ -45,7 +48,11 @@ export class TorsoSurface {
     const cells = new Map<string, Vector3>();
     const keep = (p: Vector3) => {
       const d = p.subtract(shoulderLocal);
-      if (d.length() > NEAR_SHOULDER || Vector3.Dot(d, forward) < -0.05) return;
+      const ahead = Vector3.Dot(d, forward);
+      // Near the shoulder, or in the tube straight out in front of it (a deep chest turned across the aim stands well
+      // ahead of the joint).
+      const inTube = ahead <= FAR_AHEAD && d.subtract(forward.scale(ahead)).length() <= TUBE;
+      if ((d.length() > NEAR_SHOULDER && !inTube) || ahead < -0.05) return;
       const key = `${Math.round(p.x / CELL)},${Math.round(p.y / CELL)},${Math.round(p.z / CELL)}`;
       const had = cells.get(key);
       // Per cell, the point furthest forward (the surface).
@@ -139,3 +146,4 @@ export function reachAlong(shoulder: Vector3, target: Vector3, dir: Vector3, rea
   if (c > 0) return 0;
   return -b + Math.sqrt(b * b - c);
 }
+

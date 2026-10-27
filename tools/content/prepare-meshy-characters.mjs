@@ -25,14 +25,15 @@
 // the unzipped "Meshy_AI_<name>_..._texture_fbx" folders, anywhere under the
 // downloads dir, 2.5–61 MB each). Those are rigged here first: the mesh is
 // welded and pre-simplified, the joints go where FBX_CHARACTERS places them
-// (by hand, read off front and side views, in units of the model's height),
-// and each vertex follows the bone nearest to it along the surface (measured
-// from vertices close to the bone's middle, so an arm hanging by the body
-// doesn't take the torso with it; see autoSkin), blended across the joints by
-// smoothing the weights over the mesh; a tail rides on the hips and the feet
+// (by hand, read off front and side views and side profiles, in units of the
+// model's height), and the skin weights come from autoskin.mjs (bone heat with
+// sight tests through a voxel fill of the body; cloth below the hips follows
+// the pelvis, the chest stays off the clavicles and arms; four influences);
+// a tail rides on the hips, hunched bodies lean back (`lean`), and the feet
 // are turned to the rig's too (bent knees leave toes pointing down once the
 // legs are straightened). SKIN_DEBUG=<dir> writes each rest mesh coloured by
-// its joints, to check the weights. Then it goes through the same
+// its joints (and <id>.cloth.glb: red where no bone is in sight, green what
+// counts as cloth), to check the weights; ONLY=<ids> rebuilds just those. Then it goes through the same
 // steps as the rest. Their first-person arms are the universal ones (looks.ts),
 // so they get no _fparms file. A character whose download isn't there is kept
 // as built (checked against the lock).
@@ -46,6 +47,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { compactPrimitive, dedup, prune, quantize, simplify, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
+import { autoSkin } from './autoskin.mjs';
 import { fbxToDocument } from './fbx.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -100,17 +102,21 @@ const landmarks = ({ spine, L, R }) => {
 const FBX_CHARACTERS = [
   {
     id: 'meshy_goblin',
+    // Its rags are hundreds of small texture islands; seamAwareSimplify collapses across the seams where the texture matches.
+    seamWeld: true,
+    // Hunched, head hung in front of the chest: sat up (degrees back per spine joint; the head keeps facing ahead).
+    lean: { Spine02: 5, Spine01: 8, Spine: 8, neck: 12 },
+    // Cloth hangs below its hips (autoskin.mjs: it follows the pelvis more than the legs).
+    cloth: true,
     fbx: /^Meshy_AI_Goblin_.*_texture\.fbx$/,
     triangles: 11000,
     feet: true,
-    // Its rags are hundreds of small UV islands, whose seams stop the simplifier near 20k triangles (within the
-    // creature budget); collapsing across them scrambles the texture.
     metallic: 0,
     roughness: 0.75,
     joints: landmarks({
       spine: [[0, 0.43, -0.03], [0, 0.5, -0.03], [0, 0.58, -0.01], [0, 0.65, 0.02], [0, 0.7, 0.07], [0, 0.74, 0.11], [0, 0.95, 0.14]],
       L: [[0.05, 0.665, 0.03], [0.217, 0.667, 0.04], [0.317, 0.525, 0.075], [0.3, 0.408, 0.15], [0.258, 0.317, 0.2], [0.085, 0.41, -0.01], [0.13, 0.32, 0.17], [0.24, 0.083, 0.06], [0.26, 0.025, 0.23], [0.27, 0.02, 0.3]],
-      R: [[-0.05, 0.665, 0], [-0.217, 0.667, -0.08], [-0.308, 0.52, -0.25], [-0.317, 0.4, -0.19], [-0.3, 0.3, -0.17], [-0.085, 0.41, -0.03], [-0.183, 0.333, -0.2], [-0.15, 0.083, -0.25], [-0.16, 0.025, -0.13], [-0.16, 0.02, -0.083]],
+      R: [[-0.05, 0.665, 0], [-0.175, 0.68, -0.06], [-0.25, 0.53, -0.24], [-0.29, 0.41, -0.19], [-0.29, 0.31, -0.17], [-0.085, 0.41, -0.03], [-0.183, 0.333, -0.2], [-0.15, 0.083, -0.25], [-0.16, 0.025, -0.13], [-0.16, 0.02, -0.083]],
     }),
   },
   {
@@ -129,6 +135,9 @@ const FBX_CHARACTERS = [
   },
   {
     id: 'meshy_toad',
+    lean: { Spine01: 4, Spine: 6, neck: 14 },
+    // Cloth hangs below its hips (autoskin.mjs: it follows the pelvis more than the legs).
+    cloth: true,
     fbx: /^Meshy_AI_Boglurker_the_toad_.*_texture\.fbx$/,
     triangles: 11000,
     feet: true,
@@ -137,11 +146,13 @@ const FBX_CHARACTERS = [
     joints: landmarks({
       spine: [[0, 0.46, -0.07], [0, 0.54, -0.08], [0, 0.62, -0.07], [0, 0.7, -0.07], [0, 0.77, -0.03], [0, 0.8, 0], [0, 0.97, 0.05]],
       L: [[0.06, 0.74, -0.03], [0.17, 0.74, -0.01], [0.3, 0.533, 0.03], [0.325, 0.4, 0.05], [0.342, 0.308, 0.05], [0.09, 0.44, -0.06], [0.167, 0.267, 0.06], [0.2, 0.08, -0.12], [0.21, 0.025, 0], [0.22, 0.02, 0.07]],
-      R: [[-0.06, 0.74, -0.03], [-0.17, 0.74, -0.01], [-0.308, 0.533, 0.03], [-0.342, 0.408, 0.05], [-0.367, 0.35, 0.05], [-0.09, 0.44, -0.06], [-0.15, 0.267, 0.06], [-0.183, 0.08, -0.12], [-0.2, 0.025, 0], [-0.21, 0.02, 0.07]],
+      R: [[-0.06, 0.74, -0.03], [-0.17, 0.74, -0.01], [-0.295, 0.533, 0.03], [-0.33, 0.408, 0.05], [-0.355, 0.35, 0.05], [-0.09, 0.44, -0.06], [-0.15, 0.267, 0.06], [-0.183, 0.08, -0.12], [-0.2, 0.025, 0], [-0.21, 0.02, 0.07]],
     }),
   },
   {
     id: 'meshy_salamander',
+    // Cloth hangs below its hips (autoskin.mjs: it follows the pelvis more than the legs).
+    cloth: true,
     fbx: /^Meshy_AI_Salamander_Warlord_.*_texture\.fbx$/,
     triangles: 11000,
     feet: true,
@@ -155,6 +166,8 @@ const FBX_CHARACTERS = [
   },
   {
     id: 'meshy_hyena',
+    // Digitigrade: the leg joints sit on the leg's centre line (read off a side profile), so straightening it turns
+    // the thigh and shin only a little and the knee doesn't fold; the hock is the ankle, the paw the foot.
     fbx: /^Meshy_AI_Hyena_Warrior_.*_texture\.fbx$/,
     tail: [[0, 0.5, -0.06], [0, 0.33, -0.11], [0, 0.22, -0.17], [0, 0.15, -0.14]],
     triangles: 10000,
@@ -163,8 +176,8 @@ const FBX_CHARACTERS = [
     roughness: 0.6,
     joints: landmarks({
       spine: [[0, 0.53, -0.02], [0, 0.6, -0.02], [0, 0.67, 0], [0, 0.74, 0], [0, 0.83, 0], [0, 0.87, 0.03], [0, 0.99, 0.05]],
-      L: [[0.04, 0.8, 0], [0.11, 0.78, 0], [0.158, 0.642, 0], [0.175, 0.508, 0.02], [0.183, 0.442, 0.03], [0.06, 0.51, -0.01], [0.108, 0.325, 0.1], [0.11, 0.15, 0], [0.11, 0.025, 0.07], [0.11, 0.02, 0.12]],
-      R: [[-0.04, 0.8, 0], [-0.11, 0.78, 0], [-0.158, 0.642, 0], [-0.175, 0.508, 0.02], [-0.183, 0.442, 0.03], [-0.06, 0.51, -0.01], [-0.108, 0.325, 0.1], [-0.11, 0.15, 0], [-0.11, 0.025, 0.07], [-0.11, 0.02, 0.12]],
+      L: [[0.04, 0.8, 0], [0.11, 0.78, 0], [0.158, 0.642, 0], [0.175, 0.508, 0.02], [0.183, 0.442, 0.03], [0.06, 0.51, 0.05], [0.105, 0.33, 0.055], [0.11, 0.15, -0.01], [0.11, 0.03, 0.09], [0.11, 0.02, 0.14]],
+      R: [[-0.04, 0.8, 0], [-0.11, 0.78, 0], [-0.158, 0.642, 0], [-0.175, 0.508, 0.02], [-0.183, 0.442, 0.03], [-0.06, 0.51, 0.05], [-0.105, 0.33, 0.055], [-0.11, 0.15, -0.01], [-0.11, 0.03, 0.09], [-0.11, 0.02, 0.14]],
     }),
   },
 ];
@@ -356,6 +369,11 @@ function pose(skel, verts, ual, c) {
       const want = norm(sub(ual.get(rule[3]).t, ual.get(rule[2]).t));
       rot[i] = qmul(qFromTo(now, want), rot[i]);
     }
+    // Hunched bodies sit up: the spine joints lean back by the character's `lean` (degrees, about the body's left-right axis),
+    // and the head keeps the way it faced (the shared clips lean and turn the head themselves).
+    const lean = c.lean?.[names[i]];
+    if (lean) rot[i] = qmul([Math.sin((-lean * Math.PI) / 360), 0, 0, Math.cos((-lean * Math.PI) / 360)], rot[i]);
+    if (c.lean && names[i] === 'Head') rot[i] = c.lean.Head ? [Math.sin((-c.lean.Head * Math.PI) / 360), 0, 0, Math.cos((-c.lean.Head * Math.PI) / 360)] : [0, 0, 0, 1];
   };
   // Children's positions depend on their parents' final turn, so settle every parent before its children.
   const depth = (i) => {
@@ -447,14 +465,6 @@ const FBX_BONES = [
 ];
 /** Triangles the FBX mesh is cut to before rigging (the rig is fitted at this detail, then build() simplifies further). */
 const WORK_TRIANGLES = 40000;
-/** How far the weights blend across a joint (share of the height). */
-const BLEND = 0.035;
-/** Seeds: vertices within SEED_REACH times the SEED_PERCENTILE distance of their nearest bone's middle. */
-const SEED_PERCENTILE = 0.25;
-const SEED_REACH = 1.4;
-/** How much a bone's straight-line distance counts against its distance along the surface. */
-const STRAIGHT_WEIGHT = 1.5;
-
 /** An unrigged Meshy FBX, rigged from its landmarks and re-posed to the rig's stance. */
 async function readFbx(file, c, ual) {
   const { doc } = await fbxToDocument(file);
@@ -489,10 +499,33 @@ async function readFbx(file, c, ual) {
   const bones = FBX_BONES.map(([j, a, b]) => ({ joint: index.get(j), a: at(a), b: at(b) }));
   // A tail rides on the hips.
   const tail = (c.tail ?? []).map((l) => [l[0] * H, low + l[1] * H, l[2] * H]);
-  for (let i = 1; i < tail.length; i++) bones.push({ joint: index.get('Hips'), a: tail[i - 1], b: tail[i] });
-  const { joints, weights } = autoSkin(P, N, indices, bones, H, names.length);
+  for (let i = 1; i < tail.length; i++) bones.push({ joint: index.get('Hips'), a: tail[i - 1], b: tail[i], tail: true });
+  const body = {
+    pelvis: index.get('Hips'),
+    chest: index.get('Spine'),
+    neck: index.get('neck'),
+    head: index.get('Head'),
+    chestAt: at('Spine'),
+    neckAt: at('neck'),
+    center: at('Hips'),
+    cloth: !!c.cloth,
+    sides: ['Left', 'Right'].map((S) => ({
+      clavicle: index.get(`${S}Shoulder`),
+      upperarm: index.get(`${S}Arm`),
+      thigh: index.get(`${S}UpLeg`),
+      calf: index.get(`${S}Leg`),
+      clavicleAt: [at(`${S}Shoulder`), at(`${S}Arm`)],
+      shoulder: at(`${S}Arm`),
+      hip: at(`${S}UpLeg`),
+      knee: at(`${S}Leg`),
+    })),
+  };
+  const { joints, weights, stats } = autoSkin(P, N, indices, bones, H, names.length, body);
+  console.log(`${c.id}: ${(stats.inside * 100).toFixed(0)}% of the grid inside, ${stats.unseen} vertices with no bone in sight, ${stats.cloth} cloth vertices`);
   if (process.env.SKIN_DEBUG) {
     await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.glb`), P, indices, joints, weights);
+    // Red: no bone in sight; green: treated as cloth.
+    await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.cloth.glb`), P, indices, joints, weights, stats.debugColor);
     writeFileSync(join(process.env.SKIN_DEBUG, `${c.id}.marks.json`), JSON.stringify(c.joints));
   }
   // The base colour map sits beside the FBX (Meshy embeds it too, but not every download links it).
@@ -522,13 +555,13 @@ const SKIN_DEBUG_COLORS = [
 ];
 
 /** With SKIN_DEBUG=<dir>: the rest mesh coloured by the joint each vertex mostly follows, to check the weights. */
-async function writeSkinDebug(path, P, indices, joints, weights) {
+async function writeSkinDebug(path, P, indices, joints, weights, given) {
   const { Document } = await import('@gltf-transform/core');
   const doc = new Document();
   const buffer = doc.createBuffer();
   const n = P.length / 3;
-  const col = new Float32Array(n * 4);
-  for (let v = 0; v < n; v++) {
+  const col = given ?? new Float32Array(n * 4);
+  for (let v = 0; v < (given ? 0 : n); v++) {
     let k = 0;
     for (let i = 1; i < 4; i++) if (weights[v * 4 + i] > weights[v * 4 + k]) k = i;
     // FBX_JOINTS order: spine in greys (pelvis brown, head beige), left arm reds, left leg greens, right arm blues, right leg purples; darker where shared.
@@ -540,196 +573,6 @@ async function writeSkinDebug(path, P, indices, joints, weights) {
   const prim = doc.createPrimitive().setAttribute('POSITION', acc('VEC3', new Float32Array(P))).setAttribute('COLOR_0', acc('VEC4', col)).setIndices(acc('SCALAR', new Uint32Array(indices))).setMaterial(doc.createMaterial('debug'));
   doc.createScene().addChild(doc.createNode('debug').setMesh(doc.createMesh('debug').addPrimitive(prim)));
   writeFileSync(path, await io.writeBinary(doc));
-}
-
-/** A binary min-heap of [key, value] for Dijkstra. */
-class Heap {
-  a = [];
-  push(k, v) {
-    const a = this.a;
-    a.push([k, v]);
-    for (let i = a.length - 1; i > 0; ) {
-      const p = (i - 1) >> 1;
-      if (a[p][0] <= a[i][0]) break;
-      [a[p], a[i]] = [a[i], a[p]];
-      i = p;
-    }
-  }
-  pop() {
-    const a = this.a;
-    const top = a[0];
-    const last = a.pop();
-    if (a.length) {
-      a[0] = last;
-      for (let i = 0; ; ) {
-        const l = i * 2 + 1;
-        const r = l + 1;
-        let m = i;
-        if (l < a.length && a[l][0] < a[m][0]) m = l;
-        if (r < a.length && a[r][0] < a[m][0]) m = r;
-        if (m === i) break;
-        [a[m], a[i]] = [a[i], a[m]];
-        i = m;
-      }
-    }
-    return top;
-  }
-  get size() {
-    return this.a.length;
-  }
-}
-
-/**
- * Skin weights for a mesh from its bones (segments, each driving a joint).
- * A bone's straight-line distance to a vertex counts three times over when the
- * surface faces the bone (the side of the body under a hanging arm faces the
- * arm). Vertices close to a bone's middle by that measure seed it; each vertex
- * then goes to the bone with the least distance along the surface from its
- * seeds plus its straight-line distance (so a limb resting against the body
- * stays separate from it; pieces with no seed take the nearest bone), and the
- * weights are smoothed over the surface so they blend across the joints.
- * Returns four joints and weights per vertex.
- */
-function autoSkin(P, N, indices, bones, H, jointCount) {
-  const n = P.length / 3;
-  // Vertices split by texture seams count as one point on the surface.
-  const canon = new Int32Array(n);
-  const byPos = new Map();
-  const q = H * 1e-5;
-  for (let v = 0; v < n; v++) {
-    const key = `${Math.round(P[v * 3] / q)},${Math.round(P[v * 3 + 1] / q)},${Math.round(P[v * 3 + 2] / q)}`;
-    const c = byPos.get(key);
-    if (c === undefined) byPos.set(key, v);
-    canon[v] = c ?? v;
-  }
-  const adj = new Map();
-  let edgeSum = 0;
-  let edges = 0;
-  const link = (a, b) => {
-    if (a === b) return;
-    const d = Math.hypot(P[a * 3] - P[b * 3], P[a * 3 + 1] - P[b * 3 + 1], P[a * 3 + 2] - P[b * 3 + 2]);
-    for (const [x, y] of [[a, b], [b, a]]) {
-      let l = adj.get(x);
-      if (!l) adj.set(x, (l = []));
-      l.push(y, d);
-    }
-    edgeSum += d;
-    edges++;
-  };
-  for (let i = 0; i < indices.length; i += 3) {
-    const [a, b, c] = [canon[indices[i]], canon[indices[i + 1]], canon[indices[i + 2]]];
-    link(a, b);
-    link(b, c);
-    link(c, a);
-  }
-  const pts = [...new Set(canon)];
-
-  // Every bone's straight-line distance to each vertex, three times as far when the surface faces the bone
-  // (the side of the body under a hanging arm faces the arm, so it isn't the arm's); the nearest by that.
-  const B = bones.length;
-  const cost = new Float32Array(n * B);
-  const near = new Int32Array(n).fill(-1);
-  const dist = new Float32Array(n);
-  const along = new Float32Array(n);
-  const facing = new Float32Array(n);
-  for (const v of pts) {
-    const p = [P[v * 3], P[v * 3 + 1], P[v * 3 + 2]];
-    const nv = [N[v * 3], N[v * 3 + 1], N[v * 3 + 2]];
-    let best = Infinity;
-    bones.forEach((b, i) => {
-      const ab = sub(b.b, b.a);
-      const t = Math.min(1, Math.max(0, dot(sub(p, b.a), ab) / (dot(ab, ab) || 1)));
-      const off = sub(p, add(b.a, scale(ab, t)));
-      const d = Math.hypot(...off);
-      const f = dot(nv, off) / (d || 1);
-      const c = f < 0 ? d * 3 : d;
-      cost[v * B + i] = c;
-      if (c < best) {
-        best = c;
-        near[v] = i;
-        dist[v] = d;
-        along[v] = t;
-        facing[v] = f;
-      }
-    });
-  }
-  // Each bone's thickness: a low percentile of its nearest vertices' distances (the median would count the body beside a hanging arm).
-  const radius = bones.map((_, i) => {
-    const ds = pts.filter((v) => near[v] === i && along[v] > 0.25 && along[v] < 0.75 && facing[v] > 0.3).map((v) => dist[v]).sort((a, b) => a - b);
-    return ds.length ? ds[Math.floor(ds.length * SEED_PERCENTILE)] : 0.05 * H;
-  });
-  const seed = (v) => along[v] > 0.1 && along[v] < 0.9 && dist[v] <= radius[near[v]] * SEED_REACH && facing[v] > 0.3;
-  // Each bone's distance along the surface from its seeds; a vertex goes to the bone with the least of that plus its straight-line cost.
-  const score = new Float64Array(n).fill(Infinity);
-  const label = new Int32Array(n).fill(-1);
-  for (let b = 0; b < B; b++) {
-    const geo = new Float64Array(n).fill(Infinity);
-    const heap = new Heap();
-    for (const v of pts) {
-      if (near[v] === b && seed(v)) {
-        geo[v] = 0;
-        heap.push(0, v);
-      }
-    }
-    while (heap.size) {
-      const [d, v] = heap.pop();
-      if (d > geo[v]) continue;
-      const l = adj.get(v) ?? [];
-      for (let i = 0; i < l.length; i += 2) {
-        const u = l[i];
-        const du = d + l[i + 1];
-        if (du < geo[u]) {
-          geo[u] = du;
-          heap.push(du, u);
-        }
-      }
-    }
-    for (const v of pts) {
-      const sc = geo[v] + cost[v * B + b] * STRAIGHT_WEIGHT;
-      if (sc < score[v]) {
-        score[v] = sc;
-        label[v] = b;
-      }
-    }
-  }
-  if (process.env.SKIN_DEBUG) {
-    const count = (f) => bones.map((_, i) => pts.filter((v) => f(v) === i).length);
-    console.log('bone radius', radius.map((r) => (r / H).toFixed(3)).join(' '));
-    console.log('near  ', count((v) => near[v]).join(' '));
-    console.log('seeds ', count((v) => (seed(v) ? near[v] : -2)).join(' '));
-    console.log('label ', count((v) => label[v]).join(' '));
-  }
-  // One-hot by joint, then smoothed over the surface.
-  const J = jointCount;
-  let w = new Float32Array(n * J);
-  for (const v of pts) w[v * J + bones[label[v] >= 0 ? label[v] : near[v]].joint] = 1;
-  const meanEdge = edgeSum / Math.max(1, edges);
-  const rounds = Math.min(60, Math.max(3, Math.round(((BLEND * H) / meanEdge) ** 2)));
-  for (let r = 0; r < rounds; r++) {
-    const next = new Float32Array(n * J);
-    for (const v of pts) {
-      const l = adj.get(v) ?? [];
-      const k = 1 + l.length / 2;
-      for (let j = 0; j < J; j++) {
-        let s = w[v * J + j];
-        for (let i = 0; i < l.length; i += 2) s += w[l[i] * J + j];
-        next[v * J + j] = s / k;
-      }
-    }
-    w = next;
-  }
-  const joints = new Uint16Array(n * 4);
-  const weights = new Float32Array(n * 4);
-  for (let v = 0; v < n; v++) {
-    const c = canon[v];
-    const top = [...w.subarray(c * J, c * J + J)].map((x, j) => [j, x]).sort((a, b) => b[1] - a[1]).slice(0, 4).filter(([, x]) => x > 0.01);
-    const sum = top.reduce((s, [, x]) => s + x, 0);
-    top.forEach(([j, x], k) => {
-      joints[v * 4 + k] = j;
-      weights[v * 4 + k] = x / sum;
-    });
-  }
-  return { joints, weights };
 }
 
 /**
@@ -837,6 +680,86 @@ function addLowDetail(doc) {
   }
 }
 
+/** Texture seams whose two sides, or the texture between them, differ by more than this (0-255 RGB distance, averaged over a few texels) stay put. */
+const SEAM_COLOUR = 18;
+
+/**
+ * Simplify a mesh whose texture is cut into many small islands (the goblin's rags): the careful simplifier won't
+ * collapse across a texture seam, so hundreds of islands stop it far short of the target. Here a seam may be
+ * collapsed across where the texture matches on both sides of it (sampled round each side's UV, so a stretched
+ * triangle there still samples the same colour), and is protected where it doesn't; texture coordinates weigh in the
+ * error so the collapse keeps to where it shows least.
+ */
+async function seamAwareSimplify(prim, jpeg, targetTris) {
+  const { data, info } = await sharp(jpeg).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const P = prim.getAttribute('POSITION').getArray();
+  const UV = prim.getAttribute('TEXCOORD_0').getArray();
+  const N = prim.getAttribute('NORMAL').getArray();
+  const n = P.length / 3;
+  // The colour round a texture coordinate (5 x 5 texels, 2 apart).
+  const colour = (u, v) => {
+    const out = [0, 0, 0];
+    let k = 0;
+    for (let dy = -4; dy <= 4; dy += 2) {
+      for (let dx = -4; dx <= 4; dx += 2) {
+        const x = Math.min(info.width - 1, Math.max(0, Math.round(u * info.width) + dx));
+        const y = Math.min(info.height - 1, Math.max(0, Math.round(v * info.height) + dy));
+        const i = (y * info.width + x) * 3;
+        out[0] += data[i];
+        out[1] += data[i + 1];
+        out[2] += data[i + 2];
+        k++;
+      }
+    }
+    return out.map((x) => x / k);
+  };
+  // Vertices at one position with different texture coordinates are the sides of a seam.
+  const byPos = new Map();
+  for (let v = 0; v < n; v++) {
+    const key = `${P[v * 3].toFixed(5)},${P[v * 3 + 1].toFixed(5)},${P[v * 3 + 2].toFixed(5)}`;
+    (byPos.get(key) ?? byPos.set(key, []).get(key)).push(v);
+  }
+  const lock = new Uint8Array(n);
+  let [seams, kept] = [0, 0];
+  for (const group of byPos.values()) {
+    if (group.length < 2) continue;
+    seams++;
+    // Each pair of sides, and the texture on the way between them (a triangle stretched across the seam samples that).
+    let worst = 0;
+    const diff = (x, y) => Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]);
+    for (let a = 0; a < group.length && worst <= SEAM_COLOUR; a++) {
+      for (let b = a + 1; b < group.length && worst <= SEAM_COLOUR; b++) {
+        const [ua, va, ub, vb] = [UV[group[a] * 2], UV[group[a] * 2 + 1], UV[group[b] * 2], UV[group[b] * 2 + 1]];
+        const ca = colour(ua, va);
+        const steps = Math.min(16, Math.ceil(Math.hypot(ub - ua, vb - va) * info.width / 8));
+        for (let k = 1; k <= steps; k++) worst = Math.max(worst, diff(ca, colour(ua + ((ub - ua) * k) / steps, va + ((vb - va) * k) / steps)));
+      }
+    }
+    if (worst > SEAM_COLOUR) {
+      kept++;
+      // meshopt_SimplifyVertex_Protect: no collapse across the seam here.
+      for (const v of group) lock[v] = 2;
+    }
+  }
+  const attrs = new Float32Array(n * 5);
+  for (let v = 0; v < n; v++) attrs.set([UV[v * 2], UV[v * 2 + 1], N[v * 3], N[v * 3 + 1], N[v * 3 + 2]], v * 5);
+  const [out, error] = MeshoptSimplifier.simplifyWithAttributes(
+    new Uint32Array(prim.getIndices().getArray()),
+    new Float32Array(P),
+    3,
+    attrs,
+    5,
+    [1, 1, 0.3, 0.3, 0.3],
+    lock,
+    targetTris * 3,
+    0.02,
+    ['Permissive'],
+  );
+  prim.getIndices().setArray(out);
+  compactPrimitive(prim);
+  console.log(`  seams: ${seams} vertices on a seam, ${kept} kept apart (texture differs), ${out.length / 3} triangles, error ${error.toFixed(4)}`);
+}
+
 /**
  * The rig's skeleton fitted to this character, with its mesh bound to it.
  * `keep` filters triangles by the rig joint most of their vertices follow
@@ -939,7 +862,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
 
   await doc.transform(dedup({ propertyTypes: [PropertyType.ACCESSOR, PropertyType.MESH, PropertyType.TEXTURE] }), prune({ keepAttributes: true }), weld());
   // Meshy's texture seams are everywhere, so they can't all be locked or the mesh barely simplifies.
-  if (ratio < 1) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.008, lockBorder: false }));
+  if (ratio < 1 && c.seamWeld) await seamAwareSimplify(prim, jpeg, Math.floor((prim.getIndices().getCount() / 3) * ratio));
+  else if (ratio < 1) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.008, lockBorder: false }));
   await doc.transform(prune({ keepAttributes: true }));
   const fullTris = triangles(doc);
   if (lod) addLowDetail(doc);
@@ -988,7 +912,8 @@ for (const c of CHARACTERS) {
 const downloaded = readdirSync(downloads, { recursive: true }).map((f) => join(downloads, String(f)));
 for (const c of FBX_CHARACTERS) {
   const file = downloaded.find((f) => c.fbx.test(basename(f)));
-  if (!file) {
+  // ONLY=meshy_goblin,meshy_toad rebuilds just those (the rest kept as built).
+  if (!file || (process.env.ONLY && !process.env.ONLY.split(',').includes(c.id))) {
     keepAsBuilt(c.id);
     continue;
   }
