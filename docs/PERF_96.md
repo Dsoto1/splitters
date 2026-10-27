@@ -83,6 +83,56 @@ What the numbers show:
   spread or clumped; bot thinking roughly doubles in a clump. The bot-side
   cuts are in MAP_BUDGETS.md ("Clumped 48 v 48").
 
+## Against the target: clumped 48 v 48 offline, default graphics
+
+The owner's target is 48 v 48 with bots running smoothly offline in the
+browser. `PERF_GRAPHICS=medium PERF_SIM=worker node tools/perf/perf96.mjs
+norman_shores frost_basin` (Medium is the default), 27 Oct 2026, box load
+2–4 for the "worker" rows and 4–8 for the "+ bot AI pass" rows (the bot AI
+changes of MAP_BUDGETS.md "Clumped 48 v 48" applied on top, measured
+together). Frame times are SwiftShader's (CPU rendering on the same 4 cores),
+so they are far above any GPU's; the worker's tick times are real CPU time.
+
+| Map, clumped | Page frame p50 / p95 (ms) | Worker tick p50 / p95 (ms) | Largest catch-up batch | Draw calls | Active meshes | Triangles | Skinned meshes (characters) |
+|---|---|---|---|---|---|---|---|
+| Norman Shores, worker | 1,005 / 10,220 | 2.4 / 7.4 | 3 | 6,316 | 5,492 | 4.75 M | 799 (105) |
+| Norman Shores, + bot AI pass | 1,160 / 1,160 (1 frame) | 2.9 / 22.8* | 4 | 5,469 | 8,340 | 5.10 M | 723 (112) |
+| Frost Basin, worker | 631 / 4,020 | 2.2 / 6.2 | 4 | 1,611 | 1,436 | 0.85 M | 444 (121) |
+| Frost Basin, + bot AI pass | 584 / 2,046 | 2.5 / 7.1 | 2 | 560 | 375 | 0.40 M | 115 (118) |
+
+\* The second run met a busier box (other agents' jobs started); its spread
+rows also show a "rest" share three times the first run's. The bot AI pass's
+own before/after is measured headless in MAP_BUDGETS.md, where it is
+repeatable.
+
+**The simulation fits**: in its worker a clumped 48 v 48 tick takes 2–3 ms at
+the median and 6–8 ms at p95 on a quiet box, inside the 16.7 ms a 60 Hz tick
+has, on a core of its own. The page's thread spends nothing on it.
+
+**Rendering is what's left above 16 ms** (on any machine whose GPU isn't far
+ahead of this CPU-rendered run). What dominates, in order:
+
+1. **Characters and skinning**: ~110 skeletons, and 720–930 skinned meshes
+   drawn a frame on Norman Shores (7–8 skinned submeshes per character:
+   body parts, gear, weapon), each skinned and drawn separately (and again
+   into the shadow map). The clump puts all 96 in view at once.
+2. **Draw calls**: 5,500–6,400 a frame on Norman Shores (1,000–1,600 on Frost
+   Basin) with 5,500–8,300 active meshes: the map's props and dressing plus
+   the characters' submeshes. Frost Basin, a third of the draw calls, renders
+   about twice as fast.
+3. **Triangles**: 4.1–5.1 M on Norman Shores (terrain plants and props), 0.4–
+   1.2 M on Frost Basin.
+4. Effects are not a factor here: no particle systems were live in these
+   samples, three lights.
+
+The page's own frame JS (prediction, interpolation, visuals, HUD) is 30–500 ms
+in these CPU-rendered frames and snapshot handling 10–120 ms a second; both
+scale with the slow frames and should be re-read on a GPU machine
+(`PERF_GPU=1`). Suggested render pass: merge each character's submeshes
+(or bake them into one skinned mesh per look), GPU skinning / animation
+textures with instancing for distant characters, impostors or lower LODs for
+far bots, and fewer distinct prop draws on Norman Shores.
+
 ## Not covered
 
 - Snapshot handling on the page (`msg`) is now the largest sim-related cost
