@@ -10,6 +10,9 @@ Gameplay messages between a player and the authoritative host
 (`ClientMessage`/`ServerMessage` in `packages/shared/src/protocol.ts`) are
 out of scope here: they ride the WebRTC data channel once a join succeeds,
 and keep their own limits (inputs ≤ 32 a message, 2 a tick, 16 queued).
+Since `PROTOCOL_VERSION` 4 their snapshots are delta-encoded per connection
+(players as changes since the copy last sent on it; see HOSTING.md "96
+players"), which relies on that channel being reliable and ordered.
 
 ## 1. Parties and channels
 
