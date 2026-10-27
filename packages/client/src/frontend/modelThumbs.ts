@@ -3,9 +3,9 @@ import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
-import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
+import { offscreenCamera } from './offscreen.ts';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Vector3 as V3 } from '@babylonjs/core/Maths/math.vector';
@@ -42,9 +42,8 @@ export class ModelThumbnails {
     this.scene = new Scene(engine);
     this.scene.autoClear = false;
     this.scene.autoClearDepthAndStencil = false;
-    const hidden = new FreeCamera('thumbHidden', Vector3.Zero(), this.scene);
-    hidden.viewport = new Viewport(0, 0, 0.0001, 0.0001);
-    this.scene.activeCamera = hidden;
+    // Renders between the app's frames: never onto the screen (see offscreenCamera).
+    this.scene.activeCamera = offscreenCamera(this.scene, 'thumbHidden');
     this.camera = new FreeCamera('thumbCam', new Vector3(0, 1, 2), this.scene);
     this.camera.minZ = 0.02;
     this.camera.freezeProjectionMatrix(Matrix.PerspectiveFovLH(0.6, 1, 0.02, 200, engine.isNDCHalfZRange));

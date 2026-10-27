@@ -6,6 +6,7 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
+import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 
 /** What the animator needs to know each frame (from interpolated snapshots). */
 export interface MotionState {
@@ -54,6 +55,8 @@ const UPPER_BODY = [
 const HANDS_OFF: ReadonlySet<OneShot> = new Set(['reload', 'melee', 'melee_heavy', 'throw', 'interact', 'hit']);
 /** Upper-body turn (radians) that brings the left shoulder forward onto a long gun. */
 const LONG_GUN_BLADE = 0.45;
+/** Half the width of a rifle stock (m): torso skin within this of the barrel line is in its way. */
+const STOCK_RADIUS = 0.035;
 
 /** An arm for the IK solver. */
 interface Arm {
@@ -98,6 +101,8 @@ export class CharacterAnimator {
   private blade = 0;
   /** The weapon relative to the right hand, from the last frame it was gripped. */
   private readonly inHand = { pos: Vector3.Zero(), rot: Quaternion.Identity(), valid: false };
+  /** Where the torso's front is, for setting a stock on it (measured on the first long-gun frame). */
+  private torso: TorsoSurface | null | undefined;
   private readonly mask = new AnimationGroupMask(UPPER_BODY, AnimationGroupMaskMode.Include);
   /** Legs-only locomotion, so the arms stay on the weapon while running. */
   private readonly legs = new AnimationGroupMask(UPPER_BODY, AnimationGroupMaskMode.Exclude);
@@ -382,6 +387,16 @@ export class CharacterAnimator {
       inward.y = 0;
       // The stock sits just inside the shoulder joint, a little in front and below.
       const pocket = shoulder.add(inward.normalize().scale(0.07 * scale)).add(new Vector3(0, -0.03, 0.05).scale(scale).applyRotationQuaternion(aim));
+      // Out along the barrel onto the body's own surface: armour or a big chest stands well in front of the joint.
+      if (this.torso === undefined) this.torso = TorsoSurface.measure(this.ch);
+      const barrel = new Vector3(0, 0, 1).applyRotationQuaternion(aim);
+      const clear = this.torso?.clearance(pocket, barrel, STOCK_RADIUS * scale, 0.01 * scale) ?? 0;
+      if (clear > 0) {
+        // ...but no further than both hands still reach their points on the gun.
+        const on = (p: ModelPoint) => point(pocket, aim, [p[0] - grip.shoulder![0], p[1] - grip.shoulder![1], p[2] - grip.shoulder![2]]);
+        const reach = (arm: Arm, p: ModelPoint) => reachAlong(pos(arm.upper), on(p), barrel, armReach(arm.upper, arm.lower, arm.hand, arm.palm));
+        pocket.addInPlace(barrel.scale(Math.min(clear, reach(arms.r, grip.grip), grip.support ? reach(arms.l, grip.support) : clear)));
+      }
       gripped = { rot: aim, pos: pocket.subtract(new Vector3(...grip.shoulder).scale(scale).applyRotationQuaternion(aim)) };
     }
 
