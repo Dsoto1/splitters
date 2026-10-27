@@ -7,6 +7,7 @@ import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder'
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import '@babylonjs/core/Rendering/edgesRenderer';
+import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
@@ -90,6 +91,16 @@ interface Visual {
   root: TransformNode;
   /** Animate from replicated state [a, b] (see ScenarioSnapshot) and wall-clock time. */
   update?: (a: number, b: number, now: number, dt: number) => void;
+  /** A destructible in the game: its meshes become GPU thin instances shared with every other one (see batchDestructibles). */
+  batch?: { base: string };
+}
+
+/** One shape and material that destructibles share: every copy is a thin instance of `mesh`. */
+interface DestructibleBatch {
+  mesh: Mesh;
+  matrices: Float32Array;
+  /** Per-instance colour (bodies only: they darken with damage). */
+  colors: Float32Array | null;
 }
 
 export interface VisualOptions {
@@ -128,6 +139,95 @@ export class ScenarioVisuals {
       this.visuals.set(i, v);
     });
     this.mergeFixtures(fixtures);
+    this.batchDestructibles([...this.visuals.values()].filter((v) => v.batch));
+  }
+
+  private batches: Mesh[] = [];
+
+  /**
+   * Destructibles are 3–6 small meshes each (a pane and its frame, a crate and
+   * its bands): a map with a hundred of them was several hundred draw calls,
+   * each mesh culled and drawn one by one. In the game every part of the same
+   * shape and material becomes a GPU thin instance of one mesh (one draw for
+   * all of them). A body darkens with damage through its instance colour; a
+   * broken one's instances collapse to nothing. MapMaker keeps them as meshes.
+   */
+  private batchDestructibles(list: Visual[]): void {
+    const groups = new Map<string, { meshes: Mesh[]; body: boolean }>();
+    const owner = new Map<Mesh, Visual>();
+    for (const v of list) {
+      v.root.computeWorldMatrix(true);
+      for (const m of v.root.getChildMeshes(false)) {
+        if (!(m instanceof Mesh) || !m.material) continue;
+        const body = m.name.endsWith('_body');
+        const pos = m.getVerticesData('position');
+        if (!pos) continue;
+        // Same shape: same vertices (each part is built from its own box or cylinder).
+        let h = pos.length;
+        for (let k = 0; k < pos.length; k++) h = (Math.imul(h, 31) + Math.round(pos[k]! * 1000)) | 0;
+        const key = `${m.material.uniqueId}|${body ? 1 : 0}|${pos.length}|${h}`;
+        let g = groups.get(key);
+        if (!g) groups.set(key, (g = { meshes: [], body }));
+        g.meshes.push(m);
+        owner.set(m, v);
+      }
+    }
+    const slots = new Map<Visual, { batch: DestructibleBatch; index: number; body: boolean; matrix: Float32Array }[]>();
+    for (const [key, g] of groups) {
+      const first = g.meshes[0]!;
+      const mesh = first.clone(`sc_destructibles_${this.batches.length}`, null, true, false)!;
+      mesh.parent = null;
+      mesh.position.setAll(0);
+      mesh.rotationQuaternion = null;
+      mesh.rotation.setAll(0);
+      mesh.scaling.setAll(1);
+      mesh.isPickable = false;
+      const n = g.meshes.length;
+      const batch: DestructibleBatch = { mesh, matrices: new Float32Array(n * 16), colors: g.body ? new Float32Array(n * 4).fill(1) : null };
+      g.meshes.forEach((m, i) => {
+        const w = m.computeWorldMatrix(true);
+        w.copyToArray(batch.matrices, i * 16);
+        const v = owner.get(m)!;
+        let list = slots.get(v);
+        if (!list) slots.set(v, (list = []));
+        list.push({ batch, index: i, body: g.body, matrix: batch.matrices.slice(i * 16, i * 16 + 16) });
+      });
+      mesh.thinInstanceSetBuffer('matrix', batch.matrices, 16, false);
+      if (batch.colors) mesh.thinInstanceSetBuffer('color', batch.colors, 4, false);
+      mesh.thinInstanceRefreshBoundingInfo(false);
+      mesh.freezeWorldMatrix();
+      mesh.doNotSyncBoundingInfo = true;
+      mesh.metadata = { key };
+      this.batches.push(mesh);
+    }
+    for (const m of owner.keys()) m.dispose(false, false);
+    const zero = new Float32Array(16);
+    for (const [v, parts] of slots) {
+      let last = 100;
+      const dirty = new Set<DestructibleBatch>();
+      v.update = (health) => {
+        if (health === last) return;
+        const was = last;
+        last = health;
+        const shade = 0.45 + 0.55 * (health / 100);
+        for (const p of parts) {
+          if ((health > 0) !== (was > 0)) {
+            p.batch.matrices.set(health > 0 ? p.matrix : zero, p.index * 16);
+            dirty.add(p.batch);
+          }
+          if (p.body && p.batch.colors) {
+            // The body's own colour times this (diffuse only, as the per-pane material did before).
+            p.batch.colors.set([shade, shade, shade, 1], p.index * 4);
+            dirty.add(p.batch);
+          }
+        }
+        for (const b of dirty) {
+          b.mesh.thinInstanceBufferUpdated('matrix');
+          if (b.colors) b.mesh.thinInstanceBufferUpdated('color');
+        }
+        dirty.clear();
+      };
+    }
   }
 
   /** Lights nothing changes (see build). */
@@ -214,6 +314,8 @@ export class ScenarioVisuals {
     this.visuals.clear();
     for (const m of this.merged) m.dispose();
     this.merged = [];
+    for (const m of this.batches) m.dispose();
+    this.batches = [];
   }
 
   dispose(): void {
@@ -1332,6 +1434,10 @@ export class ScenarioVisuals {
 
   private destructible(name: string, e: Extract<MapEntity, { kind: 'destructible' }>): Visual {
     const root = new TransformNode(name, this.scene);
+    // The game draws every destructible's parts as shared thin instances (batchDestructibles): bodies
+    // share one material per colour and darken through their instance colour; MapMaker's each own one.
+    const batched = !this.opts.editor;
+    const bodyMaterial = (hex: string) => (batched ? this.mat('destructBody', hex, { spec: 0.2 }) : this.ownMat(hex));
     const spec = DESTRUCTIBLE_SPECS[e.model];
     const h = spec.half;
     let body: Mesh;
@@ -1339,7 +1445,7 @@ export class ScenarioVisuals {
     let base: string;
     if (e.model === 'crate') {
       base = '#9a6b3d';
-      bodyMat = this.ownMat(base);
+      bodyMat = bodyMaterial(base);
       body = this.box(`${name}_body`, root, [h.x * 2, h.y * 2, h.z * 2], [0, h.y, 0], bodyMat);
       const plank = this.mat('plank', '#6e4a28');
       for (const s of [-1, 1]) {
@@ -1350,7 +1456,7 @@ export class ScenarioVisuals {
       diag.rotation.z = Math.PI / 4;
     } else if (e.model === 'barrel') {
       base = '#c23b2a';
-      bodyMat = this.ownMat(base);
+      bodyMat = bodyMaterial(base);
       body = CreateCylinder(`${name}_body`, { diameter: h.x * 2, height: h.y * 2, tessellation: 18 }, this.scene);
       body.parent = root;
       body.position.y = h.y;
@@ -1365,7 +1471,7 @@ export class ScenarioVisuals {
       // A pane in a window: translucent, with a thin frame.
       const lift = spec.lift ?? 0;
       base = '#bfe6f5';
-      bodyMat = this.ownMat(base);
+      bodyMat = bodyMaterial(base);
       bodyMat.alpha = 0.35;
       bodyMat.specularColor = new Color3(0.9, 0.9, 0.9);
       bodyMat.specularPower = 96;
@@ -1376,14 +1482,14 @@ export class ScenarioVisuals {
     } else if (e.model === 'boards') {
       // Planks nailed across a doorway at slight angles.
       base = '#8a5d33';
-      bodyMat = this.ownMat(base);
+      bodyMat = bodyMaterial(base);
       body = this.box(`${name}_body`, root, [h.x * 2, 0.32, h.z * 2], [0, 0.55, 0], bodyMat);
       const plank = this.mat('boardPlank', '#9a6b3d');
       for (const [y, r] of [[1.3, 0.06], [2.05, -0.05], [2.7, 0.04]] as const) this.box(`${name}_plank${y}`, root, [h.x * 2 + 0.1, 0.3, h.z * 2], [0, y, 0], plank).rotation.z = r;
       this.box(`${name}_cross`, root, [0.25, h.y * 2.4, h.z * 2 + 0.02], [0, h.y, 0], plank).rotation.z = 0.55;
     } else if (e.model === 'gas') {
       base = '#d8d8d0';
-      bodyMat = this.ownMat(base);
+      bodyMat = bodyMaterial(base);
       body = CreateCylinder(`${name}_body`, { diameter: h.x * 2, height: h.y * 2 - 0.2, tessellation: 16 }, this.scene);
       body.parent = root;
       body.position.y = h.y - 0.1;
@@ -1395,7 +1501,7 @@ export class ScenarioVisuals {
       this.box(`${name}_band`, root, [h.x * 2 + 0.02, 0.12, h.z * 2 + 0.02], [0, h.y * 1.3, 0], this.mat('gasBand', '#d8483a', { emissive: 0.2 }));
     } else if (e.model === 'generator') {
       base = '#5a6066';
-      bodyMat = this.ownMat(base);
+      bodyMat = bodyMaterial(base);
       body = this.box(`${name}_body`, root, [h.x * 2, h.y * 2 - 0.2, h.z * 2], [0, h.y - 0.1, 0], bodyMat);
       this.box(`${name}_panel`, root, [0.7, 0.45, 0.04], [-0.4, h.y, h.z + 0.01], this.mat('genPanel', '#e3b021', { emissive: 0.35 }));
       this.box(`${name}_fan`, root, [0.6, 0.6, 0.04], [0.45, h.y, h.z + 0.01], this.mat('genFan', '#2a2e34'));
@@ -1403,7 +1509,7 @@ export class ScenarioVisuals {
       this.box(`${name}_skid`, root, [h.x * 2 + 0.2, 0.12, h.z * 2 + 0.1], [0, 0.06, 0], this.mat('genSkid', '#e3b021'));
     } else {
       base = '#9b9a94';
-      bodyMat = this.ownMat(base);
+      bodyMat = bodyMaterial(base);
       body = this.box(`${name}_body`, root, [h.x * 2, h.y * 2, h.z * 2], [0, h.y, 0], bodyMat);
       const crack = this.mat('crack', '#44433f');
       for (const [x, y, r, len] of [
@@ -1416,6 +1522,7 @@ export class ScenarioVisuals {
       }
       if (e.explosiveOnly) this.box(`${name}_mark`, root, [0.9, 0.9, h.z * 2 + 0.03], [0, 1.5, 0], this.mat('reinforced', '#e3b021'));
     }
+    if (batched) return { root, batch: { base } };
     return {
       root,
       update: (health) => {

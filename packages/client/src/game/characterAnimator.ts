@@ -2,6 +2,8 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { Observer } from '@babylonjs/core/Misc/observable';
 import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { AnimationGroupMask, AnimationGroupMaskMode } from '@babylonjs/core/Animations/animationGroupMask';
+import { Animatable } from '@babylonjs/core/Animations/animatable';
+import type { Skeleton } from '@babylonjs/core/Bones/skeleton';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { ModelPoint, WeaponHold } from '@tiletrigger/shared';
@@ -74,6 +76,29 @@ interface Arm {
   thumb: TransformNode;
 }
 
+/** A character's animation gate: while `skip` is set its clips are not evaluated (see CharacterAnimator.stepAt). */
+interface AnimGate {
+  skip: boolean;
+}
+
+let gatePatched = false;
+/**
+ * Babylon evaluates every playing clip on every frame. Animation targets that
+ * carry a gate (a crowd's far characters, see stepAt) skip evaluation while it
+ * is shut: their bones hold the last pose, and the next evaluation samples the
+ * clip at the current time, so nothing falls behind.
+ */
+function patchAnimatables(): void {
+  if (gatePatched) return;
+  gatePatched = true;
+  const proto = Animatable.prototype as unknown as { _animate(delay: number): boolean; target: { _animGate?: AnimGate } | null };
+  const animate = proto._animate;
+  proto._animate = function (this: typeof proto, delay: number): boolean {
+    if (this.target?._animGate?.skip) return true;
+    return animate.call(this, delay);
+  };
+}
+
 /**
  * Drives one character: crossfaded locomotion loops chosen from speed and
  * airtime, upper-body one-shots (shooting, melee, reloads) over the legs, a
@@ -138,6 +163,44 @@ export class CharacterAnimator {
     }
     this.play('aim_idle', 1);
     this.observer = scene.onAfterAnimationsObservable.add(() => this.afterAnimations());
+    // The gate on every animated node, and the skeleton's matrices held while it is shut.
+    patchAnimatables();
+    for (const g of this.groups()) for (const t of g.targetedAnimations) if (t.target) (t.target as { _animGate?: AnimGate })._animGate = this.gate;
+    const skeletons = new Set<Skeleton>();
+    for (const m of ch.meshes) if (m.skeleton) skeletons.add(m.skeleton);
+    for (const sk of skeletons) {
+      const prepare = sk.prepare.bind(sk);
+      sk.prepare = (dontCheckFrameId?: boolean) => {
+        if (!this.gate.skip) prepare(dontCheckFrameId);
+      };
+    }
+  }
+
+  private readonly gate: AnimGate = { skip: false };
+  /** Animation LOD: the next time (ms) the clips are evaluated, and the step between evaluations (0: every frame). */
+  private nextStep = 0;
+
+  /**
+   * Animation LOD (a crowd's far characters): evaluate the clips, bones and
+   * aim only every `stepMs` (0: every frame), from `phase` (ms) so a crowd's
+   * evaluations spread over frames. Returns whether this frame evaluates (the
+   * state machine should update then, with the time saved up). Clips are
+   * sampled at the current time when they do, so motion keeps its speed.
+   */
+  stepAt(now: number, stepMs: number, phase = 0): boolean {
+    if (stepMs <= 0 || this.dead) {
+      this.gate.skip = false;
+      this.nextStep = 0;
+      return true;
+    }
+    if (now >= this.nextStep) {
+      // On the character's own phase, so not every far character evaluates on the same frame.
+      this.nextStep = now + stepMs - ((((now - phase) % stepMs) + stepMs) % stepMs);
+      this.gate.skip = false;
+      return true;
+    }
+    this.gate.skip = true;
+    return false;
   }
 
   /** Carry a weapon model, held as `grip` describes (null to empty the hands). */
@@ -306,6 +369,8 @@ export class CharacterAnimator {
    */
   ragdoll(): void {
     this.dead = true;
+    // Physics poses the bones from now on: they must be drawn every frame.
+    this.gate.skip = false;
     for (const g of this.ch.clips.values()) if (g.isPlaying) g.stop();
     this.aimUpper?.stop();
     this.overlay = null;
@@ -334,6 +399,7 @@ export class CharacterAnimator {
 
   private die(): void {
     this.dead = true;
+    this.gate.skip = false;
     // The ragdoll takes over from wherever the body is.
     this.prone = 0;
     this.applyProne();
@@ -364,7 +430,8 @@ export class CharacterAnimator {
 
   /** Bend the spine for aim pitch and counter-twist the hip turn, then put the weapon in the hands. */
   private afterAnimations(): void {
-    if (this.dead || this.dormant || !this.spine.length) return;
+    // Not evaluated this frame (animation LOD): the bones still hold last evaluation's aim and grip.
+    if (this.dead || this.dormant || this.gate.skip || !this.spine.length) return;
     const root = this.ch.root;
     root.computeWorldMatrix(true);
     const rootRot = Quaternion.FromRotationMatrix(root.getWorldMatrix().getRotationMatrix());

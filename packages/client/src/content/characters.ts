@@ -18,6 +18,7 @@ import { GLB, versioned } from '../assetUrl.ts';
 import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
 import { buildGear } from './gear.ts';
+import { CharacterAtlas } from './characterAtlas.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes. */
 export const LOD_DISTANCE = 18;
@@ -95,7 +96,16 @@ export class CharacterLibrary {
   /** Hip offsets between the rig's rest pose and each body's, per clip. */
   private readonly hipAnims = new Map<string, Animation>();
 
-  constructor(private readonly scene: Scene) {}
+  /** Skin, hair and eyes on one shared texture (see CharacterAtlas), when the owner asks for it (the game). */
+  private readonly atlas: CharacterAtlas | null;
+
+  constructor(
+    private readonly scene: Scene,
+    opts: { atlas?: boolean } = {},
+  ) {
+    this.atlas = opts.atlas ? new CharacterAtlas(scene) : null;
+    if (this.atlas) scene.onDisposeObservable.addOnce(() => this.atlas?.dispose());
+  }
 
   private load(file: string): Promise<AssetContainer> {
     let p = this.files.get(file);
@@ -236,6 +246,12 @@ export class CharacterLibrary {
       full.addLODLevel(LOD_DISTANCE, m as Mesh);
     }
     meshes.splice(0, meshes.length, ...meshes.filter((m) => !m.isDisposed()));
+    // Skin, hair and eyes onto the shared atlas: with their tints in the vertices they merge into one draw below.
+    if (!spec.armsOnly && this.atlas) {
+      const mat = await this.atlas.apply(meshes, name, (m) => m.name === 'MI_Eyes' || materialTint(m.name) !== null);
+      if (this.scene.isDisposed) return gone();
+      if (mat) owned.push(mat);
+    }
     // One draw per material instead of one per part (a look is 8–12 skinned parts, most sharing the outfit's or the skin's material).
     if (!spec.armsOnly) meshes.splice(0, meshes.length, ...mergeSkinnedParts(meshes, `${name}_body`));
     for (const m of meshes) {

@@ -10,6 +10,7 @@ import { ImageProcessingConfiguration } from '@babylonjs/core/Materials/imagePro
 import { DefaultRenderingPipeline } from '@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
 import { SSAO2RenderingPipeline } from '@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
 import type { Observer } from '@babylonjs/core/Misc/observable';
+import type { Node } from '@babylonjs/core/node';
 import '@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent';
 import '@babylonjs/core/Rendering/geometryBufferRendererSceneComponent';
 import '@babylonjs/core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent';
@@ -128,10 +129,13 @@ export class Atmosphere {
         nearFrame = frame;
         near.length = 0;
         const c = this.camera.globalPosition;
+        const off = this.shadowless;
         for (let i = 0; i < length; i++) {
           const m = list[i]!;
           const b = m.getBoundingInfo().boundingSphere;
-          if (Vector3.Distance(b.centerWorld, c) - b.radiusWorld <= reach) near.push(m);
+          if (Vector3.Distance(b.centerWorld, c) - b.radiusWorld > reach) continue;
+          if (off.size && underAny(m, off)) continue;
+          near.push(m);
         }
         return near;
       };
@@ -166,6 +170,12 @@ export class Atmosphere {
       }
     }
   }
+
+  /**
+   * Nodes whose meshes cast no shadow for now (a crowd's far characters: see
+   * GameView.updateAvatars). They still catch shadows.
+   */
+  readonly shadowless = new Set<Node>();
 
   /** Is this mesh part of the world that should cast and catch shadows? */
   private worldly(m: AbstractMesh): boolean {
@@ -281,4 +291,10 @@ export function renderRatio(scale: RenderScale, dpr = typeof window === 'undefin
     default:
       return Math.min(dpr, 1.25);
   }
+}
+
+/** Whether a node is one of `roots` or below one. */
+function underAny(n: Node, roots: ReadonlySet<Node>): boolean {
+  for (let p: Node | null = n; p; p = p.parent) if (roots.has(p)) return true;
+  return false;
 }

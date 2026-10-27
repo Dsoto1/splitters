@@ -169,13 +169,16 @@ const MAX_CORPSES = 32;
 /** Ragdolls still tumbling at once; past this a death plays the death animation instead (96-player matches). */
 const MAX_ACTIVE_RAGDOLLS = 12;
 /**
- * Crowd animation LOD: with more than this many remote characters, ones past
- * ANIM_LOD_NEAR metres animate every other frame and past ANIM_LOD_FAR every
- * fourth (their meshes already drop to the low-detail copy past LOD_DISTANCE).
+ * Crowd animation LOD: with more than this many remote characters, ones in
+ * view past ANIM_LOD_NEAR metres are animated (clips sampled, bones, aim and
+ * grip) at 15 Hz and past ANIM_LOD_FAR at 10 Hz instead of every frame (their
+ * meshes already drop to the low-detail copy past LOD_DISTANCE).
  */
 const ANIM_LOD_CROWD = 24;
-const ANIM_LOD_NEAR = 45;
-const ANIM_LOD_FAR = 120;
+const ANIM_LOD_NEAR = 35;
+const ANIM_LOD_FAR = 70;
+/** Crowds: characters further than this (m) cast no shadow (a crowd's far shadows are a draw each for a few pixels). */
+const CROWD_SHADOW_REACH = 30;
 /** Crowds: a character is drawn while a sphere this big (m) round its middle touches the view (it covers the gun and most of a shadow). */
 const CULL_RADIUS = 2.5;
 
@@ -261,7 +264,7 @@ export class GameView {
     this.city = new CityVisuals(this.models);
     this.scenario = new ScenarioVisuals(this.scene);
     this.zoneVisuals = new ZoneVisuals(this.scene);
-    this.characters = new CharacterLibrary(this.scene);
+    this.characters = new CharacterLibrary(this.scene, { atlas: true });
     this.creatures = new CreatureLibrary(this.scene);
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.blood = new BloodVisuals(this.scene, () => this.physics);
@@ -416,6 +419,7 @@ export class GameView {
   /** The fallen body becomes a corpse that outlives the player's respawn. */
   private toCorpse(slot: number, a: Avatar): void {
     this.avatars.delete(slot);
+    this.atmosphere.shadowless.delete(a.root);
     this.lyingDead.add(slot);
     a.tag?.mesh.dispose(false, !a.tag.mesh.isAnInstance);
     a.tag = undefined;
@@ -869,12 +873,29 @@ export class GameView {
         const speed = seated.has(p.slot) ? 0 : Math.hypot(a.vel.x, a.vel.z);
         // Far characters in a crowd animate every few frames, with the time saved up (a death always plays at once).
         const far = crowd && cam && p.alive ? Math.hypot(p.x - cam.x, p.z - cam.z) : 0;
-        const every = a.culled ? 8 : far > ANIM_LOD_FAR ? 4 : far > ANIM_LOD_NEAR ? 2 : 1;
+        // Crowds: far characters cast no shadow.
+        if (crowd && far > CROWD_SHADOW_REACH) this.atmosphere.shadowless.add(a.root);
+        else this.atmosphere.shadowless.delete(a.root);
         a.animDt = (a.animDt ?? 0) + dt;
-        a.animFrame = ((a.animFrame ?? 0) + 1) % every;
-        const animDt = Math.min(every > 1 ? 0.25 : 0.1, a.animDt);
-        if (a.animFrame === 0) a.animDt = 0;
-        if (a.animFrame === 0) a.anim.update(animDt, {
+        let run: boolean;
+        let stepped: boolean;
+        if (a.anim instanceof CharacterAnimator && !a.culled) {
+          // Characters in view: past ANIM_LOD_NEAR their clips, bones and aim are evaluated at 15 Hz, past
+          // ANIM_LOD_FAR at 10 Hz (on each one's own phase), and the state machine runs with them.
+          const stepMs = far > ANIM_LOD_FAR ? 100 : far > ANIM_LOD_NEAR ? 1000 / 15 : 0;
+          run = a.anim.stepAt(now, stepMs, (p.slot * 37) % 100);
+          stepped = stepMs > 0;
+        } else {
+          // Out of view (asleep) characters, and creatures: the state machine every few frames.
+          const every = a.culled ? 8 : far > ANIM_LOD_FAR ? 4 : far > ANIM_LOD_NEAR ? 2 : 1;
+          if (a.anim instanceof CharacterAnimator) a.anim.stepAt(now, 0);
+          a.animFrame = ((a.animFrame ?? 0) + 1) % every;
+          run = a.animFrame === 0;
+          stepped = every > 1;
+        }
+        const animDt = Math.min(stepped ? 0.25 : 0.1, a.animDt);
+        if (run) a.animDt = 0;
+        if (run) a.anim.update(animDt, {
           speed,
           moveAngle: speed > 0.3 ? angleDelta(p.yaw, Math.atan2(a.vel.x, a.vel.z)) : 0,
           airborne: !p.grounded && !seated.has(p.slot),
@@ -1129,6 +1150,7 @@ export class GameView {
   }
 
   private disposeAvatar(a: Avatar): void {
+    this.atmosphere.shadowless.delete(a.root);
     // The flash texture is shared by every flash: dispose the material, never the texture.
     a.flash?.material?.dispose();
     a.flash?.dispose();
@@ -1142,7 +1164,7 @@ export class GameView {
   // ---------------------------------------------------------------- pickups
 
   private addPickup(e: PickupEntity): void {
-    const root = createPickupVisual(this.scene, this.models, e.item, `pickup_${e.id}`);
+    const root = createPickupVisual(this.scene, this.models, e.item, `pickup_${e.id}`, true);
     const baseY = e.position[1] + PICKUP_HOVER;
     root.position.set(e.position[0], baseY, e.position[2]);
     this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2) });
