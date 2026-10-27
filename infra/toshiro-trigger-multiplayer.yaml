@@ -44,8 +44,9 @@ Parameters:
     Description: >-
       Lightsail plan. small_3_0 = 2 GB RAM, 2 vCPU, 60 GB SSD, 3 TB transfer
       (about 12 USD/month). Changing it REPLACES the instance (new disk); the
-      static IP moves over and the deploy script rebuilds the box from Git and
-      SSM, so nothing is lost but a few minutes of uptime.
+      static IP moves over and the deploy script sets the box up again from Git,
+      SSM and the published site build, so nothing is lost but a few minutes of
+      uptime.
   AdminSshCidr:
     Type: String
     Default: ''
@@ -296,6 +297,8 @@ Resources:
       NotificationEnabled: true
       NotificationTriggers: [ALARM, OK]
 
+  # Burst credits ran out when the box built the site itself; it doesn't any more (it installs CI's build,
+  # infra/tiletrigger-update.sh), so this alarm now means real load or abuse.
   BurstCapacityAlarm:
     Type: AWS::Lightsail::Alarm
     Properties:

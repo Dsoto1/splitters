@@ -113,7 +113,7 @@ authenticated endpoints, and an active-vehicle (24) runtime cap. Phase 2 and
 | 10 | Hub: discovery, codes, signaling, registration, heartbeats, TURN auth, host control | **Partly** | Discovery + heartbeats (20 s, expiry 65 s, `shared/src/net/lobby.ts:38-39`) + signaling (PeerJS) + TURN creds exist. No authenticated registration, no host control, no join authorization. |
 | 11 | Home network safety | **Complies** | Browser hosts need no port forwarding (WebRTC + TURN). The dedicated server's docs open port 7777 on a LAN only; keep "no DMZ, no admin port" in Host Service docs. |
 | 12 | Secrets | **Complies** (infra) | SSM SecureStrings; nothing reusable in the bundle. |
-| 13 | Signed updates | n/a yet | Strategy in MULTIPLAYER_SECURITY.md section 7. Site deploys build from Git on the box (`aws-lightsail-setup.sh:52-59`); see risks. |
+| 13 | Signed updates | **Complies** for the site and hub; Host Service n/a yet | The box no longer builds: CI publishes the site build to GitHub Releases with a Sigstore build-provenance attestation (keyless, no secret), and `tiletrigger-update` verifies SHA-256 + the attestation (this repo's `ci.yml`, `main`/`v*`, this commit) over HTTPS before installing; versioned folders, atomic switch, health check with automatic rollback, `--rollback` to the last 3 builds; locked dependencies (`--frozen-lockfile`, production only on the box). Draining doesn't apply to the hub (no matches run on it). Host Service updates: strategy in MULTIPLAYER_SECURITY.md section 7. HOSTING.md, "Updates". |
 | 14 | Logging/privacy | **Partly** | Hub logs little. Caddy access logs are off (default). journald now capped (300 MB, 14 days). The lobby keeps IPs in memory only for rate limits (`lobby.ts:6-11,26,90`). **Task**: a privacy page (section 7). |
 | 15 | Moderation primitives possible later | **Partly** | Listings have IDs; players have names only (no account ID). Plan account IDs (Cognito `sub`) in join tickets so kick/ban/report can key on them. |
 | 16–18 | AWS: control plane, S3/CloudFront evaluated, Lightsail hub | **Complies** | See section 3. |
@@ -206,17 +206,20 @@ primitives keyed on account IDs.
   failed relay joins, during a cut-over nobody is relayed through the old box
   anyway because the hub and TURN move together.
 - **Bundle change replaces the instance** (template parameter `BundleId`).
-  The box is rebuilt from Git and SSM by the next deploy run; static IP stays.
+  The box is set up again from Git, SSM and the published site build by the
+  next deploy run; static IP stays.
 - **Tighter coturn bounds** (41 relay ports, 48 KB/s per session) could
   refuse relays during a busy evening: watch coturn logs (`tiletrigger-relay
   status`) and widen the port range in both the template and host-setup
   together.
 - **ufw on the box**: if a future service needs a port, open it in the
   template *and* `host-setup.sh`.
-- **Building on the box** (`pnpm build` on a 2 GB instance with 2 GB swap) is
-  slow and pulls dependencies at deploy time; moving builds to CI (artifact
-  in S3, hash-verified) removes that and is the base for signed Host Service
-  releases.
+- ~~**Building on the box**~~ done: CI builds and attests the site, the box
+  downloads and verifies it (GitHub Releases rather than S3: free for a
+  public repository, nothing to run). On-box builds drained the CPU burst
+  credits (the burst alarm fired) and once ran out of memory; now only
+  `tiletrigger-update --build-here` builds there. The same verify-then-switch
+  path is the base for signed Host Service releases.
 - **Hub env grows**: `HUB_SIGNING_SECRET`, `COGNITO_*` and `PUBLIC_ORIGIN` are
   written to `/etc/tiletrigger.env` now but unused until the hub code lands.
 
