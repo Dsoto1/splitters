@@ -15,7 +15,7 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@tiletrigger/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@tiletrigger/shared';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyToneMapping } from '../game/atmosphere.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
@@ -236,11 +236,12 @@ export class EditorView {
     this.border.update(doc, boxes);
     void this.city.setMap(visible);
     // Regrow plants only when the ground or what stands on it changed.
-    const foliageKey = doc.terrain ? `${doc.terrain.heights.length}:${boxes.length}` : '';
+    const water = mapLiquids(doc.entities).filter((l) => l.liquid === 'water' || l.liquid === 'swamp');
+    const foliageKey = doc.terrain ? `${doc.terrain.heights.length}:${boxes.length}:${water.map((l) => `${l.min.x},${l.min.z},${l.max.x},${l.max.z},${l.max.y}`).join(';')}` : '';
     if (doc.terrain !== this.foliageTerrain || foliageKey !== this.foliageKey) {
       this.foliageTerrain = doc.terrain;
       this.foliageKey = foliageKey;
-      void this.foliage.grow(doc.terrain, boxes, doc.metadata.id);
+      void this.foliage.grow(doc.terrain, boxes, doc.metadata.id, water);
     }
     this.setGrid(doc, level);
     this.setBoundsOutline(doc);

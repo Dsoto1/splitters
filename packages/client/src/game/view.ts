@@ -327,7 +327,7 @@ export class GameView {
     const blood = doc.blood ?? DEFAULT_BLOOD;
     this.blood.setLook(blood.color, blood.amount);
     this.scenario.surface = (m, t) => styler.surfaceMaterial(doc, m, t);
-    void this.foliage.grow(doc.terrain, boxes, doc.metadata.id);
+    void this.foliage.grow(doc.terrain, boxes, doc.metadata.id, this.liquids.filter((l) => l.liquid === 'water' || l.liquid === 'swamp'));
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
