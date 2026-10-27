@@ -8,6 +8,17 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+## 0.3.0 (2026-10-27)
+
+**Bots**
+- Safer spawns: spawn points scored on enemy distance, occupancy, recent use and sightlines; big matches spawn in waves and add extra navmesh spawn points when a side has too few.
+- Squads of 3–6 with a leader and their own route; each side explores the map's regions; roles: campers, snipers (scoped, long sightlines, relocate after a kill) and lone wolves.
+
+**Multiplayer**
+- Browser-hosted 48v48 with friends is playable: friends merge a snapshot backlog instead of falling behind, snapshots send only what changed (about half the upload), compression runs in the match worker, and far players move smoothly between updates.
+- Network protocol 4 (delta snapshots): 0.2.0 clients can't join 0.3.0 hosts or servers.
+- Privacy page (/privacy).
+
 **Hosting**
 - The Lightsail box no longer builds the site. CI packages each green build (reproducible tarball, build.json, SHA-256 sums), attests it with Sigstore build provenance and publishes it to GitHub Releases (`main-latest`, `vX.Y.Z`, `check-builds`); `sudo tiletrigger-update` downloads the build for the exact commit, verifies it, switches to it in seconds and rolls back on a failed health check (`--rollback`, `--release`, `--status`; optional hourly timer). `--build-here` is the only way to build on the box.
 - The hub restarts only when its own code changes; a site-only update is served at once. It runs as one Node process with production dependencies only.
