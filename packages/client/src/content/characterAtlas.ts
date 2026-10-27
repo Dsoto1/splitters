@@ -109,7 +109,7 @@ export class CharacterAtlas {
       this.finishTexture.wrapU = this.finishTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
       // Data, not colour.
       this.finishTexture.gammaSpace = false;
-    } else if (changed) this.finishTexture.update(this.finish);
+    } else if (changed && !this.disposed) this.finishTexture.update(this.finish);
     return this.finishTexture;
   }
 
@@ -139,7 +139,8 @@ export class CharacterAtlas {
     // A texture that doesn't wrap fits a tile made for wrapping across too (the eyes come both ways).
     const tileFor = async (tex: BaseTexture, [ru, rv]: [number, number]) => (await this.tile(tex, ru, rv)) ?? (ru === 1 ? this.tile(tex, 2, rv) : null);
     const tiles = await Promise.all(parts.map((p) => (surfaceKey(p.mat) === key ? tileFor(p.tex, p.rep) : Promise.resolve(null))));
-    if (tiles.filter(Boolean).length < 2) return null;
+    // Tiles can come from the cache after the match (and this atlas) went away while we waited.
+    if (this.disposed || tiles.filter(Boolean).length < 2) return null;
     const finish = gear.length ? this.finishes(base) : null;
     const material = base.clone(`${name}_atlas`) as PBRMaterial;
     material.albedoTexture = this.texture;
@@ -275,6 +276,7 @@ export class CharacterAtlas {
   dispose(): void {
     this.disposed = true;
     this.texture.dispose();
+    this.finishTexture?.dispose();
   }
 }
 
