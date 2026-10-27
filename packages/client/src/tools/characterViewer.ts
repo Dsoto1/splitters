@@ -62,10 +62,11 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   );
   // Creature NPCs in a row in front (2.5 m apart), driven by the same buttons.
   const creatureLib = new CreatureLibrary(scene);
+  const bodies = [...CREATURE_ROLES, 'zombie'] as const;
   const creatures = await Promise.all(
-    CREATURE_ROLES.map(async (kind, i) => {
+    bodies.map(async (kind, i) => {
       const ch = await creatureLib.create(kind, `creature_${kind}`);
-      ch.root.position.set(mid + (i - (CREATURE_ROLES.length - 1) / 2) * 2.6, 0, 2.4);
+      ch.root.position.set(mid + (i - (bodies.length - 1) / 2) * 2.6, 0, 2.4);
       return new CreatureAnimator(scene, ch);
     }),
   );
@@ -101,7 +102,7 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   pitch.max = '60';
   pitch.value = '0';
   pitch.oninput = () => (state.pitch = (Number(pitch.value) * Math.PI) / 180);
-  panel.append(' Aim pitch ', pitch, ` ${specs.map((s) => s.label).join(' · ')} · front: ${CREATURE_ROLES.join(', ')}`);
+  panel.append(' Aim pitch ', pitch, ` ${specs.map((s) => s.label).join(' · ')} · front: ${bodies.join(', ')}`);
   document.body.append(panel);
   (window as unknown as { __charsReady: boolean; __charState: MotionState; __charAnimators: CharacterAnimator[] }).__charsReady = true;
   Object.assign(window, { __charState: state, __charAnimators: animators, __creatureAnimators: creatures, __charSpecs: specs.length });

@@ -67,10 +67,12 @@ Boundary tool's), or the terrain's edge on a map without one.
 | **Electric fence** | A park-style fence just inside the line: dark posts every 4 m with insulators, five glowing wires that flicker, yellow high-voltage signs; it hums when you are near | Solid, and touching it zaps (12 damage, at most twice a second) and throws you back into the map |
 | **Forest wall** | Undergrowth along the line, a row of the nature kit's trees (snowy on snow, palms on sand), then dense low-poly conifers in front of a dark canopy band | Solid |
 | **Shoreline & sea** | A beach running down from the line into a sea to the horizon (at the level of the map's own water where that reaches the edge) | The boundary's own barrier |
+| **Brick wall**, **White picket fence**, **Wooden fence**, **Drystone wall**, **Concrete panel wall** | loafbrr's Fences props (`lf_*`, CC0) just outside the line: the panel repeated along each side (stretched a little so a whole number fits), a post or pier at every joint, each panel on the lower ground at its ends. Heights 2.2, 1.37, 1.2, 0.95 and 2.5 m (`PROP_FENCES` in `border.ts`) | Solid as high as the wall; the boundary's own barrier above it, so you see over a low wall but can't climb out |
 
 Unlike the rest of the backdrop a border is **solid**: `borderBoxes`
 (`packages/shared/src/map/border.ts`) adds a barrier band 3 m deep just outside
-the line, 12–24 m high depending on the style, so players, shots and bots
+the line, 12–24 m high depending on the style (as high as the wall for the prop
+walls and fences), so players, shots and bots
 (through the navmesh) all meet it, on top of the boundary's own barrier. The
 fence's shocks run in the scenario (`Scenario.stepBorderFence`): an `arc` event
 draws the spark and plays the zap.
@@ -87,10 +89,11 @@ the beach and sea one each; city blocks one merged mesh plus GPU thin instances
 of the facade pieces (one draw per piece and material); the forest thin
 instances of each tree and bush model for the front row and one instanced
 ~40-triangle conifer for the far rows (their stand-in LOD); the fence instanced
-posts and signs with one mesh of wire. On the largest map (Apex Ring, 1.58 km
+posts and signs with one mesh of wire; the prop walls and fences thin
+instances of their panel and post models. On the largest map (Apex Ring, 1.58 km
 of boundary, skyline and forest) the whole border is 43 meshes, ≈4,700
 instances and ≈0.58 M triangles in view looking straight at it; the backdrop's
-belt of props steps aside where a border stands, and its ground drops under the
+belt of props steps aside where a tall border stands (not behind a fence or wall), and its ground drops under the
 sea along a shoreline.
 
 Borders are set on Rockfall Canyon and Frost Basin (cliffs), Coldwater Gulch

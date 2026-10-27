@@ -70,6 +70,21 @@
       "triangles": 5690,
       "bytes": 248276,
       "sha256": "ae6b9b74315c7739"
+    },
+    {
+      "file": "creatures/zombie.glb",
+      "id": "zombie",
+      "source": "quaternius-zombie",
+      "src": "Zombie.fbx",
+      "clips": [
+        "idle",
+        "walk",
+        "run",
+        "attack"
+      ],
+      "triangles": 2116,
+      "bytes": 566932,
+      "sha256": "50c3cfc095fce4a7"
     }
   ]
 }

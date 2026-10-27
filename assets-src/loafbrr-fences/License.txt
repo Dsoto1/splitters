@@ -1,0 +1,20 @@
+Fences
+Models by loafbrr - https://loafbrr.itch.io/
+
+License: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication, confirmed by
+the owner (2026-10-26), as for loafbrr's Mines and Caves Set.
+https://creativecommons.org/publicdomain/zero/1.0/
+No licence file ships in this download (79 GLB and 79 FBX in brick_fence,
+drystone_wall, low_wooden_fence, metal_fence, plackard_wall, plaster_wall,
+white_picket_fence and white_picket_fence_fancy).
+
+What we use: the GLB versions, their embedded textures re-encoded as 256 px
+JPEGs. The metal fence's maps are named after Textures.com photos
+(TexturesCom_Metal_PipeRusted2, TexturesCom_MetalVarious0026), so those
+pieces ship flattened to one colour per face, with no image (the same rule as
+Elbolillo's sets).
+
+Raw pack files are not kept in this repository. tools/content/prepare-props.mjs
+builds the game-ready lf_* props from the extracted download (the folder
+"Fences"; see docs/CONTENT_PIPELINE.md), and content/props.lock.json records
+what it wrote.

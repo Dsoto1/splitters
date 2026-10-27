@@ -334,7 +334,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pickupAmmo: 60,
     reloadTicks: 108,
     reload: { type: 'magazine', tactical: 84, empty: 108, out: 0.3, in: 0.7 },
-    raiseTicks: 22,
+    raiseTicks: 20,
     ammo: 'rifle',
     alt: {
       label: 'Underbarrel grenade',
@@ -356,20 +356,22 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     kind: 'hitscan',
     slot: 4,
     family: 'shotgun',
-    damage: 9,
-    pellets: 8,
-    spread: 0.085,
-    fireIntervalTicks: 50,
-    range: 45,
+    // Benchmark shotgun: makes you close in. Ten pellets in a fixed 75 mrad pattern: all of them on a body
+    // out to about 5 m (one shot kills), a few at 15 m, a scratch at 25 m (pattern and steep falloff).
+    damage: 12,
+    pellets: 10,
+    spread: 0.075,
+    fireIntervalTicks: 45,
+    range: 40,
     magazine: 6,
     reserveMax: 36,
     pickupAmmo: 12,
     // Shell by shell: each one loaded can be fired straight away.
     reloadTicks: 134,
     reload: { type: 'shell', start: 14, each: 18, end: 12 },
-    raiseTicks: 20,
+    raiseTicks: 16,
     ammo: 'shells',
-    alt: { label: 'Both barrels', ammo: 'shared', cost: 2, fireIntervalTicks: 70, kind: 'hitscan', damage: 9, pellets: 16, spread: 0.11 },
+    alt: { label: 'Both barrels', ammo: 'shared', cost: 2, fireIntervalTicks: 70, kind: 'hitscan', damage: 12, pellets: 16, spread: 0.11 },
     botDesirability: 0.65,
     botRange: [0, 9],
     view: { model: 'guns/shotgun.glb', fallback: 'weapons/shotgun.glb', viewOffset: [0.2, -0.2, 0.6], tracer: '#ffb38a', hold: { style: 'long', grip: [0, 0, -0.18], support: [0, 0.045, 0.22], shoulder: [0, -0.03, -0.46] } },
@@ -380,7 +382,9 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     kind: 'hitscan',
     slot: 5,
     family: 'precision',
-    damage: 75,
+    // Benchmark precision rifle: patience, prediction and holdover. A body shot and anything else kills, a head
+    // shot kills outright; the heavy round drops half a metre by 200 m and the next shot wants a settled beat.
+    damage: 80,
     pellets: 1,
     spread: 0,
     fireIntervalTicks: 75,
@@ -449,14 +453,17 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     damage: 0,
     pellets: 1,
     spread: 0,
-    fireIntervalTicks: 60,
+    // Benchmark rocket: rewards predicting where they will be. A slow 30 m/s rocket (a runner moves 4 m while it
+    // crosses 25 m), a 5 m blast and a direct hit that kills outright; your own blast hurts you three quarters as much.
+    // Quick to bring back: a rocket every 1.5 s, fire again as soon as it is loaded.
+    fireIntervalTicks: 36,
     range: 0,
     magazine: 1,
     reserveMax: 8,
     pickupAmmo: 4,
-    reloadTicks: 85,
-    raiseTicks: 42,
-    projectile: { speed: 30, gravity: 0, fuseSeconds: 4, splashRadius: 5, splashDamage: 120, splashEdgeDamage: 20, selfDamageScale: 0.6, visual: 'rocket', impactDamage: 30 },
+    reloadTicks: 54,
+    raiseTicks: 32,
+    projectile: { speed: 30, gravity: 0, fuseSeconds: 4, splashRadius: 5, splashDamage: 120, splashEdgeDamage: 15, selfDamageScale: 0.75, visual: 'rocket', impactDamage: 40 },
     ammo: 'explosive',
     botDesirability: 0.8,
     botRange: [7, 40],
@@ -585,17 +592,19 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
 
 /**
  * Weapons of the gunplay pass (docs/GUNPLAY_SPEC.md). The Heavy Revolver is
- * benchmark B: every trigger pull is an event. Huge damage and kick, six
- * rounds, a true first shot and a slow, rhythmic round-by-round reload (each
- * cartridge can be fired as soon as it is in).
+ * benchmark B: every trigger pull is an event. Absurd damage for a handgun (a
+ * head shot kills at any range, a body shot takes nine tenths of a life),
+ * savage kick, five rounds, a true first shot that only comes back once the
+ * last one has settled (fan it and you miss), and a slow, rhythmic
+ * round-by-round reload (each cartridge can be fired as soon as it is in).
  */
 function gunplayWeapons(): Record<string, WeaponDefinition> {
   const list: WeaponDefinition[] = [
     weapon({
       id: 'core.revolver', displayName: 'Heavy Revolver', kind: 'hitscan', slot: 2, fireMode: 'semi', family: 'revolver',
-      damage: 70, spread: 0.0005, fireIntervalTicks: 34, range: 300, magazine: 6, reserveMax: 36, pickupAmmo: 12,
-      reloadTicks: 124, reload: { type: 'shell', start: 18, each: 16, end: 10 }, raiseTicks: 16,
-      ammo: 'light', knockback: 2.5, botDesirability: 0.6, botRange: [3, 40],
+      damage: 90, spread: 0.0005, fireIntervalTicks: 40, range: 300, magazine: 5, reserveMax: 30, pickupAmmo: 10,
+      reloadTicks: 118, reload: { type: 'shell', start: 18, each: 18, end: 10 }, raiseTicks: 16,
+      ammo: 'light', knockback: 4, botDesirability: 0.6, botRange: [3, 40],
       view: sidearm('revolver', 0.28, '#ffcf7a', { sound: 'fire.revolver' }),
     }),
   ];

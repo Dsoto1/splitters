@@ -3,10 +3,10 @@ import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
-import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { PointLight } from '@babylonjs/core/Lights/pointLight';
+import { offscreenCamera } from './offscreen.ts';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
@@ -43,9 +43,8 @@ export class PortraitRenderer {
     // Never draws to the screen: only into the portrait texture.
     this.scene.autoClear = false;
     this.scene.autoClearDepthAndStencil = false;
-    const hidden = new FreeCamera('portraitHidden', Vector3.Zero(), this.scene);
-    hidden.viewport = new Viewport(0, 0, 0.0001, 0.0001);
-    this.scene.activeCamera = hidden;
+    // Renders between the app's frames: never onto the screen (see offscreenCamera).
+    this.scene.activeCamera = offscreenCamera(this.scene, 'portraitHidden');
     this.camera = new FreeCamera('portraitCam', new Vector3(0, 1.6, 1), this.scene);
     this.camera.fov = 0.42;
     this.camera.minZ = 0.02;

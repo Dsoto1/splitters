@@ -1,0 +1,17 @@
+Zombie (animated) - "Zombie by @Quaternius"
+Model by Quaternius - https://quaternius.com
+
+License: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
+https://creativecommons.org/publicdomain/zero/1.0/
+Quaternius releases his packs under CC0; the owner supplied this download as
+CC0. The download itself (December 2017: Blends/, FBX/Zombie.fbx and
+ZombieSmooth.fbx, OBJ/, Preview.mp4) carries no licence file.
+
+What we use: FBX/Zombie.fbx (rigged: 48-bone humanoid skeleton, 2,116
+triangles, clips ZombieIdle, ZombieWalk, ZombieRun, ZombieBite, ZombieCrawl)
+and its palette Blends/ZombieTexture.png (32 x 32 px).
+
+Raw pack files are not kept in this repository.
+tools/content/prepare-creatures.mjs builds packages/client/public/creatures/zombie.glb
+from the extracted download (see docs/CHARACTERS.md, "Creatures"), and
+content/creatures.lock.json records what it wrote.

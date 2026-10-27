@@ -359,6 +359,86 @@
       "license": "Owned",
       "licenseFile": "assets-src/tiletrigger-ancient/License.txt",
       "retrieved": "2026-10-26"
+    },
+    "madduck-hospital": {
+      "title": "Modular 3D Hospital Environment",
+      "creator": "madduck",
+      "url": "https://madduck.itch.io/modular-3d-hospital-environment",
+      "license": "LicenseRef-Free-Use",
+      "licenseFile": "assets-src/madduck-hospital/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "modular-3d-hospital-environment",
+      "models": "FBX",
+      "convert": true,
+      "scale": 0.015,
+      "colors": {
+        "Floors_1": "#e8e8e5",
+        "Ceiling_1": "#eceeed",
+        "Walls_1": "#eceeef",
+        "Doorway_1": "#3a3e42",
+        "Window": {
+          "color": "#8fa4ae",
+          "alpha": 0.35
+        },
+        "Door_mat": "#6f9fb4",
+        "Chairs_tables_1": "#e6e8e8",
+        "Bed": "#e9edf0",
+        "Wheel_chair": "#4a5157",
+        "IV_Pole": "#c3c8cb",
+        "IV_bag": {
+          "color": "#d6ecf2",
+          "alpha": 0.75
+        },
+        "Magazine": "#c4473a",
+        "Exit_sign": {
+          "color": "#2fa85a",
+          "emissive": "#1d8a44"
+        },
+        "Ceiling_light": {
+          "color": "#f6f8ff",
+          "emissive": "#dfe8f4"
+        }
+      },
+      "meshColors": {
+        "^(Lock|Handle)_": "#b9bec2"
+      }
+    },
+    "lowpolyassets-wild-west": {
+      "title": "Low Poly Wild West",
+      "creator": "LowPolyAssets",
+      "url": "https://lowpolyassets.itch.io/low-poly-wild-west",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/lowpolyassets-wild-west/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Low Poly Wild West",
+      "models": ".",
+      "convert": true,
+      "scale": 0.01,
+      "untextured": true
+    },
+    "sigilsvault-modular-dungeon": {
+      "title": "Modular Dungeon Kit",
+      "creator": "SigilsVault (Kevin Barany)",
+      "url": "https://sigilsvault.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/sigilsvault-modular-dungeon/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "modular dungeon kit",
+      "models": ".",
+      "convert": true,
+      "textureSize": 256
+    },
+    "loafbrr-fences": {
+      "title": "Fences",
+      "creator": "loafbrr",
+      "url": "https://loafbrr.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/loafbrr-fences/License.txt",
+      "retrieved": "2026-10-26",
+      "download": "Fences",
+      "models": ".",
+      "convert": true,
+      "textureSize": 256
     }
   },
   "budgets": {
@@ -8397,6 +8477,3218 @@
       "name": "Bastet Statue",
       "category": "Sands of Egypt",
       "height": 1.12,
+      "collide": "box"
+    },
+    {
+      "id": "hp_floor_tile",
+      "pack": "madduck-hospital",
+      "src": "floor_tile_1.fbx",
+      "name": "Ward Floor Tile",
+      "category": "Hospital",
+      "collide": "box"
+    },
+    {
+      "id": "hp_floor_tile_blue",
+      "pack": "madduck-hospital",
+      "src": "floor_tile_2.fbx",
+      "name": "Corridor Floor Tile",
+      "category": "Hospital",
+      "collide": "box",
+      "colors": {
+        "Floors_1": "#c3cfd6"
+      }
+    },
+    {
+      "id": "hp_ceiling_tile",
+      "pack": "madduck-hospital",
+      "src": "ceiling_tile.fbx",
+      "name": "Ceiling Tile",
+      "category": "Hospital",
+      "collide": "box"
+    },
+    {
+      "id": "hp_wall",
+      "pack": "madduck-hospital",
+      "src": "tile_wall.fbx",
+      "name": "Hospital Wall",
+      "category": "Hospital",
+      "collide": "box",
+      "bands": [
+        [
+          0,
+          "#55595e"
+        ],
+        [
+          0.31,
+          "#eceeef"
+        ]
+      ]
+    },
+    {
+      "id": "hp_wall_half",
+      "pack": "madduck-hospital",
+      "src": "tile_wall_half.fbx",
+      "name": "Hospital Wall (Half)",
+      "category": "Hospital",
+      "collide": "box",
+      "bands": [
+        [
+          0,
+          "#55595e"
+        ],
+        [
+          0.31,
+          "#eceeef"
+        ]
+      ]
+    },
+    {
+      "id": "hp_wall_window",
+      "pack": "madduck-hospital",
+      "src": "tile_window.fbx",
+      "name": "Hospital Wall with Window",
+      "category": "Hospital",
+      "collide": "box",
+      "bands": [
+        [
+          0,
+          "#55595e"
+        ],
+        [
+          0.31,
+          "#eceeef"
+        ]
+      ]
+    },
+    {
+      "id": "hp_doorway",
+      "pack": "madduck-hospital",
+      "src": "tile_doorway_1.fbx",
+      "name": "Hospital Doorway",
+      "category": "Hospital",
+      "collide": "frame",
+      "frameTop": 3,
+      "bands": [
+        [
+          0,
+          "#55595e"
+        ],
+        [
+          0.31,
+          "#eceeef"
+        ]
+      ]
+    },
+    {
+      "id": "hp_doorway_wide",
+      "pack": "madduck-hospital",
+      "src": "tile_doorway_2.fbx",
+      "name": "Hospital Doorway (Wide)",
+      "category": "Hospital",
+      "collide": "frame",
+      "frameTop": 3,
+      "bands": [
+        [
+          0,
+          "#55595e"
+        ],
+        [
+          0.31,
+          "#eceeef"
+        ]
+      ]
+    },
+    {
+      "id": "hp_wall_corner",
+      "pack": "madduck-hospital",
+      "src": "tile_corner.fbx",
+      "name": "Hospital Wall Corner",
+      "category": "Hospital",
+      "collide": "shell",
+      "bands": [
+        [
+          0,
+          "#55595e"
+        ],
+        [
+          0.31,
+          "#eceeef"
+        ]
+      ]
+    },
+    {
+      "id": "hp_pillar",
+      "pack": "madduck-hospital",
+      "src": "pillar.fbx",
+      "name": "Hospital Pillar",
+      "category": "Hospital",
+      "collide": "box",
+      "height": 3.75,
+      "bands": [
+        [
+          0,
+          "#55595e"
+        ],
+        [
+          0.31,
+          "#eceeef"
+        ]
+      ]
+    },
+    {
+      "id": "hp_door",
+      "pack": "madduck-hospital",
+      "src": "door_1.fbx",
+      "name": "Ward Door",
+      "category": "Hospital",
+      "collide": "box"
+    },
+    {
+      "id": "hp_door_swing",
+      "pack": "madduck-hospital",
+      "src": "door_2.fbx",
+      "name": "Swing Door",
+      "category": "Hospital",
+      "collide": "box"
+    },
+    {
+      "id": "hp_bed",
+      "pack": "madduck-hospital",
+      "src": "bed.fbx",
+      "name": "Hospital Bed",
+      "category": "Hospital",
+      "collide": "box",
+      "height": 0.85,
+      "simplify": 0.2,
+      "bands": [
+        [
+          0,
+          "#8b9298"
+        ],
+        [
+          0.42,
+          "#c9dce8"
+        ],
+        [
+          0.62,
+          "#f2f4f5"
+        ]
+      ]
+    },
+    {
+      "id": "hp_bench",
+      "pack": "madduck-hospital",
+      "src": "bench.fbx",
+      "name": "Waiting Bench",
+      "category": "Hospital",
+      "collide": "box",
+      "height": 0.85,
+      "bands": [
+        [
+          0,
+          "#8b9298"
+        ],
+        [
+          0.4,
+          "#4d86a6"
+        ]
+      ]
+    },
+    {
+      "id": "hp_chair",
+      "pack": "madduck-hospital",
+      "src": "chair.fbx",
+      "name": "Visitor Chair",
+      "category": "Hospital",
+      "collide": "box",
+      "height": 1.0,
+      "bands": [
+        [
+          0,
+          "#8b9298"
+        ],
+        [
+          0.4,
+          "#4d86a6"
+        ]
+      ]
+    },
+    {
+      "id": "hp_table",
+      "pack": "madduck-hospital",
+      "src": "table.fbx",
+      "name": "Hospital Table",
+      "category": "Hospital",
+      "collide": "box",
+      "height": 0.78,
+      "bands": [
+        [
+          0,
+          "#8b9298"
+        ],
+        [
+          0.88,
+          "#e9e6de"
+        ]
+      ]
+    },
+    {
+      "id": "hp_cabinet_counter",
+      "pack": "madduck-hospital",
+      "src": "cabinet_1.fbx",
+      "name": "Nurses’ Counter Cabinet",
+      "category": "Hospital",
+      "collide": "box",
+      "height": 0.92,
+      "bands": [
+        [
+          0,
+          "#d9dddf"
+        ],
+        [
+          0.93,
+          "#9fb2ba"
+        ]
+      ]
+    },
+    {
+      "id": "hp_cabinet_low",
+      "pack": "madduck-hospital",
+      "src": "cabinet_2.fbx",
+      "name": "Low Cabinet",
+      "category": "Hospital",
+      "collide": "box",
+      "height": 0.62,
+      "bands": [
+        [
+          0,
+          "#d9dddf"
+        ],
+        [
+          0.92,
+          "#9fb2ba"
+        ]
+      ]
+    },
+    {
+      "id": "hp_cabinet_drawers",
+      "pack": "madduck-hospital",
+      "src": "cabinet_3.fbx",
+      "name": "Bedside Drawers",
+      "category": "Hospital",
+      "collide": "box",
+      "height": 0.8,
+      "bands": [
+        [
+          0,
+          "#d9dddf"
+        ],
+        [
+          0.93,
+          "#9fb2ba"
+        ]
+      ]
+    },
+    {
+      "id": "hp_wheelchair",
+      "pack": "madduck-hospital",
+      "src": "wheel_chair.fbx",
+      "name": "Wheelchair",
+      "category": "Hospital",
+      "collide": "box",
+      "height": 0.95,
+      "simplify": 0.3,
+      "bands": [
+        [
+          0,
+          "#2c3034"
+        ],
+        [
+          0.38,
+          "#2f5f86"
+        ],
+        [
+          0.55,
+          "#4a5157"
+        ]
+      ]
+    },
+    {
+      "id": "hp_iv_stand",
+      "pack": "madduck-hospital",
+      "src": "IV_Bag_holder.fbx",
+      "name": "IV Stand",
+      "category": "Hospital",
+      "collide": "trunk",
+      "height": 1.9,
+      "bands": [
+        [
+          0,
+          "#5d656b"
+        ],
+        [
+          0.08,
+          "#c3c8cb"
+        ]
+      ]
+    },
+    {
+      "id": "hp_iv_bag",
+      "pack": "madduck-hospital",
+      "src": "IV_Bag.fbx",
+      "name": "IV Bag",
+      "category": "Hospital",
+      "collide": "none",
+      "scale": 0.0095
+    },
+    {
+      "id": "hp_magazine",
+      "pack": "madduck-hospital",
+      "src": "Magazine1.fbx",
+      "name": "Magazine",
+      "category": "Hospital",
+      "collide": "none",
+      "scale": 0.0105
+    },
+    {
+      "id": "hp_exit_sign",
+      "pack": "madduck-hospital",
+      "src": "Exit_sign.fbx",
+      "name": "Exit Sign",
+      "category": "Hospital",
+      "collide": "none",
+      "scale": 0.0075
+    },
+    {
+      "id": "hp_ceiling_light",
+      "pack": "madduck-hospital",
+      "src": "ceiling_light.fbx",
+      "name": "Ceiling Light Panel",
+      "category": "Hospital",
+      "collide": "none",
+      "scale": 0.01
+    },
+    {
+      "id": "ww_barrel_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Barrel A.fbx",
+      "name": "Barrel A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_barrel_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Barrel B.fbx",
+      "name": "Barrel B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_bottle_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle A.fbx",
+      "name": "Bottle A",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_bottle_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle B.fbx",
+      "name": "Bottle B",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_bottle_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle C.fbx",
+      "name": "Bottle C",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_bottle_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle D.fbx",
+      "name": "Bottle D",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_bucket",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Bucket.fbx",
+      "name": "Bucket",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_carpet",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Carpet.fbx",
+      "name": "Carpet",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_chair",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Chair.fbx",
+      "name": "Chair",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_crate",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Crate.fbx",
+      "name": "Crate",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_dynamite_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Dynamite A.fbx",
+      "name": "Dynamite A",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_dynamite_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Dynamite B.fbx",
+      "name": "Dynamite B",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_fence_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Fence A.fbx",
+      "name": "Fence A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_fence_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Fence B.fbx",
+      "name": "Fence B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_glass",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Glass.fbx",
+      "name": "Glass",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_gold_bar",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Gold Bar.fbx",
+      "name": "Gold Bar",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_hat_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat A.fbx",
+      "name": "Hat A",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_hat_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat B.fbx",
+      "name": "Hat B",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_hat_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat C.fbx",
+      "name": "Hat C",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_hitching_post",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Hitching Post.fbx",
+      "name": "Hitching Post",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_horseshoe",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Horseshoe.fbx",
+      "name": "Horseshoe",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_ladder",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Ladder.fbx",
+      "name": "Ladder",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_lantern",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Lantern.fbx",
+      "name": "Lantern",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_pickaxe",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Pickaxe.fbx",
+      "name": "Pickaxe",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_table_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Table A.fbx",
+      "name": "Table A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_table_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Table B.fbx",
+      "name": "Table B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_trough_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Trough A.fbx",
+      "name": "Trough A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_trough_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Trough B.fbx",
+      "name": "Trough B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_wheel_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Wheel A.fbx",
+      "name": "Wheel A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_wheel_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Clutter/Wheel B.fbx",
+      "name": "Wheel B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_bar",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Bar.fbx",
+      "name": "Bar",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_gallows",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Gallows.fbx",
+      "name": "Gallows",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_rail",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Rail.fbx",
+      "name": "Rail",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_water_tank",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Water Tank.fbx",
+      "name": "Water Tank",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_windmill",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Windmill.fbx",
+      "name": "Windmill",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_balcony_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony A.fbx",
+      "name": "Wild West Balcony A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony B.fbx",
+      "name": "Wild West Balcony B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony C.fbx",
+      "name": "Wild West Balcony C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony D.fbx",
+      "name": "Wild West Balcony D",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony E.fbx",
+      "name": "Wild West Balcony E",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_f",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony F.fbx",
+      "name": "Wild West Balcony F",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_with_railing_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing A.fbx",
+      "name": "Wild West Balcony With Railing A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_with_railing_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing B.fbx",
+      "name": "Wild West Balcony With Railing B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_balcony_with_railing_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing C.fbx",
+      "name": "Wild West Balcony With Railing C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_post",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Post.fbx",
+      "name": "Wild West Post",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_railing",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Railing.fbx",
+      "name": "Wild West Railing",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_cell_door",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Cell Door.fbx",
+      "name": "Wild West Cell Door",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Door A.fbx",
+      "name": "Wild West Door A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Door B.fbx",
+      "name": "Wild West Door B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Saloon Door.fbx",
+      "name": "Wild West Saloon Door",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_floor_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor A.fbx",
+      "name": "Wild West Floor A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_floor_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor B.fbx",
+      "name": "Wild West Floor B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_floor_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor C.fbx",
+      "name": "Wild West Floor C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_floor_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor D.fbx",
+      "name": "Wild West Floor D",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_floor_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor E.fbx",
+      "name": "Wild West Floor E",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation A.fbx",
+      "name": "Wild West Foundation A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation B.fbx",
+      "name": "Wild West Foundation B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation C.fbx",
+      "name": "Wild West Foundation C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation D.fbx",
+      "name": "Wild West Foundation D",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation E.fbx",
+      "name": "Wild West Foundation E",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_foundation_f",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation F.fbx",
+      "name": "Wild West Foundation F",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof A.fbx",
+      "name": "Wild West Roof A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof B.fbx",
+      "name": "Wild West Roof B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof C.fbx",
+      "name": "Wild West Roof C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof D.fbx",
+      "name": "Wild West Roof D",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_roof_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof E.fbx",
+      "name": "Wild West Roof E",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_small_foundation_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation A.fbx",
+      "name": "Wild West Small Foundation A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_small_foundation_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation B.fbx",
+      "name": "Wild West Small Foundation B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_small_foundation_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation C.fbx",
+      "name": "Wild West Small Foundation C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_bank_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign A.fbx",
+      "name": "Bank Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_bank_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign B.fbx",
+      "name": "Bank Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_bank_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign C.fbx",
+      "name": "Bank Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_doctor_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign A.fbx",
+      "name": "Doctor Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_doctor_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign B.fbx",
+      "name": "Doctor Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_doctor_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign C.fbx",
+      "name": "Doctor Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_general_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign A.fbx",
+      "name": "General Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_general_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign B.fbx",
+      "name": "General Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_general_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign C.fbx",
+      "name": "General Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_gun_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign A.fbx",
+      "name": "Gun Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_gun_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign B.fbx",
+      "name": "Gun Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_gun_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign C.fbx",
+      "name": "Gun Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_hotel_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign A.fbx",
+      "name": "Hotel Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_hotel_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign B.fbx",
+      "name": "Hotel Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_hotel_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign C.fbx",
+      "name": "Hotel Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign A.fbx",
+      "name": "Saloon Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign B.fbx",
+      "name": "Saloon Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign C.fbx",
+      "name": "Saloon Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sheriff_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign A.fbx",
+      "name": "Sheriff Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sheriff_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign B.fbx",
+      "name": "Sheriff Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sheriff_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign C.fbx",
+      "name": "Sheriff Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign A.fbx",
+      "name": "Sign A",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign B.fbx",
+      "name": "Sign B",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign C.fbx",
+      "name": "Sign C",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign D.fbx",
+      "name": "Sign D",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign E.fbx",
+      "name": "Sign E",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_sign_f",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign F.fbx",
+      "name": "Sign F",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_sign",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Small Sign.fbx",
+      "name": "Small Sign",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_welcome_sign",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Welcome Sign.fbx",
+      "name": "Welcome Sign",
+      "category": "Wild West",
+      "collide": "none",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_big_staircase_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Big Staircase A.fbx",
+      "name": "Wild West Big Staircase A",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_corner_staircase_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Staircase A.fbx",
+      "name": "Wild West Corner Staircase A",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_corner_staircase_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Staircase B.fbx",
+      "name": "Wild West Corner Staircase B",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_corner_stairs",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Stairs.fbx",
+      "name": "Wild West Corner Stairs",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_small_stairs",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Small Stairs.fbx",
+      "name": "Wild West Small Stairs",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_staircase_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Staircase A.fbx",
+      "name": "Wild West Staircase A",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_staircase_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Staircase B.fbx",
+      "name": "Wild West Staircase B",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_stairs_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs A.fbx",
+      "name": "Wild West Stairs A",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_stairs_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs B.fbx",
+      "name": "Wild West Stairs B",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_stairs_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs C.fbx",
+      "name": "Wild West Stairs C",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_stairs_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs D.fbx",
+      "name": "Wild West Stairs D",
+      "category": "Wild West",
+      "collide": "stairs",
+      "climbs": "auto",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_cell_wall",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Cell Wall.fbx",
+      "name": "Wild West Cell Wall",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_corner_post_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Corner Post A.fbx",
+      "name": "Wild West Corner Post A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_corner_post_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Corner Post B.fbx",
+      "name": "Wild West Corner Post B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_door_and_window_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Door and Window A.fbx",
+      "name": "Wild West Door and Window A",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_door_and_window_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Door and Window B.fbx",
+      "name": "Wild West Door and Window B",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_interior_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Door A.fbx",
+      "name": "Wild West Interior Doorway",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_interior_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Door B.fbx",
+      "name": "Wild West Interior Doorway (Wide)",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_interior_small_wall",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Small Wall.fbx",
+      "name": "Wild West Interior Wall (Short)",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_interior_wall",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Wall.fbx",
+      "name": "Wild West Interior Wall",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_large_wall_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Large Wall A.fbx",
+      "name": "Wild West Large Wall A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_large_wall_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Large Wall B.fbx",
+      "name": "Wild West Large Wall B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door A.fbx",
+      "name": "Wild West Saloon Door A",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door B.fbx",
+      "name": "Wild West Saloon Door B",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door C.fbx",
+      "name": "Wild West Saloon Door C",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_saloon_door_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door D.fbx",
+      "name": "Wild West Saloon Door D",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Door A.fbx",
+      "name": "Wild West Small Door A",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Door B.fbx",
+      "name": "Wild West Small Door B",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_wall_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Wall A.fbx",
+      "name": "Wild West Small Wall A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_wall_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Wall B.fbx",
+      "name": "Wild West Small Wall B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_window_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Window A.fbx",
+      "name": "Wild West Small Window A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_small_window_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Window B.fbx",
+      "name": "Wild West Small Window B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_triangle_wall_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Triangle Wall A.fbx",
+      "name": "Wild West Triangle Wall A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_triangle_wall_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Triangle Wall B.fbx",
+      "name": "Wild West Triangle Wall B",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall A.fbx",
+      "name": "Wild West Wall A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall B.fbx",
+      "name": "Wild West Wall B (Corner)",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_wall_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall C.fbx",
+      "name": "Wild West Wall C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall D.fbx",
+      "name": "Wild West Wall D (Corner)",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_wall_door_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door A.fbx",
+      "name": "Wild West Wall Door A",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_door_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door B.fbx",
+      "name": "Wild West Wall Door B",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_door_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door C.fbx",
+      "name": "Wild West Wall Door C",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_door_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door D.fbx",
+      "name": "Wild West Wall Door D",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_wall_door_e",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door E.fbx",
+      "name": "Wild West Wall Door E",
+      "category": "Wild West",
+      "collide": "openings",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_window_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window A.fbx",
+      "name": "Wild West Window A",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_window_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window B.fbx",
+      "name": "Wild West Window B (Corner)",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_window_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window C.fbx",
+      "name": "Wild West Window C",
+      "category": "Wild West",
+      "collide": "box",
+      "scale": 0.016,
+      "yaw": 90
+    },
+    {
+      "id": "ww_window_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window D.fbx",
+      "name": "Wild West Window D (Corner)",
+      "category": "Wild West",
+      "collide": "shell",
+      "scale": 0.016
+    },
+    {
+      "id": "ww_cactus_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus A.fbx",
+      "name": "Cactus A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cactus_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus B.fbx",
+      "name": "Cactus B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cactus_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus C.fbx",
+      "name": "Cactus C",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cactus_d",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus D.fbx",
+      "name": "Cactus D",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_tumbleweed",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Nature/Tumbleweed.fbx",
+      "name": "Tumbleweed",
+      "category": "Wild West",
+      "collide": "none"
+    },
+    {
+      "id": "ww_cart_a",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart A.fbx",
+      "name": "Cart A",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cart_b",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart B.fbx",
+      "name": "Cart B",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_cart_c",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart C.fbx",
+      "name": "Cart C",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "ww_stagecoach",
+      "pack": "lowpolyassets-wild-west",
+      "src": "Transportation/Stagecoach.fbx",
+      "name": "Stagecoach",
+      "category": "Wild West",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_01.glb",
+      "name": "Dungeon Barrel Ceiling Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_02.glb",
+      "name": "Dungeon Barrel Ceiling Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_large_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_03.glb",
+      "name": "Dungeon Barrel Ceiling Large 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_01.glb",
+      "name": "Dungeon Barrel Ceiling Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_small_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_02.glb",
+      "name": "Dungeon Barrel Ceiling Small 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_barrel_ceiling_small_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_03.glb",
+      "name": "Dungeon Barrel Ceiling Small 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_block_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_large_01.glb",
+      "name": "Dungeon Block Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_block_short_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_short_small_01.glb",
+      "name": "Dungeon Block Short Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_block_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_small_01.glb",
+      "name": "Dungeon Block Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_door_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/door_01.glb",
+      "name": "Dungeon Door 01",
+      "category": "Dark Dungeon",
+      "collide": "openings"
+    },
+    {
+      "id": "sd_door_arched_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/door_arched_01_001.glb",
+      "name": "Dungeon Door Arched 01",
+      "category": "Dark Dungeon",
+      "collide": "openings"
+    },
+    {
+      "id": "sd_flat_ceiling_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_01.glb",
+      "name": "Dungeon Flat Ceiling Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_02.glb",
+      "name": "Dungeon Flat Ceiling Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_large_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_03.glb",
+      "name": "Dungeon Flat Ceiling Large 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_01.glb",
+      "name": "Dungeon Flat Ceiling Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_small_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_02.glb",
+      "name": "Dungeon Flat Ceiling Small 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_flat_ceiling_small_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_03.glb",
+      "name": "Dungeon Flat Ceiling Small 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_01.glb",
+      "name": "Dungeon Floor Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_bl_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_01.glb",
+      "name": "Dungeon Floor Large Cornertrim BL 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_bl_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_02.glb",
+      "name": "Dungeon Floor Large Cornertrim BL 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_br_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_01.glb",
+      "name": "Dungeon Floor Large Cornertrim BR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_br_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_02.glb",
+      "name": "Dungeon Floor Large Cornertrim BR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_tl_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_01.glb",
+      "name": "Dungeon Floor Large Cornertrim TL 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_tl_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_02.glb",
+      "name": "Dungeon Floor Large Cornertrim TL 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_tr_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_01.glb",
+      "name": "Dungeon Floor Large Cornertrim TR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_cornertrim_tr_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_02.glb",
+      "name": "Dungeon Floor Large Cornertrim TR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_01.glb",
+      "name": "Dungeon Floor Large Trim 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_02.glb",
+      "name": "Dungeon Floor Large Trim 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_b_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_B_01.glb",
+      "name": "Dungeon Floor Large Trim B 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_b_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_B_02.glb",
+      "name": "Dungeon Floor Large Trim B 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_lr_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_LR_01.glb",
+      "name": "Dungeon Floor Large Trim LR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_lr_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_LR_02.glb",
+      "name": "Dungeon Floor Large Trim LR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_l_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_L_01.glb",
+      "name": "Dungeon Floor Large Trim L 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_l_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_L_02.glb",
+      "name": "Dungeon Floor Large Trim L 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_r_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_R_01.glb",
+      "name": "Dungeon Floor Large Trim R 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_r_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_R_02.glb",
+      "name": "Dungeon Floor Large Trim R 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_t_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_T_01.glb",
+      "name": "Dungeon Floor Large Trim T 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_large_trim_t_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_T_02.glb",
+      "name": "Dungeon Floor Large Trim T 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_01.glb",
+      "name": "Dungeon Floor Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_bl_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_01.glb",
+      "name": "Dungeon Floor Small Cornertrim BL 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_bl_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_02.glb",
+      "name": "Dungeon Floor Small Cornertrim BL 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_br_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_01.glb",
+      "name": "Dungeon Floor Small Cornertrim BR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_br_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_02.glb",
+      "name": "Dungeon Floor Small Cornertrim BR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_tl_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01.glb",
+      "name": "Dungeon Floor Small Cornertrim TL 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_tl_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01_001.glb",
+      "name": "Dungeon Floor Small Cornertrim TL 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_tr_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_01.glb",
+      "name": "Dungeon Floor Small Cornertrim TR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_cornertrim_tr_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_02.glb",
+      "name": "Dungeon Floor Small Cornertrim TR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_01.glb",
+      "name": "Dungeon Floor Small Trim 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_02.glb",
+      "name": "Dungeon Floor Small Trim 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_b_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_B_01.glb",
+      "name": "Dungeon Floor Small Trim B 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_b_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_B_02.glb",
+      "name": "Dungeon Floor Small Trim B 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_lr_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_LR_01.glb",
+      "name": "Dungeon Floor Small Trim LR 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_lr_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_LR_02.glb",
+      "name": "Dungeon Floor Small Trim LR 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_l_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_L_01.glb",
+      "name": "Dungeon Floor Small Trim L 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_l_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_L_02.glb",
+      "name": "Dungeon Floor Small Trim L 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_r_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_R_01.glb",
+      "name": "Dungeon Floor Small Trim R 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_r_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_R_02.glb",
+      "name": "Dungeon Floor Small Trim R 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_t_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_T_01.glb",
+      "name": "Dungeon Floor Small Trim T 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_floor_small_trim_t_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_T_02.glb",
+      "name": "Dungeon Floor Small Trim T 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pillar_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_01.glb",
+      "name": "Dungeon Pillar 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pillar_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_02.glb",
+      "name": "Dungeon Pillar 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pillar_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_large_01.glb",
+      "name": "Dungeon Pillar Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pillar_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_large_02.glb",
+      "name": "Dungeon Pillar Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_stairs_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_large_01.glb",
+      "name": "Dungeon Stairs Large 01",
+      "category": "Dark Dungeon",
+      "collide": "stairs",
+      "climbs": "auto"
+    },
+    {
+      "id": "sd_stairs_short_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_short_small_01.glb",
+      "name": "Dungeon Stairs Short Small 01",
+      "category": "Dark Dungeon",
+      "collide": "stairs",
+      "climbs": "auto"
+    },
+    {
+      "id": "sd_stairs_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_small_01.glb",
+      "name": "Dungeon Stairs Small 01",
+      "category": "Dark Dungeon",
+      "collide": "stairs",
+      "climbs": "auto"
+    },
+    {
+      "id": "sd_vault_ceiling_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_01.glb",
+      "name": "Dungeon Vault Ceiling Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_02.glb",
+      "name": "Dungeon Vault Ceiling Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_03.glb",
+      "name": "Dungeon Vault Ceiling Large 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_04",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_04.glb",
+      "name": "Dungeon Vault Ceiling Large 04",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_05",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_05.glb",
+      "name": "Dungeon Vault Ceiling Large 05",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_large_06",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_06.glb",
+      "name": "Dungeon Vault Ceiling Large 06",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_01.glb",
+      "name": "Dungeon Vault Ceiling Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_02.glb",
+      "name": "Dungeon Vault Ceiling Small 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_03.glb",
+      "name": "Dungeon Vault Ceiling Small 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_04",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_04.glb",
+      "name": "Dungeon Vault Ceiling Small 04",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_05",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_05.glb",
+      "name": "Dungeon Vault Ceiling Small 05",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_vault_ceiling_small_06",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_06.glb",
+      "name": "Dungeon Vault Ceiling Small 06",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_01.glb",
+      "name": "Dungeon Wall Large 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_02.glb",
+      "name": "Dungeon Wall Large 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_03",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_03.glb",
+      "name": "Dungeon Wall Large 03",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_corner_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_01.glb",
+      "name": "Dungeon Wall Large Corner 01",
+      "category": "Dark Dungeon",
+      "collide": "shell"
+    },
+    {
+      "id": "sd_wall_large_corner_l_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_L_01.glb",
+      "name": "Dungeon Wall Large Corner L 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_corner_r_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_R_01.glb",
+      "name": "Dungeon Wall Large Corner R 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_large_half_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_half_01.glb",
+      "name": "Dungeon Wall Large Half 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_01.glb",
+      "name": "Dungeon Wall Small 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_02",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_02.glb",
+      "name": "Dungeon Wall Small 02",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_corner_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_01.glb",
+      "name": "Dungeon Wall Small Corner 01",
+      "category": "Dark Dungeon",
+      "collide": "shell"
+    },
+    {
+      "id": "sd_wall_small_corner_l_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_L_01.glb",
+      "name": "Dungeon Wall Small Corner L 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_corner_r_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_R_01.glb",
+      "name": "Dungeon Wall Small Corner R 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_wall_small_half_01",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_half_01.glb",
+      "name": "Dungeon Wall Small Half 01",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_brazier",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/Brazier.glb",
+      "name": "Brazier",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_coffin",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/coffin.glb",
+      "name": "Stone Coffin",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_coffin_lid",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/coffin_lid.glb",
+      "name": "Coffin Lid",
+      "category": "Dark Dungeon",
+      "collide": "none"
+    },
+    {
+      "id": "sd_crate",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/crate.glb",
+      "name": "Dungeon Crate",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_door",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/door.glb",
+      "name": "Dungeon Door",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "sd_pot",
+      "pack": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/pot.glb",
+      "name": "Clay Pot",
+      "category": "Dark Dungeon",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_corner",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_Wall_corner.glb",
+      "name": "Brick Wall Corner",
+      "category": "Fences & Walls",
+      "collide": "shell"
+    },
+    {
+      "id": "lf_brick_wall",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall.glb",
+      "name": "Brick Wall",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_gate",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_gate.glb",
+      "name": "Brick Wall Gate",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_one_overhang",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_one_overhang.glb",
+      "name": "Brick Wall One Overhang",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_one_overhang_small",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_one_overhang_small.glb",
+      "name": "Brick Wall One Overhang Small",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_pole",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_pole.glb",
+      "name": "Brick Wall Pole",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_brick_wall_small",
+      "pack": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_small.glb",
+      "name": "Brick Wall Small",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_column",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column.glb",
+      "name": "Drystone Column",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_column_capped",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column_capped.glb",
+      "name": "Drystone Column Capped",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_column_tiles",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column_tiles.glb",
+      "name": "Drystone Column Tiles",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall.glb",
+      "name": "Drystone Wall",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_capped",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_capped.glb",
+      "name": "Drystone Wall Capped",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_half",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half.glb",
+      "name": "Drystone Wall Half",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_half_capped",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half_capped.glb",
+      "name": "Drystone Wall Half Capped",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_half_tiles",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half_tiles.glb",
+      "name": "Drystone Wall Half Tiles",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_drystone_wall_tiles",
+      "pack": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_tiles.glb",
+      "name": "Drystone Wall Tiles",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_beam",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam.glb",
+      "name": "Wooden Fence Beam",
+      "category": "Fences & Walls",
+      "collide": "none"
+    },
+    {
+      "id": "lf_wooden_fence_beam_b",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam_alt.glb",
+      "name": "Wooden Fence Beam B",
+      "category": "Fences & Walls",
+      "collide": "none"
+    },
+    {
+      "id": "lf_wooden_fence_beam_c",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam_alt_2.glb",
+      "name": "Wooden Fence Beam C",
+      "category": "Fences & Walls",
+      "collide": "none"
+    },
+    {
+      "id": "lf_wooden_fence_broken",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken.glb",
+      "name": "Wooden Fence Broken",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_broken_b",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken_alt.glb",
+      "name": "Wooden Fence Broken B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_broken_c",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken_alt2.glb",
+      "name": "Wooden Fence Broken C",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_closed",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_closed.glb",
+      "name": "Wooden Fence Closed",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_open_crossed",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_oen_crossed.glb",
+      "name": "Wooden Fence Open Crossed",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_open",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_open.glb",
+      "name": "Wooden Fence Open",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_open_b",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_open_alt.glb",
+      "name": "Wooden Fence Open B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_pile",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pile.glb",
+      "name": "Wooden Fence Pile",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole.glb",
+      "name": "Wooden Fence Post",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post_b",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_alt.glb",
+      "name": "Wooden Fence Post B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post_c",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_alt_2.glb",
+      "name": "Wooden Fence Post C",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post_broken",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_broken_large.glb",
+      "name": "Wooden Fence Post Broken",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_wooden_fence_post_stump",
+      "pack": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_broken_small.glb",
+      "name": "Wooden Fence Post Stump",
+      "category": "Fences & Walls",
+      "collide": "none"
+    },
+    {
+      "id": "lf_metal_gate",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/gate.glb",
+      "name": "Metal Gate",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_gate",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metal_fence_gate_with_gate.glb",
+      "name": "Metal Fence Gate",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_both_sides",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_both_sides_no_topbar.glb",
+      "name": "Metal Fence Both Sides",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_both_sides_topbar",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_both_sides_topbar.glb",
+      "name": "Metal Fence Both Sides Topbar",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_gate_posts",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_gate_only_sides.glb",
+      "name": "Metal Fence Gate Posts",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_one_side",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_one_side_no_topbar.glb",
+      "name": "Metal Fence One Side",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_metal_fence_one_side_topbar",
+      "pack": "loafbrr-fences",
+      "src": "metal_fence/metalfence_one_side_topbar.glb",
+      "name": "Metal Fence One Side Topbar",
+      "category": "Fences & Walls",
+      "collide": "box",
+      "flatten": true
+    },
+    {
+      "id": "lf_plackard_broken",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken.glb",
+      "name": "Concrete Panel Broken",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_broken_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken_alt.glb",
+      "name": "Concrete Panel Broken B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_broken_slanted",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken_slanted.glb",
+      "name": "Concrete Panel Broken Slanted",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_closed",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_closed.glb",
+      "name": "Concrete Panel Closed",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_closed_full",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_closed_full.glb",
+      "name": "Concrete Panel Closed Full",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner.glb",
+      "name": "Concrete Panel Corner",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_closed",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_closed.glb",
+      "name": "Concrete Panel Corner Closed",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_closed_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_closed_alt.glb",
+      "name": "Concrete Panel Corner Closed B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_open",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open.glb",
+      "name": "Concrete Panel Corner Open",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_open_90",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_90.glb",
+      "name": "Concrete Panel Corner Open 90°",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_open_90_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_90_alt.glb",
+      "name": "Concrete Panel Corner Open 90° B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_corner_open_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_alt.glb",
+      "name": "Concrete Panel Corner Open B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_open",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open.glb",
+      "name": "Concrete Panel Open",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_open_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_alt.glb",
+      "name": "Concrete Panel Open B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_open_c",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_alt2.glb",
+      "name": "Concrete Panel Open C",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_open_patched",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_patched.glb",
+      "name": "Concrete Panel Open Patched",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_broken",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_boken.glb",
+      "name": "Concrete Slab Broken",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_broken_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_broken_alt.glb",
+      "name": "Concrete Slab Broken B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_chipped",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_chipped.glb",
+      "name": "Concrete Slab Chipped",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_chipped_b",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_chipped_alt.glb",
+      "name": "Concrete Slab Chipped B",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_full",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_full.glb",
+      "name": "Concrete Slab Full",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_half",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_half.glb",
+      "name": "Concrete Slab Half",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_single",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_single.glb",
+      "name": "Concrete Slab Single",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plackard_slab_wood_patched",
+      "pack": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_wood_patched.glb",
+      "name": "Concrete Slab Wood Patched",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_wall",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall.glb",
+      "name": "Plaster Wall",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_column",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_column.glb",
+      "name": "Plaster Column",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_column_fancy",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_column_fancy.glb",
+      "name": "Plaster Column Fancy",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_wall_fenced",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_fenced.glb",
+      "name": "Plaster Wall Fenced",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_wall_half",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_half.glb",
+      "name": "Plaster Wall Half",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plaster_wall_half_fenced",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_half_fenced.glb",
+      "name": "Plaster Wall Half Fenced",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plastic_gate_left",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plastic_gate_left.glb",
+      "name": "Plastic Gate Left",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_plastic_gate_right",
+      "pack": "loafbrr-fences",
+      "src": "plaster_wall/plastic_gate_right.glb",
+      "name": "Plastic Gate Right",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_fence_left",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_closed_left.glb",
+      "name": "Picket Fence Left",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_fence_right",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_closed_right.glb",
+      "name": "Picket Fence Right",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_gate",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_gate.glb",
+      "name": "Picket Gate",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_gate_posts",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_gate_poles.glb",
+      "name": "Picket Gate Posts",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_fence_open_left",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_open_left.glb",
+      "name": "Picket Fence Open Left",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_fence_open_right",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_open_right.glb",
+      "name": "Picket Fence Open Right",
+      "category": "Fences & Walls",
+      "collide": "box"
+    },
+    {
+      "id": "lf_picket_post",
+      "pack": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_pole.glb",
+      "name": "Picket Post",
+      "category": "Fences & Walls",
       "collide": "box"
     }
   ]

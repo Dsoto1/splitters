@@ -182,11 +182,22 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   The game leans them into their motion, speeds the idle up as they move,
   lunges them forward to attack, jolts them on hits, and drops and rolls them
   over when they die.
+- **The zombie body** (Quaternius' Zombie, CC0) is an FBX with its own
+  Mixamo-style rig and clips. `tools/content/fbx.mjs` (`fbxRiggedToGlb`)
+  converts it with three.js' FBXLoader and GLTFExporter, renames its clips to
+  ours (`idle`, `walk`, `run`, and the first 1.8 s of the bite as `attack`),
+  drops still tracks and stands it 1.8 m tall; its palette is embedded as it
+  is. It has no hit or death clip: hits jolt it and death drops and rolls it,
+  as for the aliens. Its spec's `gait` gives its own clips' ground speeds
+  (a 0.3 m/s shamble, a 3 m/s run from 1.4 m/s up). The `zombie` NPC role is
+  not a creature role: `zombieHasCreatureBody` puts two in three zombies (in
+  Zombies and in co-op squads) in this body, the rest shamble on the
+  soldiers' rig with their zombie clips.
 - In game, `content/creatures.ts` (`CreatureLibrary`) loads and instances
   them and `game/creatureAnimator.ts` drives them; `view.ts` uses them when an
   avatar's spec names a creature. No ragdoll: their death plays and the body
   is left as a corpse.
-- `?mode=characters` shows the five creatures in a row in front of the
+- `?mode=characters` shows the five creatures and the zombie body in a row in front of the
   characters, driven by the same buttons.
 
 ## Known gaps

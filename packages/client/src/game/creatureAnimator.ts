@@ -106,7 +106,9 @@ export class CreatureAnimator {
       return;
     }
     if (this.dead) this.revive();
-    const want: Loop = s.speed < 0.5 ? 'idle' : this.alien || s.speed < 3 * this.hipScale ? (this.alien ? 'idle' : 'walk') : 'run';
+    const gait = this.ch.spec.gait;
+    const runFrom = gait ? gait.runFrom : 3 * this.hipScale;
+    const want: Loop = s.speed < (gait ? 0.15 : 0.5) ? 'idle' : this.alien || s.speed < runFrom ? (this.alien ? 'idle' : 'walk') : 'run';
     if (want !== this.current) {
       this.current = want;
       this.play(want, this.weights.get(want) ?? 0);
@@ -122,8 +124,8 @@ export class CreatureAnimator {
         continue;
       }
       g.weight = w;
-      if (c === 'walk') g.speedRatio = Math.max(0.5, Math.min(2.5, s.speed / (RIG_WALK * this.hipScale)));
-      else if (c === 'run') g.speedRatio = Math.max(0.6, Math.min(2.5, s.speed / (RIG_RUN * this.hipScale)));
+      if (c === 'walk') g.speedRatio = Math.max(0.5, Math.min(gait ? 4 : 2.5, s.speed / (gait ? gait.walk : RIG_WALK * this.hipScale)));
+      else if (c === 'run') g.speedRatio = Math.max(0.6, Math.min(2.5, s.speed / (gait ? gait.run : RIG_RUN * this.hipScale)));
       else if (this.alien) g.speedRatio = 1 + Math.min(2, s.speed * 0.35);
     }
     // Aliens lean into their motion and bob a little faster.

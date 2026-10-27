@@ -7354,6 +7354,4608 @@
       "triangles": 468,
       "bytes": 17636,
       "sha256": "66af409d76df08fc"
+    },
+    {
+      "file": "props/hp_floor_tile.glb",
+      "source": "madduck-hospital",
+      "src": "floor_tile_1.fbx",
+      "triangles": 12,
+      "bytes": 1716,
+      "sha256": "e4a9bb4e093c4781",
+      "size": [
+        3,
+        0.15,
+        3
+      ]
+    },
+    {
+      "file": "props/hp_floor_tile_blue.glb",
+      "source": "madduck-hospital",
+      "src": "floor_tile_2.fbx",
+      "triangles": 12,
+      "bytes": 1716,
+      "sha256": "7324089595052773",
+      "size": [
+        3,
+        0.15,
+        3
+      ]
+    },
+    {
+      "file": "props/hp_ceiling_tile.glb",
+      "source": "madduck-hospital",
+      "src": "ceiling_tile.fbx",
+      "triangles": 12,
+      "bytes": 1772,
+      "sha256": "b998d46302601369",
+      "size": [
+        3,
+        0.15,
+        3
+      ]
+    },
+    {
+      "file": "props/hp_wall.glb",
+      "source": "madduck-hospital",
+      "src": "tile_wall.fbx",
+      "triangles": 252,
+      "bytes": 8592,
+      "sha256": "31f2104f2e8b15bd",
+      "size": [
+        3,
+        3.75,
+        0.266
+      ]
+    },
+    {
+      "file": "props/hp_wall_half.glb",
+      "source": "madduck-hospital",
+      "src": "tile_wall_half.fbx",
+      "triangles": 252,
+      "bytes": 8604,
+      "sha256": "02bb0affd0c0223c",
+      "size": [
+        1.5,
+        3.75,
+        0.266
+      ]
+    },
+    {
+      "file": "props/hp_wall_window.glb",
+      "source": "madduck-hospital",
+      "src": "tile_window.fbx",
+      "triangles": 618,
+      "bytes": 18352,
+      "sha256": "7645c0fa9f63721b",
+      "size": [
+        3,
+        3.75,
+        0.266
+      ]
+    },
+    {
+      "file": "props/hp_doorway.glb",
+      "source": "madduck-hospital",
+      "src": "tile_doorway_1.fbx",
+      "triangles": 1056,
+      "bytes": 28824,
+      "sha256": "48f665fe60d82315",
+      "size": [
+        3,
+        3.75,
+        0.28
+      ]
+    },
+    {
+      "file": "props/hp_doorway_wide.glb",
+      "source": "madduck-hospital",
+      "src": "tile_doorway_2.fbx",
+      "triangles": 1056,
+      "bytes": 28780,
+      "sha256": "55765186175ffb85",
+      "size": [
+        4.5,
+        3.75,
+        0.28
+      ]
+    },
+    {
+      "file": "props/hp_wall_corner.glb",
+      "source": "madduck-hospital",
+      "src": "tile_corner.fbx",
+      "triangles": 380,
+      "bytes": 11960,
+      "sha256": "f3977988045c5da6",
+      "size": [
+        2.983,
+        3.75,
+        2.983
+      ]
+    },
+    {
+      "file": "props/hp_pillar.glb",
+      "source": "madduck-hospital",
+      "src": "pillar.fbx",
+      "triangles": 452,
+      "bytes": 12248,
+      "sha256": "5e52ee5d78cb8021",
+      "size": [
+        0.655,
+        3.75,
+        0.655
+      ]
+    },
+    {
+      "file": "props/hp_door.glb",
+      "source": "madduck-hospital",
+      "src": "door_1.fbx",
+      "triangles": 2880,
+      "bytes": 49912,
+      "sha256": "928600c91de73a3c",
+      "size": [
+        1.499,
+        3.002,
+        0.232
+      ]
+    },
+    {
+      "file": "props/hp_door_swing.glb",
+      "source": "madduck-hospital",
+      "src": "door_2.fbx",
+      "triangles": 928,
+      "bytes": 17348,
+      "sha256": "571f12c3bc3b5368",
+      "size": [
+        1.499,
+        3.002,
+        0.085
+      ]
+    },
+    {
+      "file": "props/hp_bed.glb",
+      "source": "madduck-hospital",
+      "src": "bed.fbx",
+      "triangles": 4185,
+      "bytes": 268924,
+      "sha256": "1e36b26a2d138b5f",
+      "size": [
+        1.018,
+        0.85,
+        2.31
+      ]
+    },
+    {
+      "file": "props/hp_bench.glb",
+      "source": "madduck-hospital",
+      "src": "bench.fbx",
+      "triangles": 2572,
+      "bytes": 66804,
+      "sha256": "339aa06b622dd55c",
+      "size": [
+        1.579,
+        0.85,
+        0.526
+      ]
+    },
+    {
+      "file": "props/hp_chair.glb",
+      "source": "madduck-hospital",
+      "src": "chair.fbx",
+      "triangles": 1324,
+      "bytes": 28828,
+      "sha256": "5c3ed87509736372",
+      "size": [
+        0.584,
+        1,
+        0.691
+      ]
+    },
+    {
+      "file": "props/hp_table.glb",
+      "source": "madduck-hospital",
+      "src": "table.fbx",
+      "triangles": 940,
+      "bytes": 23768,
+      "sha256": "6d7c80dfb74d019a",
+      "size": [
+        1.798,
+        0.78,
+        1.208
+      ]
+    },
+    {
+      "file": "props/hp_cabinet_counter.glb",
+      "source": "madduck-hospital",
+      "src": "cabinet_1.fbx",
+      "triangles": 4654,
+      "bytes": 80112,
+      "sha256": "87e0f2b630d5a272",
+      "size": [
+        2.155,
+        0.92,
+        0.836
+      ]
+    },
+    {
+      "file": "props/hp_cabinet_low.glb",
+      "source": "madduck-hospital",
+      "src": "cabinet_2.fbx",
+      "triangles": 2078,
+      "bytes": 38000,
+      "sha256": "05b177523047bfc8",
+      "size": [
+        0.961,
+        0.62,
+        0.464
+      ]
+    },
+    {
+      "file": "props/hp_cabinet_drawers.glb",
+      "source": "madduck-hospital",
+      "src": "cabinet_3.fbx",
+      "triangles": 2836,
+      "bytes": 49428,
+      "sha256": "b798a66b454bee11",
+      "size": [
+        0.661,
+        0.8,
+        0.547
+      ]
+    },
+    {
+      "file": "props/hp_wheelchair.glb",
+      "source": "madduck-hospital",
+      "src": "wheel_chair.fbx",
+      "triangles": 4135,
+      "bytes": 263028,
+      "sha256": "ae380856cc0ad7f6",
+      "size": [
+        0.707,
+        0.95,
+        1.042
+      ]
+    },
+    {
+      "file": "props/hp_iv_stand.glb",
+      "source": "madduck-hospital",
+      "src": "IV_Bag_holder.fbx",
+      "triangles": 3524,
+      "bytes": 98084,
+      "sha256": "101b0d7a510fcf54",
+      "size": [
+        0.603,
+        1.9,
+        0.598
+      ]
+    },
+    {
+      "file": "props/hp_iv_bag.glb",
+      "source": "madduck-hospital",
+      "src": "IV_Bag.fbx",
+      "triangles": 1326,
+      "bytes": 26288,
+      "sha256": "2caec939068ac24c",
+      "size": [
+        0.424,
+        1.108,
+        0.248
+      ]
+    },
+    {
+      "file": "props/hp_magazine.glb",
+      "source": "madduck-hospital",
+      "src": "Magazine1.fbx",
+      "triangles": 12,
+      "bytes": 1860,
+      "sha256": "2290cfde9e362c8e",
+      "size": [
+        0.202,
+        0.01,
+        0.278
+      ]
+    },
+    {
+      "file": "props/hp_exit_sign.glb",
+      "source": "madduck-hospital",
+      "src": "Exit_sign.fbx",
+      "triangles": 32,
+      "bytes": 2604,
+      "sha256": "1cc5904f8eaba479",
+      "size": [
+        0.424,
+        0.283,
+        0.047
+      ]
+    },
+    {
+      "file": "props/hp_ceiling_light.glb",
+      "source": "madduck-hospital",
+      "src": "ceiling_light.fbx",
+      "triangles": 288,
+      "bytes": 8280,
+      "sha256": "d82e5fd2689c715b",
+      "size": [
+        0.608,
+        0.062,
+        0.608
+      ]
+    },
+    {
+      "file": "props/ww_barrel_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Barrel A.fbx",
+      "triangles": 648,
+      "bytes": 38592,
+      "sha256": "1ea5c8b8e7ab69e7",
+      "size": [
+        0.87,
+        1,
+        0.87
+      ]
+    },
+    {
+      "file": "props/ww_barrel_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Barrel B.fbx",
+      "triangles": 672,
+      "bytes": 30988,
+      "sha256": "be34057c7ad0650e",
+      "size": [
+        0.899,
+        1,
+        0.899
+      ]
+    },
+    {
+      "file": "props/ww_bottle_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle A.fbx",
+      "triangles": 260,
+      "bytes": 12520,
+      "sha256": "283d338cf6a14ee4",
+      "size": [
+        0.077,
+        0.364,
+        0.081
+      ]
+    },
+    {
+      "file": "props/ww_bottle_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle B.fbx",
+      "triangles": 276,
+      "bytes": 14264,
+      "sha256": "57fe31b71c6ca544",
+      "size": [
+        0.08,
+        0.313,
+        0.08
+      ]
+    },
+    {
+      "file": "props/ww_bottle_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle C.fbx",
+      "triangles": 416,
+      "bytes": 21004,
+      "sha256": "0263853a6f30eb40",
+      "size": [
+        0.097,
+        0.297,
+        0.097
+      ]
+    },
+    {
+      "file": "props/ww_bottle_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bottle D.fbx",
+      "triangles": 332,
+      "bytes": 16160,
+      "sha256": "45a4dcbc92c95d35",
+      "size": [
+        0.063,
+        0.214,
+        0.101
+      ]
+    },
+    {
+      "file": "props/ww_bucket.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Bucket.fbx",
+      "triangles": 418,
+      "bytes": 19752,
+      "sha256": "acffc484a3ff7e70",
+      "size": [
+        0.624,
+        0.642,
+        0.624
+      ]
+    },
+    {
+      "file": "props/ww_carpet.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Carpet.fbx",
+      "triangles": 12,
+      "bytes": 1748,
+      "sha256": "49235f946d339781",
+      "size": [
+        1.079,
+        0.021,
+        1
+      ]
+    },
+    {
+      "file": "props/ww_chair.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Chair.fbx",
+      "triangles": 482,
+      "bytes": 18852,
+      "sha256": "d60901d8709b577d",
+      "size": [
+        0.504,
+        1.095,
+        0.56
+      ]
+    },
+    {
+      "file": "props/ww_crate.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Crate.fbx",
+      "triangles": 924,
+      "bytes": 39204,
+      "sha256": "a719b845760c8d3d",
+      "size": [
+        0.654,
+        0.379,
+        0.83
+      ]
+    },
+    {
+      "file": "props/ww_dynamite_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Dynamite A.fbx",
+      "triangles": 78,
+      "bytes": 5640,
+      "sha256": "be6181b41467b7c8",
+      "size": [
+        0.052,
+        0.482,
+        0.055
+      ]
+    },
+    {
+      "file": "props/ww_dynamite_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Dynamite B.fbx",
+      "triangles": 834,
+      "bytes": 33712,
+      "sha256": "9b14fbb3fd6a88c5",
+      "size": [
+        0.188,
+        0.506,
+        0.199
+      ]
+    },
+    {
+      "file": "props/ww_fence_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Fence A.fbx",
+      "triangles": 148,
+      "bytes": 7368,
+      "sha256": "30ec28a39f0167ed",
+      "size": [
+        0.109,
+        1.2,
+        3
+      ]
+    },
+    {
+      "file": "props/ww_fence_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Fence B.fbx",
+      "triangles": 352,
+      "bytes": 15356,
+      "sha256": "08f39f0b5b75f8c3",
+      "size": [
+        0.179,
+        2.184,
+        1.5
+      ]
+    },
+    {
+      "file": "props/ww_glass.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Glass.fbx",
+      "triangles": 92,
+      "bytes": 4548,
+      "sha256": "eebb045c655e7de9",
+      "size": [
+        0.091,
+        0.087,
+        0.091
+      ]
+    },
+    {
+      "file": "props/ww_gold_bar.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Gold Bar.fbx",
+      "triangles": 44,
+      "bytes": 3160,
+      "sha256": "7be5535a3735d54d",
+      "size": [
+        0.264,
+        0.072,
+        0.119
+      ]
+    },
+    {
+      "file": "props/ww_hat_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat A.fbx",
+      "triangles": 600,
+      "bytes": 37704,
+      "sha256": "4358920ad45c9117",
+      "size": [
+        0.542,
+        0.22,
+        0.457
+      ]
+    },
+    {
+      "file": "props/ww_hat_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat B.fbx",
+      "triangles": 560,
+      "bytes": 37648,
+      "sha256": "21946502e2ed2293",
+      "size": [
+        0.571,
+        0.142,
+        0.571
+      ]
+    },
+    {
+      "file": "props/ww_hat_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Hat C.fbx",
+      "triangles": 560,
+      "bytes": 37492,
+      "sha256": "1644b435896c29c5",
+      "size": [
+        0.489,
+        0.241,
+        0.489
+      ]
+    },
+    {
+      "file": "props/ww_hitching_post.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Hitching Post.fbx",
+      "triangles": 228,
+      "bytes": 9308,
+      "sha256": "ce358a07ab2daaf2",
+      "size": [
+        0.189,
+        1,
+        1.6
+      ]
+    },
+    {
+      "file": "props/ww_horseshoe.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Horseshoe.fbx",
+      "triangles": 132,
+      "bytes": 6388,
+      "sha256": "c8161a2d5224df87",
+      "size": [
+        0.018,
+        0.182,
+        0.179
+      ]
+    },
+    {
+      "file": "props/ww_ladder.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Ladder.fbx",
+      "triangles": 440,
+      "bytes": 19348,
+      "sha256": "b95ada17112df7f5",
+      "size": [
+        0.055,
+        2.3,
+        0.567
+      ]
+    },
+    {
+      "file": "props/ww_lantern.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Lantern.fbx",
+      "triangles": 960,
+      "bytes": 39568,
+      "sha256": "3abfadfb8433f3f0",
+      "size": [
+        0.225,
+        0.678,
+        0.313
+      ]
+    },
+    {
+      "file": "props/ww_pickaxe.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Pickaxe.fbx",
+      "triangles": 144,
+      "bytes": 12636,
+      "sha256": "463b60ced58ce5bf",
+      "size": [
+        0.189,
+        1.378,
+        1.071
+      ]
+    },
+    {
+      "file": "props/ww_table_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Table A.fbx",
+      "triangles": 512,
+      "bytes": 21120,
+      "sha256": "d0c6a8f1646ba0d3",
+      "size": [
+        1.353,
+        0.912,
+        1.353
+      ]
+    },
+    {
+      "file": "props/ww_table_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Table B.fbx",
+      "triangles": 536,
+      "bytes": 22740,
+      "sha256": "0afebaa9fd2181cc",
+      "size": [
+        1.353,
+        0.935,
+        1.353
+      ]
+    },
+    {
+      "file": "props/ww_trough_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Trough A.fbx",
+      "triangles": 68,
+      "bytes": 4708,
+      "sha256": "7d3bb27900428135",
+      "size": [
+        0.453,
+        0.4,
+        1.5
+      ]
+    },
+    {
+      "file": "props/ww_trough_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Trough B.fbx",
+      "triangles": 68,
+      "bytes": 3988,
+      "sha256": "0ab601e8a84fcf19",
+      "size": [
+        0.453,
+        0.4,
+        1.5
+      ]
+    },
+    {
+      "file": "props/ww_wheel_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Wheel A.fbx",
+      "triangles": 472,
+      "bytes": 18672,
+      "sha256": "932eaf4b5e0241e9",
+      "size": [
+        0.092,
+        1.042,
+        1.042
+      ]
+    },
+    {
+      "file": "props/ww_wheel_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Clutter/Wheel B.fbx",
+      "triangles": 472,
+      "bytes": 18752,
+      "sha256": "ce5f0d9e3059ae23",
+      "size": [
+        0.13,
+        1.475,
+        1.475
+      ]
+    },
+    {
+      "file": "props/ww_bar.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Bar.fbx",
+      "triangles": 236,
+      "bytes": 9592,
+      "sha256": "4b54e131cb022208",
+      "size": [
+        1.937,
+        0.944,
+        3.616
+      ]
+    },
+    {
+      "file": "props/ww_gallows.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Gallows.fbx",
+      "triangles": 2502,
+      "bytes": 100472,
+      "sha256": "acdddddea14b3c32",
+      "size": [
+        3.493,
+        4.107,
+        4.131
+      ]
+    },
+    {
+      "file": "props/ww_rail.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Rail.fbx",
+      "triangles": 352,
+      "bytes": 19600,
+      "sha256": "e376f07109a04c3d",
+      "size": [
+        1.478,
+        0.226,
+        3.471
+      ]
+    },
+    {
+      "file": "props/ww_water_tank.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Water Tank.fbx",
+      "triangles": 1496,
+      "bytes": 77196,
+      "sha256": "5e146ebf70a1cc48",
+      "size": [
+        2.201,
+        5.678,
+        2.232
+      ]
+    },
+    {
+      "file": "props/ww_windmill.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Miscellaneous/Windmill.fbx",
+      "triangles": 1326,
+      "bytes": 54712,
+      "sha256": "05388b86164dfd50",
+      "size": [
+        2.426,
+        8.595,
+        2.665
+      ]
+    },
+    {
+      "file": "props/ww_balcony_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony A.fbx",
+      "triangles": 1028,
+      "bytes": 42416,
+      "sha256": "99fe6772ec715e44",
+      "size": [
+        1.844,
+        3.52,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_balcony_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony B.fbx",
+      "triangles": 1016,
+      "bytes": 42692,
+      "sha256": "9e656ef492ad440d",
+      "size": [
+        2.142,
+        4.055,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_balcony_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony C.fbx",
+      "triangles": 1416,
+      "bytes": 57764,
+      "sha256": "9f486b8ff2938780",
+      "size": [
+        6.516,
+        3.513,
+        6.52
+      ]
+    },
+    {
+      "file": "props/ww_balcony_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony D.fbx",
+      "triangles": 1640,
+      "bytes": 67948,
+      "sha256": "ccf7e0e296c3e16d",
+      "size": [
+        6.87,
+        3.508,
+        6.904
+      ]
+    },
+    {
+      "file": "props/ww_balcony_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony E.fbx",
+      "triangles": 1496,
+      "bytes": 61216,
+      "sha256": "5fdefdd7ca637287",
+      "size": [
+        6.691,
+        4.04,
+        6.698
+      ]
+    },
+    {
+      "file": "props/ww_balcony_f.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony F.fbx",
+      "triangles": 1640,
+      "bytes": 70360,
+      "sha256": "5d367e823fb4b264",
+      "size": [
+        6.993,
+        4.04,
+        6.993
+      ]
+    },
+    {
+      "file": "props/ww_balcony_with_railing_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing A.fbx",
+      "triangles": 1736,
+      "bytes": 70612,
+      "sha256": "8f19acf20a9fc34d",
+      "size": [
+        1.843,
+        5.108,
+        5.285
+      ]
+    },
+    {
+      "file": "props/ww_balcony_with_railing_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing B.fbx",
+      "triangles": 2204,
+      "bytes": 88316,
+      "sha256": "bcb9beec5ac10f84",
+      "size": [
+        6.516,
+        5.096,
+        6.52
+      ]
+    },
+    {
+      "file": "props/ww_balcony_with_railing_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Balcony With Railing C.fbx",
+      "triangles": 2396,
+      "bytes": 97576,
+      "sha256": "6f61f7b126b13aa1",
+      "size": [
+        6.87,
+        5.104,
+        6.904
+      ]
+    },
+    {
+      "file": "props/ww_post.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Post.fbx",
+      "triangles": 68,
+      "bytes": 4004,
+      "sha256": "78f0d046af705f02",
+      "size": [
+        0.21,
+        1.6,
+        0.21
+      ]
+    },
+    {
+      "file": "props/ww_railing.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Balconies/Railing.fbx",
+      "triangles": 152,
+      "bytes": 7308,
+      "sha256": "4113f78e21319a4e",
+      "size": [
+        0.106,
+        1.189,
+        1.6
+      ]
+    },
+    {
+      "file": "props/ww_cell_door.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Cell Door.fbx",
+      "triangles": 140,
+      "bytes": 6492,
+      "sha256": "b30c84baf810c0ad",
+      "size": [
+        1.92,
+        3.387,
+        0.224
+      ]
+    },
+    {
+      "file": "props/ww_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Door A.fbx",
+      "triangles": 148,
+      "bytes": 6928,
+      "sha256": "6fad1cbbd76caf57",
+      "size": [
+        1.413,
+        2.88,
+        0.327
+      ]
+    },
+    {
+      "file": "props/ww_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Door B.fbx",
+      "triangles": 528,
+      "bytes": 24020,
+      "sha256": "f2a347affc9557a1",
+      "size": [
+        1.413,
+        2.88,
+        0.402
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Doors/Saloon Door.fbx",
+      "triangles": 260,
+      "bytes": 10184,
+      "sha256": "417e38d20aa74a83",
+      "size": [
+        1.065,
+        1.414,
+        0.076
+      ]
+    },
+    {
+      "file": "props/ww_floor_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor A.fbx",
+      "triangles": 632,
+      "bytes": 25888,
+      "sha256": "62a3b195c135df5c",
+      "size": [
+        4.928,
+        0.246,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_floor_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor B.fbx",
+      "triangles": 996,
+      "bytes": 38696,
+      "sha256": "d7820991a60bf4f4",
+      "size": [
+        4.928,
+        0.246,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_floor_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor C.fbx",
+      "triangles": 628,
+      "bytes": 25700,
+      "sha256": "832b56319e5a0b3c",
+      "size": [
+        4.928,
+        0.23,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_floor_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor D.fbx",
+      "triangles": 916,
+      "bytes": 36116,
+      "sha256": "db1b785584519e3c",
+      "size": [
+        4.928,
+        0.246,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_floor_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Floor E.fbx",
+      "triangles": 640,
+      "bytes": 26172,
+      "sha256": "ef3727eb5c499028",
+      "size": [
+        4.928,
+        0.246,
+        4.928
+      ]
+    },
+    {
+      "file": "props/ww_foundation_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation A.fbx",
+      "triangles": 632,
+      "bytes": 26500,
+      "sha256": "240ce2d83e13ccdd",
+      "size": [
+        5.28,
+        0.614,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation B.fbx",
+      "triangles": 996,
+      "bytes": 39412,
+      "sha256": "b2ccbf583f2d472f",
+      "size": [
+        5.28,
+        0.614,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation C.fbx",
+      "triangles": 628,
+      "bytes": 27320,
+      "sha256": "3b9fbfcb1f18037f",
+      "size": [
+        5.28,
+        0.598,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation D.fbx",
+      "triangles": 1388,
+      "bytes": 55240,
+      "sha256": "6bf1764eb1da235b",
+      "size": [
+        5.28,
+        0.711,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation E.fbx",
+      "triangles": 1752,
+      "bytes": 68088,
+      "sha256": "3dccfce30d5f3e32",
+      "size": [
+        5.28,
+        0.711,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_foundation_f.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Foundation F.fbx",
+      "triangles": 1232,
+      "bytes": 49284,
+      "sha256": "77fa9f62957ea05c",
+      "size": [
+        5.28,
+        0.695,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_roof_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof A.fbx",
+      "triangles": 16,
+      "bytes": 2608,
+      "sha256": "bc93297c063fc17d",
+      "size": [
+        5.28,
+        0.112,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_roof_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof B.fbx",
+      "triangles": 48,
+      "bytes": 4052,
+      "sha256": "10f2719af2180e39",
+      "size": [
+        5.28,
+        0.271,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_roof_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof C.fbx",
+      "triangles": 28,
+      "bytes": 2972,
+      "sha256": "af079e0431b2f38f",
+      "size": [
+        5.28,
+        0.271,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_roof_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof D.fbx",
+      "triangles": 36,
+      "bytes": 3944,
+      "sha256": "bf02535975464936",
+      "size": [
+        5.484,
+        0.271,
+        5.483
+      ]
+    },
+    {
+      "file": "props/ww_roof_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Roof E.fbx",
+      "triangles": 648,
+      "bytes": 27112,
+      "sha256": "271ab3a0bae0253a",
+      "size": [
+        5.474,
+        5.567,
+        5.48
+      ]
+    },
+    {
+      "file": "props/ww_small_foundation_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation A.fbx",
+      "triangles": 956,
+      "bytes": 38872,
+      "sha256": "b81783cdbe754902",
+      "size": [
+        1.838,
+        0.71,
+        5.28
+      ]
+    },
+    {
+      "file": "props/ww_small_foundation_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation B.fbx",
+      "triangles": 1212,
+      "bytes": 49564,
+      "sha256": "ee83ea7cdd8d8ca9",
+      "size": [
+        6.489,
+        0.711,
+        6.497
+      ]
+    },
+    {
+      "file": "props/ww_small_foundation_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Floor & Roof/Small Foundation C.fbx",
+      "triangles": 1572,
+      "bytes": 67040,
+      "sha256": "6dac0520eb81c14f",
+      "size": [
+        7.044,
+        0.692,
+        7.062
+      ]
+    },
+    {
+      "file": "props/ww_bank_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign A.fbx",
+      "triangles": 972,
+      "bytes": 44228,
+      "sha256": "42bb4a725e0a7ae7",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_bank_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign B.fbx",
+      "triangles": 1292,
+      "bytes": 57404,
+      "sha256": "61b89fd232c278f5",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_bank_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Bank Sign C.fbx",
+      "triangles": 1198,
+      "bytes": 54100,
+      "sha256": "66213c6e966fe915",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_doctor_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign A.fbx",
+      "triangles": 1792,
+      "bytes": 84436,
+      "sha256": "ccc10c49b9e1413c",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_doctor_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign B.fbx",
+      "triangles": 2112,
+      "bytes": 97548,
+      "sha256": "75d7c49c01cdf128",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_doctor_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Doctor Sign C.fbx",
+      "triangles": 2018,
+      "bytes": 94404,
+      "sha256": "e15019cb116b7b79",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_general_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign A.fbx",
+      "triangles": 1648,
+      "bytes": 73964,
+      "sha256": "00ce47624b9388de",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_general_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign B.fbx",
+      "triangles": 2452,
+      "bytes": 113152,
+      "sha256": "67ef804e353ad63e",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_general_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/General Sign C.fbx",
+      "triangles": 2452,
+      "bytes": 113152,
+      "sha256": "67ef804e353ad63e",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_gun_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign A.fbx",
+      "triangles": 1418,
+      "bytes": 66220,
+      "sha256": "9554c634714fd4cf",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_gun_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign B.fbx",
+      "triangles": 1738,
+      "bytes": 79204,
+      "sha256": "fb8e77998019db21",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_gun_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Gun Sign C.fbx",
+      "triangles": 2214,
+      "bytes": 101816,
+      "sha256": "c495400dd318c618",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_hotel_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign A.fbx",
+      "triangles": 980,
+      "bytes": 44900,
+      "sha256": "78d4337d340ef940",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_hotel_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign B.fbx",
+      "triangles": 1300,
+      "bytes": 58064,
+      "sha256": "b7808d610d021546",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_hotel_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Hotel Sign C.fbx",
+      "triangles": 1206,
+      "bytes": 54964,
+      "sha256": "ea472abde44e1bcb",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_saloon_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign A.fbx",
+      "triangles": 2104,
+      "bytes": 74432,
+      "sha256": "a8fb6e4979483c1f",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_saloon_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign B.fbx",
+      "triangles": 1900,
+      "bytes": 87364,
+      "sha256": "de5b70f58d8a6bd3",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_saloon_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Saloon Sign C.fbx",
+      "triangles": 1328,
+      "bytes": 60964,
+      "sha256": "d1ef8f9aac92eae7",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_sheriff_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign A.fbx",
+      "triangles": 1256,
+      "bytes": 57604,
+      "sha256": "f907fbccc1f4ae39",
+      "size": [
+        10.56,
+        2.4,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_sheriff_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign B.fbx",
+      "triangles": 1576,
+      "bytes": 70652,
+      "sha256": "f3dd92fd19c9ebe4",
+      "size": [
+        10.56,
+        3.753,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_sheriff_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sheriff Sign C.fbx",
+      "triangles": 1482,
+      "bytes": 67412,
+      "sha256": "6de01b29845ca74b",
+      "size": [
+        10.56,
+        3.563,
+        2.341
+      ]
+    },
+    {
+      "file": "props/ww_sign_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign A.fbx",
+      "triangles": 524,
+      "bytes": 23304,
+      "sha256": "29337d236d9b1673",
+      "size": [
+        10.56,
+        2.4,
+        2.313
+      ]
+    },
+    {
+      "file": "props/ww_sign_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign B.fbx",
+      "triangles": 844,
+      "bytes": 36444,
+      "sha256": "94f2cb40ec622884",
+      "size": [
+        10.56,
+        3.753,
+        2.315
+      ]
+    },
+    {
+      "file": "props/ww_sign_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign C.fbx",
+      "triangles": 750,
+      "bytes": 33188,
+      "sha256": "5aae73ca7810e0e8",
+      "size": [
+        10.56,
+        3.563,
+        2.315
+      ]
+    },
+    {
+      "file": "props/ww_sign_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign D.fbx",
+      "triangles": 488,
+      "bytes": 22580,
+      "sha256": "363daf1304f0a442",
+      "size": [
+        10.56,
+        2.4,
+        0.41
+      ]
+    },
+    {
+      "file": "props/ww_sign_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign E.fbx",
+      "triangles": 196,
+      "bytes": 9000,
+      "sha256": "b37300dc6adf5a11",
+      "size": [
+        10.56,
+        2.4,
+        0.361
+      ]
+    },
+    {
+      "file": "props/ww_sign_f.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Sign F.fbx",
+      "triangles": 226,
+      "bytes": 11028,
+      "sha256": "ac13f6a1e429f78f",
+      "size": [
+        5.327,
+        1.795,
+        5.327
+      ]
+    },
+    {
+      "file": "props/ww_small_sign.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Small Sign.fbx",
+      "triangles": 336,
+      "bytes": 15356,
+      "sha256": "9e096813d7fc458f",
+      "size": [
+        1.65,
+        1.262,
+        0.131
+      ]
+    },
+    {
+      "file": "props/ww_welcome_sign.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Signs/Welcome Sign.fbx",
+      "triangles": 424,
+      "bytes": 19060,
+      "sha256": "2c718dbd314f2705",
+      "size": [
+        11.297,
+        8.264,
+        0.437
+      ]
+    },
+    {
+      "file": "props/ww_big_staircase_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Big Staircase A.fbx",
+      "triangles": 1952,
+      "bytes": 75820,
+      "sha256": "16b8e32f596fffeb",
+      "size": [
+        4.097,
+        5.214,
+        6.5
+      ]
+    },
+    {
+      "file": "props/ww_corner_staircase_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Staircase A.fbx",
+      "triangles": 660,
+      "bytes": 24276,
+      "sha256": "985762ee34efa2b1",
+      "size": [
+        4.8,
+        3.52,
+        4.8
+      ]
+    },
+    {
+      "file": "props/ww_corner_staircase_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Staircase B.fbx",
+      "triangles": 1182,
+      "bytes": 45660,
+      "sha256": "26163797951d09e4",
+      "size": [
+        4.8,
+        5.199,
+        4.8
+      ]
+    },
+    {
+      "file": "props/ww_corner_stairs.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Corner Stairs.fbx",
+      "triangles": 1364,
+      "bytes": 58340,
+      "sha256": "a56f62e845e09627",
+      "size": [
+        4.57,
+        7.018,
+        4.956
+      ]
+    },
+    {
+      "file": "props/ww_small_stairs.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Small Stairs.fbx",
+      "triangles": 564,
+      "bytes": 23820,
+      "sha256": "ec800e89182e6a63",
+      "size": [
+        1.1,
+        0.502,
+        1.584
+      ]
+    },
+    {
+      "file": "props/ww_staircase_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Staircase A.fbx",
+      "triangles": 628,
+      "bytes": 22396,
+      "sha256": "8b75d5b4cabf2548",
+      "size": [
+        1.6,
+        3.52,
+        4.089
+      ]
+    },
+    {
+      "file": "props/ww_staircase_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Staircase B.fbx",
+      "triangles": 984,
+      "bytes": 37256,
+      "sha256": "ab3ad8398f3ecdaf",
+      "size": [
+        1.6,
+        5.202,
+        4.109
+      ]
+    },
+    {
+      "file": "props/ww_stairs_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs A.fbx",
+      "triangles": 528,
+      "bytes": 23668,
+      "sha256": "e8f2df0702a5b10e",
+      "size": [
+        1.6,
+        3.52,
+        3.36
+      ]
+    },
+    {
+      "file": "props/ww_stairs_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs B.fbx",
+      "triangles": 868,
+      "bytes": 38008,
+      "sha256": "584a1d2f87ed3c9b",
+      "size": [
+        5.203,
+        3.508,
+        1.634
+      ]
+    },
+    {
+      "file": "props/ww_stairs_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs C.fbx",
+      "triangles": 868,
+      "bytes": 38040,
+      "sha256": "c00b8ee62b69477f",
+      "size": [
+        5.203,
+        3.508,
+        1.634
+      ]
+    },
+    {
+      "file": "props/ww_stairs_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Stairs/Stairs D.fbx",
+      "triangles": 1932,
+      "bytes": 78876,
+      "sha256": "318aa8b64190d3fc",
+      "size": [
+        6.765,
+        7.081,
+        3.268
+      ]
+    },
+    {
+      "file": "props/ww_cell_wall.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Cell Wall.fbx",
+      "triangles": 168,
+      "bytes": 7424,
+      "sha256": "48c3229bf688f342",
+      "size": [
+        3.2,
+        3.52,
+        0.224
+      ]
+    },
+    {
+      "file": "props/ww_corner_post_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Corner Post A.fbx",
+      "triangles": 48,
+      "bytes": 3072,
+      "sha256": "023b20f15c433d05",
+      "size": [
+        0.521,
+        3.52,
+        0.617
+      ]
+    },
+    {
+      "file": "props/ww_corner_post_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Corner Post B.fbx",
+      "triangles": 44,
+      "bytes": 2536,
+      "sha256": "895e9a44d662eceb",
+      "size": [
+        0.4,
+        3.52,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_door_and_window_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Door and Window A.fbx",
+      "triangles": 540,
+      "bytes": 29240,
+      "sha256": "558ddb04e7db8890",
+      "size": [
+        9.6,
+        3.526,
+        0.415
+      ]
+    },
+    {
+      "file": "props/ww_door_and_window_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Door and Window B.fbx",
+      "triangles": 804,
+      "bytes": 45116,
+      "sha256": "3ae127efdc5c7fe9",
+      "size": [
+        9.6,
+        3.52,
+        0.416
+      ]
+    },
+    {
+      "file": "props/ww_interior_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Door A.fbx",
+      "triangles": 376,
+      "bytes": 20164,
+      "sha256": "b0c55f2f82ab57c4",
+      "size": [
+        2.4,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_interior_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Door B.fbx",
+      "triangles": 376,
+      "bytes": 20984,
+      "sha256": "2e378a52200228f3",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_interior_small_wall.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Small Wall.fbx",
+      "triangles": 212,
+      "bytes": 10232,
+      "sha256": "59279bafb52abe4a",
+      "size": [
+        2.4,
+        3.52,
+        0.16
+      ]
+    },
+    {
+      "file": "props/ww_interior_wall.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Int. Wall.fbx",
+      "triangles": 212,
+      "bytes": 10188,
+      "sha256": "993bdebb1fb3dc72",
+      "size": [
+        4.8,
+        3.52,
+        0.16
+      ]
+    },
+    {
+      "file": "props/ww_large_wall_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Large Wall A.fbx",
+      "triangles": 132,
+      "bytes": 6436,
+      "sha256": "a86ee0d53100f2fd",
+      "size": [
+        9.6,
+        3.52,
+        0.264
+      ]
+    },
+    {
+      "file": "props/ww_large_wall_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Large Wall B.fbx",
+      "triangles": 236,
+      "bytes": 11824,
+      "sha256": "bfd8a158b3907e68",
+      "size": [
+        9.6,
+        3.52,
+        0.22
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door A.fbx",
+      "triangles": 282,
+      "bytes": 13096,
+      "sha256": "ddde90f47993a853",
+      "size": [
+        4.8,
+        3.52,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door B.fbx",
+      "triangles": 660,
+      "bytes": 29044,
+      "sha256": "123eb7e7936ea294",
+      "size": [
+        9.6,
+        3.52,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door C.fbx",
+      "triangles": 426,
+      "bytes": 25172,
+      "sha256": "9009747cd05fc148",
+      "size": [
+        4.8,
+        3.52,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_saloon_door_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Saloon Door D.fbx",
+      "triangles": 972,
+      "bytes": 55876,
+      "sha256": "bbb77e9c1f069a11",
+      "size": [
+        9.6,
+        3.525,
+        0.4
+      ]
+    },
+    {
+      "file": "props/ww_small_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Door A.fbx",
+      "triangles": 272,
+      "bytes": 12776,
+      "sha256": "94ab7489bb47a3de",
+      "size": [
+        2.4,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_small_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Door B.fbx",
+      "triangles": 430,
+      "bytes": 24380,
+      "sha256": "e41ca45af70cc013",
+      "size": [
+        2.4,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_small_wall_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Wall A.fbx",
+      "triangles": 132,
+      "bytes": 6412,
+      "sha256": "329a011c58c3f369",
+      "size": [
+        2.4,
+        3.52,
+        0.264
+      ]
+    },
+    {
+      "file": "props/ww_small_wall_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Wall B.fbx",
+      "triangles": 236,
+      "bytes": 11840,
+      "sha256": "9a922737284ad473",
+      "size": [
+        2.4,
+        3.52,
+        0.22
+      ]
+    },
+    {
+      "file": "props/ww_small_window_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Window A.fbx",
+      "triangles": 616,
+      "bytes": 33592,
+      "sha256": "5378879665e6d671",
+      "size": [
+        2.4,
+        3.52,
+        0.312
+      ]
+    },
+    {
+      "file": "props/ww_small_window_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Small Window B.fbx",
+      "triangles": 832,
+      "bytes": 41936,
+      "sha256": "b0f22efe3c38eb60",
+      "size": [
+        2.4,
+        3.52,
+        0.312
+      ]
+    },
+    {
+      "file": "props/ww_triangle_wall_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Triangle Wall A.fbx",
+      "triangles": 192,
+      "bytes": 8672,
+      "sha256": "054412a41a2b0a70",
+      "size": [
+        5.135,
+        5.135,
+        0.264
+      ]
+    },
+    {
+      "file": "props/ww_triangle_wall_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Triangle Wall B.fbx",
+      "triangles": 294,
+      "bytes": 17192,
+      "sha256": "db50b56e13d5a0e9",
+      "size": [
+        5.135,
+        5.135,
+        0.221
+      ]
+    },
+    {
+      "file": "props/ww_wall_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall A.fbx",
+      "triangles": 132,
+      "bytes": 6432,
+      "sha256": "609f508e69340b37",
+      "size": [
+        4.8,
+        3.52,
+        0.264
+      ]
+    },
+    {
+      "file": "props/ww_wall_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall B.fbx",
+      "triangles": 132,
+      "bytes": 6340,
+      "sha256": "37cc13680c637bd2",
+      "size": [
+        4.712,
+        3.52,
+        4.712
+      ]
+    },
+    {
+      "file": "props/ww_wall_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall C.fbx",
+      "triangles": 236,
+      "bytes": 11796,
+      "sha256": "4d5af1e1d86647b2",
+      "size": [
+        4.8,
+        3.52,
+        0.22
+      ]
+    },
+    {
+      "file": "props/ww_wall_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall D.fbx",
+      "triangles": 236,
+      "bytes": 12560,
+      "sha256": "6b703c24d96b49ec",
+      "size": [
+        4.681,
+        3.52,
+        4.681
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door A.fbx",
+      "triangles": 272,
+      "bytes": 12772,
+      "sha256": "57e539ef3a94c887",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door B.fbx",
+      "triangles": 268,
+      "bytes": 12684,
+      "sha256": "b66485b800e6542f",
+      "size": [
+        4.8,
+        3.526,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door C.fbx",
+      "triangles": 426,
+      "bytes": 23168,
+      "sha256": "59aaf553be66f62e",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door D.fbx",
+      "triangles": 437,
+      "bytes": 26792,
+      "sha256": "51dcd4a31b4a47ad",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_wall_door_e.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Wall Door E.fbx",
+      "triangles": 430,
+      "bytes": 24220,
+      "sha256": "957070a16b648538",
+      "size": [
+        4.8,
+        3.52,
+        0.374
+      ]
+    },
+    {
+      "file": "props/ww_window_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window A.fbx",
+      "triangles": 1170,
+      "bytes": 55716,
+      "sha256": "521a771d91ada3c3",
+      "size": [
+        4.8,
+        3.52,
+        0.312
+      ]
+    },
+    {
+      "file": "props/ww_window_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window B.fbx",
+      "triangles": 1688,
+      "bytes": 77188,
+      "sha256": "e6eee49714a86481",
+      "size": [
+        4.712,
+        3.52,
+        4.712
+      ]
+    },
+    {
+      "file": "props/ww_window_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window C.fbx",
+      "triangles": 1386,
+      "bytes": 70660,
+      "sha256": "eb85c61fb9de543f",
+      "size": [
+        4.8,
+        3.52,
+        0.312
+      ]
+    },
+    {
+      "file": "props/ww_window_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Modular/Walls/Window D.fbx",
+      "triangles": 1972,
+      "bytes": 95540,
+      "sha256": "76ffe75634ce4364",
+      "size": [
+        4.681,
+        3.52,
+        4.681
+      ]
+    },
+    {
+      "file": "props/ww_cactus_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus A.fbx",
+      "triangles": 900,
+      "bytes": 37336,
+      "sha256": "6787f0409418d4af",
+      "size": [
+        0.448,
+        2.045,
+        1.406
+      ]
+    },
+    {
+      "file": "props/ww_cactus_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus B.fbx",
+      "triangles": 1224,
+      "bytes": 50220,
+      "sha256": "46eccfc00a117cfa",
+      "size": [
+        0.772,
+        2.045,
+        0.886
+      ]
+    },
+    {
+      "file": "props/ww_cactus_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus C.fbx",
+      "triangles": 400,
+      "bytes": 22948,
+      "sha256": "81ad8fc5f071d954",
+      "size": [
+        0.245,
+        1.58,
+        1.33
+      ]
+    },
+    {
+      "file": "props/ww_cactus_d.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Cactus D.fbx",
+      "triangles": 1512,
+      "bytes": 62320,
+      "sha256": "fb3d5ef4e29d6ead",
+      "size": [
+        0.816,
+        2.047,
+        0.903
+      ]
+    },
+    {
+      "file": "props/ww_tumbleweed.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Nature/Tumbleweed.fbx",
+      "triangles": 1816,
+      "bytes": 72736,
+      "sha256": "02f1138e9d864109",
+      "size": [
+        0.772,
+        0.75,
+        0.777
+      ]
+    },
+    {
+      "file": "props/ww_cart_a.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart A.fbx",
+      "triangles": 2072,
+      "bytes": 85840,
+      "sha256": "be5cf490f2190d33",
+      "size": [
+        1.705,
+        1.107,
+        3.66
+      ]
+    },
+    {
+      "file": "props/ww_cart_b.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart B.fbx",
+      "triangles": 3100,
+      "bytes": 108140,
+      "sha256": "cdad29ef6a65cf4c",
+      "size": [
+        2.084,
+        1.73,
+        6.678
+      ]
+    },
+    {
+      "file": "props/ww_cart_c.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Transportation/Cart C.fbx",
+      "triangles": 3756,
+      "bytes": 133584,
+      "sha256": "0006cc7f9f6dee9f",
+      "size": [
+        2.163,
+        3.45,
+        6.678
+      ]
+    },
+    {
+      "file": "props/ww_stagecoach.glb",
+      "source": "lowpolyassets-wild-west",
+      "src": "Transportation/Stagecoach.fbx",
+      "triangles": 3026,
+      "bytes": 127828,
+      "sha256": "87815342278cccf7",
+      "size": [
+        3.124,
+        3.284,
+        9.083
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_01.glb",
+      "triangles": 80,
+      "bytes": 14144,
+      "sha256": "a0032bb0fe35de79",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_02.glb",
+      "triangles": 210,
+      "bytes": 17424,
+      "sha256": "d6de75e3bf23287c",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_large_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_large_03.glb",
+      "triangles": 256,
+      "bytes": 18800,
+      "sha256": "0ebfe85299420233",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_01.glb",
+      "triangles": 80,
+      "bytes": 13736,
+      "sha256": "5548a6f2fccc199d",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_small_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_02.glb",
+      "triangles": 210,
+      "bytes": 16604,
+      "sha256": "8b85609f4225c512",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_barrel_ceiling_small_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/barrel_ceiling_small_03.glb",
+      "triangles": 256,
+      "bytes": 18800,
+      "sha256": "fa11cc8a33ee5871",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_block_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_large_01.glb",
+      "triangles": 48,
+      "bytes": 13256,
+      "sha256": "5febebea0a04763d",
+      "size": [
+        4,
+        3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_block_short_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_short_small_01.glb",
+      "triangles": 12,
+      "bytes": 11572,
+      "sha256": "fd70e4635c632d1f",
+      "size": [
+        2,
+        1.5,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_block_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/block_small_01.glb",
+      "triangles": 20,
+      "bytes": 11952,
+      "sha256": "1d47cae3ecc831db",
+      "size": [
+        2,
+        3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_door_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/door_01.glb",
+      "triangles": 100,
+      "bytes": 15220,
+      "sha256": "bcc64508ef66a330",
+      "size": [
+        2,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_door_arched_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/door_arched_01_001.glb",
+      "triangles": 584,
+      "bytes": 32340,
+      "sha256": "5e68c940990a0606",
+      "size": [
+        4,
+        3.001,
+        0.682
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_01.glb",
+      "triangles": 68,
+      "bytes": 14140,
+      "sha256": "15d18a6788f87ef3",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_02.glb",
+      "triangles": 68,
+      "bytes": 14044,
+      "sha256": "0f9299557b060150",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_large_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_large_03.glb",
+      "triangles": 20,
+      "bytes": 12120,
+      "sha256": "cb933b9799febf55",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_01.glb",
+      "triangles": 44,
+      "bytes": 13036,
+      "sha256": "aa1cda235dc3fa92",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_small_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_02.glb",
+      "triangles": 44,
+      "bytes": 13036,
+      "sha256": "e20c2fc8dd7bb74f",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_flat_ceiling_small_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/flat_ceiling_small_03.glb",
+      "triangles": 12,
+      "bytes": 11688,
+      "sha256": "154a9e8239a7ec4d",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_01.glb",
+      "triangles": 20,
+      "bytes": 12144,
+      "sha256": "110bdc5657f48263",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_bl_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_01.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "9639c8d6aeb70f00",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_bl_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BL_02.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "cb4bfc7e1b445799",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_br_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_01.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "c2ecc64dcc9a7919",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_br_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_BR_02.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "6d6d5e33c1ba61fe",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tl_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_01.glb",
+      "triangles": 96,
+      "bytes": 15028,
+      "sha256": "9b4ea37c229c3149",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tl_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TL_02.glb",
+      "triangles": 96,
+      "bytes": 15032,
+      "sha256": "bcf805e6f5630d7d",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tr_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_01.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "0b9f3e0664e232d6",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_cornertrim_tr_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_cornertrim_TR_02.glb",
+      "triangles": 96,
+      "bytes": 15036,
+      "sha256": "02c7cbc7937c3bf9",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_01.glb",
+      "triangles": 96,
+      "bytes": 15448,
+      "sha256": "6534fa6eafd26b79",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_02.glb",
+      "triangles": 96,
+      "bytes": 15448,
+      "sha256": "ee592e96ef918895",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_b_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_B_01.glb",
+      "triangles": 96,
+      "bytes": 14736,
+      "sha256": "75195b627f889cd0",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_b_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_B_02.glb",
+      "triangles": 96,
+      "bytes": 14688,
+      "sha256": "f686e1f90b2f5f62",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_lr_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_LR_01.glb",
+      "triangles": 96,
+      "bytes": 15120,
+      "sha256": "f1e0a263b44d4546",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_lr_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_LR_02.glb",
+      "triangles": 96,
+      "bytes": 15120,
+      "sha256": "21c452afa6ab746c",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_l_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_L_01.glb",
+      "triangles": 96,
+      "bytes": 14636,
+      "sha256": "026fd51998e4a414",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_l_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_L_02.glb",
+      "triangles": 96,
+      "bytes": 14636,
+      "sha256": "6d2b420251f9d12a",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_r_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_R_01.glb",
+      "triangles": 96,
+      "bytes": 14636,
+      "sha256": "1b69907714a4220b",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_r_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_R_02.glb",
+      "triangles": 96,
+      "bytes": 14636,
+      "sha256": "8babcaa74c77fd81",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_t_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_T_01.glb",
+      "triangles": 96,
+      "bytes": 14684,
+      "sha256": "6e7490044950e1cf",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_large_trim_t_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_large_trim_T_02.glb",
+      "triangles": 96,
+      "bytes": 14684,
+      "sha256": "b2a231a3a39bcde7",
+      "size": [
+        4,
+        0.3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_01.glb",
+      "triangles": 20,
+      "bytes": 11976,
+      "sha256": "6ade7a44187501ba",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_bl_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_01.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "627b8175d47c5048",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_bl_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BL_02.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "e206230bb6d69c3a",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_br_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_01.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "e75db55b1da8018a",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_br_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_BR_02.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "74683fe00073cbbf",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tl_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01.glb",
+      "triangles": 60,
+      "bytes": 13636,
+      "sha256": "1d3456557f67d6f8",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tl_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TL_01_001.glb",
+      "triangles": 60,
+      "bytes": 13644,
+      "sha256": "596396fe9d7f8bd8",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tr_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_01.glb",
+      "triangles": 60,
+      "bytes": 13640,
+      "sha256": "6cda069b43647b95",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_cornertrim_tr_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_cornertrim_TR_02.glb",
+      "triangles": 60,
+      "bytes": 13640,
+      "sha256": "d95dd6d935eb89a4",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_01.glb",
+      "triangles": 60,
+      "bytes": 13960,
+      "sha256": "d83aa2c4c9dc0410",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_02.glb",
+      "triangles": 60,
+      "bytes": 13960,
+      "sha256": "9830b3fb46f98252",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_b_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_B_01.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "9bcddf91f771f103",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_b_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_B_02.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "605c7986089a48f7",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_lr_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_LR_01.glb",
+      "triangles": 60,
+      "bytes": 13768,
+      "sha256": "037eb552429f9c82",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_lr_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_LR_02.glb",
+      "triangles": 60,
+      "bytes": 13768,
+      "sha256": "3c632de83bfd1801",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_l_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_L_01.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "3cb56bcb3f7e144f",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_l_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_L_02.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "66122f25a5769b58",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_r_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_R_01.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "083c0277cf4efc68",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_r_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_R_02.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "f9888ebeeb852e85",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_t_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_T_01.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "801ff930e62ecfe6",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_floor_small_trim_t_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/floor_small_trim_T_02.glb",
+      "triangles": 44,
+      "bytes": 13000,
+      "sha256": "c2e98b3e68167775",
+      "size": [
+        2,
+        0.3,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_pillar_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_01.glb",
+      "triangles": 128,
+      "bytes": 15544,
+      "sha256": "1f248e13eec24c93",
+      "size": [
+        1,
+        3,
+        1
+      ]
+    },
+    {
+      "file": "props/sd_pillar_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_02.glb",
+      "triangles": 60,
+      "bytes": 13960,
+      "sha256": "bcefa54b5307f9e0",
+      "size": [
+        0.886,
+        3,
+        0.886
+      ]
+    },
+    {
+      "file": "props/sd_pillar_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_large_01.glb",
+      "triangles": 144,
+      "bytes": 16072,
+      "sha256": "e58c8188a2362976",
+      "size": [
+        1,
+        6,
+        1
+      ]
+    },
+    {
+      "file": "props/sd_pillar_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/pillar_large_02.glb",
+      "triangles": 76,
+      "bytes": 14828,
+      "sha256": "6cf41e674c4306b2",
+      "size": [
+        0.886,
+        6,
+        0.886
+      ]
+    },
+    {
+      "file": "props/sd_stairs_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_large_01.glb",
+      "triangles": 140,
+      "bytes": 16884,
+      "sha256": "e295bd39ff93c6cd",
+      "size": [
+        4,
+        3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_stairs_short_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_short_small_01.glb",
+      "triangles": 44,
+      "bytes": 12732,
+      "sha256": "4c6e9738d54fd602",
+      "size": [
+        2,
+        1.5,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_stairs_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/stairs_small_01.glb",
+      "triangles": 92,
+      "bytes": 14676,
+      "sha256": "a9e3b2ce848ac078",
+      "size": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_01.glb",
+      "triangles": 302,
+      "bytes": 19220,
+      "sha256": "751ee2998a67d180",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_02.glb",
+      "triangles": 340,
+      "bytes": 20332,
+      "sha256": "6cbf76e54f3dbed9",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_03.glb",
+      "triangles": 383,
+      "bytes": 21452,
+      "sha256": "0be1644ff0b06131",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_04.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_04.glb",
+      "triangles": 380,
+      "bytes": 23076,
+      "sha256": "3763d60d967943a2",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_05.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_05.glb",
+      "triangles": 420,
+      "bytes": 24300,
+      "sha256": "4ab29d2c68e581c8",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_large_06.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_large_06.glb",
+      "triangles": 458,
+      "bytes": 25804,
+      "sha256": "bdbb9aefa123c300",
+      "size": [
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_01.glb",
+      "triangles": 302,
+      "bytes": 20264,
+      "sha256": "89c47484077f3986",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_02.glb",
+      "triangles": 370,
+      "bytes": 22356,
+      "sha256": "66b7dc41d50870f3",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_03.glb",
+      "triangles": 398,
+      "bytes": 23412,
+      "sha256": "d684fc84f2281890",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_04.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_04.glb",
+      "triangles": 398,
+      "bytes": 23412,
+      "sha256": "23cbf1f67ea14dfd",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_05.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_05.glb",
+      "triangles": 426,
+      "bytes": 24468,
+      "sha256": "384f510ddb6f6f42",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_vault_ceiling_small_06.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/vault_ceiling_small_06.glb",
+      "triangles": 454,
+      "bytes": 25740,
+      "sha256": "31a5d92684a66ed8",
+      "size": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_01.glb",
+      "triangles": 92,
+      "bytes": 15084,
+      "sha256": "4c36fac581705cd8",
+      "size": [
+        4,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_02.glb",
+      "triangles": 200,
+      "bytes": 20432,
+      "sha256": "eb5d4b44d4e1f5d4",
+      "size": [
+        4,
+        3,
+        1.316
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_03.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_03.glb",
+      "triangles": 488,
+      "bytes": 27640,
+      "sha256": "8019fa84a7949423",
+      "size": [
+        4,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_corner_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_01.glb",
+      "triangles": 184,
+      "bytes": 19188,
+      "sha256": "1a73d66adf2370f0",
+      "size": [
+        4.25,
+        3,
+        4.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_corner_l_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_L_01.glb",
+      "triangles": 92,
+      "bytes": 15120,
+      "sha256": "f24b7ea2b783f1d0",
+      "size": [
+        4.25,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_corner_r_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_corner_R_01.glb",
+      "triangles": 92,
+      "bytes": 15180,
+      "sha256": "714c01b5c865d022",
+      "size": [
+        0.5,
+        3,
+        4.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_large_half_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_large_half_01.glb",
+      "triangles": 64,
+      "bytes": 13812,
+      "sha256": "8a7100d2a56ff0ea",
+      "size": [
+        4,
+        3,
+        0.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_01.glb",
+      "triangles": 60,
+      "bytes": 13552,
+      "sha256": "bce931d4b8c5b0c4",
+      "size": [
+        2,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_02.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_02.glb",
+      "triangles": 260,
+      "bytes": 19892,
+      "sha256": "af8b878214de904d",
+      "size": [
+        2,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_corner_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_01.glb",
+      "triangles": 120,
+      "bytes": 16068,
+      "sha256": "acf75a4dc8b2918e",
+      "size": [
+        2.25,
+        3,
+        2.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_corner_l_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_L_01.glb",
+      "triangles": 60,
+      "bytes": 13576,
+      "sha256": "f032c3704cea6e5e",
+      "size": [
+        2.25,
+        3,
+        0.5
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_corner_r_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_corner_R_01.glb",
+      "triangles": 60,
+      "bytes": 13600,
+      "sha256": "94528afdc1ba76f7",
+      "size": [
+        0.5,
+        3,
+        2.25
+      ]
+    },
+    {
+      "file": "props/sd_wall_small_half_01.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Modular Dungeon Pieces/GLB format/wall_small_half_01.glb",
+      "triangles": 44,
+      "bytes": 12884,
+      "sha256": "76736d62a40c6a46",
+      "size": [
+        2,
+        3,
+        0.25
+      ]
+    },
+    {
+      "file": "props/sd_brazier.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/Brazier.glb",
+      "triangles": 286,
+      "bytes": 16948,
+      "sha256": "5f99e63f949cfc3b",
+      "size": [
+        0.4,
+        1,
+        0.4
+      ]
+    },
+    {
+      "file": "props/sd_coffin.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/coffin.glb",
+      "triangles": 28,
+      "bytes": 10292,
+      "sha256": "37afc85bbd2bbea7",
+      "size": [
+        1.9,
+        0.49,
+        0.732
+      ]
+    },
+    {
+      "file": "props/sd_coffin_lid.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/coffin_lid.glb",
+      "triangles": 44,
+      "bytes": 10760,
+      "sha256": "70ba805a05584b12",
+      "size": [
+        2.033,
+        0.21,
+        0.829
+      ]
+    },
+    {
+      "file": "props/sd_crate.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/crate.glb",
+      "triangles": 108,
+      "bytes": 15496,
+      "sha256": "448be255f6ab310c",
+      "size": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    {
+      "file": "props/sd_door.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/door.glb",
+      "triangles": 56,
+      "bytes": 8372,
+      "sha256": "4744235b4226c572",
+      "size": [
+        1,
+        2,
+        0.215
+      ]
+    },
+    {
+      "file": "props/sd_pot.glb",
+      "source": "sigilsvault-modular-dungeon",
+      "src": "Props/GLB format/pot.glb",
+      "triangles": 124,
+      "bytes": 9204,
+      "sha256": "6595b30ec4c57162",
+      "size": [
+        0.578,
+        1.088,
+        0.578
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_corner.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_Wall_corner.glb",
+      "triangles": 56,
+      "bytes": 31980,
+      "sha256": "cc50db5fdc70bbd9",
+      "size": [
+        1.151,
+        2.081,
+        1.149
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall.glb",
+      "triangles": 44,
+      "bytes": 30932,
+      "sha256": "041019da5957d504",
+      "size": [
+        4,
+        2.081,
+        0.3
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_gate.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_gate.glb",
+      "triangles": 324,
+      "bytes": 21344,
+      "sha256": "73f7e112ad8ce486",
+      "size": [
+        1.581,
+        1.639,
+        0.084
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_one_overhang.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_one_overhang.glb",
+      "triangles": 52,
+      "bytes": 31316,
+      "sha256": "8eefa5c701a8f518",
+      "size": [
+        4.049,
+        2.081,
+        0.299
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_one_overhang_small.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_one_overhang_small.glb",
+      "triangles": 52,
+      "bytes": 31376,
+      "sha256": "cb431f59c7fd3027",
+      "size": [
+        2.049,
+        2.081,
+        0.3
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_pole.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_pole.glb",
+      "triangles": 36,
+      "bytes": 30868,
+      "sha256": "b4f9446982b8c6d4",
+      "size": [
+        0.48,
+        2.2,
+        0.48
+      ]
+    },
+    {
+      "file": "props/lf_brick_wall_small.glb",
+      "source": "loafbrr-fences",
+      "src": "brick_fence/brick_wall_small.glb",
+      "triangles": 44,
+      "bytes": 31136,
+      "sha256": "38014571155d3a91",
+      "size": [
+        2,
+        2.081,
+        0.3
+      ]
+    },
+    {
+      "file": "props/lf_drystone_column.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column.glb",
+      "triangles": 28,
+      "bytes": 17748,
+      "sha256": "453f525837cd15d8",
+      "size": [
+        0.569,
+        0.9,
+        0.553
+      ]
+    },
+    {
+      "file": "props/lf_drystone_column_capped.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column_capped.glb",
+      "triangles": 44,
+      "bytes": 23908,
+      "sha256": "a02c033314e2a01d",
+      "size": [
+        0.6,
+        0.949,
+        0.6
+      ]
+    },
+    {
+      "file": "props/lf_drystone_column_tiles.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_column_tiles.glb",
+      "triangles": 44,
+      "bytes": 33328,
+      "sha256": "c35e8355585a1033",
+      "size": [
+        0.569,
+        0.979,
+        0.565
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall.glb",
+      "triangles": 104,
+      "bytes": 21228,
+      "sha256": "22b747db91597c38",
+      "size": [
+        2,
+        0.846,
+        0.573
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_capped.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_capped.glb",
+      "triangles": 116,
+      "bytes": 27124,
+      "sha256": "b64429e19c03b530",
+      "size": [
+        2.013,
+        0.833,
+        0.573
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_half.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half.glb",
+      "triangles": 64,
+      "bytes": 19536,
+      "sha256": "7b5e969011730e07",
+      "size": [
+        1,
+        0.815,
+        0.513
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_half_capped.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half_capped.glb",
+      "triangles": 76,
+      "bytes": 25528,
+      "sha256": "f5de8d5cda9d0e56",
+      "size": [
+        1.013,
+        0.833,
+        0.513
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_half_tiles.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_half_tiles.glb",
+      "triangles": 108,
+      "bytes": 36384,
+      "sha256": "0eea0916897f6a02",
+      "size": [
+        1,
+        0.94,
+        0.481
+      ]
+    },
+    {
+      "file": "props/lf_drystone_wall_tiles.glb",
+      "source": "loafbrr-fences",
+      "src": "drystone_wall/drystone_wall_tiles.glb",
+      "triangles": 172,
+      "bytes": 39600,
+      "sha256": "c99054799a8082e6",
+      "size": [
+        2.007,
+        0.94,
+        0.511
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_beam.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam.glb",
+      "triangles": 36,
+      "bytes": 14744,
+      "sha256": "8f1fc57e58a9305d",
+      "size": [
+        1.997,
+        0.178,
+        0.128
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_beam_b.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam_alt.glb",
+      "triangles": 36,
+      "bytes": 14748,
+      "sha256": "4e28ff28e45f38e1",
+      "size": [
+        2.02,
+        0.187,
+        0.12
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_beam_c.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_beam_alt_2.glb",
+      "triangles": 36,
+      "bytes": 14748,
+      "sha256": "053478991d0480f9",
+      "size": [
+        2.018,
+        0.152,
+        0.131
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_broken.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken.glb",
+      "triangles": 108,
+      "bytes": 18632,
+      "sha256": "0d0b77d7f3f52b70",
+      "size": [
+        2.106,
+        1.275,
+        0.292
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_broken_b.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken_alt.glb",
+      "triangles": 112,
+      "bytes": 18860,
+      "sha256": "9c1eadc1cba97ffe",
+      "size": [
+        2.137,
+        1.199,
+        0.189
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_broken_c.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_broken_alt2.glb",
+      "triangles": 200,
+      "bytes": 23280,
+      "sha256": "db4bf8f2e7cb1276",
+      "size": [
+        2.072,
+        1.034,
+        0.83
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_closed.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_closed.glb",
+      "triangles": 144,
+      "bytes": 20680,
+      "sha256": "bfb14fc512402977",
+      "size": [
+        2.212,
+        1.199,
+        0.199
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_open_crossed.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_oen_crossed.glb",
+      "triangles": 108,
+      "bytes": 18644,
+      "sha256": "3fd630375f92d97c",
+      "size": [
+        2.124,
+        1.199,
+        0.237
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_open.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_open.glb",
+      "triangles": 108,
+      "bytes": 18640,
+      "sha256": "80635b8ede27e31f",
+      "size": [
+        2.117,
+        1.199,
+        0.189
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_open_b.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_open_alt.glb",
+      "triangles": 108,
+      "bytes": 18640,
+      "sha256": "c18f58ac048f4cf1",
+      "size": [
+        2.195,
+        1.199,
+        0.266
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_pile.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pile.glb",
+      "triangles": 76,
+      "bytes": 16960,
+      "sha256": "302bf488b84b462f",
+      "size": [
+        2.062,
+        0.276,
+        0.831
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole.glb",
+      "triangles": 36,
+      "bytes": 14804,
+      "sha256": "49bec8413230dcf1",
+      "size": [
+        0.237,
+        1.199,
+        0.249
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_b.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_alt.glb",
+      "triangles": 36,
+      "bytes": 14792,
+      "sha256": "a070f47f9e4e0bd9",
+      "size": [
+        0.189,
+        1.199,
+        0.185
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_c.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_alt_2.glb",
+      "triangles": 36,
+      "bytes": 14812,
+      "sha256": "d80d4db9fd54c46a",
+      "size": [
+        0.266,
+        1.199,
+        0.256
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_broken.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_broken_large.glb",
+      "triangles": 78,
+      "bytes": 16920,
+      "sha256": "fbff6a33a61f0253",
+      "size": [
+        0.266,
+        0.968,
+        0.256
+      ]
+    },
+    {
+      "file": "props/lf_wooden_fence_post_stump.glb",
+      "source": "loafbrr-fences",
+      "src": "low_wooden_fence/wooden_fence_pole_broken_small.glb",
+      "triangles": 46,
+      "bytes": 15196,
+      "sha256": "356e5a07c3842000",
+      "size": [
+        0.219,
+        0.453,
+        0.208
+      ]
+    },
+    {
+      "file": "props/lf_metal_gate.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/gate.glb",
+      "triangles": 114,
+      "bytes": 11344,
+      "sha256": "b4b986ed4e5a580b",
+      "size": [
+        1.035,
+        1.25,
+        0.045
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_gate.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metal_fence_gate_with_gate.glb",
+      "triangles": 56,
+      "bytes": 5200,
+      "sha256": "b2971dcb8a7393c7",
+      "size": [
+        1.189,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_both_sides.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_both_sides_no_topbar.glb",
+      "triangles": 34,
+      "bytes": 4408,
+      "sha256": "939b6aef0c44615b",
+      "size": [
+        2.696,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_both_sides_topbar.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_both_sides_topbar.glb",
+      "triangles": 46,
+      "bytes": 5276,
+      "sha256": "c5a031f36d188abb",
+      "size": [
+        2.696,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_gate_posts.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_gate_only_sides.glb",
+      "triangles": 56,
+      "bytes": 5204,
+      "sha256": "d7e2f234c00b00a1",
+      "size": [
+        1.189,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_one_side.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_one_side_no_topbar.glb",
+      "triangles": 18,
+      "bytes": 3388,
+      "sha256": "fb55a50f44fe6fc5",
+      "size": [
+        2.685,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_metal_fence_one_side_topbar.glb",
+      "source": "loafbrr-fences",
+      "src": "metal_fence/metalfence_one_side_topbar.glb",
+      "triangles": 34,
+      "bytes": 4456,
+      "sha256": "4871d211ab417dfa",
+      "size": [
+        2.696,
+        1.667,
+        0.04
+      ]
+    },
+    {
+      "file": "props/lf_plackard_broken.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken.glb",
+      "triangles": 164,
+      "bytes": 18180,
+      "sha256": "4ceb4d632801bbed",
+      "size": [
+        3.051,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_broken_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken_alt.glb",
+      "triangles": 128,
+      "bytes": 16364,
+      "sha256": "8d02e66feb070c3c",
+      "size": [
+        3.051,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_broken_slanted.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_broken_slanted.glb",
+      "triangles": 172,
+      "bytes": 18208,
+      "sha256": "b9a437b3dd422cb2",
+      "size": [
+        3.159,
+        2.508,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_closed.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_closed.glb",
+      "triangles": 152,
+      "bytes": 17772,
+      "sha256": "f1618b633230fd23",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_closed_full.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_closed_full.glb",
+      "triangles": 108,
+      "bytes": 15496,
+      "sha256": "8519482a4512535f",
+      "size": [
+        3.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner.glb",
+      "triangles": 96,
+      "bytes": 14964,
+      "sha256": "7e3d7be6a7c82879",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_closed.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_closed.glb",
+      "triangles": 36,
+      "bytes": 12432,
+      "sha256": "2defdf921fa8227d",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_closed_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_closed_alt.glb",
+      "triangles": 36,
+      "bytes": 12436,
+      "sha256": "a8505a8de6cdd722",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open.glb",
+      "triangles": 60,
+      "bytes": 13132,
+      "sha256": "98c2efa855c310e1",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open_90.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_90.glb",
+      "triangles": 60,
+      "bytes": 13216,
+      "sha256": "deb15340c9f4d534",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open_90_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_90_alt.glb",
+      "triangles": 60,
+      "bytes": 13220,
+      "sha256": "63fd3d4b32575434",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_corner_open_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_corner_open_alt.glb",
+      "triangles": 60,
+      "bytes": 13456,
+      "sha256": "98293ce582bfdaf5",
+      "size": [
+        0.2,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open.glb",
+      "triangles": 176,
+      "bytes": 18588,
+      "sha256": "b479c375d36462c0",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_alt.glb",
+      "triangles": 96,
+      "bytes": 14888,
+      "sha256": "69d7f2307b82a66f",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open_c.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_alt2.glb",
+      "triangles": 176,
+      "bytes": 18592,
+      "sha256": "5c804aa19b0f9e2d",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_open_patched.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_open_patched.glb",
+      "triangles": 176,
+      "bytes": 17556,
+      "sha256": "51f717ce4f657066",
+      "size": [
+        3.05,
+        2.5,
+        0.2
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_broken.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_boken.glb",
+      "triangles": 68,
+      "bytes": 13584,
+      "sha256": "2f540bec9ef4cd67",
+      "size": [
+        2.901,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_broken_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_broken_alt.glb",
+      "triangles": 68,
+      "bytes": 13592,
+      "sha256": "3e8e38aebe3c6f02",
+      "size": [
+        2.901,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_chipped.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_chipped.glb",
+      "triangles": 44,
+      "bytes": 12680,
+      "sha256": "bccfb9f0a3d33947",
+      "size": [
+        2.9,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_chipped_b.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_chipped_alt.glb",
+      "triangles": 60,
+      "bytes": 13804,
+      "sha256": "00615043ad4a985d",
+      "size": [
+        2.9,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_full.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_full.glb",
+      "triangles": 36,
+      "bytes": 12832,
+      "sha256": "10d1d984f9b485df",
+      "size": [
+        2.9,
+        2.433,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_half.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_half.glb",
+      "triangles": 24,
+      "bytes": 12276,
+      "sha256": "875234ceece268df",
+      "size": [
+        2.9,
+        1.616,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_single.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_single.glb",
+      "triangles": 12,
+      "bytes": 11724,
+      "sha256": "e01ff4b0234ee4f8",
+      "size": [
+        2.9,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plackard_slab_wood_patched.glb",
+      "source": "loafbrr-fences",
+      "src": "plackard_wall/plackard_slab_wood_patched.glb",
+      "triangles": 60,
+      "bytes": 13444,
+      "sha256": "7ffde6173aaf52f1",
+      "size": [
+        2.9,
+        0.8,
+        0.1
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall.glb",
+      "triangles": 60,
+      "bytes": 27512,
+      "sha256": "b064822aaa2cb711",
+      "size": [
+        2,
+        0.75,
+        0.399
+      ]
+    },
+    {
+      "file": "props/lf_plaster_column.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_column.glb",
+      "triangles": 36,
+      "bytes": 17104,
+      "sha256": "0d6aadffaf7c2f8c",
+      "size": [
+        0.528,
+        2.143,
+        0.528
+      ]
+    },
+    {
+      "file": "props/lf_plaster_column_fancy.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_column_fancy.glb",
+      "triangles": 84,
+      "bytes": 19248,
+      "sha256": "ca18c7c5bcfb41cb",
+      "size": [
+        0.528,
+        2.143,
+        0.528
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall_fenced.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_fenced.glb",
+      "triangles": 408,
+      "bytes": 47672,
+      "sha256": "8e896f3efd6e579f",
+      "size": [
+        2,
+        1.483,
+        0.419
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall_half.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_half.glb",
+      "triangles": 44,
+      "bytes": 26880,
+      "sha256": "1954b7dab14573d2",
+      "size": [
+        1,
+        0.75,
+        0.399
+      ]
+    },
+    {
+      "file": "props/lf_plaster_wall_half_fenced.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plaster_wall_half_fenced.glb",
+      "triangles": 252,
+      "bytes": 40676,
+      "sha256": "4525054e7626223a",
+      "size": [
+        1.007,
+        1.483,
+        0.43
+      ]
+    },
+    {
+      "file": "props/lf_plastic_gate_left.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plastic_gate_left.glb",
+      "triangles": 476,
+      "bytes": 23244,
+      "sha256": "b4d1164262ce76eb",
+      "size": [
+        2,
+        1.8,
+        0.061
+      ]
+    },
+    {
+      "file": "props/lf_plastic_gate_right.glb",
+      "source": "loafbrr-fences",
+      "src": "plaster_wall/plastic_gate_right.glb",
+      "triangles": 528,
+      "bytes": 25276,
+      "sha256": "e8f8381d75b9fd81",
+      "size": [
+        2.024,
+        1.8,
+        0.061
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_left.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_closed_left.glb",
+      "triangles": 156,
+      "bytes": 22512,
+      "sha256": "575875cbc655008d",
+      "size": [
+        2.388,
+        1.366,
+        0.261
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_right.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_closed_right.glb",
+      "triangles": 156,
+      "bytes": 23536,
+      "sha256": "eb3a1d5325c77302",
+      "size": [
+        2.389,
+        1.366,
+        0.261
+      ]
+    },
+    {
+      "file": "props/lf_picket_gate.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_gate.glb",
+      "triangles": 113,
+      "bytes": 19800,
+      "sha256": "d758564880b65b3d",
+      "size": [
+        1.08,
+        1.266,
+        0.062
+      ]
+    },
+    {
+      "file": "props/lf_picket_gate_posts.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_gate_poles.glb",
+      "triangles": 72,
+      "bytes": 18132,
+      "sha256": "fe4a2ee18c1391be",
+      "size": [
+        1.546,
+        1.366,
+        0.261
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_open_left.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_open_left.glb",
+      "triangles": 120,
+      "bytes": 20292,
+      "sha256": "5cee26b1a1fe23dc",
+      "size": [
+        2.164,
+        1.266,
+        0.062
+      ]
+    },
+    {
+      "file": "props/lf_picket_fence_open_right.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_open_right.glb",
+      "triangles": 120,
+      "bytes": 20248,
+      "sha256": "dd568ae0b3d43288",
+      "size": [
+        2.164,
+        1.266,
+        0.062
+      ]
+    },
+    {
+      "file": "props/lf_picket_post.glb",
+      "source": "loafbrr-fences",
+      "src": "white_picket_fence/white_picket_fence_pole.glb",
+      "triangles": 36,
+      "bytes": 15972,
+      "sha256": "ea647ed782706e7c",
+      "size": [
+        0.257,
+        1.366,
+        0.261
+      ]
     }
   ]
 }
