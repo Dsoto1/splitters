@@ -142,9 +142,9 @@ Parameters:
     Description: Existing Cognito user pool ID (referenced only).
   CognitoAppClientId:
     Type: String
-    Default: ''
+    Default: '2lrej6nsacfag8a7taeu3u6sc2'
     AllowedPattern: '^$|^[a-z0-9]{20,32}$'
-    Description: App client ID for Trigger in that pool (pending from the owner; empty until then).
+    Description: App client ID for Trigger in that pool (the public "trigger" SPA client, no secret; empty turns sign-in off).
   CognitoDomain:
     Type: String
     Default: login.toshiroplay.com

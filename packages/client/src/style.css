@@ -107,6 +107,10 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .menu-footer { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 44px; background: rgba(8, 11, 19, 0.92); border-top: 1px solid var(--line); }
 .menu-footer .news { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .menu-footer .news b { color: var(--orange); font: 700 13px var(--font-display); letter-spacing: 0.1em; margin-right: 8px; }
+.menu-footer .menu-links { display: flex; align-items: center; gap: 14px; font-size: 13px; white-space: nowrap; }
+.menu-footer .menu-links a, .menu-footer .menu-links button.link { color: var(--text); opacity: 0.75; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
+.menu-footer .menu-links a:hover, .menu-footer .menu-links button.link:hover { opacity: 1; }
+.menu-footer .menu-links .account { opacity: 0.8; }
 .screen-head { display: flex; align-items: center; gap: 18px; }
 .screen-head h2 { margin: 0; font: italic 700 34px var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
 .screen-head h2 em { color: var(--cyan); font-style: italic; }

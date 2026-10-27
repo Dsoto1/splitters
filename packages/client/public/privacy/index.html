@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy · Trigger by ToshiroPlay</title>
+    <meta name="description" content="What Trigger (ToshiroPlay) collects, why, and how long it keeps it." />
+    <style>
+      :root { color-scheme: dark light; --bg: #0b0f18; --text: #e6e9ef; --muted: #a3acbd; --accent: #ffb347; --line: #252c3b; }
+      @media (prefers-color-scheme: light) { :root { --bg: #f7f8fb; --text: #141821; --muted: #4f586a; --accent: #a65b00; --line: #d9dde6; } }
+      body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+      main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+      h1 { font-size: 30px; margin: 0 0 4px; }
+      h2 { font-size: 20px; margin: 32px 0 8px; border-top: 1px solid var(--line); padding-top: 20px; }
+      p, li { color: var(--text); }
+      .muted { color: var(--muted); font-size: 14px; }
+      a { color: var(--accent); }
+      table { border-collapse: collapse; width: 100%; font-size: 15px; }
+      th, td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
+      th { color: var(--muted); font-weight: 600; }
+      .placeholder { border: 1px dashed var(--accent); padding: 2px 6px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Privacy</h1>
+      <p class="muted">Trigger, a browser game by ToshiroPlay (trigger.toshiroplay.com). Last updated 27 October 2026.</p>
+
+      <p>
+        Trigger is free to play in your browser, and playing never needs an account. We collect as little as we can: no
+        advertising, no tracking, no analytics, and we never sell or share your data.
+      </p>
+
+      <h2>What we collect, and why</h2>
+      <table>
+        <tr><th>What</th><th>Why</th><th>How long</th></tr>
+        <tr>
+          <td><b>Your Google account ID and name</b> (and the email address Google shares), only if you choose <i>Sign in</i></td>
+          <td>To know it is you when you use features that need an account (for example, managing a server you host). Sign-in is optional.</td>
+          <td>Held by the sign-in service (Amazon Cognito, run for ToshiroPlay) while you have an account. Your browser keeps the sign-in only for the open tab. We keep no other user records.</td>
+        </tr>
+        <tr>
+          <td><b>Your IP address</b></td>
+          <td>Needed to connect you to games and to our servers, and used briefly to limit abuse (rate limits).</td>
+          <td>Kept in memory only while needed (minutes). Server logs, which can include addresses, are deleted after at most 14 days.</td>
+        </tr>
+        <tr>
+          <td><b>Game settings</b> (name, controls, graphics, maps you make)</td>
+          <td>So the game remembers your choices.</td>
+          <td>Stored in your own browser (local storage), not on our servers. Clearing your browser data removes them.</td>
+        </tr>
+        <tr>
+          <td><b>Game listings</b> (game name, host name, map, player count) when you list a game you host</td>
+          <td>To show your game in the game browser.</td>
+          <td>Removed when you stop hosting, or about a minute after your game stops checking in.</td>
+        </tr>
+      </table>
+
+      <h2>Playing with others</h2>
+      <p>
+        Online games run in a player's browser or on a player's computer and connect players directly (peer to peer). Like
+        any direct connection, the players in a match can see each other's IP addresses, unless the connection goes through
+        our relay. Trigger has no chat. The names you choose are shown to the other players.
+      </p>
+
+      <h2>Cookies</h2>
+      <p>
+        Trigger sets no cookies of its own. If you sign in, the sign-in service (login.toshiroplay.com) uses cookies needed
+        for signing in and out, and nothing else.
+      </p>
+
+      <h2>Services we use</h2>
+      <ul>
+        <li>Amazon Web Services (hosting, and Amazon Cognito for sign-in), and Google as the sign-in provider you choose.</li>
+        <li>Public STUN servers (for example Google's) that help browsers find a direct connection: they see your IP address.</li>
+      </ul>
+
+      <h2>Your choices</h2>
+      <ul>
+        <li>Play without signing in: nothing about you is stored beyond the short-lived items above.</li>
+        <li>Sign out at any time from the main menu.</li>
+        <li>Ask us to delete your account, or ask what we hold about you, using the contact below.</li>
+      </ul>
+
+      <h2>Children</h2>
+      <p>Trigger is not directed at children under 13, and we don't knowingly collect their personal information.</p>
+
+      <h2>Changes</h2>
+      <p>If this policy changes, we update this page and its date.</p>
+
+      <h2>Contact</h2>
+      <p>
+        ToshiroPlay: contact us through
+        <span class="placeholder">[contact page link — to be added by the owner]</span>.
+      </p>
+
+      <p class="muted"><a href="/">Back to the game</a></p>
+    </main>
+  </body>
+</html>

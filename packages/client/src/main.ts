@@ -31,6 +31,7 @@ import { GameSession, type SessionOptions, type Travel } from './game/session.ts
 import { listLibrary, openFromLibrary } from './editor/storage.ts';
 import { PLAYLISTS, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
+import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
 import { loadSignaling, type Transport } from './game/transport.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -415,7 +416,9 @@ class App {
 }
 
 const app = new App();
-if (params.get('mode') === 'assets') {
+// Back from the sign-in page (account.ts): finish signing in, then the menu.
+if (location.pathname === CALLBACK_PATH) void handleAuthCallback().then((message) => app.showMenu(message ?? ''));
+else if (params.get('mode') === 'assets') {
   // Team tool: inspect imported models (orientation, scale, colour, licence).
   void (async () => {
     $('menu').hidden = true;

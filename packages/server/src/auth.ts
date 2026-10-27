@@ -12,7 +12,7 @@ import { clientIp } from './clientIp.ts';
  * no user records: a request either carries a valid token or it doesn't.
  *
  * Env: COGNITO_REGION (us-east-1), COGNITO_USER_POOL_ID (us-east-1_VdMsuDJ59),
- * COGNITO_APP_CLIENT_ID (the "trigger" app client). Unset client ID: sign-in off.
+ * COGNITO_APP_CLIENT_ID (default: the public "trigger" app client; "off" turns sign-in off).
  */
 export interface CognitoConfig {
   region: string;
@@ -23,8 +23,9 @@ export interface CognitoConfig {
 export const DEFAULT_COGNITO = { region: 'us-east-1', userPoolId: 'us-east-1_VdMsuDJ59', clientId: '2lrej6nsacfag8a7taeu3u6sc2' } as const;
 
 export function cognitoFromEnv(env: NodeJS.ProcessEnv = process.env): CognitoConfig | null {
-  const clientId = env.COGNITO_APP_CLIENT_ID ?? env.COGNITO_CLIENT_ID ?? DEFAULT_COGNITO.clientId;
-  if (!clientId || clientId === 'off') return null;
+  const set = (v: string | undefined) => (v && v !== 'pending' ? v : undefined);
+  const clientId = set(env.COGNITO_APP_CLIENT_ID) ?? set(env.COGNITO_CLIENT_ID) ?? DEFAULT_COGNITO.clientId;
+  if (clientId === 'off') return null;
   return { region: env.COGNITO_REGION || DEFAULT_COGNITO.region, userPoolId: env.COGNITO_USER_POOL_ID || DEFAULT_COGNITO.userPoolId, clientId };
 }
 

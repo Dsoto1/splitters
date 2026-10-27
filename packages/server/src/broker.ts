@@ -11,7 +11,17 @@ import { clientIp } from './clientIp.ts';
  * seconds. Anything well past that is abuse (or join-code guessing: each
  * guess is an OFFER to a code that may not exist).
  */
-export const BROKER_LIMITS = {
+export interface BrokerLimits {
+  concurrent: number;
+  perIp: number;
+  connectsPerMinute: number;
+  message: { perSecond: number; burst: number; dropsToKick: number; windowMs: number };
+  offersPerMinute: number;
+  maxPayload: number;
+  httpPerMinute: number;
+}
+
+export const BROKER_LIMITS: BrokerLimits = {
   /** Broker sockets open at once, hub-wide (PeerJS concurrent_limit). */
   concurrent: 2000,
   /** Broker sockets open at once from one address (a household or a school shares one). */
@@ -26,7 +36,7 @@ export const BROKER_LIMITS = {
   maxPayload: 16 * 1024,
   /** HTTP requests to the broker (/broker/peerjs/id…) per address per minute. */
   httpPerMinute: 60,
-} as const;
+};
 
 const CODE_PREFIX = 'tiletrigger-';
 
@@ -39,7 +49,7 @@ export interface Broker {
   readonly sockets: number;
 }
 
-export function createBroker(server: Server, trustProxy: boolean, limits = BROKER_LIMITS): Broker {
+export function createBroker(server: Server, trustProxy: boolean, limits: BrokerLimits = BROKER_LIMITS): Broker {
   const perIp = new KeyedCounter(limits.perIp);
   const connects = new KeyedLimiter({ perMinute: limits.connectsPerMinute });
   const offers = new KeyedLimiter({ perMinute: limits.offersPerMinute });
