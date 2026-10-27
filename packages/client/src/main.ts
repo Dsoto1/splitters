@@ -39,7 +39,18 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const params = new URLSearchParams(location.search);
 // Browser tests' deterministic mode (?test=1): offline only, see testMode.ts.
 const TEST = testMode();
-if (TEST) setIdRandom(seededRng(TEST.seed));
+if (TEST) {
+  // Seeded per page load in this browser profile: the same steps give the same ids in a fresh profile (a test's
+  // own context), and a reload doesn't hand out ids already saved in the library before it.
+  let loads = 1;
+  try {
+    loads = Number(localStorage.getItem('tiletrigger.test.loads') ?? 0) + 1;
+    localStorage.setItem('tiletrigger.test.loads', String(loads));
+  } catch {
+    // No storage: nothing saved to collide with either.
+  }
+  setIdRandom(seededRng(Math.imul(TEST.seed, 1000003) + loads));
+}
 (window as unknown as { __testMode: typeof TEST }).__testMode = TEST;
 function storage(key: string, value?: string): string | null {
   try {
