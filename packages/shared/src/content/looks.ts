@@ -166,6 +166,13 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#34373c', cloth: '#5a5e65', trim: '#3a3d42' } },
   { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_f', skin: '#e4e4df', cloth: '#e9e9e4', trim: '#e9e9e4' } },
   { id: 'core.dapper', name: 'The Dapper', body: 'male', head: '', parts: ['meshy_dapper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#d9ad8a', cloth: '#1c1d22', trim: '#26272c' } },
+  // Creature originals (Meshy downloads rigged onto the game rig by prepare-meshy-characters.mjs); also NPC bodies (NPC_ROLE_SPECS).
+  // Bare-armed ones wear the peasant arms dyed to their skin in first person.
+  { id: 'core.goblin', name: 'Goblin', body: 'male', head: '', parts: ['meshy_goblin'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#7a9a45', cloth: '#8a8574', trim: '#4a3a2a' } },
+  { id: 'core.otter', name: 'Wealthy Otter', body: 'male', head: '', parts: ['meshy_otter'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#3e3d3f', cloth: '#3e3d3f', trim: '#2a7a7a' } },
+  { id: 'core.boglurker', name: 'Boglurker', body: 'male', head: '', parts: ['meshy_toad'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#7c8446', cloth: '#7c8446', trim: '#5a4632' } },
+  { id: 'core.warlord', name: 'Salamander Warlord', body: 'male', head: '', parts: ['meshy_salamander'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#c8c0ae', cloth: '#4f5c5a', trim: '#7a5a3a' } },
+  { id: 'core.hyena', name: 'Hyena Warrior', body: 'male', head: '', parts: ['meshy_hyena'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#8a6a48', cloth: '#7a3328', trim: '#2e2e30' } },
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'] },
 ];
 
@@ -194,6 +201,11 @@ export const LOOK_BIOS: Readonly<Record<string, string>> = {
   'core.knight': 'Rode out to a tournament in 1342 and took a very wrong turn. Still undefeated.',
   'core.nova': 'First person on the Moon in 1969, by her own account. Mission control lost the paperwork.',
   'core.dapper': 'Chicago, 1927. Runs the numbers, the speakeasy and, lately, the leaderboard.',
+  'core.goblin': 'Gutter-born, bandage-wrapped and grinning. Steals the kill, then the loot, then your seat.',
+  'core.otter': 'Old river money. Pays others to do his fighting, but can never resist joining in.',
+  'core.boglurker': 'Crawled out of the marsh for the noise and stayed for the shooting. Smells exactly as you fear.',
+  'core.warlord': 'Lord of a sunken fortress, armoured in rust and spite. Expects the arena to kneel.',
+  'core.hyena': 'Laughs at everything, especially the last thing you tried.',
   'core.engineer': 'Hard hat, fuel tank, short temper. Builds things; breaks more.',
   'core.desperado': 'Wanted in three maps. The poster doesn\'t do him justice.',
   'core.raider': 'Goggles down, bandolier full, already halfway across the map.',

@@ -165,6 +165,16 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     character('core.nova', 'Capt. Nova', { aggression: 55, accuracy: 72, tacticalAwareness: 70, rangePreference: 55, tags: ['TACTICAL'], weaponPreferences: ['core.plasma', 'core.laser_rifle', 'core.railgun'] }),
     // Hangs back, picks his moment, never misses the pay-off.
     character('core.dapper', 'The Dapper', { aggression: 45, accuracy: 78, selfPreservation: 70, itemGreed: 80, rangePreference: 45, tags: ['TACTICAL'], weaponPreferences: ['core.smg', 'core.gilded_pistol', 'core.machine_pistol'] }),
+    // Darts in close, grabs what's lying about, never fights fair.
+    character('core.goblin', 'Goblin', { aggression: 80, itemGreed: 90, selfPreservation: 35, rangePreference: 15, meleePreference: 60, tags: ['ARENA', 'RECKLESS'], weaponPreferences: ['core.sawed_off', 'core.machine_pistol', 'core.knife'] }),
+    // Keeps his distance and his fur clean: a gilded pistol and a good rifle.
+    character('core.otter', 'Wealthy Otter', { aggression: 35, accuracy: 75, selfPreservation: 80, itemGreed: 85, rangePreference: 70, tags: ['TACTICAL'], weaponPreferences: ['core.marksman', 'core.gilded_pistol', 'core.sniper'] }),
+    // Slow, stubborn and hard to shift.
+    character('core.boglurker', 'Boglurker', { aggression: 70, selfPreservation: 30, riskTolerance: 80, rangePreference: 20, pursuitPersistence: 70, tags: ['SUPPRESSOR'], weaponPreferences: ['core.auto_shotgun', 'core.flamethrower', 'core.lmg'] }),
+    // Commands the field with heavy ordnance.
+    character('core.warlord', 'Salamander Warlord', { aggression: 65, tacticalAwareness: 75, objectivePriority: 80, rangePreference: 50, tags: ['SUPPRESSOR', 'TACTICAL'], weaponPreferences: ['core.launcher', 'core.rockets', 'core.lmg'] }),
+    // Hunts in packs and never lets a wounded target go.
+    character('core.hyena', 'Hyena Warrior', { aggression: 80, pursuitPersistence: 95, teamLoyalty: 80, rangePreference: 35, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.shotgun', 'core.burst_rifle'] }),
     character('core.frost', 'Frost', { rangePreference: 90, accuracy: 82, aggression: 30, selfPreservation: 70, tags: ['SNIPER'], weaponPreferences: ['core.sniper', 'core.railgun', 'core.marksman'] }),
     character('core.operative', 'Operative', { accuracy: 75, reactionSpeed: 75, tacticalAwareness: 80, aggression: 45, tags: ['TACTICAL'], weaponPreferences: ['core.smg', 'core.hand_cannon', 'core.marksman'] }),
     character('core.medic', 'Medic', { teamLoyalty: 95, selfPreservation: 70, objectivePriority: 70, aggression: 35, tags: ['SURVIVOR'], weaponPreferences: ['core.smg', 'core.rifle', 'core.pulse_pistol'] }),

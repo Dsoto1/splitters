@@ -1292,6 +1292,11 @@ export class GameSession {
     for (const look of new Set(this.looks.values())) jobs.push(this.view.characters.preload({ look }));
     jobs.push(this.view.characters.preload({ npc: { color: '#888888', scale: 1, female: true } }));
     if (rules.mode === 'core.zombies' || map.entities.some((e) => e.kind === 'encounter' && (e.roster?.zombie ?? 0) > 0)) this.view.creatures.preload('zombie');
+    // NPCs drawn as a creature original's look (goblins, boglurkers…) in this map's encounters.
+    for (const role of NPC_ROLES) {
+      const look = NPC_ROLE_SPECS[role].look;
+      if (look && map.entities.some((e) => e.kind === 'encounter' && (e.roster?.[role] ?? 0) > 0)) jobs.push(this.view.characters.preload({ look }));
+    }
     const models = new Set<string>();
     for (const id of rules.startingWeapons) models.add(getWeapon(id).view.model);
     for (const e of map.entities) {
@@ -1364,14 +1369,16 @@ export class GameSession {
     return out;
   }
 
-  private npcLook(id: number): { color: string; scale: number; size: number; label: string; creature?: CreatureModel; zombie?: boolean } | undefined {
+  private npcLook(id: number): { color: string; scale: number; size: number; label: string; creature?: CreatureModel; zombie?: boolean; look?: string } | undefined {
     const info = this.npcInfo.get(id);
     if (!info || !this.map) return undefined;
     const faction = mapFactions(this.map)[info.faction];
     const role = NPC_ROLES[info.role] ?? 'trooper';
     // Most zombies wear Quaternius' zombie body (its own walk, run and bite); the rest shamble on the soldiers' rig.
     if (role === 'zombie') return { color: '#76866a', scale: info.size, size: info.size, label: 'Zombie', zombie: true, ...(zombieHasCreatureBody(id) ? { creature: 'zombie' as const } : {}) };
-    return { color: faction?.color ?? '#d04a3a', scale: NPC_ROLE_SPECS[role].scale * info.size, size: info.size, label: `${faction?.name ?? 'Enemy'} ${NPC_ROLE_SPECS[role].label}`, ...(isCreature(role) ? { creature: role } : {}) };
+    const spec = NPC_ROLE_SPECS[role];
+    // The creature originals wear their own character look.
+    return { color: faction?.color ?? '#d04a3a', scale: spec.scale * info.size, size: info.size, label: `${faction?.name ?? 'Enemy'} ${spec.label}`, ...(isCreature(role) ? { creature: role } : {}), ...(spec.look ? { look: spec.look } : {}) };
   }
 
   /** Objectives, timers, the Use prompt and the objective marker. */
@@ -1774,6 +1781,7 @@ export class GameSession {
         const npc = this.npcLook(id);
         // About half of each squad uses the female mannequin.
         if (npc?.creature) return npc.size === 1 ? { creature: npc.creature } : { creature: npc.creature, size: npc.size };
+        if (npc?.look) return npc.scale === 1 ? { look: npc.look } : { look: npc.look, size: npc.scale };
         if (npc) return { npc: { color: npc.color, scale: npc.scale, female: id % 2 === 1, ...(npc.zombie ? { zombie: true } : {}) } };
         const role = npcLookRole(this.looks.get(id));
         if (role && NPC_ROLE_SPECS[role].creature && isCreature(role)) return { creature: role, armed: true };

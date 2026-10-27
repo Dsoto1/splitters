@@ -314,7 +314,8 @@ export class CharacterLibrary {
   }
 
   private hipAnim(anim: Animation, body: BodyType, offset: Vector3, clip: string): Animation {
-    const key = `${body}:${clip}`;
+    // Keyed by the hip offset too: whole-body characters share a body type but not a hip height.
+    const key = `${body}:${clip}:${offset.x.toFixed(3)},${offset.y.toFixed(3)},${offset.z.toFixed(3)}`;
     let a = this.hipAnims.get(key);
     if (!a) {
       a = anim.clone();
