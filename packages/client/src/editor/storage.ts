@@ -1,4 +1,4 @@
-import { loadMap, serializeMap, type MapDocument, type ValidationIssue } from '@tiletrigger/shared';
+import { loadMap, serializeMap, stampMapRelease, type MapDocument, type ValidationIssue } from '@tiletrigger/shared';
 
 /**
  * Local map storage. Browser storage can be missing or cleared (private
@@ -142,13 +142,20 @@ export function deleteFromLibrary(id: string): void {
   set(INDEX_KEY, JSON.stringify(listLibrary().filter((e) => e.id !== id)));
 }
 
-export function exportMap(map: MapDocument): void {
-  const blob = new Blob([serializeMap(map)], { type: 'application/json' });
+/**
+ * Download the map as a file. It is stamped first (map/identity.ts): its map
+ * ID stays, and its version ID changes only when the content did. Returns the
+ * stamped map, so the editor keeps the same identity for the next export.
+ */
+export function exportMap(map: MapDocument): MapDocument {
+  const stamped = stampMapRelease(map);
+  const blob = new Blob([serializeMap(stamped)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `${map.metadata.name.replace(/[^\w.-]+/g, '_') || 'map'}.cmap.json`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  return stamped;
 }
 
 export async function importMapFile(file: File): Promise<{ map: MapDocument; issues: ValidationIssue[] } | { issues: ValidationIssue[] }> {

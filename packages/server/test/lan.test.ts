@@ -69,7 +69,7 @@ describe('LAN', () => {
   });
 
   it('the hub passes LAN discovery on to browsers at /lobby/lan', async () => {
-    const handler = lobbyHandler(new LobbyStore(), false, undefined, async () => ({ addresses: ['http://192.168.1.20:9000'], servers: [info()] }));
+    const handler = lobbyHandler(new LobbyStore(), { lan: async () => ({ addresses: ['http://192.168.1.20:9000'], servers: [info()] }) });
     const http = createServer((req, res) => void handler(req, res, () => res.writeHead(404).end()));
     await new Promise<void>((r) => http.listen(0, '127.0.0.1', () => r()));
     try {

@@ -7,7 +7,8 @@ import { MAP_FORMAT_VERSION, type MapDocument, type MapRelease } from './schema.
  *   versionId   immutable per distinct content ("v_" + 16 base32 chars),
  *   revision    1, 2, 3… for display,
  *   contentHash "sha256:<hex>" of the canonical JSON (keys sorted, no
- *               whitespace, picture and the release block itself left out),
+ *               whitespace; picture, last-saved time and the release block
+ *               itself left out),
  * in `metadata.release`. Names are never identifiers. Maps without a release
  * block (every map made before this) still load; their identity is derived
  * from their content when they are hosted (`mapIdentity`).
@@ -37,9 +38,9 @@ export function canonicalJson(value: unknown): string {
   return `{${keys.map((k) => `${JSON.stringify(k)}:${canonicalJson(o[k])}`).join(',')}}`;
 }
 
-/** The map's content as hashed: everything but its picture, picture camera and release block. */
+/** The map's content as hashed: everything but its picture, picture camera, last-saved time and release block. */
 export function canonicalMapJson(map: MapDocument): string {
-  const { thumbnail: _t, thumbnailCamera: _c, release: _r, ...metadata } = map.metadata;
+  const { thumbnail: _t, thumbnailCamera: _c, release: _r, updatedAt: _u, ...metadata } = map.metadata;
   return canonicalJson({ ...map, metadata });
 }
 

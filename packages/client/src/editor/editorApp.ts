@@ -2351,7 +2351,11 @@ export class EditorApp {
     $('ed-undo').addEventListener('click', () => this.undo());
     $('ed-redo').addEventListener('click', () => this.redo());
     $('ed-save').addEventListener('click', () => this.save());
-    $('ed-export').addEventListener('click', () => exportMap(this.doc));
+    $('ed-export').addEventListener('click', () => {
+      // Keep the identity the export stamped (map ID, version, hash), so the next export continues it.
+      const release = exportMap(this.doc).metadata.release;
+      if (release) this.doc.metadata.release = release;
+    });
     $('ed-new').addEventListener('click', () => {
       this.keepDraft();
       this.replaceDocument(newMapDocument('Untitled Map'));
