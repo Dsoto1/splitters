@@ -11,7 +11,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { CORE_THEMES, SKIES, borderStyleAt, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { CORE_THEMES, PROP_FENCES, SKIES, borderStyleAt, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { createPropNode } from './game/propVisuals.ts';
 import type { MapStyler } from './mapMeshes.ts';
@@ -236,9 +236,9 @@ export class BackdropVisuals {
     let placed = 0;
     const budget = Math.round(900 * p.density);
     g.per.forEach(([x, z], i) => {
-      // Cliffs, city blocks, forest and sea along the border stand where the belt would.
+      // Cliffs, city blocks, forest and sea along the border stand where the belt would; fences and walls are low enough to see it over.
       const border = borderStyleAt(doc, x, z);
-      if (border !== 'none' && border !== 'fence') return;
+      if (border !== 'none' && border !== 'fence' && !PROP_FENCES[border]) return;
       const dx = x - area.centre[0];
       const dz = z - area.centre[1];
       const l = Math.hypot(dx, dz) || 1;

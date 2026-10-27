@@ -37,12 +37,13 @@ import {
   NPC_ROLES,
   NPC_ROLE_SPECS,
   isCreature,
+  zombieHasCreatureBody,
   STREAK_REWARDS,
   matchPhysics,
   matchTeams,
   type Vec3,
   npcLookRole,
-  type CreatureKind,
+  type CreatureModel,
   OBJECTIVE_STATES,
   mapFactions,
   mapTeams,
@@ -1290,6 +1291,7 @@ export class GameSession {
     const jobs: Promise<unknown>[] = [];
     for (const look of new Set(this.looks.values())) jobs.push(this.view.characters.preload({ look }));
     jobs.push(this.view.characters.preload({ npc: { color: '#888888', scale: 1, female: true } }));
+    if (rules.mode === 'core.zombies' || map.entities.some((e) => e.kind === 'encounter' && (e.roster?.zombie ?? 0) > 0)) this.view.creatures.preload('zombie');
     const models = new Set<string>();
     for (const id of rules.startingWeapons) models.add(getWeapon(id).view.model);
     for (const e of map.entities) {
@@ -1362,12 +1364,13 @@ export class GameSession {
     return out;
   }
 
-  private npcLook(id: number): { color: string; scale: number; size: number; label: string; creature?: CreatureKind; zombie?: boolean } | undefined {
+  private npcLook(id: number): { color: string; scale: number; size: number; label: string; creature?: CreatureModel; zombie?: boolean } | undefined {
     const info = this.npcInfo.get(id);
     if (!info || !this.map) return undefined;
     const faction = mapFactions(this.map)[info.faction];
     const role = NPC_ROLES[info.role] ?? 'trooper';
-    if (role === 'zombie') return { color: '#76866a', scale: info.size, size: info.size, label: 'Zombie', zombie: true };
+    // Most zombies wear Quaternius' zombie body (its own walk, run and bite); the rest shamble on the soldiers' rig.
+    if (role === 'zombie') return { color: '#76866a', scale: info.size, size: info.size, label: 'Zombie', zombie: true, ...(zombieHasCreatureBody(id) ? { creature: 'zombie' as const } : {}) };
     return { color: faction?.color ?? '#d04a3a', scale: NPC_ROLE_SPECS[role].scale * info.size, size: info.size, label: `${faction?.name ?? 'Enemy'} ${NPC_ROLE_SPECS[role].label}`, ...(isCreature(role) ? { creature: role } : {}) };
   }
 

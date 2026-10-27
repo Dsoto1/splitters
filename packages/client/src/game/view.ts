@@ -947,6 +947,11 @@ export class GameView {
     return [...this.avatars.values()].filter((a) => a.anim).length;
   }
 
+  /** Avatars drawn with a creature body of this kind (tests: zombies in the zombie body). */
+  creatureCount(kind: string): number {
+    return [...this.avatars.values()].filter((a) => a.anim instanceof CreatureAnimator && a.anim.ch.kind === kind).length;
+  }
+
   private setAvatarWeapon(a: Avatar, slot: number): void {
     a.weaponSlot = slot;
     a.weaponNode?.dispose();

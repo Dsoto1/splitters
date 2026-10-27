@@ -1,0 +1,24 @@
+Modular 3D Hospital Environment
+Models by madduck - https://madduck.itch.io/
+Source page: https://madduck.itch.io/modular-3d-hospital-environment
+
+Terms (as stated by the author on the source page, researched 2026-10-26):
+the models are free for personal and commercial use, and no credit is
+required. They may not be resold or redistributed as assets (on their own or
+as part of another asset pack). No licence file ships in the download (25 FBX
+files in an FBX/ folder, untextured). The owner approved using the pack.
+Recorded as LicenseRef-Free-Use: a permissive grant with no conditions on use
+in a game, accepted like the credit-only tier. We credit the author anyway
+(docs/ASSET_SOURCES.md, in-game credits).
+
+Redistribution: the raw FBX files are never kept in this repository. Only the
+game-ready props built from them ship, inside the game. Note that this
+repository is public, so those built models (packages/client/public/props/hp_*.glb)
+can be downloaded from it; they are converted, recoloured and rescaled game
+assets, not the pack. Remove the pack from content/props.json if the author
+ever objects or narrows the terms.
+
+tools/content/prepare-props.mjs builds the props from the extracted download
+(unzip it into a folder named modular-3d-hospital-environment, so the FBX/
+folder is inside it; see docs/CONTENT_PIPELINE.md), and content/props.lock.json
+records what it wrote.

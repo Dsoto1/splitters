@@ -1,0 +1,18 @@
+Modular Dungeon Kit v1.0
+Created by SigilsVault (Kevin Barany), 05/31/2026
+https://sigilsvault.itch.io/ - https://sigilsvault.gumroad.com/
+
+License (LICENSE.txt and README.txt inside the download):
+Creative Commons Zero (CC0)
+https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt
+"Free to use for personal, educational, and commercial projects. Credit to
+'Kevin Barany' or 'SigilsVault' is appreciated but not required."
+We credit SigilsVault anyway (docs/ASSET_SOURCES.md, in-game credits).
+
+What we use: the GLB versions (textures embedded: the 512 px hand-painted trim
+sheet and the props' own maps), each re-encoded as a 256 px JPEG.
+
+Raw pack files are not kept in this repository. tools/content/prepare-props.mjs
+builds the game-ready sd_* props from the extracted download (the folder
+"modular dungeon kit"; see docs/CONTENT_PIPELINE.md), and
+content/props.lock.json records what it wrote.

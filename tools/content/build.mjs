@@ -360,7 +360,9 @@ for (const f of creatureLock.files) {
     creator: pack.creator,
     url: pack.url,
     license: pack.license,
-    modifications: ['simplified', 'textures downscaled and embedded', f.clips.length > 1 ? 'our character rig clips retargeted onto its skeleton' : 'idle clip kept'],
+    modifications: f.src.endsWith('.fbx')
+      ? ['converted from FBX to glTF with its own skeleton and clips (renamed, the attack trimmed, still tracks dropped)', 'scaled to 1.8 m and stood on the ground', 'palette texture embedded']
+      : ['simplified', 'textures downscaled and embedded', f.clips.length > 1 ? 'our character rig clips retargeted onto its skeleton' : 'idle clip kept'],
   });
 }
 const CREATURE_DIR = join(ROOT, 'packages/client/public/creatures');
@@ -410,12 +412,13 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
 const textureManifest = JSON.parse(readFileSync(join(ROOT, 'content/textures.json'), 'utf8'));
 const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, ['downscaled to 512 px', 'colour, normal and emission maps only'], 'node tools/content/prepare-textures.mjs');
 const propManifest = JSON.parse(readFileSync(join(ROOT, 'content/props.json'), 'utf8'));
+const propById = new Map(propManifest.props.map((p) => [`props/${p.id}.glb`, p]));
 const propCount = checkLocked(
   'content/props.lock.json',
   'props',
   (f) => propManifest.packs[f.source],
   propManifest.budgets,
-  (f, pack) => (pack.convert ? ['converted to glTF (FBX via three.js FBXLoader)', 'turned to face +Z, centred, stood on the ground and scaled to metres', pack.flatten ? 'photo textures replaced by one flat colour per face (no image shipped)' : 'palette texture embedded'] : pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? [`built in code by ${pack.url}`, 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
+  (f, pack) => (pack.convert ? [/\.fbx(#|$)/i.test(f.src) ? 'converted to glTF (FBX via three.js FBXLoader)' : 'read from the glTF in the download', 'turned to face +Z, centred, stood on the ground and scaled to metres', pack.flatten || propById.get(f.file)?.flatten ? 'photo textures replaced by one flat colour per face (no image shipped)' : pack.colors ? 'untextured materials given flat colours (per material, some pieces banded by height)' : pack.textureSize ? `embedded maps re-encoded as ${pack.textureSize} px JPEGs` : pack.untextured ? "untextured: each material keeps the pack's own colour" : 'palette texture embedded'] : pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? [`built in code by ${pack.url}`, 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']),
   'node tools/content/prepare-props.mjs',
 );
 const skyManifest = JSON.parse(readFileSync(join(ROOT, 'content/skies.json'), 'utf8'));

@@ -1104,6 +1104,10 @@ async function zombiesFlow(browser) {
   await page.waitForFunction(() => window.__cs.view.characterCount() > 3, null, { timeout: T(15000) }).catch(() => {});
   const drawn = await page.evaluate(() => window.__cs.view.characterCount());
   check(drawn > 3, `zombies are drawn as characters (${drawn})`);
+  // Most wear Quaternius' zombie body, walking, running and biting with its own clips.
+  await page.waitForFunction(() => window.__cs.view.creatureCount('zombie') > 0, null, { timeout: T(15000) }).catch(() => {});
+  const bodies = await page.evaluate(() => window.__cs.view.creatureCount('zombie'));
+  check(bodies > 0, `zombies wear the zombie body (${bodies})`);
   // Co-op: the scoreboard is one list of the squad.
   await page.keyboard.down('Tab');
   await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length === 4, null, { timeout: T(5000) }).catch(() => {});

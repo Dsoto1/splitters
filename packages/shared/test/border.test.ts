@@ -1,7 +1,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   ELECTRIC_FENCE,
+  PROP_FENCES,
+  PROP_FENCE_OFFSET,
   PhysicsWorld,
+  getProp,
   borderBoxes,
   borderEdges,
   borderRect,
@@ -124,6 +127,20 @@ describe('border collision', () => {
         }
       }
       // Nothing of it reaches into the play area.
+      for (const b of boxes) expect(b.min[0] >= 20 || b.max[0] <= -20 || b.min[2] >= 20 || b.max[2] <= -20).toBe(true);
+    }
+  });
+
+  it('makes the prop walls and fences as solid as they are tall, from props that exist', () => {
+    for (const [style, spec] of Object.entries(PROP_FENCES)) {
+      for (const id of [spec.panel, spec.post].filter(Boolean)) expect(getProp(`prop.${id}`), `${style}: ${id}`).toBeDefined();
+      const boxes = borderBoxes(bordered(style as BorderStyle), 0);
+      // The band covers the line where the fence stands, as high as the fence, and stays out of the play area.
+      for (let u = -20; u <= 20; u += 2) {
+        const hit = boxes.find((b) => u >= b.min[0] && u <= b.max[0] && 20 + PROP_FENCE_OFFSET >= b.min[2] && 20 + PROP_FENCE_OFFSET <= b.max[2]);
+        expect(hit, `${style} covers ${u}`).toBeDefined();
+        expect(hit!.max[1]).toBeCloseTo(spec.height, 5);
+      }
       for (const b of boxes) expect(b.min[0] >= 20 || b.max[0] <= -20 || b.min[2] >= 20 || b.max[2] <= -20).toBe(true);
     }
   });

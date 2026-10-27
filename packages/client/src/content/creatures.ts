@@ -5,22 +5,22 @@ import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import '@babylonjs/loaders/glTF/2.0';
-import { CREATURE_SPECS, type CreatureKind, type CreatureSpec } from '@tiletrigger/shared';
+import { CREATURE_SPECS, type CreatureModel, type CreatureSpec } from '@tiletrigger/shared';
 import { gone, type CharacterSpec } from './characters.ts';
 import { GLB, versioned } from '../assetUrl.ts';
 
 /**
- * Creature NPCs (imps, puglins, aliens): models with their own skeletons and
+ * Creature NPCs (imps, puglins, aliens, the zombie body): models with their own skeletons and
  * clips, kept apart from the soldier/player character path in characters.ts.
  * Built by tools/content/prepare-creatures.mjs into public/creatures.
  */
 
 /** What an avatar is drawn as: a character (player look or soldier NPC), or a creature. */
 /** A character, NPC or creature to draw; `size` scales a player's body (small and large looks). */
-export type AvatarSpec = CharacterSpec & { creature?: CreatureKind; size?: number; /** A player in a creature skin: carries guns instead of its club. */ armed?: boolean };
+export type AvatarSpec = CharacterSpec & { creature?: CreatureModel; size?: number; /** A player in a creature skin: carries guns instead of its club. */ armed?: boolean };
 
 export interface CreatureInstance {
-  kind: CreatureKind;
+  kind: CreatureModel;
   spec: CreatureSpec;
   /** Place and turn this node; the creature stands (or hovers) over its origin facing +Z. */
   root: TransformNode;
@@ -41,7 +41,7 @@ export class CreatureLibrary {
 
   constructor(private readonly scene: Scene) {}
 
-  private load(kind: CreatureKind): Promise<AssetContainer> {
+  private load(kind: CreatureModel): Promise<AssetContainer> {
     let p = this.files.get(kind);
     if (!p) {
       p = LoadAssetContainerAsync(versioned(`${import.meta.env.BASE_URL}${CREATURE_SPECS[kind].model}`), this.scene, GLB);
@@ -50,11 +50,11 @@ export class CreatureLibrary {
     return p;
   }
 
-  preload(kind: CreatureKind): void {
+  preload(kind: CreatureModel): void {
     void this.load(kind);
   }
 
-  async create(kind: CreatureKind, name: string): Promise<CreatureInstance> {
+  async create(kind: CreatureModel, name: string): Promise<CreatureInstance> {
     const spec = CREATURE_SPECS[kind];
     const container = await this.load(kind);
     // The scene went while the file loaded: build nothing into it.
@@ -84,7 +84,8 @@ export class CreatureLibrary {
     root.computeWorldMatrix(true);
     const { min } = body.getHierarchyBoundingVectors(true);
     body.position.y = -min.y + spec.hover;
-    const pelvis = joints.get('pelvis');
+    // Our rig's joint names (retargeted creatures), or a Mixamo-style rig's (the zombie).
+    const pelvis = joints.get('pelvis') ?? joints.get('Hips');
     root.computeWorldMatrix(true);
     const hipHeight = pelvis ? Math.max(0.2, pelvis.getAbsolutePosition().y - spec.hover) : 0.9;
     return {
