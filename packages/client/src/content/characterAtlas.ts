@@ -265,11 +265,15 @@ export class CharacterAtlas {
     this.pending = true;
     queueMicrotask(() => {
       this.pending = false;
-      this.texture.update(this.pixels);
+      // Disposed in the same moment a tile was filled (a scene closing): nothing to upload to.
+      if (!this.disposed) this.texture.update(this.pixels);
     });
   }
 
+  private disposed = false;
+
   dispose(): void {
+    this.disposed = true;
     this.texture.dispose();
   }
 }
