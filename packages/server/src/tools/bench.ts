@@ -60,6 +60,7 @@ const mapPaths = args.length > 2 ? args.slice(2).map(here) : [fileURLToPath(new 
 await Promise.all([initPhysics(), initNavigation()]);
 const rows: string[] = [];
 const cpuRows: string[] = [];
+const behaviourRows: string[] = [];
 for (const mapPath of mapPaths) {
   for (const v of variants) {
     const r = benchMap(mapPath, v === 'clump');
@@ -73,6 +74,9 @@ if (rows.length > 1) {
   console.log('\nProcess CPU per tick (breakdown scaled from wall clock by CPU / wall):');
   console.log('| Map | layout | CPU avg ms | CPU p95 ms | bot think | (perception | decisions | paths | aim | LOS rays/tick) | movement | combat | rest | kills | load |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const r of cpuRows) console.log(r);
+  console.log('\nBehaviour (spawn deaths: died within 3 s of spawning; coverage: share of the map\'s 21 m regions visited per minute; spread: entropy of where bots were, 1 = evenly everywhere; crowd: most bots in one region, averaged over samples):');
+  console.log('| Map | layout | first 15 s: kills (spawn deaths) | spawn deaths % of all | coverage / min | spread | crowd | kills/min | stuck |\n|---|---|---|---|---|---|---|---|---|');
+  for (const r of behaviourRows) console.log(r);
 }
 console.log(`load average ${loadavg().map((l) => l.toFixed(2)).join(' ')} (${cpus().length} cores)`);
 
@@ -99,7 +103,8 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   for (let i = 0; i < bots; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES[mixedSkills ? SKILLS[i % 3]! : 'normal']);
   // The first --viewers bots stand in for players: snapshots are encoded for them, and bots near them move at full detail.
   for (const c of match.combatants().slice(0, viewers)) match.watchers.add(c.slot);
-  for (let i = 0; i < warmup * TICK_RATE; i++) match.step();
+  const behaviour = new Behaviour(match);
+  for (let i = 0; i < warmup * TICK_RATE; i++) behaviour.events(match, match.step());
   if (clump && rules?.teamSizes?.length !== 2) throw new Error('--clump needs a two-team mode (--mode=core.tdm)');
   const area = clump ? clumpArea(match, clumpSize / 2) : null;
   if (area) clumpInto(match, area, undefined, 7);
@@ -146,6 +151,8 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
       t1 = t2;
     }
     kills += events.filter((e) => e.e === 'kill').length;
+    behaviour.events(match, events);
+    if (match.tick % TICK_RATE === 0) behaviour.sample(match);
     // Accuracy per bot skill: rounds fired, and rounds that hit someone (at once, or after flying).
     for (const e of events) {
       if (e.e !== 'shot' && e.e !== 'impact') continue;
@@ -211,6 +218,8 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   console.log(`nav: ${n('nav')} path queries (${(n('nav') / seconds).toFixed(0)}/s), ${n('navFail')} failed | line-of-sight rays ${(n('los') / ticks).toFixed(0)}/tick (+ ${(n('losShared') / ticks).toFixed(0)}/tick answered from the shared sight cache)`);
   console.log(`accuracy (rounds that hit / fired): ${[...aim].sort(([a], [b]) => SKILLS.indexOf(a as never) - SKILLS.indexOf(b as never)).map(([k, a]) => `${k} ${((a.hits / Math.max(1, a.rounds)) * 100).toFixed(1)}% of ${a.rounds}`).join(' | ')}`);
   console.log(`kills ${kills} | bot stuck recoveries ${stuck} | idle (moved < 2 m in 5 s) ${idlePct.toFixed(1)}% of samples, ${idleNow} at the end`);
+  console.log(behaviour.report(match, seconds, kills));
+  behaviourRows.push(behaviour.row(map.metadata.id, clump, seconds, kills, stuck));
   if (mode) {
     const scores = [...match.teamScores()].map(([t, s]) => `${t} ${s}`).join(', ');
     console.log(`${mode}: ${[...objective].map(([k, v]) => `${k} ${v}`).join(' | ') || 'no objective events'} | team scores: ${scores}`);
@@ -218,4 +227,97 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   match.destroy();
   const cpuRow = `| ${map.metadata.id} | ${clump ? 'clumped' : 'spread'} | ${(cpuMs / ticks).toFixed(2)} | ${cpuP95.toFixed(1)} | ${c2(think)} | ${c2(per('botPerceive'))} | ${c2(per('botDecide'))} | ${c2(per('botPath'))} | ${c2(per('botAim'))} | ${(n('los') / ticks).toFixed(0)}) | ${c2(movement)} | ${c2(combat)} | ${c2(rest)} | ${kills} | ${load.toFixed(1)} |`;
   return { cpuRow, row: `| ${map.metadata.id}${clump ? ' (clumped)' : ''} | ${avg(tickMs).toFixed(1)} | ${pct(0.95).toFixed(1)} | ${sorted[sorted.length - 1]!.toFixed(0)} | ${per('bots').toFixed(1)} | ${per('move').toFixed(1)} | ${(n('nav') / seconds).toFixed(0)} (${n('navFail')}) | ${(cpuMs / ticks).toFixed(1)} | ${kills} | ${idlePct.toFixed(0)}% | ${load.toFixed(1)} |` };
+}
+
+/**
+ * Behaviour measures (docs/BOTS.md "Measuring"): deaths soon after spawning
+ * (from the match's first tick, warm-up included), map coverage (the share of
+ * the navmesh's 21 m regions some bot stood in, per minute), how evenly the
+ * bots used the map (entropy of bot-seconds per region, 0..1), crowding (the
+ * most bots in one region, averaged over one-second samples).
+ */
+class Behaviour {
+  private static readonly REGION = 21;
+  private readonly regions = new Map<number, number>();
+  private readonly hist: Float64Array;
+  private visited = new Set<number>();
+  private readonly perMinute: number[] = [];
+  private samples = 0;
+  private crowdSum = 0;
+  private readonly crowd = new Map<number, number>();
+  earlyKills = 0;
+  earlySpawnDeaths = 0;
+  spawnDeaths = 0;
+  deaths = 0;
+
+  constructor(match: Match) {
+    for (const p of match.nav.places()) {
+      const k = Behaviour.key(p);
+      if (!this.regions.has(k)) this.regions.set(k, this.regions.size);
+    }
+    this.hist = new Float64Array(this.regions.size);
+  }
+
+  private static key(p: { x: number; y: number; z: number }): number {
+    const R = Behaviour.REGION;
+    return ((Math.floor(p.x / R) + 512) * 1024 + (Math.floor(p.z / R) + 512)) * 64 + (Math.floor(p.y / 4) + 32);
+  }
+
+  events(match: Match, events: readonly GameEvent[]): void {
+    for (const e of events) {
+      if (e.e !== 'kill') continue;
+      const v = match.actor(e.victim);
+      const young = !!v && match.tick - (v.spawnedAt ?? -Infinity) < TICK_RATE * 3;
+      this.deaths++;
+      if (young) this.spawnDeaths++;
+      if (match.tick <= TICK_RATE * 15) {
+        this.earlyKills++;
+        if (young) this.earlySpawnDeaths++;
+      }
+    }
+  }
+
+  sample(match: Match): void {
+    this.crowd.clear();
+    let top = 0;
+    for (const c of match.combatants()) {
+      if (!c.alive || !c.bot) continue;
+      const i = this.regions.get(Behaviour.key(c.move.pos));
+      if (i === undefined) continue;
+      this.visited.add(i);
+      this.hist[i]!++;
+      const n = (this.crowd.get(i) ?? 0) + 1;
+      this.crowd.set(i, n);
+      if (n > top) top = n;
+    }
+    this.samples++;
+    this.crowdSum += top;
+    if (this.samples % 60 === 0) {
+      this.perMinute.push(this.visited.size / Math.max(1, this.regions.size));
+      this.visited = new Set();
+    }
+  }
+
+  /** Coverage per minute (the part-minute at the end scaled up to a minute if no whole minute was measured). */
+  coverage(seconds: number): number {
+    if (this.perMinute.length) return this.perMinute.reduce((a, b) => a + b, 0) / this.perMinute.length;
+    return (this.visited.size / Math.max(1, this.regions.size)) * Math.min(1, 60 / Math.max(1, seconds));
+  }
+
+  spread(): number {
+    const total = this.hist.reduce((a, b) => a + b, 0);
+    if (!total || this.regions.size < 2) return 0;
+    let h = 0;
+    for (const v of this.hist) if (v > 0) h -= (v / total) * Math.log(v / total);
+    return h / Math.log(this.regions.size);
+  }
+
+  report(match: Match, seconds: number, kills: number): string {
+    void match;
+    return `behaviour: first 15 s ${this.earlyKills} kills (${this.earlySpawnDeaths} within 3 s of spawning) | spawn deaths ${this.spawnDeaths} of ${this.deaths} (${((this.spawnDeaths / Math.max(1, this.deaths)) * 100).toFixed(1)}%) | coverage ${(this.coverage(seconds) * 100).toFixed(1)}% of ${this.regions.size} regions a minute | spread ${this.spread().toFixed(3)} | crowd ${(this.crowdSum / Math.max(1, this.samples)).toFixed(1)} | kills/min ${((kills / seconds) * 60).toFixed(0)}`;
+  }
+
+  row(id: string, clump: boolean, seconds: number, kills: number, stuck: number): string {
+    return `| ${id} | ${clump ? 'clumped' : 'spread'} | ${this.earlyKills} (${this.earlySpawnDeaths}) | ${((this.spawnDeaths / Math.max(1, this.deaths)) * 100).toFixed(1)} | ${(this.coverage(seconds) * 100).toFixed(1)}% | ${this.spread().toFixed(3)} | ${(this.crowdSum / Math.max(1, this.samples)).toFixed(1)} | ${((kills / seconds) * 60).toFixed(0)} | ${stuck} |`;
+  }
 }
