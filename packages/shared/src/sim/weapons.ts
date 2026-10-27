@@ -844,6 +844,8 @@ function arsenal(): Record<string, WeaponDefinition> {
       view: longarm('lmg', 1.0, '#ffd36b', {
         model: 'guns/plasma_spin_gun.glb',
         fallback: 'weapons/lmg.glb',
+        // Chunky (side drums, a tall top): further out and lower than a rifle, so it doesn't fill the view.
+        viewOffset: [0.25, -0.28, 0.74],
         hold: { style: 'long', grip: [0, -0.09, -0.36], support: [0, -0.075, 0.1], shoulder: [0, 0.06, -0.48] },
         sound: 'fire.smg',
       }),
