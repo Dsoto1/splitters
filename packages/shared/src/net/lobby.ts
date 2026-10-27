@@ -17,6 +17,8 @@ export interface LobbyListing {
   host: string;
   /** Map display name. */
   map: string;
+  /** The map's ID, so the browser can show its picture and plan when it is one of the built-in maps (absent: name only). */
+  mapId?: string;
   mode: GameMode;
   /** People playing (bots not counted), and how many can (they take bots' places). */
   players: number;
@@ -53,5 +55,6 @@ export function parseAdvert(v: unknown): LobbyAdvert | null {
   const players = int(o.players, 0, MAX_PLAYER_SLOTS);
   const version = int(o.version, 0, 1_000_000);
   if (!code || !name || !host || !map || !mode || max === null || players === null || version === null) return null;
-  return { code, name, host, map, mode, players: Math.min(players, max), max, version, relay: o.relay === true };
+  const mapId = typeof o.mapId === 'string' && /^[A-Za-z0-9_-]{4,64}$/.test(o.mapId) ? o.mapId : undefined;
+  return { code, name, host, map, ...(mapId ? { mapId } : {}), mode, players: Math.min(players, max), max, version, relay: o.relay === true };
 }

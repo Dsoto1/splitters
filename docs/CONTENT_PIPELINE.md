@@ -184,6 +184,31 @@ unlinked (by material name), `textureSize` keeps them as JPEGs of that size, and
 ### Official maps
 
 - Built in MapMaker, saved to `maps/`, validated in CI (`validate-map`), and bot-tested with the headless bench (no stuck bots, every spawn reachable).
+- **Map thumbnails.** Every map has two thumbnails, always shown as separate boxes, never composited
+  (`frontend/mapThumbs.ts`):
+  - **Picture:** an in-game look at the map. Shipped maps (not retired ones) ship an automatic one,
+    `packages/client/public/maps/shots/<id>.jpg` (640×360 JPEG, at most 60 KB, checked by `content:check`).
+    Regenerate after changing a map: `pnpm build`, serve it
+    (`pnpm --filter @tiletrigger/client exec vite preview --port 4799`), then
+    `node tools/content/capture-map-shots.mjs http://localhost:4799 [map ids…]`
+    (`SHOT_CANDIDATES=<dir>` also keeps every rendered candidate for review). The tool picks the camera
+    itself: eye points across the play area (a grid at two heights, plus spawns, pickups and objectives),
+    raised above the floor, kept under ceilings and out of geometry, 16 directions each, scored by
+    raycasting the map's collision world (seeing far, many distinct structures, looking across the play
+    area; anything solid within a few metres ahead, close walls, lots of sky or void lose). The best three
+    distinct views are rendered and judged again on the image (detail and contrast; big flat areas such as
+    a wall, blank sky or one material lose). Look at the pictures afterwards. Where the choice is poor, fix
+    the camera in the map script, `m.thumbnailCamera(position, target)` (stored as
+    `metadata.thumbnailCamera`), and the tool uses it as is.
+  - **Plan:** the flat top-down MapMaker schematic, drawn live from the map (`frontend/mapPlan.ts`): tile
+    floors, walls, blocks and props as outlines, terrain as height contours, and dots for spawns (team
+    colours), pickups, flags, hills, bomb sites, hostages, NPC squads and vehicles.
+  - **Maker pictures:** MapMaker → Map properties → **Set thumbnail** frames the editor camera's view (a
+    16:9 guide over the viewport) and captures it in-engine as a 384×216 JPEG stored in the map
+    (`metadata.thumbnail` with the camera in `metadata.thumbnailCamera`, format v22, capped at 48,000
+    data-URL characters so it rides along in saves, exports and every map transfer). It replaces the
+    automatic picture; **Clear** goes back to it. There is no way to pick an image file: players can't
+    upload assets.
 
 ## 5. In-house tools to build
 

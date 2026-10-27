@@ -46,7 +46,7 @@ import { FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, cur
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
-import { drawMapPlan } from './mapPlan.ts';
+import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
 import { choice, fold as foldEl, infoTip, noteList, settingRow, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
@@ -56,43 +56,37 @@ import type { PortraitRenderer } from './portraits.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
 import { PLAYLISTS } from '../playlists.ts';
 
-/** A built-in map the Arcade offers. */
-/**
- * A map's picture: its screenshot from the middle with the top-down shot inset
- * (tools/content/capture-map-shots.mjs), or the drawn plan for maps without
- * shots (imported ones). `top`: the top-down shot alone.
- */
-function mapPicture(map: MapDocument, cls: string, top = false, shots = true): { el: HTMLElement; draw: () => void } {
-  const plan = el('canvas');
-  const wrap = el('div', { class: `map-pic ${cls}` }, plan);
-  const shot = (kind: 'view' | 'top') => `${import.meta.env.BASE_URL}maps/shots/${map.metadata.id}-${kind}.jpg`;
-  let drawn = false;
-  const draw = () => {
-    if (!drawn) drawMapPlan(plan, map);
-    drawn = true;
-  };
-  if (!shots) return { el: wrap, draw };
-  // Decoded with the frame that shows it: a screen rebuilt around a cached shot never shows a frame without it.
-  const main = el('img', { className: 'shot', alt: '', decoding: 'sync' });
-  main.addEventListener('load', () => wrap.classList.add('has-shot'));
-  main.addEventListener('error', () => (main.remove(), draw()));
-  main.src = shot(top ? 'top' : 'view');
-  if (main.complete && main.naturalWidth) wrap.classList.add('has-shot');
-  wrap.append(main);
-  if (!top) {
-    const inset = el('img', { className: 'shot-top', alt: '', decoding: 'sync' });
-    inset.addEventListener('error', () => inset.remove());
-    inset.src = shot('top');
-    wrap.append(inset);
-  }
-  // The plan is only drawn if the shot fails to load.
-  return { el: wrap, draw: () => undefined };
-}
-
 /** The "Inspired by …" line for a homage map (nothing for our own designs). */
 function inspired(key: string): HTMLElement[] {
   const from = mapInspiration(key);
   return from ? [el('em', { class: 'inspired', textContent: `Inspired by ${from}` })] : [];
+}
+
+/** A built-in map the Arcade offers. */
+/** A map card's picture (on top) and plan (beside the name): built-in maps have an automatic picture, grouped ones (imported) don't. */
+function cardThumbs(m: { map: MapDocument; group?: string }): MapThumbs {
+  const t = mapThumbs(m.map, !m.group);
+  t.pic.classList.add('card-pic');
+  t.plan.classList.add('card-plan');
+  return t;
+}
+
+/** Draw each card's plan once it scrolls into view in `root` (a long list draws only what is seen). */
+function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void {
+  if (typeof IntersectionObserver === 'undefined') return (_card, draw) => requestAnimationFrame(draw);
+  const draws = new Map<Element, () => void>();
+  const seen = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      seen.unobserve(e.target);
+      draws.get(e.target)?.();
+      draws.delete(e.target);
+    }
+  }, { root });
+  return (card, draw) => {
+    draws.set(card, draw);
+    seen.observe(card);
+  };
 }
 
 export interface ArcadeMap {
@@ -337,12 +331,14 @@ export class FrontEnd {
       nav.append(b);
     });
     const featured = this.maps.find((m) => m.key === 'sandgate') ?? this.maps[0]!;
-    const featuredPic = mapPicture(featured.map, 'featured-pic');
+    const featuredPic = mapThumbs(featured.map, !featured.group);
+    featuredPic.pic.classList.add('featured-pic');
+    featuredPic.plan.classList.add('card-plan');
     const card = el(
       'button',
       { class: 'featured panel', title: 'Play this map' },
-      featuredPic.el,
-      el('div', { class: 'meta' }, el('div', { class: 'kicker', textContent: 'Featured map' }), el('h3', { textContent: featured.map.metadata.name }), ...inspired(featured.key), el('p', { textContent: `${featured.modes.map((m) => MODE_LABEL[m]).join(' · ')} — ${featured.blurb}` })),
+      featuredPic.pic,
+      el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('div', { class: 'kicker', textContent: 'Featured map' }), el('h3', { textContent: featured.map.metadata.name }), ...inspired(featured.key), el('p', { textContent: `${featured.modes.map((m) => MODE_LABEL[m]).join(' · ')} — ${featured.blurb}` })), featuredPic.plan),
     );
     card.addEventListener('click', () => {
       this.pickMap(featured.key);
@@ -435,28 +431,20 @@ export class FrontEnd {
     // Picking a map redraws the setup only: the list stays where it was.
     cards.addEventListener('scroll', () => (this.mapScroll = cards.scrollTop), { passive: true });
     requestAnimationFrame(() => (cards.scrollTop = this.mapScroll));
-    // Grouped maps (many, e.g. imported ones) draw their plans only once they scroll into view.
-    const lazy = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver((seen) => {
-      for (const e of seen) {
-        if (!e.isIntersecting) continue;
-        lazy!.unobserve(e.target);
-        const m = this.maps.find((x) => x.key === (e.target as HTMLElement).dataset.map);
-        const c = e.target.querySelector('canvas');
-        if (m && c && !e.target.querySelector('.map-pic.has-shot')) drawMapPlan(c, m.map);
-      }
-    }, { root: cards });
+    // Plans are drawn as their cards scroll into view.
+    const lazy = lazyPlans(cards);
     let group: string | undefined;
     for (const m of this.maps) {
       if (m.group !== group) {
         group = m.group;
         if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
       }
-      const pic = mapPicture(m.map, 'card-pic', false, !m.group);
+      const pic = cardThumbs(m);
       const card = el(
         'button',
         { class: `map-card${m.key === current.key ? ' on' : ''}` },
-        pic.el,
-        el('div', { class: 'meta' }, el('b', { textContent: m.map.metadata.name }), ...inspired(m.key), el('small', { textContent: m.blurb }), el('div', { class: 'mode-tags' }, ...m.modes.map((x) => el('span', { textContent: MODE_LABEL[x] })))),
+        pic.pic,
+        el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('b', { textContent: m.map.metadata.name }), ...inspired(m.key), el('small', { textContent: m.blurb }), el('div', { class: 'mode-tags' }, ...m.modes.map((x) => el('span', { textContent: MODE_LABEL[x] })))), pic.plan),
       );
       card.dataset.map = m.key;
       card.addEventListener('click', () => {
@@ -468,8 +456,7 @@ export class FrontEnd {
         this.refreshSetup();
       });
       cards.append(card);
-      if (m.group && lazy) lazy.observe(card);
-      else requestAnimationFrame(pic.draw);
+      lazy(card, pic.draw);
     }
     const panel = el('div', { class: 'setup panel', id: 'match-setup' });
     this.setupPanel = panel;
@@ -492,12 +479,8 @@ export class FrontEnd {
       foldEl({ id, title, badge, open: this.folds.has(id), onToggle: (open) => (open ? this.folds.add(id) : this.folds.delete(id)) }, ...children);
 
     // ---- header: the map's picture and top-down plan, name, what you're about to play
-    const shot = el('img', { className: 'setup-shot', alt: '' });
-    shot.addEventListener('error', () => shot.remove());
-    if (!current.group) shot.src = `${import.meta.env.BASE_URL}maps/shots/${map.metadata.id}-view.jpg`;
-    else shot.remove();
-    const plan = el('canvas', { className: 'setup-plan-canvas', title: 'Top-down plan' });
-    requestAnimationFrame(() => drawMapPlan(plan, map));
+    const thumbs = mapThumbs(map, !current.group);
+    requestAnimationFrame(thumbs.draw);
     const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.map.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
     mapSelect.addEventListener('change', () => {
       this.pickMap(mapSelect.value);
@@ -510,7 +493,7 @@ export class FrontEnd {
     const head = el(
       'div',
       { class: 'setup-head' },
-      el('div', { class: 'setup-preview' }, shot, plan),
+      thumbPair(thumbs, 'setup-preview'),
       el('div', { class: 'setup-title' }, el('small', { textContent: 'Map' }), el('h3', {}, map.metadata.name, infoTip(about)), ...inspired(current.key), mapSelect, el('p', { class: 'setup-sub', id: 'setup-summary', textContent: summary })),
     );
 
@@ -824,15 +807,7 @@ export class FrontEnd {
     const close = el('button', { class: 'hm-close', id: 'hm-close', textContent: 'Cancel' });
     close.addEventListener('click', () => o.onClose());
     go.addEventListener('click', () => picked && o.onPick(picked, mode));
-    const lazy = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver((seen) => {
-      for (const e of seen) {
-        if (!e.isIntersecting) continue;
-        lazy!.unobserve(e.target);
-        const m = maps.find((x) => x.key === (e.target as HTMLElement).dataset.map);
-        const c = e.target.querySelector('canvas');
-        if (m && c && !e.target.querySelector('.map-pic.has-shot')) drawMapPlan(c, m.map);
-      }
-    }, { root: cards });
+    const lazy = lazyPlans(cards);
     const draw = () => {
       tabs.replaceChildren(...modes.map((m) => {
         const b = el('button', { class: `tab${m === mode ? ' on' : ''}`, textContent: MODE_LABEL[m] });
@@ -851,9 +826,9 @@ export class FrontEnd {
           group = m.group;
           if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
         }
-        const pic = mapPicture(m.map, 'card-pic', false, !m.group);
+        const pic = cardThumbs(m);
         const here = m.map.metadata.id === o.current;
-        const card = el('button', { class: `map-card${picked === m ? ' on' : ''}` }, pic.el, el('div', { class: 'meta' }, el('b', { textContent: m.map.metadata.name }), el('small', { textContent: here ? 'Playing now' : m.blurb })));
+        const card = el('button', { class: `map-card${picked === m ? ' on' : ''}` }, pic.pic, el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('b', { textContent: m.map.metadata.name }), el('small', { textContent: here ? 'Playing now' : m.blurb })), pic.plan));
         card.dataset.map = m.key;
         card.dataset.id = m.map.metadata.id;
         card.addEventListener('click', () => {
@@ -861,8 +836,7 @@ export class FrontEnd {
           draw();
         });
         cards.append(card);
-        if (m.group && lazy) lazy.observe(card);
-        else requestAnimationFrame(pic.draw);
+        lazy(card, pic.draw);
       }
       chosen.textContent = picked ? `${picked.map.metadata.name} · ${MODE_LABEL[mode]}` : 'Pick a map';
       go.disabled = !picked;
@@ -1053,6 +1027,16 @@ export class FrontEnd {
     return el('div', { class: 'form panel lan-panel' }, el('div', { class: 'gb-top' }, el('h4', { textContent: 'On your network (LAN)' }), status, scan), list, el('div', { class: 'gb-hub' }, add, addBtn));
   }
 
+  /** A listing's map: its picture and plan when it is one of the built-in maps, and its name. */
+  private listingMap(g: LobbyListing): HTMLElement {
+    const name = el('span', { class: 'gb-map-name', textContent: g.map });
+    const known = g.mapId ? this.maps.find((m) => !m.group && m.map.metadata.id === g.mapId) : undefined;
+    if (!known) return el('span', { class: 'gb-map' }, name);
+    const thumbs = mapThumbs(known.map, true);
+    requestAnimationFrame(thumbs.draw);
+    return el('span', { class: 'gb-map' }, thumbPair(thumbs, 'gb-thumbs'), name);
+  }
+
   /** Public games players are hosting from their browsers (Host game → List in the game browser). */
   private gameBrowser(): HTMLElement {
     const list = el('div', { class: 'gb-list' });
@@ -1072,7 +1056,7 @@ export class FrontEnd {
         'div',
         { class: 'gb-row' },
         el('div', { class: 'gb-name' }, el('b', { textContent: g.name }), el('small', { textContent: `hosted by ${g.host}` }), el('div', { class: 'gb-tags' }, ...tags)),
-        el('span', { class: 'gb-map', textContent: g.map }),
+        this.listingMap(g),
         el('span', { class: 'gb-mode', textContent: MODE_LABEL[g.mode] ?? g.mode }),
         el('span', { class: 'gb-players', textContent: `${g.players}/${g.max}` }),
         join,

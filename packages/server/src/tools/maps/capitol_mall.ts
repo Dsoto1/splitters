@@ -827,4 +827,6 @@ m.meta({
   players: [16, 32],
 });
 console.log(`capitol_mall: ${nBlocks} blocks`);
+// The map's picture: the automatic camera frames a poor view here (tools/content/capture-map-shots.mjs).
+m.thumbnailCamera([75, 24, 8], [0, 5, -5]);
 await m.save();

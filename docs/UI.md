@@ -26,7 +26,10 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
 
 - **Front end** (`src/frontend/frontEnd.ts`) has these screens:
   - **Home:** logo, slanted nav, player badge with portrait, featured map, news strip.
-  - **Arcade:** map cards with top-down plans; mode, bots, skill, score and time.
+  - **Arcade:** map cards with the map's picture on top and its top-down plan beside the name (two
+    separate boxes, `mapThumbs.ts`); the setup panel shows the picture and the plan side by side; mode,
+    bots, skill, score and time. The featured map, the host's Change map picker and the game browser
+    (listings on built-in maps) show them the same way. See CONTENT_PIPELINE.md, Official maps.
   - **Characters:** a portrait grid with Q/E filters and an info panel.
   - **Online** and **Options.**
 
@@ -55,8 +58,12 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
     Terrain, Props; Entities: NPCs, Gameplay, Vehicles, Scenario; Environment: Paint, Plants, Terrain),
     a search box that looks across every pane, and categories of cards three to a row. Tile cards show
     3D thumbnails rendered from the real pieces (`ModelThumbnails.getTile`), props from their models.
-  - **Right panel:** Map properties (plan preview, name, theme, size, players, mode, map layers, then
-    backdrop, blood and boundary), or the inspector for the selection.
+  - **Right panel:** Map properties (the map's picture beside its plan, **Set thumbnail** / **Clear**, name,
+    theme, size, players, mode, map layers, then backdrop, blood and boundary), or the inspector for the
+    selection. Set thumbnail (`makerThumb.ts`) dims everything but a 16:9 frame over the view; move the
+    camera as usual, then Capture (Enter) or Cancel (Esc). Editing aids (grid, ghosts, outlines, spawn
+    markers) are hidden for the capture; undo works on it like any other edit. The Open dialog shows each
+    draft, saved map and template with its picture and plan (`libraryThumbs.ts`).
   - **Over the view:** a tool bar (Select, Place, Erase, Paint, Walls, Terrain, Rotate, Delete; icon, name
     and key on each, the active tool lit cyan, Place green, Erase red), a one-line hint for the active tool,
     a level strip (Level N / Ground / Basement, up and down), a hover card by the pointer (name, size,

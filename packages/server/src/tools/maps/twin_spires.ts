@@ -120,4 +120,6 @@ m.meta({
   modes: ['core.tdm', 'core.deathmatch', 'core.ctf', 'core.koth'],
   players: [4, 14],
 });
+// The map's picture: the automatic camera frames a poor view here (tools/content/capture-map-shots.mjs).
+m.thumbnailCamera([0, 25, -40], [0, 4, 0]);
 await m.save();

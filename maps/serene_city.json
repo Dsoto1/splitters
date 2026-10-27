@@ -20,7 +20,19 @@
       "core.ctf",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "thumbnailCamera": {
+      "position": [
+        44,
+        3.2,
+        8
+      ],
+      "target": [
+        34.83,
+        2.6,
+        11.8
+      ]
+    }
   },
   "classicStructure": {
     "cellSize": 8,

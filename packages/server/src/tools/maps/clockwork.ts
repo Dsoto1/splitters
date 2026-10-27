@@ -227,4 +227,6 @@ m.meta({
   modes: ['core.deathmatch', 'core.tdm'],
   players: [2, 6],
 });
+// The map's picture: the automatic camera frames a poor view here (tools/content/capture-map-shots.mjs).
+m.thumbnailCamera([8, 2.9, -8], [8, 1.78, 1.94]);
 await m.save();

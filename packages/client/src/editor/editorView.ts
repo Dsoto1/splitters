@@ -291,6 +291,27 @@ export class EditorView {
     this.grid?.setEnabled(on);
   }
 
+  /** What photoMode hid, to bring back. */
+  private photoHidden: TransformNode[] = [];
+
+  /**
+   * Hide the editing aids (grid, ghosts, outlines, highlights, gizmo, spawn
+   * markers) for a clean picture of the map (MapMaker → Set thumbnail), or
+   * bring them back.
+   */
+  photoMode(on: boolean): void {
+    for (const n of this.photoHidden) n.setEnabled(true);
+    this.photoHidden = [];
+    if (!on) return;
+    const aids: (TransformNode | undefined)[] = [this.grid, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
+    for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
+    for (const n of aids) {
+      if (!n || !n.isEnabled(false)) continue;
+      n.setEnabled(false);
+      this.photoHidden.push(n);
+    }
+  }
+
   /** Spawn markers and pickup previews for entities on visible levels; selected ones are highlighted. */
   private readonly teamMats = new Map<string, StandardMaterial>();
 

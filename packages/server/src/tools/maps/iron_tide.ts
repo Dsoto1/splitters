@@ -492,4 +492,6 @@ m.meta({
   modes: ['core.hostage', 'core.bomb', 'core.tdm', 'core.ctf', 'core.deathmatch'],
   players: [12, 24],
 });
+// The map's picture: the automatic camera frames a poor view here (tools/content/capture-map-shots.mjs).
+m.thumbnailCamera([30, 28, -140], [0, 6, -60]);
 await m.save();
