@@ -534,7 +534,8 @@ async function offlineFlow(browser) {
   await page.waitForTimeout(1000);
   const t1 = await sim(page, (m) => m.tick);
   check(where.mode === 'worker' && !where.match && t1 - t0 > 20, `the offline match runs in a Web Worker (${where.mode}, ${t1 - t0} ticks in 1 s)`);
-  await page.waitForTimeout(1500);
+  // Wait for the ammo readout (it blanks while you're down after an early death).
+  await page.waitForFunction(() => /^\d+$/.test(document.getElementById('ammo-count').textContent ?? '') && /^\d+$/.test(document.getElementById('ammo-reserve').textContent ?? ''), null, { timeout: T(15000) }).catch(() => {});
   const ammo = await page.evaluate(() => `${document.getElementById('ammo-count').textContent} / ${document.getElementById('ammo-reserve').textContent}`);
   check(/^\d+ \/ \d+$/.test(ammo), `HUD shows ammo (${ammo})`);
   // A click is the user gesture that starts audio; bots fighting then make sounds.
@@ -604,6 +605,8 @@ async function citadelFlow(browser) {
   await page.waitForTimeout(4000);
   const props = await page.evaluate(() => window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.includes('_model')).length);
   check(props >= 35, `Citadel's props are placed (${props})`);
+  // A bot can down you in the first seconds (the HUD blanks until you respawn): wait for it to show again.
+  await page.waitForFunction(() => /1/.test(document.getElementById('throwable').textContent ?? ''), null, { timeout: T(15000) }).catch(() => {});
   const grenades = await page.evaluate(() => document.getElementById('throwable').textContent);
   check(/1/.test(grenades ?? ''), `HUD shows the starting grenade (${grenades})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
