@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { VISIBLE_IMPORTED_MAPS, initPhysics, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { VISIBLE_IMPORTED_MAPS, initPhysics, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
@@ -58,7 +58,7 @@ function arcadeEntries(files: Record<string, unknown>, group?: string): ArcadeMa
   return Object.entries(files)
     .flatMap(([path, json]): ArcadeMap[] => {
       const key = path.replace(/^.*\/|\.json$/g, '');
-      if (key in OFFLINE_MAPS) return [];
+      if (key in OFFLINE_MAPS || isRetiredMap(key)) return [];
       const r = loadMap(json);
       if (!r.ok) return [];
       const blurb = r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? '';
@@ -78,10 +78,8 @@ function arcadeMaps(): ArcadeMap[] {
     ...entry('canyon', 'Outdoor canyon: two bases, boulder fields, hills and a ridge ledge.', ['core.tdm', 'core.deathmatch'], 9),
     ...entry('citadel', 'Castle keep in an outer bailey: a two-storey atrium, roof terraces, every weapon.', ['core.deathmatch', 'core.tdm'], 9),
     ...entry('sandgate', 'Desert town: long street, mid doors, tunnels.', ['core.tdm', 'core.deathmatch'], 9),
-    ...entry('arena', 'Duel arena: a tight graybox loop with an upper floor, for 2–4 players.', ['core.deathmatch', 'core.tdm'], 3),
-    ...entry('vault', 'Crack the vault: doors, traps, and loops round the heist route.', ['core.deathmatch'], 5),
-    ...entry('outpost', 'Take the outpost from the Syndicate: flank the courtyard, hold the uplink, reach evac.', ['core.coop'], 2),
-    // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata.
+    // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata;
+    // arena, vault and outpost are retired (RETIRED_MAPS) and stay reachable only by ?offline= for tests.
     ...arcadeEntries(EXTRA_MAPS),
   ];
 }
@@ -147,7 +145,7 @@ class App {
       this.front = new FrontEnd($('menu'), maps, {
         openEditor: () => void this.openEditor(),
         openDesigner: (look) => void this.openDesigner(look),
-        playLocal: (map, rules, bots, skill) => this.playLocal(map, rules, bots, skill),
+        playLocal: (map, rules, bots, skill, host) => this.playLocal(map, rules, bots, skill, undefined, undefined, host),
         playOnline: (server, name) => void this.playOnline(server, name),
         playPlaylist: (id, botFill, skill) => this.playPlaylist(id, botFill, skill),
         joinCode: (code, name) => void this.joinCode(code, name),
@@ -255,13 +253,15 @@ class App {
   private chain: { playlist: Playlist; index: number; botFill: number; difficulty: 'easy' | 'normal' | 'hard' } | null = null;
 
   /** `hosting`: Host game carried over a map change (the same join code; friends rejoin it). */
-  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting']): void {
+  /** `autoHost`: open a join code for friends as soon as the match starts (Play → Host). */
+  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false): void {
     this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
       chain: !!this.chain,
       hosting,
+      autoHost,
       onExit: (reason, travel) => {
         // The host changed map: the same rules, players and bot skill there (Host game friends follow).
         if (reason === 'travel' && travel?.host) return this.playLocal(travel.host.map, travel.host.rules, travel.host.fill, travel.host.skill, undefined, travel.hosting);
@@ -349,7 +349,7 @@ class App {
     });
   }
 
-  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; onExit: (reason?: string, travel?: Travel) => void; onReady?: () => void }): void {
+  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; onExit: (reason?: string, travel?: Travel) => void; onReady?: () => void }): void {
     $('menu').hidden = true;
     this.mode = 'game';
     this.session = new GameSession({
@@ -366,6 +366,7 @@ class App {
       onReady: o.onReady,
       portrait: this.portraits?.get(this.front!.look),
       hosting: o.hosting,
+      autoHost: !!o.autoHost,
       mapPicker: this.mapPicker,
       onExit: (reason, travel) => {
         this.session = undefined;

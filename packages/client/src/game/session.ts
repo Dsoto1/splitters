@@ -140,6 +140,8 @@ export interface SessionOptions {
   portrait?: Promise<string>;
   /** Host game across a map change: the join code already open (friends come back to it), and the game browser listing's name when it was listed. */
   hosting?: { peer: PeerHost; listing?: string };
+  /** Open a join code as soon as the match starts (Play → Host). */
+  autoHost?: boolean;
   /** The map picker for the host's Change map (pause menu → Match): the front end's map cards. */
   mapPicker?: (o: { mode: GameMode; current: string; suiteOnly: boolean; onPick: (map: MapDocument, mode: GameMode) => void; onClose: () => void }) => HTMLElement;
 }
@@ -374,7 +376,7 @@ export class GameSession {
         ($('host-name') as HTMLInputElement).value = opts.hosting.listing;
       }
       void this.showHostInfo(hostBtn, hostInfo, this.peerHost.code);
-    }
+    } else if (opts.autoHost && opts.hostable && opts.transport instanceof LocalTransport) void this.startHosting(hostBtn, hostInfo);
     this.hostPanel = this.makeHostPanel();
     // Offline by default: nothing listens until the player goes online (or hosts with a code).
     $('go-online').addEventListener('click', () => this.confirmGoOnline(), { signal });
