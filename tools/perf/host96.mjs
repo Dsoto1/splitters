@@ -11,6 +11,8 @@
 //   HOST96_GUESTS=1 (friends, 1-3), PERF_GRAPHICS=low (one level for every page), PERF_SECONDS=10 per scenario,
 //   PERF_PORT=4396, HOST96_HUB_PORT=4397, PERF_JSON=file (raw results), PERF_DIST=dir (serve another build),
 //   PERF_GPU=1 (the machine's GPU instead of SwiftShader), HOST96_SCENARIOS=spread,clump,
+//   HOST96_HOST_RENDER=0 (the host's page stops drawing once friends are in: a host with a GPU far ahead of
+//   SwiftShader, so what's left on its page is serving friends and the network path can be read on its own),
 //   HOST96_MAX_KBPS=n / HOST96_MAX_SEND_MS=n (exit 1 when a friend's compressed stream averages more than n KB/s,
 //   or the host page spends more than n ms a second compressing and sending: a budget check for network changes).
 // Every page renders on the same CPU here (SwiftShader), so frame times are far above real machines': read the
@@ -214,6 +216,7 @@ for (const id of maps) {
     for (const p of guests) await p.waitForFunction(ready, null, { timeout: T });
     log('friends in');
     const players = await sim(GOD);
+    if (process.env.HOST96_HOST_RENDER === '0') await host.evaluate(() => window.__cs.view.scene.getEngine().stopRenderLoop());
     // Friends walk about (forward, turning now and then), so their inputs and prediction are exercised.
     for (const p of guests) await p.evaluate(() => {
       window.__autoInput = { forward: 1 };
