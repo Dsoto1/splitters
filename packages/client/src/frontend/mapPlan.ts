@@ -151,7 +151,7 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
       bz1 = Math.max(bz1, z);
     };
     for (const b of boxes) {
-      if (b.kind === 'barrier') continue;
+      if (b.kind === 'barrier' || b.kind === 'prop') continue; // scenery props (trees, rocks) dot the open ground
       grow(b.min[0], b.min[2]);
       grow(b.max[0], b.max[2]);
     }
