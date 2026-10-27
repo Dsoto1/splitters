@@ -113,11 +113,23 @@ export class SnapshotDecoder {
   }
 }
 
-/** One player's entry for a receiver with a stream: in full the first time, else what changed since the last copy. */
-function deltaJson(stream: SnapshotStream, cur: { q: PlayerSnapshot; cm: [number, number, number] }, fullJson: string): string {
+/**
+ * One player's entry for a receiver with a stream: in full the first time, else what changed since the last copy.
+ * `memo` keeps this snapshot's deltas by the copy they were written against: receivers last sent the same copy
+ * (most of them, most of the time) share one string.
+ */
+function deltaJson(stream: SnapshotStream, cur: { q: PlayerSnapshot; cm: [number, number, number] }, fullJson: string, memo: Map<object, string>): string {
   const prev = stream.sent.get(cur.q.s);
   stream.sent.set(cur.q.s, cur);
   if (!prev) return fullJson;
+  const known = memo.get(prev);
+  if (known !== undefined) return known;
+  const out = writeDelta(prev, cur);
+  memo.set(prev, out);
+  return out;
+}
+
+function writeDelta(prev: { q: PlayerSnapshot; cm: [number, number, number] }, cur: { q: PlayerSnapshot; cm: [number, number, number] }): string {
   const a = prev.q as unknown as Record<string, unknown>;
   const b = cur.q as unknown as Record<string, unknown>;
   let out = `{"s":${cur.q.s}`;
@@ -202,17 +214,19 @@ export function encodeSnapshots(body: SnapshotBody, viewers: readonly SnapshotVi
   let quant: { q: PlayerSnapshot; cm: [number, number, number] }[] | null = null;
   let quantJson: string[] | null = null;
   let here: Set<number> | null = null;
+  let memos: Map<object, string>[] | null = null;
   return viewers.map((v) => {
     let list = full;
     const { send, hold } = big ? interestFor(body, v.slot) : { send: null, hold: [] as number[] };
     if (v.stream) {
       quant ??= players.map(quantize);
       quantJson ??= quant.map((x) => JSON.stringify(x.q));
+      memos ??= players.map(() => new Map());
       const stream = v.stream;
       const entries: string[] = [];
       const one = (i: number) => {
         const p = players[i]!;
-        entries.push(p.s === v.slot ? playerJson[i]! : deltaJson(stream, quant![i]!, quantJson![i]!));
+        entries.push(p.s === v.slot ? playerJson[i]! : deltaJson(stream, quant![i]!, quantJson![i]!, memos![i]!));
       };
       if (send) send.forEach(one);
       else for (let i = 0; i < players.length; i++) one(i);

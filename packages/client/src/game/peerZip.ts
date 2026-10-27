@@ -11,12 +11,16 @@ export const CHUNK = 60_000;
  * binary pieces of at most CHUNK bytes, the first byte saying whether more
  * of the same message follow (0) or it's the last (1).
  */
+type ZipLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+export const ZIP_LEVEL: ZipLevel = 6;
+
 export class Zipper {
-  private readonly deflate = new Deflate({ raw: true, level: 6 });
+  private readonly deflate: Deflate;
   private out: Uint8Array[] = [];
   private readonly enc = new TextEncoder();
 
-  constructor() {
+  constructor(level: ZipLevel = ZIP_LEVEL) {
+    this.deflate = new Deflate({ raw: true, level });
     this.deflate.onData = (c) => this.out.push(c as Uint8Array);
   }
 
