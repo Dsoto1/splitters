@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, DEFAULT_RULES, INTEREST_MIN_PLAYERS, MAX_PLAYER_SLOTS, SNAPSHOT_INTERVAL_TICKS, SnapshotDecoder, SnapshotStream, encodeSnapshots, initPhysics, interestFor, loadMap, rulesForMode, type GameEvent, type PlayerSnapshot, type ServerMessage, type SnapshotBody } from '../src/index.ts';
-import { BotFiller, Match, clumpArea, clumpInto, initNavigation } from '../src/match.ts';
+import { AWAY, BotFiller, Match, clumpArea, clumpInto, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -86,6 +86,74 @@ describe('players joining and leaving running matches', () => {
     expect(filler.join('B', undefined, 1)!.kind).toBe('human');
     for (let i = 2; i < MAX_PLAYER_SLOTS; i++) match.addHuman(`p${i}`);
     expect(filler.join('late', undefined, 1)).toBeNull();
+  });
+});
+
+describe('away players', () => {
+  const still = (seq: number) => ({ seq, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0 });
+  const moving = (seq: number) => ({ ...still(seq), forward: 1 });
+
+  it('warns an idle player, then a bot plays their place until they play again', () => {
+    const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2] }, 7);
+    const filler = new BotFiller(match);
+    filler.join('Host', undefined, 4);
+    const ana = filler.join('Ana', undefined, 4)!;
+    const people = new Set([ana.slot]);
+    const team = ana.faction;
+    filler.input(ana.slot, [still(1)]);
+    // Untouched inputs (a client sends them all the time) don't count as playing.
+    let seq = 2;
+    let warned = false;
+    for (let s = 0; s < AWAY.afkSeconds - 1; s++) {
+      run(match, 60);
+      filler.input(ana.slot, [still(seq++)]);
+      warned ||= filler.watch(4, people, AWAY.afkSeconds).warn.includes(ana.slot);
+    }
+    expect(warned).toBe(true);
+    expect(filler.isAway(ana.slot)).toBe(false);
+    run(match, 120);
+    expect(filler.watch(4, people, AWAY.afkSeconds).away).toEqual([ana.slot]);
+    const body = match.slots[ana.slot]!;
+    expect(body).toMatchObject({ kind: 'bot', faction: team, name: 'Ana (away)' });
+    // The place stays theirs: a newcomer takes another bot, and the fill doesn't change around it.
+    const cleo = filler.join('Cleo', undefined, 4)!;
+    expect(cleo.slot).not.toBe(ana.slot);
+    expect(match.combatants()).toHaveLength(4);
+    run(match, 60);
+    // They play: the place is theirs again, the name too.
+    expect(filler.input(ana.slot, [moving(seq++)])).toBe(true);
+    expect(match.slots[ana.slot]).toMatchObject({ kind: 'human', name: 'Ana' });
+    expect(match.idleSeconds(ana.slot)).toBe(0);
+  });
+
+  it("keeps a dropped player's place for their next connection, then gives it to the bot", () => {
+    const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2] }, 8);
+    const filler = new BotFiller(match);
+    filler.join('Host', undefined, 4);
+    const bea = filler.join('Bea', undefined, 4)!;
+    run(match, 30);
+    bea.kills = 5;
+    expect(filler.hold(bea.slot, 'dropped', 'pk:bea', 4)).toBe(true);
+    expect(match.slots[bea.slot]!.kind).toBe('bot');
+    run(match, 60);
+    // Someone else's connection doesn't get it; hers does, score and all.
+    expect(filler.reclaim('pk:other', 'Bea')).toBeNull();
+    const back = filler.reclaim('pk:bea', 'Bea')!;
+    expect(back).toMatchObject({ slot: bea.slot, kind: 'human', name: 'Bea', kills: 5 });
+    // Her new connection counts inputs from 1 again.
+    filler.input(bea.slot, [moving(1)]);
+    expect(back.queue).toHaveLength(1);
+    // Dropped again and gone too long: the bot keeps the place, under a bot name.
+    filler.hold(bea.slot, 'dropped', 'pk:bea', 4, 1);
+    run(match, 70);
+    expect(filler.watch(4, new Set(), AWAY.afkSeconds).released).toEqual(['Bea']);
+    expect(match.slots[bea.slot]).toMatchObject({ kind: 'bot' });
+    expect(match.slots[bea.slot]!.away).toBeUndefined();
+    expect(filler.reclaim('pk:bea', 'Bea')).toBeNull();
+    // No key (nothing to recognise them by): they simply leave.
+    const cy = filler.join('Cy', undefined, 4)!;
+    expect(filler.hold(cy.slot, 'dropped', null, 4)).toBe(false);
+    expect(match.combatants().some((c) => c.name === 'Cy')).toBe(false);
   });
 });
 

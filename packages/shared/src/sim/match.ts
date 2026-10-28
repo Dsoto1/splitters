@@ -198,6 +198,13 @@ export interface Combatant {
   npc?: { encounter: string; role: NpcRole; removeAt: number; damage: number };
   /** Character look (players and bots). */
   look: string;
+  /**
+   * A player who is away (AWAY): a bot plays their body until they come back.
+   * `name` is theirs; `key` (account or browser key) lets their next
+   * connection reclaim the place; `until` (tick) is when a dropped player's
+   * hold runs out (null: idle but still connected).
+   */
+  away?: { name: string; key: string | null; why: 'afk' | 'dropped'; until: number | null };
   name: string;
   collider: RAPIER.Collider;
   move: MoveState;
@@ -1179,7 +1186,8 @@ export class Match {
    */
   takeOverBot(name: string, look?: string): Combatant | null {
     const all = this.combatants();
-    const bots = all.filter((c) => c.kind === 'bot');
+    // An away player's place is held for them: never given to someone else.
+    const bots = all.filter((c) => c.kind === 'bot' && !c.away);
     if (!bots.length) return null;
     const targets = this.teamTargets();
     const people = (team: string | null) => all.filter((c) => c.kind === 'human' && c.faction === team).length / (team ? (targets.get(team) ?? 1) : 1);
@@ -1280,6 +1288,7 @@ export class Match {
   remove(slot: number): void {
     const c = this.slots[slot];
     if (!c) return;
+    this.activity.delete(slot);
     if (this.phase === 'playing') this.mode?.onLeave(c);
     this.classes?.onLeave(c);
     this.readySlots.delete(slot);
@@ -1288,6 +1297,82 @@ export class Match {
     this.slots[slot] = null;
     this.director?.forget(slot);
     this.rolesFor = -1;
+  }
+
+  /** When each player last really played (moved, turned or pressed something), and where they last looked. */
+  private activity = new Map<number, { tick: number; yaw: number; pitch: number }>();
+
+  /**
+   * Note what a player's inputs say about them being there: moving, a button or
+   * turning counts (a client sends inputs all the time, even untouched). Returns
+   * whether they played. Works for a player who is away too (AWAY: they come back).
+   */
+  noteActivity(slot: number, inputs: readonly PlayerInput[]): boolean {
+    const c = this.slots[slot];
+    if (!c || (c.kind !== 'human' && !c.away)) return false;
+    const was = this.activity.get(slot);
+    let active = false;
+    let yaw = was?.yaw ?? NaN;
+    let pitch = was?.pitch ?? NaN;
+    for (const i of inputs) {
+      const turned = Number.isFinite(yaw) && (Math.abs(i.yaw - yaw) > 0.02 || Math.abs(i.pitch - pitch) > 0.02);
+      if (i.forward || i.right || i.buttons || turned) active = true;
+      yaw = i.yaw;
+      pitch = i.pitch;
+    }
+    this.activity.set(slot, { tick: active || !was ? this.tick : was.tick, yaw, pitch });
+    return active;
+  }
+
+  /** Seconds since this player last played (0 when unknown: just joined). */
+  idleSeconds(slot: number): number {
+    const a = this.activity.get(slot);
+    return a ? (this.tick - a.tick) / TICK_RATE : 0;
+  }
+
+  /** Start counting idle time again now (a new round, a player back from being away). */
+  resetIdle(slot?: number): void {
+    for (const [s, a] of this.activity) if (slot === undefined || s === slot) a.tick = this.tick;
+  }
+
+  /**
+   * A player is away: a bot plays their body where it is (team, score and
+   * loadout stay), shown as "Name (away)", until they come back (comeBack).
+   */
+  setAway(slot: number, away: NonNullable<Combatant['away']>, profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal): Combatant | null {
+    const c = this.slots[slot];
+    if (!c || c.kind !== 'human') return null;
+    c.kind = 'bot';
+    c.away = away;
+    c.name = `${away.name.slice(0, 25)} (away)`;
+    c.queue = [];
+    c.prevButtons = 0;
+    this.readySlots.delete(slot);
+    c.bot = new BotBrain(c.slot, profileFor(c.look, profile, this.rules.botStyle), difficulty, this.seed);
+    c.bot.onSpawn(c.yaw);
+    this.nav.places();
+    this.refreshRoles();
+    return c;
+  }
+
+  /** An away player is back: their body is theirs again, where the bot left it. */
+  comeBack(slot: number, name?: string): Combatant | null {
+    const c = this.slots[slot];
+    if (!c?.away) return null;
+    c.kind = 'human';
+    c.name = name ?? c.away.name;
+    delete c.away;
+    c.bot = undefined;
+    c.queue = [];
+    c.prevButtons = 0;
+    // A new connection counts its inputs from 1 again; the same one carries on: either is newer than nothing.
+    c.lastSeq = 0;
+    this.botThought.delete(slot);
+    this.raceBots.delete(slot);
+    this.nav.places();
+    this.refreshRoles();
+    this.resetIdle(slot);
+    return c;
   }
 
   /** Queue untrusted client inputs. Out-of-order or duplicate sequence numbers are dropped. */
@@ -4592,6 +4677,31 @@ function segmentDistance(p: Vec3, a: Vec3, b: Vec3, lift = 0): number {
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
+/**
+ * Away players (BotFiller.watch, hold, input): an online player who stops
+ * playing is warned, then a bot plays their place until they come back; a
+ * player whose connection drops keeps their place for a while, a bot playing
+ * it, and their next connection takes it back.
+ */
+export const AWAY = {
+  /** Idle this long (no moving, turning or pressing anything) and a bot plays for you (0: never). */
+  afkSeconds: 90,
+  /** The warning comes this long before. */
+  warnSeconds: 15,
+  /** A dropped player's place is kept this long for them to reconnect. */
+  holdSeconds: 60,
+} as const;
+
+/** What BotFiller.watch found: players to warn, players a bot now plays for, holds that ran out. */
+export interface AwayChanges {
+  warn: number[];
+  away: number[];
+  released: string[];
+}
+
+/** People in the match: players, and away players whose place a bot keeps for them. */
+const isPerson = (c: Combatant) => c.kind === 'human' || !!c.away;
+
 const BOT_NAMES = ['Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash', 'Nub', 'Quill'];
 
 /** Keeps a match at a target player count by adding or removing Player Bots around the humans. */
@@ -4629,15 +4739,118 @@ export class BotFiller {
   leave(slot: number, fill: number): void {
     const c = this.match.slots[slot];
     if (!c) return;
+    if (c.away) {
+      // Gone for good while away: the bot playing their place stays, as a bot of its own.
+      this.release(slot);
+      return this.rebalance(fill);
+    }
     const all = this.match.combatants();
-    const humans = all.filter((x) => x.kind === 'human').length - (c.kind === 'human' ? 1 : 0);
-    const bots = all.filter((x) => x.kind === 'bot').length;
+    const humans = all.filter(isPerson).length - (c.kind === 'human' ? 1 : 0);
+    const bots = all.filter((x) => x.kind === 'bot' && !x.away).length;
     const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans));
     if (this.opts.takeBack === true && c.kind === 'human' && bots < want) {
       const { name, profile } = this.nextBot();
       this.match.handToBot(slot, name, profile, this.difficulty, true);
     } else this.match.remove(slot);
     this.rebalance(fill);
+  }
+
+  private warned = new Set<number>();
+
+  /**
+   * A player is away: a bot plays their place for them. `why` afk: idle but
+   * connected (they come back by playing: input); dropped: their connection
+   * closed, and the place is kept `holdSeconds` for their next connection
+   * (reclaim, by `key`: their account, else their browser key). Without a key
+   * a dropped player simply leaves.
+   */
+  hold(slot: number, why: 'afk' | 'dropped', key: string | null, fill: number, holdSeconds: number = AWAY.holdSeconds): boolean {
+    const c = this.match.slots[slot];
+    if (!c) return false;
+    if (why === 'dropped' && (!key || holdSeconds <= 0)) {
+      this.leave(slot, fill);
+      return false;
+    }
+    this.warned.delete(slot);
+    const until = why === 'dropped' ? this.match.tick + Math.round(holdSeconds * TICK_RATE) : null;
+    if (c.away) {
+      // Idle, then the connection dropped too: now held for a reconnect.
+      c.away = { ...c.away, why, key: key ?? c.away.key, until };
+      return true;
+    }
+    const { profile } = this.nextBot();
+    return !!this.match.setAway(slot, { name: c.name, key, why, until }, profile, this.difficulty);
+  }
+
+  /** A player's inputs: a player away for being idle is back the moment they play. Then the inputs are queued. */
+  input(slot: number, inputs: readonly PlayerInput[]): boolean {
+    const active = this.match.noteActivity(slot, inputs);
+    const c = this.match.slots[slot];
+    let back = false;
+    if (active && c?.away?.why === 'afk') back = !!this.match.comeBack(slot);
+    if (active) this.warned.delete(slot);
+    this.match.queueInputs(slot, inputs);
+    return back;
+  }
+
+  /** A new connection takes back the place held for `key` (a dropped player reconnecting). Null when none is held. */
+  reclaim(key: string, name: string): Combatant | null {
+    const c = this.match.combatants().find((x) => x.away && x.away.key === key);
+    if (!c) return null;
+    this.warned.delete(c.slot);
+    return this.match.comeBack(c.slot, name);
+  }
+
+  /** Whether this player is away (a bot plays for them). */
+  isAway(slot: number): boolean {
+    return !!this.match.slots[slot]?.away;
+  }
+
+  /**
+   * Once a second or so: warn players about to go idle, hand idle players'
+   * places to bots (`afkSeconds`; 0: never), and end holds that ran out (the
+   * bot stays). `people`: the slots this applies to (online players; never the
+   * host's own player in a browser-hosted game).
+   */
+  watch(fill: number, people: ReadonlySet<number>, afkSeconds: number = AWAY.afkSeconds): AwayChanges {
+    const out: AwayChanges = { warn: [], away: [], released: [] };
+    const m = this.match;
+    for (const c of m.combatants()) {
+      const away = c.away;
+      if (away && away.until !== null && m.tick >= away.until) {
+        out.released.push(away.name);
+        this.release(c.slot);
+      }
+    }
+    if (out.released.length) this.rebalance(fill);
+    // Idle time counts only while the match is being played.
+    if (m.phase !== 'playing') {
+      m.resetIdle();
+      this.warned.clear();
+      return out;
+    }
+    if (afkSeconds <= 0) return out;
+    for (const c of m.combatants()) {
+      if (c.kind !== 'human' || !people.has(c.slot)) continue;
+      const idle = m.idleSeconds(c.slot);
+      if (idle >= afkSeconds) {
+        this.hold(c.slot, 'afk', null, fill);
+        out.away.push(c.slot);
+      } else if (idle >= afkSeconds - AWAY.warnSeconds && !this.warned.has(c.slot)) {
+        this.warned.add(c.slot);
+        out.warn.push(c.slot);
+      }
+    }
+    return out;
+  }
+
+  /** A held place is no longer kept: the bot playing it stays, under a bot name. */
+  private release(slot: number): void {
+    const c = this.match.slots[slot];
+    if (!c?.away) return;
+    delete c.away;
+    c.name = this.nextBot().name;
+    this.warned.delete(slot);
   }
 
   /** Bot skill now (the host can change it mid-match: retune). */
@@ -4664,13 +4877,13 @@ export class BotFiller {
       const score = (c: Combatant) => c.kills - c.deaths;
       for (const t of this.match.teams) {
         const on = this.match.combatants().filter((c) => c.faction === t.id);
-        const spare = on.filter((c) => c.kind === 'bot').sort((a, b) => score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
+        const spare = on.filter((c) => c.kind === 'bot' && !c.away).sort((a, b) => score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
         for (let n = on.length; n > (targets.get(t.id) ?? n) && spare.length; n--) this.match.remove(spare.shift()!.slot);
       }
     }
     const all = this.match.combatants();
-    const humans = all.filter((c) => c.kind === 'human').length;
-    const bots = all.filter((c) => c.kind === 'bot');
+    const humans = all.filter(isPerson).length;
+    const bots = all.filter((c) => c.kind === 'bot' && !c.away);
     const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans));
     const targets = this.match.teamTargets();
     for (let i = bots.length; i > want; i--) {
@@ -4679,7 +4892,7 @@ export class BotFiller {
       // How full the team stays without one of its bots: the team left fullest gives one up (ties: the bigger team).
       const over = (team: string | null) => (live.filter((c) => c.faction === team).length - 1) / (team ? (targets.get(team) ?? 1) : 1);
       const score = (c: Combatant) => c.kills - c.deaths;
-      const left = live.filter((c) => c.kind === 'bot').sort((a, b) => over(b.faction) - over(a.faction) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
+      const left = live.filter((c) => c.kind === 'bot' && !c.away).sort((a, b) => over(b.faction) - over(a.faction) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
       this.match.remove(left[0]!.slot);
     }
     for (let i = bots.length; i < want; i++) {

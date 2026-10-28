@@ -113,9 +113,14 @@ interface Remote {
   rtt?: number | undefined;
   /** Delta snapshots: what this friend was last sent of each player (net/interest.ts). */
   stream: SnapshotStream;
-  /** The friend's browser key (hello.pk), for a ban. */
+  /** The friend's browser key (hello.pk), for a ban, and to take their place back after a dropped link. */
   pk?: string;
+  /** When the friend's link last sent anything (ms): a silent one is closed (FRIEND_SILENT_MS). */
+  heardAt: number;
 }
+
+/** A friend's link that sends nothing this long is closed; their place is kept for them (AWAY.holdSeconds) to reconnect. */
+const FRIEND_SILENT_MS = 20_000;
 
 /**
  * Runs the authoritative Match for this browser (offline play, MapMaker TEST,
@@ -254,6 +259,8 @@ export class MatchHost {
           lateTicks: late,
         });
         tickTotal = tickMax = aiTotal = ticks = late = 0;
+        // Friends who went idle: a warning, then a bot plays for them until they're back; kept places that ran out; silent links.
+        if (this.remotes.size || match.combatants().some((c) => c.away)) this.watchAway(match);
         // Host game, every other second: each friend's ping (the host's own is 0) for everyone's scoreboard.
         if (this.remotes.size && ++pingRounds % 2 === 0) {
           const p = [me.slot, 0, ...[...this.remotes.values()].flatMap((r) => (r.slot !== null && r.rtt !== undefined ? [r.slot, r.rtt] : []))];
@@ -264,6 +271,34 @@ export class MatchHost {
     };
     wake();
   }
+
+  /** Once a second: idle friends (never the host's own player), kept places, silent links. */
+  private watchAway(match: MatchT): void {
+    const { bots, control } = this;
+    if (!bots || !control) return;
+    const friends = [...this.remotes.values()].filter((r): r is Remote & { slot: number } => r.slot !== null);
+    const changes = bots.watch(control.fill, new Set(friends.map((r) => r.slot)));
+    for (const slot of changes.warn) {
+      const r = friends.find((f) => f.slot === slot);
+      if (r) this.sink.send(r.id, JSON.stringify({ t: 'notice', text: `You're idle: move or a bot plays for you in ${this.mod?.AWAY.warnSeconds ?? 15} s` } satisfies ServerMessage));
+    }
+    for (const slot of changes.away) this.announce({ t: 'notice', text: `${match.slots[slot]?.away?.name ?? 'A player'} is away: a bot plays for them` });
+    if (changes.away.length || changes.released.length) this.rosterToAll();
+    const now = Date.now();
+    // This tab slept (hidden, a phone's screen off): friends weren't silent, we weren't listening. Start their clocks again.
+    const slept = now - this.lastWatch > 5000 || this.hidden;
+    this.lastWatch = now;
+    for (const r of friends) {
+      if (slept) r.heardAt = now;
+      else if (now - r.heardAt > FRIEND_SILENT_MS) {
+        this.sink.close(r.id, 0);
+        this.closed(r.id);
+      }
+    }
+  }
+
+  /** When watchAway last ran (ms). */
+  private lastWatch = Date.now();
 
   /** The page's tab was hidden or shown again (a hidden tab's timers wake rarely: catch up further then). */
   setHidden(hidden: boolean): void {
@@ -340,7 +375,7 @@ export class MatchHost {
   open(id: number, zip = false): void {
     // A test-mode match (fixed seed, maybe an invulnerable player) is offline only: nobody joins it.
     if (this.stopped || this.opts.test) return this.sink.close(id, 0);
-    this.remotes.set(id, { id, slot: null, early: this.match ? null : [], stream: new SnapshotStream() });
+    this.remotes.set(id, { id, slot: null, early: this.match ? null : [], stream: new SnapshotStream(), heardAt: Date.now() });
     // The friend's link compresses what it carries: here, where the match runs (a worker), not on the page.
     if (zip) this.sink.compress?.(id);
   }
@@ -350,6 +385,7 @@ export class MatchHost {
     const r = this.remotes.get(id);
     const { match, bots, control } = this;
     if (!r) return;
+    r.heardAt = Date.now();
     // While the match loads, a friend's first few messages wait for it (hello, ready, a ping or two); the rest are dropped.
     if (r.early || !match || !bots || !control) return void (r.early && r.early.length < MAX_EARLY_MESSAGES && r.early.push(text));
     const msg = parseClientMessage(text);
@@ -369,8 +405,10 @@ export class MatchHost {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: `match full (a player-hosted game takes up to ${BROWSER_HOST_MAX_GUESTS} friends)` }));
         return this.drop(id);
       }
-      // The friend takes over a bot where it stands, on the team that needs a player.
-      const player = bots.join(sanitizeName(msg.name), msg.look, control.fill);
+      // Back after a dropped link: their kept place. Else the friend takes over a bot where it stands, on the team that needs a player.
+      const name = sanitizeName(msg.name);
+      const back = msg.pk ? bots.reclaim(`pk:${msg.pk}`, name) : null;
+      const player = back ?? bots.join(name, msg.look, control.fill);
       if (!player) {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: 'match full' }));
         return this.drop(id);
@@ -378,8 +416,15 @@ export class MatchHost {
       r.slot = player.slot;
       this.sink.guest(id, player.slot);
       this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState() } satisfies ServerMessage));
+      if (back) this.announce({ t: 'notice', text: `${name} is back` });
       this.rosterToAll();
-    } else if (msg.t === 'input' && r.slot !== null) match.queueInputs(r.slot, msg.inputs);
+    } else if (msg.t === 'input' && r.slot !== null) {
+      // An idle friend's place goes back to them the moment they play.
+      if (bots.input(r.slot, msg.inputs)) {
+        this.announce({ t: 'notice', text: `${match.slots[r.slot]?.name ?? 'A player'} is back` });
+        this.rosterToAll();
+      }
+    }
     else if (msg.t === 'ready' && r.slot !== null) match.ready(r.slot);
     else if (msg.t === 'ping') {
       if (msg.rtt !== undefined) r.rtt = msg.rtt;
@@ -389,13 +434,14 @@ export class MatchHost {
     else if ((msg.t === 'host' || msg.t === 'admin') && r.slot !== null) this.sink.send(id, JSON.stringify({ t: 'host', state: null, error: 'Only the host can change the match' } satisfies ServerMessage));
   }
 
-  /** A friend's link closed: a bot takes their place where they were. */
+  /** A friend's link closed: a bot plays their place, kept a while for them to reconnect (or, with no key, takes it over). */
   closed(id: number): void {
     const r = this.remotes.get(id);
     if (!r) return;
     this.remotes.delete(id);
-    if (r.slot === null || this.stopped) return;
-    this.leave(r);
+    if (r.slot === null || this.stopped || !this.control) return;
+    this.control.bots.hold(r.slot, 'dropped', r.pk ? `pk:${r.pk}` : null, this.control.fill);
+    this.sink.guest(r.id, null);
     this.rosterToAll();
   }
 

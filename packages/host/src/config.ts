@@ -36,6 +36,8 @@ export interface HostConfig {
   joinCode?: string;
   /** Log a status line every this many seconds (0: never). */
   statusEvery: number;
+  /** Idle this many seconds and a bot plays for a player until they're back (0: never; default 90). */
+  afkSeconds: number;
 }
 
 export const DEFAULT_HUB = 'https://trigger.toshiroplay.com';
@@ -46,7 +48,7 @@ const CODE_RE = /^[A-HJKMNP-Z2-9]{6}$/;
 /** Keys a JSON config may use (the same names as the environment variables, or camelCase). */
 const KEYS: Record<string, string> = {
   HUB: 'hub', MAP: 'map', MODE: 'mode', BOT_FILL: 'botFill', MAX_PLAYERS: 'maxPlayers', BOT_DIFFICULTY: 'botDifficulty', BOT_TAKEBACK: 'botTakeBack',
-  LEADERS: 'leaders', PLAYLIST: 'playlist', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery',
+  LEADERS: 'leaders', PLAYLIST: 'playlist', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds',
 };
 
 export class ConfigError extends Error {}
@@ -125,6 +127,7 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
     ...(adminToken ? { adminToken } : {}),
     ...(joinCode ? { joinCode } : {}),
     statusEvery: num(raw.statusEvery, 'STATUS_EVERY', 0, 86400, 60),
+    afkSeconds: num(raw.afkSeconds, 'AFK_SECONDS', 0, 3600, 90),
   };
 }
 

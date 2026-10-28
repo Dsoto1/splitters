@@ -26,6 +26,8 @@ const server = await startServer({
   mode: mode as GameMode | undefined,
   // BOT_TAKEBACK=1: a bot takes over where a leaving player was, instead of the slot emptying and a fresh bot spawning normally.
   botTakeBack: env.BOT_TAKEBACK === '1',
+  // AFK_SECONDS: idle this long and a bot plays for a player until they're back (default 90; 0: never).
+  afkSeconds: env.AFK_SECONDS !== undefined ? Number(env.AFK_SECONDS) : undefined,
   // LEADERS=on (team leaders) or LEADERS=vip (Leader variant: downing a leader scores extra).
   leaders: env.LEADERS === 'vip' ? 'vip' : env.LEADERS === 'on' ? true : undefined,
   name: env.SERVER_NAME,

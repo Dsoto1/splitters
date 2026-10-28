@@ -38,7 +38,7 @@ import {
   type ServerMessage,
   type ServerStats,
 } from '@tiletrigger/shared';
-import { BotFiller, HostControl, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
+import { AWAY, BotFiller, HostControl, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 import { answerDiscovery, lanAddresses } from './lan.ts';
 import { StatsWindow } from './stats.ts';
 
@@ -48,6 +48,8 @@ export interface ServerOptions {
   host?: string;
   /** People (not bots) who may play at once (default MAX_PLAYER_SLOTS): a home upload carries every player's stream. */
   maxPlayers?: number;
+  /** Idle this many seconds and a bot plays for you until you're back (default AWAY.afkSeconds; 0: never). */
+  afkSeconds?: number;
   /** Map file path or an already-parsed document. */
   map: string | MapDocument;
   /** Fill the match with Player Bots up to this many total players (players joining take over bots). */
@@ -163,7 +165,22 @@ interface Client {
   /** Message budget (MESSAGE_RATE): over it, messages are dropped; well over it, the client is disconnected. */
   guard: MessageGuard;
   who?: PlayerIdentity;
+  /** When this connection last sent anything (ms): a silent one is closed (SILENT_MS). */
+  heardAt: number;
+  /** Kicked or banned: their place isn't kept for them. */
+  gone?: boolean;
 }
+
+/**
+ * A connection that sends nothing this long is closed (a phone that went to
+ * sleep, a dead network): the player's place is kept for them (AWAY.holdSeconds)
+ * and their next connection takes it back. A playing client sends inputs every
+ * frame and pings every second.
+ */
+const SILENT_MS = 20_000;
+
+/** Who a player is, for taking back a kept place: their account, else their browser's key. */
+const awayKey = (who: PlayerIdentity | undefined): string | null => (who?.sub ? `sub:${who.sub}` : who?.pk ? `pk:${who.pk}` : null);
 
 /** Wrong admin tokens a connection may send before it is closed. */
 const MAX_BAD_TOKENS = 5;
@@ -241,6 +258,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const clientAt = (slot: number) => [...clients].find((c) => c.slot === slot);
   /** Remove a player: they are told why, their place goes back to a bot. */
   const kick = (target: Client, reason: string) => {
+    target.gone = true;
     send(target, { t: 'reject', reason });
     target.conn.close(4003, 'kicked');
   };
@@ -293,12 +311,13 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   /** A player's connection, from the WebSocket listener or the Host Service's WebRTC links: hello, then play. */
   function accept(conn: PlayerConn): void {
     if (stopped) return conn.close(1001, 'server stopping');
-    const client: Client = { conn, slot: null, stream: new SnapshotStream(), bytesOut: 0, admin: false, badTokens: 0, guard: new MessageGuard() };
+    const client: Client = { conn, slot: null, stream: new SnapshotStream(), bytesOut: 0, admin: false, badTokens: 0, guard: new MessageGuard(), heardAt: Date.now() };
     clients.add(client);
     const helloTimer = setTimeout(() => conn.close(4000, 'hello timeout'), HELLO_TIMEOUT_MS);
 
     conn.onMessage((text) => {
       if (!clients.has(client)) return;
+      client.heardAt = Date.now();
       // A flood (a ping or input spam) is dropped, and a client that keeps it up is disconnected.
       const verdict = client.guard.check();
       if (verdict === 'kick') return void conn.close(4008, 'too many messages');
@@ -330,8 +349,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           conn.close(4004, 'banned');
           return;
         }
-        // Take over a bot where it stands (team that needs a player), or a free slot.
-        const player = bots.join(name, msg.look, control.fill);
+        // Back after a dropped connection: their kept place (a bot was playing it). Else take over a bot
+        // where it stands (team that needs a player), or a free slot.
+        const key = awayKey(who);
+        const back = key ? bots.reclaim(key, name) : null;
+        const player = back ?? bots.join(name, msg.look, control.fill);
         if (!player) {
           send(client, { t: 'reject', reason: 'server full' });
           conn.close(4002, 'full');
@@ -339,9 +361,10 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         }
         client.slot = player.slot;
         client.who = who;
-        event(`${name} joined (${sub ? 'signed in' : 'guest'}${address ? `, ${address}` : ''}) as slot ${player.slot}`);
+        event(`${name} ${back ? 'is back' : 'joined'} (${sub ? 'signed in' : 'guest'}${address ? `, ${address}` : ''}) as slot ${player.slot}`);
+        if (back) notice(`${name} is back`);
         // Back from a map change: pick up your score and weapons.
-        const carry = carried.get(player.name);
+        const carry = back ? undefined : carried.get(player.name);
         if (carry) {
           match.applyCarry(player, carry);
           carried.delete(player.name);
@@ -373,7 +396,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       } else if (msg.t === 'host' && client.slot !== null) {
         hostCommand(client, msg.cmd);
       } else if (msg.t === 'input' && client.slot !== null) {
-        match.queueInputs(client.slot, msg.inputs);
+        // An idle player's place goes back to them the moment they play.
+        if (bots.input(client.slot, msg.inputs)) {
+          notice(`${client.who?.name ?? 'A player'} is back`);
+          broadcast({ t: 'roster', players: match.roster() });
+        }
       } else if (msg.t === 'ready' && client.slot !== null) {
         match.ready(client.slot);
       } else if (msg.t === 'ping') {
@@ -386,9 +413,10 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       clearTimeout(helloTimer);
       if (!clients.delete(client)) return;
       if (client.slot !== null && !stopped) {
-        event(`${client.who?.name ?? 'a player'} left`);
-        // A bot takes the leaver's place where they were (unless botTakeBack is off).
-        bots.leave(client.slot, control.fill);
+        // Dropped (not kicked): a bot plays their place, kept for them a while (their next connection takes it back).
+        const kept = client.gone ? (bots.leave(client.slot, control.fill), false) : bots.hold(client.slot, 'dropped', awayKey(client.who), control.fill);
+        event(`${client.who?.name ?? 'a player'} ${kept ? `dropped: their place is kept ${AWAY.holdSeconds} s` : 'left'}`);
+        // Otherwise a bot takes the leaver's place where they were (unless botTakeBack is off).
         broadcast({ t: 'roster', players: match.roster() });
       }
     });
@@ -519,6 +547,21 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       });
       broadcast({ t: 'stats', ...summary });
       opts.onStats?.(StatsWindow.format(summary), summary);
+      // Away players: warn the idle, hand idle places to bots, end holds that ran out; close silent connections.
+      const away = bots.watch(control.fill, new Set(connected.map((c) => c.slot!)), opts.afkSeconds ?? AWAY.afkSeconds);
+      for (const slot of away.warn) {
+        const c = clientAt(slot);
+        if (c) send(c, { t: 'notice', text: `You're idle: move or a bot plays for you in ${AWAY.warnSeconds} s` });
+      }
+      for (const slot of away.away) {
+        const c = clientAt(slot);
+        event(`${c?.who?.name ?? 'a player'} is idle: a bot plays for them`);
+        notice(`${c?.who?.name ?? 'A player'} is away: a bot plays for them`);
+      }
+      for (const name of away.released) event(`${name} didn't come back: their place goes to a bot`);
+      if (away.away.length || away.released.length) broadcast({ t: 'roster', players: match.roster() });
+      const nowMs = Date.now();
+      for (const c of clients) if (c.slot !== null && nowMs - c.heardAt > SILENT_MS) c.conn.close(4009, 'no answer');
       // Every other second: each human's ping, for the scoreboard.
       if (++pingRounds % 2 === 0) {
         const p = connected.flatMap((c) => (c.rtt !== undefined ? [c.slot!, c.rtt] : []));
