@@ -37,16 +37,15 @@ update it when you finish a piece of work or the owner changes direction.
     (`frontEnd.ts` `arcade()` / `fillSetup()`, `modeIcons.ts`; the owner's
     mockup of 2026-10-28).
 
-  A 0.4.0 release is reasonable once the owner has tried the launcher. A minor
-  version, because these are features.
 - **Nothing is in progress.** Everything above is on `main` (`7657980` and on). Open: nine portraits left to render live (soldier NPCs untinted, cyclops/oculus/imp/Nova framing) until `portraits.ts` handles them; the Host Service launcher now opens as an app window (`src/appWindow.ts`), untested on a real screen.
 
 ## Landed on main (2026-10-28, 17:20 EDT)
 
-Everything below is on `main` at `f80a606` (green on `check/candidate`: all
-8 e2e shards, perf, release; its site build is in `check-builds`). Not yet
-released: next is a minor version (0.x.0) with a CHANGELOG entry once the owner
-has tried it.
+Everything below is on `main` and released as **0.4.0** (version, CHANGELOG
+entry and menu baseline in the release commit; tag `v0.4.0` on it). After it:
+your own muzzle flash is 1.6x, 5 cm past the muzzle at the barrel's height
+(`OWN_FLASH_SCALE`, `OWN_FLASH_AHEAD` in `view.ts`), the flash's glow sits in the
+flame, and the railgun's impact is at scale 0.4.
 
 1. **Binbun VFX (CC0 packs the owner downloaded; zips not committed):**
    - muzzle flashes `game/muzzleFlash.ts` (from `public/vfx/muzzle_flash.json` +
