@@ -144,6 +144,20 @@ update it when you finish a piece of work or the owner changes direction.
    - Blackout enemies;
    - Mercy Ward rooftop zombies.
 
+## Online: away players, reconnecting, profiles, regions (2026-10-28)
+
+- `BotFiller` (shared `sim/match.ts`, `AWAY`): idle → warning → bot plays the
+  place ("Name (away)") until real input; dropped → place held 60 s by
+  `sub:`/`pk:` key and reclaimed on reconnect; servers close links silent
+  20 s. Wired in `server.ts` (dedicated, Host Service) and `matchHost.ts`
+  (browser host, friends only). Client reconnect loop in `main.ts`.
+- Profiles: hub `profiles.ts` (`PROFILES_DIR`), usernames in account tickets,
+  page-side Ed25519 ticket checks for browser hosts (`game/ticketCheck.ts`),
+  scoreboard ✓ / GUEST, Profile screen, `client/src/profile.ts`. Needs the
+  box set up again once (`deploy-multiplayer.sh`, also for `--owner`).
+- Region: `shared/net/profile.ts` REGIONS; adverts carry `region`; game
+  browser sorts nearby first; Host Service `REGION`.
+
 ## Maps are made in MapMaker; the owner publishes (2026-10-28)
 
 - Every map is its file in `maps/`, made and edited with MapMaker; the 86

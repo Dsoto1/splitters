@@ -409,6 +409,8 @@ builds the downloads (CI does this for every green `main` and `vX.Y.Z`).
 | `BOT_DIFFICULTY`, `BOT_TAKEBACK`, `LEADERS`, `PLAYLIST` | | as the dedicated server |
 | `CONTROL_PORT` | 7797 | the control API (127.0.0.1 only) |
 | `STATUS_EVERY` | 60 | seconds between status lines (0: none) |
+| `AFK_SECONDS` | 90 | idle this long and a bot plays for a player until they're back (0: never) |
+| `REGION` | from the time zone | `na-west`, `na-east`, `sa`, `eu`, `africa`, `me`, `asia-south`, `asia-east`, `oceania`: the game browser shows games in a player's region first |
 
 No setting is a ToshiroPlay or AWS credential: the host needs none.
 
@@ -526,14 +528,51 @@ host control socket (MULTIPLAYER_SECURITY.md section 6), so /host works from
 any device; signed self-updates (section 7); an installer with start-on-boot;
 a tray icon; per-ticket join authorization for every player.
 
+## Players who go quiet: idle, asleep, dropped
+
+The same rules on every host (dedicated server, Host Service, a browser
+hosting friends), in `BotFiller` (`shared/src/sim/match.ts`, `AWAY`):
+
+- **Idle** (no moving, turning or pressing anything for `AFK_SECONDS`, 90 by
+  default; only while the match is being played): a warning 15 s before, then
+  a bot plays their place, shown as "Name (away)": same body, team, score and
+  loadout. Their next real input takes it back. A browser host never does
+  this to its own player.
+- **Dropped** (the connection closed, or sent nothing for 20 s: a phone that
+  went to sleep, a dead network): a bot plays their place, kept 60 s for them.
+  Their next connection from the same account (or, for a guest, the same
+  browser) takes it back, score and all; after that the bot keeps it. Kicked
+  and banned players' places aren't kept.
+- **The player's side** (`client/src/main.ts`): a match that drops after it
+  started shows "Connection lost: reconnecting…" (Cancel) and joins the same
+  game again for up to 60 s, at once when the page is shown again or the
+  network comes back. A refusal (kicked, banned, full) or leaving doesn't.
+- **Hosting from a phone**: the match runs on the phone, so it stops for
+  everyone if the screen turns off; the host gets a warning. Keeping a match
+  alive without its host (moving it to another player) isn't done.
+
+## Profiles
+
+Signed-in players pick a **username** (Profile, at the bottom of the main
+menu): 3–16 letters, numbers, `_ - .`, unique in Tile Trigger whatever the
+case, no reserved or official-looking names. It is their name in every match:
+the hub signs it into the account ticket a host checks (dedicated servers and
+Host Services in Node, browser hosts on the page with Ed25519), and the
+scoreboard marks it with a ✓; other people show as GUEST once more than one
+plays. Their Google name and email are never shown. They also set a
+**region** (guessed from the time zone; guests keep theirs in the browser),
+which listings carry so the game browser shows nearby games first. Kept on the
+hub in `PROFILES_DIR` (`/var/lib/tiletrigger/profiles` on the box; set by
+`infra/host-setup.sh`), `GET/PUT /api/v1/profile`, `GET /api/v1/profile/check`.
+
 ## Publishing maps (the owner)
 
 Every map, the official ones included, is made and edited in MapMaker. The
 game's owner publishes from there; nobody else can, and players never upload
 anything.
 
-**Once:** sign in on the site, then hover **Signed in as …** at the bottom of
-the main menu and click it: that copies your account ID. In AWS CloudShell, run
+**Once:** sign in on the site, open **Profile** (bottom of the main menu) and
+click **Copy my account ID**. In AWS CloudShell, run
 `infra/deploy-multiplayer.sh --owner <account ID>` (it keeps the ID in SSM,
 `/toshiro/trigger/owner-subs`, and gives the box a folder for published maps).
 
