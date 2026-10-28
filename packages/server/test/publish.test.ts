@@ -27,6 +27,9 @@ const renamed = (id: string, name: string) => {
   return serializeMap({ ...r.map, metadata: { ...r.map.metadata, name } });
 };
 const OWNER = { sub: 'owner-sub' };
+/** What the API answers (a typed view for the tests). */
+type Answer = { maps: { id: string }[]; error: string; versions: unknown[]; owner: boolean; sub: string };
+const json = (r: Response) => r.json() as Promise<Answer>;
 const BUILT_IN = new Set(['frost_basin', 'sandgate']);
 
 describe('published maps', () => {
@@ -93,26 +96,26 @@ describe('publishing over HTTP', () => {
     const { base } = await serve(['owner-sub']);
     const put = (who: string, body: string | Buffer, gz = false) =>
       fetch(`${base}/maps/frost_basin`, { method: 'PUT', headers: { Authorization: `Bearer ${who}`, 'Content-Type': 'application/json', ...(gz ? { 'Content-Encoding': 'gzip' } : {}) }, body });
-    expect((await fetch(`${base}/maps`).then((r) => r.json())).maps).toEqual([]);
+    expect((await fetch(`${base}/maps`).then(json)).maps).toEqual([]);
     expect((await fetch(`${base}/maps/frost_basin`)).status).toBe(404);
     // Signed out, a bad token, someone else: refused.
     expect((await fetch(`${base}/maps/frost_basin`, { method: 'PUT', body: '{}' })).status).toBe(401);
     expect((await put('bad', renamed('frost_basin', 'X'))).status).toBe(401);
     expect((await put('someone-else', renamed('frost_basin', 'X'))).status).toBe(403);
-    expect(await fetch(`${base}/owner`, { headers: { Authorization: 'Bearer someone-else' } }).then((r) => r.json())).toEqual({ owner: false, sub: 'someone-else' });
+    expect(await fetch(`${base}/owner`, { headers: { Authorization: 'Bearer someone-else' } }).then(json)).toEqual({ owner: false, sub: 'someone-else' });
     // The owner, gzipped as the page sends it.
     const ok = await put('owner-sub', gzipSync(renamed('frost_basin', 'Frost Basin Fixed')), true);
     expect(ok.status).toBe(200);
-    expect((await fetch(`${base}/maps`).then((r) => r.json())).maps.map((m: { id: string }) => m.id)).toEqual(['frost_basin']);
+    expect((await fetch(`${base}/maps`).then(json)).maps.map((m) => m.id)).toEqual(['frost_basin']);
     expect(JSON.parse(await fetch(`${base}/maps/frost_basin`).then((r) => r.text())).metadata.name).toBe('Frost Basin Fixed');
     // A map under another map's ID, and a broken one: refused with why.
     const wrong = await put('owner-sub', mapText('sandgate'));
     expect(wrong.status).toBe(400);
-    expect((await wrong.json()).error).toMatch(/not frost_basin/);
+    expect((await json(wrong)).error).toMatch(/not frost_basin/);
     expect((await put('owner-sub', '{')).status).toBe(400);
     // Versions and rollback are the owner's.
     expect((await fetch(`${base}/maps/frost_basin/versions`, { headers: { Authorization: 'Bearer someone-else' } })).status).toBe(403);
-    const versions = (await fetch(`${base}/maps/frost_basin/versions`, { headers: { Authorization: 'Bearer owner-sub' } }).then((r) => r.json())).versions;
+    const versions = (await fetch(`${base}/maps/frost_basin/versions`, { headers: { Authorization: 'Bearer owner-sub' } }).then(json)).versions;
     expect(versions).toHaveLength(1);
     // Other paths aren't this handler's.
     expect(await fetch(`${base}/me`).then((r) => r.text())).toBe('next');

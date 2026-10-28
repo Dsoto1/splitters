@@ -155,7 +155,7 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
       const [ox, oz] = quarter(e.position[0] - pivot[0], e.position[2] - pivot[2]);
       const moved = { ...e, position: [r3(pivot[0] + ox), e.position[1], r3(pivot[2] + oz)] as [number, number, number] } as MapEntity;
       if ('yaw' in moved) (moved as { yaw: number }).yaw = normalizeYaw(moved.yaw + Math.PI / 2);
-      if (moved.kind === 'mover') moved.points = moved.points.map(([x, y, z]) => { const [a, b] = quarter(x, z); return [r3(a), y, r3(b)]; });
+      if (moved.kind === 'mover') moved.points = moved.points.map(([x, y, z]): [number, number, number] => { const [a, b] = quarter(x, z); return [r3(a), y, r3(b)]; });
       return moved;
     }
     return e.kind === 'spawn' ? { ...e, yaw: normalizeYaw(e.yaw + Math.PI / 4) } : 'yaw' in e ? ({ ...e, yaw: normalizeYaw(e.yaw + Math.PI / 2) } as MapEntity) : e;
