@@ -28,6 +28,8 @@ const server = await startServer({
   botTakeBack: env.BOT_TAKEBACK === '1',
   // AFK_SECONDS: idle this long and a bot plays for a player until they're back (default 90; 0: never).
   afkSeconds: env.AFK_SECONDS !== undefined ? Number(env.AFK_SECONDS) : undefined,
+  // IDLE_KICK_MINUTES: away for being idle this long, still connected, and they're removed (default 10; 0: never).
+  idleKickMinutes: env.IDLE_KICK_MINUTES !== undefined ? Number(env.IDLE_KICK_MINUTES) : undefined,
   // LEADERS=on (team leaders) or LEADERS=vip (Leader variant: downing a leader scores extra).
   leaders: env.LEADERS === 'vip' ? 'vip' : env.LEADERS === 'on' ? true : undefined,
   name: env.SERVER_NAME,

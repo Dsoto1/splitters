@@ -38,6 +38,8 @@ export interface HostConfig {
   statusEvery: number;
   /** Idle this many seconds and a bot plays for a player until they're back (0: never; default 90). */
   afkSeconds: number;
+  /** Away for being idle this many minutes, still connected: removed from the match (0: never; default 10). */
+  idleKickMinutes: number;
   /** Where this computer is, for the game browser (players in the same region see it first). Default: from its time zone. */
   region: Region;
 }
@@ -50,7 +52,7 @@ const CODE_RE = /^[A-HJKMNP-Z2-9]{6}$/;
 /** Keys a JSON config may use (the same names as the environment variables, or camelCase). */
 const KEYS: Record<string, string> = {
   HUB: 'hub', MAP: 'map', MODE: 'mode', BOT_FILL: 'botFill', MAX_PLAYERS: 'maxPlayers', BOT_DIFFICULTY: 'botDifficulty', BOT_TAKEBACK: 'botTakeBack',
-  LEADERS: 'leaders', PLAYLIST: 'playlist', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', REGION: 'region',
+  LEADERS: 'leaders', PLAYLIST: 'playlist', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', IDLE_KICK_MINUTES: 'idleKickMinutes', REGION: 'region',
 };
 
 export class ConfigError extends Error {}
@@ -130,6 +132,7 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
     ...(joinCode ? { joinCode } : {}),
     statusEvery: num(raw.statusEvery, 'STATUS_EVERY', 0, 86400, 60),
     afkSeconds: num(raw.afkSeconds, 'AFK_SECONDS', 0, 3600, 90),
+    idleKickMinutes: num(raw.idleKickMinutes, 'IDLE_KICK_MINUTES', 0, 1440, 10),
     region: regionSetting(str(raw.region)),
   };
 }

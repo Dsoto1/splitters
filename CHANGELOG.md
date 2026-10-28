@@ -15,6 +15,8 @@ made only on a commit that passed CI on a check branch.
 - Away players: idle for 90 s (after a warning), a bot plays your place as "Name (away)" until you move again. A dropped connection (a phone that went to sleep) keeps your place for a minute, a bot playing it, and the game reconnects you by itself ("Reconnecting…") with your body, team and score. Silent connections are noticed within 20 s. Hosts can change the idle time (`AFK_SECONDS`, 0 off).
 - Profiles: signed in, pick a username (unique) and a region in Profile. Your username is your name in every match, marked ✓ as a verified account; other players show GUEST. Your Google name is no longer shown anywhere.
 - The game browser lists games in your region first and shows each game's region.
+- Protections on every host: players idle for 10 minutes are removed (`IDLE_KICK_MINUTES`); at most 10 joins a minute from one network (60 in all), 4 players from one network at once, one place per browser; connections that never say hello are capped. (MULTIPLAYER_SECURITY.md)
+- Hosting online: the status line (listed or code only, players, join code) moved from over the score and clock into the Tab scoreboard.
 - Hosting from a phone warns that the match stops if the screen turns off.
 
 **Maps**

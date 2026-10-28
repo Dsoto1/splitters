@@ -1,6 +1,7 @@
 import {
   BOT_DIFFICULTIES,
   BROWSER_HOST_MAX_GUESTS,
+  KeyedLimiter,
   rulesForMap,
   MAX_PLAYER_SLOTS,
   PROTOCOL_VERSION,
@@ -125,6 +126,8 @@ interface Remote {
 
 /** A friend's link that sends nothing this long is closed; their place is kept for them (AWAY.holdSeconds) to reconnect. */
 const FRIEND_SILENT_MS = 20_000;
+/** Friends' joins per minute, in all: a burst of joins (many tabs at once) is refused. */
+const FRIEND_JOINS_PER_MINUTE = 12;
 
 /**
  * Runs the authoritative Match for this browser (offline play, MapMaker TEST,
@@ -142,6 +145,7 @@ export class MatchHost {
   private control?: InstanceType<MatchModule['HostControl']>;
   private bots?: InstanceType<MatchModule['BotFiller']>;
   private remotes = new Map<number, Remote>();
+  private readonly joins = new KeyedLimiter({ perMinute: FRIEND_JOINS_PER_MINUTE, burst: FRIEND_JOINS_PER_MINUTE });
   /** Browser keys the host banned (this game only). */
   private readonly banned = new Set<string>();
   private hidden = false;
@@ -288,6 +292,18 @@ export class MatchHost {
       if (r) this.sink.send(r.id, JSON.stringify({ t: 'notice', text: `You're idle: move or a bot plays for you in ${this.mod?.AWAY.warnSeconds ?? 15} s` } satisfies ServerMessage));
     }
     for (const slot of changes.away) this.announce({ t: 'notice', text: `${match.slots[slot]?.away?.name ?? 'A player'} is away: a bot plays for them` });
+    // Idle for a long time, still connected: removed, freeing the place.
+    for (const slot of changes.kick) {
+      const r = friends.find((f) => f.slot === slot);
+      if (!r) continue;
+      const name = match.slots[slot]?.away?.name ?? 'A player';
+      this.sink.send(r.id, JSON.stringify({ t: 'reject', reason: `Removed for being idle (${this.mod?.AWAY.kickMinutes ?? 10} minutes)` } satisfies ServerMessage));
+      this.leave(r);
+      this.remotes.delete(r.id);
+      this.sink.close(r.id, 500);
+      this.announce({ t: 'notice', text: `${name} was removed for being idle` });
+    }
+    if (changes.kick.length) this.rosterToAll();
     if (changes.away.length || changes.released.length) this.rosterToAll();
     const now = Date.now();
     // This tab slept (hidden, a phone's screen off): friends weren't silent, we weren't listening. Start their clocks again.
@@ -410,10 +426,22 @@ export class MatchHost {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: `match full (a player-hosted game takes up to ${BROWSER_HOST_MAX_GUESTS} friends)` }));
         return this.drop(id);
       }
+      if (!this.joins.allow('all')) {
+        this.sink.send(id, JSON.stringify({ t: 'reject', reason: 'Too many people are joining right now: try again in a minute' }));
+        return this.drop(id);
+      }
       // Back after a dropped link: their kept place. Else the friend takes over a bot where it stands, on the team that needs a player.
       // Signed in with a username: that's their name (a verified account); else the name they typed, as a guest.
       const name = r.account?.name ?? sanitizeName(msg.name);
       const key = r.account ? `sub:${r.account.sub}` : msg.pk ? `pk:${msg.pk}` : null;
+      // The same browser (or account) again: this link replaces the old one, whose place it takes back (one place per browser).
+      const old = key ? [...this.remotes.values()].find((o) => o !== r && o.slot !== null && (o.account ? `sub:${o.account.sub}` : o.pk ? `pk:${o.pk}` : null) === key) : undefined;
+      if (old) {
+        this.remotes.delete(old.id);
+        bots.hold(old.slot!, 'dropped', key, control.fill);
+        this.sink.guest(old.id, null);
+        this.sink.close(old.id, 0);
+      }
       const back = key ? bots.reclaim(key, name) : null;
       const player = back ?? bots.join(name, msg.look, control.fill);
       if (!player) {

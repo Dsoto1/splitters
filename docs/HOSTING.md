@@ -410,6 +410,7 @@ builds the downloads (CI does this for every green `main` and `vX.Y.Z`).
 | `CONTROL_PORT` | 7797 | the control API (127.0.0.1 only) |
 | `STATUS_EVERY` | 60 | seconds between status lines (0: none) |
 | `AFK_SECONDS` | 90 | idle this long and a bot plays for a player until they're back (0: never) |
+| `IDLE_KICK_MINUTES` | 10 | away for being idle this long and still connected: removed, freeing the place (0: never) |
 | `REGION` | from the time zone | `na-west`, `na-east`, `sa`, `eu`, `africa`, `me`, `asia-south`, `asia-east`, `oceania`: the game browser shows games in a player's region first |
 
 No setting is a ToshiroPlay or AWS credential: the host needs none.

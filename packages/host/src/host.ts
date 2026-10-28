@@ -170,6 +170,7 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
     botFill: config.botFill,
     maxPlayers: config.maxPlayers,
     afkSeconds: config.afkSeconds,
+    idleKickMinutes: config.idleKickMinutes,
     botDifficulty: config.botDifficulty,
     botTakeBack: config.botTakeBack,
     leaders: config.leaders,

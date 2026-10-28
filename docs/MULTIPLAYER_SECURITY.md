@@ -225,6 +225,30 @@ systemd (`NoNewPrivileges`, `ProtectSystem=full`, `PrivateTmp`,
 `MemoryMax=768M`), restarts with backoff, journald capped at 300 MB / 14
 days, Caddy access logs off (no per-request IP log).
 
+### Game hosts: who gets in, and who stays (October 2026)
+
+On top of the hub's limits (above), every game host (dedicated server, Host
+Service: `server.ts` `JOIN_LIMITS`; a browser hosting friends: `matchHost.ts`)
+limits joining itself, so one person with many tabs can't fill a game:
+
+- **Joins:** at most 10 a minute from one address (relayed links: one
+  browser key), and 60 a minute in all (a browser host: 12 a minute in all).
+  A burst is refused with "Too many people are joining right now".
+- **One network:** at most 4 people from one address at once (direct links;
+  this computer's own address is exempt, for tests and local players).
+- **One browser:** the same account or browser key joining again replaces
+  its earlier connection (which keeps the place for it to take back), so one
+  browser never holds two places.
+- **Waiting connections:** at most 64 that haven't said hello (each has 5 s).
+- **Idle:** idle 90 s → a bot plays for them (AWAY); still idle after 10
+  minutes (`IDLE_KICK_MINUTES`, 0 off) → removed, freeing the place.
+  A connection silent for 20 s is closed (its place kept 60 s).
+- **Relays:** coturn's per-credential and total quotas and bandwidth caps
+  (section 3); relay credentials only for live games, per address and game.
+
+Not done yet: a captcha or proof of work before joining; per-account limits
+(guests need no account); reputation across games.
+
 ## 6a. Host Service MVP as built (October 2026)
 
 What runs today (`packages/host`; HOSTING.md "Dedicated host"), against the

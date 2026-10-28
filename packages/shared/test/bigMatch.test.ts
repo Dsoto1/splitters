@@ -120,6 +120,10 @@ describe('away players', () => {
     expect(cleo.slot).not.toBe(ana.slot);
     expect(match.combatants()).toHaveLength(4);
     run(match, 60);
+    // Still idle long after: the host is told to remove them.
+    expect(filler.watch(4, people, AWAY.afkSeconds, 1).kick).toEqual([]);
+    run(match, 60 * 61);
+    expect(filler.watch(4, people, AWAY.afkSeconds, 1).kick).toEqual([ana.slot]);
     // They play: the place is theirs again, the name too.
     expect(filler.input(ana.slot, [moving(seq++)])).toBe(true);
     expect(match.slots[ana.slot]).toMatchObject({ kind: 'human', name: 'Ana' });

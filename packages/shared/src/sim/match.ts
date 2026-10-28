@@ -204,7 +204,7 @@ export interface Combatant {
    * connection reclaim the place; `until` (tick) is when a dropped player's
    * hold runs out (null: idle but still connected).
    */
-  away?: { name: string; key: string | null; why: 'afk' | 'dropped'; until: number | null };
+  away?: { name: string; key: string | null; why: 'afk' | 'dropped'; until: number | null; since?: number };
   /** A signed-in player playing under their username, checked by the host (account ticket): shown as a verified account. */
   account?: boolean;
   name: string;
@@ -4692,13 +4692,17 @@ export const AWAY = {
   warnSeconds: 15,
   /** A dropped player's place is kept this long for them to reconnect. */
   holdSeconds: 60,
+  /** Away for being idle this long (still connected): removed from the match, freeing the place (0: never). */
+  kickMinutes: 10,
 } as const;
 
-/** What BotFiller.watch found: players to warn, players a bot now plays for, holds that ran out. */
+/** What BotFiller.watch found: players to warn, players a bot now plays for, holds that ran out, idle players to remove. */
 export interface AwayChanges {
   warn: number[];
   away: number[];
   released: string[];
+  /** Away for being idle past `kickMinutes`: the host removes them (kick), freeing the place. */
+  kick: number[];
 }
 
 /** People in the match: players, and away players whose place a bot keeps for them. */
@@ -4781,7 +4785,7 @@ export class BotFiller {
       return true;
     }
     const { profile } = this.nextBot();
-    return !!this.match.setAway(slot, { name: c.name, key, why, until }, profile, this.difficulty);
+    return !!this.match.setAway(slot, { name: c.name, key, why, until, since: this.match.tick }, profile, this.difficulty);
   }
 
   /** A player's inputs: a player away for being idle is back the moment they play. Then the inputs are queued. */
@@ -4814,8 +4818,8 @@ export class BotFiller {
    * bot stays). `people`: the slots this applies to (online players; never the
    * host's own player in a browser-hosted game).
    */
-  watch(fill: number, people: ReadonlySet<number>, afkSeconds: number = AWAY.afkSeconds): AwayChanges {
-    const out: AwayChanges = { warn: [], away: [], released: [] };
+  watch(fill: number, people: ReadonlySet<number>, afkSeconds: number = AWAY.afkSeconds, kickMinutes: number = AWAY.kickMinutes): AwayChanges {
+    const out: AwayChanges = { warn: [], away: [], released: [], kick: [] };
     const m = this.match;
     for (const c of m.combatants()) {
       const away = c.away;
@@ -4832,6 +4836,13 @@ export class BotFiller {
       return out;
     }
     if (afkSeconds <= 0) return out;
+    // Away for being idle too long, still connected: the host removes them (someone opening many tabs and leaving them).
+    if (kickMinutes > 0) {
+      for (const c of m.combatants()) {
+        const a = c.away;
+        if (a?.why === 'afk' && people.has(c.slot) && a.since !== undefined && m.tick - a.since >= kickMinutes * 60 * TICK_RATE) out.kick.push(c.slot);
+      }
+    }
     for (const c of m.combatants()) {
       if (c.kind !== 'human' || !people.has(c.slot)) continue;
       const idle = m.idleSeconds(c.slot);

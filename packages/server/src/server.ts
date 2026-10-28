@@ -6,6 +6,7 @@ import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { WebSocketServer, type WebSocket } from 'ws';
 import {
+  KeyedLimiter,
   MessageGuard,
   BOT_DIFFICULTIES,
   rulesForMap,
@@ -50,6 +51,8 @@ export interface ServerOptions {
   maxPlayers?: number;
   /** Idle this many seconds and a bot plays for you until you're back (default AWAY.afkSeconds; 0: never). */
   afkSeconds?: number;
+  /** Away for being idle this many minutes, still connected: removed from the match (default AWAY.kickMinutes; 0: never). */
+  idleKickMinutes?: number;
   /** Map file path or an already-parsed document. */
   map: string | MapDocument;
   /** Fill the match with Player Bots up to this many total players (players joining take over bots). */
@@ -179,6 +182,21 @@ interface Client {
  */
 const SILENT_MS = 20_000;
 
+/**
+ * Limits on who can come in (on top of the hub's: broker sockets and joins per
+ * address, relay credentials; MULTIPLAYER_SECURITY.md): one network or one
+ * browser can't fill a server, and a burst of joins is refused.
+ */
+export const JOIN_LIMITS = {
+  /** People playing from one address (when the link is direct; relayed links are counted by browser instead). */
+  perAddress: 4,
+  /** Join attempts per address (else per browser) per minute, and in all. */
+  perMinute: 10,
+  totalPerMinute: 60,
+  /** Connections that haven't said hello yet (each has HELLO_TIMEOUT_MS to). */
+  pending: 64,
+} as const;
+
 /** Who a player is, for taking back a kept place: their account, else their browser's key. */
 const awayKey = (who: PlayerIdentity | undefined): string | null => (who?.sub ? `sub:${who.sub}` : who?.pk ? `pk:${who.pk}` : null);
 
@@ -306,11 +324,14 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   let stopped = false;
   /** Humans playing now (not bots). */
   const humans = () => [...clients].filter((c) => c.slot !== null).length;
+  const joinsBy = new KeyedLimiter({ perMinute: JOIN_LIMITS.perMinute, burst: JOIN_LIMITS.perMinute });
+  const joinsAll = new KeyedLimiter({ perMinute: JOIN_LIMITS.totalPerMinute, burst: JOIN_LIMITS.totalPerMinute });
   const maxPlayers = Math.max(1, Math.min(opts.maxPlayers ?? MAX_PLAYER_SLOTS, MAX_PLAYER_SLOTS));
 
   /** A player's connection, from the WebSocket listener or the Host Service's WebRTC links: hello, then play. */
   function accept(conn: PlayerConn): void {
     if (stopped) return conn.close(1001, 'server stopping');
+    if ([...clients].filter((c) => c.slot === null).length >= JOIN_LIMITS.pending) return conn.close(4005, 'busy');
     const client: Client = { conn, slot: null, stream: new SnapshotStream(), bytesOut: 0, admin: false, badTokens: 0, guard: new MessageGuard(), heardAt: Date.now() };
     clients.add(client);
     const helloTimer = setTimeout(() => conn.close(4000, 'hello timeout'), HELLO_TIMEOUT_MS);
@@ -344,6 +365,28 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         const name = proof?.name ?? sanitizeName(msg.name);
         const address = conn.address?.();
         const who: PlayerIdentity = { name, ...(sub ? { sub } : {}), ...(msg.pk ? { pk: msg.pk } : {}), ...(address ? { address } : {}) };
+        // One network, one browser: a few joins a minute, a few people at once; and not too many joins in all.
+        // This computer (tests, players on the server's own machine) isn't a network to limit.
+        const own = !!address && /^(127\.|::1$|::ffff:127\.)/.test(address);
+        const by = address && !own ? address : msg.pk ? `pk:${msg.pk}` : null;
+        const refuse = (reason: string, code: number) => {
+          event(`refused ${name}: ${reason}`);
+          send(client, { t: 'reject', reason });
+          conn.close(code, 'limit');
+        };
+        if (!joinsAll.allow('all') || (by !== null && !joinsBy.allow(by))) return refuse('Too many people are joining right now: try again in a minute', 4011);
+        if (address && !own && [...clients].filter((c) => c !== client && c.slot !== null && c.who?.address === address).length >= JOIN_LIMITS.perAddress) {
+          return refuse(`At most ${JOIN_LIMITS.perAddress} players from one network`, 4012);
+        }
+        // The same browser (or account) again: this connection replaces the old one (a reconnect after a drop the server
+        // hasn't noticed yet), so one browser never holds two places; the old place is kept for this connection to take back.
+        const key0 = awayKey(who);
+        const old = key0 ? [...clients].find((c) => c !== client && c.slot !== null && awayKey(c.who) === key0) : undefined;
+        if (old) {
+          clients.delete(old);
+          bots.hold(old.slot!, 'dropped', key0, control.fill);
+          old.conn.close(4010, 'replaced by a new connection');
+        }
         const banned = opts.admission?.(who);
         if (banned) {
           event(`refused ${name}${sub ? ' (signed in)' : ''}: ${banned}`);
@@ -551,7 +594,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       broadcast({ t: 'stats', ...summary });
       opts.onStats?.(StatsWindow.format(summary), summary);
       // Away players: warn the idle, hand idle places to bots, end holds that ran out; close silent connections.
-      const away = bots.watch(control.fill, new Set(connected.map((c) => c.slot!)), opts.afkSeconds ?? AWAY.afkSeconds);
+      const away = bots.watch(control.fill, new Set(connected.map((c) => c.slot!)), opts.afkSeconds ?? AWAY.afkSeconds, opts.idleKickMinutes ?? AWAY.kickMinutes);
       for (const slot of away.warn) {
         const c = clientAt(slot);
         if (c) send(c, { t: 'notice', text: `You're idle: move or a bot plays for you in ${AWAY.warnSeconds} s` });
@@ -562,6 +605,12 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         notice(`${c?.who?.name ?? 'A player'} is away: a bot plays for them`);
       }
       for (const name of away.released) event(`${name} didn't come back: their place goes to a bot`);
+      for (const slot of away.kick) {
+        const c = clientAt(slot);
+        if (!c) continue;
+        event(`${c.who?.name ?? 'a player'} removed: idle for ${opts.idleKickMinutes ?? AWAY.kickMinutes} min`);
+        kick(c, `Removed for being idle (${opts.idleKickMinutes ?? AWAY.kickMinutes} minutes)`);
+      }
       if (away.away.length || away.released.length) broadcast({ t: 'roster', players: match.roster() });
       const nowMs = Date.now();
       for (const c of clients) if (c.slot !== null && nowMs - c.heardAt > SILENT_MS) c.conn.close(4009, 'no answer');
