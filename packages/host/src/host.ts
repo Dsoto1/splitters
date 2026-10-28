@@ -190,7 +190,13 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
     code: deps.resume?.code ?? config.joinCode,
     token: deps.resume?.token,
     fixedCode: !!config.joinCode || !!deps.resume,
-    admit: (conn) => server.accept(peerConn(conn as never, log)),
+    admit: (conn) => {
+      try {
+        server.accept(peerConn(conn as never, log));
+      } catch (e) {
+        log(`refused a connection: ${(e as Error).message}`);
+      }
+    },
     log,
     fetcher: deps.fetcher,
   });

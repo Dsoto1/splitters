@@ -12,7 +12,7 @@ import { BanList } from '../src/bans.ts';
 import { complete, findMap, findPlayer, parseCommand, parseDuration, runMatchCommand, type MatchCommandTarget } from '../src/commands.ts';
 import { ConfigError, DEFAULT_HUB, loadConfig, parseConfig } from '../src/config.ts';
 import { originAllowed, startConfig } from '../src/control.ts';
-import { iceForLibdatachannel, makeJoinCode } from '../src/hubLink.ts';
+import { admitWhenOpen, iceForLibdatachannel, makeJoinCode } from '../src/hubLink.ts';
 import { LINK_LIMITS, peerConn, type DataLike } from '../src/peerConn.ts';
 import { Supervisor } from '../src/supervisor.ts';
 import type { PlayerInfo } from '@tiletrigger/server/server';
@@ -338,5 +338,43 @@ describe('supervisor', () => {
     await vi.waitFor(() => expect(children.length).toBeGreaterThanOrEqual(2), { timeout: 2000 });
     expect(sup.status().lastError?.summary).toMatch(/stopped responding/);
     await sup.stop();
+  });
+});
+
+describe("a friend's connection is admitted once", () => {
+  /** A PeerJS DataConnection whose channel is already open when handed over (node-datachannel), its own open event late. */
+  class LateOpenConn extends EventEmitter {
+    open = false;
+    closed = false;
+    dataChannel = { readyState: 'open', onopen: null as ((e: unknown) => void) | null };
+    constructor() {
+      super();
+      // What PeerJS does with the channel's open event: mark the connection open and say so.
+      this.dataChannel.onopen = () => {
+        this.open = true;
+        this.emit('open');
+      };
+    }
+    close() {
+      this.closed = true;
+    }
+  }
+
+  it('admits on the first "open" only, whether PeerJS saw the event or hubLink supplied it', async () => {
+    const conn = new LateOpenConn();
+    const admitted: unknown[] = [];
+    admitWhenOpen(conn, (c) => admitted.push(c), 5000);
+    // hubLink gives PeerJS the open event it missed...
+    await vi.waitFor(() => expect(admitted).toHaveLength(1), { timeout: 2000 });
+    // ...then libdatachannel's replayed event arrives and PeerJS says "open" again: one player, not two.
+    conn.dataChannel.onopen?.({ type: 'open' });
+    expect(admitted).toHaveLength(1);
+    expect(conn.closed).toBe(false);
+  });
+
+  it("refuses a second player on one channel (two deflate streams would garble the friend's)", () => {
+    const dc = new FakeDc({ z: 1 });
+    peerConn(dc);
+    expect(() => peerConn(dc)).toThrow(/already has a player/);
   });
 });

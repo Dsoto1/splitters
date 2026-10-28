@@ -15,6 +15,8 @@ export interface DataLike {
   on(event: 'close' | 'error', cb: (...args: unknown[]) => void): unknown;
 }
 
+const claimed = new WeakSet<DataLike>();
+
 /** Limits on one player's link. */
 export const LINK_LIMITS = {
   /** Messages held back for a player who can't keep up (~5 s of snapshots): past it the link closes instead of growing. */
@@ -31,6 +33,10 @@ export const LINK_LIMITS = {
  * GUEST_TO_HOST_LIMITS; the server's MessageGuard rates whole messages).
  */
 export function peerConn(dc: DataLike, log: (line: string) => void = () => undefined): PlayerConn {
+  // One player, one deflate stream per channel: a second PlayerConn on the same channel would interleave
+  // two streams the friend can't inflate (see hubLink.ts admitWhenOpen). Refuse it outright.
+  if (claimed.has(dc)) throw new Error('this connection already has a player');
+  claimed.add(dc);
   const zip = (dc.metadata as { z?: unknown } | undefined)?.z === 1 ? new Zipper() : null;
   const parts = new Reassembler(GUEST_TO_HOST_LIMITS);
   let closing = false;

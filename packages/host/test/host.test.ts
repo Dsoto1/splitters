@@ -48,7 +48,47 @@ async function startHub(port = 0, tickets = new TicketSigner()): Promise<{ url: 
   };
 }
 
+/**
+ * node-datachannel can hand the host a friend's channel already open, its open event replayed later (after
+ * PeerJS has, or hasn't, attached its handler). Delaying every channel's open event recreates that order on
+ * any machine: hubLink supplies the missed event, then the real one arrives. Undone by the returned function.
+ */
+async function lateOpenEvents(ms: number): Promise<() => void> {
+  const poly = (await import('node-datachannel/polyfill')) as unknown as { RTCDataChannel: { prototype: { dispatchEvent(e: Event): boolean } } };
+  const proto = poly.RTCDataChannel.prototype;
+  const real = proto.dispatchEvent;
+  proto.dispatchEvent = function (this: unknown, e: Event) {
+    if (e.type !== 'open') return real.call(this, e);
+    setTimeout(() => real.call(this, e), ms);
+    return true;
+  };
+  return () => void (proto.dispatchEvent = real);
+}
+
 const until = (fn: () => unknown, timeout = 20_000) => vi.waitFor(() => expect(fn(), fn.toString()).toBeTruthy(), { timeout, interval: 100 });
+
+describe('Host Service: a channel handed over already open', () => {
+  it('gets one player and one intact stream (no second admission interleaving deflate streams)', async () => {
+    const restore = await lateOpenEvents(400);
+    const hub = await startHub();
+    const host = await startHost(parseConfig({ hub: hub.url, map: 'sandgate', botFill: 4, name: 'Late open' }), { log: () => undefined });
+    try {
+      const guests = await Promise.all(['A', 'B', 'C'].map((n) => joinAsGuest(hub.url, host.code, n)));
+      for (const g of guests) {
+        await until(() => g.welcome);
+        g.send({ t: 'ready' });
+      }
+      // A garbled stream throws in the guest's JSON.parse (the test fails) and stops its snapshots.
+      for (const g of guests) await until(() => g.snapshots > 30);
+      expect(host.server.players().map((p) => p.name).sort()).toEqual(['A', 'B', 'C']);
+      for (const g of guests) g.close();
+    } finally {
+      restore();
+      await host.stop();
+      await hub.close();
+    }
+  }, 90_000);
+});
 
 describe('Host Service end to end (hub, host and players in this process)', () => {
   const cleanup: (() => unknown)[] = [];

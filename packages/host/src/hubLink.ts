@@ -77,6 +77,50 @@ export async function loadPeer(): Promise<typeof import('peerjs')> {
   return peerModule;
 }
 
+/** What admitWhenOpen needs of a PeerJS DataConnection (a fake one in tests). */
+export interface IncomingConn {
+  readonly open: boolean;
+  readonly dataChannel?: unknown;
+  on(event: 'open' | 'error', cb: (...args: unknown[]) => void): unknown;
+  close(): void;
+}
+
+/**
+ * Hands a friend's connection to the match exactly once, when it opens.
+ *
+ * node-datachannel may hand over a channel that is already open; its "open" event then comes later,
+ * replayed from libdatachannel, and can arrive before or after PeerJS has attached its handler. Before:
+ * PeerJS never sees it and the join hangs, so when the channel is open and PeerJS still says closed,
+ * PeerJS gets its open event from here. After: PeerJS emits "open" a second time. Admitting on each
+ * "open" made two players of one connection, each with its own deflate stream, interleaved on the
+ * one channel: the friend's inflater turned out garbage (and the match had a phantom player). So
+ * the first "open" admits, and any later one is ignored.
+ */
+export function admitWhenOpen<C extends IncomingConn>(conn: C, admit: (conn: C) => void, timeoutMs = OPEN_TIMEOUT_MS): void {
+  let admitted = false;
+  const timer = setTimeout(() => !conn.open && conn.close(), timeoutMs);
+  timer.unref?.();
+  // A candidate that can't be used (another network's address) is reported here; the link goes on with the others.
+  conn.on('error', () => undefined);
+  const late = setInterval(() => {
+    const dc = conn.dataChannel as (RTCDataChannelLike & { onopen?: ((e: unknown) => void) | null }) | undefined;
+    if (admitted || conn.open || !dc) return;
+    if (dc.readyState === 'open') {
+      clearInterval(late);
+      dc.onopen?.({ type: 'open' });
+    } else if (dc.readyState === 'closed') clearInterval(late);
+  }, 100);
+  late.unref?.();
+  setTimeout(() => clearInterval(late), timeoutMs).unref?.();
+  conn.on('open', () => {
+    clearTimeout(timer);
+    clearInterval(late);
+    if (admitted) return;
+    admitted = true;
+    admit(conn);
+  });
+}
+
 export interface HubLinkOptions {
   /** The hub's origin (https://trigger.toshiroplay.com). */
   hub: string;
@@ -155,29 +199,7 @@ export class HubLink {
         }
       });
     });
-    peer.on('connection', (conn) => {
-      const timer = setTimeout(() => !conn.open && conn.close(), OPEN_TIMEOUT_MS);
-      timer.unref?.();
-      // A candidate that can't be used (another network's address) is reported here; the link goes on with the others.
-      conn.on('error', () => undefined);
-      conn.on('open', () => {
-        clearTimeout(timer);
-        clearInterval(late);
-        this.o.admit(conn);
-      });
-      // node-datachannel hands over a friend's channel that may already be open, and then never says "open"
-      // again: PeerJS would wait forever. Give PeerJS its open event when the channel is open but it hasn't seen it.
-      const late = setInterval(() => {
-        const dc = conn.dataChannel as (RTCDataChannelLike & { onopen?: ((e: unknown) => void) | null }) | undefined;
-        if (conn.open || !dc) return;
-        if (dc.readyState === 'open') {
-          clearInterval(late);
-          dc.onopen?.({ type: 'open' });
-        } else if (dc.readyState === 'closed') clearInterval(late);
-      }, 100);
-      late.unref?.();
-      setTimeout(() => clearInterval(late), OPEN_TIMEOUT_MS).unref?.();
-    });
+    peer.on('connection', (conn) => admitWhenOpen(conn, (c) => this.o.admit(c)));
     peer.on('disconnected', () => {
       if (this.peer !== peer || this.closed) return;
       if (this.online) this.o.log("lost the hub: players in the match carry on; reconnecting…");
