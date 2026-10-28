@@ -617,7 +617,8 @@ async function editoruxFlow(browser) {
   await settle();
   await page.mouse.click(sp.x, sp.y, { button: 'right' });
   const menu = await page.evaluate(() => [...document.querySelectorAll('#ed-ctx button')].map((b) => b.textContent));
-  check(menu.some((t) => t.startsWith('Rotate')) && menu.some((t) => t.startsWith('Delete')), `right-click with Select opens the selection menu (${menu.join(', ')})`);
+  const menuWhy = menu.length ? '' : ` [${await page.evaluate(([x, y]) => { const el = document.elementFromPoint(x, y); return JSON.stringify({ at: el ? `${el.tagName}#${el.id}.${el.className}` : null, tool: window.__editor.tool?.kind, looking: !!window.__editor.looking, sel: window.__editor.selection }); }, [sp.x, sp.y])}]`;
+  check(menu.some((t) => t.startsWith('Rotate')) && menu.some((t) => t.startsWith('Delete')), `right-click with Select opens the selection menu (${menu.join(', ')})${menuWhy}`);
   await page.keyboard.press('Escape');
   check(!(await page.isVisible('#ed-ctx')), 'Escape closes the selection menu');
   // A drag with Erase is one undo step.
