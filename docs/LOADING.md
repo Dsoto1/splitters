@@ -96,3 +96,13 @@ purpose, in the commit that needs it (`BUDGET_GZIP_KB`, `BUDGET_RAW_KB`).
 Measure a change: `pnpm build && node tools/ci/bundle-budget.mjs`, and
 `node tools/perf/first-load.mjs [dist …]` for times (it serves each build the
 way the hub does and alternates runs between them).
+
+## The start-up loading screen
+
+`#boot` (inline in `index.html`, so it paints before any script) covers the
+page until the first screen is ready: `client/src/boot.ts` counts the steps
+`main.ts` gives it (the engine, fonts, the menu scene, your character's
+portrait, the shipped portraits and the first map pictures, each capped) and
+fades out when they're done, after 12 s at the most, or as soon as a match,
+MapMaker or the Character Designer takes over (they have their own). The
+/host page, the team tools and test mode (`?test=1`) skip it.

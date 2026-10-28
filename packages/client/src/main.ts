@@ -28,11 +28,16 @@ import { installFullscreenKeys } from './fullscreen.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
 import { loadSignaling, type Transport } from './game/transport.ts';
 import { seededRng, testMode } from './testMode.ts';
+import { bootStep, finishBoot, preloadImage } from './boot.ts';
+import { SHIPPED_PORTRAITS } from './frontend/portraitIndex.ts';
+import { shippedPicture } from './frontend/mapThumbs.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
 // Browser tests' deterministic mode (?test=1): offline only, see testMode.ts.
 const TEST = testMode();
+// Browser tests drive the page at once: no start-up loading screen in test mode.
+if (TEST) finishBoot();
 if (TEST) {
   // Seeded per page load in this browser profile: the same steps give the same ids in a fresh profile (a test's
   // own context), and a reload doesn't hand out ids already saved in the library before it.
@@ -285,6 +290,16 @@ class App {
     if (!this.ready) {
       const shown = this.init().then(() => capped(this.menuScene!.ready(), 2500));
       revealWhenReady(shown);
+      // The start-up loading screen stays until the menu, your character and the pictures it shows first are in.
+      const steps = [
+        bootStep('the game', this.init()),
+        bootStep('fonts', document.fonts ? document.fonts.ready.then(() => undefined) : Promise.resolve()),
+        bootStep('the menu', this.init().then(() => capped(this.menuScene!.ready(), 8000))),
+        bootStep('your character', this.init().then(() => capped(this.portraits!.get(this.front!.look).then(preloadImage), 8000))),
+        bootStep('characters', capped(Promise.all(Object.values(SHIPPED_PORTRAITS).map((f) => preloadImage(`${import.meta.env.BASE_URL}portraits/${f}`))), 8000)),
+        bootStep('maps', capped(Promise.all(['sandgate', 'canyon', 'citadel', ...MAP_INDEX.slice(0, 12).map((e) => e.key)].map((id) => preloadImage(shippedPicture(id)))), 6000)),
+      ];
+      void Promise.allSettled(steps).then(() => requestAnimationFrame(() => finishBoot()));
       // Once the menu is up and the page idle, fetch what Play needs (the match code and the map it opens on).
       void shown.then(() => whenIdle(() => this.prefetchPlay(), 2000));
     }
@@ -321,6 +336,7 @@ class App {
 
   async openDesigner(look?: string): Promise<void> {
     const [{ CharacterDesigner }] = await Promise.all([import('./designer/characterDesigner.ts'), this.init()]);
+    finishBoot();
     $('menu').hidden = true;
     this.mode = 'designer';
     this.designer = new CharacterDesigner(this.engine, this.canvas, look ?? this.front!.look, (id) => {
@@ -333,6 +349,7 @@ class App {
 
   async openEditor(): Promise<void> {
     const [{ EditorApp }] = await Promise.all([import('./editor/editorApp.ts'), this.init()]);
+    finishBoot();
     const first = !this.editor;
     this.editor ??= new EditorApp({
       engine: this.engine,
@@ -565,6 +582,8 @@ class App {
   }
 
   private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected') => void; onReady?: () => void }): void {
+    // A match has its own loading screen (players, map and weapons).
+    finishBoot();
     $('menu').hidden = true;
     this.mode = 'game';
     this.session = new m.GameSession({
@@ -625,6 +644,8 @@ function onceBack(f: () => void): void {
 }
 
 const app = new App();
+// The start-up loading screen is the game's: the /host page and the team tools show straight away.
+if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || params.get('mode') === 'characters') finishBoot();
 // trigger.toshiroplay.com/host: hosting, in the browser or with the optional Host Service (hostPage.ts).
 if (/^\/host\/?$/.test(location.pathname))
   void import('./hostPage.ts').then((m) =>
