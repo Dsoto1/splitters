@@ -4,7 +4,7 @@ Maps built in tribute to classic FPS levels: our own names, layouts recreated fr
 
 ## Dockside Depot (`dockside_depot`)
 
-An homage to Counter-Strike's **cs_assault**, rebuilt from memory with our own kit (script: `packages/server/src/tools/maps/dockside_depot.ts`). It is a two-storey warehouse on an industrial lot at dusk. Tide defend inside the warehouse, Embers attack from the road at the south-west corner, and six neutral spawns cover deathmatch. Built for 8–16 players, TDM and deathmatch.
+An homage to Counter-Strike's **cs_assault**, rebuilt from memory with our own kit (script: `maps/dockside_depot.json`). It is a two-storey warehouse on an industrial lot at dusk. Tide defend inside the warehouse, Embers attack from the road at the south-west corner, and six neutral spawns cover deathmatch. Built for 8–16 players, TDM and deathmatch.
 
 **Routes in**
 - **Loading door** (a wide archway, south): from the parking lot, past the semi-trailer, the box truck and the container stacks.
@@ -24,7 +24,7 @@ An homage to Counter-Strike's **cs_assault**, rebuilt from memory with our own k
 
 ## Rail Stockyard (`rail_stockyard`)
 
-An homage to Half-Life deathmatch's **Stalkyard**. Script: `packages/server/src/tools/maps/rail_stockyard.ts`. Factory theme with gravel ground, dusk sky over a city skyline. Deathmatch and team deathmatch, 6–12 players. Embers spawn in the west shed and south-west yard, Tide in the east shed and south-east yard, with six neutral spawns on the dock, catwalk and south yard.
+An homage to Half-Life deathmatch's **Stalkyard**. Script: `maps/rail_stockyard.json`. Factory theme with gravel ground, dusk sky over a city skyline. Deathmatch and team deathmatch, 6–12 players. Embers spawn in the west shed and south-west yard, Tide in the east shed and south-east yard, with six neutral spawns on the dock, catwalk and south yard.
 
 **Routes**
 - **The yard**: open gravel with an east-west line of rolling stock (gap in the middle), a south spur of wagons, and cargo stacks one crate high to hop on.
@@ -38,7 +38,7 @@ An homage to Half-Life deathmatch's **Stalkyard**. Script: `packages/server/src/
 
 ## Bunker Cross (`bunker_cross`)
 
-An homage to Half-Life deathmatch's **Crossfire**, rebuilt to the original's layout with our own kit (script: `packages/server/src/tools/maps/bunker_cross.ts`). Two concrete bases face each other west and east across a courtyard sunk 4 m and open to the sky. Deathmatch, team deathmatch, CTF and King of the Hill.
+An homage to Half-Life deathmatch's **Crossfire**, rebuilt to the original's layout with our own kit (script: `maps/bunker_cross.json`). Two concrete bases face each other west and east across a courtyard sunk 4 m and open to the sky. Deathmatch, team deathmatch, CTF and King of the Hill.
 
 **Routes**
 - **The courtyard**: ramps climb out of all four corners; each base basement has two doors straight onto the floor.
@@ -51,7 +51,7 @@ An homage to Half-Life deathmatch's **Crossfire**, rebuilt to the original's lay
 
 ## Backwoods Lodge (`backwoods`)
 
-An homage to Counter-Strike's **cs_militia**, rebuilt from memory with our own kit (script: `packages/server/src/tools/maps/backwoods.ts`). Frontier Saloon theme on terrain, under a cloudy sky with forest scenery. A big three-level wooden lodge stands on the high ground at the north end of a farm property. A creek ravine runs across the south, with pine woods beyond it. TDM and deathmatch, 8–16 players. Embers defend the lodge (8 spawns across the cellar, the garage, the main floor and upstairs) and Tide attack from a camp in the woods (8 spawns). Six neutral spawns cover deathmatch: the barn, the shed, the drain junction, the road, the west field and the hill behind the lodge.
+An homage to Counter-Strike's **cs_militia**, rebuilt from memory with our own kit (script: `maps/backwoods.json`). Frontier Saloon theme on terrain, under a cloudy sky with forest scenery. A big three-level wooden lodge stands on the high ground at the north end of a farm property. A creek ravine runs across the south, with pine woods beyond it. TDM and deathmatch, 8–16 players. Embers defend the lodge (8 spawns across the cellar, the garage, the main floor and upstairs) and Tide attack from a camp in the woods (8 spawns). Six neutral spawns cover deathmatch: the barn, the shed, the drain junction, the road, the west field and the hill behind the lodge.
 
 **The lodge**
 - **Lower floor** (stone, at yard level): the garage, with two wide doors onto the driveway; a workshop, a laundry, a boiler room and a big cellar; and a side door on the west.

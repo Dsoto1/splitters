@@ -114,7 +114,7 @@ the forts (`sim/modes/forts.ts`, pieces and placement rules in
   out, the piece picker with costs, why the ghost can't go where it is, and
   the keys. The flags show as in CTF.
 - **Maps.** **Fort Meadow** (`maps/fort_meadow.json`, built by
-  `packages/server/src/tools/maps/fort_meadow.ts`) is made for it: a wide,
+  `maps/fort_meadow.json`) is made for it: a wide,
   rolling meadow with the bases 84 m apart on flat greens, a low ridge with
   two saddles across the middle and knolls on the flanks. Of the other CTF
   maps, the open ones work well: in a 40 s build test bots put up most of
@@ -249,7 +249,7 @@ glance off anyone who spawned (or started the round) in the last 2 s.
   void. In 3 simulated minutes of 6 bots on Grid Rings about 40 knock-offs
   are credited and bots fall on their own about once.
 - **Grid Rings** (`maps/grid_rings.json`, script
-  `packages/server/src/tools/maps/grid_rings.ts`) is the demo arena: a hub,
+  `maps/grid_rings.json`) is the demo arena: a hub,
   four rings with bounce walls and four towers with the power discs, all
   dark circuit decks rimmed in light under a night sky, joined only by jump
   pads.
@@ -340,9 +340,8 @@ MapMaker:
    used), and bases less than 16 m apart get a suggestion. Bases and hills
    that can't be reached on foot are warnings.
 
-Map scripts: `m.flag(team, at, yaw)` and `m.hill(at, radius)` in
-`packages/server/src/tools/mapkit.ts`, with the modes listed in `m.meta()`.
-Bunker Cross, Rail Stockyard and Twin Spires have both. Twin Spires is a
+Flags and hills are placed in MapMaker (Entities → Game Modes & Objectives),
+with the modes listed in the map's settings. Bunker Cross, Rail Stockyard and Twin Spires have both. Twin Spires is a
 low-scoring CTF map: its bases are 108 m apart on a sniper causeway.
 
 ## Big matches, taking over bots, team leaders

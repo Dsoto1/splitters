@@ -155,7 +155,7 @@ sounds (needs new CC0 sounds and a grip pose).
 | Urban | City intersection (convenience store, gas station, restaurant, bar, mechanic) → **much larger city riot map** from it; cul-de-sac of 5 homes leading to a main street (Grove-Street style); Nakatomi-style tower |
 | Arena shooters | The Edge (Q2) and The Longest Yard (Q3DM17) homages |
 | Classic FPS homages | Nuketown-style, Kino-der-Toten-style, "office" (CS), assault_ship.ce, Half-Life Subtransit (with a monorail) |
-| Real places (look-alikes) | National Mall, White House, history and science museum, stadium, Roman arena, IKEA-style store, St. John's Northwestern Military Academy campus (✅ first pass: `maps/st_johns.json`, built by `packages/server/src/tools/maps/st_johns.ts`), Lake Norman lake houses |
+| Real places (look-alikes) | National Mall, White House, history and science museum, stadium, Roman arena, IKEA-style store, St. John's Northwestern Military Academy campus (✅ first pass: `maps/st_johns.json`, built by `maps/st_johns.json`), Lake Norman lake houses |
 | Set pieces | Movie theater, 80s mall, airliner on the tarmac (one team starts on board), prison (one team starts in locked cells) |
 | Fantasy / adventure | Helm's-Deep-style fortress with orc NPCs, Indiana-Jones-style jungle canyon with drawbridge and a temple, dino park with roaming dinos behind placeable park fences, forest |
 | Single player / co-op | More challenges built from logic, NPCs and vehicles |

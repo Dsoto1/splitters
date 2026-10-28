@@ -181,13 +181,15 @@ It respawns 45 s after it's taken.
 ## Sky Islands
 
 The showcase map for all of this (`maps/sky_islands.json`, built by
-`packages/server/src/tools/maps/sky_islands.ts`): five grassy islands made of
+`maps/sky_islands.json`): five grassy islands made of
 blocks floating over snowy peaks, crumbling stepping-stone bridges, one plank
 bridge that holds, a swimming pond sunk into the centre island, a lava pit
 under four trapdoors guarding the railgun, breakable cover, two jetpacks, and
 a jump pad up to a sky platform with double damage.
 
-## Map scripts
+## Map scripts (retired)
+
+The official maps were once built by scripts like these; they are made in MapMaker now (BUILDING_KIT.md, "Every map is made in MapMaker"). Kept as a reference for what each piece's settings mean.
 
 ```ts
 m.block([x, y, z], [width, thickness, depth], 'crumble', { material: 'pbr_castle_stone', delay: 0.9, respawn: 6 });

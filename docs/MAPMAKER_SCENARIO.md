@@ -102,8 +102,7 @@ curbs, and optional ambient cars with a pit lane.
   terrain, under 80 m, fewer grid places than players, a grid longer than
   the road holds, checkpoints not on drivable ground or not reachable from
   the one before (navmesh), and grid places off it are warnings.
-- **Scripts.** `m.track({ points, width, laps, … })` in `mapkit.ts` (it lays
-  the road into the terrain too); see `tools/maps/sandsweep.ts`.
+- See `maps/sandsweep.json` for a finished track.
 
 ## Validation
 Show actionable errors/warnings for missing spawns, overlapping/unsafe spawns, disconnected critical navigation, unreachable objectives, broken references, impossible conditions, missing encounter spawn regions, faction loops, excessive active NPC estimates, asset/dependency failures, and mode incompatibility.

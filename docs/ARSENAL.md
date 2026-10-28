@@ -89,7 +89,7 @@ grip (`grip` / `support` in `weapons.ts`); aiming down the sights lines the top
 of the front and rear sights up under the eye.
 
 **Training Range** (`maps/training_range.json`, built by
-`packages/server/src/tools/maps/training_range.ts`): the gunplay test arena
+`maps/training_range.json`): the gunplay test arena
 of GUNPLAY_DIRECTION.md, described in [GUNPLAY_AUDIT.md](GUNPLAY_AUDIT.md#gunplay-test-arena).
 
 **Ammo pickups.** The general Ammo Box gives half a pickup to every weapon and

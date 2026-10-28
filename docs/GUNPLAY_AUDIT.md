@@ -157,7 +157,7 @@ scope-only sway (3.5 mrad), every reload interruptible.
 ## Gunplay test arena
 
 `maps/training_range.json`, built by
-`packages/server/src/tools/maps/training_range.ts` from kit tiles, library
+`maps/training_range.json` from kit tiles, library
 materials, existing props, destructibles, movers and an encounter (nothing
 new). Deathmatch, 1-8 players; the firing line is x 0, downrange is +x.
 

@@ -17,9 +17,6 @@
     "validate-map": "tsx src/tools/validate-map.ts",
     "spawn-points": "tsx src/tools/spawn-points.ts",
     "typecheck": "tsc -p .",
-    "build-sandgate": "tsx src/tools/build-sandgate.ts",
-    "build-citadel": "tsx src/tools/build-citadel.ts",
-    "build-canyon": "tsx src/tools/build-canyon.ts",
     "hub": "tsx src/hub.ts"
   },
   "dependencies": {

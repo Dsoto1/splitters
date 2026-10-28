@@ -19,6 +19,9 @@ Start with `HANDOFF.md` (current state, open items, pitfalls) and keep it curren
 - Before changing networking, the hub, hosting, TURN, AWS infrastructure or map publishing, read `docs/MULTIPLAYER_DIRECTION.md` (the owner's direction: AWS coordinates, player machines compute; no uploads; maps are declarative data; small recurring cost).
 - Identity: the owner's shared ToshiroPlay Cognito user pool (also used by their Flavius game) with Google sign-in, through a separate "trigger" app client; the hub verifies Cognito tokens against the pool's public keys (no client secret in the site).
 
+## Maps
+- Every map, official ones included, is its file in `maps/<id>.json`, made and edited with MapMaker's own tools. No map build scripts and no one-off code for a single map: a piece a map needs goes into MapMaker (palette, inspector, logic) so the owner and players can edit it.
+
 ## Content rules
 - No in-game AI generation: players can't make content through an AI service or connector, and can't upload assets.
 - Models we generate ourselves on the owner's Meshy subscription are fine to ship (record them in content provenance as Meshy, owned).
