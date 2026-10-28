@@ -79,6 +79,11 @@ export class EditorView {
   /** The race track's road, curbs and arches (rebuilt with the map). */
   private roadMeshes: Mesh[] = [];
   private dimMeshes: Mesh[] = [];
+  /** What the meshes were last built from: an edit rebuilds only what it changed (a prop moved: no tile, terrain or road meshes). */
+  private builtBoxes = '';
+  private builtTerrain: MapDocument['terrain'] | undefined = undefined;
+  private builtTheme = '';
+  private builtRoad: unknown = undefined;
   private gizmo?: LinesMesh;
   private pickKey = '';
 
@@ -236,13 +241,28 @@ export class EditorView {
       return z === undefined ? byHeight : Math.max(z, byHeight);
     };
     const onLevel = (b: WorldBox) => levelOf(b) === level;
-    this.mapMeshes = this.styler.buildBoxes(visible, drawn.filter(onLevel), 'edmap');
-    this.styler.buildTerrain(doc, 'edmap');
-    disposeRoadMeshes(this.roadMeshes);
-    this.roadMeshes = buildRoadMeshes(this.scene, doc, this.styler, 'edroad');
-    this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn.filter((b) => !onLevel(b)), 'edmapdim');
-    for (const m of this.dimMeshes) m.visibility = 0.4;
-    this.applyTileLayer();
+    // The level meshes, only when the boxes (or how they're styled) changed.
+    const theme = JSON.stringify([doc.classicStructure.theme, doc.classicStructure.tiles.map((t) => t.surfaces ?? null), level]);
+    const boxKey = `${boxesFingerprint(drawn)}|${theme}`;
+    if (boxKey !== this.builtBoxes) {
+      this.builtBoxes = boxKey;
+      this.mapMeshes = this.styler.buildBoxes(visible, drawn.filter(onLevel), 'edmap');
+      this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn.filter((b) => !onLevel(b)), 'edmapdim');
+      for (const m of this.dimMeshes) m.visibility = 0.4;
+      this.applyTileLayer();
+    }
+    // Terrain and the road, only when they changed (the terrain alone took most of an edit on big maps).
+    if (doc.terrain !== this.builtTerrain || doc.classicStructure.theme !== this.builtTheme) {
+      this.builtTerrain = doc.terrain;
+      this.builtTheme = doc.classicStructure.theme;
+      this.styler.buildTerrain(doc, 'edmap');
+      this.builtRoad = undefined;
+    }
+    if (doc.track !== this.builtRoad) {
+      this.builtRoad = doc.track;
+      disposeRoadMeshes(this.roadMeshes);
+      this.roadMeshes = buildRoadMeshes(this.scene, doc, this.styler, 'edroad');
+    }
     this.backdrop.build(doc, boxes);
     this.border.update(doc, boxes);
     void this.city.setMap(visible);
@@ -647,6 +667,8 @@ export class EditorView {
   /** Redraw only the terrain (live preview while a brush is dragged). */
   previewTerrain(doc: MapDocument): void {
     this.styler.buildTerrain(doc, 'edmap');
+    // Built from a preview: the next setMap rebuilds it from the document.
+    this.builtTerrain = undefined;
   }
 
   /** Terrain brush outline draped over the ground; null hides it. */
@@ -703,4 +725,33 @@ function selectionSize(e: MapEntity): number {
     default:
       return 1.1;
   }
+}
+
+/** A quick fingerprint of a box list (positions, kinds, sources, materials): equal lists, equal strings. */
+function boxesFingerprint(boxes: readonly WorldBox[]): string {
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193;
+  const mix = (n: number) => {
+    const v = Math.round(n * 1000) | 0;
+    h1 = Math.imul(h1 ^ v, 16777619);
+    h2 = Math.imul(h2 + v, 2246822519) ^ (h2 >>> 13);
+  };
+  const str = (t: string) => {
+    for (let i = 0; i < t.length; i++) mix(t.charCodeAt(i));
+  };
+  for (const b of boxes) {
+    mix(b.min[0]);
+    mix(b.min[1]);
+    mix(b.min[2]);
+    mix(b.max[0]);
+    mix(b.max[1]);
+    mix(b.max[2]);
+    mix(b.yaw ?? 0);
+    mix(b.pitch ?? 0);
+    mix(b.roll ?? 0);
+    str(b.kind);
+    str(b.sourceId);
+    if (b.surface) str(`${b.surface.material}${b.surface.tint ?? ''}`);
+  }
+  return `${boxes.length}:${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}`;
 }

@@ -182,13 +182,24 @@ export class MapStyler {
     const t = doc.terrain;
     if (!t) return;
     const s = t.spacing;
-    const y = (c: number, r: number) => vertexY(t, Math.max(0, Math.min(t.cols - 1, c)), Math.max(0, Math.min(t.rows - 1, r)));
-    const normal = (c: number, r: number): [number, number, number] => {
-      const nx = -(y(c + 1, r) - y(c - 1, r)) / (2 * s);
-      const nz = -(y(c, r + 1) - y(c, r - 1)) / (2 * s);
-      const l = Math.hypot(nx, 1, nz);
-      return [nx / l, 1 / l, nz / l];
-    };
+    const cols = t.cols;
+    const rows = t.rows;
+    // Heights and normals once per vertex (they were worked out again for each of up to four cells sharing a vertex).
+    const hy = new Float32Array(cols * rows);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) hy[r * cols + c] = vertexY(t, c, r);
+    const at = (c: number, r: number) => hy[Math.max(0, Math.min(rows - 1, r)) * cols + Math.max(0, Math.min(cols - 1, c))]!;
+    const nrm = new Float32Array(cols * rows * 3);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const nx = -(at(c + 1, r) - at(c - 1, r)) / (2 * s);
+        const nz = -(at(c, r + 1) - at(c, r - 1)) / (2 * s);
+        const l = Math.hypot(nx, 1, nz);
+        const i = (r * cols + c) * 3;
+        nrm[i] = nx / l;
+        nrm[i + 1] = 1 / l;
+        nrm[i + 2] = nz / l;
+      }
+    }
     const byMaterial = new Map<number, number[]>();
     t.materials.forEach((m, i) => {
       let list = byMaterial.get(m);
@@ -199,23 +210,37 @@ export class MapStyler {
       const material = TERRAIN_MATERIALS[m] ?? 'grass';
       const style = terrainStyle(material);
       const def = style.material;
-      const positions: number[] = [];
-      const normals: number[] = [];
-      const uvs: number[] = [];
-      const indices: number[] = [];
+      const n = cells.length;
+      const positions = new Float32Array(n * 12);
+      const normals = new Float32Array(n * 12);
+      const uvs = new Float32Array(n * 8);
+      const indices = new Uint32Array(n * 6);
+      const inv = 1 / def.scale;
+      let k = 0;
       for (const i of cells) {
-        const c = i % (t.cols - 1);
-        const r = Math.floor(i / (t.cols - 1));
-        const base = positions.length / 3;
-        for (const [dc, dr] of [[0, 0], [1, 0], [1, 1], [0, 1]] as const) {
+        const c = i % (cols - 1);
+        const r = (i - c) / (cols - 1);
+        for (let q = 0; q < 4; q++) {
+          // Corners 00, 10, 11, 01.
+          const dc = q === 1 || q === 2 ? 1 : 0;
+          const dr = q >= 2 ? 1 : 0;
+          const vi = (r + dr) * cols + (c + dc);
           const x = t.origin[0] + (c + dc) * s;
           const z = t.origin[1] + (r + dr) * s;
-          positions.push(x, y(c + dc, r + dr), z);
-          normals.push(...normal(c + dc, r + dr));
-          uvs.push(x / def.scale, z / def.scale);
+          const p = (k * 4 + q) * 3;
+          positions[p] = x;
+          positions[p + 1] = hy[vi]!;
+          positions[p + 2] = z;
+          normals[p] = nrm[vi * 3]!;
+          normals[p + 1] = nrm[vi * 3 + 1]!;
+          normals[p + 2] = nrm[vi * 3 + 2]!;
+          uvs[(k * 4 + q) * 2] = x * inv;
+          uvs[(k * 4 + q) * 2 + 1] = z * inv;
         }
         // Same diagonal as the collision mesh (00-11), wound so the faces point up.
-        indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+        const base = k * 4;
+        indices.set([base, base + 1, base + 2, base, base + 2, base + 3], k * 6);
+        k++;
       }
       const vd = new VertexData();
       vd.positions = positions;

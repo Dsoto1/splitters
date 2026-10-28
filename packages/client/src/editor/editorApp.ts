@@ -640,6 +640,46 @@ export class EditorApp {
     }
   }
 
+  // ---------------------------------------------------------------- sidebars
+
+  /** Fold the palette or the side panel away (and back): their tabs, Shift+[ and Shift+]; remembered in this browser. */
+  private setupSidebars(): void {
+    const root = $('editor');
+    const key = 'tiletrigger.editor.sidebars';
+    let saved: { pal?: boolean; right?: boolean } = {};
+    try {
+      saved = JSON.parse(localStorage.getItem(key) ?? '{}') as typeof saved;
+    } catch {
+      // Storage blocked: both open.
+    }
+    const apply = (side: 'pal' | 'right', collapsed: boolean) => {
+      root.classList.toggle(`${side}-collapsed`, collapsed);
+      const btn = $(side === 'pal' ? 'ed-pal-toggle' : 'ed-right-toggle');
+      const name = side === 'pal' ? 'the palette' : 'the side panel';
+      btn.textContent = (side === 'pal') === collapsed ? '›' : '‹';
+      btn.title = `${collapsed ? 'Show' : 'Hide'} ${name} (Shift+${side === 'pal' ? '[' : ']'})`;
+      btn.setAttribute('aria-label', `${collapsed ? 'Show' : 'Hide'} ${name}`);
+      btn.setAttribute('aria-expanded', String(!collapsed));
+    };
+    this.toggleSidebar = (side) => {
+      const collapsed = !root.classList.contains(`${side}-collapsed`);
+      apply(side, collapsed);
+      saved[side] = collapsed;
+      try {
+        localStorage.setItem(key, JSON.stringify(saved));
+      } catch {
+        // This page only.
+      }
+    };
+    apply('pal', !!saved.pal);
+    apply('right', !!saved.right);
+    $('ed-pal-toggle').addEventListener('click', () => this.toggleSidebar('pal'));
+    $('ed-right-toggle').addEventListener('click', () => this.toggleSidebar('right'));
+  }
+  private toggleSidebar: (side: 'pal' | 'right') => void = () => undefined;
+  private countedDoc: MapDocument | null = null;
+  private countedBoxes = 0;
+
   // ---------------------------------------------------------------- editing
 
   private run(label: string, cmd: EditCommand | { error: string }): boolean {
@@ -1405,6 +1445,11 @@ export class EditorApp {
         else if (k === 'KeyS') this.save();
         else if (k === 'KeyD') this.duplicate();
         else return;
+        e.preventDefault();
+        return;
+      }
+      if (e.shiftKey && (e.code === 'BracketLeft' || e.code === 'BracketRight')) {
+        this.toggleSidebar(e.code === 'BracketLeft' ? 'pal' : 'right');
         e.preventDefault();
         return;
       }
@@ -2390,6 +2435,7 @@ export class EditorApp {
       this.toast(`Imported ${r.map.metadata.name}`);
     });
     $('ed-test').addEventListener('click', () => this.test());
+    this.setupSidebars();
     $('ed-status').addEventListener('click', () => $('ed-issues').scrollIntoView({ behavior: 'smooth' }));
     $('ed-level-up').addEventListener('click', () => this.setLevel(this.level + 1));
     $('ed-level-down').addEventListener('click', () => this.setLevel(this.level - 1));
@@ -2437,7 +2483,12 @@ export class EditorApp {
     const npcs = this.doc.entities.filter((e) => e.kind === 'encounter').length;
     const scenario = this.doc.entities.length - spawns - pickups - npcs;
     const rules = this.doc.logic.rules.length;
-    const boxes = buildMapGeometry(this.doc).length;
+    // Counted once per version of the document (refresh runs this on every edit and level change).
+    if (this.countedDoc !== this.doc) {
+      this.countedDoc = this.doc;
+      this.countedBoxes = buildMapGeometry(this.doc).length;
+    }
+    const boxes = this.countedBoxes;
     $('ed-counts').textContent = `${tiles} tiles · ${spawns} spawns · ${pickups} pickups · ${scenario} scenario objects · ${npcs} NPC squads · ${rules} rules · ${boxes} collision boxes`;
   }
 
