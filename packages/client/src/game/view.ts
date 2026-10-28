@@ -96,6 +96,9 @@ import type { RemotePose } from './interpolation.ts';
 /** Remote players' pack muzzle flashes: within this range of the camera (m), on at most this many guns. */
 const REMOTE_FLASH_RANGE = 45;
 const MAX_REMOTE_RIGS = 8;
+/** Your own pack flash: this much bigger than the weapon's scale, starting this far (m) past the muzzle so the gun doesn't hide it. */
+const OWN_FLASH_SCALE = 1.6;
+const OWN_FLASH_AHEAD = 0.05;
 const SLOT_COLORS = ['#e6544a', '#4aa3e6', '#f2c14e', '#5cc77a', '#b276e0', '#f28f3b', '#46c9c0', '#e872b0'];
 export const slotColor = (slot: number): string => SLOT_COLORS[slot % SLOT_COLORS.length]!;
 
@@ -256,6 +259,8 @@ export class GameView {
   private viewLoad = 0;
   /** Front of the loaded viewmodel along its forward axis, for the muzzle flash. */
   private muzzleZ = 0.2;
+  /** Barrel height of the loaded viewmodel (the same estimate as remote guns: the bounds include the grip). */
+  private muzzleY = 0.02;
   private kickAmount = 0;
   private bobPhase = 0;
   /** Weapon bob strength (0..1), eased so starting or stopping doesn't pop the gun. */
@@ -493,7 +498,7 @@ export class GameView {
   localMuzzle(): Vec3 | null {
     if (!this.viewmodel || !this.viewRoot.isEnabled(false)) return null;
     this.viewRoot.computeWorldMatrix(true);
-    const p = Vector3.TransformCoordinates(new Vector3(0, 0.02, this.muzzleZ + 0.02), this.viewRoot.getWorldMatrix());
+    const p = Vector3.TransformCoordinates(new Vector3(0, this.muzzleY, this.muzzleZ + 0.02), this.viewRoot.getWorldMatrix());
     return { x: p.x, y: p.y, z: p.z };
   }
 
@@ -740,6 +745,7 @@ export class GameView {
       // Measure before parenting, in the model's own space.
       const bounds = node.getHierarchyBoundingVectors(true);
       this.muzzleZ = bounds.max.z;
+      this.muzzleY = (bounds.min.y + bounds.max.y) / 2 + (bounds.max.y - bounds.min.y) * 0.2;
       this.sightTop = bounds.max.y;
       this.stockZ = bounds.min.z;
       node.parent = this.viewRoot;
@@ -800,7 +806,7 @@ export class GameView {
     if (def.kind === 'melee' || def.view.beam) return;
     this.flashUntil = performance.now() + 45;
     const fx = muzzleEffectFor(def);
-    this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale));
+    this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale * OWN_FLASH_SCALE));
     if (this.starFlash) kickFlash(this.flash, def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1);
     if (def.kind === 'hitscan' && def.ammo) this.ejectCasing(def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1);
   }
@@ -861,7 +867,7 @@ export class GameView {
     this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
     const flashing = performance.now() < this.flashUntil;
     this.flash.setEnabled(flashing && this.starFlash);
-    this.flashRig.root.position.set(0, 0.02, this.muzzleZ);
+    this.flashRig.root.position.set(0, this.muzzleY, this.muzzleZ + OWN_FLASH_AHEAD);
     this.flashRig.update();
     // The map may set its own light level, so the base is whatever it is between shots.
     if (this.hemi && !this.hemiLit) this.hemiBase = this.hemi.intensity;
@@ -869,7 +875,7 @@ export class GameView {
     this.hemiLit = flashing;
     if (flashing) {
       this.flash.parent = this.viewRoot;
-      this.flash.position.set(0, 0.02, this.muzzleZ + 0.08);
+      this.flash.position.set(0, this.muzzleY, this.muzzleZ + 0.08);
     }
   }
 
