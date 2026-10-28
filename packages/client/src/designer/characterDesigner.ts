@@ -1,5 +1,5 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
-import { applyToneMapping } from '../game/atmosphere.ts';
+import { applyToneMapping } from '../game/graphicsSettings.ts';
 import { Scene } from '@babylonjs/core/scene';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';

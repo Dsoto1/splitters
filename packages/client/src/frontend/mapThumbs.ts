@@ -1,6 +1,15 @@
 import type { MapDocument } from '@tiletrigger/shared';
 import { drawMapPlan } from './mapPlan.ts';
 
+/** A map that may not have loaded yet (a built-in map: mapIndex.ts): its metadata now, the whole map on demand. */
+export interface MapSource {
+  readonly metadata: Pick<MapDocument['metadata'], 'id' | 'name' | 'thumbnail'>;
+  /** The whole map, once loaded. */
+  readonly map?: MapDocument;
+  /** Load the whole map (and keep it as `map`). */
+  load(): Promise<MapDocument>;
+}
+
 /**
  * A map's two thumbnails, always separate elements, never composited into one image:
  * - the picture: the maker's own (MapMaker → Set thumbnail, stored in the map
@@ -25,7 +34,7 @@ export function shippedPicture(id: string): string {
 }
 
 /** The picture a map shows: its own, else (built-in maps) the automatic one, else none. */
-export function pictureSource(map: MapDocument, shipped: boolean): string | null {
+export function pictureSource(map: Pick<MapDocument, 'metadata'> | MapSource, shipped: boolean): string | null {
   return map.metadata.thumbnail ?? (shipped ? shippedPicture(map.metadata.id) : null);
 }
 
@@ -37,8 +46,8 @@ function box(cls: string, label: string, title: string): HTMLDivElement {
   return d;
 }
 
-/** `shipped`: a built-in map, which has an automatic picture when its maker set none. */
-export function mapThumbs(map: MapDocument, shipped: boolean): MapThumbs {
+/** `shipped`: a built-in map, which has an automatic picture when its maker set none. A map still to load draws its plan once it has. */
+export function mapThumbs(map: MapDocument | MapSource, shipped: boolean): MapThumbs {
   const pic = box('pic', 'Picture', `${map.metadata.name}: a look at the map`);
   const plan = box('plan', 'Plan', `${map.metadata.name}: top-down plan (layout, spawns, pickups)`);
   const canvas = document.createElement('canvas');
@@ -59,10 +68,20 @@ export function mapThumbs(map: MapDocument, shipped: boolean): MapThumbs {
     pic.append(img);
   } else none();
   let drawn = false;
+  let loading = false;
   const draw = () => {
-    if (drawn || !canvas.isConnected || !canvas.clientWidth) return;
+    if (drawn || loading || !canvas.isConnected || !canvas.clientWidth) return;
+    const doc = 'load' in map ? map.map : map;
+    if (!doc) {
+      loading = true;
+      void (map as MapSource).load().then(
+        () => ((loading = false), draw()),
+        () => (loading = false),
+      );
+      return;
+    }
     drawn = true;
-    drawMapPlan(canvas, map);
+    drawMapPlan(canvas, doc);
   };
   return { pic, plan, draw };
 }

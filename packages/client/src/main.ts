@@ -7,28 +7,21 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { VISIBLE_IMPORTED_MAPS, initPhysics, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
-import arenaJson from '../../../maps/phase0_arena.json';
-import vaultJson from '../../../maps/m3_vault.json';
-import outpostJson from '../../../maps/m4_outpost.json';
-import sandgateJson from '../../../maps/sandgate.json';
-import citadelJson from '../../../maps/citadel.json';
-import canyonJson from '../../../maps/canyon.json';
+import { VISIBLE_IMPORTED_MAPS, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
-import { currentFrameCap, loadRenderScale, renderRatio } from './game/atmosphere.ts';
-import { EditorApp, type TestRequest } from './editor/editorApp.ts';
-import { LocalTransport, prewarmSimWorker } from './game/localTransport.ts';
+import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
+import type { EditorApp, TestRequest } from './editor/editorApp.ts';
 import { FramePacer } from './game/framePacer.ts';
-import { NetTransport } from './game/netTransport.ts';
-import { CharacterDesigner } from './designer/characterDesigner.ts';
+import type { CharacterDesigner } from './designer/characterDesigner.ts';
 import { FrontEnd, type ArcadeMap } from './frontend/frontEnd.ts';
 import { MenuScene } from './frontend/menuScene.ts';
 import { ModelThumbnails } from './frontend/modelThumbs.ts';
 import { setWeaponIconSource } from './frontend/weaponIcons.ts';
 import { PortraitRenderer } from './frontend/portraits.ts';
-import { GameSession, type SessionOptions, type Travel } from './game/session.ts';
+import type { GameSession, SessionOptions, Travel } from './game/session.ts';
 import { listLibrary, openFromLibrary } from './editor/storage.ts';
+import { MAP_INDEX, builtInMapJson, isBuiltInMap, loadBuiltInMap, type MapIndexEntry } from './mapIndex.ts';
 import { PLAYLISTS, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
@@ -95,33 +88,82 @@ function revealWhenReady(ready: Promise<unknown>): void {
   });
 }
 
-const OFFLINE_MAPS = { arena: arenaJson, vault: vaultJson, outpost: outpostJson, sandgate: sandgateJson, citadel: citadelJson, canyon: canyonJson } as const;
+/** The quick-start names (?offline=) of the original maps, and their files in maps/. */
+const OFFLINE_MAPS = { arena: 'phase0_arena', vault: 'm3_vault', outpost: 'm4_outpost', sandgate: 'sandgate', citadel: 'citadel', canyon: 'canyon' } as const;
 type OfflineMap = keyof typeof OFFLINE_MAPS;
-/** Every map file shipped in maps/ (loaded up front; they are small). */
-const EXTRA_MAPS = import.meta.glob<unknown>('../../../maps/*.json', { eager: true, import: 'default' });
+const isOfflineMap = (key: string): key is OfflineMap => Object.hasOwn(OFFLINE_MAPS, key);
 /** Maps converted from TimeSplitters MapMaker saves: their own chunks, and their own "Imported" group in the Arcade. */
 const importedMaps = (ids?: readonly string[]): Promise<Record<string, unknown>> => import('./importedMaps.ts').then((m) => m.loadImportedMaps(ids));
 
-/** Arcade entries for a set of map files, from each map's own metadata, by name. */
+/** The match code (matchCode.ts: session, transports, physics), loaded once; a failed load is tried again next time. */
+type MatchCode = typeof import('./game/matchCode.ts');
+let matchCode: Promise<MatchCode> | undefined;
+function loadMatchCode(): Promise<MatchCode> {
+  matchCode ??= import('./game/matchCode.ts')
+    .then(async (m) => {
+      // Physics is needed by every session for client prediction, online or local.
+      await m.initPhysics();
+      return m;
+    })
+    .catch((e: unknown) => {
+      matchCode = undefined;
+      throw e;
+    });
+  return matchCode;
+}
+
+/** An Arcade entry whose map is already loaded (imported maps, your MapMaker maps). */
+function loadedEntry(key: string, map: MapDocument, rest: Omit<ArcadeMap, 'key' | 'metadata' | 'map' | 'load'>): ArcadeMap {
+  return { key, metadata: map.metadata, map, load: () => Promise.resolve(map), ...rest };
+}
+
+/** An Arcade entry for a built-in map: the card from the index, the map itself loaded the first time it's needed (and kept). */
+function builtInEntry(key: string, e: MapIndexEntry, rest: Omit<ArcadeMap, 'key' | 'metadata' | 'map' | 'load'>): ArcadeMap {
+  let loading: Promise<MapDocument> | undefined;
+  const entry: ArcadeMap = {
+    key,
+    metadata: e.metadata,
+    load: () =>
+      (loading ??= loadBuiltInMap(e.key).then(
+        (doc) => {
+          if (!doc) throw new Error(`map ${e.key} failed to load`);
+          entry.map = doc;
+          return doc;
+        },
+        (err: unknown) => {
+          loading = undefined;
+          throw err;
+        },
+      )),
+    ...rest,
+  };
+  return entry;
+}
+
+const byName = (a: ArcadeMap, b: ArcadeMap) => a.metadata.name.localeCompare(b.metadata.name);
+const blurbOf = (description: string) => description.split(/(?<=\.)\s/)[0] ?? '';
+const botsFor = (players: { max: number }) => Math.max(3, Math.min(11, players.max - 1));
+
+/** Arcade entries for a set of map files (imported maps), from each map's own metadata, by name. */
 function arcadeEntries(files: Record<string, unknown>, group?: string): ArcadeMap[] {
   return Object.entries(files)
     .flatMap(([path, json]): ArcadeMap[] => {
       const key = path.replace(/^.*\/|\.json$/g, '');
-      if (key in OFFLINE_MAPS || isRetiredMap(key)) return [];
+      if (isOfflineMap(key) || isRetiredMap(key)) return [];
       const r = loadMap(json);
       if (!r.ok) return [];
-      const blurb = r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? '';
-      return [{ key, map: r.map, blurb, modes: playableModes(r.map), bots: Math.max(3, Math.min(11, r.map.metadata.recommendedPlayers.max - 1)), ...(group ? { group } : {}) }];
+      return [loadedEntry(key, r.map, { blurb: blurbOf(r.map.metadata.description), modes: playableModes(r.map), bots: botsFor(r.map.metadata.recommendedPlayers), ...(group ? { group } : {}) })];
     })
-    .sort((a, b) => a.map.metadata.name.localeCompare(b.map.metadata.name));
+    .sort(byName);
 }
 
-/** The built-in maps the Arcade offers, with the modes each supports. */
+/** The built-in maps the Arcade offers, with the modes each supports (from the index: no map file is loaded for this). */
 function arcadeMaps(): ArcadeMap[] {
+  const indexed = new Map(MAP_INDEX.map((e) => [e.key, e]));
   const entry = (key: OfflineMap, blurb: string, modes: GameMode[], bots: number): ArcadeMap[] => {
-    const r = loadMap(OFFLINE_MAPS[key]);
+    const e = indexed.get(OFFLINE_MAPS[key]);
     // Modes the map gains from its objectives (flag bases, hills) join the built-in list.
-    return r.ok ? [{ key, map: r.map, blurb, modes: [...modes, ...playableModes(r.map).filter((m) => !modes.includes(m))], bots }] : [];
+    return e ? [builtInEntry(key, e, { blurb, modes: [...modes, ...e.modes.filter((m) => !modes.includes(m))], bots })] : [];
   };
   return [
     ...entry('canyon', 'Outdoor canyon: two bases, boulder fields, hills and a ridge ledge.', ['core.tdm', 'core.deathmatch'], 9),
@@ -129,7 +171,9 @@ function arcadeMaps(): ArcadeMap[] {
     ...entry('sandgate', 'Desert town: long street, mid doors, tunnels.', ['core.tdm', 'core.deathmatch'], 9),
     // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata;
     // arena, vault and outpost are retired (RETIRED_MAPS) and stay reachable only by ?offline= for tests.
-    ...arcadeEntries(EXTRA_MAPS),
+    ...MAP_INDEX.filter((e) => !isOfflineMap(e.key) && !isRetiredMap(e.key))
+      .map((e) => builtInEntry(e.key, e, { blurb: blurbOf(e.metadata.description), modes: e.modes, bots: botsFor(e.metadata.recommendedPlayers) }))
+      .sort(byName),
   ];
 }
 
@@ -137,8 +181,14 @@ function arcadeMaps(): ArcadeMap[] {
 function ownMaps(): ArcadeMap[] {
   return listLibrary().flatMap((e): ArcadeMap[] => {
     const r = openFromLibrary(e.id);
-    return 'map' in r ? [{ key: `own:${e.id}`, map: r.map, blurb: 'Your map', modes: playableModes(r.map), bots: 4, group: 'Your' }] : [];
+    return 'map' in r ? [loadedEntry(`own:${e.id}`, r.map, { blurb: 'Your map', modes: playableModes(r.map), bots: 4, group: 'Your' })] : [];
   });
+}
+
+/** Run `f` when the page is idle (soon after, at the latest). */
+function whenIdle(f: () => void, timeout = 3000): void {
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(() => f(), { timeout });
+  else setTimeout(f, 200);
 }
 
 // One audio system for the whole app. Browsers only start audio after a user
@@ -173,8 +223,10 @@ class App {
 
   init(): Promise<void> {
     this.ready ??= (async () => {
-      // Physics is needed by every session for client prediction, online or local.
-      const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), initPhysics(), loadFonts()]);
+      const maps = arcadeMaps();
+      // The home screen's featured map draws its plan: fetch that one map alongside the engine.
+      const featured = maps.find((m) => m.key === 'sandgate') ?? maps[0];
+      const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), loadFonts(), featured && capped(featured.load(), 5000)]);
       this.engine = created.engine;
       this.applyRenderScale();
       window.addEventListener('tiletrigger:render-scale', () => this.applyRenderScale());
@@ -185,7 +237,6 @@ class App {
       this.menuScene = new MenuScene(this.engine);
       this.portraits = new PortraitRenderer(this.engine);
       setWeaponIconSource(new ModelThumbnails(this.engine));
-      const maps = arcadeMaps();
       // Imported maps stay out of the list until each one is verified (docs/IMPORTED_MAPS_AUDIT.md):
       // the verified ones join the Arcade, ?imported lists them all, ?offline=<name> opens any one.
       void importedMaps(params.has('imported') ? undefined : VISIBLE_IMPORTED_MAPS).then(
@@ -225,15 +276,45 @@ class App {
 
   async showMenu(status = ''): Promise<void> {
     // Only the first visit has anything to wait for: coming back, the menu scene is already loaded.
-    if (!this.ready) revealWhenReady(this.init().then(() => capped(this.menuScene!.ready(), 2500)));
+    if (!this.ready) {
+      const shown = this.init().then(() => capped(this.menuScene!.ready(), 2500));
+      revealWhenReady(shown);
+      // Once the menu is up and the page idle, fetch what Play needs (the match code and the map it opens on).
+      void shown.then(() => whenIdle(() => this.prefetchPlay(), 2000));
+    }
     await this.init();
     this.mode = 'menu';
     this.editor?.hide();
     this.front!.show(status);
   }
 
+  /** Polite prefetch (idle, after the menu is shown): the match code and the map Play opens on, so Start doesn't wait. */
+  private prefetchPlay(): void {
+    void this.front?.preloadCurrentMap();
+    void loadMatchCode().catch(() => undefined);
+  }
+
+  /**
+   * Run `f` with the match code, loading it first if the prefetch hasn't yet
+   * (the menu stays up meanwhile). Only the latest request runs: a second
+   * Start while the first is still loading replaces it.
+   */
+  private matchRequest = 0;
+  private async withMatch(f: (m: MatchCode) => void): Promise<void> {
+    const token = ++this.matchRequest;
+    let m: MatchCode;
+    try {
+      m = await loadMatchCode();
+    } catch (e) {
+      console.error('match code failed to load', e);
+      this.front?.setStatus('The game failed to load: check your connection and try again.');
+      return;
+    }
+    if (token === this.matchRequest) f(m);
+  }
+
   async openDesigner(look?: string): Promise<void> {
-    await this.init();
+    const [{ CharacterDesigner }] = await Promise.all([import('./designer/characterDesigner.ts'), this.init()]);
     $('menu').hidden = true;
     this.mode = 'designer';
     this.designer = new CharacterDesigner(this.engine, this.canvas, look ?? this.front!.look, (id) => {
@@ -245,7 +326,7 @@ class App {
   }
 
   async openEditor(): Promise<void> {
-    await this.init();
+    const [{ EditorApp }] = await Promise.all([import('./editor/editorApp.ts'), this.init()]);
     const first = !this.editor;
     this.editor ??= new EditorApp({
       engine: this.engine,
@@ -261,15 +342,19 @@ class App {
     // The first time, its sky, ground and shaders are still on their way: fade the view in when they are.
     if (first) revealWhenReady(capped(this.editor.view.scene.whenReadyAsync(), 2000));
     // TEST starts a match in a worker: have one load the simulation while the map is being made.
-    prewarmSimWorker();
+    void loadMatchCode().then((m) => m.prewarmSimWorker(), () => undefined);
     // Automation hook for browser tests.
     (window as unknown as { __editor: EditorApp }).__editor = this.editor;
   }
 
   private startTest(req: TestRequest): void {
     const t0 = performance.now();
+    void this.withMatch((m) => this.startTestWith(m, req, t0));
+  }
+
+  private startTestWith(m: MatchCode, req: TestRequest, t0: number): void {
     this.editor!.hide();
-    this.startSession(new LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(TEST ? { test: TEST } : {}) }), {
+    this.startSession(m, new m.LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Back to MapMaker',
       exitOnF5: true,
       onReady: () => {
@@ -280,7 +365,7 @@ class App {
       onExit: (reason) => {
         this.mode = 'editor';
         this.editor!.show();
-        prewarmSimWorker();
+        m.prewarmSimWorker();
         if (reason) this.editor!.toast(`Test ended: ${reason}`, true);
       },
     });
@@ -288,8 +373,11 @@ class App {
 
   /** Quick start from a URL (?offline=sandgate, &gamemode=core.ctf): the map's own mode (or the one asked for) and a default bot count; `extra` adds rules (Classes). */
   async playOffline(which: string = 'arena', mode: string | null = null, extra: Partial<MatchRules> = {}, bots = 0): Promise<void> {
+    // Straight into a match: fetch its code alongside the engine.
+    void loadMatchCode().catch(() => undefined);
     await this.init();
-    const json = which in OFFLINE_MAPS ? OFFLINE_MAPS[which as OfflineMap] : (EXTRA_MAPS[`../../../maps/${which}.json`] ?? (await importedMaps([which]))[`../../../maps/imported/${which}.json`]);
+    const file = isOfflineMap(which) ? OFFLINE_MAPS[which] : which;
+    const json = isBuiltInMap(file) ? await builtInMapJson(file) : (await importedMaps([which]))[`../../../maps/imported/${which}.json`];
     if (!json) return void this.showMenu(`No map called ${which}`);
     const arena = loadMap(json);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');
@@ -309,7 +397,11 @@ class App {
   /** `hosting`: Host game carried over a map change (the same join code; friends rejoin it). */
   /** `autoHost`: open a join code for friends as soon as the match starts (Play → Host). */
   playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false): void {
-    this.startSession(new LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}), ...(TEST ? { test: TEST } : {}) }), {
+    void this.withMatch((m) => this.playLocalWith(m, map, rules, botFill, difficulty, carry, hosting, autoHost));
+  }
+
+  private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean): void {
+    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
@@ -319,7 +411,7 @@ class App {
       onExit: (reason, travel) => {
         // The host changed map: the same rules, players and bot skill there (Host game friends follow).
         if (reason === 'travel' && travel?.host) return this.playLocal(travel.host.map, travel.host.rules, travel.host.fill, travel.host.skill, undefined, travel.hosting);
-        if (reason === 'travel' && travel) return this.travelLocal(travel, rules, botFill, difficulty);
+        if (reason === 'travel' && travel) return void this.travelLocal(travel, rules, botFill, difficulty);
         travel?.hosting?.peer.close();
         this.chain = null;
         void this.showMenu(reason ?? '');
@@ -333,7 +425,8 @@ class App {
       ...o,
       isSuite: inSuite,
       own: o.suiteOnly ? [] : ownMaps(),
-      onPick: (m, mode) => o.onPick(m.map, mode),
+      // A built-in map loads when its card is picked; usually it's in by the time Change map is pressed.
+      onPick: (m, mode) => (m.map ? o.onPick(m.map, mode) : void m.load().then((doc) => o.onPick(doc, mode), (e: unknown) => console.warn('map failed to load', e))),
     });
 
   /** Start a playlist (maps/playlists): its first map; each win moves on to the next. */
@@ -341,14 +434,14 @@ class App {
     const playlist = PLAYLISTS.find((p) => p.id === id);
     if (!playlist) return void this.showMenu(`No playlist called ${id}`);
     this.chain = { playlist, index: -1, botFill, difficulty };
-    this.travelLocal({}, null, botFill, difficulty);
+    void this.travelLocal({}, null, botFill, difficulty);
   }
 
   /**
    * A local chain moves on: the "Next map" a map named, else the playlist's
    * next. Only maps of our suite load; anything else ends the chain.
    */
-  private travelLocal(travel: Travel, rules: MatchRules | null, botFill: number, difficulty: 'easy' | 'normal' | 'hard'): void {
+  private async travelLocal(travel: Travel, rules: MatchRules | null, botFill: number, difficulty: 'easy' | 'normal' | 'hard'): Promise<void> {
     const chain = this.chain;
     const at = chain ? (chain.index < 0 ? 0 : playlistNext(chain.playlist, chain.index)) : null;
     const id = travel.id ?? (chain && at !== null ? chain.playlist.maps[at]!.map : null);
@@ -357,7 +450,7 @@ class App {
       travel.hosting?.peer.close();
       return void this.showMenu(chain ? `${chain.playlist.name} complete!` : '');
     }
-    const json = inSuite(id) ? EXTRA_MAPS[`../../../maps/${id}.json`] : undefined;
+    const json = inSuite(id) ? await builtInMapJson(id).catch(() => undefined) : undefined;
     const loaded = json ? loadMap(json) : null;
     if (!loaded?.ok) {
       this.chain = null;
@@ -376,10 +469,11 @@ class App {
 
   /** Join a friend's hosted game (Host game) by its code. */
   async joinCode(code: string, name: string): Promise<void> {
+    void loadMatchCode().catch(() => undefined);
     await this.init();
     this.front!.setStatus('Connecting…');
     const signaling = await loadSignaling();
-    this.startSession(signaling.join(code, name, this.front!.look), {
+    void this.withMatch((m) => this.startSession(m, signaling.join(code, name, this.front!.look), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       onExit: (reason, travel) => {
@@ -387,13 +481,14 @@ class App {
         if (reason === 'travel' && travel) return void window.setTimeout(() => void this.joinCode(code, name), 1200);
         void this.showMenu(reason ? `Disconnected: ${reason}` : '');
       },
-    });
+    }));
   }
 
   async playOnline(url: string, name: string): Promise<void> {
+    void loadMatchCode().catch(() => undefined);
     await this.init();
     this.front!.setStatus('Connecting…');
-    this.startSession(new NetTransport(url, name, this.front!.look), {
+    void this.withMatch((m) => this.startSession(m, new m.NetTransport(url, name, this.front!.look), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       onExit: (reason, travel) => {
@@ -401,13 +496,13 @@ class App {
         if (reason === 'travel' && travel) return void window.setTimeout(() => void this.playOnline(url, name), 1200);
         void this.showMenu(reason ? `Disconnected: ${reason}` : '');
       },
-    });
+    }));
   }
 
-  private startSession(transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; onExit: (reason?: string, travel?: Travel) => void; onReady?: () => void }): void {
+  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; onExit: (reason?: string, travel?: Travel) => void; onReady?: () => void }): void {
     $('menu').hidden = true;
     this.mode = 'game';
-    this.session = new GameSession({
+    this.session = new m.GameSession({
       engine: this.engine,
       rendererKind: this.kind,
       canvas: this.canvas,
@@ -436,10 +531,8 @@ const app = new App();
 if (/^\/host\/?$/.test(location.pathname))
   void import('./hostPage.ts').then((m) =>
     m.openHostPage(
-      Object.entries(EXTRA_MAPS)
-        .map(([path, json]) => ({ id: path.split('/').pop()!.replace(/\.json$/, ''), json: json as MapDocument }))
-        .filter((m) => inSuite(m.id) && !isRetiredMap(m.id))
-        .map((m) => ({ id: m.id, name: m.json.metadata.name, modes: playableModes(m.json) }))
+      MAP_INDEX.filter((e) => inSuite(e.key) && !isRetiredMap(e.key))
+        .map((e) => ({ id: e.key, name: e.metadata.name, modes: e.modes }))
         .sort((a, b) => a.name.localeCompare(b.name)),
     ),
   );

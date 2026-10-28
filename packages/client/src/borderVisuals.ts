@@ -29,7 +29,7 @@ import {
 import type { ModelLibrary } from './content/models.ts';
 import type { MapStyler } from './mapMeshes.ts';
 import { windows } from './backdrop.ts';
-import { loadGraphicsQuality } from './game/atmosphere.ts';
+import { loadGraphicsQuality } from './game/graphicsSettings.ts';
 
 type V3 = [number, number, number];
 

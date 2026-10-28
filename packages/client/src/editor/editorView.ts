@@ -17,7 +17,7 @@ import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
 import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@tiletrigger/shared';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
-import { applyToneMapping } from '../game/atmosphere.ts';
+import { applyToneMapping } from '../game/graphicsSettings.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { buildRoadMeshes, disposeRoadMeshes } from '../roadMeshes.ts';
 import { BackdropVisuals } from '../backdrop.ts';

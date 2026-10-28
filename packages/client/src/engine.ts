@@ -1,5 +1,5 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
-import { WebGPUEngine } from '@babylonjs/core/Engines/webgpuEngine';
+import type { WebGPUEngine } from '@babylonjs/core/Engines/webgpuEngine';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
@@ -45,6 +45,8 @@ export async function createEngine(canvas: HTMLCanvasElement): Promise<{ engine:
   let touchedCanvas = false;
   if (forced === 'webgpu') {
     try {
+      // Opt-in, so its engine is a chunk of its own: WebGL2 pages never load it.
+      const { WebGPUEngine } = await import('@babylonjs/core/Engines/webgpuEngine');
       if (await WebGPUEngine.IsSupportedAsync) {
         touchedCanvas = true;
         const engine = new WebGPUEngine(canvas, { antialias: true, stencil: true, powerPreference: 'high-performance' });

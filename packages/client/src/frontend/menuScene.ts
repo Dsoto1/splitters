@@ -14,7 +14,7 @@ import { PLAYER, getWeapon, isCreature, npcLookRole } from '@tiletrigger/shared'
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CharacterLibrary } from '../content/characters.ts';
-import { applyToneMapping } from '../game/atmosphere.ts';
+import { applyToneMapping } from '../game/graphicsSettings.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
 import { testMode } from '../testMode.ts';

@@ -11,7 +11,7 @@ import '@babylonjs/core/Meshes/meshLODLevel';
 import '@babylonjs/core/Meshes/instancedMesh';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 // Side-effect import: registers the glTF 2.0 loader plugin.
-import '@babylonjs/loaders/glTF/2.0';
+import './gltf.ts';
 import { MODEL_FALLBACKS } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
 

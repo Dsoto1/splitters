@@ -192,14 +192,10 @@ import {
   type LightFixture,
   isRetiredMap,
 } from '@tiletrigger/shared';
-import sandgateTemplate from '../../../../maps/sandgate.json';
-import citadelTemplate from '../../../../maps/citadel.json';
-import canyonTemplate from '../../../../maps/canyon.json';
+import { MAP_INDEX, isBuiltInMap, loadBuiltInMap } from '../mapIndex.ts';
 
-/** Every map file shipped in maps/. */
-const SHIPPED_MAPS = import.meta.glob<unknown>('../../../../maps/*.json', { eager: true, import: 'default' });
-/** IDs of the built-in maps (they have automatic pictures). */
-const SHIPPED_IDS: ReadonlySet<string> = new Set(Object.keys(SHIPPED_MAPS).map((p) => p.replace(/^.*\/|\.json$/g, '')));
+/** IDs of the built-in maps (they have automatic pictures): the files in maps/, which load on demand (mapIndex.ts). */
+const SHIPPED_IDS = { has: isBuiltInMap };
 import { EditorView } from './editorView.ts';
 import { LIQUID_LOOKS } from '../game/scenarioVisuals.ts';
 import { clearDraft, deleteFromLibrary, exportMap, importMapFile, inLibrary, listDrafts, listLibrary, openFromLibrary, saveToLibrary, writeDraft } from './storage.ts';
@@ -3386,8 +3382,11 @@ export class EditorApp {
     const list = $('ed-library');
     list.replaceChildren();
     // Each row shows the map's picture and plan (loaded and drawn as it scrolls into view).
-    const tpl = (json: unknown) => ({ load: () => ((r) => (r.ok ? r.map : null))(loadMap(json)), shipped: true });
-    const add = (label: string, sub: string, open: () => void, remove?: () => void, cls = '', preview?: { load: () => MapDocument | null; shipped: boolean }) => {
+    // Templates are built-in maps: each loads (its own chunk) when its row is seen or opened.
+    const tpl = (id: string) => ({ load: () => loadBuiltInMap(id), shipped: true });
+    const remix = (id: string, name: (m: MapDocument) => string) => () =>
+      void loadBuiltInMap(id).then((m) => m && this.replaceDocument({ ...m, metadata: { ...m.metadata, id: newId('map'), name: name(m), parentId: m.metadata.id } }));
+    const add = (label: string, sub: string, open: () => void, remove?: () => void, cls = '', preview?: { load: () => MapDocument | null | Promise<MapDocument | null>; shipped: boolean }) => {
       const li = document.createElement('li');
       if (cls) li.className = cls;
       if (preview) li.append(libraryThumb(preview.load, preview.shipped));
@@ -3422,28 +3421,14 @@ export class EditorApp {
         } else this.toast(`Could not open: ${r.issues[0]?.message}`, true);
       }, () => deleteFromLibrary(entry.id), '', { load: () => ((r) => ('map' in r ? r.map : null))(openFromLibrary(entry.id)), shipped: SHIPPED_IDS.has(entry.id) });
     }
-    add('Sandgate', 'Template · desert town for Team Deathmatch, with open courtyards', () => {
-      const r = loadMap(sandgateTemplate);
-      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Sandgate Remix', parentId: r.map.metadata.id } });
-    }, undefined, '', tpl(sandgateTemplate));
-    add('Citadel', 'Template · castle keep with a two-storey atrium, roof terraces, props and breakables', () => {
-      const r = loadMap(citadelTemplate);
-      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Citadel Remix', parentId: r.map.metadata.id } });
-    }, undefined, '', tpl(citadelTemplate));
-    add('Rockfall Canyon', 'Template · sculpted terrain canyon with two bases, boulders and a ridge ledge', () => {
-      const r = loadMap(canyonTemplate);
-      if (r.ok) this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: 'Canyon Remix', parentId: r.map.metadata.id } });
-    }, undefined, '', tpl(canyonTemplate));
-    // Every other shipped map (the homage maps and later additions) is a template too.
+    add('Sandgate', 'Template · desert town for Team Deathmatch, with open courtyards', remix('sandgate', () => 'Sandgate Remix'), undefined, '', tpl('sandgate'));
+    add('Citadel', 'Template · castle keep with a two-storey atrium, roof terraces, props and breakables', remix('citadel', () => 'Citadel Remix'), undefined, '', tpl('citadel'));
+    add('Rockfall Canyon', 'Template · sculpted terrain canyon with two bases, boulders and a ridge ledge', remix('canyon', () => 'Canyon Remix'), undefined, '', tpl('canyon'));
+    // Every other shipped map (the homage maps and later additions) is a template too (listed from the index: the maps that load).
     const known = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
-    for (const [path, json] of Object.entries(SHIPPED_MAPS)) {
-      const id = path.replace(/^.*\/|\.json$/g, '');
+    for (const { key: id, metadata } of MAP_INDEX) {
       if (known.has(id) || isRetiredMap(id)) continue;
-      const r = loadMap(json);
-      if (!r.ok) continue;
-      add(r.map.metadata.name, `Template · ${r.map.metadata.description.split(/(?<=\.)\s/)[0] ?? ''}`, () => {
-        this.replaceDocument({ ...r.map, metadata: { ...r.map.metadata, id: newId('map'), name: `${r.map.metadata.name} Remix`, parentId: r.map.metadata.id } });
-      }, undefined, '', { load: () => r.map, shipped: true });
+      add(metadata.name, `Template · ${metadata.description.split(/(?<=\.)\s/)[0] ?? ''}`, remix(id, (m) => `${m.metadata.name} Remix`), undefined, '', tpl(id));
     }
     dialog.showModal();
   }

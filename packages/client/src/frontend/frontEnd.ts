@@ -43,11 +43,12 @@ import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
 import { installTooltips } from './tooltip.ts';
-import { FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadGraphicsQuality, loadRenderScale, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/atmosphere.ts';
+import { FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadGraphicsQuality, loadRenderScale, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
+import type { MapMeta } from '../mapIndex.ts';
 import { choice, fold as foldEl, infoTip, noteList, settingRow, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
@@ -65,8 +66,8 @@ function inspired(key: string): HTMLElement[] {
 
 /** A built-in map the Arcade offers. */
 /** A map card's picture (on top) and plan (beside the name): built-in maps have an automatic picture, grouped ones (imported) don't. */
-function cardThumbs(m: { map: MapDocument; group?: string }): MapThumbs {
-  const t = mapThumbs(m.map, !m.group);
+function cardThumbs(m: ArcadeMap): MapThumbs {
+  const t = mapThumbs(m, !m.group);
   t.pic.classList.add('card-pic');
   t.plan.classList.add('card-plan');
   return t;
@@ -92,7 +93,12 @@ function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void
 
 export interface ArcadeMap {
   key: string;
-  map: MapDocument;
+  /** What its card shows; the same as `map.metadata` once loaded. */
+  metadata: MapMeta;
+  /** The whole map, once loaded (built-in maps load on demand: mapIndex.ts). */
+  map?: MapDocument;
+  /** Load the whole map and keep it as `map`. */
+  load(): Promise<MapDocument>;
   blurb: string;
   modes: GameMode[];
   bots: number;
@@ -338,14 +344,14 @@ export class FrontEnd {
       nav.append(b);
     });
     const featured = this.maps.find((m) => m.key === 'sandgate') ?? this.maps[0]!;
-    const featuredPic = mapThumbs(featured.map, !featured.group);
+    const featuredPic = mapThumbs(featured, !featured.group);
     featuredPic.pic.classList.add('featured-pic');
     featuredPic.plan.classList.add('card-plan');
     const card = el(
       'button',
       { class: 'featured panel', title: 'Play this map' },
       featuredPic.pic,
-      el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('div', { class: 'kicker', textContent: 'Featured map' }), el('h3', { textContent: featured.map.metadata.name }), ...inspired(featured.key), el('p', { textContent: `${featured.modes.map((m) => MODE_LABEL[m]).join(' · ')} — ${featured.blurb}` })), featuredPic.plan),
+      el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('div', { class: 'kicker', textContent: 'Featured map' }), el('h3', { textContent: featured.metadata.name }), ...inspired(featured.key), el('p', { textContent: `${featured.modes.map((m) => MODE_LABEL[m]).join(' · ')} — ${featured.blurb}` })), featuredPic.plan),
     );
     card.addEventListener('click', () => {
       this.pickMap(featured.key);
@@ -402,6 +408,11 @@ export class FrontEnd {
     return this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
   }
 
+  /** Load the map Play opens on (main.ts asks while the menu is idle), so the setup panel and Start don't wait for it. */
+  preloadCurrentMap(): Promise<unknown> {
+    return this.currentMap().load().catch(() => undefined);
+  }
+
   private pickMap(key: string): void {
     const m = this.maps.find((x) => x.key === key);
     if (!m) return;
@@ -451,7 +462,7 @@ export class FrontEnd {
         'button',
         { class: `map-card${m.key === current.key ? ' on' : ''}` },
         pic.pic,
-        el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('b', { textContent: m.map.metadata.name }), ...inspired(m.key), el('small', { textContent: m.blurb }), el('div', { class: 'mode-tags' }, ...m.modes.map((x) => el('span', { textContent: MODE_LABEL[x] })))), pic.plan),
+        el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('b', { textContent: m.metadata.name }), ...inspired(m.key), el('small', { textContent: m.blurb }), el('div', { class: 'mode-tags' }, ...m.modes.map((x) => el('span', { textContent: MODE_LABEL[x] })))), pic.plan),
       );
       card.dataset.map = m.key;
       card.addEventListener('click', () => {
@@ -475,6 +486,15 @@ export class FrontEnd {
   private fillSetup(panel: HTMLElement): void {
     const current = this.currentMap();
     const map = current.map;
+    if (!map) {
+      // A built-in map still loading (usually already in: the menu fetches the current one while idle).
+      panel.replaceChildren(el('p', { class: 'setup-sub', textContent: `Loading ${current.metadata.name}…` }));
+      void current.load().then(
+        () => panel.isConnected && this.currentMap() === current && this.refreshSetup(),
+        () => this.setStatus(`${current.metadata.name} failed to load`),
+      );
+      return;
+    }
     const s = this.setup;
     const team = isTeamMode(s.mode);
     const coop = isCoopMode(s.mode);
@@ -488,7 +508,7 @@ export class FrontEnd {
     // ---- header: the map's picture and top-down plan, name, what you're about to play
     const thumbs = mapThumbs(map, !current.group);
     requestAnimationFrame(thumbs.draw);
-    const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.map.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
+    const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
     mapSelect.addEventListener('change', () => {
       this.pickMap(mapSelect.value);
       this.saveSetup();
@@ -786,6 +806,7 @@ export class FrontEnd {
   /** Start the match (`host`: and open a join code for friends). */
   private start(host = false): void {
     const m = this.currentMap();
+    if (!m.map) return void m.load().then(() => this.currentMap() === m && this.start(host), () => this.setStatus(`${m.metadata.name} failed to load`));
     this.saveSetup();
     const { rules, fill } = rulesFromSetup(this.setup, m.map);
     // A co-op playlist starts on its own first map; the chain carries on from there.
@@ -803,7 +824,7 @@ export class FrontEnd {
    * your MapMaker maps).
    */
   hostMapPicker(o: { mode: GameMode; current: string; suiteOnly: boolean; isSuite: (id: string) => boolean; own?: readonly ArcadeMap[]; onPick: (m: ArcadeMap, mode: GameMode) => void; onClose: () => void }): HTMLElement {
-    const maps = [...this.maps.filter((m) => !o.suiteOnly || (!m.group && o.isSuite(m.map.metadata.id))), ...(o.suiteOnly ? [] : (o.own ?? []))];
+    const maps = [...this.maps.filter((m) => !o.suiteOnly || (!m.group && o.isSuite(m.metadata.id))), ...(o.suiteOnly ? [] : (o.own ?? []))];
     const modes = GAME_MODES.filter((mode) => maps.some((m) => m.modes.includes(mode)));
     let mode: GameMode = modes.includes(o.mode) ? o.mode : (modes[0] ?? 'core.deathmatch');
     let picked: ArcadeMap | null = null;
@@ -834,18 +855,20 @@ export class FrontEnd {
           if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
         }
         const pic = cardThumbs(m);
-        const here = m.map.metadata.id === o.current;
-        const card = el('button', { class: `map-card${picked === m ? ' on' : ''}` }, pic.pic, el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('b', { textContent: m.map.metadata.name }), el('small', { textContent: here ? 'Playing now' : m.blurb })), pic.plan));
+        const here = m.metadata.id === o.current;
+        const card = el('button', { class: `map-card${picked === m ? ' on' : ''}` }, pic.pic, el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('b', { textContent: m.metadata.name }), el('small', { textContent: here ? 'Playing now' : m.blurb })), pic.plan));
         card.dataset.map = m.key;
-        card.dataset.id = m.map.metadata.id;
+        card.dataset.id = m.metadata.id;
         card.addEventListener('click', () => {
           picked = m;
+          // Fetch it now, so Change map goes ahead the moment it's pressed.
+          void m.load().catch(() => undefined);
           draw();
         });
         cards.append(card);
         lazy(card, pic.draw);
       }
-      chosen.textContent = picked ? `${picked.map.metadata.name} · ${MODE_LABEL[mode]}` : 'Pick a map';
+      chosen.textContent = picked ? `${picked.metadata.name} · ${MODE_LABEL[mode]}` : 'Pick a map';
       go.disabled = !picked;
     };
     draw();
@@ -1059,9 +1082,9 @@ export class FrontEnd {
   /** A listing's map: its picture and plan when it is one of the built-in maps, and its name. */
   private listingMap(g: LobbyListing): HTMLElement {
     const name = el('span', { class: 'gb-map-name', textContent: g.map });
-    const known = g.mapId && !g.community ? this.maps.find((m) => !m.group && m.map.metadata.id === g.mapId) : undefined;
+    const known = g.mapId && !g.community ? this.maps.find((m) => !m.group && m.metadata.id === g.mapId) : undefined;
     if (!known) return el('span', { class: 'gb-map' }, name);
-    const thumbs = mapThumbs(known.map, true);
+    const thumbs = mapThumbs(known, true);
     requestAnimationFrame(thumbs.draw);
     return el('span', { class: 'gb-map' }, thumbPair(thumbs, 'gb-thumbs'), name);
   }
