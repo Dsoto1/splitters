@@ -2259,7 +2259,11 @@ async function dedicatedhostFlow(browser) {
     if (button) {
       await admin.evaluate((s) => document.getElementById(`hc-kick-${s}`).click(), slot);
       const kicked = await player.waitForFunction(() => /kicked/i.test(document.body.innerText), null, { timeout: T(20000) }).then(() => true, () => false);
-      check(kicked, 'the kicked player is told and leaves the match');
+      // What the player saw and what the host logged, when the kick didn't land (CI annotations carry it).
+      const why = kicked
+        ? ''
+        : ` (player: ${await player.evaluate(() => JSON.stringify({ phase: window.__cs?.phase?.(), slot: window.__cs?.slot, text: document.body.innerText.replace(/\s+/g, ' ').slice(0, 240) })).catch((e) => `gone: ${e.message.slice(0, 80)}`)}; host log: ${(() => { try { return readFileSync(join(hostState, 'logs', 'host.log'), 'utf8').split('\n').filter(Boolean).slice(-8).join(' / ').slice(0, 500); } catch { return 'none'; } })()})`;
+      check(kicked, `the kicked player is told and leaves the match${why}`);
     }
   }
   check(probes.length === 0, `pages other than /host never look for a Host Service (${probes.join(', ')})`);
