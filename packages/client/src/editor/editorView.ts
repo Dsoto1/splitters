@@ -224,7 +224,18 @@ export class EditorView {
     const boxes = buildMapGeometry(visible);
     const drawn = [...boxes, ...buildMapDecor(visible)];
     const { levelHeight } = doc.classicStructure;
-    const onLevel = (b: WorldBox) => Math.floor((b.min[1] + 0.3) / levelHeight) === level;
+    // Which level a piece belongs to. A floor goes by its top (a level's floor slab hangs half a metre
+    // below the level, and sunken floors lower still: going by the bottom put the ground floor on
+    // level -1, so it was drawn ghosted with the terrain showing through it, and the next level's
+    // floor on this one). Anything else goes by its middle; pieces of a tile never go below its level.
+    const tileZ = new Map(doc.classicStructure.tiles.map((t) => [t.id, t.z]));
+    const levelOf = (b: WorldBox) => {
+      const y = b.kind === 'floor' ? b.max[1] - 0.05 : (b.min[1] + b.max[1]) / 2;
+      const byHeight = b.kind === 'floor' ? Math.round(b.max[1] / levelHeight) : Math.floor(y / levelHeight);
+      const z = tileZ.get(b.sourceId);
+      return z === undefined ? byHeight : Math.max(z, byHeight);
+    };
+    const onLevel = (b: WorldBox) => levelOf(b) === level;
     this.mapMeshes = this.styler.buildBoxes(visible, drawn.filter(onLevel), 'edmap');
     this.styler.buildTerrain(doc, 'edmap');
     disposeRoadMeshes(this.roadMeshes);
