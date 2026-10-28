@@ -113,12 +113,12 @@ fast-forward `main` to it (it contains `main`).
    `check/kickprobe` are leftover probe branches (deleting a remote branch is
    refused from here: the owner can delete them). Effects are also capped
    (remote pack flashes within 45 m on at most 8 guns; 10 effects at once).
-6. **Next step:** `check/candidate` run on `85a2737` is checking the hang fix.
-   Its editorux failure (the right-click menu) was the test clicking off
-   screen, fixed in `b266bc9` (session branch, not yet on `check/candidate`
-   so as not to cancel that run). When it finishes: push the session branch
-   to `check/candidate`; green → fast-forward `main`; then screenshot the
-   muzzle flash from the published check build.
+6. **Next step:** the hang fix went green on perf, hostgame and dedicatedhost
+   (run on `85a2737`). The last two failures were test-side (editorux clicked
+   off screen; scenery clicked the Terrain pane while the Sky pane was open),
+   fixed in `129dc9d`, now on `check/candidate`. When that run is green:
+   fast-forward `main` to it (`git push origin 129dc9d:main`), then screenshot
+   the muzzle flash from the published check build (`window.__flashHold`).
 7. Waiting on the owner: privacy-page contact address; Sandgate's street
    terrain (lumpy dirt/grass in the open streets is authored paint: the owner
    can now draw sand Paths over it); nine portraits still rendered live.
