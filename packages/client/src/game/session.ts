@@ -1166,6 +1166,8 @@ export class GameSession {
                 return;
               }
               this.view.scenario.liquids.fx.shot(eye, to);
+              // The railgun's round lands with a big stylised impact (Binbun's Hit FX).
+              if (def?.id === 'core.railgun') this.view.hitFx(to, 'heavy');
               const victim = ev.hit[i] ?? null;
               const zone = ev.z?.[i] ?? 0;
               if (victim === this.slot) this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
@@ -1219,6 +1221,7 @@ export class GameSession {
               const len = Math.hypot(d.x, d.z) || 1;
               const dir = { x: d.x / len, y: 0.1, z: d.z / len };
               this.view.blood.hit(at, dir, 1.4);
+              this.view.hitFx(at, 'melee');
               this.view.pushPlayer(ev.hit!, { x: dir.x * 4, y: 1.5, z: dir.z * 4 });
             }
           } else if (ev.e === 'knock') {

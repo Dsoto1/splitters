@@ -23471,6 +23471,32 @@
       "modifications": [
         "effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js"
       ]
+    },
+    {
+      "file": "vfx/hit_fx.json",
+      "sha256": "07aead3b4bcfcd7e",
+      "bytes": 110720,
+      "source": "binbun-hit-fx/BinbunVFX_Vol2/StylizedHitFX/effects/**/*.tscn",
+      "title": "Stylized Hit FX (free): hit effect scenes",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js"
+      ]
+    },
+    {
+      "file": "vfx/explosion_fx.json",
+      "sha256": "9603a02303c23755",
+      "bytes": 79082,
+      "source": "binbun-explosion-fx/BinbunVFX_Vol2/ExplosionFX/effects/**/*.tscn",
+      "title": "Stylized Explosion FX (free): explosion effect scenes",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js"
+      ]
     }
   ]
 }

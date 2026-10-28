@@ -73,6 +73,7 @@ import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
+import { GodotVfx } from './godotVfx.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
@@ -238,6 +239,9 @@ export class GameView {
   /** Placed props by entity index (breakable ones disappear when broken). */
   private readonly props = new Map<number, TransformNode>();
   private effects: Fx[] = [];
+  /** Binbun's hit and explosion effects (godotVfx.ts), once their packs are in. */
+  private readonly vfx: GodotVfx;
+  private sunLight?: DirectionalLight;
   private zoneVisuals!: ZoneVisuals;
   private readonly viewRoot: TransformNode;
   private readonly foliage: FoliageVisuals;
@@ -293,6 +297,7 @@ export class GameView {
     hemi.groundColor = new Color3(0.35, 0.33, 0.3);
     this.hemi = hemi;
     const sun = new DirectionalLight('sun', new Vector3(-0.4, -1, 0.3), this.scene);
+    this.sunLight = sun;
     sun.intensity = 0.6;
 
     this.viewRoot = new TransformNode('viewRoot', this.scene);
@@ -305,6 +310,8 @@ export class GameView {
     // made it trail the muzzle by a frame whenever you moved.
     this.flash.billboardMode = MeshClass.BILLBOARDMODE_NONE;
     void loadMuzzleFlashes();
+    this.vfx = new GodotVfx(this.scene);
+    void GodotVfx.preload('hit_fx', 'explosion_fx');
     this.flashRig = new MuzzleFlashRig(this.scene, 'muzzleFlashRig', { renderingGroupId: 1 });
     this.flashRig.root.parent = this.viewRoot;
     this.brass = new StandardMaterial('brassMat', this.scene);
@@ -531,6 +538,12 @@ export class GameView {
     if (wall) this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4));
   }
 
+  /** A stylised hit from Binbun's Hit FX (godotVfx.ts): `melee` on a body, `heavy` where a railgun round lands. False before the pack is in. */
+  hitFx(at: Vec3, kind: 'melee' | 'heavy'): boolean {
+    const p = new Vector3(at.x, at.y, at.z);
+    return kind === 'melee' ? this.vfx.play('hit_fx', Math.random() < 0.5 ? 'vfx_hit_01' : 'vfx_hit_02', p, { scale: 0.22 }) : this.vfx.play('hit_fx', 'vfx_big_impact_01', p, { scale: 0.18 });
+  }
+
   /** A brief muzzle flash on a remote player's gun: the pack's flash for that weapon (muzzleFlash.ts), else the plain star. */
   remoteFlash(slot: number, def?: WeaponDefinition): void {
     const a = this.avatars.get(slot);
@@ -569,6 +582,11 @@ export class GameView {
     const now = performance.now();
     const dt = Math.min(0.1, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
+    if (this.vfx.count) {
+      // The packs' toon smoke is lit like everything else: this sun, this sky.
+      if (this.sunLight) this.vfx.setLight(this.sunLight.direction.clone(), this.sunLight.diffuse.scale(this.sunLight.intensity), (this.hemi?.diffuse ?? Color3.White()).scale((this.hemi?.intensity ?? 0.8) * 0.7));
+      this.vfx.update(dt * 1000);
+    }
     this.impacts.update(dt);
     // Remote muzzle flashes follow the guns.
     for (const a of this.avatars.values()) {
@@ -1371,6 +1389,8 @@ export class GameView {
   }
 
   explosion(at: Vec3, radius: number): void {
+    // Binbun's ground explosion (godotVfx.ts), sized to the blast; the plain fireball until its pack is in.
+    if (this.vfx.play('explosion_fx', 'vfx_ground_explosion_01', new Vector3(at.x, at.y - 0.3, at.z), { scale: Math.max(0.5, radius / 2.6) })) return;
     const ball = CreateSphere('boom', { diameter: 1, segments: 12 }, this.scene);
     const mat = glow(this.scene, 'boomMat', '#ffb347', 1);
     ball.material = mat;
@@ -1396,6 +1416,7 @@ export class GameView {
    */
   vehicleExplosion(at: Vec3, radius: number): void {
     const now = performance.now();
+    this.vfx.play('explosion_fx', 'vfx_ground_explosion_01', new Vector3(at.x, at.y - 0.3, at.z), { scale: Math.max(0.8, radius / 2) });
     const ball = (name: string, hex: string, centre: Vec3, size: number, delay: number, ttl: number, alpha: number) => {
       const mesh = CreateSphere(name, { diameter: 1, segments: 10 }, this.scene);
       const mat = glow(this.scene, `${name}Mat`, hex, 1);

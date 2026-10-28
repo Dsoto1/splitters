@@ -16,6 +16,22 @@
       "title": "flash effect settings",
       "bytes": 26566,
       "sha256": "f3cb2e6cca88fccf"
+    },
+    {
+      "file": "vfx/hit_fx.json",
+      "source": "binbun-hit-fx",
+      "src": "BinbunVFX_Vol2/StylizedHitFX/effects/**/*.tscn",
+      "title": "hit effect scenes",
+      "bytes": 110720,
+      "sha256": "07aead3b4bcfcd7e"
+    },
+    {
+      "file": "vfx/explosion_fx.json",
+      "source": "binbun-explosion-fx",
+      "src": "BinbunVFX_Vol2/ExplosionFX/effects/**/*.tscn",
+      "title": "explosion effect scenes",
+      "bytes": 79082,
+      "sha256": "9603a02303c23755"
     }
   ]
 }
