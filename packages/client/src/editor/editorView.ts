@@ -25,7 +25,7 @@ import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { PICKUP_HOVER, createPickupVisual } from '../game/pickupVisuals.ts';
-import { createPropNode, orientProp } from '../game/propVisuals.ts';
+import { createPropNode, disposePropNode, orientProp } from '../game/propVisuals.ts';
 import { CityVisuals } from '../game/cityVisuals.ts';
 import { createMountNode } from '../game/mountVisuals.ts';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -353,7 +353,7 @@ export class EditorView {
       let m = this.markers.get(e.id);
       if (m && m.key !== key) {
         this.nodeEntity.delete(m.node);
-        m.node.dispose(false, false);
+        disposePropNode(m.node);
         m.ring?.dispose();
         m = undefined;
       }
@@ -398,7 +398,7 @@ export class EditorView {
     for (const [id, m] of this.markers) {
       if (!seen.has(id)) {
         this.nodeEntity.delete(m.node);
-        m.node.dispose(false, false);
+        disposePropNode(m.node);
         m.ring?.dispose();
         this.markers.delete(id);
       }
@@ -544,7 +544,8 @@ export class EditorView {
       return;
     }
     if (this.propGhost?.model !== model) {
-      this.propGhost?.node.dispose(false, true);
+      // Not its materials: they are the model's, shared with every placed copy of it.
+      if (this.propGhost) disposePropNode(this.propGhost.node);
       const e = { id: 'ghost', kind: 'prop', position: [0, 0, 0], model, yaw: 0, scale: 1, solid: false, tint: null } as unknown as PropEntity;
       const node = createPropNode(this.scene, this.models, e, 'propGhost', false);
       this.propGhost = { model, node };
