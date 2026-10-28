@@ -1,3 +1,6 @@
+// Ray's side effect (scene picking, camera.getForwardRay): Babylon's pointer handling can pick on any scene, and
+// only the MapMaker imported it before it loaded on demand.
+import '@babylonjs/core/Culling/ray';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
