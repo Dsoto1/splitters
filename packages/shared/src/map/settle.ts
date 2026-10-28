@@ -130,3 +130,50 @@ export function floatingProps(map: MapDocument, boxes: readonly WorldBox[] = sup
   }
   return out;
 }
+
+/**
+ * Terrain kept under floors: wherever a floor lies over the ground, the
+ * terrain beneath it is lowered so it never shows through (terrain a few
+ * centimetres above or below a floor's top fights with it and shows as
+ * streaks and patches, and terrain above a floor would be walked on). Inside
+ * a floor the ground goes just under the slab; on the floor's edges just under
+ * its top, so open ground outside meets the floor without a step. Only ground
+ * near a floor is touched (within FLOOR_REACH of its top): a hill a floor is
+ * buried in, or a valley far below a bridge, stays as it is. Returns the same
+ * terrain when nothing needed lowering. Every load and every MapMaker edit of
+ * tiles or terrain goes through this, so maps never carry terrain through floors.
+ */
+export const FLOOR_REACH = 3;
+export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] = buildMapGeometry(map)): TerrainData | null {
+  const t = map.terrain;
+  if (!t) return t;
+  let heights: number[] | null = null;
+  const s = t.spacing;
+  const cm = (y: number) => Math.floor((y - t.baseY) * 100);
+  for (const b of boxes) {
+    if (b.kind !== 'floor' || b.yaw || b.pitch || b.roll) continue;
+    const top = b.max[1];
+    const c0 = Math.max(0, Math.ceil((b.min[0] - 0.01 - t.origin[0]) / s));
+    const c1 = Math.min(t.cols - 1, Math.floor((b.max[0] + 0.01 - t.origin[0]) / s));
+    const r0 = Math.max(0, Math.ceil((b.min[2] - 0.01 - t.origin[1]) / s));
+    const r1 = Math.min(t.rows - 1, Math.floor((b.max[2] + 0.01 - t.origin[1]) / s));
+    for (let r = r0; r <= r1; r++) {
+      const z = t.origin[1] + r * s;
+      const zEdge = z <= b.min[2] + 0.01 || z >= b.max[2] - 0.01;
+      for (let c = c0; c <= c1; c++) {
+        const x = t.origin[0] + c * s;
+        const edge = zEdge || x <= b.min[0] + 0.01 || x >= b.max[0] - 0.01;
+        const i = r * t.cols + c;
+        const h = (heights ?? t.heights)[i]!;
+        const y = t.baseY + h / 100;
+        if (y > top + FLOOR_REACH || y <= top - 0.05) continue;
+        const want = cm(edge ? top - 0.05 : Math.min(top - 0.05, b.min[1] - 0.02));
+        if (h > want) {
+          heights ??= [...t.heights];
+          heights[i] = want;
+        }
+      }
+    }
+  }
+  return heights ? { ...t, heights } : t;
+}

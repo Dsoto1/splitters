@@ -5,10 +5,10 @@ import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
 import { ELECTRIC_FENCE } from '../map/border.ts';
 import { MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument, type MapEntity, type Rotation, type SurfaceStyle, type TilePlacement, type TrapKind, type BlockBehaviour, type Liquid, type LightFixture, type EncounterEntrance, type GlassKind } from '../map/schema.ts';
-import { newId, type EditCommand } from './commands.ts';
+import { applyCommand, newId, type EditCommand } from './commands.ts';
 import { getProp } from '../content/props.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
-import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder } from '../map/settle.ts';
+import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder, terrainUnderFloors } from '../map/settle.ts';
 
 /** Editor-level selection: stable IDs only, never object references or indices. */
 export interface Selection {
@@ -907,4 +907,36 @@ export function edgeGlassAt(doc: MapDocument, target: EdgeTarget, catalog: TileC
   const [dx, dy] = SIDE_DIRS[target.side];
   const there = cells.get(cellKey(target.cell[0] + dx, target.cell[1] + dy, target.cell[2]));
   return (there && there.placement.glass?.[edgeKey(there.local, localSide(OPPOSITE_SIDE[target.side], there.placement.rotation))]) ?? null;
+}
+
+/**
+ * A MapMaker edit, plus lowering the terrain wherever a floor now lies over
+ * it (settle.ts terrainUnderFloors), in the same undo step: placing a room on
+ * a hillside, moving a block or raising the ground under a floor never leaves
+ * terrain showing through. Edits that can't move a floor or the ground pass through.
+ */
+export function withTerrainUnderFloors(doc: MapDocument, cmd: EditCommand): EditCommand {
+  const touches = (c: EditCommand): boolean => {
+    switch (c.kind) {
+      case 'batch':
+        return c.commands.some(touches);
+      case 'addTiles':
+      case 'removeTiles':
+      case 'updateTiles':
+      case 'setTerrain':
+        return true;
+      case 'addEntities':
+      case 'removeEntities':
+        return c.entities.some((e) => e.kind === 'block');
+      case 'updateEntities':
+        return c.after.some((e) => e.kind === 'block');
+      default:
+        return false;
+    }
+  };
+  if (!touches(cmd)) return cmd;
+  const after = applyCommand(doc, cmd);
+  const terrain = terrainUnderFloors(after);
+  if (!terrain || terrain === after.terrain) return cmd;
+  return { kind: 'batch', commands: [cmd, { kind: 'setTerrain', before: after.terrain, after: terrain }] };
 }

@@ -1,6 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   EditHistory,
+  withTerrainUnderFloors,
   addSpawnCommand,
   buildMapGeometry,
   checkPlacement,
@@ -647,7 +648,8 @@ export class EditorApp {
       return false;
     }
     try {
-      this.history.execute(label, cmd);
+      // Terrain never shows through a floor: lowered under any the edit puts over it, in the same undo step.
+      this.history.execute(label, withTerrainUnderFloors(this.doc, cmd));
       return true;
     } catch (e) {
       this.toast(`Can't ${label.toLowerCase()}: ${(e as Error).message}`, true);
