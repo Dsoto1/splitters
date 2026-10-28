@@ -36,9 +36,17 @@ export interface LobbyListing {
   community?: boolean;
   versionId?: string;
   contentHash?: string;
+  /**
+   * Where the match runs: a player's browser tab (Host game; ends when they
+   * leave), or a dedicated Host Service on someone's always-on computer
+   * (packages/host). Either way community-run: no listing is ever official.
+   */
+  hostType?: HostType;
   /** Seconds since the host last checked in. */
   age?: number;
 }
+
+export type HostType = 'browser' | 'dedicated';
 
 /** What a host sends to list or refresh its game. */
 export type LobbyAdvert = Omit<LobbyListing, 'id' | 'age'>;
@@ -51,6 +59,23 @@ export const LOBBY_EXPIRY_SECONDS = 65;
 const CODE_RE = /^[A-HJKMNP-Z2-9]{6}$/;
 const text = (v: unknown, max: number) => (typeof v === 'string' ? sanitizeName(v).slice(0, max) : null);
 const int = (v: unknown, min: number, max: number) => (typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max ? v : null);
+
+/**
+ * Whether a listing's name (or host name) passes itself off as ours: no
+ * listing is official (the hub never marks one so), and none may claim to be
+ * through its name ("Official", "ToshiroPlay", "Tile Trigger", look-alike
+ * spellings included).
+ */
+export function claimsOfficial(text: string): boolean {
+  const plain = text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[0134578@$|!]/g, (c) => ({ '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', $: 's', '|': 'i', '!': 'i' })[c] ?? c)
+    .replace(/l/g, 'i')
+    .replace(/[^a-z]/g, '');
+  return /officia|toshiro|tietrigger|tiietrigger/.test(plain);
+}
 
 /** An advert from untrusted JSON, or null if anything is off. */
 export function parseAdvert(v: unknown): LobbyAdvert | null {
@@ -80,6 +105,7 @@ export function parseAdvert(v: unknown): LobbyAdvert | null {
     max,
     version,
     relay: o.relay === true,
+    ...(o.hostType === 'dedicated' ? { hostType: 'dedicated' as const } : {}),
     ...(community ? { community } : {}),
     ...(versionId ? { versionId } : {}),
     ...(contentHash ? { contentHash } : {}),

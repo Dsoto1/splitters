@@ -224,3 +224,50 @@ and decompression. Infra already gives: TLS only (Caddy, HSTS), request bodies
 systemd (`NoNewPrivileges`, `ProtectSystem=full`, `PrivateTmp`,
 `MemoryMax=768M`), restarts with backoff, journald capped at 300 MB / 14
 days, Caddy access logs off (no per-request IP log).
+
+## 6a. Host Service MVP as built (October 2026)
+
+What runs today (`packages/host`; HOSTING.md "Dedicated host"), against the
+Phase 2 design above:
+
+- **No credentials**: the service holds no AWS credential, hub secret or
+  ToshiroPlay token. It talks to the hub as any browser host does (broker,
+  `/lobby`), so the hub's rate limits and caps apply unchanged (3 listings per
+  address, broker limits, 30 relay credentials per game).
+- **Nothing listens on the internet**: the broker socket is outbound; players
+  arrive over WebRTC (ICE; direct or through the hub's TURN). The only
+  listener is the control API on `127.0.0.1` (never `0.0.0.0`), protected by
+  an Origin allow-list (`https://trigger.toshiroplay.com`, localhost pages;
+  CORS echoes the allowed origin, never `*`; `Access-Control-Allow-Private-Network`),
+  a Host-header check against DNS rebinding, and a 192-bit pairing key made on
+  first run (state folder, file mode 0600) that /host receives in the URL
+  fragment of the link the service prints, and keeps in its own storage.
+  Without the key a page learns only that a service runs (`/api/ping`).
+- **Closed command set** (SEC-HOST-002): the console and the API accept only
+  named commands with validated arguments; a start request may name only a
+  suite map ID (never a path) and never the hub; there is no shell, path or
+  URL argument anywhere.
+- **Normal user** (SEC-HOST-001): no administrator rights to unpack, run or
+  start on boot (per-user Task Scheduler / Login Items / `systemd --user`).
+- **Crash supervision** (SEC-HOST-005): the match runs in a child process;
+  bounded error summaries (≤ 300 chars, no tokens); backoff 5 s → 5 min; 5
+  crashes in 10 min stop it (`crashloop`); a hung match (no report for 30 s)
+  is killed and restarted.
+- **Untrusted players**: the dedicated server's limits (MessageGuard, input
+  caps), plus per-link caps (`GUEST_TO_HOST_LIMITS`, binary refused, a link
+  150 messages behind is closed). `MAX_PLAYERS` caps people (upload).
+- **Bans**: by Cognito account when the player is signed in (hub-signed
+  Ed25519 ticket bound to the join code, 120 s, single use: the host never
+  sees the Cognito token, and a ticket can't be replayed at another game);
+  guests only by browser key and direct address, which is weak by design.
+  Stored locally (`bans.json`, 0600).
+- **No impersonation**: listings are never official; the hub refuses names
+  that claim to be (`claimsOfficial`); the game browser labels these games
+  "Dedicated host" with a "community-run" tooltip; non-suite maps stay
+  "Community map".
+- **Supply chain**: the downloads are built by CI from the lockfile, with
+  the official Node runtime checked against nodejs.org's SHASUMS256 and
+  node-datachannel's prebuilt module from npm (integrity-checked), and are
+  attested with Sigstore build provenance. Not yet: code signing (Windows
+  SmartScreen and macOS Gatekeeper warn once), signed self-updates (section
+  7), account pairing and the hub's host control socket (section 6).

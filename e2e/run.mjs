@@ -8,7 +8,9 @@
 // invulnerable player): see packages/client/src/testMode.ts. Wait on conditions, not fixed sleeps
 // (tools/ci/lint-e2e-waits.mjs).
 import { spawn } from 'node:child_process';
-import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium } from 'playwright';
 import { COVERED_MAPS, FLOWS, IMPORTED_PART, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
@@ -2112,6 +2114,152 @@ async function lobbyFlow(browser) {
   await solo.context().close();
 }
 
+/** A Host Service (packages/host) on a local hub: started as the owner would (`pnpm host`), with its own state folder. */
+async function startHostService({ hubPort, controlPort, env = {}, idle = false }) {
+  const state = mkdtempSync(join(tmpdir(), 'tt-host-e2e-'));
+  start('pnpm', ['--silent', '--filter', '@tiletrigger/host', 'start', ...(idle ? ['--', '--idle'] : [])], {
+    HUB: `http://127.0.0.1:${hubPort}`,
+    CONTROL_PORT: String(controlPort),
+    HOST_STATE_DIR: state,
+    STATUS_EVERY: '0',
+    ...env,
+  });
+  return state;
+}
+
+/** Listings on a local hub (node side). */
+const hubGames = (port) => fetch(`http://127.0.0.1:${port}/lobby/games`).then((r) => r.json()).then((d) => d.games);
+
+/**
+ * Dedicated host (Host Service): a headless host registers on a local hub and lists itself; a player
+ * joins it from the game browser exactly like a player-hosted game (no install, no prompt), sees bots,
+ * moves and gets snapshots; an admin joined by code kicks another player from the pause menu.
+ */
+async function dedicatedhostFlow(browser) {
+  const HUB_PORT = +(process.env.E2E_DEDICATED_HUB_PORT ?? 9079);
+  const CONTROL_PORT = +(process.env.E2E_DEDICATED_CONTROL_PORT ?? 7801);
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478', LAN_DISCOVERY: '0' });
+  await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000));
+  const hostState = await startHostService({ hubPort: HUB_PORT, controlPort: CONTROL_PORT, env: { MAP: 'sandgate', MODE: 'core.tdm', BOT_FILL: '8', SERVER_NAME: 'E2E Dedicated', ADMIN_TOKEN: 'e2e-admin-token' } });
+  const listed = await until(async () => (await hubGames(HUB_PORT)).some((g) => g.name === 'E2E Dedicated'), T(60000));
+  check(listed, 'the Host Service registers on the hub and lists itself');
+  if (!listed) return;
+  const game = (await hubGames(HUB_PORT)).find((g) => g.name === 'E2E Dedicated');
+  check(game.hostType === 'dedicated' && game.relay && !game.community && game.mapId === 'sandgate', `listed as a dedicated host with a relay, on our map (${JSON.stringify(game)})`);
+
+  const hub = `hub=127.0.0.1:${HUB_PORT}`;
+  const errors = [];
+  const probes = [];
+  const open = async (name, url) => {
+    const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+    page.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
+    // Nothing but /host may look for a Host Service on this computer.
+    page.on('request', (r) => /127\.0\.0\.1:(7797|7801|7802)/.test(r.url()) && probes.push(r.url()));
+    await page.addInitScript((n) => localStorage.setItem('cs.name', n), name);
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    return page;
+  };
+  const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
+
+  // A player finds it in the game browser and joins from there.
+  const player = await open('Visitor', `${CLIENT}/?${hub}`);
+  await player.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await player.evaluate(() => document.getElementById('nav-online')?.click());
+  const row = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Dedicated')) ?? null, null, { timeout: T(30000) }).then((h) => h.jsonValue(), () => null);
+  check(!!row && row.includes('Dedicated host') && !row.includes('Player-hosted'), `the game browser shows it as a Dedicated host (${row})`);
+  await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Dedicated')).querySelector('button').click());
+  const joined = await player.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
+  const screen = joined ? '' : await player.evaluate(() => (document.body.innerText.match(/Disconnected[^\n]*/) ?? [''])[0]).catch(() => '');
+  check(joined, `joining from the game browser puts the player in the match${screen ? ` (${screen})` : ''}`);
+  if (joined) {
+    // No install prompt, download link or banner anywhere on the way in or in game.
+    const nag = await player.evaluate(() => ({
+      links: document.querySelectorAll('a[href*="tiletrigger-host"], a[href*="releases"]').length,
+      text: /Host Service|Download/.test([...document.querySelectorAll('body *')].filter((e) => e.offsetParent !== null && !e.children.length).map((e) => e.textContent).join(' ')),
+    }));
+    check(nag.links === 0 && !nag.text, `joining a dedicated host shows no install prompt or download (${JSON.stringify(nag)})`);
+    const bots = await player.evaluate(() => [...window.__cs.hud.roster.values()].filter((p) => p.bot).length);
+    check(bots >= 5, `the player sees the host's bots (${bots})`);
+    const b0 = await player.evaluate(() => window.__cs.transport.bytesIn);
+    const moved = await player.evaluate(async () => {
+      let best = 0;
+      for (let turn = 0; turn < 4 && best <= 1; turn++) {
+        if (turn) window.__cs.input.yaw += Math.PI / 2;
+        const y0 = { ...window.__cs.local.state.pos };
+        window.__autoInput = { forward: 1 };
+        await new Promise((r) => setTimeout(r, 1500));
+        window.__autoInput = { forward: 0 };
+        const y1 = window.__cs.local.state.pos;
+        best = Math.max(best, Math.hypot(y1.x - y0.x, y1.z - y0.z));
+      }
+      return best;
+    });
+    const got = (await player.evaluate(() => window.__cs.transport.bytesIn)) - b0;
+    check(moved > 1 && got > 2000, `the player moves and keeps getting snapshots (${moved.toFixed(1)} m, ${(got / 1024).toFixed(0)} KB)`);
+
+    // The owner, joined by code with the admin token, kicks the visitor from the pause menu's player list.
+    const admin = await open('Owner', `${CLIENT}/?join=${game.code}&${hub}&admin=e2e-admin-token`);
+    const adminIn = await admin.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
+    if (!adminIn) console.log(readFileSync(join(hostState, 'logs', 'host.log'), 'utf8').split('\n').slice(-25).join('\n'));
+    check(adminIn, `the owner joins by code${adminIn ? '' : ` (${await admin.evaluate(() => document.body.innerText.match(/(Disconnected|couldn|no game)[^\n]*/)?.[0] ?? window.__cs?.phase?.() ?? 'no session').catch(() => '')})`}`);
+    const slot = await player.evaluate(() => window.__cs.slot);
+    const button = await admin.waitForFunction((s) => !!document.getElementById(`hc-kick-${s}`), slot, { timeout: T(45000), polling: 500 }).then(() => true, () => false);
+    check(button, `the admin gets the match controls, with the visitor in its player list${button ? '' : ` (${await admin.evaluate(() => JSON.stringify({ host: window.__cs?.host?.(), panels: document.querySelectorAll('[id=host-controls]').length, people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`) }))}, visitor slot ${slot})`}`);
+    if (button) {
+      await admin.evaluate((s) => document.getElementById(`hc-kick-${s}`).click(), slot);
+      const kicked = await player.waitForFunction(() => /kicked/i.test(document.body.innerText), null, { timeout: T(20000) }).then(() => true, () => false);
+      check(kicked, 'the kicked player is told and leaves the match');
+    }
+  }
+  check(probes.length === 0, `pages other than /host never look for a Host Service (${probes.join(', ')})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+
+}
+
+/** The /host page: download offered only when no Host Service runs; with one, pair, Start, see it listed, Stop. */
+async function hostpageFlow(browser) {
+  const HUB_PORT = +(process.env.E2E_HOSTPAGE_HUB_PORT ?? 9080);
+  const CONTROL_PORT = +(process.env.E2E_HOSTPAGE_CONTROL_PORT ?? 7802);
+  const errors = [];
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
+  page.on('pageerror', (e) => errors.push(e.message));
+  // No Host Service yet: the page explains both ways to host and offers the download.
+  await page.goto(`${CLIENT}/host?hostPort=${CONTROL_PORT}`, { waitUntil: 'domcontentloaded' });
+  const none = await page.waitForFunction(() => /No Host Service/.test(document.getElementById('hp-state')?.textContent ?? ''), null, { timeout: T(30000) }).then(() => true, () => false);
+  const offer = await page.evaluate(() => ({ downloads: document.querySelectorAll('a.hp-download').length, browser: /nothing to install/i.test(document.body.innerText) }));
+  check(none && offer.downloads >= 3 && offer.browser, `/host offers the download only as an option, next to hosting in the browser (${JSON.stringify(offer)})`);
+
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', LAN_DISCOVERY: '0' });
+  await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000));
+  const state = await startHostService({ hubPort: HUB_PORT, controlPort: CONTROL_PORT, idle: true });
+  const token = await until(() => Promise.resolve(existsSync(join(state, 'pairing-token'))), T(30000)).then(() => readFileSync(join(state, 'pairing-token'), 'utf8').trim());
+  await waitForHttp(`http://127.0.0.1:${CONTROL_PORT}/api/ping`, T(30000));
+  // The link the Host Service window shows pairs this browser.
+  await page.goto(`${CLIENT}/host?hostPort=${CONTROL_PORT}#pair=${token}`, { waitUntil: 'domcontentloaded' });
+  const paired = await page.waitForFunction(() => !!document.getElementById('hp-form') && document.getElementById('hp-form').childElementCount > 0, null, { timeout: T(30000) }).then(() => true, () => false);
+  check(paired && !(await page.evaluate(() => location.hash)), `the pairing link opens the controls (and leaves the key out of the address bar)${paired ? '' : ` (${await page.evaluate(() => document.getElementById('hp-service')?.textContent)})`}`);
+  if (paired) {
+    await page.fill('#hp-name', 'E2E From Host Page');
+    await page.selectOption('#hp-map', 'sandgate');
+    await page.fill('#hp-fill', '8');
+    await page.click('#hp-start');
+    const running = await page.waitForFunction(() => /Running/.test(document.getElementById('hp-run-state')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
+    check(running, `Start starts the server (${await page.evaluate(() => document.getElementById('hp-status')?.textContent)})`);
+    const listed = await until(async () => (await hubGames(HUB_PORT)).some((g) => g.name === 'E2E From Host Page' && g.hostType === 'dedicated'), T(30000));
+    check(listed, 'the server it started is in the game browser');
+    await page.click('#hp-stop');
+    const stopped = await page.waitForFunction(() => /^Stopped/.test(document.getElementById('hp-run-state')?.textContent ?? ''), null, { timeout: T(30000) }).then(() => true, () => false);
+    const gone = await until(async () => !(await hubGames(HUB_PORT)).some((g) => g.name === 'E2E From Host Page'), T(20000));
+    check(stopped && gone, 'Stop stops it and takes the listing down');
+  }
+  // Another site can't drive it.
+  const refused = await fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Origin: 'https://evil.example', Authorization: `Bearer ${token}` } }).then((r) => r.status);
+  check(refused === 403, `the control API refuses other sites' pages (${refused})`);
+  await fetch(`http://127.0.0.1:${CONTROL_PORT}/api/quit`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => undefined);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 /** Host game: one browser hosts its offline match with a code, a second joins by link through a hub's broker. */
 async function hostgameFlow(browser) {
   // The broker is a community hub's, as in a real game (a bare PeerJS broker never let the friend in on CI).
@@ -2377,7 +2525,7 @@ try {
   };
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, webgpu: webgpuFlow, visual: visualFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

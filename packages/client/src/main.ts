@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { VISIBLE_IMPORTED_MAPS, initPhysics, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { VISIBLE_IMPORTED_MAPS, initPhysics, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import arenaJson from '../../../maps/phase0_arena.json';
 import vaultJson from '../../../maps/m3_vault.json';
 import outpostJson from '../../../maps/m4_outpost.json';
@@ -432,8 +432,19 @@ class App {
 }
 
 const app = new App();
+// trigger.toshiroplay.com/host: hosting, in the browser or with the optional Host Service (hostPage.ts).
+if (/^\/host\/?$/.test(location.pathname))
+  void import('./hostPage.ts').then((m) =>
+    m.openHostPage(
+      Object.entries(EXTRA_MAPS)
+        .map(([path, json]) => ({ id: path.split('/').pop()!.replace(/\.json$/, ''), json: json as MapDocument }))
+        .filter((m) => inSuite(m.id) && !isRetiredMap(m.id))
+        .map((m) => ({ id: m.id, name: m.json.metadata.name, modes: playableModes(m.json) }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    ),
+  );
 // Back from the sign-in page (account.ts): finish signing in, then the menu.
-if (location.pathname === CALLBACK_PATH) void handleAuthCallback().then((message) => app.showMenu(message ?? ''));
+else if (location.pathname === CALLBACK_PATH) void handleAuthCallback().then((message) => app.showMenu(message ?? ''));
 else if (params.get('mode') === 'assets') {
   // Team tool: inspect imported models (orientation, scale, colour, licence).
   void (async () => {

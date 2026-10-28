@@ -994,7 +994,9 @@ export class FrontEnd {
       storage('cs.name', this.name);
       this.hooks.joinCode(c, this.displayName);
     });
-    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), el('div', { class: 'online-grid' }, this.gameBrowser(), el('div', { class: 'online-side' }, codeForm, this.lanPanel(), form)));
+    // Hosting: from a match (nothing to install), or a dedicated server (the optional Host Service, explained on /host).
+    const hosting = el('div', { class: 'form panel host-options' }, el('h4', { textContent: 'Host a game' }), el('p', { class: 'hint', textContent: 'From any match: Esc → Host game. Nothing to install.' }), el('a', { href: '/host', id: 'host-dedicated', class: 'link', textContent: 'Host a dedicated server…' }));
+    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), el('div', { class: 'online-grid' }, this.gameBrowser(), el('div', { class: 'online-side' }, codeForm, hosting, this.lanPanel(), form)));
   }
 
   /** Online → LAN: dedicated servers on your network (see game/lan.ts for how, and the limits). */
@@ -1076,8 +1078,11 @@ export class FrontEnd {
       const join = el('button', { class: 'primary', textContent: g.players >= g.max ? 'Full' : 'Join' });
       join.disabled = g.players >= g.max;
       join.addEventListener('click', () => this.hooks.joinCode(g.code, this.displayName));
-      const hosted = el('span', { class: 'gb-tag', textContent: 'Player-hosted' });
-      hosted.dataset.tip = "Runs in the host's browser: it ends if they leave, and the host's game decides what happens (play with people you trust for anything serious).";
+      const dedicated = g.hostType === 'dedicated';
+      const hosted = el('span', { class: `gb-tag${dedicated ? ' dedicated' : ''}`, textContent: dedicated ? 'Dedicated host' : 'Player-hosted' });
+      hosted.dataset.tip = dedicated
+        ? "Runs on a player's always-on computer (Tile Trigger Host Service), not in a browser tab: it keeps going when people come and go. Community-run, not an official server: its owner decides what happens."
+        : "Runs in the host's browser: it ends if they leave, and the host's game decides what happens (play with people you trust for anything serious).";
       const tags = [hosted];
       if (g.community) {
         const community = el('span', { class: 'gb-tag community', textContent: 'Community map' });

@@ -28,7 +28,7 @@ export function parseClientMessage(text: string): ClientMessage | null {
   switch (o.t) {
     case 'hello':
       return typeof o.protocol === 'number' && typeof o.name === 'string'
-        ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}), ...(typeof o.admin === 'string' && o.admin && o.admin.length <= 200 ? { admin: o.admin } : {}) }
+        ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}), ...(typeof o.admin === 'string' && o.admin && o.admin.length <= 200 ? { admin: o.admin } : {}), ...(typeof o.pk === 'string' && /^p_[A-Za-z0-9_-]{8,32}$/.test(o.pk) ? { pk: o.pk } : {}), ...(typeof o.ticket === 'string' && o.ticket.length <= 1000 ? { ticket: o.ticket } : {}) }
         : null;
     case 'admin':
       return typeof o.token === 'string' && o.token.length <= 200 ? { t: 'admin', token: o.token } : null;
@@ -108,6 +108,14 @@ function parseHostCommand(raw: unknown): HostCommand | null {
       if (typeof o.map !== 'string' || !o.map || o.map.length > 80) return null;
       if (o.mode !== undefined && (typeof o.mode !== 'string' || !isGameMode(o.mode))) return null;
       return { c: 'map', map: o.map, ...(o.mode !== undefined ? { mode: o.mode as Extract<HostCommand, { c: 'map' }>['mode'] & string } : {}) };
+    case 'kick':
+    case 'ban': {
+      if (!(typeof o.slot === 'number' && Number.isInteger(o.slot) && o.slot >= 0 && o.slot < 1000)) return null;
+      const reason = typeof o.reason === 'string' ? o.reason.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 80) : '';
+      if (o.c === 'kick') return { c: 'kick', slot: o.slot, ...(reason ? { reason } : {}) };
+      if (o.minutes !== undefined && !(typeof o.minutes === 'number' && Number.isInteger(o.minutes) && o.minutes >= 0 && o.minutes <= 525_600)) return null;
+      return { c: 'ban', slot: o.slot, ...(o.minutes ? { minutes: o.minutes as number } : {}), ...(reason ? { reason } : {}) };
+    }
     case 'restart':
       return { c: 'restart' };
     case 'end':

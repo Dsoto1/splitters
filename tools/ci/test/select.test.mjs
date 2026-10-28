@@ -60,8 +60,8 @@ describe('change-based selection', () => {
 
   it('server code runs the online flows and server unit tests', () => {
     const s = sel('packages/server/src/lobby.ts');
-    expect(s.flows).toEqual(['online', 'hostgame', 'hostcontrols', 'lobby']);
-    expect(s.unit).toEqual(['server']);
+    expect(s.flows).toEqual(['online', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost', 'hostpage']);
+    expect(s.unit).toEqual(['host', 'server']);
   });
 
   it('unit tests alone run their package, no browser', () => {
@@ -93,8 +93,8 @@ describe('change-based selection', () => {
 
   it('combines rules: the union of flows, units widened to all by a full change', () => {
     const s = sel('packages/server/src/lobby.ts', 'packages/client/src/designer/customLooks.ts');
-    expect(s.flows).toEqual(['designer', 'characters', 'online', 'hostgame', 'hostcontrols', 'lobby']);
-    expect(s.unit).toEqual(['client', 'server']);
+    expect(s.flows).toEqual(['designer', 'characters', 'online', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost', 'hostpage']);
+    expect(s.unit).toEqual(['client', 'host', 'server']);
     expect(sel('packages/server/src/lobby.ts', 'packages/shared/src/protocol.ts').unit).toBe('all');
   });
 

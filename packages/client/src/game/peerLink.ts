@@ -1,12 +1,14 @@
 import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
 import { MessageGuard, PROTOCOL_VERSION, SnapshotDecoder, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { HostLink, RemoteLink, Signaling, Transport } from './transport.ts';
-import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, plainPiece, type ReassemblyLimits } from './peerZip.ts';
+import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, plainPiece, type ReassemblyLimits } from '@tiletrigger/shared/peerZip';
 import { hubAddress, hubSetting } from './hub.ts';
 import { baseIceServers, loadRelay, sessionIce } from './relay.ts';
 import { makeJoinCode } from './joinCode.ts';
 import { netProbe } from './perfProbe.ts';
 import { SnapshotCoalescer } from './snapshotMerge.ts';
+import { adminToken, rememberAdminToken } from './netTransport.ts';
+import { accessToken } from '../account.ts';
 
 /**
  * Host game / Join by code over PeerJS: friends connect straight to the
@@ -59,7 +61,7 @@ function sendText(conn: DataConnection, text: string): void {
 
 /**
  * Calls `cb` with whole texts, putting chunked ones back together (and unzipping compressed ones). `wire` counts bytes received.
- * Nothing the other side sends is trusted: pieces and inflated output are capped (`limits`, peerZip.ts), and with a
+ * Nothing the other side sends is trusted: pieces and inflated output are capped (`limits`, shared/net/peerZip.ts), and with a
  * `guard` (the host, for each friend) messages past the rate budget are dropped. A link that breaks a limit is closed.
  */
 function onText(conn: DataConnection, cb: (text: string) => void, o: { limits: ReassemblyLimits; guard?: MessageGuard; wire?: (bytes: number) => void }): void {
@@ -205,12 +207,16 @@ export class PeerTransport implements Transport {
   private relay = false;
 
   start(onMessage: (m: ServerMessage) => void, onClose: (reason: string) => void): void {
-    // The hub's relay credentials for this game (none if the hub doesn't know the code: the broker then says why).
-    void sessionIce(this.code, 'guest').then((ice) => {
+    // The hub's relay credentials for this game (none if the hub doesn't know the code: the broker then says why),
+    // and, signed in, the hub's account ticket for it (a host then knows the account without seeing the sign-in).
+    void Promise.all([sessionIce(this.code, 'guest'), accountTicket(this.code)]).then(([ice, ticket]) => {
       this.relay = ice.relay;
+      this.ticket = ticket;
       if (!this.closedByUs) this.open(onMessage, onClose, [...baseIceServers(), ...ice.servers]);
     });
   }
+
+  private ticket: string | null = null;
 
   private open(onMessage: (m: ServerMessage) => void, onClose: (reason: string) => void, iceServers: RTCIceServer[]): void {
     const peer = new Peer(peerOptions({ iceServers }));
@@ -264,7 +270,8 @@ export class PeerTransport implements Transport {
       conn.on('open', () => {
         opened = true;
         clearTimeout(timeout);
-        this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look });
+        const admin = adminToken(`code:${this.code}`);
+        this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
         this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: 0, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) }), 1000);
       });
       onText(
@@ -308,6 +315,12 @@ export class PeerTransport implements Transport {
     this.send({ t: 'ready' });
   }
 
+  /** Admin login and commands: a dedicated host (Host Service) runs them for its admin; a browser host refuses them. */
+  sendCommand(msg: Extract<ClientMessage, { t: 'host' | 'admin' }>): void {
+    if (msg.t === 'admin') rememberAdminToken(`code:${this.code}`, msg.token);
+    this.send(msg);
+  }
+
   close(): void {
     this.closedByUs = true;
     clearInterval(this.pingTimer);
@@ -325,3 +338,30 @@ export const peerSignaling: Signaling = {
   host: (admit) => new PeerHost(admit),
   join: (code, name, look) => new PeerTransport(cleanJoinCode(code), name, look),
 };
+
+const PLAYER_KEY = 'tiletrigger.pk';
+/** A random key for this browser ("p_…"): it proves nothing, and is all a host can ban a guest by (with their address). */
+export function playerKey(): string {
+  try {
+    const have = localStorage.getItem(PLAYER_KEY);
+    if (have && /^p_[A-Za-z0-9_-]{8,32}$/.test(have)) return have;
+    const made = `p_${Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => (b % 36).toString(36)).join('')}`;
+    localStorage.setItem(PLAYER_KEY, made);
+    return made;
+  } catch {
+    return `p_${Math.random().toString(36).slice(2, 14).padEnd(8, '0')}`;
+  }
+}
+
+/** The hub's account ticket for joining `code` (signed-in players only), or null. */
+async function accountTicket(code: string): Promise<string | null> {
+  const token = accessToken();
+  const hub = hubAddress();
+  if (!token || !hub) return null;
+  try {
+    const res = await fetch(`${hub.secure ? 'https' : 'http'}://${hub.host}:${hub.port}${hub.path}api/v1/ticket?code=${code}`, { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) });
+    return res.ok ? (((await res.json()) as { ticket?: string }).ticket ?? null) : null;
+  } catch {
+    return null;
+  }
+}

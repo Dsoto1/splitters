@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GUEST_TO_HOST_LIMITS, Reassembler, Unzipper, Zipper, plainPiece } from '../src/game/peerZip.ts';
+import { GUEST_TO_HOST_LIMITS, Reassembler, Unzipper, Zipper, plainPiece } from '@tiletrigger/shared/peerZip';
 import { sinkTo, type FromSimHost } from '../src/game/matchHost.ts';
 
 describe('host game stream', () => {

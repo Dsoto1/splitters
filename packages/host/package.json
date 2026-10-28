@@ -1,0 +1,22 @@
+{
+  "name": "@tiletrigger/host",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --import tsx src/main.ts",
+    "typecheck": "tsc -p .",
+    "package": "node tools/package.mjs"
+  },
+  "dependencies": {
+    "@tiletrigger/server": "workspace:*",
+    "@tiletrigger/shared": "workspace:*",
+    "node-datachannel": "0.33.4",
+    "peerjs": "1.5.4",
+    "tsx": "^4.20.6",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "esbuild": "0.28.2"
+  }
+}
