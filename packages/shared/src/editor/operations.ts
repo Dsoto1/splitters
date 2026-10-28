@@ -145,7 +145,7 @@ export function yawStep(kind: MapEntity['kind'] | 'tile', fine = false): number 
 /**
  * Turn the selection. One thing (or one moving build) turns in place by its kind's step (yawStep,
  * Shift: `fine`); a mover's build turns about the mover. A group (tiles, or several things) turns
- * as one about its centre: a quarter turn, or with `fine` the finer step when nothing in it is
+ * as one about its centre (routes, being offsets, turn with their marker): a quarter turn, or with `fine` the finer step when nothing in it is
  * tied to the grid (tiles, zones, liquids).
  */
 export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog, opts: { fine?: boolean } = {}): EditCommand | { error: string } {
@@ -208,7 +208,8 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
     const out = { ...e, position: [x, e.position[1], z] as [number, number, number] } as MapEntity;
     if ('yaw' in out) (out as { yaw: number }).yaw = normalizeYaw(out.yaw + angle);
     if (out.kind === 'mover') out.points = out.points.map(([px, py, pz]): [number, number, number] => { const [a, b] = turn(px, pz); return [a, py, b]; });
-    if (out.kind === 'airplane') out.route = out.route.map(([px, pz]): [number, number] => about(px, pz));
+    // Plane routes, like mover points, are offsets from the marker: they turn with it.
+    if (out.kind === 'airplane') out.route = out.route.map(([px, pz]): [number, number] => turn(px, pz));
     if ((out.kind === 'zone' || out.kind === 'water') && quarters % 2) out.size = [out.size[2], out.size[1], out.size[0]];
     return out;
   });

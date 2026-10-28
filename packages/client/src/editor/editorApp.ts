@@ -209,6 +209,7 @@ import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
 import { RoadTool } from './roadTool.ts';
 import { PathTool } from './pathTool.ts';
+import { RouteTool } from './routeTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 import { Palette } from './palette.ts';
 import { PaletteAtlas } from './paletteAtlas.ts';
@@ -237,7 +238,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'road' } | { kind: 'path' };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'road' } | { kind: 'path' } | { kind: 'route' };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -472,6 +473,8 @@ export class EditorApp {
   /** The Road tool (race tracks). */
   private readonly road: RoadTool;
   private readonly paths: PathTool;
+  /** Mover and plane routes, drawn on the map with the Paths tool's hands. */
+  private readonly routes: RouteTool;
   private level = 0;
   private showAll = false;
   /** The last placing tool, so the toolbar's Place button can pick it up again. */
@@ -534,6 +537,7 @@ export class EditorApp {
     this.thumbs = new ModelThumbnails(host.engine);
     this.road = new RoadTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.paths = new PathTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
+    this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.history = new EditHistory(newMapDocument('Untitled Map'));
     this.logic = new LogicPanel({
       doc: () => this.doc,
@@ -649,6 +653,7 @@ export class EditorApp {
       this.road.refresh();
       this.road.renderPane($('ed-road'));
       this.paths.refresh();
+      this.routes.refresh();
       this.paths.renderPane($('ed-paths'));
       if (!force) this.scheduleAutosave();
     }
@@ -729,6 +734,7 @@ export class EditorApp {
     const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain' };
     this.road.setActive(tool.kind === 'road');
     this.paths.setActive(tool.kind === 'path');
+    this.routes.setActive(tool.kind === 'route');
     // The pane holding the tool's card (props sit in Props, Nature or Vehicles; scenario pieces in several tabs).
     const card = document.querySelector<HTMLElement>(`#ed-palette .ed-pane [data-tool="${CSS.escape(toolKey(tool))}"]`);
     const at = card?.closest<HTMLElement>('.ed-pane')?.dataset.pane ?? pane[tool.kind];
@@ -775,6 +781,7 @@ export class EditorApp {
       scatter: ['Place', 'Click or drag plants patches · right-click (Shift+drag) clears that kind of plant · [ ] brush size'],
       road: ['Road', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click the road inserts one'],
       path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
+      route: ['Route', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click a stretch inserts one · Esc when done'],
     };
     const [name, hint] = hints[tool.kind];
     const what = PLACING.has(tool.kind) ? `: ${this.toolName(tool)}` : tool.kind === 'edge' ? `: ${EDGE_STYLE_LABELS[tool.style]}` : '';
@@ -967,6 +974,8 @@ export class EditorApp {
         return this.road.erase(this.hoverPoint);
       case 'path':
         return this.paths.erase(this.hoverPoint);
+      case 'route':
+        return this.routes.erase(this.hoverPoint);
       case 'terrain':
         return this.toast('Terrain: Shift-drag does the opposite (lower, or raise)');
       case 'erase':
@@ -1455,6 +1464,13 @@ export class EditorApp {
       const preview = moveCommand(this.doc, this.selection, cellOffset[0], cellOffset[1], 0);
       this.view.setOutlines(this.doc, this.selection.tiles, [cellOffset[0], cellOffset[1], 0], 'error' in preview);
     }
+    // Things follow the pointer as you drag (with tiles, cell by cell), so every kind previews where it lands.
+    if (this.selection.entities.length) {
+      const cs = this.doc.classicStructure.cellSize;
+      const [ex, ez] = this.selection.tiles.length ? [cellOffset[0] * cs, cellOffset[1] * cs] : freeOffset;
+      const moved = applyCommand(this.doc, moveEntitiesCommand(this.doc, this.selection.entities, ex, 0, ez));
+      this.view.setEntities(moved, this.level, this.showAll, new Set(this.selection.entities));
+    }
   }
 
   private endDrag(): void {
@@ -1498,6 +1514,7 @@ export class EditorApp {
       this.updatePointer(e.clientX, e.clientY);
       if (this.road.dragging) this.road.pointerMove(this.hoverPoint);
       if (this.paths.dragging) this.paths.pointerMove(this.hoverPoint);
+      if (this.routes.dragging) this.routes.pointerMove(this.hoverPoint);
       if (this.brush && e.buttons & 1) this.brushAtHover(false);
       if (this.drag) {
         if (Math.hypot(e.clientX - this.drag.pointerX, e.clientY - this.drag.pointerY) > 4) this.drag.moved = true;
@@ -1525,6 +1542,7 @@ export class EditorApp {
       }
       if (this.tool.kind === 'road') return this.road.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind === 'path') return this.paths.pointerDown(this.hoverPoint, e.shiftKey);
+      if (this.tool.kind === 'route') return this.routes.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind !== 'select') return this.placeAtHover();
       const hit = this.pick();
       if (!hit) {
@@ -1565,6 +1583,7 @@ export class EditorApp {
         this.endDrag();
         this.road.pointerUp();
         this.paths.pointerUp();
+        this.routes.pointerUp();
       }
     });
     window.addEventListener(
@@ -1671,6 +1690,7 @@ export class EditorApp {
         case 'Backspace':
           if (this.tool.kind === 'road' && this.road.deleteSelected()) break;
           if (this.tool.kind === 'path' && this.paths.deleteSelected()) break;
+          if (this.tool.kind === 'route' && this.routes.deleteSelected()) break;
           this.deleteSelection();
           break;
         // One meaning per key: PgUp/PgDn change the level (Shift: move the selection a level), [ ] the brush size.
@@ -2874,6 +2894,17 @@ export class EditorApp {
     }
   }
 
+  /** "Draw route": edit a mover's or plane's points on the map with the Paths tool's hands (the Route tool). */
+  private drawRouteButton(id: string): HTMLButtonElement {
+    const b = button('Draw route on the map', () => {
+      this.routes.edit(id);
+      this.setTool({ kind: 'route' });
+    });
+    b.id = 'ed-draw-route';
+    b.title = 'Click to add points, drag them, Shift-click a stretch to insert, right-click or Del to remove (Esc when done)';
+    return b;
+  }
+
   /** The moving build `ids` make up exactly (its IDs, mover first), or null. */
   private wholeBuild(ids: readonly string[]): string[] | null {
     const group = ids.length > 1 ? moverGroupOf(this.doc, ids[0]!) : null;
@@ -3262,6 +3293,7 @@ export class EditorApp {
           if (e.route.length < 32) update('Add route point', { route: [...e.route, next] });
         }));
         const length = e.route.reduce((sum, p, i) => (i ? sum + Math.hypot(p[0] - e.route[i - 1]![0], p[1] - e.route[i - 1]![1]) : 0), 0) + (e.closed ? Math.hypot(e.route[0]![0] - e.route[e.route.length - 1]![0], e.route[0]![1] - e.route[e.route.length - 1]![1]) : 0);
+        el.append(this.drawRouteButton(e.id));
         el.append(small(`Points are metres from the marker (moving it moves the whole route). ${Math.round(length)} m a lap at ${Math.round(length / e.loopSeconds)} m/s. Riders jump out with E or Space and parachute down; bots jump over their objective.`));
         break;
       }
@@ -3297,7 +3329,7 @@ export class EditorApp {
         el.append(button('+ Add point', () => {
           const last = e.points[e.points.length - 1]!;
           if (e.points.length < 16) update('Add mover point', { points: [...e.points, [last[0], last[1] + 2, last[2]]], ...(e.angles ? { angles: [...e.angles, e.angles[e.angles.length - 1] ?? 0] } : {}) });
-        }));
+        }), this.drawRouteButton(e.id));
         const h3b = document.createElement('h3');
         h3b.textContent = 'Carries';
         el.append(h3b);
