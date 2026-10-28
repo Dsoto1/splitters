@@ -750,21 +750,22 @@ export class EditorApp {
     this.palette?.syncActive();
     $('ed-tb-place-what').textContent = this.lastPlace ? this.toolName(this.lastPlace) : '';
     const hints: Record<Tool['kind'], [string, string]> = {
-      select: ['Select', 'Left-click picks what is outlined in cyan · Shift+click adds · drag moves · Del deletes · R rotates · Ctrl+D duplicates'],
-      erase: ['Erase', 'Left-click deletes what is outlined in red: tiles on this level, props, NPCs, items, doors, traps, blocks, water…, a whole moving build (Alt: one piece) · Ctrl+Z brings it back'],
-      tile: ['Place', 'Left-click places the green piece · R rotates it · right-click erases · PgUp/PgDn changes level'],
-      spawn: ['Place', 'Left-click places a player spawn · R turns it 45° · right-click erases'],
-      pickup: ['Place', 'Left-click places the pickup · right-click erases'],
-      scenario: ['Place', 'Left-click places it (doors, walls and lasers snap to doorways) · R turns it 90° · right-click erases · L opens Logic'],
-      npc: ['Place', 'Left-click drops the NPCs here · R turns them · edit soldiers, faction and orders in the inspector · right-click erases'],
-      paint: ['Paint', 'Left-click paints a surface · right-click resets it to the theme · Alt-click or I picks a style up'],
-      edge: ['Walls', 'Left-click a wall or floor edge to build it this way · right-click resets it · O cycles the style'],
-      prop: ['Place', 'Left-click places the prop (25 cm snap, Shift for free) · R turns it 15° · right-click erases'],
-      mount: ['Place', 'Left-click places it · R turns it 15° · right-click erases · players get in and out with E'],
-      terrain: ['Terrain', 'Hold left to sculpt or paint · [ ] brush size · Shift inverts raise/lower · T cycles brushes'],
-      scatter: ['Place', 'Left-click plants a patch · Alt-click clears that kind of plant · [ ] brush size · right-click erases one'],
-      road: ['Road', 'Left-click adds a road point after the selected one · drag a point to move it · Shift-click the road inserts one · right-click or Del removes one'],
-      path: ['Paths', 'Left-click adds a point after the selected one (two clicks start a path) · drag a point to move it · Shift-click a path inserts one · right-click or Del removes one · click another path to edit it'],
+      // One line per tool, in the same order: left-click · right-click (takes back what the tool does) · R · modifiers.
+      select: ['Select', 'Click picks · right-click: menu · drag moves · R turns (Shift+R a little) · Shift+click adds · Alt+click one piece of a build · Del deletes'],
+      erase: ['Erase', 'Click deletes what is outlined in red (a whole moving build; Alt: one piece) · Ctrl+Z brings it back'],
+      tile: ['Place', 'Click places the green piece · right-click removes a tile · R turns it 90° · PgUp/PgDn level'],
+      spawn: ['Place', 'Click places a player spawn · right-click removes a spawn · R turns it 45° (Shift+R 15°)'],
+      pickup: ['Place', 'Click places the pickup · right-click removes a pickup'],
+      scenario: ['Place', 'Click places it (doors, walls and lasers snap to doorways) · right-click removes an object · R turns it 90° (Shift+R 15°) · L opens Logic'],
+      npc: ['Place', 'Click drops the NPCs here · right-click removes them · R turns them 90° (Shift+R 15°) · soldiers, faction and orders in the inspector'],
+      paint: ['Paint', 'Click paints a surface · right-click resets it to the theme · Alt+click or I picks a style up'],
+      edge: ['Walls', 'Click a wall or floor edge to build it this way · right-click resets it · O cycles the style'],
+      prop: ['Place', 'Click places the prop (25 cm snap; Shift: free) · right-click removes a prop · R turns it 15° (Shift+R 5°)'],
+      mount: ['Place', 'Click places it · right-click removes a vehicle · R turns it 15° (Shift+R 5°) · players get in and out with E'],
+      terrain: ['Terrain', 'Hold to sculpt or paint · Shift: the opposite (lower / raise) · [ ] brush size · T cycles brushes'],
+      scatter: ['Place', 'Click plants a patch · right-click (or Alt+click) clears that kind of plant · [ ] brush size'],
+      road: ['Road', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click the road inserts one'],
+      path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
     };
     const [name, hint] = hints[tool.kind];
     const what = PLACING.has(tool.kind) ? `: ${this.toolName(tool)}` : tool.kind === 'edge' ? `: ${EDGE_STYLE_LABELS[tool.style]}` : '';
@@ -934,6 +935,101 @@ export class EditorApp {
     const sel = hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : { tiles: [], entities: group ?? [hit.id] };
     const name = group && group.length > 1 ? 'moving build' : this.targetName(hit);
     if (this.run(`Erase ${name}`, deleteCommand(this.doc, sel))) this.toast(`Erased ${name} · Ctrl+Z to undo`);
+  }
+
+  /**
+   * Right-click, one rule for every tool: it takes back what that tool does, where you click.
+   * Paint resets the surface, Walls resets the wall, Scatter clears its plants, Road and Paths remove
+   * a point or path, and a placing tool removes a thing of its own kind (Erase removes anything).
+   * With Select it opens the selection menu.
+   */
+  private secondaryClick(x: number, y: number, alt: boolean): void {
+    const tool = this.tool;
+    switch (tool.kind) {
+      case 'select':
+        return this.openContextMenu(x, y);
+      case 'paint':
+        return this.paintAtHover(true);
+      case 'edge':
+        return this.edgeAtHover('auto');
+      case 'scatter':
+        return this.scatterAtHover(tool.set, true);
+      case 'road':
+        return this.road.erase(this.hoverPoint);
+      case 'path':
+        return this.paths.erase(this.hoverPoint);
+      case 'terrain':
+        return this.toast('Terrain: Shift-drag does the opposite (lower, or raise)');
+      case 'erase':
+        return;
+    }
+    const hit = this.pick();
+    const e = hit?.kind === 'entity' ? this.doc.entities.find((x) => x.id === hit.id) : undefined;
+    const mine =
+      !!hit &&
+      (tool.kind === 'tile'
+        ? hit.kind === 'tile'
+        : tool.kind === 'spawn' || tool.kind === 'pickup' || tool.kind === 'prop' || tool.kind === 'mount'
+          ? e?.kind === tool.kind
+          : hit.kind === 'entity');
+    if (!hit) return this.toast(`Nothing to remove here on ${levelName(this.level)}`, true);
+    if (!mine) return this.toast(`Right-click removes what this tool places; ${this.targetName(hit)} is something else (Erase, X, removes anything)`, true);
+    this.eraseAtHover(alt);
+  }
+
+  /** The selection menu (right-click with Select): picks what is under the pointer first if it isn't selected. */
+  private openContextMenu(x: number, y: number): void {
+    const hit = this.pick();
+    if (hit) {
+      const key = hit.kind === 'tile' ? 'tiles' : 'entities';
+      const ids = (hit.kind === 'entity' && moverGroupOf(this.doc, hit.id)) || [hit.id];
+      if (!ids.every((id) => this.selection[key].includes(id))) this.setSelection(hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : { tiles: [], entities: ids });
+    }
+    const has = this.selection.tiles.length + this.selection.entities.length > 0;
+    document.getElementById('ed-ctx')?.remove();
+    const menu = document.createElement('div');
+    menu.id = 'ed-ctx';
+    menu.className = 'ed-ctx';
+    menu.setAttribute('role', 'menu');
+    const item = (label: string, keys: string, run: () => void, enabled = has) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'menuitem');
+      b.disabled = !enabled;
+      b.innerHTML = `<span>${escapeHtml(label)}</span><kbd>${escapeHtml(keys)}</kbd>`;
+      b.addEventListener('click', () => {
+        close();
+        run();
+      });
+      menu.append(b);
+    };
+    const close = () => {
+      menu.remove();
+      window.removeEventListener('pointerdown', outside, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
+    const outside = (ev: PointerEvent) => {
+      if (!menu.contains(ev.target as Node)) close();
+    };
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') {
+        ev.stopPropagation();
+        close();
+      }
+    };
+    item('Rotate', 'R', () => this.rotate());
+    item('Rotate a little', 'Shift+R', () => this.rotate(true));
+    item('Duplicate', 'Ctrl+D', () => this.duplicate());
+    item('Focus', 'F', () => this.focusSelection());
+    item('Delete', 'Del', () => this.deleteSelection());
+    item('Select none', 'Esc', () => this.setSelection(emptySelection()));
+    $('editor').append(menu);
+    const r = menu.getBoundingClientRect();
+    menu.style.left = `${Math.min(x, innerWidth - r.width - 8)}px`;
+    menu.style.top = `${Math.min(y, innerHeight - r.height - 8)}px`;
+    window.addEventListener('pointerdown', outside, true);
+    window.addEventListener('keydown', onKey, true);
+    (menu.querySelector('button:not([disabled])') as HTMLButtonElement | null)?.focus();
   }
 
   /** Display name of a pick target. */
@@ -1334,7 +1430,7 @@ export class EditorApp {
       if (this.looking) {
         const dx = e.movementX;
         const dy = e.movementY;
-        // A right-click that wobbles a few pixels is still a click (erase), not a look.
+        // A right-click that wobbles a few pixels is still a click (secondaryClick), not a look.
         this.looking.travel += Math.abs(dx) + Math.abs(dy);
         if (this.looking.travel > 6) this.looking.moved = true;
         if (this.looking.button === 2) this.view.look(dx * LOOK_SENSITIVITY, -dy * LOOK_SENSITIVITY);
@@ -1399,21 +1495,9 @@ export class EditorApp {
       if (this.looking && (e.button === 2 || e.button === 1)) {
         const wasClick = !this.looking.moved && e.button === 2;
         this.looking = null;
-        if (wasClick && this.tool.kind === 'paint') {
+        if (wasClick) {
           this.updatePointer(e.clientX, e.clientY);
-          this.paintAtHover(true);
-        } else if (wasClick && this.tool.kind === 'edge') {
-          this.updatePointer(e.clientX, e.clientY);
-          this.edgeAtHover('auto');
-        } else if (wasClick && this.tool.kind === 'road') {
-          this.updatePointer(e.clientX, e.clientY);
-          this.road.erase(this.hoverPoint);
-        } else if (wasClick && this.tool.kind === 'path') {
-          this.updatePointer(e.clientX, e.clientY);
-          this.paths.erase(this.hoverPoint);
-        } else if (wasClick && this.tool.kind !== 'select' && this.tool.kind !== 'terrain' && this.tool.kind !== 'erase') {
-          this.updatePointer(e.clientX, e.clientY);
-          this.eraseAtHover(e.altKey);
+          this.secondaryClick(e.clientX, e.clientY, e.altKey);
         }
         return;
       }
