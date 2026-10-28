@@ -1,4 +1,4 @@
-# Handoff: where Tile Trigger stands (2026-10-28)
+# Handoff: where Tile Trigger stands (2026-10-28, afternoon)
 
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current:
@@ -14,6 +14,13 @@ update it when you finish a piece of work or the owner changes direction.
   - MapMaker white-props fix;
   - Host Service, the dedicated-server launcher;
   - on-demand loading: the menu loads 0.74 MB of JS gzip instead of 4.4 MB.
+
+  - Host Service **launcher** (`packages/host/src/launcher.ts`): the service
+    serves its own page on 127.0.0.1 and opens it on start: the console in
+    the site's look (log, filters, command line with suggestions) and a right
+    bar of controls, each running the console command it shows;
+  - map select: uniform map cards (picture, name, plan); blurb and modes in
+    the setup panel.
 
   A 0.4.0 release is reasonable once the owner has tried the launcher. A minor
   version, because these are features.
@@ -37,6 +44,10 @@ update it when you finish a piece of work or the owner changes direction.
    (`systemctl enable --now tiletrigger-update.timer`).
 
 **Gotchas**
+
+- Some Claude sessions can't reach registry.npmjs.org (DNS fails, the proxy
+  refuses it): `pnpm install` fails, so nothing builds or tests locally. Push
+  to `check/candidate` and let CI check it.
 
 - The session's git proxy refuses tag pushes and remote branch deletes. The
   owner makes releases in the GitHub UI: tag `vX.Y.Z` on the green main commit,
@@ -130,6 +141,25 @@ update it when you finish a piece of work or the owner changes direction.
    - Runway Nine airplane;
    - Blackout enemies;
    - Mercy Ward rooftop zombies.
+
+## Asked about, waiting for the owner's choice (2026-10-28)
+
+- **Editing system maps as the owner.** Today MapMaker opens a suite map only
+  as a "Remix" (new ID). Proposed: an owner "Edit this map" that keeps the
+  ID and exports `maps/<id>.json` ready to drop into the repo (GitHub web
+  upload or a Claude session), so CI validates it and the normal release
+  ships it. Not an upload to the live site (MULTIPLAYER_DIRECTION: no
+  uploads; the box never builds).
+- **FBX characters with auto-rigging.** `tools/content/prepare-meshy-characters.mjs`
+  already rigs unrigged FBX bodies onto rig.glb (`FBX_CHARACTERS`: joints
+  placed by hand in units of height, weights from `autoskin.mjs`, hands
+  closed for a grip; first-person arms are the universal ones, so guns look
+  the same for every character). Proposed: guess the landmarks automatically
+  for upright T/A-pose humanoids and a local "Character Lab" page to drop an
+  FBX in, adjust the guesses and settings (lean, cloth, triangles, finish),
+  preview it animated and holding a gun, then write the `FBX_CHARACTERS`
+  entry and provenance. Source FBX stays outside the repo (CC0, provenance
+  recorded). Runs on the owner's machine or in a Claude session, not the site.
 
 ## Backlog ideas (not started, not yet asked for)
 
