@@ -68,7 +68,7 @@ fast-forward `main` to it (it contains `main`).
    `check/terrain` (`476bd74`) e2e shard 8 failed once (outpost, canyon, teams,
    hostcontrols, lobby, dedicatedhost); logs aren't downloadable here; re-run it
    to tell flake from real.
-3. **MapMaker:** fold-away sidebars (\\ / Shift+\\), edits rebuild only what
+3. **MapMaker:** fold-away sidebars (\ / Shift+\), edits rebuild only what
    changed (measured on Sandgate headless: ~170 ms per edit, ~100 ms of it the
    terrain), faster terrain meshes, and **Paths** (`shared/map/paths.ts`,
    `client/pathMeshes.ts`, `editor/pathTool.ts`, `setPaths` command; laid on
