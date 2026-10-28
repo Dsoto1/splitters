@@ -904,11 +904,11 @@ export class EditorApp {
       const name = coreCatalog.get(this.tool.tile)?.displayName ?? this.tool.tile;
       this.run(`Place ${name}`, { kind: 'addTiles', tiles: [placement] });
     } else if (this.tool.kind === 'spawn' && this.hoverPoint) {
-      const p: [number, number, number] = [snap(this.hoverPoint.x, this.snapStep(0.5)), this.level * this.doc.classicStructure.levelHeight, snap(this.hoverPoint.z, this.snapStep(0.5))];
+      const p = this.placeSpot()!;
       const { command, id } = addSpawnCommand(p, this.spawnYaw);
       if (this.run('Place spawn', command)) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'pickup' && this.hoverPoint) {
-      const p: [number, number, number] = [snap(this.hoverPoint.x, this.snapStep(0.5)), this.level * this.doc.classicStructure.levelHeight, snap(this.hoverPoint.z, this.snapStep(0.5))];
+      const p = this.placeSpot()!;
       const id = newId('pickup');
       const name = getItem(this.tool.item)?.displayName ?? 'pickup';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'pickup', position: p, item: this.tool.item, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
@@ -918,7 +918,7 @@ export class EditorApp {
       const name = getProp(this.tool.model)?.displayName ?? 'prop';
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p, model: this.tool.model, yaw: this.propYaw, scale: 1, solid: true, tint: null }] })) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'mount' && this.hoverPoint) {
-      const p: [number, number, number] = [snap(this.hoverPoint.x, this.snapStep(0.5)), this.hoverPoint.y, snap(this.hoverPoint.z, this.snapStep(0.5))];
+      const p = this.placeSpot()!;
       const id = newId('mount');
       const def = MOUNT_DEFS[this.tool.model];
       if (this.run(`Place ${def.displayName}`, { kind: 'addEntities', entities: [{ id, kind: 'mount', position: p, model: this.tool.model, yaw: this.propYaw, faction: null, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
@@ -936,8 +936,7 @@ export class EditorApp {
       const label = SCENARIO_PALETTE.find((x) => x.key === (this.tool as { key: string }).key)?.label ?? 'object';
       if (this.run(`Place ${label}`, { kind: 'addEntities', entities: placed })) this.setSelection({ tiles: [], entities: [entity.id] });
     } else if (this.tool.kind === 'npc' && this.hoverPoint) {
-      const y = this.hoverOnTerrain ? Math.round(this.hoverPoint.y * 100) / 100 : this.level * this.doc.classicStructure.levelHeight;
-      const r = placeNpcCommand(this.doc, this.tool.key, [snap(this.hoverPoint.x, this.snapStep(0.5)), y, snap(this.hoverPoint.z, this.snapStep(0.5))], this.scenarioYaw);
+      const r = placeNpcCommand(this.doc, this.tool.key, this.placeSpot()!, this.scenarioYaw);
       if ('error' in r) return this.toast(r.error, true);
       if (this.run(`Place ${r.label}`, r.command)) this.setSelection({ tiles: [], entities: [r.id] });
     }
@@ -1231,6 +1230,18 @@ export class EditorApp {
     if (this.run('Duplicate', r.command)) this.setSelection(r.selection);
   }
 
+  /**
+   * One placement rule for spawns, pickups, vehicles and NPCs: on the terrain where the pointer
+   * meets it, else on the floor of the level being edited; snapped to the snap setting (Ctrl or
+   * Shift: free).
+   */
+  private placeSpot(step = 0.5): [number, number, number] | null {
+    const h = this.hoverPoint;
+    if (!h) return null;
+    const y = this.hoverOnTerrain ? Math.round(h.y * 100) / 100 : this.level * this.doc.classicStructure.levelHeight;
+    return [snap(h.x, this.snapStep(step)), y, snap(h.z, this.snapStep(step))];
+  }
+
   /** Where a prop of `model` goes under the pointer (snapped; Ctrl or Shift for free placement; bedded into terrain). */
   private propSpot(model: string): [number, number, number] | null {
     if (!this.hoverPoint) return null;
@@ -1444,7 +1455,16 @@ export class EditorApp {
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
     // Props show their real model where they'd land, see-through, before you click.
-    this.view.setPropGhost(this.tool.kind === 'prop' && !this.looking ? this.tool.model : null, this.tool.kind === 'prop' ? this.propSpot(this.tool.model) : null, this.propYaw);
+    // One ghost for every kind that has a model: where it would land, facing the way it would face.
+    const t = this.tool;
+    const ghost: { kind: 'prop' | 'mount' | 'spawn' | 'pickup'; model: string; at: [number, number, number] | null; yaw: number } | null =
+      this.looking ? null
+      : t.kind === 'prop' ? { kind: 'prop', model: t.model, at: this.propSpot(t.model), yaw: this.propYaw }
+      : t.kind === 'mount' ? { kind: 'mount', model: t.model, at: this.placeSpot(), yaw: this.propYaw }
+      : t.kind === 'spawn' ? { kind: 'spawn', model: 'spawn', at: this.placeSpot(), yaw: this.spawnYaw }
+      : t.kind === 'pickup' ? { kind: 'pickup', model: t.item, at: this.placeSpot(), yaw: 0 }
+      : null;
+    this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop');
     if (this.tool.kind === 'tile' && cell) {
       const ok = checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok;
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);

@@ -82,8 +82,10 @@ fast-forward `main` to it (it contains `main`).
    - Erase picks like Select (a whole moving build; Alt one piece).
    - Placement: Ctrl (or Shift) places without snapping for every kind
      (`freePlacing`); dragged things preview where they land (`updateDrag`).
-     Not done: ghosts for spawns, pickups, objects and vehicles (only tiles and
-     props have one).
+     One spot rule (`placeSpot`: the terrain under the pointer, else the
+     level's floor) and one ghost (`setPropGhost`) for props, vehicles, spawns
+     and pickups; tiles keep their green ghost. Objects (doors, traps…) still
+     show only the hover cell.
    - Rotation: `yawStep(kind, fine)` in shared `operations.ts` (spawn 45/15,
      prop and vehicle 15/5, tiles, zones and liquids 90, rest 90/15) for
      placing, R, Shift+R and the inspector; groups turn about their centre

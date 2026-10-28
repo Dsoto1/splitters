@@ -591,22 +591,35 @@ export class EditorView {
   private propGhost: { model: string; node: TransformNode } | null = null;
 
   /** A see-through preview of a prop where it would be placed (null hides it). */
-  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number): void {
+  /** The see-through preview of what a placing tool would put down (props, vehicles, spawns, pickups). */
+  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number, kind: 'prop' | 'mount' | 'spawn' | 'pickup' = 'prop'): void {
     if (!model || !at) {
       this.propGhost?.node.setEnabled(false);
       return;
     }
-    if (this.propGhost?.model !== model) {
+    const key = `${kind}:${model}`;
+    if (this.propGhost?.model !== key) {
       // Not its materials: they are the model's, shared with every placed copy of it.
       if (this.propGhost) disposePropNode(this.propGhost.node);
-      const e = { id: 'ghost', kind: 'prop', position: [0, 0, 0], model, yaw: 0, scale: 1, solid: false, tint: null } as unknown as PropEntity;
-      const node = createPropNode(this.scene, this.models, e, 'propGhost', false);
-      this.propGhost = { model, node };
+      let node: TransformNode;
+      if (kind === 'mount') node = createMountNode(this.scene, this.models, model as Extract<MapEntity, { kind: 'mount' }>['model'], 'mountGhost', null);
+      else if (kind === 'spawn') {
+        const capsule = this.createSpawnMarker('ghost').node as Mesh;
+        capsule.material = this.mat.spawn;
+        node = capsule;
+      }
+      else if (kind === 'pickup') node = createPickupVisual(this.scene, this.models, model, 'pickupGhost');
+      else {
+        const e = { id: 'ghost', kind: 'prop', position: [0, 0, 0], model, yaw: 0, scale: 1, solid: false, tint: null } as unknown as PropEntity;
+        node = createPropNode(this.scene, this.models, e, 'propGhost', false);
+      }
+      this.propGhost = { model: key, node };
       // Fade every mesh as the model loads in.
       const fade = () => {
-        for (const m of node.getChildMeshes()) {
-          m.visibility = 0.55;
-          m.isPickable = false;
+        for (const m of [node, ...node.getChildMeshes()]) {
+          if (!('visibility' in m)) continue;
+          (m as Mesh).visibility = 0.55;
+          (m as Mesh).isPickable = false;
         }
       };
       fade();
@@ -614,7 +627,8 @@ export class EditorView {
     }
     const node = this.propGhost.node;
     node.setEnabled(true);
-    node.position.set(at[0], at[1], at[2]);
+    const lift = kind === 'spawn' ? PLAYER.height / 2 : kind === 'pickup' ? PICKUP_HOVER : 0;
+    node.position.set(at[0], at[1] + lift, at[2]);
     node.rotation.y = yaw;
   }
 
