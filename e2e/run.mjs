@@ -2220,6 +2220,8 @@ async function hostcontrolsFlow(browser) {
   const applied = { score: await sim(page, (m) => m.rules.scoreLimit), pending: await page.evaluate(() => window.__cs.host()?.pending) };
   check(applied.score === 16 && !Object.keys(applied.pending ?? {}).length, `the restart plays with the waiting rule change (${JSON.stringify(applied)})`);
   await pickMap(page, 'atomic_court');
+  // The picked map loads on demand (its own chunk), so the announcement can follow a moment later.
+  await page.waitForFunction(() => /Changing map to/i.test(document.getElementById('message').textContent), null, { timeout: T(5000) }).catch(() => {});
   const toast = await page.evaluate(() => document.getElementById('message').textContent);
   check(/Changing map to .*Atomic Court/i.test(toast), `the change is announced (${toast})`);
   const moved = (await simWait(page, (m) => m.map.metadata.id === 'atomic_court', null, T(60000))) && (await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false));

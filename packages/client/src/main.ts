@@ -425,7 +425,8 @@ class App {
       ...o,
       isSuite: inSuite,
       own: o.suiteOnly ? [] : ownMaps(),
-      onPick: (m, mode) => void m.load().then((doc) => o.onPick(doc, mode), (e: unknown) => console.warn('map failed to load', e)),
+      // A built-in map loads when its card is picked; usually it's in by the time Change map is pressed.
+      onPick: (m, mode) => (m.map ? o.onPick(m.map, mode) : void m.load().then((doc) => o.onPick(doc, mode), (e: unknown) => console.warn('map failed to load', e))),
     });
 
   /** Start a playlist (maps/playlists): its first map; each win moves on to the next. */

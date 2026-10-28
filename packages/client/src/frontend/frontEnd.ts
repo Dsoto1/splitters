@@ -861,6 +861,8 @@ export class FrontEnd {
         card.dataset.id = m.metadata.id;
         card.addEventListener('click', () => {
           picked = m;
+          // Fetch it now, so Change map goes ahead the moment it's pressed.
+          void m.load().catch(() => undefined);
           draw();
         });
         cards.append(card);
