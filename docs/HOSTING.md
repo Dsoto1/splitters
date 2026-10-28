@@ -392,7 +392,7 @@ That is a 48 v 48 Team Deathmatch on Frost Basin (bots fill the 96 slots,
 up to 16 people take bots' places), listed in the game browser of
 https://trigger.toshiroplay.com. Windows PowerShell:
 `$env:MAP="frost_basin"; $env:MODE="core.tdm"; $env:BOT_FILL="96"; pnpm host`.
-`pnpm host --idle` waits for `start` (console, launcher or /host); `--no-open` (or `HOST_OPEN=0`) doesn't open the launcher. `pnpm host:package`
+`pnpm host --idle` waits for `start` (console, launcher or /host); `--no-open` (or `HOST_OPEN=0`) doesn't open the launcher. The launcher opens in a window of its own (Edge, Chrome, Brave or Chromium in app mode, with its own profile in the service's state folder; Edge comes with Windows); without one of those, or with `--browser` (or `HOST_APP_WINDOW=0`), it opens as a tab in your default browser. Closing the launcher never stops the server: type `launcher` in the console to open it again. `pnpm host:package`
 builds the downloads (CI does this for every green `main` and `vX.Y.Z`).
 
 | Setting (env, or the same key in `HOST_CONFIG=host.json`) | Default | |

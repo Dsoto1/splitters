@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { createInterface } from 'node:readline';
@@ -9,6 +8,7 @@ import { COMMANDS, complete, helpText, parseCommand } from './commands.ts';
 import { ConfigError, describeConfig, loadConfig, type HostConfig } from './config.ts';
 import { DEFAULT_CONTROL_PORT, startControl } from './control.ts';
 import { DEFAULT_MAPS_DIR, suiteIds } from './host.ts';
+import { openLauncherWindow } from './appWindow.ts';
 import { LogBuffer, mapCatalog } from './launcher.ts';
 import { syncMaps } from './published.ts';
 import { Logger } from './logger.ts';
@@ -167,20 +167,13 @@ async function service(): Promise<void> {
   const pairUrl = `${site}/host#pair=${token}${control.port !== DEFAULT_CONTROL_PORT ? `&port=${control.port}` : ''}`;
   // The launcher, on this computer only; the key rides in the #fragment, which the browser never sends anywhere.
   const launcherUrl = `http://127.0.0.1:${control.port}/#key=${token}`;
-  const openLauncher = (): string => {
-    const [cmd, cmdArgs] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', launcherUrl]] : process.platform === 'darwin' ? ['open', [launcherUrl]] : ['xdg-open', [launcherUrl]];
-    try {
-      spawn(cmd as string, cmdArgs as string[], { stdio: 'ignore', detached: true, windowsHide: true })
-        .on('error', () => log(`[service] couldn't open a browser: open ${launcherUrl} yourself`))
-        .unref();
-      return 'opening the launcher in your browser…';
-    } catch {
-      return `couldn't open a browser: open ${launcherUrl} yourself`;
-    }
-  };
+  // Its own window (Edge or Chrome in app mode, a profile of its own in the state folder) when it can;
+  // else a tab in your browser. `--browser` or HOST_APP_WINDOW=0: always a tab.
+  const openLauncher = (): string =>
+    openLauncherWindow(launcherUrl, { profileDir: join(state.dir, 'launcher-window'), appWindow: !args.includes('--browser') && env.HOST_APP_WINDOW !== '0', log });
 
   log(`Tile Trigger Host Service ${VERSION}. Type help for commands; closing this window stops the server.`);
-  log(`Launcher: ${launcherUrl}  (opens in your browser; type launcher to open it again. The link carries this computer's pairing key: don't share it)`);
+  log(`Launcher: ${launcherUrl}  (opens in its own window; closing it leaves the server running: type launcher to open it again. The link carries this computer's pairing key: don't share it)`);
   log(`Also on the site: ${pairUrl}`);
   log(`Settings, bans and logs: ${state.dir}${logger.file ? `  (log: ${logger.file})` : ''}`);
 

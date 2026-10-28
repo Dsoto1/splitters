@@ -12,6 +12,7 @@ import { BanList } from '../src/bans.ts';
 import { COMMANDS, complete, findMap, findPlayer, parseCommand, parseDuration, runMatchCommand, type MatchCommandTarget } from '../src/commands.ts';
 import { ConfigError, DEFAULT_HUB, loadConfig, parseConfig } from '../src/config.ts';
 import { originAllowed, ownPage, startConfig } from '../src/control.ts';
+import { appWindowArgs, browserCandidates, findAppBrowser } from '../src/appWindow.ts';
 import { LogBuffer, launcherCsp, launcherPage, mapCatalog } from '../src/launcher.ts';
 import { DEFAULT_MAPS_DIR, suiteIds } from '../src/host.ts';
 import { syncMaps } from '../src/published.ts';
@@ -461,5 +462,25 @@ describe('published maps on a Host Service', () => {
     await syncMaps(bundled, dir, 'http://hub', fetcher);
     expect(name('frost_basin')).toBe('Frost Basin');
     expect(existsSync(join(dir, 'owner_new.json'))).toBe(false);
+  });
+});
+
+describe('the launcher window', () => {
+  it('prefers Edge on Windows, then Chrome', () => {
+    const env = { 'ProgramFiles(x86)': 'C:\\Program Files (x86)', ProgramFiles: 'C:\\Program Files', LOCALAPPDATA: 'C:\\Users\\a\\AppData\\Local' };
+    const all = browserCandidates('win32', env);
+    expect(all[0]).toBe('C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe');
+    const chromeOnly = (p: string) => p.endsWith('Google\\Chrome\\Application\\chrome.exe') && p.startsWith('C:\\Program Files\\');
+    expect(findAppBrowser('win32', env, chromeOnly)).toBe('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe');
+  });
+  it('looks on the PATH on Linux and finds nothing without a Chromium browser', () => {
+    expect(findAppBrowser('linux', { PATH: '/usr/bin:/bin' }, (p) => p === '/usr/bin/chromium')).toBe('/usr/bin/chromium');
+    expect(findAppBrowser('linux', { PATH: '/usr/bin' }, () => false)).toBeNull();
+  });
+  it('opens the page as an app with a profile of its own', () => {
+    const a = appWindowArgs('http://127.0.0.1:7790/#key=k', '/state/launcher-window');
+    expect(a).toContain('--app=http://127.0.0.1:7790/#key=k');
+    expect(a).toContain('--user-data-dir=/state/launcher-window');
+    expect(a).toContain('--no-first-run');
   });
 });
