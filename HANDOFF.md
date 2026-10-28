@@ -105,7 +105,15 @@ fast-forward `main` to it (it contains `main`).
    - e2e: editorux checks the rotation steps, the menu and strokes. CI failures
      now come back as annotations (`::error title=e2e <flow>::…`), so a failed
      shard can be read through the check-runs API without the log.
-5. Waiting on the owner: privacy-page contact address; Sandgate's street
+5. **Frozen page fixed (85a2737):** the hit/explosion player's `Emitter.spawnAt`
+   returned without counting a particle once an emitter was full, so the
+   emission loops never ended and busy matches froze (perf stall on Frost
+   Basin, hostgame/dedicatedhost connection failures, a scenery click
+   timeout). Found by bisecting on `check/perf-a` / `check/perf-b`; those and
+   `check/kickprobe` are leftover probe branches (deleting a remote branch is
+   refused from here: the owner can delete them). Effects are also capped
+   (remote pack flashes within 45 m on at most 8 guns; 10 effects at once).
+6. Waiting on the owner: privacy-page contact address; Sandgate's street
    terrain (lumpy dirt/grass in the open streets is authored paint: the owner
    can now draw sand Paths over it); nine portraits still rendered live.
 
