@@ -191,6 +191,7 @@ import {
   placeNpcCommand,
   type LightFixture,
   isRetiredMap,
+  moverGroupOf,
 } from '@tiletrigger/shared';
 import { MAP_INDEX, isBuiltInMap, loadBuiltInMap } from '../mapIndex.ts';
 
@@ -1315,13 +1316,15 @@ export class EditorApp {
         return;
       }
       const key = hit.kind === 'tile' ? 'tiles' : 'entities';
-      const already = this.selection[key].includes(hit.id);
+      // A moving build (a mover and every block and prop it carries) is picked whole; Alt-click picks one part.
+      const ids = (hit.kind === 'entity' && !e.altKey && moverGroupOf(this.doc, hit.id)) || [hit.id];
+      const already = ids.every((id) => this.selection[key].includes(id));
       if (e.shiftKey) {
-        const next = { ...this.selection, [key]: already ? this.selection[key].filter((id) => id !== hit.id) : [...this.selection[key], hit.id] };
+        const next = { ...this.selection, [key]: already ? this.selection[key].filter((id) => !ids.includes(id)) : [...new Set([...this.selection[key], ...ids])] };
         this.setSelection(next);
         return;
       }
-      if (!already) this.setSelection(hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : { tiles: [], entities: [hit.id] });
+      if (!already) this.setSelection(hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : { tiles: [], entities: ids });
       if (this.hoverPoint && this.hoverCell) {
         this.drag = { startCell: [this.hoverCell[0], this.hoverCell[1]], startPoint: { ...this.hoverPoint }, pointerX: e.clientX, pointerY: e.clientY, moved: false, cellOffset: [0, 0], freeOffset: [0, 0] };
       }
@@ -2564,6 +2567,11 @@ export class EditorApp {
       el.append(small(`ID ${t.id}`));
     } else if (entities.length === 1 && tiles.length === 0) {
       this.entityInspector(el, doc.entities.find((x) => x.id === entities[0])!);
+    } else if (tiles.length === 0 && this.wholeBuild(entities)) {
+      // A moving build selected whole: its mover's settings; moving, rotating, duplicating or deleting takes every part.
+      const group = this.wholeBuild(entities)!;
+      el.append(small(`A moving build: the mover and the ${group.length - 1} parts it carries, selected together. Move, rotate (R), duplicate or delete it as one; Alt-click picks a single part.`));
+      this.entityInspector(el, doc.entities.find((x) => x.id === group[0])!);
     } else {
       el.append(h2(`${tiles.length + entities.length} selected`));
       el.append(text(`${tiles.length} tiles, ${entities.length} entities`));
@@ -2578,6 +2586,12 @@ export class EditorApp {
       settle.title = 'Bed the selected props into the terrain under them (no floating corners on slopes)';
       el.append(settle);
     }
+  }
+
+  /** The moving build `ids` make up exactly (its IDs, mover first), or null. */
+  private wholeBuild(ids: readonly string[]): string[] | null {
+    const group = ids.length > 1 ? moverGroupOf(this.doc, ids[0]!) : null;
+    return group && group.length === ids.length && group.every((id) => ids.includes(id)) ? group : null;
   }
 
   /** Inspector fields for one entity: position, facing and its kind's settings. */
@@ -3001,11 +3015,14 @@ export class EditorApp {
         const h3b = document.createElement('h3');
         h3b.textContent = 'Carries';
         el.append(h3b);
-        // Blocks near the marker: tick the ones it carries.
-        const near = doc.entities
-          .filter((o): o is Extract<MapEntity, { kind: 'block' }> => o.kind === 'block' && (e.blocks.includes(o.id) || Math.hypot(o.position[0] - e.position[0], o.position[2] - e.position[2]) < 24))
-          .sort((a, b) => Math.hypot(a.position[0] - e.position[0], a.position[2] - e.position[2]) - Math.hypot(b.position[0] - e.position[0], b.position[2] - e.position[2]))
-          .slice(0, 24);
+        // Every block it carries, then free blocks near the marker (not another mover's) to tick.
+        const elsewhere = new Set(doc.entities.flatMap((o) => (o.kind === 'mover' && o.id !== e.id ? o.blocks : [])));
+        const dist = (o: MapEntity) => Math.hypot(o.position[0] - e.position[0], o.position[2] - e.position[2]);
+        const blocks = doc.entities.filter((o): o is Extract<MapEntity, { kind: 'block' }> => o.kind === 'block');
+        const near = [
+          ...blocks.filter((o) => e.blocks.includes(o.id)),
+          ...blocks.filter((o) => !e.blocks.includes(o.id) && !elsewhere.has(o.id) && dist(o) < 24).sort((a, b) => dist(a) - dist(b)).slice(0, 12),
+        ];
         for (const b of near) {
           const c = document.createElement('input');
           c.type = 'checkbox';

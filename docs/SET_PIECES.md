@@ -47,6 +47,17 @@ and back, an 8 m deck hinged at the marker that starts raised and comes down
 when logic sends it. Tick more blocks in the mover's *Carries* list to move
 them together (a train car, a moving room). See SCENARIO.md, *Movers*.
 
+A mover and everything it carries is one **moving build** in MapMaker:
+clicking any part of it (the marker, a block, a riding prop) selects the
+whole build, so dragging, nudging, rotating (R: a quarter turn about the
+marker, its route turning with it), duplicating (the copy carries its own
+blocks) and deleting take every part together, and the inspector shows the
+mover's settings. Alt-click (Option-click on a Mac) picks a single part to
+change on its own. Deleting a carried block takes it off the mover's list; a
+mover left carrying nothing goes too. The *Carries* list shows every block
+the mover carries, then free blocks near it to add. Glacier Line's walkers,
+Express Lobby's cabs and Sushi Belt Sumo's plates are builds like this.
+
 ### Force fields, low gravity and lit signs (Style Packs)
 
 Three more pieces came with the Orbital Station and Neon Megacity Style

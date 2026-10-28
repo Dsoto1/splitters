@@ -73,7 +73,44 @@ function selected(doc: MapDocument, sel: Selection): { tiles: TilePlacement[]; e
 
 export function deleteCommand(doc: MapDocument, sel: Selection): EditCommand {
   const { tiles, entities } = selected(doc, sel);
-  return { kind: 'batch', commands: [{ kind: 'removeTiles', tiles }, { kind: 'removeEntities', entities }] };
+  // A mover left carrying a deleted block drops it from its list; one left carrying nothing goes too.
+  const gone = new Set(entities.map((e) => e.id));
+  const before: MapEntity[] = [];
+  const after: MapEntity[] = [];
+  const emptied: MapEntity[] = [];
+  for (const m of doc.entities) {
+    if (m.kind !== 'mover' || gone.has(m.id)) continue;
+    const blocks = m.blocks.filter((id) => !gone.has(id));
+    const props = (m.props ?? []).filter((id) => !gone.has(id));
+    if (blocks.length === m.blocks.length && props.length === (m.props ?? []).length) continue;
+    if (!blocks.length) emptied.push(m);
+    else {
+      before.push(m);
+      after.push({ ...m, blocks, props: props.length ? props : undefined });
+    }
+  }
+  return { kind: 'batch', commands: [{ kind: 'removeTiles', tiles }, { kind: 'removeEntities', entities: [...entities, ...emptied] }, { kind: 'updateEntities', before, after }] };
+}
+
+/**
+ * The moving build an entity belongs to: a mover with every block and prop it
+ * carries (the IDs, the mover first), or null for an entity that is part of
+ * none. MapMaker selects, moves, duplicates, rotates and deletes such a build
+ * as one piece (Alt-click still picks a single part).
+ */
+export function moverGroupOf(doc: MapDocument, id: string): string[] | null {
+  for (const m of doc.entities) {
+    if (m.kind !== 'mover') continue;
+    if (m.id === id || m.blocks.includes(id) || (m.props ?? []).includes(id)) return [m.id, ...m.blocks, ...(m.props ?? [])];
+  }
+  return null;
+}
+
+/** `ids` with every moving build any of them is part of added whole. */
+export function withMoverGroups(doc: MapDocument, ids: readonly string[]): string[] {
+  const out = new Set(ids);
+  for (const id of ids) for (const g of moverGroupOf(doc, id) ?? []) out.add(g);
+  return [...out];
 }
 
 /** Move selected tiles by whole cells and entities by the same world offset. */
@@ -99,8 +136,30 @@ export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCat
   const rotated = tiles.map((t) => ({ ...t, rotation: ((t.rotation + 1) % 4) as Rotation }));
   const check = checkPlacement(doc, rotated, [], catalog);
   if (!check.ok) return { error: check.reason };
+  // A whole moving build (mover, blocks, props all selected) turns as one about the mover:
+  // a quarter turn, its parts' positions and facings and its route with it.
+  const ids = new Set(entities.map((e) => e.id));
+  const pivotOf = new Map<string, [number, number, number]>();
+  for (const m of entities) {
+    if (m.kind !== 'mover' || ![...m.blocks, ...(m.props ?? [])].every((id) => ids.has(id))) continue;
+    for (const id of [m.id, ...m.blocks, ...(m.props ?? [])]) pivotOf.set(id, m.position);
+  }
+  // A quarter turn of facing (yaw + 90°) takes an offset (x, z) to (z, -x): facing is (sin yaw, cos yaw).
+  const quarter = (x: number, z: number): [number, number] => [z, -x];
+  // (+ 0: no negative zeros in the saved map.)
+  const r3 = (v: number) => Math.round(v * 1000) / 1000 + 0;
   // Spawns turn in 45° steps; doors, traps and other facing objects in quarter turns.
-  const turned = entities.map((e) => (e.kind === 'spawn' ? { ...e, yaw: normalizeYaw(e.yaw + Math.PI / 4) } : 'yaw' in e ? { ...e, yaw: normalizeYaw(e.yaw + Math.PI / 2) } : e));
+  const turned = entities.map((e): MapEntity => {
+    const pivot = pivotOf.get(e.id);
+    if (pivot) {
+      const [ox, oz] = quarter(e.position[0] - pivot[0], e.position[2] - pivot[2]);
+      const moved = { ...e, position: [r3(pivot[0] + ox), e.position[1], r3(pivot[2] + oz)] as [number, number, number] } as MapEntity;
+      if ('yaw' in moved) (moved as { yaw: number }).yaw = normalizeYaw(moved.yaw + Math.PI / 2);
+      if (moved.kind === 'mover') moved.points = moved.points.map(([x, y, z]) => { const [a, b] = quarter(x, z); return [r3(a), y, r3(b)]; });
+      return moved;
+    }
+    return e.kind === 'spawn' ? { ...e, yaw: normalizeYaw(e.yaw + Math.PI / 4) } : 'yaw' in e ? ({ ...e, yaw: normalizeYaw(e.yaw + Math.PI / 2) } as MapEntity) : e;
+  });
   return {
     kind: 'batch',
     commands: [
@@ -118,7 +177,19 @@ export function duplicateCommand(doc: MapDocument, sel: Selection, catalog: Tile
   for (let dx = 1; dx <= 32; dx++) {
     const copies = tiles.map((t) => ({ ...t, id: newId('tile'), x: t.x + dx }));
     if (!checkPlacement(doc, copies, [], catalog).ok) continue;
-    const entityCopies = entities.map((e) => ({ ...e, id: newId(e.kind), position: [e.position[0] + dx * cellSize, e.position[1], e.position[2]] as [number, number, number] }));
+    // Copies refer to each other: a copied mover carries the copied blocks, a copied portal pair links its copies.
+    const idMap = new Map(entities.map((e) => [e.id, newId(e.kind)]));
+    const pairs = new Map<string, string>();
+    for (const e of entities) if (e.kind === 'portal' && entities.filter((o) => o.kind === 'portal' && o.pair === e.pair).length === 2 && !pairs.has(e.pair)) pairs.set(e.pair, newId('pair'));
+    const entityCopies = entities.map((e): MapEntity => {
+      const copy = { ...e, id: idMap.get(e.id)!, position: [e.position[0] + dx * cellSize, e.position[1], e.position[2]] as [number, number, number] } as MapEntity;
+      if (copy.kind === 'mover') {
+        copy.blocks = copy.blocks.map((id) => idMap.get(id) ?? id);
+        if (copy.props) copy.props = copy.props.map((id) => idMap.get(id) ?? id);
+      }
+      if (copy.kind === 'portal' && pairs.has(copy.pair)) copy.pair = pairs.get(copy.pair)!;
+      return copy;
+    });
     return {
       command: { kind: 'batch', commands: [{ kind: 'addTiles', tiles: copies }, { kind: 'addEntities', entities: entityCopies }] },
       selection: { tiles: copies.map((c) => c.id), entities: entityCopies.map((c) => c.id) },

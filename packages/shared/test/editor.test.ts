@@ -9,6 +9,8 @@ import {
   invertCommand,
   loadMap,
   moveCommand,
+  moverGroupOf,
+  withMoverGroups,
   newMapDocument,
   placeTileCommand,
   rotateCommand,
@@ -23,7 +25,16 @@ import {
   type EditCommand,
   type MapDocument,
 } from '../src/index.ts';
+import { readFileSync } from 'node:fs';
 import { loadArena } from './helpers.ts';
+
+/** One of our maps, from maps/<id>.json. */
+const ourMap = (id: string): MapDocument => {
+  const r = loadMap(readFileSync(new URL(`../../../maps/${id}.json`, import.meta.url), 'utf8'));
+  if (!r.ok) throw new Error(`${id} failed to load`);
+  return r.map;
+};
+const entity = (d: MapDocument, id: string) => d.entities.find((e) => e.id === id)!;
 
 const sorted = (d: MapDocument) => ({
   ...d,
@@ -139,6 +150,60 @@ describe('editor operations', () => {
     expect(copy.x).toBe(3); // cells x=1,2 are taken
     expect(copy.id).not.toBe('t_room_sw');
     expect(checkPlacement(after, after.classicStructure.tiles).ok).toBe(true);
+  });
+
+  it("treats a moving build (a mover and what it carries) as one piece: select, duplicate, rotate, delete", () => {
+    const doc = ourMap('glacier_line');
+    const walker = moverGroupOf(doc, 'walker1_lb_foot')!;
+    expect(walker[0]).toBe('mover_walker1');
+    expect(walker).toHaveLength(25);
+    expect(withMoverGroups(doc, ['walker1_lb_foot', 'mover_walker2']).length).toBe(50);
+    expect(moverGroupOf(doc, 'sp_does_not_exist')).toBeNull();
+
+    // Duplicate: the copied mover carries the copied blocks; the original still carries its own.
+    const d = unwrap(duplicateCommand(doc, { tiles: [], entities: walker }));
+    const dup = applyCommand(doc, d.command);
+    const copyMover = dup.entities.find((e) => d.selection.entities.includes(e.id) && e.kind === 'mover')!;
+    expect(copyMover.kind === 'mover' && copyMover.blocks.every((id) => d.selection.entities.includes(id))).toBe(true);
+    expect(entity(dup, 'mover_walker1')).toEqual(entity(doc, 'mover_walker1'));
+    expect(loadMap(serializeMap(dup)).ok).toBe(true);
+
+    // Rotate: a quarter turn about the mover, route included; four of them come back to the start.
+    const sel = { tiles: [], entities: walker };
+    const once = applyCommand(doc, unwrap(rotateCommand(doc, sel)));
+    const m0 = entity(doc, 'mover_walker1');
+    const m1 = entity(once, 'mover_walker1');
+    const foot0 = entity(doc, 'walker1_lb_foot').position;
+    const foot1 = entity(once, 'walker1_lb_foot').position;
+    // Offset (x, z) from the mover becomes (z, -x).
+    expect(foot1[0] - m0.position[0]).toBeCloseTo(foot0[2] - m0.position[2], 2);
+    expect(foot1[2] - m0.position[2]).toBeCloseTo(-(foot0[0] - m0.position[0]), 2);
+    expect(m1.kind === 'mover' && m1.points[2]).toEqual([8, 0, 0]);
+    let back = once;
+    for (let i = 0; i < 3; i++) back = applyCommand(back, unwrap(rotateCommand(back, sel)));
+    expect(entity(back, 'walker1_lb_foot').position[0]).toBeCloseTo(foot0[0], 2);
+    expect(entity(back, 'walker1_lb_foot').position[2]).toBeCloseTo(foot0[2], 2);
+
+    // Delete one carried block: the mover lets go of it. Delete the whole build: nothing is left behind.
+    const one = applyCommand(doc, deleteCommand(doc, { tiles: [], entities: ['walker1_lb_foot'] }));
+    const after = entity(one, 'mover_walker1');
+    expect(after.kind === 'mover' && after.blocks.includes('walker1_lb_foot')).toBe(false);
+    expect(loadMap(serializeMap(one)).ok).toBe(true);
+    const all = applyCommand(doc, deleteCommand(doc, sel));
+    expect(all.entities.some((e) => walker.includes(e.id))).toBe(false);
+  });
+
+  it('removes a mover whose last block is deleted, and links duplicated portals to each other', () => {
+    const doc = ourMap('pharaohs_reach');
+    const ferry = doc.entities.find((e) => e.kind === 'mover' && e.blocks.length === 1)!;
+    const block = ferry.kind === 'mover' ? ferry.blocks[0]! : '';
+    const r = applyCommand(doc, deleteCommand(doc, { tiles: [], entities: [block] }));
+    expect(r.entities.some((e) => e.id === ferry.id)).toBe(false);
+    const d = unwrap(duplicateCommand(doc, { tiles: [], entities: ['portal_tomb', 'portal_pyramid'] }));
+    const copies = applyCommand(doc, d.command).entities.filter((e) => d.selection.entities.includes(e.id));
+    const pairs = copies.map((e) => (e.kind === 'portal' ? e.pair : ''));
+    expect(pairs[0]).toBe(pairs[1]);
+    expect(pairs[0]).not.toBe('pyramid');
   });
 
   it('creates new maps that validate and survive a save/load round trip', () => {
