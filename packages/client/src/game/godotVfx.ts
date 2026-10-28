@@ -793,12 +793,13 @@ void main(void) {
   float outAlpha = 1.0;
   FRAGMENT_BODY
   // Godot shows these through a tone map with glow; a soft roll-off keeps the hues instead of clipping to white.
-  vec3 c = vec3(1.0) - exp(-max(outColor, vec3(0.0)) * u_bright);
+  // (Not named c: the shader bodies use that name.)
+  vec3 toned = vec3(1.0) - exp(-max(outColor, vec3(0.0)) * u_bright);
 #ifdef CUT
   if (outAlpha < CUT) discard;
-  gl_FragColor = vec4(c, 1.0);
+  gl_FragColor = vec4(toned, 1.0);
 #else
-  gl_FragColor = vec4(c, clamp(outAlpha, 0.0, 1.0));
+  gl_FragColor = vec4(toned, clamp(outAlpha, 0.0, 1.0));
 #endif
 }`;
 
