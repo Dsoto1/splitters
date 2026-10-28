@@ -411,9 +411,13 @@ export class MuzzleFlashRig {
     return true;
   }
 
+  /** Tests and screenshots: hold every flash at this many ms after its shot (undefined: play normally). */
+  static hold: number | undefined;
+
   /** Animate; returns whether anything is showing. */
   update(now = performance.now()): boolean {
     if (this.firedAt < 0) return false;
+    if (MuzzleFlashRig.hold !== undefined) now = this.firedAt + MuzzleFlashRig.hold;
     const t = ((now - this.firedAt) / 1000) * SPEED;
     let any = false;
     for (const p of this.pieces) {

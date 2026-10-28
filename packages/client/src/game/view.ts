@@ -311,6 +311,8 @@ export class GameView {
     // made it trail the muzzle by a frame whenever you moved.
     this.flash.billboardMode = MeshClass.BILLBOARDMODE_NONE;
     void loadMuzzleFlashes();
+    // Browser tests hold flashes still to look at them (window.__flashHold = ms after the shot).
+    Object.defineProperty(window, '__flashHold', { configurable: true, set: (v: number | undefined) => (MuzzleFlashRig.hold = v), get: () => MuzzleFlashRig.hold });
     this.vfx = new GodotVfx(this.scene);
     void GodotVfx.preload('hit_fx', 'explosion_fx');
     this.flashRig = new MuzzleFlashRig(this.scene, 'muzzleFlashRig', { renderingGroupId: 1 });
