@@ -46,3 +46,13 @@ tunnel.
    current one?
 
 **Status:** staged; waiting for the owner's go.
+
+## 2. Map rework batches and set pieces
+
+**Asked (earlier backlog; saved again 2026-10-28):** held until the owner says go.
+- **Map rework batches:** revisit maps in groups for layout, assets, looks, spawns, weapons, glass windows and better water.
+- **Runway Nine:** an airplane set piece.
+- **Blackout:** enemies (NPCs) for the map.
+- **Mercy Ward:** zombies on the roof.
+
+**Status:** staged; waiting for the owner's go.
