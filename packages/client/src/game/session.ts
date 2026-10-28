@@ -705,18 +705,13 @@ export class GameSession {
     note.textContent = this.community ? 'Not one of our own maps: it is listed as a "Community map".' : '';
     ($('host-list') as HTMLInputElement).disabled = !this.listable;
     ($('host-name') as HTMLInputElement).hidden = !($('host-list') as HTMLInputElement).checked;
-    let badge = document.getElementById('online-badge');
-    if (!badge) {
-      badge = document.createElement('div');
-      badge.id = 'online-badge';
-      $('hud').append(badge);
-    }
-    badge.hidden = !online || !local;
-    if (online && local && this.peerHost) badge.textContent = `${listed ? 'Online · listed' : 'Online · code only'} · ${1 + local.guests}/${local.capacity} · ${this.peerHost.code}${this.community ? ' · Community map' : ''}`;
+    // Hosting online: a line in the Tab scoreboard (not over the score and clock).
+    const where = online && local && this.peerHost ? `${listed ? 'Online · listed' : 'Online · code only'} · ${1 + local.guests}/${local.capacity} · code ${this.peerHost.code}${this.community ? ' · Community map' : ''}` : '';
+    this.hud.onlineNote = where;
     // The Match tab says where you stand; the Host tab has the controls.
     const state = $('pause-online-state');
     state.hidden = !can;
-    state.textContent = online ? `${badge.textContent}. Host tab: invite link, Go offline.` : 'Offline: only you and bots. Host tab → Go online to let people join.';
+    state.textContent = online ? `${where}. Host tab: invite link, Go offline.` : 'Offline: only you and bots. Host tab → Go online to let people join.';
     state.classList.toggle('on', online);
     this.pauseMenu.setTabVisible('host', !!local || this.hostPanel.controlling);
   }
@@ -982,7 +977,6 @@ export class GameSession {
     document.getElementById('online-confirm')?.remove();
     document.getElementById('leave-confirm')?.remove();
     $('pause-scores').replaceChildren();
-    document.getElementById('online-badge')?.remove();
     if (document.pointerLockElement) document.exitPointerLock();
     this.opts.transport.close();
     this.abort.abort();

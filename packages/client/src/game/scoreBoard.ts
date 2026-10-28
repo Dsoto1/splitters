@@ -50,6 +50,8 @@ export interface BoardGroup {
 export interface BoardData {
   /** Map · mode · time line. */
   head: string;
+  /** A line under it (hosting online: listed or code only, players, the join code); '' for none. */
+  note?: string;
   kind: 'ffa' | 'teams' | 'coop';
   /** Teams (kind 'teams'), or a single group with every player, in display order. */
   groups: BoardGroup[];
@@ -149,6 +151,7 @@ interface GroupEls {
 
 export class ScoreBoard {
   private head: HTMLElement | null = null;
+  private note: HTMLElement | null = null;
   private body: HTMLElement | null = null;
   private groups: GroupEls[] = [];
   private rows = new Map<number, RowEls>();
@@ -169,7 +172,7 @@ export class ScoreBoard {
   /** Forget the DOM (the container was emptied, or a new match starts). */
   clear(): void {
     this.root.replaceChildren();
-    this.head = this.body = null;
+    this.head = this.note = this.body = null;
     this.groups = [];
     this.rows.clear();
     this.shape = '';
@@ -183,6 +186,9 @@ export class ScoreBoard {
     const shape = `${layout.name}|${layout.cols}|${layout.dense}|${layout.tall}|${flags}|${data.kind === 'ffa' ? columns.length : data.groups.map((g) => g.id).join(',')}`;
     if (shape !== this.shape || !this.body || this.body.parentNode !== this.root) this.build(data, layout, columns.length, shape);
     if (this.head!.textContent !== data.head) this.head!.textContent = data.head;
+    const note = data.note ?? '';
+    if (this.note!.textContent !== note) this.note!.textContent = note;
+    this.note!.hidden = !note;
     // Teams: name and score.
     if (data.kind === 'teams') {
       data.groups.forEach((g, i) => {
@@ -230,6 +236,7 @@ export class ScoreBoard {
     this.root.style.setProperty('--sb-tpl', tpl);
     if (this.opts.sizeSelf) this.root.style.width = `min(${Math.round(layout.cols * (layout.name === 'tn' ? 270 : 330) + 32)}px, 96vw)`;
     this.head = make('div', 'sb-head');
+    this.note = make('div', 'sb-note');
     this.body = make('div', 'sb-body');
     this.groups = [];
     for (let i = 0; i < count; i++) {
@@ -270,7 +277,7 @@ export class ScoreBoard {
       this.body.append(el);
       this.groups.push({ el, name, score, list, hd });
     }
-    this.root.append(this.head, this.body);
+    this.root.append(this.head, this.note, this.body);
   }
 
   /** The row for a player, patched to `r` (only the cells that changed). */

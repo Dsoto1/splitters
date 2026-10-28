@@ -692,7 +692,9 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #pause .host-maps .map-card { padding: 0; }
 
 /* Go online: the confirm, and the host's online badge on the HUD. */
-#online-badge { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); padding: 3px 10px; border: 1px solid rgba(46, 204, 113, 0.55); border-radius: 3px; background: rgba(10, 30, 20, 0.7); color: var(--success, #2ecc71); font: 600 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; pointer-events: none; }
+/* Hosting online (session.ts): a line in the Tab scoreboard under its title. */
+.sb-note { flex: none; margin: -4px 2px 8px; font: 600 12px var(--font-display); letter-spacing: 0.08em; color: var(--success, #2ecc71); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-note[hidden] { display: none; }
 
 .host-controls { padding: 8px 12px; border: 1px solid rgba(0, 209, 255, 0.4); border-radius: 4px; background: rgba(0, 20, 30, 0.5); }
 #pause .host-controls button { padding: 6px 10px; }

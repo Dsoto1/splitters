@@ -2082,7 +2082,7 @@ async function lobbyFlow(browser) {
   await solo.addInitScript(() => localStorage.setItem('cs.name', 'Solo'));
   await solo.goto(`${CLIENT}/?offline=sandgate&${hub}`, { waitUntil: 'domcontentloaded' });
   await solo.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !(document.getElementById('online-badge')?.hidden ?? true) }));
+  const offline = await solo.evaluate(() => ({ online: !document.getElementById('go-online').hidden, badge: !!window.__cs.hud.onlineNote }));
   check(offline.online && !offline.badge, 'an offline match stays offline and offers "Go online"');
   const listedAs = (name) => solo.evaluate((n) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.some((g) => g.name === n)), name);
   await sim(solo, (m) => void (m.combatants().find((c) => c.kind === 'human').kills = 5));
@@ -2095,13 +2095,13 @@ async function lobbyFlow(browser) {
   await solo.evaluate(() => document.getElementById('online-yes').click());
   const reset = await sim(solo, (m) => m.combatants().find((c) => c.kind === 'human').kills);
   check(reset === 0, `going online restarts the match (score ${reset})`);
-  const up = await solo.waitForFunction(() => /^Online · listed/.test(document.getElementById('online-badge')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
-  const badge = await solo.evaluate(() => document.getElementById('online-badge')?.textContent ?? '');
+  const up = await solo.waitForFunction(() => /^Online · listed/.test(window.__cs.hud.onlineNote ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
+  const badge = await solo.evaluate(() => window.__cs.hud.onlineNote ?? '');
   check(up && (await listedAs('E2E Go Online')), `the match is online and in the game browser (${badge})`);
   await solo.evaluate(() => document.getElementById('go-offline').click());
   const down = await solo.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Go Online')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
-  const after = await solo.evaluate(() => ({ badge: !(document.getElementById('online-badge')?.hidden ?? true), online: !document.getElementById('go-online').hidden }));
-  check(down && !after.badge && after.online, 'Go offline removes the listing and the badge');
+  const after = await solo.evaluate(() => ({ badge: !!window.__cs.hud.onlineNote, online: !document.getElementById('go-online').hidden }));
+  check(down && !after.badge && after.online, 'Go offline removes the listing and the online line');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await solo.context().close();
 }

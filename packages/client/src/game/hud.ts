@@ -93,6 +93,8 @@ export class Hud {
   private pickupTimer?: number;
   private lastWeaponBar = '';
   private roster = new Map<number, RosterEntry>();
+  /** Hosting online: shown in the Tab scoreboard under its title (listed or code only, players, the join code). */
+  onlineNote = '';
   private hitTimer?: number;
   /** Classes: each player's class (CLASS_IDS index), from snapshots; and lines about your own class and power disc. */
   private classes = new Map<number, number>();
@@ -844,10 +846,11 @@ export class Hud {
     };
     const sorted = [...scores].sort(race ? (a, b) => (race.get(a.s)?.[0] ?? 999) - (race.get(b.s)?.[0] ?? 999) || a.s - b.s : (a, b) => b.k - a.k || (b.o ?? 0) - (a.o ?? 0) || a.d - b.d || a.s - b.s);
     const clock = this.timer.textContent ? ` · ${this.timer.textContent} left` : '';
+    const note = this.onlineNote;
     const head = `${final ? 'Final · ' : ''}${this.mapName} · ${this.modeLabel.textContent ?? ''}${final ? '' : clock}`;
     const flags = { cls: this.classes.size > 0, obj: race ? 'Lap' : this.objLabel, ping: this.pings.size > 0 };
     if (!this.teams) {
-      return { head, kind: this.coop ? 'coop' : 'ffa', groups: [{ id: 'all', name: '', color: '', score: 0, lead: false, rows: sorted.map(row) }], ...flags };
+      return { head, note, kind: this.coop ? 'coop' : 'ffa', groups: [{ id: 'all', name: '', color: '', score: 0, lead: false, rows: sorted.map(row) }], ...flags };
     }
     const totals = this.teamTotals(scores);
     const top = Math.max(...this.teams.map((t) => totals.get(t.id) ?? 0));
@@ -859,7 +862,7 @@ export class Hud {
       lead: top > 0 && (totals.get(t.id) ?? 0) === top,
       rows: sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row),
     }));
-    return { head, kind: 'teams', groups, ...flags };
+    return { head, note, kind: 'teams', groups, ...flags };
   }
 
   renderPerf(visible: boolean, lines: Record<string, string | number>, server: ServerStats | null, botStates: string[]): void {
