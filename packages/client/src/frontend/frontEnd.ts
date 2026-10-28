@@ -1072,7 +1072,12 @@ export class FrontEnd {
       if (who) {
         const out = el('button', { class: 'link', id: 'sign-out', textContent: 'Sign out' });
         out.addEventListener('click', () => signOut());
-        box.append(el('span', { class: 'account', textContent: `Signed in as ${who.name}` }), out);
+        // The account ID (Cognito `sub`) is what names the game's owner on the hub (deploy --owner): click to copy it.
+        const me = el('span', { class: 'account', id: 'account-name', textContent: `Signed in as ${who.name}` });
+        me.dataset.tip = `Account ID ${who.sub} (click to copy)`;
+        me.style.cursor = 'copy';
+        me.addEventListener('click', () => void navigator.clipboard?.writeText(who.sub).then(() => (me.dataset.tip = 'Account ID copied'), () => undefined));
+        box.append(me, out);
       } else {
         const inBtn = el('button', { class: 'link', id: 'sign-in', textContent: 'Sign in' });
         inBtn.dataset.tip = 'Optional: a ToshiroPlay account (Google). Playing never needs one.';

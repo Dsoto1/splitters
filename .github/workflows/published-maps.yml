@@ -1,0 +1,65 @@
+name: Published maps
+
+# Keeps the repository's copy of the maps the owner publishes from MapMaker (the hub's /api/v1/maps,
+# packages/server/src/publish.ts): once a day (and from "Run workflow") it downloads the published
+# versions into maps/ and, when anything changed, pushes a commit to check/published-maps and runs CI
+# there. Like any check branch, main is fast-forwarded to it only once it is green (CLAUDE.md). The site
+# doesn't wait for this: it uses the published versions from the hub as soon as they are published.
+on:
+  schedule:
+    - cron: '41 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: published-maps
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      HUB: https://trigger.toshiroplay.com
+      BRANCH: check/published-maps
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - name: Download the published maps
+        run: |
+          set -euo pipefail
+          curl -fsS --max-time 30 "$HUB/api/v1/maps" -o /tmp/published.json
+          python3 - <<'PY'
+          import json, re, subprocess, os
+          maps = json.load(open('/tmp/published.json'))['maps']
+          for m in maps:
+              mid = m['id']
+              if not re.fullmatch(r'[a-z0-9_]{2,48}', mid):
+                  continue
+              out = f'maps/{mid}.json'
+              subprocess.run(['curl', '-fsS', '--max-time', '60', f"{os.environ['HUB']}/api/v1/maps/{mid}?v={m['at']}", '-o', out], check=True)
+              json.load(open(out))  # it is JSON; the map tests check the rest
+              print(f"{mid}: {m['name']} (published {m['at']})")
+          PY
+      - name: Commit to the check branch and run CI there
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- maps && [ -z "$(git ls-files --others --exclude-standard maps)" ]; then
+            echo "The repository's maps already match the published ones."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add maps
+          git commit -m "Maps: the versions published from MapMaker ($(date -u +%Y-%m-%d))" -m "Downloaded from $HUB/api/v1/maps by the Published maps workflow."
+          git push --force origin "HEAD:refs/heads/$BRANCH"
+          # A push made with this workflow's token starts no other workflow: ask for CI on the branch.
+          gh workflow run ci.yml --ref "$BRANCH"
+          echo "Pushed $BRANCH; CI is running there. Fast-forward main to it once it is green."

@@ -58,6 +58,9 @@
 #   --budget-warn USD       first budget alert (15);  --budget-limit USD  budget (25)
 #   --infra-only            stop after the stack (no SSH bootstrap, no checks)
 #   --yes                   don't ask before deleting hand-made DNS records (--dns replace)
+#   --owner SUB             the account that may publish maps from MapMaker (its Cognito user ID; MapMaker's
+#                           Publish shows it to a signed-in account that isn't one yet). Kept in SSM
+#                           (<prefix>/owner-subs, comma-separated); --owner '' removes everyone
 #
 # No secrets are stored in this repository: the TURN and hub secrets live in SSM
 # Parameter Store (SecureString, default aws/ssm key) and reach the instance over
@@ -84,6 +87,7 @@ REPO=https://github.com/Dsoto1/splitters.git
 ICE_TTL=3600
 INFRA_ONLY=0
 YES=0
+OWNER_SET=0 OWNER_SUBS_NEW=''
 # Explicitly set options (empty = keep the stack's value, or the template default on create).
 EMAIL='' DNS_MODE='' ROOT='' TURN_RECORD='' INSTANCE='' AZ='' BUNDLE='' APP_CLIENT='2lrej6nsacfag8a7taeu3u6sc2' ADMIN_SSH='' BUDGET_WARN='' BUDGET_LIMIT=''
 
@@ -94,6 +98,7 @@ note() { printf '   %s\n' "$*"; }
 while [ $# -gt 0 ]; do
   case "$1" in
     --email) EMAIL="${2:?}"; shift ;;
+    --owner) OWNER_SET=1; OWNER_SUBS_NEW="${2-}"; shift ;;
     --dns) DNS_MODE="${2:?}"; shift ;;
     --root) ROOT=true ;;
     --no-root) ROOT=false ;;
@@ -287,6 +292,13 @@ ensure_secret turn-secret
 ensure_secret hub-signing-secret
 aws ssm get-parameter --name "$SSM_PREFIX/turn-secret" --with-decryption --query Parameter.Value --output text > "$WORK/turn-secret"
 aws ssm get-parameter --name "$SSM_PREFIX/hub-signing-secret" --with-decryption --query Parameter.Value --output text > "$WORK/hub-signing-secret"
+# Owner accounts (map publishing): not a secret, a plain String parameter.
+if [ "$OWNER_SET" = 1 ]; then
+  [[ "$OWNER_SUBS_NEW" =~ ^[A-Za-z0-9,_-]*$ ]] || die "--owner: Cognito user IDs only (letters, digits, - and _, comma-separated)"
+  aws ssm put-parameter --name "$SSM_PREFIX/owner-subs" --type String --overwrite --value "${OWNER_SUBS_NEW:- }" >/dev/null
+  note "owner accounts for map publishing: ${OWNER_SUBS_NEW:-none}"
+fi
+OWNER_SUBS="$(aws ssm get-parameter --name "$SSM_PREFIX/owner-subs" --query Parameter.Value --output text 2>/dev/null | tr -d ' ' || true)"
 chmod 600 "$WORK"/*-secret
 
 # ------------------------------------------------------------------ 4. alarm contact
@@ -390,7 +402,8 @@ for i in $(seq 1 30); do rssh true 2>/dev/null && break; [ "$i" = 30 ] && die "S
     AUTO_UPDATE "$AUTO_UPDATE" PROVENANCE "$PROVENANCE" ICE_TTL "$ICE_TTL" \
     TURN_SECRET "$(cat "$WORK/turn-secret")" HUB_SIGNING_SECRET "$(cat "$WORK/hub-signing-secret")" \
     COGNITO_REGION "$(stack_param CognitoRegion)" COGNITO_USER_POOL_ID "$(stack_param CognitoUserPoolId)" \
-    COGNITO_APP_CLIENT_ID "$(stack_param CognitoAppClientId)" COGNITO_DOMAIN "$(stack_param CognitoDomain)" HOST_FIREWALL 1
+    COGNITO_APP_CLIENT_ID "$(stack_param CognitoAppClientId)" COGNITO_DOMAIN "$(stack_param CognitoDomain)" HOST_FIREWALL 1 \
+    OWNER_SUBS "$OWNER_SUBS"
 } > "$WORK/bootstrap.env"
 chmod 600 "$WORK/bootstrap.env"
 

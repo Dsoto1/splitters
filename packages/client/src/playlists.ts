@@ -15,3 +15,6 @@ export const PLAYLISTS: readonly Playlist[] = Object.values(import.meta.glob<unk
 
 /** Whether `id` names a map of our suite. */
 export const inSuite = (id: string): boolean => SUITE.has(id);
+
+/** A map the owner published with a new ID (publishedMaps.ts) is one of ours too. */
+export const addToSuite = (id: string): void => void SUITE.add(id);

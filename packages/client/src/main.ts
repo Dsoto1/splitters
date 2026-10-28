@@ -23,7 +23,7 @@ import type { GameSession, SessionOptions, Travel } from './game/session.ts';
 import { listLibrary, openFromLibrary } from './editor/storage.ts';
 import { MAP_INDEX, builtInMapJson, loadBuiltInMap, type MapIndexEntry } from './mapIndex.ts';
 import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
-import { PLAYLISTS, inSuite } from './playlists.ts';
+import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
 import { loadSignaling, type Transport } from './game/transport.ts';
@@ -178,6 +178,7 @@ function applyPublished(maps: ArcadeMap[], published: ReadonlyMap<string, Publis
       known.blurb = blurbOf(p.description) || known.blurb;
       if (modes.length) known.modes = modes;
     } else if (modes.length && !isRetiredMap(p.id)) {
+      addToSuite(p.id);
       maps.push(builtInEntry(p.id, { key: p.id, metadata: meta, modes }, { blurb: blurbOf(p.description), modes, bots: botsFor(p.recommendedPlayers) }));
     }
   }

@@ -526,6 +526,44 @@ host control socket (MULTIPLAYER_SECURITY.md section 6), so /host works from
 any device; signed self-updates (section 7); an installer with start-on-boot;
 a tray icon; per-ticket join authorization for every player.
 
+## Publishing maps (the owner)
+
+Every map, the official ones included, is made and edited in MapMaker. The
+game's owner publishes from there; nobody else can, and players never upload
+anything.
+
+**Once:** sign in on the site, then hover **Signed in as …** at the bottom of
+the main menu and click it: that copies your account ID. In AWS CloudShell, run
+`infra/deploy-multiplayer.sh --owner <account ID>` (it keeps the ID in SSM,
+`/toshiro/trigger/owner-subs`, and gives the box a folder for published maps).
+
+**Then, any time:** open MapMaker signed in. Open… lists the official maps as
+**Official map** (not "Template"): they open as they are, with their own ID,
+instead of as a remix. Change what you like, then **Publish** (top bar, orange):
+it says whether this replaces an official map or adds a new one, refuses a map
+with errors, and lists every version published before with **Restore**. **Go
+back to the built-in version** stops using the published one. A map of your own
+(a new ID) published this way becomes an official map in everyone's list; a
+community map you like can be imported and published the same way.
+
+What happens:
+- The hub (`packages/server/src/publish.ts`) checks the map itself (it loads,
+  its ID, no validation errors, a mode that can run), keeps it in
+  `/var/lib/tiletrigger/maps` with every earlier version (the last 50 of each),
+  and serves `/api/v1/maps`. Only the accounts in `OWNER_SUBS` can publish,
+  roll back or take down, checked against a verified sign-in token.
+- The site (`packages/client/src/publishedMaps.ts`) asks the hub for the list
+  and uses a published version over the one built into it, everywhere a map
+  loads: the map list, matches, MapMaker. A match already running keeps the
+  version it started with; players joining it get that version from its host.
+- Host Services keep their maps in their state folder: the ones they came
+  with, with the published versions over them, updated at start and every 10
+  minutes (`packages/host/src/published.ts`); a running server picks a publish
+  up at its next map change.
+- The repository's `maps/` catches up once a day: the **Published maps**
+  workflow downloads them to `check/published-maps` and runs CI there; main is
+  fast-forwarded to it once green, like any change.
+
 ## 2. Official servers (later)
 
 `pnpm --filter @tiletrigger/server start` runs one dedicated match

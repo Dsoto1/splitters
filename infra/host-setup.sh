@@ -21,6 +21,7 @@
 #   TURN_SECRET=…  HUB_SIGNING_SECRET=… (from SSM SecureStrings; never in Git)
 #   COGNITO_REGION=… COGNITO_USER_POOL_ID=… COGNITO_APP_CLIENT_ID=… COGNITO_DOMAIN=…
 #   HOST_FIREWALL=1                     ufw on the box as well as Lightsail's firewall
+#   OWNER_SUBS=…                        accounts that may publish maps from MapMaker (Cognito user IDs, comma-separated)
 #
 # Same pieces as deploy/aws-lightsail-setup.sh (site + hub + coturn + Caddy),
 # with: secrets from SSM instead of generated on the box, 1 h TURN
@@ -146,6 +147,7 @@ COGNITO_REGION=${COGNITO_REGION:-}
 COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID:-}
 COGNITO_APP_CLIENT_ID=${COGNITO_APP_CLIENT_ID:-}
 COGNITO_DOMAIN=${COGNITO_DOMAIN:-}
+OWNER_SUBS=${OWNER_SUBS:-}
 ENV
 chown root:tiletrigger "$ENV_FILE.new" && chmod 640 "$ENV_FILE.new" && mv "$ENV_FILE.new" "$ENV_FILE"
 umask 022
@@ -233,7 +235,10 @@ Wants=network-online.target
 User=tiletrigger
 Group=tiletrigger
 WorkingDirectory=$APP/packages/server
-Environment=PORT=8080 HOST=127.0.0.1 TRUST_PROXY=1 NODE_ENV=production SITE_DIR=$SITE_ROOT/current/site
+Environment=PORT=8080 HOST=127.0.0.1 TRUST_PROXY=1 NODE_ENV=production SITE_DIR=$SITE_ROOT/current/site PUBLISHED_MAPS_DIR=/var/lib/tiletrigger/maps
+# Published maps (packages/server/src/publish.ts) live in /var/lib/tiletrigger, the hub's own state folder.
+StateDirectory=tiletrigger
+StateDirectoryMode=0750
 EnvironmentFile=$ENV_FILE
 # One process: Node with tsx's loader (no pnpm or tsx wrapper processes in between).
 ExecStart=/usr/bin/node --import tsx src/hub.ts

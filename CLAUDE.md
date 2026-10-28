@@ -16,7 +16,7 @@ Start with `HANDOFF.md` (current state, open items, pitfalls) and keep it curren
 - Before changing weapons, recoil, ballistics, damage, TTK or weapon animation, read `docs/GUNPLAY_SPEC.md` (technical design) and `docs/GUNPLAY_DIRECTION.md` (the feel it's tuned for: arcade responsiveness + ballistic depth + modern polish; responsiveness > realism, fun > simulation).
 
 ## Multiplayer and hosting
-- Before changing networking, the hub, hosting, TURN, AWS infrastructure or map publishing, read `docs/MULTIPLAYER_DIRECTION.md` (the owner's direction: AWS coordinates, player machines compute; no uploads; maps are declarative data; small recurring cost).
+- Before changing networking, the hub, hosting, TURN, AWS infrastructure or map publishing, read `docs/MULTIPLAYER_DIRECTION.md` (the owner's direction: AWS coordinates, player machines compute; no player uploads (only the owner publishes maps, from MapMaker: docs/HOSTING.md, "Publishing maps"); maps are declarative data; small recurring cost).
 - Identity: the owner's shared ToshiroPlay Cognito user pool (also used by their Flavius game) with Google sign-in, through a separate "trigger" app client; the hub verifies Cognito tokens against the pool's public keys (no client secret in the site).
 
 ## Maps
@@ -26,4 +26,4 @@ Start with `HANDOFF.md` (current state, open items, pitfalls) and keep it curren
 - No in-game AI generation: players can't make content through an AI service or connector, and can't upload assets.
 - Models we generate ourselves on the owner's Meshy subscription are fine to ship (record them in content provenance as Meshy, owned).
 - Otherwise only CC0, credit-only human-made, or approved Quaternius packs; never commit raw pack files.
-- Official and featured servers carry only maps built from our own suite. Community-hosted servers may run community maps (declarative data, in-house assets only), shown with a clear "Community map" label.
+- Official and featured servers carry only our own maps: the suite in maps/ and what the owner publishes from MapMaker. Community-hosted servers may run community maps (declarative data, in-house assets only), shown with a clear "Community map" label.
