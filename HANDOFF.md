@@ -41,12 +41,12 @@ update it when you finish a piece of work or the owner changes direction.
   version, because these are features.
 - **Nothing is in progress.** Everything above is on `main` (`7657980` and on). Open: nine portraits left to render live (soldier NPCs untinted, cyclops/oculus/imp/Nova framing) until `portraits.ts` handles them; the Host Service launcher now opens as an app window (`src/appWindow.ts`), untested on a real screen.
 
-## In flight (2026-10-28, 16:30 EDT): pick up here
+## Landed on main (2026-10-28, 17:20 EDT)
 
-All of this is on the session branch `claude/launcher-ui-map-cards` (pushed) and
-on `check/candidate` (CI running). `main` is at `4718207` + the infra fixes; none
-of the list below is on `main` yet. When `check/candidate` is green,
-fast-forward `main` to it (it contains `main`).
+Everything below is on `main` at `f80a606` (green on `check/candidate`: all
+8 e2e shards, perf, release; its site build is in `check-builds`). Not yet
+released: next is a minor version (0.x.0) with a CHANGELOG entry once the owner
+has tried it.
 
 1. **Binbun VFX (CC0 packs the owner downloaded; zips not committed):**
    - muzzle flashes `game/muzzleFlash.ts` (from `public/vfx/muzzle_flash.json` +
@@ -54,20 +54,20 @@ fast-forward `main` to it (it contains `main`).
      particle/shader player for `hit_fx.json`, `explosion_fx.json`);
      converter `tools/content/prepare-vfx.mjs` + `godot.mjs`; provenance in
      `content/vfx*.json`, `assets-src/binbun-*`.
-   - Muzzle commit `8ac1d75` went green on `check/vfx`, but a local capture
-     (frozen clock, `?offline=arena`) showed **no flash visible in first
-     person**: the rig fires (pieces enabled, scale 0.2 at the muzzle) yet
-     nothing shows. Suspects: blades lie along the view axis (edge-on from
-     behind the gun), the front star is small, alpha math, or the atlas
-     sampling. Debug with the check-builds site (release asset of the commit)
-     served locally + Playwright (scripts were in the session scratchpad:
-     freeze `performance.now` after `view.flashRig.fire`). Don't ship until a
-     screenshot shows a flash. Hit/explosion player is untested visually.
+   - Verified on the published check build of `f80a606` (served locally,
+     `?offline=training_range&test=1&god=1&sim=main&bots=1`, `#pause` hidden,
+     `window.__flashHold` = 8/20/40 ms): the pistol's flash shows, an orange
+     flame and a yellow glow at the muzzle. It is small and partly behind the
+     slide; make it bigger or move it forward if the owner wants more punch.
+     (The earlier "no flash" capture was before `__flashHold`.)
+   - `f80a606` fixed the hit/explosion shaders: the wrapper's tone-map `vec3 c`
+     clashed with `vec2 c` in flare, streaks, impact_core and spiral_dust, so
+     WebGL refused them and most pieces drew nothing. Now impacts and the
+     ground explosion draw (checked with `view.vfx.play` in front of the camera).
 2. **Terrain never through floors** (`settle.ts terrainUnderFloors`, applied in
    `loadMap` and every MapMaker edit via `withTerrainUnderFloors`): on
-   `check/terrain` (`476bd74`) e2e shard 8 failed once (outpost, canyon, teams,
-   hostcontrols, lobby, dedicatedhost); logs aren't downloadable here; re-run it
-   to tell flake from real.
+   `check/terrain` shard 8 failed once; with the hang fixed, every shard
+   passed on `f80a606`, so that was the frozen page, not terrain.
 3. **MapMaker:** fold-away sidebars (\ / Shift+\), edits rebuild only what
    changed (measured on Sandgate headless: ~170 ms per edit, ~100 ms of it the
    terrain), faster terrain meshes, and **Paths** (`shared/map/paths.ts`,
@@ -113,12 +113,9 @@ fast-forward `main` to it (it contains `main`).
    `check/kickprobe` are leftover probe branches (deleting a remote branch is
    refused from here: the owner can delete them). Effects are also capped
    (remote pack flashes within 45 m on at most 8 guns; 10 effects at once).
-6. **Next step:** the hang fix went green on perf, hostgame and dedicatedhost
-   (run on `85a2737`). The last two failures were test-side (editorux clicked
-   off screen; scenery clicked the Terrain pane while the Sky pane was open),
-   fixed in `129dc9d`, now on `check/candidate`. When that run is green:
-   fast-forward `main` to it (`git push origin 129dc9d:main`), then screenshot
-   the muzzle flash from the published check build (`window.__flashHold`).
+6. **Done:** editorux now refocuses on the spawn spot before placing it (`fbb8eed`;
+   `129dc9d`'s right-click at (6, 0, 0) was still behind the camera left on the
+   rocks), scenery opens the Terrain pane first (`129dc9d`), and main is at `f80a606`.
 7. Waiting on the owner: privacy-page contact address; Sandgate's street
    terrain (lumpy dirt/grass in the open streets is authored paint: the owner
    can now draw sand Paths over it); nine portraits still rendered live.
@@ -142,6 +139,10 @@ fast-forward `main` to it (it contains `main`).
 
 **Gotchas**
 
+- Local e2e in a cloud session: the project's Playwright wants a browser build
+  that isn't installed. Run a copy of `e2e/run.mjs` with
+  `executablePath: '/opt/pw-browsers/chromium'` added to `chromium.launch` (don't
+  commit the copy).
 - Some Claude sessions can't reach registry.npmjs.org (DNS fails, the proxy
   refuses it): `pnpm install` fails, so nothing builds or tests locally. Push
   to `check/candidate` and let CI check it.
