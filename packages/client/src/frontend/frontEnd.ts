@@ -1313,7 +1313,11 @@ export class FrontEnd {
       });
     });
     scan.addEventListener('click', () => void run());
-    void run();
+    // Looking on this computer (localhost) makes browsers ask "access other apps and services on this
+    // device?". Only do that by itself on a page served from this computer or the local network; on
+    // the public site it waits for Scan, so the question only comes when you asked for it.
+    if (/^(localhost|127\.|\[::1\]|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(location.hostname)) void run();
+    else status.textContent = 'Press Scan to look for servers on this computer and your network (your browser asks first).';
     return el('div', { class: 'form panel lan-panel' }, el('div', { class: 'gb-top' }, el('h4', { textContent: 'On your network (LAN)' }), status, scan), list, el('div', { class: 'gb-hub' }, add, addBtn));
   }
 
