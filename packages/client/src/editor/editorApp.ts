@@ -207,6 +207,7 @@ import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
 import { RoadTool } from './roadTool.ts';
+import { PathTool } from './pathTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 import { Palette } from './palette.ts';
 import { PaletteAtlas } from './paletteAtlas.ts';
@@ -235,7 +236,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'road' };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'road' } | { kind: 'path' };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -467,6 +468,7 @@ export class EditorApp {
   readonly logic: LogicPanel;
   /** The Road tool (race tracks). */
   private readonly road: RoadTool;
+  private readonly paths: PathTool;
   private level = 0;
   private showAll = false;
   /** The last placing tool, so the toolbar's Place button can pick it up again. */
@@ -522,6 +524,7 @@ export class EditorApp {
     this.view = new EditorView(host.engine);
     this.thumbs = new ModelThumbnails(host.engine);
     this.road = new RoadTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
+    this.paths = new PathTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.history = new EditHistory(newMapDocument('Untitled Map'));
     this.logic = new LogicPanel({
       doc: () => this.doc,
@@ -636,6 +639,8 @@ export class EditorApp {
       this.syncTerrainUi();
       this.road.refresh();
       this.road.renderPane($('ed-road'));
+      this.paths.refresh();
+      this.paths.renderPane($('ed-paths'));
       if (!force) this.scheduleAutosave();
     }
   }
@@ -713,6 +718,7 @@ export class EditorApp {
     if (tool.kind === 'edge') this.edgeStyle = tool.style;
     const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain' };
     this.road.setActive(tool.kind === 'road');
+    this.paths.setActive(tool.kind === 'path');
     // The pane holding the tool's card (props sit in Props, Nature or Vehicles; scenario pieces in several tabs).
     const card = document.querySelector<HTMLElement>(`#ed-palette .ed-pane [data-tool="${CSS.escape(toolKey(tool))}"]`);
     const at = card?.closest<HTMLElement>('.ed-pane')?.dataset.pane ?? pane[tool.kind];
@@ -757,6 +763,7 @@ export class EditorApp {
       terrain: ['Terrain', 'Hold left to sculpt or paint · [ ] brush size · Shift inverts raise/lower · T cycles brushes'],
       scatter: ['Place', 'Left-click plants a patch · Alt-click clears that kind of plant · [ ] brush size · right-click erases one'],
       road: ['Road', 'Left-click adds a road point after the selected one · drag a point to move it · Shift-click the road inserts one · right-click or Del removes one'],
+      path: ['Paths', 'Left-click adds a point after the selected one (two clicks start a path) · drag a point to move it · Shift-click a path inserts one · right-click or Del removes one · click another path to edit it'],
     };
     const [name, hint] = hints[tool.kind];
     const what = PLACING.has(tool.kind) ? `: ${this.toolName(tool)}` : tool.kind === 'edge' ? `: ${EDGE_STYLE_LABELS[tool.style]}` : '';
@@ -1340,6 +1347,7 @@ export class EditorApp {
       }
       this.updatePointer(e.clientX, e.clientY);
       if (this.road.dragging) this.road.pointerMove(this.hoverPoint);
+      if (this.paths.dragging) this.paths.pointerMove(this.hoverPoint);
       if (this.drag) {
         if (Math.hypot(e.clientX - this.drag.pointerX, e.clientY - this.drag.pointerY) > 4) this.drag.moved = true;
         if (this.drag.moved) this.updateDrag();
@@ -1361,6 +1369,7 @@ export class EditorApp {
       if (this.tool.kind === 'scatter') return this.scatterAtHover(this.tool.set, e.altKey);
       if (this.tool.kind === 'erase') return this.eraseAtHover();
       if (this.tool.kind === 'road') return this.road.pointerDown(this.hoverPoint, e.shiftKey);
+      if (this.tool.kind === 'path') return this.paths.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind !== 'select') return this.placeAtHover();
       const hit = this.pick();
       if (!hit) {
@@ -1395,6 +1404,9 @@ export class EditorApp {
         } else if (wasClick && this.tool.kind === 'road') {
           this.updatePointer(e.clientX, e.clientY);
           this.road.erase(this.hoverPoint);
+        } else if (wasClick && this.tool.kind === 'path') {
+          this.updatePointer(e.clientX, e.clientY);
+          this.paths.erase(this.hoverPoint);
         } else if (wasClick && this.tool.kind !== 'select' && this.tool.kind !== 'terrain' && this.tool.kind !== 'erase') {
           this.updatePointer(e.clientX, e.clientY);
           this.eraseAtHover();
@@ -1405,6 +1417,7 @@ export class EditorApp {
         this.endStroke();
         this.endDrag();
         this.road.pointerUp();
+        this.paths.pointerUp();
       }
     });
     window.addEventListener(
@@ -1502,6 +1515,7 @@ export class EditorApp {
         case 'Delete':
         case 'Backspace':
           if (this.tool.kind === 'road' && this.road.deleteSelected()) break;
+          if (this.tool.kind === 'path' && this.paths.deleteSelected()) break;
           this.deleteSelection();
           break;
         case 'PageUp':
@@ -1721,6 +1735,20 @@ export class EditorApp {
     this.buildPropPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
+    // Paths: roads, streets, trails and walkways, in the Terrain pane (they lie on the ground and shape it).
+    const pathGroup = this.palette.group($('ed-terrain-paths'), 'terrain:paths', 'Paths & Roads');
+    const pathBtn = document.createElement('button');
+    pathBtn.className = 'tile-btn';
+    pathBtn.dataset.tool = 'path';
+    pathBtn.innerHTML = '<svg viewBox="0 0 56 56"><rect x="4" y="4" width="48" height="48" rx="4" fill="#5c7a3a"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#c9a36b" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#e3c48f" stroke-width="2" stroke-dasharray="3 4" fill="none"/></svg>Paths';
+    pathBtn.title = 'Draw roads, streets, trails and walkways: click points; style, width and laying into the ground in the pane';
+    pathBtn.addEventListener('click', () => this.setTool({ kind: 'path' }));
+    pathGroup.append(pathBtn);
+    this.palette.register(pathBtn, { key: 'path', name: 'Paths', tags: 'path road street trail walkway sidewalk pavement asphalt cobble dirt gravel boardwalk' });
+    const pathPane = document.createElement('div');
+    pathPane.id = 'ed-paths';
+    pathGroup.after(pathPane);
+    this.paths.renderPane(pathPane);
     const track = this.palette.group($('ed-mounts'), 'vehicles:track', 'Race Track');
     const roadBtn = document.createElement('button');
     roadBtn.className = 'tile-btn';
@@ -3466,12 +3494,12 @@ export class EditorApp {
     list.replaceChildren();
     // Each row shows the map's picture and plan (loaded and drawn as it scrolls into view).
     // Templates are built-in maps: each loads (its own chunk) when its row is seen or opened.
-    const tpl = (id: string) => ({ load: () => loadBuiltInMap(id), shipped: true });
+    const tpl = (id: string) => ({ load: () => loadBuiltInMap(id, { forEditing: true }), shipped: true });
     const remix = (id: string, name: (m: MapDocument) => string) => () =>
-      void loadBuiltInMap(id).then((m) => m && this.replaceDocument({ ...m, metadata: { ...m.metadata, id: newId('map'), name: name(m), parentId: m.metadata.id } }));
+      void loadBuiltInMap(id, { forEditing: true }).then((m) => m && this.replaceDocument({ ...m, metadata: { ...m.metadata, id: newId('map'), name: name(m), parentId: m.metadata.id } }));
     // The owner opens our maps as they are (same ID), to fix them and Publish; everyone else gets a remix to make their own.
     const edit = (id: string) => () =>
-      void loadBuiltInMap(id).then((m) => {
+      void loadBuiltInMap(id, { forEditing: true }).then((m) => {
         if (!m) return this.toast(`Couldn't open ${id}`, true);
         this.replaceDocument(m);
         this.toast(`Editing the official ${m.metadata.name}: Publish puts your changes live for everyone`);
@@ -3507,12 +3535,12 @@ export class EditorApp {
     }
     for (const entry of listLibrary()) {
       add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {
-        const r = openFromLibrary(entry.id);
+        const r = openFromLibrary(entry.id, true);
         if ('map' in r) {
           this.replaceDocument(r.map);
           this.toast(`Opened "${r.map.metadata.name}"`);
         } else this.toast(`Could not open: ${r.issues[0]?.message}`, true);
-      }, () => deleteFromLibrary(entry.id), '', { load: () => ((r) => ('map' in r ? r.map : null))(openFromLibrary(entry.id)), shipped: SHIPPED_IDS.has(entry.id) });
+      }, () => deleteFromLibrary(entry.id), '', { load: () => ((r) => ('map' in r ? r.map : null))(openFromLibrary(entry.id, true)), shipped: SHIPPED_IDS.has(entry.id) });
     }
     add('Sandgate', `${kind} · desert town for Team Deathmatch, with open courtyards`, template('sandgate', () => 'Sandgate Remix'), undefined, cls, tpl('sandgate'));
     add('Citadel', `${kind} · castle keep with a two-storey atrium, roof terraces, props and breakables`, template('citadel', () => 'Citadel Remix'), undefined, cls, tpl('citadel'));
@@ -3542,7 +3570,9 @@ export class EditorApp {
     const main = this.doc.metadata.supportedModes[0] ?? '';
     const teams = isTeamMode(main) ? (main === 'core.ctf' ? (this.doc.teamSetup?.sizes.slice(0, 2) ?? [4, 4]) : this.doc.teamSetup?.sizes) : undefined;
     const fill = teams ? Math.min(32, teams.reduce((a, b) => a + b, 0)) : botCount + 1;
-    this.host.startTest({ map: this.doc, botFill: fill, difficulty });
+    // As played: paths laid into the ground, terrain under the floors (what loadMap gives every match).
+    const played = loadMap(this.doc);
+    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty });
   }
 
   toast(message: string, error = false): void {

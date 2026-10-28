@@ -742,6 +742,27 @@ export type Track = z.infer<typeof Track>;
 export type TrackSurface = (typeof TRACK_SURFACES)[number];
 export type RaceVehicle = (typeof RACE_VEHICLES)[number];
 
+/** How a path (paths.ts) looks: its surface, and what the ground under it is painted. */
+export const PATH_STYLES = ['asphalt', 'concrete', 'cobble', 'flagstone', 'gravel', 'dirt', 'sand', 'planks'] as const;
+export type PathStyle = (typeof PATH_STYLES)[number];
+
+/**
+ * A path drawn in MapMaker (paths.ts): a road, street, trail or walkway
+ * through the points (a smooth curve), `width` metres wide, in a style.
+ * `lay`: the ground under it is levelled to the path and painted, and its
+ * edges blend back into the ground (on load, so moving a path in MapMaker
+ * moves the dip with it). Drawn only: nothing collides with a path itself.
+ */
+export const MapPath = z.object({
+  id: z.string().min(1).max(64),
+  style: z.enum(PATH_STYLES).default('dirt'),
+  width: z.number().min(0.5).max(20).default(3),
+  points: z.array(Vec3Tuple).min(2).max(200),
+  loop: z.boolean().default(false),
+  lay: z.boolean().default(true),
+});
+export type MapPath = z.infer<typeof MapPath>;
+
 /** Sky, distant scenery, ground past the border and haze (see backdrop.ts). */
 export const BackdropSchema = z.object({
   sky: z.enum(SKY_IDS),
@@ -799,6 +820,8 @@ export const MapDocument = z.object({
   bounds: MapBounds.nullable().default(null),
   /** Race track (road, checkpoints, start grid), or none. */
   track: Track.nullable().default(null),
+  /** Roads, streets, trails and walkways (paths.ts). */
+  paths: z.array(MapPath).max(64).optional(),
   /** What surrounds the play area, or none (the theme's backdrop). */
   backdrop: BackdropSchema.nullable().default(null),
   /** Gravity and fall damage for this map, or none (normal gravity, no fall damage). Matches can override both. */

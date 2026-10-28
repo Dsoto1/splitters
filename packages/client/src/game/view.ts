@@ -74,6 +74,7 @@ import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 import { GodotVfx } from './godotVfx.ts';
+import { buildPathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
@@ -334,6 +335,8 @@ export class GameView {
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);
     buildRoadMeshes(this.scene, doc, styler);
+    // Paths (MapMaker's roads, streets and trails), on the ground as played (loadMap laid them in).
+    buildPathMeshes(this.scene, doc, doc.terrain, styler);
     const backdropVisuals = new BackdropVisuals(this.scene, styler, this.models);
     const backdrop = backdropVisuals.build(doc, boxes);
     if (backdropVisuals.sky) this.skyEffects.apply(doc, backdrop, backdropVisuals.sky);

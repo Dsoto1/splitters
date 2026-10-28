@@ -8,6 +8,7 @@ export * from './map/geometry.ts';
 export * from './map/terrain.ts';
 export * from './map/track.ts';
 export * from './map/settle.ts';
+export * from './map/paths.ts';
 export * from './map/backdrop.ts';
 export * from './map/dressing.ts';
 export * from './map/border.ts';

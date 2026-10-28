@@ -15,11 +15,12 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection } from '@tiletrigger/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid } from '@tiletrigger/shared';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyToneMapping } from '../game/graphicsSettings.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { buildRoadMeshes, disposeRoadMeshes } from '../roadMeshes.ts';
+import { buildPathMeshes, disposePathMeshes } from '../pathMeshes.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
@@ -84,6 +85,13 @@ export class EditorView {
   private builtTerrain: MapDocument['terrain'] | undefined = undefined;
   private builtTheme = '';
   private builtRoad: unknown = undefined;
+  private builtPaths: MapDocument['paths'] | null = null;
+  private builtStructure: MapDocument['classicStructure'] | null = null;
+  private drawnPaths: MapDocument['paths'] | null = null;
+  private drawnTerrain: MapDocument['terrain'] | undefined = undefined;
+  /** The ground as played (paths laid in, kept under floors): what the terrain, plants and roads are drawn on. */
+  private shownTerrain: MapDocument['terrain'] = null;
+  private pathMeshes: Mesh[] = [];
   private gizmo?: LinesMesh;
   private pickKey = '';
 
@@ -251,28 +259,42 @@ export class EditorView {
       for (const m of this.dimMeshes) m.visibility = 0.4;
       this.applyTileLayer();
     }
-    // Terrain and the road, only when they changed (the terrain alone took most of an edit on big maps).
-    if (doc.terrain !== this.builtTerrain || doc.classicStructure.theme !== this.builtTheme) {
+    // The ground as played: the paths laid in (paths.ts) and kept under the floors. MapMaker's document
+    // keeps them apart, so a path that moves takes its dip with it.
+    if (doc.terrain !== this.builtTerrain || doc.paths !== this.builtPaths || doc.classicStructure !== this.builtStructure) {
       this.builtTerrain = doc.terrain;
+      this.builtPaths = doc.paths;
+      this.builtStructure = doc.classicStructure;
+      const laid = withPathsLaid(doc);
+      this.shownTerrain = laid.terrain ? terrainUnderFloors(laid) : null;
+      this.builtTheme = '';
+    }
+    const shown = this.shownTerrain === doc.terrain ? doc : { ...doc, terrain: this.shownTerrain };
+    // Terrain, paths and the road, only when they changed (the terrain alone took most of an edit on big maps).
+    if (this.shownTerrain !== this.drawnTerrain || doc.classicStructure.theme !== this.builtTheme) {
+      this.drawnTerrain = this.shownTerrain;
       this.builtTheme = doc.classicStructure.theme;
-      this.styler.buildTerrain(doc, 'edmap');
+      this.styler.buildTerrain(shown, 'edmap');
       this.builtRoad = undefined;
     }
-    if (doc.track !== this.builtRoad) {
+    if (doc.track !== this.builtRoad || doc.paths !== this.drawnPaths) {
       this.builtRoad = doc.track;
+      this.drawnPaths = doc.paths;
       disposeRoadMeshes(this.roadMeshes);
-      this.roadMeshes = buildRoadMeshes(this.scene, doc, this.styler, 'edroad');
+      disposePathMeshes(this.pathMeshes);
+      this.roadMeshes = buildRoadMeshes(this.scene, shown, this.styler, 'edroad');
+      this.pathMeshes = buildPathMeshes(this.scene, doc, this.shownTerrain, this.styler, 'edpath');
     }
     this.backdrop.build(doc, boxes);
     this.border.update(doc, boxes);
     void this.city.setMap(visible);
     // Regrow plants only when the ground or what stands on it changed.
     const water = mapLiquids(doc.entities).filter((l) => l.liquid === 'water' || l.liquid === 'swamp');
-    const foliageKey = doc.terrain ? `${doc.terrain.heights.length}:${boxes.length}:${water.map((l) => `${l.min.x},${l.min.z},${l.max.x},${l.max.z},${l.max.y}`).join(';')}` : '';
-    if (doc.terrain !== this.foliageTerrain || foliageKey !== this.foliageKey) {
-      this.foliageTerrain = doc.terrain;
+    const foliageKey = shown.terrain ? `${shown.terrain.heights.length}:${boxes.length}:${water.map((l) => `${l.min.x},${l.min.z},${l.max.x},${l.max.z},${l.max.y}`).join(';')}` : '';
+    if (shown.terrain !== this.foliageTerrain || foliageKey !== this.foliageKey) {
+      this.foliageTerrain = shown.terrain;
       this.foliageKey = foliageKey;
-      void this.foliage.grow(doc.terrain, boxes, doc.metadata.id, water);
+      void this.foliage.grow(shown.terrain, boxes, doc.metadata.id, water);
     }
     this.setGrid(doc, level);
     this.setBoundsOutline(doc);
@@ -669,6 +691,7 @@ export class EditorView {
     this.styler.buildTerrain(doc, 'edmap');
     // Built from a preview: the next setMap rebuilds it from the document.
     this.builtTerrain = undefined;
+    this.drawnTerrain = undefined;
   }
 
   /** Terrain brush outline draped over the ground; null hides it. */

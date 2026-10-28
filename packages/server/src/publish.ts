@@ -129,7 +129,8 @@ export class PublishedMaps {
   /** Check a map's text: it loads, has an allowed ID (`id` if given), and no validation errors. */
   check(text: string, id?: string): MapDocument {
     if (Buffer.byteLength(text) > MAX_MAP_BYTES) throw new PublishError('the map is too large');
-    const r = loadMap(text);
+    // Kept as made (paths not laid into the ground): hosts and MapMaker load it from here.
+    const r = loadMap(text, undefined, { forEditing: true });
     if (!r.ok) throw new PublishError(`the map doesn't load: ${r.issues.find((i) => i.severity === 'error')?.message ?? 'invalid'}`);
     const map = r.map;
     if (!isMapId(map.metadata.id)) throw new PublishError('the map ID must be 2–48 characters of a–z, 0–9 and _');

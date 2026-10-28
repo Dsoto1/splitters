@@ -41,9 +41,9 @@ export async function builtInMapJson(key: string): Promise<unknown> {
 }
 
 /** A built-in map, loaded and checked (null when there is none or it doesn't load). */
-export async function loadBuiltInMap(key: string): Promise<MapDocument | null> {
+export async function loadBuiltInMap(key: string, opts: { forEditing?: boolean } = {}): Promise<MapDocument | null> {
   const json = await builtInMapJson(key);
   if (json === undefined) return null;
-  const r = loadMap(json);
+  const r = loadMap(json, undefined, opts);
   return r.ok ? r.map : null;
 }

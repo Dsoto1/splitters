@@ -112,7 +112,7 @@ function arches(scene: Scene, doc: MapDocument, name: string): Mesh[] {
 
 const flats = new WeakMap<Scene, Map<string, StandardMaterial>>();
 
-function flat(scene: Scene, name: string, hex: string, zOffset: number, glow = 0): StandardMaterial {
+export function flat(scene: Scene, name: string, hex: string, zOffset: number, glow = 0): StandardMaterial {
   let cache = flats.get(scene);
   if (!cache) flats.set(scene, (cache = new Map()));
   const key = `${hex}|${zOffset}|${glow}`;
@@ -132,7 +132,7 @@ function flat(scene: Scene, name: string, hex: string, zOffset: number, glow = 0
  * A mesh along the road from rows of points across it (see roadStrip),
  * optionally only the stretches `keep` accepts (dashes, curb stripes).
  */
-function strip(scene: Scene, name: string, road: { rows: number[][]; s: number[] }, material: StandardMaterial, uv?: (col: number, s: number) => [number, number], keep?: (s: number) => boolean): Mesh {
+export function strip(scene: Scene, name: string, road: { rows: number[][]; s: number[] }, material: StandardMaterial, uv?: (col: number, s: number) => [number, number], keep?: (s: number) => boolean): Mesh {
   const positions: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];

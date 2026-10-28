@@ -61,9 +61,9 @@ export function listDrafts(): Draft[] {
   if (legacy) {
     try {
       const parsed = JSON.parse(legacy) as { map: unknown; savedAt: string };
-      const r = loadMap(parsed.map);
+      const r = loadMap(parsed.map, undefined, { forEditing: true });
       // Skip it when it is just the saved copy of a library map.
-      const saved = r.ok ? openFromLibrary(r.map.metadata.id) : null;
+      const saved = r.ok ? openFromLibrary(r.map.metadata.id, true) : null;
       const same = r.ok && saved && 'map' in saved && sameContent(saved.map, r.map);
       if (r.ok && !same && !storedDrafts().some((d) => (d.map as MapDocument)?.metadata?.id === r.map.metadata.id)) {
         set(DRAFTS_KEY, JSON.stringify([{ map: r.map, savedAt: parsed.savedAt }, ...storedDrafts()].slice(0, MAX_DRAFTS)));
@@ -79,7 +79,7 @@ export function listDrafts(): Draft[] {
   }
   const out: Draft[] = [];
   for (const d of storedDrafts()) {
-    const r = loadMap(d.map);
+    const r = loadMap(d.map, undefined, { forEditing: true });
     if (r.ok) out.push({ map: r.map, savedAt: d.savedAt });
   }
   return out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
@@ -126,10 +126,11 @@ export function saveToLibrary(map: MapDocument): MapDocument | null {
   return set(INDEX_KEY, JSON.stringify(list)) ? stamped : null;
 }
 
-export function openFromLibrary(id: string): { map: MapDocument } | { issues: ValidationIssue[] } {
+/** A saved map: as played, or `forEditing` (MapMaker: paths kept out of the ground, see loadMap). */
+export function openFromLibrary(id: string, forEditing = false): { map: MapDocument } | { issues: ValidationIssue[] } {
   const raw = get(mapKey(id));
   if (!raw) return { issues: [{ severity: 'error', code: 'storage.missing', message: 'map not found in local storage' }] };
-  const r = loadMap(raw);
+  const r = loadMap(raw, undefined, { forEditing });
   return r.ok ? { map: r.map } : { issues: r.issues };
 }
 
@@ -160,6 +161,6 @@ export function exportMap(map: MapDocument): MapDocument {
 
 export async function importMapFile(file: File): Promise<{ map: MapDocument; issues: ValidationIssue[] } | { issues: ValidationIssue[] }> {
   if (file.size > 4 * 1024 * 1024) return { issues: [{ severity: 'error', code: 'import.size', message: 'file is larger than 4 MB' }] };
-  const r = loadMap(await file.text());
+  const r = loadMap(await file.text(), undefined, { forEditing: true });
   return r.ok ? { map: r.map, issues: r.issues } : { issues: r.issues };
 }

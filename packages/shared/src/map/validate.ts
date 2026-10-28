@@ -6,6 +6,7 @@ import { buildMapGeometry, buildOccupancy, cellHasFloor, cellKey, cellSides, dyn
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { floatingProps, terrainUnderFloors } from './settle.ts';
+import { withPathsLaid } from './paths.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
@@ -35,7 +36,7 @@ export type LoadResult =
  * `ok` is false only when the map cannot be used at all (errors); warnings and
  * suggestions ride along with a usable map.
  */
-export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatalog): LoadResult {
+export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatalog, opts: { forEditing?: boolean } = {}): LoadResult {
   let raw: unknown = json;
   // Size first, before any parsing: a map is at most RESOURCE_BUDGETS.mapBytes of JSON wherever it comes from.
   const bytes = typeof json === 'string' ? utf8Length(json) : utf8Length(JSON.stringify(json) ?? '');
@@ -65,8 +66,10 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   }
   const issues = validateMap(parsed.data, catalog);
   if (issues.some((i) => i.severity === 'error')) return { ok: false, issues };
-  // Terrain never shows through a floor (settle.ts terrainUnderFloors): every map, however it was made.
-  const map = parsed.data.terrain ? { ...parsed.data, terrain: terrainUnderFloors(parsed.data, buildMapGeometry(parsed.data, catalog)) } : parsed.data;
+  // As played: paths laid into the ground (paths.ts; MapMaker keeps them apart, `forEditing`, so the ground
+  // follows a path that moves), then terrain kept under every floor (settle.ts terrainUnderFloors).
+  let map = opts.forEditing ? parsed.data : withPathsLaid(parsed.data);
+  if (map.terrain) map = { ...map, terrain: terrainUnderFloors(map, buildMapGeometry(map, catalog)) };
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
 }
 
