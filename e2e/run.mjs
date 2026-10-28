@@ -612,7 +612,8 @@ async function editoruxFlow(browser) {
   const turnedBy = (((sp1?.yaw ?? 0) - (sp0?.yaw ?? 0)) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
   check(!!sp0 && Math.abs(turnedBy - (Math.PI / 4 + Math.PI / 12)) < 0.01, `R turns a spawn 45° and Shift+R 15° more (${((turnedBy * 180) / Math.PI).toFixed(1)}°)`);
   // Right-click with Select: the selection menu; Escape closes it.
-  const sp = await at(sp1?.position[0] ?? 6, (sp1?.position[1] ?? 0) + 0.9, sp1?.position[2] ?? 0);
+  // The spot the spawn was placed from (on screen; the spawn itself may sit on terrain far below the level plane).
+  const sp = await at(6, 0, 0);
   await page.mouse.move(sp.x, sp.y);
   await settle();
   await page.mouse.click(sp.x, sp.y, { button: 'right' });
