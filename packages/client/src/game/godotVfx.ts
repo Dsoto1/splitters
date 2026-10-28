@@ -1048,7 +1048,12 @@ class Emitter {
 
   /** A particle at `pos` (sub-emitters: where the parent is now). */
   spawnAt(t: number, pos: Vector3 | null): void {
-    if (this.parts.length >= this.cap) return;
+    // Counted even when full: the emission loops run until `spawned` catches up, and a particle
+    // skipped without counting would keep them spinning for ever (a frozen page).
+    if (this.parts.length >= this.cap) {
+      this.spawned++;
+      return;
+    }
     const pr = this.proc;
     const p: Particle = {
       born: t,
@@ -1084,7 +1089,8 @@ class Emitter {
         const spanT = this.lifetime * (1 - this.explode);
         while (this.spawned < this.amount && t >= this.emitFrom + (spanT * this.spawned) / this.amount) this.spawnAt(this.emitFrom + (spanT * this.spawned) / this.amount, null);
       } else if (t < this.emitTo) {
-        const want = Math.floor(((t - this.emitFrom) / this.lifetime) * this.amount);
+        // Bounded per frame, whatever the lifetime (a zero one would ask for infinitely many).
+        const want = Math.min(this.spawned + this.cap, Math.floor(((t - this.emitFrom) / Math.max(1e-3, this.lifetime)) * this.amount));
         while (this.spawned <= want) this.spawnAt(t, null);
       }
     }
