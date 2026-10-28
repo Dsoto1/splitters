@@ -90,6 +90,33 @@ describe('Host Service: a channel handed over already open', () => {
   }, 90_000);
 });
 
+describe('Host Service: a Node player joins whatever order the network delivers in', () => {
+  it("can't be reached before it has recorded the host's answer (libdatachannel offerer race), and joins with a late answer", async () => {
+    const hub = await startHub();
+    const host = await startHost(parseConfig({ hub: hub.url, map: 'sandgate', botFill: 4, name: 'Late answer' }), { log: () => undefined });
+    try {
+      // What the player sends, and its signaling state each time (have-local-offer until the answer is recorded).
+      const sent: { type: string; state?: string; sdp?: string }[] = [];
+      const g = await joinAsGuest(hub.url, host.code, 'Patient', {}, { answerDelayMs: 600, onSignal: (type, state, sdp) => sent.push({ type, state, sdp }) });
+      const offer = sent.find((m) => m.type === 'OFFER');
+      // The offer gives the host no address: it can't start ICE (and DTLS) towards this player early...
+      expect(offer?.sdp).toBeTruthy();
+      expect(offer!.sdp).not.toMatch(/a=candidate:/);
+      // ...and the candidates go only once the answer is recorded (signaling back to stable).
+      const candidates = sent.filter((m) => m.type === 'CANDIDATE');
+      expect(candidates.length).toBeGreaterThan(0);
+      expect(candidates.every((m) => m.state === 'stable')).toBe(true);
+      await until(() => g.welcome);
+      g.send({ t: 'ready' });
+      await until(() => g.snapshots > 10);
+      g.close();
+    } finally {
+      await host.stop();
+      await hub.close();
+    }
+  }, 90_000);
+});
+
 describe('Host Service end to end (hub, host and players in this process)', () => {
   const cleanup: (() => unknown)[] = [];
   afterAll(async () => {
