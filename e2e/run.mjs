@@ -867,6 +867,8 @@ async function sceneryFlow(browser) {
   await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'border_cliffs'), null, { timeout: T(10000) }).catch(() => {});
   const mixed = await page.evaluate(() => ({ sides: window.__editor.doc.backdrop?.borderSides, cliffs: window.__editor.view.scene.meshes.some((m) => m.name === 'border_cliffs') }));
   check(mixed.sides?.north === 'cliffs' && mixed.cliffs, `MapMaker mixes border styles per side (${JSON.stringify(mixed.sides)})`);
+  // Back from Sky to the Terrain pane for its plants.
+  await page.click('#ed-pal-tabs [data-pane="terrain"]');
   await page.click('[data-foliage="4"]');
   const at = async (x, z) => page.evaluate(([x, z]) => window.__editor.view.project({ x, y: 0, z }), [x, z]);
   let p = await at(0, 0);
@@ -2642,7 +2644,7 @@ try {
         console.log(`FAIL ${name}: ${e.message}`);
         console.log((e.stack ?? '').split('\n').filter((l) => l.includes('run.mjs')).join('\n'));
         failures++;
-        attemptFails.push(`threw: ${e.message.split('\n')[0]}`);
+        attemptFails.push(`threw: ${e.message.split('\n')[0]}${(e.stack ?? '').match(/run\.mjs:(\d+)/) ? ` at run.mjs:${(e.stack ?? '').match(/run\.mjs:(\d+)/)[1]}` : ''}`);
       }
       await Promise.all(shots.splice(0));
       // Pages a flow left open (a running match keeps rendering) would slow every flow after it.
