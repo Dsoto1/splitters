@@ -14,6 +14,8 @@ import { ConfigError, DEFAULT_HUB, loadConfig, parseConfig } from '../src/config
 import { originAllowed, ownPage, startConfig } from '../src/control.ts';
 import { LogBuffer, launcherCsp, launcherPage, mapCatalog } from '../src/launcher.ts';
 import { DEFAULT_MAPS_DIR, suiteIds } from '../src/host.ts';
+import { syncMaps } from '../src/published.ts';
+import { loadMap as loadMapDoc, serializeMap } from '@tiletrigger/shared';
 import { admitWhenOpen, iceForLibdatachannel, makeJoinCode } from '../src/hubLink.ts';
 import { LINK_LIMITS, peerConn, type DataLike } from '../src/peerConn.ts';
 import { Supervisor } from '../src/supervisor.ts';
@@ -416,5 +418,45 @@ describe("a friend's connection is admitted once", () => {
     const dc = new FakeDc({ z: 1 });
     peerConn(dc);
     expect(() => peerConn(dc)).toThrow(/already has a player/);
+  });
+});
+
+describe('published maps on a Host Service', () => {
+  it('lays the published versions over its own maps, follows take-downs, and keeps going offline', async () => {
+    const bundled = tmp();
+    const dir = tmp();
+    const { copyFileSync, readFileSync: read, existsSync } = await import('node:fs');
+    for (const id of ['frost_basin', 'sandgate']) copyFileSync(join(DEFAULT_MAPS_DIR, `${id}.json`), join(bundled, `${id}.json`));
+    const doc = (id: string, name: string, newId = id) => {
+      const r = loadMapDoc(read(join(DEFAULT_MAPS_DIR, `${id}.json`), 'utf8'));
+      if (!r.ok) throw new Error('map failed to load');
+      return serializeMap({ ...r.map, metadata: { ...r.map.metadata, id: newId, name } });
+    };
+    let hub: Record<string, { text: string; hash: string; at: number }> | null = {};
+    const fetcher = (async (url: string) => {
+      if (!hub) throw new Error('offline');
+      const m = /\/api\/v1\/maps(?:\/(\w+))?/.exec(url)!;
+      if (!m[1]) return new Response(JSON.stringify({ maps: Object.entries(hub).map(([id, v]) => ({ id, hash: v.hash, at: v.at })) }));
+      return hub[m[1]] ? new Response(hub[m[1]]!.text) : new Response('{}', { status: 404 });
+    }) as unknown as typeof fetch;
+    const name = (id: string) => JSON.parse(read(join(dir, `${id}.json`), 'utf8')).metadata.name;
+
+    expect(await syncMaps(bundled, dir, 'http://hub', fetcher)).toMatchObject({ published: 0, online: true });
+    expect(name('frost_basin')).toBe('Frost Basin');
+    hub = { frost_basin: { text: doc('frost_basin', 'Frost Basin Fixed'), hash: 'h1', at: 1 }, owner_new: { text: doc('sandgate', 'New One', 'owner_new'), hash: 'h2', at: 2 } };
+    expect(await syncMaps(bundled, dir, 'http://hub', fetcher)).toMatchObject({ published: 2, added: ['owner_new'] });
+    expect(name('frost_basin')).toBe('Frost Basin Fixed');
+    expect(suiteIds(dir).has('owner_new')).toBe(true);
+    // The hub can't be reached: everything stays as it was.
+    const saved = hub;
+    hub = null;
+    expect(await syncMaps(bundled, dir, 'http://hub', fetcher)).toMatchObject({ online: false, published: 2 });
+    expect(name('frost_basin')).toBe('Frost Basin Fixed');
+    // Taken down: back to the map that came with it; the added one goes.
+    expect(Object.keys(saved)).toHaveLength(2);
+    hub = {};
+    await syncMaps(bundled, dir, 'http://hub', fetcher);
+    expect(name('frost_basin')).toBe('Frost Basin');
+    expect(existsSync(join(dir, 'owner_new.json'))).toBe(false);
   });
 });

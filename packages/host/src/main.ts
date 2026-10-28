@@ -10,6 +10,7 @@ import { ConfigError, describeConfig, loadConfig, type HostConfig } from './conf
 import { DEFAULT_CONTROL_PORT, startControl } from './control.ts';
 import { DEFAULT_MAPS_DIR, suiteIds } from './host.ts';
 import { LogBuffer, mapCatalog } from './launcher.ts';
+import { syncMaps } from './published.ts';
 import { Logger } from './logger.ts';
 import { ServiceState, stateDir } from './state.ts';
 import { Supervisor, forkChild, CRASH_POLICY } from './supervisor.ts';
@@ -84,6 +85,25 @@ async function service(): Promise<void> {
   const explicit = !!env.HOST_CONFIG || ['MAP', 'MODE', 'BOT_FILL', 'SERVER_NAME', 'VISIBILITY', 'MAX_PLAYERS'].some((k) => env[k]);
   const base = explicit || !saved.config ? config : { ...saved.config, hub: config.hub, ...(config.adminToken ? { adminToken: config.adminToken } : {}) };
 
+  // The maps the match reads: the ones that came with the service, with the owner's published versions over them
+  // (published.ts), kept up to date in the state folder. The match processes read that folder.
+  const mapsDir = join(state.dir, 'maps');
+  const syncNow = async () => {
+    const r = await syncMaps(DEFAULT_MAPS_DIR, mapsDir, base.hub, fetch, (l) => log(`[maps] ${l}`)).catch((e: Error) => (log(`[maps] couldn't update the maps: ${e.message}`), null));
+    if (!r) return;
+    for (const id of suiteIds(mapsDir)) suite.add(id);
+    for (const id of [...suite]) if (!existsSync(join(mapsDir, `${id}.json`))) suite.delete(id);
+    launcherMaps.splice(0, launcherMaps.length, ...mapCatalog(mapsDir, suite));
+    return r;
+  };
+  const suite = new Set<string>();
+  const launcherMaps: ReturnType<typeof mapCatalog> = [];
+  const synced = await syncNow();
+  process.env.HOST_MAPS_DIR = mapsDir;
+  if (synced?.published) log(`[maps] ${synced.published} map${synced.published === 1 ? '' : 's'} published by the game's owner${synced.added.length ? ` (new: ${synced.added.join(', ')})` : ''}`);
+  // A publish reaches a running server at its next map change.
+  setInterval(() => void syncNow(), 10 * 60_000).unref();
+
   const bansFile = join(state.dir, 'bans.json');
   const bans = new BanList(bansFile);
   let lastHost = '';
@@ -118,7 +138,6 @@ async function service(): Promise<void> {
 
   // A console line from the window or the launcher: both see the command and its answer.
   let runLine: (line: string, from: 'window' | 'launcher') => Promise<void> = async () => undefined;
-  const suite = suiteIds(DEFAULT_MAPS_DIR);
   const site = env.HOST_SITE ?? SITE;
 
   const port = env.CONTROL_PORT !== undefined ? Number(env.CONTROL_PORT) : DEFAULT_CONTROL_PORT;
@@ -136,7 +155,7 @@ async function service(): Promise<void> {
       quit: () => void quit('quit from /host'),
       log: (l) => log(`[web] ${l}`),
       bans,
-      launcher: { version: VERSION, commands: COMMANDS, maps: mapCatalog(DEFAULT_MAPS_DIR, suite), site, logs, run: (line) => runLine(line, 'launcher') },
+      launcher: { version: VERSION, commands: COMMANDS, maps: launcherMaps, site, logs, run: (line) => runLine(line, 'launcher') },
     });
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === 'EADDRINUSE') {
