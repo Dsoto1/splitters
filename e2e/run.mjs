@@ -598,6 +598,38 @@ async function editoruxFlow(browser) {
   check(aimed && aimed.position[1] < 0 && !d.entities.some((e) => e.id === aimed.id) && d.entities.filter((e) => e.kind === 'prop').length === rocks.length - 1, `Erase deletes the rock under the pointer, standing on the terrain (${aimed?.position[1]})`);
   await page.mouse.move(700, 400);
   await shot('erase-terrain');
+  // One rotation step per kind: R turns a spawn 45°, Shift+R a finer 15°.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
+  await clickAt(6, 0, 0);
+  const sp0 = (await doc()).entities.filter((e) => e.kind === 'spawn').at(-1);
+  await page.evaluate((id) => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setSelection({ tiles: [], entities: [id] });
+  }, sp0?.id);
+  await page.keyboard.press('KeyR');
+  await page.keyboard.press('Shift+KeyR');
+  const sp1 = (await doc()).entities.find((e) => e.id === sp0?.id);
+  const turnedBy = (((sp1?.yaw ?? 0) - (sp0?.yaw ?? 0)) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  check(!!sp0 && Math.abs(turnedBy - (Math.PI / 4 + Math.PI / 12)) < 0.01, `R turns a spawn 45° and Shift+R 15° more (${((turnedBy * 180) / Math.PI).toFixed(1)}°)`);
+  // Right-click with Select: the selection menu; Escape closes it.
+  const sp = await at(sp1?.position[0] ?? 6, (sp1?.position[1] ?? 0) + 0.9, sp1?.position[2] ?? 0);
+  await page.mouse.move(sp.x, sp.y);
+  await settle();
+  await page.mouse.click(sp.x, sp.y, { button: 'right' });
+  const menu = await page.evaluate(() => [...document.querySelectorAll('#ed-ctx button')].map((b) => b.textContent));
+  check(menu.some((t) => t.startsWith('Rotate')) && menu.some((t) => t.startsWith('Delete')), `right-click with Select opens the selection menu (${menu.join(', ')})`);
+  await page.keyboard.press('Escape');
+  check(!(await page.isVisible('#ed-ctx')), 'Escape closes the selection menu');
+  // A drag with Erase is one undo step.
+  const before = (await doc()).entities.length;
+  await page.evaluate(() => {
+    const h = window.__editor.history;
+    h.beginStroke();
+    for (const e of window.__editor.doc.entities.filter((x) => x.kind === 'spawn').slice(-1)) h.execute('Erase', { kind: 'removeEntities', entities: [e] });
+    h.endStroke();
+  });
+  await page.keyboard.press('Control+KeyZ');
+  check((await doc()).entities.length === before, 'a stroke undoes in one step');
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => document.querySelector('#ed-modes [data-ws="build"]').click());
