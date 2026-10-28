@@ -479,6 +479,39 @@ async function editoruxFlow(browser) {
   d = await doc();
   check(d.classicStructure.tiles.some((t) => t.x === 2), 'undo brings the erased tile back in one step');
 
+  // A placed prop keeps its look, deselected, once the preview moves on to another model (the preview
+  // used to take the model's shared materials and textures down with it, leaving placed copies white).
+  await page.evaluate(() => window.__editor.view.focus({ x: -14, y: 0, z: 10 }));
+  await clickTool(page, '[data-tool="prop:prop.ww_barrel_a"]');
+  await clickAt(-14, 0, 10);
+  const placedBarrel = (await doc()).entities.find((e) => e.kind === 'prop' && e.model === 'prop.ww_barrel_a');
+  await clickTool(page, '[data-tool="prop:prop.sf_barrel"]');
+  const away = await at(-19, 0, 14);
+  await page.mouse.move(away.x, away.y);
+  await page.waitForFunction(() => window.__editor.view.propGhost?.model === 'prop.sf_barrel', null, { timeout: T(10000) }).catch(() => {});
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.mouse.move(10, 400);
+  await page.waitForFunction((id) => {
+    const s = window.__editor.view.scene;
+    return !!s.getTransformNodeByName(`edprop_${id}`)?.getChildMeshes().length && s.isReady();
+  }, placedBarrel?.id, { timeout: T(30000) }).catch(() => {});
+  await settle();
+  const barrelPx = await (async () => {
+    const { PNG } = await import('pngjs');
+    const png = PNG.sync.read(await page.screenshot());
+    const c = await at(-14, 0.45, 10);
+    const sum = [0, 0, 0];
+    for (let dx = -2; dx <= 2; dx++) for (let dy = -2; dy <= 2; dy++) {
+      const i = (Math.round(c.y + dy) * png.width + Math.round(c.x + dx)) * 4;
+      for (let k = 0; k < 3; k++) sum[k] += png.data[i + k];
+    }
+    return sum.map((v) => Math.round(v / 25));
+  })();
+  check(placedBarrel && (await page.evaluate(() => window.__editor.selection.entities.length)) === 0 && Math.max(...barrelPx) < 190, `a placed textured prop draws in its colours, not white, deselected after the preview changed model (rgb ${barrelPx.join(',')})`);
+  await page.keyboard.press('Control+KeyZ');
+  await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
+
   // Select + Delete, and Rotate from the tool bar.
   await page.click('#ed-tb-select');
   await clickAt(1, 0, 2);
