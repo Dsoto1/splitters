@@ -100,6 +100,7 @@ export class HubLink {
   private attempts = 0;
   private closed = false;
   private everOpen = false;
+  private warned = false;
   code: string;
   readonly token: string;
   /** Registered on the broker right now (new players can find the game). */
@@ -207,6 +208,10 @@ export class HubLink {
       // network, socket-error, socket-closed, server-error: 'disconnected' follows, or the peer was destroyed (the first try).
       if (peer.destroyed) {
         this.online = false;
+        if (!this.everOpen && !this.warned) {
+          this.warned = true;
+          this.o.log(`can't reach the hub at ${this.o.hub} (${type}); trying again until it answers`);
+        }
         this.scheduleReconnect();
       }
     });
