@@ -29,7 +29,6 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
     async load(id) {
       if (id !== RESOLVED) return undefined;
       const { loadMap, playableModes } = await loadShared();
-      this.addWatchFile(mapsDir);
       const entries = [];
       for (const file of readdirSync(mapsDir).filter((f) => f.endsWith('.json')).sort()) {
         const path = join(mapsDir, file);

@@ -111,6 +111,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Bundle budget (the JS a first visit loads before the menu; docs/LOADING.md)
+        run: node tools/ci/bundle-budget.mjs packages/client/dist
       - uses: actions/upload-artifact@v4
         with:
           name: client-dist
@@ -136,6 +138,8 @@ jobs:
       - run: pnpm build
         env:
           VITE_HUB: self
+      - name: Bundle budget (the JS a first visit loads before the menu; docs/LOADING.md)
+        run: node tools/ci/bundle-budget.mjs packages/client/dist
       - run: tools/ci/client-release.sh package packages/client/dist client-release
         env:
           VITE_HUB: self

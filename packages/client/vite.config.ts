@@ -17,37 +17,37 @@ function assetVersion(): string {
 
 /**
  * Vendor code in chunks of its own, which keep their names (and hashes) from
- * one release to the next while our code changes: Babylon, Rapier (physics,
- * its WebAssembly inlined by the -compat package), PeerJS and the rest of
- * node_modules. Babylon is split in two: what the first page load runs (the
- * menu: engine, scene, glTF loader) and the rest (shadows, post-processes,
- * particles…), which loads with the match or MapMaker. See docs/LOADING.md.
+ * one release to the next while our code changes: `babylon` (the part of
+ * Babylon the first page load runs: engine, scene, materials, glTF loader),
+ * `rapier` (physics, its WebAssembly inlined by the -compat package), `peerjs`
+ * and `vendor` (the rest of node_modules the menu needs). See docs/LOADING.md.
  */
 function vendorChunks(): Rollup.GetManualChunk {
-  let initial: Set<string> | null = null;
-  /** Modules the entry imports statically (directly or through others): what the first page load runs. */
-  const reachable = (meta: Rollup.ManualChunkMeta): Set<string> => {
-    if (initial) return initial;
-    const seen = new Set<string>();
-    const todo = [...meta.getModuleIds()].filter((id) => meta.getModuleInfo(id)?.isEntry);
+  let start: Set<string> | null = null;
+  /** What the first page load runs: the entry and everything it imports statically. */
+  const atStart = (meta: Rollup.ManualChunkMeta): Set<string> => {
+    if (start) return start;
+    start = new Set();
+    const todo = [...meta.getModuleIds()].filter((m) => meta.getModuleInfo(m)?.isEntry);
     while (todo.length) {
       const id = todo.pop()!;
-      if (seen.has(id)) continue;
-      seen.add(id);
+      if (start.has(id)) continue;
+      start.add(id);
       todo.push(...(meta.getModuleInfo(id)?.importedIds ?? []));
     }
-    return (initial = seen);
+    return start;
   };
   return (id, meta) => {
     const pkg = /node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?((?:@[^/]+\/)?[^/]+)\//.exec(id)?.[1];
     if (!pkg) return undefined;
-    const atStart = reachable(meta).has(id);
-    if (pkg.startsWith('@babylonjs/') || pkg === 'babylonjs-gltf2interface') return atStart ? 'babylon' : 'babylon-more';
+    const first = atStart(meta).has(id);
+    // The rest of Babylon keeps Rollup's own chunks: a manual chunk would also take in the shaders it imports,
+    // which the menu fetches on demand, and the menu would then wait for all of it to get one.
+    if (pkg.startsWith('@babylonjs/') || pkg === 'babylonjs-gltf2interface') return first ? 'babylon' : undefined;
     if (pkg === '@dimforge/rapier3d-compat') return 'rapier';
     if (pkg === 'peerjs' || pkg === 'peerjs-js-binarypack' || pkg === 'webrtc-adapter' || pkg === 'sdp' || pkg === 'eventemitter3') return 'peerjs';
-    // Recast (navigation) already loads as a chunk of its own, from the match and the MapMaker only.
-    if (pkg.startsWith('@recast-navigation/') || pkg === 'recast-navigation') return undefined;
-    return atStart ? 'vendor' : undefined;
+    // Everything else the menu needs (zod, …); the rest (recast, pako) stays with whoever loads it.
+    return first ? 'vendor' : undefined;
   };
 }
 

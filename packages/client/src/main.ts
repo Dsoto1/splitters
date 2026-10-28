@@ -280,7 +280,7 @@ class App {
       const shown = this.init().then(() => capped(this.menuScene!.ready(), 2500));
       revealWhenReady(shown);
       // Once the menu is up and the page idle, fetch what Play needs (the match code and the map it opens on).
-      void shown.then(() => whenIdle(() => this.prefetchPlay()));
+      void shown.then(() => whenIdle(() => this.prefetchPlay(), 2000));
     }
     await this.init();
     this.mode = 'menu';
