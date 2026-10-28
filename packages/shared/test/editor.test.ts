@@ -14,6 +14,7 @@ import {
   newMapDocument,
   placeTileCommand,
   rotateCommand,
+  yawStep,
   serializeMap,
   tileAt,
   NPC_PALETTE,
@@ -132,12 +133,32 @@ describe('editor operations', () => {
     expect(moveCommand(arena, { tiles: ['t_room_sw'], entities: [] }, 1, 0, 0)).toEqual({ error: 'overlaps another tile' });
   });
 
-  it('rotates tiles a quarter turn and spawns by 45 degrees', () => {
+  it('turns one thing by its kind\'s step and a group as one about its centre', () => {
     const doc = loadArena();
+    // One spawn: an eighth turn (Shift: 15°), in place.
+    const one = applyCommand(doc, unwrap(rotateCommand(doc, { tiles: [], entities: ['sp_room_sw'] })));
+    const s1 = one.entities.find((e) => e.id === 'sp_room_sw')!;
+    const s0 = doc.entities.find((e) => e.id === 'sp_room_sw')!;
+    expect(s1.kind === 'spawn' ? s1.yaw : NaN).toBeCloseTo(0.785 + yawStep('spawn'), 2);
+    expect(s1.position).toEqual(s0.position);
+    const fine = applyCommand(doc, unwrap(rotateCommand(doc, { tiles: [], entities: ['sp_room_sw'] }, undefined, { fine: true })));
+    const sf = fine.entities.find((e) => e.id === 'sp_room_sw')!;
+    expect(sf.kind === 'spawn' ? sf.yaw : NaN).toBeCloseTo(0.785 + Math.PI / 12, 2);
+    expect(yawStep('prop')).toBeCloseTo(Math.PI / 12);
+    expect(yawStep('door')).toBeCloseTo(Math.PI / 2);
+
+    // A tile and a spawn: a quarter turn together about the tile; the spawn swings round it.
     const r = applyCommand(doc, unwrap(rotateCommand(doc, { tiles: ['t_corr_s'], entities: ['sp_room_sw'] })));
-    expect(r.classicStructure.tiles.find((t) => t.id === 't_corr_s')!.rotation).toBe(2);
+    const t0 = doc.classicStructure.tiles.find((t) => t.id === 't_corr_s')!;
+    const t1 = r.classicStructure.tiles.find((t) => t.id === 't_corr_s')!;
+    expect(t1.rotation).toBe(2);
+    expect([t1.x, t1.y]).toEqual([t0.x, t0.y]);
     const spawn = r.entities.find((e) => e.id === 'sp_room_sw')!;
-    expect(spawn.kind === 'spawn' ? spawn.yaw : NaN).toBeCloseTo(0.785 + Math.PI / 4, 2);
+    expect(spawn.kind === 'spawn' ? spawn.yaw : NaN).toBeCloseTo(0.785 + Math.PI / 2, 2);
+    const cs = doc.classicStructure.cellSize;
+    expect(spawn.position[0] - t0.x * cs).toBeCloseTo(s0.position[2] - t0.y * cs, 2);
+    expect(spawn.position[2] - t0.y * cs).toBeCloseTo(-(s0.position[0] - t0.x * cs), 2);
+    expect(rotateCommand(doc, { tiles: ['t_corr_s'], entities: ['sp_room_sw'] }, undefined, { fine: true })).toEqual({ error: 'tiles, zones and liquids turn in quarter turns' });
     // Stairs reserve the cell above them, which stays put under rotation, so this is allowed.
     expect('kind' in rotateCommand(doc, { tiles: ['t_stairs'], entities: [] })).toBe(true);
   });

@@ -131,34 +131,86 @@ export function moveCommand(doc: MapDocument, sel: Selection, dx: number, dy: nu
 }
 
 /** Rotate selected tiles a quarter turn clockwise in place, and spawns by 45°. */
-export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog): EditCommand | { error: string } {
+/**
+ * How far one press of R turns a thing of each kind, everywhere in MapMaker (placing it, turning a
+ * selected one, and the inspector's Facing step), and the finer step with Shift. Spawns turn in
+ * eighths, props and vehicles in 15°, tiles, zones and liquids in quarter turns, everything else in
+ * quarter turns with 15° fine steps.
+ */
+export function yawStep(kind: MapEntity['kind'] | 'tile', fine = false): number {
+  const deg = kind === 'spawn' ? (fine ? 15 : 45) : kind === 'prop' || kind === 'mount' ? (fine ? 5 : 15) : kind === 'tile' || kind === 'zone' || kind === 'water' ? 90 : fine ? 15 : 90;
+  return (deg * Math.PI) / 180;
+}
+
+/**
+ * Turn the selection. One thing (or one moving build) turns in place by its kind's step (yawStep,
+ * Shift: `fine`); a mover's build turns about the mover. A group (tiles, or several things) turns
+ * as one about its centre: a quarter turn, or with `fine` the finer step when nothing in it is
+ * tied to the grid (tiles, zones, liquids).
+ */
+export function rotateCommand(doc: MapDocument, sel: Selection, catalog: TileCatalog = coreCatalog, opts: { fine?: boolean } = {}): EditCommand | { error: string } {
   const { tiles, entities } = selected(doc, sel);
-  const rotated = tiles.map((t) => ({ ...t, rotation: ((t.rotation + 1) % 4) as Rotation }));
-  const check = checkPlacement(doc, rotated, [], catalog);
-  if (!check.ok) return { error: check.reason };
-  // A whole moving build (mover, blocks, props all selected) turns as one about the mover:
-  // a quarter turn, its parts' positions and facings and its route with it.
+  if (!tiles.length && !entities.length) return { error: 'nothing selected' };
+  const { cellSize } = doc.classicStructure;
   const ids = new Set(entities.map((e) => e.id));
-  const pivotOf = new Map<string, [number, number, number]>();
-  for (const m of entities) {
-    if (m.kind !== 'mover' || ![...m.blocks, ...(m.props ?? [])].every((id) => ids.has(id))) continue;
-    for (const id of [m.id, ...m.blocks, ...(m.props ?? [])]) pivotOf.set(id, m.position);
+  const movers = entities.filter((m): m is Extract<MapEntity, { kind: 'mover' }> => m.kind === 'mover' && [...m.blocks, ...(m.props ?? [])].every((id) => ids.has(id)));
+  const oneBuild = !tiles.length && movers.length === 1 && entities.length === 1 + movers[0]!.blocks.length + (movers[0]!.props?.length ?? 0);
+  const single = !tiles.length && entities.length === 1;
+  const gridBound = tiles.length > 0 || entities.some((e) => e.kind === 'zone' || e.kind === 'water');
+
+  let angle: number;
+  let pivot: [number, number];
+  if (single) {
+    angle = yawStep(entities[0]!.kind, opts.fine);
+    pivot = [entities[0]!.position[0], entities[0]!.position[2]];
+  } else {
+    if (opts.fine && gridBound) return { error: 'tiles, zones and liquids turn in quarter turns' };
+    angle = opts.fine ? yawStep('block', true) : Math.PI / 2;
+    if (oneBuild) pivot = [movers[0]!.position[0], movers[0]!.position[2]];
+    else if (tiles.length) {
+      // About a cell (or a cell corner) so every tile lands on a whole cell.
+      const xs = tiles.map((t) => t.x);
+      const ys = tiles.map((t) => t.y);
+      let cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+      let cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+      if (!Number.isInteger(cx * 2) || Number.isInteger(cx) !== Number.isInteger(cy)) [cx, cy] = [Math.floor(cx), Math.floor(cy)];
+      pivot = [cx * cellSize, cy * cellSize];
+    } else {
+      const xs = entities.map((e) => e.position[0]);
+      const zs = entities.map((e) => e.position[2]);
+      const half = (v: number) => Math.round(v * 2) / 2;
+      pivot = [half((Math.min(...xs) + Math.max(...xs)) / 2), half((Math.min(...zs) + Math.max(...zs)) / 2)];
+    }
   }
-  // A quarter turn of facing (yaw + 90°) takes an offset (x, z) to (z, -x): facing is (sin yaw, cos yaw).
-  const quarter = (x: number, z: number): [number, number] => [z, -x];
+  const quarters = Math.round(angle / (Math.PI / 2));
+  const isQuarter = Math.abs(angle - quarters * (Math.PI / 2)) < 1e-9;
+  if (single && !isQuarter && (entities[0]!.kind === 'zone' || entities[0]!.kind === 'water')) return { error: 'zones and liquids turn in quarter turns' };
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  // Turning facing by +angle takes an offset (x, z) to (x cos + z sin, z cos - x sin): facing is (sin yaw, cos yaw).
   // (+ 0: no negative zeros in the saved map.)
   const r3 = (v: number) => Math.round(v * 1000) / 1000 + 0;
-  // Spawns turn in 45° steps; doors, traps and other facing objects in quarter turns.
+  const turn = (x: number, z: number): [number, number] => [r3(x * c + z * s), r3(z * c - x * s)];
+  const about = (x: number, z: number): [number, number] => {
+    const [ox, oz] = turn(x - pivot[0], z - pivot[1]);
+    return [r3(pivot[0] + ox), r3(pivot[1] + oz)];
+  };
+
+  const rotated = tiles.map((t) => {
+    const [x, z] = about(t.x * cellSize, t.y * cellSize);
+    return { ...t, x: Math.round(x / cellSize), y: Math.round(z / cellSize), rotation: ((t.rotation + quarters) % 4) as Rotation };
+  });
+  const check = checkPlacement(doc, rotated, [], catalog);
+  if (!check.ok) return { error: check.reason };
+
   const turned = entities.map((e): MapEntity => {
-    const pivot = pivotOf.get(e.id);
-    if (pivot) {
-      const [ox, oz] = quarter(e.position[0] - pivot[0], e.position[2] - pivot[2]);
-      const moved = { ...e, position: [r3(pivot[0] + ox), e.position[1], r3(pivot[2] + oz)] as [number, number, number] } as MapEntity;
-      if ('yaw' in moved) (moved as { yaw: number }).yaw = normalizeYaw(moved.yaw + Math.PI / 2);
-      if (moved.kind === 'mover') moved.points = moved.points.map(([x, y, z]): [number, number, number] => { const [a, b] = quarter(x, z); return [r3(a), y, r3(b)]; });
-      return moved;
-    }
-    return e.kind === 'spawn' ? { ...e, yaw: normalizeYaw(e.yaw + Math.PI / 4) } : 'yaw' in e ? ({ ...e, yaw: normalizeYaw(e.yaw + Math.PI / 2) } as MapEntity) : e;
+    const [x, z] = single ? [e.position[0], e.position[2]] : about(e.position[0], e.position[2]);
+    const out = { ...e, position: [x, e.position[1], z] as [number, number, number] } as MapEntity;
+    if ('yaw' in out) (out as { yaw: number }).yaw = normalizeYaw(out.yaw + angle);
+    if (out.kind === 'mover') out.points = out.points.map(([px, py, pz]): [number, number, number] => { const [a, b] = turn(px, pz); return [a, py, b]; });
+    if (out.kind === 'airplane') out.route = out.route.map(([px, pz]): [number, number] => about(px, pz));
+    if ((out.kind === 'zone' || out.kind === 'water') && quarters % 2) out.size = [out.size[2], out.size[1], out.size[0]];
+    return out;
   });
   return {
     kind: 'batch',

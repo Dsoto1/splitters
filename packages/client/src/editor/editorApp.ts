@@ -21,6 +21,7 @@ import {
   resolveSurface,
   faceSlot,
   rotateCommand,
+  yawStep,
   setThemeCommand,
   coreMaterials,
   coreThemes,
@@ -1028,27 +1029,28 @@ export class EditorApp {
     return tile ? { kind: 'tile', id: tile.id } : null;
   }
 
-  private rotate(): void {
+  /** R turns what you are placing, or the selection, by that kind's step (yawStep); Shift+R by the finer step. */
+  private rotate(fine = false): void {
+    const deg = (yaw: number) => `Facing ${Math.round((yaw * 180) / Math.PI)}°`;
     if (this.tool.kind === 'tile') {
+      if (fine) this.toast('Tiles turn in quarter turns');
       this.rotation = ((this.rotation + 1) % 4) as Rotation;
       this.toast(`${this.toolName(this.tool)} turned to ${this.rotation * 90}°`);
       this.updateHover();
     } else if (this.tool.kind === 'spawn') {
-      this.spawnYaw = normalizeYaw(this.spawnYaw + Math.PI / 4);
-      this.toast(`Facing ${Math.round((this.spawnYaw * 180) / Math.PI)}°`);
-    } else if (this.tool.kind === 'npc') {
-      this.scenarioYaw = normalizeYaw(this.scenarioYaw + Math.PI / 2);
-      this.toast(`Facing ${Math.round((this.scenarioYaw * 180) / Math.PI)}°`);
+      this.spawnYaw = normalizeYaw(this.spawnYaw + yawStep('spawn', fine));
+      this.toast(deg(this.spawnYaw));
     } else if (this.tool.kind === 'prop' || this.tool.kind === 'mount') {
-      this.propYaw = normalizeYaw(this.propYaw + Math.PI / 12);
-      this.toast(`Facing ${Math.round((this.propYaw * 180) / Math.PI)}°`);
-    } else if (this.tool.kind === 'scenario') {
-      this.scenarioYaw = normalizeYaw(this.scenarioYaw + Math.PI / 2);
-      this.toast(`Facing ${Math.round((this.scenarioYaw * 180) / Math.PI)}°`);
+      this.propYaw = normalizeYaw(this.propYaw + yawStep(this.tool.kind, fine));
+      this.toast(deg(this.propYaw));
+    } else if (this.tool.kind === 'npc' || this.tool.kind === 'scenario') {
+      // Doors, traps, pads, ladders, NPCs and the rest: quarter turns, Shift 15°.
+      this.scenarioYaw = normalizeYaw(this.scenarioYaw + yawStep('door', fine));
+      this.toast(deg(this.scenarioYaw));
     } else if (this.selection.tiles.length || this.selection.entities.length) {
-      this.run('Rotate', rotateCommand(this.doc, this.selection));
+      this.run(fine ? 'Rotate a little' : 'Rotate', rotateCommand(this.doc, this.selection, undefined, { fine }));
     } else {
-      this.toast('Rotate turns the selection, or the piece you are placing: select something first', true);
+      this.toast('R turns the selection, or the piece you are placing (Shift+R: a finer step): select something first', true);
     }
   }
 
@@ -1471,7 +1473,7 @@ export class EditorApp {
       }
       switch (e.code) {
         case 'KeyR':
-          this.rotate();
+          this.rotate(e.shiftKey);
           break;
         case 'KeyF':
           this.focusSelection();
@@ -1604,7 +1606,7 @@ export class EditorApp {
     const sep = document.createElement('span');
     sep.className = 'tb-sep';
     bar.append(sep);
-    add('ed-tb-rotate', 'rotate', 'Rotate', 'R', 'Rotate the selection, or the piece you are placing', () => this.rotate());
+    add('ed-tb-rotate', 'rotate', 'Rotate', 'R', 'Rotate the selection, or the piece you are placing (Shift+R: a finer step)', () => this.rotate());
     add('ed-tb-delete', 'delete', 'Delete', 'Del', 'Delete the selection', () => this.deleteSelection());
     this.syncToolbar();
   }
@@ -2680,7 +2682,7 @@ export class EditorApp {
     }
     const buttons = document.createElement('div');
     buttons.className = 'buttons';
-    buttons.append(button('Rotate (R)', () => this.run('Rotate', rotateCommand(this.doc, this.selection))), button('Duplicate', () => this.duplicate()), button('Delete', () => this.deleteSelection()), button('Focus (F)', () => this.focusSelection()));
+    buttons.append(button('Rotate (R)', () => this.rotate()), button('Duplicate', () => this.duplicate()), button('Delete', () => this.deleteSelection()), button('Focus (F)', () => this.focusSelection()));
     el.append(buttons);
     if (doc.terrain && entities.some((id) => doc.entities.find((x) => x.id === id)?.kind === 'prop')) {
       const settle = button('Settle on ground', () => this.settleProps(entities));
@@ -2720,7 +2722,7 @@ export class EditorApp {
       row('Height', numberInput(e.position[1], 0.25, (v) => setPos(1, v))),
       row('Z', numberInput(e.position[2], 0.5, (v) => setPos(2, v))),
     );
-    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), e.kind === 'spawn' || e.kind === 'prop' ? 15 : 90, (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))));
+    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), Math.round((yawStep(e.kind) * 180) / Math.PI), (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))));
 
     const toggle = (label: string, value: boolean, patch: (v: boolean) => Partial<MapEntity>) => {
       const c = document.createElement('input');
