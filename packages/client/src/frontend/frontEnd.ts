@@ -73,6 +73,20 @@ function cardThumbs(m: ArcadeMap): MapThumbs {
   return t;
 }
 
+/**
+ * A map card: the picture on top, then the name and the top-down plan. Every
+ * card is the same size (the name and nothing else), so the grid stays
+ * even; the map's blurb, modes and details live in the panel beside the list.
+ * `note` is a short tag over the picture ("Playing now").
+ */
+function mapCard(m: ArcadeMap, on: boolean, note?: string): { card: HTMLButtonElement; draw: () => void } {
+  const pic = cardThumbs(m);
+  const card = el('button', { class: `map-card${on ? ' on' : ''}`, title: m.metadata.name }, pic.pic, el('div', { class: 'meta' }, el('b', { textContent: m.metadata.name }), pic.plan));
+  if (note) card.append(el('span', { class: 'card-note', textContent: note }));
+  card.dataset.map = m.key;
+  return { card, draw: pic.draw };
+}
+
 /** Draw each card's plan once it scrolls into view in `root` (a long list draws only what is seen). */
 function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void {
   if (typeof IntersectionObserver === 'undefined') return (_card, draw) => requestAnimationFrame(draw);
@@ -457,14 +471,7 @@ export class FrontEnd {
         group = m.group;
         if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
       }
-      const pic = cardThumbs(m);
-      const card = el(
-        'button',
-        { class: `map-card${m.key === current.key ? ' on' : ''}` },
-        pic.pic,
-        el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('b', { textContent: m.metadata.name }), ...inspired(m.key), el('small', { textContent: m.blurb }), el('div', { class: 'mode-tags' }, ...m.modes.map((x) => el('span', { textContent: MODE_LABEL[x] })))), pic.plan),
-      );
-      card.dataset.map = m.key;
+      const { card, draw } = mapCard(m, m.key === current.key);
       card.addEventListener('click', () => {
         this.pickMap(m.key);
         this.saveSetup();
@@ -474,7 +481,7 @@ export class FrontEnd {
         this.refreshSetup();
       });
       cards.append(card);
-      lazy(card, pic.draw);
+      lazy(card, draw);
     }
     const panel = el('div', { class: 'setup panel', id: 'match-setup' });
     this.setupPanel = panel;
@@ -521,7 +528,7 @@ export class FrontEnd {
       'div',
       { class: 'setup-head' },
       thumbPair(thumbs, 'setup-preview'),
-      el('div', { class: 'setup-title' }, el('small', { textContent: 'Map' }), el('h3', {}, map.metadata.name, infoTip(about)), ...inspired(current.key), mapSelect, el('p', { class: 'setup-sub', id: 'setup-summary', textContent: summary })),
+      el('div', { class: 'setup-title' }, el('small', { textContent: 'Map' }), el('h3', {}, map.metadata.name, infoTip(about)), ...inspired(current.key), el('p', { class: 'setup-blurb', textContent: current.blurb }), mapSelect, el('p', { class: 'setup-sub', id: 'setup-summary', textContent: summary })),
     );
 
     // ---- mode: the map's modes with a line each; the rest greyed with why
@@ -854,10 +861,8 @@ export class FrontEnd {
           group = m.group;
           if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
         }
-        const pic = cardThumbs(m);
         const here = m.metadata.id === o.current;
-        const card = el('button', { class: `map-card${picked === m ? ' on' : ''}` }, pic.pic, el('div', { class: 'meta' }, el('div', { class: 'meta-text' }, el('b', { textContent: m.metadata.name }), el('small', { textContent: here ? 'Playing now' : m.blurb })), pic.plan));
-        card.dataset.map = m.key;
+        const { card, draw: drawPlan } = mapCard(m, picked === m, here ? 'Playing now' : undefined);
         card.dataset.id = m.metadata.id;
         card.addEventListener('click', () => {
           picked = m;
@@ -866,7 +871,7 @@ export class FrontEnd {
           draw();
         });
         cards.append(card);
-        lazy(card, pic.draw);
+        lazy(card, drawPlan);
       }
       chosen.textContent = picked ? `${picked.metadata.name} · ${MODE_LABEL[mode]}` : 'Pick a map';
       go.disabled = !picked;
