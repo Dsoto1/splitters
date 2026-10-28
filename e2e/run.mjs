@@ -599,9 +599,13 @@ async function editoruxFlow(browser) {
   await page.mouse.move(700, 400);
   await shot('erase-terrain');
   // One rotation step per kind: R turns a spawn 45°, Shift+R a finer 15°.
+  // Back from the rocks at (30, 30): (6, 0, 0) is behind the camera there.
+  await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
   await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
+  const spawns = (await doc()).entities.filter((e) => e.kind === 'spawn').length;
   await clickAt(6, 0, 0);
   const sp0 = (await doc()).entities.filter((e) => e.kind === 'spawn').at(-1);
+  check((await doc()).entities.filter((e) => e.kind === 'spawn').length === spawns + 1, 'the Spawn tool places a spawn where you click');
   await page.evaluate((id) => {
     window.__editor.setTool({ kind: 'select' });
     window.__editor.setSelection({ tiles: [], entities: [id] });
