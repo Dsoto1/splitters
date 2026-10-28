@@ -233,7 +233,7 @@ export class GameSession {
   /** The join code's registration while this match is hosted for friends. */
   private peerHost?: HostLink;
   /** The pause menu's Match section (bots, map, restart, end) and the match's settings while you run it. */
-  private readonly hostPanel: HostPanel;
+  private hostPanel: HostPanel;
   private hostState: HostState | null = null;
   private mapPicker: HTMLElement | null = null;
   /** The pause menu's tabs, keys and controller. */
@@ -750,10 +750,11 @@ export class GameSession {
   }
 
   /** The pause menu's Match section: the offline player and the Host game host run their match; on a dedicated server, its admin. */
-  private makeHostPanel(): HostPanel {
+  private makeHostPanel(dedicated = false): HostPanel {
     const t = this.opts.transport;
     const local = t instanceof LocalTransport ? t : null;
-    const net = t instanceof NetTransport ? t : null;
+    // A dedicated server: by WebSocket, or a Host Service joined by code (its welcome says so).
+    const net = t instanceof NetTransport || (dedicated && !local && t.sendCommand) ? (t as Required<Pick<typeof t, 'sendCommand'>>) : null;
     const panel = new HostPanel(
       {
         command: (cmd) => {
@@ -894,6 +895,7 @@ export class GameSession {
 
   /** Set when a chain moves on (see Travel). */
   private travel: Travel | null = null;
+  private dedicatedPanel = false;
 
   /** A won co-op map in a local match: after a moment for the results, go on to the next map of the chain. */
   private chainOn(next: string | undefined): void {
@@ -992,6 +994,12 @@ export class GameSession {
         this.slot = msg.slot;
         this.rules = msg.rules;
         if (msg.lan?.length) this.showLanAddresses(msg.lan);
+        // A Host Service joined by code has an admin login, as a dedicated server does.
+        if (msg.dedicated && !(this.opts.transport instanceof NetTransport) && !(this.opts.transport instanceof LocalTransport) && !this.dedicatedPanel) {
+          this.dedicatedPanel = true;
+          this.hostPanel.root.remove();
+          this.hostPanel = this.makeHostPanel(true);
+        }
         const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
         this.hud.setTeams(teams);
         this.hud.setBoardMode(msg.rules.mode);
@@ -1043,6 +1051,7 @@ export class GameSession {
         break;
       case 'roster':
         this.hud.setRoster(msg.players);
+        this.hostPanel.setPeople(msg.players.filter((p) => !p.bot && p.slot !== this.slot).map((p) => ({ slot: p.slot, name: p.name })));
         if (this.peerHost) this.updateOnline();
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
         this.view.setLocalLook(this.looks.get(this.slot));

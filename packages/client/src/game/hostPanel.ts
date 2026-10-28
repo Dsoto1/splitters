@@ -42,6 +42,9 @@ export class HostPanel {
   /** Settings being edited, applied together. */
   private draft: Draft | null = null;
   private readonly status = el('p', { class: 'hint hc-status', id: 'hc-status' });
+  /** People in the match besides you (kick and ban). */
+  private people: { slot: number; name: string }[] = [];
+  private peopleKey = '';
 
   constructor(
     private readonly hooks: HostPanelHooks,
@@ -56,6 +59,15 @@ export class HostPanel {
     this.state = state;
     this.draft = state ? { fill: state.fill, sizes: this.sizesOf(state), skill: state.skill, style: state.style, rules: nextRules(state) } : null;
     this.render();
+  }
+
+  /** The roster's people (not bots), you left out: whoever runs the match can kick or ban them. */
+  setPeople(people: { slot: number; name: string }[]): void {
+    const key = people.map((p) => `${p.slot}:${p.name}`).join('|');
+    if (key === this.peopleKey) return;
+    this.peopleKey = key;
+    this.people = people;
+    if (this.state) this.render();
   }
 
   get controlling(): boolean {
@@ -169,6 +181,19 @@ export class HostPanel {
     const end = el('button', { id: 'hc-end', textContent: 'End match', title: 'End the match now and show the scoreboard' });
     end.addEventListener('click', () => this.hooks.command({ c: 'end' }));
     actions.append(restart, end);
+    // People: kick (they may come back) or ban (kept out: their account when signed in, else weakly by browser).
+    const people = this.people.length
+      ? [
+          el('h4', { textContent: 'Players' }),
+          ...this.people.map((p) => {
+            const kick = el('button', { id: `hc-kick-${p.slot}`, textContent: 'Kick', title: `Remove ${p.name} (they may rejoin)` });
+            kick.addEventListener('click', () => this.hooks.command({ c: 'kick', slot: p.slot }));
+            const ban = el('button', { id: `hc-ban-${p.slot}`, textContent: 'Ban', title: `Remove ${p.name} and keep them out` });
+            ban.addEventListener('click', () => window.confirm(`Ban ${p.name} from this ${this.title === 'Admin' ? 'server' : 'game'}?`) && this.hooks.command({ c: 'ban', slot: p.slot }));
+            return el('div', { class: 'hc-row hc-person' }, el('span', { textContent: p.name }), kick, ban);
+          }),
+        ]
+      : [];
     const label = s.teams ? (now.every((n) => n === now[0]) ? teamsLabel(s.teams, now[0]!) : now.join('v')) : `${s.fill} players`;
     const summary = el('summary', {}, `Match (${this.title.toLowerCase()})`, el('small', { textContent: ` ${label} · ${MODE_LABELS[s.mode]} · ${SKILL_LABELS[s.skill]} bots` }));
     this.root.replaceChildren(
@@ -179,6 +204,7 @@ export class HostPanel {
       apply,
       ...waiting,
       actions,
+      ...people,
       this.status,
     );
     this.root.open = open;

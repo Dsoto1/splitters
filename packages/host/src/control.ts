@@ -65,16 +65,18 @@ const START_KEYS = new Set(['map', 'mode', 'botFill', 'maxPlayers', 'botDifficul
 /** A start request's settings on top of the service's own (throws ConfigError with a message for the page). */
 export function startConfig(body: unknown, base: HostConfig, suite: ReadonlySet<string>): HostConfig {
   if (typeof body !== 'object' || body === null || Array.isArray(body)) throw new ConfigError('send the settings as a JSON object');
-  const o = body as Record<string, unknown>;
+  const o = { ...(body as Record<string, unknown>) };
   for (const k of Object.keys(o)) if (!START_KEYS.has(k)) throw new ConfigError(`unknown setting "${k}"`);
+  // Empty clears a setting: the map's own mode, a random join code. (An empty admin token keeps the current one.)
+  const clear = ['mode', 'joinCode'].filter((k) => o[k] === '');
+  for (const k of [...clear, ...(o.adminToken === '' ? ['adminToken'] : [])]) delete o[k];
   // A suite map by ID only: never a file path from a page.
   if (o.map !== undefined && !(typeof o.map === 'string' && isMapId(o.map) && suite.has(o.map))) throw new ConfigError('map must be one of the game\'s maps');
   if (o.mode !== undefined && !(typeof o.mode === 'string' && (GAME_MODES as readonly string[]).includes(o.mode))) throw new ConfigError('unknown mode');
   for (const k of ['name', 'hostName', 'adminToken', 'joinCode']) if (o[k] !== undefined && (typeof o[k] !== 'string' || (o[k] as string).length > 64)) throw new ConfigError(`${k} must be text (at most 64 characters)`);
   for (const k of ['botFill', 'maxPlayers']) if (o[k] !== undefined && typeof o[k] !== 'number') throw new ConfigError(`${k} must be a number`);
   const merged: Record<string, unknown> = { ...base, playlist: undefined, ...o };
-  // Empty strings clear a setting (no admin token, a random join code).
-  for (const k of ['adminToken', 'joinCode', 'mode']) if (merged[k] === '') delete merged[k];
+  for (const k of clear) delete merged[k];
   if (merged.leaders === true) merged.leaders = 'on';
   const c = parseConfig(merged);
   if (c.botFill > MAX_PLAYER_SLOTS) throw new ConfigError('too many players');
@@ -152,7 +154,8 @@ export async function startControl(o: ControlOptions): Promise<{ port: number; s
     void (async () => {
       try {
         if (path === '/api/start') {
-          const config = startConfig(await readJson(req), o.base, o.suite);
+          // On top of the settings it runs with now (the admin token stays unless a new one is given); the hub is the service's.
+          const config = { ...startConfig(await readJson(req), sup.config ?? o.base, o.suite), hub: o.base.hub };
           await sup.start(config);
           o.persist(config, true);
           o.log?.(`start from /host: ${config.map}, ${config.botFill} players and bots`);
