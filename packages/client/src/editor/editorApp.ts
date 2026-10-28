@@ -457,6 +457,8 @@ export class EditorApp {
   private rotation: Rotation = 0;
   /** Facing for the next prop placed. */
   private propYaw = 0;
+  /** The scatter set N picks up again. */
+  private lastScatter: ScatterSetId = 'forest';
   private readonly thumbs: ModelThumbnails;
   /** The palette's prebuilt pictures (public/thumbs) and its behaviour (groups, search, favourites, keys). */
   readonly paletteAtlas = new PaletteAtlas();
@@ -722,6 +724,7 @@ export class EditorApp {
   private setTool(tool: Tool): void {
     this.tool = tool;
     if (PLACING.has(tool.kind)) this.lastPlace = tool;
+    if (tool.kind === 'scatter') this.lastScatter = tool.set;
     if (tool.kind === 'edge') this.edgeStyle = tool.style;
     const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain' };
     this.road.setActive(tool.kind === 'road');
@@ -778,7 +781,7 @@ export class EditorApp {
     const hintEl = $('ed-toolhint');
     hintEl.className = `tool-${tool.kind === 'erase' ? 'erase' : PLACING.has(tool.kind) ? 'place' : 'other'}`;
     hintEl.innerHTML = `<b>${escapeHtml(name + what)}</b> ${escapeHtml(hint)}`;
-    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · Esc: Select tool';
+    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · V select · P place · X erase · B paint · O walls · T terrain · N scatter · G paths · Esc: Select tool';
     this.updateHover();
   }
 
@@ -1633,6 +1636,13 @@ export class EditorApp {
         case 'KeyX':
           this.setTool({ kind: 'erase' });
           break;
+        // G: Paths (Shift+G: the race road), N: Scatter (the last set you used).
+        case 'KeyG':
+          this.setTool({ kind: e.shiftKey ? 'road' : 'path' });
+          break;
+        case 'KeyN':
+          this.setTool({ kind: 'scatter', set: this.lastScatter });
+          break;
         case 'KeyP':
           this.placeTool();
           break;
@@ -1884,7 +1894,7 @@ export class EditorApp {
     pathBtn.className = 'tile-btn';
     pathBtn.dataset.tool = 'path';
     pathBtn.innerHTML = '<svg viewBox="0 0 56 56"><rect x="4" y="4" width="48" height="48" rx="4" fill="#5c7a3a"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#c9a36b" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#e3c48f" stroke-width="2" stroke-dasharray="3 4" fill="none"/></svg>Paths';
-    pathBtn.title = 'Draw roads, streets, trails and walkways: click points; style, width and laying into the ground in the pane';
+    pathBtn.title = 'Paths (G): draw roads, streets, trails and walkways: click points; style, width and laying into the ground in the pane';
     pathBtn.addEventListener('click', () => this.setTool({ kind: 'path' }));
     pathGroup.append(pathBtn);
     this.palette.register(pathBtn, { key: 'path', name: 'Paths', tags: 'path road street trail walkway sidewalk pavement asphalt cobble dirt gravel boardwalk' });

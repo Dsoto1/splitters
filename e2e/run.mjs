@@ -2607,10 +2607,13 @@ try {
     const seconds = (Date.now() - t0) / 1000;
     results.push({ flow: name, status, seconds, attempts: tries.length, fails: tries.filter((t) => t.length) });
     console.log(`FLOW ${name} ${status} in ${seconds.toFixed(0)} s${tries.length > 1 ? ` (${tries.length} attempts)` : ''}`);
+    // On GitHub, a failed flow is also an annotation, readable from the run's summary and the API without the log.
+    if (status === 'FAIL' && process.env.GITHUB_ACTIONS) console.log(`::error title=e2e ${name}::${tries.flat().join(' | ').replace(/[\r\n%]/g, ' ').slice(0, 900)}`);
   }
   await browser.close();
 } catch (e) {
   console.log(`FAIL ${e.message}`);
+  if (process.env.GITHUB_ACTIONS) console.log(`::error title=e2e run::${String(e.message).replace(/[\r\n%]/g, ' ').slice(0, 900)}`);
   // Where in which flow (the run.mjs frames).
   console.log((e.stack ?? '').split('\n').filter((l) => l.includes('run.mjs')).join('\n'));
   failures++;
