@@ -88,7 +88,7 @@ async function service(): Promise<void> {
       if (sup.state === 'running' && h) log(`[service] running: join code ${h.code}, hub ${h.online ? 'connected' : 'unreachable (players in the match carry on)'}, ${h.visibility === 'listed' ? (h.listed ? 'listed in the game browser' : `not listed yet${h.listingError ? ` (${h.listingError})` : ''}`) : 'join code only'}`);
       else if (sup.state !== 'running') log(`[service] server ${sup.state}${sup.lastError && sup.state !== 'stopped' ? `: ${sup.lastError.summary}` : ''}`);
     },
-    (line, kind) => log(kind === 'event' ? line : `[host] ${line}`),
+    (line, kind) => log(kind === 'event' || line.startsWith('[') ? line : `[host] ${line}`),
     bansFile,
   );
 

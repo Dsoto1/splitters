@@ -23,7 +23,7 @@ export interface SupervisorStatus {
 /** How to start a match process (tests pass a fake). */
 export type Spawner = () => ChildProcess;
 
-export const forkChild = (entry = process.argv[1]!): Spawner => () => fork(entry, ['--child'], { execArgv: process.execArgv, stdio: ['ignore', 'inherit', 'inherit', 'ipc'] });
+export const forkChild = (entry = process.argv[1]!): Spawner => () => fork(entry, ['--child'], { execArgv: process.execArgv, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
 
 /**
  * Runs the match in a child process and keeps it running: restarts it after a
@@ -142,6 +142,15 @@ export class Supervisor {
     this.lastBeat = Date.now();
     this.set('starting');
     let startupFailed = false;
+    // The match process's own output (the match's notices, warnings) goes through the service's log too.
+    for (const stream of [child.stdout, child.stderr]) {
+      let rest = '';
+      stream?.on('data', (d: Buffer) => {
+        const lines = (rest + d.toString()).split('\n');
+        rest = lines.pop() ?? '';
+        for (const l of lines) if (l.trim() && !/UNDICI|trace-warnings/.test(l)) this.onLine(l.slice(0, 500), 'log');
+      });
+    }
     child.on('message', (m: FromChild) => {
       if (this.child !== child) return;
       this.lastBeat = Date.now();

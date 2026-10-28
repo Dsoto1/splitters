@@ -7,3 +7,4 @@ dist/
 *.GCI
 .claude/worktrees/
 e2e-artifacts/
+host-release/

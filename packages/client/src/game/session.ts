@@ -66,6 +66,7 @@ import {
   type MatchPhase,
   type PlayerInput,
   type ScoreEntry,
+  type RosterEntry,
   type ServerMessage,
   type ServerStats,
   type MatchRules,
@@ -896,6 +897,11 @@ export class GameSession {
   /** Set when a chain moves on (see Travel). */
   private travel: Travel | null = null;
   private dedicatedPanel = false;
+  private lastRoster: RosterEntry[] | null = null;
+  /** The roster's people other than you, for the host's kick and ban buttons. */
+  private peopleIn(players: readonly RosterEntry[]): { slot: number; name: string }[] {
+    return players.filter((p) => !p.bot && p.slot !== this.slot).map((p) => ({ slot: p.slot, name: p.name }));
+  }
 
   /** A won co-op map in a local match: after a moment for the results, go on to the next map of the chain. */
   private chainOn(next: string | undefined): void {
@@ -999,6 +1005,7 @@ export class GameSession {
           this.dedicatedPanel = true;
           this.hostPanel.root.remove();
           this.hostPanel = this.makeHostPanel(true);
+          if (this.lastRoster) this.hostPanel.setPeople(this.peopleIn(this.lastRoster));
         }
         const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
         this.hud.setTeams(teams);
@@ -1051,7 +1058,8 @@ export class GameSession {
         break;
       case 'roster':
         this.hud.setRoster(msg.players);
-        this.hostPanel.setPeople(msg.players.filter((p) => !p.bot && p.slot !== this.slot).map((p) => ({ slot: p.slot, name: p.name })));
+        this.lastRoster = msg.players;
+        this.hostPanel.setPeople(this.peopleIn(msg.players));
         if (this.peerHost) this.updateOnline();
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
         this.view.setLocalLook(this.looks.get(this.slot));

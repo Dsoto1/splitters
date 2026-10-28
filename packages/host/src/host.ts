@@ -12,7 +12,11 @@ import { HubLink } from './hubLink.ts';
 import { peerConn } from './peerConn.ts';
 
 /** Our suite (maps/): where suite IDs are looked up, and what may be listed as one of our maps. */
-export const DEFAULT_MAPS_DIR = process.env.HOST_MAPS_DIR ?? fileURLToPath(new URL('../../../maps/', import.meta.url));
+export const DEFAULT_MAPS_DIR =
+  process.env.HOST_MAPS_DIR ??
+  // The packaged Host Service keeps them beside its bundle (app/maps); from the repository, the repo's maps/.
+  [new URL('./maps/', import.meta.url), new URL('../../../maps/', import.meta.url)].map((u) => fileURLToPath(u)).find((d) => existsSync(d)) ??
+  fileURLToPath(new URL('../../../maps/', import.meta.url));
 
 export interface HostStatus {
   state: 'starting' | 'running' | 'stopping';

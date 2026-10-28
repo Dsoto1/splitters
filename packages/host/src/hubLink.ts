@@ -1,5 +1,4 @@
 import { randomInt } from 'node:crypto';
-import { createRequire } from 'node:module';
 import type { DataConnection, Peer as PeerT, PeerOptions } from 'peerjs';
 import type { Fetch } from './advertiser.ts';
 
@@ -28,6 +27,11 @@ export interface IceServer {
   urls: string | string[];
   username?: string;
   credential?: string;
+}
+
+/** What hubLink reads of a data channel. */
+interface RTCDataChannelLike {
+  readyState: string;
 }
 
 /** Public STUN, as browsers use (client relay.ts), until the hub's answer replaces it. */
@@ -67,8 +71,9 @@ export async function loadPeer(): Promise<typeof import('peerjs')> {
       this.on('error', () => undefined);
     }
   };
-  // PeerJS ships CommonJS for Node; its ESM entry is for bundlers.
-  peerModule = createRequire(import.meta.url)('peerjs') as typeof import('peerjs');
+  // PeerJS ships CommonJS for Node (its ESM entry is for bundlers): its exports come as the default.
+  const mod = (await import('peerjs')) as typeof import('peerjs') & { default?: typeof import('peerjs') };
+  peerModule = mod.Peer ? mod : mod.default!;
   return peerModule;
 }
 
@@ -156,8 +161,21 @@ export class HubLink {
       conn.on('error', () => undefined);
       conn.on('open', () => {
         clearTimeout(timer);
+        clearInterval(late);
         this.o.admit(conn);
       });
+      // node-datachannel hands over a friend's channel that may already be open, and then never says "open"
+      // again: PeerJS would wait forever. Give PeerJS its open event when the channel is open but it hasn't seen it.
+      const late = setInterval(() => {
+        const dc = conn.dataChannel as (RTCDataChannelLike & { onopen?: ((e: unknown) => void) | null }) | undefined;
+        if (conn.open || !dc) return;
+        if (dc.readyState === 'open') {
+          clearInterval(late);
+          dc.onopen?.({ type: 'open' });
+        } else if (dc.readyState === 'closed') clearInterval(late);
+      }, 100);
+      late.unref?.();
+      setTimeout(() => clearInterval(late), OPEN_TIMEOUT_MS).unref?.();
     });
     peer.on('disconnected', () => {
       if (this.peer !== peer || this.closed) return;

@@ -75,10 +75,13 @@ export function openHostPage(maps: HostPageMap[]): void {
   document.getElementById('menu')?.setAttribute('hidden', '');
   document.title = 'Host a game · Tile Trigger';
   // The pairing key from the Host Service's link: keep it, and take it out of the address bar.
-  const frag = new URLSearchParams(location.hash.slice(1));
-  if (frag.get('pair') && /^[a-f0-9]{48}$/.test(frag.get('pair')!)) store.set(PAIR_KEY, frag.get('pair'));
-  if (frag.get('port') && /^\d{2,5}$/.test(frag.get('port')!)) store.set(PORT_KEY, frag.get('port'));
-  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  const takeFragment = () => {
+    const frag = new URLSearchParams(location.hash.slice(1));
+    if (frag.get('pair') && /^[a-f0-9]{48}$/.test(frag.get('pair')!)) store.set(PAIR_KEY, frag.get('pair'));
+    if (frag.get('port') && /^\d{2,5}$/.test(frag.get('port')!)) store.set(PORT_KEY, frag.get('port'));
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  };
+  takeFragment();
   const port = Number(new URLSearchParams(location.search).get('hostPort') ?? store.get(PORT_KEY) ?? DEFAULT_PORT);
   const api = `http://127.0.0.1:${port}/api`;
 
@@ -273,5 +276,12 @@ export function openHostPage(maps: HostPageMap[]): void {
       showDownloads('No Host Service is running on this computer.');
     }
   };
+  // The pairing link opened in this tab again (only the #fragment changed): pair now.
+  window.addEventListener('hashchange', () => {
+    if (!/pair=/.test(location.hash)) return;
+    takeFragment();
+    formBuilt = false;
+    void detect();
+  });
   void detect();
 }

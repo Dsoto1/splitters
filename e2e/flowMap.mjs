@@ -13,7 +13,7 @@ export const IMPORTED_PART = MAP_PARTS - 1;
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', ...MAP_FLOWS,
-  'designer', 'characters', 'online', 'hostgame', 'hostcontrols', 'lobby', 'webgpu', 'visual',
+  'designer', 'characters', 'online', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost', 'hostpage', 'webgpu', 'visual',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -90,10 +90,11 @@ const RULES = [
   [/^packages\/client\/src\/designer\//, ['designer', 'characters'], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, ['characters'], ['client']],
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
-  [/^packages\/client\/src\/frontend\//, ['offline', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'designer', 'characters', 'editor', 'webgpu', 'visual'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['offline', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', 'characters', 'editor', 'webgpu', 'visual'], ['client']],
+  [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
-  [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'hostgame', 'hostcontrols', 'lobby'], ['client']],
-  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'lobby'], ['client']],
+  [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],
+  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],
   [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera)\.ts$/, ['vehicles', 'race'], ['client']],
   [/^packages\/client\/src\/(game\/raceHud\.ts|roadMeshes\.ts)$/, ['race'], ['client']],
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
@@ -106,7 +107,10 @@ const RULES = [
 
   // The server (dedicated server, hub, lobby).
   [/^packages\/server\/src\/tools\//, NONE, ['server']],
-  [/^packages\/server\//, ['online', 'hostgame', 'hostcontrols', 'lobby'], ['server']],
+  [/^packages\/server\//, ['online', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost', 'hostpage'], ['server', 'host']],
+  // The Host Service (dedicated host); its packaging tool runs in CI's host-release job.
+  [/^packages\/host\/tools\//, NONE, []],
+  [/^packages\/host\//, ['dedicatedhost', 'hostpage'], ['host']],
 ];
 
 /**

@@ -26,6 +26,7 @@
     "content:check": "node tools/content/build.mjs --check",
     "dev:hub": "pnpm --filter @tiletrigger/server hub",
     "host": "pnpm --silent --filter @tiletrigger/host start",
+    "host:package": "pnpm --filter @tiletrigger/host package --",
     "dev:peer": "pnpm --filter @tiletrigger/server hub"
   },
   "devDependencies": {

@@ -382,3 +382,55 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+
+  # The Host Service downloads (packages/host/tools/package.mjs): one archive per OS with the Node runtime,
+  # the bundled service, node-datachannel's prebuilt module and our maps. Built on Linux for every OS (only the
+  # runtime and the native module differ, both downloaded and checked), smoke-tested on Linux, attested like the
+  # site, and published beside it under fixed names (the /host page links main-latest's).
+  host-release:
+    needs: [plan, release]
+    if: >-
+      always() && needs.release.result == 'success' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    concurrency:
+      group: host-release-${{ startsWith(github.ref, 'refs/tags/') && 'tags' || 'main' }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm host:package --out "$PWD/host-release"
+      - name: Smoke test (the Linux package starts, registers on a local hub and lists itself)
+        run: |
+          (cd packages/server && PORT=8098 HOST=127.0.0.1 SITE_DIR=/nonexistent node --import tsx src/hub.ts > "$RUNNER_TEMP/hub.log" 2>&1 &)
+          for _ in $(seq 1 60); do curl -fsS http://127.0.0.1:8098/lobby/health >/dev/null 2>&1 && break; sleep 0.5; done
+          mkdir -p "$RUNNER_TEMP/host" && tar -xzf host-release/tiletrigger-host-linux-x64.tar.gz -C "$RUNNER_TEMP/host"
+          (cd "$RUNNER_TEMP/host/tiletrigger-host" && HUB=http://127.0.0.1:8098 HOST_STATE_DIR="$RUNNER_TEMP/state" SERVER_NAME="CI smoke" MAP=sandgate BOT_FILL=8 ./start-host.sh --no-console > "$RUNNER_TEMP/host.log" 2>&1 &)
+          for _ in $(seq 1 90); do curl -fsS http://127.0.0.1:8098/lobby/games | grep -q '"CI smoke"' && break; sleep 1; done
+          cat "$RUNNER_TEMP/host.log"
+          curl -fsS http://127.0.0.1:8098/lobby/games | grep '"hostType":"dedicated"'
+      - id: attest
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: host-release/tiletrigger-host-*
+      - name: Publish
+        run: |
+          tag=main-latest
+          case "$GITHUB_REF" in refs/tags/*) tag="${GITHUB_REF#refs/tags/}" ;; esac
+          cd host-release
+          sha256sum tiletrigger-host-*.zip tiletrigger-host-*.tar.gz > tiletrigger-host-SHA256SUMS
+          cp "$BUNDLE" tiletrigger-host.sigstore.json
+          gh release upload "$tag" tiletrigger-host-*.zip tiletrigger-host-*.tar.gz tiletrigger-host-SHA256SUMS tiletrigger-host.sigstore.json --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
