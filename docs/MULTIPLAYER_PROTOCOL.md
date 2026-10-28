@@ -317,3 +317,39 @@ address). Map data (section 10): 2 MiB before parsing is enforced by
 `loadMap` everywhere; content hashes are `sha256:` over the canonical JSON
 with the picture, `updatedAt` and the `release` block left out
 (`shared/src/map/identity.ts`).
+
+## 12. Host Service MVP (implemented, October 2026)
+
+The first Host Service (`packages/host`, HOSTING.md "Dedicated host") uses
+today's endpoints rather than sections 6 and 9, which still describe the
+paired version:
+
+- **Registration**: the PeerJS broker as a host, `tiletrigger-<CODE>`, exactly
+  as a browser host (reconnecting with the same id and broker token after
+  losing the hub). Listing: `POST/PUT/DELETE /lobby/games` with
+  `hostType: "dedicated"` (absent or `"browser"` for browser hosts). The hub
+  never marks a listing official; names and host names that claim to be
+  ("Official", "ToshiroPlay", "Tile Trigger", look-alike spellings) are
+  refused with 400 (`claimsOfficial`, `shared/src/net/lobby.ts`).
+- **TURN**: `GET /lobby/ice?session=<CODE>&role=host`, renewed at half life.
+- **Gameplay**: unchanged messages (`PROTOCOL_VERSION` 4, still compatible
+  with 0.3.0 clients: every new field is optional). `welcome.dedicated: true`
+  tells a client joined by code that the pause menu's Server admin login
+  applies. `hello` gains `pk` (a random per-browser key, `p_` + 8–32
+  `[A-Za-z0-9_-]`) and `ticket` (≤ 1000 chars). `HostCommand` gains
+  `{ c: "kick", slot, reason? }` and `{ c: "ban", slot, minutes?, reason? }`
+  (reason ≤ 80 chars, minutes ≤ 525,600; 0/absent = for good). Browser hosts
+  run kick/ban for their own friends; dedicated servers for admins only.
+- **Account tickets** (a first piece of section 7): `GET /api/v1/ticket?code=<CODE>`
+  with `Authorization: Bearer <Cognito token>` → `{ ticket, exp }`;
+  `GET /api/v1/ticket-keys` → `{ keys: [{ kid, x }] }` (Ed25519 raw public
+  keys, base64url). Ticket = `base64url(JSON{kid, sub, code, iat, exp, jti})`
+  `.` `base64url(Ed25519 signature)`, 120 s, for one join code; the host checks
+  the signature, the code and the expiry, and accepts each `jti` once. Same
+  per-address limits as `/api/v1/me`. The key is made at hub start
+  (`HUB_TICKET_KEY` keeps one); hosts refetch keys on an unknown `kid`.
+- **Control API** (local only, not the hub's): `http://127.0.0.1:7797/api/`
+  `ping` (no auth: `{service, version, paired}`), `status`, and POST `start`,
+  `stop`, `restart`, `kick`, `ban`, `unban`, `quit`, with
+  `Authorization: Bearer <pairing key>`; bodies ≤ 4 KB JSON; 240 requests and
+  20 commands a minute. See MULTIPLAYER_SECURITY.md section 6a.

@@ -334,6 +334,180 @@ want always-on official matches.
 What a player-hosted game can't do: survive the host leaving, or stop the
 host from cheating. The game browser tags these games "Player-hosted".
 
+## Dedicated host (Host Service)
+
+A server on your own computer (a spare PC is ideal) that people on the
+internet join from https://trigger.toshiroplay.com, by the game browser or a
+join code: no port forwarding, no certificates, no browser tab. It is the
+dedicated server's match (`packages/server/src/server.ts`) with players
+arriving the way they join a browser host (WebRTC through the hub's broker),
+so to players it is just another game, labelled **Dedicated host** (never
+"official"). Nobody needs it to play: joining any game needs no install, and
+the download is offered only on the /host page.
+
+### For the owner: four steps, no commands
+
+1. Open https://trigger.toshiroplay.com/host (or Online → **Host a dedicated
+   server…**) and download the Host Service for your computer (Windows,
+   macOS Apple silicon or Intel, Linux).
+2. Unzip it and double-click **Start Tile Trigger Host** (Windows: the `.cmd`;
+   it may say the app is unrecognised: More info → Run anyway. macOS:
+   right-click the `.command` → Open the first time. Linux: `./start-host.sh`).
+3. A server window opens and the server starts: Frost Basin, 24 players and
+   bots, listed in the game browser. Type `help` in that window to see what
+   it can do (`players`, `kick`, `ban`, `map`, `bots`, `teams`, `say`,
+   `visibility`, `stop`, `quit`…).
+4. Optional: click the **web control** link the window shows. It opens
+   /host already paired with this computer, where you choose the map, mode,
+   players and bots (96 = 48 v 48), name, visibility and admin token, press
+   Start / Stop / Restart, and see players (kick, ban), uptime and errors.
+   Closing that page changes nothing. **Closing the server window stops the
+   server**; next time you open it, it starts again with the last settings
+   (or stays stopped if you stopped it).
+
+Settings, bans and the pairing key live in your user profile
+(`%LOCALAPPDATA%\TileTriggerHost`, `~/Library/Application Support/TileTriggerHost`,
+`~/.local/state/tiletrigger-host`); logs in the unpacked folder's `logs/`
+(`host.log`, rotated at 5 MB, 5 kept).
+
+### From the repository (the owner's machine with git)
+
+```
+git clone https://github.com/Dsoto1/splitters.git && cd splitters
+pnpm install
+MAP=frost_basin MODE=core.tdm BOT_FILL=96 MAX_PLAYERS=16 SERVER_NAME="Frost Basin 48v48" ADMIN_TOKEN=pick-a-long-secret pnpm host
+```
+
+That is a 48 v 48 Team Deathmatch on Frost Basin (bots fill the 96 slots,
+up to 16 people take bots' places), listed in the game browser of
+https://trigger.toshiroplay.com. Windows PowerShell:
+`$env:MAP="frost_basin"; $env:MODE="core.tdm"; $env:BOT_FILL="96"; pnpm host`.
+`pnpm host --idle` waits for `start` (console or /host). `pnpm host:package`
+builds the downloads (CI does this for every green `main` and `vX.Y.Z`).
+
+| Setting (env, or the same key in `HOST_CONFIG=host.json`) | Default | |
+|---|---|---|
+| `HUB` | `https://trigger.toshiroplay.com` | the hub (plain `http://` only for one on your own network) |
+| `MAP` | `frost_basin` | a map of our suite by ID, or a map file's path (listed as a **Community map**) |
+| `MODE` | the map's first | `core.tdm`, `core.ctf`, … |
+| `BOT_FILL` | 24 | players + bots to keep (≤ 96) |
+| `MAX_PLAYERS` | 16 | people at once: your upload carries each one (~20 KB/s at 48 v 48) |
+| `SERVER_NAME`, `HOST_NAME` | Dedicated host, Host Service | the game browser's name and "hosted by" (names claiming to be official are refused) |
+| `VISIBILITY` | `listed` | `listed` (game browser and code) or `code` (join code only) |
+| `ADMIN_TOKEN` | none | in-game admin (pause menu → Server admin, or `?admin=`); 8+ characters |
+| `JOIN_CODE` | random, kept across crashes | a fixed code (6 characters, no look-alikes) for bookmarks |
+| `BOT_DIFFICULTY`, `BOT_TAKEBACK`, `LEADERS`, `PLAYLIST` | | as the dedicated server |
+| `CONTROL_PORT` | 7797 | the control API (127.0.0.1 only) |
+| `STATUS_EVERY` | 60 | seconds between status lines (0: none) |
+
+No setting is a ToshiroPlay or AWS credential: the host needs none.
+
+### How it works
+
+- **Hub link** (`packages/host/src/hubLink.ts`): PeerJS, unchanged, on
+  [node-datachannel](https://github.com/murat-dogan/node-datachannel)'s
+  standard WebRTC polyfill (libdatachannel; prebuilt for Linux, macOS and
+  Windows, x64 and arm64, installed without build scripts). The host
+  registers `tiletrigger-<CODE>` on the hub's broker exactly as a browser host
+  does, so the client needed no change to join it. TURN credentials come
+  from `/lobby/ice?role=host` and are renewed at half life; libdatachannel
+  takes them escaped (coturn's usernames carry `:`; checked against a TURN
+  server in relay-only mode). The broker socket uses the `ws` package:
+  Node's own WebSocket never reports a connection that failed, and PeerJS
+  would then never retry.
+- **Players** (`peerConn.ts`): each data channel becomes a `PlayerConn` of the
+  dedicated server (same join flow, MessageGuard rate limits, caps, admin
+  commands, delta snapshots); what a player sends is reassembled with
+  `GUEST_TO_HOST_LIMITS`, what it gets is the same deflate stream a browser
+  host sends (`shared/src/net/peerZip.ts`). A player whose link can't keep up
+  (150 messages held back) is dropped instead of filling memory.
+- **Listing** (`advertiser.ts`): `hostType: "dedicated"`, checked in every
+  20 s, re-listed when the hub forgot it; taken down on stop.
+- **Robustness**: the match runs in a child process (`--child`) supervised
+  by the service (`supervisor.ts`): a crash or a hang (no report for 30 s)
+  restarts it after 5 s doubling to 5 min under the same join code; 5
+  crashes in 10 min stop it (`crashloop`, shown in the console and /host); a
+  setting that can't start (a bad map) is not retried. Losing the hub: players
+  already in keep playing (their connections are direct or relayed, not
+  through the hub); the host reconnects with backoff (1 s → 30 s) under the
+  same code and re-lists. Ctrl+C, `quit`, closing the window, SIGTERM or
+  SIGHUP: players are told, the listing is removed, the match ends.
+- **Control API** (`control.ts`) for /host: `127.0.0.1` only; Origin must be
+  `https://trigger.toshiroplay.com` or a localhost page (`HOST_ALLOWED_ORIGINS`
+  adds others), Host must be the loopback name (no DNS rebinding), and every
+  command needs the pairing key (`Bearer`). Closed command set: status,
+  start (suite map by ID and checked numbers; never a path, URL or the hub),
+  stop, restart, kick, ban, unban, quit.
+- **Kick and ban** (`bans.ts`): bans live in `bans.json` in the state folder
+  and survive restarts. Signed-in players are banned by account: the client
+  asks the hub for an account ticket for that join code
+  (`GET /api/v1/ticket`, Ed25519-signed, 2 min, single use at the host) and
+  the host checks it with the hub's public key (`/api/v1/ticket-keys`): it
+  never sees the player's Cognito token. Guests can only be banned by their
+  browser key (`p_…`, cleared with site data) and their address when the link
+  is direct (not relayed; shared by households, and changes): **guest bans are
+  weak**. In-game admins kick and ban from pause menu → Match → Players; a
+  Host game host can kick and ban friends too (for that game only).
+
+### Measured (October 2026, this repository's 4-core container)
+
+Frost Basin, Team Deathmatch, 96 players and bots (48 v 48), 8 players joined
+from Node clients over WebRTC: simulation + snapshots + compression
+**5.2–7.5 ms a tick** (of 16.7; no late ticks), bot AI 1.2–1.6 ms, each
+player getting **~19 KB/s** compressed at 30 snapshots a second (so 16
+players ≈ 300 KB/s ≈ 2.5 Mbit/s of upload). The download is ~50 MB
+(Linux .tar.gz), ~170 MB unpacked, most of it the Node runtime.
+
+### Run on boot (optional)
+
+The service starts when you double-click it; to start it with the computer:
+
+- **Windows**: Task Scheduler → Create Task → Trigger "At log on" → Action
+  "Start a program": `C:\…\tiletrigger-host\Start Tile Trigger Host.cmd`
+  (run as your user; no administrator rights needed).
+- **macOS**: System Settings → General → Login Items → add
+  `Start Tile Trigger Host.command`, or a LaunchAgent
+  (`~/Library/LaunchAgents/com.toshiroplay.trigger-host.plist` with
+  `ProgramArguments` = the `.command` path and `RunAtLoad` true).
+- **Linux** (`systemd --user`, no root): `~/.config/systemd/user/tiletrigger-host.service`
+
+  ```
+  [Unit]
+  Description=Tile Trigger Host Service
+  After=network-online.target
+  [Service]
+  WorkingDirectory=%h/tiletrigger-host
+  ExecStart=%h/tiletrigger-host/start-host.sh
+  Restart=on-failure
+  [Install]
+  WantedBy=default.target
+  ```
+
+  then `systemctl --user enable --now tiletrigger-host` (and
+  `loginctl enable-linger $USER` to run without logging in). Logs: `logs/`
+  and `journalctl --user -u tiletrigger-host`.
+
+### Known limits
+
+- Windows SmartScreen and macOS Gatekeeper warn the first time (the start
+  files are not code-signed; the Node runtime inside is the official signed
+  one). The archives are attested by CI (Sigstore build provenance:
+  `gh attestation verify tiletrigger-host-windows-x64.zip --repo Dsoto1/splitters`).
+- /host talks to `http://127.0.0.1` from an https page: Chrome, Edge and
+  Firefox allow it (Chrome may ask for "local network access" once);
+  Safari may refuse, and the console remains the full admin interface.
+- Guest bans are weak (above). Join tickets carry the account only; the
+  host doesn't yet check a hub-signed ticket for every join (protocol §7).
+- One match per service; no automatic updates (download the new version);
+  the upload is the limit long before the CPU (`MAX_PLAYERS`).
+
+### Next steps
+
+Account pairing of a Host Service with a ToshiroPlay account and the hub's
+host control socket (MULTIPLAYER_SECURITY.md section 6), so /host works from
+any device; signed self-updates (section 7); an installer with start-on-boot;
+a tray icon; per-ticket join authorization for every player.
+
 ## 2. Official servers (later)
 
 `pnpm --filter @tiletrigger/server start` runs one dedicated match
