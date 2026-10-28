@@ -1111,14 +1111,19 @@ export class EditorApp {
   private edgeAtHover(style: EdgeStyle): void {
     const target = this.hoverEdge;
     if (!target) return;
+    this.setEdge(target, style, this.edgeGlass);
+  }
+
+  /** Build a side in `style`, with `glass` in its window (the Walls tool and the inspector alike). */
+  private setEdge(target: EdgeTarget, style: EdgeStyle, glass: GlassKind | null): void {
     const cmd = setEdgeCommand(this.doc, target, style);
     if ('error' in cmd) return this.toast(cmd.error, true);
     // Glass goes with the window: set (or clear) it in the same undo step.
-    const glazed = GLASS_EDGES.has(style as never) ? this.edgeGlass : null;
-    const glass = setEdgeGlassCommand(applyCommand(this.doc, cmd), target, glazed);
+    const glazed = GLASS_EDGES.has(style as never) ? glass : null;
+    const glassCmd = setEdgeGlassCommand(applyCommand(this.doc, cmd), target, glazed);
     const label = style === 'auto' ? 'Reset wall' : `Wall: ${EDGE_STYLE_LABELS[style]}${glazed ? ` (${GLASS_KIND_LABELS[glazed].toLowerCase()} glass)` : ''}`;
     const had = edgeGlassAt(this.doc, target);
-    this.run(label, 'error' in glass || (!glazed && !had) ? cmd : { kind: 'batch', commands: [cmd, glass] });
+    this.run(label, 'error' in glassCmd || (!glazed && !had) ? cmd : { kind: 'batch', commands: [cmd, glassCmd] });
   }
 
   /** Eyedropper: copy the hovered surface's effective style into the brush. */
@@ -2812,12 +2817,22 @@ export class EditorApp {
           const sel = document.createElement('select');
           const now = edgeChoiceAt(doc, target);
           for (const style of EDGE_STYLES) sel.append(new Option(EDGE_STYLE_LABELS[style], style, false, style === now));
+          // The same choices as the Walls tool: a style, and glass in a window.
+          const glass = document.createElement('select');
+          glass.title = 'Glass in this window';
+          glass.append(new Option('No glass', ''), ...GLASS_KINDS.map((k) => new Option(GLASS_KIND_LABELS[k], k)));
+          glass.value = edgeGlassAt(doc, target) ?? '';
+          glass.hidden = !GLASS_EDGES.has(now as never);
+          const apply = () => this.setEdge(target, sel.value as EdgeStyle, (glass.value || null) as GlassKind | null);
           sel.addEventListener('change', () => {
-            const cmd = setEdgeCommand(this.doc, target, sel.value as EdgeStyle);
-            if ('error' in cmd) this.toast(cmd.error, true);
-            else this.run(`Wall: ${EDGE_STYLE_LABELS[sel.value as EdgeStyle]}`, cmd);
+            if (GLASS_EDGES.has(sel.value as never) && !edgeGlassAt(this.doc, target)) glass.value = this.edgeGlass ?? '';
+            apply();
           });
-          el.append(row({ N: 'North', E: 'East', S: 'South', W: 'West' }[side], sel));
+          glass.addEventListener('change', apply);
+          const pair = document.createElement('span');
+          pair.className = 'ed-wall-pick';
+          pair.append(sel, glass);
+          el.append(row({ N: 'North', E: 'East', S: 'South', W: 'West' }[side], pair));
         }
       } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
       if (def?.configurable) this.roomOptionsPanel(el, t);
@@ -2825,6 +2840,15 @@ export class EditorApp {
       const h3 = document.createElement('h3');
       h3.textContent = 'Surfaces';
       el.append(h3);
+      // The Paint tool's own "Apply to", shared: a change here is a change there.
+      const scope = document.createElement('select');
+      scope.id = 'ed-insp-scope';
+      for (const [v, label] of [['surface', 'This surface'], ['sameType', 'Same piece type'], ['level', 'Whole level'], ['all', 'Whole map']] as const) scope.append(new Option(label, v, false, v === this.paintScope));
+      scope.addEventListener('change', () => {
+        this.paintScope = scope.value as PaintScope;
+        $<HTMLSelectElement>('ed-scope').value = scope.value;
+      });
+      el.append(row('Apply to', scope));
       for (const slot of SURFACE_SLOTS) el.append(this.surfaceRow(t, slot));
       el.append(small(`ID ${t.id}`));
     } else if (entities.length === 1 && tiles.length === 0) {
@@ -3504,12 +3528,19 @@ export class EditorApp {
     tint.value = current?.tint ?? '#ffffff';
     tint.disabled = !current;
     tint.title = 'Tint';
-    const apply = (style: SurfaceStyle | null) => this.run(`Paint ${SURFACE_SLOT_LABELS[slot].toLowerCase()}`, paintCommand(this.doc, t.id, slot, style));
+    const apply = (style: SurfaceStyle | null) => this.run(`Paint ${SURFACE_SLOT_LABELS[slot].toLowerCase()}`, paintCommand(this.doc, t.id, slot, style, this.paintScope));
     mat.addEventListener('change', () => apply(mat.value ? { material: mat.value, tint: current?.tint ?? null } : null));
     tint.addEventListener('change', () => current && apply({ material: current.material, tint: tint.value.toLowerCase() }));
     const wrap = document.createElement('div');
     wrap.className = 'surface-row';
-    wrap.append(text(SURFACE_SLOT_LABELS[slot]), mat, tint);
+    // The Paint tool's current brush, onto this surface.
+    const brush = document.createElement('button');
+    brush.type = 'button';
+    brush.className = 'ed-use-brush';
+    brush.textContent = 'Brush';
+    brush.title = `Paint it with the Paint tool's brush (${coreMaterials.get(this.paintStyle.material)?.displayName ?? this.paintStyle.material})`;
+    brush.addEventListener('click', () => apply(this.paintStyle));
+    wrap.append(text(SURFACE_SLOT_LABELS[slot]), mat, tint, brush);
     return wrap;
   }
 
