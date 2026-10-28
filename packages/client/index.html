@@ -165,10 +165,10 @@
         </div>
         <button id="ed-status" class="pill">Checking…</button>
         <div class="tabs ed-modes" id="ed-modes">
-          <button id="ed-build-btn" class="tab on" data-ws="build" title="Build: tiles, walls and openings, terrain, props">Build</button>
+          <button id="ed-build-btn" class="tab on" data-ws="build" title="Build: tiles, walls and openings, props">Build</button>
           <button id="ed-entities-btn" class="tab" data-ws="entities" title="Entities: NPCs, spawns and pickups, vehicles, doors and traps">Entities</button>
           <button id="ed-logic-btn" class="tab" data-ws="logic" title="Scenario logic: objectives, variables, timers, rules (L)">Logic</button>
-          <button id="ed-env-btn" class="tab" data-ws="environment" title="Environment: materials and paint, plants, terrain; sky and backdrop in Map properties"><span class="wide">Environment</span><span class="narrow">Env</span></button>
+          <button id="ed-env-btn" class="tab" data-ws="environment" title="Environment: paint, plants and terrain; sky, backdrop and border"><span class="wide">Environment</span><span class="narrow">Env</span></button>
         </div>
         <div class="spacer"></div>
         <button id="ed-grid" class="ed-toggle on" aria-pressed="true" title="Grid lines on the level being edited"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="wide">Grid</span></button>
@@ -186,8 +186,6 @@
             <button class="tab on" data-ws="build" data-pane="tiles" data-cat="structure" title="Structure: rooms, corridors, buildings, stairs and open ground">Tiles</button>
             <button class="tab" data-ws="build" data-pane="advanced" data-cat="structure" title="Walls &amp; openings: build any side of a room as a wall, window, doorway or gap">Walls</button>
             <button class="tab" data-ws="build" data-pane="props" data-cat="props" title="Props by theme: home &amp; town, industrial, sci-fi, medieval, dungeons, western, ancient">Props</button>
-            <button class="tab" data-ws="build" data-pane="plants" data-cat="nature" title="Nature: trees, rocks and plants, and the scatter brush">Nature</button>
-            <button class="tab" data-ws="build" data-pane="terrain" data-cat="terrain" title="Terrain: sculpt and paint open ground">Terrain</button>
             <button class="tab" data-ws="entities" data-pane="entities" data-cat="gameplay" title="Gameplay: spawns, game-mode objectives and pickups" hidden>Gameplay</button>
             <button class="tab" data-ws="entities" data-pane="npcs" data-cat="npcs" title="NPCs: soldiers, squads and spawners" hidden>NPCs</button>
             <button class="tab" data-ws="entities" data-pane="vehicles" data-cat="vehicles" title="Vehicles &amp; turrets, parked vehicles and race tracks" hidden>Vehicles</button>
@@ -196,6 +194,7 @@
             <button class="tab" data-ws="environment" data-pane="paint" data-cat="paint" title="Paint: materials and tints for any surface" hidden>Paint</button>
             <button class="tab" data-ws="environment" data-pane="plants" data-cat="nature" title="Nature: trees, rocks and plants, and the scatter brush" hidden>Nature</button>
             <button class="tab" data-ws="environment" data-pane="terrain" data-cat="terrain" title="Terrain: sculpt and paint open ground" hidden>Terrain</button>
+            <button class="tab" data-ws="environment" data-pane="sky" data-cat="sky" title="Sky: sky, distant scenery, haze and the border round the map" hidden>Sky</button>
           </div>
           <div class="ed-search-row">
             <input id="ed-search" type="search" placeholder="Search all pieces… ( / )" autocomplete="off" spellcheck="false" aria-label="Search the palette: names, themes and packs" />
@@ -269,6 +268,9 @@
             <label class="check"><input id="ed-tr-boundary" type="checkbox" checked /> Invisible walls round the edge</label>
             <button id="ed-tr-remove" class="danger">Remove terrain</button>
           </div>
+        </div>
+        <div class="ed-pane" data-pane="sky" data-cat="sky" hidden>
+          <div id="ed-sky"></div>
         </div>
         <div class="ed-pane" data-pane="paint" data-cat="paint" hidden>
           <h3>Paint</h3>

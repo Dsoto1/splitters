@@ -362,6 +362,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 [data-cat='objects'] { --cat: var(--cat-objects); }
 [data-cat='lights'] { --cat: var(--cat-lights); }
 [data-cat='paint'] { --cat: var(--cat-paint); }
+[data-cat='sky'] { --cat: var(--cyan); }
 #ed-palette { --cat: var(--cat-structure); padding-top: 0; overflow-x: hidden; }
 .ed-pal-head { position: sticky; top: 0; z-index: 3; margin: 0 -10px; padding: 10px 10px 4px; background: rgb(18, 24, 39); }
 .ed-pal-tabs { flex-wrap: wrap; gap: 2px; margin: 0 0 6px; }

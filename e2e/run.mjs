@@ -758,6 +758,8 @@ async function canyonFlow(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
+  // Terrain lives in the Environment workspace (one home per pane).
+  await page.click('#ed-env-btn');
   await page.click('#ed-pal-tabs [data-pane="terrain"]');
   await page.click('#ed-tr-new');
   check(await page.evaluate(() => !!window.__editor.doc.terrain), 'MapMaker creates terrain');
@@ -803,6 +805,9 @@ async function sceneryFlow(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
+  // The backdrop lives in Environment → Sky.
+  await page.click('#ed-env-btn');
+  await page.click('#ed-pal-tabs [data-pane="sky"]');
   await page.selectOption('#ed-bd-sky', 'sunset');
   await page.waitForFunction(() => window.__editor.doc.backdrop?.sky === 'sunset' && window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky'), null, { timeout: T(5000) }).catch(() => {});
   const bd = await page.evaluate(() => ({ sky: window.__editor.doc.backdrop?.sky, mesh: window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky') }));
@@ -812,8 +817,11 @@ async function sceneryFlow(browser) {
   await page.click('.ed-row-buttons button:has-text("Alien")');
   const blood = await page.evaluate(() => window.__editor.doc.blood);
   check(blood?.color === '#3f9b1f' && blood?.amount === 'heavy', `MapMaker sets the map's blood (${JSON.stringify(blood)})`);
+  // Terrain lives in the Environment workspace (one home per pane).
+  await page.click('#ed-env-btn');
   await page.click('#ed-pal-tabs [data-pane="terrain"]');
   await page.click('#ed-tr-new');
+  await page.click('#ed-pal-tabs [data-pane="sky"]');
   // A border along the terrain's edge, previewed live: an electric fence, then cliffs on the north side.
   await page.selectOption('#ed-bd-border', 'fence');
   await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'border_fence_posts' && m.thinInstanceCount > 10), null, { timeout: T(10000) }).catch(() => {});

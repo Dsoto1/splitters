@@ -1794,7 +1794,6 @@ export class EditorApp {
     this.paletteWs = ws;
     this.showPane(first[ws] ?? 'tiles');
     if (ws === 'environment' && (this.selection.tiles.length || this.selection.entities.length)) this.setSelection(emptySelection());
-    if (ws === 'environment') document.getElementById('ed-backdrop-head')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
   /** Light the top bar's workspace tab: Logic while its panel is open, else the palette's workspace. */
@@ -2675,7 +2674,16 @@ export class EditorApp {
     $('ed-counts').textContent = `${tiles} tiles · ${spawns} spawns · ${pickups} pickups · ${scenario} scenario objects · ${npcs} NPC squads · ${rules} rules · ${boxes} collision boxes`;
   }
 
+  /** Environment → Sky: the backdrop's one home, kept in step with the map. */
+  private renderSkyPane(): void {
+    const el = document.getElementById('ed-sky');
+    if (!el) return;
+    el.replaceChildren();
+    this.renderBackdropPanel(el);
+  }
+
   private renderInspector(): void {
+    this.renderSkyPane();
     const el = $('ed-inspector');
     el.replaceChildren();
     const { tiles, entities } = this.selection;
@@ -2758,7 +2766,12 @@ export class EditorApp {
       desc.addEventListener('change', () => this.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
       el.append(desc);
 
-      this.renderBackdropPanel(el);
+      const sky = button('Sky, scenery & border…', () => {
+        this.setWorkspace('environment');
+        this.showPane('sky');
+      });
+      sky.title = 'The sky, distant scenery, haze and the border live in Environment → Sky';
+      el.append(sky);
       this.renderBloodPanel(el);
       this.renderPhysicsPanel(el);
       if (doc.classicStructure.tiles.some((t) => dressable(coreCatalog.get(t.tile)))) {
