@@ -556,7 +556,7 @@ export class GameView {
   /** A stylised hit from Binbun's Hit FX (godotVfx.ts): `melee` on a body, `heavy` where a railgun round lands. False before the pack is in. */
   hitFx(at: Vec3, kind: 'melee' | 'heavy'): boolean {
     const p = new Vector3(at.x, at.y, at.z);
-    return kind === 'melee' ? this.vfx.play('hit_fx', Math.random() < 0.5 ? 'vfx_hit_01' : 'vfx_hit_02', p, { scale: 0.22 }) : this.vfx.play('hit_fx', 'vfx_big_impact_01', p, { scale: 0.18 });
+    return kind === 'melee' ? this.vfx.play('hit_fx', Math.random() < 0.5 ? 'vfx_hit_01' : 'vfx_hit_02', p, { scale: 0.22 }) : this.vfx.play('hit_fx', 'vfx_big_impact_01', p, { scale: 0.4 });
   }
 
   /** A brief muzzle flash on a remote player's gun: the pack's flash for that weapon (muzzleFlash.ts), else the plain star. */

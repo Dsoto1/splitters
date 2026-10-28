@@ -377,8 +377,9 @@ export class MuzzleFlashRig {
       mesh.parent = this.root;
       mesh.renderingGroupId = this.renderingGroupId;
       mesh.billboardMode = Mesh.BILLBOARDMODE_ALL;
-      // The pack's glow is a dome from `at` back towards the muzzle: a disc at its middle, as wide as it.
-      mesh.position.z = fx.glow.at - fx.glow.height / 4;
+      // The pack's glow is a dome from `at` back towards the muzzle: a disc in its back half, where the flame is
+      // (further out, seen from behind the gun it floats ahead of the flame as a separate dot), as wide as it.
+      mesh.position.z = fx.glow.at - fx.glow.height * 0.75;
       mesh.scaling.setAll(fx.glow.radius * 2.2);
       mesh.setEnabled(false);
       this.pieces.push({ mesh, mat, layer: null, delay: 0, size: 1 });
