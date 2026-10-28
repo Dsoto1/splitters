@@ -41,6 +41,57 @@ update it when you finish a piece of work or the owner changes direction.
   version, because these are features.
 - **Nothing is in progress.** Everything above is on `main` (`7657980` and on). Open: nine portraits left to render live (soldier NPCs untinted, cyclops/oculus/imp/Nova framing) until `portraits.ts` handles them; the Host Service launcher now opens as an app window (`src/appWindow.ts`), untested on a real screen.
 
+## In flight (2026-10-28, 15:10 EDT): pick up here
+
+All of this is on the session branch `claude/launcher-ui-map-cards` (pushed) and
+on `check/candidate` (CI running). `main` is at `4718207` + the infra fixes; none
+of the list below is on `main` yet. When `check/candidate` is green,
+fast-forward `main` to it (it contains `main`).
+
+1. **Binbun VFX (CC0 packs the owner downloaded; zips not committed):**
+   - muzzle flashes `game/muzzleFlash.ts` (from `public/vfx/muzzle_flash.json` +
+     atlas), hit and explosion effects `game/godotVfx.ts` (a small Godot
+     particle/shader player for `hit_fx.json`, `explosion_fx.json`);
+     converter `tools/content/prepare-vfx.mjs` + `godot.mjs`; provenance in
+     `content/vfx*.json`, `assets-src/binbun-*`.
+   - Muzzle commit `8ac1d75` went green on `check/vfx`, but a local capture
+     (frozen clock, `?offline=arena`) showed **no flash visible in first
+     person**: the rig fires (pieces enabled, scale 0.2 at the muzzle) yet
+     nothing shows. Suspects: blades lie along the view axis (edge-on from
+     behind the gun), the front star is small, alpha math, or the atlas
+     sampling. Debug with the check-builds site (release asset of the commit)
+     served locally + Playwright (scripts were in the session scratchpad:
+     freeze `performance.now` after `view.flashRig.fire`). Don't ship until a
+     screenshot shows a flash. Hit/explosion player is untested visually.
+2. **Terrain never through floors** (`settle.ts terrainUnderFloors`, applied in
+   `loadMap` and every MapMaker edit via `withTerrainUnderFloors`): on
+   `check/terrain` (`476bd74`) e2e shard 8 failed once (outpost, canyon, teams,
+   hostcontrols, lobby, dedicatedhost); logs aren't downloadable here; re-run it
+   to tell flake from real.
+3. **MapMaker:** fold-away sidebars (Shift+[ / Shift+]), edits rebuild only what
+   changed (measured on Sandgate headless: ~170 ms per edit, ~100 ms of it the
+   terrain), faster terrain meshes, and **Paths** (`shared/map/paths.ts`,
+   `client/pathMeshes.ts`, `editor/pathTool.ts`, `setPaths` command; laid on
+   load, `loadMap(..., { forEditing: true })` in MapMaker/publish keeps them
+   apart).
+4. **Owner said "yes to all" of the MapMaker unification list (not started):**
+   1 one right-click rule (undo the tool's effect) + Select context menu;
+   2 Erase picks like Select (whole moving builds); 3 one placement rule
+   (height, snap, Shift) + one ghost preview for every kind, also while
+   dragging; 4 one rotation step table, Shift+R fine, group rotation round the
+   centre; 5 drag-to-paint for Paint/Walls/Erase/Scatter, modifiers Shift =
+   invert, Alt = pick, Ctrl = fine; 6 PgUp/PgDn only levels, [ ] only brush
+   size, a key per tool (move the sidebar keys off Shift+[ ]); 7 one hint per
+   tool in one place; 8 inspector walls/surfaces use the tools' options (glass,
+   scope); 9 one home per pane (Nature/Terrain twice, sky in Map properties),
+   undo instead of confirm(); 10 one Path tool for race road, mover routes,
+   airplane routes (Paths tool is the start). File:line notes for each came
+   from an audit of `editor/editorApp.ts` (the list is in the CHANGELOG-free
+   session; redo the audit if needed).
+5. Waiting on the owner: privacy-page contact address; Sandgate's street
+   terrain (lumpy dirt/grass in the open streets is authored paint: the owner
+   can now draw sand Paths over it); nine portraits still rendered live.
+
 ## How work flows (details in CLAUDE.md)
 
 1. Work on the session branch, or in an agent worktree that you merge into it.
