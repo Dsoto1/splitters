@@ -27,10 +27,11 @@ export async function joinAsGuest(hub: string, code: string, name: string, extra
   const g: Guest = { messages: [], bytes: 0, snapshots: 0, welcome: null, rejected: null, closed: false, send: () => undefined, close: () => peer.destroy() };
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('guest could not connect in 20 s')), 20_000);
-    peer.on('error', (e) => reject(e));
+    peer.on('error', (e) => (e as { type?: string }).type !== 'webrtc' && reject(e));
     peer.on('open', () => {
       const conn = peer.connect(PEER_PREFIX + code, { reliable: true, serialization: 'raw', metadata: { z: 1 } });
       g.send = (m) => conn.open && conn.send(JSON.stringify(m));
+      conn.on('error', () => undefined);
       conn.on('open', () => {
         clearTimeout(timer);
         g.send({ t: 'hello', protocol: PROTOCOL_VERSION, name, ...extra });

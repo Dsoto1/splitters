@@ -4,7 +4,8 @@ import type { HostConfig } from './config.ts';
 import type { HostStatus } from './host.ts';
 
 /** Crash-loop protection (MULTIPLAYER_SECURITY.md section 6): backoff 5 s doubling to 5 min; 5 crashes in 10 min stop it. */
-export const CRASH_POLICY = { firstDelayMs: 5000, maxDelayMs: 300_000, maxCrashes: 5, windowMs: 600_000, hangMs: 30_000, stopGraceMs: 8000 } as const;
+export type CrashPolicy = { firstDelayMs: number; maxDelayMs: number; maxCrashes: number; windowMs: number; hangMs: number; stopGraceMs: number };
+export const CRASH_POLICY: Readonly<CrashPolicy> = { firstDelayMs: 5000, maxDelayMs: 300_000, maxCrashes: 5, windowMs: 600_000, hangMs: 30_000, stopGraceMs: 8000 };
 
 export type ServiceState = 'stopped' | 'starting' | 'running' | 'stopping' | 'restarting' | 'crashloop';
 
@@ -48,7 +49,7 @@ export class Supervisor {
   constructor(
     private readonly spawn: Spawner,
     private readonly log: (line: string) => void = (l) => console.log(`[service] ${l}`),
-    private readonly policy = CRASH_POLICY,
+    private readonly policy: Readonly<CrashPolicy> = CRASH_POLICY,
     private readonly onChange: () => void = () => undefined,
     /** The match process's own log lines and events (joins, kicks, results). */
     private readonly onLine: (line: string, kind: 'log' | 'event') => void = (l) => console.log(l),

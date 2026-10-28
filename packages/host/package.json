@@ -11,6 +11,10 @@
     "@tiletrigger/shared": "workspace:*",
     "node-datachannel": "0.33.4",
     "peerjs": "1.5.4",
-    "tsx": "^4.20.6"
+    "tsx": "^4.20.6",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
   }
 }

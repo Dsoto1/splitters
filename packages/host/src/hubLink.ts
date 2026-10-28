@@ -57,7 +57,16 @@ export async function loadPeer(): Promise<typeof import('peerjs')> {
   g.RTCPeerConnection ??= poly.RTCPeerConnection;
   g.RTCSessionDescription ??= poly.RTCSessionDescription;
   g.RTCIceCandidate ??= poly.RTCIceCandidate;
-  if (typeof g.WebSocket !== 'function') throw new Error('this Node has no WebSocket: use Node 22 or newer');
+  // The `ws` package, not Node's own WebSocket: Node's fires no "close" when a connection can't be made
+  // (the hub is down), and PeerJS only learns it lost the hub from "close", so it would never retry.
+  const { WebSocket: Ws } = await import('ws');
+  g.WebSocket = class extends Ws {
+    constructor(url: string, protocols?: string | string[]) {
+      super(url, protocols);
+      // A failed connection is an "error" event first: without a listener Node would throw it. "close" follows.
+      this.on('error', () => undefined);
+    }
+  };
   // PeerJS ships CommonJS for Node; its ESM entry is for bundlers.
   peerModule = createRequire(import.meta.url)('peerjs') as typeof import('peerjs');
   return peerModule;
@@ -143,6 +152,8 @@ export class HubLink {
     peer.on('connection', (conn) => {
       const timer = setTimeout(() => !conn.open && conn.close(), OPEN_TIMEOUT_MS);
       timer.unref?.();
+      // A candidate that can't be used (another network's address) is reported here; the link goes on with the others.
+      conn.on('error', () => undefined);
       conn.on('open', () => {
         clearTimeout(timer);
         this.o.admit(conn);

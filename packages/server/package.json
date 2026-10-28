@@ -5,7 +5,10 @@
   "exports": {
     "./server": "./src/server.ts",
     "./ice": "./src/ice.ts",
-    "./tickets": "./src/tickets.ts"
+    "./tickets": "./src/tickets.ts",
+    "./broker": "./src/broker.ts",
+    "./lobby": "./src/lobby.ts",
+    "./auth": "./src/auth.ts"
   },
   "scripts": {
     "dev": "tsx watch src/main.ts",
