@@ -52,9 +52,10 @@ async function run(dir, port) {
   const types = new Map();
   const loaded = [];
   let navAt = null;
-  cdp.on('Network.requestWillBeSent', (e) => (navAt ??= e.timestamp));
+  const sent = new Map();
+  cdp.on('Network.requestWillBeSent', (e) => ((navAt ??= e.timestamp), sent.set(e.requestId, e.timestamp)));
   cdp.on('Network.responseReceived', (e) => types.set(e.requestId, { type: e.type, url: e.response.url }));
-  cdp.on('Network.loadingFinished', (e) => loaded.push({ ...types.get(e.requestId), bytes: e.encodedDataLength, at: e.timestamp }));
+  cdp.on('Network.loadingFinished', (e) => loaded.push({ ...types.get(e.requestId), bytes: e.encodedDataLength, at: e.timestamp, from: sent.get(e.requestId) }));
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   const start = Date.now();
@@ -79,6 +80,11 @@ async function run(dir, port) {
       }),
   );
   const total = sum(loaded);
+  // LOAD_TRACE: every request after the menu, seconds from navigation (start → end), and when Start was pressed and the match showed.
+  if (process.env.LOAD_TRACE) {
+    console.log(`  Start pressed at ${(t0 / 1000).toFixed(2)} s, in match at ${(t1 / 1000).toFixed(2)} s`);
+    for (const l of loaded.filter((x) => x.at - navAt > menuMs / 1000).sort((a, b) => a.from - b.from)) console.log(`  ${(l.from - navAt).toFixed(2).padStart(6)} → ${(l.at - navAt).toFixed(2).padStart(6)} s ${(l.bytes / 1e3).toFixed(1).padStart(8)} kB  ${l.type} ${l.url?.replace(/^.*\//, '')}`);
+  }
   if (process.env.LOAD_LIST) for (const l of before.filter((x) => x.type === 'Script')) console.log(`  ${(l.bytes / 1e3).toFixed(1).padStart(8)} kB  ${l.url.replace(/^.*\//, '')}`);
   await ctx.close();
   return { dir, menuMs, jsBytes: sum(js), jsFiles: js.length, allBytes: sum(before), jsAtPlay, playMs: t1 - t0, totalBytes: total, wallMs: Date.now() - start, errors };
