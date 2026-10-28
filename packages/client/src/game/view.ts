@@ -148,6 +148,8 @@ interface Avatar {
   glowKey?: string;
   /** Crowds: left out of drawing while outside the view (see updateAvatars). */
   culled?: boolean;
+  /** Your own body while you look through your own eyes: kept loaded, not drawn. */
+  hiddenSelf?: boolean;
 }
 
 /** How long an NPC takes to climb out of a hatch or burrow (ms), and from how deep. */
@@ -815,7 +817,29 @@ export class GameView {
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
     const seen = new Set<number>();
     for (const p of poses) {
-      if (p.slot === localSlot) continue;
+      if (p.slot === localSlot) {
+        // Your own body in first person: kept loaded but not drawn (and not animated), so switching to
+        // third person shows your character at once instead of a capsule while the model loads.
+        if (!p.alive) continue;
+        seen.add(p.slot);
+        const want = spec(p.slot);
+        const key = JSON.stringify(want);
+        let a = this.avatars.get(p.slot);
+        if (a && a.specKey !== key) {
+          this.disposeAvatar(a);
+          a = undefined;
+        }
+        if (!a) this.avatars.set(p.slot, (a = this.createAvatar(p.slot, want, key)));
+        a.hiddenSelf = true;
+        a.root.setEnabled(false);
+        a.root.position.set(p.x, p.y, p.z);
+        a.root.rotation.y = p.yaw;
+        if (a.anim instanceof CharacterAnimator) a.anim.setDormant(true);
+        a.wasAlive = true;
+        a.last = undefined;
+        a.vel = { x: 0, z: 0 };
+        continue;
+      }
       seen.add(p.slot);
       // Their body is lying as a corpse; they come back as a new avatar when they respawn.
       if (p.alive) this.lyingDead.delete(p.slot);
@@ -842,6 +866,12 @@ export class GameView {
         if (Math.hypot(p.x - a.last.x, p.z - a.last.z) > 4) a.vel = { x: 0, z: 0 };
       }
       a.last = { x: p.x, y: p.y, z: p.z, t: now };
+      if (a.hiddenSelf) {
+        // Back to third person: draw it again (it was kept loaded while hidden).
+        a.hiddenSelf = false;
+        a.root.setEnabled(!a.culled);
+        if (a.anim instanceof CharacterAnimator) a.anim.setDormant(!!a.culled);
+      }
       // A creature plays its own death and is left lying where it fell (no ragdoll).
       if (a.wasAlive && !p.alive && a.anim instanceof CreatureAnimator) {
         a.anim.update(0, { speed: 0, moveAngle: 0, airborne: false, alive: false, pitch: 0, celebrate: false });
@@ -993,12 +1023,12 @@ export class GameView {
 
   /** Remote avatars currently shown as animated characters (for tests and the stats overlay). */
   characterCount(): number {
-    return [...this.avatars.values()].filter((a) => a.anim).length;
+    return [...this.avatars.values()].filter((a) => a.anim && !a.hiddenSelf).length;
   }
 
   /** Avatars drawn with a creature body of this kind (tests: zombies in the zombie body). */
   creatureCount(kind: string): number {
-    return [...this.avatars.values()].filter((a) => a.anim instanceof CreatureAnimator && a.anim.ch.kind === kind).length;
+    return [...this.avatars.values()].filter((a) => !a.hiddenSelf && a.anim instanceof CreatureAnimator && a.anim.ch.kind === kind).length;
   }
 
   private setAvatarWeapon(a: Avatar, slot: number): void {
