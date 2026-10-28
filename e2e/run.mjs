@@ -796,7 +796,8 @@ async function canyonFlow(browser) {
   await page.click('#ed-tr-new');
   check(await page.evaluate(() => !!window.__editor.doc.terrain), 'MapMaker creates terrain');
   await clickTool(page, '[data-tool="terrain:raise"]');
-  const p = await page.evaluate(() => window.__editor.view.project({ x: 0, y: 0, z: 0 }));
+  // Clear of the new map's starting room (ground under a floor stays below it).
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 18, y: 0, z: 0 }));
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
   // Hold until the hill has grown (headless frame rates vary), at most 6 s.
