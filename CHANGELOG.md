@@ -8,6 +8,9 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Fixes**
+- Safari: offline and MapMaker TEST matches no longer fail with "undefined is not an object (evaluating 'o.rawintegrationparameters_new')". The match worker's entry is now a small loader, so Safari no longer loads a second, never-started copy of the physics engine; CI checks no chunk imports from it.
+
 **MapMaker**
 - Fixed: placed props drew white (untextured) once you moved on to placing a different prop: the placement preview disposed the materials and textures every copy of its model shares.
 
