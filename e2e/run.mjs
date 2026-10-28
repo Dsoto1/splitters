@@ -636,6 +636,21 @@ async function offlineFlow(browser) {
   check(await planDrawn(page, '.map-card .map-thumb.plan canvas'), 'the plan is drawn top-down');
   await page.waitForFunction(() => document.querySelector('.setup-preview .pic img')?.naturalWidth > 0, null, { timeout: T(10000) }).catch(() => {});
   check((await thumbLoaded(page, '.setup-preview .pic img')) && (await planDrawn(page, '.setup-preview .plan canvas')), 'match setup shows the picture and the plan side by side');
+  // The list's mode tabs and search narrow it; every card stays the same height.
+  const heights = await page.$$eval('#map-cards .map-card', (cs) => new Set(cs.map((c) => Math.round(c.getBoundingClientRect().height))).size);
+  check(heights === 1, `every map card is the same height (${heights} different heights)`);
+  await page.click('#map-tabs [data-mode="core.ctf"]');
+  const ctf = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
+  check(ctf > 0 && ctf < all.length, `the Capture the Flag tab lists only its maps (${ctf} of ${all.length})`);
+  await page.click('#map-tabs [data-mode="all"]');
+  await page.fill('#map-search', 'sandg');
+  const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
+  check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
+  await page.fill('#map-search', '');
+  // The setup goes step by step: picking a mode folds it into a line and opens the players.
+  await page.click('#arcade-modes .mode-chip');
+  const steps = await page.evaluate(() => ({ mode: document.getElementById('step-mode')?.className, players: document.getElementById('step-players')?.className }));
+  check(/done/.test(steps.mode ?? '') && /open/.test(steps.players ?? ''), `picking a mode finishes that step and opens the players (${JSON.stringify(steps)})`);
   await page.setViewportSize({ width: 960, height: 540 });
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
@@ -1129,6 +1144,7 @@ async function teamsFlow(browser) {
   await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10 })));
   await page.goto(CLIENT);
   await page.click('#nav-play');
+  await page.click('#step-players .step-head');
   await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
@@ -1168,6 +1184,7 @@ async function customSetupFlow(browser) {
   await page.reload();
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-play');
+  await page.click('#step-players .step-head');
   await page.waitForSelector('#arcade-team-cards');
   const setSize = (i, v) =>
     page.evaluate(([i, v]) => {
@@ -1195,6 +1212,7 @@ async function customSetupFlow(browser) {
   await page.reload();
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-play');
+  await page.click('#step-players .step-head');
   await page.waitForSelector('#arcade-team-cards');
   const remembered = await total();
   check(changed.startsWith('1v1') && remembered.startsWith('1v1'), `the last setup is remembered across a reload (${changed} → ${remembered})`);

@@ -62,6 +62,7 @@ import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STY
 import type { PortraitRenderer } from './portraits.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
 import { PLAYLISTS } from '../playlists.ts';
+import { MODE_SHORT, modeIcon } from './modeIcons.ts';
 
 /** The "Inspired by …" line for a homage map (nothing for our own designs). */
 function inspired(key: string): HTMLElement[] {
@@ -84,13 +85,67 @@ function cardThumbs(m: ArcadeMap): MapThumbs {
  * even; the map's blurb, modes and details live in the panel beside the list.
  * `note` is a short tag over the picture ("Playing now").
  */
-function mapCard(m: ArcadeMap, on: boolean, note?: string): { card: HTMLButtonElement; draw: () => void } {
+function mapCard(m: ArcadeMap, on: boolean, note?: string, fav?: { on: boolean; toggle: () => boolean }): { card: HTMLButtonElement; draw: () => void } {
   const pic = cardThumbs(m);
-  const card = el('button', { class: `map-card${on ? ' on' : ''}`, title: m.metadata.name }, pic.pic, el('div', { class: 'meta' }, el('b', { textContent: m.metadata.name }), pic.plan));
+  // One row of short mode tags; more than fit become "+N" (the card never grows).
+  const shown = m.modes.slice(0, 3);
+  const tags = el('span', { class: 'card-modes' }, ...shown.map((x) => el('i', { textContent: MODE_SHORT[x] })), ...(m.modes.length > shown.length ? [el('i', { class: 'more', textContent: `+${m.modes.length - shown.length}`, title: m.modes.slice(3).map((x) => MODE_LABEL[x]).join(', ') })] : []));
+  const card = el('button', { class: `map-card${on ? ' on' : ''}`, title: m.metadata.name }, pic.pic, el('div', { class: 'meta' }, el('span', { class: 'meta-text' }, el('b', { textContent: m.metadata.name }), tags), pic.plan));
   if (note) card.append(el('span', { class: 'card-note', textContent: note }));
+  if (fav) {
+    // A span, not a button: buttons can't hold buttons.
+    const star = el('span', { class: `card-fav${fav.on ? ' on' : ''}`, role: 'button', tabIndex: 0, title: 'Favourite', textContent: fav.on ? '★' : '☆' });
+    star.setAttribute('aria-pressed', String(fav.on));
+    const flip = (e: Event) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const now = fav.toggle();
+      star.classList.toggle('on', now);
+      star.textContent = now ? '★' : '☆';
+      star.setAttribute('aria-pressed', String(now));
+    };
+    star.addEventListener('click', flip);
+    star.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && flip(e));
+    card.append(star);
+  }
   card.dataset.map = m.key;
   return { card, draw: pic.draw };
 }
+
+/** Maps the Featured sort puts first and badges (the home screen shows the first). */
+const FEATURED_MAPS: readonly string[] = ['sandgate', 'canyon', 'citadel'];
+
+/** How the map list is shown (kept in this browser). */
+interface MapBrowsePrefs {
+  sort: 'featured' | 'name' | 'size' | 'favs';
+  view: 'grid' | 'list';
+  favs: string[];
+}
+const BROWSE_KEY = 'tiletrigger.mapBrowse';
+function loadBrowsePrefs(): MapBrowsePrefs {
+  const d: MapBrowsePrefs = { sort: 'featured', view: 'grid', favs: [] };
+  try {
+    const p = JSON.parse(localStorage.getItem(BROWSE_KEY) ?? '{}') as Partial<MapBrowsePrefs>;
+    return {
+      sort: (['featured', 'name', 'size', 'favs'] as const).find((s) => s === p.sort) ?? d.sort,
+      view: p.view === 'list' ? 'list' : 'grid',
+      favs: Array.isArray(p.favs) ? p.favs.filter((x): x is string => typeof x === 'string').slice(0, 200) : [],
+    };
+  } catch {
+    return d;
+  }
+}
+function saveBrowsePrefs(p: MapBrowsePrefs): void {
+  try {
+    localStorage.setItem(BROWSE_KEY, JSON.stringify(p));
+  } catch {
+    // This page only.
+  }
+}
+
+/** Match setup's steps, in order: the one open is where you are. */
+type SetupStep = 'mode' | 'players' | 'bots' | 'rules' | 'done';
+const STEP_ORDER: readonly SetupStep[] = ['mode', 'players', 'bots', 'done'];
 
 /** Draw each card's plan once it scrolls into view in `root` (a long list draws only what is seen). */
 function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void {
@@ -388,7 +443,7 @@ export class FrontEnd {
       b.addEventListener('click', item.act);
       nav.append(b);
     });
-    const featured = this.maps.find((m) => m.key === 'sandgate') ?? this.maps[0]!;
+    const featured = this.maps.find((m) => m.key === FEATURED_MAPS[0]) ?? this.maps[0]!;
     const featuredPic = mapThumbs(featured, !featured.group);
     featuredPic.pic.classList.add('featured-pic');
     featuredPic.plan.classList.add('card-plan');
@@ -448,6 +503,12 @@ export class FrontEnd {
   private setupPanel: HTMLElement | null = null;
   /** The saved setup loaded last (its name), to show whether the setup still matches it. */
   private setupName: string | null = lastSetup();
+  /** The map list's mode tab and search (this visit) and its sort, view and favourites (kept). */
+  private mapFilter: GameMode | 'all' = 'all';
+  private mapQuery = '';
+  private readonly browse = loadBrowsePrefs();
+  /** The setup step that's open; the rest show a line each. */
+  private step: SetupStep = 'mode';
 
   private currentMap(): ArcadeMap {
     return this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
@@ -489,35 +550,128 @@ export class FrontEnd {
   }
 
   private arcade(): HTMLElement {
-    const current = this.currentMap();
-    const cards = el('div', { class: 'map-cards' });
+    const cards = el('div', { class: `map-cards${this.browse.view === 'list' ? ' list' : ''}`, id: 'map-cards' });
     // Picking a map redraws the setup only: the list stays where it was.
     cards.addEventListener('scroll', () => (this.mapScroll = cards.scrollTop), { passive: true });
     requestAnimationFrame(() => (cards.scrollTop = this.mapScroll));
-    // Plans are drawn as their cards scroll into view.
-    const lazy = lazyPlans(cards);
-    let group: string | undefined;
-    for (const m of this.maps) {
-      if (m.group !== group) {
-        group = m.group;
-        if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
-      }
-      const { card, draw } = mapCard(m, m.key === current.key);
-      card.addEventListener('click', () => {
-        this.pickMap(m.key);
-        this.saveSetup();
-        cards.querySelectorAll('.map-card.on').forEach((c) => c.classList.remove('on'));
-        card.classList.add('on');
-        this.setupScroll = 0;
-        this.refreshSetup();
+
+    // ---- the list's controls: a tab per mode, search, sort, grid or list
+    const used = GAME_MODES.filter((g) => this.maps.some((m) => m.modes.includes(g)));
+    if (this.mapFilter !== 'all' && !used.includes(this.mapFilter)) this.mapFilter = 'all';
+    const tabs = el('div', { class: 'map-tabs', id: 'map-tabs', role: 'tablist' });
+    const drawTabs = () =>
+      tabs.replaceChildren(
+        ...(['all', ...used] as const).map((f) => {
+          const b = el('button', { type: 'button', class: `map-tab${f === this.mapFilter ? ' on' : ''}`, textContent: f === 'all' ? 'All maps' : MODE_LABEL[f], role: 'tab' });
+          b.setAttribute('aria-selected', String(f === this.mapFilter));
+          b.dataset.mode = f;
+          b.addEventListener('click', () => {
+            this.mapFilter = f;
+            this.mapScroll = 0;
+            drawTabs();
+            drawCards();
+          });
+          return b;
+        }),
+      );
+    const search = el('input', { type: 'search', id: 'map-search', placeholder: 'Search maps…', value: this.mapQuery, maxLength: 40, autocomplete: 'off' });
+    search.setAttribute('aria-label', 'Search maps');
+    search.addEventListener('input', () => {
+      this.mapQuery = search.value;
+      drawCards();
+    });
+    const sort = el('select', { id: 'map-sort', title: 'Sort maps' }, ...([['featured', 'Featured'], ['name', 'A–Z'], ['size', 'Size'], ['favs', 'Favourites']] as const).map(([v, t]) => el('option', { value: v, textContent: t, selected: v === this.browse.sort })));
+    sort.addEventListener('change', () => {
+      this.browse.sort = sort.value as MapBrowsePrefs['sort'];
+      saveBrowsePrefs(this.browse);
+      drawCards();
+    });
+    const viewBtn = (v: MapBrowsePrefs['view'], glyph: string, label: string) => {
+      const b = el('button', { type: 'button', class: `view-btn${this.browse.view === v ? ' on' : ''}`, textContent: glyph, title: label });
+      b.setAttribute('aria-label', label);
+      b.dataset.view = v;
+      b.addEventListener('click', () => {
+        this.browse.view = v;
+        saveBrowsePrefs(this.browse);
+        cards.classList.toggle('list', v === 'list');
+        tools.querySelectorAll('.view-btn').forEach((x) => x.classList.toggle('on', (x as HTMLElement).dataset.view === v));
       });
-      cards.append(card);
-      lazy(card, draw);
-    }
+      return b;
+    };
+    const tools = el('div', { class: 'map-tools' }, search, sort, el('div', { class: 'view-pick' }, viewBtn('grid', '▦', 'Grid'), viewBtn('list', '☰', 'List')));
+
+    const drawCards = () => {
+      const current = this.currentMap();
+      const lazy = lazyPlans(cards);
+      const q = this.mapQuery.trim().toLowerCase();
+      const favs = new Set(this.browse.favs);
+      const built = this.maps.map((m, i) => ({ m, i }));
+      const shown = built.filter(({ m }) => (this.mapFilter === 'all' || m.modes.includes(this.mapFilter)) && (!q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q))));
+      const rank = (key: string) => {
+        const f = FEATURED_MAPS.indexOf(key);
+        return f < 0 ? FEATURED_MAPS.length : f;
+      };
+      const by = this.browse.sort;
+      // Your own maps stay under their heading after the built-in ones, whatever the sort.
+      shown.sort((a, b) =>
+        (a.m.group ?? '').localeCompare(b.m.group ?? '') ||
+        (by === 'favs' ? Number(favs.has(b.m.key)) - Number(favs.has(a.m.key)) : 0) ||
+        (by === 'featured' || by === 'favs' ? rank(a.m.key) - rank(b.m.key) : 0) ||
+        (by === 'size' ? a.m.metadata.recommendedPlayers.max - b.m.metadata.recommendedPlayers.max : 0) ||
+        (by === 'name' ? a.m.metadata.name.localeCompare(b.m.metadata.name) : a.i - b.i),
+      );
+      cards.replaceChildren();
+      let group: string | undefined;
+      for (const { m } of shown) {
+        if (m.group !== group) {
+          group = m.group;
+          if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
+        }
+        const featured = !m.group && FEATURED_MAPS.includes(m.key);
+        const { card, draw } = mapCard(m, m.key === current.key, featured ? 'Featured' : undefined, {
+          on: favs.has(m.key),
+          toggle: () => {
+            const now = !this.browse.favs.includes(m.key);
+            this.browse.favs = now ? [...this.browse.favs, m.key] : this.browse.favs.filter((k) => k !== m.key);
+            saveBrowsePrefs(this.browse);
+            return now;
+          },
+        });
+        card.addEventListener('click', () => {
+          this.pickMap(m.key);
+          this.saveSetup();
+          cards.querySelectorAll('.map-card.on').forEach((c) => c.classList.remove('on'));
+          card.classList.add('on');
+          this.setupScroll = 0;
+          // A new map starts the steps again at its mode (a filtered list already picked one it has).
+          if (this.mapFilter !== 'all' && m.modes.includes(this.mapFilter) && this.setup.mode !== this.mapFilter) this.setMode(this.mapFilter);
+          this.step = this.mapFilter !== 'all' ? 'players' : 'mode';
+          this.refreshSetup();
+        });
+        cards.append(card);
+        lazy(card, draw);
+      }
+      if (!shown.length) cards.append(el('p', { class: 'map-empty', textContent: q ? `No maps match "${this.mapQuery.trim()}".` : 'No maps for this mode.' }));
+    };
+    drawTabs();
+    drawCards();
     const panel = el('div', { class: 'setup panel', id: 'match-setup' });
     this.setupPanel = panel;
     this.fillSetup(panel);
-    return el('div', { class: 'screen play' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Match <em>Setup</em>' })), el('div', { class: 'arcade' }, cards, panel));
+    return el(
+      'div',
+      { class: 'screen play' },
+      el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Match <em>Setup</em>' })),
+      el('div', { class: 'arcade' }, el('div', { class: 'map-browse' }, el('div', { class: 'map-bar' }, tabs, tools), cards), panel),
+    );
+  }
+
+  /** Move the setup on from `from` to the next step (skipping ones already behind you). */
+  private nextStep(from: SetupStep): void {
+    const i = STEP_ORDER.indexOf(from);
+    this.step = i < 0 ? 'done' : STEP_ORDER[i + 1] ?? 'done';
+    this.setupScroll = 0;
+    this.refreshSetup();
   }
 
   /** The setup panel: map preview, the core settings (mode, players, bots), folded extras, saved setups, Start and Host. */
@@ -543,38 +697,66 @@ export class FrontEnd {
     const fold = (id: string, title: string, badge: string | undefined, ...children: HTMLElement[]) =>
       foldEl({ id, title, badge, open: this.folds.has(id), onToggle: (open) => (open ? this.folds.add(id) : this.folds.delete(id)) }, ...children);
 
-    // ---- header: the map's picture and top-down plan, name, what you're about to play
+    // ---- header: the map's picture with its top-down plan, name, what it is, how many and how long
     const thumbs = mapThumbs(map, !current.group);
     requestAnimationFrame(thumbs.draw);
+    // The list is hidden on small screens: there, this picks the map.
     const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
     mapSelect.addEventListener('change', () => {
       this.pickMap(mapSelect.value);
       this.saveSetup();
       this.setupScroll = 0;
+      this.step = 'mode';
       this.go('play');
     });
     const about = [map.metadata.description, map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(map.metadata.author) ? `Map by ${map.metadata.author}` : '', `Made for ${map.metadata.recommendedPlayers.min}–${map.metadata.recommendedPlayers.max} players; ${map.entities.filter((e) => e.kind === 'spawn').length} spawn points.`].filter(Boolean).join('\n\n');
-    const summary = `${MODE_LABEL[s.mode]} · ${team ? `${setupTeams(s, map).join('v')} · ` : ''}${players} player${players === 1 ? '' : 's'}${coop ? '' : forts ? ` · ${s.fortCycles ?? 1} × (${s.fortBuild ?? 2.5} + ${s.fortCombat ?? 5} min)` : ` · ${s.minutes ? `${s.minutes} min` : 'no time limit'}`}`;
+    const sizes = team ? setupTeams(s, map) : [];
+    const rec = map.metadata.recommendedPlayers;
+    const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : race ? `${s.raceLaps ?? map.track?.laps ?? 3} laps` : s.minutes ? `~${s.minutes} min` : 'No time limit';
+    const facts = el(
+      'p',
+      { class: 'setup-facts', id: 'setup-summary' },
+      el('span', { class: 'fact-players', title: `Made for ${rec.min}–${rec.max} players` }, team ? `${sizes.join('v')} · ${players} players` : `${players} player${players === 1 ? '' : 's'}`),
+      el('span', { class: 'fact-time', title: coop ? 'Ends through the mission' : 'Time limit' }, length),
+    );
+    const featured = !current.group && FEATURED_MAPS.includes(current.key);
     const head = el(
       'div',
       { class: 'setup-head' },
       thumbPair(thumbs, 'setup-preview'),
-      el('div', { class: 'setup-title' }, el('small', { textContent: 'Map' }), el('h3', {}, map.metadata.name, infoTip(about)), ...inspired(current.key), el('p', { class: 'setup-blurb', textContent: current.blurb }), mapSelect, el('p', { class: 'setup-sub', id: 'setup-summary', textContent: summary })),
+      el(
+        'div',
+        { class: 'setup-title' },
+        el('small', { textContent: featured ? 'Featured map' : current.group ? `${current.group} map` : 'Map' }),
+        el('h3', {}, map.metadata.name, infoTip(about)),
+        ...inspired(current.key),
+        el('p', { class: 'setup-blurb', textContent: current.blurb }),
+        facts,
+        mapSelect,
+      ),
     );
 
-    // ---- mode: the map's modes with a line each; the rest greyed with why
+    // ---- mode: a tile per mode the map has (an icon and the name), the selected one's line below, the rest greyed with why
     const options = modeOptions(map, current.modes);
     const modeChips = el(
       'div',
       { class: 'mode-pick', id: 'arcade-modes' },
       ...current.modes.map((m) => {
-        const b = el('button', { type: 'button', class: `mode-chip${m === s.mode ? ' on' : ''}` }, el('b', { textContent: MODE_LABEL[m] }), el('small', { textContent: MODE_LINES[m] }));
+        const b = el('button', { type: 'button', class: `mode-chip${m === s.mode ? ' on' : ''}` }, modeIcon(m), el('b', { textContent: MODE_LABEL[m] }));
         b.dataset.mode = m;
-        b.dataset.tip = MODE_TIPS[m] ?? MODE_LABEL[m];
-        b.addEventListener('click', () => m !== s.mode && this.setMode(m));
+        b.dataset.tip = MODE_TIPS[m] ?? MODE_LINES[m];
+        b.setAttribute('aria-pressed', String(m === s.mode));
+        b.addEventListener('click', () => {
+          // Picking the mode finishes this step: on to the players.
+          this.step = 'players';
+          this.setupScroll = 0;
+          if (m !== s.mode) this.setMode(m);
+          else this.refreshSetup();
+        });
         return b;
       }),
     );
+    const modeLine = el('p', { class: 'setup-hint mode-line', textContent: MODE_LINES[s.mode] });
     const off = options.filter((o) => !o.ok);
     const unavailable = off.length
       ? [el('div', { class: 'mode-off' }, el('span', { textContent: 'Not on this map:' }), ...off.map((o) => {
@@ -678,7 +860,6 @@ export class FrontEnd {
       : [settingRow(scoreRow.label, coop ? 'Co-op and Zombies end through the mission.' : 'The match ends when someone reaches this.', stepper({ value: s.scoreLimit, min: scoreRow.min, max: scoreRow.max, step: scoreRow.step, id: 'arcade-score', onChange: (v) => this.change((x) => (x.scoreLimit = v)) }), { disabled: coop ? `${MODE_LABEL[s.mode]} ends through the mission, not a score.` : null })];
     const rulesFold = fold('setup-rules', 'Rules', count(extras), ...toWin, timeRow, ...extras.map(rowOf));
     rulesFold.querySelector('summary')!.append(reset);
-    const sizes = team ? setupTeams(s, map) : [];
     const perTeam = team
       ? [el('p', { class: 'setup-hint', textContent: `Bots per team: ${mapTeams(map, sizes.length).map((t, i) => `${s.teamNames?.[i] || t.name} ${sizes[i]! - ((s.assign === 'fixed' ? Math.min(sizes.length - 1, s.playerTeam ?? 0) : 0) === i && s.assign !== 'random' ? 1 : 0)}`).join(' · ')}${s.assign === 'random' ? ' (one less wherever you land)' : ''}. Move bots by dragging their pips between teams.` })]
       : [];
@@ -734,22 +915,59 @@ export class FrontEnd {
     const same = !!match && JSON.stringify(match.setup) === JSON.stringify(this.setup);
     const savedFold = fold('setup-saved', 'Saved setups', this.setupName ? `${this.setupName}${same ? '' : ' (changed)'}` : `${saved.length} saved`, el('div', { class: 'saved-row' }, pick, del), el('div', { class: 'saved-row' }, nameIn, save));
 
+    // ---- the steps: the open one shows its settings, the others a line each (click one to go back to it)
+    const RANK: Record<SetupStep, number> = { mode: 0, players: 1, bots: 2, rules: 3, done: 4 };
+    const stepEl = (key: SetupStep, n: number, title: string, summary: (Node | string)[], o: { warn?: boolean; next?: string | null }, ...content: HTMLElement[]) => {
+      const open = this.step === key;
+      const done = !open && key !== 'rules' && RANK[key] < RANK[this.step];
+      const headBtn = el(
+        'button',
+        { type: 'button', class: 'step-head' },
+        el('span', { class: 'step-num', textContent: done ? '✓' : String(n) }),
+        el('h4', { textContent: title }),
+        el('span', { class: `step-sum${o.warn ? ' warn' : ''}` }, ...summary),
+        el('span', { class: 'step-caret', textContent: open ? '▾' : '▸' }),
+      );
+      headBtn.setAttribute('aria-expanded', String(open));
+      headBtn.addEventListener('click', () => {
+        if (open) return this.nextStep(key === 'rules' ? 'bots' : key);
+        this.step = key;
+        this.refreshSetup();
+      });
+      const sec = el('section', { class: `step${open ? ' open' : ''}${done ? ' done' : ''}`, id: `step-${key}` }, headBtn);
+      if (open) {
+        const next = el('button', { type: 'button', class: 'step-next', textContent: o.next ?? 'Done' });
+        next.addEventListener('click', () => this.nextStep(key === 'rules' ? 'bots' : key));
+        sec.append(el('div', { class: 'step-body' }, ...content, el('div', { class: 'step-foot' }, next)));
+      }
+      return sec;
+    };
+    const assignLabel = { balanced: 'Balanced', random: 'Random team', fixed: 'Fixed team' }[s.assign ?? 'balanced'];
+    const playersSummary = team ? `${sizes.join('v')} · ${assignLabel}` : coop ? `You + ${s.bots} squadmate${s.bots === 1 ? '' : 's'}` : `You + ${s.bots} bot${s.bots === 1 ? '' : 's'}`;
+    const skillLabel = { easy: 'Easy', normal: 'Normal', hard: 'Hard' }[s.skill] ?? s.skill;
+    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}`;
+    const modeSet = modeRows.length ? [fold('setup-mode', `${MODE_LABEL[s.mode]} settings`, 'mode settings', ...modeRows)] : [];
     const body = el(
       'div',
       { class: 'setup-body' },
-      el('section', {}, el('h4', { textContent: 'Mode' }), modeChips, ...unavailable),
-      el('section', { id: 'setup-players' }, el('h4', { textContent: coop ? 'Squad' : 'Players' }), ...playerRows, ...(notes.length ? [noteList(notes)] : [])),
-      el('section', {}, el('h4', { textContent: 'Bots' }), settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill'))),
-      ...(modeRows.length ? [fold('setup-mode', MODE_LABEL[s.mode], 'mode settings', ...modeRows)] : []),
-      rulesFold,
-      fold('setup-bots', 'More bot options', count(bots), ...bots.map(rowOf), ...perTeam),
-      fold('setup-arsenal', 'Weapons, pickups & vehicles', count(arsenal), ...arsenal.map(rowOf)),
-      ...perf,
+      stepEl('mode', 1, 'Game mode', [modeIcon(s.mode), MODE_LABEL[s.mode]], { next: 'Next: players' }, modeChips, modeLine, ...unavailable),
+      stepEl('players', 2, coop ? 'Squad' : 'Players & teams', [playersSummary], { warn: notes.some((x) => x.level === 'warn'), next: 'Next: bots' }, ...playerRows, ...(notes.length ? [noteList(notes)] : [])),
+      stepEl(
+        'bots',
+        3,
+        'Bots',
+        [botsSummary],
+        { next: 'Done' },
+        settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill')),
+        ...bots.map(rowOf),
+        ...perTeam,
+      ),
+      stepEl('rules', 4, 'Advanced rules', [changed.length ? `${changed.length} changed` : 'Standard'], { next: 'Done' }, ...modeSet, rulesFold, fold('setup-arsenal', 'Weapons, pickups & vehicles', count(arsenal), ...arsenal.map(rowOf)), ...perf),
       savedFold,
     );
     requestAnimationFrame(() => (body.scrollTop = this.setupScroll));
     body.addEventListener('scroll', () => (this.setupScroll = body.scrollTop), { passive: true });
-    const start = el('button', { type: 'button', class: 'primary go', id: 'arcade-start', title: 'Start the match offline: you and the bots (Enter)' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
+    const start = el('button', { type: 'button', class: `primary go${this.step === 'done' ? ' ready' : ''}`, id: 'arcade-start', title: 'Start the match offline: you and the bots (Enter)' }, el('span', { textContent: 'Start match' }), el('kbd', { class: 'a', textContent: '↵' }));
     start.addEventListener('click', () => this.start());
     const host = el('button', { type: 'button', class: 'go host', id: 'arcade-host', title: 'Start the match and open a join code so friends can play from their browsers (they take bots\' places). Esc → Host tab shows the code and invite link.' }, el('span', { textContent: 'Host' }));
     const playlist = s.mode === 'core.coop' && !!s.playlist;
