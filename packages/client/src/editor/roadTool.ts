@@ -306,7 +306,7 @@ export class RoadTool {
       set('Pit lane', { pit: [r(near.sample.x + near.sample.dz * off), r(near.sample.y), r(near.sample.z - near.sample.dx * off)] });
     });
     btn('ed-road-remove', 'Remove road', 'Delete the whole track', () => {
-      if (confirm('Remove the race track?')) this.commit('Remove road', null);
+      if (this.commit('Remove road', null)) this.host.toast('Race track removed · Ctrl+Z brings it back');
     });
     el.append(buttons);
   }

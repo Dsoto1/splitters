@@ -462,7 +462,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-publish-dialog .ed-publish-versions li { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
 #ed-library .official > button:first-of-type { border-color: var(--orange); }
 
-/* Collapsible sidebars: a tab on each panel's inner edge folds it away (Shift+[ and Shift+]); remembered in this browser. */
+/* Collapsible sidebars: a tab on each panel's inner edge folds it away (Backslash and Shift+Backslash); remembered in this browser. */
 #editor.pal-collapsed { --ed-pal-w: 0px; }
 #editor.right-collapsed { --ed-right-w: 0px; }
 #editor.pal-collapsed #ed-palette, #editor.right-collapsed #ed-right { display: none; }

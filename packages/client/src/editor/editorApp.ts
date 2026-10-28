@@ -647,7 +647,7 @@ export class EditorApp {
 
   // ---------------------------------------------------------------- sidebars
 
-  /** Fold the palette or the side panel away (and back): their tabs, Shift+[ and Shift+]; remembered in this browser. */
+  /** Fold the palette or the side panel away (and back): their tabs, Backslash and Shift+Backslash; remembered in this browser. */
   private setupSidebars(): void {
     const root = $('editor');
     const key = 'tiletrigger.editor.sidebars';
@@ -662,7 +662,7 @@ export class EditorApp {
       const btn = $(side === 'pal' ? 'ed-pal-toggle' : 'ed-right-toggle');
       const name = side === 'pal' ? 'the palette' : 'the side panel';
       btn.textContent = (side === 'pal') === collapsed ? '›' : '‹';
-      btn.title = `${collapsed ? 'Show' : 'Hide'} ${name} (Shift+${side === 'pal' ? '[' : ']'})`;
+      btn.title = `${collapsed ? 'Show' : 'Hide'} ${name} (${side === 'pal' ? '\\' : 'Shift+\\'})`;
       btn.setAttribute('aria-label', `${collapsed ? 'Show' : 'Hide'} ${name}`);
       btn.setAttribute('aria-expanded', String(!collapsed));
     };
@@ -750,7 +750,7 @@ export class EditorApp {
     $('ed-tb-place-what').textContent = this.lastPlace ? this.toolName(this.lastPlace) : '';
     const hints: Record<Tool['kind'], [string, string]> = {
       select: ['Select', 'Left-click picks what is outlined in cyan · Shift+click adds · drag moves · Del deletes · R rotates · Ctrl+D duplicates'],
-      erase: ['Erase', 'Left-click deletes what is outlined in red: tiles on this level, props, NPCs, items, doors, traps, blocks, water… · Ctrl+Z brings it back'],
+      erase: ['Erase', 'Left-click deletes what is outlined in red: tiles on this level, props, NPCs, items, doors, traps, blocks, water…, a whole moving build (Alt: one piece) · Ctrl+Z brings it back'],
       tile: ['Place', 'Left-click places the green piece · R rotates it · right-click erases · PgUp/PgDn changes level'],
       spawn: ['Place', 'Left-click places a player spawn · R turns it 45° · right-click erases'],
       pickup: ['Place', 'Left-click places the pickup · right-click erases'],
@@ -925,11 +925,13 @@ export class EditorApp {
     }
   }
 
-  private eraseAtHover(): void {
+  /** Erase what's under the pointer, picked the way Select picks it: a whole moving build (Alt: just that piece). */
+  private eraseAtHover(single = false): void {
     const hit = this.pick();
     if (!hit) return this.toast(`Nothing to erase here on ${levelName(this.level)}`, true);
-    const sel = hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : { tiles: [], entities: [hit.id] };
-    const name = this.targetName(hit);
+    const group = hit.kind === 'entity' && !single ? moverGroupOf(this.doc, hit.id) : null;
+    const sel = hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : { tiles: [], entities: group ?? [hit.id] };
+    const name = group && group.length > 1 ? 'moving build' : this.targetName(hit);
     if (this.run(`Erase ${name}`, deleteCommand(this.doc, sel))) this.toast(`Erased ${name} · Ctrl+Z to undo`);
   }
 
@@ -1367,7 +1369,7 @@ export class EditorApp {
       if (this.tool.kind === 'edge') return this.edgeAtHover(this.tool.style);
       if (this.tool.kind === 'terrain') return this.startStroke(e.shiftKey);
       if (this.tool.kind === 'scatter') return this.scatterAtHover(this.tool.set, e.altKey);
-      if (this.tool.kind === 'erase') return this.eraseAtHover();
+      if (this.tool.kind === 'erase') return this.eraseAtHover(e.altKey);
       if (this.tool.kind === 'road') return this.road.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind === 'path') return this.paths.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind !== 'select') return this.placeAtHover();
@@ -1409,7 +1411,7 @@ export class EditorApp {
           this.paths.erase(this.hoverPoint);
         } else if (wasClick && this.tool.kind !== 'select' && this.tool.kind !== 'terrain' && this.tool.kind !== 'erase') {
           this.updatePointer(e.clientX, e.clientY);
-          this.eraseAtHover();
+          this.eraseAtHover(e.altKey);
         }
         return;
       }
@@ -1461,8 +1463,9 @@ export class EditorApp {
         e.preventDefault();
         return;
       }
-      if (e.shiftKey && (e.code === 'BracketLeft' || e.code === 'BracketRight')) {
-        this.toggleSidebar(e.code === 'BracketLeft' ? 'pal' : 'right');
+      // \ folds the palette away (and back), Shift+\ the side panel.
+      if (e.code === 'Backslash') {
+        this.toggleSidebar(e.shiftKey ? 'right' : 'pal');
         e.preventDefault();
         return;
       }
@@ -1518,17 +1521,20 @@ export class EditorApp {
           if (this.tool.kind === 'path' && this.paths.deleteSelected()) break;
           this.deleteSelection();
           break;
+        // One meaning per key: PgUp/PgDn change the level (Shift: move the selection a level), [ ] the brush size.
         case 'PageUp':
-        case 'BracketRight':
-          if ((this.tool.kind === 'terrain' || this.tool.kind === 'scatter') && e.code === 'BracketRight') this.setBrushRadius(this.brushRadius + 2);
-          else if (e.shiftKey) this.nudge(0, 0, 1);
+          if (e.shiftKey) this.nudge(0, 0, 1);
           else this.setLevel(this.level + 1);
           break;
         case 'PageDown':
-        case 'BracketLeft':
-          if ((this.tool.kind === 'terrain' || this.tool.kind === 'scatter') && e.code === 'BracketLeft') this.setBrushRadius(this.brushRadius - 2);
-          else if (e.shiftKey) this.nudge(0, 0, -1);
+          if (e.shiftKey) this.nudge(0, 0, -1);
           else this.setLevel(this.level - 1);
+          break;
+        case 'BracketRight':
+          if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius + 2);
+          break;
+        case 'BracketLeft':
+          if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius - 2);
           break;
         case 'ArrowUp':
           this.nudge(0, 1, 0);
@@ -2196,7 +2202,9 @@ export class EditorApp {
     });
     for (const m of TERRAIN_MATERIALS) $<HTMLSelectElement>('ed-tr-new-ground').append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
     $('ed-tr-remove').addEventListener('click', () => {
-      if (confirm('Remove the terrain from this map?')) this.setTerrain('Remove terrain', null);
+      // Undoable like every edit (Ctrl+Z), so no question first.
+      this.setTerrain('Remove terrain', null);
+      this.toast('Terrain removed · Ctrl+Z brings it back');
     });
     $('ed-tr-cliffs').addEventListener('click', () => {
       if (this.doc.terrain) this.setTerrain('Paint cliffs as stone', paintSlopes(this.doc.terrain, 35, 'stone'));
