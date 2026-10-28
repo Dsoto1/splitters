@@ -27,7 +27,7 @@ update it when you finish a piece of work or the owner changes direction.
     region-sorted game browser, the online line in the Tab scoreboard, join
     limits and idle kick on every host (on `main` at `c3d6f27`; the box needs
     `infra/deploy-multiplayer.sh --owner …` rerun for `PROFILES_DIR`);
-  - on `check/candidate` (CI pending at the time of writing): shipped
+  - shipped
     character portraits (`tools/content/capture-portraits.mjs`, the
     "Capture portraits" workflow: run it once this is on `main`, then review
     and merge its `check/portraits` branch), the start-up loading screen
@@ -39,7 +39,7 @@ update it when you finish a piece of work or the owner changes direction.
 
   A 0.4.0 release is reasonable once the owner has tried the launcher. A minor
   version, because these are features.
-- **In progress:** CI on `check/candidate` for the batch above; then fast-forward `main`.
+- **Nothing is in progress.** Everything above is on `main` (`7657980` and on). Open: nine portraits left to render live (soldier NPCs untinted, cyclops/oculus/imp/Nova framing) until `portraits.ts` handles them; the Host Service launcher now opens as an app window (`src/appWindow.ts`), untested on a real screen.
 
 ## How work flows (details in CLAUDE.md)
 
