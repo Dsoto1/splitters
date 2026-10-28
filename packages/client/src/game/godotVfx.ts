@@ -1272,6 +1272,8 @@ export class GodotVfx {
   play(pack: string, effect: string, at: Vector3, opts: { scale?: number; up?: Vector3; speed?: number } = {}): boolean {
     const fx = loaded.get(pack)?.effects[effect];
     if (!fx) return false;
+    // A big fight can ask for dozens at once: past the cap the caller's plain effect stands in.
+    if (this.playing.length >= GodotVfx.MAX_PLAYING) return false;
     const scale = opts.scale ?? 1;
     const q = opts.up && Math.abs(opts.up.y) < 0.999 ? Quaternion.FromUnitVectorsToRef(Vector3.Up(), opts.up.clone().normalize(), new Quaternion()) : Quaternion.Identity();
     const root = Matrix.Compose(new Vector3(scale, scale, scale), q, at);
@@ -1394,6 +1396,9 @@ export class GodotVfx {
       return alive;
     });
   }
+
+  /** At most this many effects play at once (each is a handful of meshes and particles). */
+  static MAX_PLAYING = 10;
 
   /** How many effects are playing (tests). */
   get count(): number {

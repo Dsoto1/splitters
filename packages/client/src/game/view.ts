@@ -93,6 +93,9 @@ import { CreatureLibrary, type AvatarSpec } from '../content/creatures.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
 
+/** Remote players' pack muzzle flashes: within this range of the camera (m), on at most this many guns. */
+const REMOTE_FLASH_RANGE = 45;
+const MAX_REMOTE_RIGS = 8;
 const SLOT_COLORS = ['#e6544a', '#4aa3e6', '#f2c14e', '#5cc77a', '#b276e0', '#f28f3b', '#46c9c0', '#e872b0'];
 export const slotColor = (slot: number): string => SLOT_COLORS[slot % SLOT_COLORS.length]!;
 
@@ -261,6 +264,8 @@ export class GameView {
   private flashUntil = 0;
   /** Your gun's flash from the pack (muzzleFlash.ts); the star `flash` stays for the railgun and until the pack has loaded. */
   private readonly flashRig: MuzzleFlashRig;
+  /** Remote players' flash rigs alive (at most MAX_REMOTE_RIGS). */
+  private remoteRigs = 0;
   private starFlash = false;
   /** The ambient light, briefly brightened by your own shots (a real point light costs every pixel). */
   private hemi?: HemisphericLight;
@@ -554,8 +559,14 @@ export class GameView {
     const a = this.avatars.get(slot);
     if (!a?.muzzle) return;
     const fx = def ? muzzleEffectFor(def) : null;
-    if (fx && MuzzleFlashRig.ready()) {
-      a.flashRig ??= new MuzzleFlashRig(this.scene, `${a.root.name}_flashRig`);
+    // The pack's flash only near the camera, on a few guns at a time (each rig is a dozen meshes);
+    // further off, or in a crowd, the plain star does.
+    const near = Vector3.DistanceSquared(a.root.position, this.camera.globalPosition) < REMOTE_FLASH_RANGE * REMOTE_FLASH_RANGE;
+    if (fx && near && MuzzleFlashRig.ready() && (a.flashRig || this.remoteRigs < MAX_REMOTE_RIGS)) {
+      if (!a.flashRig) {
+        a.flashRig = new MuzzleFlashRig(this.scene, `${a.root.name}_flashRig`);
+        this.remoteRigs++;
+      }
       // A little bigger than your own: it's seen from further off.
       if (a.flashRig.fire(fx.id, fx.scale * 1.25)) {
         this.placeRemoteFlash(a);
@@ -1262,7 +1273,10 @@ export class GameView {
     // The flash texture is shared by every flash: dispose the material, never the texture.
     a.flash?.material?.dispose();
     a.flash?.dispose();
-    a.flashRig?.dispose();
+    if (a.flashRig) {
+      a.flashRig.dispose();
+      this.remoteRigs--;
+    }
     a.ragdoll?.dispose();
     a.anim?.dispose();
     a.weaponNode?.dispose();
