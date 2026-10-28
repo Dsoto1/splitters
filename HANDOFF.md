@@ -144,24 +144,25 @@ update it when you finish a piece of work or the owner changes direction.
    - Blackout enemies;
    - Mercy Ward rooftop zombies.
 
-## Asked about, waiting for the owner's choice (2026-10-28)
+## Maps are made in MapMaker; the owner publishes (2026-10-28)
 
-- **Editing system maps as the owner.** Today MapMaker opens a suite map only
-  as a "Remix" (new ID). Proposed: an owner "Edit this map" that keeps the
-  ID and exports `maps/<id>.json` ready to drop into the repo (GitHub web
-  upload or a Claude session), so CI validates it and the normal release
-  ships it. Not an upload to the live site (MULTIPLAYER_DIRECTION: no
-  uploads; the box never builds).
-- **FBX characters with auto-rigging.** `tools/content/prepare-meshy-characters.mjs`
-  already rigs unrigged FBX bodies onto rig.glb (`FBX_CHARACTERS`: joints
-  placed by hand in units of height, weights from `autoskin.mjs`, hands
-  closed for a grip; first-person arms are the universal ones, so guns look
-  the same for every character). Proposed: guess the landmarks automatically
-  for upright T/A-pose humanoids and a local "Character Lab" page to drop an
-  FBX in, adjust the guesses and settings (lean, cloth, triangles, finish),
-  preview it animated and holding a gun, then write the `FBX_CHARACTERS`
-  entry and provenance. Source FBX stays outside the repo (CC0, provenance
-  recorded). Runs on the owner's machine or in a Claude session, not the site.
+- Every map is its file in `maps/`, made and edited with MapMaker; the 86
+  build scripts were retired (CLAUDE.md, "Maps": no scripts, no one-off code
+  for one map). The map tour also opens every map in MapMaker (e2e).
+- MapMaker treats a mover and what it carries as one **moving build**
+  (select, move, rotate, duplicate, delete; Alt-click for one part).
+- **Publishing** (docs/HOSTING.md, "Publishing maps"): hub `publish.ts`
+  (`/api/v1/maps`, owner-only writes, every version kept), site
+  `publishedMaps.ts`, MapMaker `editor/ownerPublish.ts`, Host Service
+  `published.ts`, daily `published-maps.yml` workflow to
+  `check/published-maps`. **Needs the owner once:** copy the account ID
+  (main menu → click "Signed in as …") and run
+  `infra/deploy-multiplayer.sh --owner <id>` in CloudShell (that also gives
+  the hub `/var/lib/tiletrigger/maps`).
+- **Still open:** FBX characters with auto-rigging, owner-only (proposed: a
+  Character Lab that guesses the joints, previews animations and the gun grip,
+  rigs in the browser and publishes the finished model the same way; the rig
+  pipeline exists in `tools/content/prepare-meshy-characters.mjs`).
 
 ## Backlog ideas (not started, not yet asked for)
 
