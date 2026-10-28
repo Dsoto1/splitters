@@ -1,6 +1,7 @@
 import { GAME_MODES, type GameMode } from '../sim/rules.ts';
 import { MAX_PLAYER_SLOTS } from '../sim/constants.ts';
 import { sanitizeName } from './clientMessages.ts';
+import { isRegion, type Region } from './profile.ts';
 
 /**
  * The game browser's listings: matches players host from their own browsers
@@ -42,6 +43,8 @@ export interface LobbyListing {
    * (packages/host). Either way community-run: no listing is ever official.
    */
   hostType?: HostType;
+  /** Where the host is (shared/net/profile.ts): the game browser shows games in your own region first. */
+  region?: Region;
   /** Seconds since the host last checked in. */
   age?: number;
 }
@@ -106,6 +109,7 @@ export function parseAdvert(v: unknown): LobbyAdvert | null {
     version,
     relay: o.relay === true,
     ...(o.hostType === 'dedicated' ? { hostType: 'dedicated' as const } : {}),
+    ...(isRegion(o.region) ? { region: o.region } : {}),
     ...(community ? { community } : {}),
     ...(versionId ? { versionId } : {}),
     ...(contentHash ? { contentHash } : {}),

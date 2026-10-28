@@ -39,6 +39,7 @@ import {
   type MatchRules,
   mapInspiration,
   REGIONS,
+  regionLabel,
   usernameProblem,
   type Region,
 } from '@tiletrigger/shared';
@@ -1150,6 +1151,12 @@ export class FrontEnd {
         community.dataset.tip = "Made by a player in MapMaker, not one of the game's own maps (checked when it loads: it can't run code or bring outside files).";
         tags.push(community);
       }
+      if (g.region) {
+        const near = g.region === myRegion();
+        const where = el('span', { class: `gb-tag region${near ? ' near' : ''}`, textContent: regionLabel(g.region) });
+        where.dataset.tip = near ? 'In your region: usually the smoothest games.' : 'Hosted in another region: expect more delay.';
+        tags.push(where);
+      }
       if (g.relay) {
         const relay = el('span', { class: 'gb-tag relay', textContent: 'Relay' });
         relay.dataset.tip = 'The host set up a relay, so players on strict networks can usually still connect.';
@@ -1173,7 +1180,9 @@ export class FrontEnd {
       }
       status.textContent = 'Refreshing…';
       try {
-        const games = await fetchGames();
+        // Games in your region first (smoother), then the rest, each as the hub lists them.
+        const mine = myRegion();
+        const games = (await fetchGames()).map((g, i) => ({ g, i })).sort((a, b) => Number(b.g.region === mine) - Number(a.g.region === mine) || a.i - b.i).map((x) => x.g);
         status.textContent = `${games.length} game${games.length === 1 ? '' : 's'} · updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
         list.replaceChildren(...(games.length ? [el('div', { class: 'gb-row gb-head' }, el('span', { textContent: 'Game' }), el('span', { textContent: 'Map' }), el('span', { textContent: 'Mode' }), el('span', { textContent: 'Players' }), el('span')), ...games.map(row)] : [el('p', { class: 'gb-empty', textContent: 'No public games right now. Host one: start a match, press Esc, Host game, and tick "List in the game browser".' })]));
       } catch (e) {

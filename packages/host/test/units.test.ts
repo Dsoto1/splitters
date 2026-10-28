@@ -148,6 +148,9 @@ describe('listing', () => {
     expect(parseAdvert({ ...ad, hostType: 'dedicated' })?.hostType).toBe('dedicated');
     expect(parseAdvert({ ...ad, hostType: 'official' })?.hostType).toBeUndefined();
     expect(parseAdvert({ ...ad, official: true })).not.toHaveProperty('official');
+    // A region the game knows is kept; anything else is dropped.
+    expect(parseAdvert({ ...ad, region: 'eu' })?.region).toBe('eu');
+    expect(parseAdvert({ ...ad, region: 'moon' })).not.toHaveProperty('region');
     for (const fake of ['Official EU #1', 'ToshiroPlay servers', 'T1le Tr1gger 0fficial', 'tile-trigger staff', 'OFFICIAL']) expect(claimsOfficial(fake), fake).toBe(true);
     for (const fine of ["Dave's 48v48", 'Frost Friday', 'Trigger happy', 'Tiles and more']) expect(claimsOfficial(fine), fine).toBe(false);
   });

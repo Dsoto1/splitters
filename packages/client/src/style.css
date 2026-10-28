@@ -728,6 +728,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .sb-rank { color: var(--muted); text-align: right; }
 .sb-name { display: flex; align-items: center; gap: 5px; min-width: 0; }
 .sb-nm { overflow: hidden; text-overflow: ellipsis; }
+.gb-tag.region.near { border-color: rgba(46, 204, 113, 0.5); color: var(--success); }
 .sb-nm.acct::after { content: '✓'; margin-left: 5px; color: var(--cyan); font-size: 0.85em; font-weight: 700; }
 .sb-nm.guest::after { content: 'GUEST'; margin-left: 5px; padding: 0 3px; border: 1px dashed var(--line); color: var(--muted); font-size: 0.62em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-nm.bot::after { content: 'BOT'; margin-left: 5px; padding: 0 3px; border: 1px solid var(--line); color: var(--muted); font-size: 0.68em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }

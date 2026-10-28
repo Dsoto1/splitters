@@ -235,6 +235,7 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
               max: config.maxPlayers,
               relay: link.relay,
               hostType: 'dedicated',
+              region: config.region,
             }
           : null,
       log,

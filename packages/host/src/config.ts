@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { MAX_PLAYER_SLOTS, isGameMode, isMapId, sanitizeName, type GameMode } from '@tiletrigger/shared';
+import { MAX_PLAYER_SLOTS, isGameMode, isMapId, isRegion, regionForTimeZone, sanitizeName, type GameMode, type Region } from '@tiletrigger/shared';
 
 /**
  * The Host Service's settings: environment variables, optionally on top of a
@@ -38,6 +38,8 @@ export interface HostConfig {
   statusEvery: number;
   /** Idle this many seconds and a bot plays for a player until they're back (0: never; default 90). */
   afkSeconds: number;
+  /** Where this computer is, for the game browser (players in the same region see it first). Default: from its time zone. */
+  region: Region;
 }
 
 export const DEFAULT_HUB = 'https://trigger.toshiroplay.com';
@@ -48,7 +50,7 @@ const CODE_RE = /^[A-HJKMNP-Z2-9]{6}$/;
 /** Keys a JSON config may use (the same names as the environment variables, or camelCase). */
 const KEYS: Record<string, string> = {
   HUB: 'hub', MAP: 'map', MODE: 'mode', BOT_FILL: 'botFill', MAX_PLAYERS: 'maxPlayers', BOT_DIFFICULTY: 'botDifficulty', BOT_TAKEBACK: 'botTakeBack',
-  LEADERS: 'leaders', PLAYLIST: 'playlist', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds',
+  LEADERS: 'leaders', PLAYLIST: 'playlist', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', REGION: 'region',
 };
 
 export class ConfigError extends Error {}
@@ -128,7 +130,20 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
     ...(joinCode ? { joinCode } : {}),
     statusEvery: num(raw.statusEvery, 'STATUS_EVERY', 0, 86400, 60),
     afkSeconds: num(raw.afkSeconds, 'AFK_SECONDS', 0, 3600, 90),
+    region: regionSetting(str(raw.region)),
   };
+}
+
+function regionSetting(v: string | undefined): Region {
+  if (v === undefined || v === '') {
+    try {
+      return regionForTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone ?? '');
+    } catch {
+      return 'na-east';
+    }
+  }
+  if (!isRegion(v)) throw new ConfigError(`REGION must be one of na-west, na-east, sa, eu, africa, me, asia-south, asia-east, oceania (got ${v})`);
+  return v;
 }
 
 /** The settings for the log, without the admin token. */
