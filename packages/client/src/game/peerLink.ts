@@ -6,6 +6,7 @@ import { hubAddress, hubSetting } from './hub.ts';
 import { baseIceServers, loadRelay, sessionIce } from './relay.ts';
 import { makeJoinCode } from './joinCode.ts';
 import { netProbe } from './perfProbe.ts';
+import { playerKey } from './playerKey.ts';
 import { SnapshotCoalescer } from './snapshotMerge.ts';
 import { adminToken, rememberAdminToken } from './netTransport.ts';
 import { accessToken } from '../account.ts';
@@ -338,20 +339,6 @@ export const peerSignaling: Signaling = {
   host: (admit) => new PeerHost(admit),
   join: (code, name, look) => new PeerTransport(cleanJoinCode(code), name, look),
 };
-
-const PLAYER_KEY = 'tiletrigger.pk';
-/** A random key for this browser ("p_…"): it proves nothing, and is all a host can ban a guest by (with their address). */
-export function playerKey(): string {
-  try {
-    const have = localStorage.getItem(PLAYER_KEY);
-    if (have && /^p_[A-Za-z0-9_-]{8,32}$/.test(have)) return have;
-    const made = `p_${Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => (b % 36).toString(36)).join('')}`;
-    localStorage.setItem(PLAYER_KEY, made);
-    return made;
-  } catch {
-    return `p_${Math.random().toString(36).slice(2, 14).padEnd(8, '0')}`;
-  }
-}
 
 /** The hub's account ticket for joining `code` (signed-in players only), or null. */
 async function accountTicket(code: string): Promise<string | null> {

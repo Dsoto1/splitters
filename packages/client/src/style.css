@@ -116,6 +116,9 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .screen-head h2 em { color: var(--cyan); font-style: italic; }
 #menu-status { position: absolute; left: 44px; bottom: 56px; color: var(--error); font-weight: 600; min-height: 1.2em; }
 #menu-status:empty { display: none; }
+/* Reconnecting after a lost connection (main.ts): a strip over the menu, with Cancel. */
+#reconnect { position: fixed; left: 50%; top: 18px; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 14px; padding: 10px 14px 10px 18px; background: var(--glass); border: 1px solid var(--orange); border-radius: 4px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); font: 600 15px var(--font-display); letter-spacing: 0.03em; color: var(--orange); }
+#reconnect button { padding: 5px 10px; font-size: 12px; }
 
 /* Arcade (Play) */
 .arcade { display: grid; grid-template-columns: minmax(0, 1fr) clamp(400px, 40vw, 640px); gap: 18px; margin-top: 18px; height: calc(100% - 70px); min-height: 0; }

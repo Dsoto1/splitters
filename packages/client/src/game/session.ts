@@ -135,7 +135,8 @@ export interface SessionOptions {
    * Called when the player leaves or the transport closes. `reason` is set for unexpected closes.
    * `travel`: a scenario chain moves on (a won co-op map with a next map, or the server changing map).
    */
-  onExit: (reason?: string, travel?: Travel) => void;
+  /** `how`: lost (the connection to a match we were playing dropped: worth reconnecting), rejected (the server refused or removed us). */
+  onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected') => void;
   /** Local matches in a playlist: a co-op win moves on even without a "Next map" link. */
   chain?: boolean;
   /** Called once the map is loaded and the first frame can render. */
@@ -487,9 +488,14 @@ export class GameSession {
         this.onMessage(m);
         perfProbe.msg += performance.now() - t0;
       },
-      (reason) => this.exit(reason),
+      // The link closed by itself: after the welcome that's a lost connection (a sleeping phone, a network blip), not a refusal.
+      (reason) => this.exit(reason, this.welcomed && !this.rejected ? 'lost' : undefined),
     );
   }
+
+  /** The match took us in (welcome), and the server refused or removed us (reject): how an exit is reported. */
+  private welcomed = false;
+  private rejected = false;
 
   /**
    * Scoped sway: the sights drift in a slow figure of eight, and the drift
@@ -956,7 +962,7 @@ export class GameSession {
     this.updateOnline();
   }
 
-  exit(reason?: string): void {
+  exit(reason?: string, how?: 'lost' | 'rejected'): void {
     if (this.closed) return;
     this.closed = true;
     this.advertiser?.stop();
@@ -984,13 +990,14 @@ export class GameSession {
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
-    this.opts.onExit(reason, this.travel ?? undefined);
+    this.opts.onExit(reason, this.travel ?? undefined, how ?? (this.rejected ? 'rejected' : undefined));
   }
 
   private onMessage(msg: ServerMessage): void {
     if (this.closed) return;
     switch (msg.t) {
       case 'welcome': {
+        this.welcomed = true;
         // The race's start-grid vehicles and the track's ambient cars join the map's own mounts, as on the server.
         const loaded = loadMap(withTrackVehicles(msg.map, msg.rules));
         if (!loaded.ok) {
@@ -1054,7 +1061,8 @@ export class GameSession {
         break;
       }
       case 'reject':
-        this.exit(msg.reason);
+        this.rejected = true;
+        this.exit(msg.reason, 'rejected');
         break;
       case 'roster':
         this.hud.setRoster(msg.players);

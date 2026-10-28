@@ -477,15 +477,17 @@ class App {
   async joinCode(code: string, name: string): Promise<void> {
     void loadMatchCode().catch(() => undefined);
     await this.init();
-    this.front!.setStatus('Connecting…');
+    if (!this.rejoin) this.front!.setStatus('Connecting…');
     const signaling = await loadSignaling();
+    const again = () => void this.joinCode(code, name);
     void this.withMatch((m) => this.startSession(m, signaling.join(code, name, this.front!.look), {
       exitLabel: 'Leave match',
       exitOnF5: false,
-      onExit: (reason, travel) => {
+      onReady: () => this.reconnected(),
+      onExit: (reason, travel, how) => {
         // The host changed map: rejoin the same code in a moment (their next match lets us in).
-        if (reason === 'travel' && travel) return void window.setTimeout(() => void this.joinCode(code, name), 1200);
-        void this.showMenu(reason ? `Disconnected: ${reason}` : '');
+        if (reason === 'travel' && travel) return void window.setTimeout(again, 1200);
+        this.afterOnline(reason, how, again);
       },
     }));
   }
@@ -493,16 +495,73 @@ class App {
   async playOnline(url: string, name: string): Promise<void> {
     void loadMatchCode().catch(() => undefined);
     await this.init();
-    this.front!.setStatus('Connecting…');
+    if (!this.rejoin) this.front!.setStatus('Connecting…');
+    const again = () => void this.playOnline(url, name);
     void this.withMatch((m) => this.startSession(m, new m.NetTransport(url, name, this.front!.look), {
       exitLabel: 'Leave match',
       exitOnF5: false,
-      onExit: (reason, travel) => {
+      onReady: () => this.reconnected(),
+      onExit: (reason, travel, how) => {
         // The server moved on to the next map of a chain: join it again in a moment.
-        if (reason === 'travel' && travel) return void window.setTimeout(() => void this.playOnline(url, name), 1200);
-        void this.showMenu(reason ? `Disconnected: ${reason}` : '');
+        if (reason === 'travel' && travel) return void window.setTimeout(again, 1200);
+        this.afterOnline(reason, how, again);
       },
     }));
+  }
+
+  /**
+   * Reconnecting after a lost connection (a phone that slept, a network blip):
+   * the server keeps our place for a minute (AWAY.holdSeconds) and gives it back
+   * to this browser, so we try again until then: at once when the network
+   * comes back or the page is shown again, else every few seconds.
+   */
+  private rejoin?: { until: number; tries: number; again: () => void; reason: string; timer?: number; tried?: number };
+
+  /** An online match ended: try to get back in after a lost connection; otherwise the menu says why. */
+  private afterOnline(reason: string | undefined, how: 'lost' | 'rejected' | undefined, again: () => void): void {
+    const r = this.rejoin;
+    // A refusal, or leaving on purpose, ends it; a lost link (or a failed try while reconnecting) tries again.
+    // The game is gone (the host closed it): nothing to get back into.
+    const gone = !!reason && /^no game open with code/.test(reason);
+    if (how === 'rejected' || !reason || gone || (how !== 'lost' && !r)) {
+      this.stopRejoin();
+      return void this.showMenu(reason ? `Disconnected: ${reason}` : '');
+    }
+    const now = Date.now();
+    const state = r ?? (this.rejoin = { until: now + RECONNECT_FOR_MS, tries: 0, again, reason });
+    if (now > state.until) {
+      this.stopRejoin();
+      return void this.showMenu(`Disconnected: ${state.reason} (couldn't get back in)`);
+    }
+    state.tries++;
+    void this.showMenu('');
+    reconnectBanner(`Connection lost: reconnecting… (try ${state.tries})`, () => {
+      this.stopRejoin();
+      this.front?.setStatus('');
+    });
+    const attempt = state.tries;
+    const go = () => {
+      // One try per attempt (the timer and the page coming back may both call), and none once it's over.
+      if (this.rejoin !== state || state.tried === attempt) return;
+      // Asleep or hidden: the try waits for the page to be seen again.
+      if (document.hidden) return;
+      state.tried = attempt;
+      window.clearTimeout(state.timer);
+      state.again();
+    };
+    state.timer = window.setTimeout(go, Math.min(5000, 1000 * state.tries));
+    onceBack(go);
+  }
+
+  private reconnected(): void {
+    if (!this.rejoin) return;
+    this.stopRejoin();
+  }
+
+  private stopRejoin(): void {
+    if (this.rejoin) window.clearTimeout(this.rejoin.timer);
+    this.rejoin = undefined;
+    reconnectBanner(null);
   }
 
   private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; onExit: (reason?: string, travel?: Travel) => void; onReady?: () => void }): void {
@@ -530,6 +589,39 @@ class App {
       },
     });
   }
+}
+
+/** How long a lost connection is tried again (the server keeps the place a minute). */
+const RECONNECT_FOR_MS = 60_000;
+
+/** The "Reconnecting…" strip over the menu, with Cancel; null hides it. */
+function reconnectBanner(text: string | null, cancel?: () => void): void {
+  let el = document.getElementById('reconnect');
+  if (!text) return void el?.remove();
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'reconnect';
+    el.setAttribute('role', 'status');
+    document.body.append(el);
+  }
+  const b = document.createElement('button');
+  b.textContent = 'Cancel';
+  b.addEventListener('click', () => cancel?.());
+  const t = document.createElement('span');
+  t.textContent = text;
+  el.replaceChildren(t, b);
+}
+
+/** Run `f` once, the next time the page is shown again or the network comes back. */
+function onceBack(f: () => void): void {
+  const run = () => {
+    if (document.hidden) return;
+    document.removeEventListener('visibilitychange', run);
+    window.removeEventListener('online', run);
+    f();
+  };
+  document.addEventListener('visibilitychange', run);
+  window.addEventListener('online', run);
 }
 
 const app = new App();
