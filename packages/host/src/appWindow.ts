@@ -1,3 +1,4 @@
+// probe: runs the dedicatedhost flow on main (not for merging)
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
