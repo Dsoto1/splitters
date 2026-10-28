@@ -9,9 +9,11 @@ import { claimsOfficial, parseAdvert } from '@tiletrigger/shared';
 import { TicketSigner, verifyTicket } from '@tiletrigger/server/tickets';
 import { LobbyAdvertiser } from '../src/advertiser.ts';
 import { BanList } from '../src/bans.ts';
-import { complete, findMap, findPlayer, parseCommand, parseDuration, runMatchCommand, type MatchCommandTarget } from '../src/commands.ts';
+import { COMMANDS, complete, findMap, findPlayer, parseCommand, parseDuration, runMatchCommand, type MatchCommandTarget } from '../src/commands.ts';
 import { ConfigError, DEFAULT_HUB, loadConfig, parseConfig } from '../src/config.ts';
-import { originAllowed, startConfig } from '../src/control.ts';
+import { originAllowed, ownPage, startConfig } from '../src/control.ts';
+import { LogBuffer, launcherCsp, launcherPage, mapCatalog } from '../src/launcher.ts';
+import { DEFAULT_MAPS_DIR, suiteIds } from '../src/host.ts';
 import { admitWhenOpen, iceForLibdatachannel, makeJoinCode } from '../src/hubLink.ts';
 import { LINK_LIMITS, peerConn, type DataLike } from '../src/peerConn.ts';
 import { Supervisor } from '../src/supervisor.ts';
@@ -273,6 +275,44 @@ describe('control API', () => {
     expect(originAllowed('http://trigger.toshiroplay.com')).toBe(false);
     expect(originAllowed('null')).toBe(false);
     expect(originAllowed('https://friend.example', ['https://friend.example'])).toBe(true);
+  });
+
+  it("gives the console only to the launcher's own page", () => {
+    expect(ownPage('http://127.0.0.1:7797', 7797)).toBe(true);
+    expect(ownPage('http://localhost:7797', 7797)).toBe(true);
+    expect(ownPage(undefined, 7797)).toBe(true);
+    // The site's /host page and other local pages use the API, not the console.
+    expect(ownPage('https://trigger.toshiroplay.com', 7797)).toBe(false);
+    expect(ownPage('http://localhost:5173', 7797)).toBe(false);
+  });
+});
+
+describe('launcher', () => {
+  it('keeps the last console lines, numbered, and starts a page over after a restart', () => {
+    const b = new LogBuffer(5);
+    b.push('log', 'a\nb');
+    b.push('cmd', 'status', 'launcher');
+    expect(b.since(0)).toMatchObject({ next: 3, reset: false, lines: [{ n: 1, text: 'a' }, { n: 2, text: 'b' }, { n: 3, kind: 'cmd', from: 'launcher' }] });
+    for (let i = 0; i < 10; i++) b.push('out', `x${i}`);
+    const r = b.since(3);
+    expect(r.lines).toHaveLength(5);
+    expect(r.lines[0]!.n).toBe(9);
+    expect(b.since(13)).toEqual({ lines: [], next: 13, reset: false });
+    expect(b.since(500)).toMatchObject({ reset: true, next: 13 });
+  });
+
+  it("lists our maps with their names and modes, and nothing in the page's data can end its script", () => {
+    const maps = mapCatalog(DEFAULT_MAPS_DIR, suiteIds(DEFAULT_MAPS_DIR));
+    expect(maps.length).toBeGreaterThan(20);
+    expect(maps.find((m) => m.id === 'frost_basin')).toMatchObject({ name: 'Frost Basin', modes: expect.arrayContaining([expect.objectContaining({ id: 'core.tdm', team: true })]) });
+    const html = launcherPage({ version: '1.0.0', commands: COMMANDS, maps: [{ id: 'x', name: '</script><script>alert(1)</script>', modes: [] }], site: 'https://trigger.toshiroplay.com' }, 'N0NCE');
+    expect(html).not.toContain('</script><script>alert(1)');
+    expect(html.match(/<script nonce="N0NCE">/g)).toHaveLength(1);
+    expect(launcherCsp('N0NCE', 'https://trigger.toshiroplay.com')).toMatch(/script-src 'nonce-N0NCE'.*connect-src 'self'.*frame-ancestors 'none'/);
+  });
+
+  it('opens from the console with launcher', () => {
+    expect(parseCommand('launcher')).toMatchObject({ ok: true, name: 'launcher' });
   });
 });
 

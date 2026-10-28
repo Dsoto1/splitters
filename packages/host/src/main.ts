@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { createInterface } from 'node:readline';
@@ -8,6 +9,7 @@ import { COMMANDS, complete, helpText, parseCommand } from './commands.ts';
 import { ConfigError, describeConfig, loadConfig, type HostConfig } from './config.ts';
 import { DEFAULT_CONTROL_PORT, startControl } from './control.ts';
 import { DEFAULT_MAPS_DIR, suiteIds } from './host.ts';
+import { LogBuffer, mapCatalog } from './launcher.ts';
 import { Logger } from './logger.ts';
 import { ServiceState, stateDir } from './state.ts';
 import { Supervisor, forkChild, CRASH_POLICY } from './supervisor.ts';
@@ -18,11 +20,14 @@ import { Supervisor, forkChild, CRASH_POLICY } from './supervisor.ts';
  * certificates or browser tab (packages/host/README in docs/HOSTING.md,
  * "Dedicated host"). This process is the service: a server console (live log
  * and commands), a supervisor that runs the match in a child process and
- * restarts it after a crash, and a control API on 127.0.0.1 for the site's
- * /host page. `--child` runs the match process.
+ * restarts it after a crash, a control API on 127.0.0.1 for the site's /host
+ * page, and the launcher (launcher.ts): the same console as a page in the
+ * site's look, with a right bar of controls, opened in the browser on start.
+ * `--child` runs the match process.
  *
  *   pnpm host                   start (settings from the environment / HOST_CONFIG, else the last ones)
- *   pnpm host --idle            don't start a server until asked (console `start`, or /host)
+ *   pnpm host --idle            don't start a server until asked (console `start`, the launcher, or /host)
+ *   pnpm host --no-open         don't open the launcher in the browser (HOST_OPEN=0 too)
  */
 
 const VERSION = (() => {
@@ -54,8 +59,14 @@ async function service(): Promise<void> {
     process.stdout.write(`\r\x1b[K${line}\n`);
     rl.prompt(true);
   };
-  let logger = new Logger(appDir ? join(appDir, 'logs') : join(state.dir, 'logs'), print);
-  if (!logger.file && appDir) logger = new Logger(join(state.dir, 'logs'), print);
+  // Everything the window shows, the launcher shows too.
+  const logs = new LogBuffer();
+  const printLog = (line: string) => {
+    logs.push('log', line);
+    print(line);
+  };
+  let logger = new Logger(appDir ? join(appDir, 'logs') : join(state.dir, 'logs'), printLog);
+  if (!logger.file && appDir) logger = new Logger(join(state.dir, 'logs'), printLog);
   const log = (l: string) => logger.line(l);
 
   let config: HostConfig;
@@ -105,6 +116,11 @@ async function service(): Promise<void> {
     process.exit(0);
   };
 
+  // A console line from the window or the launcher: both see the command and its answer.
+  let runLine: (line: string, from: 'window' | 'launcher') => Promise<void> = async () => undefined;
+  const suite = suiteIds(DEFAULT_MAPS_DIR);
+  const site = env.HOST_SITE ?? SITE;
+
   const port = env.CONTROL_PORT !== undefined ? Number(env.CONTROL_PORT) : DEFAULT_CONTROL_PORT;
   let control: Awaited<ReturnType<typeof startControl>> | null = null;
   try {
@@ -113,13 +129,14 @@ async function service(): Promise<void> {
       token,
       supervisor: sup,
       base,
-      suite: suiteIds(DEFAULT_MAPS_DIR),
+      suite,
       origins: (env.HOST_ALLOWED_ORIGINS ?? '').split(/[\s,]+/).filter(Boolean),
       version: VERSION,
       persist: (c, running) => state.save(c, running),
       quit: () => void quit('quit from /host'),
       log: (l) => log(`[web] ${l}`),
       bans,
+      launcher: { version: VERSION, commands: COMMANDS, maps: mapCatalog(DEFAULT_MAPS_DIR, suite), site, logs, run: (line) => runLine(line, 'launcher') },
     });
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === 'EADDRINUSE') {
@@ -128,10 +145,24 @@ async function service(): Promise<void> {
     }
     throw e;
   }
-  const pairUrl = `${env.HOST_SITE ?? SITE}/host#pair=${token}${control.port !== DEFAULT_CONTROL_PORT ? `&port=${control.port}` : ''}`;
+  const pairUrl = `${site}/host#pair=${token}${control.port !== DEFAULT_CONTROL_PORT ? `&port=${control.port}` : ''}`;
+  // The launcher, on this computer only; the key rides in the #fragment, which the browser never sends anywhere.
+  const launcherUrl = `http://127.0.0.1:${control.port}/#key=${token}`;
+  const openLauncher = (): string => {
+    const [cmd, cmdArgs] = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', launcherUrl]] : process.platform === 'darwin' ? ['open', [launcherUrl]] : ['xdg-open', [launcherUrl]];
+    try {
+      spawn(cmd as string, cmdArgs as string[], { stdio: 'ignore', detached: true, windowsHide: true })
+        .on('error', () => log(`[service] couldn't open a browser: open ${launcherUrl} yourself`))
+        .unref();
+      return 'opening the launcher in your browser…';
+    } catch {
+      return `couldn't open a browser: open ${launcherUrl} yourself`;
+    }
+  };
 
   log(`Tile Trigger Host Service ${VERSION}. Type help for commands; closing this window stops the server.`);
-  log(`Optional web control: ${pairUrl}  (this link carries this computer's pairing key: don't share it)`);
+  log(`Launcher: ${launcherUrl}  (opens in your browser; type launcher to open it again. The link carries this computer's pairing key: don't share it)`);
+  log(`Also on the site: ${pairUrl}`);
   log(`Settings, bans and logs: ${state.dir}${logger.file ? `  (log: ${logger.file})` : ''}`);
 
   const startNow = !args.includes('--idle') && (explicit || !saved.config || saved.running);
@@ -199,6 +230,8 @@ async function service(): Promise<void> {
       case 'quit':
         void quit('quit');
         return '';
+      case 'launcher':
+        return openLauncher();
       default: {
         const spec = COMMANDS.find((c) => c.name === name);
         return spec?.match ? sup.command(name, a, rest) : `unknown command ${name}`;
@@ -206,20 +239,32 @@ async function service(): Promise<void> {
     }
   };
 
+  // The window already shows what was typed there; a line from the launcher is echoed in the window too.
+  runLine = async (line, from) => {
+    const p = parseCommand(line);
+    if (!p) return;
+    logs.push('cmd', line.trim(), from);
+    if (from === 'launcher') print(`> ${line.trim()}   (from the launcher)`);
+    const out = p.ok ? await serviceCommand(p.name, p.args, p.rest) : p.error;
+    if (!out) return;
+    logs.push('out', out);
+    print(out);
+  };
+
   if (interactive) {
-    const maps = [...suiteIds(DEFAULT_MAPS_DIR)].sort();
+    const maps = [...suite].sort();
     rl = createInterface({ input: process.stdin, output: process.stdout, prompt: '> ', completer: (line: string) => complete(line, maps) });
     rl.on('line', (line) => {
-      const p = parseCommand(line);
-      if (!p) return rl?.prompt();
-      if (!p.ok) return print(p.error);
-      void serviceCommand(p.name, p.args, p.rest).then((out) => out && print(out));
+      if (!parseCommand(line)) return rl?.prompt();
+      void runLine(line, 'window');
     });
     // Ctrl+C at the prompt: stop cleanly.
     rl.on('SIGINT', () => void quit('Ctrl+C'));
     rl.on('close', () => void quit('console closed'));
     rl.prompt();
   }
+  // The launcher opens with the window (not for a service run in the background, or with --no-open / HOST_OPEN=0).
+  if (interactive && !args.includes('--no-open') && env.HOST_OPEN !== '0') log(`[service] ${openLauncher()}`);
   process.on('SIGINT', () => void quit('Ctrl+C'));
   process.on('SIGTERM', () => void quit('asked to stop'));
   // The console window was closed (Windows sends SIGHUP then ends the process ~10 s later; macOS/Linux terminals too).

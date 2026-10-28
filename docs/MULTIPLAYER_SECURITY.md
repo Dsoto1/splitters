@@ -247,6 +247,10 @@ Phase 2 design above:
   named commands with validated arguments; a start request may name only a
   suite map ID (never a path) and never the hub; there is no shell, path or
   URL argument anywhere.
+  The launcher (the service's own page on 127.0.0.1) sends console lines,
+  which go through the same parser and commands as the console window; only
+  that page's origin may send them, with the pairing key, and the site's
+  /host page cannot.
 - **Normal user** (SEC-HOST-001): no administrator rights to unpack, run or
   start on boot (per-user Task Scheduler / Login Items / `systemd --user`).
 - **Crash supervision** (SEC-HOST-005): the match runs in a child process;

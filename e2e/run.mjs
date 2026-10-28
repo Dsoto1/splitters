@@ -2252,6 +2252,30 @@ async function hostpageFlow(browser) {
     const gone = await until(async () => !(await hubGames(HUB_PORT)).some((g) => g.name === 'E2E From Host Page'), T(20000));
     check(stopped && gone, 'Stop stops it and takes the listing down');
   }
+  // The launcher: the service's own page, the console's log and command line, and a right bar that runs console commands.
+  const launcher = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
+  launcher.on('pageerror', (e) => errors.push(`launcher: ${e.message}`));
+  await launcher.goto(`http://127.0.0.1:${CONTROL_PORT}/#key=${token}`, { waitUntil: 'domcontentloaded' });
+  const logged = await launcher.waitForFunction(() => /Host Service/.test(document.getElementById('log')?.textContent ?? ''), null, { timeout: T(20000) }).then(() => true, () => false);
+  check(logged && !(await launcher.evaluate(() => location.hash)), 'the launcher shows the console log (and keeps the key out of the address bar)');
+  await launcher.fill('#cmd', 'status');
+  await launcher.press('#cmd', 'Enter');
+  const answered = await launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.out')].some((l) => /server (stopped|running)/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(answered, 'a command typed in the launcher runs and its answer shows');
+  await launcher.click('#f-vis button[data-v="code"]');
+  await launcher.click('#b-start');
+  const started = await launcher.waitForFunction(() => document.getElementById('pill')?.dataset.state === 'running', null, { timeout: T(60000) }).then(() => true, () => false);
+  check(started, 'Start in the right bar starts the server');
+  if (started) {
+    await launcher.click('#f-vis button[data-v="listed"]');
+    const ran = await launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
+    check(ran, 'a right-bar toggle runs its console command (visibility listed)');
+    await launcher.click('#b-stop');
+    await launcher.waitForFunction(() => document.getElementById('pill')?.dataset.state === 'stopped', null, { timeout: T(30000) }).catch(() => {});
+  }
+  await launcher.context().close();
+  const siteConsole = await fetch(`http://127.0.0.1:${CONTROL_PORT}/api/console`, { method: 'POST', headers: { Origin: 'https://trigger.toshiroplay.com', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: '{"line":"status"}' }).then((r) => r.status);
+  check(siteConsole === 403, `the console is the launcher's alone, not the site's (${siteConsole})`);
   // Another site can't drive it.
   const refused = await fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Origin: 'https://evil.example', Authorization: `Bearer ${token}` } }).then((r) => r.status);
   check(refused === 403, `the control API refuses other sites' pages (${refused})`);

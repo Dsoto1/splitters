@@ -354,10 +354,20 @@ the download is offered only on the /host page.
    it may say the app is unrecognised: More info → Run anyway. macOS:
    right-click the `.command` → Open the first time. Linux: `./start-host.sh`).
 3. A server window opens and the server starts: Frost Basin, 24 players and
-   bots, listed in the game browser. Type `help` in that window to see what
-   it can do (`players`, `kick`, `ban`, `map`, `bots`, `teams`, `say`,
-   `visibility`, `stop`, `quit`…).
-4. Optional: click the **web control** link the window shows. It opens
+   bots, listed in the game browser. The **launcher** opens in your browser
+   with it: the same console (every line the window shows, a command line
+   with suggestions, Tab completion and ↑ ↓ history) and a right bar of
+   controls for the server, map and mode, players and bots, the game browser
+   listing, the people playing (kick, ban), a message to everyone, the admin
+   token and bans. Each control runs the console command it shows under it,
+   so you can type the same thing in either place; while the server is
+   stopped, the controls set what **Start** starts with. Type `help` in
+   either to see every command (`players`, `kick`, `ban`, `map`, `bots`,
+   `teams`, `say`, `visibility`, `stop`, `quit`…); `launcher` opens the page
+   again. The launcher is served by the Host Service on this computer only
+   (`http://127.0.0.1:7797/`, the pairing key in the link), and closing it
+   changes nothing.
+4. Optional: click the **Also on the site** link the window shows. It opens
    /host already paired with this computer, where you choose the map, mode,
    players and bots (96 = 48 v 48), name, visibility and admin token, press
    Start / Stop / Restart, and see players (kick, ban), uptime and errors.
@@ -382,7 +392,7 @@ That is a 48 v 48 Team Deathmatch on Frost Basin (bots fill the 96 slots,
 up to 16 people take bots' places), listed in the game browser of
 https://trigger.toshiroplay.com. Windows PowerShell:
 `$env:MAP="frost_basin"; $env:MODE="core.tdm"; $env:BOT_FILL="96"; pnpm host`.
-`pnpm host --idle` waits for `start` (console or /host). `pnpm host:package`
+`pnpm host --idle` waits for `start` (console, launcher or /host); `--no-open` (or `HOST_OPEN=0`) doesn't open the launcher. `pnpm host:package`
 builds the downloads (CI does this for every green `main` and `vX.Y.Z`).
 
 | Setting (env, or the same key in `HOST_CONFIG=host.json`) | Default | |
@@ -438,6 +448,14 @@ No setting is a ToshiroPlay or AWS credential: the host needs none.
   command needs the pairing key (`Bearer`). Closed command set: status,
   start (suite map by ID and checked numbers; never a path, URL or the hub),
   stop, restart, kick, ban, unban, quit.
+- **Launcher** (`launcher.ts`): the same server serves the launcher page at
+  `/` (no secrets in it: the key comes in the link's `#fragment`; a strict
+  Content-Security-Policy with a per-response script nonce, no framing). Its
+  console log (`GET /api/log?after=n`, the last 1500 lines) and command line
+  (`POST /api/console`, one line of at most 300 characters, parsed and
+  checked exactly like the window's) answer only that page (its own origin
+  on this port) with the pairing key: the site's /host page keeps the closed
+  API above.
 - **Kick and ban** (`bans.ts`): bans live in `bans.json` in the state folder
   and survive restarts. Signed-in players are banned by account: the client
   asks the hub for an account ticket for that join code

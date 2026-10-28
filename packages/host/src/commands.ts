@@ -34,6 +34,7 @@ export const COMMANDS: readonly CommandSpec[] = [
   { name: 'admin', args: 'token [rotate|clear]', help: 'show, change or remove the in-game admin token', match: false },
   { name: 'start', args: '', help: 'start the server again (after stop)', match: false },
   { name: 'stop', args: '', help: 'stop the server (the window stays: start brings it back)', match: false },
+  { name: 'launcher', args: '', help: 'open the launcher (this console with controls) in your browser', match: false },
   { name: 'quit', args: '', help: 'stop the server and close the Host Service', match: false },
 ];
 

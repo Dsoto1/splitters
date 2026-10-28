@@ -1,10 +1,11 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { GAME_MODES, KeyedLimiter, MAX_PLAYER_SLOTS, isMapId } from '@tiletrigger/shared';
 import { ConfigError, parseConfig, type HostConfig } from './config.ts';
 import type { BanList } from './bans.ts';
 import type { Supervisor } from './supervisor.ts';
+import { launcherCsp, launcherPage, type LauncherInfo, type LogBuffer } from './launcher.ts';
 
 /**
  * The Host Service's control API, for the site's /host page: on 127.0.0.1
@@ -20,6 +21,12 @@ import type { Supervisor } from './supervisor.ts';
  * The command set is closed (MULTIPLAYER_SECURITY.md SEC-HOST-002): status,
  * start with a validated config, stop, restart, quit. No paths, URLs or
  * shell text: a map is one of our suite's IDs, the hub is the service's own.
+ *
+ * It also serves the launcher (launcher.ts) at `/`: the service's own page,
+ * with the console's log (`/api/log`) and command line (`/api/console`, the
+ * console window's commands, parsed and checked the same way). Those two
+ * answer only that page (its own origin on this port) with the pairing key,
+ * never the site's /host page.
  */
 
 export const DEFAULT_CONTROL_PORT = 7797;
@@ -45,6 +52,16 @@ export interface ControlOptions {
   log?: (line: string) => void;
   /** The ban list (shown on /host; unban from there). */
   bans?: BanList;
+  /** The launcher page, its console log, and running a console line from it. */
+  launcher?: LauncherInfo & { logs: LogBuffer; run(line: string): Promise<void> };
+}
+
+/** The longest console line the launcher may send. */
+export const MAX_CONSOLE_LINE = 300;
+
+/** Whether a request comes from the launcher page itself (served from this port), or from no page at all. */
+export function ownPage(origin: string | undefined, port: number): boolean {
+  return origin === undefined || [`http://127.0.0.1:${port}`, `http://localhost:${port}`, `http://[::1]:${port}`].includes(origin);
 }
 
 /** Whether a page at `origin` may use the API (no Origin header: not a browser page, e.g. curl with the token). */
@@ -109,6 +126,7 @@ export async function startControl(o: ControlOptions): Promise<{ port: number; s
   const limiter = new KeyedLimiter({ perMinute: 240, burst: 60 });
   const commands = new KeyedLimiter({ perMinute: 20, burst: 10 });
   const badTokens = new KeyedLimiter({ perMinute: 10, burst: 10 });
+  const consoleLines = new KeyedLimiter({ perMinute: 120, burst: 30 });
   let port = o.port;
   const server = createServer((req: IncomingMessage, res: ServerResponse) => {
     const origin = req.headers.origin;
@@ -133,8 +151,22 @@ export async function startControl(o: ControlOptions): Promise<{ port: number; s
       res.setHeader('Access-Control-Max-Age', '600');
     }
     if (req.method === 'OPTIONS') return send(204);
-    if (!limiter.allow('all')) return send(429, { error: 'slow down' });
-    const path = new URL(req.url ?? '/', 'http://local').pathname;
+    const url = new URL(req.url ?? '/', 'http://local');
+    const path = url.pathname;
+    // The launcher page: static (the key arrives in the address's #fragment), never framed, its own script only.
+    if (o.launcher && req.method === 'GET' && (path === '/' || path === '/index.html')) {
+      const nonce = randomBytes(16).toString('base64');
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('Content-Security-Policy', launcherCsp(nonce, o.launcher.site));
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Referrer-Policy', 'no-referrer');
+      return void res.end(launcherPage(o.launcher, nonce));
+    }
+    if (path === '/api/log' && o.launcher && !limiter.allow('log')) return send(429, { error: 'slow down' });
+    if (path !== '/api/log' && !limiter.allow('all')) return send(429, { error: 'slow down' });
     const auth = String(req.headers.authorization ?? '').replace(/^Bearer\s+/i, '');
     const paired = !!auth && tokenMatches(auth, o.token);
     // Discovery: that the service runs, and whether this page holds the pairing token. Nothing else without it.
@@ -148,6 +180,27 @@ export async function startControl(o: ControlOptions): Promise<{ port: number; s
       const s = sup.status();
       const { adminToken: _a, ...config } = s.config ?? ({} as HostConfig);
       return send(200, { ...s, config: s.config ? { ...config, adminTokenSet: !!s.config.adminToken } : null, version: o.version, bans: o.bans?.list().map((b) => ({ id: b.id, name: b.name, account: !!b.sub, until: b.until, reason: b.reason })) ?? [] });
+    }
+    // The launcher's own: the console log and command line (its page only, not the site's).
+    if (path === '/api/log' || path === '/api/console') {
+      if (!o.launcher || !ownPage(origin, port)) return send(403, { error: 'only the launcher page uses the console' });
+      if (path === '/api/log' && req.method === 'GET') {
+        const after = Number(url.searchParams.get('after') ?? 0);
+        return send(200, o.launcher.logs.since(Number.isFinite(after) && after >= 0 ? Math.floor(after) : 0));
+      }
+      if (path === '/api/console' && req.method === 'POST') {
+        if (!consoleLines.allow('all')) return send(429, { error: 'slow down' });
+        const launcher = o.launcher;
+        return void readJson(req).then(
+          async (b) => {
+            const line = (b as { line?: unknown }).line;
+            if (typeof line !== 'string' || !line.trim() || line.length > MAX_CONSOLE_LINE) throw new ConfigError(`send a command line (at most ${MAX_CONSOLE_LINE} characters)`);
+            await launcher.run(line.replace(/[\u0000-\u001f\u007f]/g, ' '));
+            send(200, { ok: true });
+          },
+        ).catch((e: Error) => send(e instanceof ConfigError ? 400 : 500, { error: e.message.slice(0, 200) }));
+      }
+      return send(404, { error: 'not found' });
     }
     if (req.method !== 'POST') return send(404, { error: 'not found' });
     if (!commands.allow('all')) return send(429, { error: 'slow down' });
