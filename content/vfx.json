@@ -1,0 +1,27 @@
+{
+  "$comment": "Effect packs (CC0, by Binbun). tools/content/prepare-vfx.mjs reads each Godot 4 pack (its scenes, materials and textures) and writes what the game draws: an atlas of the pack's textures and the effects' settings, in packages/client/public/vfx (recorded in content/vfx.lock.json). The packs themselves are never committed.",
+  "packs": {
+    "binbun-muzzle-flash": {
+      "title": "Muzzle Flash VFX",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/muzzle-flash-vfx",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/binbun-muzzle-flash/License.txt"
+    },
+    "binbun-hit-fx": {
+      "title": "Stylized Hit FX (free)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/binbun-hit-fx/License.txt"
+    },
+    "binbun-explosion-fx": {
+      "title": "Stylized Explosion FX (free)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/binbun-explosion-fx/License.txt"
+    }
+  },
+  "budgets": { "maxBytes": 400000 }
+}

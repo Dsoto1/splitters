@@ -449,6 +449,9 @@ const gunCount = checkLocked(
   (f, pack) => (pack.meshy ? ['converted to glTF (FBX via three.js FBXLoader)', 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(/markings painted out/.test(f.src) ? ['lettering and logos painted out of the colour map'] : []), 'turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, matte material'] : ['turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, normal map to 256 px, matte material']),
   'node tools/content/prepare-guns.mjs --downloads <dir>',
 );
+const vfxManifest = JSON.parse(readFileSync(join(ROOT, 'content/vfx.json'), 'utf8'));
+const vfxCount = checkLocked('content/vfx.lock.json', 'vfx', (f) => vfxManifest.packs[f.source], vfxManifest.budgets, (f) => (f.file.endsWith('.json') ? ['effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js'] : ['textures packed into one grey atlas, 256 px each']), 'node tools/content/prepare-vfx.mjs --downloads <dir>');
+console.log(`checked ${vfxCount} effect files`);
 console.log(`checked ${textureCount} texture files, ${propCount} props, ${skyCount} skies, ${cityCount} city files, ${packFileCount} style pack files and ${gunCount} gun models`);
 
 // Map pictures (tools/content/capture-map-shots.mjs): one 640×360 JPEG per shipped (not retired) map, within budget, nothing else.

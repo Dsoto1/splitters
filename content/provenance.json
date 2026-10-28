@@ -23445,6 +23445,32 @@
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
+    },
+    {
+      "file": "vfx/muzzle_flash.webp",
+      "sha256": "9cedf59420ed172a",
+      "bytes": 20480,
+      "source": "binbun-muzzle-flash/shared/texture/*/*.png",
+      "title": "Muzzle Flash VFX: flash textures (atlas)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/muzzle-flash-vfx",
+      "license": "CC0-1.0",
+      "modifications": [
+        "textures packed into one grey atlas, 256 px each"
+      ]
+    },
+    {
+      "file": "vfx/muzzle_flash.json",
+      "sha256": "f3cb2e6cca88fccf",
+      "bytes": 26566,
+      "source": "binbun-muzzle-flash/muzzle_flash/effects/*/*.tscn",
+      "title": "Muzzle Flash VFX: flash effect settings",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/muzzle-flash-vfx",
+      "license": "CC0-1.0",
+      "modifications": [
+        "effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js"
+      ]
     }
   ]
 }

@@ -161,6 +161,8 @@ export interface WeaponPresentation {
   sound?: string;
   /** Hitscan drawn as a solid beam instead of tracers (lasers, rails). */
   beam?: boolean;
+  /** Muzzle flash: an effect of public/vfx/muzzle_flash.json and its size (default: by family, client game/muzzleFlash.ts). */
+  muzzle?: { effect: string; scale?: number };
 }
 
 /** A point on a weapon model, in model space (metres; +Z along the barrel, +Y up, +X right). */

@@ -72,6 +72,7 @@ import { Atmosphere } from './atmosphere.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
+import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
@@ -137,6 +138,8 @@ interface Avatar {
   /** Muzzle flash shown until this time. */
   flashUntil?: number;
   flash?: Mesh;
+  /** The pack's muzzle flash for their gun (muzzleFlash.ts); `flash` is the plain star used before it loads and for the railgun. */
+  flashRig?: MuzzleFlashRig;
   /** Climbing out of a hatch or burrow: rises from below the floor from this time. */
   emergeAt?: number;
   /** Team leader's crown (rules.leaders), made on first need. */
@@ -251,6 +254,9 @@ export class GameView {
   private bobAmount = 0;
   private readonly flash: Mesh;
   private flashUntil = 0;
+  /** Your gun's flash from the pack (muzzleFlash.ts); the star `flash` stays for the railgun and until the pack has loaded. */
+  private readonly flashRig: MuzzleFlashRig;
+  private starFlash = false;
   /** The ambient light, briefly brightened by your own shots (a real point light costs every pixel). */
   private hemi?: HemisphericLight;
   /** Shadows, tone mapping and post effects (Options → Graphics). */
@@ -298,6 +304,9 @@ export class GameView {
     // It rides on the gun in camera space and already faces you: billboarding it
     // made it trail the muzzle by a frame whenever you moved.
     this.flash.billboardMode = MeshClass.BILLBOARDMODE_NONE;
+    void loadMuzzleFlashes();
+    this.flashRig = new MuzzleFlashRig(this.scene, 'muzzleFlashRig', { renderingGroupId: 1 });
+    this.flashRig.root.parent = this.viewRoot;
     this.brass = new StandardMaterial('brassMat', this.scene);
     this.brass.diffuseColor = new Color3(0.78, 0.6, 0.22);
     this.brass.specularColor = new Color3(0.9, 0.8, 0.5);
@@ -439,6 +448,7 @@ export class GameView {
     a.jet?.setEnabled(false);
     this.dropCanopy(a);
     a.flash?.setEnabled(false);
+    a.flashRig?.hide();
     this.corpses.push({ a, slot, born: performance.now() });
     while (this.corpses.length > MAX_CORPSES) this.disposeAvatar(this.corpses.shift()!.a);
   }
@@ -521,13 +531,33 @@ export class GameView {
     if (wall) this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4));
   }
 
-  /** A brief muzzle flash on a remote player's gun. */
-  remoteFlash(slot: number): void {
+  /** A brief muzzle flash on a remote player's gun: the pack's flash for that weapon (muzzleFlash.ts), else the plain star. */
+  remoteFlash(slot: number, def?: WeaponDefinition): void {
     const a = this.avatars.get(slot);
     if (!a?.muzzle) return;
+    const fx = def ? muzzleEffectFor(def) : null;
+    if (fx && MuzzleFlashRig.ready()) {
+      a.flashRig ??= new MuzzleFlashRig(this.scene, `${a.root.name}_flashRig`);
+      // A little bigger than your own: it's seen from further off.
+      if (a.flashRig.fire(fx.id, fx.scale * 1.25)) {
+        this.placeRemoteFlash(a);
+        return;
+      }
+    }
     a.flash ??= this.createFlash(a.root.name);
     a.flashUntil = performance.now() + 55;
     kickFlash(a.flash, 1);
+  }
+
+  /** Put a remote flash rig at the muzzle, pointing down the barrel. */
+  private placeRemoteFlash(a: Avatar): void {
+    if (!a.flashRig || !a.muzzle) return;
+    a.muzzle.node.computeWorldMatrix(true);
+    const m = a.muzzle.node.getWorldMatrix();
+    const at = Vector3.TransformCoordinates(a.muzzle.local, m);
+    const fwd = Vector3.TransformNormal(new Vector3(0, 0, 1), m).normalize();
+    a.flashRig.root.position.copyFrom(at);
+    a.flashRig.root.lookAt(at.add(fwd));
   }
 
   private createFlash(name: string): Mesh {
@@ -542,6 +572,7 @@ export class GameView {
     this.impacts.update(dt);
     // Remote muzzle flashes follow the guns.
     for (const a of this.avatars.values()) {
+      if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
       if (!a.flash) continue;
       const on = now < (a.flashUntil ?? 0) && !!a.muzzle;
       a.flash.setEnabled(on);
@@ -728,12 +759,15 @@ export class GameView {
     if (rail) {
       // The rail slams back with a big blue-white flash.
       this.flashUntil = performance.now() + 80;
+      this.starFlash = true;
       kickFlash(this.flash, 2);
       return;
     }
     if (def.kind === 'melee' || def.view.beam) return;
     this.flashUntil = performance.now() + 45;
-    kickFlash(this.flash, def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1);
+    const fx = muzzleEffectFor(def);
+    this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale));
+    if (this.starFlash) kickFlash(this.flash, def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1);
     if (def.kind === 'hitscan' && def.ammo) this.ejectCasing(def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1);
   }
 
@@ -792,7 +826,9 @@ export class GameView {
     );
     this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
     const flashing = performance.now() < this.flashUntil;
-    this.flash.setEnabled(flashing);
+    this.flash.setEnabled(flashing && this.starFlash);
+    this.flashRig.root.position.set(0, 0.02, this.muzzleZ);
+    this.flashRig.update();
     // The map may set its own light level, so the base is whatever it is between shots.
     if (this.hemi && !this.hemiLit) this.hemiBase = this.hemi.intensity;
     if (this.hemi) this.hemi.intensity = this.hemiBase * (flashing ? 1.18 : 1);
@@ -1203,6 +1239,7 @@ export class GameView {
     // The flash texture is shared by every flash: dispose the material, never the texture.
     a.flash?.material?.dispose();
     a.flash?.dispose();
+    a.flashRig?.dispose();
     a.ragdoll?.dispose();
     a.anim?.dispose();
     a.weaponNode?.dispose();

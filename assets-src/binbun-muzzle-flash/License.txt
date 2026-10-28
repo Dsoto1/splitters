@@ -1,0 +1,9 @@
+Muzzle Flash VFX (Godot 4) by Binbun (Binbun3D, bun3d.com)
+https://binbun3d.itch.io/muzzle-flash-vfx
+
+The download carries no licence file. Its itch.io page gives the licence as
+"Creative Commons Zero v1.0 Universal" and says: "You're free to use this pack
+for personal, educational and commercial projects with no attribution required
+(CC0)." (Copied from the page on 2026-10-28.)
+
+https://creativecommons.org/publicdomain/zero/1.0/

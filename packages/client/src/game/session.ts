@@ -1189,7 +1189,7 @@ export class GameSession {
               this.hitFeedback(ev.hit, ev.z, !!ev.ar);
             } else {
               this.view.avatarAction(ev.s, 'shoot');
-              if (def && def.kind !== 'melee') this.view.remoteFlash(ev.s);
+              if (def && def.kind !== 'melee') this.view.remoteFlash(ev.s, def);
             }
           } else if (ev.e === 'impact') {
             // A bullet that was in flight landed.
