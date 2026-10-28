@@ -8,3 +8,5 @@ dist/
 .claude/worktrees/
 e2e-artifacts/
 host-release/
+*.orig
+*.rej

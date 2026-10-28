@@ -10,17 +10,21 @@
  * when it closes); no refresh token is kept, so a session lasts the tokens'
  * hour. The hub checks them when it needs to know who you are (GET /api/v1/me).
  *
- * Config (build time): VITE_COGNITO_CLIENT_ID ("off" to disable),
- * VITE_COGNITO_DOMAIN, VITE_COGNITO_ORIGINS (space-separated origins
- * registered as callback URLs; sign-in is offered only on those).
+ * Config: the server this page comes from sets it (its /auth-config.js:
+ * packages/server/src/auth.ts authConfigScript, from the pool and client the
+ * deploy looked up), so no account IDs are compiled into the site. A dev build
+ * can set VITE_COGNITO_CLIENT_ID, VITE_COGNITO_DOMAIN and VITE_COGNITO_ORIGINS
+ * (space-separated origins registered as callback URLs) instead. Neither:
+ * sign-in isn't offered. Sign-in is offered only on a registered origin.
  */
 const env = import.meta.env as Record<string, string | undefined>;
+const served = (globalThis as { __TT_AUTH?: { clientId?: unknown; domain?: unknown; origins?: unknown } }).__TT_AUTH;
+const servedOrigins: unknown = served?.origins;
+const text = (v: unknown): string | undefined => (typeof v === 'string' && /^[A-Za-z0-9.:/_-]+$/.test(v) ? v : undefined);
 export const COGNITO = {
-  clientId: env.VITE_COGNITO_CLIENT_ID ?? '2lrej6nsacfag8a7taeu3u6sc2',
-  domain: env.VITE_COGNITO_DOMAIN ?? 'login.toshiroplay.com',
-  region: 'us-east-1',
-  userPoolId: 'us-east-1_VdMsuDJ59',
-  origins: (env.VITE_COGNITO_ORIGINS ?? 'https://trigger.toshiroplay.com http://localhost:5173').split(/\s+/).filter(Boolean),
+  clientId: text(served?.clientId) ?? env.VITE_COGNITO_CLIENT_ID ?? '',
+  domain: text(served?.domain) ?? env.VITE_COGNITO_DOMAIN ?? '',
+  origins: Array.isArray(servedOrigins) ? servedOrigins.filter((o): o is string => !!text(o)) : (env.VITE_COGNITO_ORIGINS ?? 'http://localhost:5173').split(/\s+/).filter(Boolean),
   scopes: 'openid email profile',
 } as const;
 
@@ -30,7 +34,7 @@ const PENDING_KEY = 'tiletrigger.auth.pending';
 
 /** Whether sign-in is available here (configured, and this origin is a registered callback). */
 export function signInAvailable(): boolean {
-  return !!COGNITO.clientId && COGNITO.clientId !== 'off' && COGNITO.origins.includes(location.origin) && !!globalThis.crypto?.subtle;
+  return !!COGNITO.clientId && COGNITO.clientId !== 'off' && !!COGNITO.domain && COGNITO.origins.includes(location.origin) && !!globalThis.crypto?.subtle;
 }
 
 interface Tokens {

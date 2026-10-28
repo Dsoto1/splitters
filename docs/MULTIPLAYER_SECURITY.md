@@ -79,7 +79,7 @@ loopback.
 |---|---|---|---|
 | TURN shared secret | SSM SecureString `/toshiro/trigger/turn-secret` (standard tier, `aws/ssm` KMS key: free) | deploy script (owner's AWS credentials in CloudShell) → `/etc/tiletrigger.env` (root:tiletrigger 0640) and `/etc/turnserver.conf` (root:turnserver 0640) | `aws ssm put-parameter --name /toshiro/trigger/turn-secret --type SecureString --overwrite --value "$(openssl rand -hex 32)"`, then re-run the deploy. Relayed sessions reconnect with new credentials. |
 | Hub signing secret (join tickets, host session tokens, pairing codes) | SSM `/toshiro/trigger/hub-signing-secret` | same path → `HUB_SIGNING_SECRET` in the hub env | Rotate the same way; support two keys (`kid`) in the hub so tokens signed with the old one stay valid for their (short) life. |
-| Cognito app client ID, pool ID, domain | template parameters (not secret; public client `2lrej6nsacfag8a7taeu3u6sc2`, no client secret; also the default compiled into the client, `VITE_COGNITO_CLIENT_ID`) | hub env `COGNITO_*` | — |
+| Cognito app client ID, pool ID, domain | looked up by the deploy script each run (pool from its login domain, the app client by name) into template parameters (not secret: a public client without a secret); the page gets the client and domain from the hub's `/auth-config.js`, nothing is compiled in | hub env `COGNITO_*` | — |
 | Admin token for a dedicated server | that server's own env (`ADMIN_TOKEN`) | the server | Owner's choice; constant-time compare already (`server.ts:153-155`). |
 | Host Service device keys | generated on the user's machine, private key never leaves it (section 6) | Host Service | Re-pair. |
 | Release signing key (Host Service updates) | offline / CI secret, never on the hub (section 7) | release CI | Key rollover via a signed key-transition manifest. |
@@ -101,11 +101,11 @@ Three kinds of caller, three credentials (formats in MULTIPLAYER_PROTOCOL.md):
    (rate-limited) and receive a join ticket for a *public* game. Identity is
    a random per-browser `playerKey` kept in local storage — not trusted, only
    used for rate limits and the host's local kick/ban list.
-2. **Signed-in players / host owners**: Cognito (existing pool
-   `us-east-1_VdMsuDJ59`, managed login at `login.toshiroplay.com`,
+2. **Signed-in players / host owners**: Cognito (the owner's existing
+   pool, found from its managed login at `login.toshiroplay.com`,
    authorization code + PKCE, public app client without a secret). The hub
    verifies the **ID/access token** (RS256, JWKS from
-   `https://cognito-idp.us-east-1.amazonaws.com/us-east-1_VdMsuDJ59/.well-known/jwks.json`,
+   `https://cognito-idp.<region>.amazonaws.com/<pool>/.well-known/jwks.json`,
    cached; check `iss`, `aud`/`client_id`, `token_use`, `exp`) once when the
    WebSocket opens, then issues its own short session (15 min, renewed while
    connected). **Done:** the client's sign-in (`client/src/account.ts`:

@@ -53,9 +53,16 @@
 #   --auto-update on|off    hourly check for a new green main build on the box (default: off; later runs keep it)
 #   --no-provenance         skip the Sigstore build-provenance check (emergencies; SHA-256 is still checked)
 #   --repo URL              the repository (https://github.com/Dsoto1/splitters.git)
-#   --app-client-id ID      Cognito app client ID for Trigger (pool us-east-1_VdMsuDJ59; default 2lrej6nsacfag8a7taeu3u6sc2, the public "trigger" SPA client)
+#   Sign-in: the shared ToshiroPlay Cognito pool and Trigger's app client are looked up every run (nothing hardcoded):
+#   --cognito-domain HOST   the pool's managed login domain (login.toshiroplay.com): finds the pool
+#   --cognito-region REGION the pool's region (us-east-1)
+#   --app-client-name NAME  Trigger's app client in that pool, by name (trigger)
+#   --app-client-id ID      that app client by ID instead of by name
 #   --admin-ssh-cidr CIDR   keep SSH open to this CIDR permanently (default: Lightsail console only)
 #   --budget-warn USD       first budget alert (15);  --budget-limit USD  budget (25)
+#   --budget-scope S        project (default): count only costs tagged with the project (activate the tag as a cost
+#                           allocation tag in Billing first); account: the whole AWS account
+#   --budget-tag KEY        the tag the project budget filters on: Project (default) or AppName (both are set)
 #   --infra-only            stop after the stack (no SSH bootstrap, no checks)
 #   --yes                   don't ask before deleting hand-made DNS records (--dns replace)
 #   --owner SUB             the account that may publish maps from MapMaker (its Cognito user ID; MapMaker's
@@ -89,7 +96,8 @@ INFRA_ONLY=0
 YES=0
 OWNER_SET=0 OWNER_SUBS_NEW=''
 # Explicitly set options (empty = keep the stack's value, or the template default on create).
-EMAIL='' DNS_MODE='' ROOT='' TURN_RECORD='' INSTANCE='' AZ='' BUNDLE='' APP_CLIENT='2lrej6nsacfag8a7taeu3u6sc2' ADMIN_SSH='' BUDGET_WARN='' BUDGET_LIMIT=''
+EMAIL='' DNS_MODE='' ROOT='' TURN_RECORD='' INSTANCE='' AZ='' BUNDLE='' APP_CLIENT='' ADMIN_SSH='' BUDGET_WARN='' BUDGET_LIMIT='' BUDGET_SCOPE='' BUDGET_TAG=''
+COG_DOMAIN='login.toshiroplay.com' COG_REGION='us-east-1' APP_CLIENT_NAME='trigger'
 
 die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 log() { printf '\n== %s\n' "$*"; }
@@ -119,18 +127,25 @@ while [ $# -gt 0 ]; do
     --auto-update) AUTO_UPDATE="${2:?}"; shift ;;
     --no-provenance) PROVENANCE=off ;;
     --app-client-id) APP_CLIENT="${2:?}"; shift ;;
+    --app-client-name) APP_CLIENT_NAME="${2:?}"; shift ;;
+    --cognito-domain) COG_DOMAIN="${2:?}"; shift ;;
+    --cognito-region) COG_REGION="${2:?}"; shift ;;
+    --budget-scope) BUDGET_SCOPE="${2:?}"; shift ;;
+    --budget-tag) BUDGET_TAG="${2:?}"; shift ;;
     --admin-ssh-cidr) ADMIN_SSH="${2:?}"; shift ;;
     --budget-warn) BUDGET_WARN="${2:?}"; shift ;;
     --budget-limit) BUDGET_LIMIT="${2:?}"; shift ;;
     --infra-only) INFRA_ONLY=1 ;;
     --yes) YES=1 ;;
-    -h|--help) sed -n '2,64p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,70p' "$0"; exit 0 ;;
     *) die "unknown option $1 (see --help)" ;;
   esac
   shift
 done
 case "$DNS_MODE" in ''|skip|manage|replace) ;; *) die "--dns must be skip, manage or replace" ;; esac
 case "$CHANNEL" in main|stable) ;; *) die "--channel must be main or stable" ;; esac
+case "$BUDGET_SCOPE" in ''|project|account) ;; *) die "--budget-scope must be project or account" ;; esac
+case "$BUDGET_TAG" in ''|Project|AppName) ;; *) die "--budget-tag must be Project or AppName" ;; esac
 case "$AUTO_UPDATE" in ''|on|off) ;; *) die "--auto-update must be on or off" ;; esac
 [ -z "$RELEASE" ] || [[ "$RELEASE" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]] || die "--release takes a version tag (vX.Y.Z)"
 [ -z "$REF" ] || [[ "$REF" =~ ^[0-9a-f]{40}$ ]] || die "--ref takes a full commit SHA (40 hex characters)"
@@ -311,6 +326,20 @@ else
   note "existing: $CONTACT"
 fi
 
+# ------------------------------------------------------------------ sign-in (Cognito), looked up
+# The pool from its managed login domain, Trigger's app client by name in it; if a lookup fails (no
+# permission, renamed), the stack keeps the values it has.
+log "Sign-in: the ToshiroPlay Cognito pool"
+POOL_ID="$(aws cognito-idp describe-user-pool-domain --region "$COG_REGION" --domain "$COG_DOMAIN" --query DomainDescription.UserPoolId --output text 2>/dev/null | sed 's/^None$//' || true)"
+[ -n "$POOL_ID" ] || POOL_ID="$(stack_param CognitoUserPoolId)"
+if [ -n "$POOL_ID" ] && [ -z "$APP_CLIENT" ]; then
+  APP_CLIENT="$(aws cognito-idp list-user-pool-clients --region "$COG_REGION" --user-pool-id "$POOL_ID" --max-results 60 --query "UserPoolClients[?ClientName=='$APP_CLIENT_NAME'].ClientId" --output text 2>/dev/null | sed 's/^None$//' || true)"
+  [ "$(wc -w <<<"$APP_CLIENT")" -le 1 ] || die "more than one app client named $APP_CLIENT_NAME in $POOL_ID: pass --app-client-id"
+  [ -n "$APP_CLIENT" ] || APP_CLIENT="$(stack_param CognitoAppClientId)"
+fi
+if [ -n "$POOL_ID" ] && [ -n "$APP_CLIENT" ]; then note "pool $POOL_ID ($COG_DOMAIN), app client $APP_CLIENT"
+else note "not found (domain $COG_DOMAIN, client $APP_CLIENT_NAME): sign-in stays off. Pass --cognito-domain / --app-client-id."; fi
+
 # ------------------------------------------------------------------ 5. stack
 OVERRIDES=()
 add() { OVERRIDES+=("$1=$2"); }
@@ -318,7 +347,12 @@ add() { OVERRIDES+=("$1=$2"); }
 [ -n "$INSTANCE" ] && add InstanceName "$INSTANCE"
 [ -n "$AZ" ] && add AvailabilityZone "$AZ"
 [ -n "$BUNDLE" ] && add BundleId "$BUNDLE"
-[ -n "$APP_CLIENT" ] && add CognitoAppClientId "$APP_CLIENT"
+add CognitoRegion "$COG_REGION"
+add CognitoDomain "$COG_DOMAIN"
+add CognitoUserPoolId "$POOL_ID"
+add CognitoAppClientId "$APP_CLIENT"
+[ -n "$BUDGET_SCOPE" ] && add BudgetScope "$BUDGET_SCOPE"
+[ -n "$BUDGET_TAG" ] && add CostTagKey "$BUDGET_TAG"
 [ -n "$BUDGET_WARN" ] && add BudgetWarnUsd "$BUDGET_WARN"
 [ -n "$BUDGET_LIMIT" ] && add BudgetLimitUsd "$BUDGET_LIMIT"
 add ZoneName "$ZONE"
@@ -346,7 +380,7 @@ for name in "${TO_DELETE[@]}"; do claim_record apply "$name" -; done
 log "Deploying stack $STACK (a few minutes on create)"
 aws cloudformation deploy --stack-name "$STACK" --template-file "$TEMPLATE" \
   --parameter-overrides "${OVERRIDES[@]}" \
-  --tags "Project=$PROJECT" Environment=prod ManagedBy=cloudformation \
+  --tags "Project=$PROJECT" "AppName=$PROJECT" Environment=prod ManagedBy=cloudformation \
   --no-fail-on-empty-changeset
 
 STATIC_IP="$(stack_output StaticIp)"

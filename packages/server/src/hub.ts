@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { isRetiredMap } from '@tiletrigger/shared';
-import { JwksCache, accountHandler, cognitoFromEnv, issuerOf, verifyCognitoToken } from './auth.ts';
+import { JwksCache, accountHandler, authConfigScript, cognitoFromEnv, issuerOf, verifyCognitoToken } from './auth.ts';
 import { createBroker } from './broker.ts';
 import { iceFromEnv } from './ice.ts';
 import { discoverLan, lanInterfaces } from './lan.ts';
@@ -63,6 +63,8 @@ const owners = new Set((process.env.OWNER_SUBS ?? '').split(/[\s,]+/).filter(Boo
 const published = process.env.PUBLISHED_MAPS_DIR ? new PublishedMaps(process.env.PUBLISHED_MAPS_DIR, builtIn, suite) : null;
 const publish = published ? publishHandler(published, { owners, trustProxy: proxied, verify: cognito && jwks ? (t) => verifyCognitoToken(t, cognito, jwks) : null }) : (_req: unknown, _res: unknown, next: () => void) => next();
 const profile = profiles ? profileHandler(profiles, { trustProxy: proxied, verify: cognito && jwks ? (t) => verifyCognitoToken(t, cognito, jwks) : null }) : (_req: unknown, _res: unknown, next: () => void) => next();
+// The page's sign-in settings (auth.ts authConfigScript): served, never compiled into the site.
+const authConfig = authConfigScript(cognito);
 const siteDir = process.env.SITE_DIR ?? fileURLToPath(new URL('../../client/dist', import.meta.url));
 // SITE_DIR set (the Lightsail box: a link to the current build, switched by updates): always serve it.
 const site = process.env.SITE_DIR || existsSync(`${siteDir}/index.html`) ? siteHandler(siteDir) : null;
@@ -76,6 +78,11 @@ server.on('request', (req, res) => {
   };
   const path = (req.url ?? '/').split('?')[0]!;
   if (path === '/broker' || path.startsWith('/broker/')) return broker.handle(req, res, notFound);
+  if (path === '/auth-config.js') {
+    res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache');
+    return void res.end(authConfig);
+  }
   void lobby(req, res, () => void publish(req, res, () => void profile(req, res, () => void account(req, res, () => (site ? void site(req, res, notFound) : notFound()))))).catch(() => notFound());
 });
 server.listen(port, host, () => {

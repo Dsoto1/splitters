@@ -4,7 +4,7 @@ import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
 import { LOBBY_HEARTBEAT_SECONDS, LOBBY_STALE_SECONDS } from '@tiletrigger/shared';
-import { JwksCache, accountHandler, verifyCognitoToken, type CognitoConfig } from '../src/auth.ts';
+import { JwksCache, accountHandler, authConfigScript, cognitoFromEnv, verifyCognitoToken, type CognitoConfig } from '../src/auth.ts';
 import { BROKER_LIMITS, createBroker } from '../src/broker.ts';
 import { clientIp, rateKey } from '../src/clientIp.ts';
 import { DEFAULT_ICE_TTL, coturnCredentials, iceFromEnv, parseIceUsername } from '../src/ice.ts';
@@ -235,5 +235,23 @@ describe('sign-in tokens (Cognito)', () => {
     const off = accountHandler(null, false);
     const base2 = await serve((q, s) => void off(q, s, () => s.writeHead(404).end()));
     expect((await fetch(`${base2}/api/v1/me`)).status).toBe(404);
+  });
+});
+
+describe('sign-in settings come from the environment', () => {
+  it('is off unless the pool and the app client are both set', () => {
+    expect(cognitoFromEnv({})).toBeNull();
+    expect(cognitoFromEnv({ COGNITO_USER_POOL_ID: 'us-east-1_Abc123' })).toBeNull();
+    expect(cognitoFromEnv({ COGNITO_USER_POOL_ID: 'us-east-1_Abc123', COGNITO_APP_CLIENT_ID: 'off' })).toBeNull();
+    expect(cognitoFromEnv({ COGNITO_USER_POOL_ID: 'not a pool', COGNITO_APP_CLIENT_ID: 'abc' })).toBeNull();
+    expect(cognitoFromEnv({ COGNITO_USER_POOL_ID: 'eu-west-2_Abc123', COGNITO_APP_CLIENT_ID: 'client123' })).toEqual({ region: 'eu-west-2', userPoolId: 'eu-west-2_Abc123', clientId: 'client123' });
+  });
+  it('gives the page its client, login domain and origin, or nothing', () => {
+    const c = { region: 'us-east-1', userPoolId: 'us-east-1_Abc123', clientId: 'client123' };
+    const js = authConfigScript(c, { COGNITO_DOMAIN: 'login.example.com', PUBLIC_ORIGIN: 'https://game.example.com' });
+    const set = new Function(`const globalThis = {}; ${js}; return globalThis.__TT_AUTH;`)() as unknown;
+    expect(set).toEqual({ clientId: 'client123', domain: 'login.example.com', origins: ['https://game.example.com'] });
+    expect(authConfigScript(null, { COGNITO_DOMAIN: 'login.example.com' })).not.toContain('__TT_AUTH');
+    expect(authConfigScript(c, {})).not.toContain('__TT_AUTH');
   });
 });

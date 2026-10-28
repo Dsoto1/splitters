@@ -16,7 +16,7 @@ Metadata:
       - Label: { default: 'DNS (existing Route 53 hosted zone)' }
         Parameters: [HostedZoneId, ZoneName, HubHostname, ManageHubRecord, ManageRootRecord, ManageTurnRecord, TurnHostname, DnsTtl]
       - Label: { default: Cost safety }
-        Parameters: [AlertEmail, BudgetWarnUsd, BudgetLimitUsd, NetworkOutAlarmBytes]
+        Parameters: [AlertEmail, BudgetWarnUsd, BudgetLimitUsd, BudgetScope, CostTagKey, NetworkOutAlarmBytes]
       - Label: { default: 'Secrets and auth (referenced, not created)' }
         Parameters: [SsmPrefix, CognitoRegion, CognitoUserPoolId, CognitoAppClientId, CognitoDomain]
       - Label: { default: Tags }
@@ -117,6 +117,22 @@ Parameters:
     Default: 25
     MinValue: 1
     Description: Monthly budget (USD). Alerts at 100% actual and 100% forecast.
+  BudgetScope:
+    Type: String
+    Default: project
+    AllowedValues: [project, account]
+    Description: >-
+      What the budget counts. project: only costs tagged CostTagKey=ProjectTag
+      (the tag must be activated as a cost allocation tag in Billing, and only
+      costs after activation carry it). account: everything in the AWS account
+      (the owner's other projects and the domain included).
+  CostTagKey:
+    Type: String
+    Default: Project
+    AllowedValues: [Project, AppName]
+    Description: >-
+      The cost allocation tag the project budget filters on. Every resource here
+      carries both Project and AppName (the owner's standard), set to ProjectTag.
   NetworkOutAlarmBytes:
     Type: Number
     Default: 300000000
@@ -138,14 +154,18 @@ Parameters:
     Description: Region of the existing, shared ToshiroPlay Cognito user pool (not managed here).
   CognitoUserPoolId:
     Type: String
-    Default: us-east-1_VdMsuDJ59
-    AllowedPattern: '^[a-z]{2}-[a-z]+-[0-9]_[A-Za-z0-9]+$'
-    Description: Existing Cognito user pool ID (referenced only).
+    Default: ''
+    AllowedPattern: '^$|^[a-z]{2}-[a-z]+-[0-9]_[A-Za-z0-9]+$'
+    Description: >-
+      Existing Cognito user pool ID (referenced only). The deploy script looks it
+      up from CognitoDomain each run; empty turns sign-in off.
   CognitoAppClientId:
     Type: String
-    Default: '2lrej6nsacfag8a7taeu3u6sc2'
+    Default: ''
     AllowedPattern: '^$|^[a-z0-9]{20,32}$'
-    Description: App client ID for Trigger in that pool (the public "trigger" SPA client, no secret; empty turns sign-in off).
+    Description: >-
+      App client ID for Trigger in that pool (the public SPA client, no secret).
+      The deploy script looks it up by name each run; empty turns sign-in off.
   CognitoDomain:
     Type: String
     Default: login.toshiroplay.com
@@ -168,6 +188,7 @@ Conditions:
   MakeRootRecord: !And [!Condition HasZone, !Equals [!Ref ManageRootRecord, 'true']]
   MakeTurnRecord: !And [!Condition HasZone, !Equals [!Ref ManageTurnRecord, 'true']]
   HasAppClient: !Not [!Equals [!Ref CognitoAppClientId, '']]
+  ProjectBudget: !Equals [!Ref BudgetScope, project]
 
 Resources:
   # ------------------------------------------------------------ instance
@@ -222,6 +243,7 @@ Resources:
             Ipv6Cidrs: ['::/0']
       Tags:
         - { Key: Project, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref ProjectTag }
         - { Key: Environment, Value: !Ref EnvironmentTag }
         - { Key: Role, Value: multiplayer-hub }
         - { Key: ManagedBy, Value: cloudformation }
@@ -315,9 +337,14 @@ Resources:
       NotificationTriggers: [ALARM]
 
   # ------------------------------------------------------------ cost
-  # Account-wide monthly cost budget (the first two budgets in an account are
-  # free). Alerts: actual > BudgetWarnUsd, actual > BudgetLimitUsd, and a
-  # forecast over BudgetLimitUsd.
+  # Monthly cost budget (the first two budgets in an account are free). By
+  # default it counts only this project's costs: those tagged
+  # CostTagKey=ProjectTag (the Lightsail instance carries the tags; its plan,
+  # data transfer and snapshots are billed to it). BudgetScope=account counts
+  # the whole account instead. Alerts: actual > BudgetWarnUsd, actual >
+  # BudgetLimitUsd, and a forecast over BudgetLimitUsd. Expected: the 2 GB
+  # Lightsail plan (about 12 USD/month once any new-account free months end)
+  # plus cents of Route 53 queries.
   CostBudget:
     Type: AWS::Budgets::Budget
     Properties:
@@ -325,6 +352,11 @@ Resources:
         BudgetName: !Sub '${ProjectTag}-${EnvironmentTag}-monthly'
         BudgetType: COST
         TimeUnit: MONTHLY
+        CostFilters: !If
+          - ProjectBudget
+          - TagKeyValue:
+              - !Sub 'user:${CostTagKey}$${ProjectTag}'
+          - !Ref AWS::NoValue
         BudgetLimit:
           Amount: !Ref BudgetLimitUsd
           Unit: USD

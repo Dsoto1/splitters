@@ -64,9 +64,16 @@ Options worth knowing (`infra/deploy-multiplayer.sh --help` for all):
   to trigger.toshiroplay.com). The apex holds a `192.0.2.1` placeholder now;
   replacing it is the owner's call, so it's off unless asked (`--root` with
   `--dns replace` replaces the placeholder).
-- `--app-client-id <id>` stores the Cognito app client ID for Trigger (user
-  pool `us-east-1_VdMsuDJ59`, login at `login.toshiroplay.com`; the pool is
-  shared and is not managed by this stack).
+- Sign-in: every run looks up the shared ToshiroPlay Cognito pool from its
+  login domain (`--cognito-domain`, default `login.toshiroplay.com`) and
+  Trigger's app client in it by name (`--app-client-name`, default `trigger`;
+  or `--app-client-id <id>`). Nothing is hardcoded: the hub gets them in its
+  environment and gives the page its client and login domain at
+  `/auth-config.js`. If a lookup fails, the stack keeps the values it has.
+- Budget: `--budget-scope project` (default) counts only costs tagged with the
+  project (`Project` and `AppName` are both set to `toshiro-trigger`; pick the
+  one activated as a cost allocation tag with `--budget-tag`); `account` counts
+  the whole AWS account.
 - Which build: by default the latest green build of `main`; `--release vX.Y.Z`
   a release, `--channel stable` the newest release, `--ref <commit>` a commit
   CI published, `--branch check/<name>` (testing) the head of a check branch

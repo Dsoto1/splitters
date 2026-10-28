@@ -12,8 +12,11 @@ import { clientIp } from './clientIp.ts';
  * cached), issuer, audience/client_id, token_use and expiry. No database,
  * no user records: a request either carries a valid token or it doesn't.
  *
- * Env: COGNITO_REGION (us-east-1), COGNITO_USER_POOL_ID (us-east-1_VdMsuDJ59),
- * COGNITO_APP_CLIENT_ID (default: the public "trigger" app client; "off" turns sign-in off).
+ * Env: COGNITO_USER_POOL_ID and COGNITO_APP_CLIENT_ID (both needed; without
+ * them, or with the client "off", sign-in is off), COGNITO_REGION (default:
+ * the pool ID's own region), COGNITO_DOMAIN (the managed login, for the
+ * page: authConfigScript). Nothing is compiled in: on the Lightsail box the
+ * deploy script looks the pool and client up each run (infra/deploy-multiplayer.sh).
  */
 export interface CognitoConfig {
   region: string;
@@ -21,13 +24,27 @@ export interface CognitoConfig {
   clientId: string;
 }
 
-export const DEFAULT_COGNITO = { region: 'us-east-1', userPoolId: 'us-east-1_VdMsuDJ59', clientId: '2lrej6nsacfag8a7taeu3u6sc2' } as const;
-
 export function cognitoFromEnv(env: NodeJS.ProcessEnv = process.env): CognitoConfig | null {
   const set = (v: string | undefined) => (v && v !== 'pending' ? v : undefined);
-  const clientId = set(env.COGNITO_APP_CLIENT_ID) ?? set(env.COGNITO_CLIENT_ID) ?? DEFAULT_COGNITO.clientId;
-  if (clientId === 'off') return null;
-  return { region: env.COGNITO_REGION || DEFAULT_COGNITO.region, userPoolId: env.COGNITO_USER_POOL_ID || DEFAULT_COGNITO.userPoolId, clientId };
+  const clientId = set(env.COGNITO_APP_CLIENT_ID) ?? set(env.COGNITO_CLIENT_ID);
+  const userPoolId = set(env.COGNITO_USER_POOL_ID);
+  if (!clientId || clientId === 'off' || !userPoolId || !/^[a-z]{2}-[a-z]+-\d_[A-Za-z0-9]+$/.test(userPoolId)) return null;
+  return { region: env.COGNITO_REGION || userPoolId.split('_')[0]!, userPoolId, clientId };
+}
+
+/**
+ * /auth-config.js: the sign-in settings for the page this hub serves (the
+ * app client and managed login domain, and the one origin registered for the
+ * callback), so none of them is compiled into the site. Public values (they
+ * appear in every login URL). Without sign-in it sets nothing: the page then
+ * offers no sign-in.
+ */
+export function authConfigScript(cognito: CognitoConfig | null, env: NodeJS.ProcessEnv = process.env): string {
+  const domain = env.COGNITO_DOMAIN?.trim();
+  const origin = env.PUBLIC_ORIGIN?.trim();
+  if (!cognito || !domain || !/^[A-Za-z0-9.-]+$/.test(domain)) return '// Sign-in is off on this server.\n';
+  const config = { clientId: cognito.clientId, domain, ...(origin && /^https?:\/\/[A-Za-z0-9.:-]+$/.test(origin) ? { origins: [origin] } : {}) };
+  return `// Sign-in settings from this server (packages/server/src/auth.ts).\nglobalThis.__TT_AUTH = ${JSON.stringify(config)};\n`;
 }
 
 export const issuerOf = (c: CognitoConfig): string => `https://cognito-idp.${c.region}.amazonaws.com/${c.userPoolId}`;

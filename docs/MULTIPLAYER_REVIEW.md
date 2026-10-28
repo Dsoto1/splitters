@@ -38,7 +38,7 @@ pass changed since. Items marked ✔ in section 4 are done.
 | Map safety | 2 MiB before parsing (`loadMap`), `dependencies` ≤ 16; load budgets (errors): vehicles/mounts ≤ 32, destructibles + breakable blocks ≤ 1,024; warnings: encounter caps over 64 NPCs, rule loops (A → B → A within a tick). Runtime: 2,000 scenario actions and 256 rule firings a tick (rest deferred, ≤ 1,024 waiting events), one rule ≤ 30 firings/s, 64 NPCs alive, 32 NPC spawns/s and 256/min, 512 projectiles (oldest bot/NPC ones removed first); one warning per kind per match. | `shared/src/map/budgets.ts` (`RESOURCE_BUDGETS`), `validate.ts`, `sim/scenario.ts`, `sim/match.ts` |
 | Map identity | Optional `metadata.release` {mapId `m_`+16, versionId `v_`+16, revision, `sha256:` content hash of canonical JSON (picture, last-saved time and release excluded), schemaVersion, releasedAt}; stamped by MapMaker Export (new version only when the content changed); unstamped maps get a derived identity. No format bump (optional field). | `shared/src/map/identity.ts`, `client/src/editor/storage.ts` |
 | Listings | Non-suite maps may be listed only as `community: true` with map ID, version ID and content hash ("Community map" tag in the game browser and the host's badge); a non-community listing must name a suite map (hub reads `maps/`). Official/featured: browser hosts are never either. | `lobby.ts`, `hub.ts`, `client/src/game/session.ts`, `frontend/frontEnd.ts` |
-| Sign-in | Cognito managed login, authorization code + PKCE, public client `2lrej6nsacfag8a7taeu3u6sc2`, `/auth/callback`, tokens in sessionStorage, sign-out; hub verifies ID/access tokens (JWKS cached; iss, aud/client_id, token_use, exp) at `GET /api/v1/me`. No user records. | `client/src/account.ts`, `server/src/auth.ts` |
+| Sign-in | Cognito managed login, authorization code + PKCE, public client (looked up at deploy), `/auth/callback`, tokens in sessionStorage, sign-out; hub verifies ID/access tokens (JWKS cached; iss, aud/client_id, token_use, exp) at `GET /api/v1/me`. No user records. | `client/src/account.ts`, `server/src/auth.ts` |
 | Privacy page | `/privacy` (static), linked from the menu footer; contact is a placeholder for the owner. | `client/public/privacy/index.html`, `server/src/site.ts` |
 
 Not done in this pass (Phase 1 remainder → next): hub-issued join tickets
@@ -225,7 +225,7 @@ primitives keyed on account IDs.
 
 ### Blockers
 
-- ~~**Cognito app client ID**~~ resolved: `2lrej6nsacfag8a7taeu3u6sc2`
+- ~~**Cognito app client ID**~~ resolved: looked up at deploy time (infra/deploy-multiplayer.sh)
   (public SPA client), the default in the client, the hub and
   `infra/deploy-multiplayer.sh --app-client-id`.
 - ~~**Privacy page**~~ done (`/privacy`); the owner fills in the contact link.

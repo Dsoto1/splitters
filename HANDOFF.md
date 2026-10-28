@@ -101,9 +101,10 @@ update it when you finish a piece of work or the owner changes direction.
   It runs Caddy, the hub and coturn.
 - Deploys come from AWS CloudShell: `infra/deploy-multiplayer.sh`.
 - The box never builds: it installs CI's signed builds from GitHub Releases.
-- Cognito pool `us-east-1_VdMsuDJ59` (shared with the owner's Flavius game),
-  domain `login.toshiroplay.com`, Trigger app client `2lrej6nsacfag8a7taeu3u6sc2`
-  (public SPA, PKCE, Google sign-in).
+- The owner's Cognito pool (shared with their Flavius game), login domain
+  `login.toshiroplay.com`, Trigger's public SPA app client (PKCE, Google
+  sign-in). No IDs in the repo: the deploy looks them up each run; the page
+  reads them from the hub's `/auth-config.js`.
 - Secrets live only in SSM (`/toshiro/trigger/turn-secret`,
   `/toshiro/trigger/hub-signing-secret`). Never put them in the repo or the
   bundle.
