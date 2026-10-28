@@ -1,5 +1,6 @@
 import { loadMap, type GameMode, type MapDocument } from '@tiletrigger/shared';
 import index from 'virtual:map-index';
+import { publishedMapJson } from './publishedMaps.ts';
 
 /**
  * The built-in maps (maps/*.json). The menu draws from MAP_INDEX, worked out at
@@ -28,10 +29,15 @@ const path = (key: string) => `../../../maps/${key}.json`;
 /** Whether maps/<key>.json is shipped. */
 export const isBuiltInMap = (key: string): boolean => path(key) in FILES;
 
-/** The file of a built-in map (undefined if there is none). */
-export function builtInMapJson(key: string): Promise<unknown> {
+/**
+ * The file of one of our maps: the version the owner published, if there is one
+ * (publishedMaps.ts), else the one built into the site (undefined if neither).
+ */
+export async function builtInMapJson(key: string): Promise<unknown> {
+  const published = await publishedMapJson(key);
+  if (published !== undefined) return published;
   const load = FILES[path(key)];
-  return load ? load() : Promise.resolve(undefined);
+  return load ? load() : undefined;
 }
 
 /** A built-in map, loaded and checked (null when there is none or it doesn't load). */

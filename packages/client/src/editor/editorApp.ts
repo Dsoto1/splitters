@@ -212,6 +212,8 @@ import { PaletteAtlas } from './paletteAtlas.ts';
 import { NATURE_PROP_CATEGORIES, PROP_GROUPS, propGroup, scenarioGroup } from './paletteCatalog.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { libraryThumb } from './libraryThumbs.ts';
+import { isOwner, openPublishDialog } from './ownerPublish.ts';
+import { publishedMaps } from '../publishedMaps.ts';
 
 /** Small palette icon for a pickup item, coloured by item type. */
 function itemIcon(itemId: string): string {
@@ -568,7 +570,15 @@ export class EditorApp {
     this.active = true;
     $('editor').hidden = false;
     this.refresh(true);
+    // The owner (signed in, and listed on the hub) edits our maps as they are and publishes them.
+    void isOwner().then((owner) => {
+      this.owner = owner;
+      $('ed-publish').hidden = !owner;
+    });
   }
+
+  /** Signed in as an owner of the game (ownerPublish.ts): official maps open as they are, and Publish shows. */
+  private owner = false;
 
   hide(): void {
     this.active = false;
@@ -2364,6 +2374,9 @@ export class EditorApp {
     });
     $('ed-open').addEventListener('click', () => this.openDialog());
     $('ed-import').addEventListener('click', () => $('ed-import-file').click());
+    $('ed-publish').addEventListener('click', () => {
+      void openPublishDialog($<HTMLDialogElement>('ed-publish-dialog'), { doc: () => this.doc, builtIn: isBuiltInMap, toast: (t, err) => this.toast(t, err) });
+    });
     $<HTMLInputElement>('ed-import-file').addEventListener('change', async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       (e.target as HTMLInputElement).value = '';
@@ -3403,6 +3416,16 @@ export class EditorApp {
     const tpl = (id: string) => ({ load: () => loadBuiltInMap(id), shipped: true });
     const remix = (id: string, name: (m: MapDocument) => string) => () =>
       void loadBuiltInMap(id).then((m) => m && this.replaceDocument({ ...m, metadata: { ...m.metadata, id: newId('map'), name: name(m), parentId: m.metadata.id } }));
+    // The owner opens our maps as they are (same ID), to fix them and Publish; everyone else gets a remix to make their own.
+    const edit = (id: string) => () =>
+      void loadBuiltInMap(id).then((m) => {
+        if (!m) return this.toast(`Couldn't open ${id}`, true);
+        this.replaceDocument(m);
+        this.toast(`Editing the official ${m.metadata.name}: Publish puts your changes live for everyone`);
+      });
+    const template = (id: string, name: (m: MapDocument) => string) => (this.owner ? edit(id) : remix(id, name));
+    const kind = this.owner ? 'Official map' : 'Template';
+    const cls = this.owner ? 'official' : '';
     const add = (label: string, sub: string, open: () => void, remove?: () => void, cls = '', preview?: { load: () => MapDocument | null | Promise<MapDocument | null>; shipped: boolean }) => {
       const li = document.createElement('li');
       if (cls) li.className = cls;
@@ -3438,15 +3461,19 @@ export class EditorApp {
         } else this.toast(`Could not open: ${r.issues[0]?.message}`, true);
       }, () => deleteFromLibrary(entry.id), '', { load: () => ((r) => ('map' in r ? r.map : null))(openFromLibrary(entry.id)), shipped: SHIPPED_IDS.has(entry.id) });
     }
-    add('Sandgate', 'Template · desert town for Team Deathmatch, with open courtyards', remix('sandgate', () => 'Sandgate Remix'), undefined, '', tpl('sandgate'));
-    add('Citadel', 'Template · castle keep with a two-storey atrium, roof terraces, props and breakables', remix('citadel', () => 'Citadel Remix'), undefined, '', tpl('citadel'));
-    add('Rockfall Canyon', 'Template · sculpted terrain canyon with two bases, boulders and a ridge ledge', remix('canyon', () => 'Canyon Remix'), undefined, '', tpl('canyon'));
+    add('Sandgate', `${kind} · desert town for Team Deathmatch, with open courtyards`, template('sandgate', () => 'Sandgate Remix'), undefined, cls, tpl('sandgate'));
+    add('Citadel', `${kind} · castle keep with a two-storey atrium, roof terraces, props and breakables`, template('citadel', () => 'Citadel Remix'), undefined, cls, tpl('citadel'));
+    add('Rockfall Canyon', `${kind} · sculpted terrain canyon with two bases, boulders and a ridge ledge`, template('canyon', () => 'Canyon Remix'), undefined, cls, tpl('canyon'));
     // Every other shipped map (the homage maps and later additions) is a template too (listed from the index: the maps that load).
     const known = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
     for (const { key: id, metadata } of MAP_INDEX) {
       if (known.has(id) || isRetiredMap(id)) continue;
-      add(metadata.name, `Template · ${metadata.description.split(/(?<=\.)\s/)[0] ?? ''}`, remix(id, (m) => `${m.metadata.name} Remix`), undefined, '', tpl(id));
+      add(metadata.name, `${kind} · ${metadata.description.split(/(?<=\.)\s/)[0] ?? ''}`, template(id, (m) => `${m.metadata.name} Remix`), undefined, cls, tpl(id));
     }
+    // Official maps added by publishing (not built into the site) join the list once the hub answers.
+    void publishedMaps().then((p) => {
+      for (const e of p.values()) if (e.added && dialog.open) add(e.name, `${kind} · ${e.description.split(/(?<=\.)\s/)[0] ?? ''}`, template(e.id, (m) => `${m.metadata.name} Remix`), undefined, cls, tpl(e.id));
+    });
     dialog.showModal();
   }
 

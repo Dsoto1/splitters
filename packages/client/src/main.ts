@@ -21,7 +21,8 @@ import { setWeaponIconSource } from './frontend/weaponIcons.ts';
 import { PortraitRenderer } from './frontend/portraits.ts';
 import type { GameSession, SessionOptions, Travel } from './game/session.ts';
 import { listLibrary, openFromLibrary } from './editor/storage.ts';
-import { MAP_INDEX, builtInMapJson, isBuiltInMap, loadBuiltInMap, type MapIndexEntry } from './mapIndex.ts';
+import { MAP_INDEX, builtInMapJson, loadBuiltInMap, type MapIndexEntry } from './mapIndex.ts';
+import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
 import { PLAYLISTS, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
@@ -162,6 +163,29 @@ function arcadeMaps(): ArcadeMap[] {
   ];
 }
 
+/**
+ * Maps the owner published (publishedMaps.ts) into the list: our maps take the
+ * published version's details (the map itself loads published already), and a
+ * published map with a new ID joins as one of ours.
+ */
+function applyPublished(maps: ArcadeMap[], published: ReadonlyMap<string, PublishedEntry>): void {
+  for (const p of published.values()) {
+    const meta = { id: p.id, name: p.name, description: p.description, author: p.author, recommendedPlayers: p.recommendedPlayers };
+    const modes = p.modes.filter(isGameMode);
+    const known = maps.find((m) => m.metadata.id === p.id && !m.group);
+    if (known) {
+      known.metadata = { ...known.metadata, ...meta };
+      known.blurb = blurbOf(p.description) || known.blurb;
+      if (modes.length) known.modes = modes;
+    } else if (modes.length && !isRetiredMap(p.id)) {
+      maps.push(builtInEntry(p.id, { key: p.id, metadata: meta, modes }, { blurb: blurbOf(p.description), modes, bots: botsFor(p.recommendedPlayers) }));
+    }
+  }
+  // The three featured maps first, then ours by name (names may have changed), groups last.
+  const rest = maps.splice(3).sort((a, b) => (a.group ? 1 : 0) - (b.group ? 1 : 0) || (a.group || b.group ? 0 : byName(a, b)));
+  maps.push(...rest);
+}
+
 /** Your MapMaker maps (this browser's library), for an offline host's Change map. */
 function ownMaps(): ArcadeMap[] {
   return listLibrary().flatMap((e): ArcadeMap[] => {
@@ -209,6 +233,8 @@ class App {
   init(): Promise<void> {
     this.ready ??= (async () => {
       const maps = arcadeMaps();
+      // The owner's published maps update the list as soon as the hub answers (the menu draws from it when opened).
+      void publishedMaps().then((p) => p.size && applyPublished(maps, p));
       // The home screen's featured map draws its plan: fetch that one map alongside the engine.
       const featured = maps.find((m) => m.key === 'sandgate') ?? maps[0];
       const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), loadFonts(), featured && capped(featured.load(), 5000)]);
@@ -356,7 +382,7 @@ class App {
     void loadMatchCode().catch(() => undefined);
     await this.init();
     const file = isOfflineMap(which) ? OFFLINE_MAPS[which] : which;
-    const json = isBuiltInMap(file) ? await builtInMapJson(file) : undefined;
+    const json = await builtInMapJson(file);
     if (!json) return void this.showMenu(`No map called ${which}`);
     const arena = loadMap(json);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');

@@ -146,6 +146,7 @@
           <button id="ed-export" title="Export the map file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="wide">Export</span></button>
           <button id="ed-import" title="Import a map file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="wide">Import</span></button>
           <input id="ed-import-file" type="file" accept=".json,application/json" hidden />
+          <button id="ed-publish" class="owner" title="Publish this map as an official map, for everyone (owner only)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 14v6h14v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="wide">Publish</span></button>
         </div>
         <div class="group">
           <button id="ed-undo" title="Ctrl+Z">↶</button>
@@ -308,6 +309,7 @@
         <ul id="ed-library"></ul>
         <form method="dialog"><button>Close</button></form>
       </dialog>
+      <dialog id="ed-publish-dialog"></dialog>
       <dialog id="ed-quit-dialog">
         <h2>Unsaved changes</h2>
         <p id="ed-quit-msg"></p>

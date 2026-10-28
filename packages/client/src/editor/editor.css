@@ -451,3 +451,13 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
   .ed-quick-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   #ed-materials, #ed-tr-materials { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* The owner's Publish (ownerPublish.ts). */
+#ed-publish { border-color: var(--orange); color: var(--orange); }
+#ed-publish-dialog { max-width: 560px; }
+#ed-publish-dialog p { color: var(--muted); }
+#ed-publish-dialog .ed-publish-errors { color: var(--error); }
+#ed-publish-dialog .ed-publish-status:empty { display: none; }
+#ed-publish-dialog .ed-publish-versions ul { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-direction: column; gap: 6px; max-height: 30vh; overflow: auto; }
+#ed-publish-dialog .ed-publish-versions li { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+#ed-library .official > button:first-of-type { border-color: var(--orange); }
