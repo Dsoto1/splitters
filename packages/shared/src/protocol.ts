@@ -315,6 +315,8 @@ export interface RosterEntry {
   look: string;
   /** Team (faction ID) in Team Deathmatch; null otherwise. */
   team: string | null;
+  /** A signed-in player whose name is their username (checked by the host: account ticket). Other people are guests. */
+  acct?: 1;
 }
 
 export interface ServerStats {

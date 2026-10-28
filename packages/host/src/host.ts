@@ -88,8 +88,8 @@ export class TicketKeys {
       // No tickets checked until the hub answers: signed-in players count as guests meanwhile.
     }
   }
-  /** The account a ticket for `code` proves, or null (an unknown key: fetch again for next time). Each ticket counts once. */
-  verify(ticket: string, code: string): string | null {
+  /** The account (and its username) a ticket for `code` proves, or null (an unknown key: fetch again for next time). Each ticket counts once. */
+  verify(ticket: string, code: string): { sub: string; name?: string } | null {
     const c = verifyTicket(ticket, code, this.keys);
     if (!c) {
       void this.refresh();
@@ -99,7 +99,7 @@ export class TicketKeys {
     for (const [j, exp] of this.seen) if (exp * 1000 < t) this.seen.delete(j);
     if (this.seen.has(c.jti)) return null;
     this.seen.set(c.jti, c.exp);
-    return c.sub;
+    return { sub: c.sub, ...(c.name ? { name: c.name } : {}) };
   }
 }
 

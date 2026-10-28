@@ -8,6 +8,7 @@ import { iceFromEnv } from './ice.ts';
 import { discoverLan, lanInterfaces } from './lan.ts';
 import { LobbyStore, lobbyHandler } from './lobby.ts';
 import { PublishedMaps, publishHandler } from './publish.ts';
+import { ProfileStore, profileHandler } from './profiles.ts';
 import { siteHandler } from './site.ts';
 import { TicketSigner } from './tickets.ts';
 
@@ -23,7 +24,8 @@ import { TicketSigner } from './tickets.ts';
  * No match runs here: players' browsers run them.
  *   PORT (9000), HOST (0.0.0.0), TRUST_PROXY=1 behind a reverse proxy on the same box (Caddy; see clientIp.ts),
  *   MAPS_DIR (../../../maps: the suite, for listing rules),
- *   PUBLISHED_MAPS_DIR (where published maps are kept; unset: publishing is off), OWNER_SUBS (accounts that may publish).
+ *   PUBLISHED_MAPS_DIR (where published maps are kept; unset: publishing is off), OWNER_SUBS (accounts that may publish),
+ *   PROFILES_DIR (players' usernames and regions, profiles.ts; unset: profiles are off).
  * A site built with VITE_HUB=self uses the hub it was served from; otherwise
  * point the game at it with ?hub=<host:port> or VITE_HUB=<host:port>.
  */
@@ -53,11 +55,14 @@ const cognito = cognitoFromEnv();
 // Account tickets (tickets.ts): signed-in players prove their account to game hosts. HUB_TICKET_KEY (PEM) keeps the key across restarts.
 const tickets = new TicketSigner(process.env.HUB_TICKET_KEY || undefined);
 const jwks = cognito ? new JwksCache(`${issuerOf(cognito)}/.well-known/jwks.json`) : undefined;
-const account = accountHandler(cognito, proxied, jwks, tickets);
+// Profiles (profiles.ts): usernames go into account tickets, so hosts show them as verified accounts.
+const profiles = process.env.PROFILES_DIR ? new ProfileStore(process.env.PROFILES_DIR) : null;
+const account = accountHandler(cognito, proxied, jwks, tickets, (sub) => profiles?.username(sub) ?? null);
 // Published maps (publish.ts): the owner's MapMaker publishes; everyone reads.
 const owners = new Set((process.env.OWNER_SUBS ?? '').split(/[\s,]+/).filter(Boolean));
 const published = process.env.PUBLISHED_MAPS_DIR ? new PublishedMaps(process.env.PUBLISHED_MAPS_DIR, builtIn, suite) : null;
 const publish = published ? publishHandler(published, { owners, trustProxy: proxied, verify: cognito && jwks ? (t) => verifyCognitoToken(t, cognito, jwks) : null }) : (_req: unknown, _res: unknown, next: () => void) => next();
+const profile = profiles ? profileHandler(profiles, { trustProxy: proxied, verify: cognito && jwks ? (t) => verifyCognitoToken(t, cognito, jwks) : null }) : (_req: unknown, _res: unknown, next: () => void) => next();
 const siteDir = process.env.SITE_DIR ?? fileURLToPath(new URL('../../client/dist', import.meta.url));
 // SITE_DIR set (the Lightsail box: a link to the current build, switched by updates): always serve it.
 const site = process.env.SITE_DIR || existsSync(`${siteDir}/index.html`) ? siteHandler(siteDir) : null;
@@ -71,7 +76,7 @@ server.on('request', (req, res) => {
   };
   const path = (req.url ?? '/').split('?')[0]!;
   if (path === '/broker' || path.startsWith('/broker/')) return broker.handle(req, res, notFound);
-  void lobby(req, res, () => void publish(req, res, () => void account(req, res, () => (site ? void site(req, res, notFound) : notFound())))).catch(() => notFound());
+  void lobby(req, res, () => void publish(req, res, () => void profile(req, res, () => void account(req, res, () => (site ? void site(req, res, notFound) : notFound()))))).catch(() => notFound());
 });
 server.listen(port, host, () => {
   console.log(

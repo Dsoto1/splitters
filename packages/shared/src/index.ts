@@ -48,6 +48,7 @@ export * from './content/props.ts';
 export * from './protocol.ts';
 export * from './net/clientMessages.ts';
 export * from './net/lobby.ts';
+export * from './net/profile.ts';
 export * from './net/interest.ts';
 export * from './net/lan.ts';
 export * from './net/rateLimit.ts';

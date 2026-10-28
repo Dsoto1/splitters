@@ -235,7 +235,7 @@ Wants=network-online.target
 User=tiletrigger
 Group=tiletrigger
 WorkingDirectory=$APP/packages/server
-Environment=PORT=8080 HOST=127.0.0.1 TRUST_PROXY=1 NODE_ENV=production SITE_DIR=$SITE_ROOT/current/site PUBLISHED_MAPS_DIR=/var/lib/tiletrigger/maps
+Environment=PORT=8080 HOST=127.0.0.1 TRUST_PROXY=1 NODE_ENV=production SITE_DIR=$SITE_ROOT/current/site PUBLISHED_MAPS_DIR=/var/lib/tiletrigger/maps PROFILES_DIR=/var/lib/tiletrigger/profiles
 # Published maps (packages/server/src/publish.ts) live in /var/lib/tiletrigger, the hub's own state folder.
 StateDirectory=tiletrigger
 StateDirectoryMode=0750

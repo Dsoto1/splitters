@@ -19,6 +19,8 @@ export interface BoardRow {
   slot: number;
   name: string;
   bot: boolean;
+  /** A person: a verified account (signed in, playing under their username), or a guest (shown only when others are playing). */
+  who?: 'acct' | 'guest';
   /** Team colour (or the player's own colour in free-for-all). */
   color: string;
   /** Class name (Classes), else ''. */
@@ -293,7 +295,7 @@ export class ScoreBoard {
       if (f.ping) el.append(e.ping);
       this.rows.set(r.slot, e);
     }
-    const key = `${rank}|${r.name}|${r.bot}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.leader}|${r.dead}|${r.me}`;
+    const key = `${rank}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.leader}|${r.dead}|${r.me}`;
     if (key === e.key) return e;
     e.key = key;
     const set = (el: HTMLElement, text: string) => {
@@ -302,6 +304,9 @@ export class ScoreBoard {
     set(e.rank, rank ? String(rank) : '');
     set(e.name, r.name);
     e.name.classList.toggle('bot', r.bot);
+    e.name.classList.toggle('acct', r.who === 'acct');
+    e.name.classList.toggle('guest', r.who === 'guest');
+    e.name.title = r.who === 'acct' ? 'Signed in: a verified account' : r.who === 'guest' ? 'Guest: not signed in, so the name is just what they typed' : '';
     set(e.mark, r.leader ? '★' : '●');
     e.mark.style.color = r.leader ? '' : r.color;
     e.mark.classList.toggle('leader', r.leader);

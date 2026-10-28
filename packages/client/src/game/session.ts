@@ -378,6 +378,7 @@ export class GameSession {
       const local = opts.transport;
       this.peerHost = opts.hosting.peer;
       this.peerHost.admit = (link) => local.accept(link);
+      local.joinCode = this.peerHost.code;
       if (opts.hosting.listing !== undefined) {
         ($('host-list') as HTMLInputElement).checked = true;
         ($('host-name') as HTMLInputElement).value = opts.hosting.listing;
@@ -631,6 +632,7 @@ export class GameSession {
       this.peerHost = host;
       const code = await host.start();
       if (this.closed) return host.close();
+      local.joinCode = code;
       await this.showHostInfo(btn, info, code);
     } catch (e) {
       this.peerHost = undefined;

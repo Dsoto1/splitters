@@ -30,6 +30,8 @@ const MAX_EARLY_MESSAGES = 64;
 
 export interface LocalMatchOptions {
   name: string;
+  /** The local player is signed in and `name` is their username: shown as a verified account. */
+  verified?: boolean;
   /** Character look for the local player. */
   look?: string;
   /** Total players to fill with Player Bots. */
@@ -115,6 +117,8 @@ interface Remote {
   stream: SnapshotStream;
   /** The friend's browser key (hello.pk), for a ban, and to take their place back after a dropped link. */
   pk?: string;
+  /** Their account, as the page checked their ticket: their username is their name, as a verified account. */
+  account?: { sub: string; name?: string };
   /** When the friend's link last sent anything (ms): a silent one is closed (FRIEND_SILENT_MS). */
   heardAt: number;
 }
@@ -164,6 +168,7 @@ export class MatchHost {
     const test = this.opts.test;
     const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true });
     const me = match.addHuman(this.opts.name, this.opts.look)!;
+    me.account = !!this.opts.verified;
     if (test?.god) me.invulnerable = true;
     if (this.opts.carry) match.applyCarry(me, this.opts.carry);
     const bots = new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]);
@@ -406,14 +411,17 @@ export class MatchHost {
         return this.drop(id);
       }
       // Back after a dropped link: their kept place. Else the friend takes over a bot where it stands, on the team that needs a player.
-      const name = sanitizeName(msg.name);
-      const back = msg.pk ? bots.reclaim(`pk:${msg.pk}`, name) : null;
+      // Signed in with a username: that's their name (a verified account); else the name they typed, as a guest.
+      const name = r.account?.name ?? sanitizeName(msg.name);
+      const key = r.account ? `sub:${r.account.sub}` : msg.pk ? `pk:${msg.pk}` : null;
+      const back = key ? bots.reclaim(key, name) : null;
       const player = back ?? bots.join(name, msg.look, control.fill);
       if (!player) {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: 'match full' }));
         return this.drop(id);
       }
       r.slot = player.slot;
+      player.account = !!r.account?.name;
       this.sink.guest(id, player.slot);
       this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState() } satisfies ServerMessage));
       if (back) this.announce({ t: 'notice', text: `${name} is back` });
@@ -440,9 +448,15 @@ export class MatchHost {
     if (!r) return;
     this.remotes.delete(id);
     if (r.slot === null || this.stopped || !this.control) return;
-    this.control.bots.hold(r.slot, 'dropped', r.pk ? `pk:${r.pk}` : null, this.control.fill);
+    this.control.bots.hold(r.slot, 'dropped', r.account ? `sub:${r.account.sub}` : r.pk ? `pk:${r.pk}` : null, this.control.fill);
     this.sink.guest(r.id, null);
     this.rosterToAll();
+  }
+
+  /** The page checked a friend's account ticket (their hello follows). */
+  verified(id: number, sub: string, name?: string): void {
+    const r = this.remotes.get(id);
+    if (r && r.slot === null) r.account = { sub, ...(name ? { name } : {}) };
   }
 
   /** Friends playing in this match. */
@@ -519,6 +533,8 @@ export type ToSimHost =
   /** `zip`: the link wants the compressed stream (the match host compresses it: see sinkTo). */
   | { k: 'open'; id: number; zip?: boolean }
   | { k: 'msg'; id: number; text: string }
+  /** The page checked a friend's account ticket (ticketCheck.ts) before passing their hello on. */
+  | { k: 'verified'; id: number; sub: string; name?: string }
   | { k: 'closed'; id: number }
   | { k: 'hidden'; v: boolean }
   | { k: 'eval'; req: number; src: string; arg?: unknown }
@@ -588,6 +604,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return host.open(m.id, m.zip);
     case 'msg':
       return host.message(m.id, m.text);
+    case 'verified':
+      return host.verified(m.id, m.sub, m.name);
     case 'closed':
       return host.closed(m.id);
     case 'hidden':

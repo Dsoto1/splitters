@@ -160,7 +160,8 @@ export async function handleAuthCallback(): Promise<string | null> {
     if (!body.id_token || !body.access_token) return 'Sign-in failed: no tokens';
     memory = { idToken: body.id_token, accessToken: body.access_token, expiresAt: Date.now() + Math.min(body.expires_in ?? 3600, 86_400) * 1000 };
     session.set(TOKENS_KEY, JSON.stringify(memory));
-    return `Signed in as ${currentAccount()?.name ?? 'you'}`;
+    // Never the account's own name (that comes from Google): players see their username (Profile).
+    return 'Signed in';
   } catch {
     return "Sign-in failed: couldn't reach the login service";
   }

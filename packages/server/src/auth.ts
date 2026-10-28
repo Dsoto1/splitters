@@ -137,7 +137,8 @@ export async function verifyCognitoToken(token: string, config: CognitoConfig, j
  *   GET /api/v1/ticket-keys → { keys: [{ kid, x }] }: the public keys hosts check tickets with
  * 30 requests a minute per address; 10 failed tokens a minute per address, then 429 for a quarter of an hour.
  */
-export function accountHandler(config: CognitoConfig | null, trustProxy: boolean, jwks?: JwksCache, tickets?: TicketSigner) {
+/** `nameOf`: an account's username (profiles.ts), signed into its account tickets. */
+export function accountHandler(config: CognitoConfig | null, trustProxy: boolean, jwks?: JwksCache, tickets?: TicketSigner, nameOf?: (sub: string) => string | null) {
   const keys = config ? (jwks ?? new JwksCache(`${issuerOf(config)}/.well-known/jwks.json`)) : null;
   const asks = new KeyedLimiter({ perMinute: 30 });
   const failures = new KeyedLimiter({ perMinute: 10 });
@@ -170,7 +171,7 @@ export function accountHandler(config: CognitoConfig | null, trustProxy: boolean
     if (!m) return send(401, { error: 'sign in first' });
     try {
       const user = await verifyCognitoToken(m[1]!, config, keys);
-      if (wantsTicket) return send(200, tickets!.sign(user.sub, code));
+      if (wantsTicket) return send(200, tickets!.sign(user.sub, code, Date.now(), nameOf?.(user.sub)));
       return send(200, { sub: user.sub, tokenUse: user.tokenUse, exp: user.exp, ...(user.name ? { name: user.name } : {}), ...(user.email ? { email: user.email } : {}) });
     } catch (e) {
       if (!failures.allow(ip)) {

@@ -205,6 +205,8 @@ export interface Combatant {
    * hold runs out (null: idle but still connected).
    */
   away?: { name: string; key: string | null; why: 'afk' | 'dropped'; until: number | null };
+  /** A signed-in player playing under their username, checked by the host (account ticket): shown as a verified account. */
+  account?: boolean;
   name: string;
   collider: RAPIER.Collider;
   move: MoveState;
@@ -4628,7 +4630,7 @@ export class Match {
   }
 
   roster(): RosterEntry[] {
-    return this.combatants().map((c) => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null }));
+    return this.combatants().map((c) => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}) }));
   }
 
   destroy(): void {

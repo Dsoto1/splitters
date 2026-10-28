@@ -38,10 +38,14 @@ import {
   type MapDocument,
   type MatchRules,
   mapInspiration,
+  REGIONS,
+  usernameProblem,
+  type Region,
 } from '@tiletrigger/shared';
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
+import { cachedProfile, checkUsername, loadProfile, myRegion, saveProfile, setRegion } from '../profile.ts';
 import { installTooltips } from './tooltip.ts';
 import { FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadGraphicsQuality, loadRenderScale, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
@@ -135,7 +139,7 @@ export interface FrontEndHooks {
   joinCode(code: string, name: string): void;
 }
 
-type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options';
+type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options' | 'profile';
 
 const MODE_LABEL = MODE_LABELS;
 const BASE_RULES = DEFAULT_RULES;
@@ -219,9 +223,27 @@ export class FrontEnd {
   /** Clan tag shown in front of your name ("[TAG] Name"), up to 5 letters or digits. */
   clan = '';
 
-  /** Your name as other players see it, with the clan tag. */
+  /** Signed in with a username (Profile): it is your name, shown as a verified account (no clan tag). */
+  verified = false;
+
+  /** Your name as other players see it, with the clan tag (guests). */
   get displayName(): string {
+    if (this.verified) return this.name;
     return this.clan ? `[${this.clan}] ${this.name}` : this.name;
+  }
+
+  /** The footer's account links (redrawn when the profile loads). */
+  private footerBox?: HTMLElement;
+
+  /** Your profile arrived (or you have none): your username becomes your name. */
+  private applyProfile(username: string | null): void {
+    const was = `${this.verified}|${this.name}`;
+    this.verified = !!username;
+    if (username) this.name = username;
+    const box = this.footerLinks();
+    this.footerBox?.replaceWith(box);
+    this.footerBox = box;
+    if (`${this.verified}|${this.name}` !== was && !this.root.hidden && ['home', 'online', 'options', 'profile'].includes(this.screen)) this.go(this.screen);
   }
   server: string;
   look: string;
@@ -261,13 +283,14 @@ export class FrontEnd {
         'footer',
         { class: 'menu-footer' },
         el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Sandgate, Team Deathmatch and the Character Designer.'),
-        this.footerLinks(),
+        (this.footerBox = this.footerLinks()),
         this.footerHints,
       ),
     );
     window.addEventListener('keydown', this.keyHandler);
     this.go('home');
     (window as unknown as { __front: FrontEnd }).__front = this;
+    void loadProfile().then((p) => this.applyProfile(p?.username ?? null));
     // Render every character's portrait in the background while the menu is up, so Character Select opens ready.
     setTimeout(() => void this.warmPortraits(), 1500);
   }
@@ -335,6 +358,8 @@ export class FrontEnd {
         return this.online();
       case 'options':
         return this.options();
+      case 'profile':
+        return this.profile();
     }
   }
 
@@ -986,7 +1011,7 @@ export class FrontEnd {
   // ---------------------------------------------------------------- online & options
 
   private online(): HTMLElement {
-    const name = el('input', { id: 'name', value: this.name, maxLength: 24, autocomplete: 'off' });
+    const name = el('input', { id: 'name', value: this.name, maxLength: 24, autocomplete: 'off', disabled: this.verified, title: this.verified ? 'Your username: change it in Profile' : '' });
     const server = el('input', { id: 'server', value: this.server, autocomplete: 'off' });
     const img = el('img', { alt: '' });
     void this.portraits.get(this.look).then((src) => (img.src = src), () => undefined);
@@ -1003,9 +1028,11 @@ export class FrontEnd {
     );
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      this.name = name.value.trim() || this.name;
+      if (!this.verified) {
+        this.name = name.value.trim() || this.name;
+        storage('cs.name', this.name);
+      }
       this.server = server.value.trim();
-      storage('cs.name', this.name);
       storage('cs.server', this.server);
       this.hooks.playOnline(this.server, this.displayName);
     });
@@ -1018,8 +1045,10 @@ export class FrontEnd {
       e.preventDefault();
       const c = code.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
       if (c.length !== 6) return void (code.style.outline = '2px solid #e74c3c');
-      this.name = name.value.trim() || this.name;
-      storage('cs.name', this.name);
+      if (!this.verified) {
+        this.name = name.value.trim() || this.name;
+        storage('cs.name', this.name);
+      }
       this.hooks.joinCode(c, this.displayName);
     });
     // Hosting: from a match (nothing to install), or a dedicated server (the optional Host Service, explained on /host).
@@ -1067,24 +1096,23 @@ export class FrontEnd {
   /** Sign in / out (optional: playing never needs an account) and the privacy page. */
   private footerLinks(): HTMLElement {
     const box = el('div', { class: 'menu-links' });
+    // Your profile: the username you play under (never your Google name), or a prompt to pick one.
+    const username = cachedProfile()?.username;
+    const prof = el('button', { class: 'link', id: 'profile-link', textContent: currentAccount() ? (username ? `@${username}` : 'Pick a username') : 'Profile' });
+    prof.addEventListener('click', () => this.go('profile'));
     if (signInAvailable()) {
       const who = currentAccount();
       if (who) {
         const out = el('button', { class: 'link', id: 'sign-out', textContent: 'Sign out' });
         out.addEventListener('click', () => signOut());
-        // The account ID (Cognito `sub`) is what names the game's owner on the hub (deploy --owner): click to copy it.
-        const me = el('span', { class: 'account', id: 'account-name', textContent: `Signed in as ${who.name}` });
-        me.dataset.tip = `Account ID ${who.sub} (click to copy)`;
-        me.style.cursor = 'copy';
-        me.addEventListener('click', () => void navigator.clipboard?.writeText(who.sub).then(() => (me.dataset.tip = 'Account ID copied'), () => undefined));
-        box.append(me, out);
+        box.append(prof, out);
       } else {
         const inBtn = el('button', { class: 'link', id: 'sign-in', textContent: 'Sign in' });
         inBtn.dataset.tip = 'Optional: a ToshiroPlay account (Google). Playing never needs one.';
         inBtn.addEventListener('click', () => void signIn());
-        box.append(inBtn);
+        box.append(inBtn, prof);
       }
-    }
+    } else box.append(prof);
     box.append(el('a', { href: '/privacy/', target: '_blank', rel: 'noopener', id: 'privacy-link', textContent: 'Privacy' }));
     return box;
   }
@@ -1165,8 +1193,89 @@ export class FrontEnd {
     );
   }
 
+  // ---------------------------------------------------------------- profile
+
+  /**
+   * Your profile: signed in, your username (your name in every match, a
+   * verified account) and region, kept on the game server; signed out, your
+   * region, and how signing in gets you a username. Your Google name and
+   * email are never shown.
+   */
+  private profile(): HTMLElement {
+    const who = currentAccount();
+    const p = cachedProfile();
+    const regions = el('select', { id: 'profile-region' }, ...REGIONS.map((r) => el('option', { value: r.id, textContent: r.label, selected: r.id === myRegion() })));
+    const regionNote = el('small', { class: 'hint', textContent: 'The game browser shows games in your region first.' });
+    regions.addEventListener('change', () => {
+      setRegion(regions.value as Region).then(
+        () => (regionNote.textContent = 'Saved.'),
+        (e: Error) => (regionNote.textContent = `Not saved: ${e.message}`),
+      );
+    });
+    const img = el('img', { alt: '' });
+    void this.portraits.get(this.look).then((src) => (img.src = src), () => undefined);
+    const change = el('button', { type: 'button', textContent: 'Change' });
+    change.addEventListener('click', () => this.go('characters'));
+    const look = el('label', {}, 'Character', el('div', { class: 'current-look' }, img, el('b', { textContent: this.lookName(this.look) }), change));
+    const privacy = el('p', { class: 'hint', textContent: 'Your Google name and email are never shown to anyone: players see your username.' });
+    const head = el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Your <em>Profile</em>' }));
+    if (!who) {
+      const signin = el('button', { type: 'button', class: 'primary', id: 'profile-sign-in', textContent: 'Sign in' });
+      signin.addEventListener('click', () => void signIn());
+      const parts: HTMLElement[] = [
+        el('p', { textContent: `You're playing as a guest: "${this.name}", marked GUEST in online matches.` }),
+        ...(signInAvailable() ? [el('p', { class: 'hint', textContent: 'Sign in (a ToshiroPlay account, with Google) to pick a username: your name in every match, shown with a ✓ so nobody can pass for you. Playing never needs an account.' }), signin] : []),
+      ];
+      return el('div', { class: 'screen profile' }, head, el('div', { class: 'form panel', id: 'profile-form' }, ...parts, el('label', {}, 'Region', regions), regionNote, look, privacy));
+    }
+    const name = el('input', { id: 'profile-username', value: p?.username ?? '', maxLength: 16, placeholder: 'pick a username', autocomplete: 'off', spellcheck: false });
+    const status = el('small', { class: 'hint', id: 'profile-name-status', textContent: p?.username ? '' : '3–16 letters, numbers, _ - or . — unique in Tile Trigger' });
+    const save = el('button', { type: 'submit', class: 'primary', id: 'profile-save', textContent: p?.username ? 'Change username' : 'Take this username', disabled: true });
+    let timer = 0;
+    const check = () => {
+      const v = name.value.trim();
+      window.clearTimeout(timer);
+      save.disabled = true;
+      if (!v || v === p?.username) return void (status.textContent = '');
+      const local = usernameProblem(v);
+      if (local) return void (status.textContent = `Can't use that: ${local}`);
+      status.textContent = 'Checking…';
+      timer = window.setTimeout(() => {
+        checkUsername(v).then(
+          (r) => {
+            if (name.value.trim() !== v) return;
+            status.textContent = r.ok ? `${v} is free` : `Can't use that: ${r.problem}`;
+            save.disabled = !r.ok;
+          },
+          (e: Error) => (status.textContent = `Couldn't check: ${e.message}`),
+        );
+      }, 400);
+    };
+    name.addEventListener('input', check);
+    const form = el('form', { class: 'form panel', id: 'profile-form' }, el('label', {}, 'Username', name), status, save, el('label', {}, 'Region', regions), regionNote, look, privacy);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      save.disabled = true;
+      status.textContent = 'Saving…';
+      saveProfile({ username: name.value.trim() }).then(
+        (saved) => {
+          status.textContent = 'Saved: that is your name in every match now.';
+          this.applyProfile(saved.username);
+        },
+        (err: Error) => {
+          status.textContent = `Not saved: ${err.message}`;
+          save.disabled = false;
+        },
+      );
+    });
+    // The account ID (Cognito `sub`) is what names the game's owner on the server (deploy --owner).
+    const id = el('button', { type: 'button', class: 'link', id: 'account-id', textContent: 'Copy my account ID' });
+    id.addEventListener('click', () => void navigator.clipboard?.writeText(who.sub).then(() => (id.textContent = 'Account ID copied'), () => (id.textContent = who.sub)));
+    return el('div', { class: 'screen profile' }, head, form, el('p', { class: 'hint profile-id' }, id));
+  }
+
   private options(): HTMLElement {
-    const name = el('input', { value: this.name, maxLength: 24 });
+    const name = el('input', { value: this.name, maxLength: 24, disabled: this.verified, title: this.verified ? 'Your username: change it in Profile' : '' });
     const clan = el('input', { value: this.clan, maxLength: 5, placeholder: 'none' });
     clan.addEventListener('change', () => {
       this.clan = clan.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 5).toUpperCase();
@@ -1174,6 +1283,7 @@ export class FrontEnd {
       storage('cs.clan', this.clan);
     });
     name.addEventListener('change', () => {
+      if (this.verified) return;
       this.name = name.value.trim() || this.name;
       storage('cs.name', this.name);
     });

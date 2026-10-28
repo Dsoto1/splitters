@@ -11,7 +11,9 @@ import { createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes, si
  * keeps one across restarts); hosts fetch keys again on an unknown `kid`.
  *
  * Ticket: base64url(JSON claims) "." base64url(signature). Claims: kid, sub
- * (the account), code (the join code it is for), iat, exp (iat + 120 s), jti.
+ * (the account), code (the join code it is for), iat, exp (iat + 120 s), jti,
+ * and name: the account's username (profiles.ts), when it has one, so the
+ * host shows that name as a verified account.
  */
 export interface TicketClaims {
   kid: string;
@@ -20,6 +22,7 @@ export interface TicketClaims {
   iat: number;
   exp: number;
   jti: string;
+  name?: string;
 }
 
 export const TICKET_TTL_SECONDS = 120;
@@ -37,9 +40,9 @@ export class TicketSigner {
     this.kid = raw.x.slice(0, 8);
   }
 
-  sign(sub: string, code: string, now = Date.now()): { ticket: string; exp: number } {
+  sign(sub: string, code: string, now = Date.now(), name?: string | null): { ticket: string; exp: number } {
     const iat = Math.floor(now / 1000);
-    const claims: TicketClaims = { kid: this.kid, sub, code, iat, exp: iat + TICKET_TTL_SECONDS, jti: randomBytes(8).toString('hex') };
+    const claims: TicketClaims = { kid: this.kid, sub, code, iat, exp: iat + TICKET_TTL_SECONDS, jti: randomBytes(8).toString('hex'), ...(name ? { name } : {}) };
     const body = b64(Buffer.from(JSON.stringify(claims)));
     return { ticket: `${body}.${b64(sign(null, Buffer.from(body), this.key))}`, exp: claims.exp };
   }
@@ -70,5 +73,6 @@ export function verifyTicket(ticket: string, code: string, keys: ReadonlyMap<str
   }
   if (typeof claims.sub !== 'string' || !claims.sub || claims.sub.length > 128) return null;
   if (claims.code !== code || typeof claims.exp !== 'number' || claims.exp * 1000 < now) return null;
+  if (claims.name !== undefined && !(typeof claims.name === 'string' && /^[A-Za-z0-9][A-Za-z0-9_.-]{2,15}$/.test(claims.name))) return null;
   return claims;
 }

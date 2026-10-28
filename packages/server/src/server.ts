@@ -88,7 +88,7 @@ export interface ServerOptions {
   /** An admin banned a player (in-game or console): the ban list's owner records it (the player is then kicked). */
   onBan?: (who: PlayerIdentity, minutes: number, reason: string, by: string) => void;
   /** Checks a hello's account ticket (tickets.ts) for this server's join code: the account (Cognito sub), or null. */
-  verifyTicket?: (ticket: string) => string | null;
+  verifyTicket?: (ticket: string) => { sub: string; name?: string } | null;
   /** Joins, leaves, kicks, bans, admin changes and match results, as lines for a server console. */
   onEvent?: (line: string) => void;
 }
@@ -338,8 +338,10 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           conn.close(4002, 'full');
           return;
         }
-        const name = sanitizeName(msg.name);
-        const sub = msg.ticket ? (opts.verifyTicket?.(msg.ticket) ?? undefined) : undefined;
+        // Signed in with a username: that's their name here, as a verified account. Everyone else plays as a guest under the name they typed.
+        const proof = msg.ticket ? (opts.verifyTicket?.(msg.ticket) ?? null) : null;
+        const sub = proof?.sub;
+        const name = proof?.name ?? sanitizeName(msg.name);
         const address = conn.address?.();
         const who: PlayerIdentity = { name, ...(sub ? { sub } : {}), ...(msg.pk ? { pk: msg.pk } : {}), ...(address ? { address } : {}) };
         const banned = opts.admission?.(who);
@@ -361,6 +363,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         }
         client.slot = player.slot;
         client.who = who;
+        player.account = !!proof?.name;
         event(`${name} ${back ? 'is back' : 'joined'} (${sub ? 'signed in' : 'guest'}${address ? `, ${address}` : ''}) as slot ${player.slot}`);
         if (back) notice(`${name} is back`);
         // Back from a map change: pick up your score and weapons.

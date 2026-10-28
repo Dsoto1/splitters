@@ -3,6 +3,7 @@ import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, ty
 import { perfProbe } from './perfProbe.ts';
 import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
 import type { RemoteLink, Transport } from './transport.ts';
+import { checkTicket, helloTicket } from './ticketCheck.ts';
 
 export type { RemoteLink } from './transport.ts';
 
@@ -327,6 +328,9 @@ export class LocalTransport implements Transport {
     cb?.(reason);
   }
 
+  /** This game's join code while it's hosted (friends' account tickets are for it); set by the session. */
+  joinCode: string | null = null;
+
   /** Let a friend into this match (Host game). Links arriving while the match loads wait for it (a map change brings everyone back at once). */
   accept(link: RemoteLink): void {
     // Test mode is offline only (MatchHost refuses too).
@@ -334,7 +338,23 @@ export class LocalTransport implements Transport {
     const id = this.nextLink++;
     this.links.set(id, { link, slot: null });
     this.toHost({ k: 'open', id, ...(link.zip ? { zip: true } : {}) });
-    link.onMessage((text) => this.toHost({ k: 'msg', id, text }));
+    // A signed-in friend's hello carries an account ticket for our join code: check it here (the match trusts the
+    // page), and hold their messages until it's checked, so the match knows their username before it lets them in.
+    let held: string[] | null = null;
+    let first = true;
+    link.onMessage((text) => {
+      if (held) return void (held.length < 64 && held.push(text));
+      const ticket = first ? helloTicket(text) : null;
+      first = false;
+      const code = this.joinCode;
+      if (!ticket || !code) return this.toHost({ k: 'msg', id, text });
+      const waiting: string[] = (held = [text]);
+      void checkTicket(ticket, code).then((proof) => {
+        if (proof && this.links.has(id)) this.toHost({ k: 'verified', id, sub: proof.sub, ...(proof.name ? { name: proof.name } : {}) });
+        held = null;
+        for (const t of waiting) this.toHost({ k: 'msg', id, text: t });
+      });
+    });
     link.onClose(() => {
       if (!this.links.delete(id)) return;
       this.toHost({ k: 'closed', id });

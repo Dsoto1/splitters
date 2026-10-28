@@ -820,6 +820,8 @@ export class Hud {
   /** What the scoreboards show: the teams (or everyone), sorted, with each row's stats. */
   boardData(scores: readonly ScoreEntry[], localSlot: number, final: boolean): BoardData {
     const race = this.raceOrder;
+    // Guests are marked once more than one person plays (an online match), so a typed name can't pass for an account.
+    const people = [...this.roster.values()].filter((p) => !p.bot).length;
     const row = (s: ScoreEntry): BoardRow => {
       const p = this.roster.get(s.s);
       const cls = this.classes.get(s.s);
@@ -828,6 +830,7 @@ export class Hud {
         slot: s.s,
         name: this.name(s.s),
         bot: !!p?.bot,
+        ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
         color: this.team(s.s)?.color ?? slotColor(s.s),
         cls: cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? ''),
         k: s.k,
