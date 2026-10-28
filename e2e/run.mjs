@@ -1766,6 +1766,28 @@ async function mapsFlow(browser, part = 0) {
     check(ok && alive && errors.length === 0, `${id}: match starts and you spawn on solid ground${why ? ` (${why})` : ''}${errors.length ? ` (${errors.join('; ')})` : ''}`);
     await page.context().close();
   }
+  // Every map is made and edited in MapMaker: each opens there as it is, through MapMaker's own Import,
+  // with no validation errors and nothing lost (the first part also takes the maps with flows of their own).
+  const editable = [...ids, ...(part === 0 && !only ? [...COVERED_MAPS].sort() : [])];
+  if (!editable.length) return;
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  page.on('dialog', (d) => d.accept());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  for (const id of editable) {
+    errors.length = 0;
+    const path = new URL(`../maps/${id}.json`, import.meta.url).pathname;
+    const file = JSON.parse(readFileSync(path, 'utf8'));
+    await page.setInputFiles('#ed-import-file', path);
+    const opened = await page.waitForFunction((want) => window.__editor.doc.metadata.id === want && Array.isArray(window.__editor.issues), file.metadata.id, { timeout: T(30000) }).then(() => true, () => false);
+    const r = opened ? await page.evaluate(() => ({ errors: window.__editor.issues.filter((i) => i.severity === 'error').map((i) => i.message), entities: window.__editor.doc.entities.length, tiles: window.__editor.doc.classicStructure.tiles.length })) : null;
+    const whole = !!r && r.entities === file.entities.length && r.tiles === file.classicStructure.tiles.length;
+    const why = !opened ? 'did not open' : [r.errors.length ? `errors: ${r.errors.slice(0, 3).join('; ')}` : '', whole ? '' : `${r.entities}/${file.entities.length} entities, ${r.tiles}/${file.classicStructure.tiles.length} tiles`, errors.length ? errors.join('; ') : ''].filter(Boolean).join(', ');
+    check(opened && !r.errors.length && whole && !errors.length, `${id}: opens in MapMaker with no errors and nothing lost${why ? ` (${why})` : ''}`);
+  }
+  await page.context().close();
 }
 
 /** Draw `n` more frames (a page's own clock, whatever the machine's speed). */
