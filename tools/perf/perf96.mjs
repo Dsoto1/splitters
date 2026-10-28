@@ -241,4 +241,10 @@ const unmeasured = budget ? maps.flatMap((id) => GRAPHICS.filter((g) => !results
 for (const u of unmeasured) console.log(`NOT MEASURED: ${u} (the match didn't start or no clumped frame was drawn)`);
 const stalled = results.filter((r) => r.stalled);
 if (budget && !over.length && !unmeasured.length && !stalled.length) console.log(`draw budget: every clumped frame within ${budget} draws (${results.map((r) => `${r.map} ${r.graphics} ${r.clump.scene.draws}`).join(', ')})`);
+// On GitHub, each failure is also an annotation, readable through the API without the log.
+if (process.env.GITHUB_ACTIONS) {
+  for (const r of over) console.log(`::error title=perf over budget::${r.map} ${r.graphics} clumped draws ${r.clump.scene.draws} > ${budget}`);
+  for (const u of unmeasured) console.log(`::error title=perf not measured::${u}`);
+  for (const r of stalled) console.log(`::error title=perf stalled::${r.map} ${r.graphics}: ${String(r.stalled).slice(0, 300)}`);
+}
 process.exit(over.length || stalled.length || unmeasured.length ? 1 : 0);
