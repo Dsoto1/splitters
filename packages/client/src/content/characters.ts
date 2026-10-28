@@ -12,7 +12,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
-import '@babylonjs/loaders/glTF/2.0';
+import './gltf.ts';
 import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
 import { dyeTexture } from './dye.ts';

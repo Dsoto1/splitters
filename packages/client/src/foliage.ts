@@ -8,7 +8,7 @@ import type { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { TERRAIN_MATERIALS, boxBounds, cellFoliage, getProp, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
-import { loadGraphicsQuality } from './game/atmosphere.ts';
+import { loadGraphicsQuality } from './game/graphicsSettings.ts';
 
 /** Plants by the job they do: carpet grass, taller tufts, flowers, low shrubs, bushes, and pebbles on bare ground. */
 const KINDS = {
