@@ -41,7 +41,7 @@ update it when you finish a piece of work or the owner changes direction.
   version, because these are features.
 - **Nothing is in progress.** Everything above is on `main` (`7657980` and on). Open: nine portraits left to render live (soldier NPCs untinted, cyclops/oculus/imp/Nova framing) until `portraits.ts` handles them; the Host Service launcher now opens as an app window (`src/appWindow.ts`), untested on a real screen.
 
-## In flight (2026-10-28, 15:10 EDT): pick up here
+## In flight (2026-10-28, 16:30 EDT): pick up here
 
 All of this is on the session branch `claude/launcher-ui-map-cards` (pushed) and
 on `check/candidate` (CI running). `main` is at `4718207` + the infra fixes; none
@@ -68,26 +68,41 @@ fast-forward `main` to it (it contains `main`).
    `check/terrain` (`476bd74`) e2e shard 8 failed once (outpost, canyon, teams,
    hostcontrols, lobby, dedicatedhost); logs aren't downloadable here; re-run it
    to tell flake from real.
-3. **MapMaker:** fold-away sidebars (Shift+[ / Shift+]), edits rebuild only what
+3. **MapMaker:** fold-away sidebars (\\ / Shift+\\), edits rebuild only what
    changed (measured on Sandgate headless: ~170 ms per edit, ~100 ms of it the
    terrain), faster terrain meshes, and **Paths** (`shared/map/paths.ts`,
    `client/pathMeshes.ts`, `editor/pathTool.ts`, `setPaths` command; laid on
    load, `loadMap(..., { forEditing: true })` in MapMaker/publish keeps them
    apart).
-4. **Owner said "yes to all" of the MapMaker unification list (not started):**
-   1 one right-click rule (undo the tool's effect) + Select context menu;
-   2 Erase picks like Select (whole moving builds); 3 one placement rule
-   (height, snap, Shift) + one ghost preview for every kind, also while
-   dragging; 4 one rotation step table, Shift+R fine, group rotation round the
-   centre; 5 drag-to-paint for Paint/Walls/Erase/Scatter, modifiers Shift =
-   invert, Alt = pick, Ctrl = fine; 6 PgUp/PgDn only levels, [ ] only brush
-   size, a key per tool (move the sidebar keys off Shift+[ ]); 7 one hint per
-   tool in one place; 8 inspector walls/surfaces use the tools' options (glass,
-   scope); 9 one home per pane (Nature/Terrain twice, sky in Map properties),
-   undo instead of confirm(); 10 one Path tool for race road, mover routes,
-   airplane routes (Paths tool is the start). File:line notes for each came
-   from an audit of `editor/editorApp.ts` (the list is in the CHANGELOG-free
-   session; redo the audit if needed).
+4. **MapMaker unification ("yes to all"), done on the session branch (CI next):**
+   - Right-click takes back the tool's effect (`secondaryClick`): Paint resets,
+     Walls resets, Scatter clears, Road/Paths/Route remove a point, a placing
+     tool removes a thing of its own kind; with Select it opens a menu
+     (`openContextMenu`, `#ed-ctx`).
+   - Erase picks like Select (a whole moving build; Alt one piece).
+   - Placement: Ctrl (or Shift) places without snapping for every kind
+     (`freePlacing`); dragged things preview where they land (`updateDrag`).
+     Not done: ghosts for spawns, pickups, objects and vehicles (only tiles and
+     props have one).
+   - Rotation: `yawStep(kind, fine)` in shared `operations.ts` (spawn 45/15,
+     prop and vehicle 15/5, tiles, zones and liquids 90, rest 90/15) for
+     placing, R, Shift+R and the inspector; groups turn about their centre
+     (`rotateCommand`).
+   - Drag-to-paint for Paint, Walls, Scatter and Erase (`brushAtHover`), one
+     undo step per drag (`EditHistory.beginStroke/endStroke`); Shift = the
+     opposite, Alt = pick.
+   - Keys: \ and Shift+\ fold the sidebars, PgUp/PgDn levels only, [ ] brush
+     size only, G Paths, Shift+G race Road, N Scatter.
+   - One hint line per tool (click · right-click · R · modifiers).
+   - Inspector walls pick glass like the Walls tool (`setEdge`); surfaces share
+     the Paint tool's Apply to and take its brush.
+   - One home per pane: Nature and Terrain only in Environment; the backdrop in
+     Environment → Sky (`#ed-sky`); no `confirm()` for undoable removals.
+   - Routes: `editor/routeTool.ts`, "Draw route on the map" in the mover and
+     plane inspectors, the same gestures as Paths and the Road.
+   - e2e: editorux checks the rotation steps, the menu and strokes. CI failures
+     now come back as annotations (`::error title=e2e <flow>::…`), so a failed
+     shard can be read through the check-runs API without the log.
 5. Waiting on the owner: privacy-page contact address; Sandgate's street
    terrain (lumpy dirt/grass in the open streets is authored paint: the owner
    can now draw sand Paths over it); nine portraits still rendered live.
