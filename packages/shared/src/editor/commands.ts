@@ -230,19 +230,42 @@ export class EditHistory {
     return this.redoStack[this.redoStack.length - 1]?.label;
   }
 
+  /** While a stroke is open (beginStroke … endStroke), its edits join one undo step. */
+  private stroke: { open: boolean; entry: HistoryEntry | null } = { open: false, entry: null };
+
+  /** Start a stroke: drag-painting, drag-erasing and the like undo in one step. */
+  beginStroke(): void {
+    this.stroke = { open: true, entry: null };
+  }
+
+  endStroke(): void {
+    this.stroke = { open: false, entry: null };
+  }
+
   /** Apply and record a command. Throws CommandError (leaving history untouched) if it does not apply. */
   execute(label: string, command: EditCommand): void {
     if (isEmptyCommand(command)) return;
     const before = this.current;
     const after = applyCommand(before, command);
     this.current = after;
-    this.undoStack.push({ label, command, before, after });
+    const top = this.undoStack[this.undoStack.length - 1];
+    if (this.stroke.open && this.stroke.entry && top === this.stroke.entry) {
+      top.command = { kind: 'batch', commands: [top.command, command] };
+      top.after = after;
+      this.redoStack = [];
+      this.revision++;
+      return;
+    }
+    const entry = { label, command, before, after };
+    if (this.stroke.open) this.stroke.entry = entry;
+    this.undoStack.push(entry);
     if (this.undoStack.length > this.limit) this.undoStack.shift();
     this.redoStack = [];
     this.revision++;
   }
 
   undo(): string | undefined {
+    this.endStroke();
     const entry = this.undoStack.pop();
     if (!entry) return undefined;
     this.current = entry.before;
@@ -252,6 +275,7 @@ export class EditHistory {
   }
 
   redo(): string | undefined {
+    this.endStroke();
     const entry = this.redoStack.pop();
     if (!entry) return undefined;
     this.current = entry.after;

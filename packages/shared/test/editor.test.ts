@@ -111,6 +111,21 @@ describe('EditHistory', () => {
     h.undo();
     expect(h.doc).toEqual(doc);
   });
+
+  it('joins a stroke (drag-painting, drag-erasing) into one undo step', () => {
+    const h = new EditHistory(newMapDocument('t'));
+    const original = h.doc;
+    h.beginStroke();
+    h.execute('Place corridor', unwrap(placeTileCommand(h.doc, 'core.corridor', 1, 0, 0, 1)).command);
+    h.execute('Place room', unwrap(placeTileCommand(h.doc, 'core.room', 2, 0, 0, 0)).command);
+    h.endStroke();
+    expect(h.doc.classicStructure.tiles).toHaveLength(3);
+    expect(h.undo()).toBe('Place corridor');
+    expect(h.doc).toEqual(original);
+    expect(h.canUndo).toBe(false);
+    h.redo();
+    expect(h.doc.classicStructure.tiles).toHaveLength(3);
+  });
 });
 
 describe('editor operations', () => {

@@ -479,7 +479,13 @@ export class EditorApp {
   /** Top bar Snap: 'normal' keeps each tool's own step (50 cm, props 25 cm). */
   private snapMode: 'fine' | 'normal' | 'coarse' | 'off' = 'normal';
   private snapStep(normal: number): number {
+    if (this.freePlacing()) return 0.01;
     return { fine: 0.25, normal, coarse: 1, off: 0.01 }[this.snapMode];
+  }
+
+  /** One placement rule for every kind: hold Ctrl (or Shift) to place without snapping. */
+  private freePlacing(): boolean {
+    return ['ControlLeft', 'ControlRight', 'MetaLeft', 'ShiftLeft', 'ShiftRight'].some((k) => this.keys.has(k));
   }
   /** Last pointer position over the view, for the hover card. */
   private pointerAt: { x: number; y: number } | null = null;
@@ -752,18 +758,18 @@ export class EditorApp {
     const hints: Record<Tool['kind'], [string, string]> = {
       // One line per tool, in the same order: left-click · right-click (takes back what the tool does) · R · modifiers.
       select: ['Select', 'Click picks · right-click: menu · drag moves · R turns (Shift+R a little) · Shift+click adds · Alt+click one piece of a build · Del deletes'],
-      erase: ['Erase', 'Click deletes what is outlined in red (a whole moving build; Alt: one piece) · Ctrl+Z brings it back'],
+      erase: ['Erase', 'Click or drag deletes what is outlined in red (a whole moving build; Alt: one piece) · Ctrl+Z brings it back'],
       tile: ['Place', 'Click places the green piece · right-click removes a tile · R turns it 90° · PgUp/PgDn level'],
       spawn: ['Place', 'Click places a player spawn · right-click removes a spawn · R turns it 45° (Shift+R 15°)'],
       pickup: ['Place', 'Click places the pickup · right-click removes a pickup'],
       scenario: ['Place', 'Click places it (doors, walls and lasers snap to doorways) · right-click removes an object · R turns it 90° (Shift+R 15°) · L opens Logic'],
       npc: ['Place', 'Click drops the NPCs here · right-click removes them · R turns them 90° (Shift+R 15°) · soldiers, faction and orders in the inspector'],
-      paint: ['Paint', 'Click paints a surface · right-click resets it to the theme · Alt+click or I picks a style up'],
-      edge: ['Walls', 'Click a wall or floor edge to build it this way · right-click resets it · O cycles the style'],
-      prop: ['Place', 'Click places the prop (25 cm snap; Shift: free) · right-click removes a prop · R turns it 15° (Shift+R 5°)'],
+      paint: ['Paint', 'Click or drag paints surfaces · right-click (Shift+drag) resets them to the theme · Alt+click or I picks a style up'],
+      edge: ['Walls', 'Click or drag along wall and floor edges to build them this way · right-click (Shift+drag) resets them · O cycles the style'],
+      prop: ['Place', 'Click places the prop (Ctrl: no snap) · right-click removes a prop · R turns it 15° (Shift+R 5°)'],
       mount: ['Place', 'Click places it · right-click removes a vehicle · R turns it 15° (Shift+R 5°) · players get in and out with E'],
       terrain: ['Terrain', 'Hold to sculpt or paint · Shift: the opposite (lower / raise) · [ ] brush size · T cycles brushes'],
-      scatter: ['Place', 'Click plants a patch · right-click (or Alt+click) clears that kind of plant · [ ] brush size'],
+      scatter: ['Place', 'Click or drag plants patches · right-click (Shift+drag) clears that kind of plant · [ ] brush size'],
       road: ['Road', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click the road inserts one'],
       path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
     };
@@ -1032,6 +1038,42 @@ export class EditorApp {
     (menu.querySelector('button:not([disabled])') as HTMLButtonElement | null)?.focus();
   }
 
+  /** A drag with Paint, Walls, Scatter or Erase: what it last touched, so each surface, wall or thing is done once. */
+  private brush: { invert: boolean; alt: boolean; key: string | null; at: { x: number; z: number } | null } | null = null;
+
+  /** Apply the brush tool under the pointer if it has moved onto something new (always on the first press). */
+  private brushAtHover(first: boolean): void {
+    const b = this.brush;
+    const tool = this.tool;
+    if (!b) return;
+    if (tool.kind === 'paint') {
+      const t = this.paintTarget();
+      const key = t ? `${t.tile.id}:${t.slot}` : null;
+      if (!key || key === b.key) return;
+      b.key = key;
+      return this.paintAtHover(b.invert);
+    }
+    if (tool.kind === 'edge') {
+      const key = this.hoverEdge ? JSON.stringify(this.hoverEdge) : null;
+      if (!key || key === b.key) return;
+      b.key = key;
+      return this.edgeAtHover(b.invert ? 'auto' : tool.style);
+    }
+    if (tool.kind === 'scatter') {
+      const p = this.hoverPoint;
+      if (!p || (b.at && Math.hypot(p.x - b.at.x, p.z - b.at.z) < this.brushRadius * 0.8)) return;
+      b.at = { x: p.x, z: p.z };
+      return this.scatterAtHover(tool.set, b.invert || b.alt, !first);
+    }
+    if (tool.kind === 'erase') {
+      const hit = this.pick();
+      if (!hit && !first) return;
+      if (hit && hit.id === b.key) return;
+      b.key = hit?.id ?? null;
+      this.eraseAtHover(b.alt);
+    }
+  }
+
   /** Display name of a pick target. */
   private targetName(hit: { kind: 'tile' | 'entity'; id: string }): string {
     if (hit.kind === 'tile') {
@@ -1172,10 +1214,10 @@ export class EditorApp {
     if (this.run('Duplicate', r.command)) this.setSelection(r.selection);
   }
 
-  /** Where a prop of `model` goes under the pointer (snapped; Shift for free placement; bedded into terrain). */
+  /** Where a prop of `model` goes under the pointer (snapped; Ctrl or Shift for free placement; bedded into terrain). */
   private propSpot(model: string): [number, number, number] | null {
     if (!this.hoverPoint) return null;
-    const free = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+    const free = this.freePlacing();
     const p: [number, number, number] = [free ? Math.round(this.hoverPoint.x * 100) / 100 : snap(this.hoverPoint.x, this.snapStep(0.25)), this.level * this.doc.classicStructure.levelHeight, free ? Math.round(this.hoverPoint.z * 100) / 100 : snap(this.hoverPoint.z, this.snapStep(0.25))];
     if (this.hoverOnTerrain && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model, position: p, yaw: this.propYaw, scale: 1 }) ?? p[1];
     return p;
@@ -1448,6 +1490,7 @@ export class EditorApp {
       this.updatePointer(e.clientX, e.clientY);
       if (this.road.dragging) this.road.pointerMove(this.hoverPoint);
       if (this.paths.dragging) this.paths.pointerMove(this.hoverPoint);
+      if (this.brush && e.buttons & 1) this.brushAtHover(false);
       if (this.drag) {
         if (Math.hypot(e.clientX - this.drag.pointerX, e.clientY - this.drag.pointerY) > 4) this.drag.moved = true;
         if (this.drag.moved) this.updateDrag();
@@ -1463,11 +1506,15 @@ export class EditorApp {
         return;
       }
       if (e.button !== 0) return;
-      if (this.tool.kind === 'paint') return e.altKey ? this.pickStyleAtHover() : this.paintAtHover(false);
-      if (this.tool.kind === 'edge') return this.edgeAtHover(this.tool.style);
+      if (this.tool.kind === 'paint' && e.altKey) return this.pickStyleAtHover();
       if (this.tool.kind === 'terrain') return this.startStroke(e.shiftKey);
-      if (this.tool.kind === 'scatter') return this.scatterAtHover(this.tool.set, e.altKey);
-      if (this.tool.kind === 'erase') return this.eraseAtHover(e.altKey);
+      // Paint, Walls, Scatter and Erase paint as you drag (one undo step); Shift does the opposite.
+      if (this.tool.kind === 'paint' || this.tool.kind === 'edge' || this.tool.kind === 'scatter' || this.tool.kind === 'erase') {
+        this.history.beginStroke();
+        this.brush = { invert: e.shiftKey, alt: e.altKey, key: null, at: null };
+        this.brushAtHover(true);
+        return;
+      }
       if (this.tool.kind === 'road') return this.road.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind === 'path') return this.paths.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind !== 'select') return this.placeAtHover();
@@ -1502,6 +1549,10 @@ export class EditorApp {
         return;
       }
       if (e.button === 0) {
+        if (this.brush) {
+          this.brush = null;
+          this.history.endStroke();
+        }
         this.endStroke();
         this.endDrag();
         this.road.pointerUp();
@@ -2328,7 +2379,7 @@ export class EditorApp {
   }
 
   /** Plant a patch of the set round the pointer, or (clear) remove that set's props there. One undo step either way. */
-  private scatterAtHover(set: ScatterSetId, clear: boolean): void {
+  private scatterAtHover(set: ScatterSetId, clear: boolean, quiet = false): void {
     const p = this.hoverPoint;
     if (!p) return;
     const r = this.brushRadius;
@@ -2340,7 +2391,7 @@ export class EditorApp {
       return;
     }
     const plants = scatterProps(this.doc, set, p.x, p.z, r, this.level * this.doc.classicStructure.levelHeight, (Math.random() * 2 ** 31) | 0);
-    if (!plants.length) return this.toast('No room here: the patch is already full', true);
+    if (!plants.length) return quiet ? undefined : this.toast('No room here: the patch is already full', true);
     this.run(`Scatter ${label}`, { kind: 'addEntities', entities: plants.map((e) => ({ ...e, id: newId('prop') })) });
   }
 

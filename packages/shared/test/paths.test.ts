@@ -30,9 +30,11 @@ describe('paths', () => {
     expect(r1.map.paths![0]!.lay).toBe(false);
     const r2 = loadMap(serializeMap(r1.map));
     expect(r2.ok && r2.map.terrain!.heights).toEqual(r1.map.terrain!.heights);
-    // MapMaker keeps them apart.
+    // MapMaker keeps them apart: the ground is as it would be with no paths (only lowered under floors).
     const ed = loadMap(serializeMap(sloped()), undefined, { forEditing: true });
-    expect(ed.ok && ed.map.terrain!.heights).toEqual(sloped().terrain!.heights);
+    const none = loadMap(serializeMap({ ...sloped(), paths: undefined }), undefined, { forEditing: true });
+    expect(ed.ok && ed.map.paths![0]!.lay).toBe(true);
+    expect(ed.ok && ed.map.terrain!.heights).toEqual(none.ok && none.map.terrain!.heights);
     expect(withPathsLaid(r1.map)).toBe(r1.map);
   });
 
