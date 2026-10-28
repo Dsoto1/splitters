@@ -1,0 +1,56 @@
+name: Capture portraits
+
+# Renders every built-in character's portrait (tools/content/capture-portraits.mjs) with the menu's own
+# renderer and commits the pictures and their index to check/portraits, then runs CI there. Like any
+# check branch, main is fast-forwarded to it once it's green (CLAUDE.md). Run it after characters or the
+# portrait framing change ("Run workflow"); characters without a shipped portrait are rendered live meanwhile.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: portraits
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      BRANCH: check/portraits
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: for i in 1 2 3; do timeout 300 pnpm exec playwright install --with-deps chromium && exit 0; echo "playwright install try $i failed"; sleep 10; done; exit 1
+        timeout-minutes: 17
+      - name: Render the portraits
+        run: |
+          set -euo pipefail
+          pnpm --filter @tiletrigger/client exec vite preview --port 4799 --strictPort > /tmp/preview.log 2>&1 &
+          for i in $(seq 1 60); do curl -fs http://localhost:4799/ > /dev/null && break; sleep 1; done
+          node tools/content/capture-portraits.mjs http://localhost:4799
+      - name: Commit to the check branch and run CI there
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git add packages/client/public/portraits packages/client/src/frontend/portraitIndex.ts
+          if git diff --cached --quiet; then echo "The portraits are unchanged."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Portraits: rendered by the Capture portraits workflow ($(date -u +%Y-%m-%d))"
+          git push --force origin "HEAD:refs/heads/$BRANCH"
+          # A push made with this workflow's token starts no other workflow: ask for CI on the branch.
+          gh workflow run ci.yml --ref "$BRANCH"
+          echo "Pushed $BRANCH; CI is running there. Fast-forward main to it once it's green."

@@ -319,3 +319,17 @@ ceiling, a low window), and large ones are easier to hit and must crouch
 under openings a little over 2 m. Health pickups fill up to the size's
 health. The match setting **Character sizes: Matter / All equal**
 (`MatchRules.bodySizes`) makes everyone play and look standard.
+
+## Portraits
+
+Character Select, the player badge and the HUD show a portrait of each look,
+rendered from the 3D character by `client/src/frontend/portraits.ts`: head
+and shoulders, framed from the neck joint up to the top of the model and
+centred on the head joint (any body shape), three-quarter from the front;
+creatures whole. The built-in looks' portraits ship with the site
+(`client/public/portraits/*.webp`, listed in `frontend/portraitIndex.ts`) so
+the menu shows them at once. They're made by the **Capture portraits**
+workflow (`tools/content/capture-portraits.mjs`, the same renderer), which
+commits them to `check/portraits`; run it after adding characters or changing
+the framing. A look without a shipped portrait (new since the last capture,
+or a player's own design) is rendered live in the browser, as before.

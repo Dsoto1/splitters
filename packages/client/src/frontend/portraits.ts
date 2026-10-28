@@ -15,6 +15,7 @@ import { CharacterAnimator } from '../game/characterAnimator.ts';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { getLook, isCreature, npcLookRole } from '@tiletrigger/shared';
+import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
 
 const SIZE = 256;
 
@@ -62,8 +63,19 @@ export class PortraitRenderer {
     this.creatures = new CreatureLibrary(this.scene);
   }
 
-  /** A portrait (PNG data URL) of a look; cached per look. */
+  /**
+   * A portrait of a look (an image URL): the one shipped with the site when
+   * there is one (portraitIndex.ts: instant, cached by the browser), else
+   * rendered here once (a PNG data URL) and kept.
+   */
   get(look: string): Promise<string> {
+    const shipped = SHIPPED_PORTRAITS[look];
+    if (shipped) return Promise.resolve(`${import.meta.env.BASE_URL}portraits/${shipped}`);
+    return this.renderLive(look);
+  }
+
+  /** Render a portrait here even when one is shipped (tools/content/capture-portraits.mjs makes the shipped ones with it). */
+  renderLive(look: string): Promise<string> {
     let p = this.cache.get(look);
     if (!p) {
       p = (this.queue = this.queue.then(() => this.render(look))) as Promise<string>;
@@ -90,16 +102,7 @@ export class PortraitRenderer {
       }
       ch.root.computeWorldMatrix(true);
       for (const n of ch.root.getDescendants(false)) (n as TransformNode).computeWorldMatrix?.(true);
-      const head = ch.joints.get('Head');
-      const at = head ? head.getAbsolutePosition().clone() : new Vector3(0, 1.6, 0);
-      at.y += 0.06;
-      // Whole-body models (all 1.83 m tall) can have their head joint low in a big helmet: frame the face.
-      if (getLook(look).whole) at.y = Math.max(at.y, 1.55);
-      const view = PORTRAIT_VIEWS[look];
-      if (view) at.addInPlace(view.aim);
-      this.camera.position.copyFrom(at.add(view?.from ?? new Vector3(0.22, 0.04, 0.85)));
-      this.camera.setTarget(at.add(new Vector3(0, -0.06, 0)));
-
+      this.frameHead(ch.meshes, ch.joints, PORTRAIT_VIEWS[look]);
       return await this.snap(ch.meshes);
     } finally {
       anim.dispose(); // also disposes the character
@@ -133,29 +136,47 @@ export class PortraitRenderer {
         anim.update(0.1, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0.05, celebrate: false });
         this.scene.render();
       }
-      this.frameBody(ch.meshes);
+      ch.root.computeWorldMatrix(true);
+      for (const n of ch.root.getDescendants(false)) (n as TransformNode).computeWorldMatrix?.(true);
+      this.frameHead(ch.meshes, ch.joints);
       return await this.snap(ch.meshes);
     } finally {
       anim.dispose();
     }
   }
 
-  /** Aim the camera at the top third of the posed (skinned) meshes. */
+  /**
+   * Head and shoulders, whatever the body: from the neck joint up to the top
+   * of the posed model (hair, a hat, an otter's ears), centred on the head
+   * joint, seen three-quarter from the front. Bodies that aren't human-shaped
+   * (the otter, the cat, big helmets) frame as well as people do, because
+   * nothing assumes a head 1.8 m up.
+   */
+  private frameHead(meshes: AbstractMesh[], joints: ReadonlyMap<string, TransformNode>, view?: { from: Vector3; aim: Vector3 }): void {
+    const head = joints.get('Head');
+    if (!head) return this.frameBody(meshes);
+    const { max } = bounds(meshes);
+    const h = head.getAbsolutePosition();
+    const neck = joints.get('neck_01')?.getAbsolutePosition() ?? h.subtract(new Vector3(0, 0.12, 0));
+    // Neck to the top of the model: about a head; never a sliver, never the whole body (a tall hat, raised ears).
+    const span = Math.min(0.75, Math.max(0.2, max.y - neck.y));
+    const at = new Vector3(h.x, neck.y + span * 0.45, h.z);
+    if (view) at.addInPlace(view.aim);
+    // The frame shows about 1.7 heads: the head, the neck, the top of the shoulders.
+    const dist = (span * 1.7) / (2 * Math.tan(this.camera.fov / 2));
+    const from = (view?.from ?? new Vector3(0.26, 0.05, 1)).normalizeToNew();
+    this.camera.position.copyFrom(at.add(from.scale(dist)));
+    this.camera.setTarget(at.add(new Vector3(0, -span * 0.06, 0)));
+  }
+
+  /** A creature (or anything without a head joint), whole, seen three-quarter from the front: they come in every shape. */
   private frameBody(meshes: AbstractMesh[]): void {
-    const min = new Vector3(Infinity, Infinity, Infinity);
-    const max = new Vector3(-Infinity, -Infinity, -Infinity);
-    for (const m of meshes) {
-      m.computeWorldMatrix(true);
-      m.refreshBoundingInfo({ applySkeleton: true, applyMorph: true });
-      const b = m.getBoundingInfo().boundingBox;
-      min.minimizeInPlace(b.minimumWorld);
-      max.maximizeInPlace(b.maximumWorld);
-    }
-    const h = Math.min(4, Math.max(0.4, max.y - min.y));
-    const at = new Vector3((min.x + max.x) / 2, max.y - h * 0.24, (min.z + max.z) / 2);
-    // Far enough back that the top ~45% of the body fills the frame.
-    const dist = (h * 0.45) / (2 * Math.tan(this.camera.fov / 2));
-    this.camera.position.set(at.x + dist * 0.25, at.y + 0.03 * h, max.z + dist);
+    const { min, max } = bounds(meshes);
+    const size = Math.min(6, Math.max(0.4, max.y - min.y, (max.x - min.x) * 0.8, (max.z - min.z) * 0.8));
+    const at = new Vector3((min.x + max.x) / 2, min.y + (max.y - min.y) * 0.55, (min.z + max.z) / 2);
+    const dist = (size * 1.15) / (2 * Math.tan(this.camera.fov / 2));
+    const from = new Vector3(0.45, 0.25, 1).normalize();
+    this.camera.position.copyFrom(at.add(from.scale(dist)));
     this.camera.setTarget(at);
   }
 
@@ -188,6 +209,20 @@ export class PortraitRenderer {
   dispose(): void {
     this.scene.dispose();
   }
+}
+
+/** The posed (skinned) meshes' world bounds. */
+function bounds(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
+  const min = new Vector3(Infinity, Infinity, Infinity);
+  const max = new Vector3(-Infinity, -Infinity, -Infinity);
+  for (const m of meshes) {
+    m.computeWorldMatrix(true);
+    m.refreshBoundingInfo({ applySkeleton: true, applyMorph: true });
+    const b = m.getBoundingInfo().boundingBox;
+    min.minimizeInPlace(b.minimumWorld);
+    max.maximizeInPlace(b.maximumWorld);
+  }
+  return { min, max };
 }
 
 /** Whether a render drew the character (any opaque pixel), rather than an empty frame. */

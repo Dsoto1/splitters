@@ -296,9 +296,14 @@ export class FrontEnd {
     setTimeout(() => void this.warmPortraits(), 1500);
   }
 
+  /** Every built-in look with a portrait (tools/content/capture-portraits.mjs renders these for the site). */
+  portraitLooks(): string[] {
+    return [...CORE_LOOKS.map((l) => l.id), ...NPC_LOOKS.map((l) => l.id)];
+  }
+
   /** Portraits for all the looks, one at a time, only while the menu is showing (never during a match). */
   private async warmPortraits(): Promise<void> {
-    const ids = [...CORE_LOOKS.map((l) => l.id), ...NPC_LOOKS.map((l) => l.id), ...listCustomLooks().map((l) => l.id)];
+    const ids = [...this.portraitLooks(), ...listCustomLooks().map((l) => l.id)];
     for (const id of ids) {
       while (this.root.hidden) await new Promise((r) => setTimeout(r, 2000));
       await this.portraits.get(id).catch(() => undefined);
