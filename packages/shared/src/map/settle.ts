@@ -150,8 +150,10 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
   let heights: number[] | null = null;
   const s = t.spacing;
   const cm = (y: number) => Math.floor((y - t.baseY) * 100);
-  for (const b of boxes) {
-    if (b.kind !== 'floor' || b.yaw || b.pitch || b.roll) continue;
+  // Highest floors first: ground lowered under an upper floor may then reach a lower one, and goes under that
+  // too in the same pass (so a second pass changes nothing).
+  const floors = boxes.filter((b) => b.kind === 'floor' && !b.yaw && !b.pitch && !b.roll).sort((a, b) => b.max[1] - a.max[1]);
+  for (const b of floors) {
     const top = b.max[1];
     const c0 = Math.max(0, Math.ceil((b.min[0] - 0.01 - t.origin[0]) / s));
     const c1 = Math.min(t.cols - 1, Math.floor((b.max[0] + 0.01 - t.origin[0]) / s));
