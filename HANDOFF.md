@@ -22,11 +22,24 @@ update it when you finish a piece of work or the owner changes direction.
   - map select: uniform map cards (picture, name, plan); blurb and modes in
     the setup panel;
   - the imported TimeSplitters maps (`maps/imported/`) and their importer are
-    gone (the owner's call: they didn't convert well).
+    gone (the owner's call: they didn't convert well);
+  - online: away players and reconnecting, profiles (username, region),
+    region-sorted game browser, the online line in the Tab scoreboard, join
+    limits and idle kick on every host (on `main` at `c3d6f27`; the box needs
+    `infra/deploy-multiplayer.sh --owner …` rerun for `PROFILES_DIR`);
+  - on `check/candidate` (CI pending at the time of writing): shipped
+    character portraits (`tools/content/capture-portraits.mjs`, the
+    "Capture portraits" workflow: run it once this is on `main`, then review
+    and merge its `check/portraits` branch), the start-up loading screen
+    (`src/boot.ts`), MapMaker's level split fixed (floors go by their top, so
+    ground floors aren't drawn see-through over terrain), and match setup's
+    step-by-step panel with mode tabs, search, sort, list view and favourites
+    (`frontEnd.ts` `arcade()` / `fillSetup()`, `modeIcons.ts`; the owner's
+    mockup of 2026-10-28).
 
   A 0.4.0 release is reasonable once the owner has tried the launcher. A minor
   version, because these are features.
-- **Nothing is in progress.** No agents are running and no CI is pending.
+- **In progress:** CI on `check/candidate` for the batch above; then fast-forward `main`.
 
 ## How work flows (details in CLAUDE.md)
 
