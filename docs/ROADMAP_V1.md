@@ -142,6 +142,7 @@ sounds (needs new CC0 sounds and a grip pose).
 - ✅ Map cards: show **one image** per map — a real aerial/player-camera screenshot — and let the user cycle to the grid layout. (Oct 27: every map has a picture and a separate plan, shown side by side, never composited; automatic pictures chosen by raycast and image scoring so they don't face walls or sky; makers set their own picture in MapMaker with Set thumbnail. See CONTENT_PIPELINE.md, Official maps.)
 
 ### 6b. Imported TimeSplitters maps
+- **Dropped (Oct 28):** the imported maps and the importer were removed (docs/ORIGINAL_MAPS.md).
 - ✅ Hide them until each one is verified (your call). (Oct 26: only verified maps show, `VISIBLE_IMPORTED_MAPS` in `shared/map/imported.ts`: Clover, Core, Archives, Bunker, Stack; `?imported` lists all 116.)
 - ✅ Work out what the decoded data is missing (props, textures, heights) using controlled test saves, then rebuild a few by hand to set the bar. (Oct 26: audit of every map in [IMPORTED_MAPS_AUDIT.md](IMPORTED_MAPS_AUDIT.md) (`tools/audit-imported.ts`). Fixed in the converter: cut-off areas joined back (9,195 → 2,428 floor cells cut off), "sky below" (Space Station backdrop had no ground), roofs on rooms, the saves' per-tile light colours as lights, sparse dressing, spawn facing; rotation/footprint rules pinned by `imported.test.ts`. Clover and Bunker polished by hand (`tools/polish-imported.ts`). Still open, needing controlled test saves (no test saves were available): item kinds, tile looks, tall pieces and lifts, and whether the whole map is mirrored.)
 

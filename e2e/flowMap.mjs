@@ -6,8 +6,6 @@
 /** The map tour is long: CI runs it in this many parts ('maps', 'maps2', … 'maps7'). */
 export const MAP_PARTS = 7;
 export const MAP_FLOWS = Array.from({ length: MAP_PARTS }, (_, i) => (i ? `maps${i + 1}` : 'maps'));
-/** The part that also spot-checks the imported maps (maps/imported/). */
-export const IMPORTED_PART = MAP_PARTS - 1;
 
 /** Every flow in e2e/run.mjs (run.mjs refuses to start if they differ). */
 export const FLOWS = [
@@ -103,7 +101,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx'], ['client']],
   [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies'], ['client']],
-  [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|importedMaps|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual'], ['client']],
+  [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual'], ['client']],
 
   // The server (dedicated server, hub, lobby).
   [/^packages\/server\/src\/tools\//, NONE, ['server']],
@@ -142,11 +140,6 @@ export function selectForPaths(paths, mapIds = []) {
         for (const f of MAP_USERS[id] ?? []) flows.add(f);
       }
       unitAll = true;
-      continue;
-    }
-    if (/^maps\/imported\//.test(p)) {
-      flows.add(MAP_FLOWS[IMPORTED_PART]);
-      unit.add('server');
       continue;
     }
     if (/^maps\//.test(p)) {

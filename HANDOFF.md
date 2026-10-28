@@ -20,7 +20,9 @@ update it when you finish a piece of work or the owner changes direction.
     the site's look (log, filters, command line with suggestions) and a right
     bar of controls, each running the console command it shows;
   - map select: uniform map cards (picture, name, plan); blurb and modes in
-    the setup panel.
+    the setup panel;
+  - the imported TimeSplitters maps (`maps/imported/`) and their importer are
+    gone (the owner's call: they didn't convert well).
 
   A 0.4.0 release is reasonable once the owner has tried the launcher. A minor
   version, because these are features.

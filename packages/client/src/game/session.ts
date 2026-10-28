@@ -656,7 +656,7 @@ export class GameSession {
     this.updateListing();
   }
 
-  /** Any valid map may be listed publicly: our suite's as they are, others (imported, MapMaker) labelled "Community map". */
+  /** Any valid map may be listed publicly: our suite's as they are, others (MapMaker) labelled "Community map". */
   private get listable(): boolean {
     return !!this.map && !this.offlineOnly;
   }

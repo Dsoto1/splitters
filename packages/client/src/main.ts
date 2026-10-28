@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { VISIBLE_IMPORTED_MAPS, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
@@ -92,8 +92,6 @@ function revealWhenReady(ready: Promise<unknown>): void {
 const OFFLINE_MAPS = { arena: 'phase0_arena', vault: 'm3_vault', outpost: 'm4_outpost', sandgate: 'sandgate', citadel: 'citadel', canyon: 'canyon' } as const;
 type OfflineMap = keyof typeof OFFLINE_MAPS;
 const isOfflineMap = (key: string): key is OfflineMap => Object.hasOwn(OFFLINE_MAPS, key);
-/** Maps converted from TimeSplitters MapMaker saves: their own chunks, and their own "Imported" group in the Arcade. */
-const importedMaps = (ids?: readonly string[]): Promise<Record<string, unknown>> => import('./importedMaps.ts').then((m) => m.loadImportedMaps(ids));
 
 /** The match code (matchCode.ts: session, transports, physics), loaded once; a failed load is tried again next time. */
 type MatchCode = typeof import('./game/matchCode.ts');
@@ -112,7 +110,7 @@ function loadMatchCode(): Promise<MatchCode> {
   return matchCode;
 }
 
-/** An Arcade entry whose map is already loaded (imported maps, your MapMaker maps). */
+/** An Arcade entry whose map is already loaded (your MapMaker maps). */
 function loadedEntry(key: string, map: MapDocument, rest: Omit<ArcadeMap, 'key' | 'metadata' | 'map' | 'load'>): ArcadeMap {
   return { key, metadata: map.metadata, map, load: () => Promise.resolve(map), ...rest };
 }
@@ -143,19 +141,6 @@ function builtInEntry(key: string, e: MapIndexEntry, rest: Omit<ArcadeMap, 'key'
 const byName = (a: ArcadeMap, b: ArcadeMap) => a.metadata.name.localeCompare(b.metadata.name);
 const blurbOf = (description: string) => description.split(/(?<=\.)\s/)[0] ?? '';
 const botsFor = (players: { max: number }) => Math.max(3, Math.min(11, players.max - 1));
-
-/** Arcade entries for a set of map files (imported maps), from each map's own metadata, by name. */
-function arcadeEntries(files: Record<string, unknown>, group?: string): ArcadeMap[] {
-  return Object.entries(files)
-    .flatMap(([path, json]): ArcadeMap[] => {
-      const key = path.replace(/^.*\/|\.json$/g, '');
-      if (isOfflineMap(key) || isRetiredMap(key)) return [];
-      const r = loadMap(json);
-      if (!r.ok) return [];
-      return [loadedEntry(key, r.map, { blurb: blurbOf(r.map.metadata.description), modes: playableModes(r.map), bots: botsFor(r.map.metadata.recommendedPlayers), ...(group ? { group } : {}) })];
-    })
-    .sort(byName);
-}
 
 /** The built-in maps the Arcade offers, with the modes each supports (from the index: no map file is loaded for this). */
 function arcadeMaps(): ArcadeMap[] {
@@ -237,12 +222,6 @@ class App {
       this.menuScene = new MenuScene(this.engine);
       this.portraits = new PortraitRenderer(this.engine);
       setWeaponIconSource(new ModelThumbnails(this.engine));
-      // Imported maps stay out of the list until each one is verified (docs/IMPORTED_MAPS_AUDIT.md):
-      // the verified ones join the Arcade, ?imported lists them all, ?offline=<name> opens any one.
-      void importedMaps(params.has('imported') ? undefined : VISIBLE_IMPORTED_MAPS).then(
-        (files) => maps.push(...arcadeEntries(files, 'Imported')),
-        (e: unknown) => console.warn('imported maps failed to load', e),
-      );
       this.front = new FrontEnd($('menu'), maps, {
         openEditor: () => void this.openEditor(),
         openDesigner: (look) => void this.openDesigner(look),
@@ -377,7 +356,7 @@ class App {
     void loadMatchCode().catch(() => undefined);
     await this.init();
     const file = isOfflineMap(which) ? OFFLINE_MAPS[which] : which;
-    const json = isBuiltInMap(file) ? await builtInMapJson(file) : (await importedMaps([which]))[`../../../maps/imported/${which}.json`];
+    const json = isBuiltInMap(file) ? await builtInMapJson(file) : undefined;
     if (!json) return void this.showMenu(`No map called ${which}`);
     const arena = loadMap(json);
     if (!arena.ok) return void this.showMenu('Built-in map failed to load');

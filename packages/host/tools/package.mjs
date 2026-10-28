@@ -66,7 +66,7 @@ async function bundle(dir) {
     logLevel: 'warning',
   });
   writeFileSync(join(dir, 'version.txt'), `${VERSION}\n`);
-  // Our suite: the maps a host may run and change to (not the imported ones or tools' files).
+  // Our suite: the maps a host may run and change to (not tools' files).
   mkdirSync(join(dir, 'maps'), { recursive: true });
   for (const f of readdirSync(join(ROOT, 'maps'))) if (f.endsWith('.json')) copyFileSync(join(ROOT, 'maps', f), join(dir, 'maps', f));
   // node-datachannel's JavaScript and its one dependency, from the lockfile's install.

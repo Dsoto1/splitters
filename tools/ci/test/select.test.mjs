@@ -1,7 +1,7 @@
 // Change-based selection (e2e/flowMap.mjs) and shard balancing (e2e/shards.mjs).
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { COVERED_MAPS, FLOWS, IMPORTED_PART, MAP_FLOWS, MAP_PARTS, mapPartOf, selectForPaths, unitTestPaths } from '../../../e2e/flowMap.mjs';
+import { COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS, mapPartOf, selectForPaths, unitTestPaths } from '../../../e2e/flowMap.mjs';
 import { assignShards, durationOf, loadTimings, shardCount, MAX_SHARDS, UNKNOWN_FLOW_S } from '../../../e2e/shards.mjs';
 
 const mapIds = readdirSync(new URL('../../../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
@@ -81,9 +81,6 @@ describe('change-based selection', () => {
     expect(own.flows).toEqual(['vault']);
   });
 
-  it('imported maps run the part that spot-checks them', () => {
-    expect(sel('maps/imported/ts2_symmetry.json').flows).toEqual([MAP_FLOWS[IMPORTED_PART]]);
-  });
 
   it('baselines run the screenshot flow; render code gets the perf check', () => {
     expect(sel('e2e/baselines/menu.png')).toMatchObject({ full: false, flows: ['visual'] });

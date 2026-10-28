@@ -1,7 +1,7 @@
 /**
  * The famous maps our homage maps are recreated from (layouts only: our own
  * names, assets and tiles). Shown as "Inspired by …" in the map picker.
- * Keyed by map id; imported TimeSplitters maps say where they came from.
+ * Keyed by map id.
  */
 export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   bottling: 'Facility (GoldenEye 007)',
@@ -44,10 +44,7 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   after_hours: 'Night at the Museum',
 };
 
-/** "Inspired by …" for a map, if it has one (imported TimeSplitters maps name their game). */
+/** "Inspired by …" for a map, if it has one. */
 export function mapInspiration(id: string): string | null {
-  if (MAP_INSPIRATIONS[id]) return MAP_INSPIRATIONS[id]!;
-  if (id.startsWith('ts2_')) return 'a TimeSplitters 2 MapMaker map';
-  if (id.startsWith('tsfp_')) return 'a TimeSplitters: Future Perfect MapMaker map';
-  return null;
+  return MAP_INSPIRATIONS[id] ?? null;
 }

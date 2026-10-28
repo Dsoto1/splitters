@@ -65,7 +65,7 @@ function inspired(key: string): HTMLElement[] {
 }
 
 /** A built-in map the Arcade offers. */
-/** A map card's picture (on top) and plan (beside the name): built-in maps have an automatic picture, grouped ones (imported) don't. */
+/** A map card's picture (on top) and plan (beside the name): built-in maps have an automatic picture, your own MapMaker maps don't. */
 function cardThumbs(m: ArcadeMap): MapThumbs {
   const t = mapThumbs(m, !m.group);
   t.pic.classList.add('card-pic');
@@ -116,7 +116,7 @@ export interface ArcadeMap {
   blurb: string;
   modes: GameMode[];
   bots: number;
-  /** Shown under its own heading after the built-in maps (e.g. "Imported"). */
+  /** Shown under its own heading after the built-in maps (e.g. "Your"). */
   group?: string;
 }
 

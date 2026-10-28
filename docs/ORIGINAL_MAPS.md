@@ -1,5 +1,11 @@
 # Importing maps from the original games: plan
 
+> **Removed (2026-10-28).** The owner dropped the imported TimeSplitters maps:
+> they didn't convert well. The 116 maps (`maps/imported/`), the importer,
+> its mapping table, audit and polish tools, and their tests were deleted;
+> git history before that date has them. The homage maps in `maps/` are our
+> own builds and stay. This page is kept as the record of what was tried.
+
 Goal: take a map a player built in the original TimeSplitters MapMaker (or
 another game's level editor) and rebuild it in Tile Trigger with our own
 look-alike pieces, so it plays the same.

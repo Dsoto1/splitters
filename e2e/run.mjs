@@ -3,7 +3,7 @@
 // Usage: pnpm build && pnpm e2e   (pnpm e2e:changed: the flows e2e/flowMap.mjs maps your changes to)
 //   E2E_ONLY=a,b (those flows), E2E_SHARD=i/n (one of n shards balanced by e2e/timings.json),
 //   E2E_RETRIES=1 (a failed flow runs again; passing then it's FLAKY, not a failure), E2E_TIMINGS_OUT=file
-//   (per-flow seconds), E2E_SEED (the imported maps' pick), E2E_UPDATE_BASELINES=1 (visual flow: new pictures).
+//   (per-flow seconds), E2E_UPDATE_BASELINES=1 (visual flow: new pictures).
 // Flows that need determinism open pages with ?test=1 (fixed sim seed, seeded MapMaker ids; &god=1 an
 // invulnerable player): see packages/client/src/testMode.ts. Wait on conditions, not fixed sleeps
 // (tools/ci/lint-e2e-waits.mjs).
@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium } from 'playwright';
-import { COVERED_MAPS, FLOWS, IMPORTED_PART, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
+import { COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
 import { assignShards, loadTimings } from './shards.mjs';
 
 // E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
@@ -625,7 +625,7 @@ async function offlineFlow(browser) {
     );
   await page.waitForFunction(() => [...document.querySelectorAll('.map-card .map-thumb.pic img')].every((i) => i.complete), null, { timeout: T(20000) }).catch(() => {});
   const all = await cards();
-  // Built-in maps (maps/*.json; retired ones aren't listed) ship a picture; imported ones show their plan alone.
+  // Built-in maps (maps/*.json; retired ones aren't listed) ship a picture.
   const { readdirSync } = await import('node:fs');
   const builtIn = new Set(readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)));
   const missing = all.filter((c) => builtIn.has(c.map) && !c.loaded).map((c) => c.map);
@@ -1734,18 +1734,6 @@ async function raceFlow(browser) {
   await page.context().close();
 }
 
-/** A seeded shuffle (mulberry32), so a run's picks can be repeated from its seed. */
-function seededShuffle(items, seed) {
-  let a = seed >>> 0;
-  const rand = () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(a ^ (a >>> 15), a | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-  return items.map((x) => [rand(), x]).sort((p, q) => p[0] - q[0]).map(([, x]) => x);
-}
-
 /**
  * Every homage map (and any other map without a flow of its own) starts a match cleanly. The tour is long: CI runs
  * it in MAP_PARTS parts ('maps', 'maps2', ...), part i taking every MAP_PARTS-th map by name (flowMap.mapPartOf).
@@ -1756,18 +1744,7 @@ async function mapsFlow(browser, part = 0) {
   const only = process.env.E2E_MAPS?.split(',');
   const all = readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !COVERED_MAPS.has(id)).sort();
   const ids = only ? (part ? [] : all.filter((id) => only.includes(id))) : all.filter((_, i) => i % MAP_PARTS === part);
-  // Imported maps (maps/imported/, converted from TimeSplitters MapMaker saves) are many: one part spot-checks 5,
-  // picked by E2E_SEED (default: the day, so the picks rotate but a run can be repeated); E2E_IMPORTED=all checks
-  // every one, E2E_IMPORTED=id1,id2 checks those.
-  let imported = [];
-  try {
-    imported = readdirSync(new URL('../maps/imported/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort();
-  } catch {}
-  const pick = process.env.E2E_IMPORTED;
-  const seed = Number(process.env.E2E_SEED ?? Math.floor(Date.now() / 86400000));
-  const chosen = part !== IMPORTED_PART ? [] : pick === 'all' ? imported : pick ? pick.split(',') : seededShuffle(imported, seed).slice(0, 5);
-  if (chosen.length) console.log(`imported maps checked (E2E_SEED=${seed}): ${chosen.join(', ')}`);
-  for (const id of [...ids, ...chosen]) {
+  for (const id of ids) {
     const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
@@ -1780,20 +1757,13 @@ async function mapsFlow(browser, part = 0) {
       const t0 = await sim(page, (m) => m.tick).catch(() => 0);
       await simWait(page, (m, _me, t) => m.tick >= t, t0 + 90, T(15000));
     }
-    // Imported maps can have floors below level 0: "solid ground" there means not below the lowest floor.
-    let floor = -5;
-    if (!chosen.includes(id)) {
-      // Maps with basements (sewers, cisterns) spawn players below 0: below the lowest spawn is falling.
-      const m = JSON.parse(readFileSync(new URL(`../maps/${id}.json`, import.meta.url), 'utf8'));
-      floor = Math.min(floor, ...m.entities.filter((e) => e.kind === 'spawn').map((e) => e.position[1] - 2));
-    } else {
-      const m = JSON.parse(readFileSync(new URL(`../maps/imported/${id}.json`, import.meta.url), 'utf8'));
-      floor = Math.min(0, ...m.classicStructure.tiles.map((t) => t.z)) * m.classicStructure.levelHeight - 1;
-    }
+    // Maps with basements (sewers, cisterns) spawn players below 0: below the lowest spawn is falling.
+    const m = JSON.parse(readFileSync(new URL(`../maps/${id}.json`, import.meta.url), 'utf8'));
+    const floor = Math.min(-5, ...m.entities.filter((e) => e.kind === 'spawn').map((e) => e.position[1] - 2));
     const alive = ok && (await page.evaluate((floor) => window.__cs.local.alive && window.__cs.local.state.pos.y > floor, floor));
     const where = ok ? await page.evaluate(() => window.__cs.local.state.pos.y.toFixed(1)) : 'no match';
     const why = !ok ? 'no match' : !alive ? `down or fell: y ${where}, floor ${floor.toFixed(1)}` : '';
-    check(ok && alive && errors.length === 0, `${id}: match starts and you spawn on solid ground${chosen.includes(id) ? ` (y ${where})` : ''}${why ? ` (${why})` : ''}${errors.length ? ` (${errors.join('; ')})` : ''}`);
+    check(ok && alive && errors.length === 0, `${id}: match starts and you spawn on solid ground${why ? ` (${why})` : ''}${errors.length ? ` (${errors.join('; ')})` : ''}`);
     await page.context().close();
   }
 }
