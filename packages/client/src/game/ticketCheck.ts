@@ -12,6 +12,7 @@ export interface TicketProof {
   name?: string;
 }
 
+type KeyList = { keys?: { kid?: unknown; x?: unknown }[] };
 let keys: Promise<Map<string, string>> | null = null;
 let fetchedAt = 0;
 const seen = new Map<string, number>();
@@ -22,7 +23,7 @@ function hubKeys(force = false): Promise<Map<string, string>> {
     const url = hubApi('ticket-keys');
     keys = url
       ? fetch(url, { signal: AbortSignal.timeout(6000) })
-          .then((r) => (r.ok ? (r.json() as Promise<{ keys?: { kid?: unknown; x?: unknown }[] }>) : { keys: [] }))
+          .then((r): Promise<KeyList> | KeyList => (r.ok ? (r.json() as Promise<KeyList>) : { keys: [] }))
           .then((j) => new Map((j.keys ?? []).flatMap((k) => (typeof k.kid === 'string' && typeof k.x === 'string' && k.x.length < 100 ? [[k.kid, k.x] as [string, string]] : []))))
           .catch(() => new Map<string, string>())
       : Promise.resolve(new Map<string, string>());

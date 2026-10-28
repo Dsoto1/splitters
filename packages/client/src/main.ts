@@ -564,7 +564,7 @@ class App {
     reconnectBanner(null);
   }
 
-  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; onExit: (reason?: string, travel?: Travel) => void; onReady?: () => void }): void {
+  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected') => void; onReady?: () => void }): void {
     $('menu').hidden = true;
     this.mode = 'game';
     this.session = new m.GameSession({
@@ -583,9 +583,9 @@ class App {
       hosting: o.hosting,
       autoHost: !!o.autoHost,
       mapPicker: this.mapPicker,
-      onExit: (reason, travel) => {
+      onExit: (reason, travel, how) => {
         this.session = undefined;
-        o.onExit(reason, travel);
+        o.onExit(reason, travel, how);
       },
     });
   }
