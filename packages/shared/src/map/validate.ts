@@ -2,10 +2,10 @@ import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { getProp } from '../content/props.ts';
-import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, resolveEdge, yawXZ } from './geometry.ts';
+import { buildMapGeometry, buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, resolveEdge, yawXZ } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
-import { floatingProps } from './settle.ts';
+import { floatingProps, terrainUnderFloors } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
@@ -65,7 +65,9 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   }
   const issues = validateMap(parsed.data, catalog);
   if (issues.some((i) => i.severity === 'error')) return { ok: false, issues };
-  return { ok: true, map: parsed.data, issues, migratedFrom: migrated.fromVersion };
+  // Terrain never shows through a floor (settle.ts terrainUnderFloors): every map, however it was made.
+  const map = parsed.data.terrain ? { ...parsed.data, terrain: terrainUnderFloors(parsed.data, buildMapGeometry(parsed.data, catalog)) } : parsed.data;
+  return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
 }
 
 /** Semantic validation of a schema-valid map. Navigation reachability lives in nav/ (needs Recast). */
