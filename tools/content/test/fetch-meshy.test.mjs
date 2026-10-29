@@ -161,4 +161,20 @@ describe('fetch-meshy', () => {
     await expect(rigByUrl(m, dir, { fetch })).rejects.toThrow(/MESHY_API_KEY/);
     await expect(fetchCharacter(m, dir, { log: () => {} })).rejects.toThrow(/downloaded by hand/);
   });
+
+  it('uploads the unrigged download as a data URI with modelUrl "upload"', async () => {
+    const dir = tmp();
+    const m = { id: 'meshy_up', source: { license: 'owned', modelUrl: 'upload', file: '^Meshy_AI_Up_\\d+_texture\\.glb$' } };
+    const asset = 'https://assets.meshy.ai/up.glb?Signature=x';
+    const { fetch, calls } = mockFetch({
+      'https://api.meshy.ai/openapi/v1/rigging': { json: { result: 'rig-up' } },
+      [taskUrl('rig', 'rig-up')]: { json: { status: 'SUCCEEDED', result: { rigged_character_glb_url: asset } } },
+      [asset]: { body: GLB },
+    });
+    await expect(rigByUrl(m, dir, { fetch, apiKey: 'k', log: () => {} })).rejects.toThrow(/no unrigged GLB/);
+    writeFileSync(join(dir, 'Meshy_AI_Up_1029_texture.glb'), GLB);
+    await fetchCharacter(m, dir, { fetch, apiKey: 'k', log: () => {}, sleep: async () => {} });
+    expect(JSON.parse(calls[0].body)).toEqual({ model_url: `data:application/octet-stream;base64,${GLB.toString('base64')}`, height_meters: 1.8 });
+    expect(existsSync(join(dir, 'meshy_up.glb'))).toBe(true);
+  });
 });

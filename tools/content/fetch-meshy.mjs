@@ -13,7 +13,8 @@
 //   <dir>/<id>/<id>_texture.fbx and .png, rigged later from the manifest's landmarks.
 // A model at a public URL (`source.modelUrl`, e.g. a Google Drive download link of the owner's copy) can be
 // rigged by Meshy: with a key, it is sent to POST /openapi/v1/rigging and the rigged GLB comes back as
-// <dir>/<id>.glb (preferred over rigging it in-house from found landmarks).
+// <dir>/<id>.glb (preferred over rigging it in-house from found landmarks). `modelUrl: "upload"` sends the
+// unrigged download in <dir> (matched by source.file) to Meshy as a data URI instead of a link.
 // Meshy's API only serves tasks in the key holder's own account, so only the owner's own models (their
 // meshy.ai/s/… share links: the manifest names the task IDs) come through here. A community (CC0) model
 // is downloaded by hand from its page: its rigged GLB saved as <dir>/<id>.glb, or its textured FBX
@@ -21,7 +22,7 @@
 // FORCE=1 fetches again what is already there. Meshy's file links are signed and expire, so each is
 // downloaded right after its task is read.
 
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MESHY_TASKS, readManifests } from './character-manifests.mjs';
@@ -110,13 +111,30 @@ export const downloadFiles = (m) => (m.source.meshy?.rig ? [`${m.id}.glb`] : [`$
 export function downloaded(m, dir) {
   if (downloadFiles(m).every((f) => existsSync(join(dir, f)))) return true;
   if (existsSync(join(dir, `${m.id}.glb`))) return true;
+  // A character with a rigging task wants its rigged GLB, not the unrigged download it was made from.
+  if (m.source.meshy?.rig) return false;
   if (!m.source.file || !existsSync(dir)) return false;
   const re = new RegExp(m.source.file);
   return readdirSync(dir, { recursive: true }).some((f) => re.test(basename(String(f))));
 }
 
+/** `source.modelUrl: "upload"`: the unrigged download in the downloads dir goes to Meshy itself, as a data URI. */
+export const UPLOAD = 'upload';
+/** Meshy takes a model up to this size as a data URI (a bigger one wants a public link). */
+const UPLOAD_MAX_BYTES = 60 * 1048576;
+
+/** The unrigged download (a textured GLB matched by `source.file`) as a data URI for Meshy's rigging API. */
+export function uploadUri(m, dir) {
+  const re = m.source.file && new RegExp(m.source.file);
+  const file = re && existsSync(dir) ? readdirSync(dir, { recursive: true }).map(String).find((f) => /\.glb$/i.test(f) && re.test(basename(f))) : null;
+  if (!file) throw new FetchError(`${m.id}: source.modelUrl is "upload", but no unrigged GLB matching source.file is in ${dir}`);
+  const bytes = readFileSync(join(dir, file));
+  if (bytes.length > UPLOAD_MAX_BYTES) throw new FetchError(`${m.id}: ${basename(file)} is ${(bytes.length / 1048576).toFixed(0)} MB, too big to upload: give source.modelUrl a public link instead`);
+  return `data:application/octet-stream;base64,${bytes.toString('base64')}`;
+}
+
 /**
- * Have Meshy rig an unrigged model that sits at a public URL (`source.modelUrl`: a community model the
+ * Have Meshy rig an unrigged model that sits at a public URL (or, with `modelUrl: "upload"`, the download itself) (`source.modelUrl`: a community model the
  * owner downloaded and shared, say from Google Drive), then download the rigged GLB as <dir>/<id>.glb:
  * POST /openapi/v1/rigging { model_url, height_meters }, then the task is polled until it finishes.
  */
@@ -124,9 +142,10 @@ export async function rigByUrl(m, dir, opts = {}) {
   const { fetch = globalThis.fetch, apiKey, log = console.log, pollMs = 5000, timeoutMs = 20 * 60 * 1000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = opts;
   if (!apiKey) throw new FetchError('MESHY_API_KEY is not set: Meshy rigging needs your API key');
   const url = `${API}/${MESHY_TASKS.rig}`;
+  const modelUrl = m.source.modelUrl === UPLOAD ? uploadUri(m, dir) : m.source.modelUrl;
   let res;
   try {
-    res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ model_url: m.source.modelUrl, height_meters: 1.8 }) });
+    res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ model_url: modelUrl, height_meters: 1.8 }) });
   } catch (e) {
     throw unreachable(url, e);
   }

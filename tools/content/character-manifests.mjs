@@ -66,7 +66,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     // A community model can carry a rigging task the owner ran on it (rigByUrl), but no other task.
     need(s.license === 'owned' || Object.keys(s.meshy).every((k) => k === 'rig'), 'source.meshy: task IDs only fetch the owner\'s own models (a community model is downloaded by hand; only a "rig" task of the owner\'s may be named)');
   }
-  need(s.modelUrl === undefined || (typeof s.modelUrl === 'string' && /^https:\/\//.test(s.modelUrl)), 'source.modelUrl: a public https download link of the unrigged model (for Meshy\'s rigging API)');
+  need(s.modelUrl === undefined || s.modelUrl === 'upload' || (typeof s.modelUrl === 'string' && /^https:\/\//.test(s.modelUrl)), 'source.modelUrl: a public https download link of the unrigged model, or "upload" (the download itself, for Meshy\'s rigging API)');
   if (s.file !== undefined) {
     let ok = typeof s.file === 'string';
     try {
