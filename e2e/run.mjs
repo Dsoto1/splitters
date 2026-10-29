@@ -2671,13 +2671,14 @@ async function handoffFlow(browser) {
   });
   let heir = null;
   let other = null;
+  const t0 = Date.now();
   const named = await until(async () => {
     const [a, b] = [await known(ann), await known(bo)];
     if (a?.standby && a.cp && b?.next === a.standby) [heir, other] = [{ page: ann, name: 'Ann' }, { page: bo, name: 'Bo' }];
     else if (b?.standby && b.cp && a?.next === b.standby) [heir, other] = [{ page: bo, name: 'Bo' }, { page: ann, name: 'Ann' }];
     return !!heir;
-  }, T(30000));
-  check(named, `the host names a successor in advance, everyone knows its code, and it gets checkpoints (${JSON.stringify([await known(ann), await known(bo)])})`);
+  }, T(180000));
+  check(named, `the host names a successor in advance, everyone knows its code, and it gets checkpoints (${((Date.now() - t0) / 1000).toFixed(0)} s; ${JSON.stringify([await known(ann), await known(bo)])})`);
   if (!named) return;
   // The other friend scores: that must survive the handoff.
   await sim(host, (m, me, n) => void (m.combatants().find((c) => c.kind === 'human' && c.name === n).kills = 7), other.name);

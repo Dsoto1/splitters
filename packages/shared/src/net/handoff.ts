@@ -18,8 +18,11 @@ import { sanitizeName } from './clientMessages.ts';
 export const CHECKPOINT_EVERY_SECONDS = 3;
 /** A checkpoint older than this (seconds) is too stale to carry on from: the match ends instead. */
 export const CHECKPOINT_MAX_AGE_SECONDS = 30;
-/** How long friends wait to be let into the successor's match (seconds) before giving up on it. */
-export const HANDOFF_JOIN_SECONDS = 20;
+/**
+ * How long friends wait for their link to the successor (seconds) before giving up on it; once linked, the
+ * successor may take up to a minute to start the match (a slow machine) before they give up.
+ */
+export const HANDOFF_JOIN_SECONDS = 10;
 /** How long a friend asked to stand by has to open its standby code (seconds) before the host asks someone else. */
 export const STANDBY_ANSWER_SECONDS = 30;
 /** The biggest checkpoint a successor accepts (characters of JSON). */

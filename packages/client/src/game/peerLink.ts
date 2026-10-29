@@ -256,6 +256,8 @@ export class PeerTransport implements Transport {
   dedicated = false;
   /** The host let us in (its welcome came), even if the match is still loading here. */
   welcomed = false;
+  /** Our link to the host is open (it may still be starting its match: a successor taking over). */
+  linked = false;
   private saidBye = false;
 
   constructor(
@@ -335,6 +337,7 @@ export class PeerTransport implements Transport {
       });
       conn.on('open', () => {
         opened = true;
+        this.linked = true;
         clearTimeout(timeout);
         const admin = adminToken(`code:${this.code}`);
         this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
@@ -408,7 +411,8 @@ export class PeerTransport implements Transport {
       void host.start().then(
         (code) => {
           this.standbyOpening = false;
-          if (this.closedByUs) return host.close();
+          // Gone, or someone else was named meanwhile (we took too long): not needed after all.
+          if (this.closedByUs || h.successor) return host.close();
           h.standby = host;
           this.send({ t: 'standby', code });
         },

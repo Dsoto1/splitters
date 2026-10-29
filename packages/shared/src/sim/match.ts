@@ -4945,8 +4945,9 @@ export class BotFiller {
       if (!c) continue;
       this.match.restoreCombatant(c, p);
       if (self) mine = c;
-      // Their place waits for them (the usual hold for a dropped player); with no key, a bot takes it over for good.
-      else this.hold(c.slot, 'dropped', p.key ?? null, fill);
+      // Their place waits for them (twice the usual hold: everyone is reconnecting at once, some on slow machines);
+      // with no key, a bot takes it over for good.
+      else this.hold(c.slot, 'dropped', p.key ?? null, fill, AWAY.holdSeconds * 2);
     }
     mine ??= this.match.addHuman(me.name, me.look);
     this.rebalance(fill);
