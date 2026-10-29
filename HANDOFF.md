@@ -1,10 +1,93 @@
-# Handoff: where Tile Trigger stands (2026-10-28, afternoon)
+# Handoff: where Tile Trigger stands (2026-10-29, evening)
 
 A briefing for the next Claude session or agent picking up this repo. Read
-`CLAUDE.md` first (workflow and rules), then this file. Keep this file current:
-update it when you finish a piece of work or the owner changes direction.
+`CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
-## State
+## Start here (session of 2026-10-29, handed off to a new account)
+
+**`main` is still at `f015af3` (0.5.0).** Everything below is on the session
+branch `claude/launcher-ui-map-cards` (tip at the commit that adds this note)
+and on `check/candidate` up to `cc57ae3`, but CI there was red, so `main` was
+not fast-forwarded.
+
+### 1. Make `check/candidate` green, then fast-forward `main`
+The last run, on `cc57ae3` (Actions run 40945882610), passed check, build,
+site and e2e shards 1–7. Two jobs failed:
+- **perf:** "NOT MEASURED: frost_basin/medium (the match didn't start or no
+  clumped frame was drawn)". This is probably the draw-call or effects work
+  (dust and mist instancing, mist folded into fog on medium), or a slow start.
+- **e2e shard 8:** "4 check(s) failed". lobby was FLAKY ("joining from the game
+  browser…"); the failing lines haven't been read yet: get the job log.
+
+Earlier runs on `12e9041`, `780d077` and `65a7fc4` also failed. Push the
+session branch to `check/candidate` (fast-forward), fix, and repeat until green.
+
+### 2. On the session branch (not on main yet)
+- **Performance** (St. John's, 48 players):
+  - medium: main draws 824 → ~440;
+  - high: main draws 2059 → ~776, shadow draws 885 → ~157.
+
+  How:
+  - shadow-caster culling uses `customAllowRendering` (per cascade, per
+    light-space square; `MIN_TEXELS=6`) in `atmosphere.ts`;
+  - sun-ray occluders go through `rays.getPass().renderList`; never use
+    `includedMeshes`, which hid instanced trees and props;
+  - impact dust and blood mist are instanced;
+  - medium mist is folded into EXP2 fog.
+- **High quality, sharper:** MSAA (`samples=4`) instead of FXAA; SSAO2 at full
+  blur ratio.
+- **Safari mouse:** raw pointer lock (`unadjustedMovement`) with a fallback.
+- **Browser bot cap:** 24v24 (`BROWSER_MAX_PLAYERS=48`); dedicated hosts keep
+  48v48.
+- **Host panel:**
+  - characters are built through a queue (one per 16 ms; first-person arms
+    bypass it);
+  - "Apply: +N bots";
+  - End and Restart need a double click.
+- **Map rotation / queue** and **unified paths** (roads, race tracks, vehicle
+  and NPC routes, joinable ends) in MapMaker.
+- **AWS:** the `AppName=TileTrigger` tag on the stack, its resources and SSM;
+  the budget filters on it (`infra/`, docs/HOSTING.md). The owner reruns
+  `infra/deploy-multiplayer.sh` to apply it.
+- **Characters:**
+  - the intake queue `content/intake/meshy-queue.json` (50 models, with names
+    and sizes);
+  - Ranger renamed to Linktifa;
+  - body sizes: Goblin and Wealthy Otter small; Iron Knight, Salamander
+    Warlord and Hyena Warrior large (`size` in looks.ts).
+
+### 3. Unmerged agent branches (each pushed as `wip/*`; review, finish, merge)
+| Branch | State |
+|---|---|
+| `wip/bot-manager` (624ec87) | Bots window for hosts, `BOTSET` / console `botset`, scenario maps naming their own bots (`MapDocument.bots`, edited in MapMaker), docs and e2e. Typecheck, unit tests (run file by file under load) and the `teams` flow pass. In `hostcontrols`, every new check passes, but two older checks failed on a loaded run ("a friend joins the hosted match", "the end-of-match scoreboard says where the match goes next") and haven't been rerun clean. Deferred: named NPCs in encounters, per-bot loadouts, editing bot sets on /host. |
+| `wip/host-handoff` (2bb8de4) | Host leaving a browser match: goodbye, reconnect and a host-left screen; handoff to another player. The agent was still working, with about 10 uncommitted files (matchHost, peerLink, sim/match, net/handoff, e2e/run). A snapshot of them (unchecked) is on `wip/host-handoff-uncommitted` (d2989b4); start from there. |
+| `wip/character-intake` (2358cdf) | The unified Meshy character pipeline: landmark rigger or Meshy rigging API, a grip sheet, 22 new characters from the owner's downloads, and four held back whose rigs fail the grip sheet. Docs: adding a Meshy character. Sizes are in the manifests. The intake queue on the branch drops the 18 characters it shipped. |
+| `wip/roster-cleanup` (899537c) | Six retired looks (Champion, Desperado, Miller, Raider, Sprinter, Striker; old ids load as kept looks); a helmet tool (`prepare-gear.mjs`) and five helmets; model gear on the Head joint. The per-look fixes are WIP. Commando's and Engineer's helmet fits are off; beret and headband sit high; Farmhand's hat and Drifter's mask aren't done; the Dapper's jacket skin weights are diagnosed but not fixed (arm weights on torso vertices; see the commit). No CHANGELOG entry or portraits yet. |
+
+Merge order suggestion: bot-manager, character-intake, roster-cleanup (expect a
+small conflict in `content/meshy.lock.json` and looks.ts), then host-handoff.
+Run the checks after each merge.
+
+### 4. Meshy models still to bring in
+- The owner's downloads come from Drive folder
+  `18MaKefMCWARf1Y3gAjhZuxTto86vGAYl` and the private repo `Dsoto1/meshystuff`.
+  They aren't in a new container: fetch them again with `gdown` (Python API
+  `download_folder`) and by cloning meshystuff, outside the repo. Never commit
+  raw downloads.
+- 32 models are unrigged: rig them with Meshy's rigging API (`MESHY_API_KEY`
+  is set in new sessions; pass the public Drive links as `model_url`) or with
+  the landmark rigger on `wip/character-intake`.
+- Not done yet:
+  - the weapons (Frontier Rifle, Neon Flux);
+  - the medkit;
+  - the buggy and its wheel, to replace the jeep.
+- About 18 queued models haven't been delivered yet.
+- The owner's review results are kept in the review artifact
+  https://claude.ai/artifact/Cwq57yDPtBzmnrpaf7josr (its db collection
+  `reviews`).
+
+## Earlier state (2026-10-28)
+
 
 - **Live:** https://trigger.toshiroplay.com, version **0.3.0** (`v0.3.0` tag and
   GitHub release exist). `main` is at or past `ace6276`; all of it went green on
