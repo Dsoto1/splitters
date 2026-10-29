@@ -72,6 +72,9 @@ async function bundle(dir) {
   // The built-in map rotations (data, maps/rotations/).
   mkdirSync(join(dir, 'maps', 'rotations'), { recursive: true });
   for (const f of readdirSync(join(ROOT, 'maps', 'rotations'))) if (f.endsWith('.json')) copyFileSync(join(ROOT, 'maps', 'rotations', f), join(dir, 'maps', 'rotations', f));
+  // The built-in bot sets (data, maps/botsets/).
+  mkdirSync(join(dir, 'maps', 'botsets'), { recursive: true });
+  for (const f of readdirSync(join(ROOT, 'maps', 'botsets'))) if (f.endsWith('.json')) copyFileSync(join(ROOT, 'maps', 'botsets', f), join(dir, 'maps', 'botsets', f));
   // node-datachannel's JavaScript and its one dependency, from the lockfile's install.
   const store = join(ROOT, 'node_modules/.pnpm');
   const from = (name) => {

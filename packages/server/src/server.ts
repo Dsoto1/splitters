@@ -29,6 +29,9 @@ import {
   travelNotice,
   MapRotation,
   validateRotation,
+  botSetLabel,
+  type BotSet,
+  type BotSetPreset,
   type RotationPreset,
   type RotationState,
   type BotDifficulty,
@@ -46,6 +49,7 @@ import {
 import { AWAY, BotFiller, HostControl, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 import { answerDiscovery, lanAddresses } from './lan.ts';
 import { expandRotation, readRotationPresets, suiteLookup } from './rotation.ts';
+import { readBotSetPresets, resolveBotSet } from './botSets.ts';
 import { StatsWindow } from './stats.ts';
 
 export interface ServerOptions {
@@ -92,6 +96,11 @@ export interface ServerOptions {
   rotation?: readonly unknown[];
   /** Play the rotation in a random order (a new one each time round). */
   rotationShuffle?: boolean;
+  /**
+   * The host's own bots (BOTSET; shared sim/botSet.ts): a built-in set's id (maps/botsets/<id>.json), the text
+   * form ("Sir Clank, core.knight, hard; Zorp"), or a set object. Kept across map changes; admins change it live.
+   */
+  botSet?: unknown;
   /** Answer LAN discovery broadcasts (UDP, LAN_DISCOVERY_PORT unless a port is given). Off by default; main.ts turns it on. */
   lanDiscovery?: boolean | number;
   /**
@@ -167,6 +176,10 @@ export interface RunningServer {
   rotation(): RotationState & { items: string[] };
   /** The built-in rotations (maps/rotations/) a host can pick. */
   readonly rotationPresets: readonly RotationPreset[];
+  /** The bot set the host chose (null: none; the map's own bots, else random ones, play). */
+  botSet(): BotSet | null;
+  /** The built-in bot sets (maps/botsets/). */
+  readonly botSetPresets: readonly BotSetPreset[];
   close(): Promise<void>;
 }
 
@@ -262,7 +275,12 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const clients = new Set<Client>();
   const stats = new StatsWindow();
   let pendingEvents: GameEvent[] = [];
-  let bots = new BotFiller(match, BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'], { takeBack: opts.botTakeBack });
+  const botSetPresets = readBotSetPresets(mapsDir);
+  const firstSet = resolveBotSet(opts.botSet, botSetPresets);
+  if (firstSet.error) console.warn(`[bots] ${firstSet.error}: random bots`);
+  for (const n of firstSet.notes) console.warn(`[bots] ${n}`);
+  if (firstSet.set) console.log(`[bots] ${botSetLabel(firstSet.set)}`);
+  let bots = new BotFiller(match, BOT_DIFFICULTIES[opts.botDifficulty ?? 'normal'], { takeBack: opts.botTakeBack, botSet: firstSet.set });
   /** Players to keep (bots included), bot skill and style: the admin can change them mid-match (HostControl). */
   let control = new HostControl(match, bots, botFill, 'Admin');
   /** Scenario chains: what each player (by name) takes into the next map, until they rejoin. */
@@ -637,7 +655,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     map = t.map;
     playIndex = t.index;
     match = new Match(map, withLeaders(t.rules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
-    bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack });
+    bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack, botSet: bots.hostSet });
     control = new HostControl(match, bots, t.fill ?? control.fill, 'Admin');
     bots.rebalance(control.fill);
     // A map the owner published since is picked up from here on.
@@ -660,6 +678,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         if (!travel) planRotation(ev);
         const top = [...match.combatants()].filter((c) => c.kind !== 'npc').sort((a, b) => b.kills - a.kills)[0];
         event(`match over on ${map.metadata.name}: ${ev.team ? `team ${ev.team} wins` : ev.winner !== null ? `${match.slots[ev.winner]?.name ?? 'someone'} wins` : 'a draw'}${top ? ` (top: ${top.name}, ${top.kills} kills)` : ''}`);
+      }
+      // A new bot set swaps in a bot every quarter second (every screen builds the new characters in turn).
+      if (bots.settling && match.tick % Math.round(TICK_RATE / 4) === 0 && bots.stage(control.fill)) {
+        broadcast({ t: 'roster', players: match.roster() });
+        if (!bots.settling) refreshAdmins();
       }
       if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) sendSnapshots();
       if (travel && match.tick >= travel.atTick) doTravel();
@@ -727,6 +750,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     command: runCommand,
     rotation: () => ({ ...rotation.state(nameOf), items: rotation.items() }),
     rotationPresets,
+    botSet: () => bots.hostSet,
+    botSetPresets,
     setAdminToken: (token) => {
       adminHash = token ? createHash('sha256').update(token).digest() : null;
       // Admins logged in with the old token stay admin until they leave.

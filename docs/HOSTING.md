@@ -418,6 +418,7 @@ builds the downloads (CI does this for every green `main` and `vX.Y.Z`).
 | `BOT_DIFFICULTY`, `BOT_TAKEBACK`, `LEADERS`, `PLAYLIST` | | as the dedicated server |
 | `ROTATION` | none | the map rotation: after each match the next of these maps instead of a replay, round and round. `frost_basin:tdm,diamond_park:ctf` (no mode: the map's first), or `preset:flag_run` (maps/rotations/); in a config file also a list. Maps that aren't ours and modes a map can't play are dropped with a log line. Edited live with the console's `rotation` and `skip`, the launcher's Rotation card or the admin's pause menu, and kept for the next start |
 | `ROTATION_SHUFFLE` | off | play the rotation in a random order (a new one each time round) |
+| `BOTSET` | none | your own bots (see Host controls → Bot sets): a built-in set's id (`knights_vs_space`, `zombie_horde`, `classic_mix`: maps/botsets/), a JSON file of one (`BOTSET=bots.json`), or a list, one bot per `;`: `Sir Clank, core.knight, hard, -, 1, Vanguard; Zorp, core.visitor` (name, look, skill, style, team from 1, squad; `-` or blank for the default; a first item `only` keeps the match to these bots). In a config file also a `{ name, entries, fill }` object. Edited live with the console's `botset`, the launcher's Bots card or the admin's pause menu (Bots…), and kept for the next start |
 | `CONTROL_PORT` | 7797 | the control API (127.0.0.1 only) |
 | `STATUS_EVERY` | 60 | seconds between status lines (0: none) |
 | `AFK_SECONDS` | 90 | idle this long and a bot plays for a player until they're back (0: never) |
@@ -631,6 +632,7 @@ Other settings (environment variables):
 | `LEADERS=on` / `vip` | Team leaders (gold star; their Follow me / Hold here orders every bot on the team). `vip`: Leader hunt, downing a leader scores 3 for Team Deathmatch. |
 | `PLAYLIST=maps/playlists/night_shift.json` | Plays a scenario chain: each won map moves everyone on to the next (see GAME_MODES.md, Scenario chains). |
 | `ROTATION=frost_basin:tdm,diamond_park:ctf` | Map rotation: after each match (the scoreboard), the next of these instead of a replay, round and round; `preset:<id>` adds a built-in one (maps/rotations/). `ROTATION_SHUFFLE=1` plays them in a random order. See Host controls → Rotation. |
+| `BOTSET=knights_vs_space` | Your own bots: a built-in set (maps/botsets/), a JSON file (`BOTSET=bots.json`) or a list (`Sir Clank, core.knight, hard; Zorp`). See Host controls → Bot sets. |
 | `SERVER_NAME` | Name shown in Online → LAN. |
 | `ADMIN_TOKEN` | Lets a player run the match from the pause menu (Match: players or team size, bot skill and style, change map, restart, end). A player is admin when they join with `?admin=<token>` in the page address (`/?autojoin&server=ws://…&admin=<token>`) or enter it under pause menu → Server admin. Unset: nobody can. Five wrong tokens close the connection. |
 | `LAN_DISCOVERY=0` | Don't answer LAN discovery broadcasts (UDP 7790). |
@@ -743,6 +745,44 @@ section:
   in-game changes are saved for the next start). Commands: `{ c: 'rotation',
   entries?, shuffle? }` (the whole list) and `{ c: 'skip' }`; HostState carries
   `rotation` (absent from older hosts, so the panel hides the section).
+- **Bot sets.** Your own bots (`shared/sim/botSet.ts`): a named list of bots,
+  each with a name (at most 20 characters, cleaned; repeats get a number), a
+  look (any preset character or NPC skin, or random), a skill (easy, normal,
+  hard, or the match's), a style (own, arena, tactical, or the match's), a team
+  (by order, or auto) and a squad label. Bots join in the list's order (in team
+  modes the team that most needs a player takes its own bots first, then
+  unteamed ones), then random bots fill up to the player count, unless the set
+  says **Only these bots**. Random bots give way first when the match shrinks
+  or a player joins, then the set's from its end. Bots with the same squad on
+  one side stick together: the first of them alive leads, the others go back
+  to it past 14 m and otherwise take its goal (a teammate's Follow me / Hold
+  here order still comes first; free-for-all has no squads). A bot's own skill
+  and style survive the match-wide Bot skill / Bot style.
+  - **Where:** Play → Match setup → Bots → Name your bots… (kept with the setup
+    and saved setups); pause menu → Match → Bot set → **Bots…** (live: Apply
+    keeps bots that are still in the list where they stand, renamed and
+    re-dressed in place, and swaps the rest in one bot every quarter second, so
+    every screen builds the new characters in turn); a dedicated host's
+    `BOTSET`, console `botset` and the launcher's Bots card.
+  - **The window:** a table (look picker with portraits, name, skill, style,
+    team, squad; ↑ ↓ duplicate remove), Fill the rest randomly / Only these
+    bots, Start from… a built-in set (`maps/botsets/*.json`, data) or one saved
+    in this browser (`cs.botsets`), Save, Delete saved. Keys: Tab and ↑ ↓ (the
+    same column in the next row), Esc closes the look picker then the window,
+    Ctrl+Enter applies; a controller drives it through the pause menu (d-pad,
+    A, B).
+  - **Console:** `botset` (show), `botset preset <id>`, `botset add <name>
+    [look] [skill] [team]`, `botset remove <n|name>`, `botset list <bot; bot…>`
+    (the whole list in the text form above), `botset only|random`, `botset
+    clear` (random bots). Each sends the whole set as an admin's command.
+  - **Scenario maps** can name their own bots (`MapDocument.bots`, MapMaker →
+    map properties → Bots): they play unless the host picks a set; a map change
+    carries only a set the host chose, so the next map's own bots play there.
+  - **Protocol:** `{ c: 'bots', botSet }` (the whole set; `null`: random bots),
+    checked by the host (validateBotSet: unknown looks become random, names
+    are cleaned and capped, at most 96 bots); HostState carries `botSet` (and
+    `mapBots` when the set in play is the map's). Older hosts ignore the field
+    and send no `botSet`, so the pause menu shows no Bots… button.
 
 ## 3. LAN games
 

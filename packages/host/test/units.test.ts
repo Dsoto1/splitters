@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import type { ChildProcess } from 'node:child_process';
 import { describe, expect, it, vi } from 'vitest';
 import { Unzipper } from '@tiletrigger/shared/peerZip';
-import { claimsOfficial, parseAdvert } from '@tiletrigger/shared';
+import { claimsOfficial, parseAdvert, validateBotSet, type BotSet } from '@tiletrigger/shared';
 import { TicketSigner, verifyTicket } from '@tiletrigger/server/tickets';
 import { LobbyAdvertiser } from '../src/advertiser.ts';
 import { BanList } from '../src/bans.ts';
@@ -98,6 +98,8 @@ describe('server console commands', () => {
       maps: new Map([['sandgate', 'Sandgate']]),
       rotation: () => ({ entries: [], shuffle: false, next: null, current: null }),
       presets: [],
+      botSet: () => null,
+      botSetPresets: [],
       modes: () => ['core.tdm'],
     };
     expect(runMatchCommand('kick', ['griefer', 'spawn', 'camping'], '', t)).toBe('kicked Griefer');
@@ -144,6 +146,8 @@ describe('server console commands', () => {
       rotation: () => state,
       presets: [{ format: 'tiletrigger.rotation', id: 'flags', name: 'Flags', description: '', family: 'objective', shuffle: true, maps: [{ map: 'maple_court', mode: 'core.ctf' }] }],
       modes: (id) => MAPS[id]?.modes ?? null,
+      botSet: () => null,
+      botSetPresets: [],
     };
     expect(runMatchCommand('rotation', [], '', t)).toMatch(/empty/);
     expect(runMatchCommand('rotation', ['add', 'sandgate'], '', t)).toMatch(/1\. Sandgate · Team Deathmatch/);
@@ -160,6 +164,54 @@ describe('server console commands', () => {
     expect(complete('rotation a', [])).toEqual([['add'], 'a']);
     expect(complete('rotation add sa', ['sandgate'])).toEqual([['sandgate'], 'sa']);
     expect(complete('rotation preset f', [], ['flags'])).toEqual([['flags'], 'f']);
+  });
+
+  it('edits the bot set with the command in-game admins send (the whole set)', () => {
+    let set: BotSet | null = null;
+    const sent: HostCommand[] = [];
+    const t: MatchCommandTarget = {
+      players: () => [],
+      command: (cmd) => {
+        sent.push(cmd);
+        if (cmd.c === 'bots' && cmd.botSet !== undefined) set = cmd.botSet === null ? null : validateBotSet(cmd.botSet)!.set;
+        return null;
+      },
+      say: () => undefined,
+      currentMapId: () => 'frost_basin',
+      teams: () => '',
+      setVisibility: () => undefined,
+      setName: () => undefined,
+      maps: new Map(),
+      rotation: () => ({ entries: [], shuffle: false, next: null, current: null }),
+      presets: [],
+      modes: () => null,
+      botSet: () => set,
+      botSetPresets: [{ format: 'tiletrigger.botset', id: 'duo', name: 'Duo', description: '', fill: 'only', entries: [{ name: 'Ann', look: 'core.knight' }, { name: 'Bo' }] }],
+    };
+    expect(runMatchCommand('botset', [], '', t)).toMatch(/Random bots/);
+    expect(runMatchCommand('botset', ['preset', 'duo'], 'preset duo', t)).toMatch(/Duo: 2 bots only:\n 1\. Ann, core\.knight\n 2\. Bo/);
+    expect(runMatchCommand('botset', ['add', 'Sir Clank', 'Iron Knight', 'hard', '2'], 'add "Sir Clank" "Iron Knight" hard 2', t)).toMatch(/3\. Sir Clank, core\.knight, hard, -, 2/);
+    expect(runMatchCommand('botset', ['remove', '1'], 'remove 1', t)).not.toMatch(/Ann/);
+    expect(runMatchCommand('botset', ['random'], 'random', t)).toMatch(/random bots fill the rest/);
+    expect(runMatchCommand('botset', ['list'], 'list Zed, zombie; Yo, core.nova, easy', t)).toMatch(/1\. Zed, npc:zombie\n 2\. Yo, core\.nova, easy/);
+    expect(runMatchCommand('botset', ['clear'], 'clear', t)).toMatch(/Random bots/);
+    expect(sent.at(-1)).toEqual({ c: 'bots', botSet: null });
+    expect(complete('botset p', [], [], ['duo'])).toEqual([['preset'], 'p']);
+    expect(complete('botset preset d', [], [], ['duo'])).toEqual([['duo'], 'd']);
+  });
+
+  it('reads BOTSET: a preset name or a list, from the environment, a file or a page; never a file from a page', () => {
+    expect(parseConfig({ botSet: 'knights_vs_space' }).botSet).toBe('knights_vs_space');
+    expect(parseConfig({ botSet: { name: 'X', entries: [{ name: 'A' }] } }).botSet).toEqual({ name: 'X', entries: [{ name: 'A' }] });
+    expect(parseConfig({}).botSet).toBeUndefined();
+    expect(() => parseConfig({ botSet: 'x'.repeat(5000) })).toThrow(/BOTSET/);
+    expect(loadConfig({ BOTSET: 'bots.json' }, '/', () => '{"name":"Mine","entries":[{"name":"Ann"}]}').botSet).toEqual({ name: 'Mine', entries: [{ name: 'Ann' }] });
+    const base = parseConfig({ botSet: 'zombie_horde' });
+    expect(startConfig({ botSet: 'Ann, core.knight; Bo' }, base, new Set(['frost_basin'])).botSet).toBe('Ann, core.knight; Bo');
+    expect(startConfig({}, base, new Set(['frost_basin'])).botSet).toBe('zombie_horde');
+    expect(startConfig({ botSet: '' }, base, new Set(['frost_basin'])).botSet).toBeUndefined();
+    expect(() => startConfig({ botSet: '/etc/passwd.json' }, base, new Set(['frost_basin']))).toThrow(ConfigError);
+    expect(() => startConfig({ botSet: { name: 'x' } }, base, new Set(['frost_basin']))).toThrow(ConfigError);
   });
 
   it('reads ROTATION from the environment or a config file, and refuses what is not map:mode or preset:<name>', () => {

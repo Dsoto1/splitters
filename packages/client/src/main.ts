@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { MapRotation, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { MapRotation, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
@@ -257,9 +257,15 @@ class App {
       this.front = new FrontEnd($('menu'), maps, {
         openEditor: () => void this.openEditor(),
         openDesigner: (look) => void this.openDesigner(look),
-        playLocal: (map, rules, bots, skill, host) => this.playLocal(map, rules, bots, skill, undefined, undefined, host),
+        playLocal: (map, rules, bots, skill, host, botSet) => {
+          this.botSet = botSet ?? null;
+          this.playLocal(map, rules, bots, skill, undefined, undefined, host);
+        },
         playOnline: (server, name) => void this.playOnline(server, name),
-        playPlaylist: (id, botFill, skill) => this.playPlaylist(id, botFill, skill),
+        playPlaylist: (id, botFill, skill, botSet) => {
+          this.botSet = botSet ?? null;
+          this.playPlaylist(id, botFill, skill);
+        },
         joinCode: (code, name) => void this.joinCode(code, name),
       }, this.menuScene, this.portraits, audio, params);
       this.engine.runRenderLoop(() => this.frame());
@@ -429,6 +435,12 @@ class App {
     },
   });
 
+  /**
+   * The host's own bots (Play → Match setup → Bots; the pause menu's Bots… changes it mid-match): it goes on
+   * from map to map with the match, and the setup's set again when a new match starts from the menu.
+   */
+  private botSet: BotSet | null = null;
+
   /** The scenario chain being played (Arcade → co-op → Playlist): which playlist, how far in, and its settings. */
   private chain: { playlist: Playlist; index: number; botFill: number; difficulty: 'easy' | 'normal' | 'hard' } | null = null;
 
@@ -439,7 +451,7 @@ class App {
   }
 
   private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean): void {
-    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, rules, ...(carry ? { carry } : {}), ...(TEST ? { test: TEST } : {}) }), {
+    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, ...(carry ? { carry } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
@@ -449,11 +461,15 @@ class App {
       rotation: this.rotationOpts(),
       onExit: (reason, travel) => {
         // The host changed map (or the rotation moved on): the same rules, players and bot skill there (Host game friends follow).
-        if (reason === 'travel' && travel?.host) return this.playLocal(travel.host.map, travel.host.rules, travel.host.fill, travel.host.skill, undefined, travel.hosting);
+        if (reason === 'travel' && travel?.host) {
+          if (travel.host.botSet !== undefined) this.botSet = travel.host.botSet;
+          return this.playLocal(travel.host.map, travel.host.rules, travel.host.fill, travel.host.skill, undefined, travel.hosting);
+        }
         if (reason === 'travel' && travel) return void this.travelLocal(travel, rules, botFill, difficulty);
         travel?.hosting?.peer.close();
         this.chain = null;
         this.rotation = new MapRotation();
+        this.botSet = null;
         void this.showMenu(reason ?? '');
       },
     });

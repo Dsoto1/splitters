@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { MODE_LABELS, isGameMode, isTeamMode } from '@tiletrigger/shared';
-import type { RotationPreset } from '@tiletrigger/shared';
+import { botSetToText, presetBotSet, type BotSetPreset, type RotationPreset } from '@tiletrigger/shared';
 import type { CommandSpec } from './commands.ts';
 
 /**
@@ -90,6 +90,8 @@ export interface LauncherInfo {
   maps: readonly LauncherMap[];
   /** The built-in map rotations (maps/rotations/), offered in the Rotation card. */
   presets?: readonly RotationPreset[];
+  /** The built-in bot sets (maps/botsets/), offered in the Bots card. */
+  botSets?: readonly BotSetPreset[];
   /** Where map pictures come from (the site's automatic shots). */
   site: string;
 }
@@ -111,7 +113,8 @@ export function launcherCsp(nonce: string, site: string): string {
 
 export function launcherPage(info: LauncherInfo, nonce: string): string {
   const presets = (info.presets ?? []).map((p) => ({ id: p.id, name: p.name, description: p.description, shuffle: p.shuffle, maps: p.maps }));
-  const data = scriptJson({ version: info.version, commands: info.commands.map((c) => ({ name: c.name, args: c.args, help: c.help })), maps: info.maps, presets, site: info.site });
+  const botSets = (info.botSets ?? []).map((p) => ({ id: p.id, name: p.name, description: p.description, count: p.entries.length, text: botSetToText(presetBotSet(p)) }));
+  const data = scriptJson({ version: info.version, commands: info.commands.map((c) => ({ name: c.name, args: c.args, help: c.help })), maps: info.maps, presets, botSets, site: info.site });
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -190,6 +193,14 @@ export function launcherPage(info: LauncherInfo, nonce: string): string {
       <div class="row-btns"><label class="check"><input type="checkbox" id="rot-shuffle"> Shuffle</label><button type="button" id="rot-skip" title="Go on to the next map now">Skip to next</button><button type="button" id="rot-clear">Clear</button></div>
       <code class="hint" id="h-rot"></code>
     </section>
+    <section class="card" id="bots-card">
+      <h3>Bot <em>set</em> <span class="count" id="bots-count"></span></h3>
+      <p class="note" id="bots-note"></p>
+      <div class="inline"><select id="bots-preset" aria-label="Built-in bot set"><option value="">Start from a preset…</option></select><button type="button" id="bots-use">Use</button></div>
+      <label class="field"><span title="One bot a line: Name, look, skill, style, team, squad (blank or - for the default; team from 1). A first line only keeps the match to these bots.">Bots</span><textarea id="bots-text" rows="6" spellcheck="false" placeholder="Sir Clank, core.knight, hard, -, 1, Vanguard&#10;Zorp, core.visitor"></textarea></label>
+      <div class="row-btns"><button type="button" id="bots-apply">Apply</button><button type="button" id="bots-clear">Random bots</button></div>
+      <code class="hint" id="h-bots"></code>
+    </section>
     <section class="card">
       <h3>Players <em>&amp; bots</em></h3>
       <div class="field"><span title="Players and bots to keep: bots fill up to this, people take bots' places">Players + bots</span><div class="stepper" data-k="bots" data-min="1" data-max="96"><button type="button" data-d="-1" aria-label="Fewer">−</button><b id="v-bots">–</b><button type="button" data-d="1" aria-label="More">+</button></div></div>
@@ -258,7 +269,8 @@ button:disabled { opacity: 0.4; cursor: default; }
 button.primary { background: var(--cyan); border-color: var(--cyan); color: #04121a; }
 button.danger { background: transparent; border-color: rgba(231, 76, 60, 0.6); color: #ff8a7d; width: 100%; }
 button.ghost { background: transparent; }
-input, select { font: 500 14px var(--font-body); color: var(--text); background: var(--surface-1); border: 1px solid var(--line); border-radius: 3px; padding: 7px 9px; min-width: 0; }
+input, select, textarea { font: 500 14px var(--font-body); color: var(--text); background: var(--surface-1); border: 1px solid var(--line); border-radius: 3px; padding: 7px 9px; min-width: 0; }
+textarea { width: 100%; resize: vertical; font: 500 13px ui-monospace, Menlo, Consolas, monospace; line-height: 1.4; }
 select { width: 100%; }
 .panel { background: var(--glass); border: 1px solid var(--line); border-radius: 6px; }
 .spacer { flex: 1; }
@@ -871,10 +883,70 @@ const SCRIPT = `
     setDraftRotation([]);
   });
 
-  function renderAll() { renderTop(); renderMap(); renderPlayers(); renderListing(); renderPeople(); renderBans(); renderRotation(); }
+  // ---------------------------------------------------------------- bot set
+  // One bot a line ("Name, look, skill, style, team, squad"; a first line "only": just these bots).
+  // Running: Apply runs botset list (the match checks it and swaps bots in one at a time). Stopped: the next Start's.
+  var botSetById = {};
+  (DATA.botSets || []).forEach(function (p) {
+    botSetById[p.id] = p;
+    var o = document.createElement('option'); o.value = p.id; o.textContent = p.name + ' (' + p.count + ' bots)'; o.title = p.description;
+    $('bots-preset').append(o);
+  });
+  function botText(set) {
+    if (!set) return '';
+    var lines = set.fill === 'only' ? ['only'] : [];
+    (set.entries || []).forEach(function (e) {
+      var c = [e.name, e.look || '-', e.skill || '-', e.style || '-', e.team != null ? String(e.team + 1) : '-', e.squad || '-'];
+      while (c.length > 1 && c[c.length - 1] === '-') c.pop();
+      lines.push(c.join(', '));
+    });
+    return lines.join('\\n');
+  }
+  // The config's BOTSET (a preset's id, the text form, or a set) as text.
+  function configBotText(v) {
+    if (!v) return '';
+    if (typeof v === 'object') return botText(v);
+    if (botSetById[v]) return botSetById[v].text;
+    return String(v).split(';').map(function (l) { return l.trim(); }).filter(Boolean).join('\\n');
+  }
+  var botsShown = null;
+  function renderBots() {
+    var text = running() ? botText(S.host.botSet) : configBotText(draft && draft.botSet);
+    var box = $('bots-text');
+    // Don't overwrite what the owner is typing.
+    if (document.activeElement !== box && text !== botsShown) { box.value = text; botsShown = text; }
+    var n = text ? text.split('\\n').filter(function (l) { return l && l !== 'only' && l !== 'random'; }).length : 0;
+    var only = /^only\\b/.test(text);
+    $('bots-count').textContent = n ? n + (only ? ' only' : '') : '';
+    $('bots-note').textContent = n ? (only ? 'Only these bots play.' : 'These bots first, then random bots up to the player count.') + (running() ? ' Changes swap bots in one at a time.' : '') : 'Random bots. Pick a preset, or write your own: one bot a line.';
+    $('bots-clear').disabled = !n;
+    $('h-bots').textContent = running() ? 'botset \\u00b7 botset preset <name> \\u00b7 botset list <bot; bot> \\u00b7 botset clear' : 'start  (with these bots)';
+  }
+  $('bots-use').addEventListener('click', function () {
+    var p = botSetById[$('bots-preset').value]; if (!p) return;
+    if (running()) return run('botset preset ' + p.id);
+    draft.botSet = p.id; botsShown = null; renderAll();
+    toast(p.name + ' for the next Start');
+  });
+  $('bots-apply').addEventListener('click', function () {
+    var lines = $('bots-text').value.split('\\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    botsShown = null;
+    if (running()) return run(lines.length ? 'botset list ' + lines.join('; ') : 'botset clear');
+    draft.botSet = lines.join('; '); renderAll();
+    toast('Bots for the next Start');
+  });
+  $('bots-clear').addEventListener('click', function () {
+    botsShown = null;
+    if (running()) return run('botset clear');
+    draft.botSet = ''; renderAll();
+  });
+
+  function renderAll() { renderTop(); renderMap(); renderPlayers(); renderListing(); renderPeople(); renderBans(); renderRotation(); renderBots(); }
 
   $('b-start').addEventListener('click', function () {
-    var body = { map: draft.map, mode: draft.mode || '', botFill: draft.botFill, maxPlayers: draft.maxPlayers, name: draft.name, visibility: draft.visibility, rotation: draft.rotation || [], rotationShuffle: !!draft.rotationShuffle };
+    var body = { map: draft.map, mode: draft.mode || '', botFill: draft.botFill, maxPlayers: draft.maxPlayers, name: draft.name, visibility: draft.visibility, rotation: draft.rotation || [], rotationShuffle: !!draft.rotationShuffle, botSet: typeof draft.botSet === 'string' ? draft.botSet : '' };
+    // A set saved from the match (an object) stays as it is: the service keeps it.
+    if (draft.botSet && typeof draft.botSet === 'object') delete body.botSet;
     local('cmd', 'start  (' + (mapById[draft.map] ? mapById[draft.map].name : draft.map) + (draft.mode ? ', ' + modeShort(draft.mode) : '') + ', ' + draft.botFill + ' players and bots)');
     api('/api/start', body).then(function () { setTimeout(pollStatus, 300); }, function (e) { local('out', 'could not start: ' + e.message); });
   });
@@ -921,7 +993,7 @@ const SCRIPT = `
       S = s;
       if (wasOffline || !$('overlay').hidden) { overlay(''); wasOffline = false; }
       var c = s.config || {};
-      if (!draft || running()) draft = { map: c.map && mapById[c.map] ? c.map : (DATA.maps[0] ? DATA.maps[0].id : 'frost_basin'), mode: c.mode || '', botFill: c.botFill || 24, maxPlayers: c.maxPlayers || 16, name: c.name || 'Dedicated host', visibility: c.visibility || 'listed', rotation: (c.rotation || []).slice(), rotationShuffle: !!c.rotationShuffle };
+      if (!draft || running()) draft = { map: c.map && mapById[c.map] ? c.map : (DATA.maps[0] ? DATA.maps[0].id : 'frost_basin'), mode: c.mode || '', botFill: c.botFill || 24, maxPlayers: c.maxPlayers || 16, name: c.name || 'Dedicated host', visibility: c.visibility || 'listed', rotation: (c.rotation || []).slice(), rotationShuffle: !!c.rotationShuffle, botSet: c.botSet || '' };
       renderAll();
     }, failed);
   }

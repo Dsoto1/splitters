@@ -9,6 +9,8 @@ import { ConfigError, describeConfig, loadConfig, type HostConfig } from './conf
 import { DEFAULT_CONTROL_PORT, startControl } from './control.ts';
 import { DEFAULT_MAPS_DIR, suiteIds } from './host.ts';
 import { readRotationPresets } from '@tiletrigger/server/rotation';
+import { readBotSetPresets, resolveBotSet } from '@tiletrigger/server/botSets';
+import { sameBotSet } from '@tiletrigger/shared';
 import { openLauncherWindow } from './appWindow.ts';
 import { LogBuffer, mapCatalog } from './launcher.ts';
 import { syncMaps } from './published.ts';
@@ -107,6 +109,8 @@ async function service(): Promise<void> {
 
   // The built-in map rotations (maps/rotations/): the launcher offers them, the console's rotation preset uses them.
   const presets = readRotationPresets(DEFAULT_MAPS_DIR);
+  // The built-in bot sets (maps/botsets/): the launcher's Bots card and the console's botset preset.
+  const botSets = readBotSetPresets(DEFAULT_MAPS_DIR);
   const bansFile = join(state.dir, 'bans.json');
   const bans = new BanList(bansFile);
   let lastHost = '';
@@ -125,6 +129,12 @@ async function service(): Promise<void> {
           sup.config = { ...rest, ...(items.length ? { rotation: items } : {}), ...(shuffle ? { rotationShuffle: true } : {}) };
           state.save(sup.config, true);
         }
+      }
+      // The bot set changed in the match: kept for the next start too (as the set itself).
+      if (sup.state === 'running' && h && h.botSet !== undefined && sup.config && !sameBotSet(h.botSet, resolveBotSet(sup.config.botSet, botSets).set)) {
+        const { botSet: _b, ...rest } = sup.config;
+        sup.config = { ...rest, ...(h.botSet ? { botSet: { ...h.botSet } as unknown as Record<string, unknown> } : {}) };
+        state.save(sup.config, true);
       }
       const key = `${sup.state}|${h?.code}|${h?.online}|${h?.listed}`;
       if (key === lastHost) return;
@@ -168,7 +178,7 @@ async function service(): Promise<void> {
       quit: () => void quit('quit from /host'),
       log: (l) => log(`[web] ${l}`),
       bans,
-      launcher: { version: VERSION, commands: COMMANDS, maps: launcherMaps, presets, site, logs, run: (line) => runLine(line, 'launcher') },
+      launcher: { version: VERSION, commands: COMMANDS, maps: launcherMaps, presets, botSets, site, logs, run: (line) => runLine(line, 'launcher') },
     });
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === 'EADDRINUSE') {
@@ -278,7 +288,7 @@ async function service(): Promise<void> {
 
   if (interactive) {
     const maps = [...suite].sort();
-    rl = createInterface({ input: process.stdin, output: process.stdout, prompt: '> ', completer: (line: string) => complete(line, maps, presets.map((p) => p.id)) });
+    rl = createInterface({ input: process.stdin, output: process.stdout, prompt: '> ', completer: (line: string) => complete(line, maps, presets.map((p) => p.id), botSets.map((p) => p.id)) });
     rl.on('line', (line) => {
       if (!parseCommand(line)) return rl?.prompt();
       void runLine(line, 'window');

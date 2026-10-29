@@ -1,6 +1,7 @@
 import { HOST_BOT_SKILLS, HOST_BOT_STYLES, type ClientMessage, type HostCommand, type HostRulesPatch } from '../protocol.ts';
 import { isMapId } from '../sim/playlist.ts';
 import { ROTATION_MAX } from '../sim/rotation.ts';
+import { validateBotSet } from '../sim/botSet.ts';
 import { isGameMode, type GameMode } from '../sim/rules.ts';
 import type { PlayerInput } from '../sim/movement.ts';
 
@@ -79,8 +80,16 @@ function parseHostCommand(raw: unknown): HostCommand | null {
       if (o.teamSizes !== undefined && !(Array.isArray(o.teamSizes) && o.teamSizes.length >= 2 && o.teamSizes.length <= 8 && o.teamSizes.every(count))) return null;
       if (o.skill !== undefined && !(HOST_BOT_SKILLS as readonly unknown[]).includes(o.skill)) return null;
       if (o.style !== undefined && !(HOST_BOT_STYLES as readonly unknown[]).includes(o.style)) return null;
-      const cmd = { c: 'bots', fill: o.fill, teamSize: o.teamSize, teamSizes: Array.isArray(o.teamSizes) ? [...(o.teamSizes as number[])] : undefined, skill: o.skill, style: o.style } as Extract<HostCommand, { c: 'bots' }>;
-      for (const k of ['fill', 'teamSize', 'teamSizes', 'skill', 'style'] as const) if (cmd[k] === undefined) delete cmd[k];
+      // The bot set: made valid here (names cleaned and capped, unknown looks random); not a set at all: refused.
+      let botSet: Extract<HostCommand, { c: 'bots' }>['botSet'];
+      if (o.botSet === null) botSet = null;
+      else if (o.botSet !== undefined) {
+        const v = validateBotSet(o.botSet);
+        if (!v) return null;
+        botSet = v.set;
+      }
+      const cmd = { c: 'bots', fill: o.fill, teamSize: o.teamSize, teamSizes: Array.isArray(o.teamSizes) ? [...(o.teamSizes as number[])] : undefined, skill: o.skill, style: o.style, botSet } as Extract<HostCommand, { c: 'bots' }>;
+      for (const k of ['fill', 'teamSize', 'teamSizes', 'skill', 'style', 'botSet'] as const) if (cmd[k] === undefined) delete cmd[k];
       return cmd;
     }
     case 'rules': {

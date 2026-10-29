@@ -2,7 +2,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { GAME_MODES, KeyedLimiter, MAX_PLAYER_SLOTS, isMapId } from '@tiletrigger/shared';
-import { ConfigError, parseConfig, type HostConfig } from './config.ts';
+import { BOTSET_MAX_TEXT, ConfigError, parseConfig, type HostConfig } from './config.ts';
 import type { BanList } from './bans.ts';
 import type { Supervisor } from './supervisor.ts';
 import { launcherCsp, launcherPage, type LauncherInfo, type LogBuffer } from './launcher.ts';
@@ -33,7 +33,7 @@ export const DEFAULT_CONTROL_PORT = 7797;
 export const SERVICE_ID = 'tiletrigger-host';
 export const DEFAULT_ALLOWED_ORIGINS = ['https://trigger.toshiroplay.com'];
 const LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d{1,5})?$/;
-const MAX_BODY = 4096;
+const MAX_BODY = 8192;
 
 export interface ControlOptions {
   port: number;
@@ -57,7 +57,7 @@ export interface ControlOptions {
 }
 
 /** The longest console line the launcher may send. */
-export const MAX_CONSOLE_LINE = 300;
+export const MAX_CONSOLE_LINE = 3000;
 
 /** Whether a request comes from the launcher page itself (served from this port), or from no page at all. */
 export function ownPage(origin: string | undefined, port: number): boolean {
@@ -77,7 +77,7 @@ const tokenMatches = (a: string, b: string) => {
 };
 
 /** What a start request may set (all checked; anything else in the body is refused). */
-const START_KEYS = new Set(['map', 'mode', 'botFill', 'maxPlayers', 'botDifficulty', 'name', 'hostName', 'visibility', 'adminToken', 'joinCode', 'leaders', 'botTakeBack', 'afkSeconds', 'rotation', 'rotationShuffle']);
+const START_KEYS = new Set(['map', 'mode', 'botFill', 'maxPlayers', 'botDifficulty', 'name', 'hostName', 'visibility', 'adminToken', 'joinCode', 'leaders', 'botTakeBack', 'afkSeconds', 'rotation', 'rotationShuffle', 'botSet']);
 
 /** A start request's settings on top of the service's own (throws ConfigError with a message for the page). */
 export function startConfig(body: unknown, base: HostConfig, suite: ReadonlySet<string>): HostConfig {
@@ -95,6 +95,9 @@ export function startConfig(body: unknown, base: HostConfig, suite: ReadonlySet<
   // The rotation: a list of "map:mode" / "preset:<name>" items (parseConfig checks their form; the match, the maps).
   if (o.rotation !== undefined && !(Array.isArray(o.rotation) && o.rotation.length <= 40 && o.rotation.every((x) => typeof x === 'string' && x.length <= 70))) throw new ConfigError('rotation must be a list of map:mode items');
   if (o.rotationShuffle !== undefined && typeof o.rotationShuffle !== 'boolean') throw new ConfigError('rotationShuffle must be true or false');
+  // The bot set: a built-in set's name or the text form ("Name, look, skill; …"); never a file from a page.
+  if (o.botSet !== undefined && !(typeof o.botSet === 'string' && o.botSet.length <= BOTSET_MAX_TEXT && !o.botSet.trim().endsWith('.json'))) throw new ConfigError('botSet must be a bot set\'s name or a list of bots');
+  if (o.botSet === '') o.botSet = undefined;
   const merged: Record<string, unknown> = { ...base, playlist: undefined, ...o };
   for (const k of clear) delete merged[k];
   if (merged.leaders === true) merged.leaders = 'on';

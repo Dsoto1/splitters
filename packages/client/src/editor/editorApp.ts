@@ -36,6 +36,9 @@ import {
   type EncounterEntrance,
   mapFactions,
   mapTeams,
+  botSetLabel,
+  mapBotSet,
+  type MapBotSet,
   playableModes,
   isTeamMode,
   MODE_LABELS,
@@ -217,6 +220,8 @@ import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { libraryThumb } from './libraryThumbs.ts';
 import { isOwner, openPublishDialog } from './ownerPublish.ts';
 import { publishedMaps } from '../publishedMaps.ts';
+import { botManager } from '../frontend/botManager.ts';
+import { BOT_SET_PRESETS } from '../playlists.ts';
 
 /** Small palette icon for a pickup item, coloured by item type. */
 function itemIcon(itemId: string): string {
@@ -2116,6 +2121,41 @@ export class EditorApp {
     this.palette.filter(pack ? (b) => !b.dataset.tool || stylePackHas(pack, b.dataset.tool) : null);
   }
 
+  // ---------------------------------------------------------------- the map's own bots
+
+  /**
+   * The map's own bots (MapDocument.bots): names, looks, skills, styles, teams and squads for its PvP bots
+   * or, in co-op, the players' side. They play unless the host picks a set of their own. The Bots window
+   * (the one match setup and the pause menu use) edits them; one undo step per Apply.
+   */
+  private renderMapBots(el: HTMLElement): void {
+    const doc = this.doc;
+    const head = document.createElement('h3');
+    head.textContent = 'Bots';
+    const sum = text(doc.bots?.entries.length ? botSetLabel(mapBotSet(doc)) : 'Random bots');
+    sum.id = 'ed-bots-sum';
+    const open = button(doc.bots ? 'Edit bots…' : 'Name the bots…', () => {
+      if (document.getElementById('bot-manager')) return;
+      const main = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
+      const teams = isTeamMode(main) ? mapTeams(doc, main === 'core.ctf' ? 2 : (doc.teamSetup?.sizes.length ?? 2)) : [];
+      const win = botManager({
+        set: mapBotSet(doc),
+        teams: teams.map((t) => ({ name: t.name, color: t.color })),
+        presets: BOT_SET_PRESETS,
+        applyLabel: 'Use for this map',
+        note: "This map's own bots: they play unless the host picks a set of their own (Play → Match setup → Bots, or the pause menu).",
+        onApply: (set) => {
+          const after: MapBotSet | null = set ? { name: set.name, fill: set.fill, entries: set.entries.map((e) => ({ ...e })) } : null;
+          this.run('Map bots', { kind: 'setMapBots', before: this.doc.bots ?? null, after });
+        },
+        onClose: () => document.getElementById('ed-bots-edit')?.focus(),
+      });
+      document.body.append(win);
+    });
+    open.id = 'ed-bots-edit';
+    el.append(head, row('Bots', sum), row('', open), small('Name your bots, pick their looks, skill, style, team and squad: a scenario\'s cast, or the players\' squad in co-op.'));
+  }
+
   // ---------------------------------------------------------------- teams
 
   /** Map properties in team modes: how many teams and how many players on each (2–8 teams of 1–16). */
@@ -2857,6 +2897,7 @@ export class EditorApp {
       if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
       if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim') this.renderTeamSetup(el);
+      this.renderMapBots(el);
       const layersHead = document.createElement('h3');
       layersHead.id = 'ed-layers-head';
       layersHead.textContent = 'Map layers';

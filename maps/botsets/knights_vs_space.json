@@ -1,0 +1,21 @@
+{
+  "format": "tiletrigger.botset",
+  "id": "knights_vs_space",
+  "name": "Knights vs Space Crew",
+  "description": "Iron-clad knights and their wardens (first team) against the space crew and their visitors (second team), each side in two squads. For team modes; random bots fill bigger teams.",
+  "fill": "random",
+  "entries": [
+    { "name": "Sir Clank", "look": "core.knight", "skill": "hard", "team": 0, "squad": "Vanguard" },
+    { "name": "Dame Gauntlet", "look": "core.sentinel", "team": 0, "squad": "Vanguard" },
+    { "name": "Bastion", "look": "core.bulwark", "team": 0, "squad": "Vanguard" },
+    { "name": "Ser Rowan", "look": "core.warden", "team": 0, "squad": "Rearguard" },
+    { "name": "Longbow", "look": "core.ranger", "style": "tactical", "team": 0, "squad": "Rearguard" },
+    { "name": "Fletcher", "look": "core.huntress", "style": "tactical", "team": 0, "squad": "Rearguard" },
+    { "name": "Capt. Orion", "look": "core.nova", "skill": "hard", "team": 1, "squad": "Bridge" },
+    { "name": "Zorp", "look": "core.visitor", "team": 1, "squad": "Bridge" },
+    { "name": "Ace Vega", "look": "core.ember", "style": "arena", "team": 1, "squad": "Bridge" },
+    { "name": "Glorp", "look": "core.visitor", "team": 1, "squad": "Away team" },
+    { "name": "Watcher", "look": "npc:oculus", "team": 1, "squad": "Away team" },
+    { "name": "Cyclo", "look": "npc:cyclops", "team": 1, "squad": "Away team" }
+  ]
+}

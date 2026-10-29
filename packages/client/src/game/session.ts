@@ -170,7 +170,7 @@ export interface Travel {
   map?: string;
   carry?: CarryOver;
   /** The host changed map (offline, Host game): play `map` with these rules, players and bot skill. */
-  host?: { map: MapDocument; rules: MatchRules; fill: number; skill: HostState['skill'] };
+  host?: { map: MapDocument; rules: MatchRules; fill: number; skill: HostState['skill']; botSet?: HostState['botSet'] };
   /** Host game: the join code, handed on to the next match (friends were sent `travel` and rejoin it). */
   hosting?: { peer: HostLink; listing?: string };
 }
@@ -370,7 +370,7 @@ export class GameSession {
           // The browser may refuse the mouse right after Esc: Resume (click) always works.
           ($('resume') as HTMLButtonElement).focus();
         },
-        overlay: () => document.getElementById('leave-confirm') ?? document.getElementById('online-confirm') ?? this.mapPicker,
+        overlay: () => document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('leave-confirm') ?? document.getElementById('online-confirm') ?? this.mapPicker,
         opened: () => this.drawPause(true),
       },
       signal,
@@ -896,7 +896,7 @@ export class GameSession {
     if (!map) return void console.warn(`rotation: ${up.entry.map} didn't load; the match replays`);
     r.list.advance();
     const next = rulesForTravel(rules, map, s.fill, up.entry.mode, s.teamSize);
-    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill } };
+    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill, botSet: s.mapBots ? null : (s.botSet ?? null) } };
     this.showRotation();
     window.setTimeout(() => !this.closed && this.exit('travel'), Math.max(0, wait - (performance.now() - t0)));
   }
@@ -953,7 +953,7 @@ export class GameSession {
     if (!rules) return;
     const next = rulesForTravel(rules, map, s.fill, mode, s.teamSize);
     t.notice(travelNotice(map.metadata.name, next.rules.mode));
-    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill } };
+    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill, botSet: s.mapBots ? null : (s.botSet ?? null) } };
     window.setTimeout(() => this.exit('travel'), 1200);
   }
 

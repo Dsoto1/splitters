@@ -32,6 +32,12 @@ export interface HostConfig {
   rotation?: string[];
   /** Play the rotation in a random order. */
   rotationShuffle?: boolean;
+  /**
+   * The host's own bots (docs/HOSTING.md, "Bot sets"): a built-in set's id (maps/botsets/<id>.json), a list in
+   * the text form ("Sir Clank, core.knight, hard; Zorp"), or (in a JSON config, or BOTSET=file.json) a set
+   * object. The match checks it (validateBotSet).
+   */
+  botSet?: string | Record<string, unknown>;
   /** Listing name in the game browser. */
   name: string;
   /** "hosted by …" in the game browser. */
@@ -60,7 +66,7 @@ const CODE_RE = /^[A-HJKMNP-Z2-9]{6}$/;
 /** Keys a JSON config may use (the same names as the environment variables, or camelCase). */
 const KEYS: Record<string, string> = {
   HUB: 'hub', MAP: 'map', MODE: 'mode', BOT_FILL: 'botFill', MAX_PLAYERS: 'maxPlayers', BOT_DIFFICULTY: 'botDifficulty', BOT_TAKEBACK: 'botTakeBack',
-  LEADERS: 'leaders', PLAYLIST: 'playlist', ROTATION: 'rotation', ROTATION_SHUFFLE: 'rotationShuffle', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', IDLE_KICK_MINUTES: 'idleKickMinutes', REGION: 'region',
+  LEADERS: 'leaders', PLAYLIST: 'playlist', ROTATION: 'rotation', ROTATION_SHUFFLE: 'rotationShuffle', BOTSET: 'botSet', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', IDLE_KICK_MINUTES: 'idleKickMinutes', REGION: 'region',
 };
 
 export class ConfigError extends Error {}
@@ -84,6 +90,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env, cwd = process.c
     }
   }
   for (const [envKey, key] of Object.entries(KEYS)) if (env[envKey] !== undefined && env[envKey] !== '') raw[key] = env[envKey];
+  // BOTSET=bots.json: a set in a file (only from the owner's own settings, never from a page).
+  if (typeof raw.botSet === 'string' && raw.botSet.trim().endsWith('.json')) {
+    const file = resolve(cwd, raw.botSet.trim());
+    try {
+      raw.botSet = JSON.parse(read(file)) as unknown;
+    } catch (e) {
+      throw new ConfigError(`BOTSET ${file}: ${(e as Error).message}`);
+    }
+  }
   return parseConfig(raw, cwd);
 }
 
@@ -124,6 +139,7 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
   const hostName = (str(raw.hostName) ? sanitizeName(str(raw.hostName)!) : '').slice(0, 32);
   const playlist = str(raw.playlist);
   const rotation = rotationSetting(raw.rotation);
+  const botSet = botSetSetting(raw.botSet);
   return {
     hub: url.origin + url.pathname.replace(/\/+$/, ''),
     map: isMapId(map) ? map : resolve(cwd, map),
@@ -136,6 +152,7 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
     ...(playlist ? { playlist: resolve(cwd, playlist) } : {}),
     ...(rotation.length ? { rotation } : {}),
     ...(bool(raw.rotationShuffle) ? { rotationShuffle: true } : {}),
+    ...(botSet !== undefined ? { botSet } : {}),
     name: name || 'Dedicated host',
     hostName: hostName || 'Host Service',
     visibility,
@@ -167,6 +184,20 @@ export function rotationSetting(v: unknown): string[] {
   });
 }
 
+/** Most text a BOTSET may be (96 bots of about 30 characters). */
+export const BOTSET_MAX_TEXT = 4000;
+
+/** BOTSET: a preset's id or the text form (a string), or a set object; only the form is checked here. */
+export function botSetSetting(v: unknown): HostConfig['botSet'] {
+  if (v === undefined || v === null || v === '') return undefined;
+  if (typeof v === 'string') {
+    if (v.length > BOTSET_MAX_TEXT) throw new ConfigError(`BOTSET: at most ${BOTSET_MAX_TEXT} characters`);
+    return v.trim();
+  }
+  if (typeof v === 'object' && !Array.isArray(v) && JSON.stringify(v).length <= BOTSET_MAX_TEXT * 4) return v as Record<string, unknown>;
+  throw new ConfigError('BOTSET must be a built-in set\'s name, a list ("Name, look, skill; …"), or a { name, entries, fill } object');
+}
+
 function regionSetting(v: string | undefined): Region {
   if (v === undefined || v === '') {
     try {
@@ -181,5 +212,5 @@ function regionSetting(v: string | undefined): Region {
 
 /** The settings for the log, without the admin token. */
 export function describeConfig(c: HostConfig): string {
-  return `hub ${c.hub}, map ${c.map}${c.mode ? ` (${c.mode})` : ''}${c.rotation?.length ? `, rotation ${c.rotation.join(' ')}${c.rotationShuffle ? ' (shuffled)' : ''}` : ''}, ${c.botFill} players and bots, up to ${c.maxPlayers} people, ${c.visibility === 'listed' ? `listed as "${c.name}"` : 'join code only'}${c.adminToken ? ', admin token set' : ''}`;
+  return `hub ${c.hub}, map ${c.map}${c.mode ? ` (${c.mode})` : ''}${c.rotation?.length ? `, rotation ${c.rotation.join(' ')}${c.rotationShuffle ? ' (shuffled)' : ''}` : ''}${c.botSet ? `, bot set ${typeof c.botSet === 'string' && !/[,;]/.test(c.botSet) ? c.botSet : 'of your own'}` : ''}, ${c.botFill} players and bots, up to ${c.maxPlayers} people, ${c.visibility === 'listed' ? `listed as "${c.name}"` : 'join code only'}${c.adminToken ? ', admin token set' : ''}`;
 }

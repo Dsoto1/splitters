@@ -1,5 +1,6 @@
 import { BOT_DIFFICULTIES } from '../bots/profile.ts';
 import type { HostRulesPatch, HostState, MatchCommand } from '../protocol.ts';
+import { botSetLabel, sameBotSet, validateBotSet } from './botSet.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { teamCount, teamsLabel } from './hostRules.ts';
 import { validateTeamSizes } from './matchSetup.ts';
@@ -47,6 +48,8 @@ export class HostControl {
       sizes: teams ? Array.from({ length: teams }, (_, i) => sizes[i] ?? Math.max(1, Math.round(this.fill / teams))) : [],
       rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks },
       pending: { ...this.pending },
+      botSet: this.bots.botSet,
+      ...(this.bots.botSet && !this.bots.hostSet ? { mapBots: true } : {}),
     };
   }
 
@@ -97,6 +100,14 @@ export class HostControl {
       this.fill = Math.max(1, Math.min(this.max, cmd.fill));
       const coop = this.match.rules.mode === 'core.coop' || this.match.rules.mode === 'core.zombies';
       lines.push(coop ? `the squad to ${this.fill}` : `the match to ${this.fill} players`);
+    }
+    if (cmd.botSet !== undefined) {
+      // Checked again here: the command may come from a console or a test, not only parseClientMessage.
+      const next = cmd.botSet === null ? null : (validateBotSet(cmd.botSet)?.set ?? null);
+      if (!sameBotSet(next, this.bots.botSet)) {
+        this.bots.setBotSet(next);
+        lines.push(`the bots to ${botSetLabel(this.bots.botSet)}`);
+      }
     }
     const skill = cmd.skill && cmd.skill !== this.bots.skill.id ? cmd.skill : undefined;
     const style = cmd.style && cmd.style !== (this.match.rules.botStyle ?? 'mixed') ? cmd.style : undefined;
