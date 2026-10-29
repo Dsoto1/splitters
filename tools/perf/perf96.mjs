@@ -175,6 +175,8 @@ for (const id of maps) {
                 s.casters.push(window.__cs.view.atmosphere?.casterCount ?? 0);
               });
               await new Promise((r) => setTimeout(r, 2000));
+              // A CPU-rendered page (CI) can draw fewer than one frame in 2 s: wait for one, up to 30 s more.
+              for (let waited = 0; s.draws.length === 0 && waited < 30000; waited += 250) await new Promise((r) => setTimeout(r, 250));
               sc.onBeforeRenderObservable.remove(before);
               sc.onAfterRenderObservable.remove(after);
               if (counter && add) counter.addCount = add;
