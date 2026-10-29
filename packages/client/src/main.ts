@@ -523,8 +523,22 @@ class App {
       const transport = signaling.join(code, name, this.front!.look);
       let ready = false;
       // A try with a deadline: not let in by then, it has failed (let in, the match may take its time to load).
-      const welcomed = () => !!(transport as { welcomed?: boolean }).welcomed;
-      const deadline = o.within ? window.setTimeout(() => !ready && !welcomed() && session.exit(`no answer within ${Math.round(o.within! / 1000)} s`), o.within) : undefined;
+      // Linked but not let in yet (a successor still starting the match it took over): it gets longer, up to LINKED_WAIT_MS.
+      const t = transport as { welcomed?: boolean; linked?: boolean };
+      const t0 = Date.now();
+      let deadline: number | undefined;
+      let due = t0 + (o.within ?? 0);
+      const check = () => {
+        if (ready || t.welcomed) return;
+        // Late (this page stalled: a slow machine loading): that time wasn't the host's to answer in. Look again shortly.
+        const late = Date.now() - due > 2000;
+        if (late || (t.linked && Date.now() - t0 < LINKED_WAIT_MS)) {
+          due = Date.now() + 1000;
+          return void (deadline = window.setTimeout(check, 1000));
+        }
+        session.exit(`no answer within ${Math.round((Date.now() - t0) / 1000)} s`);
+      };
+      if (o.within) deadline = window.setTimeout(check, o.within);
       const session = this.startSession(m, transport, {
         exitLabel: 'Leave match',
         exitOnF5: false,
@@ -731,8 +745,15 @@ class App {
   }
 }
 
-/** A friend's browser host dropped: how long we try to get back into its game before saying it's gone. */
-const RECONNECT_HOST_MS = 15_000;
+/**
+ * A friend's browser host dropped: how long we try to get back into its game before saying it's gone. A host
+ * whose tab closed or crashed is gone from the broker at once (we stop then); one whose machine lost its network
+ * stays registered until the broker gives up on it (about a minute). Only then does a successor take over:
+ * sooner, a successor that had only lost its own link would start a second copy of a match still running.
+ */
+const RECONNECT_HOST_MS = 60_000;
+/** A try with a deadline whose link opened (the host is there, still starting its match) may wait this long to be let in. */
+const LINKED_WAIT_MS = 60_000;
 
 /** How long a lost connection is tried again (the server keeps the place a minute). */
 const RECONNECT_FOR_MS = 60_000;

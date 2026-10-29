@@ -151,7 +151,7 @@ F3 / Options → Display: the performance overlay; Pause → Settings → Copy p
 Friends of a browser host no longer get a bare "the host left the game"
 (docs/MULTIPLAYER_PROTOCOL.md section 13): the host sends `bye` before its links
 close (Leave match, `pagehide`); a friend whose link just drops (or whose host
-is silent 20 s) gets up to 15 s of "Reconnecting to host…"; then the host-left screen
+is silent 20 s) gets "Reconnecting to host…" (until the broker says the game is gone, at most a minute); then the host-left screen
 (`game/hostLeft.ts`, `main.ts` `afterHost`) with the last standings, **Host this
 map** (`playLocal(..., autoHost, autoList)`) and **Back to menu**. Hosting that
 starts before the match has loaded is now listed once the welcome comes (it

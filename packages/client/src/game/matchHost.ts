@@ -340,7 +340,8 @@ export class MatchHost {
     if (changes.away.length || changes.released.length) this.rosterToAll();
     const now = Date.now();
     // This tab slept (hidden, a phone's screen off): friends weren't silent, we weren't listening. Start their clocks again.
-    const slept = now - this.lastWatch > 5000 || this.hidden;
+    // So did the page (a long stall: friends' messages reach us through it), going by its own player's inputs.
+    const slept = now - this.lastWatch > 5000 || this.hidden || now - this.pageHeardAt > 5000;
     this.lastWatch = now;
     for (const r of friends) {
       if (slept) r.heardAt = now;
@@ -359,7 +360,11 @@ export class MatchHost {
     this.hidden = hidden;
   }
 
+  /** When this browser's own player last sent inputs (ms): the page is alive and passing friends' messages on. */
+  private pageHeardAt = Date.now();
+
   input(inputs: PlayerInput[]): void {
+    this.pageHeardAt = Date.now();
     if (this.match && this.me) this.match.queueInputs(this.me.slot, inputs);
   }
 

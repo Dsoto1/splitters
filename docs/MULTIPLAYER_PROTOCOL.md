@@ -366,9 +366,12 @@ see then (`client/src/main.ts` `afterHost`, `game/hostLeft.ts`):
   (`HOST_SILENT_MS`: a browser host streams 20 snapshots a second), as
   `dropped`. Dedicated hosts (`welcome.dedicated`) keep the old behaviour
   (reconnect for up to a minute: they hold places and come back).
-- **Dropped**: "Reconnecting to host…" for up to 15 s (rejoining the same code
-  until let in, or until the broker says it is gone; the host keeps the place
-  60 s by the friend's key, so a blip or a reload brings them back to it).
+- **Dropped**: "Reconnecting to host…": rejoining the same code until let in,
+  or until the broker says the game is gone (at once when the host's tab closed
+  or crashed), for up to a minute (a host whose machine lost its network stays
+  on the broker until it gives up on it, about a minute; a successor must not
+  take over a match that is still running). The host keeps the place 60 s by
+  the friend's key, so a blip or a reload brings them back to it.
 - **Then**: the host-left screen: the last standings the friend had, "The host
   left", and **Host this map** (one click: a Host game on the same map, mode
   and rules, about as many players, listed in the game browser so the others
@@ -409,10 +412,11 @@ A browser-hosted match with friends in no longer has to end with its host
   checkpoint's age, deletes the old listing with its secret and lists the
   match under its own code. Everyone else gets "The host left: <name> is
   taking over…" and joins the successor's code with the usual hello, ticket
-  and join checks; their places wait for them as away players held 60 s by
+  and join checks; their places wait for them as away players held 120 s by
   hashed key (`reclaim` tries the key and its hash), so they get back their
-  slot's team, score and weapons. Not let in within 20 s, or no successor:
-  the host-left screen (section 13).
+  slot's team, score and weapons. No link to the successor within 10 s (or
+  linked but not let in within a minute), or no successor: the host-left
+  screen (section 13).
 - **Trust**: friends only ever follow a code their own host named over its
   link; nobody can claim to be the successor. The successor sees no other
   player's key. It does get the listing's secret (it can only take that
