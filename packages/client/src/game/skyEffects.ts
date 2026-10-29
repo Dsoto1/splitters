@@ -151,7 +151,9 @@ export class SkyEffects {
     rays.density = 0.9;
     // The shafts come through gaps in big things (buildings, terrain, trees): only those block the light.
     // Drawing every mesh into the light's pass as well was a second draw for each, hundreds a frame in a
-    // fight; people, props and effects barely dent a shaft.
+    // fight; people, props and effects barely dent a shaft. They go in as the pass's own render list (as a
+    // shadow map's): the post-process's includedMeshes filter lost instanced meshes (trees, props) from
+    // the main view.
     let refresh = 0;
     const occluders = () => {
       const list: AbstractMesh[] = [disc];
@@ -159,7 +161,7 @@ export class SkyEffects {
         if (m === disc || !m.isEnabled() || m.renderingGroupId !== 0 || (m.metadata as { effect?: boolean } | null)?.effect) continue;
         if (m.getBoundingInfo().boundingSphere.radiusWorld >= OCCLUDER_RADIUS) list.push(m);
       }
-      rays.includedMeshes = list;
+      rays.getPass().renderList = list;
     };
     // The disc rides with the camera, far out along the way to the sun.
     this.observer = this.scene.onBeforeRenderObservable.add(() => {

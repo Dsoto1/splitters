@@ -139,7 +139,8 @@ export class CharacterLibrary {
     // A soldier NPC chosen as a player skin is drawn like that NPC (creatures go through the CreatureLibrary).
     const role = spec.armsOnly ? null : npcLookRole(spec.look);
     if (role && !NPC_ROLE_SPECS[role].creature) spec = { npc: { color: NPC_LOOK_COLORS[role] ?? '#d04a3a', scale: 1, female: role === 'sniper' } };
-    if (this.turn) {
+    // Your own first-person arms don't wait: the view sets them up in order with the gun.
+    if (this.turn && !spec.armsOnly) {
       // Everything in first, so the build below runs in one go on its turn.
       await this.preload(spec);
       await this.turn();

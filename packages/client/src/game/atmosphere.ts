@@ -83,55 +83,68 @@ export class Atmosphere {
     let nearFrame = -1;
     // Then each map (a cascade on high) draws only the casters inside its own square, as the light sees
     // it: with three cascades every caster was drawn three times. Depth is clamped, so only the sides cut.
+    // This is decided per mesh as it draws (customAllowRendering), not by giving each map a list of its own:
+    // Babylon keeps instances' visibility per pass, and lists that differed by cascade lost the trees and
+    // props (instances) from the main view. Instanced meshes always draw: all their copies are one call.
     const csm = s instanceof CascadedShadowGenerator ? s : null;
-    const perPass: AbstractMesh[][] = [];
-    const passFrame: number[] = [];
     const at = new Vector3();
     const map = s.getShadowMap();
+    /** The square the map being drawn covers, worked out once per map per frame. */
+    const square = { frame: -1, layer: -1, ok: false, kx: 0, ky: 0, minRadius: 0 };
+    let counted = -1;
     if (map) {
-      map.getCustomRenderList = (pass, list, length) => {
+      map.getCustomRenderList = (_pass, list, length) => {
         if (!list) return null;
         const frame = scene.getFrameId();
-        if (frame !== nearFrame) {
-          nearFrame = frame;
-          near.length = 0;
-          const c = this.camera.globalPosition;
-          const off = this.shadowless;
-          for (let i = 0; i < length; i++) {
-            const m = list[i]!;
-            const b = m.getBoundingInfo().boundingSphere;
-            if (Vector3.Distance(b.centerWorld, c) - b.radiusWorld > reach) continue;
-            if (off.size && underAny(m, off)) continue;
-            near.push(m);
-          }
+        if (frame === nearFrame) return near;
+        nearFrame = frame;
+        near.length = 0;
+        const c = this.camera.globalPosition;
+        const off = this.shadowless;
+        for (let i = 0; i < length; i++) {
+          const m = list[i]!;
+          const b = m.getBoundingInfo().boundingSphere;
+          if (Vector3.Distance(b.centerWorld, c) - b.radiusWorld > reach) continue;
+          if (off.size && underAny(m, off)) continue;
+          near.push(m);
+        }
+        return near;
+      };
+      s.customAllowRendering = (sub) => {
+        const m = sub.getRenderingMesh();
+        const frame = scene.getFrameId();
+        if (counted !== frame) {
+          counted = frame;
           this.casterCount = 0;
         }
-        if (passFrame[pass] === frame) return perPass[pass]!;
-        const lo = csm ? csm.getCascadeMinExtents(pass) : null;
-        const hi = csm ? csm.getCascadeMaxExtents(pass) : null;
-        const toMap = csm ? csm.getCascadeTransformMatrix(pass) : s.getTransformMatrix();
-        if (!toMap || (csm && (!lo || !hi || hi.x <= lo.x || hi.y <= lo.y))) return near;
-        passFrame[pass] = frame;
-        const out = (perPass[pass] ??= []);
-        out.length = 0;
-        // The map's square is -1..1 across; a metre is this much of it.
-        const kx = csm ? 2 / (hi!.x - lo!.x) : 1 / BOX;
-        const ky = csm ? 2 / (hi!.y - lo!.y) : 1 / BOX;
-        // Casters smaller than a few of the map's texels cast a speck: the far cascade's texel is a quarter
-        // metre, and it had well over a thousand props, most of them that small.
-        // The square is 2 / kx metres across and its map that many texels: half of MIN_TEXELS of them, as a radius.
-        const minRadius = MIN_TEXELS / (kx * map.getSize().width);
-        for (const m of near) {
-          const b = m.getBoundingInfo().boundingSphere;
-          if (b.radiusWorld < minRadius) continue;
-          Vector3.TransformCoordinatesToRef(b.centerWorld, toMap, at);
-          // A little slack: the cascades are fitted after this list is made.
-          const r = b.radiusWorld + 1;
-          if (Math.abs(at.x) - r * kx > 1 || Math.abs(at.y) - r * ky > 1) continue;
-          out.push(m);
+        if (m.hasInstances || m.hasThinInstances) {
+          this.casterCount++;
+          return true;
         }
-        this.casterCount += out.length;
-        return out;
+        const layer = csm ? ((csm as unknown as { _currentLayer?: number })._currentLayer ?? 0) : 0;
+        if (square.frame !== frame || square.layer !== layer) {
+          square.frame = frame;
+          square.layer = layer;
+          const lo = csm ? csm.getCascadeMinExtents(layer) : null;
+          const hi = csm ? csm.getCascadeMaxExtents(layer) : null;
+          square.ok = !csm || (!!lo && !!hi && hi.x > lo.x && hi.y > lo.y);
+          // The map's square is -1..1 across; a metre is this much of it.
+          square.kx = csm && square.ok ? 2 / (hi!.x - lo!.x) : 1 / BOX;
+          square.ky = csm && square.ok ? 2 / (hi!.y - lo!.y) : 1 / BOX;
+          // Casters smaller than a few of the map's texels cast a speck: the far cascade's texel is a quarter
+          // metre. The square is 2 / kx metres across and the map that many texels: MIN_TEXELS of them across.
+          square.minRadius = MIN_TEXELS / (square.kx * map.getSize().width);
+        }
+        if (!square.ok) return true;
+        const toMap = csm ? csm.getCascadeTransformMatrix(layer) : s.getTransformMatrix();
+        if (!toMap) return true;
+        const b = m.getBoundingInfo().boundingSphere;
+        if (b.radiusWorld < square.minRadius) return false;
+        Vector3.TransformCoordinatesToRef(b.centerWorld, toMap, at);
+        const r = b.radiusWorld;
+        if (Math.abs(at.x) - r * square.kx > 1 || Math.abs(at.y) - r * square.ky > 1) return false;
+        this.casterCount++;
+        return true;
       };
     }
 
