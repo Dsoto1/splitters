@@ -1155,6 +1155,32 @@ async function physicsfxFlow(browser) {
   const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat' && m.isEnabled()).length }));
   check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
+  // Past the ragdoll cap (big matches) a death plays the death animation instead: a bot killed in mid-air
+  // falls to the ground under gravity rather than dying where it hung.
+  await page.waitForFunction(() => window.__match.slots.some((c) => c && c.slot !== window.__cs.slot && c.alive && window.__cs.view.avatars.has(c.slot)), null, { timeout: T(8000) }).catch(() => {});
+  const airborne = await page.evaluate(() => {
+    const m = window.__match;
+    const v = window.__cs.view;
+    const me = m.slots[window.__cs.slot];
+    const bot = m.slots.find((c) => c && c !== me && c.alive && v.avatars.has(c.slot));
+    if (!bot) return null;
+    v.activeRagdolls = () => Infinity;
+    bot.move = { ...bot.move, pos: { ...bot.move.pos, y: bot.move.pos.y + 6 }, velY: 0, grounded: false };
+    m.damage(bot, 500, me, 'core.pistol');
+    window.__airSlot = bot.slot;
+    return { died: bot.move.pos.y };
+  });
+  await page.waitForFunction(() => !!window.__cs.view.avatars.get(window.__airSlot)?.fall, null, { timeout: T(6000) }).catch(() => {});
+  const landed = await page.evaluate(() => {
+    const v = window.__cs.view;
+    delete v.activeRagdolls;
+    const a = v.avatars.get(window.__airSlot);
+    if (!a?.fall) return null;
+    // Two seconds of falling at once (headless frames are slow).
+    for (let i = 0; i < 120; i++) v.stepFall(a, 1 / 60);
+    return { y: a.root.position.y, ground: a.fall.ground, from: a.fall.y };
+  });
+  check(!!airborne && !!landed && landed.ground < airborne.died - 3 && Math.abs(landed.y - landed.ground) < 0.05, `a bot killed in mid-air without a ragdoll falls to the ground (${JSON.stringify({ airborne, landed })})`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
   await page.waitForFunction(() => !!window.__cs.view.physics, null, { timeout: T(3000) }).catch(() => {});
   await page.evaluate(() => {

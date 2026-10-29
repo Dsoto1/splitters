@@ -141,6 +141,8 @@ interface Avatar {
   canopy?: { node: TransformNode; kind: number };
   /** Physics body after death (until the next spawn). */
   ragdoll?: Ragdoll;
+  /** A body that died without a ragdoll (too many tumbling, or a creature) falls to the ground under gravity. */
+  fall?: { y: number; vy: number; ground: number };
   wasAlive?: boolean;
   /** The held weapon and its muzzle in the weapon's own space (for tracers and flashes). */
   muzzle?: { node: TransformNode; local: Vector3 };
@@ -482,6 +484,20 @@ export class GameView {
     return n;
   }
 
+  /** Where a body that died without a ragdoll comes to rest: the first solid thing below it. */
+  private startFall(x: number, y: number, z: number): { y: number; vy: number; ground: number } {
+    const hit = this.physics?.raycast({ x, y: y + 0.3, z }, { x: 0, y: -1, z: 0 }, 200);
+    return { y, vy: 0, ground: hit ? y + 0.3 - hit.dist : y };
+  }
+
+  private stepFall(a: Avatar, dt: number): void {
+    const f = a.fall!;
+    if (f.y <= f.ground) return;
+    f.vy -= PLAYER.gravity * dt;
+    f.y = Math.max(f.ground, f.y + f.vy * dt);
+    a.root.position.y = f.y;
+  }
+
   /** The fallen body becomes a corpse that outlives the player's respawn. */
   private toCorpse(slot: number, a: Avatar): void {
     this.avatars.delete(slot);
@@ -646,6 +662,8 @@ export class GameView {
         a.flash.position.copyFrom(Vector3.TransformCoordinates(a.muzzle.local, a.muzzle.node.getWorldMatrix()));
       }
     }
+    for (const a of this.avatars.values()) if (a.fall && !a.ragdoll) this.stepFall(a, dt);
+    for (const c of this.corpses) if (c.a.fall && !c.a.ragdoll) this.stepFall(c.a, dt);
     if (this.physics) {
       this.physics.step(dt);
       for (const a of this.avatars.values()) a.ragdoll?.update();
@@ -977,6 +995,7 @@ export class GameView {
       // A creature plays its own death and is left lying where it fell (no ragdoll).
       if (a.wasAlive && !p.alive && a.anim instanceof CreatureAnimator) {
         a.anim.update(0, { speed: 0, moveAngle: 0, airborne: false, alive: false, pitch: 0, celebrate: false });
+        a.fall = this.startFall(a.root.position.x, a.root.position.y, a.root.position.z);
         this.toCorpse(p.slot, a);
         continue;
       }
@@ -995,7 +1014,10 @@ export class GameView {
       a.wasAlive = p.alive;
       // While ragdolled the body stays where it fell; physics moves the bones.
       if (!a.ragdoll) {
-        a.root.position.set(p.x, p.y, p.z);
+        // Dead without a ragdoll: the body falls from where it died instead of playing its death in mid-air.
+        if (p.alive) a.fall = undefined;
+        else a.fall ??= this.startFall(p.x, p.y, p.z);
+        a.root.position.set(p.x, a.fall ? a.fall.y : p.y, p.z);
         if (a.emergeAt !== undefined) {
           const t = (now - a.emergeAt) / EMERGE_MS;
           if (t >= 1) a.emergeAt = undefined;
