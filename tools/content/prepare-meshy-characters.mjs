@@ -53,6 +53,7 @@ import sharp from 'sharp';
 import { autoSkin } from './autoskin.mjs';
 import { buildSpec, readManifests } from './character-manifests.mjs';
 import { fbxToDocument } from './fbx.mjs';
+import { fitHands } from './hands.mjs';
 import { seamAwareSimplify } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -283,7 +284,6 @@ function pose(skel, verts, ual, c) {
     pos.set(p, v * 3);
     nrm.set(n, v * 3);
   }
-  if (c.mitts) mitten(pos, nrm, J, W, names, posed, index);
   // Meshy sizes the model as it was posed (bent knees and all): stand it at the rig's height, feet on the ground.
   let [low, high] = [Infinity, -Infinity];
   for (let v = 1; v < pos.length; v += 3) [low, high] = [Math.min(low, pos[v]), Math.max(high, pos[v])];
@@ -457,36 +457,6 @@ async function writeSkinDebug(path, P, indices, joints, weights, given) {
   writeFileSync(path, await io.writeBinary(doc));
 }
 
-/**
- * Close open, spread hands into mittens: past the knuckles everything is drawn
- * back towards them and together, and the whole hand shrinks a little (so a
- * gun grip reads, and a bulky glove doesn't fill the first-person view).
- */
-function mitten(pos, nrm, J, W, names, posed, index) {
-  for (const side of ['Left', 'Right']) {
-    const h = index.get(`${side}Hand`);
-    const H = posed[h];
-    const d = norm(sub(H, posed[index.get(`${side}ForeArm`)]));
-    const verts = [];
-    for (let v = 0; v < pos.length / 3; v++) {
-      let best = 0;
-      for (let k = 1; k < 4; k++) if (W[v * 4 + k] > W[v * 4 + best]) best = k;
-      if (J[v * 4 + best] === h) verts.push(v);
-    }
-    let L = 0;
-    for (const v of verts) L = Math.max(L, dot(sub(pos.subarray(v * 3, v * 3 + 3), H), d));
-    const knuckle = L * 0.4;
-    for (const v of verts) {
-      let p = sub(Array.from(pos.subarray(v * 3, v * 3 + 3)), H);
-      const along = dot(p, d);
-      const across = sub(p, scale(d, along));
-      if (along > knuckle) p = add(scale(d, knuckle + (along - knuckle) * 0.4), scale(across, 0.75));
-      pos.set(add(H, scale(p, 0.85)), v * 3);
-    }
-  }
-  void nrm;
-}
-
 /** How much of the first-person arms shows and how bulky: the elbow end goes, sleeves pull in towards the bone, hands shrink. */
 const FP_KEEP_FROM = 0.4;
 const FP_SLEEVE = 0.6;
@@ -592,16 +562,6 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     return t;
   };
   for (const j of joints) place(j);
-  for (const j of joints) {
-    const parent = j.getParentNode();
-    const pw = parent ? worldRest(parent) : { q: [0, 0, 0, 1], t: [0, 0, 0] };
-    const pt = parent && ual.has(parent.getName()) ? target.get(parent.getName()) : pw.t;
-    j.setTranslation(qrot(qinv(pw.q), sub(target.get(j.getName()), pt)));
-  }
-  // Bind matrices at the fitted rest pose (rotations are the rig's own).
-  const ibm = new Float32Array(joints.length * 16);
-  joints.forEach((j, i) => ibm.set(inverseRigid(ual.get(j.getName()).q, target.get(j.getName())), i * 16));
-  skin.getInverseBindMatrices().setArray(ibm);
 
   // Out with the mannequin and the clips; in with the character.
   for (const a of root.listAnimations()) {
@@ -635,6 +595,22 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     major[v] = rigNames[top[0]?.[0] ?? 0];
   }
   const fp = firstPerson ? slimArms(src, major) : null;
+  // Hands: measured from the mesh, the finger joints fitted to them and the fingers weighted (hands.mjs).
+  const pos = fp ? fp.pos : new Float32Array(src.pos);
+  const fitted = new Map(rigNames.map((n) => [n, { q: ual.get(n).q, t: target.get(n) }]));
+  const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, log: (l) => console.log(`  ${out} ${l}`) });
+  for (const [n, t] of hands.moved) target.set(n, t);
+  for (const j of joints) if (hands.data[j.getName().slice(-1)] && j.getName().startsWith('hand_')) j.setExtras({ hand: hands.data[j.getName().slice(-1)] });
+  for (const j of joints) {
+    const parent = j.getParentNode();
+    const pw = parent ? worldRest(parent) : { q: [0, 0, 0, 1], t: [0, 0, 0] };
+    const pt = parent && ual.has(parent.getName()) ? target.get(parent.getName()) : pw.t;
+    j.setTranslation(qrot(qinv(pw.q), sub(target.get(j.getName()), pt)));
+  }
+  // Bind matrices at the fitted rest pose (rotations are the rig's own).
+  const ibm = new Float32Array(joints.length * 16);
+  joints.forEach((j, i) => ibm.set(inverseRigid(ual.get(j.getName()).q, target.get(j.getName())), i * 16));
+  skin.getInverseBindMatrices().setArray(ibm);
   const kept = [];
   for (let i = 0; i < src.indices.length; i += 3) {
     const a = src.indices[i];
@@ -653,7 +629,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   const prim = doc
     .createPrimitive()
     .setMaterial(material)
-    .setAttribute('POSITION', acc('VEC3', fp ? fp.pos : src.pos))
+    .setAttribute('POSITION', acc('VEC3', pos))
     .setAttribute('NORMAL', acc('VEC3', src.nrm))
     .setAttribute('TEXCOORD_0', acc('VEC2', src.uv))
     .setAttribute('JOINTS_0', acc('VEC4', J))
@@ -677,7 +653,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   writeFileSync(join(OUT, out), glb);
   const lodTris = triangles(doc) - fullTris;
   console.log(`${out.padEnd(28)} ${String(fullTris).padStart(6)} tris ${lod ? `(+${lodTris} low-detail)` : ''} ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
-  return { file: `characters/${out}`, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: fullTris, ...(lod ? { lodTriangles: lodTris } : {}), bytes: glb.byteLength };
+  return { file: `characters/${out}`, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: fullTris, ...(lod ? { lodTriangles: lodTris } : {}), bytes: glb.byteLength, hands: true };
 }
 
 const lock = { $comment: 'Generated by tools/content/prepare-meshy-characters.mjs. Do not edit by hand.', files: [] };
