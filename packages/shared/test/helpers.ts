@@ -32,7 +32,6 @@ export function makeMap(tiles: MapDocument['classicStructure']['tiles'], spawns:
     logic: { variables: [], timers: [], objectives: [], rules: [] },
     terrain: null,
     bounds: null,
-    track: null,
     teamSetup: null,
     backdrop: null,
     blood: null,

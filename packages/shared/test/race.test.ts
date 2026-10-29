@@ -10,7 +10,8 @@ import {
   RaceDirector,
   TICK_RATE,
   TrackGeometry,
-  conformTerrainToTrack,
+  layPathsIntoTerrain,
+  racePathFromTrack,
   initPhysics,
   newTerrain,
   playableModes,
@@ -43,7 +44,7 @@ function oval(o: Partial<Track> = {}): Track {
 /** Flat open ground with the oval on it and spawns in the infield. */
 function raceMap(track: Track | null = oval()): MapDocument {
   const map = makeMap([], [[0, 0, 0], [4, 0, 0], [-4, 0, 0], [0, 0, 4]]);
-  return { ...map, terrain: { ...newTerrain(180, 2), baseY: 0 }, track, metadata: { ...map.metadata, supportedModes: ['core.race'], recommendedPlayers: { min: 1, max: 4 } } };
+  return { ...map, terrain: { ...newTerrain(180, 2), baseY: 0 }, ...(track ? { paths: [racePathFromTrack(track)] } : {}), metadata: { ...map.metadata, supportedModes: ['core.race'], recommendedPlayers: { min: 1, max: 4 } } };
 }
 
 /** A pretend match: racers are points we move along the road by hand. */
@@ -100,10 +101,11 @@ describe('race tracks', () => {
     expect(Math.abs(near.lateral)).toBeLessThan(4);
   });
 
-  it('lays the road into the terrain: flat under it, blended at the shoulders', () => {
+  it('a race road that lays levels the ground under it: flat under it, blended at the shoulders', () => {
     const hilly = { ...newTerrain(180, 2), heights: newTerrain(180, 2).heights.map((_, i) => (i % 7) * 40) };
-    const t = conformTerrainToTrack(hilly, oval());
-    expect(terrainHeightAt(t, 0, -40)).toBeCloseTo(0, 1);
+    const t = layPathsIntoTerrain(hilly, [{ ...racePathFromTrack(oval()), lay: true }]);
+    // Level across the road (the ground along it, smoothed).
+    expect(Math.abs(terrainHeightAt(t, 0, -40)! - terrainHeightAt(t, 0, -37)!)).toBeLessThan(0.15);
     // Far from the road nothing changes.
     expect(terrainHeightAt(t, 0, 0)).toBeCloseTo(terrainHeightAt(hilly, 0, 0)!, 3);
   });

@@ -1,19 +1,20 @@
 import type { ValidationIssue } from './validate.ts';
-import type { MapDocument, MapEntity, MountEntity, Track } from './schema.ts';
-import { terrainHeightAt, TERRAIN_MATERIALS, type TerrainData } from './terrain.ts';
+import { RaceSettings, type MapDocument, type MapEntity, type MapPath, type MountEntity, type PathUse, type Track } from './schema.ts';
+import { terrainHeightAt, type TerrainData } from './terrain.ts';
 
 /**
- * Race tracks (map format v18). A track is a smooth road through ordered
- * control points: a Catmull-Rom curve sampled every couple of metres. Every
- * derived piece lives here as pure functions of the map, so the simulation,
- * the client's road mesh, MapMaker's preview and the validator all agree:
+ * Path curves and race tracks. Every path (schema.ts MapPath: roads, the
+ * race track, AI routes) is a Catmull-Rom curve through its ordered points,
+ * open or closed (a loop wraps from the last point back to the first). The
+ * race track is the map's path used as a race. Every derived piece lives
+ * here as pure functions of the map, so the simulation, the client's road
+ * mesh, MapMaker's preview and the validator all agree:
  *
  * - the centre line (samples with tangent and distance along),
  * - checkpoints (gates across the road, in order; gate 0 is the start line,
  *   which is also the finish line of a circuit),
  * - the start grid (two abreast behind the start line),
- * - "on the road" lookups (vehicles grip better there),
- * - laying the road into the terrain (flatten under it, blend the shoulders).
+ * - "on the road" lookups (vehicles grip better there).
  */
 
 /** One point on the centre line: position, unit tangent (x/z) and distance along the road. */
@@ -308,15 +309,52 @@ function centreLine(track: Track, loop: boolean, shape: CurveShape): TrackSample
   return out;
 }
 
-const cache = new WeakMap<Track, TrackGeometry>();
+/** A race path's settings when it has none of its own. */
+export const DEFAULT_RACE: RaceSettings = RaceSettings.parse({});
 
-/** The map's track geometry (cached per track object), or null when it has none. */
-export function trackGeometry(map: { track?: Track | null }): TrackGeometry | null {
-  const t = map.track;
-  if (!t || t.points.length < 2) return null;
-  let g = cache.get(t);
-  if (!g) cache.set(t, (g = new TrackGeometry(t)));
+/** How a smooth path's centre line is drawn through its points (see CurveShape). */
+const SMOOTH_CURVE = { step: 1, centripetal: true } as const;
+
+/** A path as the curve code reads it: its points, width and loop, with its race settings (the defaults when it has none). */
+export function pathTrack(p: MapPath): Track {
+  return { ...DEFAULT_RACE, ...p.race, points: p.points, width: p.width, loop: p.closed, surface: p.style === 'dirt' ? 'dirt' : 'asphalt' };
+}
+
+const geometry = new WeakMap<MapPath, TrackGeometry>();
+/** A path's centre line (cached per path object): the classic race curve, or the smooth one. */
+export function pathGeometry(p: MapPath): TrackGeometry {
+  let g = geometry.get(p);
+  if (!g) geometry.set(p, (g = new TrackGeometry(pathTrack(p), p.curve === 'classic' ? {} : SMOOTH_CURVE)));
   return g;
+}
+
+/** Does the path have this use? */
+export const pathUses = (p: MapPath, use: PathUse): boolean => p.uses.includes(use);
+
+/** The map's race track: its first path used as a race (null: none). */
+export function racePath(map: { paths?: readonly MapPath[] | undefined }): MapPath | null {
+  return map.paths?.find((p) => pathUses(p, 'race') && p.points.length >= 2) ?? null;
+}
+
+/** The race track's settings and points (track.ts's shape), or null when the map has none. */
+export function raceTrack(map: { paths?: readonly MapPath[] | undefined }): Track | null {
+  const p = racePath(map);
+  return p ? pathGeometry(p).track : null;
+}
+
+/**
+ * A race road path from a track's points and settings: the classic curve, not laid on load
+ * (what migration makes of a v22 `track`; tests and tools build race maps with it).
+ */
+export function racePathFromTrack(t: Track, id = 'race_track'): MapPath {
+  const { points, width, loop, surface, ...race } = t;
+  return { id, points, closed: loop, uses: ['road', 'race'], width, style: surface === 'dirt' ? 'dirt' : 'asphalt', lay: false, curve: 'classic', race };
+}
+
+/** The map's race track geometry (cached per path object), or null when it has none. */
+export function trackGeometry(map: { paths?: readonly MapPath[] | undefined }): TrackGeometry | null {
+  const p = racePath(map);
+  return p ? pathGeometry(p) : null;
 }
 
 /** Prefix of the start-grid vehicles a race adds to the map (see raceGridEntities). */
@@ -344,7 +382,7 @@ export const AMBIENT_CAR_PREFIX = 'ambient_car_';
  */
 export function ambientCarEntities(map: MapDocument): { entity: MountEntity; pit: [number, number, number]; pitYaw: number }[] {
   const g = trackGeometry(map);
-  const t = map.track;
+  const t = g?.track;
   if (!g || !t || !t.ambient) return [];
   const r = (v: number) => Math.round(v * 100) / 100;
   const line = g.at(g.start);
@@ -366,7 +404,7 @@ export function ambientCarEntities(map: MapDocument): { entity: MountEntity; pit
  * builds its mounts in the same order, so mount indices agree.
  */
 export function withTrackVehicles(map: MapDocument, rules: { mode: string; raceVehicle?: string }): MapDocument {
-  if (!map.track || map.entities.some((e) => e.id.startsWith(RACE_GRID_PREFIX) || e.id.startsWith(AMBIENT_CAR_PREFIX))) return map;
+  if (!racePath(map) || map.entities.some((e) => e.id.startsWith(RACE_GRID_PREFIX) || e.id.startsWith(AMBIENT_CAR_PREFIX))) return map;
   const grid = rules.mode === 'core.race' ? raceGridEntities(map, rules.raceVehicle) : [];
   const ambient = ambientCarEntities(map).map((c) => c.entity);
   if (!grid.length && !ambient.length) return map;
@@ -404,51 +442,6 @@ export function roadStrip(map: MapDocument, from: number, to: number, cols: numb
   return { rows, s };
 }
 
-/**
- * Lay the road into the terrain: under the road the ground is set to the
- * road's height (flat across), the shoulders blend back into the hills over
- * `shoulder` metres, and the cells under the road are painted gravel (dirt
- * for a dirt road) with no plants. Sim and client both read the result.
- */
-export function conformTerrainToTrack(t: TerrainData, track: Track, shoulder = 6): TerrainData {
-  const g = new TrackGeometry(track);
-  const half = track.width / 2 + 1;
-  const heights = t.heights.slice();
-  for (let r = 0; r < t.rows; r++) {
-    for (let c = 0; c < t.cols; c++) {
-      const x = t.origin[0] + c * t.spacing;
-      const z = t.origin[1] + r * t.spacing;
-      const near = g.nearest(x, z, half + shoulder + 2);
-      if (!near) continue;
-      const d = Math.abs(near.lateral);
-      if (d > half + shoulder || near.dist > half + shoulder + 1) continue;
-      const i = r * t.cols + c;
-      const want = Math.round((near.sample.y - t.baseY) * 100);
-      const k = d <= half ? 1 : 1 - smoothstep((d - half) / shoulder);
-      heights[i] = Math.round(heights[i]! + (want - heights[i]!) * k);
-    }
-  }
-  const under = TERRAIN_MATERIALS.indexOf(track.surface === 'dirt' ? 'dirt' : 'gravel');
-  const materials = t.materials.slice();
-  const foliage = t.foliage.length ? t.foliage.slice() : [];
-  for (let i = 0; i < materials.length; i++) {
-    const c = i % (t.cols - 1);
-    const r = Math.floor(i / (t.cols - 1));
-    const x = t.origin[0] + (c + 0.5) * t.spacing;
-    const z = t.origin[1] + (r + 0.5) * t.spacing;
-    const near = g.nearest(x, z, half + 2);
-    if (!near || Math.abs(near.lateral) > half) continue;
-    materials[i] = under;
-    if (foliage.length) foliage[i] = 0;
-  }
-  return { ...t, heights, materials, foliage };
-}
-
-const smoothstep = (v: number): number => {
-  const t = Math.max(0, Math.min(1, v));
-  return t * t * (3 - 2 * t);
-};
-
 /** Ease a new control point's height onto the ground under it (MapMaker places points where you click). */
 export function trackPointAt(terrain: TerrainData | null, x: number, y: number, z: number): [number, number, number] {
   const r = (v: number) => Math.round(v * 100) / 100;
@@ -460,15 +453,25 @@ export function trackPointAt(terrain: TerrainData | null, x: number, y: number, 
  * Creator-facing checks on the track (navigation reachability is checked in
  * nav/, which needs Recast): enough control points, inside the boundary and
  * on the terrain, long enough to race, a grid for the players, and Race mode
- * listed only with a track.
+ * listed only with a track. Also the paths' own checks: one race track, and
+ * routes NPC squads walk exist.
  */
 export function validateTrack(map: MapDocument): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const t = map.track;
+  const paths = map.paths ?? [];
+  const ids = new Set<string>();
+  for (const p of paths) {
+    if (ids.has(p.id)) issues.push({ severity: 'error', code: 'path.duplicate', message: `two paths share the id "${p.id}"` });
+    ids.add(p.id);
+  }
+  const races = paths.filter((p) => pathUses(p, 'race'));
+  if (races.length > 1) issues.push({ severity: 'warning', code: 'track.many', message: `${races.length} paths are race tracks: races use the first one` });
+  const t = raceTrack(map);
   if (!t) {
-    if (map.metadata.supportedModes.includes('core.race')) issues.push({ severity: 'error', code: 'race.no_track', message: 'Race is listed but the map has no track: draw one with the Road tool' });
+    if (map.metadata.supportedModes.includes('core.race')) issues.push({ severity: 'error', code: 'race.no_track', message: 'Race is listed but the map has no track: draw a path with the Paths tool (G) and tick Race track' });
     return issues;
   }
+  if (t.width < 5) issues.push({ severity: 'error', code: 'track.width', message: `the race track is ${t.width} m wide: races need 5 m or more` });
   if (t.loop && t.points.length < 3) issues.push({ severity: 'error', code: 'track.points', message: 'a circuit needs at least 3 road points' });
   if (map.bounds) {
     const { min, max } = map.bounds;
@@ -480,7 +483,7 @@ export function validateTrack(map: MapDocument): ValidationIssue[] {
   if (!g) return issues;
   if (map.terrain) {
     const off = g.samples.filter((p) => terrainHeightAt(map.terrain!, p.x, p.z) === null).length;
-    if (off) issues.push({ severity: 'warning', code: 'track.off_terrain', message: `${off * 2} m of road runs off the terrain` });
+    if (off) issues.push({ severity: 'warning', code: 'track.off_terrain', message: `${Math.round((off * g.length) / g.samples.length)} m of road runs off the terrain` });
   }
   if (g.length < 80) issues.push({ severity: 'warning', code: 'track.short', message: `the road is only ${Math.round(g.length)} m long: races need 80 m or more` });
   // Only races put everyone on the grid; a track that just carries ambient traffic can have any player count.

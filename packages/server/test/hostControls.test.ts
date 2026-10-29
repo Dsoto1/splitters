@@ -29,7 +29,6 @@ const room = (id: string, next?: string): MapDocument => ({
   },
   terrain: null,
   bounds: null,
-  track: null,
   teamSetup: null,
   backdrop: null,
   blood: null,

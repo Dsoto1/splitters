@@ -23,7 +23,7 @@ import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 22;
+export const MAP_FORMAT_VERSION = 23;
 /** Content packs a map may name in `dependencies`. */
 export const MAX_MAP_DEPENDENCIES = 16;
 
@@ -367,6 +367,8 @@ export const EncounterEntity = EntityBase.extend({
   order: z.enum(SQUAD_ORDERS).default('hold'),
   /** Point of interest for defend/patrol orders (any entity). */
   orderTarget: StableId.nullable().default(null),
+  /** Patrol order (v23): walk this path (a `route` or `road` path's id) instead of to the target and back. Absent: none. */
+  route: z.string().min(1).max(64).optional(),
   startActive: z.boolean().default(true),
   difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'),
   /** Multipliers on the roles' own health and damage, and their body size (hitbox too); absent = 1. */
@@ -708,10 +710,12 @@ export const TRACK_SURFACES = ['asphalt', 'dirt'] as const;
 export const RACE_VEHICLES = ['kart', 'speeder', 'buggy'] as const;
 
 /**
- * A race track (map format v18; see track.ts): a smooth road through ordered
- * control points (world X, Y, Z of its centre line), `width` metres across,
- * either a closed circuit or point to point. Checkpoints and the start grid
- * are derived from it. Race mode needs one; other modes just drive on it.
+ * A race track as the curve code reads it (track.ts): ordered control points
+ * (world X, Y, Z of the centre line), `width` metres across, a closed circuit
+ * or point to point, and its race settings. Maps keep their race track as a
+ * path with the `race` use (MapPath, below): map formats v18-v22 stored it in
+ * a `track` field of its own, which migration (v22 -> v23) turns into such a
+ * path. raceTrack(map) gives the race path in this shape.
  */
 export const Track = z.object({
   points: z.array(Vec3Tuple).min(2).max(200),
@@ -747,19 +751,81 @@ export const PATH_STYLES = ['asphalt', 'concrete', 'cobble', 'flagstone', 'grave
 export type PathStyle = (typeof PATH_STYLES)[number];
 
 /**
- * A path drawn in MapMaker (paths.ts): a road, street, trail or walkway
- * through the points (a smooth curve), `width` metres wide, in a style.
- * `lay`: the ground under it is levelled to the path and painted, and its
- * edges blend back into the ground (on load, so moving a path in MapMaker
- * moves the dip with it). Drawn only: nothing collides with a path itself.
+ * What a path is for (one path can have several):
+ * - `road`: drawn, a ribbon in its `style` (paths.ts); `lay` levels the ground under it;
+ * - `race`: the race track: checkpoints along it in point order, laps on a closed path,
+ *   one run from the first point to the last on an open one (track.ts). A race road is drawn
+ *   with curbs, a start line and arches; a race path that is not a road only gets the arches
+ *   and the start line (a race along streets drawn some other way);
+ * - `route`: an invisible guide line for the AI: bots driving vehicles follow it (and roads),
+ *   and NPC squads with the patrol order walk the one their encounter names. MapMaker shows it dashed.
+ */
+export const PATH_USES = ['road', 'race', 'route'] as const;
+export type PathUse = (typeof PATH_USES)[number];
+/** How NPCs walk a route: round and round (an open route: back to its start, then on again), or there and back. */
+export const PATROL_STYLES = ['loop', 'back_and_forth'] as const;
+export type PatrolStyle = (typeof PATROL_STYLES)[number];
+/**
+ * How the curve runs through the points: `smooth` (centripetal, sampled every metre: it never
+ * overshoots at sharp or uneven corners) or `classic` (the race track's original curve, kept by
+ * tracks made before paths and races were one, so they race exactly as they always did).
+ */
+export const PATH_CURVES = ['smooth', 'classic'] as const;
+
+/** A race path's settings (absent: these defaults). */
+export const RaceSettings = z.object({
+  /** Laps of a circuit (point to point is always one run). */
+  laps: z.number().int().min(1).max(20).default(3),
+  /** Places on the start grid (two abreast behind the start line). */
+  grid: z.number().int().min(2).max(16).default(8),
+  /** Vehicle everyone races in (Arcade can change it). */
+  vehicle: z.enum(RACE_VEHICLES).default('kart'),
+  /** Weapons, vehicle guns and the sideline sentries on (Arcade can change it). */
+  combat: z.boolean().default(false),
+  /** Red-and-white curbs along both edges. */
+  curbs: z.boolean().default(true),
+  /**
+   * Ambient cars: this many NPC-driven vehicles lapping the track in every
+   * mode (no team: they run anyone over, and anyone can shoot them up or
+   * take the wheel). Wrecked ones come back in the pit lane.
+   */
+  ambient: z.number().int().min(0).max(12).default(0),
+  ambientVehicle: z.enum(RACE_VEHICLES).default('kart'),
+  /** Where wrecked ambient cars come back (lined up behind it, facing down the road); null: just off the road by the start line. */
+  pit: Vec3Tuple.nullable().default(null),
+});
+export type RaceSettings = z.infer<typeof RaceSettings>;
+
+/**
+ * A path drawn in MapMaker: an ordered list of points (a smooth curve through
+ * them), open or `closed` (a loop: the last point joins the first), `width`
+ * metres wide, with its `uses` (PATH_USES). The points' order is the path's
+ * direction: the way a race runs, and the only way traffic goes on a
+ * `oneWay` path. Roads: `style`, and `lay`: the ground under it is levelled
+ * to the path and painted and its edges blend back into the ground (worked
+ * out on load, so moving a path in MapMaker moves the dip with it); a path
+ * that doesn't lay keeps its own height (a raised track). Drawn only:
+ * nothing collides with a path itself.
  */
 export const MapPath = z.object({
   id: z.string().min(1).max(64),
-  style: z.enum(PATH_STYLES).default('dirt'),
-  width: z.number().min(0.5).max(20).default(3),
   points: z.array(Vec3Tuple).min(2).max(200),
-  loop: z.boolean().default(false),
+  /** A loop: the last point joins back to the first ("join ends"). */
+  closed: z.boolean().default(false),
+  uses: z.array(z.enum(PATH_USES)).min(1).max(3).default(['road']),
+  width: z.number().min(0.5).max(30).default(3),
+  style: z.enum(PATH_STYLES).default('dirt'),
   lay: z.boolean().default(true),
+  /** Traffic only in point order: vehicle bots never drive it the other way, patrols never turn back. */
+  oneWay: z.boolean().optional(),
+  /** Speed hint for drivers (m/s): bots driving along it keep under it. Absent: none. */
+  speed: z.number().min(2).max(80).optional(),
+  /** Routes: how NPCs walk it (absent: round a closed path, there and back on an open one). */
+  patrol: z.enum(PATROL_STYLES).optional(),
+  /** Race settings (absent: the defaults). */
+  race: RaceSettings.optional(),
+  /** Absent: smooth. */
+  curve: z.enum(PATH_CURVES).optional(),
 });
 export type MapPath = z.infer<typeof MapPath>;
 
@@ -818,9 +884,7 @@ export const MapDocument = z.object({
   terrain: Terrain.nullable().default(null),
   /** Walls round the play area, or none. */
   bounds: MapBounds.nullable().default(null),
-  /** Race track (road, checkpoints, start grid), or none. */
-  track: Track.nullable().default(null),
-  /** Roads, streets, trails and walkways (paths.ts). */
+  /** Paths: roads, streets and trails, the race track and AI routes (PATH_USES). Absent: none. */
   paths: z.array(MapPath).max(64).optional(),
   /** What surrounds the play area, or none (the theme's backdrop). */
   backdrop: BackdropSchema.nullable().default(null),

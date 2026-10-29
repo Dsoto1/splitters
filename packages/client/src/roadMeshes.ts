@@ -4,11 +4,11 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { coreMaterials, roadStrip, roadSurfaceY, trackGeometry, type MapDocument } from '@tiletrigger/shared';
+import { PATH_LOOKS, coreMaterials, pathDrawn, racePath, roadStrip, roadSurfaceY, trackGeometry, type MapDocument } from '@tiletrigger/shared';
 import type { MapStyler } from './mapMeshes.ts';
 
 /**
- * A race track drawn on the map: the road ribbon (asphalt or dirt, laid on
+ * The race track (the map's race path) drawn: the road ribbon (in its style, laid on
  * the ground it follows), white edge lines and a dashed centre line, red and
  * white curbs, a chequered start/finish line, and an arch over every
  * checkpoint (the start/finish arch is the big one). Shared by the game and
@@ -17,24 +17,32 @@ import type { MapStyler } from './mapMeshes.ts';
  */
 export function buildRoadMeshes(scene: Scene, doc: MapDocument, styler: MapStyler, name = 'road', o: { arches?: boolean } = {}): Mesh[] {
   const g = trackGeometry(doc);
-  const t = doc.track;
-  if (!g || !t) return [];
+  const path = racePath(doc);
+  if (!g || !path) return [];
+  const t = g.track;
   const out: Mesh[] = [];
   const half = t.width / 2;
-  const cols = Math.max(2, Math.ceil(t.width / 3));
-  const surfaceId = t.surface === 'dirt' ? 'core.pbr_forest' : 'core.pbr_asphalt';
-  const scale = coreMaterials.get(surfaceId)?.scale ?? 4;
-  // The road's own copy of the ground material, pulled toward the camera so it never fights the terrain under it.
-  const roadMat = styler.surfaceMaterial(doc, surfaceId, t.surface === 'dirt' ? '#b49a74' : null).clone(`${name}_surface`) as StandardMaterial;
-  roadMat.zOffset = -2;
-  out.push(strip(scene, `${name}_surface`, roadStrip(doc, -half, half, cols, 0.04), roadMat, (c, s) => [((c / cols) * t.width) / scale, s / scale]));
-  if (t.surface === 'asphalt') {
-    const white = flat(scene, `${name}_paint`, '#e8e8e2', -4);
-    out.push(strip(scene, `${name}_edge_l`, roadStrip(doc, -half + 0.5, -half + 0.8, 1, 0.06), white));
-    out.push(strip(scene, `${name}_edge_r`, roadStrip(doc, half - 0.8, half - 0.5, 1, 0.06), white));
-    out.push(strip(scene, `${name}_centre`, roadStrip(doc, -0.15, 0.15, 1, 0.06), white, undefined, (s) => Math.floor(s / 3) % 2 === 0));
+  // A race path that is also a road is drawn as a race road; one that isn't gets only its start line and arches.
+  const road = pathDrawn(path);
+  if (road) {
+    const cols = Math.max(2, Math.ceil(t.width / 3));
+    // Asphalt and dirt as race tracks always were; any other path style in its own surface.
+    const look = PATH_LOOKS[path.style];
+    const surfaceId = path.style === 'dirt' ? 'core.pbr_forest' : path.style === 'asphalt' ? 'core.pbr_asphalt' : look.surface;
+    const tint = path.style === 'dirt' ? '#b49a74' : path.style === 'asphalt' ? null : look.tint;
+    const scale = coreMaterials.get(surfaceId)?.scale ?? 4;
+    // The road's own copy of the ground material, pulled toward the camera so it never fights the terrain under it.
+    const roadMat = styler.surfaceMaterial(doc, surfaceId, tint).clone(`${name}_surface`) as StandardMaterial;
+    roadMat.zOffset = -2;
+    out.push(strip(scene, `${name}_surface`, roadStrip(doc, -half, half, cols, 0.04), roadMat, (c, s) => [((c / cols) * t.width) / scale, s / scale]));
+    if (path.style === 'asphalt') {
+      const white = flat(scene, `${name}_paint`, '#e8e8e2', -4);
+      out.push(strip(scene, `${name}_edge_l`, roadStrip(doc, -half + 0.5, -half + 0.8, 1, 0.06), white));
+      out.push(strip(scene, `${name}_edge_r`, roadStrip(doc, half - 0.8, half - 0.5, 1, 0.06), white));
+      out.push(strip(scene, `${name}_centre`, roadStrip(doc, -0.15, 0.15, 1, 0.06), white, undefined, (s) => Math.floor(s / 3) % 2 === 0));
+    }
   }
-  if (t.curbs) {
+  if (road && t.curbs) {
     const red = flat(scene, `${name}_curb_red`, '#c8322a', -4);
     const white = flat(scene, `${name}_curb_white`, '#ecebe6', -4);
     for (const [side, from, to] of [['l', -half - 1.1, -half + 0.1], ['r', half - 0.1, half + 1.1]] as const) {

@@ -1,17 +1,22 @@
-import { TrackGeometry } from './track.ts';
+import { pathGeometry, pathUses } from './track.ts';
 import { TERRAIN_MATERIALS, terrainHeightAt, type TerrainData, type TerrainMaterial } from './terrain.ts';
-import { Track, type MapDocument, type MapPath, type PathStyle } from './schema.ts';
+import type { MapDocument, MapPath, PathStyle } from './schema.ts';
 
 /**
- * Paths: roads, streets, trails and walkways drawn in MapMaker. Each is a
- * smooth curve through its points (the race track's own centre-line code),
- * `width` wide. A path that `lay`s levels the ground under it to the curve,
+ * Paths: roads, streets, trails and walkways, the race track and AI routes,
+ * drawn in MapMaker. Each is a curve through its points (track.ts's
+ * centre-line code, pathGeometry), `width` wide, open or closed. A drawn path
+ * (a road or race road) that `lay`s levels the ground under it to the curve,
  * blends its edges back into the hills, paints the cells under it and clears
  * their plants. That is worked out when a map is loaded for play
  * (layPathsIntoTerrain, from loadMap), never stored, so MapMaker can move a
  * path and the ground follows. Paths are drawn only; nothing collides with
- * one, the ground under it is what you walk and drive on.
+ * one, the ground under it is what you walk and drive on. Routes are never
+ * drawn in the game and never shape the ground.
  */
+
+/** Is the path drawn in the game (a road, or a race track drawn as a road)? */
+export const pathDrawn = (p: MapPath): boolean => pathUses(p, 'road');
 
 /** Per style: the surface drawn (materials.ts), the ground painted under it, and edge lines. */
 export const PATH_LOOKS: Record<PathStyle, { label: string; surface: string; tint: string | null; ground: TerrainMaterial; lines: boolean }> = {
@@ -25,23 +30,6 @@ export const PATH_LOOKS: Record<PathStyle, { label: string; surface: string; tin
   planks: { label: 'Boardwalk', surface: 'core.pbr_weathered_planks', tint: null, ground: 'dirt', lines: false },
 };
 
-/** How a path's centre line is drawn through its points (see CurveShape). */
-const PATH_CURVE = { step: 1, centripetal: true } as const;
-
-const geometry = new WeakMap<MapPath, TrackGeometry>();
-/** The path's centre line (cached per path object). */
-export function pathGeometry(p: MapPath): TrackGeometry {
-  let g = geometry.get(p);
-  if (!g) {
-    // The race track's centre-line code, with only what a path has.
-    const shape = Track.parse({ points: p.points, width: Math.max(5, p.width), loop: p.loop });
-    // Centripetal and finely sampled: no overshoot or loops at sharp or uneven corners.
-    g = new TrackGeometry({ ...shape, width: p.width }, PATH_CURVE);
-    geometry.set(p, g);
-  }
-  return g;
-}
-
 const smooth = (v: number): number => {
   const t = Math.max(0, Math.min(1, v));
   return t * t * (3 - 2 * t);
@@ -54,7 +42,7 @@ const smooth = (v: number): number => {
  * plants. Returns the same terrain when no path lays.
  */
 export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): TerrainData {
-  const laid = paths.filter((p) => p.lay && p.points.length >= 2);
+  const laid = paths.filter((p) => p.lay && pathDrawn(p) && p.points.length >= 2);
   if (!laid.length) return t;
   const heights = t.heights.slice();
   const materials = t.materials.slice();
@@ -130,21 +118,22 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
  * players) changes nothing. loadMap does this; MapMaker shows it without storing it.
  */
 export function withPathsLaid(map: MapDocument): MapDocument {
-  if (!map.terrain || !map.paths?.some((p) => p.lay)) return map;
-  return { ...map, terrain: layPathsIntoTerrain(map.terrain, map.paths), paths: map.paths.map((p) => (p.lay ? { ...p, lay: false } : p)) };
+  if (!map.terrain || !map.paths?.some((p) => p.lay && pathDrawn(p))) return map;
+  return { ...map, terrain: layPathsIntoTerrain(map.terrain, map.paths), paths: map.paths.map((p) => (p.lay && pathDrawn(p) ? { ...p, lay: false } : p)) };
 }
 
 /**
- * The ground the paths cover (x/z, each path's centre line plus half its
+ * The ground the laid roads cover (x/z, each one's centre line plus half its
  * width), or null with none. A map with no terrain draws its ground and
  * keeps its floor under this as well as under what is built, so a road
  * drawn out past the buildings lies on level ground, not under the hills
- * the backdrop raises round the map.
+ * the backdrop raises round the map. A path that doesn't lay (a raised
+ * track) and routes get no ground of their own.
  */
 export function pathsExtent(paths: readonly MapPath[] | null | undefined): { min: [number, number]; max: [number, number] } | null {
   let [x0, z0, x1, z1] = [Infinity, Infinity, -Infinity, -Infinity];
   for (const p of paths ?? []) {
-    if (p.points.length < 2) continue;
+    if (p.points.length < 2 || !p.lay || !pathDrawn(p)) continue;
     const half = p.width / 2;
     for (const s of pathGeometry(p).samples) {
       x0 = Math.min(x0, s.x - half);

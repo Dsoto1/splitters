@@ -1,4 +1,5 @@
 import type { MapDocument } from '../map/schema.ts';
+import { racePath } from '../map/track.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
@@ -312,7 +313,7 @@ export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
 };
 
 /** Race needs a track. */
-export const hasTrack = (map: MapDocument): boolean => !!map.track && map.track.points.length >= 2;
+export const hasTrack = (map: MapDocument): boolean => !!racePath(map);
 
 /** Capture the Flag needs a flag base for each of its two teams. */
 export function hasFlagBases(map: MapDocument): boolean {

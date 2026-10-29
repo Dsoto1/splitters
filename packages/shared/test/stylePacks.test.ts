@@ -35,6 +35,7 @@ import {
   type MapDocument,
   type MapEntity,
   type Rotation,
+  raceTrack,
 } from '../src/index.ts';
 import { NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
@@ -139,7 +140,7 @@ describe('style pack demo maps', () => {
     const movers = map.entities.filter((e) => e.kind === 'mover');
     expect(movers.map((e) => e.id).sort()).toEqual(['mover_lift_e', 'mover_lift_spire', 'mover_lift_w', 'mover_tram']);
     expect(liftLinks(map).length).toBe(6);
-    expect(map.track?.ambient).toBe(2);
+    expect(raceTrack(map)?.ambient).toBe(2);
     const signs = map.entities.filter((e) => e.kind === 'light' && (e.fixture === 'sign' || e.fixture === 'billboard'));
     expect(signs.length).toBeGreaterThanOrEqual(10);
     const blackout = map.logic.rules.find((r) => r.id === 'rule_blackout')!;

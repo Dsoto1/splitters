@@ -6,7 +6,7 @@ function sloped(path: Partial<MapPath> = {}): MapDocument {
   const doc = newMapDocument('Paths');
   const t = newTerrain(40);
   for (let r = 0; r < t.rows; r++) for (let c = 0; c < t.cols; c++) t.heights[r * t.cols + c] = Math.round(((t.origin[0] + c * t.spacing) / 4) * 100) + (r % 2 ? 60 : 0);
-  return { ...doc, terrain: t, paths: [{ id: 'path_a', style: 'dirt', width: 4, points: [[-12, 0, 0], [12, 0, 0]], loop: false, lay: true, ...path }] };
+  return { ...doc, terrain: t, paths: [{ id: 'path_a', style: 'dirt', width: 4, points: [[-12, 0, 0], [12, 0, 0]], closed: false, uses: ['road'], lay: true, ...path }] };
 }
 
 describe('paths', () => {
@@ -49,7 +49,7 @@ describe('paths', () => {
 
   it('the curve passes through every point and never doubles back, even at sharp, uneven corners', () => {
     // A long stretch, then a short hook and a hairpin: uniform Catmull-Rom overshoots and loops here.
-    const p: MapPath = { id: 'path_z', style: 'dirt', width: 6, points: [[-30, 0, 0], [0, 0, 0], [1, 0, 2], [-20, 0, 3], [-20, 0, 20]], loop: false, lay: false };
+    const p: MapPath = { id: 'path_z', style: 'dirt', width: 6, points: [[-30, 0, 0], [0, 0, 0], [1, 0, 2], [-20, 0, 3], [-20, 0, 20]], closed: false, uses: ['road'], lay: false };
     const g = pathGeometry(p);
     for (const q of p.points) {
       const near = g.nearest(q[0], q[2], 5)!;
@@ -65,7 +65,7 @@ describe('paths', () => {
   });
 
   it('a map with no terrain has ground under its paths, past the buildings', () => {
-    const doc = { ...newMapDocument('Road'), paths: [{ id: 'path_r', style: 'dirt' as const, width: 4, points: [[0, 0, 10], [0, 0, 60]] as [number, number, number][], loop: false, lay: true }] };
+    const doc = { ...newMapDocument('Road'), paths: [{ id: 'path_r', style: 'dirt' as const, width: 4, points: [[0, 0, 10], [0, 0, 60]] as [number, number, number][], closed: false, uses: ['road' as const], lay: true }] };
     expect(pathsExtent(doc.paths)!.max[1]).toBeGreaterThanOrEqual(62);
     const slab = buildMapGeometry(doc).find((b) => b.kind === 'barrier' && b.sourceId === 'ground' && b.max[1] - b.min[1] < 3)!;
     expect(slab.max[2]).toBeGreaterThan(62);

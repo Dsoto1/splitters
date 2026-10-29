@@ -40,6 +40,7 @@ import {
   mapInspiration,
   REGIONS,
   regionLabel,
+  raceTrack,
   usernameProblem,
   type Region,
 } from '@tiletrigger/shared';
@@ -716,7 +717,7 @@ export class FrontEnd {
     const about = [map.metadata.description, map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(map.metadata.author) ? `Map by ${map.metadata.author}` : '', `Made for ${map.metadata.recommendedPlayers.min}–${map.metadata.recommendedPlayers.max} players; ${map.entities.filter((e) => e.kind === 'spawn').length} spawn points.`].filter(Boolean).join('\n\n');
     const sizes = team ? setupTeams(s, map) : [];
     const rec = map.metadata.recommendedPlayers;
-    const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : race ? `${s.raceLaps ?? map.track?.laps ?? 3} laps` : s.minutes ? `~${s.minutes} min` : 'No time limit';
+    const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : race ? `${s.raceLaps ?? raceTrack(map)?.laps ?? 3} laps` : s.minutes ? `~${s.minutes} min` : 'No time limit';
     const facts = el(
       'p',
       { class: 'setup-facts', id: 'setup-summary' },
@@ -881,7 +882,7 @@ export class FrontEnd {
     if (s.mode === 'core.koth') modeRows.push(settingRow('Hill moves', 'Seconds before the hill moves to the next spot.', stepper({ value: s.hill ?? 60, min: 15, max: 300, step: 15, id: 'arcade-hill', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.hill = v === 60 ? undefined : v)) })));
     if (race) {
       modeRows.push(
-        settingRow('Laps', 'Laps of the circuit (a point-to-point track is always one run).', stepper({ value: s.raceLaps ?? map.track?.laps ?? 3, min: 1, max: 10, id: 'arcade-laps', onChange: (v) => this.change((x) => (x.raceLaps = v)) })),
+        settingRow('Laps', 'Laps of the circuit (a point-to-point track is always one run).', stepper({ value: s.raceLaps ?? raceTrack(map)?.laps ?? 3, min: 1, max: 10, id: 'arcade-laps', onChange: (v) => this.change((x) => (x.raceLaps = v)) })),
         settingRow('Vehicle', "What everyone races in. Map: the track's own choice.", choice([['map', 'Map'], ['kart', 'Go-Kart'], ['speeder', 'Speeder'], ['buggy', 'Buggy']], s.raceVehicle ?? 'map', (v) => this.change((x) => (x.raceVehicle = v === 'map' ? undefined : (v as ArcadeSetup['raceVehicle']))))),
         settingRow('Combat', 'Combat race: weapons and vehicle guns are live and the sentries by the track shoot. Clean: nobody can hurt anybody.', choice([['map', 'Map'], ['off', 'Clean'], ['on', 'Combat']], s.raceCombat === undefined ? 'map' : s.raceCombat ? 'on' : 'off', (v) => this.change((x) => (x.raceCombat = v === 'map' ? undefined : v === 'on')))),
       );

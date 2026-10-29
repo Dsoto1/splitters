@@ -286,7 +286,6 @@ export function newMapDocument(name = 'Untitled Map', now: Date = new Date()): M
     logic: emptyLogic(),
     terrain: null,
     bounds: null,
-    track: null,
     teamSetup: null,
     backdrop: null,
     blood: null,

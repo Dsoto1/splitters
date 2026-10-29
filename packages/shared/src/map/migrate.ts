@@ -51,7 +51,47 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [20, (doc) => ({ ...doc })],
   // v21 -> v22: optional `metadata.thumbnail` (the map's picture) and `metadata.thumbnailCamera`. Additive.
   [21, (doc) => ({ ...doc })],
+  // v22 -> v23: one path primitive. Paths gain `closed` (was `loop`) and `uses`; the race `track` becomes a race path.
+  [22, migratePathsV23],
 ]);
+
+/** The race track's own settings as they were in v22 (missing = the v22 defaults). */
+const V22_TRACK_DEFAULTS: Record<string, unknown> = { width: 12, loop: true, laps: 3, grid: 8, vehicle: 'kart', combat: false, surface: 'asphalt', curbs: true, ambient: 0, ambientVehicle: 'kart', pit: null };
+
+/**
+ * v22 -> v23: every path is one kind of thing (schema.ts MapPath).
+ * - A v22 path (a road: id, style, width, points, loop, lay) keeps all that, `loop` renamed `closed`, used as a road.
+ * - The v22 `track` becomes the first path, used as a road and a race, with the classic curve the track always
+ *   had and `lay: false` (the race road was drawn over the ground as authored, never laid in on load), so it is
+ *   raced and drawn exactly as before. Its surface (asphalt or dirt) is the road's style.
+ * - NPC squads had no routes before v23 (patrol walked to a target entity and back, which stays as it is).
+ */
+export function migratePathsV23(doc: Record<string, unknown>): Record<string, unknown> {
+  const { track, ...rest } = doc;
+  const old = Array.isArray(doc.paths) ? (doc.paths as Record<string, unknown>[]) : [];
+  const paths: Record<string, unknown>[] = old.map((p) => {
+    const { loop, ...keep } = p;
+    return { ...keep, closed: loop === true, uses: ['road'] };
+  });
+  if (track && typeof track === 'object') {
+    const t = { ...V22_TRACK_DEFAULTS, ...(track as Record<string, unknown>) };
+    const ids = new Set(paths.map((p) => p.id));
+    let id = 'race_track';
+    for (let n = 2; ids.has(id); n++) id = `race_track_${n}`;
+    paths.unshift({
+      id,
+      points: t.points,
+      closed: t.loop,
+      uses: ['road', 'race'],
+      width: t.width,
+      style: t.surface === 'dirt' ? 'dirt' : 'asphalt',
+      lay: false,
+      curve: 'classic',
+      race: { laps: t.laps, grid: t.grid, vehicle: t.vehicle, combat: t.combat, curbs: t.curbs, ambient: t.ambient, ambientVehicle: t.ambientVehicle, pit: t.pit },
+    });
+  }
+  return paths.length ? { ...rest, paths } : (({ paths: _none, ...r }) => r)(rest);
+}
 
 export class MapMigrationError extends Error {}
 
