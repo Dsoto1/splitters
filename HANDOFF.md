@@ -60,12 +60,12 @@ session branch to `check/candidate` (fast-forward), fix, and repeat until green.
 | Branch | State |
 |---|---|
 | `wip/bot-manager` (624ec87) | Bots window for hosts, `BOTSET` / console `botset`, scenario maps naming their own bots (`MapDocument.bots`, edited in MapMaker), docs and e2e. Typecheck, unit tests (run file by file under load) and the `teams` flow pass. In `hostcontrols`, every new check passes, but two older checks failed on a loaded run ("a friend joins the hosted match", "the end-of-match scoreboard says where the match goes next") and haven't been rerun clean. Deferred: named NPCs in encounters, per-bot loadouts, editing bot sets on /host. |
-| `wip/host-handoff` (a759e34, based on f015af3: merge it onto the session branch) | Part 1 works: goodbye, reconnect and a host-left screen with "Host this map"; `hostgame` passed. Part 2 mostly works: a low-ping successor gets checkpoints every 3 s, takes the match over and moves the listing. **Open bug:** in the e2e flow `handoff`, the other friend never rejoins the successor's match; their place is held as "(away)". Start from the friend's console line "the host's link went…" and the held-links path (`PeerHost` admit → `linkFor` → `LocalTransport.accept`). Risks: a forked match if the host is unreachable but still registered; the successor holds the old listing's secret. Run `hostgame`, `lobby`, `hostcontrols` and `handoff` on a `check/` branch. |
+| `wip/host-handoff` | Merged onto the session branch (via `wip/merge-host-handoff`), the rejoin bug fixed: see "Host leaves a browser-hosted match; host handoff" below. Run `hostgame`, `lobby`, `hostcontrols` and `handoff` on a `check/` branch. |
 | `wip/character-intake` (2358cdf) | The unified Meshy character pipeline: landmark rigger or Meshy rigging API, a grip sheet. 18 new characters shipped from the owner's downloads; five are held back as queued manifests (King Aldric, Saint Nick, Brass Hare, Grizzelda, Bandit; the reasons are in their notes). The owner confirmed (2026-10-29): Hector and Ricochet are right, and `_Halloween2025_a_ul` is Rattles (build it from that file). `Tribal_Warrior_Charac` (a woman in tribal dress) is still unidentified: ask the owner. Before merging, render the grip sheets again (the sizes changed) and fix the Lancer's oversized hands and the cowboy's flat hands (`fixes.hands`). Checks: typecheck, content:check and the e2e `characters`/`designer`/`visual` flows pass; `physicsfx` timed out locally, so run it on CI. Docs: adding a Meshy character. Sizes are in the manifests. The intake queue on the branch drops the 18 characters it shipped. |
 | `wip/roster-cleanup` (899537c) | Six retired looks (Champion, Desperado, Miller, Raider, Sprinter, Striker; old ids load as kept looks); a helmet tool (`prepare-gear.mjs`) and five helmets; model gear on the Head joint. The per-look fixes are WIP. Commando's and Engineer's helmet fits are off; beret and headband sit high; Farmhand's hat and Drifter's mask aren't done; the Dapper's jacket skin weights are diagnosed but not fixed (arm weights on torso vertices; see the commit). No CHANGELOG entry or portraits yet. |
 
-Merge order suggestion: bot-manager, character-intake, roster-cleanup (expect a
-small conflict in `content/meshy.lock.json` and looks.ts), then host-handoff.
+Merge order suggestion: character-intake, roster-cleanup (expect a
+small conflict in `content/meshy.lock.json` and looks.ts). bot-manager and host-handoff are in.
 Run the checks after each merge.
 
 ### 4. Meshy models still to bring in
@@ -322,34 +322,31 @@ presets are data in `maps/botsets/*.json` (`parseBotSetPreset`, tested in `botSe
   name; encounters keep role labels); per-bot loadouts; the site's /host page doesn't edit the set (the
   launcher and console do); squads don't share a formation, only goals.
 
-## Host leaves a browser-hosted match (2026-10-29)
+## Host leaves a browser-hosted match; host handoff (2026-10-29, wip/host-handoff merged)
 
-Friends of a browser host no longer get a bare "the host left the game"
-(docs/MULTIPLAYER_PROTOCOL.md section 13): the host sends `bye` before its links
-close (Leave match, `pagehide`); a friend whose link just drops (or whose host
-is silent 20 s) gets "Reconnecting to host…" (until the broker says the game is gone, at most a minute); then the host-left screen
-(`game/hostLeft.ts`, `main.ts` `afterHost`) with the last standings, **Host this
-map** (`playLocal(..., autoHost, autoList)`) and **Back to menu**. Hosting that
-starts before the match has loaded is now listed once the welcome comes (it
-used to stay "Will be listed once you host"). e2e: `hostgame`.
-
-## Host handoff for browser-hosted matches (2026-10-29)
-
-A browser-hosted match now survives its host (docs/MULTIPLAYER_PROTOCOL.md
-section 14, what carries over and what starts fresh): the host keeps the
-friend with the best ping named successor (`matchHost.ts` `tendSuccessor`:
-`standby` → the friend opens a code of its own → `successor` to all), sends it
-a `checkpoint` every 3 s (`shared/net/handoff.ts`; people by hashed key only),
-and when the host goes the successor restores the match (`BotFiller.restore`,
-`Match.resume`, `main.ts` `takeOver`) while the others follow its code
-(`afterHost`). No hub change. Unit tests: `shared/test/handoff.test.ts`,
-`client/test/localHost.test.ts`; e2e flow `handoff` (new; also in flowMap and
-timings). Open: the local e2e runs here were made under heavy machine load
-(other agents' builds) and timing-sensitive flows (`lobby`, `handoff`) failed
-there for load reasons (links dropped by slow pages); let CI judge, and look
-at the console line "the host's link went (closed|silent|goodbye)" if a
-friend drops. The successor gets the old listing's secret (it takes the
-listing down); vehicles, pickups, map logic, NPCs, flags and waves restart.
+Details: docs/MULTIPLAYER_PROTOCOL.md sections 13 and 14.
+- **Host leaves:** the host sends `bye` before its links close (Leave match, `pagehide`); a friend whose
+  link just drops (or whose host is silent 20 s) gets "Reconnecting to host…" (up to a minute, until the
+  broker says the game is gone), then the host-left screen (`game/hostLeft.ts`, `main.ts` `afterHost`) with
+  the last standings, **Host this map** and **Back to menu**. e2e: `hostgame`.
+- **Handoff:** the host keeps the best-ping friend named successor (`matchHost.ts` `tendSuccessor`:
+  `standby` → the friend opens a code of its own → `successor` to all) and sends it a `checkpoint` every
+  3 s (`shared/net/handoff.ts`; people by hashed key only; the listing's name only, never its secret). When
+  the host goes the successor restores the match (`BotFiller.restore`, `Match.resume`, `main.ts`
+  `takeOver`) and the others follow its code (`afterHost`, `keepJoining`). No hub change. Tests:
+  `shared/test/handoff.test.ts`, `client/test/localHost.test.ts`, e2e `handoff` (prints the friends'
+  console when a check fails; `E2E_HANDOFF_LOG=1` for all of it).
+- **Fixed on merge:** the other friend not rejoining: `afterHost` gave the follow one 10 s try while the
+  successor was busy starting the match (on a loaded machine its page answers late), then showed the
+  host-left screen; the successor held the place as "(away)". Now friends keep trying for 90 s
+  (`HANDOFF_FOLLOW_SECONDS`, inside the 120 s hold). Successor swaps wait 30 s and keep the old one named
+  until the new one answers (a loaded machine's pings flapped the role and left gaps with nobody named).
+  The successor checks twice (3 s apart) that the host is gone before taking over (fork guard).
+- **Left as is:** a successor whose own link drops while the host and the others carry on stays out
+  (its reconnect fails, its checkpoint goes stale, no second copy): fine. A crashed host's listing is
+  hidden after a missed check-in and expires in 65 s, so for a moment two listings may share a name.
+  The successor doesn't carry the host's bot set (the checkpoint has bots by name and look, not the set).
+  Vehicles, pickups, map logic, NPCs, flags and waves restart (by design).
 
 ## How work flows (details in CLAUDE.md)
 
