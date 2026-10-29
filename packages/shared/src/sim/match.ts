@@ -63,6 +63,7 @@ import { Encounters } from './encounters.ts';
 import { ZombieSurvival } from './zombies.ts';
 import { RaceDirector, raceShot, roadHandling, type RaceVehicleView } from './race.ts';
 import { TrackDriver } from './trackDriver.ts';
+import { vehicleGuides, type Guide } from '../bots/guides.ts';
 import { ambientCarEntities, raceGridEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
@@ -501,6 +502,8 @@ export class Match {
   readonly race: RaceDirector | null;
   /** The map's race track, if it has one (vehicles grip better on the road in any mode). */
   private readonly road: TrackGeometry | null;
+  /** Routes and roads bots driving vehicles follow (bots/guides.ts). */
+  private readonly guides: readonly Guide[];
   /** Racing Player Bots' drivers (by slot). */
   private readonly raceBots = new Map<number, TrackDriver>();
   /** Ambient cars: NPC-driven vehicles lapping the track in any mode (mount index, driver, ticks stuck). */
@@ -553,6 +556,7 @@ export class Match {
     });
     // Race: the start-grid vehicles, after the map's own mounts (clients add the same ones: withRaceGrid).
     this.road = trackGeometry(map);
+    this.guides = vehicleGuides(map.paths);
     const gridMounts: number[] = [];
     if (rules.mode === 'core.race') {
       raceGridEntities(map, rules.raceVehicle).forEach((e, i) => {
@@ -1667,6 +1671,7 @@ export class Match {
         // Bots that may not take a vehicle right now (carrying the bomb, leading hostages) don't see any to get in.
         mounts: aware < Infinity ? undefined : mounts && !c.mount && this.mode?.blocksVehicle(c) ? mounts.filter((m) => m.kind !== 'vehicle') : mounts,
         seat: c.mount ? this.seatView(c) : null,
+        guides: this.guides,
         squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
         // (Always present, so every view has one shape: bot code reading it stays monomorphic.)
         alliesGrid: every > 1 && c.faction !== null ? alliesGrids.get(c.faction) : undefined,

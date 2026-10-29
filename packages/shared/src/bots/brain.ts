@@ -17,6 +17,7 @@ import { simProfile } from '../sim/profile.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
 import { fanPoints, isDoorway, solveThrow, turnAngle } from './tactics.ts';
 import { freshDrive, inArc, rideFor, steer, turretFor, vehicleFor, type DriveState, type MountView, type SeatView } from './vehicles.ts';
+import { followGuide, type Guide } from './guides.ts';
 
 export type { MountView, SeatView } from './vehicles.ts';
 
@@ -114,6 +115,8 @@ export interface BotWorldView {
   shotAt?: { tick: number; from: Vec3 } | null;
   /** Turrets and vehicles on the map. */
   mounts?: readonly MountView[];
+  /** Routes and roads a bot driving a vehicle follows when one runs its way (guides.ts). */
+  guides?: readonly Guide[];
   /** The seat the bot is in, if any. */
   seat?: SeatView | null;
   /** Squad tactics (NPCs): advance now (bounding) or hold and cover the one that is. */
@@ -1609,8 +1612,12 @@ export class BotBrain {
       }
       // Look ahead along the route.
       while (this.pathIndex < this.path.length - 1 && horizontalDistance(m.pos, this.path[this.pathIndex]!) < 6) this.pathIndex++;
-      const aimPt = this.path[this.pathIndex] ?? goal;
+      // A route or road running our way (not for boats): drive along it, a point ahead on the line.
+      const guided = view.guides?.length && !m.floats ? followGuide(view.guides, m.pos, m.yaw, goal, m.speed ?? 0) : null;
+      const aimPt = guided?.aim ?? this.path[this.pathIndex] ?? goal;
       let ctl = steer(this.drive, tick, m, aimPt, left);
+      // Its speed hint: off the throttle above it.
+      if (guided?.speed && (m.speed ?? 0) > guided.speed) ctl = { ...ctl, forward: Math.min(ctl.forward, 0) };
       // An armed pilot (forward guns) turns onto targets in front.
       if (seat.weapon && target && horizontalDistance(m.pos, target.pos) < 45) {
         ctl = steer(this.drive, tick, m, target.pos, 30);

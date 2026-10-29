@@ -1,6 +1,7 @@
 import type { BotBrain } from '../bots/brain.ts';
 import type { EventType } from '../map/logic.ts';
-import { NPC_ROLES, type EncounterEntity, type MapDocument, type NpcRole, type SquadOrder } from '../map/schema.ts';
+import { NPC_ROLES, type EncounterEntity, type MapDocument, type MapPath, type NpcRole, type SquadOrder } from '../map/schema.ts';
+import { pathGeometry } from '../map/track.ts';
 import { clamp, horizontalDistance, type Vec3 } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, TICK_RATE } from './constants.ts';
@@ -37,7 +38,15 @@ interface EncounterRt {
   legs: Map<number, number>;
   /** Roamers: where each member is wandering to now. */
   wander: Map<number, Vec3>;
+  /** Route patrols: which way along the route each member walks (1 with the path's direction, -1 against it). */
+  dirs: Map<number, number>;
+  /** Route patrols round an open route: members walking back from its end to its start. */
+  homing: Set<number>;
 }
+
+/** Route patrols aim this far ahead along the route (m), and join it from further off than this. */
+const ROUTE_STEP = 5;
+const ROUTE_ON = 4;
 
 /** Members re-share sightings this often. */
 const ALERT_INTERVAL_TICKS = 15;
@@ -55,16 +64,19 @@ export class Encounters {
   private readonly list = new Map<string, EncounterRt>();
   private readonly byNpc = new Map<number, EncounterRt>();
   private started = false;
+  /** The map's paths by id: the routes squads with the patrol order walk (an encounter's `route`). */
+  private readonly routes = new Map<string, MapPath>();
 
   constructor(
     map: MapDocument,
     private readonly host: EncounterHost,
   ) {
     for (const e of map.entities) if (e.kind === 'encounter') this.list.set(e.id, this.fresh(e));
+    for (const p of map.paths ?? []) if (p.points.length >= 2) this.routes.set(p.id, p);
   }
 
   private fresh(e: EncounterEntity): EncounterRt {
-    return { e, active: false, budget: 0, spawned: 0, members: [], nextSpawn: 0, order: e.order, cleared: false, queue: [], legs: new Map(), wander: new Map() };
+    return { e, active: false, budget: 0, spawned: 0, members: [], nextSpawn: 0, order: e.order, cleared: false, queue: [], legs: new Map(), wander: new Map(), dirs: new Map(), homing: new Set() };
   }
 
   /** Back to the start (new round). The match removes the NPCs themselves. */
@@ -192,9 +204,52 @@ export class Encounters {
     for (const m of living) this.host.npc(m)!.brain.alert(seen.pos, seen.tick);
   }
 
-  /** Roamers keep moving with nobody near (they don't doze off like guards). */
+  /** Roamers and route patrols keep moving with nobody near (they don't doze off like guards). */
   roaming(npcId: number): boolean {
-    return this.byNpc.get(npcId)?.order === 'roam';
+    const r = this.byNpc.get(npcId);
+    return !!r && (r.order === 'roam' || (r.order === 'patrol' && !!this.route(r)));
+  }
+
+  /** The route a squad patrols (its encounter's `route`, when the map has that path), or null. */
+  private route(r: EncounterRt): MapPath | null {
+    return (r.e.route && this.routes.get(r.e.route)) || null;
+  }
+
+  /**
+   * Walking a route: a point a few metres ahead along it, members a little
+   * apart side by side. Off the route, the nearest point on it first. Round
+   * and round a loop; on an open route there and back (turning at its ends),
+   * or round (back to the start from the end) when the path says so. A
+   * one-way route is only walked its own way.
+   */
+  private routeGoal(r: EncounterRt, path: MapPath, npcId: number, pos: Vec3, index: number): { pos: Vec3; radius: number } {
+    const g = pathGeometry(path);
+    const lane = ((index % 3) - 1) * 0.9;
+    const at = (s: number): Vec3 => {
+      const q = g.at(s);
+      return { x: q.x + q.dz * lane, y: q.y, z: q.z - q.dx * lane };
+    };
+    if (r.homing.has(npcId)) {
+      if (horizontalDistance(pos, g.samples[0]!) > 3) return { pos: at(0), radius: 1.5 };
+      r.homing.delete(npcId);
+    }
+    const near = g.nearest(pos.x, pos.z, 1e5)!;
+    if (near.dist > ROUTE_ON) return { pos: at(near.sample.s), radius: 1.5 };
+    const style = path.patrol ?? (path.closed ? 'loop' : 'back_and_forth');
+    let dir = path.oneWay ? 1 : (r.dirs.get(npcId) ?? 1);
+    if (!g.loop) {
+      const s = near.sample.s;
+      if (style === 'back_and_forth' && !path.oneWay) {
+        if (dir > 0 && s >= g.length - 2) dir = -1;
+        else if (dir < 0 && s <= 2) dir = 1;
+      } else if (s >= g.length - 2) {
+        // Round an open route: back to its start, then along it again.
+        r.homing.add(npcId);
+        return { pos: at(0), radius: 1.5 };
+      }
+    }
+    r.dirs.set(npcId, dir);
+    return { pos: at(near.sample.s + dir * ROUTE_STEP), radius: 1.5 };
   }
 
   /** Where a member should be when not fighting. */
@@ -216,6 +271,8 @@ export class Encounters {
       case 'defend':
         return { pos: ring(target, 2), radius: 2 };
       case 'patrol': {
+        const route = this.route(r);
+        if (route) return this.routeGoal(r, route, npcId, me.pos, index);
         let leg = r.legs.get(npcId) ?? 1;
         const goal = leg ? target : home;
         if (horizontalDistance(me.pos, goal) < 2.5) {

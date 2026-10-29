@@ -55,6 +55,7 @@ export * from './net/interest.ts';
 export * from './net/lan.ts';
 export * from './net/rateLimit.ts';
 export * from './bots/profile.ts';
+export * from './bots/guides.ts';
 export * from './editor/commands.ts';
 export * from './editor/operations.ts';
 export * from './editor/stylePacks.ts';

@@ -116,8 +116,11 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
     if (e.kind !== 'encounter') continue;
     if (!factionIds.has(e.faction) || e.faction === PLAYERS_FACTION) issues.push({ severity: 'error', code: 'encounter.faction', message: `encounter ${e.id} uses unknown faction "${e.faction}"`, targetId: e.id });
     if (rosterSize(e.roster) === 0) issues.push({ severity: 'warning', code: 'encounter.empty', message: `encounter ${e.id} has nobody in its squad`, targetId: e.id });
-    if ((e.order === 'defend' || e.order === 'patrol') && (!e.orderTarget || !entities.has(e.orderTarget))) {
-      issues.push({ severity: 'warning', code: 'encounter.target', message: `encounter ${e.id} is ordered to ${e.order} but has no target object`, targetId: e.id });
+    const route = e.route ? map.paths?.find((p) => p.id === e.route) : undefined;
+    if (e.route && !route) issues.push({ severity: 'warning', code: 'encounter.route', message: `encounter ${e.id} patrols route "${e.route}", which the map doesn't have`, targetId: e.id });
+    // A patrol walks its route, or else goes to its target and back.
+    if ((e.order === 'defend' || (e.order === 'patrol' && !route)) && (!e.orderTarget || !entities.has(e.orderTarget))) {
+      issues.push({ severity: 'warning', code: 'encounter.target', message: `encounter ${e.id} is ordered to ${e.order} but has no ${e.order === 'patrol' ? 'route or ' : ''}target object`, targetId: e.id });
     }
   }
   if (map.metadata.supportedModes[0] === 'core.coop' && !map.entities.some((e) => e.kind === 'encounter')) {

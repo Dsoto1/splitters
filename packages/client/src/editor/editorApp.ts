@@ -3221,9 +3221,30 @@ export class EditorApp {
         if ((e.entrance ?? 'none') === 'none') number('Spawn radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 1, 16) }));
         if (e.entrance === 'vent') number('Vent height (m)', e.ventHeight ?? 3.5, 0.25, (v) => ({ ventHeight: clamp(v, 2, 12) }));
         if ((e.entrance ?? 'none') !== 'none') number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
-        const orderLabels: Record<(typeof SQUAD_ORDERS)[number], string> = { hold: 'hold here', attack: 'hunt the enemy', defend: 'defend the target', patrol: 'patrol to the target and back', follow: 'follow the players (allies)', roam: 'roam the whole map (wildlife, monsters)' };
+        const orderLabels: Record<(typeof SQUAD_ORDERS)[number], string> = { hold: 'hold here', attack: 'hunt the enemy', defend: 'defend the target', patrol: 'patrol a route (or to the target and back)', follow: 'follow the players (allies)', roam: 'roam the whole map (wildlife, monsters)' };
         choose('Order', SQUAD_ORDERS.map((o) => [o, orderLabels[o]] as const), e.order, (v) => ({ order: v as typeof e.order }));
-        if (e.order === 'defend' || e.order === 'patrol') {
+        if (e.order === 'patrol') {
+          // Routes (and roads) drawn with the Paths tool: the squad walks one, round a loop or there and back.
+          const routes = (doc.paths ?? []).map((p, i) => [p, i] as const).filter(([p]) => p.uses.includes('route') || p.uses.includes('road'));
+          choose('Route', [['', '— none: to the target and back —'] as const, ...routes.map(([p, i]) => [p.id, pathLabel(p, i)] as const)], e.route ?? '', (v) => ({ route: v || undefined }));
+          if (e.route) {
+            el.append(
+              button('Edit the route on the map', () => {
+                this.setTool({ kind: 'path' });
+                this.paths.edit(e.route!);
+              }),
+            );
+          } else {
+            el.append(
+              button('Draw a new route', () => {
+                this.paths.preset('route');
+                this.setTool({ kind: 'path' });
+                this.toast('Click the ground to draw the route (join the ends for a loop), then pick it in this squad\'s Route');
+              }),
+            );
+          }
+        }
+        if (e.order === 'defend' || (e.order === 'patrol' && !e.route)) {
           choose('Target', [['', '— choose —'] as const, ...doc.entities.filter((o) => o.id !== e.id && o.kind !== 'spawn').map((o) => [o.id, entityLabel(doc, o)] as const)], e.orderTarget ?? '', (v) => ({ orderTarget: v || null }));
         }
         choose('Skill', [['easy', 'easy'], ['normal', 'normal'], ['hard', 'hard']], e.difficulty, (v) => ({ difficulty: v as typeof e.difficulty }));
