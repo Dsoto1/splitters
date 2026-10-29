@@ -2,14 +2,13 @@
   "id": "meshy_santa",
   "kind": "character",
   "use": "player",
-  "status": "queued",
   "order": 17,
   "name": "Saint Nick",
   "look": "core.saintnick",
   "bio": "Has a list. You are on the other one.",
   "body": "male",
   "size": "large",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: Santa. Held back: the hands came out as 35 cm slabs (the fur cuffs are skinned to the hands) and cover his face on the grip sheet. Needs Meshy's rigging (source.modelUrl, with MESHY_API_KEY) or landmarks read off the model.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: Santa. Was held back: the found hands came out as 35 cm slabs (the fur cuffs skinned to the hands).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -18,8 +17,11 @@
     "community": {
       "model": "T Pose Santa"
     },
-    "modelUrl": "https://drive.usercontent.google.com/download?id=1-2RgJCFpaCDeLmsJxVKY6fCCwWnHMHt2&export=download&confirm=t",
-    "file": "^Meshy_AI_T_Pose_Santa_\\d+_(image-to-3d-)?texture\\.glb$"
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_T_Pose_Santa_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a189fb-dbb4-7149-bf61-3776817a0c05"
+    }
   },
   "finish": {
     "metallic": 0,

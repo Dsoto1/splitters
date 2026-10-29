@@ -1,0 +1,37 @@
+{
+  "id": "meshy_punkin",
+  "kind": "character",
+  "use": "player",
+  "order": 51,
+  "name": "Punkin",
+  "look": "core.punkin",
+  "bio": "Carved once a year, angry all year round.",
+  "body": "male",
+  "size": "small",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: pumpkin head.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/0197fbf8-fb47-7104-9f72-7ffa62554825",
+    "community": {
+      "model": "Pumpkin head scarecrow"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_very_high_details_sy_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a08-101a-7320-bcaf-56ec55e9d823"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

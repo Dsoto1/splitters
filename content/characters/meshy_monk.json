@@ -1,0 +1,36 @@
+{
+  "id": "meshy_monk",
+  "kind": "character",
+  "use": "player",
+  "order": 41,
+  "name": "Brother Ansel",
+  "look": "core.ansel",
+  "bio": "Took a vow of silence. His shotgun did not.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: priest/monk.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019b0a85-3058-7a32-829c-1ecfeee310b3",
+    "community": {
+      "model": "Medieval Monk in Contemplation"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_Medieval_Monk_in_Cont_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a03-4e49-758d-b75a-6cf9705ffc09"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.85
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

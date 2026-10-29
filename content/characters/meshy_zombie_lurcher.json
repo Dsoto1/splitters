@@ -1,0 +1,36 @@
+{
+  "id": "meshy_zombie_lurcher",
+  "kind": "character",
+  "use": "npc+player",
+  "order": 46,
+  "name": "Lurcher",
+  "look": "core.lurcher",
+  "bio": "All skin, no bones about it. Mostly skin.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: zombie 4.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/0195f885-e632-7961-96aa-3a4afdc330c0",
+    "community": {
+      "model": "Skinny zombie"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_The_object_is_a_skinn_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a06-2863-70b3-9b4e-a9d566e19d73"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.85
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

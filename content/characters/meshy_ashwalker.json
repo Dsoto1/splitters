@@ -1,0 +1,33 @@
+{
+  "id": "meshy_ashwalker",
+  "kind": "character",
+  "use": "player",
+  "order": 56,
+  "name": "Ashwalker",
+  "look": "core.ashwalker",
+  "bio": "Paints himself in the ash of the last arena he won.",
+  "body": "male",
+  "notes": "Not in the intake queue: found among the owner's downloads (2026-10-29) and brought in as a new character (named here; the owner reviews it on the grip and portrait sheets). Rigged by Meshy's rigging API from the unrigged textured GLB (source.modelUrl \"upload\").",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-10-29",
+    "url": null,
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_a_black_tribal_man_wi_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a0b-1e9b-7362-a818-d0779745bb32"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

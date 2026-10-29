@@ -1,0 +1,37 @@
+{
+  "id": "meshy_teddy",
+  "kind": "character",
+  "use": "player",
+  "order": 38,
+  "name": "Teddy",
+  "look": "core.teddy",
+  "bio": "Won at a fairground in 1987. Has been winning everything since.",
+  "body": "male",
+  "size": "small",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: teddy bear.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/01994b60-9f84-7cb2-8db5-4d6c1efd598e",
+    "community": {
+      "model": "An adorable teddy bear"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_An_adorable_teddy_bea_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a00-dbdc-72ca-aba1-74ce8989ee86"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.9
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

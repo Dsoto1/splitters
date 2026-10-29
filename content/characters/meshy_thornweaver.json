@@ -1,0 +1,33 @@
+{
+  "id": "meshy_thornweaver",
+  "kind": "character",
+  "use": "player",
+  "order": 57,
+  "name": "Thornweaver",
+  "look": "core.thornweaver",
+  "bio": "Tracks anything across any ground, then waits for it.",
+  "body": "female",
+  "notes": "Not in the intake queue: found among the owner's downloads (2026-10-29) and brought in as a new character (named here; the owner reviews it on the grip and portrait sheets). Rigged by Meshy's rigging API from the unrigged textured GLB (source.modelUrl \"upload\").",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-10-29",
+    "url": null,
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_Tribal_Warrior_Charac_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a0b-64fb-7054-9580-9320b4285f70"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

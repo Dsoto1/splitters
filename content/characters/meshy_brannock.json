@@ -1,0 +1,36 @@
+{
+  "id": "meshy_brannock",
+  "kind": "character",
+  "use": "player",
+  "order": 40,
+  "name": "Ser Brannock",
+  "look": "core.brannock",
+  "bio": "Swore an oath to defend the realm. The realm is now a deathmatch arena; the oath still holds.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: knight.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019cee3e-fd2f-7ebb-9d95-b12f1aee4046",
+    "community": {
+      "model": "Knight Stance"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_Knight_Stance_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a02-443b-7442-ad18-a291c82dc28c"
+    }
+  },
+  "finish": {
+    "metallic": 0.3,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

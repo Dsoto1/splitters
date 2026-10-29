@@ -1,0 +1,36 @@
+{
+  "id": "meshy_zombie_groaner",
+  "kind": "character",
+  "use": "npc+player",
+  "order": 45,
+  "name": "Groaner",
+  "look": "core.groaner",
+  "bio": "Says the same thing over and over. It is usually \"brains\".",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: zombie 3.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/0199594a-3684-74a4-97d0-6835e11a29b3",
+    "community": {
+      "model": "Zombie T Pose"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_Zombie_T_Pose_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a189e9-4224-722c-9042-798b11bf9b60"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.85
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

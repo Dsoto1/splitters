@@ -1,0 +1,37 @@
+{
+  "id": "meshy_anubis",
+  "kind": "character",
+  "use": "player",
+  "order": 39,
+  "name": "Anubis",
+  "look": "core.anubis",
+  "bio": "Weighs every heart in the arena. Most come up light.",
+  "body": "male",
+  "size": "large",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: Anubis.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/01949bdc-c981-76ab-a761-77581ea062da",
+    "community": {
+      "model": "An ancient Egyptian Anubis"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_An_ancient_Egyptian_A_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a01-fba4-71ae-972c-8c970781a3d2"
+    }
+  },
+  "finish": {
+    "metallic": 0.35,
+    "roughness": 0.5
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

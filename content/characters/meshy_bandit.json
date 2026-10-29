@@ -2,14 +2,13 @@
   "id": "meshy_bandit",
   "kind": "character",
   "use": "player",
-  "status": "queued",
   "order": 37,
   "name": "Bandit",
   "look": "core.bandit",
   "bio": "Steals your ammo, your cover and, if you blink, your lunch.",
   "body": "male",
   "size": "small",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: raccoon. Held back: a squat raccoon with a long tail: the found landmarks don't fit its shape (the head and body tear on the grip sheet). Needs landmarks read off the model and a tail (fixes.tail).",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: raccoon. Was held back: a squat raccoon with a long tail that the found landmarks did not fit.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -18,7 +17,11 @@
     "community": {
       "model": "a raccoon warrior in T-pose"
     },
-    "file": "^Meshy_AI_a_raccon_warrior_in_T_\\d+_(image-to-3d-)?texture\\.glb$"
+    "file": "^Meshy_AI_a_raccon_warrior_in_T_\\d+_(image-to-3d-)?texture\\.glb$",
+    "modelUrl": "upload",
+    "meshy": {
+      "rig": "01a189ff-cdbc-7656-8229-2f291554135f"
+    }
   },
   "finish": {
     "metallic": 0,
