@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
@@ -28,7 +28,6 @@ import { installFullscreenKeys } from './fullscreen.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
 import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
 import type { Handoff } from './game/peerLink.ts';
-import { dropListing } from './game/hub.ts';
 import { seededRng, testMode } from './testMode.ts';
 import { bootStep, finishBoot, preloadImage } from './boot.ts';
 import { SHIPPED_PORTRAITS } from './frontend/portraitIndex.ts';
@@ -408,8 +407,8 @@ class App {
    * stand by, where the others are reconnecting; the listing moves to it too.
    */
   private takeOver(end: SessionEnd, standby: HostLink, cp: MatchCheckpoint, age: number): void {
-    // The old host's listing goes (its secret came with the checkpoint); ours replaces it once the match runs.
-    if (cp.listing?.id && cp.listing.secret) dropListing(cp.listing.id, cp.listing.secret);
+    // Our listing (under the old one's name) goes up once the match runs. The old host took its own down when it
+    // left; a crashed host's is hidden once it misses a check-in (the checkpoint never carries a listing's secret).
     this.chain = null;
     const restore: MatchCheckpoint = { ...cp, timeLeft: cp.timeLeft > 0 ? Math.max(1, Math.round(cp.timeLeft - age)) : 0 };
     this.playLocal(end.map, cp.rules, cp.fill, cp.skill, undefined, { peer: standby, ...(cp.listing ? { listing: cp.listing.name } : {}) }, false, false, { restore, greeting: 'The host left: you host the match now' });
@@ -546,7 +545,7 @@ class App {
    * Join a friend's hosted game (Host game) by its code. `o`, after their host left: a try with a deadline
    * (`within` ms to be let in, else `onFail`), `onReady` once in, and a line to greet with.
    */
-  async joinCode(code: string, name: string, o: { within?: number; onFail?: (reason?: string) => void; onReady?: () => void; greeting?: string } = {}): Promise<void> {
+  async joinCode(code: string, name: string, o: { within?: number; onFail?: (reason?: string, how?: 'lost' | 'rejected') => void; onReady?: () => void; greeting?: string } = {}): Promise<void> {
     void loadMatchCode().catch(() => undefined);
     await this.init();
     if (!this.rejoin && !o.onFail) this.front!.setStatus('Connecting…');
@@ -584,7 +583,7 @@ class App {
         },
         onExit: (reason, travel, how, end) => {
           window.clearTimeout(deadline);
-          if (!ready && o.onFail) return o.onFail(reason);
+          if (!ready && o.onFail) return o.onFail(reason, how);
           // The host changed map: rejoin the same code in a moment (their next match lets us in).
           if (reason === 'travel' && travel) return void window.setTimeout(again, 1200);
           // A player's browser hosted it and it's gone (it left, or the link dropped): the host-left screen.
@@ -610,21 +609,14 @@ class App {
     if (gone === 'dropped') {
       screen.wait('Reconnecting to host…', 'The connection to the host dropped. Trying to get back in.');
       // Try again until let back in, or the time is up, or the broker says the game is gone (its tab closed).
-      const until = Date.now() + RECONNECT_HOST_MS;
-      let back = false;
-      for (let missing = false; !back && !missing && Date.now() < until; ) {
-        const tried = await new Promise<{ ok: boolean; reason?: string }>((resolve) =>
-          void this.joinCode(code, name, {
-            within: Math.max(3000, until - Date.now()),
-            onFail: (reason) => resolve({ ok: false, ...(reason ? { reason } : {}) }),
-            onReady: () => resolve({ ok: true }),
-          }),
-        );
-        back = tried.ok;
-        missing = !!tried.reason && /^no game open with code/.test(tried.reason);
-        if (!back && !missing) await new Promise((r) => window.setTimeout(r, 1000));
+      let back = await keepJoining((left) => this.tryJoin(code, name, { within: Math.max(3000, left) }), { until: Date.now() + RECONNECT_HOST_MS });
+      // The successor, told the game is gone: make sure before carrying the match on. A host whose link to the
+      // broker blipped (it rejoins it in a second) may still be running the match with the others: a second copy here would fork it.
+      if (!back.ok && standby && gameIsGone(back.reason)) {
+        await new Promise((r) => window.setTimeout(r, 3000));
+        back = await this.tryJoin(code, name, { within: 5000 }).then((r) => ({ ...r, tries: back.tries + 1 }));
       }
-      if (back) {
+      if (back.ok) {
         screen.hide();
         return void standby?.close();
       }
@@ -643,18 +635,18 @@ class App {
     standby?.close();
     if (next && next.code !== standby?.code) {
       screen.wait('The host left', `${next.name} is taking over…`);
-      const followed = await new Promise<boolean>((resolve) =>
-        void this.joinCode(next.code, name, {
-          within: HANDOFF_JOIN_SECONDS * 1000,
-          greeting: `The host left: ${next.name} took over`,
-          onFail: () => resolve(false),
-          onReady: () => {
-            screen.hide();
-            resolve(true);
-          },
-        }),
+      // The successor is starting the match at this very moment (busy for a while on a slow machine): one try
+      // isn't enough, so keep at it while our place is held there, until let in, refused or it's gone.
+      const followed = await keepJoining(
+        async (left, n) => {
+          if (n > 1) screen.wait('The host left', `${next.name} is taking over… (try ${n})`);
+          const tried = await this.tryJoin(next.code, name, { within: Math.min(left, HANDOFF_JOIN_SECONDS * 1000), greeting: `The host left: ${next.name} took over` });
+          if (!tried.ok) console.warn(`couldn't follow ${next.name} to ${next.code} (try ${n}): ${tried.reason ?? 'no reason'}`);
+          return tried;
+        },
+        { until: Date.now() + HANDOFF_FOLLOW_SECONDS * 1000 },
       );
-      if (followed) return;
+      if (followed.ok) return screen.hide();
     }
     void this.showMenu('');
     screen.ended('The host left', gone === 'left' ? 'The host left the game, so this match is over.' : "The host's game is gone, so this match is over.", [
@@ -671,6 +663,18 @@ class App {
         },
       },
     ]);
+  }
+
+  /** One try at a friend's game (after its host left): `within` ms to be let in. */
+  private tryJoin(code: string, name: string, o: { within: number; greeting?: string }): Promise<JoinTry> {
+    return new Promise<JoinTry>((resolve) =>
+      void this.joinCode(code, name, {
+        ...o,
+        // Refused (banned, full): no use trying again, unless the host said to ("Too many people are joining right now: try again").
+        onFail: (reason, how) => resolve({ ok: false, ...(reason ? { reason } : {}), ...(how === 'rejected' && !/try again/i.test(reason ?? '') ? { rejected: true } : {}) }),
+        onReady: () => resolve({ ok: true }),
+      }),
+    );
   }
 
   async playOnline(url: string, name: string): Promise<void> {

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, MAX_CHECKPOINT_CHARS, handoffKey, initPhysics, parseCheckpoint, parseClientMessage, type MatchCheckpoint } from '../src/index.ts';
+import { DEFAULT_RULES, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MAX_CHECKPOINT_CHARS, handoffKey, initPhysics, keepJoining, parseCheckpoint, parseClientMessage, type JoinTry, type MatchCheckpoint } from '../src/index.ts';
 import { BotFiller, HostControl, Match, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -30,7 +30,7 @@ function hostMatch() {
     [bo.slot, 'sub:bo-account'],
   ]);
   const players = match.checkpointPlayers((c) => (keys.has(c.slot) ? handoffKey(keys.get(c.slot)!) : null), ann.slot);
-  const cp: MatchCheckpoint = { v: 1, map: match.map.metadata.id, rules: match.rules, phase: match.phase, timeLeft: match.timeLeftSeconds(), fill: control.fill, skill: bots.skill.id, players, banned: [handoffKey('pk:p_banned1234')], listing: { name: 'Friday', id: 'abc123', secret: 'deadbeef' } };
+  const cp: MatchCheckpoint = { v: 1, map: match.map.metadata.id, rules: match.rules, phase: match.phase, timeLeft: match.timeLeftSeconds(), fill: control.fill, skill: bots.skill.id, players, banned: [handoffKey('pk:p_banned1234')], listing: { name: 'Friday' } };
   return { match, host, ann, bo, cp };
 }
 
@@ -65,11 +65,12 @@ describe('host handoff checkpoints', () => {
     expect(parseCheckpoint({ ...cp, rules: { ...cp.rules, mode: 'core.nonsense' } })).toBeNull();
     expect(parseCheckpoint({ ...cp, players: new Array(200).fill(cp.players[0]) })).toBeNull();
     expect(parseCheckpoint('x'.repeat(MAX_CHECKPOINT_CHARS + 1))).toBeNull();
-    const odd = parseCheckpoint({ ...cp, players: [{ ...cp.players[0], name: 'A\u0000b', k: 1e12, hp: -5, key: 'pk:raw', w: [['core.pistol', 1e9, 5], 'junk'] }], banned: ['pk:raw', handoffKey('x')], listing: { name: 'L', id: 'bad id!', secret: 'zz' } })!;
+    const odd = parseCheckpoint({ ...cp, players: [{ ...cp.players[0], name: 'A\u0000b', k: 1e12, hp: -5, key: 'pk:raw', w: [['core.pistol', 1e9, 5], 'junk'] }], banned: ['pk:raw', handoffKey('x')], listing: { name: 'L', id: 'abc123', secret: 'deadbeef' } })!;
     expect(odd.players[0]).toMatchObject({ name: 'Ab', k: 100_000, hp: 0 });
     expect(odd.players[0]!.key).toBeUndefined();
     expect(odd.players[0]!.w).toEqual([['core.pistol', 10_000, 5]]);
     expect(odd.banned).toEqual([handoffKey('x')]);
+    // Only the listing's name: never its ID or secret (the successor can't touch the host's listing).
     expect(odd.listing).toEqual({ name: 'L' });
   });
 
@@ -115,5 +116,40 @@ describe('host handoff checkpoints', () => {
     const teams = match.teams!.map((t) => t.id);
     match.resume('playing', 100, [[teams[0]!, 2], [teams[1]!, 1]]);
     expect([...match.teamScores().values()]).toEqual([2, 1]);
+  });
+
+  describe('following the successor (keepJoining)', () => {
+    // A pretend clock: each try takes `ms` of it, and so does each pause.
+    const run = (results: (JoinTry & { ms?: number })[], until: number) => {
+      let t = 0;
+      const lefts: number[] = [];
+      const done = keepJoining(
+        async (left) => {
+          lefts.push(left);
+          const r = results[Math.min(lefts.length - 1, results.length - 1)]!;
+          t += r.ms ?? HANDOFF_JOIN_SECONDS * 1000;
+          return r;
+        },
+        { until, now: () => t, sleep: async (ms) => void (t += ms) },
+      );
+      return done.then((r) => ({ ...r, lefts }));
+    };
+    const noAnswer = { ok: false, reason: 'no answer within 10 s' };
+
+    it('keeps trying while the successor is busy starting the match, and gets in', async () => {
+      // The bug: one 10 s try, then the host-left screen, while the successor held our place for two minutes.
+      const r = await run([noAnswer, noAnswer, { ok: false, reason: "found the game but couldn't connect to it" }, { ok: true }], HANDOFF_FOLLOW_SECONDS * 1000);
+      expect(r).toMatchObject({ ok: true, tries: 4 });
+    });
+
+    it('stops when refused or when the game is gone, and when the time is up', async () => {
+      expect(await run([noAnswer, { ok: false, reason: 'You were banned from this game', rejected: true }, { ok: true }], 90_000)).toMatchObject({ ok: false, tries: 2, rejected: true });
+      expect(await run([{ ok: false, reason: 'no game open with code ABC234 — check the code' }, { ok: true }], 90_000)).toMatchObject({ ok: false, tries: 1 });
+      const late = await run([noAnswer], 35_000);
+      expect(late).toMatchObject({ ok: false, tries: 4 });
+      expect(late.lefts).toEqual([35_000, 24_000, 13_000, 2_000]);
+      // The places a successor keeps (twice AWAY.holdSeconds, 120 s) outlast the following.
+      expect(HANDOFF_FOLLOW_SECONDS).toBeLessThan(120);
+    });
   });
 });

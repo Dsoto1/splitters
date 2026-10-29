@@ -23,6 +23,13 @@ export const CHECKPOINT_MAX_AGE_SECONDS = 30;
  * successor may take up to a minute to start the match (a slow machine) before they give up.
  */
 export const HANDOFF_JOIN_SECONDS = 10;
+/**
+ * How long friends keep trying to get into the successor's match (seconds), a try at a time
+ * (HANDOFF_JOIN_SECONDS each). The successor is starting the match it took over at that very moment (on a
+ * slow machine its page is busy for a while), so one try is not enough; this stays well inside the time
+ * their places are held for them there (twice AWAY.holdSeconds).
+ */
+export const HANDOFF_FOLLOW_SECONDS = 90;
 /** How long a friend asked to stand by has to open its standby code (seconds) before the host asks someone else. */
 export const STANDBY_ANSWER_SECONDS = 30;
 /** The biggest checkpoint a successor accepts (characters of JSON). */
@@ -75,8 +82,44 @@ export interface MatchCheckpoint {
   players: CheckpointPlayer[];
   /** Keys the host banned (hashed), so they stay out. */
   banned?: string[];
-  /** The game browser listing: its name, and the host's listing ID and secret so the successor can take it down. */
-  listing?: { name: string; id?: string; secret?: string };
+  /**
+   * The game browser listing's name, so the successor lists the match under it. Never the listing's ID or
+   * secret: with those, whichever friend was named successor could take the host's listing down or point it
+   * at another game while the host still runs it. A host leaving on purpose takes its listing down itself;
+   * a crashed host's listing is hidden once it misses a check-in and expires soon after (LOBBY_EXPIRY_SECONDS).
+   */
+  listing?: { name: string };
+}
+
+/** One try to get into a game: let in, or why not (`rejected`: the host refused us, so trying again won't help). */
+export interface JoinTry {
+  ok: boolean;
+  reason?: string;
+  rejected?: boolean;
+}
+
+/** The broker doesn't know the code: nobody hosts on it (any more), so there's nothing to keep trying. */
+export const gameIsGone = (reason: string | undefined): boolean => !!reason && /^no game open with code/.test(reason);
+
+/**
+ * Keep trying to get into a game (reconnecting to our host, or following its successor after a handoff) until
+ * we're let in, refused, the game is gone, or `until` (a Date.now() time) has passed. `attempt` gets the
+ * milliseconds left; `pause` ms between tries. Resolves with the last try and how many there were.
+ */
+export async function keepJoining(
+  attempt: (msLeft: number, tryNo: number) => Promise<JoinTry>,
+  o: { until: number; pause?: number; now?: () => number; sleep?: (ms: number) => Promise<void> },
+): Promise<JoinTry & { tries: number }> {
+  const now = o.now ?? Date.now;
+  const sleep = o.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  let last: JoinTry = { ok: false, reason: 'no time to try' };
+  let tries = 0;
+  while (now() < o.until) {
+    last = await attempt(o.until - now(), ++tries);
+    if (last.ok || last.rejected || gameIsGone(last.reason)) break;
+    if (now() < o.until) await sleep(o.pause ?? 1000);
+  }
+  return { ...last, tries };
 }
 
 /**
@@ -178,8 +221,8 @@ export function parseCheckpoint(raw: unknown): MatchCheckpoint | null {
   if (Array.isArray(o.banned)) cp.banned = o.banned.filter((k): k is string => typeof k === 'string' && KEY_RE.test(k)).slice(0, 256);
   const l = o.listing as Record<string, unknown> | undefined;
   if (typeof l === 'object' && l !== null && typeof l.name === 'string') {
+    // (An older host may still send the listing's ID and secret: they're dropped.)
     cp.listing = { name: l.name.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 40) };
-    if (typeof l.id === 'string' && /^[\w-]{1,64}$/.test(l.id) && typeof l.secret === 'string' && /^[0-9a-f]{1,64}$/.test(l.secret)) Object.assign(cp.listing, { id: l.id, secret: l.secret });
   }
   return cp;
 }

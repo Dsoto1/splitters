@@ -60,11 +60,9 @@ export interface LocalMatchOptions {
   selfKey?: string;
 }
 
-/** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts). */
+/** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
 export interface HostListing {
   name: string;
-  id?: string;
-  secret?: string;
 }
 
 /** What the page reads synchronously about a match that may run elsewhere (a worker): kept up to date by the host. */
@@ -154,6 +152,8 @@ const FRIEND_SILENT_MS = 20_000;
 const FRIEND_LOADING_SILENT_MS = 60_000;
 /** Friends' joins per minute, in all: a burst of joins (many tabs at once) is refused. */
 const FRIEND_JOINS_PER_MINUTE = 12;
+/** Host handoff: a ready successor keeps the role at least this long (seconds) before a better connection takes it over. */
+const SUCCESSOR_KEEP_SECONDS = 30;
 
 /**
  * Runs the authoritative Match for this browser (offline play, MapMaker TEST,
@@ -553,8 +553,16 @@ export class MatchHost {
     this.rosterToAll();
   }
 
-  /** Host handoff: the friend named to take over (asked to stand by until `code` comes back), and when they were asked. */
-  private successor: { id: number; code: string | null; askedAt: number } | null = null;
+  /**
+   * Host handoff: the friend named to take over (asked to stand by until `code` comes back), when they were
+   * asked, and since when they've been ready (their code came).
+   */
+  private successor: { id: number; code: string | null; askedAt: number; since: number } | null = null;
+  /**
+   * A friend with a clearly better connection, asked to stand by to replace a successor that is ready: the
+   * successor stays named until they answer, so the match is never without one in between.
+   */
+  private candidate: { id: number; askedAt: number } | null = null;
   /** Friends who were asked and never answered (they aren't asked again), and everyone asked. */
   private readonly passedOver = new Set<number>();
   private readonly asked = new Set<number>();
@@ -590,15 +598,28 @@ export class MatchHost {
       this.passedOver.add(s.id);
       s = null;
     }
+    // A candidate gone, away or silent too long: not them again.
+    let c = this.candidate;
+    if (c && (!friends.some((r) => r.id === c!.id) || now - c.askedAt > STANDBY_ANSWER_SECONDS * 1000)) {
+      this.passedOver.add(c.id);
+      c = null;
+    }
     const rtt = (r: Remote) => r.rtt ?? 999;
     const best = friends.filter((r) => !this.passedOver.has(r.id)).sort((a, b) => rtt(a) - rtt(b) || a.id - b.id)[0];
-    // A clearly better connection takes the role over (well better: not a swap for every wobble).
-    if (s?.code && current && best && best.id !== s.id && rtt(best) + 80 < rtt(current)) s = null;
-    if (!s && best) {
-      s = { id: best.id, code: null, askedAt: now };
-      this.asked.add(best.id);
-      this.sink.send(best.id, JSON.stringify({ t: 'standby' } satisfies ServerMessage));
+    if (!s && c) {
+      // No successor any more, and someone asked already: they're the one we wait for.
+      s = { id: c.id, code: null, askedAt: c.askedAt, since: 0 };
+      c = null;
+    } else if (!s && best) {
+      s = { id: best.id, code: null, askedAt: now, since: 0 };
+      this.ask(best.id);
+    } else if (s?.code && current && best && !c && best.id !== s.id && rtt(best) + 80 < rtt(current) && now - s.since >= SUCCESSOR_KEEP_SECONDS * 1000) {
+      // A clearly better connection takes the role over (well better, and not more often than every so often: a
+      // loaded machine's pings swing by seconds). The successor stays named until the new one is ready.
+      c = { id: best.id, askedAt: now };
+      this.ask(best.id);
     }
+    this.candidate = c;
     this.successor = s;
     this.announceSuccessor();
     if (s?.code && now - this.checkpointAt >= CHECKPOINT_EVERY_SECONDS * 1000) this.sendCheckpoint();
@@ -611,11 +632,19 @@ export class MatchHost {
   private standingBy(r: Remote, code: string): void {
     const s = this.successor;
     if (!this.asked.has(r.id) || r.slot === null || !isJoinCode(code)) return;
-    if (s?.code && s.id !== r.id) return;
+    const replacing = this.candidate?.id === r.id;
+    if (s?.code && s.id !== r.id && !replacing) return;
+    if (replacing) this.candidate = null;
     this.passedOver.delete(r.id);
-    this.successor = { id: r.id, code, askedAt: s?.id === r.id ? s.askedAt : Date.now() };
+    this.successor = { id: r.id, code, askedAt: s?.id === r.id ? s.askedAt : Date.now(), since: s?.id === r.id && s.code === code ? s.since : Date.now() };
     this.announceSuccessor();
     this.sendCheckpoint();
+  }
+
+  /** Ask a friend to stand by (open a join code of their own to take the match over on). */
+  private ask(id: number): void {
+    this.asked.add(id);
+    this.sink.send(id, JSON.stringify({ t: 'standby' } satisfies ServerMessage));
   }
 
   /** Tell every friend who takes over (and where), when that changes. */
@@ -666,7 +695,7 @@ export class MatchHost {
       ...(teams?.length ? { teams } : {}),
       players: match.checkpointPlayers(keyOf, successor),
       ...(this.banned.size ? { banned: [...this.banned].map((k) => (k.startsWith('h:') ? k : handoffKey(`pk:${k}`))) } : {}),
-      ...(this.listing ? { listing: this.listing } : {}),
+      ...(this.listing ? { listing: { name: this.listing.name } } : {}),
     };
   }
 

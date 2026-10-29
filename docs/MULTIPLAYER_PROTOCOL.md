@@ -387,8 +387,12 @@ A browser-hosted match with friends in no longer has to end with its host
 `peerLink.ts` `onHandoff`, `main.ts` `afterHost` / `takeOver`):
 
 - **Successor, named in advance**: once a second the host keeps one friend
-  named, the one with the lowest ping (a friend clearly better by 80 ms takes
-  the role over; away players are skipped). It sends that friend
+  named, the one with the lowest ping (away players are skipped). A friend
+  clearly better by 80 ms replaces a ready successor, but only after that one
+  has been ready 30 s (pings on a loaded machine swing by seconds), and the
+  successor stays named until the replacement answers, so there's always
+  one (a friend asked while another is named keeps its standby code unless
+  the host names a third). It sends that friend
   `{ t: "standby" }`; the friend opens a join code of its own on the broker
   (a `PeerHost` that holds any links until it has a match) and answers
   `ClientMessage { t: "standby", code }` (a join code, nothing else). Only the
@@ -403,24 +407,34 @@ A browser-hosted match with friends in no longer has to end with its host
   plays, alive, position, facing, health, armour, weapons with ammo and the
   one in hand. People carry only a hashed key (`handoffKey`: `h:` + 32 hex of
   SHA-256 of `pk:…` or `sub:…`), never the key; bans likewise; plus the game
-  browser listing's name, id and secret. The successor checks shape and size
+  browser listing's name (never its id or secret). The successor checks shape and size
   (`parseCheckpoint`, ≤ 96 KB).
 - **The host goes** (`bye`, or a drop after the reconnect try): the successor,
   if its checkpoint is at most 30 s old and for the map it has, starts the
   match from it (`LocalMatchOptions.restore`: `BotFiller.restore`,
   `Match.resume`) on its standby code, with the clock moved on by the
-  checkpoint's age, deletes the old listing with its secret and lists the
-  match under its own code. Everyone else gets "The host left: <name> is
+  checkpoint's age, and lists the match under its own code with the old
+  listing's name. (A host leaving on purpose took its listing down; a crashed
+  host's listing is hidden once it misses a check-in and expires after 65 s.) Everyone else gets "The host left: <name> is
   taking over…" and joins the successor's code with the usual hello, ticket
   and join checks; their places wait for them as away players held 120 s by
   hashed key (`reclaim` tries the key and its hash), so they get back their
-  slot's team, score and weapons. No link to the successor within 10 s (or
-  linked but not let in within a minute), or no successor: the host-left
-  screen (section 13).
+  slot's team, score and weapons. They keep trying (`keepJoining`: tries of
+  10 s, or a minute once linked, for up to 90 s, as the successor is busy
+  starting the match at that very moment) until let in; refused, the
+  successor's code gone, the time up, or no successor: the host-left screen
+  (section 13).
 - **Trust**: friends only ever follow a code their own host named over its
   link; nobody can claim to be the successor. The successor sees no other
-  player's key. It does get the listing's secret (it can only take that
-  listing down or update it).
+  player's key, nor the listing's id or secret (with those, any friend named
+  successor could take the host's listing down or point it elsewhere).
+- **Forks**: a successor takes over only when its host said `bye`, or when
+  its own reconnect to the host ends with the broker saying the code is gone,
+  twice, 3 s apart (a host whose broker link blipped is back on it within
+  seconds), while its checkpoint is still fresh (30 s); a host that is unreachable
+  from the successor but still registered keeps the successor retrying the
+  old code until the checkpoint is stale, so it never starts a second copy
+  (that match then ends for the successor, who gets the host-left screen).
 - **Carries over**: players and teams, scores, team scores of objective
   modes, the clock, positions, facing, health, armour, weapons and ammo, bot
   count and skill, rules as changed, bans, the listing. **Starts fresh**:

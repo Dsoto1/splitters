@@ -1116,8 +1116,8 @@ export class GameSession {
         region: myRegion(),
       }),
       show,
-      // The match knows its listing: a successor (host handoff) takes it over if this browser goes.
-      (id, secret) => local.setListing(id ? { name: ($('host-name') as HTMLInputElement).value.trim() || `${me}'s game`, id, secret } : null),
+      // The match knows its listing's name: a successor (host handoff) lists the match under it if this browser goes.
+      (id) => local.setListing(id ? { name: ($('host-name') as HTMLInputElement).value.trim() || `${me}'s game` } : null),
     );
     this.advertiser.start();
     show();

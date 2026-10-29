@@ -252,6 +252,8 @@ export class PeerTransport implements Transport {
   /** Host handoff (net/handoff.ts): the successor the host named, and, asked to stand by, our standby code and checkpoint. */
   private handoff: Handoff = { successor: null, standby: null, checkpoint: null };
   private standbyOpening = false;
+  /** The successor named when the host asked us to stand by (null: nobody): we were asked to replace them. */
+  private standbyFor: string | null = null;
   /** The host is a dedicated one (a Host Service: it keeps places and comes back), not a player's browser. */
   dedicated = false;
   /** The host let us in (its welcome came), even if the match is still loading here. */
@@ -404,15 +406,17 @@ export class PeerTransport implements Transport {
     const h = this.handoff;
     if (msg.t === 'standby') {
       // Asked to stand by: open a join code of our own (it holds links until there's a match) and tell the host.
+      // (Asked while someone else is ready: we're to replace them, and they stay named until we answer.)
       if (h.standby) return this.send({ t: 'standby', code: h.standby.code });
       if (this.standbyOpening) return;
       this.standbyOpening = true;
+      this.standbyFor = h.successor?.code ?? null;
       const host = new PeerHost(null);
       void host.start().then(
         (code) => {
           this.standbyOpening = false;
           // Gone, or someone else was named meanwhile (we took too long): not needed after all.
-          if (this.closedByUs || h.successor) return host.close();
+          if (this.closedByUs || (h.successor && h.successor.code !== this.standbyFor)) return host.close();
           h.standby = host;
           this.send({ t: 'standby', code });
         },
@@ -422,8 +426,12 @@ export class PeerTransport implements Transport {
     }
     if (msg.t === 'successor') {
       h.successor = isJoinCode(msg.code) ? { code: msg.code, slot: typeof msg.slot === 'number' ? msg.slot : null, name: typeof msg.name === 'string' ? sanitizeName(msg.name) : 'A player' } : null;
-      // Someone else (or nobody) takes over now: our standby code and checkpoint are no longer needed.
-      if (h.standby && h.successor?.code !== h.standby.code) {
+      // Someone else takes over now (not the one we were asked to replace): our standby code and checkpoint are no
+      // longer needed. Nobody named (the host between successors, maybe waiting for our answer): keep it.
+      const named = h.successor?.code;
+      // We're it: whoever we were asked to replace is just someone else from now on.
+      if (named && named === h.standby?.code) this.standbyFor = null;
+      if (h.standby && named && named !== h.standby.code && named !== this.standbyFor) {
         h.standby.close();
         h.standby = null;
         h.checkpoint = null;

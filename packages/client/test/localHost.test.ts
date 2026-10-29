@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { BROWSER_HOST_MAX_GUESTS, DEFAULT_RULES, PROTOCOL_VERSION, type ServerMessage } from '@tiletrigger/shared';
 import { makeMap } from '../../shared/test/helpers.ts';
 import { LocalTransport, type RemoteLink } from '../src/game/localTransport.ts';
@@ -202,5 +202,44 @@ describe('host controls in a browser match (offline, Host game)', () => {
     expect(roster.players.find((p) => p.slot === welcome.slot)).toMatchObject({ name: otherName, bot: false });
     expect(roster.players.filter((p) => !p.bot).map((p) => p.name).sort()).toEqual([mine.name, otherName].sort());
     await until(() => again.got.some((m) => m.t === 'snapshot' && m.score.some((s) => s.s === welcome.slot && s.k === 4)));
+  }, 60_000);
+
+  it('host handoff: a better connection replaces a ready successor only now and then, and the old one stays named until it answers', async () => {
+    const { t } = await host(4);
+    const ann = friend();
+    const bo = friend();
+    t.accept(ann.link);
+    ann.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Ann', pk: 'p_annkey1234' });
+    t.accept(bo.link);
+    bo.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Bo', pk: 'p_bokey12345' });
+    const ping = (f: ReturnType<typeof friend>, rtt: number) => f.say({ t: 'ping', id: 0, ct: 0, rtt });
+    ping(ann, 300);
+    ping(bo, 300);
+    await until(() => [ann, bo].some((f) => f.got.some((m) => m.t === 'standby')));
+    const [heir, other] = ann.got.some((m) => m.t === 'standby') ? [ann, bo] : [bo, ann];
+    heir.say({ t: 'standby', code: 'ABC234' });
+    const named = (f: ReturnType<typeof friend>) => f.got.filter((m) => m.t === 'successor').at(-1);
+    expect(named(other)).toMatchObject({ code: 'ABC234' });
+    // A much better connection right away: no swap yet (a loaded machine's pings swing by seconds).
+    ping(other, 20);
+    ping(heir, 900);
+    await new Promise((r) => setTimeout(r, 2500));
+    expect(other.got.some((m) => m.t === 'standby')).toBe(false);
+    // Half a minute on, it is asked to stand by; the successor stays named (and checkpointed) until it answers.
+    const real = Date.now.bind(Date);
+    const clock = vi.spyOn(Date, 'now').mockImplementation(() => real() + 31_000);
+    try {
+      ping(other, 20);
+      ping(heir, 900);
+      await until(() => other.got.some((m) => m.t === 'standby'));
+      for (const f of [ann, bo]) expect(named(f)).toMatchObject({ code: 'ABC234' });
+      const checkpoints = heir.got.filter((m) => m.t === 'checkpoint').length;
+      await until(() => heir.got.filter((m) => m.t === 'checkpoint').length > checkpoints);
+      other.say({ t: 'standby', code: 'DEF567' });
+      for (const f of [ann, bo]) expect(named(f)).toMatchObject({ code: 'DEF567' });
+      expect(other.got.some((m) => m.t === 'checkpoint')).toBe(true);
+    } finally {
+      clock.mockRestore();
+    }
   }, 60_000);
 });

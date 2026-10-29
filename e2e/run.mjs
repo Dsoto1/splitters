@@ -2822,10 +2822,14 @@ async function handoffFlow(browser) {
   await sleep(5000);
   const hub = `&hub=127.0.0.1:${PEER_PORT}`;
   const errors = [];
+  const logs = [];
+  const began = Date.now();
   const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
   const open = async (name, url) => {
     const p = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
     p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
+    // The friends' console (warnings and up, and timed lines), shown when a check after the handoff fails.
+    p.on('console', (m) => (m.type() === 'warning' || m.type() === 'error' || process.env.E2E_HANDOFF_LOG) && logs.push(`${((Date.now() - began) / 1000).toFixed(1)} ${name} ${m.type()}: ${m.text().slice(0, 300)}`));
     await p.addInitScript((n) => localStorage.setItem('cs.name', n), name);
     await p.goto(url, { waitUntil: 'domcontentloaded', timeout: T(60000) });
     return p;
@@ -2849,7 +2853,7 @@ async function handoffFlow(browser) {
   const bo = await open('Bo', `${CLIENT}/?join=${code}${hub}`);
   const inBoth = (await ann.waitForFunction(playing, null, { timeout: T(120000) }).then(() => true, () => false)) && (await bo.waitForFunction(playing, null, { timeout: T(120000) }).then(() => true, () => false));
   check(inBoth, 'two friends join the hosted match');
-  if (!inBoth) return;
+  if (!inBoth) return void console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
   // What each friend's link knows: its standby code (asked to stand by), the successor named, a checkpoint.
   const known = (p) => p.evaluate(() => {
     const h = window.__cs?.transport?.handoff;
@@ -2885,6 +2889,7 @@ async function handoffFlow(browser) {
   const back = await simWait(heir.page, (m, me, n) => m.combatants().some((c) => c.kind === 'human' && c.name === n && !c.away && c.kills === 7), other.name, T(30000));
   const seen = await sim(heir.page, (m) => m.combatants().map((c) => `${c.name}:${c.kind}:${c.kills}`));
   check(back, `${other.name} has their place back, with their score (${seen.join(', ')})`);
+  if (!followed || !back) console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
   const moved = await heir.page
     .waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => { const g = d.games.filter((x) => x.name === 'E2E Handoff'); return g.length === 1 && g[0].code === c; }), heirCode, { timeout: T(40000), polling: 1000 })
     .then(() => true, () => false);
