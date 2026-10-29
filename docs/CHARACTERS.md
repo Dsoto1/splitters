@@ -348,7 +348,7 @@ repo; they live in a downloads dir outside it.
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below). |
-| `source.modelUrl` | A public download link of the unrigged model (say the owner's Google Drive copy: `https://drive.usercontent.google.com/download?id=<file id>&export=download&confirm=t`), for Meshy's rigging API. |
+| `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
 `content/intake/meshy-queue.json` lists models the owner picked.
@@ -397,6 +397,9 @@ Two ways, the first preferred when it's available:
    rigged path (Meshy's joints mapped onto ours). It prints the task ID: put it
    in `source.meshy.rig` to fetch the same result again later. Meshy rigs
    textured humanoids only; a request it refuses comes back with its message.
+   With `modelUrl: "upload"` the download goes up as a data URI; one over 300k
+   triangles is cut to 200k first (Meshy failed a 917k-triangle king and rigged
+   the same model cut to 150k). A rigging task costs 5 credits.
 2. **In-house** (no key, or no `modelUrl`): `prepare-meshy-characters.mjs` cuts
    the mesh to 40k triangles first (meshopt, looser and then sloppy for
    million-triangle downloads), finds the joints from the mesh

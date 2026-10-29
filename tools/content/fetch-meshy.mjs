@@ -122,27 +122,56 @@ export function downloaded(m, dir) {
 export const UPLOAD = 'upload';
 /** Meshy takes a model up to this size as a data URI (a bigger one wants a public link). */
 const UPLOAD_MAX_BYTES = 60 * 1048576;
+/** Meshy fails to rig a model with many more triangles than this (seen: 917k failed, the same cut to 150k rigged), so a denser one is cut first. */
+const UPLOAD_MAX_TRIANGLES = 300000;
+const UPLOAD_TRIANGLES = 200000;
 
-/** The unrigged download (a textured GLB matched by `source.file`) as a data URI for Meshy's rigging API. */
-export function uploadUri(m, dir) {
+/** Triangles in a GLB, from its JSON chunk (0 when it can't be read). */
+function glbTriangles(bytes) {
+  try {
+    const g = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString('utf8'));
+    let n = 0;
+    for (const mesh of g.meshes ?? []) for (const p of mesh.primitives) n += (p.indices !== undefined ? g.accessors[p.indices].count : g.accessors[p.attributes.POSITION].count) / 3;
+    return n;
+  } catch {
+    return 0;
+  }
+}
+
+/** A dense download cut to UPLOAD_TRIANGLES (texture coordinates and the texture kept), as GLB bytes. */
+async function cutForUpload(bytes) {
+  const [{ NodeIO }, { ALL_EXTENSIONS }, { dequantize, simplify, weld }, { MeshoptSimplifier }] = await Promise.all([import('@gltf-transform/core'), import('@gltf-transform/extensions'), import('@gltf-transform/functions'), import('meshoptimizer')]);
+  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+  const doc = await io.readBinary(new Uint8Array(bytes));
+  await doc.transform(dequantize(), weld(), simplify({ simplifier: MeshoptSimplifier, ratio: Math.min(1, UPLOAD_TRIANGLES / glbTriangles(bytes)), error: 0.01 }));
+  return Buffer.from(await io.writeBinary(doc));
+}
+
+/** The unrigged download (a textured GLB matched by `source.file`) as a data URI for Meshy's rigging API (cut first when it's dense). */
+export async function uploadUri(m, dir, log = () => {}) {
   const re = m.source.file && new RegExp(m.source.file);
   const file = re && existsSync(dir) ? readdirSync(dir, { recursive: true }).map(String).find((f) => /\.glb$/i.test(f) && re.test(basename(f))) : null;
   if (!file) throw new FetchError(`${m.id}: source.modelUrl is "upload", but no unrigged GLB matching source.file is in ${dir}`);
-  const bytes = readFileSync(join(dir, file));
-  if (bytes.length > UPLOAD_MAX_BYTES) throw new FetchError(`${m.id}: ${basename(file)} is ${(bytes.length / 1048576).toFixed(0)} MB, too big to upload: give source.modelUrl a public link instead`);
+  let bytes = readFileSync(join(dir, file));
+  const tris = glbTriangles(bytes);
+  if (tris > UPLOAD_MAX_TRIANGLES) {
+    bytes = await cutForUpload(bytes);
+    log(`${m.id}: ${basename(file)} cut from ${tris} to ${glbTriangles(bytes)} triangles for Meshy`);
+  }
+  if (bytes.length > UPLOAD_MAX_BYTES) throw new FetchError(`${m.id}: ${basename(file)} is ${(bytes.length / 1048576).toFixed(0)} MB, too big to upload`);
   return `data:application/octet-stream;base64,${bytes.toString('base64')}`;
 }
 
 /**
- * Have Meshy rig an unrigged model that sits at a public URL (or, with `modelUrl: "upload"`, the download itself) (`source.modelUrl`: a community model the
- * owner downloaded and shared, say from Google Drive), then download the rigged GLB as <dir>/<id>.glb:
+ * Have Meshy rig an unrigged model that sits at a public URL (`source.modelUrl`; or, with `modelUrl: "upload"`,
+ * the download itself), then download the rigged GLB as <dir>/<id>.glb:
  * POST /openapi/v1/rigging { model_url, height_meters }, then the task is polled until it finishes.
  */
 export async function rigByUrl(m, dir, opts = {}) {
   const { fetch = globalThis.fetch, apiKey, log = console.log, pollMs = 5000, timeoutMs = 20 * 60 * 1000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = opts;
   if (!apiKey) throw new FetchError('MESHY_API_KEY is not set: Meshy rigging needs your API key');
   const url = `${API}/${MESHY_TASKS.rig}`;
-  const modelUrl = m.source.modelUrl === UPLOAD ? uploadUri(m, dir) : m.source.modelUrl;
+  const modelUrl = m.source.modelUrl === UPLOAD ? await uploadUri(m, dir, log) : m.source.modelUrl;
   let res;
   try {
     res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ model_url: modelUrl, height_meters: 1.8 }) });
