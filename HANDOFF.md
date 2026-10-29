@@ -120,7 +120,7 @@ flame, and the railgun's impact is at scale 0.4.
 6. **Done:** editorux now refocuses on the spawn spot before placing it (`fbb8eed`;
    `129dc9d`'s right-click at (6, 0, 0) was still behind the camera left on the
    rocks), scenery opens the Terrain pane first (`129dc9d`), and main is at `f80a606`.
-7. Waiting on the owner: privacy-page contact address; Sandgate's street
+7. Waiting on the owner: Sandgate's street
    terrain (lumpy dirt/grass in the open streets is authored paint: the owner
    can now draw sand Paths over it); eight portraits still rendered live (soldier NPCs and zombies untinted; imp tiny; cyclops and oculus as blobs). Portraits must use `offscreenProjection` (offscreen.ts): the engine uses a reversed depth buffer.
 
