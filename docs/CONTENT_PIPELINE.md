@@ -110,6 +110,12 @@ their materials baked and shrunk; the other GLB kits are normalised as they
 are. Never copy the raw downloads into the repo. (Older Train Kit props whose
 source GLB is in `assets-src/kenney-train-kit/` keep building from there.)
 
+**Meshy API** (`tools/content/meshy-api.mjs`, needs `MESHY_API_KEY`): checks
+the owner's credit balance, lists the account's API tasks and downloads a
+task's files (`download <kind> <task id> <dir>`, into a dir outside the repo)
+for the scripts above. The API only sees tasks made through the API: models
+made on meshy.ai's site and community downloads are downloaded by hand.
+
 **Meshy downloads** (`tools/content/meshy-mesh.mjs`, `meshy: true` packs in
 `content/guns.json` and `content/props.json`). Meshy's textured FBX is one
 mesh of 0.3–3.3 million triangles whose colour map is cut into thousands of

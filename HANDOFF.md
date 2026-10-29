@@ -146,6 +146,15 @@ Prepared on the session branch: version 0.5.0, CHANGELOG section, menu baseline.
 
 F3 / Options → Display: the performance overlay; Pause → Settings → Copy performance report (`game/perfOverlay.ts`). When the owner reports a slowdown, ask for that report. CI's `perf:budget` now also fails on effects in the shadow pass, more than 600 shadow casters (clumped Frost Basin, medium; 446 on CI with 46 characters in view) and effect starts over 40 ms (docs/PERF_96.md, last section). New effect materials made per shot: block their dirty mechanism, and don't `clone()` meshes in hot paths (share geometry).
 
+## Meshy connection (2026-10-29)
+
+`MESHY_API_KEY` is set in the cloud environment and works (balance 5,425
+credits). `node tools/content/meshy-api.mjs balance | list | get | download`.
+The API lists no tasks: everything in `content/meshy.lock.json` was made on
+meshy.ai's site, and its task IDs return 404 through the API, so those raw
+downloads (and the community ones) still come from the site by hand. New
+models made through the API can be downloaded straight into a scratch dir.
+
 ## How work flows (details in CLAUDE.md)
 
 1. Work on the session branch, or in an agent worktree that you merge into it.
