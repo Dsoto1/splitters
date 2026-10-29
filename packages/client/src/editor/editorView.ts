@@ -21,7 +21,7 @@ import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyToneMapping } from '../game/graphicsSettings.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { buildRoadMeshes, disposeRoadMeshes } from '../roadMeshes.ts';
-import { buildPathMeshes, disposePathMeshes } from '../pathMeshes.ts';
+import { buildGuideLines, buildPathMeshes, disposePathMeshes } from '../pathMeshes.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
@@ -85,7 +85,6 @@ export class EditorView {
   private builtBoxes = '';
   private builtTerrain: MapDocument['terrain'] | undefined = undefined;
   private builtTheme = '';
-  private builtRoad: unknown = undefined;
   private builtPaths: MapDocument['paths'] | null = null;
   private builtStructure: MapDocument['classicStructure'] | null = null;
   private drawnPaths: MapDocument['paths'] | null = null;
@@ -93,6 +92,8 @@ export class EditorView {
   /** The ground as played (paths laid in, kept under floors): what the terrain, plants and roads are drawn on. */
   private shownTerrain: MapDocument['terrain'] = null;
   private pathMeshes: Mesh[] = [];
+  /** Routes (paths not drawn in the game), dashed. */
+  private guideLines: Mesh[] = [];
   private gizmo?: LinesMesh;
   private pickKey = '';
 
@@ -284,15 +285,16 @@ export class EditorView {
       this.drawnTerrain = this.shownTerrain;
       this.builtTheme = doc.classicStructure.theme;
       this.styler.buildTerrain(shown, 'edmap');
-      this.builtRoad = undefined;
+      this.drawnPaths = null;
     }
-    if (doc.track !== this.builtRoad || doc.paths !== this.drawnPaths) {
-      this.builtRoad = doc.track;
+    if (doc.paths !== this.drawnPaths) {
       this.drawnPaths = doc.paths;
       disposeRoadMeshes(this.roadMeshes);
       disposePathMeshes(this.pathMeshes);
       this.roadMeshes = buildRoadMeshes(this.scene, shown, this.styler, 'edroad');
       this.pathMeshes = buildPathMeshes(this.scene, doc, this.shownTerrain, this.styler, 'edpath');
+      for (const m of this.guideLines) m.dispose();
+      this.guideLines = buildGuideLines(this.scene, doc, this.shownTerrain, 'edguide');
     }
     this.backdrop.build(doc, boxes);
     this.border.update(doc, boxes);

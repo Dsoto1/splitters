@@ -1,7 +1,11 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { CreateDashedLines, CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { PATH_LOOKS, coreMaterials, pathGeometry, terrainHeightAt, type MapDocument, type MapPath, type TerrainData } from '@tiletrigger/shared';
+import { PATH_LOOKS, coreMaterials, pathDrawn, pathGeometry, racePath, terrainHeightAt, type MapDocument, type MapPath, type TerrainData } from '@tiletrigger/shared';
 import type { MapStyler } from './mapMeshes.ts';
 import { flat, strip } from './roadMeshes.ts';
 
@@ -56,8 +60,10 @@ function pathStrip(terrain: TerrainData | null, p: MapPath, from: number, to: nu
 export function buildPathMeshes(scene: Scene, doc: MapDocument, terrain: TerrainData | null, styler: MapStyler, name = 'path'): Mesh[] {
   const out: Mesh[] = [];
   const mats = new Map<string, StandardMaterial>();
+  const race = racePath(doc);
   for (const p of doc.paths ?? []) {
-    if (p.points.length < 2) continue;
+    // Roads only (routes are never drawn; the race track is drawn as a race road, roadMeshes.ts).
+    if (p.points.length < 2 || !pathDrawn(p) || p === race) continue;
     const look = PATH_LOOKS[p.style];
     let mat = mats.get(p.style);
     if (!mat) {
@@ -81,6 +87,53 @@ export function buildPathMeshes(scene: Scene, doc: MapDocument, terrain: Terrain
   for (const m of out) {
     m.isPickable = false;
     m.freezeWorldMatrix();
+  }
+  return out;
+}
+
+/** A path's centre line as MapMaker draws it: along its curve on the ground (closing a loop), `lift` above the surface. */
+export function pathLine(p: MapPath, terrain: TerrainData | null, lift: number): Vector3[] {
+  const g = pathGeometry(p);
+  const up = pathLift(p) + lift;
+  const line = g.samples.map((q) => new Vector3(q.x, pathSurfaceY(terrain, q.y, q.x, q.z) + up, q.z));
+  if (g.loop && line.length) line.push(line[0]!.clone());
+  return line;
+}
+
+/** Arrowheads along a path the way it runs (its point order), about every 12 m, `size` metres long: lines for a line system. */
+export function pathArrows(p: MapPath, terrain: TerrainData | null, lift: number, size = 1): Vector3[][] {
+  const g = pathGeometry(p);
+  const up = pathLift(p) + lift;
+  const n = Math.max(2, Math.round(g.length / 12));
+  const out: Vector3[][] = [];
+  for (let k = 0; k < n; k++) {
+    const q = g.at(((k + 0.5) * g.length) / n);
+    const y = pathSurfaceY(terrain, q.y, q.x, q.z) + up;
+    const tip = new Vector3(q.x + q.dx * size * 0.5, y, q.z + q.dz * size * 0.5);
+    const back = (side: number) => new Vector3(q.x - q.dx * size * 0.5 + q.dz * size * 0.6 * side, y, q.z - q.dz * size * 0.5 - q.dx * size * 0.6 * side);
+    out.push([back(-1), tip, back(1)]);
+  }
+  return out;
+}
+
+/**
+ * MapMaker only: the paths not drawn in the game (routes, a race path that
+ * isn't a road) as dashed lines with arrows, so they can be seen with any
+ * tool. Lines in rendering group 1 (over the ground).
+ */
+export function buildGuideLines(scene: Scene, doc: MapDocument, terrain: TerrainData | null, name = 'guide'): LinesMesh[] {
+  const out: LinesMesh[] = [];
+  for (const p of doc.paths ?? []) {
+    if (p.points.length < 2 || pathDrawn(p)) continue;
+    const color = Color3.FromHexString(p.uses.includes('route') ? '#c58bff' : '#f2c14e');
+    const line = CreateDashedLines(`${name}_${p.id}`, { points: pathLine(p, terrain, 0.05), dashSize: 3, gapSize: 2, dashNb: Math.max(8, Math.round(pathGeometry(p).length / 2)) }, scene);
+    const arrows = CreateLineSystem(`${name}_${p.id}_arrows`, { lines: pathArrows(p, terrain, 0.06) }, scene);
+    for (const m of [line, arrows]) {
+      m.color = color;
+      m.isPickable = false;
+      m.renderingGroupId = 1;
+      out.push(m);
+    }
   }
   return out;
 }

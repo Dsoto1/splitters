@@ -643,6 +643,28 @@ async function editoruxFlow(browser) {
   await page.mouse.up();
   const dragged = (await doc()).paths?.find((p) => p.id === road.id)?.points[1];
   check(dragged && Math.hypot(dragged[0] - 37, dragged[2] - 46) < 1, `dragging a handle moves its point (${JSON.stringify(dragged)})`);
+  // Join the ends: with the last point selected, a click on the first point makes the path a loop.
+  const clickHandle = async (i) => {
+    const h = await page.evaluate((i) => {
+      const m = window.__editor.view.scene.getMeshByName(`pathPt${i}`);
+      return m && { x: m.position.x, y: m.position.y, z: m.position.z };
+    }, i);
+    const s = await at(h.x, h.y, h.z);
+    await page.mouse.move(s.x, s.y);
+    await page.waitForFunction(() => window.__editor.paths.hovering === 'point', null, { timeout: T(5000) }).catch(() => {});
+    await page.mouse.click(s.x, s.y);
+  };
+  await clickHandle(2);
+  await clickHandle(0);
+  const joined = (await doc()).paths?.find((p) => p.id === road.id);
+  check(joined?.closed === true && joined.points.length === 3, `clicking the first point with the last selected joins the ends (closed ${joined?.closed})`);
+  check(await page.evaluate((id) => !!window.__editor.view.scene.getMeshByName(`pathArrows_${id}`), road.id), 'the path shows arrows the way it runs');
+  await page.click('#ed-path-close');
+  check((await doc()).paths?.find((p) => p.id === road.id)?.closed === false, 'the pane\'s Open button opens the loop again');
+  const unreversed = (await doc()).paths.find((p) => p.id === road.id).points;
+  await page.click('#ed-path-reverse');
+  const reversed = (await doc()).paths.find((p) => p.id === road.id).points;
+  check(JSON.stringify(reversed) === JSON.stringify([...unreversed].reverse()), 'Reverse direction runs the path the other way');
   await settle(); // the edit's new meshes draw from the next frame
   await shot('paths');
   // Paint from far out: the ground under the pointer, not the invisible wall round the map.
@@ -1825,20 +1847,21 @@ async function raceFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  // MapMaker: lay a road with three clicks, drag a point, undo, set the laps, delete a point.
+  // MapMaker: the Paths tool lays the race track (a path used as a race): three clicks, drag a point, undo, set the laps, delete a point.
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
   await page.click('#ed-new');
   await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: -2 }));
   const doc = () => page.evaluate(() => window.__editor.doc);
+  const raceOf = (d) => d.paths?.find((p) => p.uses.includes('race'));
   const at = (x, z) => page.evaluate(([x, z]) => window.__editor.view.project({ x, y: 0, z }), [x, z]);
   const clickWorld = async (x, z) => {
     const p = await at(x, z);
     await page.mouse.move(p.x, p.y);
     await page.mouse.click(p.x, p.y);
   };
-  await clickTool(page, '[data-tool="road"]');
+  await clickTool(page, '[data-tool="path-race"]');
   // Let the new map settle (its first frame resets the view), then look at where the road goes.
   await frames(page, 3);
   await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: -2 }));
@@ -1846,33 +1869,34 @@ async function raceFlow(browser) {
   await clickWorld(16, -6);
   await clickWorld(13, 4);
   let d = await doc();
-  check(d.track?.points.length === 3 && d.track.loop, `three clicks lay a circuit (${d.track?.points.length ?? 0} points)`);
+  let t = raceOf(d);
+  check(t?.points.length === 3 && t.closed && t.uses.includes('road'), `three clicks lay a circuit (${t?.points.length ?? 0} points)`);
   const from = await at(16, -6);
   const to = await at(19, -8);
   await page.mouse.move(from.x, from.y);
   await page.mouse.down();
   await page.mouse.move(to.x, to.y, { steps: 8 });
   await page.mouse.up();
-  d = await doc();
-  check(d.track && Math.hypot(d.track.points[1][0] - 19, d.track.points[1][2] + 8) < 1.5, `dragging a road point moves it (${d.track?.points[1]?.join(', ')})`);
+  t = raceOf(await doc());
+  check(t && Math.hypot(t.points[1][0] - 19, t.points[1][2] + 8) < 1.5, `dragging a road point moves it (${t?.points[1]?.join(', ')})`);
   await page.keyboard.press('Control+KeyZ');
-  d = await doc();
-  check(d.track && Math.hypot(d.track.points[1][0] - 16, d.track.points[1][2] + 6) < 1, 'undo puts it back');
+  t = raceOf(await doc());
+  check(t && Math.hypot(t.points[1][0] - 16, t.points[1][2] + 6) < 1, 'undo puts it back');
   // The pane is rebuilt after the undo; if the edit hit the old input, set it again on the new one.
   let laps;
   for (let tries = 0; tries < 3 && laps !== 5; tries++) {
-    await page.fill('#ed-road-laps', '5');
-    await page.dispatchEvent('#ed-road-laps', 'change');
-    laps = await page.waitForFunction(() => window.__editor.doc.track?.laps === 5, null, { timeout: T(2000) }).then(() => 5, async () => (await doc()).track?.laps);
+    await page.fill('#ed-path-laps', '5');
+    await page.dispatchEvent('#ed-path-laps', 'change');
+    laps = await page.waitForFunction(() => window.__editor.doc.paths?.find((p) => p.uses.includes('race'))?.race?.laps === 5, null, { timeout: T(2000) }).then(() => 5, async () => raceOf(await doc())?.race?.laps);
   }
-  check(laps === 5, `the Road pane sets the laps (${laps})`);
+  check(laps === 5, `the Paths pane sets the race laps (${laps})`);
   await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0), null, { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0)), 'MapMaker draws the road ribbon');
   const del = await at(13, 4);
   await page.mouse.move(del.x, del.y);
   await page.mouse.click(del.x, del.y, { button: 'right' });
-  d = await doc();
-  check(d.track?.points.length === 2, `right-click deletes a road point (${d.track?.points.length})`);
+  t = raceOf(await doc());
+  check(t?.points.length === 2, `right-click deletes a road point (${t?.points.length})`);
   await page.keyboard.press('Escape');
 
   // A race on Sandsweep Circuit: on the grid in a speeder, the countdown, then away.

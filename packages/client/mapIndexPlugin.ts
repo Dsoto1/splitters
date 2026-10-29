@@ -25,6 +25,11 @@ const RESOLVED = `\0${ID}`;
 export function mapIndexPlugin(mapsDir: string): Plugin {
   return {
     name: 'tiletrigger-map-index',
+    // Load the shared package before the bundle's own modules keep the build busy: on a loaded machine the
+    // module runner's requests otherwise queue behind them past its 60 s timeout and the build fails.
+    async buildStart() {
+      await loadShared();
+    },
     resolveId: (id) => (id === ID ? RESOLVED : undefined),
     async load(id) {
       if (id !== RESOLVED) return undefined;

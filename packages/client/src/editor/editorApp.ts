@@ -207,8 +207,7 @@ import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
-import { RoadTool } from './roadTool.ts';
-import { PathTool } from './pathTool.ts';
+import { PathTool, pathLabel, type PathKind } from './pathTool.ts';
 import { RouteTool } from './routeTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 import { Palette } from './palette.ts';
@@ -238,7 +237,7 @@ export interface EditorHost {
   goHome(): void;
 }
 
-type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'road' } | { kind: 'path' } | { kind: 'route' };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
 const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
@@ -471,7 +470,6 @@ export class EditorApp {
   private scenarioYaw = 0;
   readonly logic: LogicPanel;
   /** The Road tool (race tracks). */
-  private readonly road: RoadTool;
   private readonly paths: PathTool;
   /** Mover and plane routes, drawn on the map with the Paths tool's hands. */
   private readonly routes: RouteTool;
@@ -539,7 +537,6 @@ export class EditorApp {
   constructor(private readonly host: EditorHost) {
     this.view = new EditorView(host.engine);
     this.thumbs = new ModelThumbnails(host.engine);
-    this.road = new RoadTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.paths = new PathTool({
       doc: () => this.doc,
       run: (label, cmd) => this.run(label, cmd),
@@ -662,8 +659,6 @@ export class EditorApp {
       this.updateHover();
       this.logic.render();
       this.syncTerrainUi();
-      this.road.refresh();
-      this.road.renderPane($('ed-road'));
       this.paths.refresh();
       this.routes.refresh();
       this.paths.renderPane($('ed-paths'));
@@ -744,7 +739,6 @@ export class EditorApp {
     if (tool.kind === 'scatter') this.lastScatter = tool.set;
     if (tool.kind === 'edge') this.edgeStyle = tool.style;
     const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain' };
-    this.road.setActive(tool.kind === 'road');
     this.paths.setActive(tool.kind === 'path');
     this.routes.setActive(tool.kind === 'route');
     // The pane holding the tool's card (props sit in Props, Nature or Vehicles; scenario pieces in several tabs).
@@ -791,8 +785,7 @@ export class EditorApp {
       mount: ['Place', 'Click places it · right-click removes a vehicle · R turns it 15° (Shift+R 5°) · players get in and out with E'],
       terrain: ['Terrain', 'Hold to sculpt or paint · Shift: the opposite (lower / raise) · [ ] brush size · T cycles brushes'],
       scatter: ['Place', 'Click or drag plants patches · right-click (Shift+drag) clears that kind of plant · [ ] brush size'],
-      road: ['Road', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click the road inserts one'],
-      path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
+      path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · click the first point with the last selected to join the ends · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
       route: ['Route', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click a stretch inserts one · Esc when done'],
     };
     const [name, hint] = hints[tool.kind];
@@ -1002,8 +995,6 @@ export class EditorApp {
         return this.edgeAtHover('auto');
       case 'scatter':
         return this.scatterAtHover(tool.set, true);
-      case 'road':
-        return this.road.erase(this.hoverPoint);
       case 'path':
         return this.paths.erase(this.hoverPoint);
       case 'route':
@@ -1546,7 +1537,7 @@ export class EditorApp {
           : '';
     } else if (this.tool.kind === 'path') {
       const over = this.paths.hovering;
-      $('ed-target').textContent = this.paths.dragging ? 'Moving the point' : over === 'point' ? 'Drag to move this point · right-click removes it' : over === 'path' ? 'Click to edit this path · Shift-click puts a point here' : '';
+      $('ed-target').textContent = this.paths.dragging ? 'Moving the point' : over === 'point' ? (this.paths.joining ? 'Click to join the ends (a loop) · drag to move this point' : 'Drag to move this point · right-click removes it') : over === 'path' ? 'Click to edit this path · Shift-click puts a point here' : '';
     } else $('ed-target').textContent = '';
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
@@ -1617,7 +1608,6 @@ export class EditorApp {
         return;
       }
       this.updatePointer(e.clientX, e.clientY);
-      if (this.road.dragging) this.road.pointerMove(this.hoverPoint);
       if (this.paths.dragging) this.paths.pointerMove(this.hoverPoint);
       if (this.routes.dragging) this.routes.pointerMove(this.hoverPoint);
       if (this.brush && e.buttons & 1) this.brushAtHover(false);
@@ -1645,7 +1635,6 @@ export class EditorApp {
         this.brushAtHover(true);
         return;
       }
-      if (this.tool.kind === 'road') return this.road.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind === 'path') return this.paths.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind === 'route') return this.routes.pointerDown(this.hoverPoint, e.shiftKey);
       if (this.tool.kind !== 'select') return this.placeAtHover();
@@ -1686,7 +1675,6 @@ export class EditorApp {
         }
         this.endStroke();
         this.endDrag();
-        this.road.pointerUp();
         this.paths.pointerUp();
         this.routes.pointerUp();
       }
@@ -1765,9 +1753,10 @@ export class EditorApp {
         case 'KeyX':
           this.setTool({ kind: 'erase' });
           break;
-        // G: Paths (Shift+G: the race road), N: Scatter (the last set you used).
+        // G: Paths (Shift+G: Paths on the race track), N: Scatter (the last set you used).
         case 'KeyG':
-          this.setTool({ kind: e.shiftKey ? 'road' : 'path' });
+          if (e.shiftKey) this.paths.preset('race');
+          this.setTool({ kind: 'path' });
           break;
         case 'KeyN':
           this.setTool({ kind: 'scatter', set: this.lastScatter });
@@ -1793,7 +1782,6 @@ export class EditorApp {
           break;
         case 'Delete':
         case 'Backspace':
-          if (this.tool.kind === 'road' && this.road.deleteSelected()) break;
           if (this.tool.kind === 'path' && this.paths.deleteSelected()) break;
           if (this.tool.kind === 'route' && this.routes.deleteSelected()) break;
           this.deleteSelection();
@@ -2017,33 +2005,34 @@ export class EditorApp {
     this.buildPropPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
-    // Paths: roads, streets, trails and walkways, in the Terrain pane (they lie on the ground and shape it).
-    const pathGroup = this.palette.group($('ed-terrain-paths'), 'terrain:paths', 'Paths & Roads');
-    const pathBtn = document.createElement('button');
-    pathBtn.className = 'tile-btn';
-    pathBtn.dataset.tool = 'path';
-    pathBtn.innerHTML = '<svg viewBox="0 0 56 56"><rect x="4" y="4" width="48" height="48" rx="4" fill="#5c7a3a"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#c9a36b" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#e3c48f" stroke-width="2" stroke-dasharray="3 4" fill="none"/></svg>Paths';
-    pathBtn.title = 'Paths (G): draw roads, streets, trails and walkways: click points; style, width and laying into the ground in the pane';
-    pathBtn.addEventListener('click', () => this.setTool({ kind: 'path' }));
-    pathGroup.append(pathBtn);
-    this.palette.register(pathBtn, { key: 'path', name: 'Paths', tags: 'path road street trail walkway sidewalk pavement asphalt cobble dirt gravel boardwalk' });
+    // Paths: one tool for roads, streets, trails and walkways, the race track and AI routes, in the Terrain pane
+    // (roads lie on the ground and shape it). The race track and route cards open it on that kind of path.
+    const pathGroup = this.palette.group($('ed-terrain-paths'), 'terrain:paths', 'Paths, Roads & Routes');
+    const pathCard = (tool: string, kind: PathKind, svg: string, label: string, title: string, tags: string) => {
+      const b = document.createElement('button');
+      b.className = 'tile-btn';
+      b.dataset.tool = tool;
+      b.innerHTML = `<svg viewBox="0 0 56 56">${svg}</svg>${label}`;
+      b.title = title;
+      b.addEventListener('click', () => {
+        this.paths.preset(kind);
+        this.setTool({ kind: 'path' });
+      });
+      this.palette.register(b, { key: tool, name: label, tags });
+      return b;
+    };
+    pathGroup.append(
+      pathCard('path', 'road', '<rect x="4" y="4" width="48" height="48" rx="4" fill="#5c7a3a"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#c9a36b" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#e3c48f" stroke-width="2" stroke-dasharray="3 4" fill="none"/>', 'Paths', 'Paths (G): roads, streets, trails and walkways, the race track and AI routes: click points; join the ends for a loop; uses and settings in the pane', 'path road street trail walkway sidewalk pavement asphalt cobble dirt gravel boardwalk loop'),
+      pathCard('path-route', 'route', '<rect x="4" y="4" width="48" height="48" rx="4" fill="#4a5a3a"/><path d="M8 46 C20 40 18 18 32 18 S48 12 50 8" stroke="#c58bff" stroke-width="3" stroke-dasharray="5 4" fill="none"/><path d="M44 6l6 2-3 6" stroke="#c58bff" stroke-width="3" fill="none"/>', 'Route', 'A route for the AI (never drawn in the game): bots driving vehicles follow it, NPC squads patrol it', 'route patrol waypoint npc guide ai vehicle follow'),
+    );
     const pathPane = document.createElement('div');
     pathPane.id = 'ed-paths';
     pathGroup.after(pathPane);
     this.paths.renderPane(pathPane);
     const track = this.palette.group($('ed-mounts'), 'vehicles:track', 'Race Track');
-    const roadBtn = document.createElement('button');
-    roadBtn.className = 'tile-btn';
-    roadBtn.dataset.tool = 'road';
-    roadBtn.innerHTML = '<svg viewBox="0 0 56 56"><path d="M8 50 C8 20 48 36 48 6" stroke="#3a3f48" stroke-width="12" fill="none"/><path d="M8 50 C8 20 48 36 48 6" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/><path d="M40 4h12v4H40zM40 8h4v4h-4zM48 8h4v4h-4z" fill="#f2f2f2"/></svg>Road / Track';
-    roadBtn.title = 'Draw a race track: click road points, then set width, laps and the start grid';
-    roadBtn.addEventListener('click', () => this.setTool({ kind: 'road' }));
-    track.append(roadBtn);
-    this.palette.register(roadBtn, { key: 'road', name: 'Road / Track', tags: 'road track race circuit lap checkpoint' });
-    const roadPane = document.createElement('div');
-    roadPane.id = 'ed-road';
-    track.after(roadPane);
-    this.road.renderPane(roadPane);
+    track.append(
+      pathCard('path-race', 'race', '<path d="M8 50 C8 20 48 36 48 6" stroke="#3a3f48" stroke-width="12" fill="none"/><path d="M8 50 C8 20 48 36 48 6" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/><path d="M40 4h12v4H40zM40 8h4v4h-4zM48 8h4v4h-4z" fill="#f2f2f2"/>', 'Race Track', 'Race track (Shift+G): a path used as the race track: click its points (a circuit at once), then set laps and the start grid in the Paths pane', 'road track race circuit lap checkpoint'),
+    );
 
     // Palette (after the reference board): the top bar's workspace picks a row of sub-tabs, a sub-tab one pane;
     // search shows ranked matches from all of them instead.
@@ -2861,7 +2850,7 @@ export class EditorApp {
         'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
         'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
         'core.elim': 'Elimination: round-based Team Deathmatch. No respawns until the next round; the last team standing wins it.',
-        'core.race': 'Race: draw a track with the Road tool (Entities → Road). Everyone starts on the grid behind the green point in the track\'s vehicle; checkpoints are spaced along the road. Spawn points are only used before the race puts you in your car.',
+        'core.race': 'Race: draw the track with the Paths tool (Shift+G, or Vehicles → Race Track) and tick Race track. Everyone starts on the grid behind its green first point in the track\'s vehicle; checkpoints are spaced along it in point order (laps on a loop, one run on an open path). Spawn points are only used before the race puts you in your car.',
       };
       // Maps with flag bases or hills also offer those modes in the Arcade, whatever the main mode is.
       const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
