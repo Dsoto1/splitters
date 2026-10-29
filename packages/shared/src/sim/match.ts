@@ -1,7 +1,8 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { simProfile } from './profile.ts';
 import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
-import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile } from '../bots/profile.ts';
+import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile, type BotStyle } from '../bots/profile.ts';
+import { botSetInUse, type BotEntry, type BotSet } from './botSet.ts';
 import { SightCache } from '../bots/sight.ts';
 import { ViewGrid } from '../bots/grid.ts';
 import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, type DirectorMember } from '../bots/director.ts';
@@ -205,6 +206,11 @@ export interface Combatant {
   streak?: number;
   /** A teammate's order to a bot: follow them, or hold a spot, until `until`. */
   order?: { kind: 'follow' | 'hold'; leader: number; pos: Vec3; until: number };
+  /**
+   * A Player Bot from the host's bot set (sim/botSet.ts): which entry it plays (by index), its own skill and
+   * style (absent: the match's), and its squad label (bots of one squad on one side stick together).
+   */
+  botSet?: { index: number; skill?: BotDifficulty['id']; style?: BotStyle; squad?: string };
   /** NPC details. */
   /** `damage`: the encounter's damage multiplier (MapMaker). */
   npc?: { encounter: string; role: NpcRole; removeAt: number; damage: number };
@@ -1179,13 +1185,19 @@ export class Match {
     return c;
   }
 
-  /** `asCharacter`: play the look's own profile (under the match's bot style) instead of `profile` when it has one. */
-  addBot(name: string, profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal, asCharacter = false): Combatant | null {
-    const c = this.addCombatant('bot', name);
+  /**
+   * `asCharacter`: play the look's own profile (under the match's bot style) instead of `profile` when it has one.
+   * `o`: a bot of the host's bot set: its team (a faction ID), look, and own skill, style and squad.
+   */
+  addBot(name: string, profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal, asCharacter = false, o?: { team?: string; look?: string; botSet?: NonNullable<Combatant['botSet']> }): Combatant | null {
+    const team = o?.team !== undefined && this.teams?.some((t) => t.id === o.team) ? o.team : undefined;
+    const c = this.addCombatant('bot', name, team);
     if (c) {
-      c.look = lookForBot(c.slot);
+      c.look = o?.look ? validLookId(o.look) : lookForBot(c.slot);
       this.applyBodySize(c);
-      c.bot = new BotBrain(c.slot, asCharacter ? profileFor(c.look, profile, this.rules.botStyle) : profile, difficulty, this.seed);
+      if (o?.botSet) c.botSet = { ...o.botSet };
+      const skill = c.botSet?.skill ? BOT_DIFFICULTIES[c.botSet.skill] : difficulty;
+      c.bot = new BotBrain(c.slot, asCharacter ? profileFor(c.look, profile, c.botSet?.style ?? this.rules.botStyle) : profile, skill, this.seed);
       c.bot.onSpawn(c.yaw);
       // Bots choose routes from the navmesh's sample places: build them now, not mid-match.
       this.nav.places();
@@ -1212,7 +1224,7 @@ export class Match {
     // Random or fixed assignment: the team is chosen first and one of its bots makes room.
     const want = this.teams && this.rules.teamAssign && this.rules.teamAssign !== 'balanced' ? this.factionFor('human') : undefined;
     const mine = (c: Combatant) => (want !== undefined && c.faction === want ? 0 : 1);
-    bots.sort((a, b) => mine(a) - mine(b) || people(a.faction) - people(b.faction) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
+    bots.sort((a, b) => mine(a) - mine(b) || people(a.faction) - people(b.faction) || setRank(a) - setRank(b) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
     const out = bots[0]!;
     const from = out.name;
     this.botThought.delete(out.slot);
@@ -1253,12 +1265,62 @@ export class Match {
     if (style) this.setRules({ botStyle: style === 'mixed' ? undefined : style });
     for (const c of this.combatants()) {
       if (c.kind !== 'bot' || !c.bot) continue;
-      c.bot = new BotBrain(c.slot, profileFor(c.look, c.bot.profile, this.rules.botStyle), difficulty, this.seed);
-      c.bot.onSpawn(c.yaw);
-      this.botThought.delete(c.slot);
+      // A bot of the host's set with its own skill or style keeps it.
+      this.rebrain(c, c.away ? difficulty : c.botSet?.skill ? BOT_DIFFICULTIES[c.botSet.skill] : difficulty);
     }
     this.rolesFor = -1;
     this.refreshRoles();
+  }
+
+  /** A fresh brain for a Player Bot from where it stands: `difficulty`, playing its character under its style (its own, else the match's). */
+  private rebrain(c: Combatant, difficulty: BotDifficulty): void {
+    if (!c.bot) return;
+    c.bot = new BotBrain(c.slot, profileFor(c.look, c.bot.profile, c.botSet?.style ?? this.rules.botStyle), difficulty, this.seed);
+    c.bot.onSpawn(c.yaw);
+    this.botThought.delete(c.slot);
+  }
+
+  /**
+   * The host's bot set changed for this bot (BotFiller.setBotSet): its name, look, skill, style and squad from
+   * `entry` (index `index`), where it stands. `difficulty`: the match's skill, for an entry without its own.
+   * A new look rebuilds its character on every screen (the clients' character queue spreads that out).
+   */
+  updateSetBot(c: Combatant, index: number, entry: BotEntry, difficulty: BotDifficulty): void {
+    if (c.kind !== 'bot' || c.away) return;
+    const before = c.botSet;
+    c.botSet = { index, ...(entry.skill ? { skill: entry.skill } : {}), ...(entry.style ? { style: entry.style } : {}), ...(entry.squad ? { squad: entry.squad } : {}) };
+    c.name = entry.name;
+    const look = entry.look ? validLookId(entry.look) : c.look;
+    const relook = look !== c.look;
+    if (relook) {
+      c.look = look;
+      this.applyBodySize(c);
+    }
+    if (relook || before?.skill !== c.botSet.skill || before?.style !== c.botSet.style) {
+      this.rebrain(c, c.botSet.skill ? BOT_DIFFICULTIES[c.botSet.skill] : difficulty);
+      this.rolesFor = -1;
+    }
+    this.squadLeads = null;
+  }
+
+  /** A bot no longer plays an entry of the host's set (the set changed): a random bot from now on, under `name`. */
+  dropSetBot(c: Combatant, name: string, difficulty: BotDifficulty): void {
+    if (!c.botSet) return;
+    const own = c.botSet.skill !== undefined || c.botSet.style !== undefined;
+    delete c.botSet;
+    c.name = name;
+    if (own) this.rebrain(c, difficulty);
+    this.squadLeads = null;
+  }
+
+  /** The faction the next bot joins (the team that most needs a player), or null outside team modes. */
+  nextBotTeam(): string | null {
+    return this.teams ? this.factionFor('bot') : null;
+  }
+
+  /** How many are on a team now, and how many it should have (team modes). */
+  teamRoom(team: string): { on: number; size: number } {
+    return { on: this.combatants().filter((c) => c.faction === team).length, size: this.teamTargets().get(team) ?? 0 };
   }
 
   /**
@@ -1314,6 +1376,8 @@ export class Match {
     this.slots[slot] = null;
     this.director?.forget(slot);
     this.rolesFor = -1;
+    this.leadGoals.delete(slot);
+    this.squadLeads = null;
   }
 
   /** When each player last really played (moved, turned or pressed something), and where they last looked. */
@@ -1793,7 +1857,7 @@ export class Match {
           pos: c.move.pos,
           fighting,
           enemyAt: fighting && seen ? seen.pos : null,
-          free: !c.mount && !c.order && d.planFor(c.slot).role === 'squad',
+          free: !c.mount && !c.order && !c.botSet?.squad && d.planFor(c.slot).role === 'squad',
           teamLeader: this.isLeader(c),
           profile: c.bot.profile,
         });
@@ -1807,7 +1871,49 @@ export class Match {
   private botGoal(c: Combatant, hostiles: Combatant[], zombies: boolean, coop: boolean): { pos: Vec3; radius: number } | null {
     const npc = c.npc;
     if (npc) return npc.role === 'zombie' ? this.nearestGoal(c, hostiles, 1.5) : this.encounters.goalFor(c.slot);
-    return this.teammateOrder(c) ?? (zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null));
+    const order = this.teammateOrder(c);
+    if (order) return order;
+    const squad = this.squadGoal(c);
+    if (squad !== undefined) return squad;
+    const goal = zombies ? this.holdOutGoal(c, hostiles) : coop ? this.coopGoal(c, hostiles) : this.classGoal(c, this.mode?.botGoal(c, hostiles) ?? null);
+    // A squad's leader: its followers go where it goes.
+    if (c.botSet?.squad) this.leadGoals.set(c.slot, goal);
+    return goal;
+  }
+
+  /** Squads of the host's bot set: "side|label" -> the leader's slot (the first of them alive), rebuilt once a tick. */
+  private squadLeads: { tick: number; lead: Map<string, number> } | null = null;
+  /** Each squad leader's own goal when it last thought (null: roaming). */
+  private readonly leadGoals = new Map<number, { pos: Vec3; radius: number } | null>();
+
+  private squadKey(c: Combatant): string | null {
+    const label = c.botSet?.squad;
+    // Squads only make sense with a side: team modes and co-op (in a free-for-all everyone is an enemy).
+    if (!label || c.kind !== 'bot' || c.away || c.faction === null) return null;
+    return `${c.faction}|${label.toLowerCase()}`;
+  }
+
+  /**
+   * A bot in a squad of the host's set that isn't its leader: back to the leader when it strays (more than
+   * SQUAD_STRAY m), else the leader's own goal, else (the leader roaming) close by the leader. Undefined: not
+   * a follower (no squad, or it leads), so its own goals apply.
+   */
+  private squadGoal(c: Combatant): { pos: Vec3; radius: number } | null | undefined {
+    const key = this.squadKey(c);
+    if (!key) return undefined;
+    if (this.squadLeads?.tick !== this.tick) {
+      const lead = new Map<string, number>();
+      for (const x of this.combatants()) {
+        const k = x.alive ? this.squadKey(x) : null;
+        if (k && !lead.has(k)) lead.set(k, x.slot);
+      }
+      this.squadLeads = { tick: this.tick, lead };
+    }
+    const slot = this.squadLeads.lead.get(key);
+    const leader = slot === undefined ? undefined : this.slots[slot];
+    if (!leader || leader === c || !leader.alive) return undefined;
+    if (horizontalDistance(c.move.pos, leader.move.pos) > SQUAD_STRAY) return { pos: leader.move.pos, radius: 5 };
+    return this.leadGoals.get(leader.slot) ?? { pos: leader.move.pos, radius: 6 };
   }
 
   private gridFor(i: number, list: readonly CombatantView[]): ViewGrid {
@@ -4736,29 +4842,184 @@ export interface AwayChanges {
   kick: number[];
 }
 
+/** A follower in a squad of the host's bot set further than this (m) from its leader goes back to it. */
+const SQUAD_STRAY = 14;
+
 /** People in the match: players, and away players whose place a bot keeps for them. */
 const isPerson = (c: Combatant) => c.kind === 'human' || !!c.away;
+
+/** Which bot gives way first (lowest first): random bots, then the host's set from its last entry back (the first ones stay longest). */
+const setRank = (c: Combatant): number => (c.botSet ? 1_000_000 - c.botSet.index : 0);
 
 const BOT_NAMES = ['Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash', 'Nub', 'Quill'];
 
 /** Keeps a match at a target player count by adding or removing Player Bots around the humans. */
 export class BotFiller {
   private counter = 0;
+  /** The host's bot set (sim/botSet.ts): its bots come first, in order; null: every bot random. */
+  private set: BotSet | null = null;
+  /** The set changed mid-match: bots are swapped in and out one at a time (stage), not all at once. */
+  private staging = false;
 
   constructor(
     private readonly match: Match,
     private difficulty: BotDifficulty = BOT_DIFFICULTIES.normal,
-    /** `takeBack`: a bot takes a leaving player's place where they stood; off (the default), the slot empties and a fresh bot spawns normally. */
-    private readonly opts: { takeBack?: boolean } = {},
-  ) {}
+    /**
+     * `takeBack`: a bot takes a leaving player's place where they stood; off (the default), the slot empties and a fresh bot spawns normally.
+     * `botSet`: the host's bot set (already validated: validateBotSet).
+     */
+    private readonly opts: { takeBack?: boolean; botSet?: BotSet | null } = {},
+  ) {
+    this.set = botSetInUse(opts.botSet) ? opts.botSet : null;
+  }
+
+  /** The host's bot set now (null: random bots). */
+  get botSet(): BotSet | null {
+    return this.set;
+  }
+
+  /** Whether a changed set is still being swapped in (stage). */
+  get settling(): boolean {
+    return this.staging;
+  }
 
   private nextBot(): { name: string; profile: BotProfile } {
-    const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
-    const round = Math.floor(this.counter / BOT_NAMES.length);
-    // Big matches run out of names: Mildred, then Mildred 2.
-    const name = `${BOT_NAMES[this.counter % BOT_NAMES.length]!}${round ? ` ${round + 1}` : ''}`;
-    this.counter++;
-    return { name, profile };
+    // Random bots never take a name the host's set uses.
+    const taken = this.set ? new Set(this.set.entries.map((e) => e.name.toLowerCase())) : null;
+    for (let tries = 0; ; tries++) {
+      const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
+      const round = Math.floor(this.counter / BOT_NAMES.length);
+      // Big matches run out of names: Mildred, then Mildred 2.
+      const name = `${BOT_NAMES[this.counter % BOT_NAMES.length]!}${round ? ` ${round + 1}` : ''}`;
+      this.counter++;
+      if (!taken?.has(name.toLowerCase()) || tries > BOT_NAMES.length * 2) return { name, profile };
+    }
+  }
+
+  /** A team of the match by order (a set's `team`), or undefined (auto, or no such team). */
+  private teamAt(i: number | undefined): string | undefined {
+    return i === undefined ? undefined : this.match.teams?.[i]?.id;
+  }
+
+  /** The set's bots not in the match now, in order. */
+  private waiting(): { entry: BotEntry; index: number }[] {
+    const set = this.set;
+    if (!set) return [];
+    const used = new Set<number>();
+    for (const c of this.match.combatants()) if (c.kind === 'bot' && c.botSet) used.add(c.botSet.index);
+    return set.entries.flatMap((entry, index) => (used.has(index) ? [] : [{ entry, index }]));
+  }
+
+  /**
+   * The next bot to add: the set's first bot waiting for the team that most needs a player (its own team's
+   * first, then one without a team), else a random bot; with "only these bots", null when none fits.
+   */
+  private pick(): { entry: BotEntry; index: number; team?: string } | 'random' | null {
+    const set = this.set;
+    if (!set) return 'random';
+    const free = this.waiting();
+    const m = this.match;
+    if (m.teams) {
+      const team = m.nextBotTeam()!;
+      const own = free.find((x) => this.teamAt(x.entry.team) === team) ?? free.find((x) => this.teamAt(x.entry.team) === undefined);
+      if (own) return { ...own, team };
+      if (set.fill === 'random') return 'random';
+      // Only these bots: another team with room whose own bots wait.
+      const other = free.find((x) => {
+        const t = this.teamAt(x.entry.team);
+        if (!t) return false;
+        const r = m.teamRoom(t);
+        return r.on < r.size;
+      });
+      return other ? { ...other, team: this.teamAt(other.entry.team)! } : null;
+    }
+    const first = free[0];
+    return first ?? (set.fill === 'only' ? null : 'random');
+  }
+
+  /** Add one bot (the set's next, else a random one). False when none can be added. */
+  private addOne(): boolean {
+    const p = this.pick();
+    if (!p) return false;
+    if (p === 'random') {
+      const { name, profile } = this.nextBot();
+      return !!this.match.addBot(name, profile, this.difficulty, true);
+    }
+    const e = p.entry;
+    const profile = CORE_BOT_PROFILES[p.index % CORE_BOT_PROFILES.length]!;
+    const botSet = { index: p.index, ...(e.skill ? { skill: e.skill } : {}), ...(e.style ? { style: e.style } : {}), ...(e.squad ? { squad: e.squad } : {}) };
+    return !!this.match.addBot(e.name, profile, this.difficulty, true, { ...(p.team ? { team: p.team } : {}), ...(e.look ? { look: e.look } : {}), botSet });
+  }
+
+  /**
+   * The host set a new bot set (or none) mid-match. Bots already playing one of its entries keep their place
+   * (matched by name, else by position in the list) and take the entry's name, look, skill, style and squad
+   * now; bots whose entry is gone play on as random bots. The rest (new entries, team moves, "only these
+   * bots") is swapped in one bot at a time by `stage`, so a big change never lands in one frame.
+   */
+  setBotSet(next: BotSet | null): void {
+    const set = botSetInUse(next) ? next : null;
+    this.set = set;
+    const bots = this.match.combatants().filter((c) => c.kind === 'bot' && !c.away && c.botSet);
+    const claimed = new Map<Combatant, number>();
+    const taken = new Set<number>();
+    if (set) {
+      for (const c of bots) {
+        const i = set.entries.findIndex((e, j) => !taken.has(j) && e.name.toLowerCase() === c.name.toLowerCase());
+        if (i >= 0) {
+          claimed.set(c, i);
+          taken.add(i);
+        }
+      }
+      for (const c of bots) {
+        const i = c.botSet!.index;
+        if (claimed.has(c) || i >= set.entries.length || taken.has(i)) continue;
+        claimed.set(c, i);
+        taken.add(i);
+      }
+    }
+    for (const c of bots) {
+      const i = claimed.get(c);
+      if (i === undefined) this.match.dropSetBot(c, this.nextBot().name, this.difficulty);
+      else this.match.updateSetBot(c, i, set!.entries[i]!, this.difficulty);
+    }
+    this.staging = true;
+  }
+
+  /**
+   * One step of swapping a changed set in (call a few times a second while `settling`): one bot that no
+   * longer fits (a random bot where a set bot waits for its team, a set bot on the wrong team, any random
+   * bot under "only these bots") goes, and the fill brings in the next. Returns whether the roster changed.
+   */
+  stage(fill: number): boolean {
+    if (!this.staging) return false;
+    const m = this.match;
+    const set = this.set;
+    const bots = m.combatants().filter((c) => c.kind === 'bot' && !c.away);
+    const waiting = this.waiting();
+    const fits = (team: string | null) => waiting.some((x) => {
+      const t = this.teamAt(x.entry.team);
+      return t === undefined || t === team;
+    });
+    const stale = bots
+      .filter((c) => {
+        if (c.botSet) {
+          const e = set?.entries[c.botSet.index];
+          const t = this.teamAt(e?.team);
+          return !e || (t !== undefined && t !== c.faction);
+        }
+        return !!set && (set.fill === 'only' || fits(c.faction));
+      })
+      .sort((a, b) => setRank(a) - setRank(b) || b.slot - a.slot)[0];
+    if (stale) {
+      m.remove(stale.slot);
+      this.rebalance(fill);
+      return true;
+    }
+    this.staging = false;
+    const before = bots.length;
+    this.rebalance(fill);
+    return m.combatants().filter((c) => c.kind === 'bot' && !c.away).length !== before;
   }
 
   /**
@@ -4921,7 +5182,7 @@ export class BotFiller {
       const score = (c: Combatant) => c.kills - c.deaths;
       for (const t of this.match.teams) {
         const on = this.match.combatants().filter((c) => c.faction === t.id);
-        const spare = on.filter((c) => c.kind === 'bot' && !c.away).sort((a, b) => score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
+        const spare = on.filter((c) => c.kind === 'bot' && !c.away).sort((a, b) => setRank(a) - setRank(b) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
         for (let n = on.length; n > (targets.get(t.id) ?? n) && spare.length; n--) this.match.remove(spare.shift()!.slot);
       }
     }
@@ -4936,13 +5197,11 @@ export class BotFiller {
       // How full the team stays without one of its bots: the team left fullest gives one up (ties: the bigger team).
       const over = (team: string | null) => (live.filter((c) => c.faction === team).length - 1) / (team ? (targets.get(team) ?? 1) : 1);
       const score = (c: Combatant) => c.kills - c.deaths;
-      const left = live.filter((c) => c.kind === 'bot' && !c.away).sort((a, b) => over(b.faction) - over(a.faction) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
+      const left = live.filter((c) => c.kind === 'bot' && !c.away).sort((a, b) => over(b.faction) - over(a.faction) || setRank(a) - setRank(b) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
       this.match.remove(left[0]!.slot);
     }
-    for (let i = bots.length; i < want; i++) {
-      const { name, profile } = this.nextBot();
-      if (!this.match.addBot(name, profile, this.difficulty, true)) break;
-    }
+    // The host's set first, in order (per team in team modes), then random bots (unless the set says only these).
+    for (let i = bots.length; i < want; i++) if (!this.addOne()) break;
   }
 }
 

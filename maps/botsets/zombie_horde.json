@@ -1,0 +1,21 @@
+{
+  "format": "tiletrigger.botset",
+  "id": "zombie_horde",
+  "name": "Zombie horde",
+  "description": "Only shambling bots, in three packs that rush together. Best in a team match against the packs, or a free-for-all.",
+  "fill": "only",
+  "entries": [
+    { "name": "Shambles", "look": "npc:zombie", "style": "arena", "squad": "Pack A" },
+    { "name": "Groaner", "look": "npc:zombie", "style": "arena", "squad": "Pack A" },
+    { "name": "Rotgut", "look": "npc:zombie", "style": "arena", "squad": "Pack A" },
+    { "name": "Moaner", "look": "npc:zombie", "style": "arena", "squad": "Pack A" },
+    { "name": "Lurch", "look": "npc:zombie", "style": "arena", "squad": "Pack B" },
+    { "name": "Mumbles", "look": "npc:zombie", "style": "arena", "squad": "Pack B" },
+    { "name": "Stumpy", "look": "npc:zombie", "style": "arena", "squad": "Pack B" },
+    { "name": "Gnaw", "look": "npc:zombie", "style": "arena", "squad": "Pack B" },
+    { "name": "Big Ugly", "look": "npc:zombie", "skill": "hard", "style": "arena", "squad": "Pack C" },
+    { "name": "Drool", "look": "npc:zombie", "style": "arena", "squad": "Pack C" },
+    { "name": "Creak", "look": "npc:zombie", "style": "arena", "squad": "Pack C" },
+    { "name": "Mrs. Bones", "look": "npc:zombie", "style": "arena", "squad": "Pack C" }
+  ]
+}

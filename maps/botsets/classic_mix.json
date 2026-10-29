@@ -1,0 +1,21 @@
+{
+  "format": "tiletrigger.botset",
+  "id": "classic_mix",
+  "name": "Classic mix",
+  "description": "The usual crowd by name, each in their own character, normal and hard mixed in. Random bots fill the rest.",
+  "fill": "random",
+  "entries": [
+    { "name": "Brassneck", "look": "core.bulwark", "skill": "hard" },
+    { "name": "Mildred", "look": "core.miller" },
+    { "name": "Captain Pell", "look": "core.barnacle" },
+    { "name": "Wick", "look": "core.scout", "skill": "hard" },
+    { "name": "Doctor Umber", "look": "core.medic" },
+    { "name": "Spoke", "look": "core.engineer" },
+    { "name": "Gloam", "look": "core.drifter", "skill": "hard" },
+    { "name": "Tibbs", "look": "core.biscuit" },
+    { "name": "Ferro", "look": "core.commando" },
+    { "name": "Lady Ash", "look": "core.frost", "skill": "hard" },
+    { "name": "Nub", "look": "core.goblin", "skill": "easy" },
+    { "name": "Quill", "look": "core.huntress" }
+  ]
+}

@@ -1,5 +1,6 @@
 import type { MapDocument } from './map/schema.ts';
 import type { PlayerInput } from './sim/movement.ts';
+import type { BotSet } from './sim/botSet.ts';
 import type { RotationEntry, RotationState } from './sim/rotation.ts';
 import type { GameMode, MatchRules } from './sim/rules.ts';
 
@@ -47,8 +48,12 @@ export const HOST_BOT_STYLES = ['mixed', 'arena', 'tactical'] as const;
  * has no `rotation`, so the pause menu doesn't offer it).
  */
 export type HostCommand =
-  /** `teamSizes`: every team's own size (uneven teams); `teamSize`: every team the same size. */
-  | { c: 'bots'; fill?: number; teamSize?: number; teamSizes?: number[]; skill?: (typeof HOST_BOT_SKILLS)[number]; style?: (typeof HOST_BOT_STYLES)[number] }
+  /**
+   * `teamSizes`: every team's own size (uneven teams); `teamSize`: every team the same size. `botSet`: the
+   * host's own bots (sim/botSet.ts: names, looks, skills, styles, teams, squads; null: random bots again),
+   * swapped in a bot at a time. Hosts that don't know `botSet` ignore it (their HostState has none).
+   */
+  | { c: 'bots'; fill?: number; teamSize?: number; teamSizes?: number[]; skill?: (typeof HOST_BOT_SKILLS)[number]; style?: (typeof HOST_BOT_STYLES)[number]; botSet?: BotSet | null }
   /** Rules that take effect when the match restarts (Restart match applies them). */
   | { c: 'rules'; rules: HostRulesPatch }
   | { c: 'map'; map: string; mode?: GameMode }
@@ -101,6 +106,8 @@ export interface HostState {
   mode: GameMode;
   /** The map rotation (hosts that have one; absent from older ones). */
   rotation?: RotationState;
+  /** The host's bot set (null: random bots). Absent from older hosts: the pause menu then offers no Bots… window. */
+  botSet?: BotSet | null;
 }
 
 export interface PlayerSnapshot {
