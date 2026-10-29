@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     "./server": "./src/server.ts",
+    "./rotation": "./src/rotation.ts",
     "./ice": "./src/ice.ts",
     "./tickets": "./src/tickets.ts",
     "./broker": "./src/broker.ts",

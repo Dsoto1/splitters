@@ -1,0 +1,16 @@
+{
+  "format": "tiletrigger.rotation",
+  "id": "big_battles",
+  "name": "Big Battles",
+  "description": "The largest maps, for full servers: big teams, long sightlines, objectives to fight over. Shuffled.",
+  "family": "big",
+  "shuffle": true,
+  "maps": [
+    { "map": "capitol_mall", "mode": "core.tdm" },
+    { "map": "glacier_line", "mode": "core.bomb" },
+    { "map": "riot_junction", "mode": "core.ctf" },
+    { "map": "st_johns", "mode": "core.tdm" },
+    { "map": "fernwood_moon", "mode": "core.ctf" },
+    { "map": "serene_city", "mode": "core.hostage" }
+  ]
+}

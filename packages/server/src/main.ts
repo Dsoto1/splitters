@@ -16,8 +16,13 @@ if (mode && !isGameMode(mode)) throw new Error(`MODE must be one of ${GAME_MODES
 const playlist = env.PLAYLIST ? parsePlaylist(JSON.parse(readFileSync(resolve(env.INIT_CWD ?? process.cwd(), env.PLAYLIST), 'utf8'))) : undefined;
 if (playlist === null) throw new Error(`PLAYLIST ${env.PLAYLIST} is not a valid playlist`);
 
+// ROTATION=frost_basin:tdm,diamond_park:ctf (or preset:team_classics, maps/rotations/): after each match the next of
+// these instead of a replay, round and round; ROTATION_SHUFFLE=1 plays them in a random order.
+const rotation = (env.ROTATION ?? '').split(/[\s,]+/).filter(Boolean);
+
 const server = await startServer({
   playlist,
+  ...(rotation.length ? { rotation, rotationShuffle: /^(1|true|yes|on)$/i.test(env.ROTATION_SHUFFLE ?? '') } : {}),
   port: Number(env.PORT ?? 7777),
   host: env.HOST,
   map: env.MAP ?? defaultMap,

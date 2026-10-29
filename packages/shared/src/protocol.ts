@@ -1,5 +1,6 @@
 import type { MapDocument } from './map/schema.ts';
 import type { PlayerInput } from './sim/movement.ts';
+import type { RotationEntry, RotationState } from './sim/rotation.ts';
 import type { GameMode, MatchRules } from './sim/rules.ts';
 
 /**
@@ -39,7 +40,11 @@ export const HOST_BOT_STYLES = ['mixed', 'arena', 'tactical'] as const;
  * team modes: per team), bot skill and style, live; `map` travels to another
  * map (servers and Host game: a map of our suite, by ID) in `mode`
  * (default: the current one, else the map's own); `restart` starts the match
- * over; `end` ends it now, to the scoreboard.
+ * over; `end` ends it now, to the scoreboard; `rotation` sets the map
+ * rotation (the maps played in turn after each match; sim/rotation.ts) or
+ * turns its shuffle on or off; `skip` goes on to the rotation's next map now.
+ * Hosts that don't know `rotation` and `skip` ignore them (their HostState
+ * has no `rotation`, so the pause menu doesn't offer it).
  */
 export type HostCommand =
   /** `teamSizes`: every team's own size (uneven teams); `teamSize`: every team the same size. */
@@ -52,12 +57,17 @@ export type HostCommand =
   /** Remove a player (not a bot) from the match; they may rejoin. */
   | { c: 'kick'; slot: number; reason?: string }
   /** Remove a player and keep them out: their account when signed in, else their browser key and address (weak). `minutes`: 0 or absent, for good. */
-  | { c: 'ban'; slot: number; minutes?: number; reason?: string };
+  | { c: 'ban'; slot: number; minutes?: number; reason?: string }
+  /** The whole list (each map of our suite, in a mode it plays; at most ROTATION_MAX), and/or shuffle. */
+  | { c: 'rotation'; entries?: RotationEntry[]; shuffle?: boolean }
+  | { c: 'skip' };
 
 /** Commands about one player (kick, ban): the host's connections handle them, not the match. */
 export type PlayerCommand = Extract<HostCommand, { c: 'kick' | 'ban' }>;
+/** The map rotation's commands: whoever hosts keeps the rotation (it outlives each match). */
+export type RotationCommand = Extract<HostCommand, { c: 'rotation' | 'skip' }>;
 /** Commands the match itself runs (HostControl). */
-export type MatchCommand = Exclude<HostCommand, { c: 'map' } | PlayerCommand>;
+export type MatchCommand = Exclude<HostCommand, { c: 'map' } | PlayerCommand | RotationCommand>;
 
 /** Rules a host can change mid-match; they wait for the next restart. */
 export interface HostRulesPatch {
@@ -89,6 +99,8 @@ export interface HostState {
   /** The current map (ID) and mode. */
   map: string;
   mode: GameMode;
+  /** The map rotation (hosts that have one; absent from older ones). */
+  rotation?: RotationState;
 }
 
 export interface PlayerSnapshot {
@@ -226,7 +238,8 @@ export type GameEvent =
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit. */ hs?: 1 }
   | { e: 'spawn'; s: number }
   /** `outcome` is set when a co-op mission ends (victory or defeat). */
-  | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null; /** "Next map" logic: the suite map ID everyone goes on to. */ next?: string }
+  | { e: 'round_end'; winner: number | null; outcome?: 'victory' | 'defeat'; /** Winning team (faction ID) in Team Deathmatch; null for a draw. */ team?: string | null; /** "Next map" logic: the suite map ID everyone goes on to. */ next?: string;
+      /** The map rotation's next map (its display name) and mode, where the match goes after the scoreboard. */ up?: { map: string; mode: GameMode } }
   | { e: 'round_start' }
   // Objective modes. `team` is a team (faction) ID.
   /** Capture the Flag: `team`'s flag was taken, dropped, returned home or captured; `s` is who did it (null: it went home on its own). */

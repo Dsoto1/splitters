@@ -27,6 +27,10 @@ import {
   playlistNext,
   rulesForTravel,
   travelNotice,
+  MapRotation,
+  validateRotation,
+  type RotationPreset,
+  type RotationState,
   type BotDifficulty,
   type HostCommand,
   type CarryOver,
@@ -41,6 +45,7 @@ import {
 } from '@tiletrigger/shared';
 import { AWAY, BotFiller, HostControl, Match, initNavigation, validateNavigation } from '@tiletrigger/shared/match';
 import { answerDiscovery, lanAddresses } from './lan.ts';
+import { expandRotation, readRotationPresets, suiteLookup } from './rotation.ts';
 import { StatsWindow } from './stats.ts';
 
 export interface ServerOptions {
@@ -79,6 +84,14 @@ export interface ServerOptions {
   playlist?: Playlist;
   /** Our suite (where "Next map" and playlist IDs are looked up): default the repo's maps/ folder. */
   mapsDir?: string;
+  /**
+   * Map rotation (ROTATION): after each match, the next of these instead of a replay, round and round.
+   * Items: "map[:mode]" ("frost_basin:tdm"; no mode: the map's first), "preset:<id>" (maps/rotations/<id>.json)
+   * or { map, mode }. Maps outside our suite and modes a map can't play are dropped, with a log line.
+   */
+  rotation?: readonly unknown[];
+  /** Play the rotation in a random order (a new one each time round). */
+  rotationShuffle?: boolean;
   /** Answer LAN discovery broadcasts (UDP, LAN_DISCOVERY_PORT unless a port is given). Off by default; main.ts turns it on. */
   lanDiscovery?: boolean | number;
   /**
@@ -150,6 +163,10 @@ export interface RunningServer {
   command(cmd: HostCommand, by: string): string | null;
   /** A new ADMIN_TOKEN from now on (undefined: nobody new can log in). */
   setAdminToken(token: string | undefined): void;
+  /** The map rotation now (what admins see), and as config items ("frost_basin:tdm") for saving. */
+  rotation(): RotationState & { items: string[] };
+  /** The built-in rotations (maps/rotations/) a host can pick. */
+  readonly rotationPresets: readonly RotationPreset[];
   close(): Promise<void>;
 }
 
@@ -252,6 +269,27 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   let carried = new Map<string, CarryOver>();
   /** A won map with somewhere to go: travel at this tick (late in the intermission). */
   let travel: { atTick: number; map: MapDocument; rules: MatchRules; index: number; carry: { score: boolean; loadout: boolean }; fill?: number } | null = null;
+  /** The map rotation: which maps of our suite it may name, the built-in presets, and the list itself. */
+  const lookup = suiteLookup(mapsDir);
+  const rotationPresets = readRotationPresets(mapsDir, lookup);
+  const rotation = new MapRotation([], { shuffle: opts.rotationShuffle });
+  const nameOf = (id: string) => lookup(id)?.name ?? id;
+  /** Set the rotation from config items or a command's entries; what's dropped is logged. Returns the dropped lines. */
+  const setRotation = (raw: readonly unknown[]): string[] => {
+    const ex = expandRotation(raw, rotationPresets);
+    const v = validateRotation(ex.items, lookup);
+    const dropped = [...ex.dropped, ...v.dropped];
+    for (const d of dropped) console.warn(`[rotation] dropped: ${d}`);
+    rotation.set(v.entries, { map: map.metadata.id, mode: match.rules.mode });
+    return dropped;
+  };
+  if (opts.rotation?.length) {
+    setRotation(opts.rotation);
+    const up = rotation.peek();
+    console.log(`[rotation] ${rotation.entries.length} map${rotation.entries.length === 1 ? '' : 's'}${rotation.shuffle ? ', shuffled' : ''}${up ? `; next: ${nameOf(up.entry.map)} (${MODE_LABELS[up.entry.mode]})` : ''}`);
+  }
+  /** The admin's view: the match's settings and the rotation. */
+  const hostSettings = () => ({ ...control.state(), rotation: rotation.state(nameOf) });
   /** The token compared in constant time (as hashes, so lengths don't matter). */
   let adminHash = opts.adminToken ? createHash('sha256').update(opts.adminToken).digest() : null;
   const isAdminToken = (token: string | undefined) => !!adminHash && !!token && timingSafeEqual(adminHash, createHash('sha256').update(token).digest());
@@ -267,7 +305,10 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
 
   /** Keep humans + bots at the fill target: bots leave when humans join and return when they go. */
   bots.rebalance(control.fill);
-  const hostState = (c: Client) => send(c, { t: 'host', state: control.state() });
+  const hostState = (c: Client) => send(c, { t: 'host', state: hostSettings() });
+  const refreshAdmins = () => {
+    for (const c of clients) if (c.admin && c.slot !== null) hostState(c);
+  };
   const notice = (text: string) => {
     console.log(`[admin] ${text}`);
     broadcast({ t: 'notice', text });
@@ -291,6 +332,33 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       notice(travelNotice(m.metadata.name, next.rules.mode));
       return null;
     }
+    if (cmd.c === 'rotation') {
+      if (cmd.entries) {
+        const dropped = setRotation(cmd.entries);
+        if (cmd.entries.length && rotation.empty) {
+          refreshAdmins();
+          return `None of those can be played here: ${dropped.join('; ')}`;
+        }
+      }
+      if (cmd.shuffle !== undefined) rotation.setShuffle(cmd.shuffle);
+      const up = rotation.peek();
+      event(`${by} set the map rotation: ${rotation.entries.length} map${rotation.entries.length === 1 ? '' : 's'}${rotation.shuffle ? ', shuffled' : ''}${up ? `, next ${nameOf(up.entry.map)} (${MODE_LABELS[up.entry.mode]})` : ' (matches replay)'}`);
+      refreshAdmins();
+      return null;
+    }
+    if (cmd.c === 'skip') {
+      if (travel) return 'Already changing map';
+      const up = rotation.peek();
+      if (!up) return 'The rotation is empty: add maps to it first';
+      const m = suiteMap(up.entry.map);
+      if (!m) return `${nameOf(up.entry.map)} didn't load`;
+      rotation.advance();
+      const next = travelTo(m, up.entry.mode, match.tick + HOST_TRAVEL_TICKS);
+      notice(travelNotice(m.metadata.name, next.mode));
+      event(`${by} skipped to the rotation's next map`);
+      refreshAdmins();
+      return null;
+    }
     if (cmd.c === 'kick' || cmd.c === 'ban') {
       const target = clientAt(cmd.slot);
       if (!target?.who) return 'No such player (bots come and go by themselves: change the players instead)';
@@ -310,15 +378,15 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     if (r.error) return r.error;
     if (r.notice) notice(r.notice);
     broadcast({ t: 'roster', players: match.roster() });
-    for (const c of clients) if (c.admin && c.slot !== null) hostState(c);
+    refreshAdmins();
     return null;
   };
   /** An in-game admin's command. */
   const hostCommand = (client: Client, cmd: HostCommand) => {
     if (!client.admin) return send(client, { t: 'host', state: null, error: adminHash ? 'Only the server admin can change the match (pause menu → Server admin)' : 'This server has no admin (ADMIN_TOKEN is not set)' });
-    if ((cmd.c === 'kick' || cmd.c === 'ban') && cmd.slot === client.slot) return send(client, { t: 'host', state: control.state(), error: "You can't kick yourself" });
+    if ((cmd.c === 'kick' || cmd.c === 'ban') && cmd.slot === client.slot) return send(client, { t: 'host', state: hostSettings(), error: "You can't kick yourself" });
     const error = runCommand(cmd, `Admin ${client.who?.name ?? ''}`.trim());
-    if (error) return send(client, { t: 'host', state: control.state(), error });
+    if (error) return send(client, { t: 'host', state: hostSettings(), error });
   };
 
   let stopped = false;
@@ -529,6 +597,27 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       carry: list?.carry ?? { score: true, loadout: true },
     };
   };
+  /**
+   * The rotation moves on to `m` in `mode` (at the end of a match, or skipped to): the host's own settings and
+   * players carry over (rulesForTravel), scores and weapons don't. Returns the rules it will play.
+   */
+  const travelTo = (m: MapDocument, mode: GameMode, atTick: number): MatchRules => {
+    const next = rulesForTravel(match.rules, m, control.fill, mode, control.state().teamSize);
+    travel = { atTick, map: m, rules: next.rules, index: playIndex, carry: { score: false, loadout: false }, fill: next.fill };
+    return next.rules;
+  };
+  /** A match ended with nowhere else to go: the rotation's next map after the scoreboard (and everyone is told where). */
+  const planRotation = (ev: Extract<GameEvent, { e: 'round_end' }>) => {
+    const up = rotation.peek();
+    if (!up) return;
+    const m = suiteMap(up.entry.map);
+    if (!m) return void console.warn(`[rotation] ${up.entry.map} didn't load: replaying ${map.metadata.name}`);
+    rotation.advance();
+    const rules = travelTo(m, up.entry.mode, match.tick + Math.max(30, match.rules.intermissionTicks - 30));
+    ev.up = { map: m.metadata.name, mode: rules.mode };
+    event(`next map: ${m.metadata.name} (${MODE_LABELS[rules.mode]})`);
+    refreshAdmins();
+  };
   /** Change map: everyone gets `travel` and reconnects to the new match, keeping what the chain carries. */
   const doTravel = () => {
     const t = travel!;
@@ -552,6 +641,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack });
     control = new HostControl(match, bots, t.fill ?? control.fill, 'Admin');
     bots.rebalance(control.fill);
+    // A map the owner published since is picked up from here on.
+    lookup.forget();
     console.log(`[chain] now playing ${map.metadata.name}`);
   };
 
@@ -566,6 +657,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       for (const ev of events) {
         if (ev.e !== 'round_end') continue;
         if (ev.outcome === 'victory') planTravel(ev.next);
+        // Nowhere to go from a chain: the rotation's next map (an empty rotation replays, as before).
+        if (!travel) planRotation(ev);
         const top = [...match.combatants()].filter((c) => c.kind !== 'npc').sort((a, b) => b.kills - a.kills)[0];
         event(`match over on ${map.metadata.name}: ${ev.team ? `team ${ev.team} wins` : ev.winner !== null ? `${match.slots[ev.winner]?.name ?? 'someone'} wins` : 'a draw'}${top ? ` (top: ${top.name}, ${top.kills} kills)` : ''}`);
       }
@@ -633,6 +726,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     info,
     notice: (text: string) => broadcast({ t: 'notice', text }),
     command: runCommand,
+    rotation: () => ({ ...rotation.state(nameOf), items: rotation.items() }),
+    rotationPresets,
     setAdminToken: (token) => {
       adminHash = token ? createHash('sha256').update(token).digest() : null;
       // Admins logged in with the old token stay admin until they leave.

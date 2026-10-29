@@ -1,0 +1,17 @@
+{
+  "format": "tiletrigger.rotation",
+  "id": "team_deathmatch_tour",
+  "name": "Team Deathmatch Tour",
+  "description": "Team Deathmatch across mid-sized maps, from the snowfields to the docks.",
+  "family": "teams",
+  "maps": [
+    { "map": "frost_basin", "mode": "core.tdm" },
+    { "map": "canyon", "mode": "core.tdm" },
+    { "map": "crossroads", "mode": "core.tdm" },
+    { "map": "sandgate", "mode": "core.tdm" },
+    { "map": "dockside_depot", "mode": "core.tdm" },
+    { "map": "iron_compound", "mode": "core.tdm" },
+    { "map": "backwoods", "mode": "core.tdm" },
+    { "map": "jungle_steps", "mode": "core.tdm" }
+  ]
+}

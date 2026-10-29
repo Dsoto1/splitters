@@ -1,0 +1,15 @@
+{
+  "format": "tiletrigger.rotation",
+  "id": "flag_run",
+  "name": "Flag Run",
+  "description": "Capture the Flag, map after map.",
+  "family": "objective",
+  "maps": [
+    { "map": "bunker_cross", "mode": "core.ctf" },
+    { "map": "coldwater_gulch", "mode": "core.ctf" },
+    { "map": "twin_spires", "mode": "core.ctf" },
+    { "map": "no_mans_field", "mode": "core.ctf" },
+    { "map": "maple_court", "mode": "core.ctf" },
+    { "map": "dustwater", "mode": "core.ctf" }
+  ]
+}

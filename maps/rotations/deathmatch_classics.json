@@ -1,0 +1,17 @@
+{
+  "format": "tiletrigger.rotation",
+  "id": "deathmatch_classics",
+  "name": "Deathmatch Classics",
+  "description": "Everyone for themselves on tight, fast arenas: a new one after every match.",
+  "family": "ffa",
+  "maps": [
+    { "map": "atomic_court", "mode": "core.deathmatch" },
+    { "map": "clockwork", "mode": "core.deathmatch" },
+    { "map": "bottling", "mode": "core.deathmatch" },
+    { "map": "jade_sanctum", "mode": "core.deathmatch" },
+    { "map": "void_yard", "mode": "core.deathmatch" },
+    { "map": "gallows_yard", "mode": "core.deathmatch" },
+    { "map": "overhang", "mode": "core.deathmatch" },
+    { "map": "reactor", "mode": "core.deathmatch" }
+  ]
+}

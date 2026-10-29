@@ -1,0 +1,16 @@
+{
+  "format": "tiletrigger.rotation",
+  "id": "objective_mix",
+  "name": "Objective Mix",
+  "description": "A different objective every match: hills, bombs, hostages, flags and last-team-standing rounds.",
+  "family": "objective",
+  "maps": [
+    { "map": "cinder_foundry", "mode": "core.koth" },
+    { "map": "dune_harbor", "mode": "core.bomb" },
+    { "map": "glasswork_office", "mode": "core.hostage" },
+    { "map": "iron_compound", "mode": "core.ctf" },
+    { "map": "eagle_spires", "mode": "core.elim" },
+    { "map": "starhaven", "mode": "core.bomb" },
+    { "map": "neon_spire", "mode": "core.koth" }
+  ]
+}

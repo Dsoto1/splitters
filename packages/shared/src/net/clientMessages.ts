@@ -1,5 +1,7 @@
 import { HOST_BOT_SKILLS, HOST_BOT_STYLES, type ClientMessage, type HostCommand, type HostRulesPatch } from '../protocol.ts';
-import { isGameMode } from '../sim/rules.ts';
+import { isMapId } from '../sim/playlist.ts';
+import { ROTATION_MAX } from '../sim/rotation.ts';
+import { isGameMode, type GameMode } from '../sim/rules.ts';
 import type { PlayerInput } from '../sim/movement.ts';
 
 /**
@@ -116,6 +118,20 @@ function parseHostCommand(raw: unknown): HostCommand | null {
       if (o.minutes !== undefined && !(typeof o.minutes === 'number' && Number.isInteger(o.minutes) && o.minutes >= 0 && o.minutes <= 525_600)) return null;
       return { c: 'ban', slot: o.slot, ...(o.minutes ? { minutes: o.minutes as number } : {}), ...(reason ? { reason } : {}) };
     }
+    case 'rotation': {
+      // Shapes only: whether each map is ours and plays that mode is the host's to check.
+      if (o.shuffle !== undefined && typeof o.shuffle !== 'boolean') return null;
+      if (o.entries !== undefined && !(Array.isArray(o.entries) && o.entries.length <= ROTATION_MAX)) return null;
+      const entries: { map: string; mode: GameMode }[] = [];
+      for (const e of (o.entries as unknown[] | undefined) ?? []) {
+        const x = e as Record<string, unknown> | null;
+        if (!x || !isMapId(x.map) || typeof x.mode !== 'string' || !isGameMode(x.mode)) return null;
+        entries.push({ map: x.map, mode: x.mode });
+      }
+      return { c: 'rotation', ...(o.entries !== undefined ? { entries } : {}), ...(o.shuffle !== undefined ? { shuffle: o.shuffle as boolean } : {}) };
+    }
+    case 'skip':
+      return { c: 'skip' };
     case 'restart':
       return { c: 'restart' };
     case 'end':

@@ -142,6 +142,13 @@ export function selectForPaths(paths, mapIds = []) {
       unitAll = true;
       continue;
     }
+    // Built-in map rotations (data): the host controls that offer them, and the tests that check them.
+    if (/^maps\/rotations\/[^/]+\.json$/.test(p)) {
+      flows.add('hostcontrols');
+      flows.add('dedicatedhost');
+      for (const u of ['shared', 'server', 'host']) unit.add(u);
+      continue;
+    }
     if (/^maps\//.test(p)) {
       full = true;
       unitAll = true;
