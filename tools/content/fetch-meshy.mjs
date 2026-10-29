@@ -11,6 +11,9 @@
 //   (retexture, remesh, refine, image, multiImage, preview: the text-to-3d, image-to-3d, remesh and
 //   retexture task results' model_urls.fbx and texture_urls[0].base_color), saved as
 //   <dir>/<id>/<id>_texture.fbx and .png, rigged later from the manifest's landmarks.
+// A model at a public URL (`source.modelUrl`, e.g. a Google Drive download link of the owner's copy) can be
+// rigged by Meshy: with a key, it is sent to POST /openapi/v1/rigging and the rigged GLB comes back as
+// <dir>/<id>.glb (preferred over rigging it in-house from found landmarks).
 // Meshy's API only serves tasks in the key holder's own account, so only the owner's own models (their
 // meshy.ai/s/… share links: the manifest names the task IDs) come through here. A community (CC0) model
 // is downloaded by hand from its page: its rigged GLB saved as <dir>/<id>.glb, or its textured FBX
@@ -112,10 +115,60 @@ export function downloaded(m, dir) {
   return readdirSync(dir, { recursive: true }).some((f) => re.test(basename(String(f))));
 }
 
+/**
+ * Have Meshy rig an unrigged model that sits at a public URL (`source.modelUrl`: a community model the
+ * owner downloaded and shared, say from Google Drive), then download the rigged GLB as <dir>/<id>.glb:
+ * POST /openapi/v1/rigging { model_url, height_meters }, then the task is polled until it finishes.
+ */
+export async function rigByUrl(m, dir, opts = {}) {
+  const { fetch = globalThis.fetch, apiKey, log = console.log, pollMs = 5000, timeoutMs = 20 * 60 * 1000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = opts;
+  if (!apiKey) throw new FetchError('MESHY_API_KEY is not set: Meshy rigging needs your API key');
+  const url = `${API}/${MESHY_TASKS.rig}`;
+  let res;
+  try {
+    res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ model_url: m.source.modelUrl, height_meters: 1.8 }) });
+  } catch (e) {
+    throw unreachable(url, e);
+  }
+  const body = await res.text().catch(() => '');
+  if (res.status === 401 || res.status === 403) throw new FetchError(`Meshy refused MESHY_API_KEY for rigging ${m.id} (HTTP ${res.status})`);
+  if (res.status === 402) throw new FetchError(`Meshy wants credits to rig ${m.id} (HTTP 402): top up the account`);
+  if (!res.ok) throw new FetchError(`Meshy would not rig ${m.id} (HTTP ${res.status}): ${body.slice(0, 200)}`);
+  let id;
+  try {
+    id = JSON.parse(body).result;
+  } catch {
+    id = null;
+  }
+  if (typeof id !== 'string') throw new FetchError(`Meshy's answer to the rigging request for ${m.id} has no task ID: ${body.slice(0, 200)}`);
+  log(`${m.id}: rigging task ${id} started (add "rig": "${id}" to its source.meshy to fetch it again later)`);
+  const until = Date.now() + timeoutMs;
+  for (;;) {
+    let task;
+    try {
+      task = await readTask('rig', id, { fetch, apiKey });
+    } catch (e) {
+      if (!(e instanceof FetchError) || !/is (PENDING|IN_PROGRESS)/.test(e.message)) throw e;
+      if (Date.now() > until) throw new FetchError(`rigging task ${id} for ${m.id} has not finished after ${Math.round(timeoutMs / 60000)} minutes: fetch it later with "rig": "${id}" in its source.meshy`);
+      await sleep(pollMs);
+      continue;
+    }
+    const glb = task.result?.rigged_character_glb_url;
+    if (!glb) throw new FetchError(`rigging task ${id} has no rigged GLB (result.rigged_character_glb_url)`);
+    mkdirSync(dir, { recursive: true });
+    const path = join(dir, `${m.id}.glb`);
+    const bytes = await download(glb, path, 'glb', { fetch });
+    log(`${m.id}: rigged by Meshy, ${(bytes / 1048576).toFixed(1)} MB → ${path}`);
+    return [path];
+  }
+}
+
 /** Fetch one character's download into `dir`. Returns what it saved. */
 export async function fetchCharacter(m, dir, opts = {}) {
   const log = opts.log ?? console.log;
   const tasks = m.source.meshy ?? {};
+  // A model at a public URL with no rig yet: Meshy rigs it (preferred over rigging it here) when there's a key.
+  if (!tasks.rig && m.source.modelUrl && opts.apiKey) return rigByUrl(m, dir, opts);
   if (tasks.rig) {
     const task = await readTask('rig', tasks.rig, opts);
     const url = task.result?.rigged_character_glb_url;
@@ -151,7 +204,9 @@ export async function fetchAll(dir, ids, opts = {}) {
   const list = ids?.length ? all.filter((m) => ids.includes(m.id)) : all;
   const failed = [];
   for (const m of list) {
-    if (!opts.force && downloaded(m, dir)) {
+    // With a key, a model Meshy can rig (source.modelUrl) is wanted as a rigged <id>.glb, even when its unrigged download is here.
+    const rigWanted = opts.apiKey && m.source.modelUrl && !m.source.meshy?.rig;
+    if (!opts.force && (rigWanted ? existsSync(join(dir, `${m.id}.glb`)) : downloaded(m, dir))) {
       log(`${m.id}: already downloaded`);
       continue;
     }

@@ -333,7 +333,7 @@ for (const f of charEntries) {
     creator: [...new Set(packs.map((p) => p.creator))].join(', '),
     url: packs.map((p) => p.url).join(' '),
     license: [...new Set(packs.map((p) => p.license))].join(', '),
-    modifications: [...(CHAR_MODS[f.role] ?? []), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : [])],
+    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : [])],
   });
 }
 const CHAR_DIR = join(ROOT, 'packages/client/public/characters');

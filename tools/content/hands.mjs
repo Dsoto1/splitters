@@ -111,8 +111,9 @@ export function measureHand(pts, ref, override = {}) {
   const c = scale(across, flip);
   const uvt = pts.map((p) => [dot(p, along), dot(p, c), dot(p, palmSide)]);
   const us = uvt.map((x) => x[0]);
-  const u0 = pct(us, 3);
-  const u1 = Math.max(u0 + 0.02, pct(us, 97));
+  // From the wrist end (a cuff or sleeve the skinning left on the hand, far behind the wrist joint, doesn't count) to the fingertips.
+  const u1 = Math.max(0.02, pct(us, 97));
+  const u0 = Math.min(u1 - 0.02, Math.max(pct(us, 3), -0.15 * u1));
   const span = u1 - u0;
   const slab = uvt.filter((x) => x[0] >= u0 + 0.15 * span && x[0] <= u0 + 0.55 * span);
   const use = slab.length >= 6 ? slab : uvt;

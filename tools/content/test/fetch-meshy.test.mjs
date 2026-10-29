@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { FetchError, downloaded, fetchAll, fetchCharacter, readTask, taskUrl } from '../fetch-meshy.mjs';
+import { FetchError, downloaded, fetchAll, fetchCharacter, readTask, rigByUrl, taskUrl } from '../fetch-meshy.mjs';
 
 const GLB = Buffer.concat([Buffer.from('glTF'), Buffer.alloc(60)]);
 const FBX = Buffer.concat([Buffer.from('Kaydara FBX Binary  \0'), Buffer.alloc(60)]);
@@ -16,8 +16,9 @@ const community = { id: 'meshy_found', source: { license: 'CC0', url: 'https://w
 function mockFetch(table) {
   const calls = [];
   const fetch = async (url, init = {}) => {
-    calls.push({ url, auth: init.headers?.Authorization });
-    const r = table[url];
+    calls.push({ url, auth: init.headers?.Authorization, ...(init.method ? { method: init.method, body: init.body } : {}) });
+    let r = table[url];
+    if (typeof r === 'function') r = r();
     if (!r) throw new TypeError('fetch failed', { cause: { code: 'ENOTFOUND' } });
     if (r instanceof Error) throw r;
     const body = r.body ?? Buffer.from(JSON.stringify(r.json ?? {}));
@@ -134,5 +135,30 @@ describe('fetch-meshy', () => {
     expect(calls.map((c) => c.url)).toEqual([taskUrl('remesh', unrigged.source.meshy.remesh)]);
     expect(lines[0]).toBe('meshy_test: already downloaded');
     await expect(fetchAll(dir, ['meshy_nobody'], { manifests: [rigged] })).rejects.toThrow(/no manifest/);
+  });
+
+  it('has Meshy rig a model at a public URL, waiting for the task, and saves the rigged GLB', async () => {
+    const dir = tmp();
+    const m = { id: 'meshy_found', source: { license: 'CC0', modelUrl: 'https://drive.usercontent.google.com/download?id=abc&export=download', community: { model: 'Found' } } };
+    const states = ['PENDING', 'IN_PROGRESS', 'SUCCEEDED'];
+    const asset = 'https://assets.meshy.ai/rigged.glb?Signature=x';
+    const { fetch, calls } = mockFetch({
+      'https://api.meshy.ai/openapi/v1/rigging': { json: { result: 'rig-1111-2222-3333-4444' } },
+      [taskUrl('rig', 'rig-1111-2222-3333-4444')]: () => {
+        const status = states.shift();
+        return { json: { status, ...(status === 'SUCCEEDED' ? { result: { rigged_character_glb_url: asset } } : {}) } };
+      },
+      [asset]: { body: GLB },
+    });
+    const lines = [];
+    const saved = await fetchCharacter(m, dir, { fetch, apiKey: 'k', log: (l) => lines.push(l), sleep: async () => {} });
+    expect(saved).toEqual([join(dir, 'meshy_found.glb')]);
+    expect(calls[0]).toMatchObject({ url: 'https://api.meshy.ai/openapi/v1/rigging', method: 'POST', auth: 'Bearer k' });
+    expect(JSON.parse(calls[0].body)).toEqual({ model_url: m.source.modelUrl, height_meters: 1.8 });
+    expect(calls.filter((c) => c.url.endsWith('rig-1111-2222-3333-4444'))).toHaveLength(3);
+    expect(lines[0]).toMatch(/"rig": "rig-1111-2222-3333-4444"/);
+    // Without a key the model is not rigged by Meshy (the in-house rig takes it from the download).
+    await expect(rigByUrl(m, dir, { fetch })).rejects.toThrow(/MESHY_API_KEY/);
+    await expect(fetchCharacter(m, dir, { log: () => {} })).rejects.toThrow(/downloaded by hand/);
   });
 });

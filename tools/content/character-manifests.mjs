@@ -63,8 +63,10 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
       need(k in MESHY_TASKS, `source.meshy.${k}: not a task kind (${Object.keys(MESHY_TASKS).join(', ')})`);
       need(typeof v === 'string' && /^[0-9a-f-]{20,}$/i.test(v), `source.meshy.${k}: a Meshy task ID`);
     }
-    need(s.license === 'owned', 'source.meshy: task IDs only fetch the owner\'s own models (a community model is downloaded by hand)');
+    // A community model can carry a rigging task the owner ran on it (rigByUrl), but no other task.
+    need(s.license === 'owned' || Object.keys(s.meshy).every((k) => k === 'rig'), 'source.meshy: task IDs only fetch the owner\'s own models (a community model is downloaded by hand; only a "rig" task of the owner\'s may be named)');
   }
+  need(s.modelUrl === undefined || (typeof s.modelUrl === 'string' && /^https:\/\//.test(s.modelUrl)), 'source.modelUrl: a public https download link of the unrigged model (for Meshy\'s rigging API)');
   if (s.file !== undefined) {
     let ok = typeof s.file === 'string';
     try {
@@ -161,12 +163,12 @@ const SPINE_JOINTS = ['Hips', 'Spine02', 'Spine01', 'Spine', 'neck', 'Head', 'he
  * character's left, +z its front), keyed by Meshy's joint names (so its
  * JOINT_MAP and REPOSE apply), plus the ends of the head, hands and toes.
  */
+/** Landmarks in the manifest's form ({ spine, L, R }) keyed by Meshy's joint names. */
+export const jointsFromLandmarks = (l) => Object.fromEntries([...SPINE_JOINTS.map((n, i) => [n, l.spine[i]]), ...SIDE_JOINTS.flatMap((n, i) => [[`Left${n}`, l.L[i]], [`Right${n}`, l.R[i]]])]);
+
 export function buildSpec(m) {
   const x = m.fixes ?? {};
-  const l = m.landmarks;
-  const joints = l
-    ? Object.fromEntries([...SPINE_JOINTS.map((n, i) => [n, l.spine[i]]), ...SIDE_JOINTS.flatMap((n, i) => [[`Left${n}`, l.L[i]], [`Right${n}`, l.R[i]]])])
-    : undefined;
+  const joints = m.landmarks ? jointsFromLandmarks(m.landmarks) : undefined;
   return {
     id: m.id,
     meshy: m.source.meshy,

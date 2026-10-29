@@ -42,16 +42,17 @@
 // the model's name and date recorded in the lock).
 
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NodeIO, PropertyType } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { compactPrimitive, dedup, prune, quantize, simplify, weld } from '@gltf-transform/functions';
+import { compactPrimitive, dedup, dequantize, prune, quantize, simplify, transformMesh, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { autoSkin } from './autoskin.mjs';
-import { buildSpec, readManifests } from './character-manifests.mjs';
+import { buildSpec, jointsFromLandmarks, readManifests } from './character-manifests.mjs';
+import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
 import { seamAwareSimplify } from './meshy-mesh.mjs';
@@ -345,21 +346,50 @@ const FBX_BONES = [
     ].map(([a, b]) => [`${S}${a}`, `${S}${a}`, `${S}${b}`]),
   ),
 ];
-/** Triangles the FBX mesh is cut to before rigging (the rig is fitted at this detail, then build() simplifies further). */
+/** Triangles an unrigged mesh is cut to before rigging (the rig is fitted at this detail, then build() simplifies further). */
 const WORK_TRIANGLES = 40000;
-/** An unrigged Meshy FBX, rigged from its landmarks and re-posed to the rig's stance. */
-async function readFbx(file, c, ual) {
-  const { doc } = await fbxToDocument(file);
+/**
+ * An unrigged Meshy download (a textured FBX, or a textured GLB with no skin), rigged from its
+ * landmarks (the manifest's, or found from the mesh by landmarks.mjs) and re-posed to the rig's stance.
+ */
+async function readUnrigged(file, c, ual) {
+  const glb = /\.glb$/i.test(file);
+  let doc;
+  let sourceTriangles;
+  if (glb) {
+    doc = await io.read(file);
+    if (doc.getRoot().listSkins().length) throw new Error(`${file}: has a skin; save it as ${c.id}.glb to import it as a rigged download`);
+    // Node transforms into the vertices (the downloads are one node, but may be turned or scaled).
+    await doc.transform(dequantize());
+    for (const node of doc.getRoot().listNodes()) {
+      if (!node.getMesh()) continue;
+      transformMesh(node.getMesh(), node.getWorldMatrix());
+      node.setMatrix([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+    }
+    const p0 = doc.getRoot().listMeshes()[0]?.listPrimitives()[0];
+    sourceTriangles = p0 ? (p0.getIndices()?.getCount() ?? p0.getAttribute('POSITION').getCount()) / 3 : 0;
+  } else {
+    doc = (await fbxToDocument(file)).doc;
+    // fbxToDocument writes unindexed triangles.
+    sourceTriangles = doc.getRoot().listMeshes()[0].listPrimitives()[0].getAttribute('POSITION').getCount() / 3;
+  }
   const mesh = doc.getRoot().listMeshes()[0];
   if (doc.getRoot().listMeshes().length !== 1 || mesh.listPrimitives().length !== 1) throw new Error(`${file}: expected one mesh with one material`);
-  // fbxToDocument writes unindexed triangles.
-  const sourceTriangles = mesh.listPrimitives()[0].getAttribute('POSITION').getCount() / 3;
+  // Million-triangle downloads: a first rough cut, so welding and the careful cut below stay quick.
+  {
+    const p = mesh.listPrimitives()[0];
+    if (!p.getIndices()) p.setIndices(doc.createAccessor().setType('SCALAR').setArray(Uint32Array.from({ length: p.getAttribute('POSITION').getCount() }, (_, i) => i)));
+  }
   await doc.transform(weld());
   {
-    // Cut to the working detail (texture seams are kept, so the base colour still fits).
+    // Cut to the working detail (texture seams are kept, so the base colour still fits); a mesh the
+    // seams hold above twice that gets a looser cut, then a sloppy one.
     const p = mesh.listPrimitives()[0];
     const target = Math.min(p.getIndices().getCount(), WORK_TRIANGLES * 3);
-    const [cut] = MeshoptSimplifier.simplify(new Uint32Array(p.getIndices().getArray()), new Float32Array(p.getAttribute('POSITION').getArray()), 3, target, 0.01, []);
+    const pos = new Float32Array(p.getAttribute('POSITION').getArray());
+    let cut = new Uint32Array(p.getIndices().getArray());
+    for (const error of [0.01, 0.03]) if (cut.length > target * 1.5) [cut] = MeshoptSimplifier.simplify(cut, pos, 3, target, error, []);
+    if (cut.length > target * 2) [cut] = MeshoptSimplifier.simplifySloppy(cut, pos, 3, null, target, 0.05);
     p.getIndices().setArray(cut);
     compactPrimitive(p);
   }
@@ -371,8 +401,17 @@ async function readFbx(file, c, ual) {
   let [low, high] = [Infinity, -Infinity];
   for (let v = 1; v < P.length; v += 3) [low, high] = [Math.min(low, P[v]), Math.max(high, P[v])];
   const H = high - low;
+  // Landmarks: the manifest's, else found from the mesh (T-pose or A-pose).
+  let joints = c.joints;
+  let found = null;
+  if (!joints) {
+    found = findLandmarks(P, indices);
+    joints = jointsFromLandmarks(found.landmarks);
+    if (process.env.LANDMARK_PRINT) console.log(`${c.id} landmarks (paste into content/characters/${c.id}.json to adjust):\n${JSON.stringify(found.landmarks)}`);
+    if (process.env.LANDMARK_DEBUG) await landmarkPicture(P, indices, found, join(process.env.LANDMARK_DEBUG, `${c.id}.landmarks.png`));
+  }
   const at = (name) => {
-    const l = c.joints[name];
+    const l = joints[name];
     if (!l) throw new Error(`${c.id}: no landmark ${name}`);
     return [l[0] * H, low + l[1] * H, l[2] * H];
   };
@@ -402,32 +441,40 @@ async function readFbx(file, c, ual) {
       knee: at(`${S}Leg`),
     })),
   };
-  const { joints, weights, stats } = autoSkin(P, N, indices, bones, H, names.length, body);
+  const { joints: J, weights, stats } = autoSkin(P, N, indices, bones, H, names.length, body);
   console.log(`${c.id}: ${(stats.inside * 100).toFixed(0)}% of the grid inside, ${stats.unseen} vertices with no bone in sight, ${stats.cloth} cloth vertices`);
   if (process.env.SKIN_DEBUG) {
-    await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.glb`), P, indices, joints, weights);
+    await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.glb`), P, indices, J, weights);
     // Red: no bone in sight; green: treated as cloth.
-    await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.cloth.glb`), P, indices, joints, weights, stats.debugColor);
-    writeFileSync(join(process.env.SKIN_DEBUG, `${c.id}.marks.json`), JSON.stringify(c.joints));
+    await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.cloth.glb`), P, indices, J, weights, stats.debugColor);
+    writeFileSync(join(process.env.SKIN_DEBUG, `${c.id}.marks.json`), JSON.stringify(joints));
   }
-  // The base colour map sits beside the FBX (Meshy embeds it too, but not every download links it).
-  const png = file.replace(/\.fbx$/i, '.png');
-  if (!existsSync(png)) throw new Error(`${file}: no base colour map ${basename(png)} beside it`);
+  // The base colour: the GLB's own, or the map beside the FBX (Meshy embeds it too, but not every download links it).
+  let baseColor;
+  if (glb) {
+    const image = prim.getMaterial()?.getBaseColorTexture()?.getImage();
+    if (!image) throw new Error(`${file}: no base colour texture`);
+    baseColor = Buffer.from(image);
+  } else {
+    const png = file.replace(/\.fbx$/i, '.png');
+    if (!existsSync(png)) throw new Error(`${file}: no base colour map ${basename(png)} beside it`);
+    baseColor = readFileSync(png);
+  }
   const src = pose(
     { names, parent: FBX_JOINTS.map(([, p]) => (p ? index.get(p) : -1)), rest: names.map(at) },
     {
       count: P.length / 3,
-      joints,
+      joints: J,
       weights,
       at: (v) => [[P[v * 3], P[v * 3 + 1], P[v * 3 + 2]], [N[v * 3], N[v * 3 + 1], N[v * 3 + 2]]],
       uv: prim.getAttribute('TEXCOORD_0').getArray(),
       indices,
-      baseColor: readFileSync(png),
+      baseColor,
     },
     ual,
     c,
   );
-  return { src, sourceTriangles, workTriangles: indices.length / 3 };
+  return { src, sourceTriangles, workTriangles: indices.length / 3, landmarks: found ? 'found' : 'manifest' };
 }
 
 const SKIN_DEBUG_COLORS = [
@@ -665,6 +712,10 @@ const ual = new Map(rigDoc.getRoot().listSkins()[0].listJoints().map((j) => [j.g
 /** Keep a character whose download isn't in the downloads dir as built (its files must still match the lock). */
 function keepAsBuilt(id) {
   const was = oldLock.files.filter((f) => f.id === id || f.id === `${id}_fparms`);
+  if (!was.length && only && !only.includes(id)) {
+    console.log(`${id.padEnd(28)} not built yet (not in ONLY)`);
+    return;
+  }
   if (!was.length) throw new Error(`no download for ${id} in ${downloads}, and it was never built`);
   for (const f of was) {
     const path = join(ROOT, 'packages/client/public', f.file);
@@ -682,12 +733,25 @@ const downloaded = readdirSync(downloads, { recursive: true }).map((f) => join(d
 /** A character's download: a rigged GLB (<id>.glb, or a .glb matching the manifest's `source.file`) or an unrigged textured FBX. */
 function findDownload(c) {
   const own = join(downloads, `${c.id}.glb`);
-  if (existsSync(own)) return { file: own, rigged: true };
+  if (existsSync(own)) return { file: own, rigged: glbHasSkin(own) };
   const named = downloaded.filter((f) => (c.file && c.file.test(basename(f))) || basename(f) === `${c.id}_texture.fbx`);
   const glb = named.find((f) => /\.glb$/i.test(f));
-  if (glb) return { file: glb, rigged: true };
+  if (glb) return { file: glb, rigged: glbHasSkin(glb) };
   const fbx = named.find((f) => /\.fbx$/i.test(f));
   return fbx ? { file: fbx, rigged: false } : null;
+}
+/** Whether a GLB carries a skin (a rigged download) or is a plain textured mesh (rigged here), from its JSON chunk alone. */
+function glbHasSkin(file) {
+  const fd = openSync(file, 'r');
+  try {
+    const head = Buffer.alloc(20);
+    readSync(fd, head, 0, 20, 0);
+    const json = Buffer.alloc(head.readUInt32LE(12));
+    readSync(fd, json, 0, json.length, 20);
+    return (JSON.parse(json.toString('utf8')).skins ?? []).length > 0;
+  } finally {
+    closeSync(fd);
+  }
 }
 /** The first-person arms (forearms and hands) every character gets, from the same source as its body. */
 const fparms = (c, src) => build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio: 0.8, lod: false, firstPerson: true });
@@ -704,10 +768,9 @@ for (const c of SPECS) {
     lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src)) });
     continue;
   }
-  if (!c.joints) throw new Error(`${c.id}: ${basename(found.file)} is unrigged, so content/characters/${c.id}.json needs its landmarks`);
-  const { src, sourceTriangles, workTriangles } = await readFbx(found.file, c, ual);
-  const built = await build(c, src, `${c.id}.glb`, { ratio: (c.triangles ?? 11000) / workTriangles });
-  const from = { ...(c.community ?? {}), src: basename(found.file), sourceTriangles };
+  const { src, sourceTriangles, workTriangles, landmarks } = await readUnrigged(found.file, c, ual);
+  const built = await build(c, src, `${c.id}.glb`, { ratio: Math.min(1, (c.triangles ?? 11000) / workTriangles) });
+  const from = { ...(c.community ?? {}), src: basename(found.file), sourceTriangles, ...(landmarks === 'found' ? { landmarks } : {}) };
   lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.pack, ...from, ...built });
   lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src)) });
 }
