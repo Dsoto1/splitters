@@ -1,0 +1,32 @@
+{
+  "id": "meshy_hazmat",
+  "kind": "character",
+  "use": "player+npc",
+  "order": 31,
+  "name": "Hazmat",
+  "look": "core.hazmat",
+  "bio": "Rated for every spill on the map. Mostly the ones he causes.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: hazmat suit.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/Hazmat-TPose-019fb676-c586-71cd-ba94-77e8fc3b1c36",
+    "community": {
+      "model": "Hazmat T Pose"
+    },
+    "file": "^Meshy_AI_Hazmat_T_Pose_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.55
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

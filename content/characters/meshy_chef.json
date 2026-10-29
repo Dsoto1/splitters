@@ -1,0 +1,33 @@
+{
+  "id": "meshy_chef",
+  "kind": "character",
+  "use": "player",
+  "order": 34,
+  "name": "Chef Basile",
+  "look": "core.basile",
+  "bio": "Runs the hottest kitchen in the arena. Everything is served well done.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: chef.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019d0dc6-1bdb-753f-a917-bb8a926fb471",
+    "community": {
+      "model": "T Pose Chef"
+    },
+    "file": "^Meshy_AI_T_Pose_Chef_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.65
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "cloth": true
+  }
+}

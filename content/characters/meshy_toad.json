@@ -1,0 +1,70 @@
+{
+  "id": "meshy_toad",
+  "kind": "character",
+  "use": "player+npc",
+  "order": 6,
+  "name": "Boglurker",
+  "look": "core.boglurker",
+  "bio": "Crawled out of the marsh for the noise and stayed for the shooting. Smells exactly as you fear.",
+  "body": "male",
+  "notes": "Hunched (`lean`); cloth hangs below its hips.",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-03-25",
+    "url": null,
+    "file": "^Meshy_AI_Boglurker_the_toad_.*_texture\\.fbx$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "lean": {
+      "Spine01": 4,
+      "Spine": 6,
+      "neck": 14
+    },
+    "cloth": true,
+    "feet": true
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.46, -0.07],
+      [0, 0.54, -0.08],
+      [0, 0.62, -0.07],
+      [0, 0.7, -0.07],
+      [0, 0.77, -0.03],
+      [0, 0.8, 0],
+      [0, 0.97, 0.05]
+    ],
+    "L": [
+      [0.06, 0.74, -0.03],
+      [0.17, 0.74, -0.01],
+      [0.3, 0.533, 0.03],
+      [0.325, 0.4, 0.05],
+      [0.342, 0.308, 0.05],
+      [0.09, 0.44, -0.06],
+      [0.167, 0.267, 0.06],
+      [0.2, 0.08, -0.12],
+      [0.21, 0.025, 0],
+      [0.22, 0.02, 0.07]
+    ],
+    "R": [
+      [-0.06, 0.74, -0.03],
+      [-0.17, 0.74, -0.01],
+      [-0.295, 0.533, 0.03],
+      [-0.33, 0.408, 0.05],
+      [-0.355, 0.35, 0.05],
+      [-0.09, 0.44, -0.06],
+      [-0.15, 0.267, 0.06],
+      [-0.183, 0.08, -0.12],
+      [-0.2, 0.025, 0],
+      [-0.21, 0.02, 0.07]
+    ]
+  }
+}

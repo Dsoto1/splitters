@@ -1,0 +1,30 @@
+{
+  "id": "meshy_knight",
+  "kind": "character",
+  "use": "player",
+  "order": 1,
+  "name": "Iron Knight",
+  "look": "core.knight",
+  "bio": "Rode out to a tournament in 1342 and took a very wrong turn. Still undefeated.",
+  "body": "male",
+  "size": "large",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-10-25",
+    "url": null,
+    "meshy": {
+      "preview": "01a173bc-08fd-7255-a545-bb6519425146",
+      "refine": "01a173bd-fc9c-7307-bff2-a15a52b42102",
+      "rig": "01a173c0-4d21-712b-97ba-7f08daf670c7"
+    }
+  },
+  "finish": {
+    "metallic": 0.35,
+    "roughness": 0.45
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {}
+}

@@ -711,6 +711,15 @@ else if (params.get('mode') === 'assets') {
     window.addEventListener('resize', () => engine.resize());
     await openCharacterViewer(engine, canvas);
   })();
+} else if (params.get('mode') === 'grips') {
+  // Team tool: one character holding one weapon at a time, for tools/content/grip-sheet.mjs.
+  void (async () => {
+    $('menu').hidden = true;
+    const { createEngine } = await import('./engine.ts');
+    const { openGripSheet } = await import('./tools/gripSheet.ts');
+    const { engine } = await createEngine($<HTMLCanvasElement>('view'));
+    await openGripSheet(engine);
+  })();
 } else if (params.get('mode') === 'editor') void app.openEditor();
 else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('offline')) {

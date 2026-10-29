@@ -18,6 +18,7 @@ import { Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { PNG } from 'pngjs';
 import { objToDocument } from './obj.mjs';
+import { isQueued, looksProblems, readManifests } from './character-manifests.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = join(ROOT, 'content/models.json');
@@ -292,6 +293,18 @@ const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));
 const meshyLock = JSON.parse(readFileSync(join(ROOT, 'content/meshy.lock.json'), 'utf8'));
 const charFiles = new Set();
 const charEntries = [...charLock.files, ...meshyLock.files];
+// One manifest per whole-body character (content/characters), each built and in the generated looks.
+try {
+  const all = readManifests();
+  problems.push(...looksProblems(all));
+  const characters = all.filter((m) => !isQueued(m));
+  for (const m of characters) if (!meshyLock.files.some((f) => f.id === m.id)) problems.push(`content/characters/${m.id}.json: not built (run node tools/content/prepare-meshy-characters.mjs <downloads> with ONLY=${m.id})`);
+  for (const f of meshyLock.files) if (!characters.some((m) => f.id === m.id || f.id === `${m.id}_fparms`)) problems.push(`${f.file}: no manifest in content/characters`);
+  console.log(`checked ${characters.length} character manifests and their looks`);
+} catch (e) {
+  problems.push(e.message);
+}
+
 for (const f of charEntries) {
   charFiles.add(f.file);
   const packIds = f.source.split(/,\s*/);
@@ -320,7 +333,7 @@ for (const f of charEntries) {
     creator: [...new Set(packs.map((p) => p.creator))].join(', '),
     url: packs.map((p) => p.url).join(' '),
     license: [...new Set(packs.map((p) => p.license))].join(', '),
-    modifications: [...(CHAR_MODS[f.role] ?? []), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : [])],
+    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : [])],
   });
 }
 const CHAR_DIR = join(ROOT, 'packages/client/public/characters');

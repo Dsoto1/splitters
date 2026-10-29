@@ -1,0 +1,32 @@
+{
+  "id": "meshy_zombie_rotter",
+  "kind": "character",
+  "use": "npc+player",
+  "order": 28,
+  "name": "Rotter",
+  "look": "core.rotter",
+  "bio": "Falls apart a little more every round, and never seems to mind.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: zombie 2.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019cd5f1-8fc5-793a-bfc3-6362a967a859",
+    "community": {
+      "model": "zombie"
+    },
+    "file": "^Meshy_AI_zombie_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

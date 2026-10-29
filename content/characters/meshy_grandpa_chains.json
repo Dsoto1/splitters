@@ -1,0 +1,32 @@
+{
+  "id": "meshy_grandpa_chains",
+  "kind": "character",
+  "use": "player",
+  "order": 30,
+  "name": "Grandpa Chains",
+  "look": "core.grandpachains",
+  "bio": "Slippers on, gold chain out, and a better aim than any of his grandchildren.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: old man, slippers, gold chain.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019d6583-4e6b-7f44-9d84-2463443e8cf9",
+    "community": {
+      "model": "Elderly Man with Outstretched arms"
+    },
+    "file": "^Meshy_AI_Elderly_Man_with_Outs_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

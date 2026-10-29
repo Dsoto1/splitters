@@ -1,0 +1,33 @@
+{
+  "id": "meshy_botboy",
+  "kind": "character",
+  "use": "player",
+  "order": 33,
+  "name": "Botboy",
+  "look": "core.botboy",
+  "bio": "A robot raised by humans, with the dress sense to prove it.",
+  "body": "male",
+  "size": "small",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: robot boy.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019c7dbf-4c20-7354-850c-cce8cd7b3c37",
+    "community": {
+      "model": "Robot in T Pose"
+    },
+    "file": "^Meshy_AI_Robot_in_T_Pose_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.3,
+    "roughness": 0.55
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "meshy_cowboy",
+  "kind": "character",
+  "use": "player",
+  "order": 35,
+  "name": "Dusty Colt",
+  "look": "core.dustycolt",
+  "bio": "Rode into the arena on a horse that has since left without him.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: cowboy.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019e8ebd-61b0-7b5c-a1da-ddfec14299ea",
+    "community": {
+      "model": "T Pose Cowboy"
+    },
+    "file": "^Meshy_AI_T_Pose_Cowboy_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "cloth": true
+  }
+}

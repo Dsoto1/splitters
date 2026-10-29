@@ -1,0 +1,33 @@
+{
+  "id": "meshy_ninja",
+  "kind": "character",
+  "use": "player",
+  "order": 32,
+  "name": "Shade",
+  "look": "core.shade",
+  "bio": "You will hear about him afterwards. Never before.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: ninja.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019f9b1c-6097-7fac-86de-5a6141690531",
+    "community": {
+      "model": "Iron Shadow Warrior"
+    },
+    "file": "^Meshy_AI_Iron_Shadow_Warrior_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.15,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "cloth": true
+  }
+}

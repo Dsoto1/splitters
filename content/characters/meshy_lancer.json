@@ -1,0 +1,34 @@
+{
+  "id": "meshy_lancer",
+  "kind": "character",
+  "use": "player",
+  "order": 19,
+  "name": "Lancer Mei",
+  "look": "core.mei",
+  "bio": "Trained with the lance for twenty years. Took about twenty seconds to learn the rifle.",
+  "body": "female",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: female lancer.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019f8f3c-f027-741d-b676-c700d0d3be15",
+    "community": {
+      "model": "Female lancer"
+    },
+    "modelUrl": "https://drive.usercontent.google.com/download?id=1RFye7NB1tl5JvgfSdKsuRmIKvTEvePe1&export=download&confirm=t",
+    "file": "^Meshy_AI_hunghu_female_lancer__\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.3,
+    "roughness": 0.55
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "cloth": true
+  }
+}

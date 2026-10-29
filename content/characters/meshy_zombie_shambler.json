@@ -1,0 +1,32 @@
+{
+  "id": "meshy_zombie_shambler",
+  "kind": "character",
+  "use": "npc+player",
+  "order": 27,
+  "name": "Shambler",
+  "look": "core.shambler",
+  "bio": "Still wearing the shirt from his last day at the office. Still looking for the exit.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: zombie.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/01981b88-8b1d-7231-a7da-4f1885926e12",
+    "community": {
+      "model": "A highly realistic zombie"
+    },
+    "file": "^Meshy_AI_A_highly_realistic_zo_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

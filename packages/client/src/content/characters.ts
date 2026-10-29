@@ -65,7 +65,26 @@ export interface CharacterInstance {
   clips: Map<Clip, AnimationGroup>;
   meshes: AbstractMesh[];
   body: BodyType | 'mannequin';
+  /** Each hand as measured from its model at import (Meshy characters; tools/content/hands.mjs), when the file has it. */
+  hands: { l?: HandData; r?: HandData };
   dispose(): void;
+}
+
+/**
+ * A hand measured from its mesh (tools/content/hands.mjs, `extras.hand` on the
+ * hand joints of a Meshy character's file), in the hand joint's own space,
+ * model metres: where the palm's centre is, which way the fingers run, how
+ * long (wrist joint to fingertips), wide and thick the hand is, and how far
+ * its fingers close round a grip (0: a closed or rigid hand).
+ */
+export interface HandData {
+  palm: [number, number, number];
+  dir: [number, number, number];
+  length: number;
+  width: number;
+  thickness: number;
+  curl: number;
+  fingers: 'split' | 'mitten' | 'none';
 }
 
 export interface CharacterSpec {
@@ -156,6 +175,7 @@ export class CharacterLibrary {
     let joints: Map<string, TransformNode>;
     let clips: Map<Clip, AnimationGroup>;
     let body: CharacterInstance['body'];
+    let hands: CharacterInstance['hands'] = {};
 
     if (spec.npc) {
       // The rig's own mannequin: skeleton and clips come along with the instance.
@@ -212,6 +232,7 @@ export class CharacterLibrary {
       }
       // The first part carries the skeleton; every part shares it (all are bound to this body's pose).
       const carrier = carrierC!.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true });
+      hands = handsOf(carrierC!);
       for (const n of carrier.rootNodes) n.parent = holder;
       const skeleton = carrier.skeletons[0]!;
       joints = jointMap(carrier.rootNodes);
@@ -222,8 +243,8 @@ export class CharacterLibrary {
         for (const m of attached) partOf.set(m, i + 1);
         meshes.push(...attached);
       });
-      // A whole-body character's first-person arms are the universal ones, dyed to match it.
-      this.dress(meshes, spec.armsOnly && look.whole ? { ...look, skin: look.whole.skin, cloth: look.whole.cloth, trim: look.whole.trim } : look);
+      // A whole-body character's first-person arms are its own (nothing to dye) or the universal ones, dyed to match it.
+      this.dress(meshes, spec.armsOnly && look.whole ? { ...look, skin: look.whole.skin ?? null, cloth: look.whole.cloth ?? null, trim: look.whole.trim ?? null } : look);
       if (!spec.armsOnly && !look.whole && look.gear?.length) {
         const of = (i: number) => meshes.filter((m) => (partOf.get(m) ?? 0) === i);
         const headIndex = look.parts.length;
@@ -285,6 +306,7 @@ export class CharacterLibrary {
       clips,
       meshes,
       body,
+      hands,
       dispose: () => {
         for (const g of new Set(clips.values())) g.dispose();
         for (const o of owned) o.dispose();
@@ -399,6 +421,17 @@ export class CharacterLibrary {
 
   /** Character height in metres before scaling, for fitting to the player capsule. */
   static readonly TARGET_HEIGHT = PLAYER.height;
+}
+
+/** The measured hands a character file carries on its hand joints (glTF extras, read as metadata). */
+function handsOf(container: AssetContainer): CharacterInstance['hands'] {
+  const out: CharacterInstance['hands'] = {};
+  for (const side of ['l', 'r'] as const) {
+    const node = container.transformNodes.find((n) => n.name === `hand_${side}`);
+    const hand = (node?.metadata as { gltf?: { extras?: { hand?: HandData } } } | null)?.gltf?.extras?.hand;
+    if (hand && Array.isArray(hand.palm) && hand.palm.length === 3) out[side] = hand;
+  }
+  return out;
 }
 
 function jointMap(roots: readonly { getDescendants(directOnly?: boolean): unknown[] }[]): Map<string, TransformNode> {

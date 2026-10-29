@@ -1,0 +1,34 @@
+{
+  "id": "meshy_bonesworth",
+  "kind": "character",
+  "use": "player",
+  "order": 25,
+  "name": "Count Bonesworth",
+  "look": "core.bonesworth",
+  "bio": "Two hundred years dead and still dressed for dinner.",
+  "body": "male",
+  "size": "large",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: tall dapper skeleton.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019c14f7-cdd5-7fbb-9343-126efa2c3e1f",
+    "community": {
+      "model": "Dapper Elegant Ghoul"
+    },
+    "file": "^Meshy_AI_Dapper_Elegant_Ghoul_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "cloth": true
+  }
+}

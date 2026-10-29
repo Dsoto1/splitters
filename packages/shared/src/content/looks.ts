@@ -5,6 +5,8 @@
  * tints combine freely. The Character Designer builds custom looks from the
  * same catalogue; they travel as short IDs (encodeLook / decodeLook).
  */
+import { WHOLE_BODY_BIOS, WHOLE_BODY_LOOKS } from './characters.generated.ts';
+
 export type BodyType = 'male' | 'female';
 
 /** Where an outfit part goes. A look uses at most one part per slot. */
@@ -36,13 +38,13 @@ export interface CharacterLook {
   gear?: string[];
   /**
    * A whole-body character (one model with its own textures, `parts[0]`; see
-   * tools/content/prepare-meshy-characters.mjs): no separate head, hair, gear or
-   * dyes, and not a Designer base. In first person it wears the universal arms
-   * (`arms`, a base-body arms part on the shared rig, so every gun's grip fits)
-   * dyed to match: `cloth`/`trim` for the sleeves and `skin` for the hands
-   * (bare skin, or a glove colour).
+   * tools/content/prepare-meshy-characters.mjs and content/characters): no
+   * separate head, hair, gear or dyes, and not a Designer base. In first person
+   * it wears `arms`: its own forearms and hands (`<part>_fparms`, cut from the
+   * same model), or a universal base-body arms part on the shared rig dyed to
+   * match (`cloth`/`trim` for the sleeves, `skin` for the hands).
    */
-  whole?: { arms: string; skin: string; cloth: string; trim: string };
+  whole?: { arms: string; skin?: string; cloth?: string; trim?: string };
 }
 
 /** Where a piece of gear goes; one per slot. */
@@ -162,24 +164,8 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['helmet', 'tank'] },
   { id: 'core.desperado', name: 'Desperado', body: 'male', head: 'head_male', parts: ['peasant_torso_m', 'peasant_arms_m', 'peasant_legs_m', 'ranger_feet_m'], hair: ['hair_simpleparted', 'hair_beard'], colorways: [], skin: SKIN_TONES[2], hairColor: '#2a2422', cloth: '#8a7a52', trim: '#4a3020', gear: ['brim', 'mask', 'bandolier'] },
   { id: 'core.raider', name: 'Raider', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buzzedfemale'], colorways: [], skin: SKIN_TONES[4], hairColor: '#8a3a2a', cloth: '#6a3a7a', trim: '#1e2126', gear: ['goggles', 'bandolier'] },
-  // Whole-body originals (prepare-meshy-characters.mjs).
-  { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'ranger_arms_m', skin: '#34373c', cloth: '#5a5e65', trim: '#3a3d42' } },
-  { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_f', skin: '#e4e4df', cloth: '#e9e9e4', trim: '#e9e9e4' } },
-  { id: 'core.dapper', name: 'The Dapper', body: 'male', head: '', parts: ['meshy_dapper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#d9ad8a', cloth: '#1c1d22', trim: '#26272c' } },
-  // Creature originals (Meshy downloads rigged onto the game rig by prepare-meshy-characters.mjs); also NPC bodies (NPC_ROLE_SPECS).
-  // Bare-armed ones wear the peasant arms dyed to their skin in first person.
-  { id: 'core.goblin', name: 'Goblin', body: 'male', head: '', parts: ['meshy_goblin'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'peasant_arms_m', skin: '#4f9a2f', cloth: '#8a8574', trim: '#4a3a2a' } },
-  { id: 'core.otter', name: 'Wealthy Otter', body: 'male', head: '', parts: ['meshy_otter'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'peasant_arms_m', skin: '#3e3d3f', cloth: '#3e3d3f', trim: '#2a7a7a' } },
-  { id: 'core.boglurker', name: 'Boglurker', body: 'male', head: '', parts: ['meshy_toad'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#6a8a35', cloth: '#7c8446', trim: '#5a4632' } },
-  { id: 'core.warlord', name: 'Salamander Warlord', body: 'male', head: '', parts: ['meshy_salamander'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'ranger_arms_m', skin: '#c8c0ae', cloth: '#4f5c5a', trim: '#7a5a3a' } },
-  { id: 'core.hyena', name: 'Hyena Warrior', body: 'male', head: '', parts: ['meshy_hyena'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'ranger_arms_m', skin: '#8a6a48', cloth: '#7a3328', trim: '#2e2e30' } },
-  // Meshy community originals (CC0 per the owner), rigged onto the game rig by prepare-meshy-characters.mjs; three are NPC bodies too.
-  { id: 'core.elder', name: 'Elder Tomo', body: 'male', head: '', parts: ['meshy_elder'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#c99a76', cloth: '#5f5a4c', trim: '#3b3731' } },
-  { id: 'core.visitor', name: 'The Visitor', body: 'male', head: '', parts: ['meshy_alien'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#b4b6a0', cloth: '#b4b6a0', trim: '#94967f' } },
-  { id: 'core.biscuit', name: 'Biscuit', body: 'male', head: '', parts: ['meshy_cat'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'peasant_arms_m', skin: '#cfcfca', cloth: '#7c7c7a', trim: '#4e4e4c' } },
-  { id: 'core.ember', name: 'Flt. Lt. Ember', body: 'male', head: '', parts: ['meshy_pilot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#2f3136', cloth: '#a8582a', trim: '#2f3136' } },
-  { id: 'core.barnacle', name: "Cap'n Barnacle", body: 'male', head: '', parts: ['meshy_pirate'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#9a6a48', cloth: '#7aa688', trim: '#5a3a22' } },
-  { id: 'core.bogdan', name: 'Big Bogdan', body: 'male', head: '', parts: ['meshy_titan'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'peasant_arms_m', skin: '#c48a62', cloth: '#c48a62', trim: '#a06c4c' } },
+  // Whole-body characters, one per manifest in content/characters (generated: characters.generated.ts).
+  ...WHOLE_BODY_LOOKS,
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'] },
 ];
 
@@ -205,20 +191,7 @@ export const LOOK_BIOS: Readonly<Record<string, string>> = {
   'core.frost': 'Came down from the mountain pass. Brought the cold with her.',
   'core.operative': 'Dark suit of armour, darker glasses. Never seen arriving.',
   'core.medic': 'Patches up her team, then patches holes in yours.',
-  'core.knight': 'Rode out to a tournament in 1342 and took a very wrong turn. Still undefeated.',
-  'core.nova': 'First person on the Moon in 1969, by her own account. Mission control lost the paperwork.',
-  'core.dapper': 'Chicago, 1927. Runs the numbers, the speakeasy and, lately, the leaderboard.',
-  'core.goblin': 'Gutter-born, bandage-wrapped and grinning. Steals the kill, then the loot, then your seat.',
-  'core.otter': 'Old river money. Pays others to do his fighting, but can never resist joining in.',
-  'core.boglurker': 'Crawled out of the marsh for the noise and stayed for the shooting. Smells exactly as you fear.',
-  'core.warlord': 'Lord of a sunken fortress, armoured in rust and spite. Expects the arena to kneel.',
-  'core.hyena': 'Laughs at everything, especially the last thing you tried.',
-  'core.elder': 'Has meditated on this map for forty years. Knows where you will peek before you do.',
-  'core.visitor': 'Came a very long way to study human culture. Stayed for the deathmatches.',
-  'core.biscuit': 'Stood up on his hind legs one morning and never went back down. Knocks things off ledges, you included.',
-  'core.ember': 'Ejected over the arena on a test flight and decided to stay. Still logs every kill as a sortie.',
-  'core.barnacle': 'Lost a leg to a cannonball and his ship to a card game. Wants both back, in that order.',
-  'core.bogdan': 'Bent iron bars at the travelling circus until the circus ran out of bars.',
+  ...WHOLE_BODY_BIOS,
   'core.engineer': 'Hard hat, fuel tank, short temper. Builds things; breaks more.',
   'core.desperado': 'Wanted in three maps. The poster doesn\'t do him justice.',
   'core.raider': 'Goggles down, bandolier full, already halfway across the map.',

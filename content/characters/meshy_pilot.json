@@ -1,0 +1,68 @@
+{
+  "id": "meshy_pilot",
+  "kind": "character",
+  "use": "player",
+  "order": 12,
+  "name": "Flt. Lt. Ember",
+  "look": "core.ember",
+  "bio": "Ejected over the arena on a test flight and decided to stay. Still logs every kill as a sortie.",
+  "body": "male",
+  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. The suit's blue sleeve patch (a red swoosh on a blue field) goes to the suit's orange (`scrubBlue`).",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-05-10",
+    "url": null,
+    "community": {
+      "model": "T Pose Pilot"
+    },
+    "file": "^Meshy_AI_T_Pose_Pilot_.*_texture\\.fbx$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.65
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "scrubBlue": "#a8582a"
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.5, -0.005],
+      [0, 0.57, 0],
+      [0, 0.64, 0],
+      [0, 0.72, -0.005],
+      [0, 0.83, -0.01],
+      [0, 0.87, 0],
+      [0, 1, 0]
+    ],
+    "L": [
+      [0.035, 0.79, -0.01],
+      [0.11, 0.78, -0.02],
+      [0.25, 0.76, -0.02],
+      [0.385, 0.753, -0.013],
+      [0.475, 0.748, -0.012],
+      [0.07, 0.48, 0],
+      [0.075, 0.28, -0.01],
+      [0.088, 0.07, -0.03],
+      [0.095, 0.02, 0.05],
+      [0.095, 0.015, 0.095]
+    ],
+    "R": [
+      [-0.035, 0.79, -0.01],
+      [-0.11, 0.78, -0.02],
+      [-0.25, 0.76, -0.02],
+      [-0.385, 0.753, -0.013],
+      [-0.475, 0.748, -0.012],
+      [-0.07, 0.48, 0],
+      [-0.075, 0.28, -0.01],
+      [-0.088, 0.07, -0.03],
+      [-0.095, 0.02, 0.05],
+      [-0.095, 0.015, 0.095]
+    ]
+  }
+}
