@@ -110,34 +110,48 @@
             <div id="pause-admin-slot"></div>
           </section>
           <section class="pause-sec" data-sec="host" hidden>
-            <h4 class="pause-h">Online</h4>
-            <div class="pause-online">
-              <button id="go-online" class="primary" hidden title="Restart this match and list it in the game browser">Go online</button>
-              <button id="go-offline" hidden title="Disconnect friends and stop listing this match">Go offline</button>
-              <p class="hint" id="online-note" hidden></p>
-              <!-- Online: the join code and invite link come first, where they fit on small screens. -->
-              <div id="host-info" hidden></div>
-              <button id="host-game" hidden title="Let friends join this match from their browsers with a code (not listed)">Host with code only (not listed)</button>
-              <div id="host-public" hidden>
-                <label class="pause-row" title="Anyone can find and join this match from Online → Game browser"><span>List in the game browser</span> <input id="host-list" type="checkbox" /></label>
-                <input id="host-name" maxlength="40" placeholder="Server name" aria-label="Server name" />
-                <p class="hint" id="host-public-status"></p>
+            <div id="pause-online-box" class="pause-online-box">
+              <h4 class="pause-h">Online</h4>
+              <div class="pause-online">
+                <button id="go-online" class="primary" hidden title="Restart this match and list it in the game browser">Go online</button>
+                <button id="go-offline" hidden title="Disconnect friends and stop listing this match">Go offline</button>
+                <p class="hint" id="online-note" hidden></p>
+                <!-- Online: the join code and invite link come first, where they fit on small screens. -->
+                <div id="host-info" hidden></div>
+                <button id="host-game" hidden title="Let friends join this match from their browsers with a code (not listed)">Host with code only (not listed)</button>
+                <div id="host-public" hidden>
+                  <label class="pause-row" title="Anyone can find and join this match from Online → Game browser"><span>List in the game browser</span> <input id="host-list" type="checkbox" /></label>
+                  <input id="host-name" maxlength="40" placeholder="Server name" aria-label="Server name" />
+                  <p class="hint" id="host-public-status"></p>
+                </div>
               </div>
             </div>
             <div id="pause-host-slot"></div>
           </section>
           <section class="pause-sec" data-sec="settings" hidden>
-            <label class="pause-row"><span>Volume</span> <input id="volume" type="range" min="0" max="100" step="5" /></label>
-            <label class="pause-row"><span>Mouse</span> <input id="mouse-sens" type="range" min="0.2" max="4" step="0.1" /> <output id="mouse-sens-val"></output></label>
-            <label class="pause-row"><span>Invert look</span> <input id="mouse-invert" type="checkbox" /></label>
-            <label class="pause-row"><span>Aim assist</span> <input id="aim-assist" type="checkbox" /></label>
-            <label class="pause-row"><span>Blood</span> <input id="blood-toggle" type="checkbox" checked /></label>
-            <label class="pause-row"><span>Bodies</span> <select id="bodies-setting"><option value="stay">Stay all match</option><option value="fade">Fade after 30 s</option></select></label>
-            <div class="pause-row"><span>Screen</span> <button id="pause-fullscreen">Fullscreen</button></div>
-            <label class="pause-row" title="Frame time, what each frame costs and what it draws, top left (F3)"><span>Performance overlay</span> <input id="perf-overlay" type="checkbox" /></label>
-            <div class="pause-row"><span>Running slowly?</span> <button id="perf-report" title="Copies the last minute's frame times, your graphics card and settings, to paste into a message">Copy performance report</button></div>
-            <p class="hint" id="perf-report-note"></p>
-            <textarea id="perf-report-text" class="perf-report-text" readonly rows="4" aria-label="Performance report" hidden></textarea>
+            <div class="pause-groups">
+              <div class="pause-group">
+                <h4 class="pause-h">Controls</h4>
+                <label class="pause-row"><span>Mouse</span> <input id="mouse-sens" type="range" min="0.2" max="4" step="0.1" /> <output id="mouse-sens-val"></output></label>
+                <label class="pause-row" title="Look speed when aiming down the sights or scoped. 1.00×: the view moves on screen as in hip fire"><span>Zoom sensitivity</span> <input id="zoom-sens" type="range" min="0.2" max="3" step="0.05" /> <output id="zoom-sens-val"></output></label>
+                <label class="pause-row"><span>Invert look</span> <input id="mouse-invert" type="checkbox" /></label>
+                <label class="pause-row"><span>Aim assist</span> <input id="aim-assist" type="checkbox" /></label>
+              </div>
+              <div class="pause-group">
+                <h4 class="pause-h">Sound and screen</h4>
+                <label class="pause-row"><span>Volume</span> <input id="volume" type="range" min="0" max="100" step="5" /></label>
+                <div class="pause-row"><span>Screen</span> <button id="pause-fullscreen">Fullscreen</button></div>
+                <label class="pause-row"><span>Blood</span> <input id="blood-toggle" type="checkbox" checked /></label>
+                <label class="pause-row"><span>Bodies</span> <select id="bodies-setting"><option value="stay">Stay all match</option><option value="fade">Fade after 30 s</option></select></label>
+              </div>
+              <div class="pause-group">
+                <h4 class="pause-h">Performance</h4>
+                <label class="pause-row" title="Frame time, what each frame costs and what it draws, top left (F3)"><span>Performance overlay</span> <input id="perf-overlay" type="checkbox" /></label>
+                <div class="pause-row"><span>Running slowly?</span> <button id="perf-report" title="Copies the last minute's frame times, your graphics card and settings, to paste into a message">Copy performance report</button></div>
+                <p class="hint" id="perf-report-note"></p>
+                <textarea id="perf-report-text" class="perf-report-text" readonly rows="4" aria-label="Performance report" hidden></textarea>
+              </div>
+            </div>
             <p class="hint">Graphics, crosshair and keys: main menu → Options.</p>
           </section>
         </div>

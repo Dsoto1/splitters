@@ -365,7 +365,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 
 /* Pause */
 #pause { position: fixed; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: 8px; box-sizing: border-box; background: radial-gradient(circle at 50% 50%, rgba(11, 15, 26, 0.55), rgba(11, 15, 26, 0.85)); }
-#pause .pause-card { display: flex; flex-direction: column; width: min(560px, 100%); max-height: 100%; box-sizing: border-box; padding: 14px 16px 10px; background: var(--glass); }
+#pause .pause-card { display: flex; flex-direction: column; width: min(1400px, 92vw, 100%); max-height: 100%; box-sizing: border-box; padding: 14px 16px 10px; background: var(--glass); }
 #pause .pause-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 #pause .pause-title { margin: 0; font: italic 700 30px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
 #pause .pause-context { margin: 0; color: var(--muted); font: 600 13px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
@@ -381,7 +381,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #pause .pause-note.on { border-left-color: var(--success); color: var(--text); }
 #pause .pause-online { display: flex; flex-direction: column; gap: 8px; }
 #pause .pause-row { display: flex; align-items: center; gap: 10px; min-height: 30px; color: var(--muted); font: 600 13px var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; }
-#pause .pause-row > span:first-child { flex: 0 0 120px; }
+#pause .pause-row > span:first-child { flex: 0 0 150px; }
 #pause .pause-row input[type='range'] { flex: 1; min-width: 0; }
 #pause .pause-scores { font-size: 13px; }
 #pause .pause-scores:empty { display: none; }
@@ -393,6 +393,25 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #pause button.danger, #pause .confirm button.danger { background: transparent; border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #pause button.danger:hover { background: rgba(231, 76, 60, 0.16); }
 #pause #host-info, #pause .host-controls { max-width: none; width: auto; }
+/*
+ * Wide windows: the menu uses the width. Settings is two columns of groups; the Host tab's panel is two
+ * columns (Online, teams and bots | rules, Apply, match buttons, rotation, people: hostPanel.ts). Below
+ * 1000 px wide, one column as before.
+ */
+#pause .pause-groups { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px 28px; align-items: start; }
+#pause .pause-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+#pause .pause-online-box { display: flex; flex-direction: column; gap: 8px; }
+/* Nothing to show online (no hub here, or not yours to host): no empty heading either. */
+#pause .pause-online-box:not(:has(.pause-online > :not([hidden]))) { display: none; }
+#pause .host-controls .hc-col { min-width: 0; }
+@media (min-width: 1000px) {
+  #pause .pause-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #pause .host-controls .hc-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; align-items: start; }
+  #pause .host-controls .hc-col + .hc-col { padding-left: 28px; margin-left: -1px; border-left: 1px solid var(--line); }
+  #pause .host-controls .hc-col > h4:first-child, #pause .host-controls .hc-col > .pause-online-box:first-child { margin-top: 4px; }
+  /* The Match tab's buttons and board don't need the full width. */
+  #pause .pause-sec[data-sec='match'] .pause-actions { max-width: 760px; }
+}
 #pause .confirm { position: fixed; left: 50%; top: 50%; z-index: 6; transform: translate(-50%, -50%); width: min(420px, calc(100vw - 32px)); padding: 16px 18px; background: rgba(10, 14, 24, 0.97); }
 #pause .confirm p { margin: 0 0 12px; color: var(--text); font: 500 14px var(--font-body); }
 #pause .confirm .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
@@ -791,6 +810,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .host-controls .hc-rot li.next { box-shadow: inset 3px 0 0 var(--cyan); }
 #pause .host-controls .hc-rot li button { padding: 1px 7px; font-size: 12px; }
 .host-controls .hc-rot-tools select { flex: 1; min-width: 0; }
+.host-controls .hc-row input[type='checkbox'] { flex: none; }
 .host-controls .hc-check { display: flex; align-items: center; gap: 5px; flex: 1; color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
 #feed .note { font-style: normal; color: #9fe8ff; }
 .host-maps { position: fixed; inset: 16px; z-index: 5; display: flex; flex-direction: column; gap: 10px; padding: 14px; background: rgba(8, 12, 22, 0.96); border: 1px solid rgba(0, 209, 255, 0.4); border-radius: 6px; }
