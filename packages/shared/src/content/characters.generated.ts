@@ -20,6 +20,9 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.bogdan', name: 'Big Bogdan', body: 'male', head: '', parts: ['meshy_titan'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'peasant_arms_m', skin: '#c48a62', cloth: '#c48a62', trim: '#a06c4c' } },
 ];
 
+/** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
+export const WHOLE_BODY_NPC_LOOKS: readonly CharacterLook[] = [];
+
 /** Their one-line bios (character select). */
 export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.knight': 'Rode out to a tournament in 1342 and took a very wrong turn. Still undefeated.',

@@ -1,5 +1,7 @@
 {
   "id": "meshy_toad",
+  "kind": "character",
+  "use": "player+npc",
   "order": 6,
   "name": "Boglurker",
   "look": "core.boglurker",
@@ -10,7 +12,8 @@
     "license": "owned",
     "author": "the owner, on their Meshy subscription",
     "date": "2026-03-25",
-    "fbx": "^Meshy_AI_Boglurker_the_toad_.*_texture\\.fbx$"
+    "url": null,
+    "file": "^Meshy_AI_Boglurker_the_toad_.*_texture\\.fbx$"
   },
   "finish": {
     "metallic": 0,

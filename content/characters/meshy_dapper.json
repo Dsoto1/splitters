@@ -1,5 +1,7 @@
 {
   "id": "meshy_dapper",
+  "kind": "character",
+  "use": "player",
   "order": 3,
   "name": "The Dapper",
   "look": "core.dapper",
@@ -9,6 +11,7 @@
     "license": "owned",
     "author": "the owner, on their Meshy subscription",
     "date": "2026-10-25",
+    "url": null,
     "meshy": {
       "preview": "01a17408-78ca-7473-b379-648d7e9aa349",
       "refine": "01a17409-66cf-7542-bf7f-d39040dd0f4f",
@@ -24,8 +27,7 @@
     "arms": "ranger_arms_m",
     "skin": "#d9ad8a",
     "cloth": "#1c1d22",
-    "trim": "#26272c",
-    "ownArms": true
+    "trim": "#26272c"
   },
   "fixes": {}
 }

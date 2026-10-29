@@ -2,15 +2,15 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { FetchError, fetchAll, fetchCharacter, readTask, taskUrl } from '../fetch-meshy.mjs';
+import { FetchError, downloaded, fetchAll, fetchCharacter, readTask, taskUrl } from '../fetch-meshy.mjs';
 
 const GLB = Buffer.concat([Buffer.from('glTF'), Buffer.alloc(60)]);
 const FBX = Buffer.concat([Buffer.from('Kaydara FBX Binary  \0'), Buffer.alloc(60)]);
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
 
 const rigged = { id: 'meshy_test', source: { license: 'owned', meshy: { preview: 'p-1111-2222-3333-4444', refine: 'r-1111-2222-3333-4444', rig: 'g-1111-2222-3333-4444' } } };
-const unrigged = { id: 'meshy_lump', source: { license: 'owned', meshy: { refine: 'r-1111-2222-3333-4444', remesh: 'm-1111-2222-3333-4444' }, fbx: '^nothing$' } };
-const community = { id: 'meshy_found', source: { license: 'CC0', community: { model: 'Found', url: null }, fbx: '^Meshy_AI_Found_.*\\.fbx$' } };
+const unrigged = { id: 'meshy_lump', source: { license: 'owned', meshy: { refine: 'r-1111-2222-3333-4444', remesh: 'm-1111-2222-3333-4444' }, file: '^nothing$' } };
+const community = { id: 'meshy_found', source: { license: 'CC0', url: 'https://www.meshy.ai/posts/0000', community: { model: 'Found' }, file: '^Meshy_AI_Found_.*\\.fbx$' } };
 
 /** A fetch that answers from a table of URL → response, and records every call. */
 function mockFetch(table) {
@@ -113,8 +113,15 @@ describe('fetch-meshy', () => {
     expect(existsSync(join(dir, 'meshy_test.glb'))).toBe(false);
   });
 
-  it('sends community models to a download by hand', async () => {
-    await expect(fetchCharacter(community, tmp(), { apiKey: 'k', log: quiet })).rejects.toThrow(/download it by hand/);
+  it('sends community models to a download by hand, and finds them by id or file pattern', async () => {
+    const dir = tmp();
+    await expect(fetchCharacter(community, dir, { apiKey: 'k', log: quiet })).rejects.toThrow(/downloaded by hand from https:\/\/www\.meshy\.ai\/posts\/0000: save its rigged GLB as .*meshy_found\.glb/);
+    expect(downloaded(community, dir)).toBe(false);
+    writeFileSync(join(dir, 'Meshy_AI_Found_2026_texture.fbx'), FBX);
+    expect(downloaded(community, dir)).toBe(true);
+    const other = tmp();
+    writeFileSync(join(other, 'meshy_found.glb'), GLB);
+    expect(downloaded(community, other)).toBe(true);
   });
 
   it('skips what is downloaded and reports what failed', async () => {

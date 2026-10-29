@@ -1,5 +1,7 @@
 {
   "id": "meshy_titan",
+  "kind": "character",
+  "use": "player+npc",
   "order": 14,
   "name": "Big Bogdan",
   "look": "core.bogdan",
@@ -11,11 +13,11 @@
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
     "date": "2026-05-03",
+    "url": null,
     "community": {
-      "model": "T Pose Titan",
-      "url": null
+      "model": "T Pose Titan"
     },
-    "fbx": "^Meshy_AI_T_Pose_Titan_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_T_Pose_Titan_.*_texture\\.fbx$"
   },
   "finish": {
     "metallic": 0,

@@ -1,5 +1,7 @@
 {
   "id": "meshy_goblin",
+  "kind": "character",
+  "use": "player+npc",
   "order": 4,
   "name": "Goblin",
   "look": "core.goblin",
@@ -10,7 +12,8 @@
     "license": "owned",
     "author": "the owner, on their Meshy subscription",
     "date": "2026-10-26",
-    "fbx": "^Meshy_AI_Goblin_.*_texture\\.fbx$"
+    "url": null,
+    "file": "^Meshy_AI_Goblin_.*_texture\\.fbx$"
   },
   "finish": {
     "metallic": 0,

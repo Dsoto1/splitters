@@ -1,5 +1,7 @@
 {
   "id": "meshy_elder",
+  "kind": "character",
+  "use": "player",
   "order": 9,
   "name": "Elder Tomo",
   "look": "core.elder",
@@ -10,11 +12,11 @@
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
     "date": "2025-11-14",
+    "url": null,
     "community": {
-      "model": "Elder T-pose",
-      "url": null
+      "model": "Elder T-pose"
     },
-    "fbx": "^Meshy_AI_Elder_T_POSE_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_Elder_T_POSE_.*_texture\\.fbx$"
   },
   "finish": {
     "metallic": 0,

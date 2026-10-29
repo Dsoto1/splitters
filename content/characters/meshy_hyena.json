@@ -1,5 +1,7 @@
 {
   "id": "meshy_hyena",
+  "kind": "character",
+  "use": "player+npc",
   "order": 8,
   "name": "Hyena Warrior",
   "look": "core.hyena",
@@ -10,7 +12,8 @@
     "license": "owned",
     "author": "the owner, on their Meshy subscription",
     "date": "2025-04-25",
-    "fbx": "^Meshy_AI_Hyena_Warrior_.*_texture\\.fbx$"
+    "url": null,
+    "file": "^Meshy_AI_Hyena_Warrior_.*_texture\\.fbx$"
   },
   "finish": {
     "metallic": 0.15,

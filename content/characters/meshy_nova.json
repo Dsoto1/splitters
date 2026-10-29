@@ -1,5 +1,7 @@
 {
   "id": "meshy_nova",
+  "kind": "character",
+  "use": "player",
   "order": 2,
   "name": "Capt. Nova",
   "look": "core.nova",
@@ -9,6 +11,7 @@
     "license": "owned",
     "author": "the owner, on their Meshy subscription",
     "date": "2026-10-25",
+    "url": null,
     "meshy": {
       "preview": "01a17408-6ee3-7596-80cc-44711c118d2f",
       "refine": "01a17409-5c80-7338-a476-32f6a5f454ec",
@@ -24,8 +27,7 @@
     "arms": "peasant_arms_f",
     "skin": "#e4e4df",
     "cloth": "#e9e9e4",
-    "trim": "#e9e9e4",
-    "ownArms": true
+    "trim": "#e9e9e4"
   },
   "fixes": {}
 }

@@ -62,7 +62,7 @@ const downloads = process.argv[2];
 if (!downloads) throw new Error('usage: prepare-meshy-characters.mjs <downloads dir>');
 
 /** The characters: one manifest each in content/characters (character-manifests.mjs reads and checks them). */
-const SPECS = readManifests().map(buildSpec);
+const SPECS = readManifests({ ready: true }).map(buildSpec);
 
 /** Meshy's joints onto the rig's (its head's end markers fold into the head). */
 const JOINT_MAP = {
@@ -701,35 +701,39 @@ function keepAsBuilt(id) {
 // ONLY=meshy_goblin,meshy_toad rebuilds just those (the rest kept as built).
 const only = process.env.ONLY?.split(',').filter(Boolean);
 for (const id of only ?? []) if (!SPECS.some((c) => c.id === id)) throw new Error(`ONLY: no manifest content/characters/${id}.json`);
-// The unrigged FBX downloads are found by file name anywhere under the downloads dir.
+// Downloads are found by name anywhere under the downloads dir.
 const downloaded = readdirSync(downloads, { recursive: true }).map((f) => join(downloads, String(f)));
+/** A character's download: a rigged GLB (<id>.glb, or a .glb matching the manifest's `source.file`) or an unrigged textured FBX. */
+function findDownload(c) {
+  const own = join(downloads, `${c.id}.glb`);
+  if (existsSync(own)) return { file: own, rigged: true };
+  const named = downloaded.filter((f) => (c.file && c.file.test(basename(f))) || basename(f) === `${c.id}_texture.fbx`);
+  const glb = named.find((f) => /\.glb$/i.test(f));
+  if (glb) return { file: glb, rigged: true };
+  const fbx = named.find((f) => /\.fbx$/i.test(f));
+  return fbx ? { file: fbx, rigged: false } : null;
+}
+/** The first-person arms (forearms and hands) every character gets, from the same source as its body. */
+const fparms = (c, src) => build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio: 0.8, lod: false, firstPerson: true });
 for (const c of SPECS) {
-  if (only && !only.includes(c.id)) {
+  const found = only && !only.includes(c.id) ? null : findDownload(c);
+  if (!found) {
     keepAsBuilt(c.id);
     continue;
   }
-  if (c.rigged) {
-    // A Meshy rigged GLB, as fetch-meshy.mjs saves it.
-    const file = join(downloads, `${c.id}.glb`);
-    if (!existsSync(file)) {
-      keepAsBuilt(c.id);
-      continue;
-    }
-    const src = await readMeshy(file, ual, c);
-    const meshy = { meshy: c.meshy };
-    lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...meshy, ...(await build(c, src, `${c.id}.glb`, c.triangles ? { ratio: c.triangles / (src.indices.length / 3) } : {})) });
-    if (c.ownArms) lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...meshy, ...(await build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio: 0.8, lod: false, firstPerson: true })) });
+  if (found.rigged) {
+    const src = await readMeshy(found.file, ual, c);
+    const from = { ...(c.meshy ? { meshy: c.meshy } : {}), ...(c.community ?? {}), ...(c.meshy ? {} : { src: basename(found.file) }) };
+    lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...from, ...(await build(c, src, `${c.id}.glb`, c.triangles ? { ratio: c.triangles / (src.indices.length / 3) } : {})) });
+    lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src)) });
     continue;
   }
-  // An unrigged FBX download: the manifest's file name pattern, or <id>_texture.fbx as fetch-meshy.mjs saves it.
-  const file = downloaded.find((f) => (c.fbx && c.fbx.test(basename(f))) || basename(f) === `${c.id}_texture.fbx`);
-  if (!file) {
-    keepAsBuilt(c.id);
-    continue;
-  }
-  const { src, sourceTriangles, workTriangles } = await readFbx(file, c, ual);
-  const built = await build(c, src, `${c.id}.glb`, { ratio: c.triangles / workTriangles });
-  lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.pack, ...(c.community ?? {}), src: basename(file), sourceTriangles, ...built });
+  if (!c.joints) throw new Error(`${c.id}: ${basename(found.file)} is unrigged, so content/characters/${c.id}.json needs its landmarks`);
+  const { src, sourceTriangles, workTriangles } = await readFbx(found.file, c, ual);
+  const built = await build(c, src, `${c.id}.glb`, { ratio: (c.triangles ?? 11000) / workTriangles });
+  const from = { ...(c.community ?? {}), src: basename(found.file), sourceTriangles };
+  lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.pack, ...from, ...built });
+  lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src)) });
 }
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
 console.log(`wrote ${lock.files.length} files and content/meshy.lock.json`);

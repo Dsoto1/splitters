@@ -1,5 +1,7 @@
 {
   "id": "meshy_alien",
+  "kind": "character",
+  "use": "player+npc",
   "order": 10,
   "name": "The Visitor",
   "look": "core.visitor",
@@ -10,11 +12,11 @@
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
     "date": "2026-07-21",
+    "url": null,
     "community": {
-      "model": "T Pose Alien",
-      "url": null
+      "model": "T Pose Alien"
     },
-    "fbx": "^Meshy_AI_T_Pose_Alien_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_T_Pose_Alien_.*_texture\\.fbx$"
   },
   "finish": {
     "metallic": 0,

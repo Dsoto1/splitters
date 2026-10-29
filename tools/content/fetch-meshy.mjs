@@ -11,7 +11,10 @@
 //   (retexture, remesh, refine, image, multiImage, preview: the text-to-3d, image-to-3d, remesh and
 //   retexture task results' model_urls.fbx and texture_urls[0].base_color), saved as
 //   <dir>/<id>/<id>_texture.fbx and .png, rigged later from the manifest's landmarks.
-// A community model (no task IDs) can't be fetched: download it by hand from its page into the dir.
+// Meshy's API only serves tasks in the key holder's own account, so only the owner's own models (their
+// meshy.ai/s/… share links: the manifest names the task IDs) come through here. A community (CC0) model
+// is downloaded by hand from its page: its rigged GLB saved as <dir>/<id>.glb, or its textured FBX
+// folder unzipped anywhere under <dir> (found by the manifest's `source.file` pattern).
 // FORCE=1 fetches again what is already there. Meshy's file links are signed and expire, so each is
 // downloaded right after its task is read.
 
@@ -103,8 +106,9 @@ export const downloadFiles = (m) => (m.source.meshy?.rig ? [`${m.id}.glb`] : [`$
 /** Whether a character's download is already in the dir (an unrigged one by its own name or the manifest's pattern). */
 export function downloaded(m, dir) {
   if (downloadFiles(m).every((f) => existsSync(join(dir, f)))) return true;
-  if (m.source.meshy?.rig || !m.source.fbx || !existsSync(dir)) return false;
-  const re = new RegExp(m.source.fbx);
+  if (existsSync(join(dir, `${m.id}.glb`))) return true;
+  if (!m.source.file || !existsSync(dir)) return false;
+  const re = new RegExp(m.source.file);
   return readdirSync(dir, { recursive: true }).some((f) => re.test(basename(String(f))));
 }
 
@@ -123,7 +127,7 @@ export async function fetchCharacter(m, dir, opts = {}) {
     return [path];
   }
   const stage = MODEL_STAGES.find((k) => tasks[k]);
-  if (!stage) throw new FetchError(`${m.id} has no Meshy task to fetch (a community model: download it by hand${m.source.community?.url ? ` from ${m.source.community.url}` : ''} into ${dir})`);
+  if (!stage) throw new FetchError(`${m.id} has no Meshy task to fetch. Meshy's API only serves the key holder's own tasks, so a community model is downloaded by hand${m.source.url ? ` from ${m.source.url}` : ''}: save its rigged GLB as ${join(dir, `${m.id}.glb`)}, or unzip its textured FBX folder into ${dir} (found by the manifest's source.file pattern).`);
   const task = await readTask(stage, tasks[stage], opts);
   const fbx = task.model_urls?.fbx;
   const color = task.texture_urls?.[0]?.base_color;
@@ -142,7 +146,7 @@ export async function fetchCharacter(m, dir, opts = {}) {
 /** Fetch the given characters (or every one not downloaded yet); returns the ids that failed. */
 export async function fetchAll(dir, ids, opts = {}) {
   const log = opts.log ?? console.log;
-  const all = opts.manifests ?? readManifests();
+  const all = opts.manifests ?? readManifests().filter((m) => m.kind !== 'creature');
   for (const id of ids ?? []) if (!all.some((m) => m.id === id)) throw new FetchError(`no manifest content/characters/${id}.json`);
   const list = ids?.length ? all.filter((m) => ids.includes(m.id)) : all;
   const failed = [];

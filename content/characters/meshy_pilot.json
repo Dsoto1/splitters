@@ -1,5 +1,7 @@
 {
   "id": "meshy_pilot",
+  "kind": "character",
+  "use": "player",
   "order": 12,
   "name": "Flt. Lt. Ember",
   "look": "core.ember",
@@ -10,11 +12,11 @@
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
     "date": "2026-05-10",
+    "url": null,
     "community": {
-      "model": "T Pose Pilot",
-      "url": null
+      "model": "T Pose Pilot"
     },
-    "fbx": "^Meshy_AI_T_Pose_Pilot_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_T_Pose_Pilot_.*_texture\\.fbx$"
   },
   "finish": {
     "metallic": 0.05,

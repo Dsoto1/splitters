@@ -26,7 +26,7 @@ if (!relative(ROOT, dir).startsWith('..')) {
 }
 const lock = JSON.parse(readFileSync(join(ROOT, 'content/meshy.lock.json'), 'utf8'));
 const only = process.env.ONLY?.split(',').filter(Boolean);
-const ids = only ?? readManifests().filter((m) => !lock.files.some((f) => f.id === m.id)).map((m) => m.id);
+const ids = only ?? readManifests({ ready: true }).filter((m) => !lock.files.some((f) => f.id === m.id)).map((m) => m.id);
 if (!ids.length) {
   console.log('every manifest in content/characters is built (ONLY=<ids> rebuilds some)');
   process.exit(0);

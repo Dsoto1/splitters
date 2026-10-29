@@ -1,5 +1,7 @@
 {
   "id": "meshy_pirate",
+  "kind": "character",
+  "use": "player+npc",
   "order": 13,
   "name": "Cap'n Barnacle",
   "look": "core.barnacle",
@@ -10,11 +12,11 @@
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
     "date": "2026-07-14",
+    "url": null,
     "community": {
-      "model": "T Pose Pirate",
-      "url": null
+      "model": "T Pose Pirate"
     },
-    "fbx": "^Meshy_AI_T_Pose_Pirate_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_T_Pose_Pirate_.*_texture\\.fbx$"
   },
   "finish": {
     "metallic": 0.05,

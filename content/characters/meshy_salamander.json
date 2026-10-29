@@ -1,5 +1,7 @@
 {
   "id": "meshy_salamander",
+  "kind": "character",
+  "use": "player+npc",
   "order": 7,
   "name": "Salamander Warlord",
   "look": "core.warlord",
@@ -10,7 +12,8 @@
     "license": "owned",
     "author": "the owner, on their Meshy subscription",
     "date": "2026-04-21",
-    "fbx": "^Meshy_AI_Salamander_Warlord_.*_texture\\.fbx$"
+    "url": null,
+    "file": "^Meshy_AI_Salamander_Warlord_.*_texture\\.fbx$"
   },
   "finish": {
     "metallic": 0.3,

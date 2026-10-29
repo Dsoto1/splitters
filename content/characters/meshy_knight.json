@@ -1,5 +1,7 @@
 {
   "id": "meshy_knight",
+  "kind": "character",
+  "use": "player",
   "order": 1,
   "name": "Iron Knight",
   "look": "core.knight",
@@ -9,6 +11,7 @@
     "license": "owned",
     "author": "the owner, on their Meshy subscription",
     "date": "2026-10-25",
+    "url": null,
     "meshy": {
       "preview": "01a173bc-08fd-7255-a545-bb6519425146",
       "refine": "01a173bd-fc9c-7307-bff2-a15a52b42102",
@@ -23,8 +26,7 @@
     "arms": "ranger_arms_m",
     "skin": "#34373c",
     "cloth": "#5a5e65",
-    "trim": "#3a3d42",
-    "ownArms": true
+    "trim": "#3a3d42"
   },
   "fixes": {}
 }
