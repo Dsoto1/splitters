@@ -12,6 +12,7 @@ import { Ray } from '@babylonjs/core/Culling/ray';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
+import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
@@ -411,16 +412,7 @@ export class EditorView {
         m = undefined;
       }
       if (!m) {
-        m =
-          e.kind === 'spawn'
-            ? this.createSpawnMarker(e.id)
-            : e.kind === 'pickup'
-              ? { key, node: createPickupVisual(this.scene, this.models, e.item, `edpickup_${e.id}`) }
-              : e.kind === 'prop'
-                ? { key, node: createPropNode(this.scene, this.models, e, `edprop_${e.id}`, false) }
-                : e.kind === 'mount'
-                  ? { key, node: createMountNode(this.scene, this.models, e.model, `edmount_${e.id}`, MOUNT_DEFS[e.model].kind === 'sentry' ? null : mountTint(e.skin, e.faction ? (teams.find((t) => t.id === e.faction)?.color ?? null) : null)) }
-                  : { key, node: this.scenario.createNode(e, `ed_${e.id}`) };
+        m = e.kind === 'spawn' ? this.createSpawnMarker(e.id) : { key, node: this.entityNode(e, e.id, teams) };
         m.key = key;
         this.markers.set(e.id, m);
         this.nodeEntity.set(m.node, e.id);
@@ -432,11 +424,7 @@ export class EditorView {
         m.node.rotation.y = e.yaw;
         (m.node as Mesh).material = selected.has(e.id) ? this.mat.spawnSel : e.faction ? this.teamMaterial(teams.find((t) => t.id === e.faction)?.color ?? '#888888') : this.mat.spawn;
       } else {
-        const scenario = e.kind !== 'pickup';
-        m.node.position.set(e.position[0], e.position[1] + (scenario ? 0 : PICKUP_HOVER), e.position[2]);
-        if (e.kind === 'prop') orientProp(m.node as TransformNode, e, doc.terrain);
-        else if (e.kind === 'mount') m.node.rotation.y = e.yaw;
-        else if (scenario) placeScenarioNode(m.node as TransformNode, e);
+        this.placeEntityNode(m.node as TransformNode, e, doc);
         if (selected.has(e.id) && !m.ring) {
           m.ring = CreateCylinder(`edsel_${e.id}`, { diameter: selectionSize(e), height: 1.2, tessellation: 24 }, this.scene);
           m.ring.material = this.mat.outline;
@@ -456,6 +444,50 @@ export class EditorView {
         this.markers.delete(id);
       }
     }
+  }
+
+  /** An entity's visual in MapMaker (spawns have their own marker). */
+  private entityNode(e: MapEntity, id: string, teams: ReturnType<typeof mapTeams>): TransformNode {
+    if (e.kind === 'pickup') return createPickupVisual(this.scene, this.models, e.item, `edpickup_${id}`);
+    if (e.kind === 'prop') return createPropNode(this.scene, this.models, e, `edprop_${id}`, false);
+    if (e.kind === 'mount') return createMountNode(this.scene, this.models, e.model, `edmount_${id}`, MOUNT_DEFS[e.model].kind === 'sentry' ? null : mountTint(e.skin, e.faction ? (teams.find((t) => t.id === e.faction)?.color ?? null) : null));
+    return this.scenario.createNode(e as Parameters<ScenarioVisuals['createNode']>[0], `ed_${id}`);
+  }
+
+  /** Put an entity's visual (not a spawn's) where the entity is, facing its way. */
+  private placeEntityNode(node: TransformNode, e: MapEntity, doc: MapDocument): void {
+    node.position.set(e.position[0], e.position[1] + (e.kind === 'pickup' ? PICKUP_HOVER : 0), e.position[2]);
+    if (e.kind === 'prop') orientProp(node, e, doc.terrain);
+    else if (e.kind === 'mount') node.rotation.y = e.yaw;
+    else if (e.kind !== 'pickup') placeScenarioNode(node, e);
+  }
+
+  /** Previews of what the Scenario and NPC tools would place, by `key`: rebuilt only when it changes. */
+  private entityGhost: { key: string; nodes: TransformNode[] } | null = null;
+
+  /** The see-through preview of what an object tool would put down: these entities where they'd go (null hides it). */
+  setEntityGhost(doc: MapDocument, key: string | null, entities: readonly MapEntity[]): void {
+    if (!key) {
+      for (const n of this.entityGhost?.nodes ?? []) n.setEnabled(false);
+      return;
+    }
+    if (this.entityGhost?.key !== key) {
+      for (const n of this.entityGhost?.nodes ?? []) disposePropNode(n);
+      const teams = mapTeams(doc, MAX_TEAMS);
+      const nodes = entities.map((e, i) => {
+        const node = e.kind === 'spawn' ? this.createSpawnMarker(`ghost${i}`).node : this.entityNode(e, `ghost${i}`, teams);
+        seeThrough(node);
+        return node;
+      });
+      this.entityGhost = { key, nodes };
+    }
+    entities.forEach((e, i) => {
+      const node = this.entityGhost!.nodes[i];
+      if (!node) return;
+      node.setEnabled(true);
+      if (e.kind === 'spawn') node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
+      else this.placeEntityNode(node, e, doc);
+    });
   }
 
   private createSpawnMarker(id: string): EntityMarker {
@@ -614,16 +646,7 @@ export class EditorView {
         node = createPropNode(this.scene, this.models, e, 'propGhost', false);
       }
       this.propGhost = { model: key, node };
-      // Fade every mesh as the model loads in.
-      const fade = () => {
-        for (const m of [node, ...node.getChildMeshes()]) {
-          if (!('visibility' in m)) continue;
-          (m as Mesh).visibility = 0.55;
-          (m as Mesh).isPickable = false;
-        }
-      };
-      fade();
-      node.onAfterWorldMatrixUpdateObservable.add(fade);
+      seeThrough(node);
     }
     const node = this.propGhost.node;
     node.setEnabled(true);
@@ -791,4 +814,38 @@ function boxesFingerprint(boxes: readonly WorldBox[]): string {
     if (b.surface) str(`${b.surface.material}${b.surface.tint ?? ''}`);
   }
   return `${boxes.length}:${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}`;
+}
+
+/** See-through copies of materials that are forced opaque (glTF models), which ignore a mesh's visibility; by source. */
+const ghostMaterials = new WeakMap<Material, Material>();
+
+function ghostMaterial(mat: Material): Material {
+  if (mat.transparencyMode !== Material.MATERIAL_OPAQUE && mat.transparencyMode !== Material.MATERIAL_ALPHATEST) return mat;
+  let ghost = ghostMaterials.get(mat);
+  if (!ghost) {
+    ghost = mat.clone(`${mat.name}_ghost`)!;
+    ghost.transparencyMode = Material.MATERIAL_ALPHABLEND;
+    ghostMaterials.set(mat, ghost);
+  }
+  return ghost;
+}
+
+/**
+ * A placement preview: every mesh see-through and unpickable, every frame (models load in after it's made).
+ * Opaque-only materials are swapped for see-through copies: the originals are shared with every placed copy.
+ */
+function seeThrough(node: TransformNode): void {
+  const fade = () => {
+    for (const m of [node, ...node.getChildMeshes()]) {
+      if (!('visibility' in m)) continue;
+      const mesh = m as Mesh;
+      mesh.visibility = 0.55;
+      mesh.isPickable = false;
+      if (mesh.material && mesh.getClassName() === 'Mesh') mesh.material = ghostMaterial(mesh.material);
+    }
+  };
+  fade();
+  const scene = node.getScene();
+  const each = scene.onBeforeRenderObservable.add(fade);
+  node.onDisposeObservable.addOnce(() => scene.onBeforeRenderObservable.remove(each));
 }

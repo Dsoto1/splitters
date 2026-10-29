@@ -444,6 +444,28 @@ async function editoruxFlow(browser) {
   await clickAt(-2, 0, 2.5);
   d = await doc();
   check(d.entities.some((e) => e.kind === 'encounter' && e.roster.heavy === 1 && e.activeCap === 1), 'places a lone Heavy');
+  // Objects and NPCs preview where they'd go, see-through, before you click (a door snaps into the doorway).
+  const objectGhost = () =>
+    page.evaluate(() => {
+      const n = window.__editor.view.scene.getNodeByName('ed_ghost0');
+      const parts = n?.getChildMeshes() ?? [];
+      return n ? { on: n.isEnabled(), x: n.position.x, z: n.position.z, faded: parts.length > 0 && parts.every((m) => m.visibility < 1 && !m.isPickable) } : null;
+    });
+  const hoverWith = async (tool, x, z) => {
+    await clickTool(page, tool);
+    const p = await at(x, 0, z);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    return objectGhost();
+  };
+  const doorGhost = await hoverWith('[data-tool="scenario:door"]', 4, 1);
+  check(doorGhost?.on && doorGhost.faded && Math.hypot(doorGhost.x - 4, doorGhost.z - 1) < 3, `the Door tool previews a see-through door at the pointer (${JSON.stringify(doorGhost)})`);
+  const squadGhost = await hoverWith('[data-tool="npc:squad"]', -3, 4);
+  check(squadGhost?.on && squadGhost.faded && Math.hypot(squadGhost.x + 3, squadGhost.z - 4) < 1, `an NPC tool previews its squad marker at the pointer (${JSON.stringify(squadGhost)})`);
+  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
+  await settle();
+  const leftOn = await page.evaluate(() => ['ed_ghost0', 'propGhost', 'mountGhost', 'pickupGhost', 'spawn_ghost'].filter((n) => window.__editor.view.scene.getNodeByName(n)?.isEnabled()));
+  check(leftOn.length === 0, `previews go away with Select (${leftOn.join(', ')})`);
   await clickTool(page, '[data-tool="npc:militia"]');
   await clickAt(9, 0, 1);
   d = await doc();
@@ -601,6 +623,7 @@ async function editoruxFlow(browser) {
   // One rotation step per kind: R turns a spawn 45°, Shift+R a finer 15°.
   // Back from the rocks at (30, 30): (6, 0, 0) is behind the camera there.
   await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
+  await settle(); // project() uses the last frame's camera
   await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
   const spawns = (await doc()).entities.filter((e) => e.kind === 'spawn').length;
   await clickAt(6, 0, 0);

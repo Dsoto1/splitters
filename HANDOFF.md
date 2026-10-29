@@ -83,8 +83,13 @@ flame, and the railgun's impact is at scale 0.4.
      (`freePlacing`); dragged things preview where they land (`updateDrag`).
      One spot rule (`placeSpot`: the terrain under the pointer, else the
      level's floor) and one ghost (`setPropGhost`) for props, vehicles, spawns
-     and pickups; tiles keep their green ghost. Objects (doors, traps…) still
-     show only the hover cell.
+     and pickups; tiles keep their green ghost. Objects and NPCs too
+     (`objectGhost` in editorApp: what `newScenarioEntities` / `placeNpcCommand`
+     would add, made once per object and facing and moved with the pointer;
+     drawn by `setEntityGhost` with the markers' own `entityNode`). Previews are
+     updated before `updateHoverTarget`'s per-tool early returns, and
+     `seeThrough` swaps opaque-only (glTF) materials for shared see-through
+     copies (`ghostMaterial`), never the originals.
    - Rotation: `yawStep(kind, fine)` in shared `operations.ts` (spawn 45/15,
      prop and vehicle 15/5, tiles, zones and liquids 90, rest 90/15) for
      placing, R, Shift+R and the inspector; groups turn about their centre

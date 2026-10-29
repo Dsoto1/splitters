@@ -923,14 +923,7 @@ export class EditorApp {
       const def = MOUNT_DEFS[this.tool.model];
       if (this.run(`Place ${def.displayName}`, { kind: 'addEntities', entities: [{ id, kind: 'mount', position: p, model: this.tool.model, yaw: this.propYaw, faction: null, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
     } else if (this.tool.kind === 'scenario' && this.hoverPoint) {
-      const y = this.level * this.doc.classicStructure.levelHeight;
-      let p: [number, number, number] = [snap(this.hoverPoint.x, this.snapStep(0.5)), y, snap(this.hoverPoint.z, this.snapStep(0.5))];
-      let yaw = this.scenarioYaw;
-      if (snapsToDoorway(this.tool.key)) {
-        const d = snapToDoorway(this.hoverPoint.x, this.hoverPoint.z, this.doc.classicStructure.cellSize);
-        p = [d.x, y, d.z];
-        yaw = d.yaw;
-      }
+      const { p, yaw } = this.scenarioSpot(this.tool.key)!;
       const placed = newScenarioEntities(this.tool.key, p, yaw, this.doc);
       const entity = placed[placed.length - 1]!;
       const label = SCENARIO_PALETTE.find((x) => x.key === (this.tool as { key: string }).key)?.label ?? 'object';
@@ -940,6 +933,34 @@ export class EditorApp {
       if ('error' in r) return this.toast(r.error, true);
       if (this.run(`Place ${r.label}`, r.command)) this.setSelection({ tiles: [], entities: [r.id] });
     }
+  }
+
+  /** Where the Scenario tool puts an object, and its facing: on the level's floor, or in the doorway for doors and the like. */
+  private scenarioSpot(key: ScenarioPaletteKey): { p: [number, number, number]; yaw: number } | null {
+    if (!this.hoverPoint) return null;
+    const y = this.level * this.doc.classicStructure.levelHeight;
+    if (snapsToDoorway(key)) {
+      const d = snapToDoorway(this.hoverPoint.x, this.hoverPoint.z, this.doc.classicStructure.cellSize);
+      return { p: [d.x, y, d.z], yaw: d.yaw };
+    }
+    return { p: [snap(this.hoverPoint.x, this.snapStep(0.5)), y, snap(this.hoverPoint.z, this.snapStep(0.5))], yaw: this.scenarioYaw };
+  }
+
+  /** What the Scenario or NPC tool would place: made once per object, facing and edit (factions, sizes), then moved with the pointer. */
+  private objectGhostCache: { key: string; at: [number, number, number]; entities: MapEntity[] } | null = null;
+
+  private objectGhost(): { key: string; entities: MapEntity[] } | null {
+    const t = this.tool;
+    const spot = t.kind === 'scenario' ? this.scenarioSpot(t.key) : t.kind === 'npc' && this.hoverPoint ? { p: this.placeSpot()!, yaw: this.scenarioYaw } : null;
+    if (!spot || (t.kind !== 'scenario' && t.kind !== 'npc')) return null;
+    const key = `${t.kind}:${t.key}:${spot.yaw}:${this.history.revision}`;
+    let c = this.objectGhostCache;
+    if (c?.key !== key) {
+      const entities = t.kind === 'scenario' ? newScenarioEntities(t.key, spot.p, spot.yaw, this.doc) : addedEntities(placeNpcCommand(this.doc, t.key, spot.p, spot.yaw));
+      c = this.objectGhostCache = { key, at: spot.p, entities };
+    }
+    const [dx, dy, dz] = [spot.p[0] - c.at[0], spot.p[1] - c.at[1], spot.p[2] - c.at[2]];
+    return { key, entities: c.entities.map((e) => ({ ...e, position: [e.position[0] + dx, e.position[1] + dy, e.position[2] + dz] }) as MapEntity) };
   }
 
   /** Erase what's under the pointer, picked the way Select picks it: a whole moving build (Alt: just that piece). */
@@ -1395,6 +1416,19 @@ export class EditorApp {
   }
 
   private updateHoverTarget(): void {
+    // Placing tools show what they'd put down, see-through, before you click (first: every other tool hides them).
+    // One ghost for every kind that has a model: where it would land, facing the way it would face.
+    const t = this.tool;
+    const ghost: { kind: 'prop' | 'mount' | 'spawn' | 'pickup'; model: string; at: [number, number, number] | null; yaw: number } | null =
+      this.looking ? null
+      : t.kind === 'prop' ? { kind: 'prop', model: t.model, at: this.propSpot(t.model), yaw: this.propYaw }
+      : t.kind === 'mount' ? { kind: 'mount', model: t.model, at: this.placeSpot(), yaw: this.propYaw }
+      : t.kind === 'spawn' ? { kind: 'spawn', model: 'spawn', at: this.placeSpot(), yaw: this.spawnYaw }
+      : t.kind === 'pickup' ? { kind: 'pickup', model: t.item, at: this.placeSpot(), yaw: 0 }
+      : null;
+    this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop');
+    const objects = this.looking ? null : this.objectGhost();
+    this.view.setEntityGhost(this.doc, objects?.key ?? null, objects?.entities ?? []);
     if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
       const target = this.drag || this.looking ? null : this.pick();
       this.view.setPickHighlight(this.doc, target, this.tool.kind === 'erase' ? 'erase' : 'pick', this.history.revision);
@@ -1454,17 +1488,6 @@ export class EditorApp {
     } else $('ed-target').textContent = '';
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
-    // Props show their real model where they'd land, see-through, before you click.
-    // One ghost for every kind that has a model: where it would land, facing the way it would face.
-    const t = this.tool;
-    const ghost: { kind: 'prop' | 'mount' | 'spawn' | 'pickup'; model: string; at: [number, number, number] | null; yaw: number } | null =
-      this.looking ? null
-      : t.kind === 'prop' ? { kind: 'prop', model: t.model, at: this.propSpot(t.model), yaw: this.propYaw }
-      : t.kind === 'mount' ? { kind: 'mount', model: t.model, at: this.placeSpot(), yaw: this.propYaw }
-      : t.kind === 'spawn' ? { kind: 'spawn', model: 'spawn', at: this.placeSpot(), yaw: this.spawnYaw }
-      : t.kind === 'pickup' ? { kind: 'pickup', model: t.item, at: this.placeSpot(), yaw: 0 }
-      : null;
-    this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop');
     if (this.tool.kind === 'tile' && cell) {
       const ok = checkPlacement(this.doc, [{ id: '__ghost', tile: this.tool.tile, x: cell[0], y: cell[1], z: cell[2], rotation: this.rotation }]).ok;
       this.view.setGhost(this.doc, this.tool.tile, cell, this.rotation, ok);
@@ -3912,4 +3935,11 @@ function edgeIcon(style: EdgeStyle): string {
   const k = 34 / Math.max(4, ...pieces.map((p) => p[3]));
   const rects = pieces.map(([u0, u1, y0, y1, t]) => `<rect x="${(4 + (u0 + 4) * 6).toFixed(1)}" y="${(48 - y1 * k).toFixed(1)}" width="${((u1 - u0) * 6).toFixed(1)}" height="${((y1 - y0) * k).toFixed(1)}" fill="${t < 0.3 ? '#8ea2c0' : '#d9d6cf'}"/>`);
   return `<svg viewBox="0 0 56 56" aria-hidden="true"><rect x="4" y="48" width="48" height="3" fill="#5b616b"/>${rects.join('')}</svg>`;
+}
+
+/** The entities a command adds (an NPC placement may also add a faction first). */
+function addedEntities(r: { command: EditCommand } | { error: string }): MapEntity[] {
+  if ('error' in r) return [];
+  const walk = (c: EditCommand): MapEntity[] => (c.kind === 'addEntities' ? [...c.entities] : c.kind === 'batch' ? c.commands.flatMap(walk) : []);
+  return walk(r.command);
 }
