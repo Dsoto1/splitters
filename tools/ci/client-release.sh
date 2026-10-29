@@ -17,6 +17,8 @@
 #         refs/tags/vX.Y.Z     the release vX.Y.Z (notes: its CHANGELOG.md section; + build.json, SHA256SUMS)
 #         refs/heads/check/*   the prerelease `check-builds` (deploy-multiplayer.sh --branch, for testing)
 #       and drops the per-commit files of older commits (main-latest keeps KEEP_MAIN, check-builds KEEP_CHECK).
+#       On main, a version (packages/client/package.json) with a CHANGELOG.md section and no release yet is
+#       released too: vX.Y.Z is made from this build, its tag on this commit. Nobody tags by hand.
 # shellcheck disable=SC2016 # backticks in release notes are Markdown
 set -euo pipefail
 
@@ -134,6 +136,11 @@ publish() {
     esac
     printf '### Site build published\n\n- `%s` → release `%s` (%s)\n- Deploy: `sudo tiletrigger-update%s` on the box, or `infra/deploy-multiplayer.sh%s`\n' \
       "$name.tar.gz" "$tag" "$version" "$on_box" "$deploy" >> "$GITHUB_STEP_SUMMARY"
+  fi
+  # main reached a new version (bumped, with its CHANGELOG section): release it from this green build. Creating
+  # the release makes the tag on this commit (a tag made with the workflow's token starts no other run).
+  if [ "$tag" = main-latest ] && [ -n "$(awk -v v="$version" '/^## /{p = ($2 == v)} p' CHANGELOG.md)" ] && ! gh release view "v$version" >/dev/null 2>&1; then
+    GITHUB_REF="refs/tags/v$version" publish "$out"
   fi
 }
 

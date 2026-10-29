@@ -5,7 +5,7 @@ name: CI
 # fast-forwarded to main. A push to main whose commit already went green on a check branch runs nothing again.
 # Everything runs nightly on main, for v* tags, and from "Run workflow" (workflow_dispatch, full on by default).
 # Pushes also package the deployable site (site job) and, once everything is green, publish it to GitHub
-# Releases (release job): main → main-latest, v* → vX.Y.Z, check/** → check-builds. The Lightsail box
+# Releases (release job): main → main-latest (and vX.Y.Z when main reaches a new version), v* → vX.Y.Z, check/** → check-builds. The Lightsail box
 # downloads and verifies that build instead of building (infra/tiletrigger-update.sh, docs/HOSTING.md).
 on:
   push:
@@ -431,12 +431,17 @@ jobs:
           subject-path: host-release/tiletrigger-host-*
       - name: Publish
         run: |
-          tag=main-latest
-          case "$GITHUB_REF" in refs/tags/*) tag="${GITHUB_REF#refs/tags/}" ;; esac
+          tags=(main-latest)
+          case "$GITHUB_REF" in refs/tags/*) tags=("${GITHUB_REF#refs/tags/}") ;; esac
+          # main reaching a new version made its release in the release job (client-release.sh): the downloads go there too.
+          if [ "$GITHUB_REF" = refs/heads/main ]; then
+            v="v$(node -p "require('./packages/client/package.json').version")"
+            if gh release view "$v" >/dev/null 2>&1 && ! gh release view "$v" --json assets -q '.assets[].name' | grep -qx tiletrigger-host-SHA256SUMS; then tags+=("$v"); fi
+          fi
           cd host-release
           sha256sum tiletrigger-host-*.zip tiletrigger-host-*.tar.gz > tiletrigger-host-SHA256SUMS
           cp "$BUNDLE" tiletrigger-host.sigstore.json
-          gh release upload "$tag" tiletrigger-host-*.zip tiletrigger-host-*.tar.gz tiletrigger-host-SHA256SUMS tiletrigger-host.sigstore.json --clobber
+          for tag in "${tags[@]}"; do gh release upload "$tag" tiletrigger-host-*.zip tiletrigger-host-*.tar.gz tiletrigger-host-SHA256SUMS tiletrigger-host.sigstore.json --clobber; done
         env:
           GH_TOKEN: ${{ github.token }}
           BUNDLE: ${{ steps.attest.outputs.bundle-path }}

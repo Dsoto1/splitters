@@ -140,7 +140,7 @@ unchanged code too (slow frames); CI is the judge.
 
 ## Release 0.5.0 (2026-10-29)
 
-Prepared on the session branch: version 0.5.0, CHANGELOG section, menu baseline. Once its check run is green and `main` is fast-forwarded, the owner tags `v0.5.0` on that commit (tag pushes are refused from here).
+Prepared on the session branch: version 0.5.0, CHANGELOG section, menu baseline. Once its check run is green and `main` is fast-forwarded, CI makes the `v0.5.0` release and tag itself (client-release.sh: main reaching a version with a CHANGELOG section and no release).
 
 ## Performance overlay and budgets (2026-10-29)
 
@@ -173,9 +173,9 @@ F3 / Options → Display: the performance overlay; Pause → Settings → Copy p
   refuses it): `pnpm install` fails, so nothing builds or tests locally. Push
   to `check/candidate` and let CI check it.
 
-- The session's git proxy refuses tag pushes and remote branch deletes. The
-  owner makes releases in the GitHub UI: tag `vX.Y.Z` on the green main commit,
-  notes from CHANGELOG.
+- The session's git proxy refuses tag pushes and remote branch deletes. Releases
+  don't need one: when `main` reaches a version with a CHANGELOG section and no
+  release yet, CI makes `vX.Y.Z` (and its tag) from that green build.
 - Bump `packages/client/package.json` for a release. The menu shows the version,
   so regenerate the menu screenshot baseline: `pnpm e2e:baselines`, or
   `E2E_UPDATE_BASELINES=1 E2E_ONLY=visual node e2e/run.mjs`, keeping only
