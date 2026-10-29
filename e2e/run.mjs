@@ -2585,6 +2585,12 @@ async function hostcontrolsFlow(browser) {
     }, id);
     return page.waitForFunction((n) => (document.getElementById('hc-rot-next')?.textContent ?? '') === `Next up: ${n} · Deathmatch`, name, { timeout: T(30000) }).then(() => true, () => false);
   };
+  /** End match takes a second click (the first only asks): the host confirms and the match ends. */
+  const endMatch = (page) => page.evaluate(() => {
+    const b = document.getElementById('hc-end');
+    b.click();
+    b.click();
+  });
   /** The end-of-match scoreboard's line under its title (the overlay's, or the pause menu's board while it's open). */
   const boardNote = (page, re) => page.waitForFunction((src) => [...document.querySelectorAll('#scoreboard .sb-note, #pause-scores .sb-note')].some((n) => new RegExp(src).test(n.textContent ?? '')), re.source, { timeout: T(20000) }).then(() => true, () => false);
 
@@ -2708,7 +2714,7 @@ async function hostcontrolsFlow(browser) {
     await friend.evaluate(() => {
       const keep = setInterval(() => window.__cs?.hud?.nextMap && ((window.__sawNext = window.__cs.hud.nextMap), clearInterval(keep)), 50);
     });
-    await host.evaluate(() => document.getElementById('hc-end').click());
+    await endMatch(host);
     // What the friend's scoreboard says at the end (kept, in case its page is slow and the board isn't drawn before the travel).
     const sawNext = await friend.waitForFunction(() => window.__cs?.hud?.nextMap || window.__sawNext, null, { timeout: T(20000), polling: 50 }).then((h) => h.jsonValue(), () => '');
     check(/Next map: Void Yard \(Deathmatch\)/.test(sawNext), `the friend's end-of-match scoreboard says where the match goes next (${sawNext})`);
@@ -2727,7 +2733,7 @@ async function hostcontrolsFlow(browser) {
   const empty = await solo.evaluate(() => document.getElementById('hc-rot-next')?.textContent ?? '');
   check(/^Empty/.test(empty), `an empty rotation replays the map (${empty})`);
   check(await queueMap(solo, 'void_yard', 'Void Yard'), 'Add map… queues a map: "Next up: Void Yard · Deathmatch"');
-  await solo.evaluate(() => document.getElementById('hc-end').click());
+  await endMatch(solo);
   check(await boardNote(solo, /Next map: Void Yard \(Deathmatch\)/), 'the end-of-match scoreboard says where the match goes next');
   const rotated = await simWait(solo, (m) => m.map.metadata.id === 'void_yard', null, T(60000));
   await solo.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
