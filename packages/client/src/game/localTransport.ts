@@ -1,5 +1,6 @@
 import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
-import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
+import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type HostListing, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
+import { playerKey } from './playerKey.ts';
 import { perfProbe } from './perfProbe.ts';
 import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
 import type { RemoteLink, Transport } from './transport.ts';
@@ -157,6 +158,11 @@ export class LocalTransport implements Transport {
     this.toHost({ k: 'drop', reason });
   }
 
+  /** The game browser listing (or none): if the match is handed on, the successor takes it over. */
+  setListing(listing: HostListing | null): void {
+    this.toHost({ k: 'listing', listing });
+  }
+
   /** Tell everyone the map is about to change ("Changing map to …"). */
   notice(text: string): void {
     // This player sees it now (the map change follows at once); friends get it from the match.
@@ -206,7 +212,8 @@ export class LocalTransport implements Transport {
     if (typeof document.addEventListener === 'function') document.addEventListener('visibilitychange', this.onVisibility);
     // The tab is closing (or reloading): friends hear it from us, not from a dead link.
     if (typeof window.addEventListener === 'function') window.addEventListener('pagehide', this.onPageHide);
-    const start: ToSimHost = { k: 'start', map: this.map, opts: this.opts, hidden: document.hidden };
+    // This browser's key goes with the match: a successor keeps our place for it if the match is handed on.
+    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, ...this.opts }, hidden: document.hidden };
     if (simThreadWanted() === 'worker' && this.startWorker(start)) return;
     this.startHere(start);
   }

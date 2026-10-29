@@ -151,11 +151,29 @@ F3 / Options → Display: the performance overlay; Pause → Settings → Copy p
 Friends of a browser host no longer get a bare "the host left the game"
 (docs/MULTIPLAYER_PROTOCOL.md section 13): the host sends `bye` before its links
 close (Leave match, `pagehide`); a friend whose link just drops (or whose host
-is silent 8 s) gets 8 s of "Reconnecting to host…"; then the host-left screen
+is silent 20 s) gets up to 15 s of "Reconnecting to host…"; then the host-left screen
 (`game/hostLeft.ts`, `main.ts` `afterHost`) with the last standings, **Host this
 map** (`playLocal(..., autoHost, autoList)`) and **Back to menu**. Hosting that
 starts before the match has loaded is now listed once the welcome comes (it
 used to stay "Will be listed once you host"). e2e: `hostgame`.
+
+## Host handoff for browser-hosted matches (2026-10-29)
+
+A browser-hosted match now survives its host (docs/MULTIPLAYER_PROTOCOL.md
+section 14, what carries over and what starts fresh): the host keeps the
+friend with the best ping named successor (`matchHost.ts` `tendSuccessor`:
+`standby` → the friend opens a code of its own → `successor` to all), sends it
+a `checkpoint` every 3 s (`shared/net/handoff.ts`; people by hashed key only),
+and when the host goes the successor restores the match (`BotFiller.restore`,
+`Match.resume`, `main.ts` `takeOver`) while the others follow its code
+(`afterHost`). No hub change. Unit tests: `shared/test/handoff.test.ts`,
+`client/test/localHost.test.ts`; e2e flow `handoff` (new; also in flowMap and
+timings). Open: the local e2e runs here were made under heavy machine load
+(other agents' builds) and timing-sensitive flows (`lobby`, `handoff`) failed
+there for load reasons (links dropped by slow pages); let CI judge, and look
+at the console line "the host's link went (closed|silent|goodbye)" if a
+friend drops. The successor gets the old listing's secret (it takes the
+listing down); vehicles, pickups, map logic, NPCs, flags and waves restart.
 
 ## How work flows (details in CLAUDE.md)
 

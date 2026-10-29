@@ -125,6 +125,11 @@ export class CtfMode implements ModeLogic {
     this.onKill(c);
   }
 
+  /** Host handoff: the team scores a checkpoint carried (as teamScores gives them). */
+  restoreScores(scores: ReadonlyMap<string, number>): void {
+    for (const t of this.host.teams) this.captures.set(t.id, scores.get(t.id) ?? 0);
+  }
+
   teamScores(): Map<string, number> {
     return new Map(this.host.teams.map((t) => [t.id, this.captures.get(t.id) ?? 0]));
   }

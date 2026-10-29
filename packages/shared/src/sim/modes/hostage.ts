@@ -190,6 +190,11 @@ export class HostageMode implements ModeLogic {
 
   onLeave(): void {}
 
+  /** Host handoff: the team scores a checkpoint carried (as teamScores gives them). */
+  restoreScores(scores: ReadonlyMap<string, number>): void {
+    for (const t of this.host.teams) this.wins.set(t.id, scores.get(t.id) ?? 0);
+  }
+
   teamScores(): Map<string, number> {
     return new Map(this.host.teams.map((t) => [t.id, this.wins.get(t.id) ?? 0]));
   }
