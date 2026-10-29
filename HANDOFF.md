@@ -145,6 +145,33 @@ flame, and the railgun's impact is at scale 0.4.
   `terrainRaycast` marches only the stretch over the terrain, so it reaches
   from any zoom.
 
+## One path primitive: roads, race track, routes (2026-10-29)
+
+- **Data (map format 23):** `MapPath` (schema.ts) is points + `closed` (was `loop`) + `uses`
+  (`road` drawn, `race` the race track, `route` an AI guide line) + width, style, lay, and
+  optional `oneWay`, `speed` (m/s hint), `patrol` (`loop` / `back_and_forth`), `race`
+  (laps, grid, vehicle, combat, curbs, ambient, ambientVehicle, pit) and `curve` (`classic`:
+  the old race curve). The map's `track` field is gone: migration v22→v23
+  (`migratePathsV23`) makes it the first path, uses road+race, `curve: 'classic'`,
+  `lay: false`. `racePath` / `raceTrack` / `trackGeometry` (track.ts) read it;
+  `pathGeometry` moved to track.ts. Only the first race path races (validator warns).
+  `pathsExtent` covers laid roads only (a raised track gets no ground). Test
+  `unifiedPaths.test.ts` proves every shipped race map has the same curve, gates, grid,
+  ambient cars and ground as before.
+- **MapMaker:** `editor/pathTool.ts` is the one tool (roadTool.ts deleted; Race Track card and
+  Shift+G call `paths.preset('race')`; Route card `preset('route')`). Join ends: click the
+  first point with the last selected (`joining`), or `#ed-path-close`; `#ed-path-reverse`.
+  Arrows (`pathArrows`), dashed routes (`buildGuideLines`, editor only). Encounter inspector:
+  patrol → Route picker, Edit/Draw route.
+- **Game:** `bots/guides.ts` (`vehicleGuides`, `followGuide`) used in `brain.thinkMounted`'s
+  driver branch via `view.guides`; race bots and ambient cars still use `TrackDriver`.
+  `Encounters.routeGoal` walks an encounter's `route`; route patrols count as roaming (they
+  think with nobody near). Patrols to a target entity are unchanged (nothing to migrate).
+- **Not done:** mover and airplane routes (`editor/routeTool.ts`) stay entity-relative motion,
+  not paths; road grip (`roadHandling`) still only on the race track; ambient cars only lap
+  the race track. The map-index build plugin now loads shared in `buildStart` (builds timed
+  out on a loaded machine).
+
 ## Effects performance (2026-10-29)
 
 After 0.4.0 the owner felt the new effects slowing play. Measured in a 48-player

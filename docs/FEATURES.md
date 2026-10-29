@@ -121,7 +121,7 @@ A map offers its listed modes, plus these automatically:
 - Elimination wherever Team Deathmatch is;
 - Bomb with bombsites;
 - Hostage with hostages and a rescue zone;
-- Race with a track;
+- Race with a race-track path;
 - Zombies on every map.
 
 | Mode | Rules | Live maps |
@@ -183,7 +183,7 @@ Portals appear only on pantry_raid and sandfall_colosseum.
 ### MapMaker
 - Every item, NPC and prop.
 - Style packs: military, frontier, imperial, orbital, gothic, jungle, neon, suburban, egypt.
-- Paths, roads and routes.
+- Paths: one tool for roads, the race track and AI routes (loops, one-way, direction arrows); squads patrol routes, driving bots follow them.
 - Logic panel.
 - Owner-only Publish.
 
