@@ -144,7 +144,7 @@ export class SkyEffects {
     mat.disableLighting = true;
     mat.emissiveColor = Color3.FromHexString(sky.light.sunColor);
     disc.material = mat;
-    const rays = new VolumetricLightScatteringPostProcess('sunRays', 0.5, this.camera, disc, 64, Texture.BILINEAR_SAMPLINGMODE, this.scene.getEngine(), false, this.scene);
+    const rays = new VolumetricLightScatteringPostProcess('sunRays', { postProcessRatio: 1, passRatio: 0.5 }, this.camera, disc, 64, Texture.BILINEAR_SAMPLINGMODE, this.scene.getEngine(), false, this.scene);
     rays.exposure = 0.2;
     rays.decay = 0.965;
     rays.weight = 0.5;
