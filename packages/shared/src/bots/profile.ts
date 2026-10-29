@@ -146,7 +146,7 @@ const character = (id: string, displayName: string, traits: Traits): BotProfile 
  */
 export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.fromEntries(
   [
-    character('core.ranger', 'Ranger', { rangePreference: 85, accuracy: 70, aggression: 40, tacticalAwareness: 70, tags: ['SNIPER', 'TACTICAL'], weaponPreferences: ['core.sniper', 'core.marksman', 'core.rifle'] }),
+    character('core.ranger', 'Linktifa', { rangePreference: 85, accuracy: 70, aggression: 40, tacticalAwareness: 70, tags: ['SNIPER', 'TACTICAL'], weaponPreferences: ['core.sniper', 'core.marksman', 'core.rifle'] }),
     character('core.huntress', 'Huntress', { rangePreference: 70, accuracy: 72, pursuitPersistence: 80, tacticalAwareness: 60, tags: ['TACTICAL'], weaponPreferences: ['core.rifle', 'core.marksman', 'core.burst_rifle'] }),
     character('core.sprout', 'Sprout', { aggression: 70, itemGreed: 80, exploration: 75, rangePreference: 30, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.machine_pistol', 'core.nailgun'] }),
     character('core.bulwark', 'Bulwark', { aggression: 65, selfPreservation: 30, riskTolerance: 75, rangePreference: 25, tags: ['SUPPRESSOR'], weaponPreferences: ['core.lmg', 'core.auto_shotgun', 'core.rockets'] }),
