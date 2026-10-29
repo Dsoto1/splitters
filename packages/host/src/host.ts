@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MODE_LABELS, isMapId, isRetiredMap, loadMap, mapContentHash, mapIdentity, parsePlaylist, sanitizeName, type LobbyAdvert, type MapDocument, type RotationState, type ServerStats } from '@tiletrigger/shared';
+import { MODE_LABELS, isMapId, isRetiredMap, loadMap, mapContentHash, mapIdentity, parsePlaylist, sanitizeName, type BotSet, type LobbyAdvert, type MapDocument, type RotationState, type ServerStats } from '@tiletrigger/shared';
 import { suiteLookup } from '@tiletrigger/server/rotation';
 import { startServer, type RunningServer } from '@tiletrigger/server/server';
 import { verifyTicket } from '@tiletrigger/server/tickets';
@@ -43,6 +43,8 @@ export interface HostStatus {
   people: { slot: number; name: string; account: boolean; ping: number | null; team: string | null; kills: number; deaths: number }[];
   /** The map rotation now, and as config items (the service saves them, so a restart keeps it). */
   rotation: RotationState & { items: string[] };
+  /** The host's bot set now (null: random bots): the service saves it, so a restart keeps it. */
+  botSet: BotSet | null;
 }
 
 export interface RunningHost {
@@ -179,6 +181,7 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
     leaders: config.leaders,
     ...(config.rotation?.length ? { rotation: config.rotation } : {}),
     rotationShuffle: config.rotationShuffle,
+    ...(config.botSet !== undefined ? { botSet: config.botSet } : {}),
     name: config.name,
     adminToken: config.adminToken,
     lanDiscovery: false,
@@ -263,6 +266,8 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
     players: () => server.players(),
     rotation: () => server.rotation(),
     presets: server.rotationPresets,
+    botSet: () => server.botSet(),
+    botSetPresets: server.botSetPresets,
     modes: (id) => lookup(id)?.modes ?? null,
     command: (cmd, by) => server.command(cmd, by),
     say: (text) => server.notice(`[Host] ${text}`),
@@ -321,6 +326,7 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
         upKBps: lastStats ? Math.round((lastStats.bytesPerSecPerClient * lastStats.humans) / 102.4) / 10 : 0,
         people: server.players().map((p) => ({ slot: p.slot, name: p.name, account: !!p.sub, ping: p.ping, team: p.team, kills: p.kills, deaths: p.deaths })),
         rotation: server.rotation(),
+        botSet: server.botSet(),
       };
     },
     stop: async (reason = 'The server is shutting down') => {

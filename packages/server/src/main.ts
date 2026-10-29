@@ -20,9 +20,15 @@ if (playlist === null) throw new Error(`PLAYLIST ${env.PLAYLIST} is not a valid 
 // these instead of a replay, round and round; ROTATION_SHUFFLE=1 plays them in a random order.
 const rotation = (env.ROTATION ?? '').split(/[\s,]+/).filter(Boolean);
 
+// BOTSET: the host's own bots: a built-in set (maps/botsets/<id>.json, e.g. knights_vs_space), a JSON file of one
+// ({ name, entries, fill }), or a list "Name, look, skill, style, team, squad; …" (docs/HOSTING.md, "Bot sets").
+const botSetFile = env.BOTSET?.trim().endsWith('.json') ? resolve(env.INIT_CWD ?? process.cwd(), env.BOTSET.trim()) : null;
+const botSet: unknown = botSetFile ? JSON.parse(readFileSync(botSetFile, 'utf8')) : env.BOTSET || undefined;
+
 const server = await startServer({
   playlist,
   ...(rotation.length ? { rotation, rotationShuffle: /^(1|true|yes|on)$/i.test(env.ROTATION_SHUFFLE ?? '') } : {}),
+  ...(botSet !== undefined ? { botSet } : {}),
   port: Number(env.PORT ?? 7777),
   host: env.HOST,
   map: env.MAP ?? defaultMap,

@@ -110,11 +110,12 @@ export async function syncMaps(bundled: string, dir: string, hub: string, fetche
       // Copied again next time.
     }
   }
-  // The built-in map rotations (maps/rotations/) come along: the match reads them from this folder too.
-  const presets = join(bundled, 'rotations');
-  if (existsSync(presets)) {
-    mkdirSync(join(dir, 'rotations'), { recursive: true });
-    for (const f of readdirSync(presets).filter((x) => x.endsWith('.json'))) if (!sameFile(join(presets, f), join(dir, 'rotations', f))) copyFileSync(join(presets, f), join(dir, 'rotations', f));
+  // The built-in map rotations (maps/rotations/) and bot sets (maps/botsets/) come along: the match reads them from this folder too.
+  for (const sub of ['rotations', 'botsets']) {
+    const presets = join(bundled, sub);
+    if (!existsSync(presets)) continue;
+    mkdirSync(join(dir, sub), { recursive: true });
+    for (const f of readdirSync(presets).filter((x) => x.endsWith('.json'))) if (!sameFile(join(presets, f), join(dir, sub, f))) copyFileSync(join(presets, f), join(dir, sub, f));
   }
   const shippedIds = new Set(shipped.map((f) => f.slice(0, -5)));
   return { published: Object.keys(manifest).length, added: Object.keys(manifest).filter((id) => !shippedIds.has(id)), online: !!listed };

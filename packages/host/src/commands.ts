@@ -1,4 +1,4 @@
-import { GAME_MODES, MODE_LABELS, ROTATION_MAX, isGameMode, type GameMode, type HostCommand, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
+import { BOT_SET_MAX, GAME_MODES, MODE_LABELS, ROTATION_MAX, botSetFromText, botSetLabel, botSetToText, emptyBotSet, isGameMode, presetBotSet, type BotSet, type BotSetPreset, type GameMode, type HostCommand, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
 import type { PlayerInfo } from '@tiletrigger/server/server';
 
 /**
@@ -29,6 +29,7 @@ export const COMMANDS: readonly CommandSpec[] = [
   { name: 'teams', args: '[size]', help: 'show the teams, or set every team to this size (8 = 8v8)', match: true },
   { name: 'rotation', args: '[add <map> [mode]|remove <n>|move <n> up|down|preset <name>|shuffle on|off|clear]', help: 'the map rotation: the maps played in turn after each match (empty: the match replays)', match: true },
   { name: 'skip', args: '', help: "go on to the rotation's next map now", match: true },
+  { name: 'botset', args: '[preset <name>|add <name> [look] [skill] [team]|remove <n>|list <bot; bot…>|only|random|clear]', help: 'your own bots: names, looks, skills, teams, squads (a bot: "Name, look, skill, style, team, squad")', match: true },
   { name: 'restart', args: '', help: 'restart the match (same map)', match: true },
   { name: 'end', args: '', help: 'end the match now, to the scoreboard', match: true },
   { name: 'visibility', args: 'listed|code', help: 'in the game browser, or join code only', match: true },
@@ -58,9 +59,10 @@ export function parseCommand(line: string): Parsed | null {
 }
 
 export const ROTATION_ACTIONS = ['add', 'remove', 'move', 'preset', 'shuffle', 'clear'] as const;
+export const BOTSET_ACTIONS = ['preset', 'add', 'remove', 'list', 'only', 'random', 'clear'] as const;
 
 /** Tab completion for the console: command names, then map IDs and modes where they fit. */
-export function complete(line: string, maps: readonly string[], presets: readonly string[] = []): [string[], string] {
+export function complete(line: string, maps: readonly string[], presets: readonly string[] = [], botSets: readonly string[] = []): [string[], string] {
   const parts = line.split(/\s+/);
   if (parts.length <= 1) {
     const hits = NAMES.filter((n) => n.startsWith(parts[0] ?? ''));
@@ -76,7 +78,8 @@ export function complete(line: string, maps: readonly string[], presets: readonl
     if (parts[1] === 'move') return parts.length === 4 ? ['up', 'down'] : [];
     return [];
   };
-  const pool = parts[0] === 'map' ? maps : parts[0] === 'mode' ? modes : parts[0] === 'visibility' ? ['listed', 'code'] : parts[0] === 'admin' ? ['token'] : parts[0] === 'rotation' ? rotation() : [];
+  const botset = (): readonly string[] => (parts.length === 2 ? BOTSET_ACTIONS : parts[1] === 'preset' && parts.length === 3 ? botSets : []);
+  const pool = parts[0] === 'map' ? maps : parts[0] === 'mode' ? modes : parts[0] === 'visibility' ? ['listed', 'code'] : parts[0] === 'admin' ? ['token'] : parts[0] === 'rotation' ? rotation() : parts[0] === 'botset' ? botset() : [];
   return [pool.filter((p) => p.startsWith(last)), last];
 }
 
@@ -140,6 +143,9 @@ export interface MatchCommandTarget {
   rotation(): RotationState;
   /** The built-in rotations (maps/rotations/). */
   presets: readonly RotationPreset[];
+  /** The host's bot set now (null: random bots), and the built-in ones (maps/botsets/). */
+  botSet(): BotSet | null;
+  botSetPresets: readonly BotSetPreset[];
   /** The modes a map of our suite plays (its first is its own), or null. */
   modes(id: string): readonly GameMode[] | null;
   command(cmd: HostCommand, by: string): string | null;
@@ -201,6 +207,8 @@ export function runMatchCommand(name: string, args: string[], rest: string, t: M
       return rotationCommand(args, t);
     case 'skip':
       return done(t.command({ c: 'skip' }, by), "going on to the rotation's next map");
+    case 'botset':
+      return botSetCommand(args, rest, t);
     case 'restart':
       return done(t.command({ c: 'restart' }, by), 'match restarting');
     case 'end':
@@ -279,5 +287,58 @@ function rotationCommand(args: string[], t: MatchCommandTarget): string {
     }
     default:
       return `usage: ${helpText('rotation')}`;
+  }
+}
+
+/** The bot set as console lines: one bot a line in the text form ("Name, look, skill, style, team, squad"). */
+export function botSetText(set: BotSet | null): string {
+  if (!set) return 'Random bots (no bot set). botset preset <name>, botset add <name> [look] [skill] [team], or botset list "Name, look, skill; …".';
+  const lines = set.entries.map((e, i) => `${String(i + 1).padStart(2)}. ${botSetToText({ ...set, fill: 'random', entries: [e] })}`);
+  return [`${botSetLabel(set)}${set.fill === 'only' ? '' : ' (random bots fill the rest)'}:`, ...lines].join('\n');
+}
+
+/** `botset …`: show it, or change it with the same command in-game admins send (the whole set). */
+function botSetCommand(args: string[], rest: string, t: MatchCommandTarget): string {
+  const by = 'Console';
+  const now = t.botSet() ?? emptyBotSet();
+  const send = (set: BotSet | null) => {
+    const err = t.command({ c: 'bots', botSet: set }, by);
+    return err ? `refused: ${err}` : botSetText(t.botSet());
+  };
+  const after = rest.slice(rest.match(/^\S+/)?.[0].length ?? 0).trim();
+  switch (args[0]) {
+    case undefined:
+      return botSetText(t.botSet());
+    case 'preset': {
+      const key = args.slice(1).join(' ').toLowerCase();
+      const p = t.botSetPresets.find((x) => x.id === args[1] || x.name.toLowerCase() === key);
+      if (!p) return `usage: botset preset <name>\n${t.botSetPresets.map((x) => `  ${x.id.padEnd(22)} ${x.name}: ${x.entries.length} bots`).join('\n') || '  (no built-in bot sets)'}`;
+      return send(presetBotSet(p));
+    }
+    case 'add': {
+      if (!args[1]) return 'usage: botset add <name> [look] [skill] [team]  ("quoted names" may have spaces)';
+      if (now.entries.length >= BOT_SET_MAX) return `a bot set holds ${BOT_SET_MAX} bots at most`;
+      const add = botSetFromText([args[1], args[2] ?? '-', args[3] ?? '-', '-', args[4] ?? '-'].join(', ')).set.entries[0];
+      if (!add) return 'usage: botset add <name> [look] [skill] [team]';
+      return send({ ...now, entries: [...now.entries, add] });
+    }
+    case 'remove': {
+      const n = Number(args[1]);
+      const i = Number.isInteger(n) && n >= 1 && n <= now.entries.length ? n - 1 : now.entries.findIndex((e) => e.name.toLowerCase() === args.slice(1).join(' ').toLowerCase());
+      if (i < 0) return `usage: botset remove <1-${now.entries.length}|name>`;
+      return send({ ...now, entries: now.entries.filter((_, j) => j !== i) });
+    }
+    case 'list': {
+      if (!after) return 'usage: botset list Name, look, skill, style, team, squad; Name2, …';
+      const v = botSetFromText(after, now.name);
+      return send({ ...v.set, fill: /^only\b/i.test(after) ? 'only' : now.fill }) + (v.fixes.length ? `\n(${v.fixes.join('; ')})` : '');
+    }
+    case 'only':
+    case 'random':
+      return send({ ...now, fill: args[0] });
+    case 'clear':
+      return send(null);
+    default:
+      return `usage: ${helpText('botset')}`;
   }
 }

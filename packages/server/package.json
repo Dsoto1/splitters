@@ -5,6 +5,7 @@
   "exports": {
     "./server": "./src/server.ts",
     "./rotation": "./src/rotation.ts",
+    "./botSets": "./src/botSets.ts",
     "./ice": "./src/ice.ts",
     "./tickets": "./src/tickets.ts",
     "./broker": "./src/broker.ts",
