@@ -1,7 +1,7 @@
 # Characters
 
 Players, Player Bots and NPCs are animated characters built from CC0 parts by
-Quaternius (see [`ASSET_SOURCES.md`](ASSET_SOURCES.md)). Nothing is generated:
+Quaternius, plus whole-body Meshy characters (see "Adding a Meshy character") (see [`ASSET_SOURCES.md`](ASSET_SOURCES.md)). Nothing is generated:
 every mesh, texture and animation comes from a human-made pack, and players
 express themselves by combining parts and colourways.
 
@@ -162,12 +162,20 @@ How the hands close on the weapon:
 - During reloads, melee, throws and hits, the IK fades out and the weapon rides
   in the right hand; it fades back in afterwards.
 - The finger joints keep their animation tracks in the clips that hold things.
+- **Measured hands** (Meshy characters): the file carries each hand's
+  measurements on its hand joint (`extras.hand`, see "Adding a Meshy
+  character" below). The palm that goes on the grip is the measured palm
+  centre, not the rig's (the middle knuckle x 0.6), and it rests from the grip's
+  centre line by half the grip plus half the hand's thickness, so a big hand
+  wraps the grip instead of sinking into it or hovering beside it. The fingers
+  close as far as the hand allows (`curl`: 0 for a fist or gauntlet that is
+  already closed).
 
 ### First-person arms
 
 Your own view shows your look's arms holding the viewmodel:
 - **Which arms:** the arms part of your look. Under a sportswear top it's `athlete_fparms_m/f`, bare arms cut from the base body for this view only.
-- **Whole-body characters** (Iron Knight, Capt. Nova, The Dapper, the creature originals: Goblin, Wealthy Otter, Boglurker, Salamander Warlord, Hyena Warrior, and the community originals: Elder Tomo, The Visitor, Biscuit, Flt. Lt. Ember, Cap'n Barnacle, Big Bogdan) wear the universal arms in first person: a base-body arms part on the shared rig (so every gun's grip fits), with the sleeves dyed and the hands tinted to match the character (`whole.cloth`/`trim`/`skin` in `looks.ts`; a glove colour goes in `skin`). The bare-armed creatures wear the peasant arms with the sleeves dyed to their skin.
+- **Whole-body characters** (the Meshy characters, `content/characters`) wear their own forearms and hands in first person: `<id>_fparms.glb`, cut from the same model (the elbow half of each forearm dropped, sleeves pulled in towards the bone, hands a little smaller so a gauntlet doesn't fill the view), on the character's own fitted skeleton. A manifest can choose a universal arms part instead (`firstPerson: { arms: "ranger_arms_m", skin, cloth, trim }`): a base-body arms part on the shared rig, sleeves dyed and hands tinted to match.
 - **Placement:** they hang from the camera a little in front of the eyes. The shoulders are never in view, and long guns stay within reach.
 - **Grip:** the gun keeps its tuned viewmodel placement, with bob, recoil and the reload dip. `gripExternal` IKs the palms onto its grip and support points with the same solver as third person.
 
@@ -287,6 +295,193 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   would stand it up like a person, it couldn't hold a weapon, and the
   player-sized hit capsule would cover a fraction of its 5.8 m length. It
   ships as a stone statue prop instead (`mp_dino_statue`, Jungle Ruins).
+
+## Adding a Meshy character
+
+Whole-body characters are Meshy models: made on the owner's Meshy account
+(owned), or Meshy community models under CC0. Each is one manifest,
+`content/characters/<id>.json`, and nothing else: the tools read every
+manifest, so adding a character needs no code. Raw downloads never enter the
+repo; they live in a downloads dir outside it.
+
+### 1. The manifest
+
+```json
+{
+  "id": "meshy_galloway",
+  "kind": "character",
+  "use": "player",
+  "order": 15,
+  "name": "Sir Galloway",
+  "look": "core.galloway",
+  "bio": "One line for character select.",
+  "body": "male",
+  "size": "large",
+  "notes": "Anything the next person should know about this model.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019fb494-…",
+    "community": { "model": "T-pose knight" },
+    "file": "^Meshy_AI_T_Pose_Knight_.*_texture\\.fbx$"
+  },
+  "finish": { "metallic": 0.3, "roughness": 0.5 },
+  "firstPerson": { "arms": "own" },
+  "fixes": { "triangles": 11000, "feet": true, "hands": { "curl": 0.8 } },
+  "landmarks": { "spine": [[0, 0.5, 0], …7 points], "L": […10 points], "R": […10 points] }
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `id` | File names: `<id>.json`, `<id>.glb`, `<id>_fparms.glb`. Lower case, `meshy_…`. |
+| `kind`, `use` | `character` (rides our rig) or `creature` (not built here: creatures keep their own rigs); `player`, `npc` or `player+npc`. An NPC-only character gets a look (`WHOLE_BODY_NPC_LOOKS`) but isn't on the roster; NPC roles name looks in `NPC_ROLE_SPECS` by hand. |
+| `status` | `queued` for a stub that isn't ready: it is checked only for the queue's fields and not built. Drop it once the rest is filled in. |
+| `order` | Roster position among the whole-body characters (unique). |
+| `name`, `look`, `bio` | The look's display name, its ID (`core.<name>`, never changed once shipped: saved looks and bots use it) and its one-line bio. |
+| `body`, `size` | `male` or `female` proportions (clips and hip height); `small` / `large` body size, or left out. |
+| `source.license` | `owned` (made on the owner's Meshy account; provenance pack `meshy-owned`) or `CC0` (a community model; pack `meshy-community-characters`, with `community.model` as named on its page). |
+| `source.author`, `date`, `url` | Who made it, when (YYYY-MM-DD), and the community post or the owner's share link (`https://www.meshy.ai/s/…`), or `null`. |
+| `source.meshy` | The owner's own models only: Meshy task IDs (`preview`, `refine`, `image`, `multiImage`, `remesh`, `retexture`, `rig`), which `fetch-meshy.mjs` downloads by. |
+| `source.file` | A regular expression for the download's file name (a rigged `.glb`, or the textured `.fbx`), when it isn't saved as `<id>.glb`. |
+| `finish` | The one material's metallic and roughness (0–1). |
+| `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below). |
+| `source.modelUrl` | A public download link of the unrigged model (say the owner's Google Drive copy: `https://drive.usercontent.google.com/download?id=<file id>&export=download&confirm=t`), for Meshy's rigging API. |
+| `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
+
+`content/intake/meshy-queue.json` lists models the owner picked.
+`node tools/content/character-manifests.mjs --stubs [ids…]` writes a queued
+stub for each queued character or creature that has no manifest yet; fill it
+in, drop `status`, and remove the entry from the queue once it ships.
+
+### 2. Get the download
+
+The downloads dir is anywhere outside the repo (say `~/meshy-downloads`). The
+importer finds a character's download there by its manifest id or its
+`source.file` pattern:
+- `<id>.glb`: a rigged GLB (Meshy's auto-rig output: its joints are mapped
+  onto ours, no landmarks needed);
+- an unrigged textured GLB (Meshy's "texture" download, no skin), matched by
+  `source.file`: rigged here (below);
+- a textured FBX folder (the `.fbx` with its `.png` beside it), anywhere under
+  the dir, matched by `source.file` or named `<id>_texture.fbx`: rigged here.
+
+Record which download a manifest takes in its `source.file` pattern (one
+download per pattern; the importer says when none matches).
+
+**Community (CC0) models are downloaded by hand.** Meshy's API only serves
+tasks in the key holder's own account; it has no endpoint for community posts.
+Download the model from its page (the rigged GLB if it has one, otherwise the
+textured FBX) and save it as above.
+
+**The owner's own models** (their `meshy.ai/s/…` share links) are fetched by
+task ID: put the IDs in `source.meshy` and run
+
+    MESHY_API_KEY=… node tools/content/fetch-meshy.mjs ~/meshy-downloads [ids…]
+
+It reads each task through the Meshy API (`api.meshy.ai`; the rig task gives
+the rigged GLB, otherwise the latest textured stage gives the FBX and its
+base colour map) and downloads the files from `assets.meshy.ai`, saving
+`<id>.glb` or `<id>/<id>_texture.fbx` and `.png`. Without a key, when Meshy
+can't be reached, or for a task that hasn't finished, it says so and why.
+
+### Rigging an unrigged download
+
+Two ways, the first preferred when it's available:
+1. **Meshy's rigging API**, with `MESHY_API_KEY` set and the manifest's
+   `source.modelUrl`: `fetch-meshy.mjs` (and so `pnpm content:meshy`) sends the
+   model to `POST /openapi/v1/rigging` (`model_url`, `height_meters`), waits for
+   the task, and saves the rigged GLB as `<id>.glb`, which then goes through the
+   rigged path (Meshy's joints mapped onto ours). It prints the task ID: put it
+   in `source.meshy.rig` to fetch the same result again later. Meshy rigs
+   textured humanoids only; a request it refuses comes back with its message.
+2. **In-house** (no key, or no `modelUrl`): `prepare-meshy-characters.mjs` cuts
+   the mesh to 40k triangles first (meshopt, looser and then sloppy for
+   million-triangle downloads), finds the joints from the mesh
+   (`tools/content/landmarks.mjs`), and skins it with `autoskin.mjs`:
+   - the mesh is drawn into a front view (coverage and depth per pixel);
+   - the neck is the narrowest row of the body's middle below the head (kept
+     between 0.80 and 0.88 of the height), the crotch the highest row with the
+     gap between the legs showing (a coat or robe that hides it: 0.44);
+   - each arm is the direction from the shoulder (level for a T-pose, down to
+     75° for an A-pose) that stays in the mesh furthest, followed to the hand's
+     tip; elbow and wrist at 38% and 74% of its length; the shoulder line is
+     lowered until it meets the arm when a collar or cape hides it;
+   - knees and ankles are the middle of each leg's run at the usual heights; the
+     foot runs from the heel to the furthest toe near the ground.
+   `LANDMARK_DEBUG=<dir>` draws what it found over front and side views
+   (`<id>.landmarks.png`); `LANDMARK_PRINT=1` prints the landmarks in manifest
+   form. When they're wrong, paste them into the manifest's `landmarks`, fix the
+   bad points, and build again: the manifest's landmarks replace the found ones.
+   Tails, hunched spines (`fixes.lean`) and cloth (`fixes.cloth`) are not found:
+   set them in the manifest.
+
+### 3. Build it
+
+    MESHY_API_KEY=… pnpm content:meshy ~/meshy-downloads
+
+builds every manifest not built yet (or `ONLY=<ids>`): it fetches what it can,
+then runs `prepare-meshy-characters.mjs` for those characters only (everything
+else is kept as built), writes the looks and refreshes `content/provenance.json`.
+The steps on their own:
+- `ONLY=<ids> node tools/content/prepare-meshy-characters.mjs ~/meshy-downloads`
+  builds `packages/client/public/characters/<id>.glb` (body and low-detail
+  copy) and `<id>_fparms.glb` (first-person arms), recorded in
+  `content/meshy.lock.json`. `SKIN_DEBUG=<dir>` writes the weights to look at.
+- `node tools/content/character-manifests.mjs` writes
+  `packages/shared/src/content/characters.generated.ts`, the looks and bios
+  `looks.ts` reads (`pnpm content:check` fails while it is out of date, a
+  manifest is unbuilt or a built file has no manifest).
+- `pnpm content:build` refreshes the provenance ledger.
+
+**Hands.** At import every hand is measured and fitted (`tools/content/hands.mjs`):
+- measured in the hand joint's space: finger direction, palm centre, length
+  from the wrist joint to the fingertips, width and thickness;
+- the rig's finger joints moved onto it (knuckles on the knuckle line, the
+  thumb scaled from the rig's), keeping the rig's joint orientations;
+- the fingers weighted to the rig's finger chains: split into index, middle,
+  ring and pinky where the gaps between the fingers show, blended at the
+  knuckles and along each finger; one bend at the knuckle line for a mitten
+  or claw; left rigid when the hand is already closed (a fist or gauntlet:
+  thickness over 0.42 of its length);
+- the measurements written on the hand joints (`extras.hand`) for the game.
+
+The log prints each hand's size and what it got (`split`, `mitten`, `none`).
+For an odd model, `fixes.hands` overrides: `palm` (`[x, y, z]` in the hand
+joint's space, metres), `curl` (0–1.5, how far the fingers close), `scale`
+(shrink or grow the hand about the wrist), for both hands or one (`l`, `r`).
+
+`node tools/content/rehand-built.mjs` (`ONLY=<ids>`) does the same to
+characters already built, from their shipped files, when the downloads
+aren't at hand: it re-skins the hand region in place, cuts first-person arms
+from the body for a character without them, and updates the lock (then run
+`pnpm content:build`). Running it again changes nothing.
+
+### 4. Check the grip sheet
+
+    pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4860
+    ONLY=<ids> node tools/content/grip-sheet.mjs http://localhost:4860 ~/grip-sheets
+
+writes `~/grip-sheets/<id>.png` (outside the repo): the character holding a
+pistol, a rifle, a shotgun and a knife, in third person framed on the hands
+and in first person as the game draws it (`?mode=grips`, the game's own
+renderer). Look for palms on the grips, fingers round them (not through the
+gun or splayed in the air), the support hand on the handguard, and in first
+person, sleeves that don't cover the sights. Fix a bad hand with
+`fixes.hands` and build again. `?mode=characters&looks=<look>` shows the
+character with every clip.
+
+### 5. Ship it
+
+- Commit the manifest, the built files, `content/meshy.lock.json`,
+  `content/provenance.json` and `characters.generated.ts` (never the
+  downloads). For a community model, add it to the licence file's list
+  (`assets-src/meshy-community-characters/License.txt`).
+- Run `pnpm content:check`, `pnpm typecheck`, `pnpm test:changed` and the
+  `characters` and `designer` e2e flows.
+- Capture its portrait (the **Capture portraits** workflow) once it's on `main`.
 
 ## Known gaps
 
