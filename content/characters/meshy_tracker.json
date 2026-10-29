@@ -1,0 +1,17 @@
+{
+  "id": "meshy_tracker",
+  "kind": "character",
+  "use": "player",
+  "status": "queued",
+  "name": "Plains Scout",
+  "notes": "plains scout; check the model is respectful before shipping. Named Plains Scout: the roster already has a Tracker (core.tracker). The download is most likely Meshy_AI_Cyber_Tribal_Warrior_1029194105_texture.glb (a T-posed warrior in a feathered headdress); held back until the owner confirms it and that it is respectful (the queue's note). The other tribal download, Meshy_AI_Tribal_Warrior_Charac_1029194134_texture.glb (a woman in tribal dress), matches no queue entry.",
+  "source": {
+    "license": "CC0",
+    "url": "https://www.meshy.ai/posts/0194a6c5-16d7-7fae-97e2-df92cb78c889",
+    "community": {
+      "model": "Tracker"
+    },
+    "file": "^Meshy_AI_Cyber_Tribal_Warrior_\\d+_texture\\.glb$",
+    "modelUrl": "https://drive.usercontent.google.com/download?id=116IdALe4KqBXa6NDIAfX9kaDlbHtubGd&export=download&confirm=t"
+  }
+}

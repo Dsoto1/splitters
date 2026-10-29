@@ -1,0 +1,34 @@
+{
+  "id": "meshy_galloway",
+  "kind": "character",
+  "use": "player",
+  "order": 23,
+  "name": "Sir Galloway",
+  "look": "core.galloway",
+  "bio": "Swore an oath to protect the realm. The realm has since moved on; he has not.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: T-pose knight.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019fb494-3125-767f-8d10-d78d88dcee73",
+    "community": {
+      "model": "Medieval Knight Character"
+    },
+    "modelUrl": "https://drive.usercontent.google.com/download?id=1Yb5Sh7FP83RLdz1BWjG46dmO3HaDG-CG&export=download&confirm=t",
+    "file": "^Meshy_AI_Medieval_Knight_Chara_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.35,
+    "roughness": 0.5
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "cloth": true
+  }
+}

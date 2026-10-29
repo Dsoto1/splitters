@@ -17,6 +17,31 @@ Models (name as on the download, download file date):
 - "T Pose Pirate" (2026-07-14)  -> character meshy_pirate (look Cap'n Barnacle)
 - "T Pose Titan" (2026-05-03)  -> character meshy_titan (look Big Bogdan)
 
+The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landmarks found on the mesh; the post URL is each model's community page):
+
+- "a raccoon warrior in T-pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/01990582-7d15-78ed-82d9-279f1a3a60cf)  -> character meshy_bandit (look Bandit)
+- "Dapper Elegant Ghoul" (downloaded 2026-10-29, https://www.meshy.ai/posts/019c14f7-cdd5-7fbb-9343-126efa2c3e1f)  -> character meshy_bonesworth (look Count Bonesworth)
+- "Robot in T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/019c7dbf-4c20-7354-850c-cce8cd7b3c37)  -> character meshy_botboy (look Botboy)
+- "Energetic anthro rabbit" (downloaded 2026-10-29, https://www.meshy.ai/posts/019ad7f4-7590-7ed4-abff-fb9bb6f1065a)  -> character meshy_brass_hare (look Brass Hare)
+- "T Pose Chef" (downloaded 2026-10-29, https://www.meshy.ai/posts/019d0dc6-1bdb-753f-a917-bb8a926fb471)  -> character meshy_chef (look Chef Basile)
+- "T Pose Cowboy" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e8ebd-61b0-7b5c-a1da-ddfec14299ea)  -> character meshy_cowboy (look Dusty Colt)
+- "t pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e5197-9688-7ed6-b96e-65ce11181dfa)  -> character meshy_dale (look Dale)
+- "Medieval Knight Character" (downloaded 2026-10-29, https://www.meshy.ai/posts/019fb494-3125-767f-8d10-d78d88dcee73)  -> character meshy_galloway (look Sir Galloway)
+- "Elderly Man with Outstretched arms" (downloaded 2026-10-29, https://www.meshy.ai/posts/019d6583-4e6b-7f44-9d84-2463443e8cf9)  -> character meshy_grandpa_chains (look Grandpa Chains)
+- "Gloombraid Goblin Shaman" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e40b6-5e91-7d09-b4ef-eac45a40e626)  -> character meshy_grizzelda (look Grizzelda)
+- "Realistic T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f9d4e-ce1b-787b-a3d7-6e078cb86602)  -> character meshy_grunt68 (look Grunt '68)
+- "Hazmat T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/Hazmat-TPose-019fb676-c586-71cd-ba94-77e8fc3b1c36)  -> character meshy_hazmat (look Hazmat)
+- "Untitled (bald man in leathers)" (downloaded 2026-10-29, https://www.meshy.ai/posts/019fa69e-98f2-75bd-b347-6c3a53ce9c1f)  -> character meshy_hector (look Hector)
+- "Female lancer" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f8f3c-f027-741d-b676-c700d0d3be15)  -> character meshy_lancer (look Lancer Mei)
+- "Iron Shadow Warrior" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f9b1c-6097-7fac-86de-5a6141690531)  -> character meshy_ninja (look Shade)
+- "Low Poly T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f9d4e-cd8d-787b-8fc1-ec0c33402aa8)  -> character meshy_ricochet (look Ricochet)
+- "White Rusty Mech" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f3ef0-e612-7dfa-97cf-358fe2f357ab)  -> character meshy_rustmech (look Ivory Rustwalker)
+- "T Pose Santa" (downloaded 2026-10-29, https://www.meshy.ai/posts/christmas-santa-claus-3d-character-model-animation-ready-01a0698e-123a-7439-90ce-586dbbc91226)  -> character meshy_santa (look Saint Nick)
+- "T Pose Shiba Inu" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e3fb2-711c-7039-8570-1d59dba28a76)  -> character meshy_shiba (look Shiba)
+- "T Pose Automaton" (downloaded 2026-10-29, https://www.meshy.ai/posts/TPose-Automaton-019fbb32-61f6-75c6-897c-e36f20750c47)  -> character meshy_t350 (look T-350)
+- "zombie" (downloaded 2026-10-29, https://www.meshy.ai/posts/019cd5f1-8fc5-793a-bfc3-6362a967a859)  -> character meshy_zombie_rotter (look Rotter)
+- "A highly realistic zombie" (downloaded 2026-10-29, https://www.meshy.ai/posts/01981b88-8b1d-7231-a7da-4f1885926e12)  -> character meshy_zombie_shambler (look Shambler)
+
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):
 
@@ -26,7 +51,7 @@ likeness screen):
 - "T Pose Portrait" (2026-07-27): a photo-real likeness of a real person,
   made from a portrait photograph
 
-tools/content/prepare-meshy-characters.mjs (FBX_CHARACTERS) rigs the textured
-FBX downloads onto the game's skeleton and builds the shipped character files.
+tools/content/prepare-meshy-characters.mjs (one manifest each in content/characters) rigs
+the textured downloads onto the game's skeleton and builds the shipped character files.
 The raw downloads (FBX, PNG) are not kept in the repo; content/meshy.lock.json
 checks the built files.

@@ -1,0 +1,34 @@
+{
+  "id": "meshy_hector",
+  "kind": "character",
+  "use": "player",
+  "order": 24,
+  "name": "Hector",
+  "look": "core.hector",
+  "bio": "Says little, carries a lot, and is always the last one standing at the bar.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: the owner's name for him.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019fa69e-98f2-75bd-b347-6c3a53ce9c1f",
+    "community": {
+      "model": "Untitled (bald man in leathers)"
+    },
+    "modelUrl": "https://drive.usercontent.google.com/download?id=1JiKW-7XFkGCX5D1cWrZ68PYg2ieuZZjI&export=download&confirm=t",
+    "file": "^Meshy_AI__1029193526_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "cloth": true
+  }
+}

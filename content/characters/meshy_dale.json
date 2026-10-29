@@ -1,0 +1,32 @@
+{
+  "id": "meshy_dale",
+  "kind": "character",
+  "use": "player",
+  "order": 29,
+  "name": "Dale",
+  "look": "core.dale",
+  "bio": "Came in to fix the vending machine. Has been winning ever since.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: an everyday guy.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019e5197-9688-7ed6-b96e-65ce11181dfa",
+    "community": {
+      "model": "t pose"
+    },
+    "file": "^Meshy_AI_t_pose_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

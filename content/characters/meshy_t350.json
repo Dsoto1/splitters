@@ -1,0 +1,33 @@
+{
+  "id": "meshy_t350",
+  "kind": "character",
+  "use": "player+npc",
+  "order": 16,
+  "name": "T-350",
+  "look": "core.t350",
+  "bio": "Built to sweep floors. Upgraded itself to sweep arenas.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: automaton.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/TPose-Automaton-019fbb32-61f6-75c6-897c-e36f20750c47",
+    "community": {
+      "model": "T Pose Automaton"
+    },
+    "modelUrl": "https://drive.usercontent.google.com/download?id=1ASIw9qPut_cutdCUK6ZEhcMlzZ0FrpE7&export=download&confirm=t",
+    "file": "^Meshy_AI_T_Pose_Automaton_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.5,
+    "roughness": 0.45
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

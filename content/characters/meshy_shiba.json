@@ -1,0 +1,32 @@
+{
+  "id": "meshy_shiba",
+  "kind": "character",
+  "use": "player",
+  "order": 36,
+  "name": "Shiba",
+  "look": "core.shiba",
+  "bio": "Very fast. Much aim. Wow.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: shiba dog.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019e3fb2-711c-7039-8570-1d59dba28a76",
+    "community": {
+      "model": "T Pose Shiba Inu"
+    },
+    "file": "^Meshy_AI_T_Pose_Shiba_Inu_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

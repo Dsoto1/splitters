@@ -1,0 +1,34 @@
+{
+  "id": "meshy_rustmech",
+  "kind": "character",
+  "use": "player",
+  "order": 15,
+  "name": "Ivory Rustwalker",
+  "look": "core.rustwalker",
+  "bio": "Woke up in a scrapyard with no orders and a full magazine. Has been following both ever since.",
+  "body": "male",
+  "size": "large",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: white rusty mech.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019f3ef0-e612-7dfa-97cf-358fe2f357ab",
+    "community": {
+      "model": "White Rusty Mech"
+    },
+    "modelUrl": "https://drive.usercontent.google.com/download?id=1y3DaB3nYRWX3ON0OFx_qA-nZLPGAIyyv&export=download&confirm=t",
+    "file": "^Meshy_AI_White_Rusty_Mech_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.4,
+    "roughness": 0.55
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

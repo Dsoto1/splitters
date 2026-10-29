@@ -1,0 +1,33 @@
+{
+  "id": "meshy_grunt68",
+  "kind": "character",
+  "use": "player",
+  "order": 22,
+  "name": "Grunt '68",
+  "look": "core.grunt68",
+  "bio": "Has been in the field so long the field started calling him sir.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: Vietnam-era soldier.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019f9d4e-ce1b-787b-a3d7-6e078cb86602",
+    "community": {
+      "model": "Realistic T Pose"
+    },
+    "modelUrl": "https://drive.usercontent.google.com/download?id=1NdviLcJ_CGeiJczOwHks5C_oPhSrpJvI&export=download&confirm=t",
+    "file": "^Meshy_AI_Realistic_T_Pose_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

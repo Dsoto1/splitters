@@ -1,0 +1,35 @@
+{
+  "id": "meshy_king",
+  "kind": "character",
+  "use": "player",
+  "status": "queued",
+  "order": 18,
+  "name": "King Aldric",
+  "look": "core.aldric",
+  "bio": "Rules three kingdoms and one leaderboard. Only one of them by election.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: king. Held back: his arms are fused with the cape, so the found landmarks put the hands on the cape (the grip sheet showed the hands raised beside the head and the sleeves torn). Needs Meshy's rigging (source.modelUrl, with MESHY_API_KEY) or landmarks read off the model.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019eab72-7fbe-78d2-9936-e1d7328721a8",
+    "community": {
+      "model": "Regal Monarch in Velvet"
+    },
+    "modelUrl": "https://drive.usercontent.google.com/download?id=1GlavNT3LTTTTmPU8xNSmIAogFYpWOglP&export=download&confirm=t",
+    "file": "^Meshy_AI_Regal_Monarch_in_Velv_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "cloth": true
+  }
+}

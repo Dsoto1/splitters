@@ -2,16 +2,6 @@
   "$comment": "Models queued for import (owner, 2026-10-29). Names and IDs are proposals. Community posts (CC0) are downloaded by hand into the downloads dir as <id>.glb (rigged GLB) or the textured FBX folder; the owner's own models (/s/ links) are fetched by task ID with MESHY_API_KEY. Remove an entry once its manifest is in content/characters/ (or the weapon, vehicle or item is shipped). `size` (small | large; absent = standard) is the gameplay body size the owner approved (2026-10-29).",
   "queue": [
     {
-      "id": "meshy_rustmech",
-      "name": "Ivory Rustwalker",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019f3ef0-e612-7dfa-97cf-358fe2f357ab",
-      "license": "CC0 (Meshy community)",
-      "note": "white rusty mech",
-      "size": "large"
-    },
-    {
       "id": "meshy_triceratops",
       "name": "Triceratops",
       "kind": "creature",
@@ -28,24 +18,6 @@
       "url": "https://www.meshy.ai/posts/019e91b5-bda3-7714-91a6-870f1f0db2d3",
       "license": "CC0 (Meshy community)",
       "note": "rifle"
-    },
-    {
-      "id": "meshy_ninja",
-      "name": "Shade",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019f9b1c-6097-7fac-86de-5a6141690531",
-      "license": "CC0 (Meshy community)",
-      "note": "ninja"
-    },
-    {
-      "id": "meshy_galloway",
-      "name": "Sir Galloway",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019fb494-3125-767f-8d10-d78d88dcee73",
-      "license": "CC0 (Meshy community)",
-      "note": "T-pose knight"
     },
     {
       "id": "meshy_neon_flux",
@@ -66,15 +38,6 @@
       "note": "king"
     },
     {
-      "id": "meshy_dale",
-      "name": "Dale",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019e5197-9688-7ed6-b96e-65ce11181dfa",
-      "license": "CC0 (Meshy community)",
-      "note": "an everyday guy"
-    },
-    {
       "id": "meshy_monk",
       "name": "Brother Ansel",
       "kind": "character",
@@ -82,15 +45,6 @@
       "url": "https://www.meshy.ai/posts/019b0a85-3058-7a32-829c-1ecfeee310b3",
       "license": "CC0 (Meshy community)",
       "note": "priest/monk"
-    },
-    {
-      "id": "meshy_lancer",
-      "name": "Lancer Mei",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019f8f3c-f027-741d-b676-c700d0d3be15",
-      "license": "CC0 (Meshy community)",
-      "note": "female lancer"
     },
     {
       "id": "meshy_cal",
@@ -112,15 +66,6 @@
       "note": "knight"
     },
     {
-      "id": "meshy_hector",
-      "name": "Hector",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019fa69e-98f2-75bd-b347-6c3a53ce9c1f",
-      "license": "CC0 (Meshy community)",
-      "note": "the owner's name for him"
-    },
-    {
       "id": "meshy_zhao",
       "name": "Agent Zhao",
       "kind": "character",
@@ -128,26 +73,6 @@
       "url": "https://www.meshy.ai/posts/019df47b-abde-7afe-955f-5350acdc8ff9",
       "license": "CC0 (Meshy community)",
       "note": "customs agent"
-    },
-    {
-      "id": "meshy_brass_hare",
-      "name": "Brass Hare",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019ad7f4-7590-7ed4-abff-fb9bb6f1065a",
-      "license": "CC0 (Meshy community)",
-      "note": "steampunk rabbit",
-      "size": "small"
-    },
-    {
-      "id": "meshy_grizzelda",
-      "name": "Grizzelda",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019e40b6-5e91-7d09-b4ef-eac45a40e626",
-      "license": "CC0 (Meshy community)",
-      "note": "lady goblin",
-      "size": "small"
     },
     {
       "id": "meshy_longshadow",
@@ -169,15 +94,6 @@
       "note": "the Medkit pickup model"
     },
     {
-      "id": "meshy_chef",
-      "name": "Chef Basile",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019d0dc6-1bdb-753f-a917-bb8a926fb471",
-      "license": "CC0 (Meshy community)",
-      "note": "chef"
-    },
-    {
       "id": "meshy_tracker",
       "name": "Plains Scout",
       "kind": "character",
@@ -185,34 +101,6 @@
       "url": "https://www.meshy.ai/posts/0194a6c5-16d7-7fae-97e2-df92cb78c889",
       "license": "CC0 (Meshy community)",
       "note": "plains scout; check the model is respectful before shipping"
-    },
-    {
-      "id": "meshy_santa",
-      "name": "Saint Nick",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/christmas-santa-claus-3d-character-model-animation-ready-01a0698e-123a-7439-90ce-586dbbc91226",
-      "license": "CC0 (Meshy community)",
-      "note": "Santa",
-      "size": "large"
-    },
-    {
-      "id": "meshy_hazmat",
-      "name": "Hazmat",
-      "kind": "character",
-      "use": "player+npc",
-      "url": "https://www.meshy.ai/posts/Hazmat-TPose-019fb676-c586-71cd-ba94-77e8fc3b1c36",
-      "license": "CC0 (Meshy community)",
-      "note": "hazmat suit"
-    },
-    {
-      "id": "meshy_ricochet",
-      "name": "Ricochet",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019f9d4e-cd8d-787b-8fc1-ec0c33402aa8",
-      "license": "CC0 (Meshy community)",
-      "note": "for Ricochet"
     },
     {
       "id": "meshy_big_bab",
@@ -223,24 +111,6 @@
       "license": "CC0 (Meshy community)",
       "note": "baboon in street clothes",
       "size": "large"
-    },
-    {
-      "id": "meshy_zombie_shambler",
-      "name": "Shambler",
-      "kind": "character",
-      "use": "npc+player",
-      "url": "https://www.meshy.ai/posts/01981b88-8b1d-7231-a7da-4f1885926e12",
-      "license": "CC0 (Meshy community)",
-      "note": "zombie"
-    },
-    {
-      "id": "meshy_cowboy",
-      "name": "Dusty Colt",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019e8ebd-61b0-7b5c-a1da-ddfec14299ea",
-      "license": "CC0 (Meshy community)",
-      "note": "cowboy"
     },
     {
       "id": "meshy_wizard",
@@ -259,73 +129,6 @@
       "url": "https://www.meshy.ai/posts/0195f886-b627-7961-bb58-c55323edc6b6",
       "license": "CC0 (Meshy community)",
       "note": "skeleton"
-    },
-    {
-      "id": "meshy_botboy",
-      "name": "Botboy",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019c7dbf-4c20-7354-850c-cce8cd7b3c37",
-      "license": "CC0 (Meshy community)",
-      "note": "robot boy",
-      "size": "small"
-    },
-    {
-      "id": "meshy_t350",
-      "name": "T-350",
-      "kind": "character",
-      "use": "player+npc",
-      "url": "https://www.meshy.ai/posts/TPose-Automaton-019fbb32-61f6-75c6-897c-e36f20750c47",
-      "license": "CC0 (Meshy community)",
-      "note": "automaton",
-      "size": "large"
-    },
-    {
-      "id": "meshy_grunt68",
-      "name": "Grunt '68",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019f9d4e-ce1b-787b-a3d7-6e078cb86602",
-      "license": "CC0 (Meshy community)",
-      "note": "Vietnam-era soldier"
-    },
-    {
-      "id": "meshy_shiba",
-      "name": "Shiba",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019e3fb2-711c-7039-8570-1d59dba28a76",
-      "license": "CC0 (Meshy community)",
-      "note": "shiba dog",
-      "size": "small"
-    },
-    {
-      "id": "meshy_zombie_rotter",
-      "name": "Rotter",
-      "kind": "character",
-      "use": "npc+player",
-      "url": "https://www.meshy.ai/posts/019cd5f1-8fc5-793a-bfc3-6362a967a859",
-      "license": "CC0 (Meshy community)",
-      "note": "zombie 2"
-    },
-    {
-      "id": "meshy_bonesworth",
-      "name": "Count Bonesworth",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019c14f7-cdd5-7fbb-9343-126efa2c3e1f",
-      "license": "CC0 (Meshy community)",
-      "note": "tall dapper skeleton",
-      "size": "large"
-    },
-    {
-      "id": "meshy_grandpa_chains",
-      "name": "Grandpa Chains",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/019d6583-4e6b-7f44-9d84-2463443e8cf9",
-      "license": "CC0 (Meshy community)",
-      "note": "old man, slippers, gold chain"
     },
     {
       "id": "meshy_buggy_wheel",
@@ -371,16 +174,6 @@
       "url": "https://www.meshy.ai/posts/0196daa9-6371-746f-b8ec-eb93815c0c4c",
       "license": "CC0 (Meshy community)",
       "note": "creature"
-    },
-    {
-      "id": "meshy_bandit",
-      "name": "Bandit",
-      "kind": "character",
-      "use": "player",
-      "url": "https://www.meshy.ai/posts/01990582-7d15-78ed-82d9-279f1a3a60cf",
-      "license": "CC0 (Meshy community)",
-      "note": "raccoon",
-      "size": "small"
     },
     {
       "id": "meshy_prism_cat",

@@ -1,0 +1,33 @@
+{
+  "id": "meshy_brass_hare",
+  "kind": "character",
+  "use": "player",
+  "order": 21,
+  "name": "Brass Hare",
+  "look": "core.brasshare",
+  "bio": "Wound up every morning and never quite runs down.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: steampunk rabbit.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019ad7f4-7590-7ed4-abff-fb9bb6f1065a",
+    "community": {
+      "model": "Energetic anthro rabbit"
+    },
+    "modelUrl": "https://drive.usercontent.google.com/download?id=1G3KUrYJQJnjJzLPfS0Guc_SBirSdnAQ-&export=download&confirm=t",
+    "file": "^Meshy_AI_An_energetic_anthro_r_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.25,
+    "roughness": 0.55
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}
