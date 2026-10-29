@@ -89,6 +89,7 @@ import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
 import { LocalTransport } from './localTransport.ts';
 import { netProbe, perfProbe } from './perfProbe.ts';
+import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
 import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
 import { loadSignaling, type HostLink } from './transport.ts';
@@ -279,6 +280,8 @@ export class GameSession {
   private fps = 0;
   private fpsAt = performance.now();
   private frameMs = 0;
+  /** The performance overlay's measurements (on while it shows). */
+  private readonly perf = new PerfOverlay();
   private lastCorrections = 0;
   private correctionsPerSec = 0;
   private bytesInAt = 0;
@@ -304,8 +307,9 @@ export class GameSession {
     this.view = new GameView(opts.engine);
     this.input = new InputState(opts.canvas);
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
-    this.showStats = opts.showStats;
-    this.input.onToggle.set('F3', () => (this.showStats = !this.showStats));
+    // The performance overlay: ?stats, F3 or Options; remembered.
+    this.showStats = opts.showStats || loadPerfOverlay();
+    this.input.onToggle.set('F3', () => this.setShowStats(!this.showStats));
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
     this.input.onToggle.set('Space', () => {
       if (this.local && !this.local.alive) this.spectateNext = true;
@@ -423,6 +427,38 @@ export class GameSession {
     invert.addEventListener('change', mouseChanged, { signal });
     assist.addEventListener('change', mouseChanged, { signal });
     // The player's own blood switch; the map sets the colour and amount.
+    // The performance overlay, and the report to paste when the game runs slowly.
+    const perfBox = $('perf-overlay') as HTMLInputElement;
+    perfBox.checked = this.showStats;
+    perfBox.addEventListener('change', () => this.setShowStats(perfBox.checked), { signal });
+    const reportBtn = $('perf-report') as HTMLButtonElement;
+    const reportNote = $('perf-report-note');
+    reportBtn.addEventListener(
+      'click',
+      () => {
+        if (!this.perf.visible) {
+          this.setShowStats(true);
+          reportNote.textContent = 'Measuring now: play a minute (as when it was slow), then copy the report.';
+          return;
+        }
+        const text = this.perf.report({
+          renderer: this.opts.rendererKind,
+          match: this.opts.transport.label,
+          map: this.map?.metadata.name ?? '?',
+          mode: this.rules?.mode ?? '?',
+          players: this.view.avatarCount + 1,
+          ping: `${this.opts.transport.rttMs.toFixed(0)} ms`,
+        });
+        void navigator.clipboard?.writeText(text).then(
+          () => (reportNote.textContent = 'Copied: paste it into a message.'),
+          () => (reportNote.textContent = 'Copying was blocked: select the report below and copy it.'),
+        );
+        const box = document.getElementById('perf-report-text') as HTMLTextAreaElement;
+        box.value = text;
+        box.hidden = false;
+      },
+      { signal },
+    );
     const bloodBox = $('blood-toggle') as HTMLInputElement;
     bloodBox.checked = this.view.blood.enabled;
     bloodBox.addEventListener(
@@ -888,6 +924,14 @@ export class GameSession {
    * up: after a few seconds of the match falling behind real time or frames
    * crawling, one quiet line says what helps. Nothing otherwise.
    */
+  /** Show or hide the performance overlay (and remember it). */
+  private setShowStats(on: boolean): void {
+    this.showStats = on;
+    savePerfOverlay(on);
+    const box = document.getElementById('perf-overlay') as HTMLInputElement | null;
+    if (box) box.checked = on;
+  }
+
   private noteIfSlow(stats: Extract<ServerMessage, { t: 'stats' }>): void {
     if (this.slowSeconds < 0 || !(this.opts.transport instanceof LocalTransport)) return;
     const slow = !document.hidden && (stats.lateTicks > 12 || this.frameMs > 50);
@@ -1933,26 +1977,28 @@ export class GameSession {
     this.hud.renderPerf(
       this.showStats,
       {
+        ...(this.showStats ? this.perf.lines() : {}),
         renderer: this.opts.rendererKind,
         match: this.opts.transport.label,
-        fps: this.fps.toFixed(0),
-        frame: `${this.frameMs.toFixed(1)} ms`,
+        ...(this.showStats ? {} : { fps: this.fps.toFixed(0), frame: `${this.frameMs.toFixed(1)} ms` }),
         ping: `${this.opts.transport.rttMs.toFixed(0)} ms`,
         'down (client)': `${this.kibPerSec.toFixed(1)} KiB/s`,
         corrections: `${this.correctionsPerSec.toFixed(1)}/s (last ${((local?.lastCorrection ?? 0) * 100).toFixed(1)} cm)`,
         'unacked input': local?.pendingCount ?? 0,
-        'active meshes': this.view.scene.getActiveMeshes().length,
         position: local ? `${local.state.pos.x.toFixed(1)}, ${local.state.pos.y.toFixed(1)}, ${local.state.pos.z.toFixed(1)}` : '-',
       },
       this.serverStats,
       this.botStates,
     );
+    this.perf.visible = this.showStats;
     if (!perfProbe.on) return this.view.render();
+    if (this.perf.visible) this.view.countDraws();
     const r0 = performance.now();
     this.view.render();
     const end = performance.now();
     perfProbe.render = end - r0;
     perfProbe.endFrame(end);
+    if (this.perf.visible) this.perf.noteFrame(this.view.perfCounts());
   }
 }
 

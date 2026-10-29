@@ -322,6 +322,19 @@ function gradientTexture(scene: Scene, spec: Json): Texture {
 
 // ------------------------------------------------------------------ meshes (Godot's primitive meshes, with their UVs)
 
+/**
+ * A playing effect's mesh on a base mesh's geometry, with its settings. Not `clone()`: that deep-copies the
+ * source's properties, about a millisecond a mesh, every time an effect plays.
+ */
+function pieceOf(base: Mesh, name: string): Mesh {
+  const mesh = new Mesh(name, base.getScene());
+  base.geometry?.applyToMesh(mesh);
+  mesh.isPickable = false;
+  mesh.alwaysSelectAsActiveMesh = true;
+  mesh.doNotSyncBoundingInfo = true;
+  return mesh;
+}
+
 function godotMesh(scene: Scene, spec: Json, name: string): Mesh {
   const type = String(spec.type);
   const positions: number[] = [];
@@ -1301,7 +1314,7 @@ export class GodotVfx {
         if (!meshSpec || !matSpec) continue;
         const material = materialFor(this.scene, matSpec, fx.root, num(node.transform_align, 0) === 1 || num(node.transform_align, 0) === 3, `${pack}/${effect}/${name}`, this.materials);
         if (!material) continue;
-        const mesh = this.baseMesh(`${pack}/${effect}/${name}`, meshSpec).clone(`gv_${name}_${id}`);
+        const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
         mesh.setEnabled(false);
         mesh.alwaysSelectAsActiveMesh = true;
@@ -1316,7 +1329,7 @@ export class GodotVfx {
         if (!meshSpec || !matSpec || node.visible === false) continue;
         const material = materialFor(this.scene, matSpec, fx.root, false, `${pack}/${effect}/${name}`, this.materials);
         if (!material) continue;
-        const mesh = this.baseMesh(`${pack}/${effect}/${name}`, meshSpec).clone(`gv_${name}_${id}`);
+        const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
         mesh.alwaysSelectAsActiveMesh = true;
         mesh.material = material;

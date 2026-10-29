@@ -94,6 +94,7 @@ export class Atmosphere {
           if (off.size && underAny(m, off)) continue;
           near.push(m);
         }
+        this.casterCount = near.length;
         return near;
       };
     }
@@ -133,6 +134,8 @@ export class Atmosphere {
    * GameView.updateAvatars). They still catch shadows.
    */
   readonly shadowless = new Set<Node>();
+  /** Meshes the shadow map drew in the last frame (the performance overlay shows it). */
+  casterCount = 0;
 
   /** Is this mesh part of the world that should cast and catch shadows? */
   private worldly(m: AbstractMesh): boolean {

@@ -632,3 +632,16 @@ trouble; skipping the prediction replay when the server agrees with the
 predicted state at the acknowledged input (Rapier moves are most of a
 friend's per-snapshot cost once caught up); measuring frame times on real
 GPUs (`PERF_GPU=1`), which this box can't.
+
+## Performance overlay and the effects budget (29 Oct 2026)
+
+**On a player's machine.** F3 (or Options → Display) shows `game/perfOverlay.ts`: perfProbe's frame samples (it turns the probe on and keeps about a minute of frames) and what each frame drew (`GameView.perfCounts`: draw calls, active meshes, `Atmosphere.casterCount`, characters, effects), plus the GPU from WebGL's unmasked renderer. Pause → Settings → Copy performance report gives the last minute as text: machine, settings, match, frame-time percentiles, hitches, and the sim / net / game / render split. Ask for one when a slowdown is reported: CI renders on the CPU and can't see it.
+
+**In CI** (`pnpm perf:budget`, `tools/perf/perf96.mjs`), besides `PERF_MAX_DRAWS`:
+- any mesh tagged `metadata.effect` in a shadow map's list fails the run;
+- `PERF_MAX_CASTERS=320`: the average shadow casters in a clumped frame (Frost Basin medium was 184–248; low has none);
+- `PERF_MAX_FX_MS=40`: starting an explosion, both hits and every muzzle flash on a fresh rig (median of three) mid-fight. Measured 1–3 ms.
+
+Turning off the effect exclusion and the flash materials' blocked dirty mechanism made the run fail with 124–129 effect meshes in the shadow pass and flash starts of 43–73 ms.
+
+**What the flash starts were.** In a 96-player scene (about 5,000 meshes) a new muzzle flash rig took 20–80 ms. Every new `ShaderMaterial`'s `backFaceCulling` / `alphaMode` setters walk every mesh and submesh to mark them dirty (three walks a piece, 15 pieces in a big flash), and `Mesh.clone` deep-copies the source's properties. Flash materials now block their dirty mechanism (they only ever take uniforms), and rig pieces and effect meshes share their source's geometry instead of cloning it.

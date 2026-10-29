@@ -1,6 +1,7 @@
 // Ray's side effect (scene picking, camera.getForwardRay): Babylon's pointer handling can pick on any scene, and
 // only the MapMaker imported it before it loaded on demand.
 import '@babylonjs/core/Culling/ray';
+import type { PerfCounter } from '@babylonjs/core/Misc/perfCounter';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
@@ -1914,6 +1915,30 @@ export class GameView {
     mesh.color = Color3.FromHexString(color);
     mesh.isPickable = false;
     this.effects.push({ mesh, born: performance.now(), ttl: ttlMs });
+  }
+
+  /** The engine's draw-call counter (Babylon only resets it per frame when asked: `countDraws`). */
+  private get drawCounter(): PerfCounter | undefined {
+    return (this.scene.getEngine() as unknown as { _drawCalls?: PerfCounter })._drawCalls;
+  }
+
+  /** Other players and NPCs drawn as characters (for the performance report). */
+  get avatarCount(): number {
+    return this.avatars.size;
+  }
+
+  /** Start counting this frame's draw calls (before `render`), for the performance overlay. */
+  countDraws(): void {
+    this.drawCounter?.fetchNewFrame();
+  }
+
+  /** What the frame just rendered drew, for the performance overlay (after `countDraws` and `render`). */
+  perfCounts(): { draws: number; meshes: number; casters: number; characters: number; effects: number } {
+    const counter = this.drawCounter;
+    counter?.addCount(0, true);
+    let characters = 0;
+    for (const a of this.avatars.values()) if (a.anim && !a.culled) characters++;
+    return { draws: counter?.current ?? 0, meshes: this.scene.getActiveMeshes().length, casters: this.atmosphere.casterCount, characters, effects: this.vfx.count + this.effects.length };
   }
 
   render(): void {

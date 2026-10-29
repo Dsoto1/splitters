@@ -273,6 +273,17 @@ function quad(scene: Scene, name: string, kind: 'blade' | 'front' | 'glow'): Mes
   return mesh;
 }
 
+/**
+ * A rig's piece: a new mesh on the shared quad's geometry. Not `clone()`: that deep-copies the source's
+ * properties, about 1 ms a piece (a big flash has 15), and a player's first shot builds a rig mid-fight.
+ */
+function pieceOf(quad: Mesh, name: string): Mesh {
+  const mesh = new Mesh(name, quad.getScene());
+  quad.geometry?.applyToMesh(mesh);
+  mesh.isPickable = false;
+  return mesh;
+}
+
 function sceneShared(scene: Scene): SceneShared {
   let s = shared.get(scene);
   if (!s) {
@@ -293,6 +304,10 @@ function flashMaterial(scene: Scene, name: string, glow: boolean): ShaderMateria
     defines: glow ? ['#define GLOW'] : [],
     needAlphaBlending: true,
   });
+  // A new material, only ever given uniforms: nothing to mark dirty. Setting backFaceCulling or alphaMode
+  // otherwise walks every mesh in the scene, three times a piece; with 96 players about 5,000 meshes, so a
+  // player's first shot (a rig of up to 15 pieces) stalled for tens of milliseconds.
+  m.blockDirtyMechanism = true;
   m.backFaceCulling = false;
   m.disableDepthWrite = true;
   m.alphaMode = Constants.ALPHA_COMBINE;
@@ -358,7 +373,7 @@ export class MuzzleFlashRig {
         mat.setFloat('opacity', 1);
         mat.setColor3('primary', primary);
         mat.setColor3('secondary', secondary);
-        const mesh = (layer.type === 'front' ? s.front : s.blade).clone(`${this.name}_${li}_${i}`);
+        const mesh = pieceOf(layer.type === 'front' ? s.front : s.blade, `${this.name}_${li}_${i}`);
         mesh.metadata = EFFECT;
         mesh.material = mat;
         mesh.parent = this.root;
@@ -377,7 +392,7 @@ export class MuzzleFlashRig {
       mat.setColor3('primary', primary);
       mat.setColor3('secondary', secondary);
       mat.setVector2('cup', new Vector2(0, 1));
-      const mesh = s.glow.clone(`${this.name}_glow`);
+      const mesh = pieceOf(s.glow, `${this.name}_glow`);
       mesh.metadata = EFFECT;
       mesh.material = mat;
       mesh.parent = this.root;

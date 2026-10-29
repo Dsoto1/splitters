@@ -1487,6 +1487,16 @@ async function arsenalFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__give, null, { timeout: T(60000) });
+  // The performance overlay (F3) measures frames while it shows; Pause → Settings copies a report of them.
+  await page.keyboard.press('F3');
+  await page.waitForFunction(() => /frame split/.test(document.getElementById('perf')?.textContent ?? '') && /\d+ draws/.test(document.getElementById('perf').textContent), null, { timeout: T(15000) }).catch(() => {});
+  const overlay = await page.$eval('#perf', (e) => (e.hidden ? '' : e.textContent));
+  check(/frame split/.test(overlay) && /\d+ draws/.test(overlay) && /shadow casters/.test(overlay), `F3 shows the performance overlay (${overlay.split('\n').slice(0, 4).join(' | ')})`);
+  await page.evaluate(() => document.querySelector('#pause [data-tab="settings"]')?.click());
+  await page.$eval('#perf-report', (b) => b.click());
+  const report = await page.$eval('#perf-report-text', (e) => e.value);
+  check(/performance report/.test(report) && /^Frames +\d+ over/m.test(report) && /^GPU /m.test(report), `the pause menu copies a performance report (${report.split('\n')[0]})`);
+  await page.keyboard.press('F3');
   // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
   for (const id of ['core.flamethrower', 'core.oil_slicker', 'core.laser_rifle', 'core.railgun', 'core.bubble_blaster', 'core.swarm', 'core.disc_launcher', 'core.arc_caster', 'core.goo_gun', 'core.burst_rifle']) {
     await page.evaluate((w) => {

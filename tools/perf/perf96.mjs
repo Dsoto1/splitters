@@ -9,7 +9,10 @@
 //   PERF_GPU=1 (the machine's GPU instead of SwiftShader), PERF_JSON=file (raw results),
 //   PERF_DIST=dir (serve that build instead of packages/client/dist), PERF_MAX_DRAWS=n (exit 1 when a
 //   clumped frame averages more draw calls than n: a budget check for render changes),
-//   PERF_STALL_S=300 (a page that doesn't answer for this long ends that map's run, reported as stalled).
+//   PERF_STALL_S=300 (a page that doesn't answer for this long ends that map's run, reported as stalled),
+//   PERF_MAX_CASTERS=n (exit 1 when a clumped frame averages more shadow casters than n), PERF_MAX_FX_MS=n
+//   (exit 1 when starting an effect takes longer: an explosion, a hit, a muzzle flash of each kind, each
+//   built while the match loads rather than mid-fight). Effects in the shadow pass always fail a budget run.
 // SwiftShader renders on the CPU, so render times are far above a real GPU's: compare runs
 // on the same machine, and read the sim and JS columns as the portable part.
 import { spawn } from 'node:child_process';
@@ -158,7 +161,7 @@ for (const id of maps) {
               const counter = engine._drawCalls;
               const add = counter?.addCount;
               let frameDraws = 0;
-              const s = { draws: [], meshes: [], tris: [], skinned: [] };
+              const s = { draws: [], meshes: [], tris: [], skinned: [], casters: [] };
               if (counter && add) counter.addCount = (n, f) => ((frameDraws += n), add.call(counter, n, f));
               const before = sc.onBeforeRenderObservable.add(() => (frameDraws = 0));
               const after = sc.onAfterRenderObservable.add(() => {
@@ -169,6 +172,7 @@ for (const id of maps) {
                 s.meshes.push(active.length);
                 s.tris.push(sc.getActiveIndices() / 3);
                 s.skinned.push(skinned);
+                s.casters.push(window.__cs.view.atmosphere?.casterCount ?? 0);
               });
               await new Promise((r) => setTimeout(r, 2000));
               sc.onBeforeRenderObservable.remove(before);
@@ -177,7 +181,9 @@ for (const id of maps) {
               const avg = (a) => Math.round(a.reduce((x, v) => x + v, 0) / Math.max(1, a.length));
               // Characters drawn (in view) now, for draws per character.
               const shown = [...window.__cs.view.avatars.values()].filter((a) => a.anim && !a.culled).length;
-              return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length };
+              // Effects (flashes, hits, explosions) never belong in the shadow pass: a second draw each, for a wrong shadow.
+              const effectCasters = sc.lights.flatMap((l) => l.getShadowGenerator?.()?.getShadowMap()?.renderList ?? []).filter((m) => m.metadata?.effect).length;
+              return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length };
             });
             const prof = await sim(PROFILE, false);
             const wall = (Date.now() - t0) / 1000;
@@ -215,6 +221,41 @@ for (const id of maps) {
               `${id} ${graphics} ${mode} ${scenario}: ${r.fps.toFixed(1)} fps, frame ${r.dt.toFixed(1)} ms (p50 ${r.p50.toFixed(1)}, p95 ${r.p95.toFixed(1)}, max ${r.max.toFixed(0)}) = sim ${r.sim.toFixed(1)} (${r.ticksPerFrame.toFixed(2)} ticks, max ${r.maxBatch}; ${r.simShare.toFixed(0)} ms/s) + msg ${r.msg.toFixed(1)} (${r.msgShare.toFixed(0)} ms/s) + js ${r.js.toFixed(1)} + render ${r.render.toFixed(1)} + other ${r.other.toFixed(1)} | ${r.tickRate.toFixed(1)} ticks/s, tick ${r.tick.total.toFixed(2)} ms = bots ${r.tick.bots.toFixed(2)} + physics ${r.tick.physics.toFixed(2)} + rest ${r.tick.rest.toFixed(2)}${prof.wake ? ` | worker wakes: ${JSON.stringify(prof.wake)}` : ''}${scenario === 'clump' ? ` | ${row.placed} placed` : ''} | scene ${JSON.stringify(scene)}`,
             );
           }
+          // What starting each effect costs now, mid-fight: an explosion, both hits, a muzzle flash of every kind
+          // (on a fresh rig, as a player's first shot builds one). Each was built while the match loaded.
+          row.fx = await page.evaluate(async () => {
+            const v = window.__cs.view;
+            const ray = v.scene.activeCamera.getForwardRay(6);
+            const at = ray.origin.add(ray.direction.scale(6));
+            const p = { x: at.x, y: at.y, z: at.z };
+            const times = {};
+            const time = (k, f) => {
+              const t0 = performance.now();
+              f();
+              times[k] = Math.round((performance.now() - t0) * 10) / 10;
+            };
+            time('explosion', () => v.explosion(p, 4));
+            time('hit heavy', () => v.hitFx(p, 'heavy'));
+            time('hit melee', () => v.hitFx(p, 'melee'));
+            const pack = await fetch(new URL('vfx/muzzle_flash.json', document.baseURI)).then((r) => r.json(), () => null);
+            // Three fresh rigs per flash, the median kept: the page shares 4 cores with 96 bots and a CPU renderer,
+            // so one sample can be a lost time slice rather than the code.
+            const Rig = v.flashRig.constructor;
+            for (const id of Object.keys(pack?.effects ?? {})) {
+              const ms = [0, 1, 2].map((i) => {
+                const rig = new Rig(v.scene, `perfRig_${id}_${i}`);
+                const t0 = performance.now();
+                rig.fire(id, 0.2);
+                const took = performance.now() - t0;
+                rig.dispose();
+                return took;
+              });
+              times[`flash ${id}`] = Math.round(ms.sort((x, y) => x - y)[1] * 10) / 10;
+            }
+            return times;
+          });
+          const slowest = Object.entries(row.fx).sort((a, b) => b[1] - a[1])[0];
+          console.log(`  effects: slowest start ${slowest ? `${slowest[0]} ${slowest[1]} ms` : '-'} (${JSON.stringify(row.fx)})`);
           if (errors.length) console.log(`  page errors: ${errors.slice(0, 3).join('; ')}`);
           results.push(row);
         })(),
@@ -240,11 +281,24 @@ for (const r of over) console.log(`OVER BUDGET: ${r.map} ${r.graphics} clumped d
 const unmeasured = budget ? maps.flatMap((id) => GRAPHICS.filter((g) => !results.some((r) => r.map === id && r.graphics === g && (r.stalled || r.clump?.scene.frames > 0))).map((g) => `${id}/${g}`)) : [];
 for (const u of unmeasured) console.log(`NOT MEASURED: ${u} (the match didn't start or no clumped frame was drawn)`);
 const stalled = results.filter((r) => r.stalled);
+// Shadow casters (clumped frames), effects in the shadow pass, and what starting an effect costs.
+const casterBudget = Number(process.env.PERF_MAX_CASTERS ?? 0);
+const fxBudget = Number(process.env.PERF_MAX_FX_MS ?? 0);
+const checking = budget || casterBudget || fxBudget;
+const fails = [];
+for (const r of results.filter((x) => !x.stalled)) {
+  if (casterBudget && (r.clump?.scene.casters ?? 0) > casterBudget) fails.push(`${r.map} ${r.graphics}: clumped frames average ${r.clump.scene.casters} shadow casters > ${casterBudget}`);
+  for (const sc of ['spread', 'clump']) if (checking && r[sc]?.scene.effectCasters) fails.push(`${r.map} ${r.graphics} ${sc}: ${r[sc].scene.effectCasters} effect meshes in the shadow pass`);
+  for (const [k, ms] of Object.entries(r.fx ?? {})) if (fxBudget && ms > fxBudget) fails.push(`${r.map} ${r.graphics}: starting ${k} took ${ms} ms > ${fxBudget}`);
+}
+for (const f of fails) console.log(`OVER BUDGET: ${f}`);
+if (checking && !fails.length && results.some((r) => r.clump)) console.log(`shadow and effects budget: ${results.filter((r) => r.clump).map((r) => `${r.map} ${r.graphics} ${r.clump.scene.casters} casters, slowest effect ${Math.max(0, ...Object.values(r.fx ?? {}))} ms`).join('; ')}`);
 if (budget && !over.length && !unmeasured.length && !stalled.length) console.log(`draw budget: every clumped frame within ${budget} draws (${results.map((r) => `${r.map} ${r.graphics} ${r.clump.scene.draws}`).join(', ')})`);
 // On GitHub, each failure is also an annotation, readable through the API without the log.
 if (process.env.GITHUB_ACTIONS) {
   for (const r of over) console.log(`::error title=perf over budget::${r.map} ${r.graphics} clumped draws ${r.clump.scene.draws} > ${budget}`);
   for (const u of unmeasured) console.log(`::error title=perf not measured::${u}`);
   for (const r of stalled) console.log(`::error title=perf stalled::${r.map} ${r.graphics}: ${String(r.stalled).slice(0, 300)}`);
+  for (const f of fails) console.log(`::error title=perf over budget::${f}`);
 }
-process.exit(over.length || stalled.length || unmeasured.length ? 1 : 0);
+process.exit(over.length || stalled.length || unmeasured.length || fails.length ? 1 : 0);

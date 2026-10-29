@@ -23,6 +23,8 @@ export interface FrameSample {
 export const perfProbe = {
   on: false,
   frames: [] as FrameSample[],
+  /** Keep only this many frames (the performance overlay's rolling minute); 0 keeps them all (perf runs). */
+  keep: 0,
   /** Accumulated since the last frame. */
   sim: 0,
   ticks: 0,
@@ -47,6 +49,7 @@ export const perfProbe = {
     this.lastFrame = this.frameStart;
     const total = end - this.frameStart;
     if (dt > 0) this.frames.push({ dt, sim: this.sim, ticks: this.ticks, batch: this.batch, msg: this.msg, js: Math.max(0, total - this.render), render: this.render });
+    if (this.keep && this.frames.length > this.keep) this.frames.splice(0, this.frames.length - this.keep);
     this.sim = this.ticks = this.batch = this.msg = 0;
   },
   reset(): void {

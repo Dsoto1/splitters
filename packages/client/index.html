@@ -134,6 +134,10 @@
             <label class="pause-row"><span>Blood</span> <input id="blood-toggle" type="checkbox" checked /></label>
             <label class="pause-row"><span>Bodies</span> <select id="bodies-setting"><option value="stay">Stay all match</option><option value="fade">Fade after 30 s</option></select></label>
             <div class="pause-row"><span>Screen</span> <button id="pause-fullscreen">Fullscreen</button></div>
+            <label class="pause-row" title="Frame time, what each frame costs and what it draws, top left (F3)"><span>Performance overlay</span> <input id="perf-overlay" type="checkbox" /></label>
+            <div class="pause-row"><span>Running slowly?</span> <button id="perf-report" title="Copies the last minute's frame times, your graphics card and settings, to paste into a message">Copy performance report</button></div>
+            <p class="hint" id="perf-report-note"></p>
+            <textarea id="perf-report-text" class="perf-report-text" readonly rows="4" aria-label="Performance report" hidden></textarea>
             <p class="hint">Graphics, crosshair and keys: main menu → Options.</p>
           </section>
         </div>
