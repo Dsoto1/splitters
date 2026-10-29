@@ -402,6 +402,8 @@ export class FrontEnd {
         return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Mode'), hint(kbd('↵', 'a'), 'Start')];
       case 'characters':
         return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Filter'), hint(kbd('D', 'x'), 'Design new'), hint(kbd('C', 'y'), 'Customise'), hint(kbd('↵', 'a'), 'Select')];
+      case 'options':
+        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Section')];
       default:
         return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('↵', 'a'), 'Confirm')];
     }
@@ -1555,35 +1557,35 @@ export class FrontEnd {
     const relayPass = el('input', { type: 'password', value: relay?.pass ?? '', placeholder: 'password', autocomplete: 'off' });
     const relayChanged = () => saveRelay({ url: relayUrl.value, user: relayUser.value.trim(), pass: relayPass.value });
     for (const f of [relayUrl, relayUser, relayPass]) f.addEventListener('change', relayChanged);
-    const controls = el(
-      'div',
-      { class: 'controls' },
-      ...[
-        ['Move', 'WASD'],
-        ['Jump (stands you up)', 'Space'],
-        ['Sprint (uses stamina)', 'Shift'],
-        ['Crouch / prone (toggle)', 'C / Z'],
-        ['Fire', 'Left mouse · F'],
-        ['Aim down sights / scope (wheel: scope zoom)', 'Right mouse · X'],
-        ['Look (touchpad / keyboard)', 'Arrow keys'],
-        ['Second trigger (alt fire)', 'Middle mouse · V'],
-        ['Throw grenade or mine', 'Hold G to aim, let go to throw'],
-        ['Hold breath (scoped)', 'Shift'],
-        ['Reload', 'R'],
-        ['Use · get in or out of a vehicle', 'E'],
-        ['Third person · in a vehicle: cockpit or chase camera', 'H'],
-        ['Weapons', '1–9 · Wheel · Q'],
-        ['Scores', 'Tab'],
-        ['Fullscreen', 'F11 · Alt+Enter'],
-        ['Controller: move / look', 'Left stick / right stick'],
-        ['Controller: fire / aim', 'RT / LT'],
-        ['Controller: jump / crouch', 'A / B'],
-        ['Controller: reload / next weapon', 'X / Y'],
-        ['Controller: use / throw', 'RB / hold LB'],
-        ['Controller: sprint / ping', 'L3 / D-pad up'],
-        ['Controller: third person / vehicle camera', 'R3'],
-      ].map(([a, k]) => el('div', {}, el('span', { textContent: a! }), kbd(k!))),
-    );
+    const bindings: [string, string][] = [
+      ['Move', 'WASD'],
+      ['Jump (stands you up)', 'Space'],
+      ['Sprint (uses stamina)', 'Shift'],
+      ['Crouch / prone (toggle)', 'C / Z'],
+      ['Fire', 'Left mouse · F'],
+      ['Aim down sights / scope (wheel: scope zoom)', 'Right mouse · X'],
+      ['Look (touchpad / keyboard)', 'Arrow keys'],
+      ['Second trigger (alt fire)', 'Middle mouse · V'],
+      ['Throw grenade or mine', 'Hold G to aim, let go to throw'],
+      ['Hold breath (scoped)', 'Shift'],
+      ['Reload', 'R'],
+      ['Use · get in or out of a vehicle', 'E'],
+      ['Third person · in a vehicle: cockpit or chase camera', 'H'],
+      ['Weapons', '1–9 · Wheel · Q'],
+      ['Scores', 'Tab'],
+      ['Fullscreen', 'F11 · Alt+Enter'],
+      ['Controller: move / look', 'Left stick / right stick'],
+      ['Controller: fire / aim', 'RT / LT'],
+      ['Controller: jump / crouch', 'A / B'],
+      ['Controller: reload / next weapon', 'X / Y'],
+      ['Controller: use / throw', 'RB / hold LB'],
+      ['Controller: sprint / ping', 'L3 / D-pad up'],
+      ['Controller: third person / vehicle camera', 'R3'],
+    ];
+    const bindingList = (rows: [string, string][]) => el('div', { class: 'controls' }, ...rows.map(([a, k]) => el('div', {}, el('span', { textContent: a }), kbd(k))));
+    const pad = 'Controller: ';
+    const keyboard = bindingList(bindings.filter(([a]) => !a.startsWith(pad)));
+    const controller = bindingList(bindings.filter(([a]) => a.startsWith(pad)).map(([a, k]) => [a.slice(pad.length).replace(/^./, (c) => c.toUpperCase()), k]));
     // Crosshair styles and colours (reference board: crosshair styles).
     const crosshairs = el('div', { class: 'crosshair-pick' });
     const colours = el('div', { class: 'crosshair-pick colours' });
@@ -1617,40 +1619,76 @@ export class FrontEnd {
     const saveMarks = () => saveMarkers({ ally: allySel.value, enemy: enemySel.value || null });
     allySel.addEventListener('change', saveMarks);
     enemySel.addEventListener('change', saveMarks);
+    // One section at a time beside a list of sections; every setting a row: what it is (and what it does) on
+    // the left, its control on the right.
+    const row = (label: string, control: HTMLElement, help?: string) =>
+      el('div', { class: 'opt-row' }, el('div', { class: 'opt-label' }, el('span', { textContent: label }), ...(help ? [el('small', { textContent: help })] : [])), el('div', { class: 'opt-control' }, control));
+    const toggle = (input: HTMLInputElement) => el('label', { class: 'switch' }, input, el('span', { class: 'switch-track' }));
+    const volumeVal = el('output', { textContent: `${volume.value}%` });
+    volume.addEventListener('input', () => (volumeVal.textContent = `${volume.value}%`));
+    const crosshairPreview = el('div', { class: 'opt-stack' }, crosshairs, colours);
+    const sections: [string, string, HTMLElement[]][] = [
+      ['general', 'General', [
+        row('Player name', name, this.verified ? 'Your username: change it in Profile.' : 'What other players see.'),
+        row('Clan tag', clan, 'Up to five letters, shown before your name.'),
+        row('Volume', el('span', { class: 'opt-range' }, volume, volumeVal)),
+      ]],
+      ['display', 'Display', [
+        row('Fullscreen', fullscreen, 'F11 or Alt+Enter also switch it.'),
+        row('Graphics', graphics, 'Applies from your next match. Medium suits most computers; drop to Low if the game stutters, try High on a strong graphics card.'),
+        row('Render scale', renderScale, 'Pixels drawn per screen point. Native on a Retina screen is four times the work; Auto is barely softer and much cooler and quieter on laptops.'),
+        row('Frame cap', frameCap, 'Most frames drawn a second. 60 is smooth and keeps laptops cool.'),
+      ]],
+      ['controls', 'Controls', [
+        row('Mouse sensitivity', el('span', { class: 'opt-range' }, sens, sensVal)),
+        row('Invert look', toggle(invert), 'Mouse up looks down.'),
+        row('Aim assist', toggle(assist), 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
+        el('h3', { class: 'opt-sub', textContent: 'Keyboard and mouse' }),
+        keyboard,
+        el('h3', { class: 'opt-sub', textContent: 'Controller' }),
+        controller,
+      ]],
+      ['hud', 'HUD', [
+        row('Crosshair', crosshairPreview, 'Its shape, then its colour.'),
+        row('Hit marker', hitStyle, 'What flashes on the crosshair when you hit someone.'),
+        row('Teammate marker', allySel),
+        row('Enemy marker', enemySel, 'Off: only teammates are marked.'),
+      ]],
+      ['online', 'Online', [
+        el('p', { class: 'opt-note', textContent: "If a friend finds your game but can't connect, your networks block direct connections. A TURN relay passes the game through a server instead: make a free account (e.g. metered.ca → TURN server), paste its address and login here, and invite your friend again. The invite link carries these settings." }),
+        row('Relay address', relayUrl),
+        row('Username', relayUser),
+        row('Password', relayPass),
+      ]],
+    ];
+    if (!sections.some(([id]) => id === this.optionsTab)) this.optionsTab = 'general';
+    const nav = el('nav', { class: 'opt-nav' });
+    const body = el('div', { class: 'opt-body' });
+    const show = (id: string) => {
+      this.optionsTab = id;
+      const [, title, rows] = sections.find(([s]) => s === id)!;
+      for (const b of nav.querySelectorAll('button')) b.classList.toggle('on', b.dataset.tab === id);
+      body.replaceChildren(el('h3', { class: 'opt-title', textContent: title }), ...rows);
+      body.scrollTop = 0;
+    };
+    for (const [id, label] of sections) {
+      const b = el('button', { type: 'button', textContent: label });
+      b.dataset.tab = id;
+      b.addEventListener('click', () => show(id));
+      nav.append(b);
+    }
+    show(this.optionsTab);
     return el(
       'div',
       { class: 'screen options' },
       el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Game <em>Options</em>' })),
-      el(
-        'div',
-        { class: 'form panel' },
-        el('label', {}, 'Player name', name),
-        el('label', {}, 'Clan tag', clan),
-        el('label', {}, 'Volume', volume),
-        el('label', {}, 'Display', fullscreen),
-        el('label', {}, el('span', { class: 'row-label' }, 'Graphics', infoTip('Applies from your next match. Medium suits most computers; drop to Low if the game stutters, try High on a strong graphics card.')), graphics),
-        el('label', {}, el('span', { class: 'row-label' }, 'Render scale', infoTip('Pixels drawn per screen point. Retina screens have two per point: Native draws all of them (four times the work), Auto draws 1.25 (barely softer, much cooler and quieter on laptops). Applies at once.')), renderScale),
-        el('label', {}, el('span', { class: 'row-label' }, 'Frame cap', infoTip('Most frames drawn per second. 60 is smooth and keeps laptops cool; ProMotion screens would otherwise draw 120. Applies at once.')), frameCap),
-        el('label', {}, 'Mouse sensitivity', el('span', { class: 'row' }, sens, sensVal)),
-        el('label', {}, 'Invert look', invert),
-        el('label', {}, 'Aim assist', assist),
-        el('p', { class: 'hint', textContent: 'Playing on a touchpad? Turn on aim assist, look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).' }),
-        el('h3', { class: 'panel-title', textContent: 'Crosshair' }),
-        crosshairs,
-        colours,
-        el('label', {}, 'Hit marker', hitStyle),
-        el('label', {}, 'Teammate marker', allySel),
-        el('label', {}, 'Enemy marker', enemySel),
-        el('h3', { class: 'panel-title', textContent: 'Relay (Host game / Join by code)' }),
-        el('p', { class: 'hint', textContent: "If a friend finds your game but can't connect, your networks block direct connections. A TURN relay passes the game through a server instead: make a free account (e.g. metered.ca → TURN server), paste its address and login here, and invite your friend again — the invite link carries these settings." }),
-        el('label', {}, 'Relay address', relayUrl),
-        el('label', {}, 'Username', relayUser),
-        el('label', {}, 'Password', relayPass),
-        el('h3', { class: 'panel-title', textContent: 'Controls' }),
-        controls,
-      ),
+      el('div', { class: 'opt-layout panel' }, nav, body),
     );
   }
+
+  /** The section of Options last open (Q / E step through them). */
+  private optionsTab = 'general';
+  private static readonly OPTION_TABS = ['general', 'display', 'controls', 'hud', 'online'];
 
   // ---------------------------------------------------------------- keyboard
 
@@ -1672,6 +1710,10 @@ export class FrontEnd {
       const m = this.currentMap();
       const i = m.modes.indexOf(this.setup.mode);
       this.setMode(m.modes[(i + (e.key === 'e' ? 1 : m.modes.length - 1)) % m.modes.length]!);
+    } else if (this.screen === 'options' && (e.key === 'q' || e.key === 'e') && !(e.target instanceof HTMLSelectElement)) {
+      const tabs = FrontEnd.OPTION_TABS;
+      this.optionsTab = tabs[(tabs.indexOf(this.optionsTab) + (e.key === 'e' ? 1 : tabs.length - 1)) % tabs.length]!;
+      this.go('options');
     } else if (this.screen === 'characters' && (e.key === 'q' || e.key === 'e')) {
       const order = ['all', 'originals', 'ranger', 'peasant', 'athlete', 'npc', 'mine'];
       this.charFilter = order[(order.indexOf(this.charFilter) + (e.key === 'e' ? 1 : order.length - 1)) % order.length]!;

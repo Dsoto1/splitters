@@ -678,6 +678,19 @@ async function offlineFlow(browser) {
   await page.setViewportSize({ width: 1400, height: 820 });
   await page.goto(CLIENT);
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  // Options: a section at a time (Q / E step through them), wide rows, switches that save.
+  await page.click('#nav-options');
+  await page.waitForSelector('.opt-nav');
+  const sections = await page.$$eval('.opt-nav button', (bs) => bs.map((b) => b.dataset.tab));
+  const optWidth = await page.$eval('.opt-layout', (e) => e.getBoundingClientRect().width);
+  check(sections.join() === 'general,display,controls,hud,online' && optWidth > 700, `Options has its sections side by side with a wide panel (${sections.join(', ')}; ${Math.round(optWidth)} px)`);
+  await page.keyboard.press('e');
+  await page.keyboard.press('e');
+  check((await page.textContent('.opt-title')) === 'Controls', 'E steps to the next Options section');
+  await page.click('.opt-row:has-text("Invert look") .switch');
+  check(await page.evaluate(() => Object.values(localStorage).some((v) => /"invertY":true/.test(v))), 'the Invert look switch saves');
+  await page.click('.opt-row:has-text("Invert look") .switch');
+  await page.keyboard.press('Escape');
   await page.click('#nav-play');
   await page.waitForSelector('.map-card');
   const cards = () =>
