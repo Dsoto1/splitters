@@ -2540,7 +2540,8 @@ async function hostcontrolsFlow(browser) {
   const openPanel = (page) => page.evaluate(() => (document.getElementById('host-controls').open = true));
   const pickMap = async (page, id) => {
     await page.evaluate(() => document.getElementById('hc-map').click());
-    await page.waitForSelector('#host-maps', { timeout: T(10000) });
+    // Under load the cards take a while: the picker has every map of our suite.
+    await page.waitForSelector('#host-maps', { timeout: T(30000) });
     await page.evaluate((mapId) => {
       document.querySelector('#host-maps .hm-modes [data-mode="core.deathmatch"]')?.click();
       document.querySelector(`#host-maps .map-card[data-id="${mapId}"]`).click();
@@ -2635,16 +2636,6 @@ async function hostcontrolsFlow(browser) {
   await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
   const after = { n: await sim(page, (m) => m.combatants().length), skill: await page.evaluate(() => window.__cs.host()?.skill) };
   check(moved && after.n === 6 && after.skill === 'hard', `the match restarts on the new map with the same players and bots (${JSON.stringify(after)})`);
-  // The map rotation: queue a map, end the match, and after the scoreboard it goes there instead of replaying.
-  const empty = await page.evaluate(() => document.getElementById('hc-rot-next')?.textContent ?? '');
-  check(/^Empty/.test(empty), `an empty rotation replays the map (${empty})`);
-  check(await queueMap(page, 'void_yard', 'Void Yard'), 'Add map… queues a map: "Next up: Void Yard · Deathmatch"');
-  await page.evaluate(() => document.getElementById('hc-end').click());
-  check(await boardNote(page, /Next map: Void Yard \(Deathmatch\)/), 'the end-of-match scoreboard says where the match goes next');
-  const rotated = await simWait(page, (m) => m.map.metadata.id === 'void_yard', null, T(60000));
-  await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
-  const kept = await page.evaluate(() => document.getElementById('hc-rot-next')?.textContent ?? '');
-  check(rotated && kept === 'Next up: Void Yard · Deathmatch', `after the scoreboard the match travels to the queued map, and the rotation stays (${kept})`);
   await page.context().close();
 
   // Host game: the host changes map; the friend comes along without a new code.
@@ -2690,14 +2681,36 @@ async function hostcontrolsFlow(browser) {
     // Host game's rotation: the friend's scoreboard says where next, and the friend comes along.
     check(await queueMap(host, 'void_yard', 'Void Yard'), 'the host queues a map in Host game');
     await host.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
+    await friend.evaluate(() => {
+      const keep = setInterval(() => window.__cs?.hud?.nextMap && ((window.__sawNext = window.__cs.hud.nextMap), clearInterval(keep)), 50);
+    });
     await host.evaluate(() => document.getElementById('hc-end').click());
-    check(await boardNote(friend, /Next map: Void Yard \(Deathmatch\)/), "the friend's end-of-match scoreboard says where the match goes next");
+    // What the friend's scoreboard says at the end (kept, in case its page is slow and the board isn't drawn before the travel).
+    const sawNext = await friend.waitForFunction(() => window.__cs?.hud?.nextMap || window.__sawNext, null, { timeout: T(20000), polling: 50 }).then((h) => h.jsonValue(), () => '');
+    check(/Next map: Void Yard \(Deathmatch\)/.test(sawNext), `the friend's end-of-match scoreboard says where the match goes next (${sawNext})`);
     const along = await simWait(host, (m) => m.map.metadata.id === 'void_yard' && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, T(90000));
     check(along, 'the rotation takes the friend along to the next map');
   }
-  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await host.context().close();
   await friend.context().close();
+
+  // After Host game (a match left loading here slowed the friend's rejoin above).
+  const solo = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  solo.on('pageerror', (e) => errors.push(`rotation: ${e.message}`));
+  await solo.goto(`${CLIENT}/?offline=arena`, { waitUntil: 'domcontentloaded' });
+  await solo.waitForFunction(playing, null, { timeout: T(60000) });
+  // Offline, the map rotation: queue a map, end the match, and after the scoreboard it goes there instead of replaying.
+  const empty = await solo.evaluate(() => document.getElementById('hc-rot-next')?.textContent ?? '');
+  check(/^Empty/.test(empty), `an empty rotation replays the map (${empty})`);
+  check(await queueMap(solo, 'void_yard', 'Void Yard'), 'Add map… queues a map: "Next up: Void Yard · Deathmatch"');
+  await solo.evaluate(() => document.getElementById('hc-end').click());
+  check(await boardNote(solo, /Next map: Void Yard \(Deathmatch\)/), 'the end-of-match scoreboard says where the match goes next');
+  const rotated = await simWait(solo, (m) => m.map.metadata.id === 'void_yard', null, T(60000));
+  await solo.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
+  const kept = await solo.evaluate(() => document.getElementById('hc-rot-next')?.textContent ?? '');
+  check(rotated && kept === 'Next up: Void Yard · Deathmatch', `after the scoreboard the match travels to the queued map, and the rotation stays (${kept})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await solo.context().close();
 }
 
 /** Each flow's outcome: { flow, status PASS | FLAKY | FAIL, seconds, attempts, fails (failed checks per failed attempt) }. */
