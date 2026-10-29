@@ -2,6 +2,8 @@
 
 Start with `HANDOFF.md` (current state, open items, pitfalls) and keep it current when you finish work.
 
+Session memory: at the end of a session, write `.control-center/session-summary.json` (title, summary, decisions, tasks; no secrets); the session hook sends it to the Project Control Center.
+
 ## Git workflow
 - Work on the session branch; no pull requests unless asked.
 - Before pushing, run the checks: `pnpm typecheck`, `pnpm test:changed` (vitest on what changed vs origin/main) and `pnpm e2e:changed` (after `pnpm build`: the e2e flows `e2e/flowMap.mjs` maps your changed files to; one flow by hand: `E2E_ONLY=<flow> node e2e/run.mjs`). Agents use these two rather than picking tests by hand.

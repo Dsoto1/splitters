@@ -10,3 +10,6 @@ e2e-artifacts/
 host-release/
 *.orig
 *.rej
+
+# Project Control Center: the session summary an agent writes for the session hook (never committed)
+.control-center/session-summary.json
