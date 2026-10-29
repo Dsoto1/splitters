@@ -91,6 +91,8 @@ export class LobbyAdvertiser {
   constructor(
     private readonly advert: () => Omit<LobbyAdvert, 'version'>,
     private readonly changed: () => void = () => undefined,
+    /** The listing's id and secret once listed (null once it's down): a successor host takes it down if the match is handed on. */
+    private readonly onListed: (id: string | null, secret: string) => void = () => undefined,
   ) {}
 
   start(): void {
@@ -119,6 +121,7 @@ export class LobbyAdvertiser {
       if (!res.ok || !data.id) return this.set(data.error ?? `game browser answered ${res.status}`);
       this.id = data.id;
       this.secret = data.secret ?? '';
+      this.onListed(this.id, this.secret);
       this.set(null);
     } catch {
       this.set("couldn't reach the game browser");
@@ -144,5 +147,13 @@ export class LobbyAdvertiser {
     clearInterval(this.timer);
     window.removeEventListener('pagehide', this.onHide);
     this.takeDown(false);
+    this.onListed(null, '');
   }
+}
+
+/** Take down a listing with its secret (a successor host replacing the listing of the host it took over from). */
+export function dropListing(id: string, secret: string): void {
+  const url = lobbyUrl();
+  if (!url || !/^[\w-]{1,64}$/.test(id)) return;
+  void fetch(`${url}/${id}`, { method: 'DELETE', headers: { 'X-Lobby-Secret': secret } }).catch(() => undefined);
 }

@@ -353,3 +353,87 @@ paired version:
   `stop`, `restart`, `kick`, `ban`, `unban`, `quit`, with
   `Authorization: Bearer <pairing key>`; bodies ≤ 4 KB JSON; 240 requests and
   20 commands a minute. See MULTIPLAYER_SECURITY.md section 6a.
+
+## 13. Host leaves (browser hosts, October 2026)
+
+A match a player's browser hosts ends when that browser goes. What friends
+see then (`client/src/main.ts` `afterHost`, `game/hostLeft.ts`):
+
+- **Goodbye**: a host leaving on purpose (Leave match, closing or reloading
+  the tab: `pagehide`) sends every friend `{ t: "bye" }` before its links
+  close (`LocalTransport.sayGoodbye`). A friend's `PeerTransport` then reports
+  the host as `left`; a link that closes without it, or a host silent for 20 s
+  (`HOST_SILENT_MS`: a browser host streams 20 snapshots a second), as
+  `dropped`. Dedicated hosts (`welcome.dedicated`) keep the old behaviour
+  (reconnect for up to a minute: they hold places and come back).
+- **Dropped**: "Reconnecting to host…": rejoining the same code until let in,
+  or until the broker says the game is gone (at once when the host's tab closed
+  or crashed), for up to a minute (a host whose machine lost its network stays
+  on the broker until it gives up on it, about a minute; a successor must not
+  take over a match that is still running). The host keeps the place 60 s by
+  the friend's key, so a blip or a reload brings them back to it.
+- **Then**: the host-left screen: the last standings the friend had, "The host
+  left", and **Host this map** (one click: a Host game on the same map, mode
+  and rules, about as many players, listed in the game browser so the others
+  can find it) or **Back to menu**.
+
+`bye` is a new optional server message: older clients ignore it, so
+`PROTOCOL_VERSION` stays 4.
+
+## 14. Host handoff (browser hosts, October 2026)
+
+A browser-hosted match with friends in no longer has to end with its host
+(`shared/src/net/handoff.ts`, `client/src/game/matchHost.ts` `tendSuccessor`,
+`peerLink.ts` `onHandoff`, `main.ts` `afterHost` / `takeOver`):
+
+- **Successor, named in advance**: once a second the host keeps one friend
+  named, the one with the lowest ping (a friend clearly better by 80 ms takes
+  the role over; away players are skipped). It sends that friend
+  `{ t: "standby" }`; the friend opens a join code of its own on the broker
+  (a `PeerHost` that holds any links until it has a match) and answers
+  `ClientMessage { t: "standby", code }` (a join code, nothing else). Only the
+  friend asked may answer; one that doesn't within 30 s is passed over (a
+  late answer still counts while no one else is ready). Then
+  every friend gets `{ t: "successor", code, slot, name }` (again whenever it
+  changes, `code: ""` when there's none, and on joining).
+- **Checkpoint**: every 3 s, to the successor only,
+  `{ t: "checkpoint", cp }` (`MatchCheckpoint`): map ID, live rules, phase and
+  seconds left, fill, bot skill, objective team scores, and every player
+  (people and bots): name, team, kills / deaths / self-kills / objective
+  plays, alive, position, facing, health, armour, weapons with ammo and the
+  one in hand. People carry only a hashed key (`handoffKey`: `h:` + 32 hex of
+  SHA-256 of `pk:…` or `sub:…`), never the key; bans likewise; plus the game
+  browser listing's name, id and secret. The successor checks shape and size
+  (`parseCheckpoint`, ≤ 96 KB).
+- **The host goes** (`bye`, or a drop after the reconnect try): the successor,
+  if its checkpoint is at most 30 s old and for the map it has, starts the
+  match from it (`LocalMatchOptions.restore`: `BotFiller.restore`,
+  `Match.resume`) on its standby code, with the clock moved on by the
+  checkpoint's age, deletes the old listing with its secret and lists the
+  match under its own code. Everyone else gets "The host left: <name> is
+  taking over…" and joins the successor's code with the usual hello, ticket
+  and join checks; their places wait for them as away players held 120 s by
+  hashed key (`reclaim` tries the key and its hash), so they get back their
+  slot's team, score and weapons. No link to the successor within 10 s (or
+  linked but not let in within a minute), or no successor: the host-left
+  screen (section 13).
+- **Trust**: friends only ever follow a code their own host named over its
+  link; nobody can claim to be the successor. The successor sees no other
+  player's key. It does get the listing's secret (it can only take that
+  listing down or update it).
+- **Carries over**: players and teams, scores, team scores of objective
+  modes, the clock, positions, facing, health, armour, weapons and ammo, bot
+  count and skill, rules as changed, bans, the listing. **Starts fresh**:
+  projectiles and bullets in flight, ground hazards, deployed cover,
+  vehicles and turrets (back at their spots; riders are put on foot where
+  they were), pickups (all available), doors / buttons / destructibles /
+  scenario logic and timers, NPCs and encounters, flags and bombs (back at
+  base), Zombies waves (from wave 1), race progress, classes, kill streaks
+  and UAVs, the dead (they respawn a second later). Bots get fresh brains.
+
+`standby`, `successor`, `checkpoint` and the `standby` client message are
+new optional messages: older clients ignore them (an older friend just never
+answers `standby` and is passed over), so `PROTOCOL_VERSION` stays 4.
+Dedicated servers never send them and ignore a `standby` answer. No hub
+change was needed: the standby code is an ordinary broker registration and
+the listing moves with the existing `POST` / `DELETE /lobby/games`.

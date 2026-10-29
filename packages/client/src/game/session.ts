@@ -102,6 +102,7 @@ import { loadRelay, relayParams } from './relay.ts';
 import { ROTATION_PRESETS, inSuite } from '../playlists.ts';
 import { PauseMenu } from './pauseMenu.ts';
 import type { ScreenMarker } from './hud.ts';
+import type { BoardData } from './scoreBoard.ts';
 import { CoverState } from './coverState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
@@ -143,7 +144,8 @@ export interface SessionOptions {
    * `travel`: a scenario chain moves on (a won co-op map with a next map, or the server changing map).
    */
   /** `how`: lost (the connection to a match we were playing dropped: worth reconnecting), rejected (the server refused or removed us). */
-  onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected') => void;
+  /** `end`: how the match stood when it ended for us (the standings, map and rules), once it had taken us in. */
+  onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void;
   /** Local matches in a playlist: a co-op win moves on even without a "Next map" link. */
   chain?: boolean;
   /** Called once the map is loaded and the first frame can render. */
@@ -154,6 +156,10 @@ export interface SessionOptions {
   hosting?: { peer: HostLink; listing?: string };
   /** Open a join code as soon as the match starts (Play → Host). */
   autoHost?: boolean;
+  /** With autoHost: list the match in the game browser too (Host this map, after a host left). */
+  autoList?: boolean;
+  /** A line to show as the match starts ("Host left: Ann is taking over"). */
+  greeting?: string;
   /** The map picker for the host's Change map (pause menu → Match): the front end's map cards. `title`: its heading and button. */
   mapPicker?: (o: { mode: GameMode; current: string; suiteOnly: boolean; title?: string; onPick: (map: MapDocument, mode: GameMode) => void; onClose: () => void }) => HTMLElement;
   /**
@@ -162,6 +168,17 @@ export interface SessionOptions {
    * `info` is a map's name and the modes it plays (null: not one of ours).
    */
   rotation?: { list: MapRotation; load(id: string): Promise<MapDocument | null>; info: RotationLookup };
+}
+
+/** How a match stood when it ended for this player: the last standings, and enough to host the same match again. */
+export interface SessionEnd {
+  /** The final scoreboard as this player last saw it. */
+  board: BoardData;
+  /** The map as the match sent it, and the rules it played. */
+  map: MapDocument;
+  rules: MatchRules;
+  /** Players in the match then (people and bots): roughly the bot fill to host it again. */
+  fill: number;
 }
 
 /** Where a scenario chain goes next: a suite map ID (local "Next map"), or the server's new map (its name). */
@@ -413,8 +430,9 @@ export class GameSession {
     const listBox = $('host-list') as HTMLInputElement;
     const listName = $('host-name') as HTMLInputElement;
     pub.hidden = hostBtn.hidden || !hubSetting();
-    listBox.checked = false;
-    listName.value = '';
+    // Listed already (a map change carried the listing), or to be listed as it starts (Host this map).
+    listBox.checked = (!!opts.hosting && opts.hosting.listing !== undefined) || (!!opts.autoList && !!opts.hostable && !this.offlineOnly && !!hubSetting());
+    listName.value = opts.hosting?.listing ?? '';
     // The server name only matters when the match is listed.
     const showName = () => (listName.hidden = !listBox.checked);
     showName();
@@ -1098,6 +1116,8 @@ export class GameSession {
         region: myRegion(),
       }),
       show,
+      // The match knows its listing: a successor (host handoff) takes it over if this browser goes.
+      (id, secret) => local.setListing(id ? { name: ($('host-name') as HTMLInputElement).value.trim() || `${me}'s game`, id, secret } : null),
     );
     this.advertiser.start();
     show();
@@ -1114,7 +1134,14 @@ export class GameSession {
       local.travelGuests(this.travel.host?.map.metadata.name ?? this.travel.id ?? 'the next map');
       const listed = ($('host-list') as HTMLInputElement).checked;
       this.travel.hosting = { peer: this.peerHost, ...(listed ? { listing: ($('host-name') as HTMLInputElement).value } : {}) };
+    } else if (this.peerHost && local?.guests) {
+      // Friends are told we're leaving (bye) before the join code goes, which closes their links.
+      local.sayGoodbye();
+      const peer = this.peerHost;
+      window.setTimeout(() => peer.close(), 1500);
     } else this.peerHost?.close();
+    // The standings as they were (before the HUD goes), for a screen after the match (the host left).
+    const end: SessionEnd | undefined = this.welcomed && this.welcomeMap && this.rules ? { board: this.hud.boardData(this.scores, this.slot, true), map: this.welcomeMap, rules: this.rules, fill: Math.max(2, this.lastRoster?.length ?? 2) } : undefined;
     this.hostPanel.root.remove();
     this.mapPicker?.remove();
     document.getElementById('online-confirm')?.remove();
@@ -1131,14 +1158,18 @@ export class GameSession {
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
-    this.opts.onExit(reason, this.travel ?? undefined, how ?? (this.rejected ? 'rejected' : undefined));
+    this.opts.onExit(reason, this.travel ?? undefined, how ?? (this.rejected ? 'rejected' : undefined), end);
   }
+
+  /** The map as the welcome brought it (before this page added anything to it), for hosting the match again. */
+  private welcomeMap: MapDocument | null = null;
 
   private onMessage(msg: ServerMessage): void {
     if (this.closed) return;
     switch (msg.t) {
       case 'welcome': {
         this.welcomed = true;
+        this.welcomeMap = msg.map;
         // The race's start-grid vehicles and the track's ambient cars join the map's own mounts, as on the server.
         const loaded = loadMap(withTrackVehicles(msg.map, msg.rules));
         if (!loaded.ok) {
@@ -1195,9 +1226,12 @@ export class GameSession {
         this.hud.show();
         this.hud.npcName = (id) => this.npcLook(id)?.label;
         this.updatePause();
+        // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
+        if (this.peerHost) this.updateListing();
         this.updateOnline();
         (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, map: loaded.map.metadata.id };
         this.opts.onReady?.();
+        if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
         break;
       }

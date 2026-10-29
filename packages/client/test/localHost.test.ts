@@ -147,4 +147,60 @@ describe('host controls in a browser match (offline, Host game)', () => {
     await until(() => back.got.some((m) => m.t === 'welcome'));
     expect(next.guests).toBe(1);
   });
+
+  it('a host leaving says goodbye to its friends before their links close', async () => {
+    const { t } = await host(4);
+    const f = friend();
+    t.accept(f.link);
+    f.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Friend' });
+    t.close();
+    expect(f.got.at(-1)).toEqual({ t: 'bye' });
+    expect(f.closed()).toBe(false);
+    await until(() => f.closed());
+  });
+
+  it('host handoff: a friend is named successor and checkpointed; restored from it, the others take their places back', async () => {
+    const { t } = await host(4);
+    const ann = friend();
+    const bo = friend();
+    t.accept(ann.link);
+    ann.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Ann', pk: 'p_annkey1234' });
+    t.accept(bo.link);
+    bo.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Bo', pk: 'p_bokey12345' });
+    // Within a second or so the host asks one friend to stand by.
+    await until(() => [ann, bo].some((f) => f.got.some((m) => m.t === 'standby')));
+    const [heir, other] = ann.got.some((m) => m.t === 'standby') ? [ann, bo] : [bo, ann];
+    // Only the friend asked may answer: the other's claim is ignored.
+    other.say({ t: 'standby', code: 'ZZZZZZ' });
+    heir.say({ t: 'standby', code: 'ABC234' });
+    for (const f of [ann, bo]) expect(f.got.filter((m) => m.t === 'successor').at(-1)).toMatchObject({ t: 'successor', code: 'ABC234' });
+    const cp = heir.got.filter((m) => m.t === 'checkpoint').at(-1);
+    expect(other.got.some((m) => m.t === 'checkpoint')).toBe(false);
+    if (cp?.t !== 'checkpoint') throw new Error('no checkpoint');
+    const otherName = heir === ann ? 'Bo' : 'Ann';
+    const otherKey = heir === ann ? 'p_bokey12345' : 'p_annkey1234';
+    expect(JSON.stringify(cp.cp)).not.toContain(otherKey);
+    const mine = cp.cp.players.find((p) => p.succ === 1)!;
+    expect(cp.cp.players.find((p) => p.name === otherName)?.key).toMatch(/^h:/);
+    // The host goes; the heir carries the match on from the checkpoint, and the other friend reconnects to it.
+    t.close();
+    const next = new LocalTransport(yard(), { name: mine.name, botFill: cp.cp.fill, difficulty: 'normal', restore: { ...cp.cp, players: cp.cp.players.map((p) => (p.name === otherName ? { ...p, k: 4 } : p)) } });
+    open.push(next);
+    const got: ServerMessage[] = [];
+    next.start((m) => got.push(m), () => undefined);
+    await until(() => got.some((m) => m.t === 'welcome'));
+    expect(next.hostState()!.fill).toBe(cp.cp.fill);
+    const again = friend();
+    next.accept(again.link);
+    again.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: otherName, pk: otherKey });
+    await until(() => again.got.some((m) => m.t === 'welcome'));
+    const roster = again.got.filter((m) => m.t === 'roster').at(-1);
+    if (roster?.t !== 'roster') throw new Error('no roster');
+    const welcome = again.got.find((m) => m.t === 'welcome');
+    if (welcome?.t !== 'welcome') throw new Error('no welcome');
+    // Their own place (not a bot's), with the score the checkpoint had.
+    expect(roster.players.find((p) => p.slot === welcome.slot)).toMatchObject({ name: otherName, bot: false });
+    expect(roster.players.filter((p) => !p.bot).map((p) => p.name).sort()).toEqual([mine.name, otherName].sort());
+    await until(() => again.got.some((m) => m.t === 'snapshot' && m.score.some((s) => s.s === welcome.slot && s.k === 4)));
+  }, 60_000);
 });

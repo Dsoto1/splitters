@@ -53,6 +53,7 @@ import { terrainHeightAt } from '../map/terrain.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
+import type { CheckpointPlayer, MatchCheckpoint } from '../net/handoff.ts';
 import { ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
 import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
@@ -4494,6 +4495,101 @@ export class Match {
     }
   }
 
+  /**
+   * Host handoff: everyone in the match as they stand now (people, away players and Player Bots), for a
+   * successor host to restore (MatchCheckpoint). `keyOf`: a person's hashed key (handoffKey), when known.
+   */
+  checkpointPlayers(keyOf: (c: Combatant) => string | null, successor: number | null): CheckpointPlayer[] {
+    const r = (v: number) => Math.round(v * 100) / 100;
+    return this.combatants().map((c) => {
+      const person = c.kind === 'human' || !!c.away;
+      const key = person ? keyOf(c) : null;
+      const held = c.weapons.get(c.current);
+      return {
+        name: c.away ? c.away.name : c.name,
+        kind: person ? 'human' : 'bot',
+        ...(key ? { key } : {}),
+        ...(c.slot === successor ? { succ: 1 as const } : {}),
+        ...(c.account ? { acct: 1 as const } : {}),
+        look: c.look,
+        team: c.faction,
+        k: c.kills,
+        d: c.deaths,
+        ...(c.selfKills ? { x: c.selfKills } : {}),
+        ...(c.objective ? { o: c.objective } : {}),
+        alive: c.alive,
+        ...(c.alive ? { p: [r(c.move.pos.x), r(c.move.pos.y), r(c.move.pos.z)] as [number, number, number], yaw: r(c.yaw), hp: Math.round(c.health), ar: Math.round(c.armor) } : {}),
+        w: [...c.weapons.values()].map((w): [string, number, number] => [w.def.id, w.mag, w.reserve]),
+        ...(held ? { cur: held.def.id } : {}),
+      };
+    });
+  }
+
+  /**
+   * Host handoff: a player just added to this match (addHuman / addBot) takes the place a checkpoint
+   * recorded: team, score, weapons, and (alive) where they stood, facing the same way, with the same health.
+   * The dead wait a moment and respawn as usual.
+   */
+  restoreCombatant(c: Combatant, p: CheckpointPlayer): void {
+    const team = p.team === null ? null : (this.teams?.find((t) => t.id === p.team)?.id ?? c.faction);
+    if (team !== c.faction) c.faction = team;
+    c.kills = p.k;
+    c.deaths = p.d;
+    c.selfKills = p.x ?? 0;
+    c.objective = p.o ?? 0;
+    c.account = p.acct === 1;
+    if (p.alive && p.p) {
+      if (!c.alive) this.spawn(c);
+      this.leaveMount(c, false);
+      c.move = { pos: { x: p.p[0], y: p.p[1], z: p.p[2] }, velY: 0, grounded: false };
+      c.yaw = p.yaw ?? c.yaw;
+      c.pitch = 0;
+      c.health = Math.max(1, Math.min(c.maxHealth, p.hp ?? c.maxHealth));
+      c.armor = Math.max(0, Math.min(MAX_ARMOR, p.ar ?? 0));
+    } else {
+      this.leaveMount(c, false);
+      c.alive = false;
+      c.respawnTick = this.zombies ? Infinity : this.tick + Math.max(TICK_RATE, this.rules.respawnDelayTicks);
+    }
+    const weapons = new Map<number, WeaponState>();
+    for (const [id, mag, reserve] of p.w ?? []) {
+      let def: WeaponDefinition;
+      try {
+        def = getWeapon(id);
+      } catch {
+        continue;
+      }
+      weapons.set(weaponCode(def), { def, mag: Math.max(0, Math.min(def.magazine, mag)), reserve: Math.max(0, Math.min(def.reserveMax, reserve)), alt: def.alt?.max ?? 0 });
+    }
+    if (weapons.size) {
+      c.weapons = weapons;
+      const cur = [...weapons.values()].find((w) => w.def.id === p.cur) ?? [...weapons.values()][0]!;
+      c.current = weaponCode(cur.def);
+      c.raiseTicks = 0;
+      c.reload = null;
+    }
+  }
+
+  /**
+   * Host handoff: carry on a match restored from a checkpoint in `phase`, with `timeLeft` seconds of it to
+   * go: no start gate, countdown or round_start. Objective modes get their team scores back. A checkpoint
+   * from before the round began just starts as a new match does.
+   */
+  resume(phase: MatchPhase, timeLeft: number, teams?: readonly [string, number][]): void {
+    if (phase === 'playing') {
+      this.phase = 'playing';
+      for (const c of this.combatants()) c.spawnedAt = this.tick;
+      this.mode?.reset();
+      this.zombies?.reset();
+      this.race?.reset(false);
+      this.phaseEndTick = this.rules.timeLimitSeconds > 0 ? this.tick + Math.max(1, timeLeft) * TICK_RATE : Infinity;
+    } else if (phase === 'intermission') {
+      this.phase = 'intermission';
+      this.phaseEndTick = this.tick + Math.max(1, timeLeft) * TICK_RATE;
+    }
+    if (teams?.length) this.mode?.restoreScores?.(new Map(teams));
+  }
+
   /** What `c` would carry into the next map of a chain. */
   carryOf(c: Combatant): CarryOver {
     return { kills: c.kills, deaths: c.deaths, weapons: [...c.weapons.values()].map((w): [string, number, number] => [w.def.id, w.mag, w.reserve]) };
@@ -5098,6 +5194,39 @@ export class BotFiller {
     if (active) this.warned.delete(slot);
     this.match.queueInputs(slot, inputs);
     return back;
+  }
+
+  /**
+   * Host handoff: fill a fresh match from a checkpoint. Bots come back as bots, `me` (the successor's own
+   * player, marked `succ`) as a player, and everyone else as an away player whose place a bot keeps, held
+   * for their next connection by their hashed key (reclaim). Returns the successor's own player.
+   */
+  restore(cp: MatchCheckpoint, fill: number, me: { name: string; look?: string }): Combatant | null {
+    let mine: Combatant | null = null;
+    // People first (their teams as they were), then the bots.
+    const order = [...cp.players].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'human' ? -1 : 1));
+    for (const p of order) {
+      if (p.kind === 'bot') {
+        const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
+        this.counter++;
+        const c = this.match.addBot(p.name, profile, this.difficulty, true);
+        if (!c) continue;
+        c.look = validLookId(p.look);
+        this.match.restoreCombatant(c, p);
+        continue;
+      }
+      const self = p.succ === 1 && !mine;
+      const c = this.match.addHuman(self ? me.name : p.name, self ? (me.look ?? p.look) : p.look, p.team);
+      if (!c) continue;
+      this.match.restoreCombatant(c, p);
+      if (self) mine = c;
+      // Their place waits for them (twice the usual hold: everyone is reconnecting at once, some on slow machines);
+      // with no key, a bot takes it over for good.
+      else this.hold(c.slot, 'dropped', p.key ?? null, fill, AWAY.holdSeconds * 2);
+    }
+    mine ??= this.match.addHuman(me.name, me.look);
+    this.rebalance(fill);
+    return mine;
   }
 
   /** A new connection takes back the place held for `key` (a dropped player reconnecting). Null when none is held. */

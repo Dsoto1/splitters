@@ -11,7 +11,7 @@ export const MAP_FLOWS = Array.from({ length: MAP_PARTS }, (_, i) => (i ? `maps$
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', ...MAP_FLOWS,
-  'designer', 'characters', 'online', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost', 'hostpage', 'webgpu', 'visual',
+  'designer', 'characters', 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -93,7 +93,8 @@ const RULES = [
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],
-  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],
+  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost'], ['client']],
+  [/^packages\/client\/src\/game\/hostLeft\.ts$/, ['hostgame', 'handoff'], ['client']],
   [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera)\.ts$/, ['vehicles', 'race'], ['client']],
   [/^packages\/client\/src\/(game\/raceHud\.ts|roadMeshes\.ts)$/, ['race'], ['client']],
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
@@ -106,7 +107,7 @@ const RULES = [
 
   // The server (dedicated server, hub, lobby).
   [/^packages\/server\/src\/tools\//, NONE, ['server']],
-  [/^packages\/server\//, ['online', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost', 'hostpage'], ['server', 'host']],
+  [/^packages\/server\//, ['online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage'], ['server', 'host']],
   // The Host Service (dedicated host); its packaging tool runs in CI's host-release job.
   [/^packages\/host\/tools\//, NONE, []],
   [/^packages\/host\//, ['dedicatedhost', 'hostpage'], ['host']],

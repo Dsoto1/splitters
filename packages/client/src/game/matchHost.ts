@@ -2,6 +2,10 @@ import {
   BOT_DIFFICULTIES,
   BROWSER_HOST_MAX_GUESTS,
   BROWSER_MAX_PLAYERS,
+  CHECKPOINT_EVERY_SECONDS,
+  STANDBY_ANSWER_SECONDS,
+  handoffKey,
+  isJoinCode,
   KeyedLimiter,
   rulesForMap,
   MAX_PLAYER_SLOTS,
@@ -24,6 +28,7 @@ import {
   type RotationCommand,
   type HostState,
   type MapDocument,
+  type MatchCheckpoint,
   type MatchRules,
   type PlayerInput,
   type ServerMessage,
@@ -49,6 +54,17 @@ export interface LocalMatchOptions {
   carry?: CarryOver;
   /** Browser tests' deterministic mode (testMode.ts): a fixed seed, optionally an invulnerable player. Offline only. */
   test?: { seed: number; god: boolean };
+  /** Host handoff: carry on the match this checkpoint describes (the host left; this browser was its successor). */
+  restore?: MatchCheckpoint;
+  /** This browser's own key (`pk:…`): if the match is handed on, the next host keeps this player's place for it. */
+  selfKey?: string;
+}
+
+/** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts). */
+export interface HostListing {
+  name: string;
+  id?: string;
+  secret?: string;
 }
 
 /** What the page reads synchronously about a match that may run elsewhere (a worker): kept up to date by the host. */
@@ -128,10 +144,14 @@ interface Remote {
   account?: { sub: string; name?: string };
   /** When the friend's link last sent anything (ms): a silent one is closed (FRIEND_SILENT_MS). */
   heardAt: number;
+  /** The friend has loaded the match (`ready`): until then a slow machine building the map may go quiet longer. */
+  loaded?: boolean;
 }
 
 /** A friend's link that sends nothing this long is closed; their place is kept for them (AWAY.holdSeconds) to reconnect. */
 const FRIEND_SILENT_MS = 20_000;
+/** …and one still loading the match (no `ready` yet: a slow machine building a big map can't answer meanwhile). */
+const FRIEND_LOADING_SILENT_MS = 60_000;
 /** Friends' joins per minute, in all: a burst of joins (many tabs at once) is refused. */
 const FRIEND_JOINS_PER_MINUTE = 12;
 
@@ -179,19 +199,29 @@ export class MatchHost {
     await mod.initNavigation();
     if (this.stopped) return;
     const { Match, BotFiller, HostControl } = mod;
-    const rules = this.opts.rules ?? rulesForMap(this.map);
+    const cp = this.opts.restore;
+    const rules = cp?.rules ?? this.opts.rules ?? rulesForMap(this.map);
     const test = this.opts.test;
     const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true });
-    const me = match.addHuman(this.opts.name, this.opts.look)!;
+    const bots = new BotFiller(match, BOT_DIFFICULTIES[cp?.skill ?? this.opts.difficulty], { botSet: this.opts.botSet ?? null });
+    const fill = Math.min(cp?.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS);
+    let me: Combatant;
+    if (cp) {
+      // Handed on: everyone where the old host's checkpoint had them (the others' places kept for them), the clock and team scores too.
+      me = bots.restore(cp, fill, { name: this.opts.name, ...(this.opts.look ? { look: this.opts.look } : {}) })!;
+      match.resume(cp.phase, cp.timeLeft, cp.teams);
+      for (const key of cp.banned ?? []) this.banned.add(key);
+      if (cp.listing) this.listing = { name: cp.listing.name };
+    } else {
+      me = match.addHuman(this.opts.name, this.opts.look)!;
+      if (this.opts.carry) match.applyCarry(me, this.opts.carry);
+    }
     me.account = !!this.opts.verified;
     if (test?.god) me.invulnerable = true;
-    if (this.opts.carry) match.applyCarry(me, this.opts.carry);
-    const bots = new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty], { botSet: this.opts.botSet ?? null });
-    const fill = Math.min(this.opts.botFill, MAX_PLAYER_SLOTS);
     // Load tests (?bots=96) start past the browser's cap; the host can't raise it further.
     const control = new HostControl(match, bots, fill, 'Host', Math.max(BROWSER_MAX_PLAYERS, fill));
     Object.assign(this, { match, me, mod, control, bots });
-    bots.rebalance(control.fill);
+    if (!cp) bots.rebalance(control.fill);
     this.onMatch?.(match, me, mod);
 
     this.sink.local({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() });
@@ -292,6 +322,8 @@ export class MatchHost {
         tickTotal = tickMax = aiTotal = ticks = late = 0;
         // Friends who went idle: a warning, then a bot plays for them until they're back; kept places that ran out; silent links.
         if (this.remotes.size || match.combatants().some((c) => c.away)) this.watchAway(match);
+        // Host handoff: keep a successor named, and their checkpoint fresh.
+        if (this.remotes.size || this.successor) this.tendSuccessor(match);
         // Host game, every other second: each friend's ping (the host's own is 0) for everyone's scoreboard.
         if (this.remotes.size && ++pingRounds % 2 === 0) {
           const p = [me.slot, 0, ...[...this.remotes.values()].flatMap((r) => (r.slot !== null && r.rtt !== undefined ? [r.slot, r.rtt] : []))];
@@ -329,11 +361,12 @@ export class MatchHost {
     if (changes.away.length || changes.released.length) this.rosterToAll();
     const now = Date.now();
     // This tab slept (hidden, a phone's screen off): friends weren't silent, we weren't listening. Start their clocks again.
-    const slept = now - this.lastWatch > 5000 || this.hidden;
+    // So did the page (a long stall: friends' messages reach us through it), going by its own player's inputs.
+    const slept = now - this.lastWatch > 5000 || this.hidden || now - this.pageHeardAt > 5000;
     this.lastWatch = now;
     for (const r of friends) {
       if (slept) r.heardAt = now;
-      else if (now - r.heardAt > FRIEND_SILENT_MS) {
+      else if (now - r.heardAt > (r.loaded ? FRIEND_SILENT_MS : FRIEND_LOADING_SILENT_MS)) {
         this.sink.close(r.id, 0);
         this.closed(r.id);
       }
@@ -348,7 +381,11 @@ export class MatchHost {
     this.hidden = hidden;
   }
 
+  /** When this browser's own player last sent inputs (ms): the page is alive and passing friends' messages on. */
+  private pageHeardAt = Date.now();
+
   input(inputs: PlayerInput[]): void {
+    this.pageHeardAt = Date.now();
     if (this.match && this.me) this.match.queueInputs(this.me.slot, inputs);
   }
 
@@ -443,7 +480,7 @@ export class MatchHost {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: `protocol ${msg.protocol} unsupported (host speaks ${PROTOCOL_VERSION})` }));
         return this.drop(id);
       }
-      if (msg.pk && this.banned.has(msg.pk)) {
+      if (msg.pk && (this.banned.has(msg.pk) || this.banned.has(handoffKey(`pk:${msg.pk}`)))) {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: 'You were banned from this game' }));
         return this.drop(id);
       }
@@ -469,7 +506,8 @@ export class MatchHost {
         this.sink.guest(old.id, null);
         this.sink.close(old.id, 0);
       }
-      const back = key ? bots.reclaim(key, name) : null;
+      // A place kept by a handoff is held under the hashed key (the old host's checkpoint never carried keys themselves).
+      const back = key ? (bots.reclaim(key, name) ?? bots.reclaim(handoffKey(key), name)) : null;
       const player = back ?? bots.join(name, msg.look, control.fill);
       if (!player) {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: 'match full' }));
@@ -481,6 +519,8 @@ export class MatchHost {
       this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState() } satisfies ServerMessage));
       if (back) this.announce({ t: 'notice', text: `${name} is back` });
       this.rosterToAll();
+      // Who takes over if this host goes: everyone knows in advance.
+      if (this.successorSent) this.sink.send(id, this.successorSent);
     } else if (msg.t === 'input' && r.slot !== null) {
       // An idle friend's place goes back to them the moment they play.
       if (bots.input(r.slot, msg.inputs)) {
@@ -488,11 +528,16 @@ export class MatchHost {
         this.rosterToAll();
       }
     }
-    else if (msg.t === 'ready' && r.slot !== null) match.ready(r.slot);
+    else if (msg.t === 'ready' && r.slot !== null) {
+      r.loaded = true;
+      match.ready(r.slot);
+    }
     else if (msg.t === 'ping') {
       if (msg.rtt !== undefined) r.rtt = msg.rtt;
       this.sink.send(id, JSON.stringify({ t: 'pong', id: msg.id, ct: msg.ct } satisfies ServerMessage));
     }
+    // The friend asked to stand by has opened its code: it's the successor now (nobody else can name a code).
+    else if (msg.t === 'standby' && r.slot !== null) this.standingBy(r, msg.code);
     // Only the host runs the match: a friend's host commands (or admin logins) are refused.
     else if ((msg.t === 'host' || msg.t === 'admin') && r.slot !== null) this.sink.send(id, JSON.stringify({ t: 'host', state: null, error: 'Only the host can change the match' } satisfies ServerMessage));
   }
@@ -506,6 +551,123 @@ export class MatchHost {
     this.control.bots.hold(r.slot, 'dropped', r.account ? `sub:${r.account.sub}` : r.pk ? `pk:${r.pk}` : null, this.control.fill);
     this.sink.guest(r.id, null);
     this.rosterToAll();
+  }
+
+  /** Host handoff: the friend named to take over (asked to stand by until `code` comes back), and when they were asked. */
+  private successor: { id: number; code: string | null; askedAt: number } | null = null;
+  /** Friends who were asked and never answered (they aren't asked again), and everyone asked. */
+  private readonly passedOver = new Set<number>();
+  private readonly asked = new Set<number>();
+  private checkpointAt = 0;
+  /** The successor message friends were last sent ('' before any). */
+  private successorSent = '';
+  /** The game browser listing (the page tells us), for the successor to carry on. */
+  private listing: HostListing | null = null;
+
+  /** The page listed (or unlisted) the match in the game browser. */
+  setListing(listing: HostListing | null): void {
+    this.listing = listing;
+  }
+
+  /** A friend's key as the match holds places by it: their account, else their browser key. */
+  private keyOf(r: Remote): string | null {
+    return r.account ? `sub:${r.account.sub}` : r.pk ? `pk:${r.pk}` : null;
+  }
+
+  /**
+   * Once a second with friends in: keep one of them named successor (the best connection, asked to stand
+   * by first), tell everyone who it is and its code, and send it a fresh checkpoint every few seconds.
+   */
+  private tendSuccessor(match: MatchT): void {
+    const now = Date.now();
+    const friends = [...this.remotes.values()].filter((r): r is Remote & { slot: number } => r.slot !== null && !match.slots[r.slot]?.away);
+    let s = this.successor;
+    const current = s ? friends.find((r) => r.id === s!.id) : undefined;
+    // Gone, or away (a bot plays for them): someone else.
+    if (s && !current) s = null;
+    // Asked and never answered: someone else, and not them again.
+    if (s && !s.code && now - s.askedAt > STANDBY_ANSWER_SECONDS * 1000) {
+      this.passedOver.add(s.id);
+      s = null;
+    }
+    const rtt = (r: Remote) => r.rtt ?? 999;
+    const best = friends.filter((r) => !this.passedOver.has(r.id)).sort((a, b) => rtt(a) - rtt(b) || a.id - b.id)[0];
+    // A clearly better connection takes the role over (well better: not a swap for every wobble).
+    if (s?.code && current && best && best.id !== s.id && rtt(best) + 80 < rtt(current)) s = null;
+    if (!s && best) {
+      s = { id: best.id, code: null, askedAt: now };
+      this.asked.add(best.id);
+      this.sink.send(best.id, JSON.stringify({ t: 'standby' } satisfies ServerMessage));
+    }
+    this.successor = s;
+    this.announceSuccessor();
+    if (s?.code && now - this.checkpointAt >= CHECKPOINT_EVERY_SECONDS * 1000) this.sendCheckpoint();
+  }
+
+  /**
+   * A friend asked to stand by answered with its code: it's the successor now. A late answer (we'd moved on
+   * to asking someone else) still counts while nobody else is ready. Friends never asked are ignored.
+   */
+  private standingBy(r: Remote, code: string): void {
+    const s = this.successor;
+    if (!this.asked.has(r.id) || r.slot === null || !isJoinCode(code)) return;
+    if (s?.code && s.id !== r.id) return;
+    this.passedOver.delete(r.id);
+    this.successor = { id: r.id, code, askedAt: s?.id === r.id ? s.askedAt : Date.now() };
+    this.announceSuccessor();
+    this.sendCheckpoint();
+  }
+
+  /** Tell every friend who takes over (and where), when that changes. */
+  private announceSuccessor(): void {
+    const s = this.successor;
+    const r = s?.code ? this.remotes.get(s.id) : undefined;
+    const msg: ServerMessage = s?.code && r && r.slot !== null ? { t: 'successor', code: s.code, slot: r.slot, name: this.match?.slots[r.slot]?.name ?? 'A player' } : { t: 'successor', code: '' };
+    const text = JSON.stringify(msg);
+    // Nothing named yet and nothing said: nothing to take back.
+    if (text === this.successorSent || (!this.successorSent && !s?.code)) return;
+    this.successorSent = text;
+    for (const g of this.remotes.values()) if (g.slot !== null) this.sink.send(g.id, text);
+  }
+
+  /** The match as it stands, to the successor only. */
+  private sendCheckpoint(): void {
+    const s = this.successor;
+    const r = s ? this.remotes.get(s.id) : undefined;
+    if (!s?.code || !r || r.slot === null) return;
+    const cp = this.checkpoint(r.slot);
+    if (!cp) return;
+    this.checkpointAt = Date.now();
+    this.sink.send(r.id, JSON.stringify({ t: 'checkpoint', cp } satisfies ServerMessage));
+  }
+
+  /** A checkpoint of the match for a successor at `successor` (net/handoff.ts): people by hashed key only. */
+  checkpoint(successor: number | null): MatchCheckpoint | null {
+    const { match, control, bots, me } = this;
+    if (!match || !control || !bots || this.stopped) return null;
+    const keys = new Map<number, string>();
+    for (const r of this.remotes.values()) {
+      const key = r.slot !== null ? this.keyOf(r) : null;
+      if (key) keys.set(r.slot!, key);
+    }
+    const keyOf = (c: Combatant) => {
+      const key = keys.get(c.slot) ?? (c === me ? this.opts.selfKey : c.away?.key) ?? null;
+      return key ? handoffKey(key) : null;
+    };
+    const teams = match.mode ? [...match.mode.teamScores()] : undefined;
+    return {
+      v: 1,
+      map: this.map.metadata.id,
+      rules: match.rules,
+      phase: match.phase,
+      timeLeft: match.timeLeftSeconds(),
+      fill: control.fill,
+      skill: bots.skill.id,
+      ...(teams?.length ? { teams } : {}),
+      players: match.checkpointPlayers(keyOf, successor),
+      ...(this.banned.size ? { banned: [...this.banned].map((k) => (k.startsWith('h:') ? k : handoffKey(`pk:${k}`))) } : {}),
+      ...(this.listing ? { listing: this.listing } : {}),
+    };
   }
 
   /** The page checked a friend's account ticket (their hello follows). */
@@ -594,6 +756,8 @@ export type ToSimHost =
   | { k: 'verified'; id: number; sub: string; name?: string }
   | { k: 'closed'; id: number }
   | { k: 'hidden'; v: boolean }
+  /** The game browser listing changed (host handoff carries it to the successor). */
+  | { k: 'listing'; listing: HostListing | null }
   | { k: 'eval'; req: number; src: string; arg?: unknown }
   | { k: 'give'; id: string }
   | { k: 'stop' }
@@ -669,6 +833,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return host.closed(m.id);
     case 'hidden':
       return host.setHidden(m.v);
+    case 'listing':
+      return host.setListing(m.listing);
     case 'give':
       return host.give(m.id);
     case 'eval':
