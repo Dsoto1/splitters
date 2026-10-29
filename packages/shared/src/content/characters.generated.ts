@@ -4,14 +4,14 @@ import type { CharacterLook } from './looks.ts';
 
 /** Whole-body characters (Meshy models rigged onto the game rig by tools/content/prepare-meshy-characters.mjs), in roster order. */
 export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
-  { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_knight_fparms' } },
+  { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_knight_fparms' } },
   { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_nova_fparms' } },
   { id: 'core.dapper', name: 'The Dapper', body: 'male', head: '', parts: ['meshy_dapper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_dapper_fparms' } },
-  { id: 'core.goblin', name: 'Goblin', body: 'male', head: '', parts: ['meshy_goblin'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_goblin_fparms' } },
-  { id: 'core.otter', name: 'Wealthy Otter', body: 'male', head: '', parts: ['meshy_otter'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_otter_fparms' } },
+  { id: 'core.goblin', name: 'Goblin', body: 'male', head: '', parts: ['meshy_goblin'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_goblin_fparms' } },
+  { id: 'core.otter', name: 'Wealthy Otter', body: 'male', head: '', parts: ['meshy_otter'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_otter_fparms' } },
   { id: 'core.boglurker', name: 'Boglurker', body: 'male', head: '', parts: ['meshy_toad'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_toad_fparms' } },
-  { id: 'core.warlord', name: 'Salamander Warlord', body: 'male', head: '', parts: ['meshy_salamander'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_salamander_fparms' } },
-  { id: 'core.hyena', name: 'Hyena Warrior', body: 'male', head: '', parts: ['meshy_hyena'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hyena_fparms' } },
+  { id: 'core.warlord', name: 'Salamander Warlord', body: 'male', head: '', parts: ['meshy_salamander'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_salamander_fparms' } },
+  { id: 'core.hyena', name: 'Hyena Warrior', body: 'male', head: '', parts: ['meshy_hyena'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_hyena_fparms' } },
   { id: 'core.elder', name: 'Elder Tomo', body: 'male', head: '', parts: ['meshy_elder'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_elder_fparms' } },
   { id: 'core.visitor', name: 'The Visitor', body: 'male', head: '', parts: ['meshy_alien'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_alien_fparms' } },
   { id: 'core.biscuit', name: 'Biscuit', body: 'male', head: '', parts: ['meshy_cat'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_cat_fparms' } },
@@ -19,12 +19,12 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.barnacle', name: 'Cap\'n Barnacle', body: 'male', head: '', parts: ['meshy_pirate'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_pirate_fparms' } },
   { id: 'core.bogdan', name: 'Big Bogdan', body: 'male', head: '', parts: ['meshy_titan'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_titan_fparms' } },
   { id: 'core.rustwalker', name: 'Ivory Rustwalker', body: 'male', head: '', parts: ['meshy_rustmech'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_rustmech_fparms' } },
-  { id: 'core.t350', name: 'T-350', body: 'male', head: '', parts: ['meshy_t350'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_t350_fparms' } },
+  { id: 'core.t350', name: 'T-350', body: 'male', head: '', parts: ['meshy_t350'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_t350_fparms' } },
   { id: 'core.mei', name: 'Lancer Mei', body: 'female', head: '', parts: ['meshy_lancer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_lancer_fparms' } },
   { id: 'core.grunt68', name: 'Grunt \'68', body: 'male', head: '', parts: ['meshy_grunt68'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_grunt68_fparms' } },
   { id: 'core.galloway', name: 'Sir Galloway', body: 'male', head: '', parts: ['meshy_galloway'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_galloway_fparms' } },
   { id: 'core.hector', name: 'Hector', body: 'male', head: '', parts: ['meshy_hector'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hector_fparms' } },
-  { id: 'core.bonesworth', name: 'Count Bonesworth', body: 'male', head: '', parts: ['meshy_bonesworth'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_bonesworth_fparms' } },
+  { id: 'core.bonesworth', name: 'Count Bonesworth', body: 'male', head: '', parts: ['meshy_bonesworth'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_bonesworth_fparms' } },
   { id: 'core.ricochet', name: 'Ricochet', body: 'male', head: '', parts: ['meshy_ricochet'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_ricochet_fparms' } },
   { id: 'core.shambler', name: 'Shambler', body: 'male', head: '', parts: ['meshy_zombie_shambler'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_zombie_shambler_fparms' } },
   { id: 'core.rotter', name: 'Rotter', body: 'male', head: '', parts: ['meshy_zombie_rotter'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_zombie_rotter_fparms' } },
@@ -32,10 +32,10 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.grandpachains', name: 'Grandpa Chains', body: 'male', head: '', parts: ['meshy_grandpa_chains'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_grandpa_chains_fparms' } },
   { id: 'core.hazmat', name: 'Hazmat', body: 'male', head: '', parts: ['meshy_hazmat'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hazmat_fparms' } },
   { id: 'core.shade', name: 'Shade', body: 'male', head: '', parts: ['meshy_ninja'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_ninja_fparms' } },
-  { id: 'core.botboy', name: 'Botboy', body: 'male', head: '', parts: ['meshy_botboy'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_botboy_fparms' } },
+  { id: 'core.botboy', name: 'Botboy', body: 'male', head: '', parts: ['meshy_botboy'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_botboy_fparms' } },
   { id: 'core.basile', name: 'Chef Basile', body: 'male', head: '', parts: ['meshy_chef'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_chef_fparms' } },
   { id: 'core.dustycolt', name: 'Dusty Colt', body: 'male', head: '', parts: ['meshy_cowboy'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_cowboy_fparms' } },
-  { id: 'core.shiba', name: 'Shiba', body: 'male', head: '', parts: ['meshy_shiba'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_shiba_fparms' } },
+  { id: 'core.shiba', name: 'Shiba', body: 'male', head: '', parts: ['meshy_shiba'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_shiba_fparms' } },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */

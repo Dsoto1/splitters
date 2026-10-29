@@ -7,6 +7,7 @@
   "look": "core.bonesworth",
   "bio": "Two hundred years dead and still dressed for dinner.",
   "body": "male",
+  "size": "large",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: tall dapper skeleton.",
   "source": {
     "license": "CC0",

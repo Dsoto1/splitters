@@ -7,6 +7,7 @@
   "look": "core.warlord",
   "bio": "Lord of a sunken fortress, armoured in rust and spite. Expects the arena to kneel.",
   "body": "male",
+  "size": "large",
   "notes": "Cloth hangs below its hips.",
   "source": {
     "license": "owned",

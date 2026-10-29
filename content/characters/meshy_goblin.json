@@ -7,6 +7,7 @@
   "look": "core.goblin",
   "bio": "Gutter-born, bandage-wrapped and grinning. Steals the kill, then the loot, then your seat.",
   "body": "male",
+  "size": "small",
   "notes": "Hunched, head hung in front of the chest: sat up by `lean` (degrees back per spine joint; the head keeps facing ahead). Its rags are hundreds of small texture islands, so `seamWeld` simplifies across the seams where the texture matches. Cloth hangs below its hips.",
   "source": {
     "license": "owned",

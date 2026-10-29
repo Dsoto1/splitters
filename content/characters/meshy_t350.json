@@ -7,6 +7,7 @@
   "look": "core.t350",
   "bio": "Built to sweep floors. Upgraded itself to sweep arenas.",
   "body": "male",
+  "size": "large",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: automaton.",
   "source": {
     "license": "CC0",

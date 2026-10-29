@@ -7,6 +7,7 @@
   "look": "core.botboy",
   "bio": "A robot raised by humans, with the dress sense to prove it.",
   "body": "male",
+  "size": "small",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: robot boy.",
   "source": {
     "license": "CC0",
