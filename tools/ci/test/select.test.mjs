@@ -81,6 +81,10 @@ describe('change-based selection', () => {
     expect(own.flows).toEqual(['vault']);
   });
 
+  it('built-in bot sets run the Bots window flows and the tests that check them', () => {
+    expect(sel('maps/botsets/zombie_horde.json')).toMatchObject({ full: false, flows: ['offline', 'teams', 'hostcontrols', 'dedicatedhost'], unit: ['host', 'server', 'shared'] });
+  });
+
 
   it('baselines run the screenshot flow; render code gets the perf check', () => {
     expect(sel('e2e/baselines/menu.png')).toMatchObject({ full: false, flows: ['visual'] });

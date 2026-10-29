@@ -1009,7 +1009,7 @@ export class FrontEnd {
     });
     const clear = el('button', { type: 'button', class: 'link', id: 'arcade-botset-clear', textContent: 'Random', title: 'Back to random bots', hidden: !s.botSet });
     clear.addEventListener('click', () => this.change((x) => delete x.botSet));
-    return settingRow('Your bots', 'Name your bots and pick their looks, skill, style, team and squad (bots in a squad stick together). Built-in sets too: Knights vs Space Crew, Zombie horde, Classic mix.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'arcade-botset-sum', textContent: botSetLabel(s.botSet) }), clear, edit));
+    return settingRow('Your bots', 'Name your bots and pick their looks, skill, style, team and squad (bots in a squad stick together). Built-in sets too: Knights vs Space Crew, Zombie horde, Classic mix.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'arcade-botset-sum', textContent: botSetLabel(s.botSet), title: botSetLabel(s.botSet) }), clear, edit));
   }
 
   /**

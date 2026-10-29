@@ -938,3 +938,11 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 /* The match setup's and the pause menu's line about the bot set. */
 .bot-set-line { display: flex; align-items: center; gap: 8px; }
 .bot-set-line .bot-set-sum { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font: 500 14px var(--font-body); }
+@media (max-height: 420px) {
+  .bot-manager { padding: 6px; }
+  .bot-manager .bm-panel { gap: 6px; padding: 8px 10px; }
+  .bot-manager .bm-note, .bot-manager .bm-status:empty { display: none; }
+  .bot-manager .bm-table { min-height: 60px; }
+  .bot-manager .bm-head h3 { font-size: 18px; }
+  .bot-manager .bm-foot { padding-top: 4px; }
+}
