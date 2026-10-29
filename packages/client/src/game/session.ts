@@ -626,7 +626,7 @@ export class GameSession {
     this.pauseDrawnAt = t;
     this.hud.pauseContext();
     if (this.pauseMenu.tab === 'match') {
-      this.hud.renderPauseScores($('pause-scores'), this.scores, this.slot);
+      this.hud.renderPauseScores($('pause-scores'), this.scores, this.slot, this.phase === 'intermission');
     }
     ($('pause-class') as HTMLButtonElement).hidden = !this.classesOn;
   }
@@ -886,7 +886,8 @@ export class GameSession {
     if (!r || !up || !(t instanceof LocalTransport) || this.travel || this.rotating) return;
     this.rotating = true;
     const t0 = performance.now();
-    const wait = Math.max(1000, ((this.rules?.intermissionTicks ?? 300) / TICK_RATE) * 1000 - 600);
+    // Before the match starts itself over (the page hears of the end a little after the match).
+    const wait = Math.max(1000, ((this.rules?.intermissionTicks ?? 300) / TICK_RATE) * 1000 - 1500);
     const map = await r.load(up.entry.map);
     const s = this.hostState;
     const rules = t.liveRules() ?? this.rules;

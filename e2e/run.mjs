@@ -2551,16 +2551,17 @@ async function hostcontrolsFlow(browser) {
   const queueMap = async (page, id, name) => {
     await openPanel(page);
     await page.evaluate(() => document.getElementById('hc-rot-add').click());
-    await page.waitForSelector('#host-maps', { timeout: T(10000) });
+    // Under load the cards take a while: the picker has every map of our suite.
+    if (!(await page.waitForSelector('#host-maps', { timeout: T(30000) }).then(() => true, () => false))) return false;
     await page.evaluate((mapId) => {
       document.querySelector('#host-maps .hm-modes [data-mode="core.deathmatch"]')?.click();
       document.querySelector(`#host-maps .map-card[data-id="${mapId}"]`).click();
       document.getElementById('hm-go').click();
     }, id);
-    return page.waitForFunction((n) => (document.getElementById('hc-rot-next')?.textContent ?? '') === `Next up: ${n} · Deathmatch`, name, { timeout: T(15000) }).then(() => true, () => false);
+    return page.waitForFunction((n) => (document.getElementById('hc-rot-next')?.textContent ?? '') === `Next up: ${n} · Deathmatch`, name, { timeout: T(30000) }).then(() => true, () => false);
   };
-  /** The end-of-match scoreboard's line under its title. */
-  const boardNote = (page, re) => page.waitForFunction((src) => new RegExp(src).test(document.querySelector('#scoreboard .sb-note')?.textContent ?? ''), re.source, { timeout: T(10000) }).then(() => true, () => false);
+  /** The end-of-match scoreboard's line under its title (the overlay's, or the pause menu's board while it's open). */
+  const boardNote = (page, re) => page.waitForFunction((src) => [...document.querySelectorAll('#scoreboard .sb-note, #pause-scores .sb-note')].some((n) => new RegExp(src).test(n.textContent ?? '')), re.source, { timeout: T(20000) }).then(() => true, () => false);
 
   // Offline: the player runs the match.
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();

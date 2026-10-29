@@ -815,10 +815,10 @@ export class Hud {
   private boardAt = 0;
   private boardOpen = false;
 
-  /** The pause menu's Match tab: the same board, in the menu's width. */
-  renderPauseScores(box: HTMLElement, scores: readonly ScoreEntry[], localSlot: number): void {
+  /** The pause menu's Match tab: the same board, in the menu's width (`final`: the match is over, so where it goes next too). */
+  renderPauseScores(box: HTMLElement, scores: readonly ScoreEntry[], localSlot: number, final = false): void {
     if (this.pauseBoard?.root !== box) this.pauseBoard = new ScoreBoard(box, { maxWidth: 560, sizeSelf: false });
-    this.pauseBoard.render(this.boardData(scores, localSlot, false));
+    this.pauseBoard.render(this.boardData(scores, localSlot, final));
   }
 
   /** What the scoreboards show: the teams (or everyone), sorted, with each row's stats. */

@@ -416,6 +416,8 @@ builds the downloads (CI does this for every green `main` and `vX.Y.Z`).
 | `ADMIN_TOKEN` | none | in-game admin (pause menu → Server admin, or `?admin=`); 8+ characters |
 | `JOIN_CODE` | random, kept across crashes | a fixed code (6 characters, no look-alikes) for bookmarks |
 | `BOT_DIFFICULTY`, `BOT_TAKEBACK`, `LEADERS`, `PLAYLIST` | | as the dedicated server |
+| `ROTATION` | none | the map rotation: after each match the next of these maps instead of a replay, round and round. `frost_basin:tdm,diamond_park:ctf` (no mode: the map's first), or `preset:flag_run` (maps/rotations/); in a config file also a list. Maps that aren't ours and modes a map can't play are dropped with a log line. Edited live with the console's `rotation` and `skip`, the launcher's Rotation card or the admin's pause menu, and kept for the next start |
+| `ROTATION_SHUFFLE` | off | play the rotation in a random order (a new one each time round) |
 | `CONTROL_PORT` | 7797 | the control API (127.0.0.1 only) |
 | `STATUS_EVERY` | 60 | seconds between status lines (0: none) |
 | `AFK_SECONDS` | 90 | idle this long and a bot plays for a player until they're back (0: never) |
@@ -628,6 +630,7 @@ Other settings (environment variables):
 | `BOT_TAKEBACK=1` | When a player leaves, a bot takes over where they were. Default: the slot empties and a fresh bot spawns normally. |
 | `LEADERS=on` / `vip` | Team leaders (gold star; their Follow me / Hold here orders every bot on the team). `vip`: Leader hunt, downing a leader scores 3 for Team Deathmatch. |
 | `PLAYLIST=maps/playlists/night_shift.json` | Plays a scenario chain: each won map moves everyone on to the next (see GAME_MODES.md, Scenario chains). |
+| `ROTATION=frost_basin:tdm,diamond_park:ctf` | Map rotation: after each match (the scoreboard), the next of these instead of a replay, round and round; `preset:<id>` adds a built-in one (maps/rotations/). `ROTATION_SHUFFLE=1` plays them in a random order. See Host controls → Rotation. |
 | `SERVER_NAME` | Name shown in Online → LAN. |
 | `ADMIN_TOKEN` | Lets a player run the match from the pause menu (Match: players or team size, bot skill and style, change map, restart, end). A player is admin when they join with `?admin=<token>` in the page address (`/?autojoin&server=ws://…&admin=<token>`) or enter it under pause menu → Server admin. Unset: nobody can. Five wrong tokens close the connection. |
 | `LAN_DISCOVERY=0` | Don't answer LAN discovery broadcasts (UDP 7790). |
@@ -725,6 +728,21 @@ section:
     `?admin=` or a token entered this session stays admin).
 - **Restart match** starts over on the same map (scores cleared, everyone
   respawns, countdown). **End match** ends it now, to the scoreboard.
+- **Rotation.** A list of up to 20 maps of our suite, each in a mode
+  (`shared/sim/rotation.ts`): Add map… (the map picker), remove, move up and
+  down, start from a preset (`maps/rotations/*.json`, data), Shuffle (a new
+  random order each time round, never the same map twice in a row) and Skip to
+  next (travels now, as Change map does). When a match ends with nowhere else
+  to go (a co-op playlist's win or a "Next map" link come first), the end of
+  the scoreboard takes everyone to the next entry, with the host's settings and
+  players as Change map does; scores start fresh. Everyone's scoreboard says
+  "Next map: … (…)" (`round_end.up`). Empty: the match replays, as before.
+  Offline and Host game keep the list in the page across map changes (until
+  you go back to the menu); a dedicated server keeps it in the match process
+  (`ROTATION`, the console's `rotation` / `skip`, the launcher's Rotation card;
+  in-game changes are saved for the next start). Commands: `{ c: 'rotation',
+  entries?, shuffle? }` (the whole list) and `{ c: 'skip' }`; HostState carries
+  `rotation` (absent from older hosts, so the panel hides the section).
 
 ## 3. LAN games
 
