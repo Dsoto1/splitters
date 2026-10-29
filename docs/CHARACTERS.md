@@ -50,20 +50,22 @@ A look (`packages/shared/src/content/looks.ts`) is made of:
 - colourways;
 - a skin tint and a hair tint, multiplied over the textures.
 
-Fourteen presets ship. Between them they use every part, hairstyle and
-colourway, and a unit test keeps it that way:
+The part-built presets (the originals) wear these outfits; the Designer
+offers every part, hairstyle and colourway, and a unit test keeps it that way:
 
 | Preset | Made of |
 |---|---|
 | Ranger, Huntress | Full ranger outfit |
 | Warden, Scout | Ranger in moss |
-| Farmhand, Miller | Peasant, Miller in dusk |
+| Farmhand, Sprout, Medic | Peasant |
 | Tracker, Pathfinder | Ranger top with peasant trousers |
 | Drifter, Wayfarer | Peasant with a ranger hood |
 | Brawler | Shirtless with peasant trousers and shoes |
-| Sprinter | Base body sportswear |
-| Champion | Light sportswear, barefoot, with a ranger pauldron |
-| Striker | Light sports top with ranger trousers, boots and pauldrons |
+| Bulwark, Commando, Frost, Operative, Sentinel | Ranger, dyed |
+| Engineer | Peasant, dyed |
+
+Retired presets (Champion, Desperado, Miller, Raider, Sprinter, Striker) resolve
+to a kept look (`RETIRED_LOOKS` in looks.ts), so saved choices still load.
 
 Players pick one on the main menu (remembered locally). It's sent in `hello`
 and carried in the roster, so every client sees it. Bots get a spread of looks;

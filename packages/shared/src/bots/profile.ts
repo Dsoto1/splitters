@@ -153,14 +153,11 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     character('core.warden', 'Warden', { teamLoyalty: 85, objectivePriority: 80, tacticalAwareness: 80, selfPreservation: 60, tags: ['TACTICAL', 'SUPPRESSOR'], weaponPreferences: ['core.rifle', 'core.lmg', 'core.shotgun'] }),
     character('core.scout', 'Scout', { objectivePriority: 90, aggression: 60, exploration: 70, rangePreference: 35, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.sawed_off', 'core.pulse_pistol'] }),
     character('core.farmhand', 'Farmhand', { aggression: 75, meleePreference: 55, rangePreference: 15, accuracy: 40, riskTolerance: 70, tags: ['BERSERKER'], weaponPreferences: ['core.shotgun', 'core.sawed_off', 'core.auto_shotgun'] }),
-    character('core.miller', 'Miller', { aggression: 30, selfPreservation: 75, tacticalAwareness: 75, pursuitPersistence: 25, rangePreference: 60, tags: ['TACTICAL', 'CAMPER'], weaponPreferences: ['core.marksman', 'core.launcher', 'core.rifle'] }),
     character('core.tracker', 'Tracker', { exploration: 85, pursuitPersistence: 85, tacticalAwareness: 60, tags: ['EXPLORER', 'LONE_WOLF'], weaponPreferences: ['core.burst_rifle', 'core.rifle', 'core.laser_rifle'] }),
     character('core.pathfinder', 'Pathfinder', { exploration: 95, itemGreed: 75, aggression: 55, tags: ['EXPLORER', 'ARENA'], weaponPreferences: ['core.disc_launcher', 'core.plasma', 'core.railgun'] }),
     character('core.drifter', 'Drifter', { aggression: 45, selfPreservation: 70, riskTolerance: 30, rangePreference: 65, tags: ['SURVIVOR', 'LONE_WOLF'], weaponPreferences: ['core.hand_cannon', 'core.marksman', 'core.flare_gun'] }),
     character('core.wayfarer', 'Wayfarer', { tacticalAwareness: 65, teamLoyalty: 70, objectivePriority: 70, tags: [], weaponPreferences: ['core.rifle', 'core.launcher', 'core.smg'] }),
     character('core.brawler', 'Brawler', { aggression: 95, meleePreference: 80, selfPreservation: 15, rangePreference: 5, riskTolerance: 90, accuracy: 35, tags: ['BERSERKER', 'RECKLESS'], weaponPreferences: ['core.shotgun', 'core.flamethrower', 'core.knife'] }),
-    character('core.sprinter', 'Sprinter', { aggression: 80, itemGreed: 85, reactionSpeed: 75, rangePreference: 30, tacticalAwareness: 30, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.plasma', 'core.disc_launcher'] }),
-    character('core.champion', 'Champion', { accuracy: 80, reactionSpeed: 80, aggression: 75, itemGreed: 80, tags: ['ARENA'], weaponPreferences: ['core.railgun', 'core.rockets', 'core.plasma'] }),
     character('core.commando', 'Commando', { aggression: 70, tacticalAwareness: 85, teamLoyalty: 75, accuracy: 65, tags: ['TACTICAL'], weaponPreferences: ['core.rifle', 'core.burst_rifle', 'core.shotgun'] }),
     // Charges in with a big gun and won't be talked out of it.
     character('core.knight', 'Iron Knight', { aggression: 85, selfPreservation: 25, riskTolerance: 80, meleePreference: 60, rangePreference: 15, pursuitPersistence: 85, tags: ['BERSERKER'], weaponPreferences: ['core.auto_shotgun', 'core.shotgun', 'core.lmg'] }),
@@ -194,10 +191,7 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     character('core.operative', 'Operative', { accuracy: 75, reactionSpeed: 75, tacticalAwareness: 80, aggression: 45, tags: ['TACTICAL'], weaponPreferences: ['core.smg', 'core.hand_cannon', 'core.marksman'] }),
     character('core.medic', 'Medic', { teamLoyalty: 95, selfPreservation: 70, objectivePriority: 70, aggression: 35, tags: ['SURVIVOR'], weaponPreferences: ['core.smg', 'core.rifle', 'core.pulse_pistol'] }),
     character('core.engineer', 'Engineer', { aggression: 60, rangePreference: 25, riskTolerance: 70, tags: ['SUPPRESSOR'], weaponPreferences: ['core.flamethrower', 'core.nailgun', 'core.launcher'] }),
-    character('core.desperado', 'Desperado', { accuracy: 70, reactionSpeed: 85, aggression: 65, rangePreference: 45, tags: ['ARENA'], weaponPreferences: ['core.hand_cannon', 'core.shotgun', 'core.sawed_off'] }),
-    character('core.raider', 'Raider', { aggression: 85, itemGreed: 80, exploration: 70, rangePreference: 25, tags: ['ARENA', 'RECKLESS'], weaponPreferences: ['core.auto_shotgun', 'core.smg', 'core.disc_launcher'] }),
     character('core.sentinel', 'Sentinel', { selfPreservation: 80, objectivePriority: 85, teamLoyalty: 80, aggression: 40, rangePreference: 55, tags: ['TACTICAL', 'SUPPRESSOR'], weaponPreferences: ['core.lmg', 'core.rifle', 'core.launcher'] }),
-    character('core.striker', 'Striker', { aggression: 85, pursuitPersistence: 90, riskTolerance: 75, rangePreference: 30, tags: ['ARENA'], weaponPreferences: ['core.rockets', 'core.auto_shotgun', 'core.smg'] }),
   ].map((p) => [p.id, p]),
 );
 
