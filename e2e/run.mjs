@@ -2547,6 +2547,20 @@ async function hostcontrolsFlow(browser) {
       document.getElementById('hm-go').click();
     }, id);
   };
+  /** Pause menu → Match → Rotation → Add map…: queue a map (in Deathmatch); true once "Next up" names it. */
+  const queueMap = async (page, id, name) => {
+    await openPanel(page);
+    await page.evaluate(() => document.getElementById('hc-rot-add').click());
+    await page.waitForSelector('#host-maps', { timeout: T(10000) });
+    await page.evaluate((mapId) => {
+      document.querySelector('#host-maps .hm-modes [data-mode="core.deathmatch"]')?.click();
+      document.querySelector(`#host-maps .map-card[data-id="${mapId}"]`).click();
+      document.getElementById('hm-go').click();
+    }, id);
+    return page.waitForFunction((n) => (document.getElementById('hc-rot-next')?.textContent ?? '') === `Next up: ${n} · Deathmatch`, name, { timeout: T(15000) }).then(() => true, () => false);
+  };
+  /** The end-of-match scoreboard's line under its title. */
+  const boardNote = (page, re) => page.waitForFunction((src) => new RegExp(src).test(document.querySelector('#scoreboard .sb-note')?.textContent ?? ''), re.source, { timeout: T(10000) }).then(() => true, () => false);
 
   // Offline: the player runs the match.
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
@@ -2620,6 +2634,16 @@ async function hostcontrolsFlow(browser) {
   await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
   const after = { n: await sim(page, (m) => m.combatants().length), skill: await page.evaluate(() => window.__cs.host()?.skill) };
   check(moved && after.n === 6 && after.skill === 'hard', `the match restarts on the new map with the same players and bots (${JSON.stringify(after)})`);
+  // The map rotation: queue a map, end the match, and after the scoreboard it goes there instead of replaying.
+  const empty = await page.evaluate(() => document.getElementById('hc-rot-next')?.textContent ?? '');
+  check(/^Empty/.test(empty), `an empty rotation replays the map (${empty})`);
+  check(await queueMap(page, 'void_yard', 'Void Yard'), 'Add map… queues a map: "Next up: Void Yard · Deathmatch"');
+  await page.evaluate(() => document.getElementById('hc-end').click());
+  check(await boardNote(page, /Next map: Void Yard \(Deathmatch\)/), 'the end-of-match scoreboard says where the match goes next');
+  const rotated = await simWait(page, (m) => m.map.metadata.id === 'void_yard', null, T(60000));
+  await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
+  const kept = await page.evaluate(() => document.getElementById('hc-rot-next')?.textContent ?? '');
+  check(rotated && kept === 'Next up: Void Yard · Deathmatch', `after the scoreboard the match travels to the queued map, and the rotation stays (${kept})`);
   await page.context().close();
 
   // Host game: the host changes map; the friend comes along without a new code.
@@ -2662,6 +2686,13 @@ async function hostcontrolsFlow(browser) {
     check(friendThere && sameCode === code, `the friend plays on with the same join code (${sameCode})`);
     const heard = await friend.evaluate(() => window.__notes.some((t) => t.includes('Changing map to')));
     check(heard, 'the friend saw the map change announced in the feed');
+    // Host game's rotation: the friend's scoreboard says where next, and the friend comes along.
+    check(await queueMap(host, 'void_yard', 'Void Yard'), 'the host queues a map in Host game');
+    await host.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
+    await host.evaluate(() => document.getElementById('hc-end').click());
+    check(await boardNote(friend, /Next map: Void Yard \(Deathmatch\)/), "the friend's end-of-match scoreboard says where the match goes next");
+    const along = await simWait(host, (m) => m.map.metadata.id === 'void_yard' && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, T(90000));
+    check(along, 'the rotation takes the friend along to the next map');
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await host.context().close();

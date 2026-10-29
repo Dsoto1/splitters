@@ -1086,7 +1086,7 @@ export class FrontEnd {
    * suite (servers and Host game); otherwise `own` maps join too (offline:
    * your MapMaker maps).
    */
-  hostMapPicker(o: { mode: GameMode; current: string; suiteOnly: boolean; isSuite: (id: string) => boolean; own?: readonly ArcadeMap[]; onPick: (m: ArcadeMap, mode: GameMode) => void; onClose: () => void }): HTMLElement {
+  hostMapPicker(o: { mode: GameMode; current: string; suiteOnly: boolean; isSuite: (id: string) => boolean; own?: readonly ArcadeMap[]; title?: string; onPick: (m: ArcadeMap, mode: GameMode) => void; onClose: () => void }): HTMLElement {
     const maps = [...this.maps.filter((m) => !o.suiteOnly || (!m.group && o.isSuite(m.metadata.id))), ...(o.suiteOnly ? [] : (o.own ?? []))];
     const modes = GAME_MODES.filter((mode) => maps.some((m) => m.modes.includes(mode)));
     let mode: GameMode = modes.includes(o.mode) ? o.mode : (modes[0] ?? 'core.deathmatch');
@@ -1094,7 +1094,7 @@ export class FrontEnd {
     const cards = el('div', { class: 'map-cards' });
     const tabs = el('div', { class: 'tabs hm-modes' });
     const chosen = el('span', { class: 'hm-chosen' });
-    const go = el('button', { class: 'primary', id: 'hm-go', textContent: 'Change map', disabled: true });
+    const go = el('button', { class: 'primary', id: 'hm-go', textContent: o.title ?? 'Change map', disabled: true });
     const close = el('button', { class: 'hm-close', id: 'hm-close', textContent: 'Cancel' });
     close.addEventListener('click', () => o.onClose());
     go.addEventListener('click', () => picked && o.onPick(picked, mode));
@@ -1133,7 +1133,7 @@ export class FrontEnd {
       go.disabled = !picked;
     };
     draw();
-    return el('div', { class: 'host-maps', id: 'host-maps' }, el('div', { class: 'hm-head' }, el('h3', { textContent: 'Change map' }), tabs), cards, el('div', { class: 'hm-foot' }, chosen, close, go));
+    return el('div', { class: 'host-maps', id: 'host-maps' }, el('div', { class: 'hm-head' }, el('h3', { textContent: o.title ?? 'Change map' }), tabs), cards, el('div', { class: 'hm-foot' }, chosen, close, go));
   }
 
   // ---------------------------------------------------------------- character select

@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { MapRotation, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
@@ -414,6 +414,21 @@ class App {
     this.playLocal(arena.map, rules, bots > 0 ? bots : botFill, 'normal');
   }
 
+  /**
+   * The host's map rotation (offline, Host game; pause menu → Match): it outlives each match, so it goes on
+   * from map to map, and starts empty again when the player goes back to the menu.
+   */
+  private rotation = new MapRotation();
+  private readonly rotationOpts = (): NonNullable<SessionOptions['rotation']> => ({
+    list: this.rotation,
+    load: (id) => (inSuite(id) ? loadBuiltInMap(id) : Promise.resolve(null)),
+    // Our suite's maps (as the menu lists them) and the modes each plays.
+    info: (id) => {
+      const e = inSuite(id) && !isRetiredMap(id) ? MAP_INDEX.find((m) => m.key === id) : undefined;
+      return e ? { name: e.metadata.name, modes: e.modes } : null;
+    },
+  });
+
   /** The scenario chain being played (Arcade → co-op → Playlist): which playlist, how far in, and its settings. */
   private chain: { playlist: Playlist; index: number; botFill: number; difficulty: 'easy' | 'normal' | 'hard' } | null = null;
 
@@ -431,12 +446,14 @@ class App {
       chain: !!this.chain,
       hosting,
       autoHost,
+      rotation: this.rotationOpts(),
       onExit: (reason, travel) => {
-        // The host changed map: the same rules, players and bot skill there (Host game friends follow).
+        // The host changed map (or the rotation moved on): the same rules, players and bot skill there (Host game friends follow).
         if (reason === 'travel' && travel?.host) return this.playLocal(travel.host.map, travel.host.rules, travel.host.fill, travel.host.skill, undefined, travel.hosting);
         if (reason === 'travel' && travel) return void this.travelLocal(travel, rules, botFill, difficulty);
         travel?.hosting?.peer.close();
         this.chain = null;
+        this.rotation = new MapRotation();
         void this.showMenu(reason ?? '');
       },
     });
@@ -581,7 +598,7 @@ class App {
     reconnectBanner(null);
   }
 
-  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected') => void; onReady?: () => void }): void {
+  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; rotation?: SessionOptions['rotation']; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected') => void; onReady?: () => void }): void {
     // A match has its own loading screen (players, map and weapons).
     finishBoot();
     $('menu').hidden = true;
@@ -602,6 +619,7 @@ class App {
       hosting: o.hosting,
       autoHost: !!o.autoHost,
       mapPicker: this.mapPicker,
+      ...(o.rotation ? { rotation: o.rotation } : {}),
       onExit: (reason, travel, how) => {
         this.session = undefined;
         o.onExit(reason, travel, how);

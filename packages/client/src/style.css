@@ -781,6 +781,17 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .host-controls .hc-actions button { flex: 1; }
 .host-controls .hc-status { margin: 6px 0 0; }
 .host-controls .hc-status.error { color: #ff8a6b; }
+.host-controls .hc-rot-next { margin: 4px 0; color: var(--cyan); font: 600 14px var(--font-display); }
+.host-controls .hc-rot { margin: 4px 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; counter-reset: rot; }
+.host-controls .hc-rot li { counter-increment: rot; display: flex; align-items: center; gap: 4px; padding: 3px 6px; background: rgba(0, 0, 0, 0.25); border-radius: 3px; font-size: 13px; }
+.host-controls .hc-rot li::before { content: counter(rot); min-width: 18px; color: var(--muted); font: 700 12px var(--font-display); }
+.host-controls .hc-rot li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.host-controls .hc-rot li small { opacity: 0.7; }
+.host-controls .hc-rot li.now { box-shadow: inset 3px 0 0 #2ecc71; }
+.host-controls .hc-rot li.next { box-shadow: inset 3px 0 0 var(--cyan); }
+#pause .host-controls .hc-rot li button { padding: 1px 7px; font-size: 12px; }
+.host-controls .hc-rot-tools select { flex: 1; min-width: 0; }
+.host-controls .hc-check { display: flex; align-items: center; gap: 5px; flex: 1; color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
 #feed .note { font-style: normal; color: #9fe8ff; }
 .host-maps { position: fixed; inset: 16px; z-index: 5; display: flex; flex-direction: column; gap: 10px; padding: 14px; background: rgba(8, 12, 22, 0.96); border: 1px solid rgba(0, 209, 255, 0.4); border-radius: 6px; }
 .host-maps .hm-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }

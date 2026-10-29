@@ -1,4 +1,4 @@
-import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
+import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type GameMode, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type RotationCommand, type ServerMessage } from '@tiletrigger/shared';
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
 import { perfProbe } from './perfProbe.ts';
 import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
@@ -146,10 +146,15 @@ export class LocalTransport implements Transport {
    * everything else happens there, live. A refused command comes back as a
    * `host` message with its error. Friends can't: their commands are refused.
    */
-  host(cmd: Exclude<HostCommand, { c: 'map' }>): string | null {
+  host(cmd: Exclude<HostCommand, { c: 'map' } | RotationCommand>): string | null {
     if (this.stopped || !this.facts) return 'The match has not started';
     this.toHost({ k: 'cmd', cmd });
     return null;
+  }
+
+  /** Where the map rotation (kept by the page) goes after this match: the end-of-match scoreboard says so to everyone. */
+  setUpNext(next: { map: string; mode: GameMode } | null): void {
+    this.toHost({ k: 'upnext', next });
   }
 
   /** Go offline: every friend is told why and disconnected, and bots take their places again (the match carries on). */

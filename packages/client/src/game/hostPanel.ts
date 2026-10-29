@@ -1,4 +1,4 @@
-import { DEFAULT_TEAMS, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, TICK_RATE, isTeamMode, teamsLabel, type HostCommand, type HostRulesPatch, type HostState } from '@tiletrigger/shared';
+import { DEFAULT_TEAMS, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, TICK_RATE, isTeamMode, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
 import { choice, el, settingRow, stepper, teamEditor } from '../frontend/setupControls.ts';
 
 /** Team sizes a host can jump to in one click (every team the same size). */
@@ -14,6 +14,11 @@ export interface HostPanelHooks {
   changeMap?: () => void;
   /** Log in as the dedicated server's admin; absent: not on a dedicated server. */
   login?: (token: string) => void;
+  /**
+   * The map rotation: add a map (the map picker), and the built-in presets. Absent: no rotation here
+   * (MapMaker TEST, a playlist, or a server too old to have one). Changes go through `command`.
+   */
+  rotation?: { add(): void; presets: readonly RotationPreset[] };
 }
 
 interface Draft {
@@ -45,6 +50,8 @@ export class HostPanel {
   /** People in the match besides you (kick and ban). */
   private people: { slot: number; name: string }[] = [];
   private peopleKey = '';
+  /** The rotation this browser keeps (offline, Host game); a server's comes in its HostState. */
+  private ownRotation: RotationState | null = null;
 
   constructor(
     private readonly hooks: HostPanelHooks,
@@ -70,6 +77,12 @@ export class HostPanel {
     if (this.state) this.render();
   }
 
+  /** The rotation kept by this browser (null: the host's state carries it, or there is none). */
+  setRotation(rotation: RotationState | null): void {
+    this.ownRotation = rotation;
+    if (this.state) this.render();
+  }
+
   get controlling(): boolean {
     return !!this.state;
   }
@@ -77,6 +90,70 @@ export class HostPanel {
   setStatus(text: string, error = false): void {
     this.status.textContent = text;
     this.status.classList.toggle('error', error);
+  }
+
+  /**
+   * The map rotation: the maps played in turn after each match, each in its mode. Add (the map picker),
+   * remove, move up and down, start from a preset, shuffle, skip to the next now; "Next up" says where the
+   * match goes. Every change sends the whole list (the host checks it).
+   */
+  private rotationSection(s: HostState): HTMLElement[] {
+    const hook = this.hooks.rotation;
+    const r = this.ownRotation ?? s.rotation ?? null;
+    if (!hook || !r) return [];
+    const entries: RotationEntry[] = r.entries.map((e) => ({ map: e.map, mode: e.mode }));
+    const set = (list: RotationEntry[]) => this.hooks.command({ c: 'rotation', entries: list });
+    const next = r.next !== null ? r.entries[r.next] : undefined;
+    const head = el('p', { class: 'hc-rot-next', id: 'hc-rot-next', textContent: next ? `Next up: ${next.name} · ${MODE_LABELS[next.mode]}` : 'Empty: the match replays this map. Add maps, or start from a preset.' });
+    const list = el('ol', { class: 'hc-rot', id: 'hc-rot-list' });
+    r.entries.forEach((e, i) => {
+      const button = (id: string, text: string, title: string, disabled: boolean, act: () => void) => {
+        const b = el('button', { id: `hc-rot-${id}-${i}`, textContent: text, title, disabled });
+        b.addEventListener('click', act);
+        return b;
+      };
+      const swap = (j: number) => {
+        const l = [...entries];
+        [l[i], l[j]] = [l[j]!, l[i]!];
+        set(l);
+      };
+      const label = el('span', { textContent: `${e.name} ` }, el('small', { textContent: MODE_LABELS[e.mode] }));
+      const li = el(
+        'li',
+        { class: i === r.current ? 'now' : i === r.next ? 'next' : '', title: i === r.current ? 'Playing now' : i === r.next ? 'Next up' : '' },
+        label,
+        button('up', '↑', 'Move up', i === 0, () => swap(i - 1)),
+        button('down', '↓', 'Move down', i === r.entries.length - 1, () => swap(i + 1)),
+        button('del', '✕', 'Remove', false, () => set(entries.filter((_, j) => j !== i))),
+      );
+      list.append(li);
+    });
+    const add = el('button', { id: 'hc-rot-add', textContent: 'Add map…', title: `Pick a map and mode for the rotation (up to ${ROTATION_MAX})`, disabled: r.entries.length >= ROTATION_MAX });
+    add.addEventListener('click', () => hook.add());
+    const preset = el('select', { id: 'hc-rot-preset', title: 'Replace the rotation with a built-in one' });
+    preset.append(new Option('Start from a preset…', ''));
+    for (const p of hook.presets) {
+      const o = new Option(`${p.name} (${p.maps.length})`, p.id);
+      o.title = p.description;
+      preset.append(o);
+    }
+    preset.addEventListener('change', () => {
+      const p = hook.presets.find((x) => x.id === preset.value);
+      if (p) this.hooks.command({ c: 'rotation', entries: p.maps.map((m) => ({ map: m.map, mode: m.mode })), shuffle: p.shuffle });
+    });
+    const shuffle = el('input', { type: 'checkbox', id: 'hc-rot-shuffle', checked: r.shuffle });
+    shuffle.addEventListener('change', () => this.hooks.command({ c: 'rotation', shuffle: shuffle.checked }));
+    const skip = el('button', { id: 'hc-rot-skip', textContent: 'Skip to next', title: next ? `Go to ${next.name} now` : 'The rotation is empty', disabled: !next });
+    skip.addEventListener('click', () => this.hooks.command({ c: 'skip' }));
+    const clear = el('button', { id: 'hc-rot-clear', textContent: 'Clear', title: 'Empty the rotation (matches replay their map)', disabled: !r.entries.length });
+    clear.addEventListener('click', () => set([]));
+    return [
+      el('h4', { textContent: 'Rotation' }),
+      head,
+      ...(r.entries.length ? [list] : []),
+      el('div', { class: 'hc-row hc-rot-tools' }, add, preset),
+      el('div', { class: 'hc-row hc-rot-tools' }, el('label', { class: 'hc-check' }, shuffle, ' Shuffle'), skip, clear),
+    ];
   }
 
   /** Every team's size (an older server only says the largest). */
@@ -183,6 +260,7 @@ export class HostPanel {
     }
     const restart = el('button', { id: 'hc-restart', textContent: 'Restart match', title: pending ? 'Start over with the waiting rule changes' : 'Start the match over on this map' });
     confirmTwice(restart, 'Click again to restart', () => this.hooks.command({ c: 'restart' }));
+    const rotation = this.rotationSection(s);
     const end = el('button', { id: 'hc-end', textContent: 'End match', title: 'End the match now and show the scoreboard' });
     confirmTwice(end, 'Click again to end', () => this.hooks.command({ c: 'end' }));
     actions.append(restart, end);
@@ -209,6 +287,7 @@ export class HostPanel {
       apply,
       ...waiting,
       actions,
+      ...rotation,
       ...people,
       this.status,
     );

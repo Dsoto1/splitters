@@ -95,6 +95,8 @@ export class Hud {
   private roster = new Map<number, RosterEntry>();
   /** Hosting online: shown in the Tab scoreboard under its title (listed or code only, players, the join code). */
   onlineNote = '';
+  /** At the end of a match: where the map rotation goes next ("Next map: Diamond Park (Capture the Flag)"), on the scoreboard. */
+  nextMap = '';
   private hitTimer?: number;
   /** Classes: each player's class (CLASS_IDS index), from snapshots; and lines about your own class and power disc. */
   private classes = new Map<number, number>();
@@ -846,7 +848,7 @@ export class Hud {
     };
     const sorted = [...scores].sort(race ? (a, b) => (race.get(a.s)?.[0] ?? 999) - (race.get(b.s)?.[0] ?? 999) || a.s - b.s : (a, b) => b.k - a.k || (b.o ?? 0) - (a.o ?? 0) || a.d - b.d || a.s - b.s);
     const clock = this.timer.textContent ? ` · ${this.timer.textContent} left` : '';
-    const note = this.onlineNote;
+    const note = final && this.nextMap ? [this.nextMap, this.onlineNote].filter(Boolean).join(' · ') : this.onlineNote;
     const head = `${final ? 'Final · ' : ''}${this.mapName} · ${this.modeLabel.textContent ?? ''}${final ? '' : clock}`;
     const flags = { cls: this.classes.size > 0, obj: race ? 'Lap' : this.objLabel, ping: this.pings.size > 0 };
     if (!this.teams) {

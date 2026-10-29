@@ -40,6 +40,7 @@ const MAP_USERS = {
   grid_rings: ['classes'],
   sandsweep: ['race'],
   atomic_court: ['hostcontrols'],
+  void_yard: ['hostcontrols'],
 };
 
 const FULL = Symbol('full');

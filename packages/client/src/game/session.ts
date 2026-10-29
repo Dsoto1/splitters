@@ -76,8 +76,13 @@ import {
   mountDamageState,
   rulesForTravel,
   travelNotice,
+  nextMapLine,
+  validateRotation,
   type GameMode,
   type HostState,
+  type MapRotation,
+  type RotationCommand,
+  type RotationLookup,
   mapIdentity,
 } from '@tiletrigger/shared';
 import type { AudioSystem } from '../audio/audio.ts';
@@ -94,7 +99,7 @@ import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
 import { loadSignaling, type HostLink } from './transport.ts';
 import { loadRelay, relayParams } from './relay.ts';
-import { inSuite } from '../playlists.ts';
+import { ROTATION_PRESETS, inSuite } from '../playlists.ts';
 import { PauseMenu } from './pauseMenu.ts';
 import type { ScreenMarker } from './hud.ts';
 import { CoverState } from './coverState.ts';
@@ -149,8 +154,14 @@ export interface SessionOptions {
   hosting?: { peer: HostLink; listing?: string };
   /** Open a join code as soon as the match starts (Play → Host). */
   autoHost?: boolean;
-  /** The map picker for the host's Change map (pause menu → Match): the front end's map cards. */
-  mapPicker?: (o: { mode: GameMode; current: string; suiteOnly: boolean; onPick: (map: MapDocument, mode: GameMode) => void; onClose: () => void }) => HTMLElement;
+  /** The map picker for the host's Change map (pause menu → Match): the front end's map cards. `title`: its heading and button. */
+  mapPicker?: (o: { mode: GameMode; current: string; suiteOnly: boolean; title?: string; onPick: (map: MapDocument, mode: GameMode) => void; onClose: () => void }) => HTMLElement;
+  /**
+   * The map rotation this browser keeps across map changes (offline and Host game; main.ts holds it):
+   * after each match the next of its maps instead of a replay. `load` fetches a map of our suite;
+   * `info` is a map's name and the modes it plays (null: not one of ours).
+   */
+  rotation?: { list: MapRotation; load(id: string): Promise<MapDocument | null>; info: RotationLookup };
 }
 
 /** Where a scenario chain goes next: a suite map ID (local "Next map"), or the server's new map (its name). */
@@ -803,22 +814,94 @@ export class GameSession {
       {
         command: (cmd) => {
           if (local) {
+            if (cmd.c === 'rotation' || cmd.c === 'skip') return this.rotationCommand(cmd);
             const error = local.host(cmd);
             if (error) panel.setStatus(error, true);
           } else net?.sendCommand({ t: 'host', cmd });
         },
         ...((local ? this.opts.hostable : net) && this.opts.mapPicker ? { changeMap: () => this.openMapPicker() } : {}),
         ...(net ? { login: (token: string) => net.sendCommand({ t: 'admin', token }) } : {}),
+        // The map rotation: kept by this browser (not in a playlist, whose wins move it on), or by the server (when it has one).
+        ...(this.opts.mapPicker && ((local && this.opts.hostable && this.opts.rotation && !this.opts.chain) || net) ? { rotation: { add: () => this.openMapPicker('rotation'), presets: ROTATION_PRESETS } } : {}),
       },
       net ? 'Admin' : 'Host',
     );
     panel.root.hidden = true;
     $(net ? 'pause-admin-slot' : 'pause-host-slot').append(panel.root);
+    if (local) this.showRotation(panel);
     return panel;
   }
 
-  /** Change map: the front end's map cards (our suite only on servers and in Host game), then travel. */
-  private openMapPicker(): void {
+  /** This browser's rotation, if it keeps one here (offline, Host game; not a playlist or MapMaker TEST). */
+  private get ownRotation(): NonNullable<SessionOptions['rotation']> | null {
+    return this.opts.transport instanceof LocalTransport && this.opts.hostable && !this.opts.chain ? (this.opts.rotation ?? null) : null;
+  }
+
+  /** The panel shows the rotation, and the match knows where it goes next (everyone's end-of-match scoreboard says so). */
+  private showRotation(panel = this.hostPanel): void {
+    const r = this.ownRotation;
+    const t = this.opts.transport;
+    if (!r || !(t instanceof LocalTransport)) return;
+    const name = (id: string) => r.info(id)?.name ?? id;
+    panel.setRotation(r.list.state(name));
+    const up = r.list.peek();
+    t.setUpNext(up ? { map: name(up.entry.map), mode: up.entry.mode } : null);
+  }
+
+  /** The host changed this browser's rotation (the list, shuffle), or skipped to its next map. */
+  private rotationCommand(cmd: RotationCommand): void {
+    const r = this.ownRotation;
+    if (!r) return;
+    if (cmd.c === 'skip') return void this.skipRotation();
+    if (cmd.entries) {
+      // Our suite only, each in a mode it plays (as a server checks it).
+      const v = validateRotation(cmd.entries, r.info);
+      if (cmd.entries.length && !v.entries.length) return this.hostPanel.setStatus(`None of those can be played: ${v.dropped.join('; ')}`, true);
+      const s = this.hostState;
+      r.list.set(v.entries, s ? { map: s.map, mode: s.mode } : null);
+    }
+    if (cmd.shuffle !== undefined) r.list.setShuffle(cmd.shuffle);
+    this.hostPanel.setStatus('');
+    this.showRotation();
+  }
+
+  /** Skip to next: the rotation's next map now (as Change map does). */
+  private async skipRotation(): Promise<void> {
+    const r = this.ownRotation;
+    const up = r?.list.peek();
+    if (!r || !up || this.travel) return;
+    const map = await r.load(up.entry.map);
+    if (this.closed || this.travel) return;
+    if (!map) return this.hostPanel.setStatus(`${r.info(up.entry.map)?.name ?? up.entry.map} didn't load`, true);
+    r.list.advance();
+    this.changeMap(map, up.entry.mode);
+  }
+
+  /** A match ended with nowhere else to go: after the scoreboard, the rotation's next map (an empty rotation replays). */
+  private rotating = false;
+  private async rotateOn(): Promise<void> {
+    const r = this.ownRotation;
+    const t = this.opts.transport;
+    const up = r?.list.peek();
+    if (!r || !up || !(t instanceof LocalTransport) || this.travel || this.rotating) return;
+    this.rotating = true;
+    const t0 = performance.now();
+    const wait = Math.max(1000, ((this.rules?.intermissionTicks ?? 300) / TICK_RATE) * 1000 - 600);
+    const map = await r.load(up.entry.map);
+    const s = this.hostState;
+    const rules = t.liveRules() ?? this.rules;
+    this.rotating = false;
+    if (this.closed || this.travel || !s || !rules) return;
+    if (!map) return void console.warn(`rotation: ${up.entry.map} didn't load; the match replays`);
+    r.list.advance();
+    const next = rulesForTravel(rules, map, s.fill, up.entry.mode, s.teamSize);
+    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill } };
+    this.showRotation();
+    window.setTimeout(() => !this.closed && this.exit('travel'), Math.max(0, wait - (performance.now() - t0)));
+  }
+
+  /** Change map (or add one to the rotation): the front end's map cards (our suite only on servers, in Host game and for rotations). */
+  private openMapPicker(purpose: 'change' | 'rotation' = 'change'): void {
     const s = this.hostState;
     if (!s || !this.opts.mapPicker || this.mapPicker) return;
     const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
@@ -829,14 +912,26 @@ export class GameSession {
     this.mapPicker = this.opts.mapPicker({
       mode: s.mode,
       current: s.map,
-      suiteOnly: !local || !!this.peerHost,
+      suiteOnly: !local || !!this.peerHost || purpose === 'rotation',
+      ...(purpose === 'rotation' ? { title: 'Add to rotation' } : {}),
       onClose: close,
       onPick: (map, mode) => {
         close();
-        this.changeMap(map, mode);
+        if (purpose === 'rotation') this.addToRotation(map, mode);
+        else this.changeMap(map, mode);
       },
     });
     $('pause').append(this.mapPicker);
+  }
+
+  /** The host picked a map for the end of the rotation (the whole list goes, as every rotation change does). */
+  private addToRotation(map: MapDocument, mode: GameMode): void {
+    const entry = { map: map.metadata.id, mode };
+    const own = this.ownRotation;
+    const now = own ? own.list.entries : (this.hostState?.rotation?.entries ?? []);
+    const cmd: RotationCommand = { c: 'rotation', entries: [...now.map((e) => ({ map: e.map, mode: e.mode })), entry] };
+    if (own) return this.rotationCommand(cmd);
+    this.opts.transport.sendCommand?.({ t: 'host', cmd });
   }
 
   /**
@@ -1308,10 +1403,15 @@ export class GameSession {
             if (ev.hs && ev.killer === this.slot) this.hud.headshot();
           } else if (ev.e === 'round_end') {
             if (ev.outcome === 'victory') this.chainOn(ev.next);
+            // Nowhere else to go: this browser's rotation moves on after the scoreboard.
+            if (!this.travel && !ev.next) void this.rotateOn();
+            // Everyone's scoreboard says where the match goes next (a server's or host's rotation).
+            this.hud.nextMap = ev.up ? nextMapLine(ev.up.map, ev.up.mode) : '';
             this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
             this.outcome = ev.outcome ?? null;
           } else if (ev.e === 'round_start') {
             this.outcome = null;
+            this.hud.nextMap = '';
             this.view.clearCorpses();
             this.npcInfo.clear();
           } else if (ev.e === 'say') {

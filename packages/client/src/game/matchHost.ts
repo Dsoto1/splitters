@@ -18,7 +18,9 @@ import {
   type BotDifficulty,
   type CarryOver,
   type GameEvent,
+  type GameMode,
   type HostCommand,
+  type RotationCommand,
   type HostState,
   type MapDocument,
   type MatchRules,
@@ -151,6 +153,11 @@ export class MatchHost {
   private readonly banned = new Set<string>();
   private hidden = false;
   private factsSent = '';
+  /**
+   * The map rotation's next map (display name) and mode, set by the page that keeps the rotation: a match
+   * that ends says so to everyone (round_end `up`), and the page takes everyone there after the scoreboard.
+   */
+  private upNext: { map: string; mode: GameMode } | null = null;
   /** Called with the match once it runs (the page's test hooks). */
   onMatch?: (match: MatchT, me: Combatant, mod: MatchModule) => void;
   /** Ticking time and wake count, for perf probes on the page's thread: (ms, ticks) per wake, without delivery to the local player. */
@@ -217,7 +224,10 @@ export class MatchHost {
       const w0 = now;
       for (; now >= next && n < most; n++) {
         const s = performance.now();
-        events.push(...match.step());
+        const stepped = match.step();
+        // A match that ends with nowhere else to go ("Next map" logic): everyone sees where the rotation goes next.
+        if (this.upNext) for (const ev of stepped) if (ev.e === 'round_end' && !ev.next) ev.up = { ...this.upNext };
+        events.push(...stepped);
         if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
           const snap = match.snapshot(events);
           const l0 = performance.now();
@@ -347,8 +357,13 @@ export class MatchHost {
     return this.stopped ? null : (this.control?.state() ?? null);
   }
 
+  /** Where the map rotation goes after this match (null: nowhere, the match replays). */
+  setUpNext(next: { map: string; mode: GameMode } | null): void {
+    this.upNext = next;
+  }
+
   /** The host's controls (bots, skill, style, restart, end). Returns the error, if it was refused. */
-  command(cmd: Exclude<HostCommand, { c: 'map' }>): string | null {
+  command(cmd: Exclude<HostCommand, { c: 'map' } | RotationCommand>): string | null {
     const c = this.control;
     if (!c || this.stopped) return 'The match has not started';
     if (cmd.c === 'kick' || cmd.c === 'ban') {
@@ -558,7 +573,9 @@ export type ToSimHost =
   | { k: 'start'; map: MapDocument; opts: LocalMatchOptions; hidden: boolean }
   | { k: 'input'; inputs: PlayerInput[] }
   | { k: 'ready' }
-  | { k: 'cmd'; cmd: Exclude<HostCommand, { c: 'map' }> }
+  | { k: 'cmd'; cmd: Exclude<HostCommand, { c: 'map' } | RotationCommand> }
+  /** The map rotation's next map and mode (the page keeps the rotation), for the end-of-match scoreboard. */
+  | { k: 'upnext'; next: { map: string; mode: GameMode } | null }
   | { k: 'drop'; reason: string }
   | { k: 'notice'; text: string; guestsOnly?: boolean }
   /** `zip`: the link wants the compressed stream (the match host compresses it: see sinkTo). */
@@ -627,6 +644,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       if (error) post({ k: 'local', msg: { t: 'host', state: host.hostState(), error } });
       return;
     }
+    case 'upnext':
+      return host.setUpNext(m.next);
     case 'drop':
       return host.dropGuests(m.reason);
     case 'notice':
