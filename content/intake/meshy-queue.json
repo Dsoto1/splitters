@@ -1,5 +1,5 @@
 {
-  "$comment": "Models queued for import (owner, 2026-10-29). Names and IDs are proposals. Community posts (CC0) are downloaded by hand into the downloads dir as <id>.glb (rigged GLB) or the textured FBX folder; the owner's own models (/s/ links) are fetched by task ID with MESHY_API_KEY. Remove an entry once its manifest is in content/characters/ (or the weapon, vehicle or item is shipped).",
+  "$comment": "Models queued for import (owner, 2026-10-29). Names and IDs are proposals. Community posts (CC0) are downloaded by hand into the downloads dir as <id>.glb (rigged GLB) or the textured FBX folder; the owner's own models (/s/ links) are fetched by task ID with MESHY_API_KEY. Remove an entry once its manifest is in content/characters/ (or the weapon, vehicle or item is shipped). `size` (small | large; absent = standard) is the gameplay body size the owner approved (2026-10-29).",
   "queue": [
     {
       "id": "meshy_rustmech",
@@ -8,7 +8,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019f3ef0-e612-7dfa-97cf-358fe2f357ab",
       "license": "CC0 (Meshy community)",
-      "note": "white rusty mech"
+      "note": "white rusty mech",
+      "size": "large"
     },
     {
       "id": "meshy_triceratops",
@@ -98,7 +99,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019b3af5-767c-7517-9dde-896b777b7637",
       "license": "CC0 (Meshy community)",
-      "note": "cartoon-kid look-alike: an original name, not the show's"
+      "note": "cartoon-kid look-alike: an original name, not the show's",
+      "size": "small"
     },
     {
       "id": "meshy_brannock",
@@ -134,7 +136,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019ad7f4-7590-7ed4-abff-fb9bb6f1065a",
       "license": "CC0 (Meshy community)",
-      "note": "steampunk rabbit"
+      "note": "steampunk rabbit",
+      "size": "small"
     },
     {
       "id": "meshy_grizzelda",
@@ -143,7 +146,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019e40b6-5e91-7d09-b4ef-eac45a40e626",
       "license": "CC0 (Meshy community)",
-      "note": "lady goblin"
+      "note": "lady goblin",
+      "size": "small"
     },
     {
       "id": "meshy_longshadow",
@@ -152,7 +156,8 @@
       "use": "player+npc",
       "url": "https://www.meshy.ai/posts/019a3c86-59f5-7912-bb01-192b1a08eb8b",
       "license": "CC0 (Meshy community)",
-      "note": "tall faceless figure (spooky NPC too)"
+      "note": "tall faceless figure (spooky NPC too)",
+      "size": "large"
     },
     {
       "id": "meshy_medkit",
@@ -174,7 +179,7 @@
     },
     {
       "id": "meshy_tracker",
-      "name": "Tracker",
+      "name": "Plains Scout",
       "kind": "character",
       "use": "player",
       "url": "https://www.meshy.ai/posts/0194a6c5-16d7-7fae-97e2-df92cb78c889",
@@ -188,7 +193,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/christmas-santa-claus-3d-character-model-animation-ready-01a0698e-123a-7439-90ce-586dbbc91226",
       "license": "CC0 (Meshy community)",
-      "note": "Santa"
+      "note": "Santa",
+      "size": "large"
     },
     {
       "id": "meshy_hazmat",
@@ -215,7 +221,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019f6ba3-0841-7739-af7e-d60ab20641e0",
       "license": "CC0 (Meshy community)",
-      "note": "baboon in street clothes"
+      "note": "baboon in street clothes",
+      "size": "large"
     },
     {
       "id": "meshy_zombie_shambler",
@@ -260,7 +267,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019c7dbf-4c20-7354-850c-cce8cd7b3c37",
       "license": "CC0 (Meshy community)",
-      "note": "robot boy"
+      "note": "robot boy",
+      "size": "small"
     },
     {
       "id": "meshy_t350",
@@ -269,7 +277,8 @@
       "use": "player+npc",
       "url": "https://www.meshy.ai/posts/TPose-Automaton-019fbb32-61f6-75c6-897c-e36f20750c47",
       "license": "CC0 (Meshy community)",
-      "note": "automaton"
+      "note": "automaton",
+      "size": "large"
     },
     {
       "id": "meshy_grunt68",
@@ -287,7 +296,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019e3fb2-711c-7039-8570-1d59dba28a76",
       "license": "CC0 (Meshy community)",
-      "note": "shiba dog"
+      "note": "shiba dog",
+      "size": "small"
     },
     {
       "id": "meshy_zombie_rotter",
@@ -305,7 +315,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019c14f7-cdd5-7fbb-9343-126efa2c3e1f",
       "license": "CC0 (Meshy community)",
-      "note": "tall dapper skeleton"
+      "note": "tall dapper skeleton",
+      "size": "large"
     },
     {
       "id": "meshy_grandpa_chains",
@@ -368,7 +379,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/01990582-7d15-78ed-82d9-279f1a3a60cf",
       "license": "CC0 (Meshy community)",
-      "note": "raccoon"
+      "note": "raccoon",
+      "size": "small"
     },
     {
       "id": "meshy_prism_cat",
@@ -377,7 +389,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/01942bcd-8cf0-778b-acbb-1aea68189a03",
       "license": "CC0 (Meshy community)",
-      "note": "rainbow cat robot"
+      "note": "rainbow cat robot",
+      "size": "small"
     },
     {
       "id": "meshy_seer",
@@ -431,7 +444,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/01949bdc-c981-76ab-a761-77581ea062da",
       "license": "CC0 (Meshy community)",
-      "note": "Anubis"
+      "note": "Anubis",
+      "size": "large"
     },
     {
       "id": "meshy_punkin",
@@ -440,7 +454,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/0197fbf8-fb47-7104-9f72-7ffa62554825",
       "license": "CC0 (Meshy community)",
-      "note": "pumpkin head"
+      "note": "pumpkin head",
+      "size": "small"
     },
     {
       "id": "meshy_teddy",
@@ -449,7 +464,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/01994b60-9f84-7cb2-8db5-4d6c1efd598e",
       "license": "CC0 (Meshy community)",
-      "note": "teddy bear"
+      "note": "teddy bear",
+      "size": "small"
     }
   ]
 }
