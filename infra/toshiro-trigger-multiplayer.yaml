@@ -20,7 +20,7 @@ Metadata:
       - Label: { default: 'Secrets and auth (referenced, not created)' }
         Parameters: [SsmPrefix, CognitoRegion, CognitoUserPoolId, CognitoAppClientId, CognitoDomain]
       - Label: { default: Tags }
-        Parameters: [ProjectTag, EnvironmentTag]
+        Parameters: [ProjectTag, AppNameTag, EnvironmentTag]
 
 Parameters:
   InstanceName:
@@ -122,8 +122,8 @@ Parameters:
     Default: project
     AllowedValues: [project, account]
     Description: >-
-      What the budget counts. project: only costs tagged CostTagKey=ProjectTag
-      (the tag must be activated as a cost allocation tag in Billing, and only
+      What the budget counts. project: only costs tagged with CostTagKey
+      (Project=ProjectTag or AppName=AppNameTag; the tag must be activated as a cost allocation tag in Billing, and only
       costs after activation carry it). account: everything in the AWS account
       (the owner's other projects and the domain included).
   CostTagKey:
@@ -131,8 +131,8 @@ Parameters:
     Default: Project
     AllowedValues: [Project, AppName]
     Description: >-
-      The cost allocation tag the project budget filters on. Every resource here
-      carries both Project and AppName (the owner's standard), set to ProjectTag.
+      The cost allocation tag the project budget filters on. Every taggable resource
+      here carries both: Project=ProjectTag and AppName=AppNameTag (the owner's standard).
   NetworkOutAlarmBytes:
     Type: Number
     Default: 300000000
@@ -175,6 +175,10 @@ Parameters:
     Type: String
     Default: toshiro-trigger
     Description: Value of the Project tag on every taggable resource (also usable as a cost allocation tag).
+  AppNameTag:
+    Type: String
+    Default: TileTrigger
+    Description: Value of the AppName tag on every taggable resource (the owner's standard across apps; also usable as a cost allocation tag).
   EnvironmentTag:
     Type: String
     Default: prod
@@ -189,6 +193,7 @@ Conditions:
   MakeTurnRecord: !And [!Condition HasZone, !Equals [!Ref ManageTurnRecord, 'true']]
   HasAppClient: !Not [!Equals [!Ref CognitoAppClientId, '']]
   ProjectBudget: !Equals [!Ref BudgetScope, project]
+  BudgetOnAppName: !Equals [!Ref CostTagKey, AppName]
 
 Resources:
   # ------------------------------------------------------------ instance
@@ -243,7 +248,7 @@ Resources:
             Ipv6Cidrs: ['::/0']
       Tags:
         - { Key: Project, Value: !Ref ProjectTag }
-        - { Key: AppName, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref AppNameTag }
         - { Key: Environment, Value: !Ref EnvironmentTag }
         - { Key: Role, Value: multiplayer-hub }
         - { Key: ManagedBy, Value: cloudformation }
@@ -339,7 +344,7 @@ Resources:
   # ------------------------------------------------------------ cost
   # Monthly cost budget (the first two budgets in an account are free). By
   # default it counts only this project's costs: those tagged
-  # CostTagKey=ProjectTag (the Lightsail instance carries the tags; its plan,
+  # Project=ProjectTag, or AppName=AppNameTag with CostTagKey AppName (the Lightsail instance carries the tags; its plan,
   # data transfer and snapshots are billed to it). BudgetScope=account counts
   # the whole account instead. Alerts: actual > BudgetWarnUsd, actual >
   # BudgetLimitUsd, and a forecast over BudgetLimitUsd. Expected: the 2 GB
@@ -355,7 +360,7 @@ Resources:
         CostFilters: !If
           - ProjectBudget
           - TagKeyValue:
-              - !Sub 'user:${CostTagKey}$${ProjectTag}'
+              - !If [BudgetOnAppName, !Sub 'user:AppName$${AppNameTag}', !Sub 'user:Project$${ProjectTag}']
           - !Ref AWS::NoValue
         BudgetLimit:
           Amount: !Ref BudgetLimitUsd

@@ -71,9 +71,11 @@ Options worth knowing (`infra/deploy-multiplayer.sh --help` for all):
   environment and gives the page its client and login domain at
   `/auth-config.js`. If a lookup fails, the stack keeps the values it has.
 - Budget: `--budget-scope project` (default) counts only costs tagged with the
-  project (`Project` and `AppName` are both set to `toshiro-trigger`; pick the
-  one activated as a cost allocation tag with `--budget-tag`); `account` counts
-  the whole AWS account.
+  project (every taggable resource carries `Project=toshiro-trigger` and
+  `AppName=TileTrigger`; pick the one activated as a cost allocation tag with
+  `--budget-tag`); `account` counts the whole AWS account. A deploy with the
+  current script retags the live stack in place (no new server); costs before
+  the change keep the old `AppName` value in Cost Explorer.
 - Which build: by default the latest green build of `main`; `--release vX.Y.Z`
   a release, `--channel stable` the newest release, `--ref <commit>` a commit
   CI published, `--branch check/<name>` (testing) the head of a check branch

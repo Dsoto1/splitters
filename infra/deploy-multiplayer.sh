@@ -62,7 +62,7 @@
 #   --budget-warn USD       first budget alert (15);  --budget-limit USD  budget (25)
 #   --budget-scope S        project (default): count only costs tagged with the project (activate the tag as a cost
 #                           allocation tag in Billing first); account: the whole AWS account
-#   --budget-tag KEY        the tag the project budget filters on: Project (default) or AppName (both are set)
+#   --budget-tag KEY        the tag the project budget filters on: Project (default, =toshiro-trigger) or AppName (=TileTrigger); both are set
 #   --infra-only            stop after the stack (no SSH bootstrap, no checks)
 #   --yes                   don't ask before deleting hand-made DNS records (--dns replace)
 #   --owner SUB             the account that may publish maps from MapMaker (its Cognito user ID; MapMaker's
@@ -83,6 +83,8 @@ ZONE=toshiroplay.com
 HOSTNAME_=trigger.toshiroplay.com
 SSM_PREFIX=/toshiro/trigger
 PROJECT=toshiro-trigger
+# The AppName tag: the owner's tag across all their apps.
+APP_NAME=TileTrigger
 BRANCH=main
 REF=''
 CHANNEL=main
@@ -296,8 +298,8 @@ ensure_secret() { # name
   if aws ssm get-parameter --name "$name" --query Parameter.Name --output text >/dev/null 2>&1; then
     note "$name: exists (kept)"
   else
-    python3 -c 'import json,secrets,sys; print(json.dumps({"Name":sys.argv[1],"Type":"SecureString","Tier":"Standard","Value":secrets.token_hex(32),"Description":sys.argv[2],"Tags":[{"Key":"Project","Value":sys.argv[3]}]}))' \
-      "$name" "Tile Trigger $1 (created by infra/deploy-multiplayer.sh)" "$PROJECT" > "$WORK/param.json"
+    python3 -c 'import json,secrets,sys; print(json.dumps({"Name":sys.argv[1],"Type":"SecureString","Tier":"Standard","Value":secrets.token_hex(32),"Description":sys.argv[2],"Tags":[{"Key":"Project","Value":sys.argv[3]},{"Key":"AppName","Value":sys.argv[4]}]}))' \
+      "$name" "Tile Trigger $1 (created by infra/deploy-multiplayer.sh)" "$PROJECT" "$APP_NAME" > "$WORK/param.json"
     aws ssm put-parameter --cli-input-json "file://$WORK/param.json" >/dev/null
     rm -f "$WORK/param.json"
     note "$name: created (random 32 bytes)"
@@ -359,6 +361,7 @@ add ZoneName "$ZONE"
 add HubHostname "$HOSTNAME_"
 add SsmPrefix "$SSM_PREFIX"
 add ProjectTag "$PROJECT"
+add AppNameTag "$APP_NAME"
 case "$DNS_MODE" in
   skip) add HostedZoneId ''; add ManageHubRecord false; add ManageRootRecord false; add ManageTurnRecord false ;;
   manage|replace)
@@ -380,7 +383,7 @@ for name in "${TO_DELETE[@]}"; do claim_record apply "$name" -; done
 log "Deploying stack $STACK (a few minutes on create)"
 aws cloudformation deploy --stack-name "$STACK" --template-file "$TEMPLATE" \
   --parameter-overrides "${OVERRIDES[@]}" \
-  --tags "Project=$PROJECT" "AppName=$PROJECT" Environment=prod ManagedBy=cloudformation \
+  --tags "Project=$PROJECT" "AppName=$APP_NAME" Environment=prod ManagedBy=cloudformation \
   --no-fail-on-empty-changeset
 
 STATIC_IP="$(stack_output StaticIp)"
