@@ -155,10 +155,10 @@
       "src": "Meshy_AI_Boglurker_the_toad_20260325_texture.fbx",
       "sourceTriangles": 852756,
       "file": "characters/meshy_toad.glb",
-      "sha256": "4ac67e3f89f6446c",
+      "sha256": "6645b602ce965cb6",
       "triangles": 11619,
       "lodTriangles": 3451,
-      "bytes": 756388,
+      "bytes": 756384,
       "hands": true
     },
     {
@@ -168,9 +168,9 @@
       "src": "Meshy_AI_Boglurker_the_toad_20260325_texture.fbx",
       "sourceTriangles": 852756,
       "file": "characters/meshy_toad_fparms.glb",
-      "sha256": "e635413f1268630f",
+      "sha256": "c7b156aaae30aeec",
       "triangles": 446,
-      "bytes": 270152,
+      "bytes": 270140,
       "hands": true
     },
     {
@@ -180,10 +180,10 @@
       "src": "Meshy_AI_Salamander_Warlord_20260421_texture.fbx",
       "sourceTriangles": 774825,
       "file": "characters/meshy_salamander.glb",
-      "sha256": "65e6e06ac9b35816",
+      "sha256": "2a445623e6a659da",
       "triangles": 11094,
       "lodTriangles": 3238,
-      "bytes": 880476,
+      "bytes": 880472,
       "hands": true
     },
     {
@@ -193,9 +193,9 @@
       "src": "Meshy_AI_Salamander_Warlord_20260421_texture.fbx",
       "sourceTriangles": 774825,
       "file": "characters/meshy_salamander_fparms.glb",
-      "sha256": "edbd4e7f3b047192",
+      "sha256": "c4a06224939f6422",
       "triangles": 1306,
-      "bytes": 461260,
+      "bytes": 461252,
       "hands": true
     },
     {
@@ -232,7 +232,7 @@
       "src": "Meshy_AI_Elder_T_POSE_20251114_texture.fbx",
       "sourceTriangles": 598236,
       "file": "characters/meshy_elder.glb",
-      "sha256": "af88411fca5091ce",
+      "sha256": "1efb30871293f1e3",
       "triangles": 11000,
       "lodTriangles": 3225,
       "bytes": 733100,
@@ -247,9 +247,9 @@
       "src": "Meshy_AI_Elder_T_POSE_20251114_texture.fbx",
       "sourceTriangles": 598236,
       "file": "characters/meshy_elder_fparms.glb",
-      "sha256": "c52f8aa1b0aacf72",
+      "sha256": "8ece85627889f24c",
       "triangles": 646,
-      "bytes": 275376,
+      "bytes": 275364,
       "hands": true
     },
     {
@@ -261,10 +261,10 @@
       "src": "Meshy_AI_T_Pose_Alien_20260721_texture.fbx",
       "sourceTriangles": 144758,
       "file": "characters/meshy_alien.glb",
-      "sha256": "0b0cdceba8bb42a2",
+      "sha256": "1be742c0c62994a0",
       "triangles": 9998,
       "lodTriangles": 2971,
-      "bytes": 485880,
+      "bytes": 485872,
       "hands": true
     },
     {
@@ -276,9 +276,9 @@
       "src": "Meshy_AI_T_Pose_Alien_20260721_texture.fbx",
       "sourceTriangles": 144758,
       "file": "characters/meshy_alien_fparms.glb",
-      "sha256": "8e635ce3f1f74501",
+      "sha256": "3b95512d47f2215d",
       "triangles": 1012,
-      "bytes": 196004,
+      "bytes": 195992,
       "hands": true
     },
     {
@@ -348,7 +348,7 @@
       "src": "Meshy_AI_T_Pose_Pirate_20260714_texture.fbx",
       "sourceTriangles": 285308,
       "file": "characters/meshy_pirate.glb",
-      "sha256": "86595f0e94e1151c",
+      "sha256": "c3ea434eb851b94a",
       "triangles": 11000,
       "lodTriangles": 3113,
       "bytes": 587372,
@@ -363,9 +363,9 @@
       "src": "Meshy_AI_T_Pose_Pirate_20260714_texture.fbx",
       "sourceTriangles": 285308,
       "file": "characters/meshy_pirate_fparms.glb",
-      "sha256": "b8ca3741c3cb32ca",
+      "sha256": "ada64f134f892181",
       "triangles": 1136,
-      "bytes": 252064,
+      "bytes": 252056,
       "hands": true
     },
     {
