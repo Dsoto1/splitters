@@ -146,6 +146,17 @@ Prepared on the session branch: version 0.5.0, CHANGELOG section, menu baseline.
 
 F3 / Options → Display: the performance overlay; Pause → Settings → Copy performance report (`game/perfOverlay.ts`). When the owner reports a slowdown, ask for that report. CI's `perf:budget` now also fails on effects in the shadow pass, more than 600 shadow casters (clumped Frost Basin, medium; 446 on CI with 46 characters in view) and effect starts over 40 ms (docs/PERF_96.md, last section). New effect materials made per shot: block their dirty mechanism, and don't `clone()` meshes in hot paths (share geometry).
 
+## Host leaves a browser-hosted match (2026-10-29)
+
+Friends of a browser host no longer get a bare "the host left the game"
+(docs/MULTIPLAYER_PROTOCOL.md section 13): the host sends `bye` before its links
+close (Leave match, `pagehide`); a friend whose link just drops (or whose host
+is silent 8 s) gets 8 s of "Reconnecting to host…"; then the host-left screen
+(`game/hostLeft.ts`, `main.ts` `afterHost`) with the last standings, **Host this
+map** (`playLocal(..., autoHost, autoList)`) and **Back to menu**. Hosting that
+starts before the match has loaded is now listed once the welcome comes (it
+used to stay "Will be listed once you host"). e2e: `hostgame`.
+
 ## How work flows (details in CLAUDE.md)
 
 1. Work on the session branch, or in an agent worktree that you merge into it.

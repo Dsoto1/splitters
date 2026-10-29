@@ -484,4 +484,9 @@ export type ServerMessage =
   | { t: 'host'; state: HostState | null; error?: string }
   /** A line for everyone's feed and a toast: what the host changed ("Host set teams to 8v8"). */
   | { t: 'notice'; text: string }
+  /**
+   * A browser host is leaving on purpose (left the match, closed the tab): the link closes next. Friends
+   * know it wasn't a network drop, so they don't wait to reconnect (MULTIPLAYER_PROTOCOL.md, "Host leaves").
+   */
+  | { t: 'bye' }
   | ({ t: 'stats' } & ServerStats);

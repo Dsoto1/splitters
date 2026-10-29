@@ -20,6 +20,8 @@ import { accessToken } from '../account.ts';
  * PeerJS: the game uses it through the Signaling interface (transport.ts).
  */
 const PREFIX = 'tiletrigger-';
+/** A friend's browser host that sends nothing for this long has dropped (it streams snapshots all the time). */
+const HOST_SILENT_MS = 8000;
 export { makeJoinCode };
 export const cleanJoinCode = (code: string): string => code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 
@@ -194,6 +196,14 @@ export class PeerTransport implements Transport {
   private closedByUs = false;
   rttMs = 0;
   bytesIn = 0;
+  /**
+   * How the host went, once the link to it closed after we were in: `left` (it said `bye`: on purpose) or
+   * `dropped` (the link just died: maybe a blip). Null while the host is there, or when we never got in.
+   */
+  hostGone: 'left' | 'dropped' | null = null;
+  /** The host is a dedicated one (a Host Service: it keeps places and comes back), not a player's browser. */
+  dedicated = false;
+  private saidBye = false;
 
   constructor(
     private readonly code: string,
@@ -227,6 +237,8 @@ export class PeerTransport implements Transport {
     const players = new SnapshotDecoder();
     let opened = false;
     let brokered = false;
+    /** When the host last sent anything: a host that goes silent (its machine slept, its tab was killed) has dropped. */
+    let heardAt = 0;
     const fail = (reason: string) => {
       if (this.closedByUs) return;
       this.closedByUs = true;
@@ -273,12 +285,22 @@ export class PeerTransport implements Transport {
         clearTimeout(timeout);
         const admin = adminToken(`code:${this.code}`);
         this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
-        this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: 0, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) }), 1000);
+        heardAt = performance.now();
+        this.pingTimer = window.setInterval(() => {
+          // A player's browser host streams 20 snapshots a second and answers every ping: silence this long is a dropped host.
+          if (!this.dedicated && performance.now() - heardAt > HOST_SILENT_MS) return hostLost();
+          this.send({ t: 'ping', id: 0, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) });
+        }, 1000);
       });
+      const hostLost = () => {
+        if (opened && !this.closedByUs) this.hostGone = this.saidBye ? 'left' : 'dropped';
+        fail(!opened ? noDirect : this.saidBye ? 'the host left the game' : 'lost the connection to the host');
+      };
       onText(
         conn,
         (text) => {
-          const t0 = netProbe.on ? performance.now() : 0;
+          const t0 = performance.now();
+          heardAt = t0;
           const msg = JSON.parse(text) as ServerMessage;
           if (netProbe.on) {
             const t1 = performance.now();
@@ -293,12 +315,18 @@ export class PeerTransport implements Transport {
             this.rttMs = this.rttMs ? this.rttMs * 0.8 + sample * 0.2 : sample;
             return;
           }
+          if (msg.t === 'bye') {
+            // The link closes next; if that close never comes, don't wait for it.
+            this.saidBye = true;
+            return void window.setTimeout(hostLost, 1500);
+          }
+          if (msg.t === 'welcome') this.dedicated = !!msg.dedicated;
           if (msg.t === 'snapshot') players.snapshot(msg);
           snapshots.push(msg);
         },
         { limits: HOST_TO_GUEST_LIMITS, wire: (bytes) => (this.bytesIn += bytes) },
       );
-      conn.on('close', () => fail(opened ? 'the host left the game' : noDirect));
+      conn.on('close', hostLost);
     });
   }
 

@@ -172,6 +172,19 @@ export class LocalTransport implements Transport {
     this.departing = true;
   }
 
+  /**
+   * This host is leaving on purpose (left the match, the tab is closing): every friend is told (`bye`) before the
+   * links close, so they know it wasn't a network drop. Sent from the page: the match may stop before it could.
+   */
+  sayGoodbye(): void {
+    if (this.departing || this.stopped || this.saidBye) return;
+    const text = JSON.stringify({ t: 'bye' } satisfies ServerMessage);
+    for (const r of this.links.values()) if (r.slot !== null) r.link.send(text);
+    this.saidBye = true;
+  }
+
+  private saidBye = false;
+
   /** Players connected from elsewhere (Host game). */
   get guests(): number {
     return [...this.links.values()].filter((r) => r.slot !== null).length;
@@ -191,6 +204,8 @@ export class LocalTransport implements Transport {
     this.onVisibility = () => this.toHost({ k: 'hidden', v: document.hidden });
     // (Unit tests run this without a real document.)
     if (typeof document.addEventListener === 'function') document.addEventListener('visibilitychange', this.onVisibility);
+    // The tab is closing (or reloading): friends hear it from us, not from a dead link.
+    if (typeof window.addEventListener === 'function') window.addEventListener('pagehide', this.onPageHide);
     const start: ToSimHost = { k: 'start', map: this.map, opts: this.opts, hidden: document.hidden };
     if (simThreadWanted() === 'worker' && this.startWorker(start)) return;
     this.startHere(start);
@@ -373,11 +388,18 @@ export class LocalTransport implements Transport {
     this.toHost({ k: 'ready' });
   }
 
+  private readonly onPageHide = () => this.sayGoodbye();
+
   close(): void {
     if (this.stopped) return;
+    // Leaving with friends in the match (not a map change): they're told first.
+    this.sayGoodbye();
     const links = [...this.links.values()].map((r) => r.link);
+    // A map change's `travel`, or the goodbye, gets a moment to arrive before the links close.
     if (this.departing) window.setTimeout(() => links.forEach((l) => l.close()), 3000);
+    else if (this.saidBye && links.length) window.setTimeout(() => links.forEach((l) => l.close()), 1000);
     else links.forEach((l) => l.close());
+    if (typeof window.removeEventListener === 'function') window.removeEventListener('pagehide', this.onPageHide);
     this.links.clear();
     this.toHost({ k: 'stop' });
     this.stopped = true;

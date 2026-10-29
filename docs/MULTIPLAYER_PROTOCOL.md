@@ -353,3 +353,26 @@ paired version:
   `stop`, `restart`, `kick`, `ban`, `unban`, `quit`, with
   `Authorization: Bearer <pairing key>`; bodies ≤ 4 KB JSON; 240 requests and
   20 commands a minute. See MULTIPLAYER_SECURITY.md section 6a.
+
+## 13. Host leaves (browser hosts, October 2026)
+
+A match a player's browser hosts ends when that browser goes. What friends
+see then (`client/src/main.ts` `afterHost`, `game/hostLeft.ts`):
+
+- **Goodbye**: a host leaving on purpose (Leave match, closing or reloading
+  the tab: `pagehide`) sends every friend `{ t: "bye" }` before its links
+  close (`LocalTransport.sayGoodbye`). A friend's `PeerTransport` then reports
+  the host as `left`; a link that closes without it, or a host silent for 8 s
+  (`HOST_SILENT_MS`: a browser host streams 20 snapshots a second), as
+  `dropped`. Dedicated hosts (`welcome.dedicated`) keep the old behaviour
+  (reconnect for up to a minute: they hold places and come back).
+- **Dropped**: "Reconnecting to host…" for up to 8 s (one rejoin of the same
+  code; the host keeps the place 60 s by the friend's key, so a blip or a
+  reload brings them back to it).
+- **Then**: the host-left screen: the last standings the friend had, "The host
+  left", and **Host this map** (one click: a Host game on the same map, mode
+  and rules, about as many players, listed in the game browser so the others
+  can find it) or **Back to menu**.
+
+`bye` is a new optional server message: older clients ignore it, so
+`PROTOCOL_VERSION` stays 4.

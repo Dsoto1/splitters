@@ -119,6 +119,16 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 /* Reconnecting after a lost connection (main.ts): a strip over the menu, with Cancel. */
 #reconnect { position: fixed; left: 50%; top: 18px; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 14px; padding: 10px 14px 10px 18px; background: var(--glass); border: 1px solid var(--orange); border-radius: 4px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); font: 600 15px var(--font-display); letter-spacing: 0.03em; color: var(--orange); }
 #reconnect button { padding: 5px 10px; font-size: 12px; }
+/* A friend's host left (game/hostLeft.ts): the last standings, what happened, what next. Over a loading match or the menu. */
+#host-left { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(4, 7, 14, 0.72); }
+#host-left .hl-card { display: flex; flex-direction: column; width: min(660px, 100%); max-height: calc(100vh - 32px); padding: 18px 20px 16px; background: rgba(10, 14, 24, 0.97); border-top: 3px solid var(--orange); }
+#host-left .panel-title { margin: 0 0 6px; font: 700 22px var(--font-display); letter-spacing: 0.04em; }
+#host-left p { margin: 0 0 12px; color: var(--text); font: 500 14px var(--font-body); }
+#host-left[data-state='wait'] p::after { content: ''; display: inline-block; width: 0.8em; height: 0.8em; margin-left: 8px; vertical-align: -1px; border: 2px solid var(--muted); border-top-color: transparent; border-radius: 50%; animation: hl-spin 0.9s linear infinite; }
+@keyframes hl-spin { to { transform: rotate(360deg); } }
+#host-left .hl-board { min-height: 0; overflow: auto; margin-bottom: 14px; font-size: 13px; }
+#host-left .hl-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+#host-left .hl-actions:empty { display: none; }
 
 /* Arcade (Play) */
 .arcade { display: grid; grid-template-columns: minmax(0, 1fr) clamp(400px, 40vw, 640px); gap: 18px; margin-top: 18px; height: calc(100% - 70px); min-height: 0; }

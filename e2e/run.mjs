@@ -2469,6 +2469,26 @@ async function hostgameFlow(browser) {
     const rate = ((await bytes()) - b0) / 5 / 1024;
     // Raw snapshots run ~40 KB/s; compressed, a few (bursty frames on CI push it up, but well under raw).
     check(rate > 0.2 && rate < 20, `the friend's stream is compressed (${rate.toFixed(1)} KB/s)`);
+    // The host leaves (Leave match, confirmed with a friend in): the friend gets the host-left screen, not a bare error.
+    await host.evaluate(() => document.getElementById('exitmatch').click());
+    await host.evaluate(() => document.getElementById('leave-yes')?.click());
+    const left = await friend
+      .waitForFunction(() => {
+        const el = document.getElementById('host-left');
+        if (el?.dataset.state !== 'ended') return null;
+        return { title: document.getElementById('hl-title').textContent, text: document.getElementById('hl-text').textContent, rows: el.querySelectorAll('.sb-row:not(.sb-hd)').length, host: !!document.getElementById('hl-host'), menu: !!document.getElementById('hl-menu') };
+      }, null, { timeout: T(30000) })
+      .then((h) => h.jsonValue(), () => null);
+    check(!!left && /host left/i.test(left.title) && left.host && left.menu, `the friend sees "The host left" with Host this map and Back to menu (${JSON.stringify(left)})`);
+    check(!!left && /left the game/.test(left.text), `the host said goodbye first, so it reads as leaving, not a dropped link (${left?.text})`);
+    check(!!left && left.rows >= 2, `the host-left screen shows the last standings (${left?.rows} rows)`);
+    // Host this map: one click, the same map hosted and listed.
+    await friend.evaluate(() => document.getElementById('hl-host').click());
+    const rehosted = await friend
+      .waitForFunction(() => window.__cs?.map === 'phase0_arena' && !document.getElementById('host-left') && /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '') && /^Listed:/.test(document.getElementById('host-public-status').textContent), null, { timeout: T(90000) })
+      .then(() => true, () => false);
+    const listing = await friend.evaluate(() => document.getElementById('host-public-status').textContent);
+    check(rehosted, `Host this map starts the same map, hosted and listed (${listing})`);
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await host.context().close();
