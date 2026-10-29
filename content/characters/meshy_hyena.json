@@ -1,0 +1,70 @@
+{
+  "id": "meshy_hyena",
+  "order": 8,
+  "name": "Hyena Warrior",
+  "look": "core.hyena",
+  "bio": "Laughs at everything, especially the last thing you tried.",
+  "body": "male",
+  "notes": "Digitigrade: the leg joints sit on the leg's centre line (read off a side profile), so straightening it turns the thigh and shin only a little and the knee doesn't fold; the hock is the ankle, the paw the foot.",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2025-04-25",
+    "fbx": "^Meshy_AI_Hyena_Warrior_.*_texture\\.fbx$"
+  },
+  "finish": {
+    "metallic": 0.15,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "ranger_arms_m",
+    "skin": "#8a6a48",
+    "cloth": "#7a3328",
+    "trim": "#2e2e30"
+  },
+  "fixes": {
+    "triangles": 10000,
+    "tail": [
+      [0, 0.5, -0.06],
+      [0, 0.33, -0.11],
+      [0, 0.22, -0.17],
+      [0, 0.15, -0.14]
+    ],
+    "feet": true
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.53, -0.02],
+      [0, 0.6, -0.02],
+      [0, 0.67, 0],
+      [0, 0.74, 0],
+      [0, 0.83, 0],
+      [0, 0.87, 0.03],
+      [0, 0.99, 0.05]
+    ],
+    "L": [
+      [0.04, 0.8, 0],
+      [0.11, 0.78, 0],
+      [0.158, 0.642, 0],
+      [0.175, 0.508, 0.02],
+      [0.183, 0.442, 0.03],
+      [0.06, 0.51, 0.05],
+      [0.105, 0.33, 0.055],
+      [0.11, 0.15, -0.01],
+      [0.11, 0.03, 0.09],
+      [0.11, 0.02, 0.14]
+    ],
+    "R": [
+      [-0.04, 0.8, 0],
+      [-0.11, 0.78, 0],
+      [-0.158, 0.642, 0],
+      [-0.175, 0.508, 0.02],
+      [-0.183, 0.442, 0.03],
+      [-0.06, 0.51, 0.05],
+      [-0.105, 0.33, 0.055],
+      [-0.11, 0.15, -0.01],
+      [-0.11, 0.03, 0.09],
+      [-0.11, 0.02, 0.14]
+    ]
+  }
+}

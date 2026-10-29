@@ -1,15 +1,20 @@
-// Whole-body characters made on the owner's Meshy subscription (text-to-3d,
-// textured, auto-rigged by Meshy), turned into parts that ride the game's own
-// rig, so every clip in rig.glb drives them unchanged.
+// Whole-body Meshy characters (made on the owner's Meshy subscription, or CC0
+// Meshy community models), turned into parts that ride the game's own rig, so
+// every clip in rig.glb drives them unchanged. Each character is one manifest,
+// content/characters/<id>.json (docs/CHARACTERS.md): adding one needs no code.
 //
 //   node tools/content/prepare-meshy-characters.mjs <downloads dir>
+//   ONLY=<ids> node tools/content/prepare-meshy-characters.mjs <downloads dir>   just those
 //
-// The downloads dir holds each character's Meshy rigged GLB as <id>.glb (about
-// 10 MB each, so they stay out of the repo; the Meshy task IDs below say where
-// they came from). Outputs go to packages/client/public/characters/<id>.glb
-// (the body, with a low-detail copy) and <id>_fparms.glb (its arms for the
-// first-person view), recorded in content/meshy.lock.json, which
-// `pnpm content:check` verifies.
+// The downloads dir (outside the repo: the files are large, and raw downloads
+// are never committed) holds what tools/content/fetch-meshy.mjs saves: a
+// rigged Meshy GLB as <id>.glb, or an unrigged textured FBX (with its .png
+// beside it) anywhere under it, matched by the manifest's `source.fbx`.
+// Outputs go to packages/client/public/characters/<id>.glb (the body, with a
+// low-detail copy) and, with `firstPerson.ownArms`, <id>_fparms.glb (its
+// forearms for the first-person view), recorded in content/meshy.lock.json,
+// which `pnpm content:check` verifies. A character whose download isn't there
+// (or isn't in ONLY) is kept as built, checked against the lock.
 //
 // What it does to each:
 // - skins the Meshy mesh in its rest pose, then turns its arms out level and its
@@ -21,24 +26,20 @@
 // - keeps the base colour only (1024 px JPEG), simplifies the mesh and adds the
 //   low-detail copy the game draws for distant characters.
 //
-// Some models came as Meshy's textured FBX download with no rig (FBX_CHARACTERS:
-// the unzipped "Meshy_AI_<name>_..._texture_fbx" folders, anywhere under the
-// downloads dir, 2.5–61 MB each). Those are rigged here first: the mesh is
-// welded and pre-simplified, the joints go where FBX_CHARACTERS places them
+// An unrigged FBX download is rigged here first: the mesh is welded and
+// pre-simplified, the joints go where the manifest's `landmarks` place them
 // (by hand, read off front and side views and side profiles, in units of the
 // model's height), and the skin weights come from autoskin.mjs (bone heat with
 // sight tests through a voxel fill of the body; cloth below the hips follows
 // the pelvis, the chest stays off the clavicles and arms; four influences);
-// a tail rides on the hips, hunched bodies lean back (`lean`), and the feet
-// are turned to the rig's too (bent knees leave toes pointing down once the
-// legs are straightened). SKIN_DEBUG=<dir> writes each rest mesh coloured by
-// its joints (and <id>.cloth.glb: red where no bone is in sight, green what
-// counts as cloth), to check the weights; ONLY=<ids> rebuilds just those. Then it goes through the same
-// steps as the rest. Their first-person arms are the universal ones (looks.ts),
-// so they get no _fparms file. A character whose download isn't there is kept
-// as built (checked against the lock). The Meshy community T-pose downloads
-// (CC0 per the owner) are FBX_CHARACTERS too, with their own `source` pack and
-// the model's name and download date (`community`) recorded in the lock.
+// a tail rides on the hips, hunched bodies lean back (`fixes.lean`), and the
+// feet are turned to the rig's too (`fixes.feet`: bent knees leave toes
+// pointing down once the legs are straightened). SKIN_DEBUG=<dir> writes each
+// rest mesh coloured by its joints (and <id>.cloth.glb: red where no bone is in
+// sight, green what counts as cloth), to check the weights. Then it goes
+// through the same steps as the rest. The manifest's licence picks the
+// provenance pack (owned: meshy-owned; CC0: meshy-community-characters, with
+// the model's name and date recorded in the lock).
 
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -50,6 +51,7 @@ import { compactPrimitive, dedup, prune, quantize, simplify, weld } from '@gltf-
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { autoSkin } from './autoskin.mjs';
+import { buildSpec, readManifests } from './character-manifests.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { seamAwareSimplify } from './meshy-mesh.mjs';
 
@@ -59,231 +61,8 @@ const LOCK = join(ROOT, 'content/meshy.lock.json');
 const downloads = process.argv[2];
 if (!downloads) throw new Error('usage: prepare-meshy-characters.mjs <downloads dir>');
 
-/** The characters: Meshy task IDs (preview, textured refine, rig) and the finish their one material gets. */
-const CHARACTERS = [
-  {
-    id: 'meshy_knight',
-    meshy: { preview: '01a173bc-08fd-7255-a545-bb6519425146', refine: '01a173bd-fc9c-7307-bff2-a15a52b42102', rig: '01a173c0-4d21-712b-97ba-7f08daf670c7' },
-    metallic: 0.35,
-    roughness: 0.45,
-  },
-  {
-    id: 'meshy_nova',
-    meshy: { preview: '01a17408-6ee3-7596-80cc-44711c118d2f', refine: '01a17409-5c80-7338-a476-32f6a5f454ec', remesh: '01a1740b-3c5d-7717-8fc8-6a15ce6dce9a', rig: '01a1740c-f882-7213-bc97-68ffda286170' },
-    metallic: 0.05,
-    roughness: 0.6,
-  },
-  {
-    id: 'meshy_dapper',
-    meshy: { preview: '01a17408-78ca-7473-b379-648d7e9aa349', refine: '01a17409-66cf-7542-bf7f-d39040dd0f4f', remesh: '01a1740b-3ff1-71f3-8005-cd3e767884b8', rig: '01a1740d-0845-7780-8c84-b7f26c5ea616' },
-    metallic: 0.05,
-    roughness: 0.7,
-  },
-];
-
-/**
- * Landmarks in model space, in units of the model's height with the feet at
- * y = 0 (+x is the character's left, +z its front): the body's joints (Meshy's
- * names, so JOINT_MAP and REPOSE apply), plus the ends of the head, hands and
- * toes. `L`/`R` give the left and right side's joints in the same order.
- */
-const SIDE_JOINTS = ['Shoulder', 'Arm', 'ForeArm', 'Hand', 'HandTip', 'UpLeg', 'Leg', 'Foot', 'ToeBase', 'ToeTip'];
-const landmarks = ({ spine, L, R }) => {
-  const out = Object.fromEntries(['Hips', 'Spine02', 'Spine01', 'Spine', 'neck', 'Head', 'head_end'].map((n, i) => [n, spine[i]]));
-  SIDE_JOINTS.forEach((n, i) => {
-    out[`Left${n}`] = L[i];
-    out[`Right${n}`] = R[i];
-  });
-  return out;
-};
-
-/**
- * Unrigged Meshy FBX downloads, rigged here: the download's file name, the
- * triangles to keep, the finish, and the landmarks (spine: hips to head end;
- * each side: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip).
- */
-const FBX_CHARACTERS = [
-  {
-    id: 'meshy_goblin',
-    // Its rags are hundreds of small texture islands; seamAwareSimplify collapses across the seams where the texture matches.
-    seamWeld: true,
-    // Hunched, head hung in front of the chest: sat up (degrees back per spine joint; the head keeps facing ahead).
-    lean: { Spine02: 5, Spine01: 8, Spine: 8, neck: 12 },
-    // Cloth hangs below its hips (autoskin.mjs: it follows the pelvis more than the legs).
-    cloth: true,
-    fbx: /^Meshy_AI_Goblin_.*_texture\.fbx$/,
-    triangles: 11000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.75,
-    joints: landmarks({
-      spine: [[0, 0.43, -0.03], [0, 0.5, -0.03], [0, 0.58, -0.01], [0, 0.65, 0.02], [0, 0.7, 0.07], [0, 0.74, 0.11], [0, 0.95, 0.14]],
-      L: [[0.05, 0.665, 0.03], [0.217, 0.667, 0.04], [0.317, 0.525, 0.075], [0.3, 0.408, 0.15], [0.258, 0.317, 0.2], [0.085, 0.41, -0.01], [0.13, 0.32, 0.17], [0.24, 0.083, 0.06], [0.26, 0.025, 0.23], [0.27, 0.02, 0.3]],
-      R: [[-0.05, 0.665, 0], [-0.175, 0.68, -0.06], [-0.25, 0.53, -0.24], [-0.29, 0.41, -0.19], [-0.29, 0.31, -0.17], [-0.085, 0.41, -0.03], [-0.183, 0.333, -0.2], [-0.15, 0.083, -0.25], [-0.16, 0.025, -0.13], [-0.16, 0.02, -0.083]],
-    }),
-  },
-  {
-    id: 'meshy_otter',
-    fbx: /^Meshy_AI_Wealthy_Otter_.*_texture\.fbx$/,
-    tail: [[-0.03, 0.3, -0.06], [0.18, 0.13, -0.18], [0.36, 0.22, -0.3]],
-    triangles: 11000,
-    feet: true,
-    metallic: 0.1,
-    roughness: 0.6,
-    joints: landmarks({
-      spine: [[-0.07, 0.36, 0.06], [-0.07, 0.45, 0.05], [-0.07, 0.55, 0.09], [-0.07, 0.66, 0.1], [-0.07, 0.78, 0.08], [-0.06, 0.82, 0.07], [-0.05, 0.98, 0.1]],
-      L: [[-0.02, 0.74, 0.08], [0.06, 0.72, 0.07], [0.142, 0.608, 0.08], [0.175, 0.525, 0.1], [0.208, 0.45, 0.12], [0.03, 0.32, 0.06], [0.09, 0.17, 0.05], [0.11, 0.05, 0.03], [0.11, 0.025, 0.12], [0.11, 0.02, 0.23]],
-      R: [[-0.12, 0.74, 0.08], [-0.2, 0.72, 0.07], [-0.25, 0.608, 0.08], [-0.29, 0.525, 0.1], [-0.342, 0.458, 0.12], [-0.16, 0.32, 0.06], [-0.2, 0.17, 0.05], [-0.22, 0.05, 0.03], [-0.22, 0.025, 0.1], [-0.22, 0.02, 0.17]],
-    }),
-  },
-  {
-    id: 'meshy_toad',
-    lean: { Spine01: 4, Spine: 6, neck: 14 },
-    // Cloth hangs below its hips (autoskin.mjs: it follows the pelvis more than the legs).
-    cloth: true,
-    fbx: /^Meshy_AI_Boglurker_the_toad_.*_texture\.fbx$/,
-    triangles: 11000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.7,
-    joints: landmarks({
-      spine: [[0, 0.46, -0.07], [0, 0.54, -0.08], [0, 0.62, -0.07], [0, 0.7, -0.07], [0, 0.77, -0.03], [0, 0.8, 0], [0, 0.97, 0.05]],
-      L: [[0.06, 0.74, -0.03], [0.17, 0.74, -0.01], [0.3, 0.533, 0.03], [0.325, 0.4, 0.05], [0.342, 0.308, 0.05], [0.09, 0.44, -0.06], [0.167, 0.267, 0.06], [0.2, 0.08, -0.12], [0.21, 0.025, 0], [0.22, 0.02, 0.07]],
-      R: [[-0.06, 0.74, -0.03], [-0.17, 0.74, -0.01], [-0.295, 0.533, 0.03], [-0.33, 0.408, 0.05], [-0.355, 0.35, 0.05], [-0.09, 0.44, -0.06], [-0.15, 0.267, 0.06], [-0.183, 0.08, -0.12], [-0.2, 0.025, 0], [-0.21, 0.02, 0.07]],
-    }),
-  },
-  {
-    id: 'meshy_salamander',
-    // Cloth hangs below its hips (autoskin.mjs: it follows the pelvis more than the legs).
-    cloth: true,
-    fbx: /^Meshy_AI_Salamander_Warlord_.*_texture\.fbx$/,
-    triangles: 11000,
-    feet: true,
-    metallic: 0.3,
-    roughness: 0.5,
-    joints: landmarks({
-      spine: [[0, 0.52, -0.02], [0, 0.58, -0.03], [0, 0.65, -0.03], [0, 0.72, -0.04], [0, 0.79, -0.02], [0, 0.83, 0], [0, 0.94, 0]],
-      L: [[0.05, 0.76, -0.02], [0.15, 0.725, -0.03], [0.217, 0.6, 0], [0.233, 0.49, 0], [0.242, 0.367, 0.04], [0.07, 0.5, -0.03], [0.083, 0.325, -0.02], [0.1, 0.1, -0.05], [0.1, 0.025, 0.03], [0.1, 0.02, 0.07]],
-      R: [[-0.05, 0.76, -0.02], [-0.15, 0.725, -0.03], [-0.217, 0.6, 0], [-0.233, 0.49, 0], [-0.242, 0.367, 0.04], [-0.07, 0.5, -0.03], [-0.083, 0.325, -0.02], [-0.1, 0.1, -0.05], [-0.1, 0.025, 0.03], [-0.1, 0.02, 0.07]],
-    }),
-  },
-  {
-    id: 'meshy_hyena',
-    // Digitigrade: the leg joints sit on the leg's centre line (read off a side profile), so straightening it turns
-    // the thigh and shin only a little and the knee doesn't fold; the hock is the ankle, the paw the foot.
-    fbx: /^Meshy_AI_Hyena_Warrior_.*_texture\.fbx$/,
-    tail: [[0, 0.5, -0.06], [0, 0.33, -0.11], [0, 0.22, -0.17], [0, 0.15, -0.14]],
-    triangles: 10000,
-    feet: true,
-    metallic: 0.15,
-    roughness: 0.6,
-    joints: landmarks({
-      spine: [[0, 0.53, -0.02], [0, 0.6, -0.02], [0, 0.67, 0], [0, 0.74, 0], [0, 0.83, 0], [0, 0.87, 0.03], [0, 0.99, 0.05]],
-      L: [[0.04, 0.8, 0], [0.11, 0.78, 0], [0.158, 0.642, 0], [0.175, 0.508, 0.02], [0.183, 0.442, 0.03], [0.06, 0.51, 0.05], [0.105, 0.33, 0.055], [0.11, 0.15, -0.01], [0.11, 0.03, 0.09], [0.11, 0.02, 0.14]],
-      R: [[-0.04, 0.8, 0], [-0.11, 0.78, 0], [-0.158, 0.642, 0], [-0.175, 0.508, 0.02], [-0.183, 0.442, 0.03], [-0.06, 0.51, 0.05], [-0.105, 0.33, 0.055], [-0.11, 0.15, -0.01], [-0.11, 0.03, 0.09], [-0.11, 0.02, 0.14]],
-    }),
-  },
-  // Meshy community downloads (CC0 per the owner; `community`: the model's name and the download's file date), all
-  // modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm.
-  {
-    id: 'meshy_elder',
-    source: 'meshy-community-characters',
-    community: { model: 'Elder T-pose', date: '2025-11-14' },
-    fbx: /^Meshy_AI_Elder_T_POSE_.*_texture\.fbx$/,
-    // Its robe hangs below the hips (autoskin.mjs: it follows the pelvis more than the legs).
-    cloth: true,
-    triangles: 11000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.75,
-    joints: landmarks({
-      spine: [[0, 0.52, 0], [0, 0.585, 0], [0, 0.65, 0], [0, 0.72, -0.005], [0, 0.825, -0.01], [0, 0.865, 0], [0, 1, 0]],
-      L: [[0.035, 0.79, 0], [0.115, 0.775, -0.01], [0.26, 0.772, 0], [0.4, 0.768, 0.012], [0.49, 0.768, 0.015], [0.085, 0.5, 0], [0.09, 0.28, 0], [0.093, 0.065, -0.015], [0.1, 0.02, 0.06], [0.1, 0.015, 0.11]],
-      R: [[-0.035, 0.79, 0], [-0.115, 0.775, -0.01], [-0.26, 0.772, 0], [-0.4, 0.768, 0.012], [-0.49, 0.768, 0.015], [-0.085, 0.5, 0], [-0.09, 0.28, 0], [-0.093, 0.065, -0.015], [-0.1, 0.02, 0.06], [-0.1, 0.015, 0.11]],
-    }),
-  },
-  {
-    id: 'meshy_alien',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Alien', date: '2026-07-21' },
-    fbx: /^Meshy_AI_T_Pose_Alien_.*_texture\.fbx$/,
-    triangles: 10000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.55,
-    joints: landmarks({
-      spine: [[0, 0.5, -0.025], [0, 0.565, -0.02], [0, 0.63, -0.015], [0, 0.7, -0.02], [0, 0.775, -0.025], [0, 0.815, -0.02], [0, 1, 0]],
-      L: [[0.025, 0.755, -0.02], [0.075, 0.75, -0.045], [0.2, 0.733, -0.062], [0.33, 0.722, -0.055], [0.41, 0.71, -0.06], [0.04, 0.48, -0.02], [0.042, 0.3, -0.03], [0.048, 0.08, -0.054], [0.055, 0.02, 0], [0.06, 0.01, 0.05]],
-      R: [[-0.025, 0.755, -0.02], [-0.075, 0.75, -0.045], [-0.2, 0.733, -0.062], [-0.33, 0.722, -0.055], [-0.41, 0.71, -0.06], [-0.04, 0.48, -0.02], [-0.042, 0.3, -0.03], [-0.048, 0.08, -0.054], [-0.055, 0.02, 0], [-0.06, 0.01, 0.05]],
-    }),
-  },
-  {
-    id: 'meshy_cat',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Cat', date: '2026-03-11' },
-    fbx: /^Meshy_AI_T_Pose_Cat_.*_texture\.fbx$/,
-    // Digitigrade hind legs: joints on the leg's centre line (hock as the ankle, paw as the foot), as for the hyena.
-    tail: [[0, 0.27, 0], [0, 0.17, -0.1], [0, 0.07, -0.27]],
-    triangles: 10000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.8,
-    joints: landmarks({
-      spine: [[0, 0.3, 0.06], [0, 0.42, 0.08], [0, 0.54, 0.09], [0, 0.66, 0.085], [0, 0.79, 0.08], [0, 0.83, 0.1], [0, 0.97, 0.13]],
-      L: [[0.04, 0.775, 0.07], [0.13, 0.765, 0.06], [0.26, 0.755, 0.085], [0.38, 0.763, 0.11], [0.45, 0.762, 0.12], [0.1, 0.27, 0.08], [0.13, 0.16, 0.1], [0.145, 0.07, 0.07], [0.17, 0.025, 0.15], [0.19, 0.01, 0.21]],
-      R: [[-0.04, 0.775, 0.07], [-0.13, 0.765, 0.06], [-0.26, 0.755, 0.085], [-0.38, 0.763, 0.11], [-0.45, 0.762, 0.12], [-0.1, 0.27, 0.08], [-0.13, 0.16, 0.1], [-0.145, 0.07, 0.07], [-0.17, 0.025, 0.15], [-0.19, 0.01, 0.21]],
-    }),
-  },
-  {
-    id: 'meshy_pilot',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Pilot', date: '2026-05-10' },
-    fbx: /^Meshy_AI_T_Pose_Pilot_.*_texture\.fbx$/,
-    // The suit's blue sleeve patch (a red swoosh on a blue field) goes to the suit's orange.
-    scrubBlue: '#a8582a',
-    triangles: 11000,
-    feet: true,
-    metallic: 0.05,
-    roughness: 0.65,
-    joints: landmarks({
-      spine: [[0, 0.5, -0.005], [0, 0.57, 0], [0, 0.64, 0], [0, 0.72, -0.005], [0, 0.83, -0.01], [0, 0.87, 0], [0, 1, 0]],
-      L: [[0.035, 0.79, -0.01], [0.11, 0.78, -0.02], [0.25, 0.76, -0.02], [0.385, 0.753, -0.013], [0.475, 0.748, -0.012], [0.07, 0.48, 0], [0.075, 0.28, -0.01], [0.088, 0.07, -0.03], [0.095, 0.02, 0.05], [0.095, 0.015, 0.095]],
-      R: [[-0.035, 0.79, -0.01], [-0.11, 0.78, -0.02], [-0.25, 0.76, -0.02], [-0.385, 0.753, -0.013], [-0.475, 0.748, -0.012], [-0.07, 0.48, 0], [-0.075, 0.28, -0.01], [-0.088, 0.07, -0.03], [-0.095, 0.02, 0.05], [-0.095, 0.015, 0.095]],
-    }),
-  },
-  {
-    id: 'meshy_pirate',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Pirate', date: '2026-07-14' },
-    fbx: /^Meshy_AI_T_Pose_Pirate_.*_texture\.fbx$/,
-    // Long coat tails below the hips.
-    cloth: true,
-    triangles: 11000,
-    // No foot turn: the left leg is a wooden peg (its "foot" bones run down the peg).
-    metallic: 0.05,
-    roughness: 0.7,
-    joints: landmarks({
-      spine: [[0, 0.5, 0], [0, 0.57, -0.005], [0, 0.64, -0.005], [0, 0.72, -0.01], [0, 0.815, -0.01], [0, 0.85, 0], [0, 0.97, 0]],
-      L: [[0.035, 0.77, -0.02], [0.115, 0.758, -0.045], [0.22, 0.748, -0.05], [0.33, 0.74, -0.05], [0.424, 0.732, -0.047], [0.07, 0.48, 0], [0.065, 0.25, -0.013], [0.068, 0.07, -0.007], [0.069, 0.02, -0.005], [0.069, 0, -0.004]],
-      R: [[-0.035, 0.77, -0.02], [-0.115, 0.758, -0.045], [-0.22, 0.748, -0.05], [-0.33, 0.74, -0.05], [-0.424, 0.732, -0.047], [-0.07, 0.48, 0], [-0.065, 0.26, -0.02], [-0.075, 0.07, -0.04], [-0.085, 0.02, 0.02], [-0.085, 0.015, 0.06]],
-    }),
-  },
-  {
-    id: 'meshy_titan',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Titan', date: '2026-05-03' },
-    fbx: /^Meshy_AI_T_Pose_Titan_.*_texture\.fbx$/,
-    triangles: 11000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.6,
-    joints: landmarks({
-      spine: [[0, 0.48, -0.01], [0, 0.56, -0.01], [0, 0.64, -0.01], [0, 0.73, -0.02], [0, 0.855, -0.02], [0, 0.89, -0.005], [0, 1, -0.005]],
-      L: [[0.045, 0.83, -0.02], [0.14, 0.8, -0.03], [0.29, 0.795, -0.045], [0.44, 0.79, -0.03], [0.565, 0.784, -0.03], [0.085, 0.46, 0], [0.095, 0.27, -0.015], [0.125, 0.07, -0.04], [0.14, 0.02, 0.04], [0.14, 0.015, 0.085]],
-      R: [[-0.045, 0.83, -0.02], [-0.14, 0.8, -0.03], [-0.29, 0.795, -0.045], [-0.44, 0.79, -0.03], [-0.565, 0.784, -0.03], [-0.085, 0.46, 0], [-0.095, 0.27, -0.015], [-0.125, 0.07, -0.04], [-0.14, 0.02, 0.04], [-0.14, 0.015, 0.085]],
-    }),
-  },
-];
+/** The characters: one manifest each in content/characters (character-manifests.mjs reads and checks them). */
+const SPECS = readManifests().map(buildSpec);
 
 /** Meshy's joints onto the rig's (its head's end markers fold into the head). */
 const JOINT_MAP = {
@@ -919,30 +698,38 @@ function keepAsBuilt(id) {
   lock.files.push(...was);
 }
 
-for (const c of CHARACTERS) {
-  const file = join(downloads, `${c.id}.glb`);
-  if (!existsSync(file)) {
+// ONLY=meshy_goblin,meshy_toad rebuilds just those (the rest kept as built).
+const only = process.env.ONLY?.split(',').filter(Boolean);
+for (const id of only ?? []) if (!SPECS.some((c) => c.id === id)) throw new Error(`ONLY: no manifest content/characters/${id}.json`);
+// The unrigged FBX downloads are found by file name anywhere under the downloads dir.
+const downloaded = readdirSync(downloads, { recursive: true }).map((f) => join(downloads, String(f)));
+for (const c of SPECS) {
+  if (only && !only.includes(c.id)) {
     keepAsBuilt(c.id);
     continue;
   }
-  const src = await readMeshy(file, ual, c);
-  const meshy = { meshy: c.meshy };
-  lock.files.push({ role: 'meshy', id: c.id, source: 'meshy-owned', ...meshy, ...(await build(c, src, `${c.id}.glb`)) });
-  lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: 'meshy-owned', ...meshy, ...(await build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio: 0.8, lod: false, firstPerson: true })) });
-}
-
-// The unrigged FBX downloads (found by file name anywhere under the downloads dir).
-const downloaded = readdirSync(downloads, { recursive: true }).map((f) => join(downloads, String(f)));
-for (const c of FBX_CHARACTERS) {
-  const file = downloaded.find((f) => c.fbx.test(basename(f)));
-  // ONLY=meshy_goblin,meshy_toad rebuilds just those (the rest kept as built).
-  if (!file || (process.env.ONLY && !process.env.ONLY.split(',').includes(c.id))) {
+  if (c.rigged) {
+    // A Meshy rigged GLB, as fetch-meshy.mjs saves it.
+    const file = join(downloads, `${c.id}.glb`);
+    if (!existsSync(file)) {
+      keepAsBuilt(c.id);
+      continue;
+    }
+    const src = await readMeshy(file, ual, c);
+    const meshy = { meshy: c.meshy };
+    lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...meshy, ...(await build(c, src, `${c.id}.glb`, c.triangles ? { ratio: c.triangles / (src.indices.length / 3) } : {})) });
+    if (c.ownArms) lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...meshy, ...(await build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio: 0.8, lod: false, firstPerson: true })) });
+    continue;
+  }
+  // An unrigged FBX download: the manifest's file name pattern, or <id>_texture.fbx as fetch-meshy.mjs saves it.
+  const file = downloaded.find((f) => (c.fbx && c.fbx.test(basename(f))) || basename(f) === `${c.id}_texture.fbx`);
+  if (!file) {
     keepAsBuilt(c.id);
     continue;
   }
   const { src, sourceTriangles, workTriangles } = await readFbx(file, c, ual);
   const built = await build(c, src, `${c.id}.glb`, { ratio: c.triangles / workTriangles });
-  lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.source ?? 'meshy-owned', ...(c.community ?? {}), src: basename(file), sourceTriangles, ...built });
+  lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.pack, ...(c.community ?? {}), src: basename(file), sourceTriangles, ...built });
 }
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
 console.log(`wrote ${lock.files.length} files and content/meshy.lock.json`);

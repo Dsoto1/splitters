@@ -1,0 +1,65 @@
+{
+  "id": "meshy_salamander",
+  "order": 7,
+  "name": "Salamander Warlord",
+  "look": "core.warlord",
+  "bio": "Lord of a sunken fortress, armoured in rust and spite. Expects the arena to kneel.",
+  "body": "male",
+  "notes": "Cloth hangs below its hips.",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-04-21",
+    "fbx": "^Meshy_AI_Salamander_Warlord_.*_texture\\.fbx$"
+  },
+  "finish": {
+    "metallic": 0.3,
+    "roughness": 0.5
+  },
+  "firstPerson": {
+    "arms": "ranger_arms_m",
+    "skin": "#c8c0ae",
+    "cloth": "#4f5c5a",
+    "trim": "#7a5a3a"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "cloth": true,
+    "feet": true
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.52, -0.02],
+      [0, 0.58, -0.03],
+      [0, 0.65, -0.03],
+      [0, 0.72, -0.04],
+      [0, 0.79, -0.02],
+      [0, 0.83, 0],
+      [0, 0.94, 0]
+    ],
+    "L": [
+      [0.05, 0.76, -0.02],
+      [0.15, 0.725, -0.03],
+      [0.217, 0.6, 0],
+      [0.233, 0.49, 0],
+      [0.242, 0.367, 0.04],
+      [0.07, 0.5, -0.03],
+      [0.083, 0.325, -0.02],
+      [0.1, 0.1, -0.05],
+      [0.1, 0.025, 0.03],
+      [0.1, 0.02, 0.07]
+    ],
+    "R": [
+      [-0.05, 0.76, -0.02],
+      [-0.15, 0.725, -0.03],
+      [-0.217, 0.6, 0],
+      [-0.233, 0.49, 0],
+      [-0.242, 0.367, 0.04],
+      [-0.07, 0.5, -0.03],
+      [-0.083, 0.325, -0.02],
+      [-0.1, 0.1, -0.05],
+      [-0.1, 0.025, 0.03],
+      [-0.1, 0.02, 0.07]
+    ]
+  }
+}

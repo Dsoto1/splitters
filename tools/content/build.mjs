@@ -18,6 +18,7 @@ import { Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { PNG } from 'pngjs';
 import { objToDocument } from './obj.mjs';
+import { looksProblems, readManifests } from './character-manifests.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = join(ROOT, 'content/models.json');
@@ -292,6 +293,17 @@ const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));
 const meshyLock = JSON.parse(readFileSync(join(ROOT, 'content/meshy.lock.json'), 'utf8'));
 const charFiles = new Set();
 const charEntries = [...charLock.files, ...meshyLock.files];
+// One manifest per whole-body character (content/characters), each built and in the generated looks.
+try {
+  const characters = readManifests();
+  problems.push(...looksProblems(characters));
+  for (const m of characters) if (!meshyLock.files.some((f) => f.id === m.id)) problems.push(`content/characters/${m.id}.json: not built (run node tools/content/prepare-meshy-characters.mjs <downloads> with ONLY=${m.id})`);
+  for (const f of meshyLock.files) if (!characters.some((m) => f.id === m.id || f.id === `${m.id}_fparms`)) problems.push(`${f.file}: no manifest in content/characters`);
+  console.log(`checked ${characters.length} character manifests and their looks`);
+} catch (e) {
+  problems.push(e.message);
+}
+
 for (const f of charEntries) {
   charFiles.add(f.file);
   const packIds = f.source.split(/,\s*/);

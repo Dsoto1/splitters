@@ -1,0 +1,31 @@
+{
+  "id": "meshy_nova",
+  "order": 2,
+  "name": "Capt. Nova",
+  "look": "core.nova",
+  "bio": "First person on the Moon in 1969, by her own account. Mission control lost the paperwork.",
+  "body": "female",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-10-25",
+    "meshy": {
+      "preview": "01a17408-6ee3-7596-80cc-44711c118d2f",
+      "refine": "01a17409-5c80-7338-a476-32f6a5f454ec",
+      "remesh": "01a1740b-3c5d-7717-8fc8-6a15ce6dce9a",
+      "rig": "01a1740c-f882-7213-bc97-68ffda286170"
+    }
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "peasant_arms_f",
+    "skin": "#e4e4df",
+    "cloth": "#e9e9e4",
+    "trim": "#e9e9e4",
+    "ownArms": true
+  },
+  "fixes": {}
+}

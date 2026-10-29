@@ -1,0 +1,68 @@
+{
+  "id": "meshy_pirate",
+  "order": 13,
+  "name": "Cap'n Barnacle",
+  "look": "core.barnacle",
+  "bio": "Lost a leg to a cannonball and his ship to a card game. Wants both back, in that order.",
+  "body": "male",
+  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. Long coat tails below the hips. No foot turn: the left leg is a wooden peg (its \"foot\" bones run down the peg).",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-07-14",
+    "community": {
+      "model": "T Pose Pirate",
+      "url": null
+    },
+    "fbx": "^Meshy_AI_T_Pose_Pirate_.*_texture\\.fbx$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "ranger_arms_m",
+    "skin": "#9a6a48",
+    "cloth": "#7aa688",
+    "trim": "#5a3a22"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "cloth": true
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.5, 0],
+      [0, 0.57, -0.005],
+      [0, 0.64, -0.005],
+      [0, 0.72, -0.01],
+      [0, 0.815, -0.01],
+      [0, 0.85, 0],
+      [0, 0.97, 0]
+    ],
+    "L": [
+      [0.035, 0.77, -0.02],
+      [0.115, 0.758, -0.045],
+      [0.22, 0.748, -0.05],
+      [0.33, 0.74, -0.05],
+      [0.424, 0.732, -0.047],
+      [0.07, 0.48, 0],
+      [0.065, 0.25, -0.013],
+      [0.068, 0.07, -0.007],
+      [0.069, 0.02, -0.005],
+      [0.069, 0, -0.004]
+    ],
+    "R": [
+      [-0.035, 0.77, -0.02],
+      [-0.115, 0.758, -0.045],
+      [-0.22, 0.748, -0.05],
+      [-0.33, 0.74, -0.05],
+      [-0.424, 0.732, -0.047],
+      [-0.07, 0.48, 0],
+      [-0.065, 0.26, -0.02],
+      [-0.075, 0.07, -0.04],
+      [-0.085, 0.02, 0.02],
+      [-0.085, 0.015, 0.06]
+    ]
+  }
+}

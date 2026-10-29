@@ -24,6 +24,7 @@
     "perf:host96": "PERF_SECONDS=6 HOST96_SCENARIOS=clump HOST96_MAX_KBPS=30 HOST96_MAX_SEND_MS=15 node tools/perf/host96.mjs frost_basin",
     "content:build": "node tools/content/build.mjs",
     "content:check": "node tools/content/build.mjs --check",
+    "content:meshy": "node tools/content/meshy-intake.mjs",
     "dev:hub": "pnpm --filter @tiletrigger/server hub",
     "host": "pnpm --silent --filter @tiletrigger/host start",
     "host:package": "pnpm --filter @tiletrigger/host package --",
