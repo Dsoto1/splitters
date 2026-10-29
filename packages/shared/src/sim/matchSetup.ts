@@ -1,5 +1,5 @@
 import type { MapDocument } from '../map/schema.ts';
-import { MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
+import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
 import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
 import { IMPROMPTU_MIN_PLAYERS } from './spawns.ts';
@@ -103,12 +103,12 @@ export const presetPlayers = (p: SetupPreset): number => p.ffa ?? (p.sizes ?? []
  * two), whole sizes 1–48, and at most MAX_PLAYER_SLOTS in all (the largest
  * teams give way first). `fixes` says what was changed, for the player.
  */
-export function validateTeamSizes(raw: readonly unknown[] | undefined, mode: GameMode, fallback: readonly number[] = [4, 4]): { sizes: number[]; fixes: string[] } {
+export function validateTeamSizes(raw: readonly unknown[] | undefined, mode: GameMode, fallback: readonly number[] = [4, 4], cap = MAX_PLAYER_SLOTS): { sizes: number[]; fixes: string[] } {
   const fixes: string[] = [];
   let sizes = (Array.isArray(raw) && raw.length ? raw : fallback).map((v) => {
     const n = typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : NaN;
     if (Number.isNaN(n)) fixes.push('A team size was not a number: set to 1');
-    return Math.max(1, Math.min(MAX_TEAM_SIZE, Number.isNaN(n) ? 1 : n));
+    return Math.max(1, Math.min(MAX_TEAM_SIZE, cap - 1, Number.isNaN(n) ? 1 : n));
   });
   if (sizes.length > MAX_TEAMS) {
     fixes.push(`At most ${MAX_TEAMS} teams`);
@@ -120,8 +120,8 @@ export function validateTeamSizes(raw: readonly unknown[] | undefined, mode: Gam
     sizes = sizes.slice(0, 2);
   }
   let total = sizes.reduce((a, b) => a + b, 0);
-  if (total > MAX_PLAYER_SLOTS) fixes.push(`At most ${MAX_PLAYER_SLOTS} players in all`);
-  while (total > MAX_PLAYER_SLOTS) {
+  if (total > cap) fixes.push(`At most ${cap} players in all`);
+  while (total > cap) {
     const big = sizes.indexOf(Math.max(...sizes));
     sizes[big]!--;
     total--;
@@ -131,12 +131,12 @@ export function validateTeamSizes(raw: readonly unknown[] | undefined, mode: Gam
 
 /** The team layout a setup plays on this map: its own, else the map's recommended one, else 4v4 (made valid for the mode). */
 export function setupTeams(setup: Pick<MatchSetup, 'teams' | 'mode'>, map: MapDocument): number[] {
-  return validateTeamSizes(setup.teams, setup.mode, map.teamSetup?.sizes ?? [4, 4]).sizes;
+  return validateTeamSizes(setup.teams, setup.mode, map.teamSetup?.sizes ?? [4, 4], BROWSER_MAX_PLAYERS).sizes;
 }
 
 /** Everyone in the match, you and bots included. */
 export function setupPlayers(setup: MatchSetup, map: MapDocument): number {
-  return isTeamMode(setup.mode) ? setupTeams(setup, map).reduce((a, b) => a + b, 0) : Math.min(MAX_PLAYER_SLOTS, setup.bots + 1);
+  return isTeamMode(setup.mode) ? setupTeams(setup, map).reduce((a, b) => a + b, 0) : Math.min(BROWSER_MAX_PLAYERS, setup.bots + 1);
 }
 
 /** Every mode, and whether this map can play it (with the reason when it can't). `offered`: the modes the map lists (playableModes). */
@@ -176,7 +176,7 @@ export interface SetupNote {
 
 /** Past this many players the setup suggests going easy on the computer; past the second, it warns. */
 export const BIG_MATCH = 32;
-export const HUGE_MATCH = 64;
+export const HUGE_MATCH = 40;
 
 /**
  * Warnings and hints for a setup on its map (none of them blocks the match):
@@ -252,7 +252,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument): { rules: Ma
     if (s.raceVehicle) rules.raceVehicle = s.raceVehicle;
     if (s.raceCombat !== undefined) rules.raceCombat = s.raceCombat;
   }
-  if (!isTeamMode(s.mode)) return { rules, fill: Math.max(1, Math.min(MAX_PLAYER_SLOTS, s.bots + 1)) };
+  if (!isTeamMode(s.mode)) return { rules, fill: Math.max(1, Math.min(BROWSER_MAX_PLAYERS, s.bots + 1)) };
   const sizes = setupTeams(s, map);
   rules.teamSizes = sizes;
   const names = (s.teamNames ?? []).slice(0, sizes.length).map((n) => (typeof n === 'string' ? n.trim().slice(0, 24) : ''));
@@ -282,12 +282,12 @@ export function normalizeSetup(raw: unknown, modes?: readonly GameMode[]): Match
   let mode: GameMode = typeof o.mode === 'string' && isGameMode(o.mode) ? o.mode : (modes?.[0] ?? 'core.deathmatch');
   if (modes?.length && !modes.includes(mode)) mode = modes[0]!;
   const out = { ...(o as unknown as MatchSetup), mode };
-  out.bots = Math.round(num(o.bots, 0, MAX_PLAYER_SLOTS - 1, 3));
+  out.bots = Math.round(num(o.bots, 0, BROWSER_MAX_PLAYERS - 1, 3));
   out.skill = o.skill === 'easy' || o.skill === 'hard' ? o.skill : 'normal';
   out.scoreLimit = Math.round(num(o.scoreLimit, 0, 1000, DEFAULT_RULES[mode].scoreLimit));
   out.minutes = num(o.minutes, 0, 120, 10);
   if (o.teams !== undefined) {
-    if (Array.isArray(o.teams)) out.teams = validateTeamSizes(o.teams, 'core.tdm').sizes;
+    if (Array.isArray(o.teams)) out.teams = validateTeamSizes(o.teams, 'core.tdm', undefined, BROWSER_MAX_PLAYERS).sizes;
     else delete out.teams;
   }
   for (const k of ['teamNames', 'teamColors'] as const) if (out[k] !== undefined && !Array.isArray(out[k])) delete out[k];

@@ -152,6 +152,8 @@ export interface TeamEditorOptions {
   people?: readonly number[];
   /** Your chip: "You" offline, absent mid-match on a server. */
   youLabel?: string;
+  /** Most players in all (a browser's match: BROWSER_MAX_PLAYERS; a dedicated host's: MAX_PLAYER_SLOTS). */
+  maxPlayers?: number;
   onChange: (next: TeamEditorState) => void;
 }
 
@@ -161,15 +163,16 @@ const PIPS = 10;
 /**
  * Teams, freely: how many (2–8), and each one's size, name and colour (from
  * the palette). Drag a bot pip to another team to move a bot there, or drag
- * yourself (or press Join) to play on that team; any total up to 96.
+ * yourself (or press Join) to play on that team; any total up to `maxPlayers`.
  */
 export function teamEditor(o: TeamEditorOptions): HTMLElement {
   const s = o.state;
   const total = s.sizes.reduce((a, b) => a + b, 0);
+  const cap = o.maxPlayers ?? MAX_PLAYER_SLOTS;
   const emit = (patch: Partial<TeamEditorState>) => o.onChange({ ...s, sizes: [...s.sizes], names: [...s.names], colors: [...s.colors], ...patch });
   const setSize = (i: number, v: number) => {
     const sizes = [...s.sizes];
-    const room = MAX_PLAYER_SLOTS - (total - sizes[i]!);
+    const room = cap - (total - sizes[i]!);
     sizes[i] = Math.max(1, Math.min(v, room, MAX_TEAM_SIZE));
     emit({ sizes });
   };
@@ -191,7 +194,7 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
     disabled: o.countLocked,
     onChange: (n) => {
       const sizes = s.sizes.slice(0, n);
-      let left = MAX_PLAYER_SLOTS - sizes.reduce((a, b) => a + b, 0);
+      let left = cap - sizes.reduce((a, b) => a + b, 0);
       while (sizes.length < n) {
         const add = Math.max(1, Math.min(left, s.sizes[s.sizes.length - 1] ?? 2));
         sizes.push(add);
@@ -237,7 +240,7 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
     });
     const people = o.people?.[i] ?? 0;
     const min = Math.max(1, people + (s.you === i ? 1 : 0));
-    const sizeStep = stepper({ value: size, min, max: Math.min(MAX_TEAM_SIZE, MAX_PLAYER_SLOTS - (total - size)), id: `${o.id}-team-size-${i}`, label: `team ${i + 1} size`, onChange: (v) => setSize(i, v) });
+    const sizeStep = stepper({ value: size, min, max: Math.min(MAX_TEAM_SIZE, cap - (total - size)), id: `${o.id}-team-size-${i}`, label: `team ${i + 1} size`, onChange: (v) => setSize(i, v) });
     // Roster: you, people, then a pip per bot (drag one to another team).
     const roster = el('div', { class: 'roster' });
     if (s.you === i && o.youLabel) {

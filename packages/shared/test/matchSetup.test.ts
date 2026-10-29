@@ -102,7 +102,10 @@ describe('fits the map', () => {
     expect(notes).toMatch(/spawns will be shared/);
     expect(notes).toMatch(/made for 2–8 players/);
     expect(notes).toMatch(/big match/);
-    expect(setupNotes(base({ teams: [48, 48] }), map).some((n) => n.level === 'warn' && /very big/.test(n.text))).toBe(true);
+    expect(setupNotes(base({ teams: [16, 16] }), map).some((n) => /very big/.test(n.text))).toBe(false);
+    expect(setupNotes(base({ teams: [24, 24] }), map).some((n) => n.level === 'warn' && /very big/.test(n.text))).toBe(true);
+    // A browser runs at most 24 v 24 (dedicated hosts 48 v 48): bigger saved layouts shrink to fit.
+    expect(setupPlayers(base({ teams: [48, 48] }), map)).toBe(48);
     // Teams beyond the map's own sides use the shared spawns.
     const sided = { ...map, factions: [{ id: 'red', name: 'Red', color: '#ff0000', relations: {} }, { id: 'blue', name: 'Blue', color: '#0000ff', relations: {} }], entities: map.entities.map((e, i) => (e.kind === 'spawn' && i < 2 ? { ...e, faction: i ? 'blue' : 'red' } : e)) } as MapDocument;
     const three = setupNotes(base({ teams: [1, 1, 1] }), sided).map((n) => n.text).join('\n');

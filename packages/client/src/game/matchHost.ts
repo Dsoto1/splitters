@@ -1,6 +1,7 @@
 import {
   BOT_DIFFICULTIES,
   BROWSER_HOST_MAX_GUESTS,
+  BROWSER_MAX_PLAYERS,
   KeyedLimiter,
   rulesForMap,
   MAX_PLAYER_SLOTS,
@@ -176,7 +177,9 @@ export class MatchHost {
     if (test?.god) me.invulnerable = true;
     if (this.opts.carry) match.applyCarry(me, this.opts.carry);
     const bots = new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]);
-    const control = new HostControl(match, bots, Math.min(this.opts.botFill, MAX_PLAYER_SLOTS));
+    const fill = Math.min(this.opts.botFill, MAX_PLAYER_SLOTS);
+    // Load tests (?bots=96) start past the browser's cap; the host can't raise it further.
+    const control = new HostControl(match, bots, fill, 'Host', Math.max(BROWSER_MAX_PLAYERS, fill));
     Object.assign(this, { match, me, mod, control, bots });
     bots.rebalance(control.fill);
     this.onMatch?.(match, me, mod);

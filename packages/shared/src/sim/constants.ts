@@ -9,6 +9,15 @@ export const MAX_PLAYER_SLOTS = 96;
  */
 export const BROWSER_HOST_MAX_GUESTS = 10;
 
+/**
+ * Most players (you, friends and bots) in a match a browser runs (offline,
+ * Host game): every bot thinks and every character draws on that one
+ * computer, and past 24 v 24 an ordinary laptop stutters. Dedicated hosts
+ * take MAX_PLAYER_SLOTS (48 v 48). A policy for browsers, not a structural
+ * limit (load tests still ask for more with ?bots=).
+ */
+export const BROWSER_MAX_PLAYERS = 48;
+
 export const TICK_RATE = 60;
 export const TICK_DT = 1 / TICK_RATE;
 /** Server sends a snapshot every N ticks (30 Hz at 60 Hz simulation). */

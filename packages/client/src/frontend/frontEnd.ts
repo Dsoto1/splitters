@@ -12,7 +12,7 @@ import {
   MODE_LABELS,
   isTeamMode,
   LOOK_BIOS,
-  MAX_PLAYER_SLOTS,
+  BROWSER_MAX_PLAYERS,
   TEAM_PRESETS,
   SETUP_PRESETS,
   BIG_MATCH,
@@ -794,6 +794,7 @@ export class FrontEnd {
           state: { sizes, names: sizes.map((_, i) => s.teamNames?.[i] || sides[i]!.name), colors: sizes.map((_, i) => s.teamColors?.[i] || sides[i]!.color), you },
           countLocked: two ? `${MODE_LABEL[s.mode]} is always two teams.` : null,
           youLabel: 'You',
+          maxPlayers: BROWSER_MAX_PLAYERS,
           onChange: (next) => this.change((x) => {
             x.teams = next.sizes;
             // Only names and colours changed from the map's are kept.
@@ -809,7 +810,7 @@ export class FrontEnd {
         }),
       );
     } else {
-      playerRows.push(settingRow(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper({ value: s.bots, min: 0, max: MAX_PLAYER_SLOTS - 1, id: 'arcade-bots', label: coop ? 'squadmates' : 'bots', onChange: (v) => this.change((x) => (x.bots = v)) })));
+      playerRows.push(settingRow(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper({ value: s.bots, min: 0, max: BROWSER_MAX_PLAYERS - 1, id: 'arcade-bots', label: coop ? 'squadmates' : 'bots', onChange: (v) => this.change((x) => (x.bots = v)) })));
       playerRows.push(el('p', { class: 'setup-hint', textContent: `You + ${s.bots} bot${s.bots === 1 ? '' : 's'} = ${players} player${players === 1 ? '' : 's'}${coop ? ' on your side' : ''}` }));
     }
     if (s.mode === 'core.coop' && PLAYLISTS.length) {
@@ -1007,14 +1008,16 @@ export class FrontEnd {
     const shown = new Set<string>();
     const teams = el('optgroup', { label: 'Teams' });
     const ffa = el('optgroup', { label: 'Free-for-all' });
+    // Past the browser's cap (24 v 24): a dedicated host's sizes.
     for (const p of SETUP_PRESETS) {
+      if (presetPlayers(p) > BROWSER_MAX_PLAYERS) continue;
       if (p.sizes) {
         shown.add(p.sizes.join(','));
         add(teams, p.sizes.join(','), p.label, presetPlayers(p), teamWhy(p.sizes));
       } else add(ffa, `ffa:${p.ffa}`, p.label, presetPlayers(p), isTeamMode(s.mode) || isCoopMode(s.mode) ? (ffaModes.length ? null : 'no free-for-all on this map') : null);
     }
     const more = el('optgroup', { label: 'More layouts' });
-    for (const p of TEAM_PRESETS) if (!shown.has(p.join(','))) add(more, p.join(','), teamLayoutLabel(p), p.reduce((a, b) => a + b, 0), teamWhy(p));
+    for (const p of TEAM_PRESETS) if (!shown.has(p.join(',')) && p.reduce((a, b) => a + b, 0) <= BROWSER_MAX_PLAYERS) add(more, p.join(','), teamLayoutLabel(p), p.reduce((a, b) => a + b, 0), teamWhy(p));
     select.append(teams, ffa, more);
     select.addEventListener('change', () => {
       const v = select.value;

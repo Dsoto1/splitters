@@ -22,6 +22,8 @@ export class HostControl {
     /** Players to keep, bots included. */
     public fill: number,
     private readonly title: HostTitle = 'Host',
+    /** Most players the host may set (a browser keeps to BROWSER_MAX_PLAYERS; dedicated hosts MAX_PLAYER_SLOTS). */
+    readonly max = MAX_PLAYER_SLOTS,
   ) {}
 
   /** Rules changed mid-match that wait for the next restart. */
@@ -35,7 +37,7 @@ export class HostControl {
       fill: this.fill,
       teamSize: teams ? (sizes.length ? Math.max(...sizes) : Math.max(1, Math.round(this.fill / teams))) : null,
       teams,
-      max: MAX_PLAYER_SLOTS,
+      max: this.max,
       skill: this.bots.skill.id,
       style: r.botStyle ?? 'mixed',
       map: this.match.map.metadata.id,
@@ -81,18 +83,18 @@ export class HostControl {
     const lines: string[] = [];
     const teams = teamCount(this.match.rules);
     if (teams && cmd.teamSizes !== undefined) {
-      const sizes = validateTeamSizes(cmd.teamSizes, this.match.rules.mode).sizes.slice(0, teams);
+      const sizes = validateTeamSizes(cmd.teamSizes, this.match.rules.mode, undefined, this.max).sizes.slice(0, teams);
       while (sizes.length < teams) sizes.push(sizes[sizes.length - 1] ?? 1);
       this.match.setRules({ teamSizes: sizes });
       this.fill = sizes.reduce((a, b) => a + b, 0);
       lines.push(`teams to ${sizes.join('v')}`);
     } else if (teams && cmd.teamSize !== undefined) {
-      const size = Math.max(1, Math.min(Math.floor(MAX_PLAYER_SLOTS / teams), cmd.teamSize));
+      const size = Math.max(1, Math.min(Math.floor(this.max / teams), cmd.teamSize));
       this.match.setRules({ teamSizes: Array.from({ length: teams }, () => size) });
       this.fill = size * teams;
       lines.push(`teams to ${teamsLabel(teams, size)}`);
     } else if (!teams && cmd.fill !== undefined) {
-      this.fill = Math.max(1, Math.min(MAX_PLAYER_SLOTS, cmd.fill));
+      this.fill = Math.max(1, Math.min(this.max, cmd.fill));
       const coop = this.match.rules.mode === 'core.coop' || this.match.rules.mode === 'core.zombies';
       lines.push(coop ? `the squad to ${this.fill}` : `the match to ${this.fill} players`);
     }

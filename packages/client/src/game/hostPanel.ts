@@ -117,6 +117,7 @@ export class HostPanel {
           state: { sizes: d.sizes, names: d.sizes.map((_, i) => s.teamNames?.[i] ?? DEFAULT_TEAMS[i]?.name ?? `Team ${i + 1}`), colors: d.sizes.map((_, i) => s.teamColors?.[i] ?? DEFAULT_TEAMS[i]?.color ?? '#00d1ff'), you: null },
           countLocked: 'The number of teams is set when the match starts: change it from Play → Match setup, or Change map.',
           namesLocked: 'Names and colours are set when the match starts (Play → Match setup).',
+          maxPlayers: s.max,
           onChange: (next) => {
             d.sizes = next.sizes;
             redraw();
