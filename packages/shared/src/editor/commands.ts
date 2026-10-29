@@ -1,5 +1,5 @@
 import type { ScenarioLogic } from '../map/logic.ts';
-import type { BloodSettings, Faction, GlassSettings, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, TeamSetup, TilePlacement } from '../map/schema.ts';
+import type { BloodSettings, Faction, GlassSettings, MapBotSet, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, TeamSetup, TilePlacement } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
 import type { Backdrop } from '../map/backdrop.ts';
 
@@ -24,6 +24,7 @@ export type EditCommand =
   | { kind: 'setTerrain'; before: TerrainData | null; after: TerrainData | null }
   | { kind: 'setBounds'; before: MapBounds | null; after: MapBounds | null }
   | { kind: 'setTeamSetup'; before: TeamSetup | null; after: TeamSetup | null }
+  | { kind: 'setMapBots'; before: MapBotSet | null; after: MapBotSet | null }
   | { kind: 'setBackdrop'; before: Backdrop | null; after: Backdrop | null }
   | { kind: 'setBlood'; before: BloodSettings | null; after: BloodSettings | null }
   | { kind: 'setPhysics'; before: MapPhysics | null; after: MapPhysics | null }
@@ -100,6 +101,10 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       const { glass: _old, ...rest } = doc;
       return cmd.after ? { ...rest, glass: cmd.after } : rest;
     }
+    case 'setMapBots': {
+      const { bots: _old, ...rest } = doc;
+      return cmd.after ? { ...rest, bots: cmd.after } : rest;
+    }
     case 'setPaths': {
       const { paths: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, paths: cmd.after } : rest;
@@ -145,6 +150,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setPhysics', before: cmd.after, after: cmd.before };
     case 'setGlass':
       return { kind: 'setGlass', before: cmd.after, after: cmd.before };
+    case 'setMapBots':
+      return { kind: 'setMapBots', before: cmd.after, after: cmd.before };
     case 'setPaths':
       return { kind: 'setPaths', before: cmd.after, after: cmd.before };
     case 'batch':
@@ -176,6 +183,7 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setBlood':
     case 'setPhysics':
     case 'setGlass':
+    case 'setMapBots':
     case 'setPaths':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':

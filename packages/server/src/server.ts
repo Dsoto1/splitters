@@ -176,7 +176,7 @@ export interface RunningServer {
   rotation(): RotationState & { items: string[] };
   /** The built-in rotations (maps/rotations/) a host can pick. */
   readonly rotationPresets: readonly RotationPreset[];
-  /** The host's bot set now (null: random bots). */
+  /** The bot set the host chose (null: none; the map's own bots, else random ones, play). */
   botSet(): BotSet | null;
   /** The built-in bot sets (maps/botsets/). */
   readonly botSetPresets: readonly BotSetPreset[];
@@ -655,7 +655,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     map = t.map;
     playIndex = t.index;
     match = new Match(map, withLeaders(t.rules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
-    bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack, botSet: bots.botSet });
+    bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack, botSet: bots.hostSet });
     control = new HostControl(match, bots, t.fill ?? control.fill, 'Admin');
     bots.rebalance(control.fill);
     // A map the owner published since is picked up from here on.
@@ -750,7 +750,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     command: runCommand,
     rotation: () => ({ ...rotation.state(nameOf), items: rotation.items() }),
     rotationPresets,
-    botSet: () => bots.botSet,
+    botSet: () => bots.hostSet,
     botSetPresets,
     setAdminToken: (token) => {
       adminHash = token ? createHash('sha256').update(token).digest() : null;

@@ -857,6 +857,29 @@ export const TeamSetup = z.object({
   sizes: z.array(z.number().int().min(1).max(16)).min(2).max(8),
 });
 
+/**
+ * The map's own Player Bots (sim/botSet.ts), for scenarios: names, looks, skills, styles, teams and squads
+ * for its PvP bots or, in co-op, the players' side. They play unless the host picks a set of their own.
+ * Only the shape is checked here; validateBotSet makes it valid when a match starts (unknown looks: random).
+ */
+export const MapBotSet = z.object({
+  name: z.string().max(40).default('Map bots'),
+  fill: z.enum(['random', 'only']).default('random'),
+  entries: z
+    .array(
+      z.object({
+        name: z.string().min(1).max(20),
+        look: z.string().max(64).optional(),
+        skill: z.enum(['easy', 'normal', 'hard']).optional(),
+        style: z.enum(['mixed', 'arena', 'tactical']).optional(),
+        team: z.number().int().min(0).max(7).optional(),
+        squad: z.string().max(16).optional(),
+      }),
+    )
+    .max(96),
+});
+export type MapBotSet = z.infer<typeof MapBotSet>;
+
 /** Map-wide physics: gravity as a multiple of normal (0.25 = moon, 2 = heavy) and whether long falls hurt. */
 export const MapPhysics = z.object({
   gravity: z.number().min(0.2).max(3).default(1),
@@ -896,6 +919,8 @@ export const MapDocument = z.object({
   glass: GlassSettings.optional(),
   /** Recommended teams for team modes, or none (two even teams). */
   teamSetup: TeamSetup.nullable().default(null),
+  /** The map's own bots (MapBotSet), or none (random bots). Absent from older maps: they load unchanged. */
+  bots: MapBotSet.optional(),
   /** Content packs this map needs, beyond the always-present core pack. */
   dependencies: z.array(z.object({ pack: ContentId, version: z.string().max(32) })).max(MAX_MAP_DEPENDENCIES).default([]),
 });

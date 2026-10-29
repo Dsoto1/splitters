@@ -108,6 +108,8 @@ export interface HostState {
   rotation?: RotationState;
   /** The host's bot set (null: random bots). Absent from older hosts: the pause menu then offers no Bots… window. */
   botSet?: BotSet | null;
+  /** The set in play is the map's own (MapDocument.bots), not one the host chose: a map change doesn't carry it on. */
+  mapBots?: boolean;
 }
 
 export interface PlayerSnapshot {

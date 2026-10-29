@@ -150,6 +150,12 @@ export function selectForPaths(paths, mapIds = []) {
       for (const u of ['shared', 'server', 'host']) unit.add(u);
       continue;
     }
+    // Built-in bot sets (data): the Bots window (match setup, pause menu), the dedicated host, and their tests.
+    if (/^maps\/botsets\/[^/]+\.json$/.test(p)) {
+      for (const f of ['offline', 'hostcontrols', 'dedicatedhost']) flows.add(f);
+      for (const u of ['shared', 'server', 'host']) unit.add(u);
+      continue;
+    }
     if (/^maps\//.test(p)) {
       full = true;
       unitAll = true;

@@ -2,7 +2,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 import { simProfile } from './profile.ts';
 import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, type MountView, type NoiseView, type PickupView, type SeatView } from '../bots/brain.ts';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, profileFor, type BotDifficulty, type BotProfile, type BotStyle } from '../bots/profile.ts';
-import { botSetInUse, type BotEntry, type BotSet } from './botSet.ts';
+import { botSetInUse, mapBotSet, type BotEntry, type BotSet } from './botSet.ts';
 import { SightCache } from '../bots/sight.ts';
 import { ViewGrid } from '../bots/grid.ts';
 import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, type DirectorMember } from '../bots/director.ts';
@@ -4860,17 +4860,25 @@ export class BotFiller {
   private set: BotSet | null = null;
   /** The set changed mid-match: bots are swapped in and out one at a time (stage), not all at once. */
   private staging = false;
+  /** The host chose the set (a map change carries it on); otherwise it is the map's own (MapDocument.bots), or none. */
+  private chosen = false;
 
   constructor(
     private readonly match: Match,
     private difficulty: BotDifficulty = BOT_DIFFICULTIES.normal,
     /**
      * `takeBack`: a bot takes a leaving player's place where they stood; off (the default), the slot empties and a fresh bot spawns normally.
-     * `botSet`: the host's bot set (already validated: validateBotSet).
+     * `botSet`: the host's bot set (already validated: validateBotSet); without one, the map's own bots play.
      */
     private readonly opts: { takeBack?: boolean; botSet?: BotSet | null } = {},
   ) {
-    this.set = botSetInUse(opts.botSet) ? opts.botSet : null;
+    this.chosen = botSetInUse(opts.botSet);
+    this.set = this.chosen ? opts.botSet! : mapBotSet(match.map);
+  }
+
+  /** The set the host chose (null: theirs is none, so the next map's own bots play), for a map change to carry on. */
+  get hostSet(): BotSet | null {
+    return this.chosen ? this.set : null;
   }
 
   /** The host's bot set now (null: random bots). */
@@ -4960,6 +4968,7 @@ export class BotFiller {
   setBotSet(next: BotSet | null): void {
     const set = botSetInUse(next) ? next : null;
     this.set = set;
+    this.chosen = true;
     const bots = this.match.combatants().filter((c) => c.kind === 'bot' && !c.away && c.botSet);
     const claimed = new Map<Combatant, number>();
     const taken = new Set<number>();

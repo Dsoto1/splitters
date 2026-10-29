@@ -49,6 +49,7 @@ export class HostControl {
       rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks },
       pending: { ...this.pending },
       botSet: this.bots.botSet,
+      ...(this.bots.botSet && !this.bots.hostSet ? { mapBots: true } : {}),
     };
   }
 

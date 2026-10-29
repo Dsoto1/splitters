@@ -896,7 +896,7 @@ export class GameSession {
     if (!map) return void console.warn(`rotation: ${up.entry.map} didn't load; the match replays`);
     r.list.advance();
     const next = rulesForTravel(rules, map, s.fill, up.entry.mode, s.teamSize);
-    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill, botSet: s.botSet ?? null } };
+    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill, botSet: s.mapBots ? null : (s.botSet ?? null) } };
     this.showRotation();
     window.setTimeout(() => !this.closed && this.exit('travel'), Math.max(0, wait - (performance.now() - t0)));
   }
@@ -953,7 +953,7 @@ export class GameSession {
     if (!rules) return;
     const next = rulesForTravel(rules, map, s.fill, mode, s.teamSize);
     t.notice(travelNotice(map.metadata.name, next.rules.mode));
-    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill, botSet: s.botSet ?? null } };
+    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill, botSet: s.mapBots ? null : (s.botSet ?? null) } };
     window.setTimeout(() => this.exit('travel'), 1200);
   }
 

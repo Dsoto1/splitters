@@ -1319,6 +1319,15 @@ async function teamsFlow(browser) {
   await page.click('#nav-play');
   await page.click('#step-players .step-head');
   await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
+  // Bots step → your bots: a built-in set (Knights vs Space Crew: knights on the first team, the space crew on the second).
+  await page.click('#step-bots .step-head');
+  await page.click('#arcade-botset');
+  await page.waitForSelector('#bot-manager', { timeout: T(5000) });
+  await page.selectOption('#bm-from', 'p:knights_vs_space');
+  const teamCol = await page.evaluate(() => ({ rows: document.querySelectorAll('#bm-table .bm-row:not(.bm-th)').length, team: document.getElementById('bm-team-0')?.selectedOptions[0]?.textContent, team6: document.getElementById('bm-team-6')?.selectedOptions[0]?.textContent }));
+  await page.click('#bm-apply');
+  const setLine = await page.evaluate(() => document.getElementById('arcade-botset-sum')?.textContent);
+  check(teamCol.rows === 12 && !!teamCol.team && teamCol.team !== teamCol.team6 && /Knights vs Space Crew: 12 bots/.test(setLine ?? ''), `match setup's Bots step takes a built-in set, a team per bot (${JSON.stringify(teamCol)}, ${setLine})`);
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   // Every team's table fills in once the roster for all 24 has arrived.
@@ -1335,6 +1344,11 @@ async function teamsFlow(browser) {
   check(board.cols >= 3, `seven teams sit in a grid of columns (${board.cols} across)`);
   check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
   check([...board.tables].sort((a, b) => a - b).join(',') === '2,2,2,2,2,2,12', `teams are filled to 2v2v2v2v2v2v12 (${board.tables.join(',')})`);
+  const sides = await sim(page, (m) => {
+    const team = (n) => m.teams.findIndex((t) => t.id === m.combatants().find((c) => c.name === n)?.faction);
+    return { clank: team('Sir Clank'), orion: team('Capt. Orion'), look: m.combatants().find((c) => c.name === 'Sir Clank')?.look };
+  });
+  check(sides.clank === 0 && sides.orion === 1 && sides.look === 'core.knight', `the set's bots play on their teams in their looks (${JSON.stringify(sides)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await customSetupFlow(browser);
@@ -2625,6 +2639,38 @@ async function hostcontrolsFlow(browser) {
   check(six && feed.includes('Host set the match to 6 players, bot skill to hard'), `Apply adds bots live, with a feed line (${feed})`);
   const hard = await sim(page, (m) => m.combatants().filter((c) => c.bot).every((c) => c.bot.difficulty.id === 'hard'));
   check(hard, 'bot skill changes live');
+  // Bots…: the Bots window. Esc closes it (the pause menu's back); then name a bot, give it a look and a skill, Apply.
+  await page.evaluate(() => document.getElementById('hc-bots').click());
+  const opened = await page.waitForSelector('#bot-manager', { timeout: T(5000) }).then(() => true, () => false);
+  await page.keyboard.press('Escape');
+  const escClosed = await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false);
+  check(opened && escClosed, `Bots… opens the Bots window and Esc closes it (${opened}, ${escClosed})`);
+  await openPanel(page);
+  await page.evaluate(() => document.getElementById('hc-bots').click());
+  await page.waitForSelector('#bot-manager', { timeout: T(5000) });
+  // (Clicks by script: the pause menu may be hidden behind the pointer lock it never got here.)
+  await page.evaluate(() => {
+    document.getElementById('bm-add').click();
+    const name = document.getElementById('bm-name-0');
+    name.value = 'Sir Testalot';
+    name.dispatchEvent(new Event('input', { bubbles: true }));
+    document.getElementById('bm-look-0').click();
+    document.getElementById('bm-pick-core_knight').click();
+    const skill = document.getElementById('bm-skill-0');
+    skill.value = 'easy';
+    skill.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  const row = await page.evaluate(() => ({ look: document.querySelector('#bm-look-0 .bm-look-name')?.textContent, portrait: !!document.querySelector('#bm-look-0 img'), sum: document.getElementById('bm-sum').textContent }));
+  check(row.look === 'Iron Knight' && row.portrait && /1 bot/.test(row.sum), `the bot's look shows its portrait and the summary counts it (${JSON.stringify(row)})`);
+  await page.evaluate(() => document.getElementById('bm-apply').click());
+  // Swapped in a bot at a time: the knight takes a random bot's place.
+  const knight = await simWait(page, (m) => m.combatants().some((c) => c.kind === 'bot' && c.name === 'Sir Testalot' && c.look === 'core.knight' && c.bot.difficulty.id === 'easy') && m.combatants().length === 6, null, T(10000));
+  check(knight, 'Apply brings the named bot into the match with its look and its own skill, the player count kept');
+  await page.keyboard.down('Tab');
+  const listed = await page.waitForFunction(() => /Sir Testalot/.test(document.getElementById('pause-scores')?.textContent ?? '') || /Sir Testalot/.test(document.getElementById('scoreboard')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  await page.keyboard.up('Tab');
+  const sum = await page.evaluate(() => document.getElementById('hc-bots-sum')?.textContent);
+  check(listed && /1 bot \+ random/.test(sum ?? ''), `the scoreboard lists the bot, and the panel says the set (${sum})`);
   // A rule change waits for the restart (the panel says so), then Restart match plays with it.
   await page.evaluate(() => {
     document.getElementById('hc-score-plus').click();
@@ -2658,8 +2704,8 @@ async function hostcontrolsFlow(browser) {
   check(/Changing map to .*Atomic Court/i.test(toast), `the change is announced (${toast})`);
   const moved = (await simWait(page, (m) => m.map.metadata.id === 'atomic_court', null, T(60000))) && (await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(60000) }).then(() => true, () => false));
   await page.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
-  const after = { n: await sim(page, (m) => m.combatants().length), skill: await page.evaluate(() => window.__cs.host()?.skill) };
-  check(moved && after.n === 6 && after.skill === 'hard', `the match restarts on the new map with the same players and bots (${JSON.stringify(after)})`);
+  const after = { n: await sim(page, (m) => m.combatants().length), skill: await page.evaluate(() => window.__cs.host()?.skill), knight: await sim(page, (m) => m.combatants().some((c) => c.name === 'Sir Testalot' && c.look === 'core.knight')) };
+  check(moved && after.n === 6 && after.skill === 'hard' && after.knight, `the match restarts on the new map with the same players and bots, the named bot too (${JSON.stringify(after)})`);
   await page.context().close();
 
   // Host game: the host changes map; the friend comes along without a new code.

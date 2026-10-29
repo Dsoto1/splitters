@@ -213,5 +213,12 @@ export function parseBotSetPreset(json: unknown): BotSetPreset | null {
   return r.data;
 }
 
+/** A map's own bots (MapDocument.bots) as the set it plays, or null when it has none that change anything. */
+export function mapBotSet(map: { bots?: unknown }): BotSet | null {
+  if (!map.bots) return null;
+  const v = validateBotSet(map.bots)?.set ?? null;
+  return botSetInUse(v) ? v : null;
+}
+
 /** A preset as the set it plays. */
 export const presetBotSet = (p: BotSetPreset): BotSet => validateBotSet({ name: p.name, entries: p.entries, fill: p.fill })!.set;

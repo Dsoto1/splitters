@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BOT_NAME_MAX, BOT_SET_MAX, DEFAULT_RULES, botSetFromText, botSetToText, initPhysics, parseBotSetPreset, parseClientMessage, presetBotSet, validateBotSet, type BotSet, type GameMode } from '../src/index.ts';
+import { BOT_NAME_MAX, BOT_SET_MAX, DEFAULT_RULES, applyCommand, invertCommand, loadMap, mapBotSet, serializeMap, botSetFromText, botSetToText, initPhysics, parseBotSetPreset, parseClientMessage, presetBotSet, validateBotSet, type BotSet, type GameMode } from '../src/index.ts';
 import { BotFiller, HostControl, Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -197,6 +197,45 @@ describe('bot sets in a match (BotFiller)', () => {
     lead.alive = false;
     (match as unknown as { squadLeads: null }).squadLeads = null;
     expect(goal(follow)).toBeUndefined();
+  });
+
+  it("a scenario map's own bots play unless the host picks a set; a map change carries only the host's choice", () => {
+    const map = { ...yard(), bots: { name: 'Cast', fill: 'only' as const, entries: [{ name: 'Guard Gus', look: 'core.warden', skill: 'hard' as const }, { name: 'Odd', look: 'not.a.look' }] } };
+    expect(mapBotSet(map)).toEqual({ name: 'Cast', fill: 'only', entries: [{ name: 'Guard Gus', look: 'core.warden', skill: 'hard' }, { name: 'Odd' }] });
+    const match = new Match(map, DEFAULT_RULES['core.deathmatch'], 3);
+    const bots = new BotFiller(match);
+    bots.join('Host', undefined, 6);
+    const control = new HostControl(match, bots, 6);
+    expect(botsOf(match).map((b) => b.name).sort()).toEqual(['Guard Gus', 'Odd']);
+    expect(bots.hostSet).toBeNull();
+    expect(control.state()).toMatchObject({ botSet: { name: 'Cast' }, mapBots: true });
+    // The host's own set wins, and is what a map change carries.
+    control.apply({ c: 'bots', botSet: set([{ name: 'Mine' }], 'only', 'Mine') });
+    expect(bots.hostSet?.name).toBe('Mine');
+    expect(control.state().mapBots).toBeUndefined();
+    const next = new BotFiller(new Match(map, DEFAULT_RULES['core.deathmatch'], 4), bots.skill, { botSet: bots.hostSet });
+    expect(next.botSet?.name).toBe('Mine');
+    // Without a host set, the next map's own bots (none here: random).
+    const plain = new BotFiller(new Match(yard(), DEFAULT_RULES['core.deathmatch'], 4), bots.skill, { botSet: null });
+    expect(plain.botSet).toBeNull();
+  });
+
+  it("MapMaker edits a map's bots as one undoable step, and the map saves and loads with them; maps without load unchanged", () => {
+    const doc = yard();
+    const after = { name: 'Cast', fill: 'random' as const, entries: [{ name: 'Gus', look: 'core.warden', team: 1, squad: 'Red' }] };
+    const cmd = { kind: 'setMapBots' as const, before: null, after };
+    const changed = applyCommand(doc, cmd);
+    expect(changed.bots).toEqual(after);
+    expect(applyCommand(changed, invertCommand(cmd)).bots).toBeUndefined();
+    const loaded = loadMap(serializeMap(changed));
+    expect(loaded.ok && loaded.map.bots).toEqual(after);
+    const plain = loadMap(serializeMap(doc));
+    expect(plain.ok && 'bots' in plain.map).toBe(false);
+    for (const f of readdirSync(mapsDir).filter((x) => x.endsWith('.json')).slice(0, 12)) {
+      const m = loadMap(readFileSync(new URL(f, mapsDir), 'utf8'));
+      expect(m.ok, f).toBe(true);
+      if (m.ok) expect(mapBotSet(m.map), f).toBeNull();
+    }
   });
 
   it('a set survives a map change (a new BotFiller takes it)', () => {
