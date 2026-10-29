@@ -82,6 +82,7 @@ Run the checks after each merge.
   - the medkit;
   - the buggy and its wheel, to replace the jeep.
 - About 18 queued models haven't been delivered yet.
+- The owner may have added extra models to the Drive folder or meshystuff that aren't in the queue. Add any you find as new characters: name each one, give it a manifest, and add it to the intake queue. Don't ask about each one; the owner reviews them on the grip and portrait sheets. `Tribal_Warrior_Charac` counts as one of these.
 - The owner's review results are kept in the review artifact
   https://claude.ai/artifact/Cwq57yDPtBzmnrpaf7josr (its db collection
   `reviews`).
