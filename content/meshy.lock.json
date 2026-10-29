@@ -589,12 +589,11 @@
       "date": "2026-10-29",
       "src": "Meshy_AI_Dapper_Elegant_Ghoul_1029194410_texture.glb",
       "sourceTriangles": 404985,
-      "landmarks": "found",
       "file": "characters/meshy_bonesworth.glb",
-      "sha256": "a3bd8022ce436a42",
-      "triangles": 18711,
-      "lodTriangles": 5561,
-      "bytes": 1210216,
+      "sha256": "ed35f254810f6577",
+      "triangles": 18823,
+      "lodTriangles": 5602,
+      "bytes": 1214272,
       "hands": true
     },
     {
@@ -605,11 +604,10 @@
       "date": "2026-10-29",
       "src": "Meshy_AI_Dapper_Elegant_Ghoul_1029194410_texture.glb",
       "sourceTriangles": 404985,
-      "landmarks": "found",
       "file": "characters/meshy_bonesworth_fparms.glb",
-      "sha256": "0984683afc366541",
-      "triangles": 5181,
-      "bytes": 437612,
+      "sha256": "57bb66decda59fd3",
+      "triangles": 5080,
+      "bytes": 433848,
       "hands": true
     },
     {
@@ -682,12 +680,11 @@
       "date": "2026-10-29",
       "src": "Meshy_AI_zombie_1028235400_texture.glb",
       "sourceTriangles": 387048,
-      "landmarks": "found",
       "file": "characters/meshy_zombie_rotter.glb",
-      "sha256": "04bb7a06ab9749e8",
+      "sha256": "230d1cf9e0e5a053",
       "triangles": 11000,
-      "lodTriangles": 3211,
-      "bytes": 667772,
+      "lodTriangles": 3161,
+      "bytes": 666332,
       "hands": true
     },
     {
@@ -698,11 +695,10 @@
       "date": "2026-10-29",
       "src": "Meshy_AI_zombie_1028235400_texture.glb",
       "sourceTriangles": 387048,
-      "landmarks": "found",
       "file": "characters/meshy_zombie_rotter_fparms.glb",
-      "sha256": "2f0603c5e362a63f",
-      "triangles": 3435,
-      "bytes": 280912,
+      "sha256": "52784cabf69b2b2d",
+      "triangles": 3191,
+      "bytes": 274740,
       "hands": true
     },
     {
