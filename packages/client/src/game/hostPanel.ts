@@ -146,7 +146,11 @@ export class HostPanel {
       );
     }
     const rulesChanged = !!r && !!want && (Object.keys(r) as (keyof HostRulesPatch)[]).some((k) => r[k] !== want[k]);
-    const apply = el('button', { class: 'primary', id: 'hc-apply', textContent: rulesChanged && !liveChanged ? 'Apply on restart' : 'Apply', disabled: !liveChanged && !rulesChanged });
+    // What Apply does to the match, on the button: "Apply: +6 bots".
+    const total = (sizes: readonly number[], fill: number) => (s.teams ? sizes.reduce((a, b) => a + b, 0) : fill);
+    const delta = total(d.sizes, d.fill) - total(now, s.fill);
+    const what = delta > 0 ? `: +${delta} bot${delta === 1 ? '' : 's'}` : delta < 0 ? `: −${-delta} bot${delta === -1 ? '' : 's'}` : '';
+    const apply = el('button', { class: 'primary', id: 'hc-apply', textContent: rulesChanged && !liveChanged ? 'Apply on restart' : `Apply${what}`, disabled: !liveChanged && !rulesChanged });
     apply.addEventListener('click', () => {
       if (liveChanged) {
         const cmd: Extract<HostCommand, { c: 'bots' }> = { c: 'bots' };
@@ -178,9 +182,9 @@ export class HostPanel {
       actions.append(map);
     }
     const restart = el('button', { id: 'hc-restart', textContent: 'Restart match', title: pending ? 'Start over with the waiting rule changes' : 'Start the match over on this map' });
-    restart.addEventListener('click', () => this.hooks.command({ c: 'restart' }));
+    confirmTwice(restart, 'Click again to restart', () => this.hooks.command({ c: 'restart' }));
     const end = el('button', { id: 'hc-end', textContent: 'End match', title: 'End the match now and show the scoreboard' });
-    end.addEventListener('click', () => this.hooks.command({ c: 'end' }));
+    confirmTwice(end, 'Click again to end', () => this.hooks.command({ c: 'end' }));
     actions.append(restart, end);
     // People: kick (they may come back) or ban (kept out: their account when signed in, else weakly by browser).
     const people = this.people.length
@@ -210,4 +214,30 @@ export class HostPanel {
     );
     this.root.open = open;
   }
+}
+
+/**
+ * A button that undoes everyone's match (restart, end) asks for a second click: the first says so on the
+ * button for a few seconds, the second does it.
+ */
+function confirmTwice(button: HTMLButtonElement, ask: string, act: () => void): void {
+  const label = button.textContent ?? '';
+  let armed: ReturnType<typeof setTimeout> | null = null;
+  button.addEventListener('click', () => {
+    if (armed) {
+      clearTimeout(armed);
+      armed = null;
+      button.textContent = label;
+      button.classList.remove('armed');
+      act();
+      return;
+    }
+    button.textContent = ask;
+    button.classList.add('armed');
+    armed = setTimeout(() => {
+      armed = null;
+      button.textContent = label;
+      button.classList.remove('armed');
+    }, 3000);
+  });
 }

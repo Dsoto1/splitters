@@ -297,6 +297,16 @@ export class GameView {
     this.scenario = new ScenarioVisuals(this.scene);
     this.zoneVisuals = new ZoneVisuals(this.scene);
     this.characters = new CharacterLibrary(this.scene, { atlas: true });
+    // Characters are built one per 16 ms (one a frame at 60 fps, more when frames are long): the host adding
+    // a dozen bots, or a full match's first wave, built them all in one long frame, a stall on every computer.
+    const turns: (() => void)[] = [];
+    let lastTurn = performance.now();
+    this.characters.turn = () => new Promise((go) => turns.push(go));
+    this.scene.onBeforeRenderObservable.add(() => {
+      const now = performance.now();
+      for (let n = Math.max(1, Math.floor((now - lastTurn) / 16)); n > 0 && turns.length; n--) turns.shift()!();
+      lastTurn = now;
+    });
     this.creatures = new CreatureLibrary(this.scene);
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.blood = new BloodVisuals(this.scene, () => this.physics);

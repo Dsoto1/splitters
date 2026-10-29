@@ -2576,8 +2576,10 @@ async function hostcontrolsFlow(browser) {
     document.getElementById('hc-players-plus').click();
     document.getElementById('hc-players-plus').click();
     document.querySelector('#hc-skill [data-value="hard"]').click();
-    document.getElementById('hc-apply').click();
   });
+  const says = await page.evaluate(() => document.getElementById('hc-apply').textContent);
+  check(says === 'Apply: +2 bots', `Apply says what it will do (${says})`);
+  await page.evaluate(() => document.getElementById('hc-apply').click());
   const six = await simWait(page, (m) => m.combatants().length === 6, null, T(5000));
   const feed = await page.evaluate(() => document.getElementById('feed').textContent);
   check(six && feed.includes('Host set the match to 6 players, bot skill to hard'), `Apply adds bots live, with a feed line (${feed})`);
@@ -2591,10 +2593,20 @@ async function hostcontrolsFlow(browser) {
   const waiting = await page.waitForFunction(() => window.__cs.host()?.pending?.scoreLimit === 16 && document.getElementById('hc-pending'), null, { timeout: T(5000) }).then(() => true, () => false);
   const still = await sim(page, (m) => m.rules.scoreLimit);
   check(waiting && still === 15, `a score limit change waits for the restart (now ${still})`);
+  // Ending or restarting everyone's match takes a second click.
+  const once = await page.evaluate(() => {
+    const b = document.getElementById('hc-end');
+    b.click();
+    return { label: b.textContent, phase: window.__cs.phase() };
+  });
+  check(once.label === 'Click again to end' && once.phase !== 'intermission', `one click on End match only asks (${JSON.stringify(once)})`);
   await page.evaluate(() => document.getElementById('hc-end').click());
   const ended = await page.waitForFunction(() => window.__cs.phase() === 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
   check(ended, 'End match goes to the scoreboard');
-  await page.evaluate(() => document.getElementById('hc-restart').click());
+  await page.evaluate(() => {
+    document.getElementById('hc-restart').click();
+    document.getElementById('hc-restart').click();
+  });
   const restarted = await page.waitForFunction(() => window.__cs.phase() !== 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
   check(restarted, 'Restart match starts it over');
   const applied = { score: await sim(page, (m) => m.rules.scoreLimit), pending: await page.evaluate(() => window.__cs.host()?.pending) };

@@ -99,6 +99,11 @@ export class CharacterLibrary {
 
   /** Skin, hair and eyes on one shared texture (see CharacterAtlas), when the owner asks for it (the game). */
   private readonly atlas: CharacterAtlas | null;
+  /**
+   * Waits for a character's turn to be built, once its files are in (the game: one a frame). Building
+   * one takes a good part of a frame, and a dozen bots joining at once built a dozen in one frame.
+   */
+  turn: (() => Promise<void>) | null = null;
 
   constructor(
     private readonly scene: Scene,
@@ -134,6 +139,11 @@ export class CharacterLibrary {
     // A soldier NPC chosen as a player skin is drawn like that NPC (creatures go through the CreatureLibrary).
     const role = spec.armsOnly ? null : npcLookRole(spec.look);
     if (role && !NPC_ROLE_SPECS[role].creature) spec = { npc: { color: NPC_LOOK_COLORS[role] ?? '#d04a3a', scale: 1, female: role === 'sniper' } };
+    if (this.turn) {
+      // Everything in first, so the build below runs in one go on its turn.
+      await this.preload(spec);
+      await this.turn();
+    }
     const rig = await this.load('rig.glb');
     // The scene went while the files loaded (left a match, closed a preview): build nothing into it.
     if (this.scene.isDisposed) return gone();
