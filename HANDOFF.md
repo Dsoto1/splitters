@@ -124,6 +124,20 @@ flame, and the railgun's impact is at scale 0.4.
    terrain (lumpy dirt/grass in the open streets is authored paint: the owner
    can now draw sand Paths over it); nine portraits still rendered live.
 
+## Effects performance (2026-10-29)
+
+After 0.4.0 the owner felt the new effects slowing play. Measured in a 48-player
+fight (`tools/perf`-style probe; frame rates in this sandbox are SwiftShader noise,
+so measure the code's own costs): effect meshes (remote flash rigs, every hit and
+explosion's particles) were shadow casters (116 of them, a second draw each), and
+each effect's first use built its meshes and materials mid-fight (first explosion
+153 ms, first railgun hit 76 ms, first flash 43 ms here). Now effect meshes carry
+`metadata.effect` and `atmosphere.worldly` leaves them out of shadows, and the map
+load warms every flash and effect (`MuzzleFlashRig.warm`, `GodotVfx.warm`): first
+uses cost 3-5 ms. Don't use Babylon's `forceCompilation` on meshes you dispose: it
+polls every 16 ms for ever. `physicsfx`'s ragdoll check fails in this sandbox on
+unchanged code too (slow frames); CI is the judge.
+
 ## How work flows (details in CLAUDE.md)
 
 1. Work on the session branch, or in an agent worktree that you merge into it.

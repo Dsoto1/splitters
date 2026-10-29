@@ -141,6 +141,9 @@ export class Atmosphere {
     // The backdrop (sky, ground and props past the border) stays out: it's far, and there's a lot of it.
     for (let n: { name: string; parent: unknown } | null = m; n; n = n.parent as typeof n) if (n.name.startsWith('backdrop_')) return false;
     if (m.isDescendantOf(this.viewRoot)) return false;
+    // Effects (muzzle flashes, hits, explosions) glow: no shadow on them, none from them (they were most of a
+    // fight's shadow casters, a second draw each, and a flash or a puff of smoke casting a shadow looks wrong).
+    if ((m.metadata as { effect?: boolean } | null)?.effect) return false;
     const mat = m.material as { alpha?: number; disableLighting?: boolean } | null;
     if (mat?.disableLighting) return false;
     return true;

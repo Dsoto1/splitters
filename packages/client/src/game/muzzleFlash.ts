@@ -66,6 +66,10 @@ interface FlashPack {
 
 /** How much faster than the pack the flashes play. */
 const SPEED = 1.6;
+/** Marks effect meshes: the atmosphere leaves them out of shadows (atmosphere.ts `worldly`). */
+const EFFECT = { effect: true };
+/** One hidden rig per scene that builds every flash while the match loads (`MuzzleFlashRig.warm`). */
+const warmRigs = new WeakMap<Scene, MuzzleFlashRig>();
 const BASE = `${import.meta.env.BASE_URL}vfx/`;
 
 let pack: FlashPack | null = null;
@@ -355,6 +359,7 @@ export class MuzzleFlashRig {
         mat.setColor3('primary', primary);
         mat.setColor3('secondary', secondary);
         const mesh = (layer.type === 'front' ? s.front : s.blade).clone(`${this.name}_${li}_${i}`);
+        mesh.metadata = EFFECT;
         mesh.material = mat;
         mesh.parent = this.root;
         mesh.renderingGroupId = this.renderingGroupId;
@@ -373,6 +378,7 @@ export class MuzzleFlashRig {
       mat.setColor3('secondary', secondary);
       mat.setVector2('cup', new Vector2(0, 1));
       const mesh = s.glow.clone(`${this.name}_glow`);
+      mesh.metadata = EFFECT;
       mesh.material = mat;
       mesh.parent = this.root;
       mesh.renderingGroupId = this.renderingGroupId;
@@ -410,6 +416,16 @@ export class MuzzleFlashRig {
       }
     }
     return true;
+  }
+
+  /**
+   * Build these flashes once (the shared pieces, the materials) while the match loads: the first shot of each
+   * built them mid-fight. One hidden rig per scene does it.
+   */
+  static warm(scene: Scene, ids: readonly string[]): void {
+    let rig = warmRigs.get(scene);
+    if (!rig) warmRigs.set(scene, (rig = new MuzzleFlashRig(scene, 'muzzleFlashWarm')));
+    for (const id of ids) rig.build(id);
   }
 
   /** Tests and screenshots: hold every flash at this many ms after its shot (undefined: play normally). */

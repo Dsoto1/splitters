@@ -48,6 +48,8 @@ interface Track {
 }
 
 const BASE = `${import.meta.env.BASE_URL}vfx/`;
+/** Marks effect meshes: the atmosphere leaves them out of shadows (atmosphere.ts `worldly`). */
+const EFFECT = { effect: true };
 const packs = new Map<string, Promise<Pack | null>>();
 /** Fetch a pack's effects once ('hit_fx', 'explosion_fx'). */
 export function loadVfxPack(name: string): Promise<Pack | null> {
@@ -1300,6 +1302,7 @@ export class GodotVfx {
         const material = materialFor(this.scene, matSpec, fx.root, num(node.transform_align, 0) === 1 || num(node.transform_align, 0) === 3, `${pack}/${effect}/${name}`, this.materials);
         if (!material) continue;
         const mesh = this.baseMesh(`${pack}/${effect}/${name}`, meshSpec).clone(`gv_${name}_${id}`);
+        mesh.metadata = EFFECT;
         mesh.setEnabled(false);
         mesh.alwaysSelectAsActiveMesh = true;
         const subName = typeof node.sub_emitter === 'string' ? node.sub_emitter.replace(/^\.\.\//, '') : null;
@@ -1314,6 +1317,7 @@ export class GodotVfx {
         const material = materialFor(this.scene, matSpec, fx.root, false, `${pack}/${effect}/${name}`, this.materials);
         if (!material) continue;
         const mesh = this.baseMesh(`${pack}/${effect}/${name}`, meshSpec).clone(`gv_${name}_${id}`);
+        mesh.metadata = EFFECT;
         mesh.alwaysSelectAsActiveMesh = true;
         mesh.material = material;
         const prop = new Prop(mesh, name, godotMatrix(node.transform));
@@ -1402,6 +1406,18 @@ export class GodotVfx {
       }
       return alive;
     });
+  }
+
+  /**
+   * Make an effect's meshes and materials before it's first needed (played out of sight and gone at once): its
+   * first play otherwise built them mid-fight. What it made stays cached for later plays. (Not forceCompilation:
+   * it polls every 16 ms until the material is ready, for ever once its mesh is gone.)
+   */
+  warm(pack: string, effect: string): void {
+    if (!this.play(pack, effect, new Vector3(0, -10000, 0))) return;
+    const p = this.playing.pop()!;
+    for (const e of p.emitters.values()) e.dispose();
+    for (const pr of p.props) pr.mesh.dispose();
   }
 
   /** At most this many effects play at once (each is a handful of meshes and particles). */

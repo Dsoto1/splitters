@@ -380,6 +380,16 @@ export class GameView {
     // Warm the model cache so first switches and pickups don't hitch.
     for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);
     void this.models.load('projectiles/grenade.glb');
+    // And the effects: each one's meshes and shaders were made by its first shot or blast in a fight (a stall each).
+    void loadMuzzleFlashes().then(() => {
+      if (this.scene.isDisposed) return;
+      const ids = new Set(WEAPONS_BY_SLOT.map((w) => muzzleEffectFor(w)?.id).filter((id): id is string => !!id));
+      MuzzleFlashRig.warm(this.scene, [...ids]);
+    });
+    void GodotVfx.preload('hit_fx', 'explosion_fx').then(() => {
+      if (this.scene.isDisposed) return;
+      for (const [pack, effect] of [['hit_fx', 'vfx_hit_01'], ['hit_fx', 'vfx_hit_02'], ['hit_fx', 'vfx_big_impact_01'], ['explosion_fx', 'vfx_ground_explosion_01']] as const) this.vfx.warm(pack, effect);
+    });
   }
 
   /** Cliffs, city blocks, fence, forest or shore along the boundary (built with the map). */
