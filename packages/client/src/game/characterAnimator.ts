@@ -93,6 +93,10 @@ interface Arm {
   hand: TransformNode;
   /** Palm centre in the hand's local space (where a grip sits). */
   palm: Vector3;
+  /** How far the palm's centre rests from the grip's centre line (model m): half the grip and half the hand. */
+  gripOffset: number;
+  /** How far the fingers close on a grip (1: the full curl; 0: a rigid or already closed hand). */
+  curl: number;
   /** Finger chains (index, middle, ring, pinky), knuckle first, for closing the hand. */
   fingers: TransformNode[][];
   /** Knuckles used to build the hand's frame. */
@@ -173,8 +177,15 @@ export class CharacterAnimator {
       const [upper, lower, hand, knuckle, index, pinky, thumb] = ['upperarm', 'lowerarm', 'hand', 'middle_01', 'index_01', 'pinky_01', 'thumb_02'].map((n) => ch.joints.get(`${n}_${side}`));
       if (!upper || !lower || !hand || !knuckle || !index || !pinky || !thumb) return null;
       const fingers = ['index', 'middle', 'ring', 'pinky'].map((f) => [1, 2, 3].map((j) => ch.joints.get(`${f}_0${j}_${side}`)).filter((n): n is TransformNode => !!n));
-      // The palm sits a little over halfway from the wrist to the middle knuckle.
-      return { upper, lower, hand, palm: knuckle.position.scale(0.6), fingers, index, pinky, knuckle, thumb };
+      // A hand measured at import (Meshy characters): its own palm centre, and its thickness sets how far
+      // that centre rests from the grip, so a big hand wraps the grip instead of sinking into it.
+      const measured = ch.hands[side];
+      if (measured) {
+        const gripOffset = Math.max(MIN_GRIP_OFFSET, GRIP_RADIUS_MEASURED + (measured.thickness - REF_HAND_THICKNESS) / 2);
+        return { upper, lower, hand, palm: new Vector3(...measured.palm), gripOffset, curl: measured.curl, fingers, index, pinky, knuckle, thumb };
+      }
+      // The rig's own hands: the palm sits a little over halfway from the wrist to the middle knuckle.
+      return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, fingers, index, pinky, knuckle, thumb };
     };
     const [r, l] = [arm('r'), arm('l')];
     this.arms = r && l ? { r, l } : null;
@@ -752,10 +763,19 @@ const refreshArm = (arm: Arm) => {
 
 /** Half the thickness of a gun's grip (m): the palm rests this far from the grip's centre line, so closed fingers wrap round it. */
 const GRIP_RADIUS = 0.034;
+/**
+ * The same for a measured palm (its centre is the middle of the hand's thickness, about 1.2 cm nearer
+ * the palm side than the rig's palm point): the offset that puts the rig's own mannequin hand where
+ * GRIP_RADIUS does, for a hand REF_HAND_THICKNESS thick (the mannequin's, measured the same way).
+ */
+const GRIP_RADIUS_MEASURED = 0.022;
+const REF_HAND_THICKNESS = 0.026;
+/** A thin hand's palm still rests this far out (m), so the grip never ends up behind it. */
+const MIN_GRIP_OFFSET = 0.012;
 
 /** Where to put a palm so the grip point sits inside the closed hand rather than in the palm itself. */
 function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number): Vector3 {
-  return gripPoint.subtract(palmSideWorld(arm).scale(GRIP_RADIUS * scale));
+  return gripPoint.subtract(palmSideWorld(arm).scale(arm.gripOffset * scale));
 }
 
 /** Unit vector out of the palm (the side the fingers close toward), in world space. */
@@ -822,6 +842,8 @@ function solveArm(space: SkeletonSpace, arm: Arm, palmTarget: Vector3, pole: Vec
 
 /** Curl the fingers toward the palm (the side the thumb is on), as if round a grip. */
 function closeHand(space: SkeletonSpace, arm: Arm, weight: number): void {
+  // A measured hand closes as far as it was found able to (not at all if it is rigid or already a fist).
+  weight *= arm.curl;
   if (weight <= 0) return;
   const wrist = space.pos(arm.hand);
   const forward = space.pos(arm.knuckle).subtract(wrist).normalize();

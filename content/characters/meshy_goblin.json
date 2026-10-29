@@ -20,10 +20,7 @@
     "roughness": 0.75
   },
   "firstPerson": {
-    "arms": "peasant_arms_m",
-    "skin": "#4f9a2f",
-    "cloth": "#8a8574",
-    "trim": "#4a3a2a"
+    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

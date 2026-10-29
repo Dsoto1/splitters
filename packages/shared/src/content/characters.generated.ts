@@ -4,20 +4,20 @@ import type { CharacterLook } from './looks.ts';
 
 /** Whole-body characters (Meshy models rigged onto the game rig by tools/content/prepare-meshy-characters.mjs), in roster order. */
 export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
-  { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#34373c', cloth: '#5a5e65', trim: '#3a3d42' } },
-  { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_f', skin: '#e4e4df', cloth: '#e9e9e4', trim: '#e9e9e4' } },
-  { id: 'core.dapper', name: 'The Dapper', body: 'male', head: '', parts: ['meshy_dapper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#d9ad8a', cloth: '#1c1d22', trim: '#26272c' } },
-  { id: 'core.goblin', name: 'Goblin', body: 'male', head: '', parts: ['meshy_goblin'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#4f9a2f', cloth: '#8a8574', trim: '#4a3a2a' } },
-  { id: 'core.otter', name: 'Wealthy Otter', body: 'male', head: '', parts: ['meshy_otter'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#3e3d3f', cloth: '#3e3d3f', trim: '#2a7a7a' } },
-  { id: 'core.boglurker', name: 'Boglurker', body: 'male', head: '', parts: ['meshy_toad'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#6a8a35', cloth: '#7c8446', trim: '#5a4632' } },
-  { id: 'core.warlord', name: 'Salamander Warlord', body: 'male', head: '', parts: ['meshy_salamander'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#c8c0ae', cloth: '#4f5c5a', trim: '#7a5a3a' } },
-  { id: 'core.hyena', name: 'Hyena Warrior', body: 'male', head: '', parts: ['meshy_hyena'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#8a6a48', cloth: '#7a3328', trim: '#2e2e30' } },
-  { id: 'core.elder', name: 'Elder Tomo', body: 'male', head: '', parts: ['meshy_elder'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#c99a76', cloth: '#5f5a4c', trim: '#3b3731' } },
-  { id: 'core.visitor', name: 'The Visitor', body: 'male', head: '', parts: ['meshy_alien'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_m', skin: '#b4b6a0', cloth: '#b4b6a0', trim: '#94967f' } },
-  { id: 'core.biscuit', name: 'Biscuit', body: 'male', head: '', parts: ['meshy_cat'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'peasant_arms_m', skin: '#cfcfca', cloth: '#7c7c7a', trim: '#4e4e4c' } },
-  { id: 'core.ember', name: 'Flt. Lt. Ember', body: 'male', head: '', parts: ['meshy_pilot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#2f3136', cloth: '#a8582a', trim: '#2f3136' } },
-  { id: 'core.barnacle', name: 'Cap\'n Barnacle', body: 'male', head: '', parts: ['meshy_pirate'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#9a6a48', cloth: '#7aa688', trim: '#5a3a22' } },
-  { id: 'core.bogdan', name: 'Big Bogdan', body: 'male', head: '', parts: ['meshy_titan'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'peasant_arms_m', skin: '#c48a62', cloth: '#c48a62', trim: '#a06c4c' } },
+  { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_knight_fparms' } },
+  { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_nova_fparms' } },
+  { id: 'core.dapper', name: 'The Dapper', body: 'male', head: '', parts: ['meshy_dapper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_dapper_fparms' } },
+  { id: 'core.goblin', name: 'Goblin', body: 'male', head: '', parts: ['meshy_goblin'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_goblin_fparms' } },
+  { id: 'core.otter', name: 'Wealthy Otter', body: 'male', head: '', parts: ['meshy_otter'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_otter_fparms' } },
+  { id: 'core.boglurker', name: 'Boglurker', body: 'male', head: '', parts: ['meshy_toad'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_toad_fparms' } },
+  { id: 'core.warlord', name: 'Salamander Warlord', body: 'male', head: '', parts: ['meshy_salamander'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_salamander_fparms' } },
+  { id: 'core.hyena', name: 'Hyena Warrior', body: 'male', head: '', parts: ['meshy_hyena'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hyena_fparms' } },
+  { id: 'core.elder', name: 'Elder Tomo', body: 'male', head: '', parts: ['meshy_elder'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_elder_fparms' } },
+  { id: 'core.visitor', name: 'The Visitor', body: 'male', head: '', parts: ['meshy_alien'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_alien_fparms' } },
+  { id: 'core.biscuit', name: 'Biscuit', body: 'male', head: '', parts: ['meshy_cat'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_cat_fparms' } },
+  { id: 'core.ember', name: 'Flt. Lt. Ember', body: 'male', head: '', parts: ['meshy_pilot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_pilot_fparms' } },
+  { id: 'core.barnacle', name: 'Cap\'n Barnacle', body: 'male', head: '', parts: ['meshy_pirate'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_pirate_fparms' } },
+  { id: 'core.bogdan', name: 'Big Bogdan', body: 'male', head: '', parts: ['meshy_titan'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_titan_fparms' } },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */

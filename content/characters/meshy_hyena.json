@@ -20,10 +20,7 @@
     "roughness": 0.6
   },
   "firstPerson": {
-    "arms": "ranger_arms_m",
-    "skin": "#8a6a48",
-    "cloth": "#7a3328",
-    "trim": "#2e2e30"
+    "arms": "own"
   },
   "fixes": {
     "triangles": 10000,

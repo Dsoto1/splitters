@@ -38,13 +38,13 @@ export interface CharacterLook {
   gear?: string[];
   /**
    * A whole-body character (one model with its own textures, `parts[0]`; see
-   * tools/content/prepare-meshy-characters.mjs): no separate head, hair, gear or
-   * dyes, and not a Designer base. In first person it wears the universal arms
-   * (`arms`, a base-body arms part on the shared rig, so every gun's grip fits)
-   * dyed to match: `cloth`/`trim` for the sleeves and `skin` for the hands
-   * (bare skin, or a glove colour).
+   * tools/content/prepare-meshy-characters.mjs and content/characters): no
+   * separate head, hair, gear or dyes, and not a Designer base. In first person
+   * it wears `arms`: its own forearms and hands (`<part>_fparms`, cut from the
+   * same model), or a universal base-body arms part on the shared rig dyed to
+   * match (`cloth`/`trim` for the sleeves, `skin` for the hands).
    */
-  whole?: { arms: string; skin: string; cloth: string; trim: string };
+  whole?: { arms: string; skin?: string; cloth?: string; trim?: string };
 }
 
 /** Where a piece of gear goes; one per slot. */

@@ -24,10 +24,7 @@
     "roughness": 0.6
   },
   "firstPerson": {
-    "arms": "peasant_arms_f",
-    "skin": "#e4e4df",
-    "cloth": "#e9e9e4",
-    "trim": "#e9e9e4"
+    "arms": "own"
   },
   "fixes": {}
 }
