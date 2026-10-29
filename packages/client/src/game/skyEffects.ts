@@ -1,4 +1,5 @@
 import type { Scene } from '@babylonjs/core/scene';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Camera } from '@babylonjs/core/Cameras/camera';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import type { Observer } from '@babylonjs/core/Misc/observable';
@@ -56,6 +57,9 @@ const SUNNY = new Set(['clear', 'cloudy', 'sunrise', 'sunset', 'dusk', 'misty', 
  * Ground mist (a map's backdrop `mist`: height fog on high graphics, thicker distance fog on medium) and light
  * shafts from the sun through gaps and foliage (high graphics, sunny skies).
  */
+/** Things at least this big (bounding radius, m) block the sun's shafts. */
+const OCCLUDER_RADIUS = 2;
+
 export class SkyEffects {
   private fog: PostProcess | null = null;
   private depth: DepthRenderer | null = null;
@@ -145,9 +149,26 @@ export class SkyEffects {
     rays.decay = 0.965;
     rays.weight = 0.5;
     rays.density = 0.9;
+    // The shafts come through gaps in big things (buildings, terrain, trees): only those block the light.
+    // Drawing every mesh into the light's pass as well was a second draw for each, hundreds a frame in a
+    // fight; people, props and effects barely dent a shaft.
+    let refresh = 0;
+    const occluders = () => {
+      const list: AbstractMesh[] = [disc];
+      for (const m of this.scene.meshes) {
+        if (m === disc || !m.isEnabled() || m.renderingGroupId !== 0 || (m.metadata as { effect?: boolean } | null)?.effect) continue;
+        if (m.getBoundingInfo().boundingSphere.radiusWorld >= OCCLUDER_RADIUS) list.push(m);
+      }
+      rays.includedMeshes = list;
+    };
     // The disc rides with the camera, far out along the way to the sun.
     this.observer = this.scene.onBeforeRenderObservable.add(() => {
       disc.position.copyFrom(this.camera.globalPosition).subtractInPlace(sun.direction.normalizeToNew().scale(900));
+      // The level is built over the first frames and doors and destructibles change it: look again now and then.
+      if (--refresh <= 0) {
+        refresh = 120;
+        occluders();
+      }
     });
     this.rays = rays;
   }
