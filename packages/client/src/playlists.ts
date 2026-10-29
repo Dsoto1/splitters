@@ -1,4 +1,4 @@
-import { isRetiredMap, parsePlaylist, parseRotationPreset, type Playlist, type RotationPreset } from '@tiletrigger/shared';
+import { isRetiredMap, parseBotSetPreset, parsePlaylist, parseRotationPreset, type BotSetPreset, type Playlist, type RotationPreset } from '@tiletrigger/shared';
 
 /** Our suite's map IDs (file names in maps/, less retired ones): the only maps a chain may go on to or the game browser lists. */
 const SUITE = new Set(
@@ -17,6 +17,12 @@ export const PLAYLISTS: readonly Playlist[] = Object.values(import.meta.glob<unk
 export const ROTATION_PRESETS: readonly RotationPreset[] = Object.values(import.meta.glob<unknown>('../../../maps/rotations/*.json', { eager: true, import: 'default' }))
   .map((json) => parseRotationPreset(json, SUITE))
   .filter((p): p is RotationPreset => p !== null)
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+/** The built-in bot sets (maps/botsets/), offered in the Bots window. */
+export const BOT_SET_PRESETS: readonly BotSetPreset[] = Object.values(import.meta.glob<unknown>('../../../maps/botsets/*.json', { eager: true, import: 'default' }))
+  .map((json) => parseBotSetPreset(json))
+  .filter((p): p is BotSetPreset => p !== null)
   .sort((a, b) => a.name.localeCompare(b.name));
 
 /** Whether `id` names a map of our suite. */

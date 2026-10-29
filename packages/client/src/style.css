@@ -890,3 +890,51 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .hp-error { color: #ff8a7a; }
 .hp-people .hc-row, .hc-person { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
 .hp-people .hc-row span, .hc-person span { flex: 1; }
+
+/* The Bots window (frontend/botManager.ts): the host's own bots, from match setup and the pause menu. */
+.bot-manager { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(4, 7, 14, 0.62); }
+.bot-manager .bm-panel { position: relative; display: flex; flex-direction: column; gap: 10px; width: min(1000px, 100%); max-height: 100%; padding: 14px 16px; background: rgba(8, 12, 22, 0.97); border-color: rgba(0, 209, 255, 0.4); border-radius: 6px; }
+.bot-manager .bm-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bot-manager .bm-head h3 { margin: 0 6px 0 0; font: italic 700 24px var(--font-display); text-transform: uppercase; }
+.bot-manager #bm-setname { flex: 1 1 180px; min-width: 0; font: 600 15px var(--font-display); }
+.bot-manager #bm-from { flex: 0 1 220px; min-width: 0; }
+.bot-manager button { padding: 6px 11px; }
+.bot-manager button.link { background: none; border: 0; padding: 4px 6px; color: var(--muted); text-decoration: underline; text-transform: none; letter-spacing: 0; font: 500 13px var(--font-body); }
+.bot-manager button.link:hover { color: var(--text); }
+.bot-manager .bm-note { margin: -4px 0 0; color: var(--muted); font: 500 13px var(--font-body); }
+.bot-manager .bm-table { flex: 1 1 auto; min-height: 120px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 3px; background: rgba(5, 9, 18, 0.55); }
+.bot-manager .bm-row { display: grid; grid-template-columns: 26px 150px minmax(110px, 1fr) 92px 96px 110px 128px; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+.bot-manager .bm-row.teams { grid-template-columns: 26px 150px minmax(110px, 1fr) 92px 96px 112px 110px 128px; }
+.bot-manager .bm-row:focus-within { background: rgba(0, 209, 255, 0.06); }
+.bot-manager .bm-th { position: sticky; top: 0; z-index: 1; padding-top: 6px; padding-bottom: 6px; background: var(--surface-1); color: var(--muted); font: 700 11px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; }
+.bot-manager .bm-num { color: var(--muted); font: 700 13px var(--font-display); text-align: right; }
+.bot-manager .bm-row input, .bot-manager .bm-row select { width: 100%; min-width: 0; padding: 5px 7px; font-size: 14px; }
+.bot-manager .bm-look { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 2px 8px 2px 2px; text-transform: none; letter-spacing: 0; font: 500 13px var(--font-body); text-align: left; background: var(--surface-1); }
+.bot-manager .bm-look-name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.bot-manager .bm-face { flex: none; width: 34px; height: 34px; border-radius: 3px; object-fit: cover; background: linear-gradient(160deg, var(--surface-3), var(--surface-1)); }
+.bot-manager .bm-face-none { display: inline-flex; align-items: center; justify-content: center; color: var(--muted); font: 700 13px var(--font-display); }
+.bot-manager .bm-acts { display: flex; gap: 3px; }
+.bot-manager .bm-act { width: 30px; padding: 4px 0; font-size: 14px; }
+.bot-manager .bm-empty { margin: 0; padding: 18px; color: var(--muted); text-align: center; }
+.bot-manager .bm-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bot-manager .bm-gap { flex: 1; }
+.bot-manager .bm-fill .tab { font-size: 12px; }
+.bot-manager .bm-status { margin: 0; min-height: 1em; color: var(--muted); font: 500 13px var(--font-body); }
+.bot-manager .bm-foot { display: flex; align-items: center; gap: 10px; padding-top: 8px; border-top: 1px solid var(--line); }
+.bot-manager .bm-sum { flex: 1; min-width: 0; font: 600 14px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bot-manager .bm-pick-wrap { position: absolute; left: 16px; right: 16px; z-index: 2; display: flex; flex-direction: column; gap: 6px; max-height: 330px; padding: 10px; background: var(--slate); border: 1px solid rgba(0, 209, 255, 0.5); border-radius: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6); }
+.bot-manager .bm-pick-head { display: flex; align-items: baseline; gap: 10px; }
+.bot-manager .bm-pick-head small { color: var(--muted); }
+.bot-manager .bm-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; overflow-y: auto; overscroll-behavior: contain; }
+.bot-manager .bm-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px; text-transform: none; letter-spacing: 0; font: 500 11px var(--font-body); background: var(--surface-1); }
+.bot-manager .bm-tile .bm-face { width: 60px; height: 60px; }
+.bot-manager .bm-tile.on { border-color: var(--cyan); background: rgba(0, 209, 255, 0.14); }
+.bot-manager .bm-tile-name { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+@media (max-width: 760px) {
+  .bot-manager .bm-row, .bot-manager .bm-row.teams { grid-template-columns: 22px 44px minmax(0, 1fr) 80px 92px; }
+  .bot-manager .bm-th, .bot-manager .bm-row > select[data-col='style'], .bot-manager .bm-row > select[data-col='team'], .bot-manager .bm-row > .bm-squad { display: none; }
+  .bot-manager .bm-look-name { display: none; }
+}
+/* The match setup's and the pause menu's line about the bot set. */
+.bot-set-line { display: flex; align-items: center; gap: 8px; }
+.bot-set-line .bot-set-sum { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font: 500 14px var(--font-body); }

@@ -1,7 +1,9 @@
 import {
   CHARACTER_PROFILES,
   CORE_LOOKS,
+  botSetLabel,
   type BotProfile,
+  type BotSet,
   NPC_LOOKS,
   NPC_ROLE_SPECS,
   npcLookRole,
@@ -64,7 +66,8 @@ import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STY
 import type { PortraitRenderer } from './portraits.ts';
 import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
-import { PLAYLISTS } from '../playlists.ts';
+import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
+import { botManager } from './botManager.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
 
 /** The "Inspired by …" line for a homage map (nothing for our own designs). */
@@ -190,10 +193,11 @@ export interface FrontEndHooks {
   openEditor(): void;
   openDesigner(look: string): void;
   /** `host`: open a join code for friends as soon as the match starts. */
-  playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill'], host?: boolean): void;
+  /** `botSet`: the host's own bots (Bots step → Edit bots…). */
+  playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill'], host?: boolean, botSet?: BotSet | null): void;
   playOnline(server: string, name: string): void;
   /** Play a scenario chain (maps/playlists): its maps in order, each once the one before is won. */
-  playPlaylist(id: string, botFill: number, skill: ArcadeSetup['skill']): void;
+  playPlaylist(id: string, botFill: number, skill: ArcadeSetup['skill'], botSet?: BotSet | null): void;
   /** Join a friend's hosted game by its code. */
   joinCode(code: string, name: string): void;
 }
@@ -951,7 +955,7 @@ export class FrontEnd {
     const assignLabel = { balanced: 'Balanced', random: 'Random team', fixed: 'Fixed team' }[s.assign ?? 'balanced'];
     const playersSummary = team ? `${sizes.join('v')} · ${assignLabel}` : coop ? `You + ${s.bots} squadmate${s.bots === 1 ? '' : 's'}` : `You + ${s.bots} bot${s.bots === 1 ? '' : 's'}`;
     const skillLabel = { easy: 'Easy', normal: 'Normal', hard: 'Hard' }[s.skill] ?? s.skill;
-    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}`;
+    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}${s.botSet ? ` · ${s.botSet.name} (${s.botSet.entries.length})` : ''}`;
     const modeSet = modeRows.length ? [fold('setup-mode', `${MODE_LABEL[s.mode]} settings`, 'mode settings', ...modeRows)] : [];
     const body = el(
       'div',
@@ -966,6 +970,7 @@ export class FrontEnd {
         { next: 'Done' },
         settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill')),
         ...bots.map(rowOf),
+        this.botSetRow(map, sizes, players),
         ...perTeam,
       ),
       stepEl('rules', 4, 'Advanced rules', [changed.length ? `${changed.length} changed` : 'Standard'], { next: 'Done' }, ...modeSet, rulesFold, fold('setup-arsenal', 'Weapons, pickups & vehicles', count(arsenal), ...arsenal.map(rowOf)), ...perf),
@@ -981,6 +986,30 @@ export class FrontEnd {
     if (playlist) host.title = 'Playlists are played offline; pick "Just this map" to host.';
     host.addEventListener('click', () => this.start(true));
     panel.replaceChildren(head, body, el('div', { class: 'setup-foot' }, ...(changed.length ? [el('div', { class: 'rule-chips' }, ...changed.map((x) => el('span', { textContent: x.value })))] : []), el('div', { class: 'go-row' }, host, start)));
+  }
+
+  /** The Bots step's line about your own bots (a bot set), and Edit bots… (the Bots window). */
+  private botSetRow(map: MapDocument, sizes: readonly number[], players: number): HTMLElement {
+    const s = this.setup;
+    const edit = el('button', { type: 'button', id: 'arcade-botset', textContent: s.botSet ? 'Edit bots…' : 'Name your bots…', title: 'Your own bots: names, looks, skill, style, team and squad' });
+    edit.addEventListener('click', () => {
+      if (document.getElementById('bot-manager')) return;
+      const sides = sizes.length ? mapTeams(map, sizes.length) : [];
+      const win = botManager({
+        set: s.botSet ?? null,
+        teams: sides.map((t, i) => ({ name: s.teamNames?.[i] || t.name, color: s.teamColors?.[i] || t.color })),
+        presets: BOT_SET_PRESETS,
+        applyLabel: 'Use these bots',
+        note: `Bots join in this order${sizes.length ? ', each on its team (Auto: wherever needed)' : ''}. ${players} players in all, you included.`,
+        players: Math.max(0, players - 1),
+        onApply: (set) => this.change((x) => (set ? (x.botSet = set) : delete x.botSet)),
+        onClose: () => (document.getElementById('arcade-botset') as HTMLElement | null)?.focus(),
+      });
+      this.root.append(win);
+    });
+    const clear = el('button', { type: 'button', class: 'link', id: 'arcade-botset-clear', textContent: 'Random', title: 'Back to random bots', hidden: !s.botSet });
+    clear.addEventListener('click', () => this.change((x) => delete x.botSet));
+    return settingRow('Your bots', 'Name your bots and pick their looks, skill, style, team and squad (bots in a squad stick together). Built-in sets too: Knights vs Space Crew, Zombie horde, Classic mix.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'arcade-botset-sum', textContent: botSetLabel(s.botSet) }), clear, edit));
   }
 
   /**
@@ -1074,9 +1103,9 @@ export class FrontEnd {
     this.saveSetup();
     const { rules, fill } = rulesFromSetup(this.setup, m.map);
     // A co-op playlist starts on its own first map; the chain carries on from there.
-    if (this.setup.mode === 'core.coop' && this.setup.playlist && PLAYLISTS.some((p) => p.id === this.setup.playlist)) return this.hooks.playPlaylist(this.setup.playlist, fill, this.setup.skill);
+    if (this.setup.mode === 'core.coop' && this.setup.playlist && PLAYLISTS.some((p) => p.id === this.setup.playlist)) return this.hooks.playPlaylist(this.setup.playlist, fill, this.setup.skill, this.setup.botSet ?? null);
     // Team modes: bots fill every team to its size and you take a place on one; otherwise the bot filler counts you too.
-    this.hooks.playLocal(m.map, rules, fill, this.setup.skill, host);
+    this.hooks.playLocal(m.map, rules, fill, this.setup.skill, host, this.setup.botSet ?? null);
   }
   // ---------------------------------------------------------------- host: change map mid-match
 

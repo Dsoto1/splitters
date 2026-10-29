@@ -3,6 +3,7 @@ import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts
 import { MAX_TEAMS, mapTeams } from './npc.ts';
 import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
 import { IMPROMPTU_MIN_PLAYERS } from './spawns.ts';
+import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
 
 /**
  * Match setup (Play → match setup, saved setups): everything the player
@@ -58,6 +59,8 @@ export interface MatchSetup {
   raceLaps?: number;
   raceVehicle?: 'kart' | 'speeder' | 'buggy';
   raceCombat?: boolean;
+  /** The host's own bots (Bots step → Edit bots…; sim/botSet.ts). Absent: random bots. */
+  botSet?: BotSet;
 }
 
 export type TeamAssign = 'balanced' | 'random' | 'fixed';
@@ -293,5 +296,10 @@ export function normalizeSetup(raw: unknown, modes?: readonly GameMode[]): Match
   for (const k of ['teamNames', 'teamColors'] as const) if (out[k] !== undefined && !Array.isArray(out[k])) delete out[k];
   if (out.assign !== undefined && out.assign !== 'random' && out.assign !== 'fixed' && out.assign !== 'balanced') delete out.assign;
   if (out.playerTeam !== undefined) out.playerTeam = Math.round(num(out.playerTeam, 0, MAX_TEAMS - 1, 0));
+  if (o.botSet !== undefined) {
+    const v = validateBotSet(o.botSet)?.set;
+    if (v && botSetInUse(v)) out.botSet = v;
+    else delete out.botSet;
+  }
   return out;
 }

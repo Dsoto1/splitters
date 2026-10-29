@@ -16,6 +16,7 @@ import {
   sanitizeName,
   weaponCode,
   type BotDifficulty,
+  type BotSet,
   type CarryOver,
   type GameEvent,
   type GameMode,
@@ -41,6 +42,8 @@ export interface LocalMatchOptions {
   /** Total players to fill with Player Bots. */
   botFill: number;
   difficulty: BotDifficulty['id'];
+  /** The host's own bots (Play → Match setup → Bots, or the pause menu's Bots…), kept across map changes by the page. */
+  botSet?: BotSet | null;
   rules?: MatchRules;
   /** Scenario chains: the score and weapons the local player brings from the previous map. */
   carry?: CarryOver;
@@ -183,7 +186,7 @@ export class MatchHost {
     me.account = !!this.opts.verified;
     if (test?.god) me.invulnerable = true;
     if (this.opts.carry) match.applyCarry(me, this.opts.carry);
-    const bots = new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty]);
+    const bots = new BotFiller(match, BOT_DIFFICULTIES[this.opts.difficulty], { botSet: this.opts.botSet ?? null });
     const fill = Math.min(this.opts.botFill, MAX_PLAYER_SLOTS);
     // Load tests (?bots=96) start past the browser's cap; the host can't raise it further.
     const control = new HostControl(match, bots, fill, 'Host', Math.max(BROWSER_MAX_PLAYERS, fill));
@@ -249,6 +252,12 @@ export class MatchHost {
         ticks++;
         next += tickMs;
         if (match.tick % 30 === 0) this.sendFacts();
+        // A new bot set swaps in a bot every quarter second (every screen builds the new characters in turn).
+        const bots = this.bots;
+        if (bots?.settling && match.tick % Math.round(TICK_RATE / 4) === 0 && this.control && bots.stage(this.control.fill)) {
+          this.rosterToAll();
+          if (!bots.settling) this.announce({ t: 'host', state: this.control.state() });
+        }
       }
       if (n) {
         const ms = performance.now() - w0;

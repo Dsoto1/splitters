@@ -1,5 +1,7 @@
-import { DEFAULT_TEAMS, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, TICK_RATE, isTeamMode, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
+import { DEFAULT_TEAMS, botSetLabel, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, TICK_RATE, isTeamMode, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
 import { choice, el, settingRow, stepper, teamEditor } from '../frontend/setupControls.ts';
+import { botManager } from '../frontend/botManager.ts';
+import { BOT_SET_PRESETS } from '../playlists.ts';
 
 /** Team sizes a host can jump to in one click (every team the same size). */
 const TEAM_PRESETS = [1, 2, 4, 5, 8, 12, 16, 24, 48];
@@ -156,6 +158,25 @@ export class HostPanel {
     ];
   }
 
+  /** The Bots window over the pause menu: Apply sends the whole set (the match swaps bots in one at a time). */
+  private openBots(s: HostState): void {
+    if (document.getElementById('bot-manager')) return;
+    const teams = s.teams ? Array.from({ length: s.teams }, (_, i) => ({ name: s.teamNames?.[i] ?? DEFAULT_TEAMS[i]?.name ?? `Team ${i + 1}`, color: s.teamColors?.[i] ?? DEFAULT_TEAMS[i]?.color ?? '#00d1ff' })) : [];
+    const players = s.teams ? this.sizesOf(s).reduce((a, b) => a + b, 0) : s.fill;
+    const opener = document.getElementById('hc-bots');
+    const win = botManager({
+      set: s.botSet ?? null,
+      teams,
+      presets: BOT_SET_PRESETS,
+      applyLabel: 'Apply',
+      note: `Applies to this match now: bots swap in one at a time. ${players} players in all, you included.`,
+      players: Math.max(0, players - 1),
+      onApply: (set) => this.hooks.command({ c: 'bots', botSet: set }),
+      onClose: () => (document.getElementById('hc-bots') ?? opener)?.focus(),
+    });
+    (document.getElementById('pause') ?? document.body).append(win);
+  }
+
   /** Every team's size (an older server only says the largest). */
   private sizesOf(s: HostState): number[] {
     if (!s.teams) return [];
@@ -208,6 +229,12 @@ export class HostPanel {
     }
     rows.push(settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice(HOST_BOT_SKILLS.map((v) => [v, SKILL_LABELS[v]] as const), d.skill, (v) => ((d.skill = v), redraw()), 'hc-skill'), { live: true }));
     rows.push(settingRow('Bot style', 'Mixed: every character plays its own way. Arena: always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', choice(HOST_BOT_STYLES.map((v) => [v, STYLE_LABELS[v]] as const), d.style, (v) => ((d.style = v), redraw()), 'hc-style'), { live: true }));
+    // The host's own bots (names, looks, skills, teams, squads): hosts that know bot sets say so (HostState.botSet).
+    if (s.botSet !== undefined) {
+      const open = el('button', { id: 'hc-bots', textContent: 'Bots…', title: 'Your own bots: names, looks, skill, style, team and squad (applies live: bots swap in one at a time)' });
+      open.addEventListener('click', () => this.openBots(s));
+      rows.push(settingRow('Bot set', 'Your own bots by name, look, skill, style, team and squad; random bots fill the rest unless the set says only these.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'hc-bots-sum', textContent: botSetLabel(s.botSet) }), open), { live: true }));
+    }
     const liveChanged = d.fill !== s.fill || d.sizes.join() !== now.join() || d.skill !== s.skill || d.style !== s.style;
 
     // Rules that need the match to start over.
