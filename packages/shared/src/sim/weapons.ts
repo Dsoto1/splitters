@@ -116,8 +116,9 @@ export interface ProjectileSpec {
   cover?: { half: [number, number, number]; health: number };
   /**
    * Arena discs (Disc Arena): no damage. A hit shoves the player `push` m/s
-   * away (and `lift` m/s up) and the disc goes back to its thrower, as it does
-   * when its fuse runs out or it has bounced `maxBounces` times. `split`: the
+   * away (and `lift` m/s up). Then, or when its fuse runs out or it has bounced
+   * `maxBounces` times, it drops to the ground for anyone to pick up (back to
+   * its thrower over the void, or left lying 15 s). `split`: the
    * first bounce splits it in three.
    */
   disc?: { push: number; lift: number; split?: boolean };
@@ -622,7 +623,7 @@ function gunplayWeapons(): Record<string, WeaponDefinition> {
 /**
  * Variants of existing weapons for Disc Arena and Classes (added last so
  * every older weapon keeps its code): the arena disc (a Disc Launcher that
- * shoves instead of hurting, three discs that come back), blast rockets (a
+ * shoves instead of hurting, three discs you pick up again), blast rockets (a
  * Rocket Launcher with a four-rocket drum and the knockback to rocket-jump)
  * and the medi-beam (a Medkit that heals a little, often, from further away).
  */

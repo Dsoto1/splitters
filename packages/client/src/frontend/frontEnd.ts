@@ -237,7 +237,7 @@ const MODE_TIPS: Partial<Record<GameMode, string>> = {
   'core.hostage': 'Rescuers lead hostages (E beside one) to the exit zone; guards hold them. No respawns in a round.',
   'core.coop': 'Work through the mission with bot squadmates against the map\'s enemies.',
   'core.zombies': 'Hold out with your bot squad against endless waves of zombies. Each wave is bigger; the fallen come back when it is beaten.',
-  'core.discs': 'Ricochet-style: everyone throws three bouncing discs that come back. A hit knocks you about without hurting; knock someone into the void to score. Power discs (fast, triple, splitting, freeze) lie about the arena.',
+  'core.discs': 'Ricochet-style: everyone starts with three bouncing discs and picks them up again where they land, like ammo (any disc will do). A hit knocks you about without hurting; knock someone into the void to score. Power discs (fast, triple, splitting, freeze) lie about the arena.',
   'core.race': 'Everyone starts on the grid in a vehicle: drive the checkpoints in order, lap after lap. First over the line wins. Combat races turn the guns and sideline sentries on.',
 };
 

@@ -229,16 +229,18 @@ weapons, health and speed. Classes replace character sizes' health and speed
 ## Disc Arena
 
 Ricochet-style free-for-all (`core.discs`, `sim/discs.ts`) on maps that list
-it. Everyone holds the **Arena Disc**: three discs that fly straight, bounce
-off walls (up to six times) and come back to you after 2.4 s or when they hit
-someone. Discs do **no damage**: a hit shoves the player away (and a little
+it. Everyone holds the **Arena Disc** and starts with three discs that fly
+straight and bounce off walls (up to six times). After 2.4 s, or when it hits
+someone, a disc **drops where it is**, and anyone short of three picks it up by
+walking over it, like ammo (not the player it just hit, for 0.4 s). One that
+falls into the void goes back to its thrower, and so does one left lying 15 s. Discs do **no damage**: a hit shoves the player away (and a little
 up). Fall into the void within 6 s of an enemy's hit and it's **their point**;
 fall on your own and you lose one. Your own discs never hit you, and discs
 glance off anyone who spawned (or started the round) in the last 2 s.
 
 - **Power discs** (pickups, `core.disc_fast`/`triple`/`split`/`freeze`) are
   good for your next three throws: fast (1.7× speed, a harder shove), triple
-  (three discs in a fan; only the middle one comes back), splitting (it
+  (three discs in a fan; only the middle one drops to be picked up), splitting (it
   becomes three at its first bounce) and freeze (freezes whoever it hits
   for a moment, with only a nudge). The HUD shows the power and throws left.
 - No weapon, ammo or grenade pickups, no kill streaks. **Weapons: Discs

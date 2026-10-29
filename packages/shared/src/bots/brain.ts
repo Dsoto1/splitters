@@ -2222,6 +2222,8 @@ export function pickupNeed(e: ItemEffect, me: CombatantView, inventory: readonly
   if (e.kind === 'powerup') return 1;
   if (e.kind === 'weapon') {
     const w = owned.get(e.weapon);
+    // Arena discs lie where they land: worth fetching whenever the hand isn't full.
+    if (w?.def.projectile?.disc && w.mag < w.def.magazine) return w.mag === 0 ? 1.2 : 0.5;
     return !w ? 1 : w.def.magazine > 0 && w.mag === 0 && w.reserve === 0 ? 1.2 : w.reserve < w.def.reserveMax / 3 ? 0.4 : 0;
   }
   if (e.kind === 'ammo') {

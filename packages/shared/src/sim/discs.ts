@@ -1,6 +1,7 @@
 /**
  * Disc Arena (Ricochet-style): everyone throws arena discs that bounce off
- * walls and come back. A disc does no damage; it shoves whoever it hits, and
+ * walls and drop where they stop, to be picked up again by whoever gets there
+ * first, like ammo. A disc does no damage; it shoves whoever it hits, and
  * a player who falls into the void after a hit is a point for the thrower.
  * Power discs (pickups) change the next few throws.
  *
@@ -34,8 +35,8 @@ export const ARENA_DISC = 'core.arena_disc';
 
 /**
  * The discs one throw makes: the spec of each and its yaw off the aim. The
- * first is the thrown disc (it comes back); any others are extras that just
- * fly out.
+ * first is the thrown disc (it drops to be picked up); any others are extras
+ * that just fly out.
  */
 export function discThrows(spec: ProjectileSpec, power: DiscPower | null): { spec: ProjectileSpec; yaw: number }[] {
   const disc = spec.disc ?? { push: 10, lift: 4 };

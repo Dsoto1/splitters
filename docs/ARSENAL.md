@@ -159,7 +159,7 @@ are unchanged; each has a pickup like every weapon):
 
 | Slot | Weapon | Variant of | How it fires |
 |---|---|---|---|
-| 6 | Arena Disc | Disc Launcher | Three discs that bounce and come back; a hit shoves, never hurts (Disc Arena) |
+| 6 | Arena Disc | Disc Launcher | Three discs that bounce and drop where they stop, picked up again like ammo; a hit shoves, never hurts (Disc Arena) |
 | 8 | Blast Rockets | Rocket Launcher | Four-rocket drum, smaller blast, knockback: rocket-jump (Rocketeer) |
 | 1 | Medi-Beam | Medkit | Heals the teammate in your sights 6 HP five times a second, 9 m (Medic) |
 

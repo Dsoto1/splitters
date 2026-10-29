@@ -40,7 +40,7 @@ const yard = () => {
   return makeMap(tiles, [[0, 0, 4], [30, 0, 4]]);
 };
 
-type Proj = { spec: { visual: string; disc?: unknown }; pos: { x: number; y: number; z: number }; bounces?: number; extra?: boolean };
+type Proj = { spec: { visual: string; disc?: unknown }; pos: { x: number; y: number; z: number }; bounces?: number; extra?: boolean; stuck?: boolean };
 const projectiles = (m: Match) => (m as unknown as { projectiles: Proj[] }).projectiles;
 
 function setup(map: MapDocument) {
@@ -87,19 +87,86 @@ describe('Disc Arena', () => {
     expect(playableModes(gridRings())).toContain('core.discs');
   });
 
-  it('a disc bounces off walls and comes back to its thrower', () => {
-    const { match, a, b, put, step, throwAt } = setup(yard());
-    put(a, 2, 0, 4);
-    put(b, 30, 0, 8);
-    // Straight at the west wall, a couple of metres away.
+  /** Throw `a`'s disc at the west wall and wait until it lies on the ground; returns where. */
+  const throwAndLand = (t: ReturnType<typeof setup>) => {
+    t.put(t.a, 2, 0, 4);
+    t.put(t.b, 30, 0, 12);
     const ghost = { move: { pos: { x: -10, y: 0, z: 4 } } } as unknown as Combatant;
+    t.throwAt(t.a, ghost);
+    let bounced = 0;
+    t.step(30, () => (bounced = Math.max(bounced, ...projectiles(t.match).map((p) => p.bounces ?? 0))));
+    t.put(t.a, 30, 0, 4);
+    t.step(200);
+    const lying = projectiles(t.match);
+    return { bounced, lying };
+  };
+
+  it('a disc bounces off walls, then drops where it stops: picked up again like ammo', () => {
+    const t = setup(yard());
+    const { bounced, lying } = throwAndLand(t);
+    expect(bounced).toBeGreaterThanOrEqual(1);
+    // It doesn't fly home: it lies on the ground, and the thrower is a disc short.
+    expect(lying).toHaveLength(1);
+    expect(lying[0]!.stuck).toBe(true);
+    expect(lying[0]!.pos.y).toBeLessThan(0.5);
+    expect(discs(t.a)).toBe(2);
+    // Walk over it.
+    t.put(t.a, lying[0]!.pos.x, 0, lying[0]!.pos.z);
+    t.step(2);
+    expect(discs(t.a)).toBe(3);
+    expect(projectiles(t.match)).toHaveLength(0);
+    expect(t.events.some((e) => e.e === 'pickup' && e.s === t.a.slot && e.item === 'core.weapon_arena_disc')).toBe(true);
+  });
+
+  it('anyone short of three discs can take a lying one; a full hand walks past it, and one left lying goes home', () => {
+    const t = setup(yard());
+    const { lying } = throwAndLand(t);
+    const at = lying[0]!.pos;
+    // The other player, with all three, leaves it.
+    t.put(t.b, at.x, 0, at.z);
+    t.step(2);
+    expect(discs(t.b)).toBe(3);
+    expect(projectiles(t.match)).toHaveLength(1);
+    // A disc short, they take it.
+    t.b.weapons.get(weaponCode(getWeapon(ARENA_DISC)))!.mag = 2;
+    t.step(2);
+    expect(discs(t.b)).toBe(3);
+    expect(discs(t.a)).toBe(2);
+
+    // Nobody comes for it: back to its thrower after a while.
+    const u = setup(yard());
+    throwAndLand(u);
+    expect(discs(u.a)).toBe(2);
+    u.step(60 * 16);
+    expect(projectiles(u.match)).toHaveLength(0);
+    expect(discs(u.a)).toBe(3);
+  });
+
+  it('the player a disc knocks over cannot grab it at once', () => {
+    const t = setup(yard());
+    t.put(t.a, 2, 0, 4);
+    t.put(t.b, 8, 0, 4);
+    t.b.weapons.get(weaponCode(getWeapon(ARENA_DISC)))!.mag = 1;
+    t.throwAt(t.a, t.b);
+    // Hold the target still where the disc drops at its feet.
+    t.step(20, () => t.put(t.b, 8, 0, 4));
+    const before = discs(t.b);
+    expect(projectiles(t.match).some((p) => p.stuck)).toBe(true);
+    expect(before).toBe(1);
+    // After the moment's grace it's anyone's, theirs included.
+    t.step(30, () => t.put(t.b, projectiles(t.match).find((p) => p.stuck)?.pos.x ?? 8, 0, projectiles(t.match).find((p) => p.stuck)?.pos.z ?? 4));
+    expect(discs(t.b)).toBe(2);
+  });
+
+  it('a disc with no ground under it (over the void) goes straight back to its thrower', () => {
+    const { match, a, put, step, throwAt } = setup(yard());
+    put(a, 2, 0, 4);
+    // Straight up: its flight ends some 55 m up, with nothing to land on below for 40 m.
+    const ghost = { move: { pos: { x: 2.01, y: 200, z: 4 } } } as unknown as Combatant;
     throwAt(a, ghost);
     expect(discs(a)).toBe(2);
-    let bounced = 0;
-    step(30, () => (bounced = Math.max(bounced, ...projectiles(match).map((p) => p.bounces ?? 0))));
-    expect(bounced).toBeGreaterThanOrEqual(1);
-    step(200);
-    expect(projectiles(match).length).toBe(0);
+    step(60 * 4);
+    expect(projectiles(match).some((p) => p.stuck)).toBe(false);
     expect(discs(a)).toBe(3);
   });
 
@@ -157,8 +224,9 @@ describe('Disc Arena', () => {
     expect(t.a.discPower?.shots).toBe(2);
     expect(discs(t.a)).toBe(2);
     t.step(200);
-    // Only the thrown disc comes back, not the extras.
-    expect(discs(t.a)).toBe(3);
+    // Only the thrown disc drops to be picked up again, not the extras.
+    expect(projectiles(t.match).filter((p) => p.stuck)).toHaveLength(1);
+    expect(discs(t.a)).toBe(2);
 
     const f = setup(yard());
     f.put(f.a, 2, 0, 4);

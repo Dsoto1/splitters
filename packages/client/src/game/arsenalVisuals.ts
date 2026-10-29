@@ -215,7 +215,8 @@ export function animateArsenalProjectile(node: TransformNode, look: ProjectileVi
       node.scaling.setAll(Math.min(3, 1 + (now - born) / 200));
       break;
     case 'disc':
-      node.rotation.y += 0.6;
+      // Spinning in flight; turning slowly where it lies, waiting to be picked up.
+      node.rotation.y += moved.lengthSquared() > 1e-6 ? 0.6 : 0.03;
       break;
     case 'vortex':
       node.rotation.y += 0.25;

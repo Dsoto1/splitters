@@ -83,6 +83,17 @@ export const MAX_REWIND_TICKS = 18;
 const HISTORY_TICKS = MAX_REWIND_TICKS + 2;
 /** Projectiles ignore their owner briefly so they don't explode in the shooter's face. */
 const OWNER_GRACE_TICKS = 8;
+/** Arena discs drop where their flight ends: found within this far below (m), else over the void (back to the thrower). */
+const DISC_DROP_REACH = 40;
+/** A dropped disc lies this long (s) for anyone to pick up, then goes back to its thrower. */
+const DISC_LIE_SECONDS = 15;
+/** And can't be picked up for this long (s) after it drops (not by the player it just hit). */
+const DISC_PICKUP_DELAY = 0.4;
+
+/** The pickup a lying spear or disc counts as (core.spear: core.weapon_spear). */
+function lyingItem(p: Projectile): ItemDefinition | undefined {
+  return getItem(`core.weapon_${p.weapon.replace(/^core\./, '')}`);
+}
 /** Start gate: the longest a match waits for its players to load, and the countdown after. */
 export const START_WAIT_SECONDS = 30;
 export const COUNTDOWN_SECONDS = 3;
@@ -1523,9 +1534,14 @@ export class Match {
       if (v) fillView(v, c, this.concealed(c));
       else views.set(c.slot, toView(c, this.concealed(c)));
     }
-    const spearItem = getItem('core.weapon_spear');
-    const lyingSpears: PickupView[] = spearItem ? this.projectiles.filter((p) => p.stuck && p.spec.retrievable).map((p) => ({ id: `spear_${p.id}`, item: spearItem, pos: p.pos, available: true })) : [];
-    const pickups: PickupView[] = [...lyingSpears, ...this.pickups.filter((p) => !restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
+    // Spears and discs lying where they landed, for whoever picks them up.
+    const lying: PickupView[] = [];
+    for (const p of this.projectiles) {
+      if (!p.stuck || !p.spec.retrievable) continue;
+      const item = lyingItem(p);
+      if (item) lying.push({ id: `${p.spec.disc ? 'disc' : 'spear'}_${p.id}`, item, pos: p.pos, available: true });
+    }
+    const pickups: PickupView[] = [...lying, ...this.pickups.filter((p) => !restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
     const npcPickups: PickupView[] = [];
     // Team-only doors block other teams; buttons a bot may press can open the doors in its way.
     const blockersBy = new Map<string | null, ReturnType<Scenario['blockers']>>();
@@ -2596,7 +2612,7 @@ export class Match {
         // Lying unclaimed too long: back to whoever threw it.
         if (--p.ticksLeft <= 0) {
           const w = owner?.weapons.get(weaponCode(getWeapon(p.weapon)));
-          if (w) w.mag = Math.max(w.mag, 1);
+          if (w) w.mag = Math.min(w.def.magazine, w.mag + 1);
           continue;
         }
         keep.push(p);
@@ -3031,16 +3047,19 @@ export class Match {
     if (def.knockback) this.push(victim, end.dir, def.knockback * (end.damage / Math.max(1, def.damage)));
   }
 
-  /** A lying spear goes to the first living player close by whose spear is thrown. */
+  /** A lying spear or disc goes to the first living player close by who has a throw of it to spare. */
   private retrieve(p: Projectile): boolean {
     const code = weaponCode(getWeapon(p.weapon));
+    const disc = !!p.spec.disc;
+    // A disc that just knocked someone over drops at their feet: not theirs at once.
+    if (this.tick < (p.armAt ?? 0)) return false;
     for (const c of this.actors()) {
       if (!c.alive || distance(c.move.pos, p.pos) > 1.6) continue;
       const w = c.weapons.get(code);
-      if (!w || w.mag > 0) continue;
-      w.mag = 1;
+      if (!w || w.mag >= w.def.magazine) continue;
+      w.mag++;
       if (c.current !== code) this.switchTo(c, code);
-      this.pendingEvents.push({ e: 'pickup', s: c.slot, id: `spear_${p.id}`, item: 'core.weapon_spear' });
+      this.pendingEvents.push({ e: 'pickup', s: c.slot, id: `${disc ? 'disc' : 'spear'}_${p.id}`, item: lyingItem(p)?.id ?? 'core.weapon_spear' });
       return true;
     }
     return false;
@@ -3050,9 +3069,16 @@ export class Match {
     const spec = p.spec;
     const owner = this.actor(p.owner) ?? null;
     if (spec.disc) {
-      // Its flight is over: the disc goes back to its thrower (extras just vanish).
-      const w = !p.extra && owner ? owner.weapons.get(weaponCode(getWeapon(p.weapon))) : undefined;
-      if (w) w.mag = Math.min(w.def.magazine, w.mag + 1);
+      // Its flight is over: the disc drops to the ground there for anyone to pick up, like ammo (extras just
+      // vanish). Over the void it goes back to its thrower, and so does one left lying (stepProjectiles).
+      if (p.extra) return;
+      const down = this.physics.raycastHit({ x: at.x, y: at.y + 0.2, z: at.z }, { x: 0, y: -1, z: 0 }, DISC_DROP_REACH);
+      if (!down) {
+        const w = owner?.weapons.get(weaponCode(getWeapon(p.weapon)));
+        if (w) w.mag = Math.min(w.def.magazine, w.mag + 1);
+        return;
+      }
+      this.projectiles.push({ ...p, id: this.nextProjectileId++, spec: { ...spec, retrievable: true }, pos: { x: at.x, y: at.y + 0.2 - down.dist + 0.1, z: at.z }, vel: { x: 0, y: 0, z: 0 }, stuck: true, ticksLeft: Math.round(DISC_LIE_SECONDS * TICK_RATE), armAt: this.tick + Math.round(DISC_PICKUP_DELAY * TICK_RATE) });
       return;
     }
     if (spec.splashRadius > 0) this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius });
