@@ -81,7 +81,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019ad7f4-7590-7ed4-abff-fb9bb6f1065a",
       "license": "CC0 (Meshy community)",
-      "note": "steampunk rabbit"
+      "note": "steampunk rabbit",
+      "size": "small"
     },
     {
       "id": "meshy_grizzelda",
@@ -90,7 +91,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/019e40b6-5e91-7d09-b4ef-eac45a40e626",
       "license": "CC0 (Meshy community)",
-      "note": "lady goblin"
+      "note": "lady goblin",
+      "size": "small"
     },
     {
       "id": "meshy_longshadow",
@@ -127,7 +129,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/christmas-santa-claus-3d-character-model-animation-ready-01a0698e-123a-7439-90ce-586dbbc91226",
       "license": "CC0 (Meshy community)",
-      "note": "Santa"
+      "note": "Santa",
+      "size": "large"
     },
     {
       "id": "meshy_big_bab",
@@ -209,7 +212,8 @@
       "use": "player",
       "url": "https://www.meshy.ai/posts/01990582-7d15-78ed-82d9-279f1a3a60cf",
       "license": "CC0 (Meshy community)",
-      "note": "raccoon"
+      "note": "raccoon",
+      "size": "small"
     },
     {
       "id": "meshy_prism_cat",
