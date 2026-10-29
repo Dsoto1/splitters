@@ -146,6 +146,17 @@ Prepared on the session branch: version 0.5.0, CHANGELOG section, menu baseline.
 
 F3 / Options → Display: the performance overlay; Pause → Settings → Copy performance report (`game/perfOverlay.ts`). When the owner reports a slowdown, ask for that report. CI's `perf:budget` now also fails on effects in the shadow pass, more than 600 shadow casters (clumped Frost Basin, medium; 446 on CI with 46 characters in view) and effect starts over 40 ms (docs/PERF_96.md, last section). New effect materials made per shot: block their dirty mechanism, and don't `clone()` meshes in hot paths (share geometry).
 
+## Crowd rendering (2026-10-29)
+
+Profiled the page's main thread in a clumped 96-player Frost Basin fight (production build, `?offline=frost_basin&gamemode=core.tdm&bots=95`, CDP profiler; frame rates here are SwiftShader noise, the main thread's busy share is not). Before: kill-feed icons rendered live (a weapon model, shader compiles and a sync `readPixels` per new weapon) were ~60%; effect meshes made and disposed ~1,000/s, each dispose walking `scene._activeAnimatables` (~12-13k: one per character bone per playing clip) and `scene.meshes`; bullet holes re-uploaded their whole 700-matrix buffer per hit; every canopy built new materials (setters walk all meshes) and a lines mesh. Now:
+- weapon icons ship (`public/weapon-icons/`, `frontend/weaponIconIndex.ts`, `tools/content/capture-weapon-icons.mjs`, run by the "Capture portraits" workflow with the portraits); a model missing there renders live;
+- `game/meshPool.ts`: sparks, dust/smoke puffs, blood drops, mist and splats are pooled (`warm()` draws one of each off-screen during map load so their shaders build then); sparks capped at 600, drops at 500; blood drops, mist and puffs carry `metadata.effect`, splats `castsNoShadow`;
+- bullet holes upload only the new range once a frame (`thinInstancePartialBufferUpdate`);
+- canopies are pooled per kind with shared materials (`releaseCanopy`).
+Result: main thread idle 74% with 53 characters in view (was 43% with 36, and 31% before the icons). Left, in order: held weapons are rebuilt on every switch (`view.setAvatarWeapon`, ~15 nodes/s, each dispose walking the animatables: pool them per model); the ~12k animatables themselves (AnimationGroup per clip per bone; Babylon's `stop`/`_start` splice that array); `computeWorldMatrix` ~4%. The physicsfx ragdoll check now waits for the corpse before sampling; it still fails in this sandbox on stalled frames, on main too.
+
+Ragdolls (asked 2026-10-29): no neutral pose, no soft joint limits, no muscle tension. `game/ragdoll.ts` uses Rapier spherical joints with no limits or motors, and damping only (linear 0.6, angular 1.6, `shared/sim/effectsPhysics.ts`). Not started.
+
 ## How work flows (details in CLAUDE.md)
 
 1. Work on the session branch, or in an agent worktree that you merge into it.

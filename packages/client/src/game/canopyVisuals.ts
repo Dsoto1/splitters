@@ -8,19 +8,55 @@ import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { CHUTE_GLIDER } from '@tiletrigger/shared';
 
+/** Canopies put away for reuse, by scene and kind (a big match drops dozens of players at once, and again on every respawn). */
+const spare = new WeakMap<Scene, Map<number, TransformNode[]>>();
+/** Canopy materials, shared by every canopy in a scene. */
+const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();
+/** Canopies of a kind kept for reuse at most. */
+const MAX_SPARE = 32;
+
 /**
  * Canopies drawn over anyone under a parachute or a glider (see
  * shared/sim/parachute.ts), built from simple shapes in code: a striped
  * dome on rigging lines, or a delta wing with a control bar. The root sits
- * at the wearer's feet and turns with them.
+ * at the wearer's feet and turns with them. Done with one: releaseCanopy.
  */
 export function createCanopy(scene: Scene, name: string, kind: number): TransformNode {
+  const reused = spare.get(scene)?.get(kind)?.pop();
+  if (reused) {
+    reused.setEnabled(true);
+    return reused;
+  }
+  return buildCanopy(scene, name, kind);
+}
+
+/** Put a canopy away for the next one of its kind (hidden), or dispose it if enough are put away. */
+export function releaseCanopy(scene: Scene, node: TransformNode, kind: number): void {
+  let byKind = spare.get(scene);
+  if (!byKind) spare.set(scene, (byKind = new Map()));
+  let list = byKind.get(kind);
+  if (!list) byKind.set(kind, (list = []));
+  if (list.length >= MAX_SPARE || node.isDisposed()) {
+    // Its materials are shared: they stay.
+    node.dispose(false, false);
+    return;
+  }
+  node.setEnabled(false);
+  list.push(node);
+}
+
+function buildCanopy(scene: Scene, name: string, kind: number): TransformNode {
   const root = new TransformNode(name, scene);
+  let mats = materials.get(scene);
+  if (!mats) materials.set(scene, (mats = new Map()));
   const mat = (key: string, hex: string) => {
-    const m = new StandardMaterial(`${name}_${key}`, scene);
+    let m = mats.get(key);
+    if (m) return m;
+    m = new StandardMaterial(`canopy_${key}`, scene);
     m.diffuseColor = Color3.FromHexString(hex);
     m.specularColor = new Color3(0.1, 0.1, 0.1);
     m.backFaceCulling = false;
+    mats.set(key, m);
     return m;
   };
   const rig = new Color4(0.15, 0.15, 0.15, 1);

@@ -9,6 +9,7 @@ import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTextur
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { EffectsWorld, Vec3 } from '@tiletrigger/shared';
+import { MeshPool } from './meshPool.ts';
 
 /** How fast drawn rounds fly (m/s): slow enough to see leave the muzzle and land, fast enough to feel like bullets. */
 export const BULLET_SPEED = 260;
@@ -31,7 +32,9 @@ interface Bullet {
 }
 
 /** Streak instances kept for reuse (pooled: automatic fire would otherwise create and dispose one per round). */
-const MAX_POOLED_STREAKS = 96;
+const MAX_POOLED_STREAKS = 256;
+/** Sparks alive at once at most: a 96-player brawl threw 1,500, and past a few hundred more add nothing to see. */
+const MAX_SPARKS = 600;
 
 interface Spark {
   mesh: InstancedMesh;
@@ -63,10 +66,15 @@ export class ImpactVisuals {
   private puffs: Puff[] = [];
   private readonly streak: Mesh;
   private readonly spark: Mesh;
+  private readonly sparkPool: MeshPool<InstancedMesh>;
+  /** Dust and smoke puffs (each its own mesh: they fade one by one). */
+  private readonly puffPool: MeshPool<Mesh>;
   private readonly holes: Mesh;
   private readonly dustMat: StandardMaterial;
   private holeCount = 0;
   private holeNext = 0;
+  /** Holes made since the last upload (first and last index): sent to the GPU once a frame, not the whole buffer per hit. */
+  private holeDirty: [number, number] | null = null;
   private readonly holeMatrices = new Float32Array(MAX_HOLES * 16);
 
   constructor(
@@ -90,6 +98,18 @@ export class ImpactVisuals {
     sparkMat.emissiveColor = new Color3(1, 0.78, 0.35);
     this.spark.material = sparkMat;
     this.prepareSource(this.spark);
+    this.sparkPool = new MeshPool(() => {
+      const m = this.spark.createInstance('spark');
+      m.isPickable = false;
+      return m;
+    }, MAX_SPARKS);
+    this.puffPool = new MeshPool(() => {
+      const m = CreateSphere('puff', { diameter: 1, segments: 4 }, scene);
+      m.isPickable = false;
+      // An effect: no shadows from it or on it (see Atmosphere).
+      m.metadata = { effect: true };
+      return m;
+    }, 160);
 
     this.dustMat = new StandardMaterial('impactDustMat', scene);
     this.dustMat.diffuseColor = new Color3(0.55, 0.52, 0.47);
@@ -188,22 +208,19 @@ export class ImpactVisuals {
     const s = size * (0.8 + Math.random() * 0.4);
     const m = Matrix.Compose(new Vector3(s, s, s), q.multiply(twist), new Vector3(point.x + n.x * 0.01, point.y + n.y * 0.01, point.z + n.z * 0.01));
     m.copyToArray(this.holeMatrices, this.holeNext * 16);
+    this.holeDirty = this.holeDirty ? [Math.min(this.holeDirty[0], this.holeNext), Math.max(this.holeDirty[1], this.holeNext)] : [this.holeNext, this.holeNext];
     this.holeNext = (this.holeNext + 1) % MAX_HOLES;
     this.holeCount = Math.min(MAX_HOLES, this.holeCount + 1);
     this.holes.thinInstanceCount = this.holeCount;
-    this.holes.thinInstanceBufferUpdated('matrix');
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5 && this.sparks.length < MAX_SPARKS; i++) {
       const v = n.scale(2 + Math.random() * 3).add(new Vector3((Math.random() - 0.5) * 4, Math.random() * 3, (Math.random() - 0.5) * 4));
-      const mesh = this.spark.createInstance('spark');
-      mesh.isPickable = false;
+      const mesh = this.sparkPool.take();
       mesh.scaling.setAll(0.025 + Math.random() * 0.02);
       const pos = new Vector3(point.x, point.y, point.z).add(n.scale(0.03));
       mesh.position.copyFrom(pos);
       this.sparks.push({ mesh, pos, vel: v, age: 0, life: 0.18 + Math.random() * 0.15 });
     }
-    const puff = CreateSphere('impactDust', { diameter: 1, segments: 4 }, this.scene);
-    puff.material = this.dustMat;
-    puff.isPickable = false;
+    const puff = this.takePuff(this.dustMat);
     puff.position.set(point.x + n.x * 0.12, point.y + n.y * 0.12, point.z + n.z * 0.12);
     puff.scaling.setAll(0.05);
     this.puffs.push({ mesh: puff, age: 0, life: 0.45, grow: 0.5 * size });
@@ -211,10 +228,9 @@ export class ImpactVisuals {
 
   /** A spray of hot sparks from a point (a badly damaged vehicle shorting out, a crash). */
   sparkBurst(at: Vec3, count: number, speed = 3): void {
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < count && this.sparks.length < MAX_SPARKS; i++) {
       const vel = new Vector3((Math.random() - 0.5) * speed * 2, Math.random() * speed * 1.4, (Math.random() - 0.5) * speed * 2);
-      const mesh = this.spark.createInstance('spark');
-      mesh.isPickable = false;
+      const mesh = this.sparkPool.take();
       mesh.scaling.setAll(0.03 + Math.random() * 0.03);
       const pos = new Vector3(at.x, at.y, at.z);
       mesh.position.copyFrom(pos);
@@ -235,12 +251,27 @@ export class ImpactVisuals {
       mat.alpha = glow ? 0.85 : 0.55;
       this.puffMats.set(hex, mat);
     }
-    const mesh = CreateSphere('puff', { diameter: 1, segments: 4 }, this.scene);
-    mesh.material = mat;
-    mesh.isPickable = false;
+    const mesh = this.takePuff(mat);
     mesh.position.set(at.x, at.y, at.z);
     mesh.scaling.setAll(size * 0.3);
     this.puffs.push({ mesh, age: 0, life, grow: size, rise, base: size * 0.3 });
+  }
+
+  private takePuff(mat: StandardMaterial): Mesh {
+    const m = this.puffPool.take();
+    m.material = mat;
+    m.visibility = 1;
+    return m;
+  }
+
+  /** Build the sparks' and dust's shaders while the match loads (see MeshPool.warm). */
+  warm(): void {
+    this.sparkPool.warm((m) => m.scaling.setAll(0.03));
+    this.puffPool.warm((m) => {
+      m.material = this.dustMat;
+      m.scaling.setAll(0.3);
+      m.visibility = 0.5;
+    });
   }
 
   /** Bullet holes currently in the level (for tests). */
@@ -249,6 +280,11 @@ export class ImpactVisuals {
   }
 
   update(dt: number): void {
+    if (this.holeDirty) {
+      const [first, last] = this.holeDirty;
+      this.holes.thinInstancePartialBufferUpdate('matrix', last - first + 1, first);
+      this.holeDirty = null;
+    }
     this.bullets = this.bullets.filter((b) => {
       b.travelled += b.speed * dt;
       const head = Math.min(b.travelled, b.dist);
@@ -268,7 +304,7 @@ export class ImpactVisuals {
       s.pos.addInPlace(s.vel.scale(dt));
       s.mesh.position.copyFrom(s.pos);
       if (s.age < s.life) return true;
-      s.mesh.dispose();
+      this.sparkPool.give(s.mesh);
       return false;
     });
     this.puffs = this.puffs.filter((p) => {
@@ -278,7 +314,7 @@ export class ImpactVisuals {
       if (p.rise) p.mesh.position.y += p.rise * dt;
       p.mesh.visibility = Math.max(0, 1 - f);
       if (f < 1) return true;
-      p.mesh.dispose();
+      this.puffPool.give(p.mesh);
       return false;
     });
   }
@@ -288,6 +324,8 @@ export class ImpactVisuals {
     for (const m of this.streakPool) m.dispose();
     for (const s of this.sparks) s.mesh.dispose();
     for (const p of this.puffs) p.mesh.dispose();
+    this.sparkPool.dispose();
+    this.puffPool.dispose();
     this.streak.dispose();
     this.spark.dispose();
     this.holes.dispose();

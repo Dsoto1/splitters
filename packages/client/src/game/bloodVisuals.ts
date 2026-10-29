@@ -6,6 +6,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { DEFAULT_BLOOD, type BloodAmount, type EffectsWorld, type Vec3 } from '@tiletrigger/shared';
+import { MeshPool } from './meshPool.ts';
 
 /** The player's own switch (pause menu); the map's setting decides the rest. */
 export const BLOOD_PREF_KEY = 'cs.blood';
@@ -34,6 +35,10 @@ const DROP_LIFE = 0.9;
 /** Splats stay this long, then fade over SPLAT_FADE. */
 const SPLAT_STAY = 7;
 const SPLAT_FADE = 2;
+/** Drops in the air at once at most (a 96-player brawl threw more than its pool held; past this nobody sees more). */
+const MAX_DROPS = 500;
+/** Drops and mist are effects: no shadows from them or on them (see Atmosphere). */
+const EFFECT = { effect: true };
 
 /**
  * Light blood: a quick spray of droplets on a hit, a puff of mist, and small
@@ -46,6 +51,10 @@ export class BloodVisuals {
   private splats: Splat[] = [];
   private mist: { mesh: Mesh; age: number }[] = [];
   private readonly dropBase: Mesh;
+  private readonly dropPool: MeshPool<Mesh>;
+  private readonly mistPool: MeshPool<Mesh>;
+  /** Splats are unit discs, scaled to their size. */
+  private readonly splatPool: MeshPool<Mesh>;
   private readonly splatMat: StandardMaterial;
   private readonly dropMat: StandardMaterial;
   private readonly mistMat: StandardMaterial;
@@ -68,7 +77,40 @@ export class BloodVisuals {
     // Instances only draw while their source is enabled, so the source stays on, shrunk to nothing.
     this.dropBase.scaling.setAll(0);
     this.dropBase.alwaysSelectAsActiveMesh = true;
+    this.dropPool = new MeshPool(() => {
+      const m = this.dropBase.createInstance('bloodDrop') as unknown as Mesh;
+      m.isPickable = false;
+      m.metadata = EFFECT;
+      return m;
+    }, MAX_DROPS);
+    this.mistPool = new MeshPool(() => {
+      const m = CreateSphere('bloodMist', { diameter: 1, segments: 4 }, scene);
+      m.material = this.mistMat;
+      m.isPickable = false;
+      m.metadata = EFFECT;
+      return m;
+    }, 48);
+    this.splatPool = new MeshPool(() => {
+      const m = CreateDisc('bloodSplat', { radius: 1, tessellation: 9 }, scene);
+      m.material = this.splatMat;
+      m.isPickable = false;
+      // Flat on a surface: it catches shadows but casts none.
+      m.metadata = { castsNoShadow: true };
+      m.rotationQuaternion = new Quaternion();
+      return m;
+    }, 140);
     this.setLook(DEFAULT_BLOOD.color, DEFAULT_BLOOD.amount);
+  }
+
+  /** Build blood's shaders while the match loads (see MeshPool.warm): a drop, mist, a splat and a fading splat. */
+  warm(): void {
+    this.dropPool.warm((m) => m.scaling.setAll(0.05));
+    this.mistPool.warm((m) => m.scaling.setAll(0.3));
+    this.splatPool.warm((m) => m.scaling.set(0.3, 0.25, 0.3));
+    this.splatPool.warm((m) => {
+      m.scaling.set(0.3, 0.25, 0.3);
+      m.visibility = 0.5;
+    });
   }
 
   setLook(color: string, amount: BloodAmount): void {
@@ -96,9 +138,9 @@ export class BloodVisuals {
       const v = d.scale(2 + Math.random() * 3 * strength).add(new Vector3((Math.random() - 0.5) * 3, Math.random() * 2.2, (Math.random() - 0.5) * 3));
       this.drop(new Vector3(at.x, at.y, at.z), v);
     }
-    const puff = CreateSphere('bloodMist', { diameter: 1, segments: 4 }, this.scene);
-    puff.material = this.mistMat;
-    puff.isPickable = false;
+    const puff = this.mistPool.take();
+    puff.scaling.setAll(0.15);
+    puff.visibility = 1;
     puff.position.set(at.x, at.y, at.z);
     this.mist.push({ mesh: puff, age: 0 });
     // A splat on whatever is right behind the target, along the shot.
@@ -115,27 +157,26 @@ export class BloodVisuals {
   }
 
   private drop(pos: Vector3, vel: Vector3): void {
-    const mesh = this.dropBase.createInstance('bloodDrop') as unknown as Mesh;
+    if (this.drops.length >= MAX_DROPS) return;
+    const mesh = this.dropPool.take();
     mesh.scaling.setAll(0.03 + Math.random() * 0.05);
     mesh.position.copyFrom(pos);
-    mesh.isPickable = false;
     this.drops.push({ mesh, pos, vel, age: 0 });
   }
 
   private splat(at: Vector3, normal: Vec3, radius: number): void {
     const n = new Vector3(normal.x, normal.y, normal.z).normalize();
-    const disc = CreateDisc('bloodSplat', { radius, tessellation: 9 }, this.scene);
-    disc.material = this.splatMat;
-    disc.isPickable = false;
-    disc.position = at.add(n.scale(0.015));
+    const disc = this.splatPool.take();
+    disc.visibility = 1;
+    disc.position.copyFrom(at.add(n.scale(0.015)));
     // Discs face -Z; turn them to face out of the surface, with a random twist.
     const q = new Quaternion();
     Quaternion.FromUnitVectorsToRef(new Vector3(0, 0, -1), n, q);
-    disc.rotationQuaternion = q.multiply(Quaternion.RotationAxis(new Vector3(0, 0, 1), Math.random() * Math.PI * 2));
-    disc.scaling.set(1, 0.6 + Math.random() * 0.5, 1);
+    q.multiplyToRef(Quaternion.RotationAxis(new Vector3(0, 0, 1), Math.random() * Math.PI * 2), disc.rotationQuaternion!);
+    disc.scaling.set(radius, radius * (0.6 + Math.random() * 0.5), radius);
     this.splats.push({ mesh: disc, born: performance.now() });
     const cap = this.amount === 'heavy' ? 120 : 50;
-    while (this.splats.length > cap) this.splats.shift()!.mesh.dispose();
+    while (this.splats.length > cap) this.splatPool.give(this.splats.shift()!.mesh);
   }
 
   /** Move drops, fade mist and old splats. Call every frame. */
@@ -149,7 +190,7 @@ export class BloodVisuals {
       const hit = len > 0 && physics ? physics.raycast(d.pos, { x: step.x / len, y: step.y / len, z: step.z / len }, len) : null;
       if (hit || d.age > DROP_LIFE) {
         if (hit && Math.random() < 0.6) this.splat(d.pos.add(step.scale(hit.dist / len)), hit.normal, 0.05 + Math.random() * 0.09);
-        d.mesh.dispose();
+        this.dropPool.give(d.mesh);
         return false;
       }
       d.pos.addInPlace(step);
@@ -161,14 +202,14 @@ export class BloodVisuals {
       m.mesh.scaling.setAll(0.15 + m.age * 2.2);
       m.mesh.visibility = Math.max(0, 1 - m.age / 0.25);
       if (m.age < 0.25) return true;
-      m.mesh.dispose();
+      this.mistPool.give(m.mesh);
       return false;
     });
     const now = performance.now();
     this.splats = this.splats.filter((s) => {
       const age = (now - s.born) / 1000;
       if (age > SPLAT_STAY + SPLAT_FADE) {
-        s.mesh.dispose();
+        this.splatPool.give(s.mesh);
         return false;
       }
       s.mesh.visibility = age > SPLAT_STAY ? 1 - (age - SPLAT_STAY) / SPLAT_FADE : 1;
@@ -180,6 +221,7 @@ export class BloodVisuals {
     for (const d of this.drops) d.mesh.dispose();
     for (const s of this.splats) s.mesh.dispose();
     for (const m of this.mist) m.mesh.dispose();
+    for (const p of [this.dropPool, this.mistPool, this.splatPool]) p.dispose();
     this.dropBase.dispose();
     for (const m of [this.dropMat, this.splatMat, this.mistMat]) m.dispose();
   }

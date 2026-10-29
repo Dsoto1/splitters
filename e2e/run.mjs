@@ -1062,6 +1062,9 @@ async function physicsfxFlow(browser) {
     return standing;
   });
   await page.addStyleTag({ content: '#pause { display: none !important; }' });
+  // The view takes the death on its next frame: on a software renderer that frame can wait a second or
+  // two behind the match's first shader builds, longer than the sampling below lasts.
+  await page.waitForFunction(() => window.__cs.view.corpses.some((c) => c.slot === window.__botSlot), null, { timeout: T(6000) }).catch(() => {});
   // Sample the fall while the body is down (the bot respawns 2-3 s after dying).
   // Measured from where its head was before the shot (a slow runner may sample it already down);
   // stop as soon as it has dropped, before the bot gets up again 2-3 s later.
@@ -1083,8 +1086,8 @@ async function physicsfxFlow(browser) {
   }
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/physicsfx-ragdoll.png` });
   // The sampling above stops once the body is down: give the blood time to land.
-  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'bloodSplat'), null, { timeout: T(2500) }).catch(() => {});
-  const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat').length }));
+  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'bloodSplat' && m.isEnabled()), null, { timeout: T(2500) }).catch(() => {});
+  const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat' && m.isEnabled()).length }));
   check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).

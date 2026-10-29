@@ -18,7 +18,7 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun } from './mountVisuals.ts';
 import { createViewCamera, poseCamera } from './cameraPose.ts';
-import { createCanopy, placeCanopy } from './canopyVisuals.ts';
+import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
@@ -387,6 +387,8 @@ export class GameView {
       const ids = new Set(WEAPONS_BY_SLOT.map((w) => muzzleEffectFor(w)?.id).filter((id): id is string => !!id));
       MuzzleFlashRig.warm(this.scene, [...ids]);
     });
+    this.blood.warm();
+    this.impacts.warm();
     void GodotVfx.preload('hit_fx', 'explosion_fx').then(() => {
       if (this.scene.isDisposed) return;
       for (const [pack, effect] of [['hit_fx', 'vfx_hit_01'], ['hit_fx', 'vfx_hit_02'], ['hit_fx', 'vfx_big_impact_01'], ['explosion_fx', 'vfx_ground_explosion_01']] as const) this.vfx.warm(pack, effect);
@@ -671,7 +673,7 @@ export class GameView {
   }
 
   private dropCanopy(a: Avatar): void {
-    a.canopy?.node.dispose(false, true);
+    if (a.canopy) releaseCanopy(this.scene, a.canopy.node, a.canopy.kind);
     a.canopy = undefined;
   }
 
@@ -680,7 +682,7 @@ export class GameView {
   /** Your own canopy in first person (overhead, where looking up shows it); null packs it away. */
   updateLocalCanopy(pos: Vec3 | null, yaw: number, kind: number): void {
     if (this.localCanopy && (this.localCanopy.kind !== kind || !pos)) {
-      this.localCanopy.node.dispose(false, true);
+      releaseCanopy(this.scene, this.localCanopy.node, this.localCanopy.kind);
       this.localCanopy = undefined;
     }
     if (!pos || !kind) return;

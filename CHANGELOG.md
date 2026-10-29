@@ -8,6 +8,14 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Performance**
+- Kills no longer stall big fights: the kill feed's weapon pictures ship with the site instead of being drawn from each gun's 3D model the first time someone dies by it (each one built a model, compiled its shaders and read the picture back from the graphics card in the middle of the fight). In a 96-player brawl that was the biggest single cost on the page.
+- Sparks, dust, smoke and blood are reused instead of made and thrown away for every hit (a brawl made about a thousand a second, and throwing one away searched all twelve thousand of the characters' running animations). Sparks in the air at once are capped at 600 and blood drops at 500, which look the same in a crowd.
+- Bullet holes: a hit sends only the new hole to the graphics card, once a frame, instead of all 700 every hit.
+- Parachutes and gliders are reused, with shared materials, instead of built for every player who drops in.
+- Blood and dust cast no shadows (they are effects), and their shaders are built while the match loads, not at the first kill.
+- Together, in a 96-player brawl with 53 characters in view, the page's main thread went from busy most of the time to idle about three quarters of it.
+
 ## 0.5.0 (2026-10-29)
 
 **Performance**

@@ -1,7 +1,7 @@
 name: Capture portraits
 
-# Renders every built-in character's portrait (tools/content/capture-portraits.mjs) with the menu's own
-# renderer and commits the pictures and their index to check/portraits, then runs CI there. Like any
+# Renders every built-in character's portrait (tools/content/capture-portraits.mjs) and every weapon's
+# kill-feed icon (capture-weapon-icons.mjs) with the game's own renderers and commits the pictures and their index to check/portraits, then runs CI there. Like any
 # check branch, main is fast-forwarded to it once it's green (CLAUDE.md). Run it after characters or the
 # portrait framing change ("Run workflow"); characters without a shipped portrait are rendered live meanwhile.
 on:
@@ -34,18 +34,19 @@ jobs:
       - run: pnpm build
       - run: for i in 1 2 3; do timeout 300 pnpm exec playwright install --with-deps chromium && exit 0; echo "playwright install try $i failed"; sleep 10; done; exit 1
         timeout-minutes: 17
-      - name: Render the portraits
+      - name: Render the portraits and weapon icons
         run: |
           set -euo pipefail
           pnpm --filter @tiletrigger/client exec vite preview --port 4799 --strictPort > /tmp/preview.log 2>&1 &
           for i in $(seq 1 60); do curl -fs http://localhost:4799/ > /dev/null && break; sleep 1; done
           node tools/content/capture-portraits.mjs http://localhost:4799
+          node tools/content/capture-weapon-icons.mjs http://localhost:4799
       - name: Commit to the check branch and run CI there
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          git add packages/client/public/portraits packages/client/src/frontend/portraitIndex.ts
+          git add packages/client/public/portraits packages/client/src/frontend/portraitIndex.ts packages/client/public/weapon-icons packages/client/src/frontend/weaponIconIndex.ts
           if git diff --cached --quiet; then echo "The portraits are unchanged."; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
