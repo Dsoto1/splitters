@@ -10,14 +10,26 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import { gearInfo, type CharacterLook } from '@tiletrigger/shared';
 
 /**
  * Gear (hats, glasses, vests, packs) built from simple shapes and hung on the
  * skeleton, so it moves with the character. Sizes come from the character's
- * own head and torso in the bind pose; colours from the look's dyes. Nothing
- * here is a model file: it is part of our own toolkit, like the building kit.
+ * own head and torso in the bind pose; colours from the look's dyes. Shaped
+ * gear is part of our own toolkit, like the building kit. Gear with a `model`
+ * (the helmets) is a textured model from public/gear (tools/content/prepare-gear.mjs),
+ * made in skull radii about the crown line: scaled by the wearer's skull and
+ * hung on the Head joint.
  */
+
+/** Where the gear models are (packages/client/public/gear). */
+export const GEAR_MODEL_BASE = `${import.meta.env.BASE_URL}gear/`;
+
+/** The model files a look's gear needs (without .glb). */
+export const gearModels = (look: Pick<CharacterLook, 'gear' | 'whole'>): string[] =>
+  look.whole ? [] : (look.gear ?? []).flatMap((id) => (gearInfo(id)?.model ? [gearInfo(id)!.model!] : []));
 
 /** Default colours when a look has no dye: the outfit family's own greens and browns. */
 const DEFAULT_CLOTH = '#3e5230';
@@ -91,6 +103,104 @@ function slice(meshes: AbstractMesh[], space: TransformNode, y: number, band: nu
   return out;
 }
 
+/** Directions round a head contour (see contour). */
+const AROUND = 48;
+
+/**
+ * The outline of some meshes' bind-pose vertices within `band` of height `y` (character space): for each of AROUND
+ * directions round (cx, cz) (0 = +Z, the face; then towards +X), how far out the surface is. Directions with no
+ * vertex take their neighbours'; the result is smoothed a little so a band laid on it doesn't follow every bump.
+ */
+function contour(meshes: AbstractMesh[], space: TransformNode, y: number, band: number, cx: number, cz: number): Float32Array | null {
+  const inv = Matrix.Invert(space.computeWorldMatrix(true));
+  const out = new Float32Array(AROUND);
+  const p = new Vector3();
+  let any = false;
+  for (const m of meshes) {
+    const pos = m.getVerticesData('position');
+    if (!pos) continue;
+    const toSpace = m.computeWorldMatrix(true).multiply(inv);
+    for (let i = 0; i < pos.length; i += 3) {
+      Vector3.TransformCoordinatesFromFloatsToRef(pos[i]!, pos[i + 1]!, pos[i + 2]!, toSpace, p);
+      if (Math.abs(p.y - y) > band) continue;
+      const dx = p.x - cx;
+      const dz = p.z - cz;
+      const k = Math.round(((Math.atan2(dx, dz) / (Math.PI * 2) + 1) % 1) * AROUND) % AROUND;
+      const d = Math.hypot(dx, dz);
+      if (d > out[k]!) out[k] = d;
+      any = true;
+    }
+  }
+  if (!any) return null;
+  // Fill the gaps from the nearest filled direction either side.
+  const filled = Float32Array.from(out);
+  for (let k = 0; k < AROUND; k++) {
+    if (out[k]! > 0) continue;
+    for (let j = 1; j < AROUND / 2; j++) {
+      const v = Math.max(out[(k + j) % AROUND]!, out[(k - j + AROUND) % AROUND]!);
+      if (v > 0) {
+        filled[k] = v;
+        break;
+      }
+    }
+  }
+  // A band lies over the bumps: each direction is at least its neighbours' average, then smoothed.
+  const smooth = new Float32Array(AROUND);
+  for (let k = 0; k < AROUND; k++) {
+    const a = filled[(k + AROUND - 1) % AROUND]!;
+    const b = filled[(k + 1) % AROUND]!;
+    smooth[k] = Math.max(filled[k]!, (a + b) / 2) * 0.5 + (a + b) * 0.25;
+  }
+  for (let k = 0; k < AROUND; k++) smooth[k] = Math.max(smooth[k]!, filled[k]!);
+  return smooth;
+}
+
+/** Point k of a contour (scaled by `grow` and pushed out by `pad` metres) at height y. */
+function around(radii: Float32Array, k: number, grow: number, pad: number, cx: number, cz: number): [number, number] {
+  const a = (k / AROUND) * Math.PI * 2;
+  const d = radii[k % AROUND]! * grow + pad;
+  return [cx + Math.sin(a) * d, cz + Math.cos(a) * d];
+}
+
+/**
+ * A closed band laid round a head: from `y0` up to `y1`, following contours measured at those heights (pushed out by
+ * `pad`), `thick` metres thick, with faces on every side (so it reads from inside a hood or under a brim too).
+ */
+function headBand(name: string, scene: Scene, lower: Float32Array, upper: Float32Array, y0: number, y1: number, pad: number, thick: number, cx: number, cz: number): Mesh {
+  const positions: number[] = [];
+  const indices: number[] = [];
+  // Rings: outer bottom, outer top, inner top, inner bottom.
+  const rings: [Float32Array, number, number][] = [
+    [lower, y0, pad + thick],
+    [upper, y1, pad + thick],
+    [upper, y1, pad],
+    [lower, y0, pad],
+  ];
+  for (const [radii, y, out] of rings) {
+    for (let k = 0; k < AROUND; k++) {
+      const [x, z] = around(radii, k, 1, out, cx, cz);
+      positions.push(x, y, z);
+    }
+  }
+  for (let r = 0; r < 4; r++) {
+    const a = r * AROUND;
+    const b = ((r + 1) % 4) * AROUND;
+    for (let k = 0; k < AROUND; k++) {
+      const k1 = (k + 1) % AROUND;
+      indices.push(a + k, a + k1, b + k, b + k, a + k1, b + k1);
+    }
+  }
+  const mesh = new Mesh(name, scene);
+  const data = new VertexData();
+  data.positions = positions;
+  data.indices = indices;
+  const normals: number[] = [];
+  VertexData.ComputeNormals(positions, indices, normals);
+  data.normals = normals;
+  data.applyToMesh(mesh);
+  return mesh;
+}
+
 export interface GearTargets {
   root: TransformNode;
   joints: Map<string, TransformNode>;
@@ -99,6 +209,8 @@ export interface GearTargets {
   eyes: AbstractMesh[];
   hair: AbstractMesh[];
   torso: AbstractMesh[];
+  /** Loaded gear models by name (gearModels); a piece whose model is missing is left off. */
+  models?: ReadonlyMap<string, AssetContainer>;
 }
 
 /** Build a look's gear onto a character; returns the meshes (already parented to joints). */
@@ -124,6 +236,16 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
   const cz = (headBox.max.z + headBox.min.z) / 2;
   const r = hx * 1.12; // a skull's radius, a little over the head mesh (hair sits under hats)
   const crownY = top - r * 0.82;
+  /** The head's outline at a height, hair included where it sits close (never more than 2.5 cm out). */
+  const outline = (y: number, withHair = true): Float32Array => {
+    const skin = contour(t.head, t.root, y, 0.008, cx, cz);
+    const fallback = new Float32Array(AROUND).fill(hx);
+    if (!skin) return fallback;
+    if (!withHair || !t.hair.length) return skin;
+    const hair = contour(t.hair, t.root, y, 0.008, cx, cz);
+    if (!hair) return skin;
+    return skin.map((d, k) => Math.max(d, Math.min(hair[k]!, d + 0.025)));
+  };
 
   const made: Mesh[] = [];
   const add = (m: Mesh, parent: TransformNode, mat: PBRMaterial) => {
@@ -155,6 +277,25 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
   };
 
   for (const id of gear) {
+    const model = gearInfo(id)?.model;
+    if (model) {
+      const container = t.models?.get(model);
+      if (!container) continue;
+      // Made in skull radii with its origin on the crown line (see content/gear.json).
+      const pivot = new TransformNode(`gear_${id}`, scene);
+      pivot.position.set(cx, crownY, cz);
+      pivot.scaling.setAll(r);
+      const inst = container.instantiateModelsToScene((n) => `${id}_${n}`, false, { doNotInstantiate: true });
+      for (const n of inst.rootNodes) n.parent = pivot;
+      pivot.parent = t.root;
+      pivot.computeWorldMatrix(true);
+      pivot.setParent(headJoint);
+      for (const m of pivot.getChildMeshes() as Mesh[]) {
+        m.isPickable = false;
+        if (m.getTotalVertices() > 0) made.push(m);
+      }
+      continue;
+    }
     switch (gearInfo(id)?.id) {
       case 'cap': {
         head(dome('cap', r * 1.02, 0.78), material(scene, cloth));
@@ -173,60 +314,59 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
         head(cuff, material(scene, shade(cloth, 0.8)));
         break;
       }
-      case 'helmet': {
-        const steel = material(scene, shade(cloth, 0.7), 'hard');
-        const shell = dome('helmet', r * 1.18, 0.86);
-        shell.position.y = crownY - 0.012;
-        head(shell, steel);
-        const rim = CreateTorus('helmetRim', { diameter: r * 2.36, thickness: 0.024, tessellation: 28 }, scene);
-        rim.scaling.z = 1.08;
-        rim.position.set(cx, crownY - 0.012, cz);
-        head(rim, steel);
-        const strap = CreateTorus('helmetStrap', { diameter: r * 1.95, thickness: 0.01, tessellation: 20 }, scene);
-        strap.rotation.z = Math.PI / 2;
-        strap.scaling.set(1, 1.25, 1);
-        strap.position.set(cx, eyeY - 0.03, cz + 0.005);
-        head(strap, material(scene, '#2a2622'));
-        break;
-      }
       case 'beret': {
-        const b = CreateSphere('beret', { diameter: r * 2.25, segments: 12 }, scene);
-        b.scaling.set(1, 0.32, 1.02);
-        b.position.set(cx - r * 0.12, top - 0.005, cz - 0.01);
-        b.rotation.z = 0.22;
-        head(b, material(scene, cloth));
-        const band = CreateTorus('beretBand', { diameter: r * 2.04, thickness: 0.018, tessellation: 24 }, scene);
-        band.scaling.z = 1.08;
-        band.position.set(cx, top - r * 0.42, cz);
-        band.rotation.z = 0.12;
-        head(band, material(scene, shade(trim, 0.8)));
+        // A band round the head at the crown line, a soft crown over the skull, and the beret's flat top pulled to one side.
+        const felt = material(scene, cloth);
+        const bandY = crownY + r * 0.05;
+        head(headBand('beretBand', scene, outline(bandY - 0.012), outline(bandY + 0.014), bandY - 0.012, bandY + 0.014, 0.003, 0.01, cx, cz), material(scene, shade(trim, 0.8)));
+        const cap = dome('beretCap', r * 1.04, 0.72);
+        cap.position.y = bandY;
+        head(cap, felt);
+        const flat = CreateSphere('beret', { diameter: r * 2.3, segments: 16 }, scene);
+        flat.scaling.set(1, 0.3, 1.02);
+        flat.position.set(cx - r * 0.16, bandY + r * 0.62, cz - r * 0.02);
+        flat.rotation.z = 0.2;
+        head(flat, felt);
         break;
       }
       case 'brim': {
+        // A crown sitting down over the skull, a band, and a brim a little wider than the shoulders' view of the head.
         const hat = material(scene, trim);
-        const crown = CreateCylinder('brimCrown', { diameterTop: r * 1.55, diameterBottom: r * 2.15, height: r * 0.95, tessellation: 20 }, scene);
-        crown.scaling.z = 1.1;
-        crown.position.set(cx, crownY + r * 0.42, cz);
+        const baseY = crownY - r * 0.06;
+        const ring = outline(baseY);
+        const rx = Math.max(...Array.from(ring, (d, k) => Math.abs(Math.sin((k / AROUND) * Math.PI * 2)) * d)) + 0.008;
+        const rz = Math.max(...Array.from(ring, (d, k) => Math.abs(Math.cos((k / AROUND) * Math.PI * 2)) * d)) + 0.008;
+        const crown = CreateCylinder('brimCrown', { diameterTop: 1.7, diameterBottom: 2, height: 1, tessellation: 28 }, scene);
+        crown.scaling.set(rx, r * 0.9, rz);
+        crown.position.set(cx, baseY + r * 0.45, cz);
         head(crown, hat);
-        const disc = CreateCylinder('brimDisc', { diameter: r * 3.6, height: 0.014, tessellation: 28 }, scene);
-        disc.position.set(cx, crownY - 0.005, cz);
+        const dent = dome('brimTop', 1, 0.25);
+        dent.scaling.set(rx * 0.85, r * 0.3, rz * 0.85);
+        dent.position.set(cx, baseY + r * 0.9, cz);
+        head(dent, hat);
+        const disc = CreateCylinder('brimDisc', { diameter: 2, height: 0.01, tessellation: 36 }, scene);
+        disc.scaling.set(rx * 1.75, 1, rz * 1.6);
+        disc.position.set(cx, baseY + 0.004, cz);
         head(disc, hat);
-        const band = CreateCylinder('brimBand', { diameter: r * 2.14, height: 0.03, tessellation: 20 }, scene);
-        band.scaling.z = 1.1;
-        band.position.set(cx, crownY + 0.02, cz);
-        head(band, material(scene, shade(cloth, 0.6)));
+        const band = CreateCylinder('brimBand', { diameterTop: 2 - 0.05 / 1, diameterBottom: 2, height: 1, tessellation: 28 }, scene);
+        band.scaling.set(rx * 1.01, 0.028, rz * 1.01);
+        band.position.set(cx, baseY + 0.022, cz);
+        head(band, material(scene, shade(trim, 0.55)));
         break;
       }
       case 'headband': {
-        const bandY = (eyeY + top) / 2 - 0.005;
-        const band = CreateTorus('headband', { diameter: r * 1.86, thickness: 0.03, tessellation: 24 }, scene);
-        band.scaling.set(1, 1, 1.12);
-        band.position.set(cx, bandY, cz + 0.004);
-        head(band, material(scene, cloth));
-        const tail = CreateBox('headbandTail', { width: 0.025, height: 0.008, depth: 0.12 }, scene);
-        tail.position.set(cx + 0.02, bandY - 0.04, headBox.min.z - 0.04);
-        tail.rotation.x = -0.9;
-        head(tail, material(scene, cloth));
+        // A cloth band laid on the forehead and round the hair, its tails knotted at the back.
+        const bandY = eyeY + (top - eyeY) * 0.42;
+        const lower = outline(bandY - 0.016);
+        const upper = outline(bandY + 0.016);
+        head(headBand('headband', scene, lower, upper, bandY - 0.016, bandY + 0.016, 0.002, 0.008, cx, cz), material(scene, cloth));
+        const [bx, bz] = around(lower, AROUND / 2, 1, 0.01, cx, cz);
+        for (const side of [-1, 1]) {
+          const tail = CreateBox('headbandTail', { width: 0.022, height: 0.075, depth: 0.006 }, scene);
+          tail.position.set(bx + side * 0.012, bandY - 0.04, bz - 0.006);
+          tail.rotation.set(-0.35, 0, side * 0.25);
+          head(tail, material(scene, cloth));
+        }
         break;
       }
       case 'shades':
@@ -234,22 +374,44 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
         const goggles = id === 'goggles';
         const lens = material(scene, goggles ? '#c8a050' : '#14161a', 'glass');
         const frame = material(scene, goggles ? '#2a2a2a' : '#0e0f12', 'hard');
-        const spread = eyeBox ? (eyeBox.max.x - eyeBox.min.x) / 2 - 0.012 : hx * 0.45;
+        const spread = eyeBox ? Math.max(0.026, (eyeBox.max.x - eyeBox.min.x) / 2 - 0.014) : hx * 0.42;
+        const ring = outline(eyeY + 0.004, goggles);
+        // The face's front over each eye (the brow can stand out past the eyes), and the head's sides at eye height.
+        const faceZ = Math.max(front, cz + ring[0]! - 0.004);
+        const sideX = Math.max(ring[AROUND / 4]!, ring[(AROUND * 3) / 4]!);
+        const lw = goggles ? 0.044 : 0.04;
+        const lh = goggles ? 0.034 : 0.026;
         for (const side of [-1, 1]) {
-          const l = CreateCylinder(`lens${side}`, { diameter: goggles ? 0.046 : 0.04, height: 0.012, tessellation: 16 }, scene);
+          const l = CreateCylinder(`lens${side}`, { diameter: 1, height: goggles ? 0.016 : 0.006, tessellation: 20 }, scene);
           l.rotation.x = Math.PI / 2;
-          l.scaling.set(1, 1, goggles ? 0.85 : 0.7);
-          l.position.set(cx + side * spread, eyeY + 0.004, front + 0.012);
+          l.scaling.set(lw, 1, lh);
+          l.position.set(cx + side * spread, eyeY + 0.003, faceZ + (goggles ? 0.012 : 0.008));
           head(l, lens);
+          const rim = CreateTorus(`lensRim${side}`, { diameter: 1, thickness: goggles ? 0.16 : 0.1, tessellation: 20 }, scene);
+          rim.rotation.x = Math.PI / 2;
+          rim.scaling.set(lw, lh, 0.02);
+          rim.position.set(cx + side * spread, eyeY + 0.003, faceZ + (goggles ? 0.016 : 0.01));
+          head(rim, frame);
         }
-        const bridge = CreateBox('bridge', { width: spread * 0.9, height: 0.008, depth: 0.008 }, scene);
-        bridge.position.set(cx, eyeY + 0.01, front + 0.014);
+        const bridge = CreateBox('bridge', { width: spread * 2 - lw * 0.9, height: 0.007, depth: 0.007 }, scene);
+        bridge.position.set(cx, eyeY + 0.008, faceZ + 0.012);
         head(bridge, frame);
-        // Strap (goggles) or arms (shades) round to the ears.
-        const strap = CreateTorus('strap', { diameter: hx * 2.05, thickness: goggles ? 0.018 : 0.006, tessellation: 24 }, scene);
-        strap.scaling.z = goggles ? 1.18 : 1.12;
-        strap.position.set(cx, eyeY + 0.006, cz + 0.006);
-        head(strap, goggles ? material(scene, '#3a3028') : frame);
+        if (goggles) {
+          // The strap: a band round the head and hair at eye height, from the lenses back.
+          const strapY = eyeY + 0.004;
+          head(headBand('strap', scene, outline(strapY - 0.011), outline(strapY + 0.011), strapY - 0.011, strapY + 0.011, 0.003, 0.006, cx, cz), material(scene, '#3a3028'));
+        } else {
+          // Arms from the lenses' outer edges back along the head's sides to the ears.
+          const backZ = cz - 0.01;
+          for (const side of [-1, 1]) {
+            const hinge = CreateBox('shadesHinge', { width: Math.max(0.006, sideX + 0.006 - spread - lw / 2), height: 0.008, depth: 0.006 }, scene);
+            hinge.position.set(cx + side * (spread + lw / 2 + (sideX + 0.006 - spread - lw / 2) / 2), eyeY + 0.008, faceZ + 0.006);
+            head(hinge, frame);
+            const arm = CreateBox('shadesArm', { width: 0.005, height: 0.007, depth: faceZ + 0.006 - backZ }, scene);
+            arm.position.set(cx + side * (sideX + 0.006), eyeY + 0.008, (faceZ + 0.006 + backZ) / 2);
+            head(arm, frame);
+          }
+        }
         break;
       }
       case 'mask': {

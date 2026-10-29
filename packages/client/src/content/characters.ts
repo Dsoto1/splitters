@@ -17,7 +17,7 @@ import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, firstPersonArms, getLook, npcL
 import { GLB, versioned } from '../assetUrl.ts';
 import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
-import { buildGear } from './gear.ts';
+import { GEAR_MODEL_BASE, buildGear, gearModels } from './gear.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
 import { asNode } from './models.ts';
 
@@ -113,6 +113,17 @@ export class CharacterLibrary {
     if (this.atlas) scene.onDisposeObservable.addOnce(() => this.atlas?.dispose());
   }
 
+  /** A gear model (public/gear/<name>.glb); null when it can't be had (the gear is left off). */
+  private loadGear(name: string): Promise<AssetContainer | null> {
+    const key = `gear:${name}`;
+    let p = this.files.get(key) as Promise<AssetContainer | null> | undefined;
+    if (!p) {
+      p = LoadAssetContainerAsync(versioned(`${GEAR_MODEL_BASE}${name}.glb`), this.scene, GLB).catch(() => null);
+      this.files.set(key, p as Promise<AssetContainer>);
+    }
+    return p;
+  }
+
   private load(file: string): Promise<AssetContainer> {
     let p = this.files.get(file);
     if (!p) {
@@ -131,6 +142,7 @@ export class CharacterLibrary {
       const l = getLook(spec.look);
       files.push(...(l.whole ? l.parts : [...l.parts, l.head, ...l.hair]).map((p) => `${p}.glb`));
       files.push(`${firstPersonArms(l)}.glb`);
+      return Promise.allSettled([...files.map((f) => this.load(f)), ...gearModels(l).map((g) => this.loadGear(g))]);
     }
     return Promise.allSettled(files.map((f) => this.load(f)));
   }
@@ -226,6 +238,13 @@ export class CharacterLibrary {
       this.dress(meshes, spec.armsOnly && look.whole ? { ...look, skin: look.whole.skin, cloth: look.whole.cloth, trim: look.whole.trim } : look);
       if (!spec.armsOnly && !look.whole && look.gear?.length) {
         const of = (i: number) => meshes.filter((m) => (partOf.get(m) ?? 0) === i);
+        const names = gearModels(look);
+        const loaded = await Promise.all(names.map((g) => this.loadGear(g)));
+        if (this.scene.isDisposed) {
+          holder.dispose();
+          return gone();
+        }
+        const models = new Map(names.flatMap((g, i) => (loaded[i] ? [[g, loaded[i]] as const] : [])));
         const headIndex = look.parts.length;
         const head = of(headIndex).filter((m) => !/_lod/.test(m.name));
         const gear = buildGear(this.scene, look, {
@@ -235,6 +254,7 @@ export class CharacterLibrary {
           eyes: head.filter((m) => (m.material?.name ?? '') === 'MI_Eyes'),
           hair: meshes.filter((m) => (partOf.get(m) ?? 0) > headIndex && !/_lod/.test(m.name)),
           torso: of(0).filter((m) => !/_lod/.test(m.name)),
+          models,
         });
         // Skinned onto the body's skeleton and merged per finish: one or two draws however many pieces.
         // Bound in the head's place (it is skinned on the same skeleton): with the character atlas, gear then merges with the head and hair.

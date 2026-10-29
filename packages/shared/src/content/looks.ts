@@ -48,11 +48,15 @@ export interface CharacterLook {
 /** Where a piece of gear goes; one per slot. */
 export type GearSlot = 'hat' | 'face' | 'chest' | 'back';
 
-/** Gear built in-game from simple shapes (no model files), coloured by the look's dyes. */
-export const GEAR: readonly { id: string; slot: GearSlot; label: string }[] = [
+/**
+ * Gear worn over the outfit. Most is built in-game from simple shapes (no model files), coloured by the look's dyes;
+ * a piece with `model` is a textured model (public/gear/<model>.glb, built by tools/content/prepare-gear.mjs from
+ * content/gear.json), fitted to the wearer's head. Custom look IDs encode gear by its place here: only append.
+ */
+export const GEAR: readonly { id: string; slot: GearSlot; label: string; model?: string }[] = [
   { id: 'cap', slot: 'hat', label: 'Cap' },
   { id: 'beanie', slot: 'hat', label: 'Beanie' },
-  { id: 'helmet', slot: 'hat', label: 'Combat helmet' },
+  { id: 'helmet', slot: 'hat', label: 'Combat helmet', model: 'military_helmet' },
   { id: 'beret', slot: 'hat', label: 'Beret' },
   { id: 'brim', slot: 'hat', label: 'Wide-brim hat' },
   { id: 'headband', slot: 'hat', label: 'Headband' },
@@ -65,6 +69,10 @@ export const GEAR: readonly { id: string; slot: GearSlot; label: string }[] = [
   { id: 'pack', slot: 'back', label: 'Backpack' },
   { id: 'radio', slot: 'back', label: 'Radio pack' },
   { id: 'tank', slot: 'back', label: 'Tank' },
+  { id: 'steel_helmet', slot: 'hat', label: 'Steel helmet', model: 'steel_helmet' },
+  { id: 'aviator_helmet', slot: 'hat', label: 'Aviator helmet', model: 'aviator_helmet' },
+  { id: 'mk2_helmet', slot: 'hat', label: 'Brimmed helmet', model: 'mk2_helmet' },
+  { id: 'viking_helmet', slot: 'hat', label: 'Horned helmet', model: 'viking_helmet' },
 ];
 export const GEAR_SLOTS: readonly GearSlot[] = ['hat', 'face', 'chest', 'back'];
 export const GEAR_SLOT_LABELS: Record<GearSlot, string> = { hat: 'Headwear', face: 'Face', chest: 'Chest', back: 'Back' };
@@ -92,7 +100,7 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.huntress', name: 'Huntress', body: 'female', head: 'head_female', parts: ranger('f'), hair: ['hair_long'], colorways: [], skin: null, hairColor: '#b08850', cloth: '#7a2a2a', trim: '#2a2622', gear: ['bandolier'] },
   // Two sizes off the standard: Sprout is small and quick, Bulwark big and tough.
   { id: 'core.sprout', name: 'Sprout', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c07a40', size: 'small', cloth: '#e0b84a', gear: ['headband'] },
-  { id: 'core.bulwark', name: 'Bulwark', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#4a4f58', trim: '#1e2126', gear: ['helmet', 'vest'] },
+  { id: 'core.bulwark', name: 'Bulwark', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#4a4f58', trim: '#1e2126', gear: ['steel_helmet', 'vest'] },
   { id: 'core.warden', name: 'Warden', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#3a3030', cloth: '#2a3a5c', trim: '#3a2a22', gear: ['beret', 'radio'] },
   { id: 'core.scout', name: 'Scout', body: 'female', head: 'head_female', parts: ranger('f', true, false), hair: ['hair_buns'], colorways: ['ranger_moss'], skin: SKIN_TONES[2], hairColor: '#4a3428', cloth: '#c8b88a', trim: '#6a4a30', gear: ['goggles', 'scarf'] },
   { id: 'core.farmhand', name: 'Farmhand', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c09060', gear: ['brim'] },
@@ -152,10 +160,10 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.brawler', name: 'Brawler', body: 'male', head: 'head_male', parts: ['athlete_torso_m', 'peasant_legs_m', 'peasant_feet_m'], hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[2], hairColor: '#2a2422', cloth: '#c0392b', gear: ['headband'] },
   // Uniforms and specialists: one outfit dyed and kitted out differently each time.
   { id: 'core.commando', name: 'Commando', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[4], hairColor: '#1e1a18', cloth: '#262a30', trim: '#1a1c20', gear: ['helmet', 'goggles', 'vest'] },
-  { id: 'core.frost', name: 'Frost', body: 'female', head: 'head_female', parts: ranger('f', false, false), hair: ['hair_long'], colorways: [], skin: SKIN_TONES[1], hairColor: '#f0e0c0', cloth: '#e8e4dc', trim: '#7a8088', gear: ['beanie', 'goggles', 'pack'] },
+  { id: 'core.frost', name: 'Frost', body: 'female', head: 'head_female', parts: ranger('f', false, false), hair: ['hair_long'], colorways: [], skin: SKIN_TONES[1], hairColor: '#f0e0c0', cloth: '#e8e4dc', trim: '#7a8088', gear: ['aviator_helmet', 'pack'] },
   { id: 'core.operative', name: 'Operative', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_simpleparted'], colorways: [], skin: SKIN_TONES[1], hairColor: '#2a2422', cloth: '#1e2126', trim: '#1e2126', gear: ['shades'] },
   { id: 'core.medic', name: 'Medic', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[2], hairColor: '#3a2a22', cloth: '#e8e4dc', trim: '#a83030', gear: ['cap', 'pack'] },
-  { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['helmet', 'tank'] },
+  { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['mk2_helmet', 'tank'] },
   // Whole-body originals (prepare-meshy-characters.mjs).
   { id: 'core.knight', name: 'Iron Knight', body: 'male', head: '', parts: ['meshy_knight'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#34373c', cloth: '#5a5e65', trim: '#3a3d42' } },
   { id: 'core.nova', name: 'Capt. Nova', body: 'female', head: '', parts: ['meshy_nova'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'peasant_arms_f', skin: '#e4e4df', cloth: '#e9e9e4', trim: '#e9e9e4' } },
@@ -336,7 +344,7 @@ export function encodeLook(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'c
   ].join('');
 }
 
-const CUSTOM_RE = /^c1-([mf])([0-9a-f]{4})([0-9a-f])([0-9a-f])([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6})(-[sl])?(?:-d([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6}))?(?:-g([0-9a-f]{4}))?$/;
+const CUSTOM_RE = /^c1-([mf])([0-9a-f]{4})([0-9a-f])([0-9a-f])([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6})(-[sl])?(?:-d([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6}))?(?:-g([0-9a-f]{4,8}))?$/;
 
 /** A custom look from its ID, or null if the ID is malformed or the look can't be worn. */
 export function decodeLook(id: string): CharacterLook | null {
