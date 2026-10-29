@@ -25,6 +25,9 @@ export const PATH_LOOKS: Record<PathStyle, { label: string; surface: string; tin
   planks: { label: 'Boardwalk', surface: 'core.pbr_weathered_planks', tint: null, ground: 'dirt', lines: false },
 };
 
+/** How a path's centre line is drawn through its points (see CurveShape). */
+const PATH_CURVE = { step: 1, centripetal: true } as const;
+
 const geometry = new WeakMap<MapPath, TrackGeometry>();
 /** The path's centre line (cached per path object). */
 export function pathGeometry(p: MapPath): TrackGeometry {
@@ -32,7 +35,8 @@ export function pathGeometry(p: MapPath): TrackGeometry {
   if (!g) {
     // The race track's centre-line code, with only what a path has.
     const shape = Track.parse({ points: p.points, width: Math.max(5, p.width), loop: p.loop });
-    g = new TrackGeometry({ ...shape, width: p.width });
+    // Centripetal and finely sampled: no overshoot or loops at sharp or uneven corners.
+    g = new TrackGeometry({ ...shape, width: p.width }, PATH_CURVE);
     geometry.set(p, g);
   }
   return g;
@@ -76,7 +80,7 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
     const target = ground.map((_, i) => {
       let sum = 0;
       let n = 0;
-      for (let k = -3; k <= 3; k++) {
+      for (let k = -6; k <= 6; k++) {
         const j = g.loop ? (i + k + ground.length) % ground.length : i + k;
         const v = ground[j];
         if (v === undefined) continue;
@@ -128,4 +132,26 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
 export function withPathsLaid(map: MapDocument): MapDocument {
   if (!map.terrain || !map.paths?.some((p) => p.lay)) return map;
   return { ...map, terrain: layPathsIntoTerrain(map.terrain, map.paths), paths: map.paths.map((p) => (p.lay ? { ...p, lay: false } : p)) };
+}
+
+/**
+ * The ground the paths cover (x/z, each path's centre line plus half its
+ * width), or null with none. A map with no terrain draws its ground and
+ * keeps its floor under this as well as under what is built, so a road
+ * drawn out past the buildings lies on level ground, not under the hills
+ * the backdrop raises round the map.
+ */
+export function pathsExtent(paths: readonly MapPath[] | null | undefined): { min: [number, number]; max: [number, number] } | null {
+  let [x0, z0, x1, z1] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const p of paths ?? []) {
+    if (p.points.length < 2) continue;
+    const half = p.width / 2;
+    for (const s of pathGeometry(p).samples) {
+      x0 = Math.min(x0, s.x - half);
+      z0 = Math.min(z0, s.z - half);
+      x1 = Math.max(x1, s.x + half);
+      z1 = Math.max(z1, s.z + half);
+    }
+  }
+  return Number.isFinite(x0) ? { min: [x0, z0], max: [x1, z1] } : null;
 }

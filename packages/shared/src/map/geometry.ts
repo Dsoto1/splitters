@@ -6,6 +6,7 @@ import { getProp } from '../content/props.ts';
 import { terrainBoundary, terrainTriangles } from './terrain.ts';
 import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
+import { pathsExtent } from './paths.ts';
 
 /**
  * `trim` boxes are visual only (baseboards, cornices, frames): never in physics
@@ -794,6 +795,14 @@ export function groundBoxes(map: MapDocument, boxes: readonly WorldBox[]): World
     z0 = Math.min(z0, map.bounds.min[1]);
     x1 = Math.max(x1, map.bounds.max[0]);
     z1 = Math.max(z1, map.bounds.max[1]);
+  }
+  // Roads and trails drawn past the buildings have ground under them too (the backdrop draws it level there).
+  const roads = pathsExtent(map.paths);
+  if (roads) {
+    x0 = Math.min(x0, roads.min[0]);
+    z0 = Math.min(z0, roads.min[1]);
+    x1 = Math.max(x1, roads.max[0]);
+    z1 = Math.max(z1, roads.max[1]);
   }
   [x0, z0, x1, z1] = [x0 - GROUND_MARGIN, z0 - GROUND_MARGIN, x1 + GROUND_MARGIN, z1 + GROUND_MARGIN];
   const top = Math.round(floor * 100) / 100 - 0.05;

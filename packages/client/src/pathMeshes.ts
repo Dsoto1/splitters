@@ -5,20 +5,40 @@ import { PATH_LOOKS, coreMaterials, pathGeometry, terrainHeightAt, type MapDocum
 import type { MapStyler } from './mapMeshes.ts';
 import { flat, strip } from './roadMeshes.ts';
 
-/** Rows of points across a path (left edge to right) following the ground, like roadStrip for the race track. */
+/** Height of a path's surface at (x, z): on the ground wherever there is ground (a path drapes over it), the curve's own height elsewhere. */
+export function pathSurfaceY(terrain: TerrainData | null, curveY: number, x: number, z: number): number {
+  return terrain ? (terrainHeightAt(terrain, x, z) ?? curveY) : curveY;
+}
+
+/** How far a path's surface stands above the ground: a boardwalk a little proud of it, everything else just on it. */
+export function pathLift(p: MapPath): number {
+  return p.style === 'planks' ? 0.12 : 0.04;
+}
+
+/**
+ * Rows of points across a path (left edge to right) following the ground,
+ * like roadStrip for the race track. Where the path turns tighter than half
+ * its width, the inside of the bend would run backwards and fold the ribbon
+ * over itself (wedges and pinches at the corners): there each line along the
+ * path holds its last point until the bend has passed it, so the inside of
+ * the corner is one clean point and the outside sweeps round it.
+ */
 function pathStrip(terrain: TerrainData | null, p: MapPath, from: number, to: number, cols: number, lift: number): { rows: number[][]; s: number[] } {
   const g = pathGeometry(p);
   const ring = g.loop ? [...g.samples, g.samples[0]!] : g.samples;
   const rows: number[][] = [];
   const s: number[] = [];
+  const last: ([number, number] | null)[] = Array.from({ length: cols + 1 }, () => null);
   ring.forEach((q, i) => {
     const row: number[] = [];
     for (let c = 0; c <= cols; c++) {
       const off = from + ((to - from) * c) / cols;
-      const x = q.x + q.dz * off;
-      const z = q.z - q.dx * off;
-      // On the ground wherever there is ground (a path drapes over it); the curve's own height elsewhere.
-      row.push(x, (terrain ? (terrainHeightAt(terrain, x, z) ?? q.y) : q.y) + lift, z);
+      let x = q.x + q.dz * off;
+      let z = q.z - q.dx * off;
+      const prev = last[c];
+      if (prev && (x - prev[0]) * q.dx + (z - prev[1]) * q.dz < 0) [x, z] = prev;
+      last[c] = [x, z];
+      row.push(x, pathSurfaceY(terrain, q.y, x, z) + lift, z);
     }
     rows.push(row);
     s.push(i === ring.length - 1 && g.loop ? g.length : q.s);
@@ -46,10 +66,10 @@ export function buildPathMeshes(scene: Scene, doc: MapDocument, terrain: Terrain
       mats.set(p.style, mat);
     }
     const half = p.width / 2;
-    const cols = Math.max(1, Math.ceil(p.width / 2));
+    // Columns about a metre apart, so the ribbon follows the ground's bumps across it.
+    const cols = Math.max(2, Math.ceil(p.width));
     const scale = coreMaterials.get(look.surface)?.scale ?? 4;
-    // A boardwalk stands a little proud of the ground; everything else lies on it.
-    const lift = p.style === 'planks' ? 0.12 : 0.04;
+    const lift = pathLift(p);
     out.push(strip(scene, `${name}_${p.id}`, pathStrip(terrain, p, -half, half, cols, lift), mat, (c, s) => [((c / cols) * p.width) / scale, s / scale]));
     if (look.lines && p.width >= 5) {
       const white = flat(scene, `${name}_paint`, '#e8e8e2', -4);

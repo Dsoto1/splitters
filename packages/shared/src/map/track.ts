@@ -58,6 +58,37 @@ const GRID_FRONT = 6;
 /** Bucket size for the road lookup grid. */
 const CELL = 8;
 
+/**
+ * How the centre line is drawn through the points. The race track keeps the
+ * defaults (uniform Catmull-Rom every 2 m, what its races were tuned on);
+ * paths use the centripetal curve, which never overshoots or loops when the
+ * points are unevenly spaced or turn sharply, sampled more finely.
+ */
+export interface CurveShape {
+  step?: number;
+  centripetal?: boolean;
+}
+
+/** Centripetal Catmull-Rom (Barry and Goldman) between p1 and p2 at u in [0, 1]. */
+function centripetal(p0: readonly number[], p1: readonly number[], p2: readonly number[], p3: readonly number[], u: number): [number, number, number] {
+  const knot = (a: readonly number[], b: readonly number[]) => Math.max(1e-3, Math.sqrt(Math.hypot(b[0]! - a[0]!, b[1]! - a[1]!, b[2]! - a[2]!)));
+  const t0 = 0;
+  const t1 = t0 + knot(p0, p1);
+  const t2 = t1 + knot(p1, p2);
+  const t3 = t2 + knot(p2, p3);
+  const t = t1 + (t2 - t1) * u;
+  const out: [number, number, number] = [0, 0, 0];
+  for (let k = 0; k < 3; k++) {
+    const a1 = ((t1 - t) / (t1 - t0)) * p0[k]! + ((t - t0) / (t1 - t0)) * p1[k]!;
+    const a2 = ((t2 - t) / (t2 - t1)) * p1[k]! + ((t - t1) / (t2 - t1)) * p2[k]!;
+    const a3 = ((t3 - t) / (t3 - t2)) * p2[k]! + ((t - t2) / (t3 - t2)) * p3[k]!;
+    const b1 = ((t2 - t) / (t2 - t0)) * a1 + ((t - t0) / (t2 - t0)) * a2;
+    const b2 = ((t3 - t) / (t3 - t1)) * a2 + ((t - t1) / (t3 - t1)) * a3;
+    out[k] = ((t2 - t) / (t2 - t1)) * b1 + ((t - t1) / (t2 - t1)) * b2;
+  }
+  return out;
+}
+
 const catmull = (p0: number, p1: number, p2: number, p3: number, t: number): number => {
   const t2 = t * t;
   const t3 = t2 * t;
@@ -75,10 +106,13 @@ export class TrackGeometry {
   readonly start: number;
   private readonly buckets = new Map<string, number[]>();
 
-  constructor(readonly track: Track) {
+  constructor(
+    readonly track: Track,
+    shape: CurveShape = {},
+  ) {
     this.loop = track.loop && track.points.length >= 3;
     this.width = track.width;
-    this.samples = centreLine(track, this.loop);
+    this.samples = centreLine(track, this.loop, shape);
     const last = this.samples[this.samples.length - 1]!;
     this.length = this.loop ? last.s + Math.hypot(this.samples[0]!.x - last.x, this.samples[0]!.z - last.z) : last.s;
     const depth = GRID_FRONT + Math.ceil(track.grid / 2) * GRID_ROW + 4;
@@ -204,7 +238,8 @@ export class TrackGeometry {
 }
 
 /** Centre-line samples: Catmull-Rom through the control points, heights eased along the road. */
-function centreLine(track: Track, loop: boolean): TrackSample[] {
+function centreLine(track: Track, loop: boolean, shape: CurveShape): TrackSample[] {
+  const step = shape.step ?? STEP;
   // Repeated points would make zero-length spans.
   const pts = track.points.filter((p, i, a) => i === 0 || Math.hypot(p[0] - a[i - 1]![0], p[2] - a[i - 1]![2]) > 0.05);
   if (loop && pts.length > 2 && Math.hypot(pts[0]![0] - pts[pts.length - 1]![0], pts[0]![2] - pts[pts.length - 1]![2]) < 0.05) pts.pop();
@@ -213,7 +248,15 @@ function centreLine(track: Track, loop: boolean): TrackSample[] {
     pts.push([p[0], p[1], p[2] + 1]);
   }
   const n = pts.length;
-  const get = (i: number) => (loop ? pts[((i % n) + n) % n]! : pts[Math.max(0, Math.min(n - 1, i))]!);
+  const get = (i: number): readonly number[] => {
+    if (loop) return pts[((i % n) + n) % n]!;
+    if (shape.centripetal && (i < 0 || i >= n)) {
+      // Past an open end: mirror the next point through the end one, so the curve leaves the end straight.
+      const [e, f] = i < 0 ? [pts[0]!, pts[1]!] : [pts[n - 1]!, pts[n - 2]!];
+      return [2 * e[0] - f[0], 2 * e[1] - f[1], 2 * e[2] - f[2]];
+    }
+    return pts[Math.max(0, Math.min(n - 1, i))]!;
+  };
   const raw: { x: number; y: number; z: number }[] = [];
   const spans = loop ? n : n - 1;
   for (let i = 0; i < spans; i++) {
@@ -221,10 +264,13 @@ function centreLine(track: Track, loop: boolean): TrackSample[] {
     const p1 = get(i);
     const p2 = get(i + 1);
     const p3 = get(i + 2);
-    const steps = Math.max(1, Math.ceil(Math.hypot(p2[0] - p1[0], p2[2] - p1[2]) / STEP));
+    const steps = Math.max(1, Math.ceil(Math.hypot(p2[0]! - p1[0]!, p2[2]! - p1[2]!) / step));
     for (let k = 0; k < steps; k++) {
       const t = k / steps;
-      raw.push({ x: catmull(p0[0], p1[0], p2[0], p3[0], t), y: catmull(p0[1], p1[1], p2[1], p3[1], t), z: catmull(p0[2], p1[2], p2[2], p3[2], t) });
+      if (shape.centripetal) {
+        const [x, y, z] = centripetal(p0, p1, p2, p3, t);
+        raw.push({ x, y, z });
+      } else raw.push({ x: catmull(p0[0]!, p1[0]!, p2[0]!, p3[0]!, t), y: catmull(p0[1]!, p1[1]!, p2[1]!, p3[1]!, t), z: catmull(p0[2]!, p1[2]!, p2[2]!, p3[2]!, t) });
     }
   }
   if (!loop) {
@@ -233,14 +279,15 @@ function centreLine(track: Track, loop: boolean): TrackSample[] {
   }
   // Ease heights along the road (a moving average over ~12 m), so a bumpy line of clicks gives a smooth road.
   const m = raw.length;
+  const ease = Math.max(1, Math.round((3 * STEP) / step));
   const ys = raw.map((_, i) => {
     let sum = 0;
     let w = 0;
-    for (let k = -3; k <= 3; k++) {
+    for (let k = -ease; k <= ease; k++) {
       const j = i + k;
       const q = loop ? raw[((j % m) + m) % m] : raw[j];
       if (!q) continue;
-      const wk = 4 - Math.abs(k);
+      const wk = ease + 1 - Math.abs(k);
       sum += q.y * wk;
       w += wk;
     }

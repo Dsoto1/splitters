@@ -226,6 +226,14 @@ export class EditorView {
     return { x: rect.left + v.x, y: rect.top + v.y };
   }
 
+  /** Like project, but null for a point behind the camera (it would land on screen mirrored). */
+  projectInView(p: Vec3): { x: number; y: number } | null {
+    const d = viewDirection(this.yaw, this.pitch);
+    const c = this.camera.position;
+    if ((p.x - c.x) * d.x + (p.y - c.y) * d.y + (p.z - c.z) * d.z <= this.camera.minZ) return null;
+    return this.project(p);
+  }
+
   // ---------- content ----------
 
   /**
@@ -304,6 +312,11 @@ export class EditorView {
     this.scenario.glass.build(visible, { windowsOnly: true });
     // Trim is pickable too, so it can be painted.
     return drawn;
+  }
+
+  /** The ground as drawn (paths laid in, kept under floors), or null on a map with no terrain. */
+  get ground(): MapDocument['terrain'] {
+    return this.shownTerrain;
   }
 
   private boundsLine?: LinesMesh;

@@ -518,6 +518,10 @@ export class EditorApp {
   /** Boxes currently shown (respecting floor isolation), for surface picking. */
   private visibleBoxes: WorldBox[] = [];
   private hoverFace: BoxHit | null = null;
+  /** Paint tool: the terrain under the pointer when it, not a surface, is what a click paints. */
+  private paintGround: Vec3 | null = null;
+  /** The boxes Paint and Walls can point at: everything drawn but the invisible barriers (map edge, ground fence). */
+  private paintable: { from: WorldBox[]; boxes: WorldBox[]; tiles: WorldBox[] } = { from: [], boxes: [], tiles: [] };
   /** Cell side under the pointer for the wall tool. */
   private hoverEdge: EdgeTarget | null = null;
   private paintStyle: SurfaceStyle = { material: 'core.red_brick', tint: null };
@@ -536,7 +540,15 @@ export class EditorApp {
     this.view = new EditorView(host.engine);
     this.thumbs = new ModelThumbnails(host.engine);
     this.road = new RoadTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
-    this.paths = new PathTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
+    this.paths = new PathTool({
+      doc: () => this.doc,
+      run: (label, cmd) => this.run(label, cmd),
+      toast: (t, bad) => this.toast(t, bad),
+      scene: this.view.scene,
+      ground: () => this.view.ground,
+      screen: (p) => this.view.projectInView(p),
+      pointer: () => this.pointerAt,
+    });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.history = new EditHistory(newMapDocument('Untitled Map'));
     this.logic = new LogicPanel({
@@ -773,7 +785,7 @@ export class EditorApp {
       pickup: ['Place', 'Click places the pickup · right-click removes a pickup'],
       scenario: ['Place', 'Click places it (doors, walls and lasers snap to doorways) · right-click removes an object · R turns it 90° (Shift+R 15°) · L opens Logic'],
       npc: ['Place', 'Click drops the NPCs here · right-click removes them · R turns them 90° (Shift+R 15°) · soldiers, faction and orders in the inspector'],
-      paint: ['Paint', 'Click or drag paints surfaces · right-click (Shift+drag) resets them to the theme · Alt+click or I picks a style up'],
+      paint: ['Paint', 'Click or drag paints surfaces and the ground (terrain) · right-click (Shift+drag) resets them to the theme · Alt+click or I picks a style up'],
       edge: ['Walls', 'Click or drag along wall and floor edges to build them this way · right-click (Shift+drag) resets them · O cycles the style'],
       prop: ['Place', 'Click places the prop (Ctrl: no snap) · right-click removes a prop · R turns it 15° (Shift+R 5°)'],
       mount: ['Place', 'Click places it · right-click removes a vehicle · R turns it 15° (Shift+R 5°) · players get in and out with E'],
@@ -1078,6 +1090,14 @@ export class EditorApp {
     const b = this.brush;
     const tool = this.tool;
     if (!b) return;
+    if (tool.kind === 'paint' && this.paintGround && !this.hoverFace) {
+      const p = this.paintGround;
+      if (b.at && Math.hypot(p.x - b.at.x, p.z - b.at.z) < this.brushRadius * 0.5) return;
+      b.at = { x: p.x, z: p.z };
+      b.key = null;
+      if (!b.invert) this.paintGroundAtHover();
+      return;
+    }
     if (tool.kind === 'paint') {
       const t = this.paintTarget();
       const key = t ? `${t.tile.id}:${t.slot}` : null;
@@ -1123,6 +1143,22 @@ export class EditorApp {
     if (!hit) return null;
     const tile = this.doc.classicStructure.tiles.find((t) => t.id === hit.box.sourceId);
     return tile ? { tile, slot: faceSlot(hit.box, hit.normal) } : null;
+  }
+
+  /** The ground Paint lays on the terrain: the brush's material when it is one of the grounds, else the Terrain tab's ground. */
+  private get groundPaint(): TerrainMaterial {
+    return TERRAIN_MATERIALS.find((m) => TERRAIN_SURFACES[m] === this.paintStyle.material) ?? this.terrainMaterial;
+  }
+
+  /** Paint the terrain under the pointer (a brush of the Terrain tab's radius). */
+  private paintGroundAtHover(): void {
+    const t = this.doc.terrain;
+    const p = this.paintGround;
+    if (!t || !p) return;
+    const m = this.groundPaint;
+    const after = applyBrush(t, { brush: 'paint', x: p.x, z: p.z, radius: this.brushRadius, strength: 1, material: m });
+    if (after.materials.every((v, i) => v === t.materials[i])) return;
+    this.run(`Paint ${TERRAIN_MATERIAL_LABELS[m].toLowerCase()} ground`, { kind: 'setTerrain', before: t, after });
   }
 
   private paintAtHover(clear: boolean): void {
@@ -1328,9 +1364,11 @@ export class EditorApp {
     const t = this.stroke?.now ?? this.doc.terrain;
     this.terrainHover = null;
     this.hoverOnTerrain = false;
+    let ground: { at: Vec3; distance: number } | null = null;
     if (t) {
       const ray = this.view.pointerRay(clientX, clientY);
       const hit = ray ? terrainRaycast(t, ray.origin, ray.dir) : null;
+      if (hit && ray) ground = { at: hit, distance: Math.hypot(hit.x - ray.origin.x, hit.y - ray.origin.y, hit.z - ray.origin.z) };
       if (hit && this.tool.kind === 'terrain') this.terrainHover = hit;
       // Spawns, pickups and props stand on the ground where it is nearer than the level plane.
       if (hit && ray && this.tool.kind !== 'tile' && this.tool.kind !== 'terrain') {
@@ -1342,9 +1380,21 @@ export class EditorApp {
       }
     }
     this.hoverCell = this.hoverPoint ? [Math.round(this.hoverPoint.x / cellSize), Math.round(this.hoverPoint.z / cellSize), this.level] : null;
+    if (this.tool.kind === 'path') this.paths.hover(this.hoverPoint);
+    this.paintGround = null;
     if (this.tool.kind === 'paint' || this.tool.kind === 'edge') {
       const ray = this.view.pointerRay(clientX, clientY);
-      this.hoverFace = ray ? raycastBoxes(ray.origin, ray.dir, this.visibleBoxes) : null;
+      // Only what is drawn: the invisible walls round the map (60 m high) would catch the ray first from far out.
+      if (this.paintable.from !== this.visibleBoxes) {
+        const boxes = this.visibleBoxes.filter((b) => b.kind !== 'barrier');
+        const tiles = new Set(this.doc.classicStructure.tiles.map((t) => t.id));
+        this.paintable = { from: this.visibleBoxes, boxes, tiles: boxes.filter((b) => tiles.has(b.sourceId)) };
+      }
+      // Paint paints tiles' surfaces (a rock or crate in the way is not one: the ground under it is what it paints).
+      const face = ray ? raycastBoxes(ray.origin, ray.dir, this.tool.kind === 'paint' ? this.paintable.tiles : this.paintable.boxes) : null;
+      // The ground in front of a surface hides it; with nothing nearer, the ground is what Paint paints.
+      this.hoverFace = face && (!ground || face.distance < ground.distance) ? face : null;
+      if (this.tool.kind === 'paint' && !this.hoverFace && ground) this.paintGround = ground.at;
     } else this.hoverFace = null;
     this.hoverEdge = null;
     if (this.tool.kind === 'edge' && this.hoverFace) {
@@ -1481,10 +1531,22 @@ export class EditorApp {
       this.view.setGhost(this.doc, null, null, 0, true);
       return;
     }
-    this.view.setFaceHighlight(this.hoverFace?.box ?? null, this.hoverFace?.localNormal ?? null);
+    // Paint lights only a surface it can paint (a tile's), never a prop or block it would leave as it is.
+    const face = this.tool.kind === 'paint' && !this.paintTarget() ? null : this.hoverFace;
+    this.view.setFaceHighlight(face?.box ?? null, face?.localNormal ?? null);
     if (this.tool.kind === 'paint') {
       const target = this.paintTarget();
-      $('ed-target').textContent = target ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}` : '';
+      const g = this.paintGround;
+      // On the ground: the ring it paints, as the Terrain tab's Paint brush shows it.
+      this.view.setBrushRing(g ? this.doc.terrain : null, g?.x ?? 0, g?.z ?? 0, this.brushRadius, '#ffb03b');
+      $('ed-target').textContent = target
+        ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}`
+        : g
+          ? `Ground · paint ${TERRAIN_MATERIAL_LABELS[this.groundPaint]} · radius ${this.brushRadius} m`
+          : '';
+    } else if (this.tool.kind === 'path') {
+      const over = this.paths.hovering;
+      $('ed-target').textContent = this.paths.dragging ? 'Moving the point' : over === 'point' ? 'Drag to move this point · right-click removes it' : over === 'path' ? 'Click to edit this path · Shift-click puts a point here' : '';
     } else $('ed-target').textContent = '';
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);

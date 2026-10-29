@@ -124,6 +124,27 @@ flame, and the railgun's impact is at scale 0.4.
    terrain (lumpy dirt/grass in the open streets is authored paint: the owner
    can now draw sand Paths over it); eight portraits still rendered live (soldier NPCs and zombies untinted; imp tiny; cyclops and oculus as blobs). Portraits must use `offscreenProjection` (offscreen.ts): the engine uses a reversed depth buffer.
 
+## MapMaker Paths and Paint fixes (2026-10-29)
+
+- **Paths:** on a map without terrain the backdrop's ground (and the collision
+  ground, `groundBoxes`) only reached 2 m past the buildings, then rose as a
+  berm, burying roads drawn further out; both now cover the paths
+  (`pathsExtent`). Path curves are centripetal Catmull-Rom sampled every
+  metre (`TrackGeometry`'s `CurveShape`; the race track keeps its old curve),
+  so no overshoot or loops; the ribbon's inner edge holds its point through a
+  tight bend instead of folding over (`pathStrip`). The editor's line follows
+  the curve on the road surface (not straight segments between points),
+  handles sit on the road, are drawn over the ground (rendering group 1),
+  are grabbed within 18 px, light yellow under the pointer, and a click on
+  another path's ribbon picks it.
+- **Paint (B):** its hover ray hit the invisible 60 m walls round the map
+  (barrier boxes) when the camera was outside them (zoomed out): the yellow
+  slab. It now skips barriers and non-tile boxes, the terrain in front hides
+  what is behind it, and on the terrain Paint paints the ground (its brush
+  material if that is a ground, else the Terrain tab's), ring and all.
+  `terrainRaycast` marches only the stretch over the terrain, so it reaches
+  from any zoom.
+
 ## Effects performance (2026-10-29)
 
 After 0.4.0 the owner felt the new effects slowing play. Measured in a 48-player

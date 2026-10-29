@@ -6,7 +6,8 @@ import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { MapPath as PathSchema, PATH_LOOKS, PATH_STYLES, newId, pathGeometry, trackPointAt, type EditCommand, type MapDocument, type MapPath, type PathStyle, type Vec3 } from '@tiletrigger/shared';
+import { MapPath as PathSchema, PATH_LOOKS, PATH_STYLES, newId, pathGeometry, trackPointAt, type EditCommand, type MapDocument, type MapPath, type PathStyle, type TerrainData, type Vec3 } from '@tiletrigger/shared';
+import { pathLift, pathSurfaceY } from '../pathMeshes.ts';
 
 /** What the path tool needs from MapMaker. */
 export interface PathToolHost {
@@ -14,10 +15,19 @@ export interface PathToolHost {
   run(label: string, cmd: EditCommand): boolean;
   toast(text: string, bad?: boolean): void;
   scene: Scene;
+  /** The ground as drawn (paths laid in), or null without terrain: handles and lines sit on the road drawn on it. */
+  ground(): TerrainData | null;
+  /** Screen position of a world point (null behind the camera) and of the pointer: handles are grabbed by how near they look. */
+  screen(p: Vec3): { x: number; y: number } | null;
+  pointer(): { x: number; y: number } | null;
 }
 
-/** How close (m) a click must be to a point to grab it. */
-const GRAB = 2;
+/** A handle is grabbed within this many pixels of where it is drawn, or this many metres of its point (close up). */
+const GRAB_PX = 18;
+const GRAB_M = 1;
+/** Handle sizes (m): the edited path's, other paths'. */
+const HANDLE = 1;
+const HANDLE_OTHER = 0.7;
 
 /**
  * MapMaker's Paths tool: roads, streets, trails and walkways (map/paths.ts),
@@ -41,10 +51,14 @@ export class PathTool {
   /** The first click of a new path. */
   private pending: [number, number, number] | null = null;
   private drag: { id: string; index: number; moved: boolean; at: [number, number, number] } | null = null;
+  /** The handle, or else the path, under the pointer (index -1: the path's ribbon; null: neither). */
+  private hovered: { id: string; index: number } | null = null;
   private markers: Mesh[] = [];
   private lines: LinesMesh[] = [];
   private active = false;
-  private readonly mats: Record<'point' | 'other' | 'sel', StandardMaterial>;
+  /** The pane last rendered, redrawn when a click picks another path. */
+  private pane: HTMLElement | null = null;
+  private readonly mats: Record<'point' | 'other' | 'sel' | 'hover', StandardMaterial>;
 
   constructor(private readonly host: PathToolHost) {
     const mat = (name: string, hex: string) => {
@@ -54,7 +68,7 @@ export class PathTool {
       m.specularColor = Color3.Black();
       return m;
     };
-    this.mats = { point: mat('pathPoint', '#5fd0ff'), other: mat('pathOther', '#4a6070'), sel: mat('pathSel', '#ff7a2a') };
+    this.mats = { point: mat('pathPoint', '#5fd0ff'), other: mat('pathOther', '#6f8797'), sel: mat('pathSel', '#ff7a2a'), hover: mat('pathHover', '#fff27a') };
   }
 
   private get paths(): MapPath[] {
@@ -70,6 +84,7 @@ export class PathTool {
     if (!on) {
       this.pending = null;
       this.drag = null;
+      this.hovered = null;
     }
     this.drawMarkers();
   }
@@ -94,14 +109,32 @@ export class PathTool {
     return this.paths.map((q) => (q.id === p.id ? p : q));
   }
 
-  /** The point near (x, z): its path and index (the edited path first). */
+  /** Where a path's point is drawn: a ball of `size` sitting on the road surface over it. */
+  private handleAt(path: MapPath, q: readonly number[], size: number): Vec3 {
+    const g = pathGeometry(path);
+    const curveY = g.nearest(q[0]!, q[2]!, 4)?.sample.y ?? q[1]!;
+    return { x: q[0]!, y: pathSurfaceY(this.host.ground(), curveY, q[0]!, q[2]!) + pathLift(path) + size * 0.3, z: q[2]! };
+  }
+
+  /**
+   * The point under the pointer: its path and index. A handle counts within
+   * a few pixels of where it is drawn (easy to grab at any zoom) or a metre
+   * of its point; the nearest wins, the edited path's on a tie.
+   */
   private pointAt(p: Vec3): { id: string; index: number } | null {
     let best: { id: string; index: number } | null = null;
-    let bestD = GRAB;
+    let bestD = Infinity;
+    const ptr = this.host.pointer();
     const order = [...this.paths].sort((a, b) => Number(b.id === this.current) - Number(a.id === this.current));
     for (const path of order) {
+      const size = path.id === this.current ? HANDLE : HANDLE_OTHER;
       path.points.forEach((q, i) => {
-        const d = Math.hypot(q[0] - p.x, q[2] - p.z);
+        const world = Math.hypot(q[0] - p.x, q[2] - p.z);
+        const at = ptr ? this.host.screen(this.handleAt(path, q, size)) : null;
+        const px = at && ptr ? Math.hypot(at.x - ptr.x, at.y - ptr.y) : Infinity;
+        if (px > GRAB_PX && world > GRAB_M) return;
+        // Pixels decide between handles; a metre off counts as the full grab distance.
+        const d = Math.min(px, (world / GRAB_M) * GRAB_PX);
         if (d < bestD) {
           bestD = d;
           best = { id: path.id, index: i };
@@ -109,6 +142,50 @@ export class PathTool {
       });
     }
     return best;
+  }
+
+  /** The path whose ribbon is under (x, z) (the edited path first), or null. */
+  private pathAt(p: Vec3): string | null {
+    let best: string | null = null;
+    let bestD = Infinity;
+    for (const path of this.paths) {
+      if (path.points.length < 2) continue;
+      const near = pathGeometry(path).nearest(p.x, p.z, path.width / 2 + 2);
+      const d = near ? Math.abs(near.lateral) - path.width / 2 : Infinity;
+      if (d > 0.5) continue;
+      const score = d - (path.id === this.current ? 0.25 : 0);
+      if (score < bestD) {
+        bestD = score;
+        best = path.id;
+      }
+    }
+    return best;
+  }
+
+  /** The pointer moved (not dragging): light the handle, or else the path, under it. */
+  hover(p: Vec3 | null): void {
+    if (!this.active || this.drag) return;
+    const point = p ? this.pointAt(p) : null;
+    const path = !point && p ? this.pathAt(p) : null;
+    // Another path's ribbon lights up (a click picks it); the edited one's needs no telling.
+    const next = point ?? (path && path !== this.current ? { id: path, index: -1 } : null);
+    if (next?.id === this.hovered?.id && next?.index === this.hovered?.index) return;
+    this.hovered = next;
+    this.drawMarkers();
+  }
+
+  /** What the pointer is over: a point, a path's ribbon, or nothing. */
+  get hovering(): 'point' | 'path' | null {
+    return !this.hovered ? null : this.hovered.index >= 0 ? 'point' : 'path';
+  }
+
+  /** Edit path `id` (its point `index` selected, -1 none) and show it in the pane. */
+  private pick(id: string, index: number): void {
+    const changed = id !== this.current;
+    this.current = id;
+    this.selected = index;
+    this.pending = null;
+    if (changed && this.pane) this.renderPane(this.pane);
   }
 
   /** Start the next path with the next click (the pane's "New path"). */
@@ -125,9 +202,16 @@ export class PathTool {
     const at = trackPointAt(doc.terrain, p.x, p.y, p.z);
     const hit = this.pointAt(p);
     if (hit) {
-      this.current = hit.id;
-      this.selected = hit.index;
+      this.pick(hit.id, hit.index);
       this.drag = { ...hit, moved: false, at: this.path!.points[hit.index]! };
+      this.hovered = hit;
+      this.drawMarkers();
+      return;
+    }
+    // A click on another path's ribbon picks that path (Shift-click still puts a point in the edited one).
+    const other = shift ? null : this.pathAt(p);
+    if (other && other !== this.current) {
+      this.pick(other, -1);
       this.drawMarkers();
       return;
     }
@@ -174,7 +258,10 @@ export class PathTool {
     const d = this.drag;
     this.drag = null;
     const path = this.paths.find((q) => q.id === d?.id);
-    if (!d || !d.moved || !path) return this.drawMarkers();
+    if (!d || !d.moved || !path) {
+      this.drawMarkers();
+      return;
+    }
     this.commit('Move path point', this.replace({ ...path, points: path.points.map((q, i) => (i === d.index ? d.at : q)) }));
   }
 
@@ -183,7 +270,7 @@ export class PathTool {
     if (!p) return;
     const hit = this.pointAt(p);
     if (hit) {
-      this.current = hit.id;
+      this.pick(hit.id, hit.index);
       this.remove(hit.index);
     }
   }
@@ -213,40 +300,63 @@ export class PathTool {
     this.drawMarkers();
   }
 
+  /**
+   * Handles and centre lines, drawn over everything (rendering group 1) so a
+   * bump in the ground never hides them: each point a ball sitting on the
+   * road over it, the edited path's bigger, its selected point orange and
+   * the one under the pointer yellow; each path's line follows its curve
+   * (the middle of the ribbon), the edited path's bright, a hovered one
+   * lighter. While a point is dragged the line shows where the road will go.
+   */
   private drawMarkers(): void {
     for (const m of this.markers) m.dispose();
     for (const l of this.lines) l.dispose();
     this.markers = [];
     this.lines = [];
     if (!this.active) return;
+    const ground = this.host.ground();
+    const ball = (name: string, at: Vec3, size: number, mat: StandardMaterial) => {
+      const s = CreateSphere(name, { diameter: size, segments: 8 }, this.host.scene);
+      s.position.set(at.x, at.y, at.z);
+      s.material = mat;
+      s.isPickable = false;
+      s.renderingGroupId = 1;
+      this.markers.push(s);
+    };
     for (const path of this.paths) {
       const mine = path.id === this.current;
-      const pts = path.points.map((q, i) => (this.drag && this.drag.id === path.id && this.drag.index === i ? this.drag.at : q));
-      pts.forEach((q, i) => {
-        const s = CreateSphere(`pathPt${i}`, { diameter: mine ? 0.8 : 0.5, segments: 6 }, this.host.scene);
-        s.position.set(q[0], q[1] + 0.6, q[2]);
-        s.material = mine && i === this.selected ? this.mats.sel : mine ? this.mats.point : this.mats.other;
-        s.isPickable = false;
-        this.markers.push(s);
-      });
-      const line = pts.map((q) => new Vector3(q[0], q[1] + 0.6, q[2]));
-      if (path.loop && pts.length >= 3) line.push(line[0]!.clone());
+      const dragged = this.drag && this.drag.id === path.id && this.drag.moved ? this.drag : null;
+      // The path as it will be once the drag ends.
+      const shown = dragged ? { ...path, points: path.points.map((q, i) => (i === dragged.index ? dragged.at : q)) } : path;
+      const g = pathGeometry(shown);
+      const lift = pathLift(path) + 0.05;
+      const line = g.samples.map((q) => new Vector3(q.x, pathSurfaceY(ground, q.y, q.x, q.z) + lift, q.z));
+      if (g.loop && line.length) line.push(line[0]!.clone());
+      const hoverPath = this.hovered?.id === path.id && this.hovered.index < 0;
       const l = CreateLines(`pathPoly_${path.id}`, { points: line }, this.host.scene);
-      l.color = Color3.FromHexString(mine ? '#5fd0ff' : '#4a6070');
+      l.color = Color3.FromHexString(mine ? '#5fd0ff' : hoverPath ? '#d6f4ff' : '#8aa2b2');
       l.isPickable = false;
+      l.renderingGroupId = 1;
       this.lines.push(l);
+      const size = mine ? HANDLE : HANDLE_OTHER;
+      shown.points.forEach((q, i) => {
+        const hot = this.hovered?.id === path.id && this.hovered.index === i;
+        const sel = mine && i === this.selected;
+        const mat = hot ? this.mats.hover : sel ? this.mats.sel : mine ? this.mats.point : this.mats.other;
+        const d = hot || sel ? size * 1.25 : size;
+        ball(`pathPt${i}`, this.handleAt(shown, q, d), d, mat);
+      });
     }
     if (this.pending) {
-      const s = CreateSphere('pathPending', { diameter: 0.8, segments: 6 }, this.host.scene);
-      s.position.set(this.pending[0], this.pending[1] + 0.6, this.pending[2]);
-      s.material = this.mats.sel;
-      s.isPickable = false;
-      this.markers.push(s);
+      const q = this.pending;
+      const y = pathSurfaceY(ground, q[1], q[0], q[2]) + 0.05 + HANDLE * 0.3;
+      ball('pathPending', { x: q[0], y, z: q[2] }, HANDLE * 1.25, this.mats.sel);
     }
   }
 
   /** The Paths pane: the list, a new path, and the selected one's settings. */
   renderPane(el: HTMLElement): void {
+    this.pane = el;
     el.replaceChildren();
     const path = this.path;
     const note = document.createElement('p');

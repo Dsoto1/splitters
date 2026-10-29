@@ -148,17 +148,60 @@ export function terrainBoundary(t: TerrainData, height = 40): WorldBox[] {
   return [box([x0 - w, y0, z0 - w], [x1 + w, y1, z0]), box([x0 - w, y0, z1], [x1 + w, y1, z1 + w]), box([x0 - w, y0, z0], [x0, y1, z1]), box([x1, y0, z0], [x1 + w, y1, z1])];
 }
 
-/** First point where a ray meets the terrain surface (for MapMaker brushes), or null. */
-export function terrainRaycast(t: TerrainData, origin: Vec3, dir: Vec3, maxDist = 600): Vec3 | null {
+const heightRange = new WeakMap<TerrainData['heights'], { low: number; high: number }>();
+
+/** The lowest and highest ground (m), cached per heights array. */
+function terrainHeightRange(t: TerrainData): { low: number; high: number } {
+  let r = heightRange.get(t.heights);
+  if (!r) {
+    let low = Infinity;
+    let high = -Infinity;
+    for (const h of t.heights) {
+      low = Math.min(low, h);
+      high = Math.max(high, h);
+    }
+    r = { low: t.baseY + low / 100, high: t.baseY + high / 100 };
+    heightRange.set(t.heights, r);
+  }
+  return r;
+}
+
+/**
+ * First point where a ray meets the terrain surface (for MapMaker brushes and
+ * picks), or null. Only the stretch of the ray over the terrain, between its
+ * lowest and highest ground, is marched, so a camera far out (zoomed right
+ * back) finds the ground as surely as one close in.
+ */
+export function terrainRaycast(t: TerrainData, origin: Vec3, dir: Vec3, maxDist = 5000): Vec3 | null {
   const above = (p: Vec3) => {
     const h = terrainHeightAt(t, p.x, p.z);
     return h === null ? null : p.y - h;
   };
   const at = (d: number): Vec3 => ({ x: origin.x + dir.x * d, y: origin.y + dir.y * d, z: origin.z + dir.z * d });
+  // Clip the ray to the box the ground lies in.
+  const { low, high } = terrainHeightRange(t);
+  const lo3 = [t.origin[0], low - 0.01, t.origin[1]];
+  const hi3 = [t.origin[0] + (t.cols - 1) * t.spacing, high + 0.01, t.origin[1] + (t.rows - 1) * t.spacing];
+  const o3 = [origin.x, origin.y, origin.z];
+  const d3 = [dir.x, dir.y, dir.z];
+  let enter = 0;
+  let exit = maxDist;
+  for (let i = 0; i < 3; i++) {
+    if (Math.abs(d3[i]!) < 1e-12) {
+      if (o3[i]! < lo3[i]! || o3[i]! > hi3[i]!) return null;
+      continue;
+    }
+    let a = (lo3[i]! - o3[i]!) / d3[i]!;
+    let b = (hi3[i]! - o3[i]!) / d3[i]!;
+    if (a > b) [a, b] = [b, a];
+    enter = Math.max(enter, a);
+    exit = Math.min(exit, b);
+  }
+  if (enter > exit) return null;
   const step = Math.max(0.25, t.spacing / 4);
-  let prev = 0;
-  let prevAbove = above(origin);
-  for (let d = step; d <= maxDist; d += step) {
+  let prev = enter;
+  let prevAbove = above(at(enter));
+  for (let d = enter + step; d <= exit + step; d += step) {
     const a = above(at(d));
     if (a !== null && prevAbove !== null && prevAbove > 0 && a <= 0) {
       // Refine between the last point above and the first below.

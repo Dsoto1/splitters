@@ -11,7 +11,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { CORE_THEMES, PROP_FENCES, SKIES, borderStyleAt, boxBounds, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { CORE_THEMES, PROP_FENCES, SKIES, borderStyleAt, boxBounds, pathsExtent, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { createPropNode } from './game/propVisuals.ts';
 import type { MapStyler } from './mapMeshes.ts';
@@ -528,6 +528,12 @@ function playArea(doc: MapDocument, boxes: readonly WorldBox[]): PlayArea {
   if (doc.bounds) {
     grow(doc.bounds.min[0], doc.bounds.min[1]);
     grow(doc.bounds.max[0], doc.bounds.max[1]);
+  }
+  // Roads and trails: level ground under them, not the berm that rises past the map's edge.
+  const roads = t ? null : pathsExtent(doc.paths);
+  if (roads) {
+    grow(roads.min[0], roads.min[1]);
+    grow(roads.max[0], roads.max[1]);
   }
   if (!Number.isFinite(min[0])) {
     min[0] = min[1] = -16;

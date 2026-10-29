@@ -620,6 +620,46 @@ async function editoruxFlow(browser) {
   check(aimed && aimed.position[1] < 0 && !d.entities.some((e) => e.id === aimed.id) && d.entities.filter((e) => e.kind === 'prop').length === rocks.length - 1, `Erase deletes the rock under the pointer, standing on the terrain (${aimed?.position[1]})`);
   await page.mouse.move(700, 400);
   await shot('erase-terrain');
+  // Paths: the handles sit on the road, light up under the pointer and drag; the line follows the ribbon's curve.
+  await page.evaluate(() => window.__editor.view.focus({ x: 30, y: 0, z: 40 }));
+  await settle();
+  await page.evaluate(() => window.__editor.setTool({ kind: 'path' }));
+  for (const [x, z] of [[26, 44], [34, 42], [32, 50]]) await clickAt(x, 0, z);
+  const road = (await doc()).paths?.at(-1);
+  check(road?.points.length === 3, `three clicks draw a path of three points (${road?.points.length})`);
+  const handle = await page.evaluate(() => {
+    const m = window.__editor.view.scene.getMeshByName('pathPt1');
+    return m && { x: m.position.x, y: m.position.y, z: m.position.z, group: m.renderingGroupId };
+  });
+  check(handle && Math.hypot(handle.x - 34, handle.z - 42) < 0.01 && handle.y - road.points[1][1] < 1 && handle.group === 1, `a path's handle sits on the road over its point, drawn over the ground (${JSON.stringify(handle)})`);
+  const hp = await at(handle.x, handle.y, handle.z);
+  // A few pixels off the handle still grabs it.
+  await page.mouse.move(hp.x + 6, hp.y - 5);
+  await page.waitForFunction(() => window.__editor.paths.hovering === 'point', null, { timeout: T(5000) }).catch(() => {});
+  check(await page.evaluate(() => window.__editor.paths.hovering === 'point' && /Drag to move/.test(document.getElementById('ed-target').textContent)), 'hovering near a handle lights it and says it drags');
+  const to = await at(37, 0, 46);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 6 });
+  await page.mouse.up();
+  const dragged = (await doc()).paths?.find((p) => p.id === road.id)?.points[1];
+  check(dragged && Math.hypot(dragged[0] - 37, dragged[2] - 46) < 1, `dragging a handle moves its point (${JSON.stringify(dragged)})`);
+  await settle(); // the edit's new meshes draw from the next frame
+  await shot('paths');
+  // Paint from far out: the ground under the pointer, not the invisible wall round the map.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'paint' }));
+  await page.evaluate(() => {
+    window.__editor.view.focus({ x: 30, y: 0, z: 30 });
+    window.__editor.view.dolly(-260);
+  });
+  await settle();
+  const far = await at(30, 0, 30);
+  await page.mouse.move(far.x, far.y);
+  await page.waitForFunction(() => !!window.__editor.paintGround, null, { timeout: T(5000) }).catch(() => {});
+  const farHover = await page.evaluate(() => ({ face: window.__editor.hoverFace?.box.kind ?? null, ground: !!window.__editor.paintGround, target: document.getElementById('ed-target').textContent }));
+  check(farHover.ground && farHover.face === null && /^Ground/.test(farHover.target), `zoomed far out, Paint points at the ground (${JSON.stringify(farHover)})`);
+  const ground0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
+  await page.mouse.click(far.x, far.y);
+  check(await page.evaluate((g) => window.__editor.doc.terrain.materials.join('') !== g, ground0), 'a click with Paint from far out paints the ground');
   // One rotation step per kind: R turns a spawn 45°, Shift+R a finer 15°.
   // Back from the rocks at (30, 30): (6, 0, 0) is behind the camera there.
   await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
