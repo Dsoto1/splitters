@@ -639,7 +639,7 @@ GPUs (`PERF_GPU=1`), which this box can't.
 
 **In CI** (`pnpm perf:budget`, `tools/perf/perf96.mjs`), besides `PERF_MAX_DRAWS`:
 - any mesh tagged `metadata.effect` in a shadow map's list fails the run;
-- `PERF_MAX_CASTERS=320`: the average shadow casters in a clumped frame (Frost Basin medium was 184–248; low has none);
+- `PERF_MAX_CASTERS=600`: the average shadow casters in a clumped frame. It grows with the characters in view (each casts several meshes): Frost Basin medium was 184–248 here and 446 on GitHub's runner with 46 characters in view; low has none. Effects in the shadow pass have their own exact check;
 - `PERF_MAX_FX_MS=40`: starting an explosion, both hits and every muzzle flash on a fresh rig (median of three) mid-fight. Measured 1–3 ms.
 
 Turning off the effect exclusion and the flash materials' blocked dirty mechanism made the run fail with 124–129 effect meshes in the shadow pass and flash starts of 43–73 ms.

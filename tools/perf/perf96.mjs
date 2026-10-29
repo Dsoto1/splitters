@@ -287,7 +287,7 @@ const fxBudget = Number(process.env.PERF_MAX_FX_MS ?? 0);
 const checking = budget || casterBudget || fxBudget;
 const fails = [];
 for (const r of results.filter((x) => !x.stalled)) {
-  if (casterBudget && (r.clump?.scene.casters ?? 0) > casterBudget) fails.push(`${r.map} ${r.graphics}: clumped frames average ${r.clump.scene.casters} shadow casters > ${casterBudget}`);
+  if (casterBudget && (r.clump?.scene.casters ?? 0) > casterBudget) fails.push(`${r.map} ${r.graphics}: clumped frames average ${r.clump.scene.casters} shadow casters > ${casterBudget} (${r.clump.scene.shown} characters in view)`);
   for (const sc of ['spread', 'clump']) if (checking && r[sc]?.scene.effectCasters) fails.push(`${r.map} ${r.graphics} ${sc}: ${r[sc].scene.effectCasters} effect meshes in the shadow pass`);
   for (const [k, ms] of Object.entries(r.fx ?? {})) if (fxBudget && ms > fxBudget) fails.push(`${r.map} ${r.graphics}: starting ${k} took ${ms} ms > ${fxBudget}`);
 }

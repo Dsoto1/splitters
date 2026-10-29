@@ -138,9 +138,13 @@ uses cost 3-5 ms. Don't use Babylon's `forceCompilation` on meshes you dispose: 
 polls every 16 ms for ever. `physicsfx`'s ragdoll check fails in this sandbox on
 unchanged code too (slow frames); CI is the judge.
 
+## Release 0.5.0 (2026-10-29)
+
+Prepared on the session branch: version 0.5.0, CHANGELOG section, menu baseline. Once its check run is green and `main` is fast-forwarded, the owner tags `v0.5.0` on that commit (tag pushes are refused from here).
+
 ## Performance overlay and budgets (2026-10-29)
 
-F3 / Options → Display: the performance overlay; Pause → Settings → Copy performance report (`game/perfOverlay.ts`). When the owner reports a slowdown, ask for that report. CI's `perf:budget` now also fails on effects in the shadow pass, more than 320 shadow casters (clumped Frost Basin, medium) and effect starts over 40 ms (docs/PERF_96.md, last section). New effect materials made per shot: block their dirty mechanism, and don't `clone()` meshes in hot paths (share geometry).
+F3 / Options → Display: the performance overlay; Pause → Settings → Copy performance report (`game/perfOverlay.ts`). When the owner reports a slowdown, ask for that report. CI's `perf:budget` now also fails on effects in the shadow pass, more than 600 shadow casters (clumped Frost Basin, medium; 446 on CI with 46 characters in view) and effect starts over 40 ms (docs/PERF_96.md, last section). New effect materials made per shot: block their dirty mechanism, and don't `clone()` meshes in hot paths (share geometry).
 
 ## How work flows (details in CLAUDE.md)
 
