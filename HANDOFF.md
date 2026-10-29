@@ -208,6 +208,36 @@ Ragdolls (asked 2026-10-29): no neutral pose, no soft joint limits, no muscle te
 
 Regular matches can go on to a queued map instead of replaying: `shared/sim/rotation.ts` (`MapRotation`, `validateRotation`, presets in `maps/rotations/*.json`). Protocol: host commands `rotation` (the whole list, and/or shuffle) and `skip`, `HostState.rotation`, `round_end.up` (everyone's scoreboard: "Next map: …"); older hosts ignore them and the panel hides the section. Dedicated server: `server.ts` plans the travel at the end of the intermission (chains first), `server/src/rotation.ts` (suite lookup, presets, `preset:` items); Host Service: `ROTATION` / `ROTATION_SHUFFLE`, console `rotation` / `skip`, the launcher's Rotation card, in-game changes saved via status (`main.ts`). Browser host: the page keeps it (`main.ts` → `SessionOptions.rotation`, `session.ts` `rotateOn` / `skipRotation`), tells the match where it goes (`setUpNext`), and travels like Change map. Not done: Play → Match setup doesn't take a rotation yet; the site's /host page doesn't edit it (the launcher and console do).
 
+## Bot sets: the host's own bots (2026-10-29)
+
+The owner asked for configurable bots when hosting and for scenarios. Shared `sim/botSet.ts`: a set is a
+name, entries (name ≤ 20, look: CORE_LOOKS or an NPC skin or random, skill, style, team index or auto,
+squad label) and `fill` (`random` or `only`); `validateBotSet` makes anything valid; text form
+(`botSetToText` / `botSetFromText`: "Name, look, skill, style, team(1-based), squad"; first line `only`);
+presets are data in `maps/botsets/*.json` (`parseBotSetPreset`, tested in `botSet.test.ts`).
+- **BotFiller** (`match.ts`): `pick()` takes the set's waiting entries in order (team modes: the neediest
+  team's own entries, then unteamed), then random bots unless `only`; bots carry `Combatant.botSet`
+  ({ index, skill, style, squad }); `setRank` makes random bots give way first (rebalance, takeOverBot).
+  `setBotSet` updates kept bots in place (by name, else position: `Match.updateSetBot` / `dropSetBot`) and
+  sets `settling`; `stage(fill)` swaps one stale bot per call (servers and the browser host call it every
+  quarter second and send the roster). Per-bot skill and style go through `Match.rebrain`;
+  `retuneBots` leaves bots with their own alone. Squads: `Match.squadGoal` (leader = first alive bot of
+  the squad on that side; followers go back past `SQUAD_STRAY` 14 m, else take the leader's last goal from
+  `leadGoals`); the director leaves squad members out of its own squads.
+- **Map bots:** optional `MapDocument.bots` (no migration, no format bump): `mapBotSet(map)`, used by
+  BotFiller when the host chose none; `hostSet` is what a map change carries; HostState `mapBots`.
+  MapMaker: map properties → Bots (`renderMapBots`, `setMapBots` command).
+- **Protocol:** `{ c: 'bots', botSet }`, HostState `botSet` / `mapBots` (optional; old hosts: no button).
+- **UI:** `frontend/botManager.ts` (the window; saved sets in `cs.botsets`), hostPanel "Bot set → Bots…",
+  match setup Bots step "Your bots" (`MatchSetup.botSet`), the page keeps the set across map changes
+  (`main.ts` `botSet`, `Travel.host.botSet`). The pause menu treats the window (and its look picker) as
+  its dialog (`session.ts` overlay), so Esc / B and the d-pad work.
+- **Dedicated:** server `botSet` option and `BOTSET` (`server/src/botSets.ts`), Host Service config
+  `botSet`, console `botset`, launcher Bots card, in-game changes saved for the next start.
+- **Not done:** named NPCs in encounters (NPC names would need the snapshot's NPC entries to carry a
+  name; encounters keep role labels); per-bot loadouts; the site's /host page doesn't edit the set (the
+  launcher and console do); squads don't share a formation, only goals.
+
 ## How work flows (details in CLAUDE.md)
 
 1. Work on the session branch, or in an agent worktree that you merge into it.
