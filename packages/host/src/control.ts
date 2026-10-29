@@ -77,7 +77,7 @@ const tokenMatches = (a: string, b: string) => {
 };
 
 /** What a start request may set (all checked; anything else in the body is refused). */
-const START_KEYS = new Set(['map', 'mode', 'botFill', 'maxPlayers', 'botDifficulty', 'name', 'hostName', 'visibility', 'adminToken', 'joinCode', 'leaders', 'botTakeBack', 'afkSeconds']);
+const START_KEYS = new Set(['map', 'mode', 'botFill', 'maxPlayers', 'botDifficulty', 'name', 'hostName', 'visibility', 'adminToken', 'joinCode', 'leaders', 'botTakeBack', 'afkSeconds', 'rotation', 'rotationShuffle']);
 
 /** A start request's settings on top of the service's own (throws ConfigError with a message for the page). */
 export function startConfig(body: unknown, base: HostConfig, suite: ReadonlySet<string>): HostConfig {
@@ -92,6 +92,9 @@ export function startConfig(body: unknown, base: HostConfig, suite: ReadonlySet<
   if (o.mode !== undefined && !(typeof o.mode === 'string' && (GAME_MODES as readonly string[]).includes(o.mode))) throw new ConfigError('unknown mode');
   for (const k of ['name', 'hostName', 'adminToken', 'joinCode']) if (o[k] !== undefined && (typeof o[k] !== 'string' || (o[k] as string).length > 64)) throw new ConfigError(`${k} must be text (at most 64 characters)`);
   for (const k of ['botFill', 'maxPlayers', 'afkSeconds']) if (o[k] !== undefined && typeof o[k] !== 'number') throw new ConfigError(`${k} must be a number`);
+  // The rotation: a list of "map:mode" / "preset:<name>" items (parseConfig checks their form; the match, the maps).
+  if (o.rotation !== undefined && !(Array.isArray(o.rotation) && o.rotation.length <= 40 && o.rotation.every((x) => typeof x === 'string' && x.length <= 70))) throw new ConfigError('rotation must be a list of map:mode items');
+  if (o.rotationShuffle !== undefined && typeof o.rotationShuffle !== 'boolean') throw new ConfigError('rotationShuffle must be true or false');
   const merged: Record<string, unknown> = { ...base, playlist: undefined, ...o };
   for (const k of clear) delete merged[k];
   if (merged.leaders === true) merged.leaders = 'on';

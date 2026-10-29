@@ -21,6 +21,7 @@ import { admitWhenOpen, iceForLibdatachannel, makeJoinCode } from '../src/hubLin
 import { LINK_LIMITS, peerConn, type DataLike } from '../src/peerConn.ts';
 import { Supervisor } from '../src/supervisor.ts';
 import type { PlayerInfo } from '@tiletrigger/server/server';
+import type { GameMode, HostCommand, RotationState } from '@tiletrigger/shared';
 
 const tmp = () => mkdtempSync(join(tmpdir(), 'tt-host-'));
 
@@ -95,6 +96,9 @@ describe('server console commands', () => {
       setVisibility: (v) => sent.push({ v }),
       setName: (n) => sent.push({ n }),
       maps: new Map([['sandgate', 'Sandgate']]),
+      rotation: () => ({ entries: [], shuffle: false, next: null, current: null }),
+      presets: [],
+      modes: () => ['core.tdm'],
     };
     expect(runMatchCommand('kick', ['griefer', 'spawn', 'camping'], '', t)).toBe('kicked Griefer');
     expect(runMatchCommand('ban', ['#4', '1d', 'cheating'], '', t)).toMatch(/banned Griefer for 1d \(guest/);
@@ -115,6 +119,58 @@ describe('server console commands', () => {
       { v: 'code' },
     ]);
     expect(runMatchCommand('kick', ['nobody'], '', t)).toMatch(/no player/);
+  });
+
+  it('edits the map rotation with the command in-game admins send (the whole list), and skips', () => {
+    const MAPS: Record<string, { name: string; modes: GameMode[] }> = { sandgate: { name: 'Sandgate', modes: ['core.tdm', 'core.deathmatch'] }, frost_basin: { name: 'Frost Basin', modes: ['core.tdm', 'core.deathmatch'] }, maple_court: { name: 'Maple Court', modes: ['core.tdm', 'core.ctf'] } };
+    let state: RotationState = { entries: [], shuffle: false, next: null, current: null };
+    const sent: HostCommand[] = [];
+    const t: MatchCommandTarget = {
+      players: () => [],
+      command: (cmd) => {
+        sent.push(cmd);
+        if (cmd.c === 'rotation') {
+          const entries = cmd.entries ?? state.entries;
+          state = { entries: entries.map((e) => ({ map: e.map, mode: e.mode, name: MAPS[e.map]!.name })), shuffle: cmd.shuffle ?? state.shuffle, next: entries.length ? 0 : null, current: null };
+        }
+        return null;
+      },
+      say: () => undefined,
+      currentMapId: () => 'frost_basin',
+      teams: () => '',
+      setVisibility: () => undefined,
+      setName: () => undefined,
+      maps: new Map(Object.entries(MAPS).map(([id, m]) => [id, m.name])),
+      rotation: () => state,
+      presets: [{ format: 'tiletrigger.rotation', id: 'flags', name: 'Flags', description: '', family: 'objective', shuffle: true, maps: [{ map: 'maple_court', mode: 'core.ctf' }] }],
+      modes: (id) => MAPS[id]?.modes ?? null,
+    };
+    expect(runMatchCommand('rotation', [], '', t)).toMatch(/empty/);
+    expect(runMatchCommand('rotation', ['add', 'sandgate'], '', t)).toMatch(/1\. Sandgate · Team Deathmatch/);
+    expect(runMatchCommand('rotation', ['add', 'maple_court', 'ctf'], '', t)).toMatch(/2\. Maple Court · Capture the Flag/);
+    expect(runMatchCommand('rotation', ['add', 'frost_basin', 'ctf'], '', t)).toMatch(/can't play Capture the Flag/);
+    expect(runMatchCommand('rotation', ['move', '2', 'up'], '', t)).toMatch(/1\. Maple Court/);
+    expect(runMatchCommand('rotation', ['remove', '2'], '', t)).not.toMatch(/Sandgate/);
+    expect(runMatchCommand('rotation', ['shuffle', 'on'], '', t)).toMatch(/shuffled/);
+    expect(runMatchCommand('rotation', ['preset', 'flags'], '', t)).toMatch(/rotation set to Flags/);
+    expect(runMatchCommand('rotation', ['preset', 'nope'], '', t)).toMatch(/flags +Flags: 1 maps/);
+    expect(runMatchCommand('skip', [], '', t)).toMatch(/next map/);
+    expect(sent.at(-1)).toEqual({ c: 'skip' });
+    expect(sent[0]).toEqual({ c: 'rotation', entries: [{ map: 'sandgate', mode: 'core.tdm' }] });
+    expect(complete('rotation a', [])).toEqual([['add'], 'a']);
+    expect(complete('rotation add sa', ['sandgate'])).toEqual([['sandgate'], 'sa']);
+    expect(complete('rotation preset f', [], ['flags'])).toEqual([['flags'], 'f']);
+  });
+
+  it('reads ROTATION from the environment or a config file, and refuses what is not map:mode or preset:<name>', () => {
+    expect(parseConfig({ rotation: 'frost_basin:tdm, maple_court:core.ctf preset:flag_run', rotationShuffle: '1' })).toMatchObject({ rotation: ['frost_basin:tdm', 'maple_court:core.ctf', 'preset:flag_run'], rotationShuffle: true });
+    expect(parseConfig({ rotation: [{ map: 'sandgate', mode: 'tdm' }, 'frost_basin'] }).rotation).toEqual(['sandgate:tdm', 'frost_basin']);
+    expect(parseConfig({}).rotation).toBeUndefined();
+    expect(() => parseConfig({ rotation: '../maps/x:tdm' })).toThrow(/ROTATION/);
+    expect(loadConfig({ ROTATION: 'sandgate:tdm', ROTATION_SHUFFLE: 'on' }, '/').rotationShuffle).toBe(true);
+    const base = parseConfig({});
+    expect(startConfig({ rotation: ['sandgate:tdm'], rotationShuffle: true }, base, new Set(['frost_basin', 'sandgate']))).toMatchObject({ rotation: ['sandgate:tdm'], rotationShuffle: true });
+    expect(() => startConfig({ rotation: 'sandgate:tdm; rm -rf' }, base, new Set(['frost_basin']))).toThrow(ConfigError);
   });
 });
 

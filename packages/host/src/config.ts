@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { MAX_PLAYER_SLOTS, isGameMode, isMapId, isRegion, regionForTimeZone, sanitizeName, type GameMode, type Region } from '@tiletrigger/shared';
+import { MAX_PLAYER_SLOTS, ROTATION_MAX, isGameMode, isMapId, isRegion, regionForTimeZone, sanitizeName, type GameMode, type Region } from '@tiletrigger/shared';
 
 /**
  * The Host Service's settings: environment variables, optionally on top of a
@@ -24,6 +24,14 @@ export interface HostConfig {
   leaders?: boolean | 'vip';
   /** A scenario chain (maps/playlists/…json). */
   playlist?: string;
+  /**
+   * The map rotation: after each match the next of these instead of a replay, round and round. Items
+   * "map:mode" ("frost_basin:tdm"; no mode: the map's first) or "preset:<id>" (maps/rotations/<id>.json).
+   * The match drops maps that aren't ours and modes a map can't play (with a log line).
+   */
+  rotation?: string[];
+  /** Play the rotation in a random order. */
+  rotationShuffle?: boolean;
   /** Listing name in the game browser. */
   name: string;
   /** "hosted by …" in the game browser. */
@@ -52,7 +60,7 @@ const CODE_RE = /^[A-HJKMNP-Z2-9]{6}$/;
 /** Keys a JSON config may use (the same names as the environment variables, or camelCase). */
 const KEYS: Record<string, string> = {
   HUB: 'hub', MAP: 'map', MODE: 'mode', BOT_FILL: 'botFill', MAX_PLAYERS: 'maxPlayers', BOT_DIFFICULTY: 'botDifficulty', BOT_TAKEBACK: 'botTakeBack',
-  LEADERS: 'leaders', PLAYLIST: 'playlist', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', IDLE_KICK_MINUTES: 'idleKickMinutes', REGION: 'region',
+  LEADERS: 'leaders', PLAYLIST: 'playlist', ROTATION: 'rotation', ROTATION_SHUFFLE: 'rotationShuffle', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', IDLE_KICK_MINUTES: 'idleKickMinutes', REGION: 'region',
 };
 
 export class ConfigError extends Error {}
@@ -115,6 +123,7 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
   const name = (str(raw.name) ? sanitizeName(str(raw.name)!) : '').slice(0, 40);
   const hostName = (str(raw.hostName) ? sanitizeName(str(raw.hostName)!) : '').slice(0, 32);
   const playlist = str(raw.playlist);
+  const rotation = rotationSetting(raw.rotation);
   return {
     hub: url.origin + url.pathname.replace(/\/+$/, ''),
     map: isMapId(map) ? map : resolve(cwd, map),
@@ -125,6 +134,8 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
     botTakeBack: bool(raw.botTakeBack),
     ...(leaders === 'vip' ? { leaders: 'vip' as const } : leaders === 'on' || leaders === 'true' ? { leaders: true } : {}),
     ...(playlist ? { playlist: resolve(cwd, playlist) } : {}),
+    ...(rotation.length ? { rotation } : {}),
+    ...(bool(raw.rotationShuffle) ? { rotationShuffle: true } : {}),
     name: name || 'Dedicated host',
     hostName: hostName || 'Host Service',
     visibility,
@@ -135,6 +146,25 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
     idleKickMinutes: num(raw.idleKickMinutes, 'IDLE_KICK_MINUTES', 0, 1440, 10),
     region: regionSetting(str(raw.region)),
   };
+}
+
+/** One rotation item: "map", "map:mode" (tdm or core.tdm) or "preset:<id>". */
+const ROTATION_ITEM = /^(preset:[a-z0-9_]{2,48}|[a-z0-9_]{2,48}(:(core\.)?[a-z]{2,16})?)$/;
+
+/**
+ * ROTATION: "frost_basin:tdm, diamond_park:ctf" (commas or spaces), or in a JSON config a list of those
+ * or of { map, mode } objects. Only the form is checked here; the match checks the maps and modes.
+ */
+export function rotationSetting(v: unknown): string[] {
+  if (v === undefined || v === null || v === '') return [];
+  const list: unknown[] = Array.isArray(v) ? v : String(v).split(/[\s,]+/).filter(Boolean);
+  if (list.length > ROTATION_MAX * 2) throw new ConfigError(`ROTATION: at most ${ROTATION_MAX} maps`);
+  return list.map((item) => {
+    const text = typeof item === 'object' && item !== null ? `${String((item as { map?: unknown }).map ?? '')}${(item as { mode?: unknown }).mode ? `:${String((item as { mode?: unknown }).mode)}` : ''}` : String(item);
+    const t = text.trim().toLowerCase();
+    if (!ROTATION_ITEM.test(t)) throw new ConfigError(`ROTATION: "${text.slice(0, 60)}" is not map:mode (frost_basin:tdm) or preset:<name>`);
+    return t;
+  });
 }
 
 function regionSetting(v: string | undefined): Region {
@@ -151,5 +181,5 @@ function regionSetting(v: string | undefined): Region {
 
 /** The settings for the log, without the admin token. */
 export function describeConfig(c: HostConfig): string {
-  return `hub ${c.hub}, map ${c.map}${c.mode ? ` (${c.mode})` : ''}, ${c.botFill} players and bots, up to ${c.maxPlayers} people, ${c.visibility === 'listed' ? `listed as "${c.name}"` : 'join code only'}${c.adminToken ? ', admin token set' : ''}`;
+  return `hub ${c.hub}, map ${c.map}${c.mode ? ` (${c.mode})` : ''}${c.rotation?.length ? `, rotation ${c.rotation.join(' ')}${c.rotationShuffle ? ' (shuffled)' : ''}` : ''}, ${c.botFill} players and bots, up to ${c.maxPlayers} people, ${c.visibility === 'listed' ? `listed as "${c.name}"` : 'join code only'}${c.adminToken ? ', admin token set' : ''}`;
 }

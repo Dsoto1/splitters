@@ -110,6 +110,12 @@ export async function syncMaps(bundled: string, dir: string, hub: string, fetche
       // Copied again next time.
     }
   }
+  // The built-in map rotations (maps/rotations/) come along: the match reads them from this folder too.
+  const presets = join(bundled, 'rotations');
+  if (existsSync(presets)) {
+    mkdirSync(join(dir, 'rotations'), { recursive: true });
+    for (const f of readdirSync(presets).filter((x) => x.endsWith('.json'))) if (!sameFile(join(presets, f), join(dir, 'rotations', f))) copyFileSync(join(presets, f), join(dir, 'rotations', f));
+  }
   const shippedIds = new Set(shipped.map((f) => f.slice(0, -5)));
   return { published: Object.keys(manifest).length, added: Object.keys(manifest).filter((id) => !shippedIds.has(id)), online: !!listed };
 }

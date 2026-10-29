@@ -149,4 +149,60 @@ describe('host controls on a dedicated server', () => {
     expect(server.match.combatants()).toHaveLength(5);
     again.ws.close();
   }, 30_000);
+
+  it('a map rotation: set from the config and by the admin, the next map after the scoreboard for everyone, skip', async () => {
+    const dir = suite();
+    writeFileSync(join(dir, 'room_c.json'), JSON.stringify(room('room_c')));
+    const warn = console.warn;
+    const dropped: string[] = [];
+    console.warn = (...a: unknown[]) => void dropped.push(a.join(' '));
+    try {
+      server = await startServer({
+        port: 0, map: join(dir, 'room_a.json'), mapsDir: dir, botFill: 2, seed: 1, startGate: false,
+        rules: { ...DEFAULT_DEATHMATCH_RULES, intermissionTicks: 60 }, adminToken: 'sesame',
+        rotation: ['room_b:deathmatch', 'not_ours:tdm', 'room_c:ctf', 'room_c'],
+      });
+    } finally {
+      console.warn = warn;
+    }
+    // Unknown maps and modes a map can't play are dropped, with a log line each.
+    expect(dropped.filter((l) => l.startsWith('[rotation] dropped'))).toHaveLength(2);
+    expect(server.rotation()).toMatchObject({ items: ['room_b:deathmatch', 'room_c:deathmatch'], next: 0, current: null });
+    const admin = connect(server.port, 'Alice', 'sesame');
+    const first = (await admin.waitFor('host')).state!;
+    expect(first.rotation).toMatchObject({ entries: [{ map: 'room_b', name: 'room b' }, { map: 'room_c' }], next: 0 });
+    // The admin's own list: refused when nothing in it can play here.
+    const bad = admin.next('host');
+    admin.send({ t: 'host', cmd: { c: 'rotation', entries: [{ map: 'not_ours', mode: 'core.tdm' }] } });
+    expect((await bad).error).toMatch(/None of those can be played/);
+    const set = admin.next('host');
+    admin.send({ t: 'host', cmd: { c: 'rotation', entries: [{ map: 'room_c', mode: 'core.deathmatch' }, { map: 'room_b', mode: 'core.deathmatch' }] } });
+    expect((await set).state?.rotation).toMatchObject({ entries: [{ map: 'room_c' }, { map: 'room_b' }], next: 0, shuffle: false });
+    // End of the match: everyone's scoreboard says where next, then everyone travels there.
+    const bob = connect(server.port, 'Bob');
+    await bob.waitFor('welcome');
+    const ended = new Promise<unknown>((resolve) => bob.ws.on('message', (d) => {
+      const m = JSON.parse(d.toString()) as ServerMessage;
+      const up = m.t === 'snapshot' ? m.ev.find((e) => e.e === 'round_end') : undefined;
+      if (up) resolve(up);
+    }));
+    admin.send({ t: 'host', cmd: { c: 'end' } });
+    expect(await ended).toMatchObject({ e: 'round_end', up: { map: 'room c', mode: 'core.deathmatch' } });
+    expect(await bob.waitFor('travel')).toEqual({ t: 'travel', map: 'room c' });
+    await new Promise((r) => setTimeout(r, 100));
+    expect(server.match.map.metadata.id).toBe('room_c');
+    expect(server.rotation()).toMatchObject({ current: 0, next: 1 });
+    // Skip to the next map now.
+    const back = connect(server.port, 'Alice', 'sesame');
+    await back.waitFor('host');
+    const skipping = back.next('notice');
+    back.send({ t: 'host', cmd: { c: 'skip' } });
+    expect((await skipping).text).toBe('Changing map to room b (Deathmatch)…');
+    await back.waitFor('travel');
+    await new Promise((r) => setTimeout(r, 100));
+    expect(server.match.map.metadata.id).toBe('room_b');
+    // Round again: room c is next.
+    expect(server.rotation()).toMatchObject({ current: 1, next: 0 });
+    for (const c of [admin, bob, back]) c.ws.close();
+  }, 30_000);
 });

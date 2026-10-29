@@ -1,4 +1,4 @@
-import { GAME_MODES, MODE_LABELS, isGameMode, type GameMode, type HostCommand } from '@tiletrigger/shared';
+import { GAME_MODES, MODE_LABELS, ROTATION_MAX, isGameMode, type GameMode, type HostCommand, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
 import type { PlayerInfo } from '@tiletrigger/server/server';
 
 /**
@@ -27,6 +27,8 @@ export const COMMANDS: readonly CommandSpec[] = [
   { name: 'mode', args: '<mode>', help: `change mode on this map (${GAME_MODES.map((m) => m.replace('core.', '')).join(', ')})`, match: true },
   { name: 'bots', args: '<n>', help: 'players and bots to keep (people take bots\' places)', match: true },
   { name: 'teams', args: '[size]', help: 'show the teams, or set every team to this size (8 = 8v8)', match: true },
+  { name: 'rotation', args: '[add <map> [mode]|remove <n>|move <n> up|down|preset <name>|shuffle on|off|clear]', help: 'the map rotation: the maps played in turn after each match (empty: the match replays)', match: true },
+  { name: 'skip', args: '', help: "go on to the rotation's next map now", match: true },
   { name: 'restart', args: '', help: 'restart the match (same map)', match: true },
   { name: 'end', args: '', help: 'end the match now, to the scoreboard', match: true },
   { name: 'visibility', args: 'listed|code', help: 'in the game browser, or join code only', match: true },
@@ -55,15 +57,26 @@ export function parseCommand(line: string): Parsed | null {
   return { ok: true, name, args: words.slice(1), rest: text.slice(text.match(/^\S+/)![0].length).trim() };
 }
 
+export const ROTATION_ACTIONS = ['add', 'remove', 'move', 'preset', 'shuffle', 'clear'] as const;
+
 /** Tab completion for the console: command names, then map IDs and modes where they fit. */
-export function complete(line: string, maps: readonly string[]): [string[], string] {
+export function complete(line: string, maps: readonly string[], presets: readonly string[] = []): [string[], string] {
   const parts = line.split(/\s+/);
   if (parts.length <= 1) {
     const hits = NAMES.filter((n) => n.startsWith(parts[0] ?? ''));
     return [hits.length ? hits : NAMES.slice(), line];
   }
   const last = parts.at(-1) ?? '';
-  const pool = parts[0] === 'map' ? maps : parts[0] === 'mode' ? GAME_MODES.map((m) => m.replace('core.', '')) : parts[0] === 'visibility' ? ['listed', 'code'] : parts[0] === 'admin' ? ['token'] : [];
+  const modes = GAME_MODES.map((m) => m.replace('core.', ''));
+  const rotation = (): readonly string[] => {
+    if (parts.length === 2) return ROTATION_ACTIONS;
+    if (parts[1] === 'add') return parts.length === 3 ? maps : parts.length === 4 ? modes : [];
+    if (parts[1] === 'preset') return parts.length === 3 ? presets : [];
+    if (parts[1] === 'shuffle') return parts.length === 3 ? ['on', 'off'] : [];
+    if (parts[1] === 'move') return parts.length === 4 ? ['up', 'down'] : [];
+    return [];
+  };
+  const pool = parts[0] === 'map' ? maps : parts[0] === 'mode' ? modes : parts[0] === 'visibility' ? ['listed', 'code'] : parts[0] === 'admin' ? ['token'] : parts[0] === 'rotation' ? rotation() : [];
   return [pool.filter((p) => p.startsWith(last)), last];
 }
 
@@ -123,6 +136,12 @@ export function findMode(key: string): GameMode | null {
 /** What the match process needs to run match commands. */
 export interface MatchCommandTarget {
   players(): PlayerInfo[];
+  /** The map rotation now. */
+  rotation(): RotationState;
+  /** The built-in rotations (maps/rotations/). */
+  presets: readonly RotationPreset[];
+  /** The modes a map of our suite plays (its first is its own), or null. */
+  modes(id: string): readonly GameMode[] | null;
   command(cmd: HostCommand, by: string): string | null;
   say(text: string): void;
   currentMapId(): string;
@@ -178,6 +197,10 @@ export function runMatchCommand(name: string, args: string[], rest: string, t: M
       if (!Number.isInteger(n) || n < 1) return 'usage: teams [size]';
       return done(t.command({ c: 'bots', teamSize: n }, by), `teams set to ${n} each`);
     }
+    case 'rotation':
+      return rotationCommand(args, t);
+    case 'skip':
+      return done(t.command({ c: 'skip' }, by), "going on to the rotation's next map");
     case 'restart':
       return done(t.command({ c: 'restart' }, by), 'match restarting');
     case 'end':
@@ -192,5 +215,69 @@ export function runMatchCommand(name: string, args: string[], rest: string, t: M
       return `listed as "${rest.slice(0, 40)}"`;
     default:
       return `not a match command: ${name}`;
+  }
+}
+
+/** The rotation as console lines: each map in turn, what plays now and what's next. */
+export function rotationText(r: RotationState): string {
+  if (!r.entries.length) return 'The rotation is empty: each match replays its map. rotation add <map> [mode], or rotation preset <name>.';
+  const lines = r.entries.map((e, i) => `${String(i + 1).padStart(2)}. ${e.name} · ${MODE_LABELS[e.mode] ?? e.mode}${i === r.current ? '   (playing)' : ''}${i === r.next ? '   (next)' : ''}`);
+  return [`Map rotation${r.shuffle ? ' (shuffled)' : ''}:`, ...lines].join('\n');
+}
+
+/** `rotation …`: show it, or change it with the same command in-game admins send (the whole list). */
+function rotationCommand(args: string[], t: MatchCommandTarget): string {
+  const by = 'Console';
+  const r = t.rotation();
+  const list: RotationEntry[] = r.entries.map((e) => ({ map: e.map, mode: e.mode }));
+  const after = (err: string | null) => (err ? `refused: ${err}` : rotationText(t.rotation()));
+  const set = (entries: RotationEntry[]) => after(t.command({ c: 'rotation', entries }, by));
+  const at = (s: string | undefined) => {
+    const n = Number(s);
+    return Number.isInteger(n) && n >= 1 && n <= list.length ? n - 1 : null;
+  };
+  switch (args[0]) {
+    case undefined:
+      return rotationText(r);
+    case 'add': {
+      if (!args[1]) return 'usage: rotation add <map> [mode]';
+      const id = findMap(t.maps, args[1]);
+      if (!id) return `no map "${args[1]}" among the game's maps`;
+      const modes = t.modes(id) ?? [];
+      const mode = args[2] ? findMode(args[2]) : (modes[0] ?? null);
+      if (!mode) return `usage: rotation add <map> [${GAME_MODES.map((m) => m.replace('core.', '')).join('|')}]`;
+      if (!modes.includes(mode)) return `${t.maps.get(id)} can't play ${MODE_LABELS[mode]} (it plays ${modes.map((m) => MODE_LABELS[m]).join(', ')})`;
+      if (list.length >= ROTATION_MAX) return `the rotation holds ${ROTATION_MAX} maps at most`;
+      return set([...list, { map: id, mode }]);
+    }
+    case 'remove': {
+      const i = at(args[1]);
+      if (i === null) return `usage: rotation remove <1-${list.length}>`;
+      list.splice(i, 1);
+      return set(list);
+    }
+    case 'move': {
+      const i = at(args[1]);
+      const d = args[2] === 'up' ? -1 : args[2] === 'down' ? 1 : 0;
+      if (i === null || !d) return 'usage: rotation move <n> up|down';
+      const j = i + d;
+      if (j < 0 || j >= list.length) return rotationText(r);
+      [list[i], list[j]] = [list[j]!, list[i]!];
+      return set(list);
+    }
+    case 'clear':
+      return set([]);
+    case 'preset': {
+      const p = t.presets.find((x) => x.id === args[1] || x.name.toLowerCase() === args.slice(1).join(' ').toLowerCase());
+      if (!p) return `usage: rotation preset <name>\n${t.presets.map((x) => `  ${x.id.padEnd(22)} ${x.name}: ${x.maps.length} maps`).join('\n') || '  (no built-in rotations)'}`;
+      const err = t.command({ c: 'rotation', entries: p.maps.map((m) => ({ map: m.map, mode: m.mode })), shuffle: p.shuffle }, by);
+      return err ? `refused: ${err}` : `rotation set to ${p.name}\n${rotationText(t.rotation())}`;
+    }
+    case 'shuffle': {
+      if (args[1] !== 'on' && args[1] !== 'off') return 'usage: rotation shuffle on|off';
+      return after(t.command({ c: 'rotation', shuffle: args[1] === 'on' }, by));
+    }
+    default:
+      return `usage: ${helpText('rotation')}`;
   }
 }

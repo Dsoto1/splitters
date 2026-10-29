@@ -69,6 +69,9 @@ async function bundle(dir) {
   // Our suite: the maps a host may run and change to (not tools' files).
   mkdirSync(join(dir, 'maps'), { recursive: true });
   for (const f of readdirSync(join(ROOT, 'maps'))) if (f.endsWith('.json')) copyFileSync(join(ROOT, 'maps', f), join(dir, 'maps', f));
+  // The built-in map rotations (data, maps/rotations/).
+  mkdirSync(join(dir, 'maps', 'rotations'), { recursive: true });
+  for (const f of readdirSync(join(ROOT, 'maps', 'rotations'))) if (f.endsWith('.json')) copyFileSync(join(ROOT, 'maps', 'rotations', f), join(dir, 'maps', 'rotations', f));
   // node-datachannel's JavaScript and its one dependency, from the lockfile's install.
   const store = join(ROOT, 'node_modules/.pnpm');
   const from = (name) => {

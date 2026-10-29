@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { MODE_LABELS, isGameMode, isTeamMode } from '@tiletrigger/shared';
+import type { RotationPreset } from '@tiletrigger/shared';
 import type { CommandSpec } from './commands.ts';
 
 /**
@@ -87,6 +88,8 @@ export interface LauncherInfo {
   version: string;
   commands: readonly CommandSpec[];
   maps: readonly LauncherMap[];
+  /** The built-in map rotations (maps/rotations/), offered in the Rotation card. */
+  presets?: readonly RotationPreset[];
   /** Where map pictures come from (the site's automatic shots). */
   site: string;
 }
@@ -107,7 +110,8 @@ export function launcherCsp(nonce: string, site: string): string {
 }
 
 export function launcherPage(info: LauncherInfo, nonce: string): string {
-  const data = scriptJson({ version: info.version, commands: info.commands.map((c) => ({ name: c.name, args: c.args, help: c.help })), maps: info.maps, site: info.site });
+  const presets = (info.presets ?? []).map((p) => ({ id: p.id, name: p.name, description: p.description, shuffle: p.shuffle, maps: p.maps }));
+  const data = scriptJson({ version: info.version, commands: info.commands.map((c) => ({ name: c.name, args: c.args, help: c.help })), maps: info.maps, presets, site: info.site });
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -176,6 +180,15 @@ export function launcherPage(info: LauncherInfo, nonce: string): string {
       <label class="field"><span>Map</span><select id="f-map"></select></label>
       <div class="chips" id="f-modes" role="group" aria-label="Mode"></div>
       <code class="hint" id="h-map"></code>
+    </section>
+    <section class="card" id="rotation-card">
+      <h3>Map <em>rotation</em> <span class="count" id="rot-count"></span></h3>
+      <p class="note" id="rot-next"></p>
+      <ol class="rot" id="rot-list"></ol>
+      <div class="inline"><select id="rot-map" aria-label="Map to add"></select><select id="rot-mode" aria-label="Mode"></select><button type="button" id="rot-add">Add</button></div>
+      <div class="inline"><select id="rot-preset" aria-label="Preset"><option value="">Start from a preset…</option></select><button type="button" id="rot-use">Use</button></div>
+      <div class="row-btns"><label class="check"><input type="checkbox" id="rot-shuffle"> Shuffle</label><button type="button" id="rot-skip" title="Go on to the next map now">Skip to next</button><button type="button" id="rot-clear">Clear</button></div>
+      <code class="hint" id="h-rot"></code>
     </section>
     <section class="card">
       <h3>Players <em>&amp; bots</em></h3>
@@ -343,6 +356,16 @@ h2 em, h3 em { color: var(--cyan); }
 .person .acts { grid-column: 2; grid-row: 1 / span 2; display: flex; gap: 4px; }
 .person .acts button { padding: 4px 8px; font-size: 11px; }
 .bans { display: flex; flex-direction: column; gap: 4px; }
+.rot { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; counter-reset: rot; }
+.rot li { counter-increment: rot; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 6px; align-items: center; padding: 5px 6px; border-radius: 4px; background: var(--surface-1); font-size: 13px; }
+.rot li::before { content: counter(rot); color: var(--muted); font: 700 12px var(--font-display); text-align: right; }
+.rot li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rot li small { color: var(--muted); }
+.rot li.now { box-shadow: inset 3px 0 0 var(--success); }
+.rot li.next { box-shadow: inset 3px 0 0 var(--cyan); }
+.rot li .acts { display: flex; gap: 2px; }
+.rot li .acts button { padding: 2px 7px; font-size: 11px; }
+.card .inline select { flex: 1; min-width: 0; width: auto; }
 .ban { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .ban span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
 .ban b { color: var(--text); }
@@ -749,10 +772,109 @@ const SCRIPT = `
     else if (stopped()) note = 'Stopped. Change anything below, then Start.';
     $('srv-note').textContent = note;
   }
-  function renderAll() { renderTop(); renderMap(); renderPlayers(); renderListing(); renderPeople(); renderBans(); }
+  // ---------------------------------------------------------------- map rotation
+  // Running: the match's rotation (each button runs its rotation command). Stopped: the list the next Start plays.
+  var presetById = {};
+  (DATA.presets || []).forEach(function (p) {
+    presetById[p.id] = p;
+    var o = document.createElement('option'); o.value = p.id; o.textContent = p.name + ' (' + p.maps.length + ' maps)'; o.title = p.description;
+    $('rot-preset').append(o);
+  });
+  var rotMap = $('rot-map');
+  DATA.maps.forEach(function (mp) { var o = document.createElement('option'); o.value = mp.id; o.textContent = mp.name; rotMap.append(o); });
+  function fillRotModes() {
+    var mp = mapById[rotMap.value]; var sel = $('rot-mode'); var was = sel.value;
+    sel.replaceChildren();
+    (mp ? mp.modes : []).forEach(function (md) { var o = document.createElement('option'); o.value = md.id; o.textContent = md.label; sel.append(o); });
+    if (was && mp && mp.modes.some(function (md) { return md.id === was; })) sel.value = was;
+  }
+  rotMap.addEventListener('change', fillRotModes);
+  fillRotModes();
+  function modeLabel(m) { for (var i = 0; i < DATA.maps.length; i++) for (var j = 0; j < DATA.maps[i].modes.length; j++) if (DATA.maps[i].modes[j].id === m) return DATA.maps[i].modes[j].label; return modeShort(m); }
+  // Config items ("frost_basin:tdm", "preset:flag_run") as entries, for the list while stopped.
+  function draftEntries(items) {
+    var out = [];
+    (items || []).forEach(function (it) {
+      var parts = String(it).split(':');
+      if (parts[0] === 'preset') { var p = presetById[parts[1]]; if (p) p.maps.forEach(function (m) { out.push({ map: m.map, mode: m.mode }); }); return; }
+      var mp = mapById[parts[0]];
+      var mode = parts[1] ? (parts[1].indexOf('core.') === 0 ? parts[1] : 'core.' + parts[1]) : (mp && mp.modes[0] ? mp.modes[0].id : '');
+      out.push({ map: parts[0], mode: mode });
+    });
+    return out;
+  }
+  function itemOf(e) { return e.map + ':' + modeShort(e.mode); }
+  function rotation() {
+    if (running()) return S.host.rotation || null;
+    if (!draft) return null;
+    var list = draftEntries(draft.rotation);
+    return { entries: list.map(function (e) { return { map: e.map, mode: e.mode, name: mapById[e.map] ? mapById[e.map].name : e.map }; }), shuffle: !!draft.rotationShuffle, next: list.length ? 0 : null, current: null };
+  }
+  function setDraftRotation(list) { draft.rotation = list.map(itemOf); renderAll(); }
+  function renderRotation() {
+    var r = rotation();
+    $('rotation-card').hidden = !r && running();
+    if (!r) return;
+    var box = $('rot-list'); box.replaceChildren();
+    r.entries.forEach(function (e, i) {
+      var li = document.createElement('li');
+      if (i === r.current) li.className = 'now'; else if (i === r.next) li.className = 'next';
+      var t = document.createElement('span'); t.textContent = e.name + ' ';
+      var md = document.createElement('small'); md.textContent = modeLabel(e.mode); t.append(md);
+      var acts = document.createElement('div'); acts.className = 'acts';
+      [['\\u2191', 'up', 'Move up'], ['\\u2193', 'down', 'Move down'], ['\\u2715', 'remove', 'Remove']].forEach(function (a) {
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = a[0]; b.title = a[2] + ' (rotation ' + (a[1] === 'remove' ? 'remove ' + (i + 1) : 'move ' + (i + 1) + ' ' + a[1]) + ')';
+        b.disabled = (a[1] === 'up' && i === 0) || (a[1] === 'down' && i === r.entries.length - 1);
+        b.addEventListener('click', function () {
+          if (running()) return run(a[1] === 'remove' ? 'rotation remove ' + (i + 1) : 'rotation move ' + (i + 1) + ' ' + a[1]);
+          var list = draftEntries(draft.rotation);
+          if (a[1] === 'remove') list.splice(i, 1);
+          else { var j = i + (a[1] === 'up' ? -1 : 1); var x = list[i]; list[i] = list[j]; list[j] = x; }
+          setDraftRotation(list);
+        });
+        acts.append(b);
+      });
+      li.append(t, acts);
+      box.append(li);
+    });
+    $('rot-count').textContent = r.entries.length ? r.entries.length + ' / 20' : '';
+    var nx = r.next != null ? r.entries[r.next] : null;
+    $('rot-next').textContent = nx ? 'Next up: ' + nx.name + ' \\u00b7 ' + modeLabel(nx.mode) : 'Empty: each match replays its map. Add maps, or start from a preset.';
+    if (document.activeElement !== $('rot-shuffle')) $('rot-shuffle').checked = !!r.shuffle;
+    $('rot-skip').disabled = !running() || !r.entries.length;
+    $('rot-clear').disabled = !r.entries.length;
+    $('rot-add').disabled = r.entries.length >= 20;
+    $('h-rot').textContent = running() ? 'rotation add <map> <mode> \\u00b7 rotation preset <name> \\u00b7 skip' : 'start  (with this rotation)';
+  }
+  $('rot-add').addEventListener('click', function () {
+    var id = rotMap.value, mode = $('rot-mode').value;
+    if (!id || !mode) return;
+    if (running()) return run('rotation add ' + id + ' ' + modeShort(mode));
+    var list = draftEntries(draft.rotation); list.push({ map: id, mode: mode }); setDraftRotation(list);
+  });
+  $('rot-use').addEventListener('click', function () {
+    var p = presetById[$('rot-preset').value]; if (!p) return;
+    if (running()) { run('rotation preset ' + p.id); return; }
+    draft.rotationShuffle = !!p.shuffle;
+    setDraftRotation(p.maps.slice());
+    toast(p.name + ' for the next Start');
+  });
+  $('rot-shuffle').addEventListener('change', function () {
+    var on = $('rot-shuffle').checked;
+    if (running()) return run('rotation shuffle ' + (on ? 'on' : 'off'));
+    draft.rotationShuffle = on; renderAll();
+  });
+  $('rot-skip').addEventListener('click', function () { if (running()) run('skip'); });
+  $('rot-clear').addEventListener('click', function () {
+    if (!confirm('Empty the rotation? Each match then replays its map.')) return;
+    if (running()) return run('rotation clear');
+    setDraftRotation([]);
+  });
+
+  function renderAll() { renderTop(); renderMap(); renderPlayers(); renderListing(); renderPeople(); renderBans(); renderRotation(); }
 
   $('b-start').addEventListener('click', function () {
-    var body = { map: draft.map, mode: draft.mode || '', botFill: draft.botFill, maxPlayers: draft.maxPlayers, name: draft.name, visibility: draft.visibility };
+    var body = { map: draft.map, mode: draft.mode || '', botFill: draft.botFill, maxPlayers: draft.maxPlayers, name: draft.name, visibility: draft.visibility, rotation: draft.rotation || [], rotationShuffle: !!draft.rotationShuffle };
     local('cmd', 'start  (' + (mapById[draft.map] ? mapById[draft.map].name : draft.map) + (draft.mode ? ', ' + modeShort(draft.mode) : '') + ', ' + draft.botFill + ' players and bots)');
     api('/api/start', body).then(function () { setTimeout(pollStatus, 300); }, function (e) { local('out', 'could not start: ' + e.message); });
   });
@@ -799,7 +921,7 @@ const SCRIPT = `
       S = s;
       if (wasOffline || !$('overlay').hidden) { overlay(''); wasOffline = false; }
       var c = s.config || {};
-      if (!draft || running()) draft = { map: c.map && mapById[c.map] ? c.map : (DATA.maps[0] ? DATA.maps[0].id : 'frost_basin'), mode: c.mode || '', botFill: c.botFill || 24, maxPlayers: c.maxPlayers || 16, name: c.name || 'Dedicated host', visibility: c.visibility || 'listed' };
+      if (!draft || running()) draft = { map: c.map && mapById[c.map] ? c.map : (DATA.maps[0] ? DATA.maps[0].id : 'frost_basin'), mode: c.mode || '', botFill: c.botFill || 24, maxPlayers: c.maxPlayers || 16, name: c.name || 'Dedicated host', visibility: c.visibility || 'listed', rotation: (c.rotation || []).slice(), rotationShuffle: !!c.rotationShuffle };
       renderAll();
     }, failed);
   }

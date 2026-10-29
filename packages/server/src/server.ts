@@ -274,14 +274,18 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const rotationPresets = readRotationPresets(mapsDir, lookup);
   const rotation = new MapRotation([], { shuffle: opts.rotationShuffle });
   const nameOf = (id: string) => lookup(id)?.name ?? id;
-  /** Set the rotation from config items or a command's entries; what's dropped is logged. Returns the dropped lines. */
-  const setRotation = (raw: readonly unknown[]): string[] => {
+  /**
+   * Set the rotation from config items or a command's entries; what's dropped is logged. A list where nothing
+   * can be played here (but something was asked for) changes nothing: returns why, else null.
+   */
+  const setRotation = (raw: readonly unknown[]): string | null => {
     const ex = expandRotation(raw, rotationPresets);
     const v = validateRotation(ex.items, lookup);
     const dropped = [...ex.dropped, ...v.dropped];
     for (const d of dropped) console.warn(`[rotation] dropped: ${d}`);
+    if (raw.length && !v.entries.length) return `None of those can be played here: ${dropped.join('; ')}`;
     rotation.set(v.entries, { map: map.metadata.id, mode: match.rules.mode });
-    return dropped;
+    return null;
   };
   if (opts.rotation?.length) {
     setRotation(opts.rotation);
@@ -333,13 +337,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       return null;
     }
     if (cmd.c === 'rotation') {
-      if (cmd.entries) {
-        const dropped = setRotation(cmd.entries);
-        if (cmd.entries.length && rotation.empty) {
-          refreshAdmins();
-          return `None of those can be played here: ${dropped.join('; ')}`;
-        }
-      }
+      const refused = cmd.entries ? setRotation(cmd.entries) : null;
+      if (refused) return refused;
       if (cmd.shuffle !== undefined) rotation.setShuffle(cmd.shuffle);
       const up = rotation.peek();
       event(`${by} set the map rotation: ${rotation.entries.length} map${rotation.entries.length === 1 ? '' : 's'}${rotation.shuffle ? ', shuffled' : ''}${up ? `, next ${nameOf(up.entry.map)} (${MODE_LABELS[up.entry.mode]})` : ' (matches replay)'}`);

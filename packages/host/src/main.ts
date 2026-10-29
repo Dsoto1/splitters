@@ -8,6 +8,7 @@ import { COMMANDS, complete, helpText, parseCommand } from './commands.ts';
 import { ConfigError, describeConfig, loadConfig, type HostConfig } from './config.ts';
 import { DEFAULT_CONTROL_PORT, startControl } from './control.ts';
 import { DEFAULT_MAPS_DIR, suiteIds } from './host.ts';
+import { readRotationPresets } from '@tiletrigger/server/rotation';
 import { openLauncherWindow } from './appWindow.ts';
 import { LogBuffer, mapCatalog } from './launcher.ts';
 import { syncMaps } from './published.ts';
@@ -104,6 +105,8 @@ async function service(): Promise<void> {
   // A publish reaches a running server at its next map change.
   setInterval(() => void syncNow(), 10 * 60_000).unref();
 
+  // The built-in map rotations (maps/rotations/): the launcher offers them, the console's rotation preset uses them.
+  const presets = readRotationPresets(DEFAULT_MAPS_DIR);
   const bansFile = join(state.dir, 'bans.json');
   const bans = new BanList(bansFile);
   let lastHost = '';
@@ -113,6 +116,16 @@ async function service(): Promise<void> {
     CRASH_POLICY,
     () => {
       const h = sup.host;
+      // The rotation changed in the match (an admin in-game, the console, the launcher): keep it for the next start.
+      if (sup.state === 'running' && h?.rotation && sup.config) {
+        const items = h.rotation.items;
+        const shuffle = h.rotation.shuffle;
+        if (items.join(' ') !== (sup.config.rotation ?? []).join(' ') || shuffle !== !!sup.config.rotationShuffle) {
+          const { rotation: _r, rotationShuffle: _s, ...rest } = sup.config;
+          sup.config = { ...rest, ...(items.length ? { rotation: items } : {}), ...(shuffle ? { rotationShuffle: true } : {}) };
+          state.save(sup.config, true);
+        }
+      }
       const key = `${sup.state}|${h?.code}|${h?.online}|${h?.listed}`;
       if (key === lastHost) return;
       lastHost = key;
@@ -155,7 +168,7 @@ async function service(): Promise<void> {
       quit: () => void quit('quit from /host'),
       log: (l) => log(`[web] ${l}`),
       bans,
-      launcher: { version: VERSION, commands: COMMANDS, maps: launcherMaps, site, logs, run: (line) => runLine(line, 'launcher') },
+      launcher: { version: VERSION, commands: COMMANDS, maps: launcherMaps, presets, site, logs, run: (line) => runLine(line, 'launcher') },
     });
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === 'EADDRINUSE') {
@@ -265,7 +278,7 @@ async function service(): Promise<void> {
 
   if (interactive) {
     const maps = [...suite].sort();
-    rl = createInterface({ input: process.stdin, output: process.stdout, prompt: '> ', completer: (line: string) => complete(line, maps) });
+    rl = createInterface({ input: process.stdin, output: process.stdout, prompt: '> ', completer: (line: string) => complete(line, maps, presets.map((p) => p.id)) });
     rl.on('line', (line) => {
       if (!parseCommand(line)) return rl?.prompt();
       void runLine(line, 'window');
