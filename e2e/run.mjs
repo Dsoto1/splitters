@@ -691,6 +691,18 @@ async function offlineFlow(browser) {
   check(await page.evaluate(() => Object.values(localStorage).some((v) => /"invertY":true/.test(v))), 'the Invert look switch saves');
   await page.click('.opt-row:has-text("Invert look") .switch');
   await page.keyboard.press('Escape');
+  // Character Select: whole square tiles row under row, and the grid ends above the info panel (it scrolls).
+  await page.click('#nav-characters');
+  await page.waitForSelector('.char-grid .char-tile');
+  const charFit = await page.evaluate(() => {
+    const t = [...document.querySelectorAll('.char-grid .char-tile')].map((e) => e.getBoundingClientRect());
+    const perRow = t.filter((r) => Math.abs(r.top - t[0].top) < 1).length;
+    const grid = document.querySelector('.char-grid').getBoundingClientRect();
+    const info = document.querySelector('.char-info').getBoundingClientRect();
+    return { tile: Math.round(t[0].height), wide: Math.round(t[0].width), step: Math.round(t[perRow].top - t[0].top), gridBottom: Math.round(grid.bottom), infoTop: Math.round(info.top) };
+  });
+  check(Math.abs(charFit.tile - charFit.wide) <= 1 && charFit.step >= charFit.tile && charFit.gridBottom <= charFit.infoTop, `Character Select tiles are square, row under row, above the info panel (${JSON.stringify(charFit)})`);
+  await page.keyboard.press('Escape');
   await page.click('#nav-play');
   await page.waitForSelector('.map-card');
   const cards = () =>

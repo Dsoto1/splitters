@@ -60,6 +60,7 @@ import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
 import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
+import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
 import { bindFullscreenButton } from '../fullscreen.ts';
 import { PLAYLISTS } from '../playlists.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
@@ -1155,20 +1156,25 @@ export class FrontEnd {
     tabs.append(el('span', { class: 'bumper', textContent: 'E' }));
 
     const grid = el('div', { class: 'char-grid loading' });
-    // Every portrait on the tab appears at once, when the last one is ready (rendered and decoded), not face by face.
+    // The shipped pictures appear together once they're all decoded (not face by face); a portrait drawn live
+    // here (a design of yours, a look new since the last capture) shimmers in its own tile until it's ready,
+    // instead of holding back the whole grid.
     const pending: Promise<void>[] = [];
     for (const c of shown) {
       const img = el('img', { alt: c.name });
-      pending.push(
-        this.portraits.get(c.id).then(
-          async (src) => {
-            img.src = src;
-            await img.decode().catch(() => undefined);
-          },
-          () => undefined,
-        ),
-      );
       const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
+      const ready = this.portraits.get(c.id).then(
+        async (src) => {
+          img.src = src;
+          await img.decode().catch(() => undefined);
+        },
+        () => undefined,
+      );
+      if (SHIPPED_PORTRAITS[c.id]) pending.push(ready);
+      else {
+        tile.classList.add('loading');
+        void ready.then(() => tile.classList.remove('loading'));
+      }
       tile.dataset.look = c.id;
       tile.addEventListener('mouseenter', () => this.preview(c.id));
       tile.addEventListener('focus', () => this.preview(c.id));
@@ -1179,6 +1185,10 @@ export class FrontEnd {
     const design = el('button', { class: 'char-tile new', title: 'Design a new character' }, el('b', { textContent: '+' }), el('span', { textContent: 'Design new' }));
     design.addEventListener('click', () => this.hooks.openDesigner(this.look));
     grid.append(design);
+    // Fade the bottom edge while there's more below.
+    const more = () => grid.classList.toggle('more', grid.scrollTop + grid.clientHeight < grid.scrollHeight - 4);
+    grid.addEventListener('scroll', more, { passive: true });
+    new ResizeObserver(more).observe(grid);
 
     const info = el('div', { class: 'char-info panel' });
     this.fillInfo(info, selected);

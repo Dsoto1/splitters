@@ -1,20 +1,21 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
-import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { PointLight } from '@babylonjs/core/Lights/pointLight';
-import { offscreenCamera } from './offscreen.ts';
+import { offscreenCamera, offscreenProjection } from './offscreen.ts';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { CharacterLibrary } from '../content/characters.ts';
 import { CharacterAnimator } from '../game/characterAnimator.ts';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
-import { getLook, isCreature, npcLookRole } from '@tiletrigger/shared';
+import { isCreature, npcLookRole } from '@tiletrigger/shared';
 import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
 
 const SIZE = 256;
@@ -50,7 +51,7 @@ export class PortraitRenderer {
     this.camera.fov = 0.42;
     this.camera.minZ = 0.02;
     // The texture is square: never take the aspect ratio from the screen (that squashed faces).
-    this.camera.freezeProjectionMatrix(Matrix.PerspectiveFovLH(this.camera.fov, 1, 0.02, 50, engine.isNDCHalfZRange));
+    this.camera.freezeProjectionMatrix(offscreenProjection(engine, this.camera.fov, 1, 0.02, 50));
     const hemi = new HemisphericLight('portraitHemi', new Vector3(0, 1, 0.5), this.scene);
     hemi.intensity = 0.7;
     hemi.groundColor = new Color3(0.12, 0.14, 0.2);
@@ -89,10 +90,9 @@ export class PortraitRenderer {
     const role = npcLookRole(look);
     if (role && isCreature(role)) return this.renderCreature(role);
     if (role) return this.renderSoldier(look);
+    // Every character faces the portrait camera (on +Z) as built. (They used to be turned round: with the depth
+    // test reversed (see offscreenProjection) a character seen from behind showed its face through its head.)
     const ch = await this.lib.create({ look }, 'portrait');
-    // Parted characters face -Z here and the portrait camera sits on +Z, so turn them round to face it;
-    // whole-body (Meshy) models already face the camera.
-    if (!getLook(look).whole) ch.root.rotation.y = Math.PI;
     const anim = new CharacterAnimator(this.scene, ch);
     try {
       // Settle into the idle stance (arms down) rather than the bind T-pose.
@@ -112,7 +112,6 @@ export class PortraitRenderer {
   /** A creature skin, framed on the upper part of its posed body (they share no head joint). */
   private async renderCreature(kind: Parameters<CreatureLibrary['create']>[0]): Promise<string> {
     const ch = await this.creatures.create(kind, 'portraitCreature');
-    ch.root.rotation.y = Math.PI;
     const anim = new CreatureAnimator(this.scene, ch);
     try {
       for (let i = 0; i < 8; i++) {
@@ -129,7 +128,6 @@ export class PortraitRenderer {
   /** A soldier NPC skin (the mannequin), framed the same way. */
   private async renderSoldier(look: string): Promise<string> {
     const ch = await this.lib.create({ look }, 'portraitSoldier');
-    ch.root.rotation.y = Math.PI;
     const anim = new CharacterAnimator(this.scene, ch);
     try {
       for (let i = 0; i < 8; i++) {
@@ -181,7 +179,8 @@ export class PortraitRenderer {
   }
 
   /** Render the meshes into the portrait texture once everything is drawable; textures load and shaders compile asynchronously. */
-  private async snap(meshes: AbstractMesh[]): Promise<string> {
+  private async snap(all: AbstractMesh[]): Promise<string> {
+    const meshes = withoutLodLevels(all);
     const textures = meshes.flatMap((m) => (m.material ? m.material.getActiveTextures() : []));
     const deadline = performance.now() + 20000;
     while (!(textures.every((t) => t.isReady()) && meshes.every((m) => m.isReady(true))) && performance.now() < deadline) {
@@ -211,8 +210,20 @@ export class PortraitRenderer {
   }
 }
 
+/**
+ * The meshes without the ones that are another mesh's lower level of detail (a character part's `_lod` copy).
+ * A scene draws one level of each, but a render target draws every mesh it's given: both levels together
+ * fought (mosaics on faces and hoods) and the coarse copy showed through the fine one (see-through helmets).
+ */
+function withoutLodLevels(meshes: AbstractMesh[]): AbstractMesh[] {
+  const levels = new Set<AbstractMesh>();
+  for (const m of meshes) if (m instanceof Mesh) for (const l of m.getLODLevels()) if (l.mesh) levels.add(l.mesh);
+  return levels.size ? meshes.filter((m) => !levels.has(m)) : meshes;
+}
+
 /** The posed (skinned) meshes' world bounds. */
-function bounds(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
+function bounds(all: AbstractMesh[]): { min: Vector3; max: Vector3 } {
+  const meshes = withoutLodLevels(all);
   const min = new Vector3(Infinity, Infinity, Infinity);
   const max = new Vector3(-Infinity, -Infinity, -Infinity);
   for (const m of meshes) {

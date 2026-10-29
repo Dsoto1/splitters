@@ -1,11 +1,11 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
-import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
-import { offscreenCamera } from './offscreen.ts';
+import { offscreenCamera, offscreenProjection } from './offscreen.ts';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Vector3 as V3 } from '@babylonjs/core/Maths/math.vector';
@@ -46,7 +46,7 @@ export class ModelThumbnails {
     this.scene.activeCamera = offscreenCamera(this.scene, 'thumbHidden');
     this.camera = new FreeCamera('thumbCam', new Vector3(0, 1, 2), this.scene);
     this.camera.minZ = 0.02;
-    this.camera.freezeProjectionMatrix(Matrix.PerspectiveFovLH(0.6, 1, 0.02, 200, engine.isNDCHalfZRange));
+    this.camera.freezeProjectionMatrix(offscreenProjection(engine, 0.6, 1, 0.02, 200));
     const hemi = new HemisphericLight('thumbHemi', new Vector3(0.2, 1, -0.4), this.scene);
     hemi.intensity = 0.9;
     hemi.groundColor = new Color3(0.25, 0.27, 0.32);
@@ -111,7 +111,7 @@ export class ModelThumbnails {
     const W = view === 'side' ? VIEWS.side.width : size;
     const H = view === 'side' ? VIEWS.side.height : size;
     const aspect = W / H;
-    this.camera.freezeProjectionMatrix(Matrix.PerspectiveFovLH(0.6, aspect, 0.02, 200, this.scene.getEngine().isNDCHalfZRange));
+    this.camera.freezeProjectionMatrix(offscreenProjection(this.scene.getEngine(), 0.6, aspect, 0.02, 200));
     {
       let min = new V3(Infinity, Infinity, Infinity);
       let max = new V3(-Infinity, -Infinity, -Infinity);
