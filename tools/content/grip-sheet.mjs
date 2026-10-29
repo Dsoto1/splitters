@@ -47,6 +47,8 @@ const manifests = existsSync(MANIFESTS)
   ? readdirSync(MANIFESTS)
       .filter((f) => f.endsWith('.json'))
       .map((f) => JSON.parse(readFileSync(join(MANIFESTS, f), 'utf8')))
+      // Queued stubs aren't built yet.
+      .filter((m) => m.status !== 'queued')
   : [];
 const lookOf = new Map(manifests.map((m) => [m.id, m.look]));
 const wanted = (only ?? manifests.map((m) => m.id)).map((id) => ({ id, look: lookOf.get(id) ?? id }));

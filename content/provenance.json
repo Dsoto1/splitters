@@ -3046,45 +3046,6 @@
       ]
     },
     {
-      "file": "characters/meshy_santa.glb",
-      "sha256": "d15889916ddcdfb1",
-      "triangles": 10998,
-      "bytes": 522800,
-      "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): T Pose Santa (download dated 2026-10-29)",
-      "creator": "Meshy community, CC0 (per owner)",
-      "url": "https://www.meshy.ai (community page URL pending from the owner)",
-      "license": "CC0-1.0",
-      "modifications": [
-        "rigged in-house (joints found from the mesh's silhouette (tools/content/landmarks.mjs), skin weights computed from the mesh)",
-        "re-posed to the rig's T-pose",
-        "bound to the rig's skeleton",
-        "simplified",
-        "base colour only, downscaled to a JPEG",
-        "vertices quantized",
-        "low-detail copy of each mesh added",
-        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
-      ]
-    },
-    {
-      "file": "characters/meshy_santa_fparms.glb",
-      "sha256": "5c8f759415cc6a39",
-      "triangles": 5759,
-      "bytes": 313024,
-      "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): T Pose Santa (download dated 2026-10-29)",
-      "creator": "Meshy community, CC0 (per owner)",
-      "url": "https://www.meshy.ai (community page URL pending from the owner)",
-      "license": "CC0-1.0",
-      "modifications": [
-        "arms cut from the body",
-        "re-posed to the rig's T-pose",
-        "rebound to the rig's skeleton",
-        "vertices quantized",
-        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
-      ]
-    },
-    {
       "file": "characters/meshy_lancer.glb",
       "sha256": "f5dfee60f0653f2b",
       "triangles": 10998,
@@ -3112,84 +3073,6 @@
       "bytes": 410348,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Female lancer (download dated 2026-10-29)",
-      "creator": "Meshy community, CC0 (per owner)",
-      "url": "https://www.meshy.ai (community page URL pending from the owner)",
-      "license": "CC0-1.0",
-      "modifications": [
-        "arms cut from the body",
-        "re-posed to the rig's T-pose",
-        "rebound to the rig's skeleton",
-        "vertices quantized",
-        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
-      ]
-    },
-    {
-      "file": "characters/meshy_grizzelda.glb",
-      "sha256": "f5accd8d83ff72a6",
-      "triangles": 16550,
-      "bytes": 984808,
-      "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): Gloombraid Goblin Shaman (download dated 2026-10-29)",
-      "creator": "Meshy community, CC0 (per owner)",
-      "url": "https://www.meshy.ai (community page URL pending from the owner)",
-      "license": "CC0-1.0",
-      "modifications": [
-        "rigged in-house (joints found from the mesh's silhouette (tools/content/landmarks.mjs), skin weights computed from the mesh)",
-        "re-posed to the rig's T-pose",
-        "bound to the rig's skeleton",
-        "simplified",
-        "base colour only, downscaled to a JPEG",
-        "vertices quantized",
-        "low-detail copy of each mesh added",
-        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
-      ]
-    },
-    {
-      "file": "characters/meshy_grizzelda_fparms.glb",
-      "sha256": "c8a6eb713925831d",
-      "triangles": 4233,
-      "bytes": 391072,
-      "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): Gloombraid Goblin Shaman (download dated 2026-10-29)",
-      "creator": "Meshy community, CC0 (per owner)",
-      "url": "https://www.meshy.ai (community page URL pending from the owner)",
-      "license": "CC0-1.0",
-      "modifications": [
-        "arms cut from the body",
-        "re-posed to the rig's T-pose",
-        "rebound to the rig's skeleton",
-        "vertices quantized",
-        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
-      ]
-    },
-    {
-      "file": "characters/meshy_brass_hare.glb",
-      "sha256": "7e81eef5dc5c577e",
-      "triangles": 14247,
-      "bytes": 979348,
-      "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): Energetic anthro rabbit (download dated 2026-10-29)",
-      "creator": "Meshy community, CC0 (per owner)",
-      "url": "https://www.meshy.ai (community page URL pending from the owner)",
-      "license": "CC0-1.0",
-      "modifications": [
-        "rigged in-house (joints found from the mesh's silhouette (tools/content/landmarks.mjs), skin weights computed from the mesh)",
-        "re-posed to the rig's T-pose",
-        "bound to the rig's skeleton",
-        "simplified",
-        "base colour only, downscaled to a JPEG",
-        "vertices quantized",
-        "low-detail copy of each mesh added",
-        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
-      ]
-    },
-    {
-      "file": "characters/meshy_brass_hare_fparms.glb",
-      "sha256": "9dd915a78de10fe1",
-      "triangles": 7665,
-      "bytes": 587148,
-      "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): Energetic anthro rabbit (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
@@ -3775,45 +3658,6 @@
       "bytes": 253184,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Shiba Inu (download dated 2026-10-29)",
-      "creator": "Meshy community, CC0 (per owner)",
-      "url": "https://www.meshy.ai (community page URL pending from the owner)",
-      "license": "CC0-1.0",
-      "modifications": [
-        "arms cut from the body",
-        "re-posed to the rig's T-pose",
-        "rebound to the rig's skeleton",
-        "vertices quantized",
-        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
-      ]
-    },
-    {
-      "file": "characters/meshy_bandit.glb",
-      "sha256": "6a8e0b8d96d69fa1",
-      "triangles": 10997,
-      "bytes": 616684,
-      "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): a raccoon warrior in T-pose (download dated 2026-10-29)",
-      "creator": "Meshy community, CC0 (per owner)",
-      "url": "https://www.meshy.ai (community page URL pending from the owner)",
-      "license": "CC0-1.0",
-      "modifications": [
-        "rigged in-house (joints found from the mesh's silhouette (tools/content/landmarks.mjs), skin weights computed from the mesh)",
-        "re-posed to the rig's T-pose",
-        "bound to the rig's skeleton",
-        "simplified",
-        "base colour only, downscaled to a JPEG",
-        "vertices quantized",
-        "low-detail copy of each mesh added",
-        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
-      ]
-    },
-    {
-      "file": "characters/meshy_bandit_fparms.glb",
-      "sha256": "ecc45c1d93cf8ad6",
-      "triangles": 4270,
-      "bytes": 324696,
-      "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): a raccoon warrior in T-pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",

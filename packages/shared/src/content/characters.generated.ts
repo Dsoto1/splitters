@@ -20,10 +20,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.bogdan', name: 'Big Bogdan', body: 'male', head: '', parts: ['meshy_titan'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_titan_fparms' } },
   { id: 'core.rustwalker', name: 'Ivory Rustwalker', body: 'male', head: '', parts: ['meshy_rustmech'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_rustmech_fparms' } },
   { id: 'core.t350', name: 'T-350', body: 'male', head: '', parts: ['meshy_t350'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_t350_fparms' } },
-  { id: 'core.saintnick', name: 'Saint Nick', body: 'male', head: '', parts: ['meshy_santa'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_santa_fparms' } },
   { id: 'core.mei', name: 'Lancer Mei', body: 'female', head: '', parts: ['meshy_lancer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_lancer_fparms' } },
-  { id: 'core.grizzelda', name: 'Grizzelda', body: 'female', head: '', parts: ['meshy_grizzelda'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_grizzelda_fparms' } },
-  { id: 'core.brasshare', name: 'Brass Hare', body: 'male', head: '', parts: ['meshy_brass_hare'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_brass_hare_fparms' } },
   { id: 'core.grunt68', name: 'Grunt \'68', body: 'male', head: '', parts: ['meshy_grunt68'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_grunt68_fparms' } },
   { id: 'core.galloway', name: 'Sir Galloway', body: 'male', head: '', parts: ['meshy_galloway'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_galloway_fparms' } },
   { id: 'core.hector', name: 'Hector', body: 'male', head: '', parts: ['meshy_hector'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hector_fparms' } },
@@ -39,7 +36,6 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.basile', name: 'Chef Basile', body: 'male', head: '', parts: ['meshy_chef'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_chef_fparms' } },
   { id: 'core.dustycolt', name: 'Dusty Colt', body: 'male', head: '', parts: ['meshy_cowboy'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_cowboy_fparms' } },
   { id: 'core.shiba', name: 'Shiba', body: 'male', head: '', parts: ['meshy_shiba'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_shiba_fparms' } },
-  { id: 'core.bandit', name: 'Bandit', body: 'male', head: '', parts: ['meshy_bandit'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_bandit_fparms' } },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -63,10 +59,7 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.bogdan': 'Bent iron bars at the travelling circus until the circus ran out of bars.',
   'core.rustwalker': 'Woke up in a scrapyard with no orders and a full magazine. Has been following both ever since.',
   'core.t350': 'Built to sweep floors. Upgraded itself to sweep arenas.',
-  'core.saintnick': 'Has a list. You are on the other one.',
   'core.mei': 'Trained with the lance for twenty years. Took about twenty seconds to learn the rifle.',
-  'core.grizzelda': 'Brews potions, curses rivals and keeps exact count of both.',
-  'core.brasshare': 'Wound up every morning and never quite runs down.',
   'core.grunt68': 'Has been in the field so long the field started calling him sir.',
   'core.galloway': 'Swore an oath to protect the realm. The realm has since moved on; he has not.',
   'core.hector': 'Says little, carries a lot, and is always the last one standing at the bar.',
@@ -82,5 +75,4 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.basile': 'Runs the hottest kitchen in the arena. Everything is served well done.',
   'core.dustycolt': 'Rode into the arena on a horse that has since left without him.',
   'core.shiba': 'Very fast. Much aim. Wow.',
-  'core.bandit': 'Steals your ammo, your cover and, if you blink, your lunch.',
 };

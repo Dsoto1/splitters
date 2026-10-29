@@ -75,6 +75,24 @@
       "note": "customs agent"
     },
     {
+      "id": "meshy_brass_hare",
+      "name": "Brass Hare",
+      "kind": "character",
+      "use": "player",
+      "url": "https://www.meshy.ai/posts/019ad7f4-7590-7ed4-abff-fb9bb6f1065a",
+      "license": "CC0 (Meshy community)",
+      "note": "steampunk rabbit"
+    },
+    {
+      "id": "meshy_grizzelda",
+      "name": "Grizzelda",
+      "kind": "character",
+      "use": "player",
+      "url": "https://www.meshy.ai/posts/019e40b6-5e91-7d09-b4ef-eac45a40e626",
+      "license": "CC0 (Meshy community)",
+      "note": "lady goblin"
+    },
+    {
       "id": "meshy_longshadow",
       "name": "Longshadow",
       "kind": "character",
@@ -101,6 +119,15 @@
       "url": "https://www.meshy.ai/posts/0194a6c5-16d7-7fae-97e2-df92cb78c889",
       "license": "CC0 (Meshy community)",
       "note": "plains scout; check the model is respectful before shipping"
+    },
+    {
+      "id": "meshy_santa",
+      "name": "Saint Nick",
+      "kind": "character",
+      "use": "player",
+      "url": "https://www.meshy.ai/posts/christmas-santa-claus-3d-character-model-animation-ready-01a0698e-123a-7439-90ce-586dbbc91226",
+      "license": "CC0 (Meshy community)",
+      "note": "Santa"
     },
     {
       "id": "meshy_big_bab",
@@ -174,6 +201,15 @@
       "url": "https://www.meshy.ai/posts/0196daa9-6371-746f-b8ec-eb93815c0c4c",
       "license": "CC0 (Meshy community)",
       "note": "creature"
+    },
+    {
+      "id": "meshy_bandit",
+      "name": "Bandit",
+      "kind": "character",
+      "use": "player",
+      "url": "https://www.meshy.ai/posts/01990582-7d15-78ed-82d9-279f1a3a60cf",
+      "license": "CC0 (Meshy community)",
+      "note": "raccoon"
     },
     {
       "id": "meshy_prism_cat",
