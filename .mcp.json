@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "control-center": {
+      "type": "http",
+      "url": "${CONTROL_CENTER_URL:-https://control-center.invalid}/api/agent/mcp",
+      "headers": { "Authorization": "Bearer ${CONTROL_CENTER_KEY:-missing}" }
+    }
+  }
+}
