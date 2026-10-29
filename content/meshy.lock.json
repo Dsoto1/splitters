@@ -467,12 +467,11 @@
       "date": "2026-10-29",
       "src": "Meshy_AI_hunghu_female_lancer__1029193500_image-to-3d-texture.glb",
       "sourceTriangles": 1076578,
-      "landmarks": "found",
       "file": "characters/meshy_lancer.glb",
-      "sha256": "f5dfee60f0653f2b",
-      "triangles": 10998,
-      "lodTriangles": 3206,
-      "bytes": 839124,
+      "sha256": "e3d764c21b453b6c",
+      "triangles": 10996,
+      "lodTriangles": 3256,
+      "bytes": 840360,
       "hands": true
     },
     {
@@ -483,11 +482,10 @@
       "date": "2026-10-29",
       "src": "Meshy_AI_hunghu_female_lancer__1029193500_image-to-3d-texture.glb",
       "sourceTriangles": 1076578,
-      "landmarks": "found",
       "file": "characters/meshy_lancer_fparms.glb",
-      "sha256": "5cc324228fddf630",
-      "triangles": 2071,
-      "bytes": 410348,
+      "sha256": "ef6ef89a264e3382",
+      "triangles": 925,
+      "bytes": 382912,
       "hands": true
     },
     {
@@ -903,10 +901,10 @@
       "sourceTriangles": 271665,
       "landmarks": "found",
       "file": "characters/meshy_cowboy.glb",
-      "sha256": "49b493b69153fb3d",
+      "sha256": "d74f8fc2fcca1509",
       "triangles": 10999,
       "lodTriangles": 3194,
-      "bytes": 637040,
+      "bytes": 637048,
       "hands": true
     },
     {
@@ -919,9 +917,9 @@
       "sourceTriangles": 271665,
       "landmarks": "found",
       "file": "characters/meshy_cowboy_fparms.glb",
-      "sha256": "e2fbcea3245c6dc2",
+      "sha256": "3cc249c3350d7b0d",
       "triangles": 4620,
-      "bytes": 337668,
+      "bytes": 337672,
       "hands": true
     },
     {
