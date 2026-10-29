@@ -3,7 +3,8 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
+import type { InstancedMesh } from '@babylonjs/core/Meshes/instancedMesh';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { DEFAULT_BLOOD, type BloodAmount, type EffectsWorld, type Vec3 } from '@tiletrigger/shared';
 import { MeshPool } from './meshPool.ts';
@@ -37,6 +38,7 @@ const SPLAT_STAY = 7;
 const SPLAT_FADE = 2;
 /** Drops in the air at once at most (a 96-player brawl threw more than its pool held; past this nobody sees more). */
 const MAX_DROPS = 500;
+const MAX_MIST = 64;
 /** Drops and mist are effects: no shadows from them or on them (see Atmosphere). */
 const EFFECT = { effect: true };
 
@@ -49,10 +51,12 @@ const EFFECT = { effect: true };
 export class BloodVisuals {
   private drops: Drop[] = [];
   private splats: Splat[] = [];
-  private mist: { mesh: Mesh; age: number }[] = [];
+  private mist: { mesh: InstancedMesh; age: number }[] = [];
   private readonly dropBase: Mesh;
   private readonly dropPool: MeshPool<Mesh>;
-  private readonly mistPool: MeshPool<Mesh>;
+  /** Mist: GPU instances of one sphere, faded by their instance colour's alpha (one draw for them all). */
+  private readonly mistBase: Mesh;
+  private readonly mistPool: MeshPool<InstancedMesh>;
   /** Splats are unit discs, scaled to their size. */
   private readonly splatPool: MeshPool<Mesh>;
   private readonly splatMat: StandardMaterial;
@@ -77,19 +81,29 @@ export class BloodVisuals {
     // Instances only draw while their source is enabled, so the source stays on, shrunk to nothing.
     this.dropBase.scaling.setAll(0);
     this.dropBase.alwaysSelectAsActiveMesh = true;
+    this.dropBase.metadata = EFFECT;
     this.dropPool = new MeshPool(() => {
       const m = this.dropBase.createInstance('bloodDrop') as unknown as Mesh;
       m.isPickable = false;
       m.metadata = EFFECT;
       return m;
     }, MAX_DROPS);
+    this.mistBase = CreateSphere('bloodMistBase', { diameter: 1, segments: 4 }, scene);
+    this.mistBase.material = this.mistMat;
+    this.mistBase.isPickable = false;
+    this.mistBase.metadata = EFFECT;
+    this.mistBase.registerInstancedBuffer('color', 4);
+    this.mistBase.instancedBuffers.color = new Color4(1, 1, 1, 1);
+    this.mistBase.hasVertexAlpha = true;
+    this.mistBase.scaling.setAll(0);
+    this.mistBase.alwaysSelectAsActiveMesh = true;
     this.mistPool = new MeshPool(() => {
-      const m = CreateSphere('bloodMist', { diameter: 1, segments: 4 }, scene);
-      m.material = this.mistMat;
+      const m = this.mistBase.createInstance('bloodMist');
       m.isPickable = false;
       m.metadata = EFFECT;
+      m.instancedBuffers.color = new Color4(1, 1, 1, 1);
       return m;
-    }, 48);
+    }, MAX_MIST);
     this.splatPool = new MeshPool(() => {
       const m = CreateDisc('bloodSplat', { radius: 1, tessellation: 9 }, scene);
       m.material = this.splatMat;
@@ -138,11 +152,13 @@ export class BloodVisuals {
       const v = d.scale(2 + Math.random() * 3 * strength).add(new Vector3((Math.random() - 0.5) * 3, Math.random() * 2.2, (Math.random() - 0.5) * 3));
       this.drop(new Vector3(at.x, at.y, at.z), v);
     }
-    const puff = this.mistPool.take();
-    puff.scaling.setAll(0.15);
-    puff.visibility = 1;
-    puff.position.set(at.x, at.y, at.z);
-    this.mist.push({ mesh: puff, age: 0 });
+    if (this.mist.length < MAX_MIST) {
+      const puff = this.mistPool.take();
+      puff.scaling.setAll(0.15);
+      (puff.instancedBuffers.color as Color4).a = 1;
+      puff.position.set(at.x, at.y, at.z);
+      this.mist.push({ mesh: puff, age: 0 });
+    }
     // A splat on whatever is right behind the target, along the shot.
     const wall = this.physics()?.raycast(at, { x: d.x, y: d.y, z: d.z }, heavy ? 3 : 1.8);
     if (wall) this.splat(new Vector3(at.x + d.x * wall.dist, at.y + d.y * wall.dist, at.z + d.z * wall.dist), wall.normal, 0.25 + Math.random() * 0.2 * strength);
@@ -200,7 +216,7 @@ export class BloodVisuals {
     this.mist = this.mist.filter((m) => {
       m.age += dt;
       m.mesh.scaling.setAll(0.15 + m.age * 2.2);
-      m.mesh.visibility = Math.max(0, 1 - m.age / 0.25);
+      (m.mesh.instancedBuffers.color as Color4).a = Math.max(0, 1 - m.age / 0.25);
       if (m.age < 0.25) return true;
       this.mistPool.give(m.mesh);
       return false;
@@ -222,6 +238,7 @@ export class BloodVisuals {
     for (const s of this.splats) s.mesh.dispose();
     for (const m of this.mist) m.mesh.dispose();
     for (const p of [this.dropPool, this.mistPool, this.splatPool]) p.dispose();
+    this.mistBase.dispose();
     this.dropBase.dispose();
     for (const m of [this.dropMat, this.splatMat, this.mistMat]) m.dispose();
   }

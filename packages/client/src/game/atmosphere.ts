@@ -19,6 +19,10 @@ export * from './graphicsSettings.ts';
 
 /** Half-size of the medium shadow box round the camera (metres): sharp nearby, none far away. */
 const BOX = 45;
+/** The medium box sits this much of its half-size ahead of the camera, where shadows are seen, not behind it. */
+const AHEAD = 0.4;
+/** A caster smaller across than this many texels of its shadow map is left out of that map. */
+const MIN_TEXELS = 6;
 
 /**
  * Lighting polish for a match scene: tone mapping and colour grading, sun
@@ -48,7 +52,7 @@ export class Atmosphere {
       const csm = new CascadedShadowGenerator(2048, sun);
       csm.numCascades = 3;
       csm.lambda = 0.85;
-      csm.shadowMaxZ = 160;
+      csm.shadowMaxZ = 120;
       csm.stabilizeCascades = true;
       csm.cascadeBlendPercentage = 0.08;
       this.shadows = csm;
@@ -74,28 +78,60 @@ export class Atmosphere {
     s.transparencyShadow = false;
     // Only casters that can reach the shadows: the shadow map draws its whole list every frame (no
     // culling of its own), which on a big map with 96 characters was several thousand draw calls.
-    const reach = quality === 'high' ? 180 : BOX * Math.SQRT2 + 10;
+    const reach = quality === 'high' ? 180 : BOX * Math.SQRT2 + BOX * AHEAD + 10;
     const near: AbstractMesh[] = [];
     let nearFrame = -1;
+    // Then each map (a cascade on high) draws only the casters inside its own square, as the light sees
+    // it: with three cascades every caster was drawn three times. Depth is clamped, so only the sides cut.
+    const csm = s instanceof CascadedShadowGenerator ? s : null;
+    const perPass: AbstractMesh[][] = [];
+    const passFrame: number[] = [];
+    const at = new Vector3();
     const map = s.getShadowMap();
     if (map) {
-      map.getCustomRenderList = (_pass, list, length) => {
+      map.getCustomRenderList = (pass, list, length) => {
         if (!list) return null;
         const frame = scene.getFrameId();
-        if (frame === nearFrame) return near;
-        nearFrame = frame;
-        near.length = 0;
-        const c = this.camera.globalPosition;
-        const off = this.shadowless;
-        for (let i = 0; i < length; i++) {
-          const m = list[i]!;
-          const b = m.getBoundingInfo().boundingSphere;
-          if (Vector3.Distance(b.centerWorld, c) - b.radiusWorld > reach) continue;
-          if (off.size && underAny(m, off)) continue;
-          near.push(m);
+        if (frame !== nearFrame) {
+          nearFrame = frame;
+          near.length = 0;
+          const c = this.camera.globalPosition;
+          const off = this.shadowless;
+          for (let i = 0; i < length; i++) {
+            const m = list[i]!;
+            const b = m.getBoundingInfo().boundingSphere;
+            if (Vector3.Distance(b.centerWorld, c) - b.radiusWorld > reach) continue;
+            if (off.size && underAny(m, off)) continue;
+            near.push(m);
+          }
+          this.casterCount = 0;
         }
-        this.casterCount = near.length;
-        return near;
+        if (passFrame[pass] === frame) return perPass[pass]!;
+        const lo = csm ? csm.getCascadeMinExtents(pass) : null;
+        const hi = csm ? csm.getCascadeMaxExtents(pass) : null;
+        const toMap = csm ? csm.getCascadeTransformMatrix(pass) : s.getTransformMatrix();
+        if (!toMap || (csm && (!lo || !hi || hi.x <= lo.x || hi.y <= lo.y))) return near;
+        passFrame[pass] = frame;
+        const out = (perPass[pass] ??= []);
+        out.length = 0;
+        // The map's square is -1..1 across; a metre is this much of it.
+        const kx = csm ? 2 / (hi!.x - lo!.x) : 1 / BOX;
+        const ky = csm ? 2 / (hi!.y - lo!.y) : 1 / BOX;
+        // Casters smaller than a few of the map's texels cast a speck: the far cascade's texel is a quarter
+        // metre, and it had well over a thousand props, most of them that small.
+        // The square is 2 / kx metres across and its map that many texels: half of MIN_TEXELS of them, as a radius.
+        const minRadius = MIN_TEXELS / (kx * map.getSize().width);
+        for (const m of near) {
+          const b = m.getBoundingInfo().boundingSphere;
+          if (b.radiusWorld < minRadius) continue;
+          Vector3.TransformCoordinatesToRef(b.centerWorld, toMap, at);
+          // A little slack: the cascades are fitted after this list is made.
+          const r = b.radiusWorld + 1;
+          if (Math.abs(at.x) - r * kx > 1 || Math.abs(at.y) - r * ky > 1) continue;
+          out.push(m);
+        }
+        this.casterCount += out.length;
+        return out;
       };
     }
 
@@ -179,8 +215,12 @@ export class Atmosphere {
   private follow(): void {
     const dir = this.sun.direction.normalizeToNew();
     const step = (BOX * 2) / 2048;
+    const fwd = this.camera.getDirection(Vector3.Forward());
+    const flat = Math.hypot(fwd.x, fwd.z) || 1;
     const c = this.camera.globalPosition;
-    const at = new Vector3(Math.round(c.x / step) * step, Math.round(c.y / step) * step, Math.round(c.z / step) * step);
+    const cx = c.x + (fwd.x / flat) * BOX * AHEAD;
+    const cz = c.z + (fwd.z / flat) * BOX * AHEAD;
+    const at = new Vector3(Math.round(cx / step) * step, Math.round(c.y / step) * step, Math.round(cz / step) * step);
     this.sun.position = at.subtract(dir.scale(200));
   }
 

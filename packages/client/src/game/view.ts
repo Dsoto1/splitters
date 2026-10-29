@@ -614,14 +614,17 @@ export class GameView {
   /** Step the effects physics and everything riding on it. */
   private updateEffects(): void {
     const now = performance.now();
-    const dt = Math.min(0.1, (now - this.lastFrame) / 1000);
+    // Physics steps at most 0.1 s; short-lived effects age by the clock, or in slow frames (a struggling
+    // computer) they lived several times longer while hits kept coming, and the pile slowed frames further.
+    const wall = Math.min(1, (now - this.lastFrame) / 1000);
+    const dt = Math.min(0.1, wall);
     this.lastFrame = now;
     if (this.vfx.count) {
       // The packs' toon smoke is lit like everything else: this sun, this sky.
       if (this.sunLight) this.vfx.setLight(this.sunLight.direction.clone(), this.sunLight.diffuse.scale(this.sunLight.intensity), (this.hemi?.diffuse ?? Color3.White()).scale((this.hemi?.intensity ?? 0.8) * 0.7));
       this.vfx.update(dt * 1000);
     }
-    this.impacts.update(dt);
+    this.impacts.update(wall);
     // Remote muzzle flashes follow the guns.
     for (const a of this.avatars.values()) {
       if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
@@ -669,7 +672,7 @@ export class GameView {
         return true;
       });
     }
-    this.blood.update(dt);
+    this.blood.update(wall);
   }
 
   private dropCanopy(a: Avatar): void {

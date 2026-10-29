@@ -53,7 +53,7 @@ void main(void) {
 const SUNNY = new Set(['clear', 'cloudy', 'sunrise', 'sunset', 'dusk', 'misty', 'snowy']);
 
 /**
- * Ground mist (a map's backdrop `mist`, medium and high graphics) and light
+ * Ground mist (a map's backdrop `mist`: height fog on high graphics, thicker distance fog on medium) and light
  * shafts from the sun through gaps and foliage (high graphics, sunny skies).
  */
 export class SkyEffects {
@@ -72,7 +72,10 @@ export class SkyEffects {
     this.dispose();
     if (this.quality === 'low') return;
     const mist = backdrop.mist ?? 0;
-    if (mist > 0 && sky.id !== 'space') this.addFog(doc, mist, Color3.FromHexString(sky.horizon));
+    if (mist > 0 && sky.id !== 'space') {
+      if (this.quality === 'high') this.addFog(doc, mist, Color3.FromHexString(sky.horizon));
+      else this.foldMist(mist, Color3.FromHexString(sky.horizon));
+    }
     if (this.quality === 'high' && SUNNY.has(sky.id) && sky.light.elevation < 75) this.addRays(sky);
   }
 
@@ -87,6 +90,20 @@ export class SkyEffects {
     if (this.depth) this.scene.disableDepthRenderer(this.camera);
     this.fog = this.rays = this.depth = null;
     this.observer = null;
+  }
+
+  /**
+   * Medium: the mist thickens the scene's own distance fog, worked out in each material as it draws.
+   * The height fog needs the scene's depth, and drawing that took a second pass over the whole scene
+   * every frame (hundreds of draw calls in a city map).
+   */
+  private foldMist(mist: number, color: Color3): void {
+    if (this.scene.fogMode !== 2) {
+      this.scene.fogMode = 2; // Scene.FOGMODE_EXP2
+      this.scene.fogColor = color;
+      this.scene.fogDensity = 0;
+    }
+    this.scene.fogDensity += mist * 0.006;
   }
 
   private addFog(doc: MapDocument, mist: number, color: Color3): void {

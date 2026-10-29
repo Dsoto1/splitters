@@ -35,6 +35,18 @@ interface Bullet {
 const MAX_POOLED_STREAKS = 256;
 /** Sparks alive at once at most: a 96-player brawl threw 1,500, and past a few hundred more add nothing to see. */
 const MAX_SPARKS = 600;
+/** Dust puffs from wall hits, and smoke puffs, alive at once at most. */
+const MAX_DUST = 200;
+const MAX_PUFFS = 120;
+/** No shadows from effects or on them (see Atmosphere). */
+const EFFECT = { effect: true };
+
+interface Dust {
+  mesh: InstancedMesh;
+  age: number;
+  life: number;
+  grow: number;
+}
 
 interface Spark {
   mesh: InstancedMesh;
@@ -67,6 +79,10 @@ export class ImpactVisuals {
   private readonly streak: Mesh;
   private readonly spark: Mesh;
   private readonly sparkPool: MeshPool<InstancedMesh>;
+  /** Wall-hit dust: GPU instances of one sphere, faded by their instance colour's alpha (one draw for them all). */
+  private readonly dust: Mesh;
+  private readonly dustPool: MeshPool<InstancedMesh>;
+  private dusts: Dust[] = [];
   /** Dust and smoke puffs (each its own mesh: they fade one by one). */
   private readonly puffPool: MeshPool<Mesh>;
   private readonly holes: Mesh;
@@ -106,15 +122,28 @@ export class ImpactVisuals {
     this.puffPool = new MeshPool(() => {
       const m = CreateSphere('puff', { diameter: 1, segments: 4 }, scene);
       m.isPickable = false;
-      // An effect: no shadows from it or on it (see Atmosphere).
-      m.metadata = { effect: true };
+      m.metadata = EFFECT;
       return m;
-    }, 160);
+    }, MAX_PUFFS);
 
     this.dustMat = new StandardMaterial('impactDustMat', scene);
     this.dustMat.diffuseColor = new Color3(0.55, 0.52, 0.47);
     this.dustMat.specularColor = Color3.Black();
     this.dustMat.alpha = 0.5;
+    this.dust = CreateSphere('impactDust', { diameter: 1, segments: 4 }, scene);
+    this.dust.material = this.dustMat;
+    this.dust.metadata = EFFECT;
+    this.dust.registerInstancedBuffer('color', 4);
+    this.dust.instancedBuffers.color = new Color4(1, 1, 1, 1);
+    this.dust.hasVertexAlpha = true;
+    this.prepareSource(this.dust);
+    this.dustPool = new MeshPool(() => {
+      const m = this.dust.createInstance('dust');
+      m.isPickable = false;
+      m.metadata = EFFECT;
+      m.instancedBuffers.color = new Color4(1, 1, 1, 1);
+      return m;
+    }, MAX_DUST);
 
     // Bullet holes: one mesh, one thin instance per hole.
     this.holes = CreateDisc('bulletHoles', { radius: 0.05, tessellation: 10 }, scene);
@@ -220,10 +249,12 @@ export class ImpactVisuals {
       mesh.position.copyFrom(pos);
       this.sparks.push({ mesh, pos, vel: v, age: 0, life: 0.18 + Math.random() * 0.15 });
     }
-    const puff = this.takePuff(this.dustMat);
-    puff.position.set(point.x + n.x * 0.12, point.y + n.y * 0.12, point.z + n.z * 0.12);
-    puff.scaling.setAll(0.05);
-    this.puffs.push({ mesh: puff, age: 0, life: 0.45, grow: 0.5 * size });
+    if (this.dusts.length >= MAX_DUST) return;
+    const dust = this.dustPool.take();
+    dust.position.set(point.x + n.x * 0.12, point.y + n.y * 0.12, point.z + n.z * 0.12);
+    dust.scaling.setAll(0.05);
+    (dust.instancedBuffers.color as Color4).a = 1;
+    this.dusts.push({ mesh: dust, age: 0, life: 0.45, grow: 0.5 * size });
   }
 
   /** A spray of hot sparks from a point (a badly damaged vehicle shorting out, a crash). */
@@ -242,6 +273,7 @@ export class ImpactVisuals {
 
   /** A soft puff that grows, rises and fades (vehicle smoke and fire). */
   puff(at: Vec3, hex: string, size: number, life: number, rise: number, glow = false): void {
+    if (this.puffs.length >= MAX_PUFFS) return;
     let mat = this.puffMats.get(hex);
     if (!mat) {
       mat = new StandardMaterial(`puff_${hex}`, this.scene);
@@ -267,6 +299,10 @@ export class ImpactVisuals {
   /** Build the sparks' and dust's shaders while the match loads (see MeshPool.warm). */
   warm(): void {
     this.sparkPool.warm((m) => m.scaling.setAll(0.03));
+    this.dustPool.warm((m) => {
+      m.scaling.setAll(0.3);
+      (m.instancedBuffers.color as Color4).a = 0.5;
+    });
     this.puffPool.warm((m) => {
       m.material = this.dustMat;
       m.scaling.setAll(0.3);
@@ -317,6 +353,15 @@ export class ImpactVisuals {
       this.puffPool.give(p.mesh);
       return false;
     });
+    this.dusts = this.dusts.filter((d) => {
+      d.age += dt;
+      const f = d.age / d.life;
+      d.mesh.scaling.setAll(0.05 + d.grow * f);
+      (d.mesh.instancedBuffers.color as Color4).a = Math.max(0, 1 - f);
+      if (f < 1) return true;
+      this.dustPool.give(d.mesh);
+      return false;
+    });
   }
 
   dispose(): void {
@@ -324,7 +369,10 @@ export class ImpactVisuals {
     for (const m of this.streakPool) m.dispose();
     for (const s of this.sparks) s.mesh.dispose();
     for (const p of this.puffs) p.mesh.dispose();
+    for (const d of this.dusts) d.mesh.dispose();
     this.sparkPool.dispose();
+    this.dustPool.dispose();
+    this.dust.dispose();
     this.puffPool.dispose();
     this.streak.dispose();
     this.spark.dispose();

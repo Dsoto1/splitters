@@ -1072,12 +1072,15 @@ async function physicsfxFlow(browser) {
   let ragdolled = false;
   // The push can throw the body up first and land it on something higher than it stood: measure the fall from its peak.
   const fell = () => { const top = track.indexOf(Math.max(...track)); return track.length ? track[top] - Math.min(...track.slice(top)) : 0; };
-  for (let i = 0; i < 12 && !(ragdolled && fell() > 0.5); i++) {
+  // Physics steps with the frames: on a slow software renderer a second of sampling can be two frames.
+  const until = Date.now() + T(3000);
+  while (Date.now() < until && !(ragdolled && fell() > 0.5)) {
     await page.waitForTimeout(T(150) / 2); // wait-ok: sampling interval of the fall
     const s = await page.evaluate(() => {
-      // A killed body leaves the live avatars for the corpse list as soon as it ragdolls.
+      // A killed body leaves the live avatars for the corpse list as soon as it ragdolls (the body,
+      // not the bot that respawns in its slot).
       const v = window.__cs.view;
-      const a = v.avatars.get(window.__botSlot) ?? v.corpses.findLast((c) => c.slot === window.__botSlot)?.a;
+      const a = v.corpses.findLast((c) => c.slot === window.__botSlot)?.a ?? v.avatars.get(window.__botSlot);
       const head = a?.anim?.ch.joints.get('Head');
       return { rag: !!a?.ragdoll, head: head ? head.getAbsolutePosition().y : null };
     });
@@ -1189,7 +1192,15 @@ async function glassChecks(browser) {
     }
   };
   const z = (i) => -8 - i * 2.6;
-  await fireAt(z(10), 4);
+  // Shots go with the frames (a held trigger fires on the next one), so on a slow renderer keep firing
+  // until two rounds have landed, as a fixed few might not.
+  const bulletproofHit = () => {
+    const m = window.__match;
+    const i = m.map.entities.findIndex((e) => e.id === 'panel_bulletproof');
+    const s = m.scenario.fullState().es.find(([k]) => k === i);
+    return !!s && s[1] < 100 && window.__cs.view.scenario.glass.counts.cracks > 0;
+  };
+  await fireAt(z(10), 12, bulletproofHit);
   await page.waitForFunction(() => window.__cs.view.scenario.glass.counts.cracks > 0, null, { timeout: T(5000) }).catch(() => {});
   const proof = await page.evaluate(() => {
     const m = window.__match;
