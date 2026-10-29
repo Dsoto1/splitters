@@ -160,14 +160,19 @@ export class Atmosphere {
         this.pipeline.bloomThreshold = 0.82;
         this.pipeline.bloomWeight = 0.22;
         this.pipeline.bloomKernel = 48;
-        this.pipeline.fxaaEnabled = true;
+        // Edges smoothed by 4x multisampling where WebGL2 has it, not FXAA: FXAA blurred the whole picture
+        // (on top of Auto's 1.25 pixels per point, high looked fuzzier than medium).
+        if (webgpu || ((scene.getEngine() as { webGLVersion?: number }).webGLVersion ?? 1) >= 2) this.pipeline.samples = 4;
+        else this.pipeline.fxaaEnabled = true;
         // The pipeline does its own image processing: carry the settings over.
         this.pipeline.imageProcessingEnabled = true;
         if (!webgpu) {
-          this.ssao = new SSAO2RenderingPipeline('atmosAO', scene, { ssaoRatio: 0.5, blurRatio: 0.5 }, [camera]);
+          // Occlusion worked out at half size, denoised at full size: denoised at half size too it was grainy.
+          this.ssao = new SSAO2RenderingPipeline('atmosAO', scene, { ssaoRatio: 0.5, blurRatio: 1 }, [camera]);
           this.ssao.radius = 1.6;
           this.ssao.totalStrength = 0.9;
-          this.ssao.samples = 12;
+          this.ssao.samples = 16;
+          this.ssao.bilateralSoften = 0.04;
           this.ssao.maxZ = 120;
         }
       } catch {

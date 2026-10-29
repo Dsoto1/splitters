@@ -335,7 +335,10 @@ export class GameSession {
     const signal = this.abort.signal;
     const lock = () => {
       opts.audio.unlock();
-      void opts.canvas.requestPointerLock();
+      // Raw mouse movement (no OS acceleration) where the browser has it; Safari and older ones refuse
+      // the option, so ask again plainly.
+      const raw = (opts.canvas.requestPointerLock as (this: HTMLCanvasElement, o?: { unadjustedMovement?: boolean }) => Promise<void> | void).call(opts.canvas, { unadjustedMovement: true });
+      if (raw instanceof Promise) raw.catch(() => opts.canvas.requestPointerLock());
     };
     opts.canvas.addEventListener('click', lock, { signal });
     $('resume').addEventListener('click', lock, { signal });
