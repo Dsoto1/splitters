@@ -32,6 +32,19 @@ import { CityVisuals } from '../game/cityVisuals.ts';
 import { createMountNode } from '../game/mountVisuals.ts';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
+import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
+import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+
+/** A picture laid over the ground while editing (MapMaker → Terrain, owner): never part of the map. */
+export interface TraceImage {
+  url: string;
+  /** World rectangle it covers (x east, z north). */
+  x0: number;
+  z0: number;
+  x1: number;
+  z1: number;
+  opacity: number;
+}
 
 interface EntityMarker {
   key: string;
@@ -375,13 +388,47 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.grid, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.grid, this.brushRing, this.gizmo, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, ...this.outlines, ...this.pickBoxes];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;
       n.setEnabled(false);
       this.photoHidden.push(n);
     }
+  }
+
+  private trace?: { mesh: Mesh; url: string };
+
+  /**
+   * The trace image (or none): a flat picture over everything at its world
+   * rectangle, see-through at `opacity`, drawn on top so hills don't hide it.
+   * Editor-only: it is never saved in the map.
+   */
+  setTrace(t: TraceImage | null): void {
+    if (!t || this.trace?.url !== t.url) {
+      this.trace?.mesh.material?.dispose(true, true);
+      this.trace?.mesh.dispose();
+      this.trace = undefined;
+    }
+    if (!t) return;
+    if (!this.trace) {
+      const mesh = CreateGround('traceImage', { width: 1, height: 1 }, this.scene);
+      const mat = new StandardMaterial('traceImageMat', this.scene);
+      const tex = new Texture(t.url, this.scene, false, true);
+      mat.diffuseTexture = tex;
+      mat.emissiveTexture = tex;
+      mat.disableLighting = true;
+      mat.specularColor = Color3.Black();
+      mat.backFaceCulling = false;
+      mesh.material = mat;
+      mesh.isPickable = false;
+      mesh.renderingGroupId = 1;
+      this.trace = { mesh, url: t.url };
+    }
+    const m = this.trace.mesh;
+    m.position.set((t.x0 + t.x1) / 2, 0.05, (t.z0 + t.z1) / 2);
+    m.scaling.set(Math.abs(t.x1 - t.x0) || 1, 1, Math.abs(t.z1 - t.z0) || 1);
+    (m.material as StandardMaterial).alpha = Math.max(0.05, Math.min(1, t.opacity));
   }
 
   /** Spawn markers and pickup previews for entities on visible levels; selected ones are highlighted. */
