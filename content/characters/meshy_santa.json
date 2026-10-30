@@ -8,7 +8,7 @@
   "bio": "Has a list. You are on the other one.",
   "body": "male",
   "size": "large",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: Santa. Was held back: the found hands came out as 35 cm slabs (the fur cuffs skinned to the hands).",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: Santa. Was held back: the found hands came out as 35 cm slabs (the fur cuffs skinned to the hands). First person: universal arms (its own hands drew oversized in first person; 2026-10-30).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -28,7 +28,10 @@
     "roughness": 0.75
   },
   "firstPerson": {
-    "arms": "own"
+    "arms": "ranger_arms_m",
+    "skin": "#e0b090",
+    "cloth": "#b0242a",
+    "trim": "#f2f2ee"
   },
   "fixes": {
     "triangles": 11000,

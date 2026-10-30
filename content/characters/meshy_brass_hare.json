@@ -8,7 +8,7 @@
   "bio": "Wound up every morning and never quite runs down.",
   "body": "male",
   "size": "small",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: steampunk rabbit. Was held back: A-posed arms close to the body, so the found arms and hands were off.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: steampunk rabbit. Was held back: A-posed arms close to the body, so the found arms and hands were off. First person: universal arms dyed brass and fur (his own hands drew huge and splayed over the grip in first person; owner's screenshot, 2026-10-30).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -28,7 +28,10 @@
     "roughness": 0.55
   },
   "firstPerson": {
-    "arms": "own"
+    "arms": "ranger_arms_m",
+    "skin": "#8a6440",
+    "cloth": "#9a7a3a",
+    "trim": "#5a4528"
   },
   "fixes": {
     "triangles": 11000,

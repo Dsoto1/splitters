@@ -8,7 +8,7 @@
   "bio": "Won at a fairground in 1987. Has been winning everything since.",
   "body": "male",
   "size": "small",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: teddy bear.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: teddy bear. First person: universal arms (its own hands drew oversized in first person; 2026-10-30).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -28,7 +28,10 @@
     "roughness": 0.9
   },
   "firstPerson": {
-    "arms": "own"
+    "arms": "peasant_arms_m",
+    "skin": "#c98a3a",
+    "cloth": "#c98a3a",
+    "trim": "#a86e2a"
   },
   "fixes": {
     "triangles": 11000,
