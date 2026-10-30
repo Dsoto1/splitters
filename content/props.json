@@ -488,6 +488,18 @@
       "meshy": true,
       "convert": true,
       "textureSize": 768
+    },
+    "meshy-owned-cargo": {
+      "title": "Tile Trigger originals (made with Meshy): crates and cargo containers",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "licenseFile": "assets-src/meshy-owned/License.txt",
+      "retrieved": "2026-10-30",
+      "download": "owned_cargo",
+      "meshy": true,
+      "convert": true,
+      "textureSize": 512
     }
   },
   "budgets": {
@@ -12060,6 +12072,213 @@
       "maxError": 0.03,
       "source": {
         "model": "Mining Haul Truck (text to 3D, for Iron Maw)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_army_crate",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Army_Crate_1030191818_texture.glb",
+      "name": "Army Crate",
+      "category": "Crates & Barrels",
+      "height": 1.0,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.05,
+      "source": {
+        "model": "Army Crate (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_wooden_crate",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Wooden_Crate_1030191900_texture.glb",
+      "name": "Wooden Crate",
+      "category": "Crates & Barrels",
+      "height": 1.0,
+      "collide": "box",
+      "triangles": 2500,
+      "maxError": 0.05,
+      "source": {
+        "model": "Wooden Crate (owner's Meshy)",
+        "date": "2026-10-30"
+      },
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "cargo_wooden_crate_cube",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Wooden_Crate_1030191909_texture.glb",
+      "name": "Wooden Crate (Cube)",
+      "category": "Crates & Barrels",
+      "height": 1.2,
+      "collide": "box",
+      "triangles": 2500,
+      "maxError": 0.05,
+      "source": {
+        "model": "Wooden Crate (Cube) (owner's Meshy)",
+        "date": "2026-10-30"
+      },
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "cargo_wooden_crate_low",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Wooden_Crate_1030191926_texture.glb",
+      "name": "Low Wooden Crate",
+      "category": "Crates & Barrels",
+      "height": 0.6,
+      "collide": "box",
+      "triangles": 2000,
+      "maxError": 0.05,
+      "source": {
+        "model": "Low Wooden Crate (owner's Meshy)",
+        "date": "2026-10-30"
+      },
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "cargo_crate_stack",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_crates__1030191803_texture.glb",
+      "name": "Crate Stack",
+      "category": "Crates & Barrels",
+      "height": 1.6,
+      "collide": "box",
+      "triangles": 3500,
+      "maxError": 0.05,
+      "source": {
+        "model": "Crate Stack (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_scifi_crate",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_object_Sci_Fi_Cargo__1030192137_texture.glb",
+      "name": "Sci-Fi Cargo Crate",
+      "category": "Crates & Barrels",
+      "height": 1.2,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.05,
+      "source": {
+        "model": "Sci-Fi Cargo Crate (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_container_old_rusty",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Old_rusty_shipping_co_1030192102_texture.glb",
+      "name": "Old Rusty Container",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.05,
+      "source": {
+        "model": "Old Rusty Container (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_container_rusty_blue",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Rusty_Blue_Shipping_C_1030192043_texture.glb",
+      "name": "Rusty Blue Container",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.05,
+      "source": {
+        "model": "Rusty Blue Container (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_container_rusty_red",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Rusty_Red_Shipping_Co_1030115909_texture.glb",
+      "name": "Rusty Red Container",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box",
+      "triangles": 3500,
+      "maxError": 0.15,
+      "source": {
+        "model": "Rusty Red Container (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_container_red",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Red_Shipping_Containe_1030192040_texture.glb",
+      "name": "Red Container (Long)",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box",
+      "triangles": 3500,
+      "maxError": 0.05,
+      "source": {
+        "model": "Red Container (Long) (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_container",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Shipping_Container_1029214643_texture.glb",
+      "name": "White Container",
+      "category": "Industrial",
+      "height": 2.6,
+      "collide": "box",
+      "triangles": 3500,
+      "maxError": 0.05,
+      "source": {
+        "model": "White Container (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_gantry_crane",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_Large_yellow_containe_1030192123_texture.glb",
+      "name": "Yellow Gantry Crane",
+      "category": "Industrial",
+      "height": 6.0,
+      "collide": "shell",
+      "triangles": 3500,
+      "maxError": 0.05,
+      "source": {
+        "model": "Yellow Gantry Crane (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "cargo_ibc_tank",
+      "pack": "meshy-owned-cargo",
+      "src": "Meshy_AI_container_2_1030192151_texture.glb",
+      "name": "IBC Tank",
+      "category": "Industrial",
+      "height": 1.2,
+      "collide": "box",
+      "triangles": 3500,
+      "maxError": 0.15,
+      "source": {
+        "model": "IBC Tank (owner's Meshy)",
         "date": "2026-10-30"
       }
     }

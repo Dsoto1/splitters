@@ -12179,6 +12179,188 @@
         7.4,
         6.86
       ]
+    },
+    {
+      "file": "props/cargo_army_crate.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Army Crate (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Army_Crate_1030191818_texture.glb",
+      "triangles": 2996,
+      "bytes": 128160,
+      "sha256": "8f9e0bf06f9e583b",
+      "size": [
+        1.383,
+        1,
+        1.25
+      ]
+    },
+    {
+      "file": "props/cargo_wooden_crate.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Wooden Crate (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Wooden_Crate_1030191900_texture.glb",
+      "triangles": 3222,
+      "bytes": 139156,
+      "sha256": "349bab80f3c0e5e0",
+      "size": [
+        1.202,
+        1,
+        1.202
+      ]
+    },
+    {
+      "file": "props/cargo_wooden_crate_cube.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Wooden Crate (Cube) (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Wooden_Crate_1030191909_texture.glb",
+      "triangles": 2500,
+      "bytes": 124496,
+      "sha256": "35c585e135de1e62",
+      "size": [
+        1.213,
+        1.2,
+        1.213
+      ]
+    },
+    {
+      "file": "props/cargo_wooden_crate_low.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Low Wooden Crate (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Wooden_Crate_1030191926_texture.glb",
+      "triangles": 2000,
+      "bytes": 114156,
+      "sha256": "f7cdde2d35ec3a80",
+      "size": [
+        2.54,
+        0.6,
+        1.191
+      ]
+    },
+    {
+      "file": "props/cargo_crate_stack.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Crate Stack (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_crates__1030191803_texture.glb",
+      "triangles": 3496,
+      "bytes": 174568,
+      "sha256": "f2e1e0af4d4293e9",
+      "size": [
+        2.093,
+        1.6,
+        0.872
+      ]
+    },
+    {
+      "file": "props/cargo_scifi_crate.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Sci-Fi Cargo Crate (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_object_Sci_Fi_Cargo__1030192137_texture.glb",
+      "triangles": 3461,
+      "bytes": 168668,
+      "sha256": "bc133a07a01be87f",
+      "size": [
+        1.762,
+        1.2,
+        1.284
+      ]
+    },
+    {
+      "file": "props/cargo_container_old_rusty.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Old Rusty Container (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Old_rusty_shipping_co_1030192102_texture.glb",
+      "triangles": 2996,
+      "bytes": 148016,
+      "sha256": "d6a37fda96fcba32",
+      "size": [
+        5.922,
+        2.6,
+        3.433
+      ]
+    },
+    {
+      "file": "props/cargo_container_rusty_blue.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Rusty Blue Container (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Rusty_Blue_Shipping_C_1030192043_texture.glb",
+      "triangles": 2991,
+      "bytes": 172572,
+      "sha256": "7424fe7b92daa349",
+      "size": [
+        4.976,
+        2.6,
+        2.23
+      ]
+    },
+    {
+      "file": "props/cargo_container_rusty_red.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Rusty Red Container (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Rusty_Red_Shipping_Co_1030115909_texture.glb",
+      "triangles": 3437,
+      "bytes": 166132,
+      "sha256": "dd2c9b979f625d28",
+      "size": [
+        5.657,
+        2.6,
+        2.329
+      ]
+    },
+    {
+      "file": "props/cargo_container_red.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Red Container (Long) (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Red_Shipping_Containe_1030192040_texture.glb",
+      "triangles": 3740,
+      "bytes": 180656,
+      "sha256": "2a2e6fe7873dfcde",
+      "size": [
+        8.086,
+        2.6,
+        3.853
+      ]
+    },
+    {
+      "file": "props/cargo_container.glb",
+      "source": "meshy-owned-cargo",
+      "title": "White Container (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Shipping_Container_1029214643_texture.glb",
+      "triangles": 3499,
+      "bytes": 169388,
+      "sha256": "ef77aa80671d7d3e",
+      "size": [
+        5.793,
+        2.6,
+        2.347
+      ]
+    },
+    {
+      "file": "props/cargo_gantry_crane.glb",
+      "source": "meshy-owned-cargo",
+      "title": "Yellow Gantry Crane (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Large_yellow_containe_1030192123_texture.glb",
+      "triangles": 3479,
+      "bytes": 193892,
+      "sha256": "b4e9ba2bc37ef706",
+      "size": [
+        3.285,
+        6,
+        9.034
+      ]
+    },
+    {
+      "file": "props/cargo_ibc_tank.glb",
+      "source": "meshy-owned-cargo",
+      "title": "IBC Tank (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_container_2_1030192151_texture.glb",
+      "triangles": 5767,
+      "bytes": 306416,
+      "sha256": "86d134434b9fe29c",
+      "size": [
+        1.059,
+        1.2,
+        1.057
+      ]
     }
   ]
 }
