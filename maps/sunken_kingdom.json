@@ -6,8 +6,8 @@
     "name": "Sunken Kingdom",
     "author": "Tile Trigger",
     "description": "A partly flooded sandstone oasis city. A ruined palace round a circular courtyard sits in the middle of the low town; the western colonnade (Embers) looks down over the turquoise lagoon from its cliff, the eastern gatehouse (Tide) holds the road in. The market arcade, the north spring and the stepped temple sit on the upper terraces; falls pour into the lower courts. Three loops on the surface (the high northern terraces, the palace ring, the southern water courts) and the buried cistern underneath, from the west stair court to the east, with rockets in its flooded hall.",
-    "createdAt": "2026-10-30T20:04:14.535Z",
-    "updatedAt": "2026-10-30T20:04:14.535Z",
+    "createdAt": "2026-10-30T20:09:58.500Z",
+    "updatedAt": "2026-10-30T20:09:58.500Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 16,
@@ -4559,11 +4559,11 @@
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
-        -44,
-        -4,
-        -45
+        -58,
+        -4.07,
+        -45.5
       ],
-      "yaw": 1.5094299752571791,
+      "yaw": 1.105616306156991,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4573,11 +4573,11 @@
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
-        -20,
+        -11,
         -4,
-        -51
+        -45
       ],
-      "yaw": -0.6718870317289056,
+      "yaw": -2.9520258446398686,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4587,11 +4587,11 @@
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
-        20,
+        11,
         -4,
-        -45
+        -51
       ],
-      "yaw": 1.9137250497355478,
+      "yaw": 2.104622863978614,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4601,11 +4601,11 @@
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
-        44,
-        -4,
-        -51
+        58,
+        -4.07,
+        -50.5
       ],
-      "yaw": -0.42066498734523255,
+      "yaw": 0.808967744205095,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4615,11 +4615,11 @@
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
-        -28,
+        8,
         -4,
-        -47
+        -45.6
       ],
-      "yaw": -2.3697826145922676,
+      "yaw": 0.05414713023388715,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4629,11 +4629,11 @@
       "kind": "prop",
       "model": "prop.rn_urn_broken",
       "position": [
-        28,
+        -9,
         -4,
-        -49
+        -51
       ],
-      "yaw": -1.6415260650181103,
+      "yaw": -0.45439095737868584,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4643,11 +4643,11 @@
       "kind": "prop",
       "model": "prop.rn_urn",
       "position": [
-        -10,
+        9,
         -4,
         -51
       ],
-      "yaw": 1.2779621174632405,
+      "yaw": 0.8608222360385331,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4964,9 +4964,9 @@
       "id": "light_0356",
       "kind": "light",
       "position": [
-        -44,
+        -58,
         -1.7,
-        -45
+        -45.5
       ],
       "yaw": 0,
       "color": "#ff9a3c",
@@ -4979,9 +4979,9 @@
       "id": "light_0357",
       "kind": "light",
       "position": [
-        -20,
+        -11,
         -1.7,
-        -51
+        -45
       ],
       "yaw": 0,
       "color": "#ff9a3c",
@@ -4994,9 +4994,9 @@
       "id": "light_0358",
       "kind": "light",
       "position": [
-        20,
+        11,
         -1.7,
-        -45
+        -51
       ],
       "yaw": 0,
       "color": "#ff9a3c",
@@ -5009,9 +5009,9 @@
       "id": "light_0359",
       "kind": "light",
       "position": [
-        44,
+        58,
         -1.7,
-        -51
+        -50.5
       ],
       "yaw": 0,
       "color": "#ff9a3c",
@@ -5022,6 +5022,36 @@
     },
     {
       "id": "light_0360",
+      "kind": "light",
+      "position": [
+        -36,
+        -1.5,
+        -48
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_0361",
+      "kind": "light",
+      "position": [
+        36,
+        -1.5,
+        -48
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_0362",
       "kind": "light",
       "position": [
         -8,
@@ -5036,7 +5066,7 @@
       "blink": 0.4
     },
     {
-      "id": "light_0361",
+      "id": "light_0363",
       "kind": "light",
       "position": [
         0,
@@ -5051,7 +5081,7 @@
       "blink": 0.4
     },
     {
-      "id": "light_0362",
+      "id": "light_0364",
       "kind": "light",
       "position": [
         -32,
@@ -5066,7 +5096,7 @@
       "blink": 0.4
     },
     {
-      "id": "light_0363",
+      "id": "light_0365",
       "kind": "light",
       "position": [
         24,
@@ -5081,7 +5111,7 @@
       "blink": 0.4
     },
     {
-      "id": "light_0364",
+      "id": "light_0366",
       "kind": "light",
       "position": [
         -4,
@@ -5095,7 +5125,7 @@
       "fixture": "none"
     },
     {
-      "id": "prop_0365",
+      "id": "prop_0367",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -5109,7 +5139,7 @@
       "tint": null
     },
     {
-      "id": "prop_0366",
+      "id": "prop_0368",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -5123,7 +5153,7 @@
       "tint": null
     },
     {
-      "id": "prop_0367",
+      "id": "prop_0369",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -5137,7 +5167,7 @@
       "tint": null
     },
     {
-      "id": "prop_0368",
+      "id": "prop_0370",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -5151,34 +5181,12 @@
       "tint": null
     },
     {
-      "id": "spawn_0369",
-      "kind": "spawn",
-      "position": [
-        -80,
-        4,
-        -36
-      ],
-      "yaw": 1.5707963267948966,
-      "faction": "embers"
-    },
-    {
-      "id": "spawn_0370",
-      "kind": "spawn",
-      "position": [
-        -80,
-        4,
-        -28
-      ],
-      "yaw": 1.5707963267948966,
-      "faction": "embers"
-    },
-    {
       "id": "spawn_0371",
       "kind": "spawn",
       "position": [
         -80,
         4,
-        -20
+        -36
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5189,7 +5197,7 @@
       "position": [
         -80,
         4,
-        -12
+        -28
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5200,7 +5208,7 @@
       "position": [
         -80,
         4,
-        12
+        -20
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5211,7 +5219,7 @@
       "position": [
         -80,
         4,
-        20
+        -12
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5222,7 +5230,7 @@
       "position": [
         -80,
         4,
-        28
+        12
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5233,7 +5241,7 @@
       "position": [
         -80,
         4,
-        36
+        20
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5242,9 +5250,9 @@
       "id": "spawn_0377",
       "kind": "spawn",
       "position": [
-        -96,
+        -80,
         4,
-        -36
+        28
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5253,9 +5261,9 @@
       "id": "spawn_0378",
       "kind": "spawn",
       "position": [
-        -96,
+        -80,
         4,
-        -12
+        36
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5266,7 +5274,7 @@
       "position": [
         -96,
         4,
-        12
+        -36
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5277,13 +5285,35 @@
       "position": [
         -96,
         4,
-        28
+        -12
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
     },
     {
       "id": "spawn_0381",
+      "kind": "spawn",
+      "position": [
+        -96,
+        4,
+        12
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_0382",
+      "kind": "spawn",
+      "position": [
+        -96,
+        4,
+        28
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_0383",
       "kind": "spawn",
       "position": [
         -88,
@@ -5294,7 +5324,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0382",
+      "id": "spawn_0384",
       "kind": "spawn",
       "position": [
         -80,
@@ -5305,7 +5335,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0383",
+      "id": "spawn_0385",
       "kind": "spawn",
       "position": [
         -88,
@@ -5316,7 +5346,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0384",
+      "id": "spawn_0386",
       "kind": "spawn",
       "position": [
         -72,
@@ -5327,34 +5357,12 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0385",
-      "kind": "spawn",
-      "position": [
-        80,
-        0,
-        0
-      ],
-      "yaw": -1.5707963267948966,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_0386",
-      "kind": "spawn",
-      "position": [
-        80,
-        0,
-        8
-      ],
-      "yaw": -1.5707963267948966,
-      "faction": "tide"
-    },
-    {
       "id": "spawn_0387",
       "kind": "spawn",
       "position": [
         80,
         0,
-        -16
+        0
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5365,13 +5373,35 @@
       "position": [
         80,
         0,
-        -24
+        8
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
     },
     {
       "id": "spawn_0389",
+      "kind": "spawn",
+      "position": [
+        80,
+        0,
+        -16
+      ],
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_0390",
+      "kind": "spawn",
+      "position": [
+        80,
+        0,
+        -24
+      ],
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_0391",
       "kind": "spawn",
       "position": [
         72,
@@ -5382,34 +5412,12 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0390",
+      "id": "spawn_0392",
       "kind": "spawn",
       "position": [
         64,
         0,
         16
-      ],
-      "yaw": -1.5707963267948966,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_0391",
-      "kind": "spawn",
-      "position": [
-        56,
-        0,
-        16
-      ],
-      "yaw": -1.5707963267948966,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_0392",
-      "kind": "spawn",
-      "position": [
-        56,
-        0,
-        -8
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5420,7 +5428,7 @@
       "position": [
         56,
         0,
-        0
+        16
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5429,7 +5437,7 @@
       "id": "spawn_0394",
       "kind": "spawn",
       "position": [
-        64,
+        56,
         0,
         -8
       ],
@@ -5440,9 +5448,9 @@
       "id": "spawn_0395",
       "kind": "spawn",
       "position": [
-        72,
+        56,
         0,
-        -8
+        0
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5451,9 +5459,9 @@
       "id": "spawn_0396",
       "kind": "spawn",
       "position": [
-        80,
+        64,
         0,
-        24
+        -8
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5462,9 +5470,9 @@
       "id": "spawn_0397",
       "kind": "spawn",
       "position": [
-        88,
+        72,
         0,
-        16
+        -8
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5473,7 +5481,7 @@
       "id": "spawn_0398",
       "kind": "spawn",
       "position": [
-        88,
+        80,
         0,
         24
       ],
@@ -5484,6 +5492,28 @@
       "id": "spawn_0399",
       "kind": "spawn",
       "position": [
+        88,
+        0,
+        16
+      ],
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_0400",
+      "kind": "spawn",
+      "position": [
+        88,
+        0,
+        24
+      ],
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_0401",
+      "kind": "spawn",
+      "position": [
         48,
         0,
         -8
@@ -5492,7 +5522,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0400",
+      "id": "spawn_0402",
       "kind": "spawn",
       "position": [
         72,
@@ -5503,7 +5533,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0401",
+      "id": "spawn_0403",
       "kind": "spawn",
       "position": [
         -56,
@@ -5514,7 +5544,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0402",
+      "id": "spawn_0404",
       "kind": "spawn",
       "position": [
         -36,
@@ -5525,7 +5555,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0403",
+      "id": "spawn_0405",
       "kind": "spawn",
       "position": [
         -80,
@@ -5536,7 +5566,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0404",
+      "id": "spawn_0406",
       "kind": "spawn",
       "position": [
         -28,
@@ -5547,7 +5577,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0405",
+      "id": "spawn_0407",
       "kind": "spawn",
       "position": [
         20,
@@ -5558,7 +5588,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0406",
+      "id": "spawn_0408",
       "kind": "spawn",
       "position": [
         24,
@@ -5569,7 +5599,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0407",
+      "id": "spawn_0409",
       "kind": "spawn",
       "position": [
         -28,
@@ -5580,7 +5610,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0408",
+      "id": "spawn_0410",
       "kind": "spawn",
       "position": [
         20,
@@ -5591,7 +5621,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0409",
+      "id": "spawn_0411",
       "kind": "spawn",
       "position": [
         36,
@@ -5602,7 +5632,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0410",
+      "id": "spawn_0412",
       "kind": "spawn",
       "position": [
         80,
@@ -5613,7 +5643,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0411",
+      "id": "spawn_0413",
       "kind": "spawn",
       "position": [
         -20,
@@ -5624,7 +5654,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0412",
+      "id": "spawn_0414",
       "kind": "spawn",
       "position": [
         20,
@@ -5635,7 +5665,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0413",
+      "id": "spawn_0415",
       "kind": "spawn",
       "position": [
         -80,
@@ -5646,7 +5676,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0414",
+      "id": "spawn_0416",
       "kind": "spawn",
       "position": [
         -36,
@@ -5657,7 +5687,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0415",
+      "id": "spawn_0417",
       "kind": "spawn",
       "position": [
         -20,
@@ -5668,7 +5698,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0416",
+      "id": "spawn_0418",
       "kind": "spawn",
       "position": [
         8,
@@ -5679,7 +5709,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0417",
+      "id": "spawn_0419",
       "kind": "spawn",
       "position": [
         24,
@@ -5690,7 +5720,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0418",
+      "id": "spawn_0420",
       "kind": "spawn",
       "position": [
         76,
@@ -5701,7 +5731,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0419",
+      "id": "spawn_0421",
       "kind": "spawn",
       "position": [
         84,
@@ -5712,7 +5742,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0420",
+      "id": "spawn_0422",
       "kind": "spawn",
       "position": [
         36,
@@ -5723,7 +5753,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0421",
+      "id": "spawn_0423",
       "kind": "spawn",
       "position": [
         -24,
@@ -5734,7 +5764,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0422",
+      "id": "spawn_0424",
       "kind": "spawn",
       "position": [
         24,
@@ -5745,7 +5775,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0423",
+      "id": "spawn_0425",
       "kind": "spawn",
       "position": [
         -96,
@@ -5756,7 +5786,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0424",
+      "id": "spawn_0426",
       "kind": "spawn",
       "position": [
         76,
@@ -5767,7 +5797,7 @@
       "faction": null
     },
     {
-      "id": "flag_0425",
+      "id": "flag_0427",
       "kind": "flag",
       "position": [
         -80,
@@ -5778,7 +5808,7 @@
       "team": "embers"
     },
     {
-      "id": "flag_0426",
+      "id": "flag_0428",
       "kind": "flag",
       "position": [
         76,
@@ -5789,7 +5819,7 @@
       "team": "tide"
     },
     {
-      "id": "hill_0427",
+      "id": "hill_0429",
       "kind": "hill",
       "position": [
         -4,
@@ -5798,7 +5828,7 @@
       ]
     },
     {
-      "id": "hill_0428",
+      "id": "hill_0430",
       "kind": "hill",
       "position": [
         -58,
@@ -5807,7 +5837,7 @@
       ]
     },
     {
-      "id": "hill_0429",
+      "id": "hill_0431",
       "kind": "hill",
       "position": [
         46,
@@ -5816,7 +5846,7 @@
       ]
     },
     {
-      "id": "hill_0430",
+      "id": "hill_0432",
       "kind": "hill",
       "position": [
         36,
@@ -5825,7 +5855,7 @@
       ]
     },
     {
-      "id": "pickup_0431",
+      "id": "pickup_0433",
       "kind": "pickup",
       "position": [
         0,
@@ -5836,7 +5866,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0432",
+      "id": "pickup_0434",
       "kind": "pickup",
       "position": [
         -64,
@@ -5847,7 +5877,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0433",
+      "id": "pickup_0435",
       "kind": "pickup",
       "position": [
         88,
@@ -5858,7 +5888,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0434",
+      "id": "pickup_0436",
       "kind": "pickup",
       "position": [
         56,
@@ -5869,7 +5899,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0435",
+      "id": "pickup_0437",
       "kind": "pickup",
       "position": [
         -4,
@@ -5880,7 +5910,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0436",
+      "id": "pickup_0438",
       "kind": "pickup",
       "position": [
         -8,
@@ -5891,7 +5921,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0437",
+      "id": "pickup_0439",
       "kind": "pickup",
       "position": [
         -40,
@@ -5902,7 +5932,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0438",
+      "id": "pickup_0440",
       "kind": "pickup",
       "position": [
         -64,
@@ -5913,7 +5943,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0439",
+      "id": "pickup_0441",
       "kind": "pickup",
       "position": [
         -40,
@@ -5924,7 +5954,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0440",
+      "id": "pickup_0442",
       "kind": "pickup",
       "position": [
         -84,
@@ -5935,7 +5965,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0441",
+      "id": "pickup_0443",
       "kind": "pickup",
       "position": [
         -32,
@@ -5946,7 +5976,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0442",
+      "id": "pickup_0444",
       "kind": "pickup",
       "position": [
         32,
@@ -5957,7 +5987,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0443",
+      "id": "pickup_0445",
       "kind": "pickup",
       "position": [
         -16,
@@ -5968,7 +5998,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0444",
+      "id": "pickup_0446",
       "kind": "pickup",
       "position": [
         0,
@@ -5979,7 +6009,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0445",
+      "id": "pickup_0447",
       "kind": "pickup",
       "position": [
         -64,
@@ -5990,7 +6020,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0446",
+      "id": "pickup_0448",
       "kind": "pickup",
       "position": [
         46,
@@ -6001,7 +6031,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0447",
+      "id": "pickup_0449",
       "kind": "pickup",
       "position": [
         44,
@@ -6012,7 +6042,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0448",
+      "id": "pickup_0450",
       "kind": "pickup",
       "position": [
         36,
@@ -6023,7 +6053,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0449",
+      "id": "pickup_0451",
       "kind": "pickup",
       "position": [
         80,
@@ -6034,7 +6064,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0450",
+      "id": "pickup_0452",
       "kind": "pickup",
       "position": [
         -44,
@@ -6045,7 +6075,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0451",
+      "id": "pickup_0453",
       "kind": "pickup",
       "position": [
         -24,
@@ -6056,7 +6086,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0452",
+      "id": "pickup_0454",
       "kind": "pickup",
       "position": [
         16,
@@ -6067,7 +6097,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0453",
+      "id": "pickup_0455",
       "kind": "pickup",
       "position": [
         -72,
@@ -6078,7 +6108,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0454",
+      "id": "pickup_0456",
       "kind": "pickup",
       "position": [
         64,
@@ -6089,7 +6119,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0455",
+      "id": "pickup_0457",
       "kind": "pickup",
       "position": [
         -40,
@@ -6100,7 +6130,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0456",
+      "id": "pickup_0458",
       "kind": "pickup",
       "position": [
         28,
@@ -6111,7 +6141,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0457",
+      "id": "pickup_0459",
       "kind": "pickup",
       "position": [
         20,
@@ -6122,7 +6152,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0458",
+      "id": "pickup_0460",
       "kind": "pickup",
       "position": [
         -60,
@@ -6133,7 +6163,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0459",
+      "id": "pickup_0461",
       "kind": "pickup",
       "position": [
         64,
@@ -6144,7 +6174,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0460",
+      "id": "pickup_0462",
       "kind": "pickup",
       "position": [
         -4,
@@ -6155,7 +6185,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0461",
+      "id": "pickup_0463",
       "kind": "pickup",
       "position": [
         -4,
@@ -6166,7 +6196,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0462",
+      "id": "pickup_0464",
       "kind": "pickup",
       "position": [
         -4,
@@ -6177,7 +6207,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0463",
+      "id": "pickup_0465",
       "kind": "pickup",
       "position": [
         4,
@@ -6188,7 +6218,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0464",
+      "id": "pickup_0466",
       "kind": "pickup",
       "position": [
         -84,
@@ -6199,7 +6229,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0465",
+      "id": "pickup_0467",
       "kind": "pickup",
       "position": [
         -84,
@@ -6210,7 +6240,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0466",
+      "id": "pickup_0468",
       "kind": "pickup",
       "position": [
         72,
@@ -6221,7 +6251,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0467",
+      "id": "pickup_0469",
       "kind": "pickup",
       "position": [
         64,
@@ -6232,7 +6262,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0468",
+      "id": "pickup_0470",
       "kind": "pickup",
       "position": [
         -56,
@@ -6243,7 +6273,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0469",
+      "id": "pickup_0471",
       "kind": "pickup",
       "position": [
         40,
@@ -6254,7 +6284,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0470",
+      "id": "pickup_0472",
       "kind": "pickup",
       "position": [
         -32,
@@ -6265,7 +6295,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0471",
+      "id": "pickup_0473",
       "kind": "pickup",
       "position": [
         24,
@@ -6276,7 +6306,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0472",
+      "id": "pickup_0474",
       "kind": "pickup",
       "position": [
         -16,
@@ -6287,7 +6317,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0473",
+      "id": "pickup_0475",
       "kind": "pickup",
       "position": [
         16,
@@ -6298,7 +6328,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0474",
+      "id": "pickup_0476",
       "kind": "pickup",
       "position": [
         32,
@@ -6309,7 +6339,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0475",
+      "id": "pickup_0477",
       "kind": "pickup",
       "position": [
         -36,
@@ -6320,7 +6350,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0476",
+      "id": "pickup_0478",
       "kind": "pickup",
       "position": [
         -72,
@@ -6331,7 +6361,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0477",
+      "id": "pickup_0479",
       "kind": "pickup",
       "position": [
         72,
@@ -6342,7 +6372,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0478",
+      "id": "pickup_0480",
       "kind": "pickup",
       "position": [
         -4,
@@ -6353,7 +6383,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0479",
+      "id": "pickup_0481",
       "kind": "pickup",
       "position": [
         -48,
@@ -6364,7 +6394,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0480",
+      "id": "pickup_0482",
       "kind": "pickup",
       "position": [
         60,
@@ -6375,7 +6405,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0481",
+      "id": "pickup_0483",
       "kind": "pickup",
       "position": [
         0,
