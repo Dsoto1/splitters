@@ -7,7 +7,7 @@ build notes (manifest, QA report, decisions and deviations) go in `docs/map-brie
 | Brief | Reference | Map | Status |
 |---|---|---|---|
 | BUILD_01_Sunken_Kingdom.md | sunken_kingdom_reference.jpg | `maps/sunken_kingdom.json` | building (2026-10-30) |
-| BUILD_06_Iron_Maw.md | iron_maw_reference.jpg | `maps/iron_maw.json` | building (2026-10-30); Meshy landmarks (bucket-wheel excavator, haul truck) await the owner's approval |
+| BUILD_06_Iron_Maw.md | iron_maw_reference.jpg | `maps/iron_maw.json` | built (2026-10-30, `wip/iron-maw`, not merged); notes in `iron_maw/` (manifest, QA report, decisions); uses the owner's Meshy excavator, haul truck and cargo props |
 
 `AGENT_BUILD_CONTRACT.md` (the owner's, v1.0) applies to every map, with these repo adaptations:
 - The map file stays `maps/<id>.json` (the game loads maps from there; CLAUDE.md "Maps"). The contract's
