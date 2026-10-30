@@ -110,6 +110,11 @@ export class PhysicsWorld {
    * breakable, a built piece): caches of sight lines start over (see SightCache).
    */
   structureVersion = 0;
+  /**
+   * A collider shots pass through while set (raycastHit and raycastNormal): the vehicle a rider fires from, so
+   * rounds leave through its own body. The match sets it around one shot or projectile step and clears it.
+   */
+  shotSkip: RAPIER.Collider | null = null;
   /** One ray for every cast (queries are synchronous): no allocation per sight line or shot. */
   private readonly ray = new RAPIER.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 });
 
@@ -344,13 +349,13 @@ export class PhysicsWorld {
 
   /** Like raycastWorld, but also returns the collider handle that was hit (shots: bulletproof glass stops them too). */
   raycastHit(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number } | null {
-    const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, SHOT_QUERY);
+    const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, SHOT_QUERY, this.shotSkip ?? undefined);
     return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle } : null;
   }
 
   /** Like raycastHit, plus the surface normal (for bouncing grenades and sticking mines). */
   raycastNormal(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number; normal: Vec3 } | null {
-    const hit = this.world.castRayAndGetNormal(this.rayFrom(origin, dir), maxDist, true, undefined, SHOT_QUERY);
+    const hit = this.world.castRayAndGetNormal(this.rayFrom(origin, dir), maxDist, true, undefined, SHOT_QUERY, this.shotSkip ?? undefined);
     return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z } } : null;
   }
 

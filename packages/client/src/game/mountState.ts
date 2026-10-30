@@ -1,4 +1,4 @@
-import { AIRPLANE_DEF, BUILT_MOUNT_BASE, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import { AIRPLANE_DEF, BUILT_MOUNT_BASE, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -146,6 +146,17 @@ export class MountState {
   riders(): Set<number> {
     const out = new Set<number>();
     for (const m of this.mounts.values()) for (const s of m.seats) if (s >= 0) out.add(s);
+    return out;
+  }
+
+  /** Riders in a real seat (SeatDef.seated), drawn sitting: the way the seat faces and its floor under the cushion. */
+  sitters(): Map<number, { yaw: number; legDrop: number }> {
+    const out = new Map<number, { yaw: number; legDrop: number }>();
+    for (const m of this.mounts.values())
+      m.seats.forEach((s, i) => {
+        const seat = m.def.seats[i];
+        if (s >= 0 && seat?.seated) out.set(s, { yaw: m.shown.yaw + (seat.facing ?? 0), legDrop: seat.legDrop ?? SEAT_LEG_DROP });
+      });
     return out;
   }
 

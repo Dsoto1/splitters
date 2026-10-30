@@ -62,8 +62,19 @@ export interface SeatDef {
   weapon?: string;
   /** How far the seat can aim either side of its facing (radians; absent = all round). */
   arc?: number;
-  /** Which way the seat's arc is centred, from the mount's forward (radians, + to the right): side door guns. Default 0. */
+  /**
+   * Which way the seat's arc is centred, from the mount's forward (radians, + to the right): side door guns. Default 0.
+   * A seated rider's hips and legs face this way too (drawing), whichever way they look.
+   */
   facing?: number;
+  /**
+   * A real seat the rider sits in: `offset` is then the cushion (where the hips rest), not the feet. The rider is
+   * drawn seated, their eye is a seated head height above the cushion (SEATED_EYE_HEIGHT; the sim gives them the
+   * crouching eye and body height) and their rounds pass through the vehicle they ride in. Absent: standing.
+   */
+  seated?: boolean;
+  /** Seated (drawing only): how far below the cushion the floor under the rider's feet is (m). Default 0.45: the shins hang straight down. */
+  legDrop?: number;
 }
 
 export interface MountDef {
@@ -212,22 +223,26 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
       ],
     },
     health: 450,
-    half: [1.0, 0.6, 2.0],
-    // On the model's seats: two rows (front at z 0.2, back at z -0.55, cushions 0.72 m up, 0.32 m either side of
-    // the middle), the roof gun over the back row, its gunner standing in the cargo bay behind.
+    // The body is 1.74 m wide and 1.44 m tall on 0.24 m of ride height, 4.4 m long; the tires stand out to 2.2 m.
+    half: [1.05, 0.8, 2.2],
+    // On the model's seats (measured on the model): two rows of cushions 0.8 m up, 0.32 m either side of the middle,
+    // the hips just ahead of each backrest (front row z 0.3, back row z -0.45); the steering wheel is on the left,
+    // at z 0.75. The front footwell floor is only 0.18 m under the cushion (legs stretched out under the dash), the
+    // back one 0.36 m (feet under the front seats). The roof gun over the back row is not manned (the owner's ask: a
+    // driver and three passengers who all shoot their own weapons).
     seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.32, 0.72, 0.2] },
-      { role: 'gunner', label: 'Gunner', offset: [0, 0.6, -1.15], weapon: 'core.mount_mg', arc: ALL_ROUND },
-      { role: 'passenger', label: 'Passenger', offset: [0.32, 0.72, 0.2] },
-      { role: 'passenger', label: 'Back seat', offset: [0.32, 0.75, -0.55] },
+      { role: 'driver', label: 'Driver', offset: [-0.32, 0.8, 0.3], seated: true, legDrop: 0.18 },
+      { role: 'passenger', label: 'Front passenger', offset: [0.32, 0.8, 0.3], seated: true, legDrop: 0.18 },
+      { role: 'passenger', label: 'Back left', offset: [-0.32, 0.8, -0.45], seated: true, legDrop: 0.28 },
+      { role: 'passenger', label: 'Back right', offset: [0.32, 0.8, -0.45], seated: true, legDrop: 0.28 },
     ],
-    // Just under the roof bars (1.45 m), looking over the wheel and dash.
-    cockpitEye: [-0.32, 1.42, 0.15],
+    // A seated head height, under the front roof bar (1.6 m at z 0.55), looking over the wheel and dash.
+    cockpitEye: [-0.32, 1.36, 0.32],
     enterRadius: 3.2,
     respawnSeconds: 45,
     blast: { radius: 4.5, damage: 90 },
     vehicle: { maxSpeed: 18, reverseSpeed: 7, accel: 10, turnRate: 1.8, grip: 0.22, mass: 1.4 },
-    blurb: 'Four seats: a driver, a gunner on the roof machine gun and two passengers with their own weapons',
+    blurb: 'Four seats: a driver and three passengers who shoot their own weapons',
   },
   hauler: {
     id: 'hauler',
@@ -315,17 +330,23 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     kind: 'vehicle',
     model: 'vehicles/gun_jeep.glb',
     health: 380,
-    half: [1.0, 0.7, 2.1],
+    // The model is 2.24 m wide, 1.94 m tall and 4.4 m long.
+    half: [1.1, 0.95, 2.2],
+    // Measured on the model: the cab (roof 1.94 m, floor 0.25 m) has no seats of its own, so the two cab riders sit
+    // on cushions 0.7 m up, just ahead of its back wall; the bed floor is about 1.0 m up and its side rails 1.3 m.
+    // The roof gunner stands in the bed at the gun; two more ride sitting on the side rails behind it, legs over the side.
     seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.4, 0.8, 0.5] },
+      { role: 'driver', label: 'Driver', offset: [-0.4, 0.7, 0.15], seated: true },
       { role: 'gunner', label: 'Roof gun', offset: [0, 1.25, -1.1], weapon: 'core.mount_mg', arc: ALL_ROUND },
-      { role: 'passenger', label: 'Passenger', offset: [0.4, 0.8, 0.5] },
+      { role: 'passenger', label: 'Passenger', offset: [0.4, 0.7, 0.15], seated: true },
+      { role: 'passenger', label: 'Left rail', offset: [-0.78, 1.3, -1.65], seated: true, facing: -Math.PI / 2, legDrop: 0.7 },
+      { role: 'passenger', label: 'Right rail', offset: [0.78, 1.3, -1.65], seated: true, facing: Math.PI / 2, legDrop: 0.7 },
     ],
     enterRadius: 3.2,
     respawnSeconds: 40,
     blast: { radius: 4.5, damage: 85 },
     vehicle: { maxSpeed: 21, reverseSpeed: 8, accel: 12, turnRate: 2.0, grip: 0.26, mass: 1.1 },
-    blurb: 'A light pickup with a machine gun on the back: a driver, a gunner who fires all round and one passenger',
+    blurb: 'A light pickup with a machine gun on the back: a driver, a gunner who fires all round and three passengers with their own weapons',
   },
   armored_rover: {
     id: 'armored_rover',
@@ -461,6 +482,8 @@ export function mountToWorld(pos: { x: number; y: number; z: number }, yaw: numb
 /** A seated rider's eye above the seat's feet point, and how far forward of it (cockpit camera). */
 export const SEATED_EYE_HEIGHT = 1.0;
 export const SEATED_EYE_FORWARD = 0.15;
+/** A seated rider's floor under the cushion when the seat doesn't say (SeatDef.legDrop): the shins hang straight down. */
+export const SEAT_LEG_DROP = 0.45;
 
 /**
  * Where a rider's eye is in the cockpit view, in the mount's frame: the
