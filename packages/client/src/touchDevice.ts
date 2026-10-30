@@ -12,11 +12,11 @@ let cached: boolean | null = null;
 export function isTouchDevice(): boolean {
   if (cached !== null) return cached;
   if (typeof window === 'undefined') return (cached = false);
-  const force = new URLSearchParams(window.location.search).get('touch');
+  const force = new URLSearchParams(window.location?.search ?? '').get('touch');
   if (force === '1' || force === '0') return (cached = force === '1');
   const media = (q: string) => typeof window.matchMedia === 'function' && window.matchMedia(q).matches;
   // A touch laptop has a fine pointer that hovers (its trackpad): it plays with the mouse.
-  cached = media('(pointer: coarse)') && !media('(any-pointer: fine)') ? true : media('(hover: none)') && navigator.maxTouchPoints > 0;
+  cached = media('(pointer: coarse)') && !media('(any-pointer: fine)') ? true : media('(hover: none)') && (globalThis.navigator?.maxTouchPoints ?? 0) > 0;
   return cached;
 }
 

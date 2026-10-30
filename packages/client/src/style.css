@@ -1050,3 +1050,21 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
 .key-bind-row { display: flex; align-items: center; gap: 8px; }
 .key-bind { min-width: 120px; font: 700 14px var(--font-display); }
 .key-bind-note { color: var(--warning); }
+/* A phone sideways (and other short windows, ~412 px tall): the home screen's buttons all fit above the footer. */
+@media (max-height: 520px) {
+  #menu .screen.home { padding: 14px 24px 56px; }
+  .logo { font-size: clamp(30px, 5vw, 44px); }
+  .logo-sub { margin-top: 4px; font-size: 11px; }
+  .nav { gap: 5px; margin-top: 12px; width: min(280px, 44vw); }
+  .nav button { font-size: 16px; padding: 7px 14px; min-height: 40px; }
+  .featured { right: 20px; bottom: 56px; width: min(300px, 38vw); }
+  .featured-pic { height: 110px; }
+  .featured .card-plan { display: none; }
+  .featured h3 { font-size: 18px; }
+  .featured p { display: none; }
+  .player-badge { top: 12px; right: 20px; }
+  .menu-footer { padding: 0 20px; }
+  .menu-footer .hintbar { display: none; }
+}
+/* No keyboard on a phone: the key hints in the pause menu and footer say nothing there. */
+html.touch .menu-footer .hintbar, html.touch .pause-foot .hint { display: none; }

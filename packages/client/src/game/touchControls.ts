@@ -81,7 +81,11 @@ export class TouchControls {
         'pointerdown',
         (e) => {
           stop(e);
-          target.setPointerCapture?.(e.pointerId);
+          try {
+            target.setPointerCapture(e.pointerId);
+          } catch {
+            // Not a live pointer (a synthetic event): tracked all the same.
+          }
           fingers.add(e.pointerId);
           h.down(e);
         },
@@ -196,7 +200,7 @@ export class TouchControls {
           jump.classList.add('on');
           const c = {
             id: e.pointerId,
-            at: performance.now(),
+            at: e.timeStamp,
             long: false,
             timer: window.setTimeout(() => {
               // Held: crouch (toggle), with a tick of the phone's vibration where it has one.
@@ -220,7 +224,14 @@ export class TouchControls {
       },
       up: (e) => {
         if (centre?.id === e.pointerId) {
-          if (!centre.long) {
+          // Tap or hold, by when the finger really went down and came up (event times): on a slow frame the
+          // lift can be handled after the hold timer ran, so a tap that crouched by mistake stands back up.
+          const tap = e.timeStamp - centre.at < LONG_PRESS_MS;
+          if (tap && centre.long) {
+            this.input.virtualKey('KeyC', true);
+            this.input.virtualKey('KeyC', false);
+          }
+          if (tap) {
             // A tap: jump (Space, so it also stands you up, or picks whom to watch while you're down).
             this.input.virtualKey('Space', true);
             this.input.virtualKey('Space', false);

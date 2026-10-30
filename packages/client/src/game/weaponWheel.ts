@@ -73,12 +73,19 @@ export class WeaponWheel {
       const y = (e.clientY - r.top - half) / half;
       this.aim(x, y);
       this.onPoint?.(x, y);
+      return Math.hypot(x, y);
     };
+    /** The press began outside the ring (on the dimmed screen, e.g. the Weapons button again): letting go closes without a switch. */
+    let outside = false;
     this.el.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.el.setPointerCapture?.(e.pointerId);
-      point(e);
+      try {
+        this.el.setPointerCapture(e.pointerId);
+      } catch {
+        // A pointer the browser no longer tracks: the press still points the wheel.
+      }
+      outside = point(e) > 1.1;
     });
     this.el.addEventListener('pointermove', (e) => {
       if (this.el.hasPointerCapture?.(e.pointerId)) point(e);
@@ -86,7 +93,7 @@ export class WeaponWheel {
     this.el.addEventListener('pointerup', (e) => {
       if (!this.el.hasPointerCapture?.(e.pointerId)) return;
       point(e);
-      if (this.hover >= 0) this.onTouchPick?.();
+      if (this.hover >= 0 && !outside) this.onTouchPick?.();
       else this.onTouchCancel?.();
     });
   }
