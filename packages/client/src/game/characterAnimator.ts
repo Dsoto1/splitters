@@ -255,6 +255,7 @@ export class CharacterAnimator {
       sk.prepare = (dontCheckFrameId?: boolean) => {
         if (!this.gate.skip) prepare(dontCheckFrameId);
       };
+      this.prepareSkins.push(() => prepare(true));
     }
   }
 
@@ -656,9 +657,16 @@ export class CharacterAnimator {
   freezePose(): void {
     if (this.frozenPose) return;
     this.frozenPose = true;
-    this.gate.skip = true;
     for (const j of this.ch.joints.values()) j.freezeWorldMatrix();
+    // Every skin takes the final pose now: a skin is only updated while its mesh is drawn, so the near-detail
+    // mesh of a body that died far away (its low-detail mesh drawn) kept the last pose it was drawn in, or the
+    // rest pose, a T, and showed it once you came close.
+    for (const prepare of this.prepareSkins) prepare();
+    this.gate.skip = true;
   }
+
+  /** Each skeleton's own update, past the gate (freezePose). */
+  private readonly prepareSkins: (() => void)[] = [];
 
   thawPose(): void {
     if (!this.frozenPose) return;
