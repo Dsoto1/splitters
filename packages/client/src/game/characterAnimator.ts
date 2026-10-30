@@ -94,6 +94,18 @@ const LONG_GUN_BLADE = 0.45;
 const STOCK_RADIUS = 0.035;
 /** Short arms slide the support hand back along the handguard, but keep it this far ahead of the grip (model m). */
 const SUPPORT_MIN_AHEAD = 0.12;
+/**
+ * First person: where each shoulder sits in the view's space (m: beside, below and a little behind the eye; x is
+ * the right shoulder's, the left mirrors it), how far it may come forward toward a point on the gun the arm can't
+ * otherwise reach, and the share of the arm's full reach it is held at (a natural bend, not a locked elbow).
+ */
+const FP_SHOULDER: readonly [number, number, number] = [0.19, -0.26, 0.03];
+/** First person: how low (m) the left shoulder sits when that hand holds nothing, so it stays out of view. */
+const FP_SHOULDER_IDLE = -0.62;
+const FP_SHOULDER_REACH = 0.4;
+/** First person: how far (m) a shoulder comes forward before the support hand slides back along the handguard instead. */
+const FP_SHOULDER_EASY = 0.12;
+const FP_BEND = 0.9;
 /** Furthest (model m) a stock the arms can't hold clear of the chest tucks out past the shoulder. */
 const TUCK_MAX = 0.12;
 const TUCK_FROM = 0.04;
@@ -823,7 +835,14 @@ export class CharacterAnimator {
     weapon.rotationQuaternion = Quaternion.Inverse(rootRot).multiply(rot);
   }
 
-  /** Hands onto a weapon placed elsewhere: palms to its grip and support points, fingers closed. */
+  /**
+   * Hands onto a weapon placed elsewhere (the first-person viewmodel): palms to its grip and support points,
+   * fingers closed. The shoulders are set from the view, not from the character's own build (a hunched cat's
+   * would sit in front of the eyes, a big knight's out of reach): each sits at FP_SHOULDER below and beside the
+   * eye, so the forearms rise from the bottom of the screen, and comes forward toward its point on the gun as far
+   * as the arm needs to keep a natural bend (only the shoulder region, off screen, stretches). A support point
+   * still out of reach then slides back along the handguard toward the grip.
+   */
   private gripPlaced(weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace, scale: number): void {
     weapon.computeWorldMatrix(true);
     const world = weapon.getWorldMatrix();
@@ -832,16 +851,46 @@ export class CharacterAnimator {
       n.computeWorldMatrix(true);
       return n.getAbsolutePosition().clone();
     };
+    const w = this.ik;
+    // A long gun's handguard rests in the support hand palm up, fingers round its far side (the clip's hand points at the sky).
+    if (grip.style === 'long' && grip.support) cupHand(space, arms.l, world, w);
+    const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
+    let supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale) : null;
+    const view = this.ch.root.parent as TransformNode | null;
+    if (view) {
+      view.computeWorldMatrix(true);
+      const vm = view.getWorldMatrix();
+      // A free left hand (a knife) hangs out of view.
+      const anchor = (side: 1 | -1) => Vector3.TransformCoordinates(new Vector3(side * FP_SHOULDER[0], side < 0 && !grip.support ? FP_SHOULDER_IDLE : FP_SHOULDER[1], FP_SHOULDER[2]), vm);
+      const shift = FP_SHOULDER_REACH * view.absoluteScaling.x;
+      if (grip.support && supportAt) {
+        // Out of the arm's reach: the support hand slides back along the handguard toward the grip first (the
+        // shoulder only comes forward a little, so the upper arm stays out of view), then the shoulder comes further.
+        const s = anchor(-1);
+        const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm) * FP_BEND + FP_SHOULDER_EASY * view.absoluteScaling.x;
+        const room = Math.max(0, grip.support[2] - grip.grip[2] - SUPPORT_MIN_AHEAD);
+        let back = 0;
+        while (back < room && Vector3.Distance(s, supportAt) > reachL) {
+          back = Math.min(room, back + 0.01);
+          supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale);
+        }
+      }
+      placeShoulder(arms.r, anchor(1), gripAt, shift);
+      placeShoulder(arms.l, anchor(-1), supportAt, shift);
+    }
     const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
     const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
-    const w = this.ik;
-    solveArm(space, arms.r, palmOnGrip(arms.r, point(grip.grip), scale), pos(arms.r.upper).add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), w);
+    solveArm(space, arms.r, gripAt, pos(arms.r.upper).add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), w);
     closeHand(space, arms.r, w);
-    if (grip.support) {
-      solveArm(space, arms.l, palmOnGrip(arms.l, point(grip.support), scale), pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
+    if (supportAt) {
+      solveArm(space, arms.l, supportAt, pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
       closeHand(space, arms.l, w * 0.7);
     }
+    this.gripMiss = { r: Vector3.Distance(palmWorld(arms.r), gripAt) / scale, l: supportAt ? Vector3.Distance(palmWorld(arms.l), supportAt) / scale : 0 };
   }
+
+  /** How far (model m) each palm ended up from where it was sent on the last external grip (tests and the grip tool). */
+  gripMiss: { r: number; l: number } | null = null;
 
   dispose(): void {
     this.scene.onAfterAnimationsObservable.remove(this.observer);
@@ -930,6 +979,50 @@ function palmSideWorld(arm: Arm): Vector3 {
 function palmWorld(arm: Arm): Vector3 {
   arm.hand.computeWorldMatrix(true);
   return Vector3.TransformCoordinates(arm.palm, arm.hand.getWorldMatrix());
+}
+
+/**
+ * Put an arm's shoulder joint at `at` (world), brought toward `target` (where its palm goes) by as much as the
+ * arm needs to reach it with a natural bend, up to `most` (world m).
+ */
+function placeShoulder(arm: Arm, at: Vector3, target: Vector3 | null, most: number): void {
+  let s = at;
+  if (target) {
+    const want = armReach(arm.upper, arm.lower, arm.hand, arm.palm) * FP_BEND;
+    const d = Vector3.Distance(at, target);
+    if (d > want) s = at.add(target.subtract(at).normalize().scale(Math.min(d - want, most)));
+  }
+  const parent = arm.upper.parent as TransformNode | null;
+  if (!parent) return;
+  parent.computeWorldMatrix(true);
+  arm.upper.position.copyFrom(Vector3.TransformCoordinates(s, parent.getWorldMatrix().clone().invert()));
+  refreshArm(arm);
+}
+
+/**
+ * Turn a support hand to cup a long gun's handguard from below: palm up and toward the gun, fingers across
+ * its underside and a little forward (`weapon`: the gun's world matrix; blended by `weight`).
+ */
+function cupHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, weight: number): void {
+  for (const n of [arm.hand, arm.knuckle]) n.computeWorldMatrix(true);
+  const wrist = arm.hand.getAbsolutePosition().clone();
+  const dir = (world: Vector3) => space.point(wrist.add(world)).subtract(space.point(wrist));
+  const axis = (x: number, y: number, z: number) => Vector3.TransformNormal(new Vector3(x, y, z), weapon).normalize();
+  const frame = (fingers: Vector3, palm: Vector3) => {
+    const z = fingers.normalizeToNew();
+    const y = palm.subtract(z.scale(Vector3.Dot(palm, z))).normalize();
+    return Quaternion.RotationQuaternionFromAxis(Vector3.Cross(y, z), y, z);
+  };
+  const palm = palmSideWorld(arm);
+  if (palm.lengthSquared() < 1e-8) return;
+  const now = frame(dir(arm.knuckle.getAbsolutePosition().subtract(wrist)), dir(palm));
+  const up = axis(0, 1, 0);
+  const ahead = axis(0, 0, 1);
+  // The gun's right in the world (left-handed), whether or not the model's node is mirrored.
+  const right = Vector3.Cross(up, ahead).normalize();
+  const want = frame(dir(right.scale(0.8).add(ahead.scale(0.55)).add(up.scale(0.15))), dir(up.scale(0.8).add(right.scale(0.45))));
+  const turnBy = want.multiply(Quaternion.Inverse(now));
+  space.setRot(arm.hand, turnBy.multiply(space.rot(arm.hand)), weight);
 }
 
 /** A proper (unmirrored) world frame for a hand, from its knuckles: +Z along the fingers. */

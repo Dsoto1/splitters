@@ -124,6 +124,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   const api = {
     looks: () => CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, parts: l.parts })),
     pose,
+    /** First person: how far (model m) each palm is from its point on the gun (0: on it). */
+    miss: () => current?.anim.gripMiss ?? null,
   };
   Object.assign(window, { __grips: api });
 }

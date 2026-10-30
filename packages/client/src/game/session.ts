@@ -1462,6 +1462,9 @@ export class GameSession {
             this.wantWeapon = 0;
           }
           this.local.reconcile(me, msg.ack, msg.me, msg.tick);
+          // A switch the server has made is done: stop asking for it, or every input would take back the server's
+          // own switches (a better gun picked up, a thrown spear caught, `__give`).
+          if (this.wantWeapon && me.w === this.wantWeapon) this.wantWeapon = 0;
         }
         this.botStates = msg.players.filter((p) => p.st).map((p) => `  ${this.hud.name(p.s).padEnd(14)} ${p.st}`);
         let poses: ReturnType<Interpolator['sample']> | undefined;

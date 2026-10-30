@@ -48,17 +48,23 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
       cockpit view; Titan, Alien, Salamander not rebuilt (downloads not available); Monk and Merrow (robes)
       restored as shipped; Bonesworth's left hand hovers open over the handguard on his grip sheet.
     - Next: re-run `vehicles`, `canyon` on a quiet machine, then merge through `check/candidate`.
-  - `wip/fp-grips` (`5bdc56a`, typecheck and unit tests pass; **e2e not run**): first-person support hand no
+  - `wip/fp-grips` (merged with `claude/launcher-ui-map-cards` at `988462b`; typecheck, build, `test:changed`
+    pass (hub/host tests timed out once under load, pass alone); e2e `characters`, `designer`, `visual` pass,
+    no baseline moved (arena 1.6 % off, within 8 %); `arsenal` failed on load timing only (frames of 1.5–3 s on a
+    shared, loaded machine: a different one check each run, every check passed in some run; with `CI=1` timeouts
+    one fail)): first-person support hand no
     longer floats off big guns. Causes: the first-person arms were placed by the character's head height (a
     hunched body's shoulders ended up 0.43 m in front of the eye) and first person had no reach handling (the IK
     stretched and stopped short by 6–13 cm). Fix in `characterAnimator.ts` (shoulders set from the view, come
     forward only as far as needed; the support hand slides back along the handguard, at least 12 cm from the grip;
     cups long guns from below; a free left hand hangs out of view) and `firstPersonArms.ts` (body 8 cm behind the
     eye). New `__grips.miss()` and a `characters` e2e check (both palms within 2 cm on rifle, Singularity Cannon,
-    Spin Gun, flamethrower for Scout, Biscuit, Grizzelda). Next: run `characters`, `designer`, `arsenal`,
-    `visual` (baselines may move with the arms: look before regenerating), then merge through
-    `check/candidate`. Left alone: the Salamander Warlord's big claws cover pistols (a hand-size content fix);
-    `__give('core.singularity')` didn't switch weapons in one offline test (not looked into).
+    Spin Gun, flamethrower for Scout, Biscuit, Grizzelda). Also fixed (`session.ts`): after any manual weapon
+    switch the client sent that weapon with every input for the rest of the life, so the server's own switches
+    (a better gun picked up, a caught spear, `__give`) were taken back at once; the request now clears once the
+    server holds it (checked offline: number key, then `__give('core.singularity')` now switches). Next: re-run
+    `arsenal` on a quiet machine, then merge through `check/candidate` (characterAnimator.ts maps to the full
+    suite). Left alone: the Salamander Warlord's big claws cover pistols (a hand-size content fix).
 - **Owner's requests not started yet:**
   - Buggy (and any vehicle that fits) seats a driver + 3 passengers, seated, who can shoot
     (sim: `packages/shared/src/sim/mounts.ts` seats).
@@ -94,6 +100,7 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   - Safari look: the owner tests it; if it is still off, ask for `window.__lookStats` from the console.
 - **`wip/spectate`** (not merged; needs a `check/` run, the shared sim changed so CI runs everything): kill cam, watching while dead (follow / free camera) and spectating by choice (`game/spectatorCam.ts`, `Match.spectate` / `joinFromSpectating`, `BotFiller.spectate` / `rejoin`; protocol additions in docs/MULTIPLAYER_PROTOCOL.md §15: `spectate` message, `welcome.spectate`, `RosterEntry.sp`, `PlayerInput.sp`, all optional, protocol stays 4). Rule: dead team players follow teammates only, no free camera; pure spectators, FFA, offline and the host/admin get everything. Spectators come back as players after a map change or a handoff. Tested: unit (`shared/test/spectate.test.ts`, `client/test/spectatorCam.test.ts`, a server test), e2e `offline` (spectate checks at its end) and `hostgame` (a friend spectates). Not judged by eye on a real match: kill-cam framing (can be blocked by a wall between your body and the killer) and the touch buttons.
 - **`wip/weapon-wheel-mobile`** (not merged yet; needs a `check/` run): the weapon wheel (`game/weaponWheel.ts`; hold Q, a tap keeps the last-weapon switch; hold Y on a controller; Options → Controls rebinds the key) and touch controls for phones (`game/touchControls.ts`, `touchDevice.ts`; every on-screen button is `InputState.virtualKey`, the pad `setTouchMove`, look `addTouchLook`, and `touchEngaged` stands in for pointer lock). New e2e flow `mobile` (Pixel 7 landscape, CDP touches). Pad-middle tap vs hold is decided from the events' timestamps, since a slow software-rendered page handles the lift late. Not judged on a real phone yet: the button layout, look speed (`TOUCH_LOOK`) and the 16-player phone host cap are first guesses.
+- **`wip/fp-grips`** (not merged; needs a `check/` run: characterAnimator.ts maps to the full suite): first-person grips on big guns. The support hand used to stop short of launchers, the Singularity Cannon, the Spin Gun and sniper rifles and float in front of them; with a Meshy character's own arms (forearms cut at mid-length) it was a hand on a horizontal stub near the top middle of the screen. Cause: the arms hung from the camera by the character's own build (a hunched cat's shoulders sat 0.43 m in front of the eye, at about the height of the handguard, so the forearm ran sideways), and nothing handled a point out of reach. Now `gripPlaced` sets the shoulders from the view (`FP_SHOULDER`), brings a shoulder forward as far as the arm needs (`FP_SHOULDER_REACH`), slides the support hand back along the handguard first, and turns it to cup the handguard (`cupHand`). Third person unchanged. Check a grip with `?mode=grips` and `__grips.miss()`. Left alone: the Salamander Warlord's big claws still cover small pistols and poke above some guns (hand size, a content fix).
 - **Not merged on purpose:** roster-cleanup's WIP commit 899537c (helmets worn on four looks; fit values are guesses, never checked visually). Finish the helmet fits (Commando, Engineer, beret and headband heights, Farmhand hat, Drifter mask, Dapper jacket weights) on a new branch.
 - **Owner to-dos:**
   - run `sudo tiletrigger-update` on the box after each `main` update;
