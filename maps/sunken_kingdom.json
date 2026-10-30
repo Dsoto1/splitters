@@ -6,8 +6,8 @@
     "name": "Sunken Kingdom",
     "author": "Tile Trigger",
     "description": "A partly flooded sandstone oasis city. A ruined palace round a circular courtyard sits in the middle of the low town; the western colonnade (Embers) looks down over the turquoise lagoon from its cliff, the eastern gatehouse (Tide) holds the road in. The market arcade, the north spring and the stepped temple sit on the upper terraces; falls pour into the lower courts. Three loops on the surface (the high northern terraces, the palace ring, the southern water courts) and the buried cistern underneath, from the west stair court to the east, with rockets in its flooded hall.",
-    "createdAt": "2026-10-30T20:14:12.369Z",
-    "updatedAt": "2026-10-30T20:14:12.369Z",
+    "createdAt": "2026-10-30T20:28:26.254Z",
+    "updatedAt": "2026-10-30T20:28:26.254Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 16,
@@ -213,7 +213,7 @@
         "options": {
           "facade": "egyptian",
           "ceiling": "roof",
-          "layout": "rubble"
+          "layout": "empty"
         },
         "edges": {
           "0,0,0:W": "broken"
