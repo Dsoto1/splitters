@@ -1588,13 +1588,17 @@ export class FrontEnd {
     const mouse = loadMousePrefs();
     const sens = el('input', { type: 'range', min: '0.2', max: '4', step: '0.1', value: String(mouse.sensitivity) });
     const sensVal = el('output', { textContent: `${mouse.sensitivity.toFixed(1)}×` });
+    const zoomSens = el('input', { type: 'range', min: '0.2', max: '3', step: '0.05', value: String(mouse.zoomSensitivity) });
+    const zoomSensVal = el('output', { textContent: `${mouse.zoomSensitivity.toFixed(2)}×` });
     const invert = el('input', { type: 'checkbox', checked: mouse.invertY });
     const assist = el('input', { type: 'checkbox', checked: mouse.aimAssist });
     const mouseChanged = () => {
-      saveMousePrefs({ sensitivity: Number(sens.value) || 1, invertY: invert.checked, aimAssist: assist.checked });
+      saveMousePrefs({ sensitivity: Number(sens.value) || 1, zoomSensitivity: Number(zoomSens.value) || 1, invertY: invert.checked, aimAssist: assist.checked });
       sensVal.textContent = `${(Number(sens.value) || 1).toFixed(1)}×`;
+      zoomSensVal.textContent = `${(Number(zoomSens.value) || 1).toFixed(2)}×`;
     };
     sens.addEventListener('input', mouseChanged);
+    zoomSens.addEventListener('input', mouseChanged);
     invert.addEventListener('change', mouseChanged);
     assist.addEventListener('change', mouseChanged);
     // A TURN relay for Host game / Join by code when networks block direct connections.
@@ -1689,6 +1693,7 @@ export class FrontEnd {
       ]],
       ['controls', 'Controls', [
         row('Mouse sensitivity', el('span', { class: 'opt-range' }, sens, sensVal)),
+        row('Zoom sensitivity', el('span', { class: 'opt-range' }, zoomSens, zoomSensVal), 'Look speed when aiming down the sights or through a scope. At 1.00× the view moves on screen just as it does in hip fire; lower is steadier, higher is quicker.'),
         row('Invert look', toggle(invert), 'Mouse up looks down.'),
         row('Aim assist', toggle(assist), 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
         el('h3', { class: 'opt-sub', textContent: 'Keyboard and mouse' }),

@@ -112,6 +112,7 @@ import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
+import { zoomLookScale } from './lookFilter.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator, type RemotePose } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
@@ -444,21 +445,26 @@ export class GameSession {
     // Mouse sensitivity and invert, saved for next time.
     const sens = $('mouse-sens') as HTMLInputElement;
     const sensVal = $('mouse-sens-val');
+    const zoomSens = $('zoom-sens') as HTMLInputElement;
+    const zoomSensVal = $('zoom-sens-val');
     const invert = $('mouse-invert') as HTMLInputElement;
     const assist = $('aim-assist') as HTMLInputElement;
     const showMouse = () => {
       assist.checked = this.input.mouse.aimAssist;
       sens.value = String(this.input.mouse.sensitivity);
       sensVal.textContent = `${this.input.mouse.sensitivity.toFixed(1)}×`;
+      zoomSens.value = String(this.input.mouse.zoomSensitivity);
+      zoomSensVal.textContent = `${this.input.mouse.zoomSensitivity.toFixed(2)}×`;
       invert.checked = this.input.mouse.invertY;
     };
     showMouse();
     const mouseChanged = () => {
-      this.input.mouse = { sensitivity: Number(sens.value) || 1, invertY: invert.checked, aimAssist: assist.checked };
+      this.input.mouse = { sensitivity: Number(sens.value) || 1, zoomSensitivity: Number(zoomSens.value) || 1, invertY: invert.checked, aimAssist: assist.checked };
       saveMousePrefs(this.input.mouse);
       showMouse();
     };
     sens.addEventListener('input', mouseChanged, { signal });
+    zoomSens.addEventListener('input', mouseChanged, { signal });
     invert.addEventListener('change', mouseChanged, { signal });
     assist.addEventListener('change', mouseChanged, { signal });
     // The player's own blood switch; the map sets the colour and amount.
@@ -850,6 +856,10 @@ export class GameSession {
     panel.root.hidden = true;
     $(net ? 'pause-admin-slot' : 'pause-host-slot').append(panel.root);
     if (local) this.showRotation(panel);
+    // The Host tab's Online block sits at the top of the panel's first column.
+    const online = document.getElementById('pause-online-box');
+    const tab = document.querySelector<HTMLElement>('#pause .pause-sec[data-sec="host"]');
+    if (local && online && tab) panel.setLead(online, tab);
     return panel;
   }
 
@@ -1145,7 +1155,7 @@ export class GameSession {
     } else this.peerHost?.close();
     // The standings as they were (before the HUD goes), for a screen after the match (the host left).
     const end: SessionEnd | undefined = this.welcomed && this.welcomeMap && this.rules ? { board: this.hud.boardData(this.scores, this.slot, true), map: this.welcomeMap, rules: this.rules, fill: Math.max(2, this.lastRoster?.length ?? 2) } : undefined;
-    this.hostPanel.root.remove();
+    this.hostPanel.remove();
     this.mapPicker?.remove();
     document.getElementById('online-confirm')?.remove();
     document.getElementById('leave-confirm')?.remove();
@@ -1185,7 +1195,7 @@ export class GameSession {
         // A Host Service joined by code has an admin login, as a dedicated server does.
         if (msg.dedicated && !(this.opts.transport instanceof NetTransport) && !(this.opts.transport instanceof LocalTransport) && !this.dedicatedPanel) {
           this.dedicatedPanel = true;
-          this.hostPanel.root.remove();
+          this.hostPanel.remove();
           this.hostPanel = this.makeHostPanel(true);
           if (this.lastRoster) this.hostPanel.setPeople(this.peopleIn(this.lastRoster));
         }
@@ -1890,7 +1900,8 @@ export class GameSession {
       this.fov = zoomed ? wantFov : this.fov + (wantFov - this.fov) * Math.min(1, dt * 14);
       this.adsAmount += ((ads ? 1 : 0) - this.adsAmount) * Math.min(1, dt * 14);
       const fov = this.fov;
-      this.input.sensitivityScale = fov / DEFAULT_FOV;
+      // Zoomed look speed: 1:1 with hip fire at the crosshair, times the player's zoom sensitivity.
+      this.input.sensitivityScale = zoomLookScale(fov, DEFAULT_FOV, DEFAULT_FOV * ADS_FOV, this.input.mouse.zoomSensitivity);
       if (ride && seatDef) {
         const seatIndex = this.seat![1];
         const feet = mountToWorld(ride.shown.pos, ride.shown.yaw, seatDef.offset);

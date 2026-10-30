@@ -1,14 +1,16 @@
+import { LookFilter, browserLookScale } from './lookFilter.ts';
 import { CLASS_SAY_BASE, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'tiletrigger.mouse';
-/** Safari reports locked-pointer movement at roughly half the scale of other browsers. */
-const BROWSER_SCALE = /^((?!chrome|chromium|android|crios|fxios).)*safari/i.test(navigator.userAgent) ? 2 : 1;
+const HAS_COALESCED = typeof PointerEvent !== 'undefined' && typeof PointerEvent.prototype.getCoalescedEvents === 'function';
 
 /** The player's mouse settings, kept between sessions. */
 export interface MousePrefs {
   /** Multiplier on look speed (0.2–4). */
   sensitivity: number;
+  /** Multiplier on look speed while aiming down the sights or scoped (0.2–3), on top of the zoom's own 1:1 scaling. */
+  zoomSensitivity: number;
   invertY: boolean;
   /** Gently pulls the sights onto enemies near the crosshair (touchpads, controllers). */
   aimAssist: boolean;
@@ -17,9 +19,14 @@ export interface MousePrefs {
 export function loadMousePrefs(): MousePrefs {
   try {
     const p = JSON.parse(localStorage.getItem(MOUSE_PREF_KEY) ?? '{}') as Partial<MousePrefs>;
-    return { sensitivity: Math.min(4, Math.max(0.2, Number(p.sensitivity) || 1)), invertY: p.invertY === true, aimAssist: p.aimAssist === true };
+    return {
+      sensitivity: Math.min(4, Math.max(0.2, Number(p.sensitivity) || 1)),
+      zoomSensitivity: Math.min(3, Math.max(0.2, Number(p.zoomSensitivity) || 1)),
+      invertY: p.invertY === true,
+      aimAssist: p.aimAssist === true,
+    };
   } catch {
-    return { sensitivity: 1, invertY: false, aimAssist: false };
+    return { sensitivity: 1, zoomSensitivity: 1, invertY: false, aimAssist: false };
   }
 }
 
@@ -46,8 +53,10 @@ const deadzone = (v: number) => (Math.abs(v) < STICK_DEADZONE ? 0 : Math.sign(v)
 export class InputState {
   yaw = 0;
   pitch = 0;
-  /** Zoomed aim lowers mouse sensitivity by this factor (set by the session). */
+  /** Zoomed aim lowers look speed by this factor (set by the session each frame: zoomLookScale). */
   sensitivityScale = 1;
+  /** Locked-pointer deltas, cleaned and summed until the next frame (see lookFilter.ts). */
+  readonly look = new LookFilter(browserLookScale(navigator.userAgent, HAS_COALESCED));
   /** The player's own look settings (Options / pause menu). */
   mouse: MousePrefs = loadMousePrefs();
   private keys = new Set<string>();
@@ -173,17 +182,22 @@ export class InputState {
       opts,
     );
     // pointermove, not mousemove: Safari doesn't reliably report locked-pointer movement on mousemove.
+    // Deltas go through the look filter and turn the view once per frame (frame()).
     window.addEventListener(
       'pointermove',
       (e) => {
         buttons(e);
         if (!this.locked || e.pointerType === 'touch') return;
-        const s = MOUSE_SENSITIVITY * this.sensitivityScale * this.mouse.sensitivity * BROWSER_SCALE;
-        this.yaw += e.movementX * s;
-        this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - e.movementY * s * (this.mouse.invertY ? -1 : 1)));
+        const subs = HAS_COALESCED ? e.getCoalescedEvents() : [];
+        this.look.push({ dx: e.movementX, dy: e.movementY, t: e.timeStamp, coalesced: subs.length > 1 ? subs.map((c) => ({ dx: c.movementX, dy: c.movementY })) : undefined });
       },
       opts,
     );
+    // A new lock (or coming back to the window) starts afresh: the first move after it can be the cursor's jump.
+    document.addEventListener('pointerlockchange', (e) => this.look.reset(e.timeStamp), opts);
+    window.addEventListener('focus', (e) => this.look.reset(e.timeStamp), opts);
+    // Diagnostics for the console (e.g. in Safari): how many moves were re-summed or dropped.
+    (window as unknown as { __lookStats?: unknown }).__lookStats = this.look.stats;
   }
 
   dispose(): void {
@@ -208,9 +222,12 @@ export class InputState {
    * view; the controller's buttons are read here too (Gamepad API is polled).
    */
   frame(dt: number): void {
+    const move = this.look.take();
     if (!this.locked) return;
     const scale = this.sensitivityScale * this.mouse.sensitivity;
     const invert = this.mouse.invertY ? -1 : 1;
+    this.yaw += move.dx * MOUSE_SENSITIVITY * scale;
+    this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - move.dy * MOUSE_SENSITIVITY * scale * invert));
     const key = (pos: string, neg: string) => (this.keys.has(pos) ? 1 : 0) - (this.keys.has(neg) ? 1 : 0);
     this.yaw += key('ArrowRight', 'ArrowLeft') * KEY_TURN * scale * dt;
     this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch + key('ArrowUp', 'ArrowDown') * KEY_TURN * 0.7 * scale * invert * dt));

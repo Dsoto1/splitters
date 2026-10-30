@@ -54,6 +54,8 @@ export class HostPanel {
   private peopleKey = '';
   /** The rotation this browser keeps (offline, Host game); a server's comes in its HostState. */
   private ownRotation: RotationState | null = null;
+  /** Shown at the top of the first column while you run the match (the Host tab's Online block); back in its home otherwise. */
+  private lead: { node: HTMLElement; home: HTMLElement } | null = null;
 
   constructor(
     private readonly hooks: HostPanelHooks,
@@ -83,6 +85,19 @@ export class HostPanel {
   setRotation(rotation: RotationState | null): void {
     this.ownRotation = rotation;
     if (this.state) this.render();
+  }
+
+  /** Put `node` (with its listeners) at the top of the first column while you run the match; otherwise it sits first in `home`. */
+  setLead(node: HTMLElement, home: HTMLElement): void {
+    this.lead = { node, home };
+    if (this.state) this.render();
+  }
+
+  /** Take the panel off the page; the lead goes back home (the next match's panel picks it up). */
+  remove(): void {
+    if (this.lead && this.lead.node.parentElement !== this.lead.home) this.lead.home.prepend(this.lead.node);
+    this.lead = null;
+    this.root.remove();
   }
 
   get controlling(): boolean {
@@ -189,6 +204,7 @@ export class HostPanel {
     const d = this.draft;
     this.root.hidden = !s && !this.hooks.login;
     if (!s || !d) {
+      if (this.lead && this.lead.node.parentElement !== this.lead.home) this.lead.home.prepend(this.lead.node);
       // Dedicated server, not (yet) the admin: a token box.
       const token = el('input', { id: 'hc-token', type: 'password', placeholder: 'Admin token', autocomplete: 'off' });
       const login = el('button', { id: 'hc-login', textContent: 'Log in' });
@@ -311,17 +327,16 @@ export class HostPanel {
       : [];
     const label = s.teams ? (now.every((n) => n === now[0]) ? teamsLabel(s.teams, now[0]!) : now.join('v')) : `${s.fill} players`;
     const summary = el('summary', {}, `Match (${this.title.toLowerCase()})`, el('small', { textContent: ` ${label} · ${MODE_LABELS[s.mode]} · ${SKILL_LABELS[s.skill]} bots` }));
+    // Two columns on wide screens (style.css): who plays (Online, teams and bots), then how (rules, Apply,
+    // the match buttons, the rotation, the people). One column below that.
     this.root.replaceChildren(
       summary,
-      el('h4', { textContent: s.teams ? 'Teams & bots' : 'Players & bots' }),
-      ...rows,
-      ...(ruleRows.length ? [el('h4', { textContent: 'Rules' }), ...ruleRows] : []),
-      apply,
-      ...waiting,
-      actions,
-      ...rotation,
-      ...people,
-      this.status,
+      el(
+        'div',
+        { class: 'hc-cols' },
+        el('div', { class: 'hc-col' }, ...(this.lead ? [this.lead.node] : []), el('h4', { textContent: s.teams ? 'Teams & bots' : 'Players & bots' }), ...rows),
+        el('div', { class: 'hc-col' }, ...(ruleRows.length ? [el('h4', { textContent: 'Rules' }), ...ruleRows] : []), apply, ...waiting, actions, ...rotation, ...people, this.status),
+      ),
     );
     this.root.open = open;
   }
