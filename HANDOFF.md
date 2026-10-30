@@ -54,6 +54,17 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   console line in this session's notes (skin vs joint hand span).
 
 ### Where things stand (2026-10-30 evening)
+- **Iron Maw on `wip/iron-maw`, not merged** (agent, 2026-10-30 night): `maps/iron_maw.json`, the open-pit
+  mine of BUILD_06 (480 m terrain at 3 m spacing, 408 m play area, 48 v 48): six bench levels, a clockwise
+  spiral haul road, SE switchbacks, 3 shaft lifts, 12 ladders, 3 cut-and-cover tunnels, crusher / screen
+  house / mills with walkable conveyor gantries, NW motor pool (Embers) vs NE workers' camp (Tide), the
+  owner's Meshy excavator, haul trucks and cargo props. TDM, CTF, KOTH, Fort Wars, Bomb (+ Elim, DM,
+  Zombies). Notes: `docs/map-briefs/iron_maw/` (manifest, QA report, decisions, screenshots). Checked:
+  typecheck, content:check, build, e2e `maps3` + `vehicles`, validate-map (0 issues), 96-bot benches
+  (4–7 ms/tick on a quiet box), perf96 (1,024 draws, 277 casters). Made with MapMaker's operations from a
+  scratch helper (no build script in the repo). Map card picture captured. Merge through a `check/` branch
+  (only the map's tour part and content run). Open: bots driving the switchbacks not measured; mossy
+  `stone` faces vs the image's orange rock; `recommendedPlayers` capped at 32 by the schema.
 - **`main` is at `9a959ee`** (green; everything requested is merged, no agents running): everything through `wip/impact`, the 2026-10-30 afternoon work (Character
   Select spin and shipped portraits, muzzle-flash light fix, wheel/trackpad weapon switching, MapMaker new-map
   sizes, `wip/bot-vehicles`, `wip/weapon-wheel-mobile`, `wip/pause-menu`, `wip/spectate`, `wip/battle-axe`), the
