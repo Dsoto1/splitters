@@ -33,13 +33,21 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     dark roof bars/dash (model geometry), tall heads touch the roof bars, the jeep's cab riders hidden behind its
     opaque windows, seated riders don't turn round past ~77°; Titan, Alien, Salamander not rebuilt (downloads
     missing); Bonesworth's left hand on his grip sheet; `visual` baselines may move if a buggy is in a picture.
-- **Next (owner agreed, after the two above are on `main`): full-body first person.** Today first person draws
-  only an arms mesh hung from the camera with IK to each gun's `hold` points; an arms part is a body fragment, so
-  on long guns (the AK's support point far forward) its open end swings into view (owner's screenshot: a torn
-  forearm). Plan: draw the player's whole character with the camera at the eyes, head hidden (shadow kept), the
-  third-person rig and hand IK holding the gun; keep gun/arms drawn over the world against clipping; tune bob,
-  recoil and reload so it stays as responsive as now (GUNPLAY_DIRECTION); a graphics option "First person: Full
-  body / Arms only".
+- **Next for the new account (owner agreed; not started): full-body first person.** Today first person draws
+  only an arms mesh (a second character, `setLocalLook` in view.ts) hung from the camera with IK to each gun's
+  `hold` points; an arms part is a body fragment, so on long guns (the AK's support point far forward) its open
+  end swings into view (owner's screenshot: a torn forearm, any character holding that gun). Plan: show the
+  player's own third-person avatar (already loaded and hidden in first person, `hiddenSelf`) with the camera at
+  its eyes, head hidden (shadow kept, or a cheap shadow-only stand-in), the third-person rig and hand IK holding
+  the gun; keep gun and hands in rendering group 1 (drawn over the world, one depth clear, as now) against wall
+  clipping; tune bob, recoil and reload so it stays as responsive as now (GUNPLAY_DIRECTION); a graphics option
+  "First person: Full body / Arms only", default full body once it feels right. Performance: about even (one
+  render either way; drops the second character and its animator and the per-character `_fparms` load, adds a
+  whole body's triangles), so it's for looks and consistency, not speed. Check with `?mode=grips` and the
+  `characters` e2e grip checks.
+- **Field guide** (owner asked 2026-10-30): a reference page of every weapon, vehicle, character, map feature
+  and pickup, generated from the shared data: https://claude.ai/artifact/GgiMK17TA5oCY3Cnyna3oy (PDF and HTML
+  were sent to the owner). Regenerate it when the arsenal or roster changes.
 - **Owner's requests not started yet:**
   - St. John's from real data: the owner's Google Maps key (`GOOGLE_MAPS_API_KEY`) is refused (Geocoding not
     allowed by the key's API restrictions, Elevation needs billing, Static 403, 3D Tiles 404). The owner set up a
