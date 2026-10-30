@@ -202,6 +202,37 @@ describe('vantage spots', () => {
   });
 });
 
+describe('vantage spots up a ladder', () => {
+  it('a sniper climbs the ladder to a roof spot: the window in the wall beside the ladder does not shut the way', () => {
+    // Riot Junction's towers: a ladder up the outside wall to the 12 m roof, past a third-floor window (a breakable
+    // pane bots never path through). Checked as a straight line from the ladder's foot to the roof, the climb went
+    // through the window, so every ladder-top roof was "no way there" and snipers set off for far ledges instead.
+    const r = loadMap(readFileSync(new URL('../../../maps/riot_junction.json', import.meta.url), 'utf8'));
+    if (!r.ok) throw new Error('map');
+    const rules = rulesForMode(r.map, 'core.tdm');
+    const match = new Match(r.map, { ...rules, scoreLimit: 0, timeLimitSeconds: 0, teamSizes: [1, 1], startingWeapons: [...rules.startingWeapons, 'core.sniper'] }, 1);
+    const bot = match.addBot('sniper', CORE_BOT_PROFILES[1]!, BOT_DIFFICULTIES.normal)!;
+    match.step();
+    expect(bot.alive).toBe(true);
+    const roof = { x: 178.8, y: 12.05, z: 51.87 };
+    const board = new VantageBoard([{ kind: 'sniper', pos: roof, yaw: 0, reach: 90, height: 12, score: 2 }]);
+    const director = (match as unknown as { director: BotDirector }).director;
+    director.setRole(bot.slot, 'sniper');
+    director.planFor(bot.slot).vantage = board;
+    // At the foot of the tower, round the corner from the ladder: the only way up is the ladder.
+    bot.move = { pos: { x: 186, y: 0.05, z: 57.6 }, velY: 0, grounded: true };
+    let arrived = -1;
+    for (let t = 0; t < TICK_RATE * 30 && arrived < 0; t++) {
+      match.step();
+      if (bot.alive && bot.bot!.vantage?.arrived) arrived = t;
+    }
+    match.destroy();
+    // Set off for it and got there (a 25 m walk and a 12 m climb), rather than writing it off as unreachable.
+    expect(arrived).toBeGreaterThanOrEqual(0);
+    expect(arrived).toBeLessThan(TICK_RATE * 20);
+  }, 60_000);
+});
+
 describe('role behaviour in a match', () => {
   const play = (style: 'mixed' | 'tactical', seconds: number) => {
     const r = loadMap(readFileSync(new URL('../../../maps/riot_junction.json', import.meta.url), 'utf8'));

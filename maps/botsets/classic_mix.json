@@ -6,7 +6,7 @@
   "fill": "random",
   "entries": [
     { "name": "Brassneck", "look": "core.bulwark", "skill": "hard" },
-    { "name": "Mildred", "look": "core.miller" },
+    { "name": "Mildred", "look": "core.wayfarer" },
     { "name": "Captain Pell", "look": "core.barnacle" },
     { "name": "Wick", "look": "core.scout", "skill": "hard" },
     { "name": "Doctor Umber", "look": "core.medic" },

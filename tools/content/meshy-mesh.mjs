@@ -259,7 +259,7 @@ export async function paintOut(map, marked, { grow = 2, holes = 0 } = {}) {
  * vertices. With `dropHidden`, the triangles nothing outside can see go at a working detail first.
  * Returns { pos, nrm, col, idx } (welded).
  */
-function closeSeams(prim, map, targetTris, maxError, dropHidden, colourWeight) {
+export function closeSeams(prim, map, targetTris, maxError, dropHidden, colourWeight) {
   const { data, info } = map;
   const P = prim.getAttribute('POSITION').getArray();
   const UV = prim.getAttribute('TEXCOORD_0').getArray();
@@ -340,7 +340,7 @@ const CREASE = Math.cos((40 * Math.PI) / 180);
  * coordinates; texels no ray reached, and the gutters, are filled from their neighbours. Normals keep creases
  * sharper than CREASE. Returns { pos, nrm, uv, idx, jpeg } (unwelded where charts or creases split).
  */
-async function rebake(low, hi, map, size, maxError) {
+export async function rebake(low, hi, map, size, maxError) {
   const { pos, idx } = low;
   const T = idx.length / 3;
   // Face normals and areas.

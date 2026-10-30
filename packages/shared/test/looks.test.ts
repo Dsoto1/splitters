@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { CHARACTER_PARTS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, decodeLook, encodeLook, getLook, initPhysics, lookForBot, lookProblems, materialTint, partInfo, textureFor } from '../src/index.ts';
+import { CHARACTER_PARTS, COLORWAYS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, decodeLook, encodeLook, getLook, HAIR_STYLES, initPhysics, lookForBot, lookProblems, materialTint, partInfo, RETIRED_LOOKS, textureFor, validLookId } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 import { loadArena } from './helpers.ts';
 
@@ -46,8 +46,9 @@ describe('character looks', () => {
     }
   });
 
-  it('uses every shipped part, hairstyle and colourway in at least one preset', () => {
-    const used = new Set(CORE_LOOKS.flatMap((l) => [l.head, ...l.parts, ...l.hair, ...l.colorways]));
+  it('offers every shipped part, hairstyle and colourway (in a preset or the Designer)', () => {
+    const designer = [...CHARACTER_PARTS.map((p) => p.id), ...Object.values(HAIR_STYLES).flatMap((h) => h.map((x) => x.id)), ...COLORWAYS.map((c) => c.id)];
+    const used = new Set([...CORE_LOOKS.flatMap((l) => [l.head, ...l.parts, ...l.hair, ...l.colorways]), ...designer]);
     const unused = lock.files.filter((f) => ['head', 'part', 'hair'].includes(f.role) && !used.has(f.id!)).map((f) => f.id);
     expect(unused).toEqual([]);
     // Every alternative colourway (a texture ID with a variant word) is worn by someone.
@@ -65,7 +66,7 @@ describe('character looks', () => {
     }
     expect(textureFor('MI_Eyes', CORE_LOOKS[0]!)).toBeNull();
     expect(textureFor('MI_Ranger', getLook('core.warden'))).toBe('ranger_moss');
-    expect(textureFor('MI_Athlete_Female', getLook('core.striker'))).toBe('athlete_light_f');
+    expect(textureFor('MI_Athlete_Female', { ...getLook('core.huntress'), colorways: ['athlete_light_f'] })).toBe('athlete_light_f');
     expect(materialTint('MI_Superhero_Male')).toBe('skin');
     expect(materialTint('MI_Hair_2')).toBe('hair');
   });
@@ -76,13 +77,21 @@ describe('character looks', () => {
     expect(getLook(undefined).id).toBe(DEFAULT_LOOK);
   });
 
+  it('resolves retired presets to a kept look', () => {
+    for (const [old, now] of Object.entries(RETIRED_LOOKS)) {
+      expect(CORE_LOOKS.some((l) => l.id === old), old).toBe(false);
+      expect(getLook(old).id, old).toBe(now);
+      expect(validLookId(old), old).toBe(now);
+    }
+  });
+
   it('gives players their chosen look and bots a spread of looks in the roster', () => {
     const match = new Match(loadArena());
-    match.addHuman('Ann', 'core.miller');
+    match.addHuman('Ann', 'core.medic');
     match.addHuman('Bo', 'not-a-look');
     for (let i = 0; i < 3; i++) match.addBot(`Bot${i}`, CORE_BOT_PROFILES[0]!);
     const roster = match.roster();
-    expect(roster.find((r) => r.name === 'Ann')!.look).toBe('core.miller');
+    expect(roster.find((r) => r.name === 'Ann')!.look).toBe('core.medic');
     expect(roster.find((r) => r.name === 'Bo')!.look).toBe(DEFAULT_LOOK);
     const bots = roster.filter((r) => r.bot);
     expect(bots.length).toBeGreaterThan(1);

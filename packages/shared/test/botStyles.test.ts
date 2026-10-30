@@ -16,9 +16,9 @@ describe('character bot profiles and styles', () => {
   });
 
   it("the match style overrides each character's own", () => {
-    const own = profileFor('core.champion', CORE_BOT_PROFILES[0]!);
+    const own = profileFor('core.pathfinder', CORE_BOT_PROFILES[0]!);
     expect(own.tags).toContain('ARENA');
-    const tac = profileFor('core.champion', CORE_BOT_PROFILES[0]!, 'tactical');
+    const tac = profileFor('core.pathfinder', CORE_BOT_PROFILES[0]!, 'tactical');
     expect(tac.tags).toContain('TACTICAL');
     expect(tac.tags).not.toContain('ARENA');
     expect(profileFor('somebody-custom', CORE_BOT_PROFILES[1]!).id).toBe(CORE_BOT_PROFILES[1]!.id);

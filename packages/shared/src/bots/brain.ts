@@ -2112,7 +2112,16 @@ export class BotBrain {
     for (const c of this.path) {
       const a = { x: prev.x, y: prev.y + 1, z: prev.z };
       const b = { x: c.x, y: c.y + 1, z: c.z };
-      const hit = view.blockers.find((box) => segmentHitsAabb(a, b, box));
+      const rise = b.y - a.y;
+      let hit: Aabb | undefined;
+      if (Math.abs(rise) > 1.5 && Math.abs(rise) > horizontalDistance(a, b) * 1.5) {
+        // Too steep to walk: a ladder (or a drop or a jump link). The bot climbs straight up or down at the low end and
+        // steps across at the top. The straight line between the two ends would cut through the wall the ladder is on
+        // (and its windows, which made every ladder-top roof look shut off), so check the way it actually goes.
+        const low = rise > 0 ? a : b;
+        const corner = { x: low.x, y: Math.max(a.y, b.y), z: low.z };
+        hit = view.blockers.find((box) => segmentHitsAabb(a, corner, box) || segmentHitsAabb(corner, b, box));
+      } else hit = view.blockers.find((box) => segmentHitsAabb(a, b, box));
       if (hit) return hit;
       prev = c;
     }

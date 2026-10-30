@@ -162,7 +162,7 @@ first, then the personalities that suit the role:
 | Squad | the rest | | | |
 
 Matches with fewer than 6 Player Bots have no roles (duels play as before).
-New tags on the roster: Miller and the Wealthy Otter are CAMPERs, the
+New tags on the roster: the Wealthy Otter is a CAMPER, the
 Drifter and the Tracker LONE_WOLFs.
 
 **Vantage spots** (`vantage.ts`) are worked out once per map (cached by the

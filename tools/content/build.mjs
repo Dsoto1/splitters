@@ -465,6 +465,16 @@ const gunCount = checkLocked(
 const vfxManifest = JSON.parse(readFileSync(join(ROOT, 'content/vfx.json'), 'utf8'));
 const vfxCount = checkLocked('content/vfx.lock.json', 'vfx', (f) => vfxManifest.packs[f.source], vfxManifest.budgets, (f) => (f.file.endsWith('.json') ? ['effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js'] : ['textures packed into one grey atlas, 256 px each']), 'node tools/content/prepare-vfx.mjs --downloads <dir>');
 console.log(`checked ${vfxCount} effect files`);
+const gearManifest = JSON.parse(readFileSync(join(ROOT, 'content/gear.json'), 'utf8'));
+const gearCount = checkLocked(
+  'content/gear.lock.json',
+  'gear',
+  (f) => gearManifest.packs[f.source],
+  gearManifest.budgets,
+  ['simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', 'colour map only, a 512 px JPEG', 'turned and fitted to the head in skull radii', 'vertices quantized'],
+  'node tools/content/prepare-gear.mjs --downloads <dir>',
+);
+console.log(`checked ${gearCount} gear models`);
 console.log(`checked ${textureCount} texture files, ${propCount} props, ${skyCount} skies, ${cityCount} city files, ${packFileCount} style pack files and ${gunCount} gun models`);
 
 // Map pictures (tools/content/capture-map-shots.mjs): one 640×360 JPEG per shipped (not retired) map, within budget, nothing else.
