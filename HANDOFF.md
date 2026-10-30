@@ -10,6 +10,44 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Owner notes, 2026-10-30 evening (not done yet; next session start here)
+- **The box is on an old build:** `sudo tiletrigger-update` says "Already on d582c4852690 (main-latest)", but
+  `main` is at `9a959ee` (buggy model and seats, weapon drops). So `main-latest` wasn't republished when `main`
+  was fast-forwarded to a commit already green on `check/candidate` (CI skips a push to main that went green on a
+  check branch, and the release job may be skipped with it). Fix the release path (ci.yml release job,
+  tools/ci/client-release.sh) so a fast-forwarded `main` always republishes `main-latest`, then have the owner rerun
+  the update. Until then the owner doesn't see the Meshy buggy.
+- **Asset quality:** many new weapons and props look "clumpy" (over-decimated). Revisit budgets: props are capped at
+  6,000 triangles / 400 KB (content/props.json `budgets`), weapons in content/guns.json; consider a higher cap for
+  hero/landmark pieces and weapons (first-person guns are seen up close), keeping LODs for distance, and rebuild the
+  owner's Meshy weapons and props with more triangles and 1024 px maps where it shows. Measure perf at 96 after.
+- **Character sizes (owner):**
+  - Small (same as Sprout), if not already: Shiba, Bandit, Teddy, Giggles, Botboy, Brass Hare, Grizzelda, The
+    Visitor, Wealthy Otter, Biscuit, Goblin.
+  - Large: Big Bogdan, Count Bonesworth, Ivory Rustwalker, Boglurker, Rattles.
+  - Punkin is small and should be normal.
+  - Bandit's scale is far too big in general (check whether it's the model's own scale/bounds, e.g. a stray
+    vertex or the tail/hat inflating the height the size class divides by).
+  - Dust Trooper looks odd; Grizzelda "is not looking right these days" (hat brim, hunched torso; she was also
+    opted out of full-body first person). Look at both in the menu and in game.
+  - Sizes live in packages/shared/src/content/looks.ts (`size`) and content/characters/*.json (`size`);
+    regenerate characters.generated.ts with character-manifests.mjs; check portraits after.
+- **Release status:** CI on check/candidate is red: e2e `arsenal` "the Battle Axe swings" fails with Full body first
+  person (passes with Arms only). The full-body agent is fixing it on `wip/full-body-fp-fix` (plus the Knight's
+  gauntlet grip and ADS screenshots). Merge that, rerun CI, fast-forward `main`, fix the release (above), update the box.
+- **In flight on branches:** `wip/st-johns` (St. John's from OSM + USGS), `wip/sunken-kingdom`, `wip/iron-maw`
+  (both under docs/map-briefs/AGENT_BUILD_CONTRACT.md), `wip/full-body-fp-fix`. Read each branch's HANDOFF/docs before
+  merging; all need a check/ run.
+- **Props added this session (on the session branch):** Meshy mining props (excavator, haul truck), 13 cargo props
+  (crates, containers, gantry crane, IBC tank), 15 street props (barrels, bins, trash, dumpster, fuel can, shop sign,
+  historic building; commit a406b0a is WIP: rerun `build-palette-atlas.mjs` against a served build, then
+  `pnpm content:build` and `pnpm content:check`, and commit the result). Downloads live outside the repo in
+  /home/user/meshy-downloads/{owned_mining,owned_cargo,owned_props2} (gone in a new container: re-fetch from the
+  Drive folder and meshystuff).
+- **T-pose:** frozen bodies' skins could keep an older pose; fixed in characterAnimator `freezePose` (every skin
+  takes the final pose). Owner's console check showed the mismatch on the live site; verify after the update with the
+  console line in this session's notes (skin vs joint hand span).
+
 ### Where things stand (2026-10-30 evening)
 - **`main` is at `9a959ee`** (green; everything requested is merged, no agents running): everything through `wip/impact`, the 2026-10-30 afternoon work (Character
   Select spin and shipped portraits, muzzle-flash light fix, wheel/trackpad weapon switching, MapMaker new-map
