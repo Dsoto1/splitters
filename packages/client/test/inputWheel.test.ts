@@ -18,6 +18,29 @@ async function make() {
   return input;
 }
 
+const scroll = (deltaY: number, deltaMode: number, t: number) => {
+  const e = Object.assign(new Event('wheel'), { deltaY, deltaMode });
+  Object.defineProperty(e, 'timeStamp', { value: t });
+  window.dispatchEvent(e);
+};
+
+describe('scrolling through weapons', () => {
+  it('one step per wheel notch, and a trackpad flick of many small events is a step or two, not one per event', async () => {
+    const input = await make();
+    scroll(3, 1, 100);
+    expect(input.takeWheel()).toBe(1);
+    // 30 events of 4 px, 8 ms apart: 120 px in a quarter of a second used to be 30 steps.
+    for (let i = 0; i < 30; i++) scroll(4, 0, 1000 + i * 8);
+    const steps = input.takeWheel();
+    expect(steps).toBeGreaterThanOrEqual(1);
+    expect(steps).toBeLessThanOrEqual(2);
+    // Back the other way.
+    scroll(-120, 0, 2000);
+    expect(input.takeWheel()).toBe(-1);
+    input.dispose();
+  });
+});
+
 describe('weapon wheel input', () => {
   let now = 1000;
   afterEach(() => vi.restoreAllMocks());

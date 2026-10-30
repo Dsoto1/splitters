@@ -267,6 +267,8 @@ export class GameView {
   /** Your own character's arms in first person, gripping the viewmodel. */
   private fpArms?: { look: string; anim: CharacterAnimator | null; root: TransformNode };
   private viewLoad = 0;
+  /** First-person guns built so far, by weapon ID, with their measurements (see setViewmodel). */
+  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }>();
   /** Front of the loaded viewmodel along its forward axis, for the muzzle flash. */
   private muzzleZ = 0.2;
   /** Barrel height of the loaded viewmodel (the same estimate as remote guns: the bounds include the grip). */
@@ -891,22 +893,29 @@ export class GameView {
     if (def?.id === this.viewWeapon) return;
     this.viewWeapon = def?.id;
     const load = ++this.viewLoad;
-    this.viewmodel?.dispose();
+    // Guns you've held are kept (hidden), so switching back is instant: building one each switch hitched the frame,
+    // badly when scrolling through several.
+    this.viewmodel?.setEnabled(false);
     this.viewmodel = undefined;
     if (!def) return;
+    const show = (v: { node: TransformNode; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }) => {
+      ({ muzzleZ: this.muzzleZ, muzzleY: this.muzzleY, sightTop: this.sightTop, stockZ: this.stockZ } = v);
+      v.node.setEnabled(true);
+      this.viewmodel = v.node;
+      this.fpArms?.anim?.gripExternal(v.node, def.view.hold);
+    };
+    const kept = this.viewmodels.get(def.id);
+    if (kept) return show(kept);
     void this.models.instantiate(def.view.model, `view_${def.id}`).then((node) => {
-      if (load !== this.viewLoad) return node.dispose();
       // Measure before parenting, in the model's own space.
       const bounds = node.getHierarchyBoundingVectors(true);
-      this.muzzleZ = bounds.max.z;
-      this.muzzleY = (bounds.min.y + bounds.max.y) / 2 + (bounds.max.y - bounds.min.y) * 0.2;
-      this.sightTop = bounds.max.y;
-      this.stockZ = bounds.min.z;
       node.parent = this.viewRoot;
       // Draw on top of the world so the gun never clips into walls.
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-      this.viewmodel = node;
-      this.fpArms?.anim?.gripExternal(node, def.view.hold);
+      const v = { node, muzzleZ: bounds.max.z, muzzleY: (bounds.min.y + bounds.max.y) / 2 + (bounds.max.y - bounds.min.y) * 0.2, sightTop: bounds.max.y, stockZ: bounds.min.z };
+      this.viewmodels.set(def.id, v);
+      node.setEnabled(false);
+      if (load === this.viewLoad) show(v);
     });
   }
 

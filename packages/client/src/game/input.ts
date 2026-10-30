@@ -227,7 +227,7 @@ export class InputState {
     window.addEventListener(
       'wheel',
       (e) => {
-        if (this.locked && !this.wheelOpen) this.wheelSteps += Math.sign(e.deltaY);
+        if (this.locked && !this.wheelOpen) this.scroll(e);
       },
       opts,
     );
@@ -532,6 +532,28 @@ export class InputState {
     const s = this.slotRequest;
     this.slotRequest = 0;
     return s;
+  }
+
+  /** Scroll so far towards the next step (pixels), when the last step was, and the last scroll event. */
+  private scrollAcc = 0;
+  private scrollStepAt = 0;
+  private scrollAt = 0;
+
+  /**
+   * One weapon step per notch of a mouse wheel, and per ~60 px of a trackpad or smooth-scrolling mouse (which send
+   * dozens of small events per flick: one step each skipped through several weapons at once), at most one step per
+   * 90 ms, so a flick's momentum doesn't keep cycling.
+   */
+  private scroll(e: WheelEvent): void {
+    const now = e.timeStamp;
+    const px = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+    if (now - this.scrollAt > 250 || Math.sign(px) !== Math.sign(this.scrollAcc)) this.scrollAcc = 0;
+    this.scrollAt = now;
+    this.scrollAcc += px;
+    if (Math.abs(this.scrollAcc) < 50 || now - this.scrollStepAt < 90) return;
+    this.wheelSteps += Math.sign(this.scrollAcc);
+    this.scrollAcc = 0;
+    this.scrollStepAt = now;
   }
 
   /** Consume accumulated wheel steps. */
