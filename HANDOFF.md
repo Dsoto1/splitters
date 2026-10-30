@@ -15,8 +15,10 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   e8f449a, passed on a715e60/b4d55de; passes locally). The crouch-on-next-frame change (bb06a47) didn't cure it. Look at
   how the CDP touch timestamps map to the page's `e.timeStamp` (touchControls.ts tap vs hold) and whether the player
   is grounded when the tap lands; log the pad state in the check before changing the game.
-- **main at b4d55de (2026-10-30 ~22:40 UTC), released as main-latest:** everything through the full-body fix,
-  St. John's, props and sizes. Sunken Kingdom (2814838) is on check/candidate next; Iron Maw still building.
+- **main at 6c0f8a6 (2026-10-30 ~23:45 UTC):** everything from this session, Sunken Kingdom and Iron Maw included
+  (both merged and green on CI). Nothing left on wip/* from this session. Open owner questions: Sunken Kingdom
+  (Meshy dome, taller cliffs, CTF flags 190 m apart: bots don't capture), Iron Maw (raise the schema's player-count
+  cap past 16–32 so the menu can say 64–96; an orange rock terrain material).
 - **Release fixed (2026-10-30 21:50 UTC):** `main` fast-forwarded to 1317b80 (= 9a959ee's code + the ci.yml fix: no
   cancelled runs on main; a main commit not green on a check branch is tested against the nearest one that was). Its run
   published `main-latest`; the owner runs `sudo tiletrigger-update` to get the Meshy buggy and weapon drops.
