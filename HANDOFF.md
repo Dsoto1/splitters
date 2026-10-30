@@ -56,8 +56,11 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   Checked: MapMaker, the validator and the nav check report nothing; bots move all over it; the `maps6` tour
   part (St. John's) and the editor flows. Open: the halls' rooms are the first pass's, stretched to the real
   footprints (wider rooms and windows); OSM has the halls as merged outlines, so where Knight, Welles and DeKoven
-  meet is a guess; more draw calls than before in a clump (bigger halls, 26 street meshes), see the PR notes in
-  CHANGELOG/the report. Not judged by eye on real hardware.
+  meet is a guess. Perf (perf96, 48 bots, Medium, SwiftShader under heavy machine load, so noisy): draws
+  spread ~415 → 420-530, clump ~420-460 → ~520-600 (bigger halls, 26 street meshes), shadow casters about the
+  same or fewer, server tick a little cheaper; loading about the same as before (67-71 s old vs 73-81 s new at
+  load 30). The `maps6`/`maps` e2e "match starts" check timed out here at load 20-30 (the old map and other
+  untouched maps did too); it passed at lower load (39 s). Not judged by eye on real hardware.
 - **Local e2e at hand-off (machine load 12–25, so timing-sensitive):** `mobile`, `offline`, `designer`,
   `editor`, `editorux`, `canyon`, `scenery`, `race` passed. `arsenal` failed "hazards are drawn on the ground"
   (failed under load before the axe merge too) and "the Battle Axe swings: the bot in front takes the blow"
