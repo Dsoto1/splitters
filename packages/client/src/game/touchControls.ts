@@ -203,11 +203,16 @@ export class TouchControls {
             at: e.timeStamp,
             long: false,
             timer: window.setTimeout(() => {
-              // Held: crouch (toggle), with a tick of the phone's vibration where it has one.
-              c.long = true;
-              this.input.virtualKey('KeyC', true);
-              this.input.virtualKey('KeyC', false);
-              navigator.vibrate?.(15);
+              // Held: crouch (toggle), with a tick of the phone's vibration where it has one. On the next frame,
+              // not now: a busy page can run this timer before it handles a lift that already happened, and
+              // touch events are handled before animation frames, so a tap's lift is seen first.
+              requestAnimationFrame(() => {
+                if (centre !== c) return;
+                c.long = true;
+                this.input.virtualKey('KeyC', true);
+                this.input.virtualKey('KeyC', false);
+                navigator.vibrate?.(15);
+              });
             }, LONG_PRESS_MS),
           };
           centre = c;
