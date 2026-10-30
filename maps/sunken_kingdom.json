@@ -18,15 +18,7 @@
       "core.ctf",
       "core.deathmatch",
       "core.koth"
-    ],
-    "release": {
-      "mapId": "m_dvwbi73di4qhhbig",
-      "versionId": "v_xuzp3dofgfnwojvh",
-      "revision": 1,
-      "contentHash": "sha256:ae5625263e83b45e8990f78749316f1e51767a838fe9dc6197fc027ddce374ec",
-      "schemaVersion": 24,
-      "releasedAt": "2026-10-30T19:57:14.708Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
