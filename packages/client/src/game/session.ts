@@ -119,7 +119,7 @@ import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { markerSetting } from './crosshair.ts';
-import { Interpolator, type RemotePose } from './interpolation.ts';
+import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
 import { ScenarioState } from './scenarioState.ts';
@@ -127,6 +127,7 @@ import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
+import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule, type CameraPose, type FreeBounds, type SpectateRule } from './spectatorCam.ts';
 
 /** Field of view while aiming down the sights, as a fraction of the normal one. */
 const ADS_FOV = 0.72;
@@ -229,6 +230,20 @@ export class GameSession {
   private rules: MatchRules | null = null;
   /** Your recent kills (ms), for the multi-kill rhythm of the kill marker. */
   private killTimes: number[] = [];
+  /** Out of play: the kill cam, following someone and the free camera (spectatorCam.ts). */
+  private readonly specCam = new SpectatorCam();
+  /** Spectating by choice (the roster marks you `sp`): out of the match until you join again. */
+  private spectator = false;
+  /** The host lets players spectate by choice (welcome `spectate`). */
+  private canSpectate = false;
+  /** Out of play this frame: spectating, or dead in a running match. */
+  private outOfPlay = false;
+  /** The latest shot that hit you: who fired it and from where (the kill cam looks there when the killer isn't in view). */
+  private lastHitBy: { slot: number; from: Vec3; at: number } | null = null;
+  /** Where the free camera may fly. */
+  private freeBounds: FreeBounds | null = null;
+  /** The view angles sent last tick (turning while watching counts as activity). */
+  private sentLook = { yaw: NaN, pitch: NaN };
 
   /** Hit confirmation on the crosshair for your shot: head, armor or body, told apart by shape (and by sound, in SessionAudio). */
   private hitFeedback(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
@@ -383,8 +398,13 @@ export class GameSession {
     this.showStats = opts.showStats || loadPerfOverlay();
     this.input.onToggle.set('F3', () => this.setShowStats(!this.showStats));
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
+    // Watching: Space switches between following someone and the free camera (or skips the kill cam).
     this.input.onToggle.set('Space', () => {
-      if (this.local && !this.local.alive) this.spectateNext = true;
+      if (this.outOfPlay) this.input.toggleSpectateCamera();
+    });
+    // Spectating by choice: J joins the game again.
+    this.input.onToggle.set('KeyJ', () => {
+      if (this.spectator) this.setSpectating(false);
     });
     this.input.onToggle.set('KeyH', () => {
       // In a vehicle H switches the driver between the cockpit and the chase camera; on foot, first and third person.
@@ -419,6 +439,15 @@ export class GameSession {
       'click',
       () => {
         this.input.respawnQueued = true;
+        lock();
+      },
+      { signal },
+    );
+    // Spectate by choice (a bot plays in your place), or join the game again.
+    $('pause-spectate').addEventListener(
+      'click',
+      () => {
+        this.setSpectating(!this.spectator);
         lock();
       },
       { signal },
@@ -696,6 +725,43 @@ export class GameSession {
       this.hud.renderPauseScores($('pause-scores'), this.scores, this.slot, this.phase === 'intermission');
     }
     ($('pause-class') as HTMLButtonElement).hidden = !this.classesOn;
+    this.drawSpectateButton();
+  }
+
+  /** The pause menu's Spectate / Join game button (only where the host supports it), and Respawn (not while spectating). */
+  private drawSpectateButton(): void {
+    const btn = $('pause-spectate') as HTMLButtonElement;
+    btn.hidden = !this.canSpectate || !this.opts.transport.sendSpectate;
+    btn.textContent = this.spectator ? 'Join game' : 'Spectate';
+    btn.title = this.spectator ? 'Back into the match (J)' : 'Leave play and watch: follow players or fly a free camera. A bot plays in your place until you join again';
+    ($('respawn-now') as HTMLButtonElement).hidden = this.spectator;
+  }
+
+  /** Ask the host to make you a spectator (on) or put you back in the game; the roster answers (`sp`). */
+  private setSpectating(on: boolean): void {
+    if (on === this.spectator || !this.canSpectate) return;
+    this.opts.transport.sendSpectate?.(on);
+  }
+
+  /** The roster says you are (or are no longer) a spectator. */
+  private spectatorChanged(on: boolean): void {
+    this.spectator = on;
+    this.specCam.reset();
+    if (on && this.local) this.local.alive = false;
+    this.hud.showMessage(on ? 'Spectating: click or ←/→ for the next player, Space for the free camera, J to join' : 'Back in the game', 4);
+    this.drawSpectateButton();
+  }
+
+  /** For browser tests: what the out-of-play camera is doing. */
+  private specState(): { spectator: boolean; out: boolean; killCam: number | null; following: number; free: boolean; camera: Vec3; rule: SpectateRule } {
+    const c = this.view.cameraPosition();
+    return { spectator: this.spectator, out: this.outOfPlay, killCam: this.specCam.killCam(performance.now())?.killer ?? null, following: this.specCam.following, free: this.specCam.free, camera: { x: c.x, y: c.y, z: c.z }, rule: this.spectateRule() };
+  }
+
+  /** Who you may watch and whether the free camera is yours (spectatorCam.ts spectateRule). */
+  private spectateRule(): SpectateRule {
+    const local = this.opts.transport instanceof LocalTransport;
+    return spectateRule({ teamMode: !!this.rules && isTeamMode(this.rules.mode), pureSpectator: this.spectator, offline: local, runsMatch: local || this.hostState !== null });
   }
 
   /** Leave: when friends play in this hosted match, it ends for them too, so ask first. */
@@ -1231,6 +1297,8 @@ export class GameSession {
         }
         this.slot = msg.slot;
         this.rules = msg.rules;
+        this.canSpectate = msg.spectate === 1;
+        this.freeBounds = freeCamBounds(loaded.map);
         if (msg.lan?.length) this.showLanAddresses(msg.lan);
         // A Host Service joined by code has an admin login, as a dedicated server does.
         if (msg.dedicated && !(this.opts.transport instanceof NetTransport) && !(this.opts.transport instanceof LocalTransport) && !this.dedicatedPanel) {
@@ -1282,7 +1350,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, map: loaded.map.metadata.id };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on) };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -1297,6 +1365,7 @@ export class GameSession {
         this.lastRoster = msg.players;
         this.hostPanel.setPeople(this.peopleIn(msg.players));
         if (this.peerHost) this.updateOnline();
+        if ((msg.players.find((p) => p.slot === this.slot)?.sp === 1) !== this.spectator) this.spectatorChanged(!this.spectator);
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
         this.view.setLocalLook(this.looks.get(this.slot));
         if (this.local) this.local.scale = this.sizeOf(this.slot);
@@ -1401,7 +1470,10 @@ export class GameSession {
               if (def?.id === 'core.railgun') this.view.hitFx(to, 'heavy');
               const victim = ev.hit[i] ?? null;
               const zone = ev.z?.[i] ?? 0;
-              if (victim === this.slot) this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
+              if (victim === this.slot) {
+                this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
+                this.lastHitBy = { slot: ev.s, from: eye, at: performance.now() };
+              }
               if (victim !== null) {
                 const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
                 const len = Math.hypot(d.x, d.y, d.z) || 1;
@@ -1485,6 +1557,7 @@ export class GameSession {
             if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
           } else if (ev.e === 'kill') {
             this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs);
+            if (ev.victim === this.slot && ev.killer !== null && ev.killer !== this.slot && this.local && msg.phase === 'playing') this.startKillCam(ev.killer, ev.weapon);
             if (ev.killer === this.slot && ev.victim !== this.slot) {
               // Kill confirmation (GUNPLAY_SPEC §22): a sharper marker that escalates with kills in a row.
               const t = performance.now();
@@ -1763,25 +1836,78 @@ export class GameSession {
     } else this.hud.setMarker(null);
   }
 
-  /** Who you watch while out of an Elimination or Bomb round (Space: the next teammate). */
-  private spectating = -1;
-
-  private spectateTarget(now: number): RemotePose | null {
-    const mode = this.rules?.mode;
-    if (mode !== 'core.elim' && mode !== 'core.bomb' && mode !== 'core.hostage') return null;
-    if (this.phase !== 'playing') return null;
-    const mine = this.hud.team(this.slot)?.id;
-    const mates = this.interp.sample(now).filter((p) => p.alive && p.slot !== this.slot && p.slot < NPC_ID_BASE && this.hud.team(p.slot)?.id === mine);
-    if (!mates.length) return null;
-    if (this.spectateNext) {
-      this.spectateNext = false;
-      const i = mates.findIndex((p) => p.slot === this.spectating);
-      this.spectating = mates[(i + 1) % mates.length]!.slot;
-    }
-    return mates.find((p) => p.slot === this.spectating) ?? ((this.spectating = mates[0]!.slot), mates[0]!);
+  /**
+   * You died to `killer`: the kill cam turns to them from by your body. With a short respawn delay it lasts
+   * until you're back; with a long one (or none: Elimination) KILL_CAM_SECONDS, then you watch.
+   */
+  private startKillCam(killer: number, weapon: string): void {
+    const local = this.local!;
+    const now = performance.now();
+    const hit = this.lastHitBy && this.lastHitBy.slot === killer && now - this.lastHitBy.at < 3000 ? this.lastHitBy.from : null;
+    const delay = (this.rules?.respawnDelayTicks ?? 0) / TICK_RATE;
+    const seconds = delay > 0 && delay <= KILL_CAM_SECONDS + 1 ? delay + 0.5 : KILL_CAM_SECONDS;
+    this.specCam.startKillCam({ killer, weapon, body: this.drawnPos, from: hit, yaw: this.input.yaw, pitch: this.input.pitch, now, seconds });
   }
 
-  private spectateNext = false;
+  /**
+   * The camera while out of play (dead, or spectating by choice): the kill cam, then following someone you
+   * may watch (spectateRule) or the free camera. Returns the pose set, or null when there is nothing to
+   * watch (the view stays where you fell).
+   */
+  private spectatorCamera(now: number, local: LocalPlayer, fov: number, picks: { step: number; toggle: boolean }): CameraPose | null {
+    const cast = (o: Vec3, d: Vec3, len: number) => local.physics.raycastWorld(o, d, len);
+    const poses = this.interp.sample(now);
+    const rule = this.spectateRule();
+    const kc = this.spectator ? null : this.specCam.killCam(now);
+    if (kc) {
+      // Any spectator key skips it.
+      if (picks.step || picks.toggle) {
+        this.specCam.endKillCam();
+        picks = { step: 0, toggle: false };
+      } else {
+        const k = poses.find((p) => p.slot === kc.killer);
+        const pose = this.specCam.killCamPose(now, k ? { x: k.x, y: k.y + 1.3, z: k.z } : null, cast)!;
+        this.view.setCamera(pose.pos, pose.yaw, pose.pitch, fov);
+        const hp = this.hp.get(kc.killer);
+        this.hud.setKillCam({ name: this.hud.name(kc.killer), color: kc.killer >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(kc.killer)?.color ?? slotColor(kc.killer)), weapon: kc.weapon, hp: k?.alive === false ? 0 : hp === undefined ? null : Math.round(hp * PLAYER.maxHealth) });
+        this.hud.setSpectating(null);
+        return pose;
+      }
+    }
+    this.hud.setKillCam(null);
+    const list = followable(poses, this.slot, rule, (s) => this.hud.team(s)?.id, NPC_ID_BASE);
+    const hint = (free: boolean) =>
+      [free ? 'WASD fly · E/Q up and down · Shift faster' : list.length > 1 ? 'Click or ←/→: next player' : '', rule.freeCam ? `Space: ${free ? 'follow players' : 'free camera'}` : '', this.spectator ? 'J: join the game' : ''].filter(Boolean).join(' · ');
+    if (picks.toggle && rule.freeCam) {
+      const from = this.view.cameraPosition();
+      if (!this.specCam.free) {
+        // The free camera starts where the view is, looking the same way.
+        this.input.yaw = this.view.camera.rotation.y;
+        this.input.pitch = -this.view.camera.rotation.x;
+      }
+      this.specCam.setFree(!this.specCam.free, from);
+    }
+    // Nobody to follow: a spectator flies instead.
+    if (!list.length && rule.freeCam && !this.specCam.free) this.specCam.setFree(true, this.view.cameraPosition());
+    if (!rule.freeCam && this.specCam.free) this.specCam.setFree(false, this.view.cameraPosition());
+    const at = this.specCam.freeAt;
+    if (this.specCam.free && at) {
+      const pose = { pos: at, yaw: this.input.yaw, pitch: this.input.pitch };
+      this.view.setCamera(at, pose.yaw, pose.pitch, fov);
+      this.hud.setSpectating('Free camera', hint(true));
+      return pose;
+    }
+    this.specCam.cycle(picks.step, list);
+    const watch = this.specCam.target(list);
+    if (!watch) {
+      this.hud.setSpectating(rule.teamOnly ? 'No teammates left to watch' : 'Nobody to watch', this.spectator ? 'J: join the game' : '');
+      return null;
+    }
+    const pose = this.specCam.followPose(watch, cast);
+    this.view.setCamera(pose.pos, pose.yaw, pose.pitch, fov);
+    this.hud.setSpectating(`Watching ${this.hud.name(watch.slot)}`, hint(false));
+    return pose;
+  }
 
   /** "STREAK 4 · Supply Pulse at 5", while streaks are on and you have one. */
   private streakLabel(): string {
@@ -1869,6 +1995,20 @@ export class GameSession {
         if (next) this.requestWeapon(next);
       }
 
+      // Out of play: spectating by choice, or dead while the match runs. The controls watch instead of play.
+      if (this.spectator) local.alive = false;
+      const out = this.spectator || (!local.alive && this.phase === 'playing');
+      if (!out && this.outOfPlay) {
+        this.specCam.reset();
+        this.hud.setKillCam(null);
+        this.hud.setSpectating(null);
+      }
+      this.outOfPlay = out;
+      this.input.spectating = out;
+      this.input.spectatingFree = out && this.specCam.free;
+      this.hud.setWatching(out);
+      const picks = out ? this.input.takeSpectate() : { step: 0, toggle: false, used: false };
+      let watched = picks.used || picks.step !== 0 || picks.toggle;
       this.input.frame(dt);
       if (this.input.mouse.aimAssist && local.alive && !this.seat) this.aimAssist(local.eye, dt, now);
       this.acc += dt;
@@ -1887,6 +2027,15 @@ export class GameSession {
           this.forts!.rotate();
           sample.buttons &= ~BUTTON_RELOAD;
         }
+        if (out) {
+          // Watching: the keys fly the free camera (if it's up), and nothing goes to the body you don't have.
+          const up = this.input.spectateVertical();
+          if (this.specCam.moveFree(TICK_DT, sample.forward, sample.right, up, this.input.yaw, this.input.pitch, this.input.held('ShiftLeft'), this.freeBounds)) watched = true;
+          if (sample.forward || sample.right || sample.buttons || up) watched = true;
+          sample.forward = 0;
+          sample.right = 0;
+          sample.buttons = 0;
+        }
         moving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
         const meleeNow = (sample.buttons & BUTTON_MELEE) !== 0;
@@ -1904,6 +2053,12 @@ export class GameSession {
           this.input.yaw += absorbed[1];
         }
         if (this.forts) cmd.build = this.forts.code;
+        if (out) {
+          // Camera input while watching is activity (the host's idle and away rules: PlayerInput.sp).
+          if (watched || cmd.yaw !== this.sentLook.yaw || cmd.pitch !== this.sentLook.pitch) cmd.sp = 1;
+          watched = false;
+        }
+        this.sentLook = { yaw: cmd.yaw, pitch: cmd.pitch };
         this.outbox.push(cmd);
         this.sfx.localStep(local, before, local.speedTicks > 0 ? SPEED_BOOST : 1);
         const ammo = local.inventory.get(local.held);
@@ -1924,7 +2079,7 @@ export class GameSession {
       if (netProbe.on) for (const i of this.outbox) netProbe.inputAt.set(i.seq, now);
       this.opts.transport.sendInputs(this.outbox.splice(0));
       this.sfx.localWeapon(local);
-      this.opts.audio.setListener(local.eye, this.input.yaw, this.input.pitch);
+      if (!out) this.opts.audio.setListener(local.eye, this.input.yaw, this.input.pitch);
 
       // Seated: the camera rides the vehicle (cockpit or chase, see VehicleCamera); seat guns replace your own weapon.
       this.mounts?.smooth(dt);
@@ -2002,20 +2157,15 @@ export class GameSession {
         this.drawnSpeed += ((v > 20 ? 0 : v) - this.drawnSpeed) * Math.min(1, dt * 10);
         this.drawnPos = drawn;
         const head = { x: drawn.x, y: drawn.y + this.eyeOffset, z: drawn.z };
-        const watch = !local.alive ? this.spectateTarget(now) : null;
-        if (watch) {
-          // Out of the round: watch a teammate who's still in it, from over their shoulder.
-          const fwd = viewDirection(watch.yaw, 0.25);
-          const at = { x: watch.x, y: watch.y + 1.7, z: watch.z };
-          const back = { x: -fwd.x, y: 0.35, z: -fwd.z };
-          const len = Math.hypot(back.x, back.y, back.z);
-          const dir = { x: back.x / len, y: back.y / len, z: back.z / len };
-          const hit = local.physics.raycastWorld(at, dir, 3.2);
-          const d = hit === null ? 3.2 : Math.max(0.4, hit - 0.25);
-          this.view.setCamera({ x: at.x + dir.x * d, y: at.y + dir.y * d, z: at.z + dir.z * d }, watch.yaw, -0.2, fov);
-          this.hud.setSpectating(this.hud.name(watch.slot));
+        // Out of play: the kill cam, following someone, or the free camera (the sound goes where the camera is).
+        const watching = out ? this.spectatorCamera(now, local, fov, picks) : null;
+        if (watching) {
+          this.opts.audio.setListener(watching.pos, watching.yaw, watching.pitch);
+        } else if (out) {
+          // Nobody to watch: the view stays where you fell.
+          this.opts.audio.setListener(local.eye, this.input.yaw, this.input.pitch);
+          this.view.setCamera(head, this.input.yaw, this.input.pitch, fov);
         } else if (this.thirdPerson && local.alive) {
-          this.hud.setSpectating(null);
           // Over the right shoulder, pulled in where a wall is in the way.
           const fwd = viewDirection(this.input.yaw, this.input.pitch);
           const right = { x: Math.cos(this.input.yaw), y: 0, z: -Math.sin(this.input.yaw) };
@@ -2028,7 +2178,6 @@ export class GameSession {
           this.tpClose = d < 1.6;
           this.view.setCamera({ x: head.x + dir.x * d, y: head.y + dir.y * d, z: head.z + dir.z * d }, this.input.yaw, this.input.pitch, fov);
         } else {
-          this.hud.setSpectating(null);
           // First person: the view carries the weapon's mechanical recoil (it is where your rounds go).
           const aimed = local.aimAngles(this.input.yaw, this.input.pitch);
           this.view.setCamera(head, aimed.yaw, aimed.pitch, fov);
@@ -2068,7 +2217,8 @@ export class GameSession {
       this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), pick: (i) => this.input.chooseClass(i) } : null);
       this.hud.setStatusLines(this.classStatusLines());
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel());
-      this.hud.setStatus(this.phase, this.timeLeft, local.alive, this.winner, this.outcome);
+      // A spectator isn't waiting to respawn: no "Respawning…".
+      this.hud.setStatus(this.phase, this.timeLeft, local.alive || this.spectator, this.winner, this.outcome);
       this.updateScenarioHud(local, now);
     }
     if (this.scenario) {

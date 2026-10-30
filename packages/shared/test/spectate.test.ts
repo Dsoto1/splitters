@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, initPhysics, parseClientMessage, type GameEvent, type PlayerInput } from '../src/index.ts';
+import { DEFAULT_DEATHMATCH_RULES, DEFAULT_RULES, initPhysics, parseClientMessage, type GameEvent, type PlayerInput } from '../src/index.ts';
 import { AWAY, BotFiller, Match, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -57,7 +57,7 @@ describe('spectating by choice', () => {
   });
 
   it('a spectator who leaves frees the slot', () => {
-    const match = new Match(yard(), DEFAULT_RULES['core.dm'], 4);
+    const match = new Match(yard(), DEFAULT_DEATHMATCH_RULES, 4);
     const filler = new BotFiller(match);
     const host = filler.join('Host', undefined, 3)!;
     const bea = filler.join('Bea', undefined, 3)!;
@@ -70,7 +70,7 @@ describe('spectating by choice', () => {
   });
 
   it("counts a spectator's camera input as activity: never marked away; removed only after the idle-kick time with no input at all", () => {
-    const match = new Match(yard(), DEFAULT_RULES['core.dm'], 5);
+    const match = new Match(yard(), DEFAULT_DEATHMATCH_RULES, 5);
     const filler = new BotFiller(match);
     filler.join('Host', undefined, 2);
     const dan = filler.join('Dan', undefined, 2)!;

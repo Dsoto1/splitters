@@ -92,6 +92,17 @@ export class InputState {
   /** Mouse wheel steps since last read (+ = next weapon). */
   private wheelSteps = 0;
   readonly onToggle = new Map<string, () => void>();
+  /**
+   * Out of play (dead, or spectating by choice), set by the session: clicks, the arrow keys (following) and
+   * a controller's shoulder buttons pick whom to watch instead of playing (takeSpectate). `spectatingFree`:
+   * the free camera flies, so the arrow keys turn it as usual.
+   */
+  spectating = false;
+  spectatingFree = false;
+  private specStep = 0;
+  private specToggle = false;
+  /** A spectator control was used (a pick, the camera toggle, Y): the session sends it as activity. */
+  private specUsed = false;
   /** Gamepad state from the last frame: sticks, and which buttons were down (for presses). */
   private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, prev: [] as boolean[] };
   /** A controller has been used since the page loaded (its sticks and triggers count). */
@@ -108,6 +119,11 @@ export class InputState {
         else if (this.locked && !e.metaKey && !e.ctrlKey && e.code !== 'Escape' && !/^F\d+$/.test(e.code)) e.preventDefault();
         if (!e.repeat) this.onToggle.get(e.code)?.();
         this.keys.add(e.code);
+        // Following someone: the arrow keys pick the previous or next player (the camera follows them, so turning does nothing).
+        if (this.spectating && !this.spectatingFree && !e.repeat && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+          this.specStep += e.code === 'ArrowRight' ? 1 : -1;
+          this.specUsed = true;
+        }
         if (e.code === 'Space') this.jumpQueued = true;
         if (e.code === 'KeyR') this.reloadQueued = true;
         // F fires and X aims, for touchpads, where clicking while dragging a finger is awkward.
@@ -169,6 +185,12 @@ export class InputState {
     const buttons = (e: PointerEvent) => {
       if (e.pointerType === 'touch') return;
       const press = this.locked || e.target === canvas;
+      // Watching: a left click is the next player, a right click the previous one.
+      if (this.spectating && this.locked && e.type === 'pointerdown') {
+        if (e.buttons & 1 && !this.fireDown) this.specStep++;
+        if (e.buttons & 2 && !this.zoomDown) this.specStep--;
+        this.specUsed = true;
+      }
       this.fireDown = (e.buttons & 1) !== 0 && (press || this.fireDown);
       this.zoomDown = (e.buttons & 2) !== 0 && (press || this.zoomDown);
       this.altDown = (e.buttons & 4) !== 0 && (press || this.altDown);
@@ -264,6 +286,15 @@ export class InputState {
     p.fire = !!down[PAD.rt];
     p.zoom = !!down[PAD.lt];
     p.jump = !!down[PAD.a];
+    if (this.spectating) {
+      // Watching: the shoulder buttons pick the next or previous player, Y switches the camera (follow / free).
+      if (pressed(PAD.rb)) this.specStep++;
+      if (pressed(PAD.lb)) this.specStep--;
+      if (pressed(PAD.y)) this.specToggle = true;
+      if (down.some(Boolean) || lx || ly || rx || ry) this.specUsed = true;
+      p.prev = down;
+      return;
+    }
     if (pressed(PAD.l3)) p.sprint = !p.sprint;
     if (!lx && !ly) p.sprint = false;
     if (pressed(PAD.a)) {
@@ -289,6 +320,28 @@ export class InputState {
     }
     if (pressed(PAD.r3)) this.onToggle.get('KeyH')?.();
     p.prev = down;
+  }
+
+  /** Consume the spectator picks since last asked: `step` (+ next, - previous), the camera toggle (Space, Y), and whether any control was used. */
+  takeSpectate(): { step: number; toggle: boolean; used: boolean } {
+    const out = { step: this.specStep, toggle: this.specToggle, used: this.specUsed };
+    this.specStep = 0;
+    this.specToggle = false;
+    this.specUsed = false;
+    return out;
+  }
+
+  /** Space (or Y on a controller) while watching: switch between following and the free camera. */
+  toggleSpectateCamera(): void {
+    this.specToggle = true;
+    this.specUsed = true;
+  }
+
+  /** The free camera's climb: E (or the right trigger) up, Q or Ctrl (or the left trigger) down. */
+  spectateVertical(): number {
+    const auto = (window as unknown as { __autoInput?: { up?: number } }).__autoInput;
+    if (auto?.up) return auto.up;
+    return (this.keys.has('KeyE') || this.pad.fire ? 1 : 0) - (this.keys.has('KeyQ') || this.keys.has('ControlLeft') || this.pad.zoom ? 1 : 0);
   }
 
   /** Consume a pending number-key weapon request. */
