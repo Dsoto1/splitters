@@ -30,6 +30,12 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - Enemies in vehicles: bots prefer launchers (aimed low at the hull), throw grenades at a stopped one, fetch a launcher within 30 m, take cover when they can't hurt it, and dodge one driven at them.
   - The sim has no roll or pitch on vehicles, so "flipped" isn't detected; a wedged vehicle is caught by the headway check instead.
   - Merge it through `check/candidate` (the shared sim changed, so CI runs the full suite).
+- **On `wip/battle-axe`** (not merged; full CI not run): the Battle Axe is also a black-powder blunderbuss (owner's ask). Swing on fire, blunderbuss on the alt trigger (right mouse with a melee weapon in hand). Numbers and the ammo choice (shotgun shells loaded by hand into a 2-load barrel) are in docs/ARSENAL.md.
+  - Sim: `AltFire.reload` / `kick` / `falloff` / `headshot`; `barrelLoader` in gunplay.ts runs the barrel's reload as a shell-by-shell magazine; client prediction mirrors it.
+  - Client: `view.muzzleAt` (the bore, measured from the GLB) and `view.altShot` (sound, rate, flash, smoke) in the weapon data; `View.muzzleSmoke`.
+  - Bots: `barrelReach`; melee bots now close all the way in (they used to hover at ~4.5 m and never swing).
+  - Not judged by eye at full frame rate: the smoke cloud's size and life, and the kick. The machine ran at ~0.3 fps during the checks.
+  - The touched files map to the FULL e2e set; only `arsenal` was run locally. Merge through `check/candidate`.
 - **Open items:**
   - `perf:mass` classes some deaths as out of view when they are on screen; check the view test before trusting its tier counts;
   - kick and flinch feel not judged by eye yet;
@@ -146,7 +152,7 @@ Start the rest when agent slots free up:
   Tommy Gun → SMG, Gatling → Spin Gun, military sniper → Sniper Rifle, Neon Flux → Burst Rifle, Frontier Rifle →
   Marksman Rifle, Futuristic Blaster → Plasma Rifle, ornate energy handgun → Pulse Pistol, Freeze Gun → Freeze Ray,
   Glue Gun → Goo Gun, toy MG on a tripod → Heavy MG Turret, Large Sentry Gun → Sentry Gun, Medkit → health pickups
-  and the Medkit/Medi-Beam. New weapon: Battle Axe (heavy melee, haft-barrel alt). The Styloo MAC-10 and AWP and the
+  and the Medkit/Medi-Beam. New weapon: Battle Axe (heavy melee, blunderbuss alt). The Styloo MAC-10 and AWP and the
   community plasma spin gun were dropped (replaced).
 - **Pickups:** `category` on weapon defs; `random` / `keepFixed` on pickups (map format v24); `mixPickups` rule
   (setup → Arsenal; host panel, live); `sim/pickupRoll.ts`; snapshot `pw`.
