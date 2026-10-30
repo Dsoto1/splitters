@@ -837,7 +837,8 @@ export class GameSession {
     if (local) this.showRotation(panel);
     // The Host tab's Online block sits at the top of the panel's first column.
     const online = document.getElementById('pause-online-box');
-    if (local && online) panel.setLead(online);
+    const tab = document.querySelector<HTMLElement>('#pause .pause-sec[data-sec="host"]');
+    if (local && online && tab) panel.setLead(online, tab);
     return panel;
   }
 

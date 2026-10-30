@@ -87,10 +87,9 @@ export class HostPanel {
     if (this.state) this.render();
   }
 
-  /** Put `node` (with its listeners) at the top of the first column while you run the match. */
-  setLead(node: HTMLElement): void {
-    if (!node.parentElement) return;
-    this.lead = { node, home: node.parentElement };
+  /** Put `node` (with its listeners) at the top of the first column while you run the match; otherwise it sits first in `home`. */
+  setLead(node: HTMLElement, home: HTMLElement): void {
+    this.lead = { node, home };
     if (this.state) this.render();
   }
 
