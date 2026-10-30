@@ -1025,8 +1025,15 @@ export class CharacterAnimator {
     if (supportAt) {
       solveArm(space, arms.l, supportAt, pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
       closeHand(space, arms.l, w * 0.7);
+    } else if (this.fp) {
+      // Full body, one-handed (a knife, an axe): the free arm hangs at your side instead of holding the aim pose up in view.
+      const s = pos(arms.l.upper);
+      const fwd = Vector3.Cross(outward, Vector3.Up()).normalize();
+      const reach = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm);
+      const hang = s.add(new Vector3(0, -reach * 0.92, 0)).add(fwd.scale(reach * 0.12)).subtract(outward.scale(reach * 0.08));
+      solveArm(space, arms.l, hang, s.add(new Vector3(0, -reach * 0.5, 0)).subtract(fwd.scale(reach * 0.5)), w);
     }
-    this.gripMiss = { r: Vector3.Distance(palmWorld(arms.r), gripAt) / scale, l: supportAt ? Vector3.Distance(palmWorld(arms.l), supportAt) / scale : 0 };
+    this.gripMiss ={ r: Vector3.Distance(palmWorld(arms.r), gripAt) / scale, l: supportAt ? Vector3.Distance(palmWorld(arms.l), supportAt) / scale : 0 };
   }
 
   /** How far (model m) each palm ended up from where it was sent on the last external grip (tests and the grip tool). */

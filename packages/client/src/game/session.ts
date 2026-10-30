@@ -2173,6 +2173,8 @@ export class GameSession {
       const fov = this.fov;
       // Zoomed look speed: 1:1 with hip fire at the crosshair, times the player's zoom sensitivity.
       this.input.sensitivityScale = zoomLookScale(fov, DEFAULT_FOV, DEFAULT_FOV * ADS_FOV, this.input.mouse.zoomSensitivity);
+      // Full-body first person stands your character under the camera only while the camera is your own eyes.
+      this.view.firstPersonEye = false;
       if (ride && seatDef) {
         const seatIndex = this.seat![1];
         const feet = mountToWorld(ride.shown.pos, ride.shown.yaw, seatDef.offset);
@@ -2250,6 +2252,7 @@ export class GameSession {
           // First person: the view carries the weapon's mechanical recoil (it is where your rounds go).
           const aimed = local.aimAngles(this.input.yaw, this.input.pitch);
           this.view.setCamera(head, aimed.yaw, aimed.pitch, fov);
+          this.view.firstPersonEye = true;
         }
       }
       this.view.setViewmodel(weapon);

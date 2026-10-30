@@ -276,6 +276,8 @@ export class GameView {
   private fpMode: FirstPersonMode = loadFirstPersonMode();
   /** Full-body first person: your own avatar seen from its eyes, while it is (firstPersonBody.ts). */
   private fpBody?: { a: Avatar; rig: FirstPersonBodyRig; vel: { x: number; z: number }; last?: { x: number; z: number; t: number } };
+  /** The camera is your own eyes this frame (not a vehicle's view, the kill cam or a spectator's): set by the session. */
+  firstPersonEye = false;
   /** The gun is hidden this frame (scoped, third person, dead): the full body is too. */
   private viewHidden = true;
   /** The camera before any shake (the full body stands under the steady eye). */
@@ -1212,15 +1214,15 @@ export class GameView {
         a.wasAlive = true;
         a.last = undefined;
         a.vel = { x: 0, z: 0 };
-        // Full-body first person (not in a seat: the vehicle's view keeps the arms): your own character, seen
-        // from its eyes, holding the gun.
-        if (this.fpMode === 'body' && !seated.has(p.slot) && a.anim instanceof CharacterAnimator) {
+        // Full-body first person (from your own eyes; in a vehicle its view keeps the arms): your own character,
+        // seen from its eyes, holding the gun.
+        if (this.fpMode === 'body' && this.firstPersonEye && !seated.has(p.slot) && a.anim instanceof CharacterAnimator) {
           this.showFpBody(a, p, now);
           continue;
         }
         if (this.fpBody) this.dropFpBody();
         // Arms only, or before your character has loaded.
-        if (this.fpMode === 'arms' || seated.has(p.slot)) this.buildFpArms();
+        if (this.fpMode === 'arms' || !this.firstPersonEye || seated.has(p.slot)) this.buildFpArms();
         a.root.setEnabled(false);
         a.root.position.set(p.x, p.y, p.z);
         a.root.rotation.y = p.yaw;
