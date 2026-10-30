@@ -282,12 +282,10 @@ export class GameView {
   /** Remote players' flash rigs alive (at most MAX_REMOTE_RIGS). */
   private remoteRigs = 0;
   private starFlash = false;
-  /** The ambient light, briefly brightened by your own shots (a real point light costs every pixel). */
+  /** The ambient light (its colour tints the effects). Shots no longer brighten it: that lit every wall on the map, indoors and out. */
   private hemi?: HemisphericLight;
   /** Shadows, tone mapping and post effects (Options → Graphics). */
   readonly atmosphere: Atmosphere;
-  private hemiBase = 0.8;
-  private hemiLit = false;
   private readonly brass: StandardMaterial;
 
   constructor(engine: AbstractEngine) {
@@ -1072,10 +1070,6 @@ export class GameView {
     this.flash.setEnabled(flashing && this.starFlash);
     this.flashRig.root.position.set(0, this.muzzleY, this.muzzleZ + OWN_FLASH_AHEAD);
     this.flashRig.update();
-    // The map may set its own light level, so the base is whatever it is between shots.
-    if (this.hemi && !this.hemiLit) this.hemiBase = this.hemi.intensity;
-    if (this.hemi) this.hemi.intensity = this.hemiBase * (flashing ? 1.18 : 1);
-    this.hemiLit = flashing;
     if (flashing) {
       this.flash.parent = this.viewRoot;
       this.flash.position.set(0, this.muzzleY, this.muzzleZ + 0.08);

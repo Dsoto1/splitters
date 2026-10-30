@@ -392,6 +392,7 @@ export class FrontEnd {
 
   private go(screen: ScreenId): void {
     clearInterval(this.browserTimer);
+    if (this.screen === 'characters' && screen !== 'characters') this.scene.resetSpin();
     this.screen = screen;
     this.hovered = null;
     this.scene.setLook(this.look);
@@ -408,7 +409,7 @@ export class FrontEnd {
       case 'play':
         return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Mode'), hint(kbd('↵', 'a'), 'Start')];
       case 'characters':
-        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Filter'), hint(kbd('D', 'x'), 'Design new'), hint(kbd('C', 'y'), 'Customise'), hint(kbd('↵', 'a'), 'Select')];
+        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Filter'), hint(kbd('D', 'x'), 'Design new'), hint(kbd('C', 'y'), 'Customise'), hint(kbd(', .'), 'Turn'), hint(kbd('↵', 'a'), 'Select')];
       case 'options':
         return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Section')];
       default:
@@ -1194,21 +1195,25 @@ export class FrontEnd {
     // The shipped pictures appear together once they're all decoded (not face by face); a portrait drawn live
     // here (a design of yours, a look new since the last capture) shimmers in its own tile until it's ready,
     // instead of holding back the whole grid.
+    // Live ones start once the shipped ones are up: drawing one blocks the page (it reads the picture back from the
+    // GPU), which held the whole grid back for seconds.
     const pending: Promise<void>[] = [];
+    const live: (() => void)[] = [];
     for (const c of shown) {
       const img = el('img', { alt: c.name });
       const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
-      const ready = this.portraits.get(c.id).then(
-        async (src) => {
-          img.src = src;
-          await img.decode().catch(() => undefined);
-        },
-        () => undefined,
-      );
-      if (SHIPPED_PORTRAITS[c.id]) pending.push(ready);
+      const load = () =>
+        this.portraits.get(c.id).then(
+          async (src) => {
+            img.src = src;
+            await img.decode().catch(() => undefined);
+          },
+          () => undefined,
+        );
+      if (SHIPPED_PORTRAITS[c.id]) pending.push(load());
       else {
         tile.classList.add('loading');
-        void ready.then(() => tile.classList.remove('loading'));
+        live.push(() => void load().then(() => tile.classList.remove('loading')));
       }
       tile.dataset.look = c.id;
       tile.addEventListener('mouseenter', () => this.preview(c.id));
@@ -1216,7 +1221,10 @@ export class FrontEnd {
       tile.addEventListener('click', () => this.select(c.id));
       grid.append(tile);
     }
-    void Promise.all(pending).then(() => grid.classList.remove('loading'));
+    void Promise.all(pending).then(() => {
+      grid.classList.remove('loading');
+      for (const start of live) start();
+    });
     const design = el('button', { class: 'char-tile new', title: 'Design a new character' }, el('b', { textContent: '+' }), el('span', { textContent: 'Design new' }));
     design.addEventListener('click', () => this.hooks.openDesigner(this.look));
     grid.append(design);
@@ -1227,7 +1235,46 @@ export class FrontEnd {
 
     const info = el('div', { class: 'char-info panel' });
     this.fillInfo(info, selected);
-    return el('div', { class: 'screen characters' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Character <em>Select</em>' }), tabs), grid, info);
+    return el('div', { class: 'screen characters' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Character <em>Select</em>' }), tabs), grid, info, this.spinZone());
+  }
+
+  /** Over the hero, beside the grid: drag (mouse or touch) to turn them round and see the whole look; or the turn buttons. */
+  private spinZone(): HTMLElement {
+    const zone = el('div', { class: 'char-spin', title: 'Drag to turn' });
+    let last: { x: number; t: number } | null = null;
+    let speed = 0;
+    zone.addEventListener('pointerdown', (e) => {
+      zone.setPointerCapture(e.pointerId);
+      last = { x: e.clientX, t: e.timeStamp };
+      speed = 0;
+      this.scene.spin(0);
+    });
+    zone.addEventListener('pointermove', (e) => {
+      if (!last) return;
+      // A drag across a quarter of the window is about half a turn.
+      const turn = ((e.clientX - last.x) / Math.max(320, window.innerWidth)) * Math.PI * 2 * 1.2;
+      const dt = Math.max(1, e.timeStamp - last.t) / 1000;
+      speed = speed * 0.5 + (turn / dt) * 0.5;
+      this.scene.spin(turn);
+      last = { x: e.clientX, t: e.timeStamp };
+    });
+    const end = (e: PointerEvent) => {
+      if (!last) return;
+      // A flick keeps turning; a drag that stopped before letting go doesn't.
+      this.scene.spin(0, e.timeStamp - last.t < 80 ? Math.max(-12, Math.min(12, speed)) : 0);
+      last = null;
+    };
+    zone.addEventListener('pointerup', end);
+    zone.addEventListener('pointercancel', end);
+    const turn = (dir: number, label: string, text: string) => {
+      const b = el('button', { class: 'spin-btn', title: label, textContent: text });
+      b.setAttribute('aria-label', label);
+      b.addEventListener('pointerdown', (e) => e.stopPropagation());
+      b.addEventListener('click', () => this.scene.spin(0, dir * 5.2));
+      return b;
+    };
+    zone.append(el('div', { class: 'spin-bar' }, turn(-1, 'Turn left', '⟲'), el('span', { textContent: 'Drag to turn' }), turn(1, 'Turn right', '⟳')));
+    return zone;
   }
 
   private fillInfo(info: HTMLElement, id: string): void {
@@ -1776,6 +1823,8 @@ export class FrontEnd {
       this.hooks.openDesigner(this.look);
     } else if (this.screen === 'characters' && e.key === 'c') {
       this.hooks.openDesigner(this.hovered ?? this.look);
+    } else if (this.screen === 'characters' && (e.key === ',' || e.key === '.')) {
+      this.scene.spin(0, e.key === '.' ? 5.2 : -5.2);
     } else if (this.screen === 'characters' && e.key === 'Enter' && this.hovered) {
       this.select(this.hovered);
     }

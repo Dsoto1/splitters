@@ -10,6 +10,7 @@ import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { PLAYER, getWeapon, isCreature, npcLookRole } from '@tiletrigger/shared';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
@@ -21,6 +22,8 @@ import { testMode } from '../testMode.ts';
 
 /** Browser tests (?test=1) compare screenshots: the drift and the hero's idle stop this far in, whatever the machine's speed. */
 const STILL_AT = testMode() ? 0.5 : Infinity;
+/** The hero stands turned this far (radians) towards the camera's side, before any turning by the viewer. */
+const HERO_YAW = 0.45;
 
 /**
  * The live backdrop behind the main menu: your own character, rifle in hand,
@@ -43,6 +46,11 @@ export class MenuScene {
   private framing = { x: 0.2, tx: 0.55, y: 1.3, ty: 1.02, z: 3.3 };
   private goal = { ...this.framing };
   private readonly state: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0.08, celebrate: false };
+  /** The hero's root, turned by `spin` (Character Select: drag to see the whole look). */
+  private heroRoot: TransformNode | null = null;
+  /** How far the viewer has turned the hero (radians) and how fast it is still turning after a flick (radians/s). */
+  private yaw = 0;
+  private yawSpeed = 0;
 
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
@@ -150,7 +158,8 @@ export class MenuScene {
         const { min, max } = ch.root.getHierarchyBoundingVectors(true);
         // Big ones shrink to fit the plinth; small ones stay their size.
         ch.root.scaling.scaleInPlace(Math.min(1, (PLAYER.height * 1.15) / Math.max(0.5, max.y - min.y)));
-        ch.root.rotation.y = 0.45;
+        ch.root.rotation.y = HERO_YAW + this.yaw;
+        this.heroRoot = ch.root;
         this.hide(ch.meshes);
         this.anim?.dispose();
         const anim = new CreatureAnimator(this.scene, ch, true);
@@ -169,7 +178,8 @@ export class MenuScene {
       if (token !== this.token) return ch.dispose();
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);
       ch.root.scaling.scaleInPlace(PLAYER.height / Math.max(0.5, max.y - min.y));
-      ch.root.rotation.y = 0.45;
+      ch.root.rotation.y = HERO_YAW + this.yaw;
+      this.heroRoot = ch.root;
       this.hide(ch.meshes);
       this.anim?.dispose();
       this.anim = new CharacterAnimator(this.scene, ch);
@@ -201,6 +211,22 @@ export class MenuScene {
     });
   }
 
+  /**
+   * Turn the hero by `radians` (a drag or a turn button). `flick` is the speed (radians/s) it keeps turning at
+   * afterwards, slowing to a stop.
+   */
+  spin(radians: number, flick = 0): void {
+    this.yaw += radians;
+    this.yawSpeed = flick;
+  }
+
+  /** Face the hero the usual way again (leaving Character Select; the camera moves then, so no easing back). */
+  resetSpin(): void {
+    this.yaw = 0;
+    this.yawSpeed = 0;
+    if (this.heroRoot && !this.heroRoot.isDisposed()) this.heroRoot.rotation.y = HERO_YAW;
+  }
+
   /** Where the hero stands on screen: beside the home menu, or pushed right of a wide panel. */
   setShot(shot: 'home' | 'side'): void {
     // Looking down -Z, screen right is world -X: a positive target x puts the hero right of centre.
@@ -217,6 +243,12 @@ export class MenuScene {
     this.camera.position.set(f.x + sway * 0.15, f.y + Math.sin(this.t * 0.17) * 0.04, f.z);
     this.camera.setTarget(new Vector3(f.tx + sway * 0.08, f.ty, 0));
     this.state.pitch = 0.06 + Math.sin(this.t * 0.6) * 0.03;
+    if (this.yawSpeed !== 0) {
+      this.yaw += this.yawSpeed * dt;
+      this.yawSpeed *= Math.exp(-dt * 3);
+      if (Math.abs(this.yawSpeed) < 0.05) this.yawSpeed = 0;
+    }
+    if (this.heroRoot && !this.heroRoot.isDisposed()) this.heroRoot.rotation.y = HERO_YAW + this.yaw;
     if (this.anim) {
       const step = Math.max(0, Math.min(dt, STILL_AT - this.heroT));
       this.heroT += step;

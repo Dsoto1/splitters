@@ -362,6 +362,12 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .char-tile.new { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--cyan); border-style: dashed; }
 .char-tile.new b { font: 700 38px var(--font-display); line-height: 1; }
 .char-tile.new span { position: static; background: none; text-align: center; }
+/* Over the hero, right of the grid: drag to turn them round. */
+.char-spin { position: fixed; top: 12vh; bottom: 16vh; right: 0; left: calc(min(900px, 64vw) + 64px); cursor: grab; touch-action: none; display: flex; align-items: flex-end; justify-content: center; }
+.char-spin:active { cursor: grabbing; }
+.char-spin .spin-bar { display: flex; align-items: center; gap: 10px; padding: 4px 8px; background: var(--glass); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; opacity: 0.75; }
+.char-spin .spin-bar:hover { opacity: 1; }
+.char-spin .spin-btn { min-width: 34px; min-height: 34px; padding: 0; border-radius: 50%; font-size: 18px; line-height: 1; }
 .char-info { flex: none; margin-top: 14px; width: min(900px, 64vw); display: grid; grid-template-columns: 110px 1fr auto auto; gap: 18px; align-items: center; padding: 14px; }
 .char-info > img { width: 110px; height: 110px; border-radius: 4px; background: linear-gradient(160deg, #2a3a55, #121827); }
 .char-info h3 { margin: 0 0 4px; font: 700 26px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }

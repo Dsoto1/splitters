@@ -779,7 +779,22 @@ async function offlineFlow(browser) {
     return { tile: Math.round(t[0].height), wide: Math.round(t[0].width), step: Math.round(t[perRow].top - t[0].top), gridBottom: Math.round(grid.bottom), infoTop: Math.round(info.top) };
   });
   check(Math.abs(charFit.tile - charFit.wide) <= 1 && charFit.step >= charFit.tile && charFit.gridBottom <= charFit.infoTop, `Character Select tiles are square, row under row, above the info panel (${JSON.stringify(charFit)})`);
+  // Every built-in look ships its portrait: one drawn live blocks the page while it's read back (it held the grid for seconds).
+  await page.waitForSelector('.char-grid:not(.loading)', { timeout: T(30000) });
+  const liveTiles = await page.$$eval('.char-grid .char-tile.loading', (ts) => ts.map((t) => t.dataset.look));
+  check(liveTiles.length === 0, `every built-in character's portrait is shipped, none drawn live (${liveTiles.join(', ') || 'none'})`);
+  // Drag the hero round to see the whole look; leaving the screen faces them forward again.
+  const spin = await page.locator('.char-spin').boundingBox();
+  const yaw = () => page.evaluate(() => window.__front.scene.yaw);
+  await page.mouse.move(spin.x + spin.width / 2, spin.y + spin.height / 2);
+  await page.mouse.down();
+  for (let i = 1; i <= 8; i++) await page.mouse.move(spin.x + spin.width / 2 + i * 20, spin.y + spin.height / 2);
+  await page.mouse.up();
+  const turned = await yaw();
+  check(Math.abs(turned) > 0.5, `dragging over the character turns them (${turned.toFixed(2)} rad)`);
   await page.keyboard.press('Escape');
+  await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
+  check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
   await page.click('#nav-play');
   await page.waitForSelector('.map-card');
   const cards = () =>

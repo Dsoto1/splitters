@@ -109,10 +109,13 @@ export class AudioSystem {
     const ctx = this.ctx;
     if (!ctx) return Promise.resolve();
     this.loading ??= Promise.all(
-      Object.entries(SOUNDS).map(async ([id, def]) => {
+      Object.entries(SOUNDS).map(async ([id, def], n) => {
         try {
           let list: AudioBuffer[];
           if (def.synth) {
+            // One sound per task, spread out: synthesising them all at once froze the page for most of a second
+            // right after the first click (which is usually opening a menu screen).
+            await new Promise((r) => setTimeout(r, n * 8));
             const count = def.variants as number;
             list = Array.from({ length: count }, (_, v) => {
               const samples = synthesize(def.synth as SynthRecipe, v);
