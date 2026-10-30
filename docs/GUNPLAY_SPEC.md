@@ -978,6 +978,41 @@ Examples:
 
 In competitive multiplayer, reaction animations must not create long unavoidable stun-lock chains unless a specific weapon explicitly owns that mechanic.
 
+### Implementation: stopping power (2026-10-30)
+
+Arcade-light, server-authoritative (`packages/shared/src/sim/impact.ts`):
+
+- Each weapon has a **stopping power** 0..1 (`stoppingPower` on the definition;
+  default by category: pistol 0.15, SMG 0.12, rifle 0.3, shotgun 0.8, sniper
+  0.9, explosive 0.4, melee 0.55, special 0.25; revolvers 0.45; mounted guns 0.3).
+- A full hit at power 1 shoves the body 3.6 m/s along the shot (on the
+  ground, gone in about a quarter of a second: a pistol round moves someone
+  ~7 cm, a shotgun blast ~35 cm) and slows it by 42 % for 0.12–0.42 s
+  (scaled by power). Pellets add up to their weapon's figures; a round
+  softened by range or glass gives its share.
+- **No stun-lock**: in one stagger window the shove stops at 4.5 m/s, the
+  slow at 50 % (and at the hardest weapon's own slow), the window at 0.6 s
+  however many rounds land; then the body is immune for 0.5 s. Under
+  sustained fire at most ~55 % of the time is slowed.
+- The shove is push velocity and the slow part of the status speed (`ms`),
+  so the local player's prediction replays both on reconciliation; bots run
+  the same movement, so suppressing fire slows a push.
+- `knockback` stays for weapons that deliberately shove hard (the Battle Axe,
+  the railgun), on top.
+- The **flinch** is drawn only (`characterAnimator.flinch`): head hits snap
+  the head back, torso hits twist the shoulders away from the round, leg hits
+  buckle the body; a heavy hit (stopping power × 2.2 or damage/25 of 1.6+) plays
+  the `hit` / `hit_head` clip on the upper body.
+- **Explosions** (`blastKnockback`, `blastThrow`): every explosion of 35+
+  splash damage throws (4 + damage × 0.06 m/s, 6–13, unless it sets its own
+  `knockback`), up 0.9× (more from below, at least 0.35×) and out 0.85×,
+  falling to 40 % at the edge. Your own blast throws 0.7× out and 0.8× up: a
+  rocket at your feet is a ~2.4 m rocket jump.
+- **Unarmed quick melee** (`UNARMED`, `BUTTON_MELEE`): punch 15 damage, 1.9 m,
+  stopping power 0.5, 0.37 s between strikes; kick (moving forward, or within
+  0.6 s of a punch) 22 damage, 2.2 m, stopping power 0.85 plus a 3.2 m/s shove,
+  0.7 s. No lockout of the gun.
+
 ---
 
 # 24. Death Presentation

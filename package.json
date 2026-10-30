@@ -21,6 +21,7 @@
     "e2e:baselines": "E2E_UPDATE_BASELINES=1 E2E_ONLY=visual node e2e/run.mjs",
     "ci:plan": "node tools/ci/select.mjs",
     "perf:budget": "PERF_GRAPHICS=medium,low PERF_SECONDS=4 PERF_MAX_DRAWS=900 PERF_MAX_CASTERS=600 PERF_MAX_FX_MS=40 PERF_STALL_S=240 node tools/perf/perf96.mjs frost_basin",
+    "perf:mass": "PERF_GRAPHICS=medium PERF_BOTS=48 PERF_SCENARIOS=mass PERF_MASS_KILLS=20 PERF_MAX_MASS_MS=250 PERF_MAX_MASS_BODIES=300 PERF_STALL_S=240 node tools/perf/perf96.mjs frost_basin",
     "perf:host96": "PERF_SECONDS=6 HOST96_SCENARIOS=clump HOST96_MAX_KBPS=30 HOST96_MAX_SEND_MS=15 node tools/perf/host96.mjs frost_basin",
     "content:build": "node tools/content/build.mjs",
     "content:check": "node tools/content/build.mjs --check",

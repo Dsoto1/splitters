@@ -53,11 +53,15 @@ export class EffectsWorld {
     }
   }
 
+  /** Fixed 60 Hz steps taken so far (simulated time, for ragdolls' settle and freeze on slow frames too). */
+  steps = 0;
+
   /** Advance by wall-clock `dt` in fixed 60 Hz steps (at most six per call, so a hitch can't snowball). */
   step(dt: number): void {
     this.acc = Math.min(this.acc + dt, 6 / 60);
     while (this.acc >= 1 / 60) {
       this.world.step();
+      this.steps++;
       this.acc -= 1 / 60;
     }
   }

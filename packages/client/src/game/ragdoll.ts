@@ -81,7 +81,8 @@ export class Ragdoll {
   private readonly rootLinear: Matrix;
   /** Pelvis joint relative to the torso capsule's centre (world, at death, in the capsule's frame). */
   private readonly pelvisLocal: Vec3;
-  private readonly born = performance.now();
+  /** The effects world's step count at death: age is simulated time, so a slow frame doesn't cut a fall short. */
+  private readonly born: number;
   private settled = false;
   /** No longer simulated: the bodies went back to the pool and the pose stays as it is. */
   frozen = false;
@@ -93,6 +94,7 @@ export class Ragdoll {
     push: Vec3,
     readonly tier: Exclude<RagdollTier, 'posed'> = 'full',
   ) {
+    this.born = world.steps;
     this.space = new SkeletonSpace(rootJoint);
     rootJoint.computeWorldMatrix(true);
     // Linear parts only: rotations are carried between world and skeleton space by conjugation.
@@ -199,9 +201,10 @@ export class Ragdoll {
         this.pelvis.computeWorldMatrix(true);
       }
     }
-    const age = (performance.now() - this.born) / 1000;
-    // Settle faster: after the first tumble, damping goes up so the body comes to rest sooner.
-    if (!this.settled && age > 0.9) {
+    const age = (this.world.steps - this.born) / 60;
+    // Settle faster: once the first tumble is over and the body has slowed, damping goes up so it comes to rest sooner.
+    const torso = this.parts[0]?.body.linvel();
+    if (!this.settled && age > 0.9 && (!torso || Math.hypot(torso.x, torso.y, torso.z) < 0.8)) {
       this.settled = true;
       for (const p of this.parts) {
         p.body.setLinearDamping(2.2);
