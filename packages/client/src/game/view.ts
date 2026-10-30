@@ -1582,7 +1582,9 @@ export class GameView {
       const want = items?.get(id) ?? p.placed;
       if (want !== p.item) {
         const at = p.root.position.clone();
-        p.root.dispose(false, true);
+        // Not its materials: they are shared (the model library's, the ring colours' cache), and disposing them
+        // drew every other copy of that gun, your own first-person one included, in plain white.
+        p.root.dispose(false, false);
         p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true);
         p.root.position.copyFrom(at);
         p.item = want;
