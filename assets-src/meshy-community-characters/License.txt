@@ -50,7 +50,6 @@ The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landma
 - "Uniformed Worker in a Jacket" (downloaded 2026-10-29, https://www.meshy.ai/posts/019df47b-abde-7afe-955f-5350acdc8ff9)  -> character meshy_zhao (look Agent Zhao)
 - "Ultra detailed desert soldier" (downloaded 2026-10-29, https://www.meshy.ai/posts/019852b3-fb04-7b24-863c-fbe5855aac95)  -> character meshy_desert_ranger (look Desert Ranger)
 - "Zombie T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/0199594a-3684-74a4-97d0-6835e11a29b3)  -> character meshy_zombie_groaner (look Groaner)
-- "Skinny zombie" (downloaded 2026-10-29, https://www.meshy.ai/posts/0195f885-e632-7961-96aa-3a4afdc330c0)  -> character meshy_zombie_lurcher (look Lurcher)
 - "A horrifying mutated creature" (downloaded 2026-10-29, https://www.meshy.ai/posts/0196daa9-6371-746f-b8ec-eb93815c0c4c)  -> character meshy_gorgle (look Gorgle)
 - "A humanoid harlequin clown" (downloaded 2026-10-29, https://www.meshy.ai/posts/0196fae7-c794-7d54-bbaa-a14d04f1d66e)  -> character meshy_giggles (look Giggles)
 - "A futuristic warrior character" (downloaded 2026-10-29, https://www.meshy.ai/posts/019485cc-4435-76fc-b859-f22eef2f296f)  -> character meshy_vanguard (look Vanguard)

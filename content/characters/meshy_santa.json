@@ -33,6 +33,15 @@
   "fixes": {
     "triangles": 11000,
     "feet": true,
-    "cloth": true
+    "cloth": true,
+    "hands": {
+      "l": {
+        "scale": 0.75,
+        "curl": 1
+      },
+      "r": {
+        "scale": 0.85
+      }
+    }
   }
 }

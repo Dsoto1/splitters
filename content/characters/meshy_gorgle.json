@@ -1,7 +1,7 @@
 {
   "id": "meshy_gorgle",
   "kind": "character",
-  "use": "npc",
+  "use": "npc+player",
   "order": 47,
   "name": "Gorgle",
   "look": "core.gorgle",

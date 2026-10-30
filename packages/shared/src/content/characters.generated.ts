@@ -23,7 +23,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.saintnick', name: 'Saint Nick', body: 'male', head: '', parts: ['meshy_santa'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_santa_fparms' } },
   { id: 'core.aldric', name: 'King Aldric', body: 'male', head: '', parts: ['meshy_king'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_king_fparms' } },
   { id: 'core.mei', name: 'Lancer Mei', body: 'female', head: '', parts: ['meshy_lancer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_lancer_fparms' } },
-  { id: 'core.grizzelda', name: 'Grizzelda', body: 'female', head: '', parts: ['meshy_grizzelda'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_grizzelda_fparms' } },
+  { id: 'core.grizzelda', name: 'Grizzelda', body: 'female', head: '', parts: ['meshy_grizzelda'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'peasant_arms_f', skin: '#7a8a3c', cloth: '#4a4a2c', trim: '#3a2a1c' } },
   { id: 'core.brasshare', name: 'Brass Hare', body: 'male', head: '', parts: ['meshy_brass_hare'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_brass_hare_fparms' } },
   { id: 'core.grunt68', name: 'Grunt \'68', body: 'male', head: '', parts: ['meshy_grunt68'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_grunt68_fparms' } },
   { id: 'core.galloway', name: 'Sir Galloway', body: 'male', head: '', parts: ['meshy_galloway'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_galloway_fparms' } },
@@ -49,10 +49,10 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.zhao', name: 'Agent Zhao', body: 'male', head: '', parts: ['meshy_zhao'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_zhao_fparms' } },
   { id: 'core.desertranger', name: 'Desert Ranger', body: 'female', head: '', parts: ['meshy_desert_ranger'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_desert_ranger_fparms' } },
   { id: 'core.groaner', name: 'Groaner', body: 'male', head: '', parts: ['meshy_zombie_groaner'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_zombie_groaner_fparms' } },
-  { id: 'core.lurcher', name: 'Lurcher', body: 'male', head: '', parts: ['meshy_zombie_lurcher'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_zombie_lurcher_fparms' } },
-  { id: 'core.giggles', name: 'Giggles', body: 'male', head: '', parts: ['meshy_giggles'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_giggles_fparms' } },
-  { id: 'core.vanguard', name: 'Vanguard', body: 'male', head: '', parts: ['meshy_vanguard'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_vanguard_fparms' } },
-  { id: 'core.dusttrooper', name: 'Dust Trooper', body: 'male', head: '', parts: ['meshy_dust_trooper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_dust_trooper_fparms' } },
+  { id: 'core.gorgle', name: 'Gorgle', body: 'male', head: '', parts: ['meshy_gorgle'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_gorgle_fparms' } },
+  { id: 'core.giggles', name: 'Giggles', body: 'male', head: '', parts: ['meshy_giggles'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#d8d0c8', cloth: '#c8c0b0', trim: '#2a2a2a' } },
+  { id: 'core.vanguard', name: 'Vanguard', body: 'male', head: '', parts: ['meshy_vanguard'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#2a2a2e', cloth: '#26262a', trim: '#2a2a2e' } },
+  { id: 'core.dusttrooper', name: 'Dust Trooper', body: 'male', head: '', parts: ['meshy_dust_trooper'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', skin: '#3a3028', cloth: '#5a4030', trim: '#3a3028' } },
   { id: 'core.punkin', name: 'Punkin', body: 'male', head: '', parts: ['meshy_punkin'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_punkin_fparms' } },
   { id: 'core.merrow', name: 'Merrow the Wise', body: 'male', head: '', parts: ['meshy_wizard'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_wizard_fparms' } },
   { id: 'core.rattles', name: 'Rattles', body: 'male', head: '', parts: ['meshy_skeleton'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_skeleton_fparms' } },
@@ -63,9 +63,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
-export const WHOLE_BODY_NPC_LOOKS: readonly CharacterLook[] = [
-  { id: 'core.gorgle', name: 'Gorgle', body: 'male', head: '', parts: ['meshy_gorgle'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_gorgle_fparms' } },
-];
+export const WHOLE_BODY_NPC_LOOKS: readonly CharacterLook[] = [];
 
 /** Their one-line bios (character select). */
 export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
@@ -114,7 +112,7 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.zhao': 'Thirty years at customs. Nothing gets past him, and nobody gets through.',
   'core.desertranger': 'Two tours in the sand. Thinks the arena is a nice change of scenery.',
   'core.groaner': 'Says the same thing over and over. It is usually "brains".',
-  'core.lurcher': 'All skin, no bones about it. Mostly skin.',
+  'core.gorgle': 'Crawled out of a lab vent. Nobody wants to know which lab.',
   'core.giggles': 'The last birthday party he worked is still talked about. Quietly.',
   'core.vanguard': 'First in, last out, never seen in between.',
   'core.dusttrooper': 'Crossed the wastes on foot. Kept the mask on for the smell of the arena.',

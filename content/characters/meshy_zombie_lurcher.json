@@ -7,7 +7,7 @@
   "look": "core.lurcher",
   "bio": "All skin, no bones about it. Mostly skin.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: zombie 4.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: zombie 4. Held back (2026-10-30): Meshy weighted the hands, which hang against the thighs, partly to the legs, so on the grip sheet they stretch down to the hips. Needs landmarks read off the model (the arms hang straight down, past what the landmark finder follows) or a re-rig.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -32,5 +32,6 @@
   "fixes": {
     "triangles": 11000,
     "feet": true
-  }
+  },
+  "status": "queued"
 }

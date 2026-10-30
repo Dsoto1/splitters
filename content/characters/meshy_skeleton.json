@@ -31,6 +31,10 @@
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true
+    "feet": true,
+    "hands": {
+      "scale": 0.85,
+      "curl": 1
+    }
   }
 }

@@ -138,6 +138,15 @@
       "url": null,
       "license": "owned (owner's Meshy account)",
       "note": "extra download Tribal_Warrior_Charac (not in the original queue); shipped 2026-10-29 as a new character, for the owner's review on the grip and portrait sheets"
+    },
+    {
+      "id": "meshy_zombie_lurcher",
+      "name": "Lurcher",
+      "kind": "character",
+      "use": "npc+player",
+      "url": "https://www.meshy.ai/posts/0195f885-e632-7961-96aa-3a4afdc330c0",
+      "license": "CC0 (Meshy community)",
+      "note": "zombie 4; held back: Meshy rigged it (task in its manifest) but the hands are weighted to the legs; needs landmarks or a re-rig"
     }
   ]
 }

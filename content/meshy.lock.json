@@ -463,27 +463,31 @@
       "role": "meshy",
       "id": "meshy_santa",
       "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fb-dbb4-7149-bf61-3776817a0c05"
+      },
       "model": "T Pose Santa",
       "date": "2026-10-29",
-      "src": "meshy_santa.glb",
       "file": "characters/meshy_santa.glb",
-      "sha256": "e263d8729de03b21",
+      "sha256": "2ea89242ca29da4d",
       "triangles": 11000,
-      "lodTriangles": 3134,
-      "bytes": 517828,
+      "lodTriangles": 3250,
+      "bytes": 520364,
       "hands": true
     },
     {
       "role": "meshy-fparms",
       "id": "meshy_santa_fparms",
       "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fb-dbb4-7149-bf61-3776817a0c05"
+      },
       "model": "T Pose Santa",
       "date": "2026-10-29",
-      "src": "meshy_santa.glb",
       "file": "characters/meshy_santa_fparms.glb",
-      "sha256": "98debbad755ea094",
-      "triangles": 5838,
-      "bytes": 314976,
+      "sha256": "6cc61fed53600611",
+      "triangles": 5839,
+      "bytes": 315148,
       "hands": true
     },
     {
@@ -496,10 +500,10 @@
       "model": "Regal Monarch in Velvet",
       "date": "2026-10-29",
       "file": "characters/meshy_king.glb",
-      "sha256": "430e963af06933b5",
+      "sha256": "7c753577d6356197",
       "triangles": 10999,
       "lodTriangles": 3279,
-      "bytes": 812488,
+      "bytes": 812492,
       "hands": true
     },
     {
@@ -512,9 +516,9 @@
       "model": "Regal Monarch in Velvet",
       "date": "2026-10-29",
       "file": "characters/meshy_king_fparms.glb",
-      "sha256": "68657f65adcedb2c",
+      "sha256": "f04821018dbc7161",
       "triangles": 1883,
-      "bytes": 358324,
+      "bytes": 358328,
       "hands": true
     },
     {
@@ -550,9 +554,11 @@
       "role": "meshy",
       "id": "meshy_grizzelda",
       "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fd-cff3-7368-a1ee-16386902dab0"
+      },
       "model": "Gloombraid Goblin Shaman",
       "date": "2026-10-29",
-      "src": "meshy_grizzelda.glb",
       "file": "characters/meshy_grizzelda.glb",
       "sha256": "ea5502177d3ec023",
       "triangles": 14599,
@@ -564,9 +570,11 @@
       "role": "meshy-fparms",
       "id": "meshy_grizzelda_fparms",
       "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fd-cff3-7368-a1ee-16386902dab0"
+      },
       "model": "Gloombraid Goblin Shaman",
       "date": "2026-10-29",
-      "src": "meshy_grizzelda.glb",
       "file": "characters/meshy_grizzelda_fparms.glb",
       "sha256": "6d9bf8add0844403",
       "triangles": 2727,
@@ -1119,27 +1127,31 @@
       "role": "meshy",
       "id": "meshy_anubis",
       "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a01-fba4-71ae-972c-8c970781a3d2"
+      },
       "model": "An ancient Egyptian Anubis",
       "date": "2026-10-29",
-      "src": "meshy_anubis.glb",
       "file": "characters/meshy_anubis.glb",
-      "sha256": "a3ef8c788584e74a",
+      "sha256": "e93dbc8cd2edd2e9",
       "triangles": 11000,
-      "lodTriangles": 3190,
-      "bytes": 648156,
+      "lodTriangles": 3178,
+      "bytes": 647500,
       "hands": true
     },
     {
       "role": "meshy-fparms",
       "id": "meshy_anubis_fparms",
       "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a01-fba4-71ae-972c-8c970781a3d2"
+      },
       "model": "An ancient Egyptian Anubis",
       "date": "2026-10-29",
-      "src": "meshy_anubis.glb",
       "file": "characters/meshy_anubis_fparms.glb",
-      "sha256": "609d64698b8e3da3",
+      "sha256": "dc3dc89ea2a9485b",
       "triangles": 3620,
-      "bytes": 316264,
+      "bytes": 316344,
       "hands": true
     },
     {
@@ -1227,27 +1239,31 @@
       "role": "meshy",
       "id": "meshy_zhao",
       "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a05-39b1-7653-b17c-03916e736722"
+      },
       "model": "Uniformed Worker in a Jacket",
       "date": "2026-10-29",
-      "src": "meshy_zhao.glb",
       "file": "characters/meshy_zhao.glb",
-      "sha256": "ecfb5105b5072ee7",
+      "sha256": "c0ea55c45db42688",
       "triangles": 10999,
-      "lodTriangles": 3154,
-      "bytes": 718996,
+      "lodTriangles": 3237,
+      "bytes": 720884,
       "hands": true
     },
     {
       "role": "meshy-fparms",
       "id": "meshy_zhao_fparms",
       "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a05-39b1-7653-b17c-03916e736722"
+      },
       "model": "Uniformed Worker in a Jacket",
       "date": "2026-10-29",
-      "src": "meshy_zhao.glb",
       "file": "characters/meshy_zhao_fparms.glb",
-      "sha256": "6c16d73cdf5cdf10",
-      "triangles": 4624,
-      "bytes": 423840,
+      "sha256": "a30ca94eb6246d7f",
+      "triangles": 4623,
+      "bytes": 423896,
       "hands": true
     },
     {
@@ -1306,37 +1322,6 @@
       "sha256": "c3195e583cf608a2",
       "triangles": 1117,
       "bytes": 277724,
-      "hands": true
-    },
-    {
-      "role": "meshy",
-      "id": "meshy_zombie_lurcher",
-      "source": "meshy-community-characters",
-      "meshy": {
-        "rig": "01a18a06-2863-70b3-9b4e-a9d566e19d73"
-      },
-      "model": "Skinny zombie",
-      "date": "2026-10-29",
-      "file": "characters/meshy_zombie_lurcher.glb",
-      "sha256": "9412f3bd84040ac2",
-      "triangles": 11000,
-      "lodTriangles": 3245,
-      "bytes": 561560,
-      "hands": true
-    },
-    {
-      "role": "meshy-fparms",
-      "id": "meshy_zombie_lurcher_fparms",
-      "source": "meshy-community-characters",
-      "meshy": {
-        "rig": "01a18a06-2863-70b3-9b4e-a9d566e19d73"
-      },
-      "model": "Skinny zombie",
-      "date": "2026-10-29",
-      "file": "characters/meshy_zombie_lurcher_fparms.glb",
-      "sha256": "b7e541edca4356ff",
-      "triangles": 1467,
-      "bytes": 254020,
       "hands": true
     },
     {
@@ -1535,10 +1520,10 @@
       "model": "Halloween 2025 ghoul",
       "date": "2026-10-29",
       "file": "characters/meshy_skeleton.glb",
-      "sha256": "a5f8416e5e2f135d",
-      "triangles": 15153,
-      "lodTriangles": 4350,
-      "bytes": 928128,
+      "sha256": "a8d4db300ea64ff7",
+      "triangles": 15217,
+      "lodTriangles": 4413,
+      "bytes": 930772,
       "hands": true
     },
     {
@@ -1551,9 +1536,9 @@
       "model": "Halloween 2025 ghoul",
       "date": "2026-10-29",
       "file": "characters/meshy_skeleton_fparms.glb",
-      "sha256": "8d5257d42b4f058c",
+      "sha256": "6d48965374ac9871",
       "triangles": 7565,
-      "bytes": 560340,
+      "bytes": 560404,
       "hands": true
     },
     {
@@ -1618,10 +1603,10 @@
         "rig": "01a18a0b-1e9b-7362-a818-d0779745bb32"
       },
       "file": "characters/meshy_ashwalker.glb",
-      "sha256": "e24eafcb875e73df",
+      "sha256": "78eff3b2788941ce",
       "triangles": 9904,
-      "lodTriangles": 2815,
-      "bytes": 673240,
+      "lodTriangles": 2850,
+      "bytes": 674380,
       "hands": true
     },
     {
@@ -1632,9 +1617,9 @@
         "rig": "01a18a0b-1e9b-7362-a818-d0779745bb32"
       },
       "file": "characters/meshy_ashwalker_fparms.glb",
-      "sha256": "4df2c89d70583333",
+      "sha256": "4c98d9516c5c2bc8",
       "triangles": 749,
-      "bytes": 296748,
+      "bytes": 296848,
       "hands": true
     },
     {
