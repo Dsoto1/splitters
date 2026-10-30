@@ -1145,7 +1145,7 @@ export class BotBrain {
       if (held.mag === 0 || (!target && held.mag < held.def.magazine / 2) || (inCoverHidden && held.mag < held.def.magazine * 0.6)) buttons |= BUTTON_RELOAD;
     }
     // Dry up close: punch or kick (quick melee) rather than click an empty gun.
-    if (target && held && held.def.kind !== 'melee' && held.def.magazine > 0 && held.mag === 0 && held.reserve === 0 && horizontalDistance(me.pos, target.pos) < 2 && (tick + this.slot) % 12 === 0) {
+    if (target && held && held.def.kind !== 'melee' && !held.def.projectile?.disc && held.def.magazine > 0 && held.mag === 0 && held.reserve === 0 && horizontalDistance(me.pos, target.pos) < 2 && (tick + this.slot) % 12 === 0) {
       buttons |= BUTTON_MELEE;
       buttons &= ~BUTTON_FIRE;
     }

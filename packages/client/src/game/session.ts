@@ -314,7 +314,8 @@ export class GameSession {
       this.sfx.localShot(def);
       return;
     }
-    if (now < this.meleeReadyAt) return;
+    // Disc Arena has no fists (nobody takes damage there).
+    if (now < this.meleeReadyAt || def?.projectile?.disc) return;
     const kind = unarmedStrike(forward, ((now - this.punchedAt) / 1000) * TICK_RATE);
     this.meleeReadyAt = now + (UNARMED[kind].cooldownTicks / TICK_RATE) * 1000;
     this.punchedAt = kind === 'punch' ? now : -1e9;

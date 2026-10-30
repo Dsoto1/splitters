@@ -2379,7 +2379,10 @@ export class Match {
             this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
             fired = true;
           }
-        } else if (c.meleeCooldown === 0) this.strike(c, unarmedStrike(input.forward, this.tick - c.punchedAt), input.viewTick ?? 0);
+        } else if (c.meleeCooldown === 0 && !def.projectile?.disc) {
+          // (Not in Disc Arena, where nobody takes damage: discs only knock people off.)
+          this.strike(c, unarmedStrike(input.forward, this.tick - c.punchedAt), input.viewTick ?? 0);
+        }
       }
       if (fired && gun) gun.firedTick = this.tick;
       // Heat weapons cool when not firing (mounted guns cool in stepMounts); bloom settles.
