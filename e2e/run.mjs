@@ -2967,10 +2967,10 @@ async function hostgameFlow(browser) {
     const rate = ((await bytes()) - b0) / 5 / 1024;
     // Raw snapshots run ~40 KB/s; compressed, a few (bursty frames on CI push it up, but well under raw).
     check(rate > 0.2 && rate < 20, `the friend's stream is compressed (${rate.toFixed(1)} KB/s)`);
-    // The friend spectates (pause menu): out of the host's match, a bot in the place, and their camera input
-    // keeps them from going idle (PlayerInput.sp); Join game puts them back.
+    // The friend spectates (what the pause menu's button does; the offline flow clicks it): out of the host's
+    // match, a bot in the place, and their camera input keeps them from going idle (PlayerInput.sp); Join game puts them back.
     const fslot = await friend.evaluate(() => window.__cs.slot);
-    await friend.evaluate(() => document.getElementById('pause-spectate').click());
+    await friend.evaluate(() => window.__cs.spectate(true));
     const specOn = await simWait(host, (m, _me, s) => m.isSpectator(s) && m.slots[s] === null, fslot, T(10000));
     await friend.evaluate(() => (window.__autoInput = { forward: 1 }));
     await friend.waitForFunction(() => window.__cs.spec().spectator && window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
@@ -2979,7 +2979,7 @@ async function hostgameFlow(browser) {
     const idle = await sim(host, (m, _me, s) => m.idleSeconds(s), fslot);
     const fstate = await friend.evaluate(() => window.__cs.spec());
     check(specOn && fstate.spectator && fstate.out && idle < 2, `a friend spectates in the hosted match, their camera input counting as activity (${idle.toFixed(1)} s idle; spectator ${fstate.spectator}, ${fstate.free ? 'free camera' : `following ${fstate.following}`})`);
-    await friend.evaluate(() => document.getElementById('pause-spectate').click());
+    await friend.evaluate(() => window.__cs.spectate(false));
     const backIn = await simWait(host, (m, _me, s) => m.slots[s]?.kind === 'human' && !m.isSpectator(s), fslot, T(10000));
     await friend.waitForFunction(() => !window.__cs.spec().spectator, null, { timeout: T(5000) }).catch(() => {});
     check(specOn && backIn && !(await friend.evaluate(() => window.__cs.spec().spectator)), 'and joins the game again');
