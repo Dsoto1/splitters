@@ -212,7 +212,8 @@ export class Atmosphere {
     if (!map) return;
     for (const m of this.pending.splice(0)) {
       if (!this.worldly(m)) continue;
-      m.receiveShadows = true;
+      // Instances take it from their source mesh (setting it on one only logs a warning: thousands in a match).
+      if (!m.isAnInstance) m.receiveShadows = true;
       const mat = m.material as { alpha?: number } | null;
       // See-through things (glass, water, effects) catch shadows but don't cast them.
       if (mat && mat.alpha !== undefined && mat.alpha < 0.99) continue;
