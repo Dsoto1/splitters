@@ -1,29 +1,58 @@
-# Handoff: where Tile Trigger stands (2026-10-29, evening)
+# Handoff: where Tile Trigger stands (2026-10-30, afternoon)
 
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
-## Start here (session of 2026-10-30, handed off to a new account)
+## Start here (session of 2026-10-30 afternoon, handed off)
 
 **Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.
 The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
+Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
-### Where things stand
-- **On `main`** (green on CI):
-  - the perf96 drawn-frame fix and the hostcontrols End-match double click;
-  - `wip/bot-manager`;
-  - High graphics no longer blurry (the sun-ray pass at full size);
-  - bodies without a ragdoll fall under gravity;
-  - `wip/character-intake` (24 new Meshy characters and hand fixes);
-  - `wip/host-handoff` (the second friend rejoins the successor);
-  - universal first-person arms for Brass Hare, Teddy and Saint Nick.
-- **Also on `main`** (`d6ecee1`, green):
-  - `wip/weapons-variety`: the owner's weapon and turret models, the Battle Axe, random pickups and "Mix up weapon pickups";
-  - `wip/roster-cleanup`'s first two commits;
-  - the ladder path fix.
-- **Also on `main`** (`4176d3d`, green): `wip/pause-safari` (wider pause menu, Safari look filter, zoom sensitivity).
-- **Also on `main`** (`384ffe7`, green): `wip/impact` (batch 2): stopping power, bigger explosion knockback, tiered ragdolls (full, cheap, posed; a body pool; a budget of awake bodies; `pnpm perf:mass`), unarmed punch and kick (Universal Animation Library clips), and Arena-tagged bots hopping only in fights on the "Mixed" style. **No agents are running; every requested branch is merged.**
+### Where things stand (end of the 2026-10-30 afternoon session)
+- **`main` is at `cf8c3e5`** (everything up to `wip/impact`, green).
+- **The session branch is ahead of `main`** with everything below, all merged. CI on `check/candidate` was
+  running on **`77a2fee`** at hand-off. Earlier runs: `b36156e` failed only on the MapMaker screenshot baseline
+  (regenerated since) and on the mobile "a tap on the pad middle jumps" check (fixed since in `bb06a47`: the
+  hold timer crouched before a late lift was seen). **Next step: read that run; if green, fast-forward `main`
+  (`git push origin 77a2fee:main`, or the newer head if you pushed fixes); if red, fix and push to
+  `check/candidate` again.**
+- **What's on the session branch and not on `main` yet** (owner's requests of 2026-10-30):
+  - Character Select: drag to turn the character (`MenuScene.spin`/`resetSpin`, `.char-spin` in frontEnd.ts);
+    all built-in portraits shipped (26 were drawn live, freezing the page for seconds); your designs' portraits
+    kept in localStorage `cs.portraits` on save; one mannequin and no cyclops/oculus blobs in the list
+    (`PLAYER_NPC_LOOKS`).
+  - Muzzle flashes no longer brighten the whole scene's ambient light (it lit every wall, indoors and out).
+  - Sounds synthesise one per task (the first click froze the page).
+  - Weapon switching: one step per wheel notch / ~60 px of trackpad (`InputState.scroll`), first-person guns
+    kept once built (`View.viewmodels`).
+  - MapMaker: new maps start on 160 m of grass terrain; New opens a size dialog (96/160/240/320 m or Sky map);
+    "nothing to stand on" check message mentions terrain.
+  - Merged agent branches: `wip/bot-vehicles`, `wip/weapon-wheel-mobile`, `wip/pause-menu`, `wip/spectate`,
+    `wip/battle-axe` (details below).
+- **Still open as branches** (agents stopped at hand-off; read their HANDOFF notes on the branch, merge through
+  `check/candidate`):
+  - `wip/posture-buggy`: hunched tall Meshy characters (Bonesworth etc.) via `fixes.lean`, feet pointing up
+    (King Aldric and others; `fixes.feet`), and the owner's Meshy buggy (Drive `Tactical_Off_Road_Bea` +
+    `Rugged_Off_Road_Tire`) replacing the Kenney buggy. Caution: rebuilding Bonesworth with
+    `pnpm content:meshy` alone gave 15.5k triangles vs the shipped 18.8k and a worse left arm; the shipped file
+    came from commit 75712f9's landmark fix, so reproduce that before rebuilding.
+  - `wip/fp-grips`: first-person grips on large weapons (the support hand floats off the Singularity Cannon
+    and others; the Battle Axe's left hand too).
+- **Owner's requests not started yet:**
+  - Buggy (and any vehicle that fits) seats a driver + 3 passengers, seated, who can shoot
+    (sim: `packages/shared/src/sim/mounts.ts` seats).
+  - St. John's from real data: the owner's Google Maps key (`GOOGLE_MAPS_API_KEY`) is refused (Geocoding not
+    allowed by the key's API restrictions, Elevation needs billing, Static 403, 3D Tiles 404). The owner set up a
+    key on another Google account: they must update the environment variable and start a new session. Google's
+    terms don't allow copying its map content into the game; OpenStreetMap (footprints, roads, lake shore) plus
+    USGS 3DEP elevation (public domain) are the suggested sources, used to guide editing in MapMaker (no map
+    build scripts).
+- **Not checked by eye / on real hardware:** Esc in Safari fullscreen, a real controller in the menus, touch
+  controls on a real phone, the kill-cam framing, the axe's smoke and kick.
+
+### Notes from this session's agents (all merged)
 - **On `wip/bot-vehicles`** (not merged; full CI not run yet): bot vehicle sense (`bots/vehicles.ts`, `brain.ts`; tests in `test/botVehicles.test.ts`).
   - Stuck drivers back out for 1 s, then get out if still stuck within 3 s, and avoid that vehicle for 30 s.
   - Riders leave a stuck bot-driven vehicle; everyone leaves a burning one.
