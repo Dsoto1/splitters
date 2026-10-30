@@ -233,8 +233,10 @@ function pose(skel, verts, ual, c) {
   const { count, joints: J, weights: W } = verts;
   // Re-pose: walk the joints parents first, turning the listed bones to the rig's directions.
   const index = new Map(names.map((n, i) => [n, i]));
-  const rot = new Array(names.length);
-  const posed = new Array(names.length);
+  let rot = new Array(names.length);
+  let posed = new Array(names.length);
+  /** Extra turns (world) for a joint after its rule: the feet levelled on their soles (below). */
+  const level = new Map();
   const visit = (i) => {
     if (rot[i]) return;
     const pi = parent[i];
@@ -258,6 +260,7 @@ function pose(skel, verts, ual, c) {
     const lean = c.lean?.[names[i]];
     if (lean) rot[i] = qmul([Math.sin((-lean * Math.PI) / 360), 0, 0, Math.cos((-lean * Math.PI) / 360)], rot[i]);
     if (c.lean && names[i] === 'Head') rot[i] = c.lean.Head ? [Math.sin((-c.lean.Head * Math.PI) / 360), 0, 0, Math.cos((-c.lean.Head * Math.PI) / 360)] : [0, 0, 0, 1];
+    if (level.has(i)) rot[i] = qmul(level.get(i), rot[i]);
   };
   // Children's positions depend on their parents' final turn, so settle every parent before its children.
   const depth = (i) => {
@@ -266,6 +269,61 @@ function pose(skel, verts, ual, c) {
     return d;
   };
   for (const i of [...names.keys()].sort((a, b) => depth(a) - depth(b))) visit(i);
+  // Feet (`feet`): the foot bone pointed the rig's way can still leave the sole tilted (Meshy's rig puts the toe joint
+  // higher on the foot than ours, so its feet came out toes up): turn each foot about its ankle until the lowest point
+  // of the heel and the lowest point of the front of the foot are level, as they stood on the ground in the download.
+  if (c.feet) {
+    const placed = (v) => {
+      let p = [0, 0, 0];
+      for (let k = 0; k < 4; k++) {
+        const w = W[v * 4 + k];
+        if (!w) continue;
+        const j = J[v * 4 + k];
+        p = add(p, scale(add(posed[j], qrot(rot[j], sub(verts.at(v, j)[0], rest[j]))), w));
+      }
+      return p;
+    };
+    const major = (v) => {
+      let best = 0;
+      for (let k = 1; k < 4; k++) if (W[v * 4 + k] > W[v * 4 + best]) best = k;
+      return J[v * 4 + best];
+    };
+    // Turning moves which points are lowest, so measure again after each turn (three passes settle it).
+    for (let pass = 0; pass < 3; pass++) {
+      let turned = false;
+      for (const S of ['Left', 'Right']) {
+        const [f, t] = [index.get(`${S}Foot`), index.get(`${S}ToeBase`)];
+        if (f === undefined || t === undefined) continue;
+        const ahead = norm([posed[t][0] - posed[f][0], 0, posed[t][2] - posed[f][2]]);
+        const pts = [];
+        for (let v = 0; v < count; v++) {
+          const m = major(v);
+          if (m === f || m === t) pts.push([dot(sub(placed(v), posed[f]), ahead), placed(v)[1]]);
+        }
+        if (pts.length < 20) continue;
+        const [s0, s1] = [Math.min(...pts.map((q) => q[0])), Math.max(...pts.map((q) => q[0]))];
+        let [heel, toe] = [null, null];
+        for (const q of pts) {
+          const at = (q[0] - s0) / (s1 - s0 || 1);
+          if (at <= 0.3 && (!heel || q[1] < heel[1])) heel = q;
+          if (at >= 0.6 && (!toe || q[1] < toe[1])) toe = q;
+        }
+        if (!heel || !toe) continue;
+        const tilt = Math.atan2(toe[1] - heel[1], toe[0] - heel[0]);
+        // A few degrees either way is the shoe's own shape: leave it.
+        if (Math.abs(tilt) < (3 * Math.PI) / 180) continue;
+        const turn = Math.max(-0.6, Math.min(0.6, -tilt));
+        const axis = norm(cross(ahead, [0, 1, 0]));
+        level.set(f, qmul([...scale(axis, Math.sin(turn / 2)), Math.cos(turn / 2)], level.get(f) ?? [0, 0, 0, 1]));
+        turned = true;
+        if (!pass) console.log(`  ${S.toLowerCase()} foot levelled: its sole was ${((tilt * 180) / Math.PI).toFixed(0)}° toes up`);
+      }
+      if (!turned) break;
+      rot = new Array(names.length);
+      posed = new Array(names.length);
+      for (const i of [...names.keys()].sort((a, b) => depth(a) - depth(b))) visit(i);
+    }
+  }
 
   const pos = new Float32Array(count * 3);
   const nrm = new Float32Array(count * 3);

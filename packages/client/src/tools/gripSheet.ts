@@ -48,6 +48,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   const models = new ModelLibrary(scene);
   const still: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false };
   let current: { anim: CharacterAnimator; dispose(): void } | null = null;
+  /** The posed character's joints (third person), for posture measurements. */
+  let joints: Map<string, TransformNode> | null = null;
   let frames = 0;
 
   engine.runRenderLoop(() => {
@@ -64,6 +66,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   async function pose(look: string, weapon: string, view: GripView): Promise<void> {
     current?.dispose();
     current = null;
+    joints = null;
     const def = getWeapon(weapon);
     if (view === 'third') {
       ground.setEnabled(true);
@@ -74,6 +77,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       const node = await models.instantiate(def.view.model, 'grip_weapon');
       anim.hold(node, def.view.hold);
       current = { anim, dispose: () => anim.dispose() };
+      joints = ch.joints;
       scene.activeCamera = orbit;
       await settle(40);
       // Framed on the hands, from the front and to the character's right (the gun hand's side).
@@ -121,9 +125,31 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     }
   }
 
+  /**
+   * After a third-person pose, the whole body from its right side, its front or its back (posture checks:
+   * a hunched back or bent knees show side-on), or its feet side-on at floor level (`feet`: soles flat or tilted).
+   */
+  async function body(from: 'side' | 'front' | 'back' | 'feet'): Promise<void> {
+    orbit.target.set(0, from === 'feet' ? 0.12 : PLAYER.height / 2, 0);
+    orbit.alpha = from === 'side' || from === 'feet' ? 0 : from === 'front' ? Math.PI / 2 : -Math.PI / 2;
+    orbit.beta = from === 'feet' ? Math.PI / 2 - 0.02 : Math.PI / 2 - 0.05;
+    orbit.radius = from === 'feet' ? 1.3 : 3.4;
+    await settle(4);
+  }
+
   const api = {
     looks: () => CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, parts: l.parts })),
     pose,
+    body,
+    /** World positions of the posed character's joints (third person), by name. */
+    joints: (): Record<string, [number, number, number]> =>
+      Object.fromEntries(
+        [...(joints ?? new Map<string, TransformNode>())].map(([n, j]) => {
+          j.computeWorldMatrix(true);
+          const p = j.getAbsolutePosition();
+          return [n, [p.x, p.y, p.z]];
+        }),
+      ),
   };
   Object.assign(window, { __grips: api });
 }
