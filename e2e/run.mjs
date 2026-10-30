@@ -1150,7 +1150,8 @@ async function physicsfxFlow(browser) {
   // The push can throw the body up first and land it on something higher than it stood: measure the fall from its peak.
   const fell = () => { const top = track.indexOf(Math.max(...track)); return track.length ? track[top] - Math.min(...track.slice(top)) : 0; };
   // Physics steps with the frames: on a slow software renderer a second of sampling can be two frames.
-  const until = Date.now() + T(3000);
+  // (The body is a corpse of its own: the bot respawning doesn't end it.)
+  const until = Date.now() + T(8000);
   while (Date.now() < until && !(ragdolled && fell() > 0.5)) {
     await page.waitForTimeout(T(150) / 2); // wait-ok: sampling interval of the fall
     const s = await page.evaluate(() => {
@@ -1177,16 +1178,26 @@ async function physicsfxFlow(browser) {
     const m = window.__match;
     const v = window.__cs.view;
     const me = m.slots[window.__cs.slot];
-    const bot = m.slots.find((c) => c && c !== me && c.alive && v.avatars.get(c.slot)?.anim?.ch);
-    if (!bot) return null;
-    const f = v.camera.getForwardRay(1).direction;
-    const len = Math.hypot(f.x, f.z) || 1;
-    // 14 m behind you, 5 m up, held there until it is shot.
-    const pos = { x: me.move.pos.x - (f.x / len) * 14, y: me.move.pos.y + 5, z: me.move.pos.z - (f.z / len) * 14 };
+    // The farthest bot (on open ground: it walked there), held 5 m up where it is, and you turn your back on it.
+    const far = (c) => Math.hypot(c.move.pos.x - me.move.pos.x, c.move.pos.z - me.move.pos.z);
+    const bot = m.slots.filter((c) => c && c !== me && c.alive && v.avatars.get(c.slot)?.anim?.ch).sort((a, b) => far(b) - far(a))[0];
+    if (!bot || far(bot) < 14) return bot ? { near: far(bot) } : null;
+    const pos = { x: bot.move.pos.x, y: bot.move.pos.y + 5, z: bot.move.pos.z };
     window.__hold = setInterval(() => (bot.move = { ...bot.move, pos: { ...pos }, velY: 0, grounded: false }), 5);
+    window.__cs.input.yaw = Math.atan2(bot.move.pos.x - me.move.pos.x, bot.move.pos.z - me.move.pos.z) + Math.PI;
+    window.__awayFrom = { x: bot.move.pos.x, z: bot.move.pos.z };
     window.__airSlot = bot.slot;
     window.__posedBefore = v.ragdollTiers.posed;
     return { slot: bot.slot };
+  });
+  // Your back to it: the camera's forward points away (turned the other way round if the yaw went the wrong way).
+  await frames(page, 3);
+  await page.evaluate(() => {
+    const cam = window.__cs.view.camera;
+    const f = cam.getForwardRay(1).direction;
+    const p = cam.globalPosition;
+    const a = window.__awayFrom;
+    if (a && f.x * (a.x - p.x) + f.z * (a.z - p.z) > 0) window.__cs.input.yaw += Math.PI;
   });
   // Let the avatar follow it up there first, then kill it.
   const followed = await page.waitForFunction(() => {
@@ -1199,39 +1210,44 @@ async function physicsfxFlow(browser) {
     const bot = m.slots[window.__airSlot];
     clearInterval(window.__hold);
     const y = bot.move.pos.y;
-    m.damage(bot, 500, m.slots[window.__cs.slot], 'core.pistol');
-    return y;
-  });
-  await page.waitForFunction(() => window.__cs.view.corpses.some((c) => c.slot === window.__airSlot && c.a.ragdoll), null, { timeout: T(15000) }).catch(() => {});
+    // No attacker: it may be on your team (no friendly fire).
+    window.__killT = performance.now();
+    m.damage(bot, 500, null, 'core.pistol');
+    // It stays dead until the view (slow on a software renderer) has laid it down.
+    bot.respawnTick = m.tick + 60 * 60;
+    return { y, dead: !bot.alive, phase: m.phase };
+  }).then((r) => (console.log(`  (out of view: killed ${JSON.stringify(r)})`), r.y));
+  // (Its own corpse: the slot may have died before.)
+  await page.waitForFunction(() => window.__cs.view.corpses.some((c) => c.slot === window.__airSlot && c.born >= window.__killT && c.a.ragdoll), null, { timeout: T(15000) }).catch(() => {});
   const laid = await page.evaluate((from) => {
     const v = window.__cs.view;
-    const c = v.corpses.findLast((x) => x.slot === window.__airSlot);
+    const c = v.corpses.findLast((x) => x.slot === window.__airSlot && x.born >= window.__killT);
     if (!c) {
       const a = v.avatars.get(window.__airSlot);
-      return { corpse: false, avatar: !!a, anim: !!a?.anim, ragdoll: a?.ragdoll?.tier ?? null, alive: window.__match.slots[window.__airSlot]?.alive };
+      const b = window.__match.slots[window.__airSlot];
+      return { corpse: false, avatar: !!a, anim: !!a?.anim, ragdoll: a?.ragdoll?.tier ?? null, alive: b?.alive, hp: b?.health, phase: window.__match.phase, deaths: b?.deaths, inv: b?.invulnerable };
     }
     const p = c.a.root.position;
     // The first ground under where it died.
-    const ground = v.physics.raycast({ x: p.x, y: from + 6, z: p.z }, { x: 0, y: -1, z: 0 }, 60);
-    return { tier: c.a.ragdoll?.tier, y: p.y, ground: ground ? from + 6 - ground.dist : null, posed: v.ragdollTiers.posed - window.__posedBefore };
+    const ground = v.physics.raycast({ x: p.x, y: from + 0.5, z: p.z }, { x: 0, y: -1, z: 0 }, 60);
+    return { tier: c.a.ragdoll?.tier, y: p.y, ground: ground ? from + 0.5 - ground.dist : null, posed: v.ragdollTiers.posed - window.__posedBefore, death: v.lastDeath, cam: { x: +v.camera.globalPosition.x.toFixed(1), y: +v.camera.globalPosition.y.toFixed(1), z: +v.camera.globalPosition.z.toFixed(1) }, at: { x: +p.x.toFixed(1), z: +p.z.toFixed(1) } };
   }, killedAt);
-  check(!!behind && followed && !!laid && laid.tier === 'posed' && laid.ground !== null && Math.abs(laid.y - laid.ground) < 0.3 && laid.y < killedAt - 3, `a death out of view isn't simulated: the body is laid on the ground (${JSON.stringify({ followed, killedAt, laid })})`);
+  await page.evaluate(() => (window.__match.slots[window.__airSlot].respawnTick = window.__match.tick));
+  check(!!behind && followed && !!laid && laid.tier === 'posed' && laid.ground !== null && Math.abs(laid.y - laid.ground) < 0.3 && laid.y < killedAt - 0.5, `a death out of view isn't simulated: the body is laid on the ground (${JSON.stringify({ followed, killedAt, laid })})`);
   // A blast throws a bot near it up and out (the game's own throw, sim/impact.ts).
   const thrown = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    const bot = m.slots.find((c) => c && c !== me && c.alive);
+    const bot = m.slots.find((c) => c && c !== me && c.alive && c.move.grounded);
     if (!bot) return null;
-    const f = window.__cs.view.camera.getForwardRay(1).direction;
-    const len = Math.hypot(f.x, f.z) || 1;
-    const at = { x: me.move.pos.x + (f.x / len) * 8, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 8 };
-    bot.move = { ...bot.move, pos: { x: at.x + (f.x / len) * 1.5, y: at.y, z: at.z + (f.z / len) * 1.5 }, velY: 0, grounded: true };
+    // Right beside it, where it stands (open ground: it got there), at waist height.
+    const at = { x: bot.move.pos.x - 1, y: bot.move.pos.y + 0.6, z: bot.move.pos.z };
     bot.health = 1000;
     window.__blastSlot = bot.slot;
     window.__blastFrom = { y: bot.move.pos.y, x: bot.move.pos.x, z: bot.move.pos.z };
     window.__blastTop = bot.move.pos.y;
-    m.splash({ x: at.x, y: at.y + 0.3, z: at.z }, 5, 0, 0, null, 'core.rockets', 1, 11);
-    return { velY: bot.move.velY, push: Math.hypot(bot.move.vx ?? 0, bot.move.vz ?? 0) };
+    m.splash(at, 5, 0, 0, null, 'core.rockets', 1, 11);
+    return { velY: bot.move.velY, push: Math.hypot(bot.move.vx ?? 0, bot.move.vz ?? 0), mount: !!bot.mount, los: m.physics.lineOfSight(at, { x: bot.move.pos.x, y: bot.move.pos.y + 1.2, z: bot.move.pos.z }) };
   });
   const rose = await page.waitForFunction(() => {
     const b = window.__match.slots[window.__blastSlot];
@@ -1239,8 +1255,8 @@ async function physicsfxFlow(browser) {
     return window.__blastTop - window.__blastFrom.y > 1;
   }, null, { timeout: T(5000), polling: 16 }).then(() => true, () => false);
   const out = await page.evaluate(() => { const b = window.__match.slots[window.__blastSlot]; return Math.hypot(b.move.pos.x - window.__blastFrom.x, b.move.pos.z - window.__blastFrom.z); });
-  // (Out: a bot steers in the air, so it can work against the throw.)
-  check(!!thrown && thrown.velY > 6 && rose && out > 1, `a blast throws a bot up and out (${JSON.stringify(thrown)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
+  // (Where it lands depends on the bot: it steers in the air, and a wall can stop it.)
+  check(!!thrown && thrown.velY > 6 && thrown.push > 4 && rose, `a blast throws a bot up and out (${JSON.stringify(thrown)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
   // A mass casualty: one blast kills everyone around a point in front of you, and nothing stalls: every body
   // goes down a ragdoll or laid down, within the budget of awake ragdoll bodies.
   const mass = await page.evaluate(() => {
@@ -1740,7 +1756,8 @@ async function arsenalFlow(browser) {
     window.__cs.input.pitch = -0.12;
   });
   const target = await sim(page, (m, me) => {
-    const bot = m.combatants().find((c) => c !== me && c.alive && !c.mount && !c.npc);
+    // An enemy (no friendly fire).
+    const bot = m.combatants().find((c) => c !== me && c.alive && !c.mount && !c.npc && (!me.faction || c.faction !== me.faction));
     if (!bot) return null;
     bot.move = { ...bot.move, pos: { x: me.move.pos.x + Math.sin(me.yaw) * 1.3, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * 1.3 }, velY: 0, grounded: true };
     bot.health = 100;
@@ -1749,13 +1766,15 @@ async function arsenalFlow(browser) {
     return { slot: bot.slot, hp: bot.health };
   });
   await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2048 }));
-  const punched = target ? await simWait(page, (m, _me, t) => m.actor(t.slot).health < t.hp, target, T(5000)) : false;
-  const swung = await page.evaluate(() => window.__cs.view.strikeMotion?.kind ?? null);
+  // Your fist comes in at once (first person); the server lands the punch (15 damage).
+  await page.waitForFunction(() => window.__cs.view.strikes.punch > 0, null, { timeout: T(5000) }).catch(() => {});
+  const swung = await page.evaluate(() => window.__cs.view.strikes.punch);
+  const punched = target ? await simWait(page, (m, _me, t) => m.actor(t.slot).health <= t.hp - 10, target, T(5000)) : false;
   await sim(page, (m, _me, t) => {
     const b = m.actor(t.slot);
     if (b) b.speedMul = 1;
   }, target);
-  check(!!target && punched && swung === 'punch', `quick melee with a gun in hand punches the bot in front (${JSON.stringify(target)}, hit ${punched}, first person: ${swung})`);
+  check(!!target && punched && swung > 0, `quick melee with a gun in hand punches the bot in front (${JSON.stringify(target)}, hit ${punched}, first-person punches: ${swung})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

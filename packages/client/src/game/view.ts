@@ -512,6 +512,7 @@ export class GameView {
     const fit = fitBudget(tierFor(dist, seen), dist, moving.map((m) => ({ tier: m.body.tier, dist: m.dist })));
     for (const i of fit.drop) this.dropTier(moving[i]!.a);
     this.ragdollTiers[fit.tier]++;
+    this.lastDeath = { slot, tier: fit.tier, dist: Math.round(dist * 10) / 10, seen };
     try {
       if (fit.tier === 'posed') this.layDown(a, v);
       else {
@@ -522,6 +523,9 @@ export class GameView {
       a.ragdoll = undefined;
     }
   }
+
+  /** The last death's tier, distance from the camera and whether it was in view (tests). */
+  lastDeath: { slot: number; tier: RagdollTier; dist: number; seen: boolean } | null = null;
 
   /** Deaths so far by the tier they got (tests and the perf check read these). */
   readonly ragdollTiers: Record<RagdollTier, number> = { full: 0, cheap: 0, posed: 0 };
@@ -933,6 +937,8 @@ export class GameView {
 
   /** Your own quick melee in first person: since when (ms), and a punch or a kick. */
   private strikeMotion: { kind: 'punch' | 'kick'; t0: number } | null = null;
+  /** Your own punches and kicks so far (tests). */
+  readonly strikes = { punch: 0, kick: 0 };
   /** Your boot, seen for a kick (made on first need). */
   private boot?: Mesh;
 
@@ -943,6 +949,7 @@ export class GameView {
    */
   localStrike(kind: 'punch' | 'kick', jab: boolean): void {
     this.strikeMotion = { kind, t0: performance.now() };
+    this.strikes[kind]++;
     if (kind === 'punch') this.fpArms?.anim?.trigger(jab ? 'jab' : 'melee');
     if (kind === 'kick' && !this.boot) {
       const boot = CreateBox('fpBoot', { width: 0.13, height: 0.11, depth: 0.3 }, this.scene);

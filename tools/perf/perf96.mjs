@@ -81,7 +81,7 @@ const CLUMP = `(m, me, seed) => {
  * Runs inside the match: a mass casualty. Puts n living bots (either side) within 3 m of a point
  * 12 m in front of the player, then sets off one blast there that kills them (their armour and health don't matter).
  */
-const MASS = `(m, me, n) => {
+const MASS_PLACE = `(m, me, n) => {
   const d = { x: Math.sin(me.yaw), z: Math.cos(me.yaw) };
   const want = { x: me.move.pos.x + d.x * 12, y: me.move.pos.y, z: me.move.pos.z + d.z * 12 };
   const at = m.nav.closestPoint(want, { x: 6, y: 10, z: 6 }) ?? want;
@@ -94,6 +94,18 @@ const MASS = `(m, me, n) => {
     c.armor = 0;
     c.health = 1;
   }
+  // Held there (they would walk off) until the blast, so everyone's view has them where they die.
+  const held = victims.map((c) => [c, c.move.pos]);
+  globalThis.__massHold = setInterval(() => {
+    for (const [c, pos] of held) c.move = { ...c.move, pos: { ...pos }, velY: 0, grounded: true };
+  }, 5);
+  globalThis.__mass = { victims, at };
+  return victims.length;
+}`;
+/** Runs inside the match: the blast (after MASS_PLACE). */
+const MASS = `(m) => {
+  clearInterval(globalThis.__massHold);
+  const { victims, at } = globalThis.__mass;
   const centre = { x: at.x, y: at.y + 0.5, z: at.z };
   m.pendingEvents.push({ e: 'explode', s: -1, p: [centre.x, centre.y, centre.z], r: 6 });
   m.splash(centre, 6, 500, 400, null, 'core.rockets', 1, 12);
@@ -145,7 +157,14 @@ async function measureMass(page, sim) {
     window.__perf.reset();
     window.__perf.on = true;
   });
-  const killed = await sim(MASS, MASS_KILLS);
+  await sim(MASS_PLACE, MASS_KILLS);
+  // Their characters walk over there (and load) before the blast.
+  await sleep(3000);
+  await page.evaluate(() => {
+    window.__perf.reset();
+    window.__mass.draws.length = 0;
+  });
+  const killed = await sim(MASS, 0);
   await sleep(4000);
   // A CPU-rendered page under load can draw only a frame or two in 4 s: wait for at least 12 (up to 60 s more).
   for (let waited = 0; waited < 60000 && (await page.evaluate(() => window.__perf.frames.length)) < 12; waited += 1000) await sleep(1000);

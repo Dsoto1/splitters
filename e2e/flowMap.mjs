@@ -129,7 +129,7 @@ export function selectForPaths(paths, mapIds = []) {
     const p = raw.replace(/^\.\//, '');
     if (!p) continue;
     // Render-side changes get the draw-call budget check.
-    if (/^packages\/client\/src\/(game\/(view|propVisuals|scenarioVisuals|cityVisuals|canopyVisuals)\.ts|mapMeshes\.ts|foliage\.ts|backdrop\.ts|content\/|materials\/)|^packages\/shared\/src\/(content|map)\/|^tools\/perf\/|^content\//.test(p)) perf = true;
+    if (/^packages\/client\/src\/(game\/(view|ragdoll|ragdollBudget|characterAnimator|propVisuals|scenarioVisuals|cityVisuals|canopyVisuals)\.ts|mapMeshes\.ts|foliage\.ts|backdrop\.ts|content\/|materials\/)|^packages\/shared\/src\/(content|map)\/|^tools\/perf\/|^content\//.test(p)) perf = true;
     const map = /^maps\/([^/]+)\.json$/.exec(p);
     if (map) {
       const id = map[1];
