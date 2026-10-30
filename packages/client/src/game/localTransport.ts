@@ -1,4 +1,5 @@
 import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type GameMode, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type RotationCommand, type ServerMessage } from '@tiletrigger/shared';
+import { deviceMaxPlayers } from '../touchDevice.ts';
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type HostListing, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
 import { playerKey } from './playerKey.ts';
 import { perfProbe } from './perfProbe.ts';
@@ -227,7 +228,7 @@ export class LocalTransport implements Transport {
     // The tab is closing (or reloading): friends hear it from us, not from a dead link.
     if (typeof window.addEventListener === 'function') window.addEventListener('pagehide', this.onPageHide);
     // This browser's key goes with the match: a successor keeps our place for it if the match is handed on.
-    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, ...this.opts }, hidden: document.hidden };
+    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...this.opts }, hidden: document.hidden };
     if (simThreadWanted() === 'worker' && this.startWorker(start)) return;
     this.startHere(start);
   }

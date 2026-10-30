@@ -1,5 +1,6 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { ImageProcessingConfiguration } from '@babylonjs/core/Materials/imageProcessingConfiguration';
+import { isTouchDevice } from '../touchDevice.ts';
 
 // The graphics settings and the game's tone mapping: what the menu and the Options screen need,
 // without the shadow and post-process code of atmosphere.ts (which re-exports all of this).
@@ -21,7 +22,8 @@ export function loadGraphicsQuality(): GraphicsQuality {
   } catch {
     // Private windows: the default.
   }
-  return 'medium';
+  // Phones and tablets start on Low (their GPUs and batteries); Options can raise it.
+  return isTouchDevice() ? 'low' : 'medium';
 }
 
 export function saveGraphicsQuality(q: GraphicsQuality): void {
@@ -84,7 +86,8 @@ function save(key: string, value: string): void {
     // Private windows: kept for this session only.
   }
 }
-export const loadRenderScale = (): RenderScale => load('tiletrigger.renderScale', RENDER_SCALES, 'auto', (s) => s as RenderScale);
+/** Phones and tablets start at Performance (75%): their screens are small and dense, their GPUs run hot. */
+export const loadRenderScale = (): RenderScale => load('tiletrigger.renderScale', RENDER_SCALES, isTouchDevice() ? 'performance' : 'auto', (s) => s as RenderScale);
 export const saveRenderScale = (s: RenderScale): void => {
   save('tiletrigger.renderScale', s);
   // Applied at once by the app (main.ts listens).

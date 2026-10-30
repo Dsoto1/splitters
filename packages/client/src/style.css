@@ -977,3 +977,76 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
   .bot-manager .bm-head h3 { font-size: 18px; }
   .bot-manager .bm-foot { padding-top: 4px; }
 }
+
+/* The weapon wheel (game/weaponWheel.ts): hold Q (or a controller's Y, or tap Weapons on a phone). */
+#weapon-wheel { position: fixed; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; pointer-events: auto; touch-action: none; background: radial-gradient(circle at 50% 50%, rgba(11, 15, 26, 0.35), rgba(11, 15, 26, 0.7)); }
+#weapon-wheel[hidden] { display: none; }
+#weapon-wheel .ww-ring { position: relative; width: min(84vmin, 480px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.35) 0 22%, rgba(18, 24, 39, 0.85) 23% 68%, rgba(18, 24, 39, 0.35) 69%); box-shadow: 0 0 0 1px rgba(0, 209, 255, 0.25); }
+#weapon-wheel .ww-item { position: absolute; transform: translate(-50%, -50%); width: 25%; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px; border: 1px solid transparent; border-radius: 6px; font-family: var(--font-display); text-align: center; color: var(--text); transition: transform 0.08s, background 0.08s; }
+#weapon-wheel .ww-item .ww-icon { width: 100%; height: clamp(26px, 8vmin, 52px); object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6)); }
+#weapon-wheel .ww-item b { font: 600 clamp(10px, 2.4vmin, 14px)/1.1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+#weapon-wheel .ww-item small { font: 600 clamp(10px, 2.2vmin, 13px) var(--font-display); color: var(--muted); font-variant-numeric: tabular-nums; }
+#weapon-wheel .ww-item.held { border-color: rgba(0, 209, 255, 0.45); }
+#weapon-wheel .ww-item.empty { opacity: 0.4; }
+#weapon-wheel .ww-item.empty small { color: var(--error); }
+#weapon-wheel .ww-item.on { transform: translate(-50%, -50%) scale(1.12); background: rgba(0, 209, 255, 0.18); border-color: var(--cyan); }
+#weapon-wheel .ww-centre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40%; display: flex; flex-direction: column; align-items: center; text-align: center; font-family: var(--font-display); pointer-events: none; }
+#weapon-wheel .ww-centre b { font: italic 700 clamp(13px, 3.4vmin, 20px)/1.1 var(--font-display); text-transform: uppercase; color: var(--cyan); }
+#weapon-wheel .ww-centre small { color: var(--muted); font: 600 clamp(11px, 2.6vmin, 15px) var(--font-display); }
+#weapon-wheel .ww-dot { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); pointer-events: none; }
+
+/* Phones and tablets (touchDevice.ts, html.touch): fingers, not a mouse. */
+html.touch { touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+html.touch body { overscroll-behavior: none; }
+html.touch #view { touch-action: none; }
+html.touch button, html.touch select, html.touch .tab { min-height: 40px; }
+html.touch input[type='range'] { min-height: 32px; }
+html.touch input:not([type]), html.touch input[type='text'], html.touch input[type='password'] { -webkit-user-select: text; user-select: text; font-size: 16px; }
+/* The HUD makes room for the controls: the pad bottom left, the buttons bottom right. */
+html.touch #weapon-bar { display: none; }
+html.touch #minimap { left: calc(60px + env(safe-area-inset-left)); top: 8px; width: 104px; height: 104px; }
+html.touch #vitals { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 118px; transform: scale(0.72); transform-origin: top left; }
+html.touch #ammo { right: auto; left: 50%; bottom: 6px; transform: translateX(-50%) scale(0.8); transform-origin: bottom center; }
+html.touch #feed { transform: scale(0.85); transform-origin: top right; }
+
+/* The on-screen controls (game/touchControls.ts). */
+#touch-ui { position: fixed; inset: 0; z-index: 2; pointer-events: none; touch-action: none; font-family: var(--font-display); --pad: clamp(120px, 42vmin, 190px); }
+#touch-ui[hidden] { display: none; }
+#touch-ui > * { pointer-events: auto; touch-action: none; }
+#touch-ui .tc-look { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; }
+#touch-ui .tc-pad { position: absolute; left: calc(18px + env(safe-area-inset-left)); bottom: 18px; width: var(--pad); height: var(--pad); border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.25), rgba(18, 24, 39, 0.5)); box-shadow: 0 0 0 1px rgba(230, 240, 255, 0.18); }
+#touch-ui .tc-pad.sprint { box-shadow: 0 0 0 2px var(--orange); }
+#touch-ui .tc-arm { position: absolute; width: 0; height: 0; border: 11px solid transparent; opacity: 0.55; }
+#touch-ui .tc-arm.up { left: 50%; top: 7%; margin-left: -11px; border-bottom-color: var(--text); border-top-width: 0; }
+#touch-ui .tc-arm.down { left: 50%; bottom: 7%; margin-left: -11px; border-top-color: var(--text); border-bottom-width: 0; }
+#touch-ui .tc-arm.left { top: 50%; left: 7%; margin-top: -11px; border-right-color: var(--text); border-left-width: 0; }
+#touch-ui .tc-arm.right { top: 50%; right: 7%; margin-top: -11px; border-left-color: var(--text); border-right-width: 0; }
+#touch-ui .tc-knob { position: absolute; left: 50%; top: 50%; width: 30%; height: 30%; margin: -15% 0 0 -15%; border-radius: 50%; background: rgba(0, 209, 255, 0.18); pointer-events: none; transition: transform 0.04s; }
+#touch-ui .tc-jump { position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%, -50%) scale(0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; background: rgba(230, 240, 255, 0.16); border: 2px solid rgba(230, 240, 255, 0.5); color: var(--text); pointer-events: none; }
+#touch-ui .tc-jump span { font: 700 22px var(--font-display); text-transform: uppercase; }
+#touch-ui .tc-jump small { font: 600 13px var(--font-display); color: var(--muted); white-space: nowrap; }
+#touch-ui .tc-jump.on { background: rgba(0, 209, 255, 0.4); }
+#touch-ui .tc-btn { position: absolute; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; min-height: 0; padding: 0; border-radius: 50%; border: 2px solid rgba(230, 240, 255, 0.45); background: rgba(18, 24, 39, 0.5); color: var(--text); font: 700 11px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; -webkit-user-select: none; user-select: none; }
+#touch-ui .tc-btn.on { background: rgba(0, 209, 255, 0.4); border-color: var(--cyan); }
+#touch-ui .tc-fire { right: calc(26px + env(safe-area-inset-right)); bottom: 34px; width: 92px; height: 92px; font-size: 15px; border-color: rgba(255, 94, 94, 0.75); background: rgba(80, 20, 28, 0.45); }
+#touch-ui .tc-fire.on { background: rgba(255, 70, 70, 0.5); border-color: #ff6b6b; }
+#touch-ui .tc-aim { right: calc(132px + env(safe-area-inset-right)); bottom: 22px; }
+#touch-ui .tc-melee { right: calc(136px + env(safe-area-inset-right)); bottom: 92px; }
+#touch-ui .tc-reload { right: calc(84px + env(safe-area-inset-right)); bottom: 148px; }
+#touch-ui .tc-throw { right: calc(14px + env(safe-area-inset-right)); bottom: 146px; width: 50px; height: 50px; }
+#touch-ui .tc-use { right: calc(204px + env(safe-area-inset-right)); bottom: 50px; }
+#touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 64px; height: 64px; border-color: rgba(0, 209, 255, 0.6); }
+#touch-ui .tc-pause { left: calc(8px + env(safe-area-inset-left)); top: 8px; width: 44px; height: 44px; border-radius: 8px; font-size: 15px; }
+/* Held upright: ask for landscape (the controls are laid out for it). */
+#touch-rotate { display: none; }
+@media (orientation: portrait) {
+  html.touch #touch-rotate { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; pointer-events: auto; background: rgba(11, 15, 26, 0.94); color: var(--text); font-family: var(--font-display); }
+  html.touch #touch-rotate div { display: flex; flex-direction: column; gap: 8px; }
+  html.touch #touch-rotate b { font: italic 700 24px var(--font-display); text-transform: uppercase; }
+  html.touch #touch-rotate b::before { content: '⟳'; display: block; font-size: 48px; font-style: normal; color: var(--cyan); }
+  html.touch #touch-rotate small { color: var(--muted); font-size: 14px; }
+}
+/* Options → Controls: a key you can rebind (the weapon wheel). */
+.key-bind-row { display: flex; align-items: center; gap: 8px; }
+.key-bind { min-width: 120px; font: 700 14px var(--font-display); }
+.key-bind-note { color: var(--warning); }
