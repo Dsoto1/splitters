@@ -494,17 +494,20 @@ export class Hud {
     }
     const def = weaponByCode(held);
     const altDef = def?.alt;
-    const altText = alive && altDef ? (altDef.ammo === 'own' ? `RMB ${altDef.label} · ${owned.get(held)?.[2] ?? 0}` : `RMB ${altDef.label}`) : '';
+    // A melee weapon's barrel loaded from a reserve (the Battle Axe): the counter shows its loads and shells.
+    const barrel = !!def && def.magazine === 0 && !!altDef?.reload;
+    const altText = alive && altDef ? (altDef.ammo === 'own' && !barrel ? `RMB ${altDef.label} · ${owned.get(held)?.[2] ?? 0}` : `RMB ${altDef.label}`) : '';
     if (this.altEl.textContent !== altText) this.altEl.textContent = altText;
     const ammo = owned.get(held);
     this.weaponName.textContent = alive && def ? def.displayName : '';
-    this.ammoReserve.textContent = alive && def && ammo && def.magazine > 0 && !reloading ? String(ammo[1]) : '';
+    this.ammoReserve.textContent = alive && def && ammo && (def.magazine > 0 || barrel) && !reloading ? String(ammo[1]) : '';
     if (!alive || !def || !ammo) this.ammoCount.textContent = '';
+    else if (barrel) this.ammoCount.textContent = reloading ? 'Loading…' : String(ammo[2]);
     else if (def.heat) this.ammoCount.textContent = ammo[3] >= 100 ? 'OVERHEAT' : `${Math.round(ammo[3])}°`;
     else if (def.magazine === 0) this.ammoCount.textContent = '∞';
     else this.ammoCount.textContent = reloading ? 'Reloading…' : String(ammo[0]);
     this.ammoCount.classList.toggle('reloading', reloading || (!!def?.heat && !!ammo && ammo[3] >= 100));
-    this.ammoCount.classList.toggle('low', !!def && def.magazine > 0 && !!ammo && ammo[0] <= Math.ceil(def.magazine / 4));
+    this.ammoCount.classList.toggle('low', !!def && !!ammo && (barrel ? ammo[2] === 0 : def.magazine > 0 && ammo[0] <= Math.ceil(def.magazine / 4)));
     const key = `${alive}|${held}|${[...owned.keys()].join(',')}`;
     if (key === this.lastWeaponBar) return;
     this.lastWeaponBar = key;

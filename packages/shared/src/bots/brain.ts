@@ -2,8 +2,8 @@ import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles,
 import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import type { ItemDefinition, ItemEffect } from '../sim/items.ts';
-import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
-import { THROWABLE_DEFS, getWeapon, weaponCode, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
+import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
+import { THROWABLE_DEFS, getWeapon, weaponCode, type AltFire, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
 import { AimModel, type AimContext, type AimSolution, type AimTarget } from './aim.ts';
@@ -77,6 +77,8 @@ export interface InventoryView {
   def: WeaponDefinition;
   mag: number;
   reserve: number;
+  /** Rounds of a second trigger with its own ammo (the Battle Axe's barrel). */
+  alt?: number;
 }
 
 /** Something heard: gunfire or an explosion, and who made it (actor ID, -1 for nobody). */
@@ -1208,6 +1210,20 @@ export class BotBrain {
     const inCoverHidden = !!this.cover && this.peekPhase === 'hide' && horizontalDistance(me.pos, this.cover.pos) < 0.8;
     if (held && held.def.magazine > 0 && held.reserve > 0 && !view.reloading) {
       if (held.mag === 0 || (!target && held.mag < held.def.magazine / 2) || (inCoverHidden && held.mag < held.def.magazine * 0.6)) buttons |= BUTTON_RELOAD;
+    }
+    // A melee weapon with a barrel (the Battle Axe's blunderbuss): swing within reach, fire the barrel at a
+    // target a few steps beyond it, and load the barrel again when nobody is that close.
+    const barrel = held && held.def.kind === 'melee' && held.def.alt?.kind === 'hitscan' ? held.def.alt : null;
+    if (held && barrel) {
+      const loaded = (held.alt ?? 0) >= barrel.cost;
+      const s = sol as AimSolution | null;
+      const lined = !!s && Math.abs(angleDelta(this.yaw, s.yaw)) < s.halfAngle + 0.05 && Math.abs(this.pitch - s.pitch) < s.halfAngle + 0.08;
+      if (wantFire && s && loaded && reacted && lined && !sprint && s.dist > held.def.range + 0.6 && s.dist < barrelReach(barrel) && !view.reloading) {
+        buttons |= BUTTON_ALT;
+        buttons &= ~BUTTON_FIRE;
+      }
+      const near = !!target && horizontalDistance(me.pos, target.pos) < barrelReach(barrel) + 4;
+      if (barrel.reload && !view.reloading && held.reserve > 0 && (held.alt ?? 0) < (barrel.max ?? 1) && (!target || (!near && !loaded))) buttons |= BUTTON_RELOAD;
     }
     // Dry up close: punch or kick (quick melee) rather than click an empty gun.
     if (target && held && held.def.kind !== 'melee' && !held.def.projectile?.disc && held.def.magazine > 0 && held.mag === 0 && held.reserve === 0 && horizontalDistance(me.pos, target.pos) < 2 && (tick + this.slot) % 12 === 0) {
@@ -2367,12 +2383,20 @@ export interface WeaponChoiceContext {
  * ammo (the last rockets are kept for a target worth them) and a magazine
  * about to run dry in a close fight. -Infinity when it can't fire at all.
  */
+/** How far (m) bots fire a melee weapon's barrel: well inside its falloff, where most of the pattern still lands. */
+export function barrelReach(alt: AltFire): number {
+  return Math.min(alt.range ?? 10, (alt.falloff?.end ?? 16) * 0.45);
+}
+
 export function weaponScore(w: InventoryView, c: WeaponChoiceContext): number {
   const { def } = w;
   const rounds = w.mag + w.reserve;
   if (def.magazine > 0 && rounds <= 0) return -Infinity;
   const { dist, target, profile } = c;
-  const [lo, hi] = def.botRange;
+  const [lo, reach] = def.botRange;
+  // A melee weapon with a loaded barrel (the Battle Axe) also fights a few steps beyond its reach.
+  const barrel = def.kind === 'melee' && def.alt?.kind === 'hitscan' && (w.alt ?? 0) >= def.alt.cost ? def.alt : null;
+  const hi = barrel ? Math.max(reach, barrelReach(barrel)) : reach;
   let score = def.botDesirability + (dist >= lo && dist <= hi ? 0.6 : -Math.min(dist < lo ? lo - dist : dist - hi, 20) * 0.03);
   if (def.projectile && dist < def.projectile.splashRadius + 1) score -= 1.5 * (profile.selfPreservation / 100);
   if (profile.tags.includes('EXPLOSIVES_FAN') && def.projectile) score += 0.4;

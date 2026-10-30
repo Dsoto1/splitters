@@ -1402,7 +1402,7 @@ export class GameSession {
             const eye = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
             const muzzle = mine ? null : this.view.muzzleOf(ev.s);
             const color = def?.view.tracer ?? '#ffd36b';
-            const strength = Math.min(2.5, Math.max(0.6, (def?.damage ?? 20) / 25));
+            const strength = Math.min(2.5, Math.max(0.6, ((ev.alt ? def?.alt?.damage : undefined) ?? def?.damage ?? 20) / 25));
             if (def?.grapple) {
               // The rope, from the hand out to the hook.
               const t = ev.to[0];
@@ -1451,7 +1451,7 @@ export class GameSession {
               this.hitFeedback(ev.hit, ev.z, !!ev.ar);
             } else {
               this.view.avatarAction(ev.s, 'shoot');
-              if (def && def.kind !== 'melee') this.view.remoteFlash(ev.s, def);
+              if (def && (def.kind !== 'melee' || ev.alt)) this.view.remoteFlash(ev.s, def, !!ev.alt);
             }
           } else if (ev.e === 'impact') {
             // A bullet that was in flight landed.
@@ -1958,15 +1958,16 @@ export class GameSession {
         if (local.alive && sample.buttons & BUTTON_FIRE && ammo && ammo[0] === 0 && ammo[1] === 0 && local.weapon?.magazine) this.sfx.dryFire(now);
         if (shot) {
           this.sfx.localShot(shot.def, shot.alt);
-          this.view.kick(shot.def);
+          this.view.kick(shot.def, shot.alt);
           const muzzle = this.view.localMuzzle();
-          const strength = Math.min(2.5, Math.max(0.6, shot.def.damage / 25));
+          const strength = Math.min(2.5, Math.max(0.6, ((shot.alt ? shot.def.alt?.damage : undefined) ?? shot.def.damage) / 25));
           // Your rounds leave at their real speed; only tracer rounds draw a streak (the rest still land).
           shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
           // Mechanical recoil is in the prediction (the camera shows it, below); this is the visual kick on top.
           // Only big single kicks (revolver, rifles that slam, shotguns) shake the camera, and briefly: automatics would blur your target.
-          const visual = gunplayOf(shot.def).kick?.visual ?? 0;
-          if (!shot.alt && visual >= 0.8) this.view.shake(Math.min(0.25, visual * 0.15));
+          // A second trigger shakes only by its own kick (the Battle Axe's blunderbuss); a swing never does.
+          const visual = shot.alt ? (shot.def.alt?.kick?.visual ?? 0) : shot.def.kind === 'melee' ? 0 : (gunplayOf(shot.def).kick?.visual ?? 0);
+          if (visual >= 0.8) this.view.shake(Math.min(0.25, visual * 0.15));
         }
       }
       if (netProbe.on) for (const i of this.outbox) netProbe.inputAt.set(i.seq, now);

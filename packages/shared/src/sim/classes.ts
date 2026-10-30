@@ -300,7 +300,7 @@ export class ClassPlay {
       for (const c of all) {
         if (!c.alive || (c !== owner && this.host.hostile(owner, c)) || horizontalDistance(c.move.pos, at) > DISPENSER.radius || Math.abs(c.move.pos.y - at.y) > 2) continue;
         if (c.health < c.maxHealth) c.health = Math.min(c.maxHealth, c.health + DISPENSER.hps / TICK_RATE);
-        if (ammoTick) for (const w of c.weapons.values()) if (w.def.magazine > 0 && w.reserve < w.def.reserveMax) w.reserve = Math.min(w.def.reserveMax, w.reserve + Math.max(1, Math.round(w.def.pickupAmmo * DISPENSER.ammo)));
+        if (ammoTick) for (const w of c.weapons.values()) if (w.def.reserveMax > 0 && w.reserve < w.def.reserveMax) w.reserve = Math.min(w.def.reserveMax, w.reserve + Math.max(1, Math.round(w.def.pickupAmmo * DISPENSER.ammo)));
       }
     }
   }
