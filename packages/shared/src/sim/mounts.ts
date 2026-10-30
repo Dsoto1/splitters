@@ -104,6 +104,11 @@ export interface MountDef {
   /** Drawn this far above the ground (m) instead of the class default (hovercraft float 0.35 m; sleds sit on the snow). */
   rideHeight?: number;
   /**
+   * Wheels drawn on a body that has none of its own (drawing only): one model, its axle along its own X once placed,
+   * at each `at` (the wheel's centre in the mount's frame; a wheel with x < 0 is turned to face outwards on the left).
+   */
+  wheels?: { model: string; at: [number, number, number][] };
+  /**
    * The driver's eye in the cockpit view, in the mount's frame (drawing only).
    * Absent: a seated head height above the driver's seat, a little forward (see cockpitEye).
    */
@@ -193,15 +198,31 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     id: 'buggy',
     displayName: 'Buggy',
     kind: 'vehicle',
-    model: 'vehicles/buggy.glb',
+    // The owner's Tactical Off-Road Beast and its Rugged Off-Road Tire (Meshy, owned; content/guns.json): a long
+    // tube-frame buggy with a roof gun, its hubs bare, so the tires go on at its hubs and it rides on them.
+    model: 'vehicles/offroad_buggy.glb',
+    rideHeight: 0.24,
+    wheels: {
+      model: 'vehicles/offroad_tire.glb',
+      at: [
+        [-1.0, 0.42, 1.74],
+        [1.0, 0.42, 1.74],
+        [-1.0, 0.42, -1.86],
+        [1.0, 0.42, -1.86],
+      ],
+    },
     health: 450,
     half: [1.0, 0.6, 2.0],
+    // On the model's seats: two rows (front at z 0.2, back at z -0.55, cushions 0.72 m up, 0.32 m either side of
+    // the middle), the roof gun over the back row, its gunner standing in the cargo bay behind.
     seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.4, 0.75, 0.3] },
-      { role: 'gunner', label: 'Gunner', offset: [0, 1.05, -1.3], weapon: 'core.mount_mg', arc: ALL_ROUND },
-      { role: 'passenger', label: 'Passenger', offset: [0.4, 0.75, 0.3] },
-      { role: 'passenger', label: 'Back seat', offset: [0.45, 0.85, -0.6] },
+      { role: 'driver', label: 'Driver', offset: [-0.32, 0.72, 0.2] },
+      { role: 'gunner', label: 'Gunner', offset: [0, 0.6, -1.15], weapon: 'core.mount_mg', arc: ALL_ROUND },
+      { role: 'passenger', label: 'Passenger', offset: [0.32, 0.72, 0.2] },
+      { role: 'passenger', label: 'Back seat', offset: [0.32, 0.75, -0.55] },
     ],
+    // Just under the roof bars (1.45 m), looking over the wheel and dash.
+    cockpitEye: [-0.32, 1.42, 0.15],
     enterRadius: 3.2,
     respawnSeconds: 45,
     blast: { radius: 4.5, damage: 90 },

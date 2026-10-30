@@ -355,7 +355,7 @@ repo; they live in a downloads dir outside it.
 | `source.file` | A regular expression for the download's file name (a rigged `.glb`, or the textured `.fbx`), when it isn't saved as `<id>.glb`. |
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -481,7 +481,11 @@ and in first person as the game draws it (`?mode=grips`, the game's own
 renderer). Look for palms on the grips, fingers round them (not through the
 gun or splayed in the air), the support hand on the handguard, and in first
 person, sleeves that don't cover the sights. Fix a bad hand with
-`fixes.hands` and build again. `?mode=characters&looks=<look>` shows the
+`fixes.hands` and build again. For posture, the same page frames the whole body
+after a pose: `window.__grips.body('side' | 'front' | 'feet')` (side-on is
+where a hunched back or toes-up feet show), and `window.__grips.joints()`
+gives the posed joints' positions. A hunched body gets `fixes.lean`
+(Bonesworth: 4, 6, 6 and 16 degrees on Spine02, Spine01, Spine and neck). `?mode=characters&looks=<look>` shows the
 character with every clip.
 
 ### 5. Ship it

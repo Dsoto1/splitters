@@ -30,6 +30,11 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - Enemies in vehicles: bots prefer launchers (aimed low at the hull), throw grenades at a stopped one, fetch a launcher within 30 m, take cover when they can't hurt it, and dodge one driven at them.
   - The sim has no roll or pitch on vehicles, so "flipped" isn't detected; a wedged vehicle is caught by the headway check instead.
   - Merge it through `check/candidate` (the shared sim changed, so CI runs the full suite).
+- **On `wip/posture-buggy`** (not merged; needs a `check/` run, the shared sim changed):
+  - Meshy feet levelled on their soles (`fixes.feet` in prepare-meshy-characters.mjs): Meshy's rig left 19 characters 7-23 degrees toes up (Bonesworth and Rotter's right foot toes down); rebuilt from their recorded rigs (no new rigging). Monk and Merrow (robes) were tried and kept as they were.
+  - `fixes.lean` on Bonesworth, Rustwalker, Rotter and Grandpa Chains. The looser triangle cut now applies to rigged downloads only, so an unrigged rebuild reproduces its shipped file (Bonesworth was byte for byte).
+  - Not rebuilt (community downloads not in either folder): Titan (head forward), Alien and Salamander (toes up 8-11 degrees). Download them by hand to fix.
+  - The owner's buggy (`vehicles/offroad_buggy.glb` + `offroad_tire.glb` drawn at the hubs from the def's `wheels`); seats moved onto the model. The owner wants driver + 3 shooting passengers (sim work for another agent): front passenger [0.32, 0.72, 0.2], back seats [-0.32, 0.75, -0.55] and [0.32, 0.75, -0.55]. The cockpit view looks over a dark, coarse dash; the chase camera is the better view. The hit box is still the old 4 x 1.2 m one (model 4.4 x 1.7 m).
 - **Open items:**
   - `perf:mass` classes some deaths as out of view when they are on screen; check the view test before trusting its tier counts;
   - kick and flinch feel not judged by eye yet;
@@ -105,7 +110,7 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
     `trim` colours the gloves.
 - **Not characters, still to bring in** (no pipeline path yet):
   - (done on `wip/weapons-variety`: the Frontier Rifle, the Neon Flux and the Medkit; see section 5)
-  - the buggy (`Tactical_Off_Road_Bea`) and its wheel (`Rugged_Off_Road_Tire`), to replace the jeep;
+  - (done on `wip/posture-buggy`: the buggy and its tire, as the `buggy` mount; the gun jeep keeps its Kenney truck);
   - the Triceratops (a creature: prepare-creatures.mjs);
   - five helmets: Aviator, Mk 2, Military, Steel and Viking (the helmet tool `prepare-gear.mjs` is on `wip/roster-cleanup`).
 - The owner's review results are kept in the review artifact

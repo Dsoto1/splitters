@@ -160,6 +160,22 @@
       "triangles": 3286,
       "bytes": 183696,
       "sha256": "30bc3dc648c402b8"
+    },
+    {
+      "file": "models/vehicles/offroad_buggy.glb",
+      "source": "meshy-owned-guns",
+      "src": "Tactical Off-Road Beast, the buggy (owner's Meshy generation, 2026-10-29)",
+      "triangles": 6780,
+      "bytes": 474216,
+      "sha256": "41ea94b219b5ba0b"
+    },
+    {
+      "file": "models/vehicles/offroad_tire.glb",
+      "source": "meshy-owned-guns",
+      "src": "Rugged Off-Road Tire, the buggy's wheels (owner's Meshy generation, 2026-10-29)",
+      "triangles": 676,
+      "bytes": 48840,
+      "sha256": "a22699aba379759c"
     }
   ]
 }

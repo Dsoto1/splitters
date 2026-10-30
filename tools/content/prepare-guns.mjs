@@ -23,7 +23,9 @@
 // channel at least `light`, channels within `chroma` of each other), `{ warm:
 // [r, r-b, r-g] }` orange and red ones. `label` names the model in the lock
 // file and provenance instead of the download's file name. `centre: base`
-// centres a turret on its pedestal (centreOnBase).
+// centres a turret on its pedestal (centreOnBase). `textureSize` (px, default 512) sizes the colour map of a
+// bigger model (the buggy); `sloppy: true` cuts a mesh of many small separate pieces (the tire's tread) to its
+// budget regardless of its topology.
 //
 // Packs with `glb: true` too (the owner's own Meshy generations, licence Owned) are Meshy's textured GLB
 // downloads instead: each entry names its file in `glb`, found directly in the downloads dir or one folder
@@ -122,7 +124,7 @@ async function build(src, entry, pack) {
   let meshy = null;
   if (pack.meshy) {
     const recolor = entry.paintOut ? async (img) => console.log(`  painted out ${await paintOut(img, markings(entry.paintOut), { grow: entry.grow ?? 2, holes: entry.holes ?? 0 })} px of markings`) : null;
-    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor }));
+    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) }));
   }
   // FBX sources (the Guns & Explosives pack) keep their UVs; their colour and normal maps sit beside them
   // unlinked, so `baseColor` / `normal` name them and they go on every material.
@@ -157,7 +159,7 @@ async function build(src, entry, pack) {
     mat.setMetallicFactor(0).setRoughnessFactor(0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
     for (const ext of mat.listExtensions()) ext.dispose();
     const base = mat.getBaseColorTexture();
-    if (base) await shrink(base, 512, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
+    if (base) await shrink(base, entry.textureSize ?? 512, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
     const normal = mat.getNormalTexture();
     if (normal) await shrink(normal, 256, 'image/jpeg');
   }

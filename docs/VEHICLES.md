@@ -59,6 +59,13 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
   Kit's long sled. The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
+  The buggy is the owner's own Meshy model (Tactical Off-Road Beast, owned;
+  `content/guns.json`, built by `prepare-guns.mjs`, 6.8k triangles, 768 px map):
+  a long tube-frame buggy with a roof gun whose hubs are bare, so the owner's
+  Rugged Off-Road Tire (`vehicles/offroad_tire.glb`, 676 triangles) is drawn at
+  each hub from the def's `wheels` (`mountVisuals.ts`), and the body rides
+  0.24 m up (`rideHeight`) on them. The wheels don't turn or steer yet (no
+  vehicle's do).
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no
   reloading) within its arc; side door guns (the gunship's) have arcs centred
   on their own side (`facing` on the seat). Passengers use their own weapons. Drivers can't
