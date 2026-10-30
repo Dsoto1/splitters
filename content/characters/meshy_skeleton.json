@@ -6,6 +6,7 @@
   "name": "Rattles",
   "look": "core.rattles",
   "bio": "You hear him before you see him. Then it is too late.",
+  "size": "large",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: skeleton.",
   "source": {

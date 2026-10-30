@@ -6,6 +6,7 @@
   "name": "The Visitor",
   "look": "core.visitor",
   "bio": "Came a very long way to study human culture. Stayed for the deathmatches.",
+  "size": "small",
   "body": "male",
   "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm.",
   "source": {

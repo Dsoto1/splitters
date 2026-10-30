@@ -31,8 +31,12 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     Visitor, Wealthy Otter, Biscuit, Goblin.
   - Large: Big Bogdan, Count Bonesworth, Ivory Rustwalker, Boglurker, Rattles.
   - Punkin is small and should be normal.
-  - Bandit's scale is far too big in general (check whether it's the model's own scale/bounds, e.g. a stray
-    vertex or the tail/hat inflating the height the size class divides by).
+  - DONE (session branch): Giggles, The Visitor small; Boglurker, Rattles large; Punkin normal. The rest of the
+    list was already set (the box was on an old build).
+  - Bandit's scale is far too big in general. Found: its model is wider (1.27×) and deeper (1.23×) than tall
+    (every other small character is tallest along its height), so at Sprout's height it carries much more bulk.
+    Fix in the character pipeline: a per-character scale in the manifest, or size it by its bulk; check the
+    download for a tail/cloak/weapon making it wide.
   - Dust Trooper looks odd; Grizzelda "is not looking right these days" (hat brim, hunched torso; she was also
     opted out of full-body first person). Look at both in the menu and in game.
   - Sizes live in packages/shared/src/content/looks.ts (`size`) and content/characters/*.json (`size`);

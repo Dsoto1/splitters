@@ -6,6 +6,7 @@
   "name": "Boglurker",
   "look": "core.boglurker",
   "bio": "Crawled out of the marsh for the noise and stayed for the shooting. Smells exactly as you fear.",
+  "size": "large",
   "body": "male",
   "notes": "Hunched (`lean`); cloth hangs below its hips.",
   "source": {

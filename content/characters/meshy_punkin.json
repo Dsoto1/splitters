@@ -7,7 +7,6 @@
   "look": "core.punkin",
   "bio": "Carved once a year, angry all year round.",
   "body": "male",
-  "size": "small",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: pumpkin head.",
   "source": {
     "license": "CC0",
