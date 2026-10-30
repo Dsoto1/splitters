@@ -3,70 +3,49 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
-## Start here (session of 2026-10-29, handed off to a new account)
+## Start here (session of 2026-10-30, handed off to a new account)
 
-**`main` is still at `f015af3` (0.5.0).** Everything below is on the session
-branch `claude/launcher-ui-map-cards` (tip at the commit that adds this note)
-and on `check/candidate` up to `cc57ae3`, but CI there was red, so `main` was
-not fast-forwarded.
+**Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.
+The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
+`curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 
-### 1. Make `check/candidate` green, then fast-forward `main`
-The last run, on `cc57ae3` (Actions run 40945882610), passed check, build,
-site and e2e shards 1–7. Two jobs failed:
-- **perf:** "NOT MEASURED: frost_basin/medium (the match didn't start or no
-  clumped frame was drawn)". This is probably the draw-call or effects work
-  (dust and mist instancing, mist folded into fog on medium), or a slow start.
-- **e2e shard 8:** "4 check(s) failed". lobby was FLAKY ("joining from the game
-  browser…"); the failing lines haven't been read yet: get the job log.
+### Where things stand
+- **On `main`** (green on CI):
+  - the perf96 drawn-frame fix and the hostcontrols End-match double click;
+  - `wip/bot-manager`;
+  - High graphics no longer blurry (the sun-ray pass at full size);
+  - bodies without a ragdoll fall under gravity;
+  - `wip/character-intake` (24 new Meshy characters and hand fixes);
+  - `wip/host-handoff` (the second friend rejoins the successor);
+  - universal first-person arms for Brass Hare, Teddy and Saint Nick.
+- **In CI on `check/candidate` at hand-off** (`d6ecee1`):
+  - `wip/weapons-variety` (new weapon and turret models, Battle Axe, random pickups and "Mix up weapon pickups");
+  - `wip/roster-cleanup`'s first two commits (six looks retired; helmet tool and models, not yet worn);
+  - the ladder path fix (bots treated tower ladders as blocked).
 
-Earlier runs on `12e9041`, `780d077` and `65a7fc4` also failed. Push the
-session branch to `check/candidate` (fast-forward), fix, and repeat until green.
+  If it's green, fast-forward `main`. If it's red, read the failed jobs' logs (`mcp__github__get_job_logs` with `failed_only`).
+- **Agents still running at hand-off; their work lives on these branches:**
+  - **`wip/pause-safari`:** a wider pause/host menu (multi-column), the Safari mouse fix (delta filtering), and a zoom sensitivity setting that scales by FOV ratio. Check what was pushed and finish it.
+  - **`wip/impact`** (batch 2):
+    - stopping power;
+    - bigger explosion knockback;
+    - tiered ragdolls (full, cheap, posed; a body pool; a budget of awake bodies; a perf "mass casualty" check);
+    - unarmed punch and kick (Universal Animation Library clips);
+    - Arena-tagged bots hop only in fights on the "Mixed" style.
 
-### 2. On the session branch (not on main yet)
-- **Performance** (St. John's, 48 players):
-  - medium: main draws 824 → ~440;
-  - high: main draws 2059 → ~776, shadow draws 885 → ~157.
+    Section 5 below lists the items; check what was pushed and finish it.
+- **Not merged on purpose:** roster-cleanup's WIP commit 899537c (helmets worn on four looks; fit values are guesses, never checked visually). Finish the helmet fits (Commando, Engineer, beret and headband heights, Farmhand hat, Drifter mask, Dapper jacket weights) on a new branch.
+- **Owner to-dos:**
+  - run `sudo tiletrigger-update` on the box after each `main` update;
+  - send Boglurker's original FBX (right hand not skinned);
+  - review the new characters (section 4);
+  - confirm the Plains Scout model is respectful.
 
-  How:
-  - shadow-caster culling uses `customAllowRendering` (per cascade, per
-    light-space square; `MIN_TEXELS=6`) in `atmosphere.ts`;
-  - sun-ray occluders go through `rays.getPass().renderList`; never use
-    `includedMeshes`, which hid instanced trees and props;
-  - impact dust and blood mist are instanced;
-  - medium mist is folded into EXP2 fog.
-- **High quality, sharper:** MSAA (`samples=4`) instead of FXAA; SSAO2 at full
-  blur ratio.
-- **Safari mouse:** raw pointer lock (`unadjustedMovement`) with a fallback.
-- **Browser bot cap:** 24v24 (`BROWSER_MAX_PLAYERS=48`); dedicated hosts keep
-  48v48.
-- **Host panel:**
-  - characters are built through a queue (one per 16 ms; first-person arms
-    bypass it);
-  - "Apply: +N bots";
-  - End and Restart need a double click.
-- **Map rotation / queue** and **unified paths** (roads, race tracks, vehicle
-  and NPC routes, joinable ends) in MapMaker.
-- **AWS:** the `AppName=TileTrigger` tag on the stack, its resources and SSM;
-  the budget filters on it (`infra/`, docs/HOSTING.md). The owner reruns
-  `infra/deploy-multiplayer.sh` to apply it.
-- **Characters:**
-  - the intake queue `content/intake/meshy-queue.json` (50 models, with names
-    and sizes);
-  - Ranger renamed to Linktifa;
-  - body sizes: Goblin and Wealthy Otter small; Iron Knight, Salamander
-    Warlord and Hyena Warrior large (`size` in looks.ts).
-
-### 3. Unmerged agent branches (each pushed as `wip/*`; review, finish, merge)
-| Branch | State |
-|---|---|
-| `wip/bot-manager` (624ec87) | Bots window for hosts, `BOTSET` / console `botset`, scenario maps naming their own bots (`MapDocument.bots`, edited in MapMaker), docs and e2e. Typecheck, unit tests (run file by file under load) and the `teams` flow pass. In `hostcontrols`, every new check passes, but two older checks failed on a loaded run ("a friend joins the hosted match", "the end-of-match scoreboard says where the match goes next") and haven't been rerun clean. Deferred: named NPCs in encounters, per-bot loadouts, editing bot sets on /host. |
-| `wip/host-handoff` | Merged onto the session branch (via `wip/merge-host-handoff`), the rejoin bug fixed: see "Host leaves a browser-hosted match; host handoff" below. Locally (load average 8-20 from other agents): the four flows `hostgame`, `hostcontrols`, `lobby`, `handoff` passed together; `handoff` passed 3 of 3 alone after the fix (it failed 2 of 3 before); `lobby` failed twice under heavy load and passed twice after. Run them on a `check/` branch. |
-| `wip/character-intake` (2358cdf), merged on `wip/merge-character-intake` | Merged with bot-manager on top of the session branch. The Phase A fixes are done: Lancer Mei, Count Bonesworth and Rotter had arm landmarks that were too short (their hands took in half the forearm) and now have landmarks read off the model; Dusty Colt has `fixes.hands.curl`. All 32 grip sheets were rendered again. 24 more characters are rigged by Meshy (section 4). Checks: typecheck, content:check, test:changed, and the e2e `characters`/`designer`/`visual` flows pass locally; run `physicsfx` on CI. |
-| `wip/roster-cleanup` (899537c) | Six retired looks (Champion, Desperado, Miller, Raider, Sprinter, Striker; old ids load as kept looks); a helmet tool (`prepare-gear.mjs`) and five helmets; model gear on the Head joint. The per-look fixes are WIP. Commando's and Engineer's helmet fits are off; beret and headband sit high; Farmhand's hat and Drifter's mask aren't done; the Dapper's jacket skin weights are diagnosed but not fixed (arm weights on torso vertices; see the commit). No CHANGELOG entry or portraits yet. |
-
-Merge order suggestion: character-intake, roster-cleanup (expect a
-small conflict in `content/meshy.lock.json` and looks.ts). bot-manager and host-handoff are in.
-Run the checks after each merge.
+### Machine notes (agents share one container)
+- **Ports:** run e2e on your own ports (`E2E_CLIENT_PORT`/`E2E_SERVER_PORT`; the lobby flow has hub ports too). The defaults collide between checkouts.
+- **Disk:** keep big renders in your scratchpad and delete them. The disk filled up once (old scratch plus 53 stale worktrees).
+- **Owner's downloads:** they live outside the repo in `/home/user/meshystuff` (a clone of Dsoto1/meshystuff) and `/home/user/meshy-drive` (Drive folder `18MaKefMCWARf1Y3gAjhZuxTto86vGAYl`, fetched with gdown). They aren't in a new container; fetch them again. Never commit raw downloads.
+- **Meshy:** `MESHY_API_KEY` is in the environment. Rigging takes `source.modelUrl: "upload"` (Drive links are refused); 5 credits per rig.
 
 ### 4. Meshy models (state on `wip/merge-character-intake`, 2026-10-30)
 - **Downloads:** the owner's files come from the Drive folder
