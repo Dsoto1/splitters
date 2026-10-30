@@ -12361,6 +12361,216 @@
         1.2,
         1.057
       ]
+    },
+    {
+      "file": "props/street_barrel.glb",
+      "source": "meshy-owned-street",
+      "title": "Wooden Barrel (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Barrel_1_1029205916_texture.glb",
+      "triangles": 3000,
+      "bytes": 112668,
+      "sha256": "7b422b0789bd025c",
+      "size": [
+        0.656,
+        0.9,
+        0.654
+      ]
+    },
+    {
+      "file": "props/street_blue_barrel.glb",
+      "source": "meshy-owned-street",
+      "title": "Blue Barrel (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Blue_Barrel_1030200127_stylize.glb",
+      "triangles": 3000,
+      "bytes": 104788,
+      "sha256": "d43e74022c02a070",
+      "size": [
+        0.746,
+        0.9,
+        0.747
+      ]
+    },
+    {
+      "file": "props/street_post_barrel.glb",
+      "source": "meshy-owned-street",
+      "title": "Yellow Hazard Barrel (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Post_Barrel_1030164958_texture.glb",
+      "triangles": 2977,
+      "bytes": 151724,
+      "sha256": "7330096637dbf1ac",
+      "size": [
+        0.632,
+        0.9,
+        0.642
+      ]
+    },
+    {
+      "file": "props/street_rusty_barrel.glb",
+      "source": "meshy-owned-street",
+      "title": "Rusty Barrel (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Rusty_Barrel_1030200140_texture.glb",
+      "triangles": 3000,
+      "bytes": 92516,
+      "sha256": "02a12a59d79d276b",
+      "size": [
+        0.567,
+        0.9,
+        0.569
+      ]
+    },
+    {
+      "file": "props/street_rusty_barrel_2.glb",
+      "source": "meshy-owned-street",
+      "title": "Rusty Barrel (Dented) (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Rusty_Barrel_1030200142_texture.glb",
+      "triangles": 2996,
+      "bytes": 122724,
+      "sha256": "d40e3cef32c07d6f",
+      "size": [
+        0.554,
+        0.9,
+        0.554
+      ]
+    },
+    {
+      "file": "props/street_rusty_barrel_3.glb",
+      "source": "meshy-owned-street",
+      "title": "Rusty Barrel (Old) (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_rusty_barrel_1030200155_texture.glb",
+      "triangles": 3000,
+      "bytes": 120816,
+      "sha256": "26be8ffb1c386e6f",
+      "size": [
+        0.601,
+        0.9,
+        0.602
+      ]
+    },
+    {
+      "file": "props/street_trash_can.glb",
+      "source": "meshy-owned-street",
+      "title": "Trash Can (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_trash_can__1030195940_texture.glb",
+      "triangles": 3000,
+      "bytes": 126268,
+      "sha256": "751328bea7f6499b",
+      "size": [
+        0.705,
+        1,
+        0.64
+      ]
+    },
+    {
+      "file": "props/street_trash_can_classic.glb",
+      "source": "meshy-owned-street",
+      "title": "Classic Trash Can (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Trash_Can_Classic_1030200011_texture.glb",
+      "triangles": 3000,
+      "bytes": 122852,
+      "sha256": "518e2f16e0d203b7",
+      "size": [
+        0.577,
+        0.9,
+        0.566
+      ]
+    },
+    {
+      "file": "props/street_city_trash.glb",
+      "source": "meshy-owned-street",
+      "title": "Wheelie Bin (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Realistic_city_trash__1029214806_texture.glb",
+      "triangles": 3493,
+      "bytes": 173440,
+      "sha256": "6e8548d8b26599d9",
+      "size": [
+        0.715,
+        1.1,
+        0.768
+      ]
+    },
+    {
+      "file": "props/street_trash_pile.glb",
+      "source": "meshy-owned-street",
+      "title": "Trash Pile (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Trash_Pile_1030195949_texture.glb",
+      "triangles": 3453,
+      "bytes": 208988,
+      "sha256": "0a4a4c765bde86e7",
+      "size": [
+        1.119,
+        1,
+        1.121
+      ]
+    },
+    {
+      "file": "props/street_trash_pile_low.glb",
+      "source": "meshy-owned-street",
+      "title": "Low Trash Pile (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Trash_Pile_1030195954_texture.glb",
+      "triangles": 2994,
+      "bytes": 188588,
+      "sha256": "956371d2952c2afd",
+      "size": [
+        1.203,
+        0.5,
+        1.25
+      ]
+    },
+    {
+      "file": "props/street_dumpster.glb",
+      "source": "meshy-owned-street",
+      "title": "Urban Dumpster (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Urban_Container_1030200046_texture.glb",
+      "triangles": 3498,
+      "bytes": 157828,
+      "sha256": "54b6bf9d6a243162",
+      "size": [
+        1.855,
+        1.3,
+        1.022
+      ]
+    },
+    {
+      "file": "props/street_fuel_can.glb",
+      "source": "meshy-owned-street",
+      "title": "Fuel Can (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Fuel_Container_1030200055_texture.glb",
+      "triangles": 2500,
+      "bytes": 129956,
+      "sha256": "027627502288fb54",
+      "size": [
+        0.38,
+        0.45,
+        0.193
+      ]
+    },
+    {
+      "file": "props/street_panel.glb",
+      "source": "meshy-owned-street",
+      "title": "Hanging Shop Sign (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Create_a_3D_model_of__1030200310_texture.glb",
+      "triangles": 3000,
+      "bytes": 135044,
+      "sha256": "28818cdbe74aabfb",
+      "size": [
+        1.147,
+        0.9,
+        0.104
+      ]
+    },
+    {
+      "file": "props/street_historic_building.glb",
+      "source": "meshy-owned-street",
+      "title": "Historic City Building (owner's Meshy) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Historic_City_Buildin_1030200355_texture.glb",
+      "triangles": 5978,
+      "bytes": 293640,
+      "sha256": "d099cf7c1aa03617",
+      "size": [
+        16.881,
+        12,
+        18.38
+      ]
     }
   ]
 }
