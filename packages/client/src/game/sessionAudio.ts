@@ -89,7 +89,9 @@ export class SessionAudio {
 
   /** A shot the local player just fired (predicted). */
   localShot(def: WeaponDefinition, alt = false): void {
-    this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id));
+    const own = alt ? def.view.altShot : undefined;
+    if (own) this.audio.play(own.sound as SoundId, { rate: own.rate ?? 1, gain: 1.15 });
+    else this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id));
   }
 
   /** Your own punch or kick: a swish as you throw it. */
@@ -209,7 +211,10 @@ export class SessionAudio {
         const mine = ev.s === me;
         // Own shots already played from prediction. A second trigger that launches something sounds like a launcher.
         const altLaunch = ev.alt && getWeapon(ev.w).alt?.kind === 'projectile' && getWeapon(ev.w).alt?.ammo === 'own';
-        if (!mine) this.audio.play(altLaunch ? 'fire.launcher' : fireSound(ev.w), { at: tuple(ev.from) });
+        // A melee weapon's own barrel (the Battle Axe's blunderbuss) has its own report.
+        const own = ev.alt ? getWeapon(ev.w).view.altShot : undefined;
+        if (!mine && own) this.audio.play(own.sound as SoundId, { at: tuple(ev.from), rate: own.rate ?? 1, gain: 1.15 });
+        else if (!mine) this.audio.play(altLaunch ? 'fire.launcher' : fireSound(ev.w), { at: tuple(ev.from) });
         let impacts = 0;
         // Bodies: one meaty hit per victim (a shotgun blast is one big hit, not nine little ones), heavier for big damage.
         const def = getWeapon(ev.w);
@@ -228,7 +233,7 @@ export class SessionAudio {
           this.audio.play('impact.world', { at: tuple(to) });
         });
         for (const [victim, v] of perVictim) {
-          const heavy = v.head || def.damage * v.pellets >= 45;
+          const heavy = v.head || ((ev.alt ? def.alt?.damage : undefined) ?? def.damage) * v.pellets >= 45;
           const at = victim === me ? undefined : tuple(v.at);
           this.audio.play(heavy ? 'impact.heavy' : 'impact.body', { at, gain: victim === me ? 0.6 : 1 });
           this.audio.play('impact.thud', { at, gain: 0.8 });

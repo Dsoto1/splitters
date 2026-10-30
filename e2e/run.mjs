@@ -2022,6 +2022,54 @@ async function arsenalFlow(browser) {
     if (b) b.speedMul = 1;
   }, target);
   check(!!target && punched && swung > 0, `quick melee with a gun in hand punches the bot in front (${JSON.stringify(target)}, hit ${punched}, first-person punches: ${swung})`);
+  // The Battle Axe: the trigger swings it at the bot in front; the second trigger (right mouse) fires the
+  // blunderbuss in its stock at the bot a few steps out (pellets, smoke, the HUD counting its loads); R loads it again.
+  if (target) {
+    await page.evaluate(() => {
+      window.__autoInput = { buttons: 0 };
+      window.__give('core.battle_axe');
+      window.__cs.input.pitch = -0.12;
+    });
+    await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.battle_axe' && window.__cs.local.raiseTicks === 0, null, { timeout: T(8000) }).catch(() => {});
+    const stand = (dist) => sim(page, (m, me, a) => {
+      const bot = m.actor(a.slot);
+      bot.move = { ...bot.move, pos: { x: me.move.pos.x + Math.sin(me.yaw) * a.dist, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * a.dist }, velY: 0, grounded: true };
+      bot.health = 100;
+      bot.armor = 0;
+      bot.speedMul = 0;
+      return bot.health;
+    }, { slot: target.slot, dist });
+    await stand(1.6);
+    // The trigger held (one swing: it's semi-automatic) until the blow lands.
+    await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+    const chopped = await simWait(page, (m, _me, t) => m.actor(t.slot).health <= 100 - 80, target, T(5000));
+    await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    check(chopped, 'the Battle Axe swings: the bot in front takes the blow');
+    await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] === 2, null, { timeout: T(5000) }).catch(() => {});
+    await stand(5);
+    // After the swing's recovery: the barrel (bit 32, the alt trigger, as right mouse sends with a melee weapon in hand).
+    await page.waitForTimeout(T(900)); // wait-ok: the swing's recovery (48 ticks) before the barrel can fire
+    const clouds = await page.evaluate(() => window.__cs.view.smokeClouds.local);
+    // Held until it goes off (a slow page samples its input seldom), then let go.
+    await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
+    await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] < 2, null, { timeout: T(8000) }).catch(() => {});
+    await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    const blasted = await simWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, T(5000));
+    await page.waitForFunction((n) => window.__cs.view.smokeClouds.local > n, clouds, { timeout: T(5000) }).catch(() => {});
+    const after = await page.evaluate(() => ({ smoke: window.__cs.view.smokeClouds.local, loads: window.__cs.local.inventory.get(window.__cs.local.held)?.[2], hud: `${document.getElementById('ammo-count')?.textContent} ${document.getElementById('ammo-reserve')?.textContent} · ${document.getElementById('ammo-alt')?.textContent}` }));
+    const hp = await sim(page, (m, _me, t) => m.actor(t.slot).health, target);
+    check(blasted && after.smoke > clouds && after.loads < 2 && /RMB Blunderbuss/.test(after.hud), `the Battle Axe's blunderbuss shoots the bot 5 m out from its barrel, in a cloud of smoke (bot at ${hp} HP, loads left ${after.loads}, HUD "${after.hud}", smoke clouds ${after.smoke})`);
+    // R loads the barrel again from its shells (slowly: about a second and a half for one).
+    await page.evaluate(() => (window.__autoInput = { buttons: 4 }));
+    await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] === 2, null, { timeout: T(8000) }).catch(() => {});
+    await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    const ammo = await page.evaluate(() => window.__cs.local.inventory.get(window.__cs.local.held));
+    check(ammo?.[0] === 0 && ammo[2] > after.loads && ammo[1] === 12 - (ammo[2] - after.loads), `R loads the barrel again from its shells (loads ${ammo?.[2]}, shells ${ammo?.[1]})`);
+    await sim(page, (m, _me, t) => {
+      const b = m.actor(t.slot);
+      if (b) b.speedMul = 1;
+    }, target);
+  }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

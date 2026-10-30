@@ -256,7 +256,8 @@ export function gunplayOf(def: WeaponDefinition): Gunplay {
     ballistic: def.kind === 'hitscan' && !def.view.beam ? ballistic : null,
     accuracy: def.accuracy ? { ...(fam?.accuracy ?? acc(def.spread, 0.014, 0.035, 0, 0, 0.1, 6, 0.55)), ...def.accuracy } : (fam?.accuracy ?? null),
     // Weapons without a family keep their old camera kick, now as a deterministic climb.
-    kick: def.kick ? { ...(fam?.kick ?? kick([0], [0], 0, 4, 8, 0.1, 0.5)), ...def.kick } : (fam?.kick ?? (def.recoil?.kick ? kick([def.recoil.kick], [0.25 * def.recoil.kick, -0.25 * def.recoil.kick], 0.2 * def.recoil.kick, 4, 8, 0.1, Math.min(1.2, def.recoil.kick * 15)) : null)),
+    // A melee weapon never kicks; its second trigger's kick (the Battle Axe's blunderbuss) settles by its own curve.
+    kick: def.kick ? { ...(fam?.kick ?? kick([0], [0], 0, 4, 8, 0.1, 0.5)), ...def.kick } : (fam?.kick ?? (def.recoil?.kick ? kick([def.recoil.kick], [0.25 * def.recoil.kick, -0.25 * def.recoil.kick], 0.2 * def.recoil.kick, 4, 8, 0.1, Math.min(1.2, def.recoil.kick * 15)) : def.kind === 'melee' ? (def.alt?.kick ?? null) : null)),
     reload: def.reload ?? { type: 'magazine', tactical: def.reloadTicks, empty: def.reloadTicks, out: 0.35, in: 1 },
     falloff: def.falloff ?? fam?.falloff ?? null,
     head: def.headshot ?? fam?.head ?? DEFAULT_HEAD,
@@ -455,6 +456,27 @@ export interface AmmoBox {
   reserve: number;
   /** A magazine is in but no round chambered yet (an empty reload interrupted before the bolt). */
   unchambered?: boolean;
+  /** Rounds of a second trigger with its own ammo (a barrel loaded from `reserve`: see barrelLoader). */
+  alt?: number;
+}
+
+const loaders = new WeakMap<WeaponDefinition, WeaponDefinition>();
+
+/**
+ * A weapon without a magazine whose second trigger is loaded by hand from its
+ * reserve (AltFire.reload: the Battle Axe's blunderbuss): it reloads like a
+ * shell-by-shell magazine of `alt.max` rounds, the barrel standing in for the
+ * magazine. Null for every other weapon. Cached, so gunplayOf caches it too.
+ */
+export function barrelLoader(def: WeaponDefinition): WeaponDefinition | null {
+  const a = def.alt;
+  if (def.magazine > 0 || !a?.reload || a.ammo !== 'own') return null;
+  let l = loaders.get(def);
+  if (!l) {
+    l = { ...def, magazine: a.max ?? 1, reload: { type: 'shell', ...a.reload } };
+    loaders.set(def, l);
+  }
+  return l;
 }
 
 /** Reload kinds by index (PrivateState `rd`). */
@@ -471,6 +493,8 @@ export interface ReloadRun {
 
 /** Whether a reload makes sense now. */
 export function canReload(def: WeaponDefinition, w: AmmoBox): boolean {
+  const barrel = barrelLoader(def);
+  if (barrel) return canReload(barrel, { mag: w.alt ?? 0, reserve: w.reserve });
   if (def.magazine === 0 || def.heat) return false;
   if (w.unchambered) return true;
   return w.mag < def.magazine && w.reserve > 0;
@@ -478,6 +502,8 @@ export function canReload(def: WeaponDefinition, w: AmmoBox): boolean {
 
 /** Start a reload (null when there is nothing to do). */
 export function beginReload(def: WeaponDefinition, w: AmmoBox): ReloadRun | null {
+  const barrel = barrelLoader(def);
+  if (barrel) return beginReload(barrel, { mag: w.alt ?? 0, reserve: w.reserve });
   if (!canReload(def, w)) return null;
   const r = gunplayOf(def).reload;
   if (r.type === 'shell') {
@@ -498,6 +524,14 @@ export function beginReload(def: WeaponDefinition, w: AmmoBox): ReloadRun | null
  * Returns the run, or null when it is finished.
  */
 export function stepReload(def: WeaponDefinition, w: AmmoBox, run: ReloadRun): ReloadRun | null {
+  const barrel = barrelLoader(def);
+  if (barrel) {
+    const b = { mag: w.alt ?? 0, reserve: w.reserve };
+    const next = stepReload(barrel, b, run);
+    w.alt = b.mag;
+    w.reserve = b.reserve;
+    return next;
+  }
   const r = gunplayOf(def).reload;
   run.t++;
   if (r.type === 'shell') {

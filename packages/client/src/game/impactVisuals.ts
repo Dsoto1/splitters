@@ -63,6 +63,8 @@ interface Puff {
   grow: number;
   rise?: number;
   base?: number;
+  /** Drift (m/s) that dies away over the puff's life (a muzzle's smoke rolling out). */
+  drift?: Vector3;
 }
 
 /**
@@ -272,7 +274,7 @@ export class ImpactVisuals {
   private readonly puffMats = new Map<string, StandardMaterial>();
 
   /** A soft puff that grows, rises and fades (vehicle smoke and fire). */
-  puff(at: Vec3, hex: string, size: number, life: number, rise: number, glow = false): void {
+  puff(at: Vec3, hex: string, size: number, life: number, rise: number, glow = false, drift?: Vec3): void {
     if (this.puffs.length >= MAX_PUFFS) return;
     let mat = this.puffMats.get(hex);
     if (!mat) {
@@ -286,7 +288,7 @@ export class ImpactVisuals {
     const mesh = this.takePuff(mat);
     mesh.position.set(at.x, at.y, at.z);
     mesh.scaling.setAll(size * 0.3);
-    this.puffs.push({ mesh, age: 0, life, grow: size, rise, base: size * 0.3 });
+    this.puffs.push({ mesh, age: 0, life, grow: size, rise, base: size * 0.3, ...(drift ? { drift: new Vector3(drift.x, drift.y, drift.z) } : {}) });
   }
 
   private takePuff(mat: StandardMaterial): Mesh {
@@ -348,6 +350,7 @@ export class ImpactVisuals {
       const f = p.age / p.life;
       p.mesh.scaling.setAll((p.base ?? 0.05) + p.grow * f);
       if (p.rise) p.mesh.position.y += p.rise * dt;
+      if (p.drift) p.mesh.position.addInPlace(p.drift.scale(dt * (1 - f) * (1 - f)));
       p.mesh.visibility = Math.max(0, 1 - f);
       if (f < 1) return true;
       this.puffPool.give(p.mesh);
