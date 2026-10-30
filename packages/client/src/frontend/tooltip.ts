@@ -26,8 +26,14 @@ export function installTooltips(root: HTMLElement = document.body): void {
     card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
   };
   const hide = () => card && (card.hidden = true);
-  root.addEventListener('pointerover', (e) => show(e.target));
-  root.addEventListener('pointerout', (e) => !(e.relatedTarget as HTMLElement | null)?.closest?.('[data-tip]') && hide());
+  // A finger has no hover: a tap on the (i) shows its card until the next tap anywhere.
+  root.addEventListener('pointerover', (e) => e.pointerType !== 'touch' && show(e.target));
+  root.addEventListener('pointerout', (e) => e.pointerType !== 'touch' && !(e.relatedTarget as HTMLElement | null)?.closest?.('[data-tip]') && hide());
+  root.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'touch') return;
+    if ((e.target as HTMLElement | null)?.closest?.('[data-tip]')) show(e.target);
+    else hide();
+  });
   root.addEventListener('focusin', (e) => show(e.target));
   root.addEventListener('focusout', hide);
   window.addEventListener('scroll', hide, true);

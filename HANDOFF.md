@@ -34,6 +34,7 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - `perf:mass` classes some deaths as out of view when they are on screen; check the view test before trusting its tier counts;
   - kick and flinch feel not judged by eye yet;
   - Safari look: the owner tests it; if it is still off, ask for `window.__lookStats` from the console.
+- **`wip/weapon-wheel-mobile`** (not merged yet; needs a `check/` run): the weapon wheel (`game/weaponWheel.ts`; hold Q, a tap keeps the last-weapon switch; hold Y on a controller; Options → Controls rebinds the key) and touch controls for phones (`game/touchControls.ts`, `touchDevice.ts`; every on-screen button is `InputState.virtualKey`, the pad `setTouchMove`, look `addTouchLook`, and `touchEngaged` stands in for pointer lock). New e2e flow `mobile` (Pixel 7 landscape, CDP touches). Pad-middle tap vs hold is decided from the events' timestamps, since a slow software-rendered page handles the lift late. Not judged on a real phone yet: the button layout, look speed (`TOUCH_LOOK`) and the 16-player phone host cap are first guesses.
 - **Not merged on purpose:** roster-cleanup's WIP commit 899537c (helmets worn on four looks; fit values are guesses, never checked visually). Finish the helmet fits (Commando, Engineer, beret and headband heights, Farmhand hat, Drifter mask, Dapper jacket weights) on a new branch.
 - **Owner to-dos:**
   - run `sudo tiletrigger-update` on the box after each `main` update;
