@@ -94,7 +94,8 @@ import {
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
-import { bindFullscreenButton, pageHoldsEscape } from '../fullscreen.ts';
+import { bindFullscreenButton, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
+import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
@@ -117,6 +118,9 @@ import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
+import { TouchControls } from './touchControls.ts';
+import { WeaponWheel, wheelEntries } from './weaponWheel.ts';
+import { isTouchDevice } from '../touchDevice.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
@@ -211,6 +215,10 @@ export class GameSession {
   readonly view: GameView;
   private readonly hud = new Hud();
   private readonly input: InputState;
+  /** The weapon wheel (hold Q, hold a controller's Y, or the Weapons button on a phone). */
+  private readonly wheel = new WeaponWheel(document.getElementById('hud')!);
+  /** Phones and tablets: the on-screen controls (null with a mouse). */
+  private touch: TouchControls | null = null;
   private readonly interp = new Interpolator();
   private readonly sfx: SessionAudio;
   private readonly abort = new AbortController();
@@ -422,11 +430,29 @@ export class GameSession {
     this.input.onToggle.set('KeyQ', () => {
       if (this.lastWeapon && this.local?.inventory.has(this.lastWeapon)) this.requestWeapon(this.lastWeapon);
     });
+    // The wheel pointed or picked by a finger (it's drawn on top of everything else in play).
+    this.wheel.onPoint = (x, y) => this.input.aimWheel(x, y);
+    this.wheel.onTouchPick = () => this.input.closeWheel(true);
+    this.wheel.onTouchCancel = () => this.input.closeWheel(false);
+    // Phones and tablets: on-screen controls instead of pointer lock (touchControls.ts).
+    if (isTouchDevice()) {
+      this.touch = new TouchControls(this.input, $('hud'), { pause: () => this.input.setTouchEngaged(false) });
+      this.input.onEngage = () => {
+        this.touch?.setActive(this.input.touchEngaged);
+        this.updatePause();
+      };
+    }
     this.hud.reset();
 
     const signal = this.abort.signal;
     const lock = () => {
       opts.audio.unlock();
+      if (this.touch) {
+        // A phone plays fullscreen (no browser bars over the controls) where it can, turned sideways.
+        if (!this.input.touchEngaged && !isFullscreen() && !testMode()) void toggleFullscreen().then(() => (screen.orientation as unknown as { lock?: (o: string) => Promise<void> }).lock?.('landscape')).catch(() => undefined);
+        this.input.setTouchEngaged(true);
+        return;
+      }
       // Raw mouse movement (no OS acceleration) where the browser has it; Safari and older ones refuse
       // the option, so ask again plainly.
       const raw = (opts.canvas.requestPointerLock as (this: HTMLCanvasElement, o?: { unadjustedMovement?: boolean }) => Promise<void> | void).call(opts.canvas, { unadjustedMovement: true });
@@ -1262,6 +1288,8 @@ export class GameSession {
     // The standings as they were (before the HUD goes), for a screen after the match (the host left).
     const end: SessionEnd | undefined = this.welcomed && this.welcomeMap && this.rules ? { board: this.hud.boardData(this.scores, this.slot, true), map: this.welcomeMap, rules: this.rules, fill: Math.max(2, this.lastRoster?.length ?? 2) } : undefined;
     this.hostPanel.remove();
+    this.wheel.dispose();
+    this.touch?.dispose();
     this.mapPicker?.remove();
     document.getElementById('online-confirm')?.remove();
     document.getElementById('leave-confirm')?.remove();
@@ -1350,7 +1378,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on) };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on) };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -1946,6 +1974,24 @@ export class GameSession {
     return m?.def.kind === 'turret' ? m.index : null;
   }
 
+  /**
+   * The weapon wheel, once a frame: open while the input holds it (alive, on foot), showing
+   * what you carry; when it closes with a pick, switch to it (as a number key would).
+   */
+  private updateWheel(local: LocalPlayer, building: boolean): void {
+    const input = this.input;
+    input.canOpenWheel = local.alive && !this.seat && !building && local.inventory.size > 0;
+    if (input.wheelOpen && !input.canOpenWheel) input.closeWheel(false);
+    if (input.wheelOpen) {
+      this.wheel.show(wheelEntries(local.ownedCodes(), local.inventory, this.wantWeapon || local.held));
+      this.wheel.aim(input.wheelAim.x, input.wheelAim.y);
+    }
+    const closed = input.takeWheelClose();
+    if (closed === null && (input.wheelOpen || !this.wheel.shown)) return;
+    const pick = this.wheel.hide();
+    if (closed && pick && local.inventory.has(pick) && pick !== (this.wantWeapon || local.held)) this.requestWeapon(pick);
+  }
+
   private requestWeapon(slot: number): void {
     const current = this.wantWeapon || this.local?.held || 0;
     if (slot !== current) this.lastWeapon = current;
@@ -1985,6 +2031,8 @@ export class GameSession {
         const next = inSlot[(i + 1) % inSlot.length];
         if (next) this.requestWeapon(next);
       }
+      this.updateWheel(local, building);
+      this.touch?.update();
       const wheel = this.input.takeWheel();
       // Through a scope the wheel steps between its zoom levels instead of switching weapons.
       if (wheel && this.scopedNow && local.weapon?.view.zoomFov) this.zoomLevel = wheel > 0 ? 1 : 0;

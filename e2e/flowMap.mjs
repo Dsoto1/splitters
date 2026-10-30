@@ -9,7 +9,7 @@ export const MAP_FLOWS = Array.from({ length: MAP_PARTS }, (_, i) => (i ? `maps$
 
 /** Every flow in e2e/run.mjs (run.mjs refuses to start if they differ). */
 export const FLOWS = [
-  'editor', 'editorux', 'offline', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
+  'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'ctf', 'forts', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', ...MAP_FLOWS,
   'designer', 'characters', 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual',
 ];
@@ -85,11 +85,13 @@ const RULES = [
   [/^packages\/client\/src\/(content|materials)\//, FULL, ['client']],
 
   // The rest of the client, by area.
+  // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
+  [/^packages\/client\/src\/(touchDevice|game\/(touchControls|weaponWheel))\.ts$/, ['mobile', 'offline'], ['client']],
   [/^packages\/client\/src\/editor\//, ['editor', 'editorux', 'scenery', 'canyon', 'race', 'visual'], ['client']],
   [/^packages\/client\/src\/designer\//, ['designer', 'characters'], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, ['characters'], ['client']],
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
-  [/^packages\/client\/src\/frontend\//, ['offline', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', 'characters', 'editor', 'webgpu', 'visual'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['offline', 'mobile', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', 'characters', 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],

@@ -15,7 +15,7 @@ import { CharacterLibrary } from '../content/characters.ts';
 import { CharacterAnimator } from '../game/characterAnimator.ts';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
-import { isCreature, npcLookRole } from '@tiletrigger/shared';
+import { decodeLook, isCreature, npcLookRole } from '@tiletrigger/shared';
 import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
 
 const SIZE = 256;
@@ -72,6 +72,12 @@ export class PortraitRenderer {
   get(look: string): Promise<string> {
     const shipped = SHIPPED_PORTRAITS[look];
     if (shipped) return Promise.resolve(`${import.meta.env.BASE_URL}portraits/${shipped}`);
+    // A design of yours: its ID is the look itself, so a picture drawn once is kept in this browser for good.
+    if (decodeLook(look)) {
+      const kept = keptPortraits()[look];
+      if (kept) return Promise.resolve(kept);
+      return this.renderLive(look).then((url) => (keepPortrait(look, url), url));
+    }
     return this.renderLive(look);
   }
 
@@ -244,6 +250,37 @@ function covered(pixels: Uint8Array | null): boolean {
 }
 
 /** RGBA pixels (bottom row first) to a PNG data URL. */
+const KEPT = 'cs.portraits';
+/** Kept for at most this many designs (the Designer saves up to 24); the oldest go first. */
+const MAX_KEPT = 32;
+
+function keptPortraits(): Record<string, string> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEPT) ?? '{}') as unknown;
+    return raw && typeof raw === 'object' ? (raw as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Keep a design's portrait (shrunk to a small WebP, about 10 kB) so it is never drawn again in this browser. */
+function keepPortrait(look: string, url: string): void {
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 160;
+    c.getContext('2d')!.drawImage(img, 0, 0, 160, 160);
+    const small = c.toDataURL('image/webp', 0.85);
+    const all = Object.entries(keptPortraits()).filter(([k]) => k !== look);
+    try {
+      localStorage.setItem(KEPT, JSON.stringify(Object.fromEntries([...all.slice(-(MAX_KEPT - 1)), [look, small.startsWith('data:image/webp') ? small : url]])));
+    } catch {
+      // Storage full or unavailable: it is drawn again next time.
+    }
+  };
+  img.src = url;
+}
+
 function toDataUrl(pixels: Uint8Array, size: number): string {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
