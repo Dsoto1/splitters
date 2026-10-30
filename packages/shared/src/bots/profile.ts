@@ -32,6 +32,8 @@ export interface BotProfile {
   tags: string[];
   /** Weapon IDs this personality favours when choosing what to hold. */
   weaponPreferences: string[];
+  /** ARENA bots: 'always' bunny-hop (the Arena match style); otherwise they hop only in fights (bots/brain.ts arenaHop). */
+  hop?: 'always';
 }
 
 /**
@@ -204,5 +206,5 @@ export function profileFor(look: string, fallback: BotProfile, style: BotStyle =
   const own = CHARACTER_PROFILES[look] ?? fallback;
   if (style === 'mixed') return own;
   const tags = own.tags.filter((t) => t !== 'ARENA' && t !== 'TACTICAL');
-  return { ...own, tags: [...tags, style === 'arena' ? 'ARENA' : 'TACTICAL'] };
+  return { ...own, tags: [...tags, style === 'arena' ? 'ARENA' : 'TACTICAL'], ...(style === 'arena' ? { hop: 'always' as const } : {}) };
 }

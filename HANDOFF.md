@@ -141,6 +141,13 @@ they are the server.
 ### 5. Queued next (owner's requests, 2026-10-29 night)
 Items 1 and 2 are **done on `wip/weapons-variety`** (based on this branch; not merged): see "Weapons variety" below.
 Start the rest when agent slots free up:
+
+**Impact work (`wip/impact`, in progress, 2026-10-30):** items 3–6 below plus tiered ragdolls. Status:
+- 4 Stopping power: sim done (`sim/impact.ts`, per-weapon `stoppingPower`, caps and immunity; unit tests). Hit flinch on the body: pending.
+- 5 Explosions: sim done (every real explosion throws, `blastThrow` up and out, rocket jumps ~2.4 m). Ragdoll fling: pending.
+- 3 Punch and kick: sim done (`BUTTON_MELEE`, `UNARMED`, bots punch when dry up close). Clips, key, first-person motion, sound: pending.
+- 6 Bot hopping: done (`arenaHop`; Arena style always, Mixed only in fights and less often).
+- Tiered ragdolls and the mass-casualty perf scenario: pending.
 1. **(done) New weapon assets** (owner's Meshy generations, provenance Meshy/owned; downloads outside the repo):
    - meshystuff: Tommy Gun, Rotary Gatling Gun, military sniper rifle, Steampunk Battle Axe, Freeze Gun, Mystical Glue Gun, Futuristic Blaster, Plastic Toy Machine Gun;
    - Drive: Large Sentry Gun (turret), "Ornate Hand Holding G…".

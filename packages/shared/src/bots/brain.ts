@@ -2,7 +2,7 @@ import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles,
 import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import type { ItemDefinition, ItemEffect } from '../sim/items.ts';
-import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
+import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { THROWABLE_DEFS, getWeapon, weaponCode, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
@@ -1144,6 +1144,11 @@ export class BotBrain {
     if (held && held.def.magazine > 0 && held.reserve > 0 && !view.reloading) {
       if (held.mag === 0 || (!target && held.mag < held.def.magazine / 2) || (inCoverHidden && held.mag < held.def.magazine * 0.6)) buttons |= BUTTON_RELOAD;
     }
+    // Dry up close: punch or kick (quick melee) rather than click an empty gun.
+    if (target && held && held.def.kind !== 'melee' && held.def.magazine > 0 && held.mag === 0 && held.reserve === 0 && horizontalDistance(me.pos, target.pos) < 2 && (tick + this.slot) % 12 === 0) {
+      buttons |= BUTTON_MELEE;
+      buttons &= ~BUTTON_FIRE;
+    }
     if (view.reloading && !this.berserker && target && moveYaw === null) stance = Math.max(stance, 1) as Stance;
     // Badly hurt and hidden: lie flat.
     if (hurt && inCoverHidden && this.tactical > 0.5) stance = 2;
@@ -1153,10 +1158,15 @@ export class BotBrain {
     else if (stance === 2) buttons |= BUTTON_PRONE;
     else if (stance === 1) buttons |= BUTTON_CROUCH;
 
-    // Arena bots bunny-hop while they strafe or run (harder to hit, faster through the air).
-    if (this.arena && me.grounded && (strafe || (forward > 0.6 && !sprint)) && tick >= this.nextHop && stance === 0) {
-      this.jumpNext = true;
-      this.nextHop = tick + Math.round(TICK_RATE * (0.5 + this.rng() * 0.6));
+    // Arena bots hop (harder to hit, faster through the air): on the Arena style all the time while they
+    // strafe or run; ARENA characters on the Mixed style only in a fight, and less often (arenaHop).
+    if (this.arena && me.grounded && stance === 0 && tick >= this.nextHop) {
+      const fighting = !!target || underFire;
+      const gap = arenaHop(this.profile.hop === 'always', fighting, strafe, forward > 0.6 && !sprint);
+      if (gap) {
+        this.jumpNext = true;
+        this.nextHop = tick + Math.round(TICK_RATE * (gap[0] + this.rng() * (gap[1] - gap[0])));
+      }
     }
     if (this.checkStuck(view, meaning && (forward !== 0 || right !== 0)) || this.jumpNext) {
       buttons |= BUTTON_JUMP;
@@ -2279,4 +2289,15 @@ function farthest(points: readonly Vec3[], from: Vec3): Vec3 | undefined {
     }
   }
   return best;
+}
+
+/**
+ * Arena hopping: the seconds (least, most) until the next hop, or null for no
+ * hop now. `always` is the Arena match style (constant bunny-hopping while
+ * strafing or running); otherwise an ARENA character on the Mixed style hops
+ * only in a fight (a target, or under fire), while it strafes, and less often.
+ */
+export function arenaHop(always: boolean, fighting: boolean, strafing: boolean, running: boolean): [number, number] | null {
+  if (always) return strafing || running ? [0.5, 1.1] : null;
+  return fighting && strafing ? [1.3, 2.4] : null;
 }

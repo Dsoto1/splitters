@@ -25,7 +25,9 @@ export const BUTTON_PRONE = 512;
 export const ADS_SPEED = 0.75;
 /** Ask to respawn now (stuck somewhere): you die where you stand and come back as usual. Counts as a suicide. */
 export const BUTTON_RESPAWN = 1024;
-const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN;
+/** Quick melee (side mouse button or Y): swing the held melee weapon, or punch / kick when none is held (UNARMED). */
+export const BUTTON_MELEE = 2048;
+const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {
