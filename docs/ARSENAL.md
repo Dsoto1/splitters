@@ -234,6 +234,26 @@ mode-only weapons (arena disc) and mounted guns have none and never roll.
   lies there now. Validation warns when a random pickup shows a weapon of
   another category (`pickup.random_item`).
 
+## Weapon drops
+
+**Drop weapon on death** (`MatchRules.dropWeapons`, default on: match setup →
+Arsenal, the pause menu's Host tab, where it applies at once and off clears the
+drops lying about): when a player or bot dies (not NPCs), `chooseDrop`
+(`sim/drops.ts`) picks the weapon in hand, else the most desirable one, that
+has a pickup item and a category (not a tool, mode-only weapon or mounted gun),
+isn't a fetched-back throw (spear), isn't in the starting loadout (rules or
+class) and has ammo (magazine + reserve; heat weapons always count, plain melee
+never). It lies on the ground straight below the body (a raycast; none over
+the void) for `DROP_LIE_SECONDS` (30), at most `MAX_DROPS` (24, oldest first),
+carrying exactly that ammo (and second-trigger rounds). Everything else is
+discarded. A pickup (same radius as map pickups) gives the weapon whole to
+someone without it (coming up like a map pickup's), or tops up the reserve of
+someone with it (`takeDropAmmo`), the rest staying on the ground. Never in
+Disc Arena, races or spears/discs only (`dropsInPlay`). The snapshot's `dw`
+lists the drops lying ([id, item, x, y, z, yaw]; repeated fields, sent when
+they change); clients draw the pickup's weapon on its side on a small ring.
+Bots see drops as weapon pickups.
+
 **Variants for Classes and Disc Arena** (added last, so older weapon codes
 are unchanged; each has a pickup like every weapon):
 

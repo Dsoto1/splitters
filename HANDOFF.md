@@ -65,6 +65,19 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     server holds it (checked offline: number key, then `__give('core.singularity')` now switches). Next: re-run
     `arsenal` on a quiet machine, then merge through `check/candidate` (characterAnimator.ts maps to the full
     suite). Left alone: the Salamander Warlord's big claws cover pistols (a hand-size content fix).
+  - `wip/weapon-drops` (from `claude/launcher-ui-map-cards`; owner's request "players/bots with ammo left drop
+    what they have as primary, rest recycled"): match rule **Drop weapon on death** (`MatchRules.dropWeapons`, default
+    on; match setup → Arsenal, pause menu → Host where it applies at once like "Mix up weapon pickups", off clears the
+    drops lying). `sim/drops.ts` picks the weapon in hand, else the most desirable one, that has a pickup item and
+    category, isn't a spear, isn't in the starting loadout (rules or class) and has ammo (heat weapons count);
+    `Match.kill` drops it straight below the body (raycast; none over the void) with exactly its ammo, 30 s, at most
+    24 (oldest first). Pickup: whole weapon if you lack it (comes up like a map pickup), else ammo to your reserve cap,
+    rest stays. Not for NPCs, Disc Arena, races, spears/discs only. Snapshot `dw` ([id, item, x, y, z, yaw], a
+    REPEATABLE field); `GameView.updateDrops` draws the gun on its side on a small ring (`createPickupVisual(..., lying)`).
+    Bots see drops as weapon pickups. Tests: `packages/shared/test/drops.test.ts`, `arsenal` e2e (a bot dies holding
+    a rifle with 7 + 23, the drop lies at the body and is drawn, walking onto it gives you exactly that).
+    Checks: typecheck, build, `arsenal` and `hostcontrols` e2e (see the branch's last commit); `test:changed` all
+    pass except `host.test.ts` timing out under load once (passes alone). Shared sim changed, so CI runs the full suite.
 - **Owner's requests not started yet:**
   - Buggy (and any vehicle that fits) seats a driver + 3 passengers, seated, who can shoot
     (sim: `packages/shared/src/sim/mounts.ts` seats).

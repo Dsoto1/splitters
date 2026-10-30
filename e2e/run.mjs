@@ -2093,6 +2093,40 @@ async function arsenalFlow(browser) {
       if (b) b.speedMul = 1;
     }, target);
   }
+  // Drop weapon on death (on by default): the bot falls holding a rifle with ammo left; the rifle lies at the body
+  // (drawn by the client), and walking onto it gives you the rifle with exactly that ammo.
+  if (target) {
+    const gun = await sim(page, (m) => (m.rules.startingWeapons.includes('core.rifle') ? 'core.sniper' : 'core.rifle'));
+    await page.evaluate((id) => window.__give(id), gun);
+    const handed = await simWait(page, (m, me, id) => [...me.weapons.values()].some((w) => w.def.id === id), gun, T(8000));
+    const fell = handed && await sim(page, (m, me, a) => {
+      const bot = m.actor(a.slot);
+      const [code, w] = [...me.weapons].find(([, x]) => x.def.id === a.gun);
+      // Into the bot's hands with odd ammo, out of yours (so the drop is new to you).
+      bot.weapons.set(code, { ...w, mag: 7, reserve: 23, alt: 0 });
+      bot.current = code;
+      me.current = [...me.weapons].find(([c, x]) => c !== code && x.def.id === 'core.pistol')?.[0] ?? me.current;
+      me.weapons.delete(code);
+      bot.speedMul = 1;
+      const at = { ...bot.move.pos };
+      // (Bots fighting all along may have dropped guns already: this one is the newest.)
+      const before = Math.max(0, ...m.drops.map((x) => x.id));
+      m.kill(bot, me, a.gun);
+      const d = m.drops.find((x) => x.id > before && x.def.id === a.gun);
+      return d ? { id: d.id, at, pos: d.pos, mag: d.mag, reserve: d.reserve } : null;
+    }, { slot: target.slot, gun });
+    const near = !!fell && Math.hypot(fell.pos.x - fell.at.x, fell.pos.z - fell.at.z) < 0.5 && Math.abs(fell.pos.y - fell.at.y) < 2;
+    const shown = !!fell && await page.waitForFunction((id) => window.__cs.view.dropsDrawn().some(([d]) => d === id) && window.__cs.view.scene.meshes.some((x) => x.name.startsWith(`drop_${id}_gun`) && x.getTotalVertices() > 0), fell.id, { timeout: T(10000) }).then(() => true, () => false);
+    check(near && shown && fell.mag === 7 && fell.reserve === 23, `the fallen bot's ${gun} drops at its body with its ammo, drawn on the ground (${JSON.stringify(fell)}, drawn ${shown})`);
+    if (fell) {
+      await sim(page, (m, me, d) => {
+        me.move = { ...me.move, pos: { ...d.pos }, velY: 0 };
+      }, fell);
+      const took = await simWait(page, (m, me, a) => [...me.weapons.values()].some((w) => w.def.id === a.gun && w.mag === 7 && w.reserve === 23) && !m.drops.some((d) => d.id === a.id), { gun, id: fell.id }, T(8000));
+      const gone = await page.waitForFunction((id) => !window.__cs.view.dropsDrawn().some(([d]) => d === id), fell.id, { timeout: T(8000) }).then(() => true, () => false);
+      check(took && gone, `walking onto the drop gives you the ${gun} with exactly its ammo (7 + 23), and the drop goes (taken ${took}, gone on the client ${gone})`);
+    }
+  }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

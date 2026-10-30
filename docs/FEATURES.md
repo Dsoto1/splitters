@@ -8,6 +8,7 @@ Everything players can use, checked against the code, and what exists but isn't 
 - the mode's starting weapons (`sim/rules.ts`);
 - a class loadout (`sim/classes.ts`);
 - a map pickup;
+- a weapon dropped by the fallen (rule "Drop weapon on death", default on: `sim/drops.ts`);
 - the "Spears only" / "Discs only" rule.
 
 MapMaker's pickup palette lists every item, so **anything below can be placed in a custom map**.
