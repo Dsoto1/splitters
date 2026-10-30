@@ -3007,7 +3007,21 @@ async function startHostService({ hubPort, controlPort, env = {}, idle = false }
 }
 
 /** Listings on a local hub (node side). */
-const hubGames = (port) => fetch(`http://127.0.0.1:${port}/lobby/games`).then((r) => r.json()).then((d) => d.games);
+/**
+ * The hub's game list (none while it says "slow down": it allows a burst of 60 reads per address, then 2 a second).
+ * Polls of it wait a second between reads (hubUntil): polling every 100 ms used up the burst when the host took a few
+ * seconds to list itself on a slow CI machine, and the next read came back with no list.
+ */
+/** null while the hub says "slow down" (or can't be reached). */
+const hubGames = (port) => fetch(`http://127.0.0.1:${port}/lobby/games`).then((r) => r.json()).then((d) => d.games ?? null, () => null);
+async function hubUntil(pred, ms) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    if (await pred().catch(() => false)) return true;
+    await sleep(1000);
+  }
+  return false;
+}
 
 /**
  * Dedicated host (Host Service): a headless host registers on a local hub and lists itself; a player
@@ -3020,10 +3034,10 @@ async function dedicatedhostFlow(browser) {
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478', LAN_DISCOVERY: '0' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000));
   const hostState = await startHostService({ hubPort: HUB_PORT, controlPort: CONTROL_PORT, env: { MAP: 'sandgate', MODE: 'core.tdm', BOT_FILL: '8', SERVER_NAME: 'E2E Dedicated', ADMIN_TOKEN: 'e2e-admin-token' } });
-  const listed = await until(async () => (await hubGames(HUB_PORT)).some((g) => g.name === 'E2E Dedicated'), T(60000));
+  const listed = await hubUntil(async () => ((await hubGames(HUB_PORT)) ?? []).some((g) => g.name === 'E2E Dedicated'), T(60000));
   check(listed, 'the Host Service registers on the hub and lists itself');
   if (!listed) return;
-  const game = (await hubGames(HUB_PORT)).find((g) => g.name === 'E2E Dedicated');
+  const game = ((await hubGames(HUB_PORT)) ?? []).find((g) => g.name === 'E2E Dedicated') ?? {};
   check(game.hostType === 'dedicated' && game.relay && !game.community && game.mapId === 'sandgate', `listed as a dedicated host with a relay, on our map (${JSON.stringify(game)})`);
 
   const hub = `hub=127.0.0.1:${HUB_PORT}`;
@@ -3128,11 +3142,11 @@ async function hostpageFlow(browser) {
     await page.click('#hp-start');
     const running = await page.waitForFunction(() => /Running/.test(document.getElementById('hp-run-state')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
     check(running, `Start starts the server (${await page.evaluate(() => document.getElementById('hp-status')?.textContent)})`);
-    const listed = await until(async () => (await hubGames(HUB_PORT)).some((g) => g.name === 'E2E From Host Page' && g.hostType === 'dedicated'), T(30000));
+    const listed = await hubUntil(async () => ((await hubGames(HUB_PORT)) ?? []).some((g) => g.name === 'E2E From Host Page' && g.hostType === 'dedicated'), T(30000));
     check(listed, 'the server it started is in the game browser');
     await page.click('#hp-stop');
     const stopped = await page.waitForFunction(() => /^Stopped/.test(document.getElementById('hp-run-state')?.textContent ?? ''), null, { timeout: T(30000) }).then(() => true, () => false);
-    const gone = await until(async () => !(await hubGames(HUB_PORT)).some((g) => g.name === 'E2E From Host Page'), T(20000));
+    const gone = await hubUntil(async () => (await hubGames(HUB_PORT))?.every((g) => g.name !== 'E2E From Host Page') === true, T(20000));
     check(stopped && gone, 'Stop stops it and takes the listing down');
   }
   // The launcher: the service's own page, the console's log and command line, and a right bar that runs console commands.

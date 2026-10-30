@@ -11,6 +11,10 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
 ### Owner notes, 2026-10-30 evening (not done yet; next session start here)
+- **Flaky e2e to fix properly:** `mobile` "a tap on the pad middle jumps" fails intermittently on CI (both attempts on
+  e8f449a, passed on a715e60/b4d55de; passes locally). The crouch-on-next-frame change (bb06a47) didn't cure it. Look at
+  how the CDP touch timestamps map to the page's `e.timeStamp` (touchControls.ts tap vs hold) and whether the player
+  is grounded when the tap lands; log the pad state in the check before changing the game.
 - **main at b4d55de (2026-10-30 ~22:40 UTC), released as main-latest:** everything through the full-body fix,
   St. John's, props and sizes. Sunken Kingdom (2814838) is on check/candidate next; Iron Maw still building.
 - **Release fixed (2026-10-30 21:50 UTC):** `main` fast-forwarded to 1317b80 (= 9a959ee's code + the ci.yml fix: no
