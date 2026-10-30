@@ -584,7 +584,7 @@ function addLowDetail(doc) {
  * `keep` filters triangles by the rig joint most of their vertices follow
  * (the first-person arms keep only arm triangles).
  */
-async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod = true, firstPerson = false } = {}) {
+async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod = true, firstPerson = false, loose = false } = {}) {
   const doc = await io.read(join(OUT, 'rig.glb'));
   const root = doc.getRoot();
   const skin = root.listSkins()[0];
@@ -693,7 +693,9 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.008, lockBorder: false }));
     // A dense rigged download (Meshy's rigging keeps every triangle sent to it) can hold the careful cut far above
     // its target: cut looser then, as an unrigged download is cut to its working detail.
-    for (const error of [0.02, 0.05]) if (triangles(doc) > want * 1.5) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio: want / triangles(doc), error, lockBorder: false }));
+    // An unrigged download is already cut to its working detail: it keeps the careful cut (looser passes there cost
+    // the hands and feet their shape, and changed the shipped builds).
+    if (loose) for (const error of [0.02, 0.05]) if (triangles(doc) > want * 1.5) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio: want / triangles(doc), error, lockBorder: false }));
   }
   await doc.transform(prune({ keepAttributes: true }));
   const fullTris = triangles(doc);
@@ -760,7 +762,7 @@ function glbHasSkin(file) {
   }
 }
 /** The first-person arms (forearms and hands) every character gets, from the same source as its body. */
-const fparms = (c, src, ratio = 0.8) => build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio, lod: false, firstPerson: true });
+const fparms = (c, src, ratio = 0.8, loose = false) => build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio, lod: false, firstPerson: true, loose });
 for (const c of SPECS) {
   const found = only && !only.includes(c.id) ? null : findDownload(c);
   if (!found) {
@@ -770,9 +772,9 @@ for (const c of SPECS) {
   if (found.rigged) {
     const src = await readMeshy(found.file, ual, c);
     const from = { ...(c.meshy ? { meshy: c.meshy } : {}), ...(c.community ?? {}), ...(c.meshy ? {} : { src: basename(found.file) }) };
-    lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...from, ...(await build(c, src, `${c.id}.glb`, c.triangles ? { ratio: c.triangles / (src.indices.length / 3) } : {})) });
+    lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...from, ...(await build(c, src, `${c.id}.glb`, { loose: true, ...(c.triangles ? { ratio: c.triangles / (src.indices.length / 3) } : {}) })) });
     // The arms as finely as an unrigged download's (cut to its working detail first) when the rigged download is denser.
-    lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src, Math.min(0.8, (0.8 * WORK_TRIANGLES) / (src.indices.length / 3)))) });
+    lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src, Math.min(0.8, (0.8 * WORK_TRIANGLES) / (src.indices.length / 3)), true)) });
     continue;
   }
   const { src, sourceTriangles, workTriangles, landmarks } = await readUnrigged(found.file, c, ual);
