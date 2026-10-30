@@ -206,6 +206,17 @@ async function editorFlow(browser) {
   await page.keyboard.press('Escape');
   d = await doc();
   check(d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.health_small'), 'places a pickup');
+  // A weapon pickup set to "Random from category: Snipers" in the inspector (it shows a sniper here).
+  const SNIPERS = ['core.weapon_sniper', 'core.weapon_marksman', 'core.weapon_railgun'];
+  await clickTool(page, '[data-tool="pickup:core.weapon_rifle"]');
+  await clickWorld(-3, 1);
+  await page.waitForSelector('#ed-pickup-weapon', { timeout: T(10000) });
+  await page.selectOption('#ed-pickup-weapon', 'sniper');
+  await page.waitForFunction(() => window.__editor.doc.entities.some((e) => e.kind === 'pickup' && e.random === 'sniper'), null, { timeout: T(10000) }).catch(() => {});
+  await page.keyboard.press('Escape');
+  d = await doc();
+  const randomPickup = d.entities.find((e) => e.kind === 'pickup' && e.random);
+  check(randomPickup?.random === 'sniper' && SNIPERS.includes(randomPickup.item), `the inspector makes a weapon pickup random from a category (${JSON.stringify(randomPickup && { random: randomPickup.random, item: randomPickup.item })})`);
 
   // Scenario: a locked door snapped into the doorway, a button and a spike trap, wired with a logic template.
   await clickTool(page, '[data-tool="scenario:door_locked"]');
@@ -250,6 +261,10 @@ async function editorFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(20000) });
   const ms = await page.evaluate(() => window.__testStartMs);
   check(ms < 3000, `TEST starts within the 3 s budget (${ms.toFixed(0)} ms)`);
+  // In play, the random pickup holds a sniper of the match's roll, and that is what's drawn.
+  const rolled = randomPickup ? await sim(page, (m, _me, id) => m.pickups.find((p) => p.id === id)?.item.id, randomPickup.id).catch(() => null) : null;
+  const shown = rolled ? await page.waitForFunction((r) => window.__cs.view.pickupItem(r[0]) === r[1], [randomPickup.id, rolled], { timeout: T(10000) }).then(() => true, () => false) : false;
+  check(SNIPERS.includes(rolled) && shown, `a random pickup holds a weapon of its category in TEST, and that is what's drawn (${rolled}, drawn ${shown})`);
   await frames(page, 10);
   await page.keyboard.press('Escape');
   // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
@@ -1633,6 +1648,21 @@ async function arsenalFlow(browser) {
   check(zones.length > 0, `hazards are drawn on the ground (${[...new Set(zones)].join(', ')})`);
   const bar = await page.evaluate(() => document.getElementById('weapon-bar').textContent);
   check(/•/.test(bar ?? ''), `the weapon bar shows several weapons in a slot (${bar})`);
+  // The host's "Mix up weapon pickups" (pause menu → Host): a fixed weapon pickup turns into another weapon of
+  // its category (its roll pool is the category's pickups, holding both), at once, and the client draws it.
+  const fixed = await sim(page, (m) => m.pickups.filter((p) => p.item.effect.kind === 'weapon' && !p.entity.keepFixed).map((p) => [p.id, p.item.id]));
+  await page.evaluate(() => {
+    document.getElementById('host-controls').open = true;
+    document.querySelector('#hc-mix [data-value="on"]')?.click();
+  });
+  const mixed = await simWait(page, (m, _me, ids) => ids.every(([id, was]) => {
+    const p = m.pickups.find((q) => q.id === id);
+    return p.item.id !== was && p.pool?.includes(p.item) && p.pool.includes(p.placed);
+  }), fixed, T(10000));
+  const [firstId] = fixed[0] ?? [];
+  const now = firstId ? await sim(page, (m, _me, id) => m.pickups.find((p) => p.id === id).item.id, firstId) : null;
+  const drawn = firstId ? await page.waitForFunction(([id, item]) => window.__cs.view.pickupItem(id) === item, [firstId, now], { timeout: T(10000) }).then(() => true, () => false) : false;
+  check(fixed.length > 0 && mixed && drawn, `the host's mix-up swaps every fixed weapon pickup for another of its category, drawn by the client (${fixed.length} pickups; ${firstId}: ${fixed[0]?.[1]} → ${now})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

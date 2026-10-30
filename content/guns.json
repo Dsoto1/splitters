@@ -54,20 +54,6 @@
       "length": 0.85
     },
     {
-      "out": "guns/awp.glb",
-      "pack": "styloo-guns",
-      "file": "awp.glb",
-      "forward": "+x",
-      "length": 1.15
-    },
-    {
-      "out": "guns/mac10.glb",
-      "pack": "styloo-guns",
-      "file": "mac10.glb",
-      "forward": "+x",
-      "length": 0.32
-    },
-    {
       "out": "guns/shotgun.glb",
       "pack": "styloo-guns",
       "file": "shotgun.glb",
@@ -124,18 +110,6 @@
       "surface": "rebake"
     },
     {
-      "out": "guns/plasma_spin_gun.glb",
-      "pack": "meshy-community-guns",
-      "download": "Meshy_AI_Plasma_Annihilator_X_20260118_texture_fbx",
-      "file": "Meshy_AI_Plasma_Annihilator_X_20260118_texture.fbx",
-      "label": "Plasma Annihilator X (2026-01-18)",
-      "forward": "-x",
-      "length": 1.0,
-      "triangles": 6000,
-      "maxError": 0.03,
-      "surface": "rebake"
-    },
-    {
       "out": "guns/arc_cannon_turret.glb",
       "pack": "meshy-community-guns",
       "download": "Meshy_AI_Nebula_Arc_Cannon_20260703_texture_fbx",
@@ -165,7 +139,7 @@
       "glb": "Meshy_AI_Rotary_Gatling_Gun_1029225655_texture.glb",
       "label": "Rotary Gatling Gun (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
-      "length": 1.0,
+      "length": 0.9,
       "triangles": 6000,
       "maxError": 0.03,
       "surface": "rebake"

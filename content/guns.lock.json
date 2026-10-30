@@ -10,22 +10,6 @@
       "sha256": "c214269d23dd0f29"
     },
     {
-      "file": "models/guns/awp.glb",
-      "source": "styloo-guns",
-      "src": "awp.glb",
-      "triangles": 2246,
-      "bytes": 123148,
-      "sha256": "2413e3cbbde93e6f"
-    },
-    {
-      "file": "models/guns/mac10.glb",
-      "source": "styloo-guns",
-      "src": "mac10.glb",
-      "triangles": 1770,
-      "bytes": 117244,
-      "sha256": "e9f38b843ccb7d87"
-    },
-    {
       "file": "models/guns/shotgun.glb",
       "source": "styloo-guns",
       "src": "shotgun.glb",
@@ -66,14 +50,6 @@
       "sha256": "2a643cacf9d91df7"
     },
     {
-      "file": "models/guns/plasma_spin_gun.glb",
-      "source": "meshy-community-guns",
-      "src": "Plasma Annihilator X (2026-01-18)",
-      "triangles": 5981,
-      "bytes": 336176,
-      "sha256": "794274b8f8376449"
-    },
-    {
       "file": "models/guns/arc_cannon_turret.glb",
       "source": "meshy-community-guns",
       "src": "Nebula Arc Cannon (2026-07-03)",
@@ -94,8 +70,8 @@
       "source": "meshy-owned-guns",
       "src": "Rotary Gatling Gun (owner's Meshy generation, 2026-10-29)",
       "triangles": 5998,
-      "bytes": 331828,
-      "sha256": "9eb8b946a848efbc"
+      "bytes": 331876,
+      "sha256": "efea6e576d36d138"
     },
     {
       "file": "models/guns/sniper_rifle.glb",

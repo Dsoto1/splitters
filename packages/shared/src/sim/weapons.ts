@@ -431,8 +431,8 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     headshot: 3,
     botDesirability: 0.6,
     botRange: [18, 120],
-    // Model: the owner's military sniper rifle (Meshy, owned; content/guns.json), the AWP it replaced as the fallback.
-    view: { model: 'guns/sniper_rifle.glb', fallback: 'guns/awp.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4, hold: { style: 'long', grip: [0, -0.05, -0.27], support: [0, -0.02, 0.24], shoulder: [0, 0.06, -0.57] } },
+    // Model: the owner's military sniper rifle (Meshy, owned; content/guns.json), the gun-pack sniper rifle as the fallback.
+    view: { model: 'guns/sniper_rifle.glb', fallback: 'weapons/sniper.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4, hold: { style: 'long', grip: [0, -0.05, -0.27], support: [0, -0.02, 0.24], shoulder: [0, 0.06, -0.57] } },
   },
   'core.launcher': {
     id: 'core.launcher',
@@ -478,8 +478,8 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'light',
     botDesirability: 0.6,
     botRange: [0, 18],
-    // Model: the owner's Tommy Gun (Meshy, owned; content/guns.json), the MAC-10 it replaced as the fallback.
-    view: { model: 'guns/tommy_gun.glb', fallback: 'guns/mac10.glb', viewOffset: [0.2, -0.2, 0.5], tracer: '#ffe9a8', hold: { style: 'long', grip: [0, -0.04, -0.075], support: [0, 0.06, 0.22], shoulder: [0, -0.01, -0.41] } },
+    // Model: the owner's Tommy Gun (Meshy, owned; content/guns.json), the gun-pack SMG as the fallback.
+    view: { model: 'guns/tommy_gun.glb', fallback: 'weapons/smg.glb', viewOffset: [0.2, -0.2, 0.5], tracer: '#ffe9a8', hold: { style: 'long', grip: [0, -0.04, -0.075], support: [0, 0.06, 0.22], shoulder: [0, -0.01, -0.41] } },
   },
   'core.rockets': {
     id: 'core.rockets',
@@ -559,7 +559,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botDesirability: 0,
     botRange: [0, 0],
     // Model: the owner's Medkit (Meshy, owned), carried by its handle; the boxes-in-code case as the fallback.
-    view: { model: 'guns/medkit.glb', fallback: 'procedural/medkit', viewOffset: [0.2, -0.24, 0.42], tracer: '#ffffff', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, 0.1, 0] } },
+    view: { model: 'guns/medkit.glb', fallback: 'procedural/medkit', viewOffset: [0.22, -0.3, 0.52], tracer: '#ffffff', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, 0.1, 0] } },
   },
   'core.grapple': {
     id: 'core.grapple',
@@ -709,7 +709,7 @@ function classWeapons(): Record<string, WeaponDefinition> {
       id: 'core.medi_beam', displayName: 'Medi-Beam', kind: 'melee', slot: 1,
       fireIntervalTicks: 12, range: 9, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 15, heal: 6,
       botDesirability: 0, botRange: [0, 0],
-      view: { model: 'guns/medkit.glb', fallback: 'procedural/medkit', viewOffset: [0.2, -0.24, 0.42], tracer: '#7dff9a', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, 0.1, 0] } },
+      view: { model: 'guns/medkit.glb', fallback: 'procedural/medkit', viewOffset: [0.22, -0.3, 0.52], tracer: '#7dff9a', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, 0.1, 0] } },
     }),
   ];
   return Object.fromEntries(list.map((w) => [w.id, w]));
@@ -911,13 +911,14 @@ function arsenal(): Record<string, WeaponDefinition> {
       damage: 9, spread: 0.035, fireIntervalTicks: 3, range: 300, magazine: 120, reserveMax: 240, pickupAmmo: 120, reloadTicks: 210, raiseTicks: 48,
       ammo: 'rifle', recoil: { kick: 0.006, bloom: 0.002, maxBloom: 0.04, recover: 0.001 }, botDesirability: 0.72, botRange: [3, 40],
       // Model: a Meshy community rotary-barrel gun (CC0 per the owner; content/guns.json): no stock, so the rear handle sits at the shoulder.
-      // Model: the owner's Rotary Gatling Gun (Meshy, owned; content/guns.json), the community spin gun it replaced as the fallback.
-      view: longarm('lmg', 1.0, '#ffd36b', {
+      // Model: the owner's Rotary Gatling Gun (Meshy, owned; content/guns.json), the gun-pack machine gun as the fallback.
+      view: longarm('lmg', 0.9, '#ffd36b', {
         model: 'guns/gatling_gun.glb',
-        fallback: 'guns/plasma_spin_gun.glb',
+        fallback: 'weapons/lmg.glb',
         // Chunky (a tall body and a carry loop): further out and lower than a rifle, so it doesn't fill the view.
-        viewOffset: [0.25, -0.28, 0.74],
-        hold: { style: 'long', grip: [0, -0.1, -0.27], support: [0, -0.14, -0.02], shoulder: [0, 0.02, -0.47] },
+        viewOffset: [0.25, -0.31, 0.74],
+        // The stock is tall: its top sits in the shoulder, so the gun rides below the face.
+        hold: { style: 'long', grip: [0, -0.09, -0.243], support: [0, -0.126, -0.018], shoulder: [0, 0.09, -0.423] },
         sound: 'fire.smg',
       }),
     }),
