@@ -104,6 +104,16 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   Local e2e: characters, designer, offline, visual pass (no baseline change); arsenal fails "hazards are drawn on
   the ground", "R loads the barrel again", sometimes the Battle Axe swing, and the build from before this work
   fails the same and more. Needs a check branch run before `main`.
+- **Sunken Kingdom: built on `wip/sunken-kingdom`, not merged** (owner's map brief BUILD_01, 2026-10-30 evening):
+  `maps/sunken_kingdom.json` (192 × 176 m, 16–32 players, TDM/CTF/DM/KotH), its picture, and
+  `docs/map-briefs/sunken_kingdom/` (manifest, QA report, decisions and deviations, screenshots); the shared
+  `docs/map-briefs/DISCOVERY_REPORT.md` (MapMaker, format, terrain, nav, modes, pickups, tests) for the other map briefs.
+  Made from MapMaker edit commands replayed in MapMaker and saved with its Export (nothing added to MapMaker, no script
+  committed). Waiting on the owner: a dome (no piece; Meshy candidate), taller tiers, and bot-only CTF not capturing in 7 min.
+  Pitfalls found: a tile stairwell on level -1 under terrain is filled by the terrain (cut a sunken court and use Open
+  Stairs on level -1); ground left at -0.15 makes a 0.4 m step onto a stair that starts at a floor's edge (keep ground
+  just under the floor, e.g. -0.04); a prop in a 3.6 m tunnel blocks bots. Merge through a `check/` branch (a map file runs
+  the `maps3` tour part).
 - **Field guide** (owner asked 2026-10-30): a reference page of every weapon, vehicle, character, map feature
   and pickup, generated from the shared data: https://claude.ai/artifact/GgiMK17TA5oCY3Cnyna3oy (PDF and HTML
   were sent to the owner). Regenerate it when the arsenal or roster changes.

@@ -6,7 +6,7 @@ build notes (manifest, QA report, decisions and deviations) go in `docs/map-brie
 
 | Brief | Reference | Map | Status |
 |---|---|---|---|
-| BUILD_01_Sunken_Kingdom.md | sunken_kingdom_reference.jpg | `maps/sunken_kingdom.json` | building (2026-10-30) |
+| BUILD_01_Sunken_Kingdom.md | sunken_kingdom_reference.jpg | `maps/sunken_kingdom.json` | built on `wip/sunken-kingdom` (2026-10-30), not merged; docs in `sunken_kingdom/`; three questions for the owner (dome, tier height, bot CTF) in its DECISIONS_AND_DEVIATIONS.md |
 | BUILD_06_Iron_Maw.md | iron_maw_reference.jpg | `maps/iron_maw.json` | building (2026-10-30); Meshy landmarks (bucket-wheel excavator, haul truck) await the owner's approval |
 
 `AGENT_BUILD_CONTRACT.md` (the owner's, v1.0) applies to every map, with these repo adaptations:
