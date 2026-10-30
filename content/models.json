@@ -407,17 +407,6 @@
       "length": 2.0
     },
     {
-      "out": "vehicles/buggy.glb",
-      "pack": "kenney-car-kit",
-      "file": "suv.glb",
-      "forward": "+z",
-      "length": 4.2,
-      "recolor": {
-        "desaturate": 0.6,
-        "tint": "#8a9a6a"
-      }
-    },
-    {
       "out": "turrets/mg.glb",
       "pack": "kenney-space-kit",
       "file": "turret_double.glb",

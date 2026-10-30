@@ -29,7 +29,13 @@
   "fixes": {
     "triangles": 11000,
     "feet": true,
-    "cloth": true
+    "cloth": true,
+    "lean": {
+      "Spine02": 4,
+      "Spine01": 6,
+      "Spine": 6,
+      "neck": 16
+    }
   },
   "landmarks": {
     "spine": [

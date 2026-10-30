@@ -1142,7 +1142,7 @@ export class GameView {
    * Update remote player and NPC avatars from interpolated poses. Each one is
    * a capsule until its character model has loaded, then an animated character.
    */
-  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set()): void {
+  updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set(), sitting: ReadonlyMap<number, { yaw: number; legDrop: number }> = new Map()): void {
     const now = performance.now();
     const crowd = poses.length > ANIM_LOD_CROWD;
     this.crowd = crowd;
@@ -1264,7 +1264,8 @@ export class GameView {
       a.glowKey = glowKey;
       if (reglow) a.mat.emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
       if (a.anim) {
-        // Riders stand still in their seats, however fast the vehicle goes.
+        // Riders stand (or sit) still in their seats, however fast the vehicle goes.
+        const sit = sitting.get(p.slot);
         const speed = seated.has(p.slot) ? 0 : Math.hypot(a.vel.x, a.vel.z);
         // Far characters in a crowd animate every few frames, with the time saved up (a death always plays at once).
         const far = crowd && cam && p.alive ? Math.hypot(p.x - cam.x, p.z - cam.z) : 0;
@@ -1299,6 +1300,7 @@ export class GameView {
           celebrate: (celebrate || !!p.emote) && p.alive,
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
+          ...(sit ? { seated: true, legDrop: sit.legDrop, seatFacing: angleDelta(p.yaw, sit.yaw) } : {}),
         });
         if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
       }

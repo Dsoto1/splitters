@@ -2199,7 +2199,8 @@ export class GameSession {
             vel: ride.vel,
             tilt: this.view.mountTilt(ride.index),
             cockpitEye: this.view.mountPoint(ride.index, cockpitEye(ride.def, seatIndex)) ?? mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex)),
-            seatEye: { x: feet.x, y: feet.y + PLAYER.eyeHeight, z: feet.z },
+            // A real seat: a seated head height over the cushion (the sim's crouching eye); otherwise standing.
+            seatEye: seatDef.seated ? mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex)) : { x: feet.x, y: feet.y + PLAYER.eyeHeight, z: feet.z },
           },
           this.input,
           cast,
@@ -2265,7 +2266,7 @@ export class GameSession {
       }
       this.lastHealth = local.health;
       this.lastArmor = local.armor;
-      this.hud.setStamina(local.state.stamina ?? 1, !!local.state.winded, local.alive, local.state.stance ?? 0);
+      this.hud.setStamina(local.state.stamina ?? 1, !!local.state.winded, local.alive, this.seat ? 0 : (local.state.stance ?? 0));
       // On a vehicle or turret gun the crosshair becomes a gunner's reticle (heat shown round it).
       this.hud.setGunnerReticle(seatGun && this.seat ? this.seat[2] : null);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2]);
@@ -2356,6 +2357,7 @@ export class GameSession {
         return null;
       },
       this.mounts?.riders(),
+      this.mounts?.sitters(),
     );
     this.sfx.remoteSteps(poses);
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot, this.phase === 'intermission');

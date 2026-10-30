@@ -27,6 +27,12 @@ export interface MotionState {
   stance?: number;
   /** Sprinting (plays the sprint even at the edge of its speed). */
   sprinting?: boolean;
+  /** Sitting in a vehicle seat (SeatDef.seated): the feet point is the cushion, the legs bend over it. */
+  seated?: boolean;
+  /** Seated: how far below the cushion the floor is (m); the shins reach down to it (SeatDef.legDrop). */
+  legDrop?: number;
+  /** Seated: which way the seat faces, relative to the body's facing (radians, like moveAngle); the hips turn toward it. */
+  seatFacing?: number;
 }
 
 export type OneShot = 'shoot' | 'melee' | 'melee_heavy' | 'reload' | 'hit' | 'hit_head' | 'throw' | 'interact' | 'jab' | 'kick';
@@ -57,6 +63,17 @@ const BACK_STAY = 0.52;
 /** Lying prone: the body tips forward onto its front around the hips (radians, metres). */
 const PRONE_TILT = 1.45;
 const HIP_HEIGHT = 0.95;
+/**
+ * Sitting: the thighs swing forward to level (radians, after the standing clip) and the body drops so the hip
+ * joints rest SIT_CLEAR (model m) above the cushion, the thighs lying on it. The knees bend so the soles reach
+ * the floor (MotionState.legDrop under the cushion; the ankle SIT_ANKLE above the sole), between the limits.
+ */
+const SIT_THIGH = 1.5;
+const SIT_CLEAR = 0.09;
+const SIT_ANKLE = 0.08;
+const SIT_KNEE_MIN = 0.3;
+const SIT_KNEE_MAX = 1.5;
+const SIT_SHIN = 0.45;
 const FADE_PER_SEC = 8;
 /** Overlays outweigh locomotion on the upper body. */
 const OVERLAY_WEIGHT = 4;
@@ -324,7 +341,9 @@ export class CharacterAnimator {
     this.backing = moving && Math.abs(s.moveAngle) > Math.PI * (this.backing ? BACK_STAY : BACK_START);
     const back = this.backing;
     const legs = back ? s.moveAngle - Math.PI * Math.sign(s.moveAngle) : s.moveAngle;
-    const side = moving ? Math.max(-HIP_TURN_MAX, Math.min(HIP_TURN_MAX, legs)) : 0;
+    // Seated, the hips and legs stay toward the seat's facing as far as the waist turns; the shoulders follow the aim.
+    const seatTurn = s.seated ? (s.seatFacing ?? 0) : null;
+    const side = seatTurn !== null ? Math.max(-HIP_TURN_MAX, Math.min(HIP_TURN_MAX, seatTurn)) : moving ? Math.max(-HIP_TURN_MAX, Math.min(HIP_TURN_MAX, legs)) : 0;
     // Eased: bots dodging left and right while they shoot would otherwise swing their hips back and forth.
     this.twist += (side - this.twist) * Math.min(1, dt * 6);
 
@@ -332,7 +351,8 @@ export class CharacterAnimator {
     const low = (s.stance ?? 0) > 0;
     // Real prone clips when the rig has them; otherwise the body is tipped over (below).
     const proneClips = s.stance === 2 && this.ch.clips.has('prone_idle');
-    if (s.celebrate) want = 'dance';
+    if (s.seated) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
+    else if (s.celebrate) want = 'dance';
     else if (s.airborne) want = 'jump_air';
     else if (proneClips) want = s.speed < 0.3 ? 'prone_idle' : 'prone_crawl';
     else if (low) want = s.speed < 0.4 ? 'crouch_idle' : 'crouch_walk';
@@ -342,11 +362,15 @@ export class CharacterAnimator {
     const sprintTarget = s.sprinting || s.speed >= SPRINT_SPEED ? 1 : 0;
     this.sprintMix += Math.sign(sprintTarget - this.sprintMix) * Math.min(Math.abs(sprintTarget - this.sprintMix), dt * FADE_PER_SEC);
     // Prone: tip the whole body forward onto its front, pivoting at the hips over the feet.
-    const tilt = s.stance === 2 && !s.celebrate && !proneClips ? PRONE_TILT : 0;
+    const tilt = s.stance === 2 && !s.celebrate && !proneClips && !s.seated ? PRONE_TILT : 0;
     // Lying down, the standing aim pose would pull the arms upright: leave the arms to the clip and the grip.
     this.lying = proneClips;
     this.prone += (tilt - this.prone) * Math.min(1, dt * 8);
     if (Math.abs(this.prone - tilt) < 1e-3) this.prone = tilt;
+    // Into and out of a seat quickly (getting in is instant in the sim).
+    const sitTarget = s.seated ? 1 : 0;
+    if (s.seated && s.legDrop !== undefined) this.legDrop = s.legDrop;
+    this.sit += Math.sign(sitTarget - this.sit) * Math.min(Math.abs(sitTarget - this.sit), dt * 6);
     this.applyProne();
     if (want !== this.current) {
       this.current = want;
@@ -606,6 +630,7 @@ export class CharacterAnimator {
     this.dead = true;
     this.gate.skip = false;
     this.prone = 0;
+    this.sit = 0;
     this.applyProne();
     for (const g of this.ch.clips.values()) if (g.isPlaying) g.stop();
     this.aimUpper?.stop();
@@ -645,20 +670,62 @@ export class CharacterAnimator {
   /** Current forward tip of the body (0 standing, PRONE_TILT lying down). */
   private prone = 0;
   private lying = false;
+  /** 0..1: how far into the seated pose (MotionState.seated). */
+  private sit = 0;
+  /** The hip joints' height over the feet standing (model m, measured from the rig; HIP_HEIGHT until then). */
+  private hipHeight: number | null = null;
+  /** Knee to ankle (model m, measured from the rig; SIT_SHIN until then). */
+  private shin: number | null = null;
+  /** The seat's floor under the cushion (MotionState.legDrop). */
+  private legDrop = 0.45;
+  private appliedSit = 0;
 
   /** Where the body sits before any prone offset (first-person arms are placed under the camera). */
   private rootBase: Vector3 | null = null;
   private applied = 0;
 
   private applyProne(): void {
-    if (this.prone === this.applied) return;
+    if (this.prone === this.applied && this.sit === this.appliedSit) return;
     this.applied = this.prone;
+    this.appliedSit = this.sit;
     const root = this.ch.root;
     this.rootBase ??= root.position.clone();
     root.rotation.x = this.prone;
     // Rotating about the feet would throw the body a metre forward; keep the hips over the feet and lay it on the ground.
     // Lifted a little so the chest rests on the floor instead of sinking into it.
-    root.position.set(this.rootBase.x, this.rootBase.y + 0.12 * (this.prone / PRONE_TILT), this.rootBase.z - HIP_HEIGHT * Math.sin(this.prone));
+    // Seated, the body drops onto the cushion (the feet point), the thighs over it and the shins hanging in front.
+    const drop = ((this.hipHeight ?? HIP_HEIGHT) - SIT_CLEAR) * this.sit;
+    root.position.set(this.rootBase.x, this.rootBase.y + 0.12 * (this.prone / PRONE_TILT) - drop, this.rootBase.z - HIP_HEIGHT * Math.sin(this.prone));
+  }
+
+  /** Bend the legs over the seat (after the clips); measures the hip height first, while it can (not lying down). */
+  private applySit(right: Vector3): void {
+    const thigh = this.ch.joints.get('thigh_l');
+    const calf = this.ch.joints.get('calf_l');
+    const foot = this.ch.joints.get('foot_l');
+    const root = this.ch.root;
+    const parentScale = (root.parent as TransformNode | null)?.absoluteScaling.y || 1;
+    if (this.hipHeight === null && this.prone === 0 && this.sit === 0 && thigh) {
+      root.computeWorldMatrix(true);
+      thigh.computeWorldMatrix(true);
+      const h = (thigh.getAbsolutePosition().y - root.getAbsolutePosition().y) / parentScale;
+      if (h > 0.2 && h < 3) this.hipHeight = h;
+    }
+    if (this.shin === null && calf && foot) {
+      calf.computeWorldMatrix(true);
+      foot.computeWorldMatrix(true);
+      const l = Vector3.Distance(calf.getAbsolutePosition(), foot.getAbsolutePosition()) / parentScale;
+      if (l > 0.1 && l < 2) this.shin = l;
+    }
+    if (this.sit <= 0.001) return;
+    // The shin's angle from straight down that puts the ankle over the floor (the thigh is level at the hip).
+    const reach = (SIT_CLEAR + this.legDrop / parentScale - SIT_ANKLE) / (this.shin ?? SIT_SHIN);
+    const shinAngle = Math.acos(Math.max(0, Math.min(1, reach)));
+    const knee = Math.max(SIT_KNEE_MIN, Math.min(SIT_KNEE_MAX, SIT_THIGH - shinAngle));
+    for (const side of ['l', 'r'] as const) {
+      this.turnJoint(this.ch.joints.get(`thigh_${side}`), right, SIT_THIGH * this.sit);
+      this.turnJoint(this.ch.joints.get(`calf_${side}`), right, -knee * this.sit);
+    }
   }
 
   private die(): void {
@@ -728,6 +795,7 @@ export class CharacterAnimator {
       const q = Quaternion.RotationAxis(pitchAxis, this.pitch * share).multiply(Quaternion.RotationAxis(twistAxis, -twist * share));
       bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
     }
+    this.applySit(right);
     this.applyReactions(right, up, rootRot);
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
     else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x);

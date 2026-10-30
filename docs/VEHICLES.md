@@ -13,12 +13,12 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
 | Sentry Gun | none | Aims and fires on its own at its team's enemies (no team: everyone) |
 | Go-Kart | 1 driver | Very quick, no gun: run people over |
 | Speeder | 2 (pilot, passenger) | Hovering; the pilot fires twin blasters ahead, the passenger shoots their own weapon |
-| Buggy | 4 (driver, gunner, 2 passengers) | The gunner works a roof machine gun all round; passengers shoot their own weapons |
+| Buggy | 4 (driver, 3 passengers) | Everyone but the driver sits and shoots their own weapon, all round; the roof gun is scenery |
 | Hauler | 6 (pilot, gunner, 4 passengers) | A slow hovering transport with a rocket gunner |
 | Skyfighter | 1 pilot | Flies: the pilot climbs (Space) and dives (Ctrl/crouch), up to 30 m above where it was parked, firing twin blasters ahead |
 | Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier with an all-round door gun; riders stand on the deck |
 | Tank | 3 (driver, cannon, roof gun) | Slow and heavy (1200 health): the cannon fires explosive shells within 35° of the nose, the roof gun works all round |
-| Gun Jeep | 3 (driver, roof gun, passenger) | Wheeled light: a quick pickup with an all-round machine gun on the back (380 health) |
+| Gun Jeep | 5 (driver, roof gun, 3 passengers) | Wheeled light: a quick pickup with an all-round machine gun on the back (380 health); a passenger in the cab and two sitting on the bed's side rails shoot their own weapons |
 | Armored Rover | 5 (driver, front gun, rear gun, 2 riders) | Wheeled heavy: slow, grippy and 900 health; the front gunner covers ±75° ahead, the rear gunner ±90° behind |
 | Hover Bike | 1 rider | Hover: the fastest thing on the map (31 m/s), fragile (170 health), no gun |
 | Gunship | 3 (pilot, left and right door guns) | Flying, on the dropship's flight model: the pilot fires blasters ahead, each door gunner covers ±70° off their own side (950 health) |
@@ -59,6 +59,13 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
   Kit's long sled. The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
+  The buggy is the owner's own Meshy model (Tactical Off-Road Beast, owned;
+  `content/guns.json`, built by `prepare-guns.mjs`, 6.8k triangles, 768 px map):
+  a long tube-frame buggy with a roof gun whose hubs are bare, so the owner's
+  Rugged Off-Road Tire (`vehicles/offroad_tire.glb`, 676 triangles) is drawn at
+  each hub from the def's `wheels` (`mountVisuals.ts`), and the body rides
+  0.24 m up (`rideHeight`) on them. The wheels don't turn or steer yet (no
+  vehicle's do).
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no
   reloading) within its arc; side door guns (the gunship's) have arcs centred
   on their own side (`facing` on the seat). Passengers use their own weapons. Drivers can't

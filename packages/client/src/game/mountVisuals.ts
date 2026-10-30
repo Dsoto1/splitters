@@ -31,6 +31,21 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
       if (tint) paint(m, tint);
     }
   });
+  // Wheels on a body without its own: placed in the mount's frame, the axle across the body (the tire's model is
+  // built with its axle along Z), the outside face out on each side. Under the body node so they ride with it.
+  const wheels = def.wheels;
+  if (wheels) {
+    wheels.at.forEach(([x, y, z], i) => {
+      void models.instantiate(wheels.model, `${name}_wheel${i}`).then((wheel) => {
+        if (root.isDisposed()) return wheel.dispose();
+        wheel.parent = body;
+        wheel.position.set(x, y, z);
+        wheel.rotation.y = x < 0 ? -Math.PI / 2 : Math.PI / 2;
+        // Rubber stays black: no skin or team paint on the tires.
+        for (const m of wheel.getChildMeshes()) m.isPickable = false;
+      });
+    });
+  }
   return root;
 }
 

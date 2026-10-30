@@ -348,6 +348,8 @@ interface Projectile {
   walking?: boolean;
   heading?: Vec3;
   hopIn?: number;
+  /** Fired by a rider: the vehicle (index into the match's mounts) it passes through rather than hitting. */
+  fromMount?: number;
 }
 
 /**
@@ -791,7 +793,7 @@ export class Match {
       c.mount = { index, seat };
       this.pendingEvents.push({ e: 'mount', s: slot, m: m.index, seat });
     }
-    c.move = { pos: this.seatFeet(m, seat), velY: 0, grounded: true };
+    c.move = this.seatMove(m, seat);
     c.yaw = yaw;
     c.pitch = 0;
     c.bot?.onSpawn(yaw);
@@ -2570,15 +2572,22 @@ export class Match {
       vel: scale(aim, spec.speed),
       ticksLeft: Math.round(spec.fuseSeconds * TICK_RATE),
       age: 0,
+      ...(shooter.mount ? { fromMount: shooter.mount.index } : {}),
     });
   }
 
   private fire(shooter: Combatant, def: Trigger, viewTick: number): void {
-    if (!simProfile.on) return this.fireNow(shooter, def, viewTick);
-    const t0 = performance.now();
-    this.fireNow(shooter, def, viewTick);
-    simProfile.add('fire', performance.now() - t0);
-    simProfile.count('fire');
+    // A rider's rounds leave through the vehicle they sit in (a seated eye is under its roof line).
+    this.physics.shotSkip = shooter.mount ? (this.mounts[shooter.mount.index]?.body ?? null) : null;
+    try {
+      if (!simProfile.on) return this.fireNow(shooter, def, viewTick);
+      const t0 = performance.now();
+      this.fireNow(shooter, def, viewTick);
+      simProfile.add('fire', performance.now() - t0);
+      simProfile.count('fire');
+    } finally {
+      this.physics.shotSkip = null;
+    }
   }
 
   private fireNow(shooter: Combatant, def: Trigger, viewTick: number): void {
@@ -2944,7 +2953,9 @@ export class Match {
       const delta = scale(p.vel, TICK_DT);
       const len = Math.hypot(delta.x, delta.y, delta.z);
       const dir = scale(delta, 1 / (len || 1));
+      this.physics.shotSkip = p.fromMount !== undefined ? (this.mounts[p.fromMount]?.body ?? null) : null;
       const wall = this.physics.raycastNormal(p.pos, dir, len);
+      this.physics.shotSkip = null;
       // Through a portal (before whatever wall it is set in): out of its partner, turned with it.
       const gate = this.scenario.portals.length ? portalSegment(this.scenario.portals, p.pos, add(p.pos, delta), this.scenario.portalOn) : null;
       if (gate && (!wall || wall.dist >= gate.t * len - 0.15)) {
@@ -3636,6 +3647,12 @@ export class Match {
     return mountToWorld(m.pos, m.yaw, m.def.seats[seat]!.offset);
   }
 
+  /** A rider's movement state in a seat: on the seat point; sitting (a real seat) takes the crouching eye and height. */
+  private seatMove(m: MountRt, seat: number): MoveState {
+    const pos = this.seatFeet(m, seat);
+    return m.def.seats[seat]!.seated ? { pos, velY: 0, grounded: true, stance: 1 } : { pos, velY: 0, grounded: true };
+  }
+
   /** Climb into the nearest turret or vehicle in reach with a free seat (driver first, then gunner, then passengers). */
   private enterMount(c: Combatant): boolean {
     let best: MountRt | null = null;
@@ -3659,7 +3676,7 @@ export class Match {
     if (seat < 0) return false;
     best.seats[seat] = c.slot;
     c.mount = { index: this.mounts.indexOf(best), seat };
-    c.move = { pos: this.seatFeet(best, seat), velY: 0, grounded: true };
+    c.move = this.seatMove(best, seat);
     c.reloadTicks = 0;
     c.windup = 0;
     c.burstLeft = 0;
@@ -3731,7 +3748,7 @@ export class Match {
       this.airdropped.add(c.slot);
       m.seats[seat] = c.slot;
       c.mount = { index: this.mounts.indexOf(m), seat };
-      c.move = { pos: this.seatFeet(m, seat), velY: 0, grounded: true };
+      c.move = this.seatMove(m, seat);
       c.yaw = m.yaw;
       this.pendingEvents.push({ e: 'mount', s: c.slot, m: m.index, seat });
       return true;
@@ -3851,10 +3868,12 @@ export class Match {
       if (m.def.sentry && this.race?.combat !== false) this.runSentry(m);
       if (m.alive && m.def.vehicle) this.vehicleHazards(m);
       if (!m.alive) continue;
-      // Riders move with it.
+      // Riders move with it; shooting their own guns from a moving one spreads like shooting on the run.
       m.seats.forEach((slot, seat) => {
         const c = slot === null ? undefined : this.actor(slot);
-        if (c?.alive) c.move = { pos: this.seatFeet(m, seat), velY: 0, grounded: true };
+        if (!c?.alive) return;
+        c.move = this.seatMove(m, seat);
+        c.moveSpeed = Math.abs(m.speed);
       });
     }
     // Moved bodies must be in place before this tick's shots and sight checks.

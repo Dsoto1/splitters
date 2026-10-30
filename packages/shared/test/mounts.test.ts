@@ -48,20 +48,57 @@ describe('turrets, sentries and vehicles', () => {
     expect(match.snapshot([]).mt).toHaveLength(1);
   });
 
-  it('a buggy seats four (driver, gunner, two passengers); a fifth player cannot get in', () => {
-    expect(MOUNT_DEFS.buggy.seats).toHaveLength(4);
+  it('a buggy seats four (a driver and three seated passengers); a fifth player cannot get in', () => {
+    expect(MOUNT_DEFS.buggy.seats.map((s) => s.role)).toEqual(['driver', 'passenger', 'passenger', 'passenger']);
+    expect(MOUNT_DEFS.buggy.seats.every((s) => s.seated && !s.weapon)).toBe(true);
     expect(MOUNT_DEFS.hauler.seats).toHaveLength(6);
     const match = new Match(yard([{ position: [10, 0, 10], model: 'buggy', yaw: 0, faction: null, respawnSeconds: null }]), rules);
     const d = new Driver(match);
     const players = [0, 1, 2, 3, 4].map((i) => match.addHuman(`p${i}`)!);
     d.run(2);
-    players.forEach((p, i) => place(p, 9 + i * 0.4, 8));
+    players.forEach((p, i) => place(p, 9 + i * 0.4, 7.5));
+    // E fills the next free seat: the wheel first, then the passenger seats in order.
     for (const p of players) use(d, p);
-    const seats = players.map((p) => p.mount?.seat ?? -1);
-    expect(seats.slice(0, 4).sort()).toEqual([0, 1, 2, 3]);
-    expect(seats[4]).toBe(-1);
-    // The gunner's mounted MG fires and heats up.
-    const gunner = players[seats.indexOf(1)]!;
+    expect(players.map((p) => p.mount?.seat ?? -1)).toEqual([0, 1, 2, 3, -1]);
+    // Seated: on the cushion with the crouching eye, not standing on it.
+    for (const p of players.slice(0, 4)) expect(p.move.stance).toBe(1);
+    // The driver can't shoot; every passenger fires their own weapon, aiming wherever they look (no arc), and
+    // their rounds leave through the buggy (aimed down past its side, they don't hit it).
+    const buggy = (match as unknown as { mounts: { health: number }[] }).mounts[0]!;
+    const health = buggy.health;
+    const aims = [Math.PI, -Math.PI / 2, Math.PI / 2, 0];
+    players.slice(0, 4).forEach((p, i) => {
+      const yaw = aims[i]!;
+      const ev = d.run(10, () => d.input(p, { yaw, pitch: -0.45, buttons: BUTTON_FIRE }));
+      const shots = ev.filter((e) => e.e === 'shot' && e.s === p.slot);
+      if (i === 0) {
+        expect(shots).toEqual([]);
+        return;
+      }
+      expect(shots.length).toBeGreaterThan(0);
+      expect(shots.every((e) => e.e === 'shot' && !e.w.startsWith('core.mount_'))).toBe(true);
+      expect(Math.abs(p.yaw - yaw)).toBeLessThan(1e-6);
+      d.run(5, () => d.input(p, { yaw, pitch: -0.45 }));
+    });
+    expect(buggy.health).toBe(health);
+    // Out again: standing.
+    use(d, players[1]!);
+    expect(players[1]!.mount).toBeUndefined();
+    expect(players[1]!.move.stance).toBeUndefined();
+    // Now the fifth gets the free seat.
+    use(d, players[4]!);
+    expect(players[4]!.mount?.seat).toBe(1);
+  });
+
+  it("the gun jeep's roof gunner fires the mounted MG", () => {
+    const match = new Match(yard([{ position: [10, 0, 10], model: 'gun_jeep', yaw: 0, faction: null, respawnSeconds: null }]), rules);
+    const d = new Driver(match);
+    const players = [0, 1].map((i) => match.addHuman(`p${i}`)!);
+    d.run(2);
+    players.forEach((p, i) => place(p, 9 + i * 0.4, 7.5));
+    for (const p of players) use(d, p);
+    const gunner = players.find((p) => MOUNT_DEFS.gun_jeep.seats[p.mount?.seat ?? -1]?.role === 'gunner')!;
+    expect(gunner).toBeDefined();
     const ev = d.run(20, () => d.input(gunner, { yaw: 0, pitch: 0, buttons: BUTTON_FIRE }));
     expect(ev.some((e) => e.e === 'shot' && e.w === 'core.mount_mg')).toBe(true);
   });

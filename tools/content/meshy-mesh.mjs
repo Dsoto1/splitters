@@ -114,7 +114,7 @@ const HIDDEN_WORK = 40000;
  * `dropHidden` drops the triangles no ray from outside can reach first (hiddenTriangles: a wreck's engine bay and
  * seat stuffing), so the budget goes to what shows. Returns { doc, sourceTriangles, triangles }.
  */
-export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, dropHidden = false } = {}) {
+export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, dropHidden = false, sloppy = false } = {}) {
   const glb = /\.glb$/i.test(fbxPath);
   const { doc } = glb ? { doc: await glbDocument(fbxPath) } : await fbxToDocument(fbxPath, { keepUv: true });
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
@@ -151,7 +151,7 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
   } else {
     const hi = { P: prim.getAttribute('POSITION').getArray().slice(), UV: prim.getAttribute('TEXCOORD_0').getArray().slice(), I: prim.getIndices().getArray().slice() };
     // Vertex colours need the vertices where the colour changes; a rebaked map carries the colour itself.
-    const low = closeSeams(prim, map, triangles, maxError, dropHidden, surface === 'vertex' ? 2 : 0.25);
+    const low = closeSeams(prim, map, triangles, maxError, dropHidden, surface === 'vertex' ? 2 : 0.25, sloppy);
     const buffer = doc.getRoot().listBuffers()[0];
     const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(buffer);
     if (surface === 'vertex') {
@@ -259,7 +259,7 @@ export async function paintOut(map, marked, { grow = 2, holes = 0 } = {}) {
  * vertices. With `dropHidden`, the triangles nothing outside can see go at a working detail first.
  * Returns { pos, nrm, col, idx } (welded).
  */
-export function closeSeams(prim, map, targetTris, maxError, dropHidden, colourWeight) {
+export function closeSeams(prim, map, targetTris, maxError, dropHidden, colourWeight, sloppy = false) {
   const { data, info } = map;
   const P = prim.getAttribute('POSITION').getArray();
   const UV = prim.getAttribute('TEXCOORD_0').getArray();
@@ -314,7 +314,10 @@ export function closeSeams(prim, map, targetTris, maxError, dropHidden, colourWe
     [cut] = MeshoptSimplifier.simplifyWithAttributes(cut, pos, 3, attrs, 6, weights, null, Math.min(cut.length, HIDDEN_WORK * 3), maxError, []);
     cut = dropHiddenTriangles(pos, cut);
   }
-  const [idx, error] = MeshoptSimplifier.simplifyWithAttributes(cut, pos, 3, attrs, 6, weights, null, Math.min(cut.length, targetTris * 3), maxError, []);
+  let [idx, error] = MeshoptSimplifier.simplifyWithAttributes(cut, pos, 3, attrs, 6, weights, null, Math.min(cut.length, targetTris * 3), maxError, []);
+  // `sloppy`: a surface of many small separate pieces (a tire's tread blocks) that the careful cut can't join is cut
+  // to the budget regardless of its topology (the rebake paints the colour back on).
+  if (sloppy && idx.length > targetTris * 3 * 1.25) [idx, error] = MeshoptSimplifier.simplifySloppy(idx, pos, 3, null, targetTris * 3, 1);
   console.log(`  seams closed: ${n} vertices welded to ${m}, ${idx.length / 3} triangles, error ${error.toFixed(4)}`);
   return { pos, nrm, col, idx };
 }

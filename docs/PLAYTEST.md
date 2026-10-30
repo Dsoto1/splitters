@@ -45,7 +45,7 @@ puts any weapon in your hands. The IDs are listed in the weapon test below.
 - [ ] Drive over grass, up the hills and across the canyon: no falling through the ground, no getting stuck on flat ground.
 - [ ] Drive into an enemy: they take damage.
 - [ ] E again: you step out beside the vehicle, on your feet.
-- [ ] The buggy takes 4 (driver, gunner, 2 passengers). With bots or a friend online, check that the gunner seat fires the mounted MG.
+- [ ] The buggy takes 4 (driver and 3 passengers), all sitting in its seats (not standing through the roof). With bots or a friend online, check that each passenger can shoot their own gun all round, and that rounds fired past its sides don't hurt the buggy. The gun jeep's roof gun still fires the mounted MG.
 - [ ] The **hauler** (canyon, on the west side of mid) takes 6. The **speeder** takes 2, and the driver fires its blasters.
 - [ ] **MG turret** on each base roof: E to man it; it only turns within its arc; hold fire until it overheats (the HUD shows heat in °) and check it cools down.
 - [ ] **Rocket turret** (Frost Basin): slow, heavy rockets.

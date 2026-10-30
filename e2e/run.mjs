@@ -2304,6 +2304,8 @@ async function vehiclesFlow(browser) {
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
   // H switches to the chase camera (remembered for ground vehicles): behind the buggy, outside it and clear of walls.
   await page.keyboard.press('KeyH');
+  // The first chase frame can take a while in software rendering (the wider view brings new things to draw).
+  await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
   await page.waitForTimeout(T(800)); // wait-ok: the camera eases out to the chase view
   let worst = null;
   for (let i = 0; i < 5; i++) {
@@ -2354,6 +2356,91 @@ async function vehiclesFlow(browser) {
   }
   await page.evaluate(() => (window.__cs.input.pitch = 0));
   check(roll < 1, `after leaving the buggy and a blast nearby, the view and gun stay level as you turn (${roll.toFixed(2)}° roll)`);
+  // Passengers: three bots take the driver's and two passenger seats (E fills the next free seat), you take the last;
+  // everyone sits, and you shoot your own gun out of the side without hitting the buggy. A fifth can't get in.
+  const ride = await page.evaluate(() => {
+    const match = window.__match;
+    const me = match.slots[window.__cs.slot];
+    // Out of any ride first (a slow frame can let a second E press land and climb back in above).
+    if (me.mount) match.leaveMount(me, true);
+    // Everyone holds still and holds fire (the buggy's health is checked below).
+    for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
+    const m = match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null)).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
+    // Bots drawn as characters (a creature has no seated pose).
+    const bots = match.slots.filter((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {})).slice(0, 4);
+    const seats = [];
+    for (const b of bots.slice(0, 3)) {
+      b.move = { pos: { x: m.pos.x, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: true };
+      match.enterMount(b);
+      seats.push(b.mount?.seat ?? -1);
+    }
+    me.move = { pos: { x: m.pos.x + 2.4, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: false };
+    window.__autoInput = { buttons: 0 };
+    return { index: m.index, seats, fifth: bots[3]?.slot, riders: bots.slice(0, 3).map((b) => b.slot) };
+  });
+  for (let i = 0; i < 4; i++) {
+    if (await page.evaluate(() => !!window.__match.slots[window.__cs.slot].mount)) break;
+    await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
+    const aboard = await page.waitForFunction(() => !!window.__match.slots[window.__cs.slot].mount, null, { timeout: T(8000) }).then(() => true, () => false);
+    if (aboard) break;
+  }
+  // Seated riders: the bots' characters ease into the seated pose.
+  await page
+    .waitForFunction((slots) => slots.every((s) => (window.__cs.view.avatars.get(s)?.anim?.sit ?? 0) > 0.95), ride.riders, { timeout: T(8000) })
+    .catch(() => {});
+  const seated = await page.evaluate((ride) => {
+    const match = window.__match;
+    const me = match.slots[window.__cs.slot];
+    const m = match.mounts.find((x) => x.index === ride.index);
+    const bot = match.slots[ride.fifth];
+    bot.move = { pos: { x: m.pos.x, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: true };
+    const fifth = match.enterMount(bot);
+    // The bots' hips sit on their cushions, not standing up out of the buggy.
+    const hips = ride.riders.map((s) => {
+      const a = window.__cs.view.avatars.get(s);
+      const thigh = a?.anim?.ch.joints.get('thigh_l');
+      return thigh ? +(thigh.getAbsolutePosition().y - (m.pos.y + m.def.seats[match.slots[s].mount.seat].offset[1])).toFixed(2) : null;
+    });
+    return {
+      mine: me.mount?.seat,
+      role: me.mount ? m.def.seats[me.mount.seat].role : null,
+      stance: me.move.stance,
+      view: window.__cs.rideView(),
+      sit: ride.riders.map((s) => +(window.__cs.view.avatars.get(s)?.anim?.sit ?? 0).toFixed(2)),
+      hips,
+      fifth,
+      health: m.health,
+    };
+  }, ride);
+  check(ride.seats.join() === '0,1,2' && seated.mine === 3 && seated.role === 'passenger' && seated.stance === 1 && seated.view === 'seat', `three riders and you fill the buggy's four seats in order, you in the back as a seated passenger (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
+  check(seated.sit.every((v) => v > 0.95) && seated.hips.every((h) => h !== null && h > 0 && h < 0.3), `riders are drawn sitting on their seats (sit ${seated.sit.join(', ')}; hips ${seated.hips.join(', ')} m over the cushions)`);
+  check(seated.fifth === false, 'a fifth player can\'t get into a full buggy');
+  // Fire out of the right side, aiming down a little: your own gun, and the rounds leave through the buggy.
+  const shot = await page.evaluate((index) => {
+    const match = window.__match;
+    const me = match.slots[window.__cs.slot];
+    const m = match.mounts.find((x) => x.index === index);
+    window.__cs.input.yaw = m.yaw + Math.PI / 2;
+    window.__cs.input.pitch = -0.35;
+    const held = me.weapons.get(me.current);
+    window.__shotStart = { mag: held?.mag ?? 0, health: m.health, weapon: me.current };
+    window.__autoInput = { buttons: 2 };
+    return window.__shotStart;
+  }, ride.index);
+  await page.waitForFunction((s) => { const me = window.__match.slots[window.__cs.slot]; return (me.weapons.get(s.weapon)?.mag ?? s.mag) < s.mag; }, shot, { timeout: T(8000) }).catch(() => {});
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const fired = await page.evaluate((index) => {
+    const me = window.__match.slots[window.__cs.slot];
+    const m = window.__match.mounts.find((x) => x.index === index);
+    return { mag: me.weapons.get(window.__shotStart.weapon)?.mag, health: m.health, seat: me.mount?.seat };
+  }, ride.index);
+  check(fired.mag < shot.mag && fired.health === shot.health && fired.seat === 3, `a seated passenger fires their own gun out of the side and the rounds don't hit their own buggy (${JSON.stringify({ weapon: shot.weapon, mag: [shot.mag, fired.mag], health: [shot.health, fired.health] })})`);
+  for (let i = 0; i < 4; i++) {
+    if (await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount)) break;
+    await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
+    await page.waitForFunction(() => !window.__match.slots[window.__cs.slot].mount, null, { timeout: T(5000) }).catch(() => {});
+  }
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   // Blow the buggy up: it goes up in a vehicle explosion and leaves a charred wreck the client keeps solid.
   const boom = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];

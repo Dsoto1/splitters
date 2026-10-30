@@ -138,8 +138,8 @@ describe('bot movement smoothness', () => {
   });
 });
 
-/** An open TDM yard 48 × 32 m with a buggy parked at the west end, facing east. */
-function rideYard(): MapDocument {
+/** An open TDM yard 48 × 32 m with a buggy (or another vehicle) parked at the west end, facing east. */
+function rideYard(model: 'buggy' | 'gun_jeep' = 'buggy'): MapDocument {
   const tiles: MapDocument['classicStructure']['tiles'] = [];
   for (let x = 0; x < 6; x++) for (let z = 0; z < 4; z++) tiles.push({ id: `y${x}_${z}`, tile: 'core.yard', x, y: z, z: 0, rotation: 0 });
   const map = makeMap(tiles, [[0, 0, 4], [0, 0, 20], [40, 0, 4], [40, 0, 20]]);
@@ -148,15 +148,19 @@ function rideYard(): MapDocument {
   map.entities.forEach((e, i) => {
     if (e.kind === 'spawn') e.faction = i < 2 ? a.id : b.id;
   });
-  map.entities.push({ id: 'mount_0', kind: 'mount', model: 'buggy', position: [4, 0, 12], yaw: Math.PI / 2, faction: null, respawnSeconds: null });
+  map.entities.push({ id: 'mount_0', kind: 'mount', model, position: [4, 0, 12], yaw: Math.PI / 2, faction: null, respawnSeconds: null });
   const r = loadMap(map);
   if (!r.ok) throw new Error(JSON.stringify(r.issues));
   return r.map;
 }
 
 describe('bots ride with a teammate', () => {
-  it('hops into the free gunner seat of a buggy a human drives by, fires the gun at an enemy, and gets out when the driver does', () => {
-    const match = new Match(rideYard(), { ...DEFAULT_TDM_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 3);
+  // The gun jeep's free roof gun first; the buggy has no gun seat, so a passenger seat and the bot's own weapon.
+  it.each([
+    ['gun_jeep', 1, (w: string) => w === 'core.mount_mg'],
+    ['buggy', 1, (w: string) => !w.startsWith('core.mount_')],
+  ] as const)('hops into the free seat of a %s a human drives by (seat %i), fires at an enemy, and gets out when the driver does', (model, wantSeat, gunOk) => {
+    const match = new Match(rideYard(model), { ...DEFAULT_TDM_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 3);
     const me = match.addHuman('me')!;
     const enemy = match.addHuman('enemy')!;
     const bot = match.addBot('mate', { ...CORE_BOT_PROFILES[3]!, tags: [], itemGreed: 0 }, BOT_DIFFICULTIES.normal)!;
@@ -187,9 +191,9 @@ describe('bots ride with a teammate', () => {
     }
     expect(boardedAt, 'boarded').toBeGreaterThanOrEqual(0);
     expect(boardedAt).toBeLessThan(60 * 6);
-    // The gun was free: it took that seat.
-    expect(bot.mount!.seat).toBe(1);
-    // An enemy shows up ahead: the gunner opens up with the mounted gun (and stays in).
+    // The gun was free: it took that seat (in the buggy, the front passenger seat).
+    expect(bot.mount!.seat).toBe(wantSeat);
+    // An enemy shows up ahead: the rider opens up, with the mounted gun or its own (and stays in).
     enemy.move = { pos: { x: 40, y: 0, z: 12 }, velY: 0, grounded: true };
     const events: GameEvent[] = [];
     for (let t = 0; t < 60 * 5; t++) {
@@ -198,7 +202,7 @@ describe('bots ride with a teammate', () => {
       enemy.health = me.health = bot.health = 100;
       events.push(...match.step());
     }
-    expect(events.some((e) => e.e === 'shot' && e.s === bot.slot && e.w === 'core.mount_mg')).toBe(true);
+    expect(events.some((e) => e.e === 'shot' && e.s === bot.slot && gunOk(e.w))).toBe(true);
     expect(bot.mount).toBeDefined();
     // The driver gets out: so does the bot, soon after.
     enemy.move = { pos: { x: 42, y: 0, z: 26 }, velY: 0, grounded: true };

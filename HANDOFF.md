@@ -10,77 +10,37 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
-### Where things stand (end of the 2026-10-30 afternoon session)
-- **`main` is at `cf8c3e5`** (everything up to `wip/impact`, green).
-- **The session branch is ahead of `main`** with everything below, all merged. CI on `check/candidate` was
-  running on **`77a2fee`** at hand-off. Earlier runs: `b36156e` failed only on the MapMaker screenshot baseline
-  (regenerated since) and on the mobile "a tap on the pad middle jumps" check (fixed since in `bb06a47`: the
-  hold timer crouched before a late lift was seen). **Next step: read that run; if green, fast-forward `main`
-  (`git push origin 77a2fee:main`, or the newer head if you pushed fixes); if red, fix and push to
-  `check/candidate` again.**
-- **What's on the session branch and not on `main` yet** (owner's requests of 2026-10-30):
-  - Character Select: drag to turn the character (`MenuScene.spin`/`resetSpin`, `.char-spin` in frontEnd.ts);
-    all built-in portraits shipped (26 were drawn live, freezing the page for seconds); your designs' portraits
-    kept in localStorage `cs.portraits` on save; one mannequin and no cyclops/oculus blobs in the list
-    (`PLAYER_NPC_LOOKS`).
-  - Muzzle flashes no longer brighten the whole scene's ambient light (it lit every wall, indoors and out).
-  - Sounds synthesise one per task (the first click froze the page).
-  - Weapon switching: one step per wheel notch / ~60 px of trackpad (`InputState.scroll`), first-person guns
-    kept once built (`View.viewmodels`).
-  - MapMaker: new maps start on 160 m of grass terrain; New opens a size dialog (96/160/240/320 m or Sky map);
-    "nothing to stand on" check message mentions terrain.
-  - Merged agent branches: `wip/bot-vehicles`, `wip/weapon-wheel-mobile`, `wip/pause-menu`, `wip/spectate`,
-    `wip/battle-axe` (details below).
-- **Still open as branches** (agents stopped at hand-off; read their HANDOFF notes on the branch, merge through
-  `check/candidate`):
-  - `wip/posture-buggy` (`5e2de5e`; typecheck, all unit tests, content:check, build and the `characters`,
-    `designer`, `race` e2e pass; **`vehicles` and `canyon` e2e timed out under load, not re-run**):
-    - Bonesworth rebuilds byte-identical again: the looser triangle cut (2d9ad08) is now for rigged downloads only.
-    - Feet: Meshy's rig put the toe joint high, so 19 Meshy-rigged characters stood 7–23° toes up (King Aldric
-      ~21°); each foot is now levelled about its ankle (heel and forefoot lows level, ±3° left alone), rebuilt
-      from their recorded rig tasks (no new credits).
-    - Lean: Bonesworth (spine 10°→1°, neck 48°→16°), Rustwalker, Rotter, Grandpa Chains.
-    - Buggy: the owner's Meshy buggy body + tyre (`vehicles/offroad_buggy.glb` 6.8k tris, `offroad_tire.glb`
-      0.7k), `MountDef.wheels` places tyres at the hubs; old Kenney buggy deleted; gun jeep unchanged.
-      Suggested 4 seats (+Z forward, +X right): driver [-0.32, 0.72, 0.2], front passenger [0.32, 0.72, 0.2],
-      back [∓0.32, 0.75, -0.55]; roof gunner standing [0, 0.6, -1.15]. Driver side is a guess from the wheel.
-    - Open: buggy hit box still [1.0, 0.6, 2.0] half-extents (model ~4.4×2.0×1.7 m); dark coarse dash in the
-      cockpit view; Titan, Alien, Salamander not rebuilt (downloads not available); Monk and Merrow (robes)
-      restored as shipped; Bonesworth's left hand hovers open over the handguard on his grip sheet.
-    - Next: re-run `vehicles`, `canyon` on a quiet machine, then merge through `check/candidate`.
-  - `wip/fp-grips` (merged with `claude/launcher-ui-map-cards` at `988462b`; typecheck, build, `test:changed`
-    pass (hub/host tests timed out once under load, pass alone); e2e `characters`, `designer`, `visual` pass,
-    no baseline moved (arena 1.6 % off, within 8 %); `arsenal` failed on load timing only (frames of 1.5–3 s on a
-    shared, loaded machine: a different one check each run, every check passed in some run; with `CI=1` timeouts
-    one fail)): first-person support hand no
-    longer floats off big guns. Causes: the first-person arms were placed by the character's head height (a
-    hunched body's shoulders ended up 0.43 m in front of the eye) and first person had no reach handling (the IK
-    stretched and stopped short by 6–13 cm). Fix in `characterAnimator.ts` (shoulders set from the view, come
-    forward only as far as needed; the support hand slides back along the handguard, at least 12 cm from the grip;
-    cups long guns from below; a free left hand hangs out of view) and `firstPersonArms.ts` (body 8 cm behind the
-    eye). New `__grips.miss()` and a `characters` e2e check (both palms within 2 cm on rifle, Singularity Cannon,
-    Spin Gun, flamethrower for Scout, Biscuit, Grizzelda). Also fixed (`session.ts`): after any manual weapon
-    switch the client sent that weapon with every input for the rest of the life, so the server's own switches
-    (a better gun picked up, a caught spear, `__give`) were taken back at once; the request now clears once the
-    server holds it (checked offline: number key, then `__give('core.singularity')` now switches). Next: re-run
-    `arsenal` on a quiet machine, then merge through `check/candidate` (characterAnimator.ts maps to the full
-    suite). Left alone: the Salamander Warlord's big claws cover pistols (a hand-size content fix).
-  - `wip/weapon-drops` (from `claude/launcher-ui-map-cards`; owner's request "players/bots with ammo left drop
-    what they have as primary, rest recycled"): match rule **Drop weapon on death** (`MatchRules.dropWeapons`, default
-    on; match setup → Arsenal, pause menu → Host where it applies at once like "Mix up weapon pickups", off clears the
-    drops lying). `sim/drops.ts` picks the weapon in hand, else the most desirable one, that has a pickup item and
-    category, isn't a spear, isn't in the starting loadout (rules or class) and has ammo (heat weapons count);
-    `Match.kill` drops it straight below the body (raycast; none over the void) with exactly its ammo, 30 s, at most
-    24 (oldest first). Pickup: whole weapon if you lack it (comes up like a map pickup), else ammo to your reserve cap,
-    rest stays. Not for NPCs, Disc Arena, races, spears/discs only. Snapshot `dw` ([id, item, x, y, z, yaw], a
-    REPEATABLE field); `GameView.updateDrops` draws the gun on its side on a small ring (`createPickupVisual(..., lying)`).
-    Bots see drops as weapon pickups. Tests: `packages/shared/test/drops.test.ts`, `arsenal` e2e (a bot dies holding
-    a rifle with 7 + 23, the drop lies at the body and is drawn, walking onto it gives you exactly that).
-    Checks: typecheck, build, `arsenal` and `hostcontrols` e2e (see the branch's last commit); `test:changed` all
-    pass except `host.test.ts` timing out under load once (passes alone). Shared sim changed, so CI runs the full suite.
+### Where things stand (2026-10-30 evening)
+- **`main` is at `d582c48`** (green): everything through `wip/impact`, the 2026-10-30 afternoon work (Character
+  Select spin and shipped portraits, muzzle-flash light fix, wheel/trackpad weapon switching, MapMaker new-map
+  sizes, `wip/bot-vehicles`, `wip/weapon-wheel-mobile`, `wip/pause-menu`, `wip/spectate`, `wip/battle-axe`), the
+  physicsfx e2e fixes, the white-gun fix (a re-rolled pickup disposed the shared gun materials: every copy of that
+  gun, first person included, drew plain white) and `wip/fp-grips` (first-person support hand on big guns;
+  server weapon switches no longer undone by the client's last request).
+- **On the session branch, in CI on `check/candidate`** (merged, local typecheck/unit/e2e pass; fast-forward
+  `main` when green):
+  - `wip/weapon-drops`: rule **Drop weapon on death** (`MatchRules.dropWeapons`, default on; match setup →
+    Arsenal, pause menu → Host). `sim/drops.ts`: the weapon in hand, else the most desirable non-starting gun with
+    ammo, drops at the body with exactly its ammo; 30 s, at most 24; picking it up gives the gun, or its ammo up to
+    your reserve cap. Not for NPCs, Disc Arena, races, spears/discs only. Snapshot `dw`; bots value drops like
+    pickups. Docs: ARSENAL.md "Weapon drops". Not looked at on screen yet (a gun modelled off its z axis may lie
+    oddly); drops aren't kept across a host handoff.
+  - `wip/posture-buggy`: Meshy feet levelled (19 characters), lean fixes (Bonesworth, Rustwalker, Rotter, Grandpa
+    Chains), the owner's Meshy buggy model, and **seats**: buggy = driver [-0.32, 0.8, 0.3] + front passenger +
+    two back seats, all seated, passengers fire their own weapons (shots pass through their own vehicle); gun jeep
+    = two seated cab seats + roof gunner + two rail riders; hit boxes fitted to the models; seated pose in
+    `CharacterAnimator`; bots ride as passengers. Docs: VEHICLES.md, PLAYTEST.md. Open: the buggy cockpit view's
+    dark roof bars/dash (model geometry), tall heads touch the roof bars, the jeep's cab riders hidden behind its
+    opaque windows, seated riders don't turn round past ~77°; Titan, Alien, Salamander not rebuilt (downloads
+    missing); Bonesworth's left hand on his grip sheet; `visual` baselines may move if a buggy is in a picture.
+- **Next (owner agreed, after the two above are on `main`): full-body first person.** Today first person draws
+  only an arms mesh hung from the camera with IK to each gun's `hold` points; an arms part is a body fragment, so
+  on long guns (the AK's support point far forward) its open end swings into view (owner's screenshot: a torn
+  forearm). Plan: draw the player's whole character with the camera at the eyes, head hidden (shadow kept), the
+  third-person rig and hand IK holding the gun; keep gun/arms drawn over the world against clipping; tune bob,
+  recoil and reload so it stays as responsive as now (GUNPLAY_DIRECTION); a graphics option "First person: Full
+  body / Arms only".
 - **Owner's requests not started yet:**
-  - Buggy (and any vehicle that fits) seats a driver + 3 passengers, seated, who can shoot
-    (sim: `packages/shared/src/sim/mounts.ts` seats).
   - St. John's from real data: the owner's Google Maps key (`GOOGLE_MAPS_API_KEY`) is refused (Geocoding not
     allowed by the key's API restrictions, Elevation needs billing, Static 403, 3D Tiles 404). The owner set up a
     key on another Google account: they must update the environment variable and start a new session. Google's
@@ -101,6 +61,11 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   - Enemies in vehicles: bots prefer launchers (aimed low at the hull), throw grenades at a stopped one, fetch a launcher within 30 m, take cover when they can't hurt it, and dodge one driven at them.
   - The sim has no roll or pitch on vehicles, so "flipped" isn't detected; a wedged vehicle is caught by the headway check instead.
   - Merge it through `check/candidate` (the shared sim changed, so CI runs the full suite).
+- **On `wip/posture-buggy`** (not merged; needs a `check/` run, the shared sim changed):
+  - Meshy feet levelled on their soles (`fixes.feet` in prepare-meshy-characters.mjs): Meshy's rig left 19 characters 7-23 degrees toes up (Bonesworth and Rotter's right foot toes down); rebuilt from their recorded rigs (no new rigging). Monk and Merrow (robes) were tried and kept as they were.
+  - `fixes.lean` on Bonesworth, Rustwalker, Rotter and Grandpa Chains. The looser triangle cut now applies to rigged downloads only, so an unrigged rebuild reproduces its shipped file (Bonesworth was byte for byte).
+  - Not rebuilt (community downloads not in either folder): Titan (head forward), Alien and Salamander (toes up 8-11 degrees). Download them by hand to fix.
+  - The owner's buggy (`vehicles/offroad_buggy.glb` + `offroad_tire.glb` drawn at the hubs from the def's `wheels`); a driver + 3 seated passengers who shoot their own weapons, the gun jeep seats five, riders sit (see "Start here" for the details). The cockpit view looks over a dark, coarse dash; the chase camera is the better view.
 - **On `wip/battle-axe`** (not merged; full CI not run): the Battle Axe is also a black-powder blunderbuss (owner's ask). Swing on fire, blunderbuss on the alt trigger (right mouse with a melee weapon in hand). Numbers and the ammo choice (shotgun shells loaded by hand into a 2-load barrel) are in docs/ARSENAL.md.
   - Sim: `AltFire.reload` / `kick` / `falloff` / `headshot`; `barrelLoader` in gunplay.ts runs the barrel's reload as a shell-by-shell magazine; client prediction mirrors it.
   - Client: `view.muzzleAt` (the bore, measured from the GLB) and `view.altShot` (sound, rate, flash, smoke) in the weapon data; `View.muzzleSmoke`.
@@ -190,7 +155,7 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     `trim` colours the gloves.
 - **Not characters, still to bring in** (no pipeline path yet):
   - (done on `wip/weapons-variety`: the Frontier Rifle, the Neon Flux and the Medkit; see section 5)
-  - the buggy (`Tactical_Off_Road_Bea`) and its wheel (`Rugged_Off_Road_Tire`), to replace the jeep;
+  - (done on `wip/posture-buggy`: the buggy and its tire, as the `buggy` mount; the gun jeep keeps its Kenney truck);
   - the Triceratops (a creature: prepare-creatures.mjs);
   - five helmets: Aviator, Mk 2, Military, Steel and Viking (the helmet tool `prepare-gear.mjs` is on `wip/roster-cleanup`).
 - The owner's review results are kept in the review artifact

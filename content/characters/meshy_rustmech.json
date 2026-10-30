@@ -29,6 +29,12 @@
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true
+    "feet": true,
+    "lean": {
+      "Spine02": 3,
+      "Spine01": 5,
+      "Spine": 6,
+      "neck": 14
+    }
   }
 }
