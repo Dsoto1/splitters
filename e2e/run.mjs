@@ -2989,19 +2989,19 @@ async function hostcontrolsFlow(browser) {
   check(hard, 'bot skill changes live');
   // Bots…: the Bots window. Esc closes it (the pause menu's back); then name a bot, give it a look and a skill, Apply.
   await page.evaluate(() => document.getElementById('hc-bots').click());
-  const opened = await page.waitForSelector('#bot-manager', { timeout: T(5000) }).then(() => true, () => false);
+  const opened = await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
   await page.keyboard.press('Escape');
   const escClosed = await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false);
   check(opened && escClosed, `Bots… opens the Bots window and Esc closes it (${opened}, ${escClosed})`);
   // One level per Esc: the look picker over the Bots window closes first, the window stays.
   await openPanel(page);
   await page.evaluate(() => document.getElementById('hc-bots').click());
-  await page.waitForSelector('#bot-manager', { timeout: T(5000) });
+  await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) });
   await page.evaluate(() => {
     document.getElementById('bm-add').click();
     document.getElementById('bm-look-0').click();
   });
-  const picking = await page.waitForSelector('#bm-pick-wrap', { timeout: T(5000) }).then(() => true, () => false);
+  const picking = await page.waitForSelector('#bm-pick-wrap', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
   await page.keyboard.press('Escape');
   const oneLevel = await page.evaluate(() => ({ picker: !!document.getElementById('bm-pick-wrap'), window: !!document.getElementById('bot-manager'), paused: !document.getElementById('pause').hidden }));
   check(picking && !oneLevel.picker && oneLevel.window && oneLevel.paused, `Esc closes the look picker only, not the Bots window too (${JSON.stringify(oneLevel)})`);
@@ -3009,7 +3009,7 @@ async function hostcontrolsFlow(browser) {
   check(await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false), "the Bots window's Back button closes it");
   await openPanel(page);
   await page.evaluate(() => document.getElementById('hc-bots').click());
-  await page.waitForSelector('#bot-manager', { timeout: T(5000) });
+  await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) });
   // (Clicks by script: the pause menu may be hidden behind the pointer lock it never got here.)
   await page.evaluate(() => {
     document.getElementById('bm-add').click();
