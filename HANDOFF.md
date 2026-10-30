@@ -40,8 +40,7 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   merging; all need a check/ run.
 - **Props added this session (on the session branch):** Meshy mining props (excavator, haul truck), 13 cargo props
   (crates, containers, gantry crane, IBC tank), 15 street props (barrels, bins, trash, dumpster, fuel can, shop sign,
-  historic building; commit a406b0a is WIP: rerun `build-palette-atlas.mjs` against a served build, then
-  `pnpm content:build` and `pnpm content:check`, and commit the result). Downloads live outside the repo in
+  historic building; palette pictures and provenance committed, `content:check` OK). Downloads live outside the repo in
   /home/user/meshy-downloads/{owned_mining,owned_cargo,owned_props2} (gone in a new container: re-fetch from the
   Drive folder and meshystuff).
 - **T-pose:** frozen bodies' skins could keep an older pose; fixed in characterAnimator `freezePose` (every skin
