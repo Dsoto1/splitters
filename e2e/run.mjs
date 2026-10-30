@@ -2531,6 +2531,20 @@ async function charactersFlow(browser) {
     await page.click(`button:text-is("${label}")`);
     await page.waitForTimeout(300); // wait-ok: plays each clip a moment (page errors are what's checked)
   }
+  // First-person arms on large guns (the grip tool, `?mode=grips`, the game's own first-person placement): both palms
+  // reach their points on the gun, for standard, own (Meshy) and universal arms. Out of reach, the support hand used to
+  // stop short of a big gun and float in front of it.
+  await page.goto(`${CLIENT}/?mode=grips&test=1`);
+  await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
+  const misses = [];
+  for (const look of ['core.scout', 'core.biscuit', 'core.grizzelda']) {
+    for (const weapon of ['core.rifle', 'core.singularity', 'core.lmg', 'core.flamethrower']) {
+      await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'first'), [look, weapon]);
+      const m = await page.evaluate(() => window.__grips.miss());
+      if (!m || m.r > 0.02 || m.l > 0.02) misses.push(`${look} ${weapon}: ${m ? `${(m.r * 100).toFixed(0)}/${(m.l * 100).toFixed(0)} cm` : 'no grip'}`);
+    }
+  }
+  check(misses.length === 0, `first-person palms are on large guns' grip and handguard (${misses.join('; ') || 'all within 2 cm'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
