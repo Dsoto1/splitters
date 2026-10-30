@@ -58,6 +58,7 @@ import {
   mapGravityZones,
   JET,
   getItem,
+  pickupPool,
   getMountDef,
   getWeapon,
   loadMap,
@@ -247,6 +248,8 @@ export class GameSession {
   private closed = false;
   /** Pickups currently taken (hidden until they respawn). */
   private taken = new Set<string>();
+  /** Random weapon pickups holding something other than what was placed (snapshot `pw`). */
+  private pickupItems = new Map<string, string>();
   /** Weapon slot the player asked for (0 = no request). */
   private wantWeapon = 0;
   /** Ground hazards from the latest snapshot, and your own status effects. */
@@ -1288,6 +1291,7 @@ export class GameSession {
         this.myClass = msg.me?.cl ?? null;
         this.myDisc = msg.me?.dp ?? null;
         this.taken = new Set(msg.pk);
+        this.pickupItems = new Map(msg.pw ?? []);
         this.modeHud?.snapshot(msg.md);
         this.forts?.apply(msg.md);
         this.raceHud?.snapshot(msg.md?.rc);
@@ -1570,6 +1574,8 @@ export class GameSession {
       if (e.kind === 'pickup') {
         const fx = getItem(e.item)?.effect;
         if (fx?.kind === 'weapon') models.add(getWeapon(fx.weapon).view.model);
+        // Whatever a random (or mixed-up) weapon pickup may roll, so a respawn never loads a model mid-fight.
+        for (const item of pickupPool(e, !!rules.mixPickups) ?? []) if (item.effect.kind === 'weapon') models.add(getWeapon(item.effect.weapon).view.model);
       }
       if (e.kind === 'mount') {
         const def = getMountDef(e.model);
@@ -2016,7 +2022,7 @@ export class GameSession {
       }
       this.view.applyPropStates(this.scenario.entities);
     }
-    this.view.updatePickups(this.taken, now);
+    this.view.updatePickups(this.taken, now, this.pickupItems);
     const shells = this.interp.sampleProjectiles(now);
     this.view.updateProjectiles(shells);
     this.view.updateZones(this.zones, now);

@@ -1,6 +1,8 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
+import { itemCategory } from '../sim/pickupRoll.ts';
+import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { getProp } from '../content/props.ts';
 import { buildMapGeometry, buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, resolveEdge, yawXZ } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
@@ -179,6 +181,9 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   const pickups = map.entities.filter((e) => e.kind === 'pickup');
   for (const p of pickups) {
     if (!getItem(p.item)) issues.push({ severity: 'error', code: 'pickup.unknown', message: `pickup ${p.id} uses unknown item "${p.item}"`, targetId: p.id });
+    // Random from category: MapMaker shows the placed item, so it should be a weapon of that category.
+    else if (p.random && itemCategory(getItem(p.item)) !== p.random) issues.push({ severity: 'warning', code: 'pickup.random_item', message: `pickup ${p.id} rolls ${WEAPON_CATEGORY_LABELS[p.random].toLowerCase()} but shows "${getItem(p.item)?.displayName}" in MapMaker`, targetId: p.id });
+    if (p.keepFixed && !itemCategory(getItem(p.item))) issues.push({ severity: 'suggestion', code: 'pickup.keep_fixed', message: `pickup ${p.id} is kept fixed, but only weapon pickups are ever mixed up`, targetId: p.id });
   }
   // Disc Arena does no damage, so a map only for it needs no health.
   const discsOnly = map.metadata.supportedModes.length > 0 && map.metadata.supportedModes.every((m) => m === 'core.discs');

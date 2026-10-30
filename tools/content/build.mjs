@@ -459,7 +459,7 @@ const gunCount = checkLocked(
   'models/guns',
   (f) => gunsManifest.packs[f.source],
   gunsManifest.budgets,
-  (f, pack) => (pack.meshy ? ['converted to glTF (FBX via three.js FBXLoader)', 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(/markings painted out/.test(f.src) ? ['lettering and logos painted out of the colour map'] : []), 'turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, matte material'] : ['turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, normal map to 256 px, matte material']),
+  (f, pack) => (pack.meshy ? [pack.glb ? "read from Meshy's textured GLB download (base colour map only)" : 'converted to glTF (FBX via three.js FBXLoader)', 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(/markings painted out/.test(f.src) ? ['lettering and logos painted out of the colour map'] : []), 'turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, matte material'] : ['turned so the barrel runs along +Z, centred and scaled', 'colour map shrunk to 512 px, normal map to 256 px, matte material']),
   'node tools/content/prepare-guns.mjs --downloads <dir>',
 );
 const vfxManifest = JSON.parse(readFileSync(join(ROOT, 'content/vfx.json'), 'utf8'));

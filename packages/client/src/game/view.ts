@@ -229,6 +229,9 @@ interface PickupVisual {
   root: TransformNode;
   baseY: number;
   phase: number;
+  /** The item drawn (a random pickup's roll, from the snapshot), and the one placed in the map. */
+  item: string;
+  placed: string;
 }
 
 /** First-person match scene: map, viewmodel, remote avatars, pickups, projectiles and effects. */
@@ -1332,16 +1335,32 @@ export class GameView {
 
   // ---------------------------------------------------------------- pickups
 
-  private addPickup(e: PickupEntity): void {
-    const root = createPickupVisual(this.scene, this.models, e.item, `pickup_${e.id}`, true);
+  private addPickup(e: PickupEntity, item = e.item): void {
+    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true);
     const baseY = e.position[1] + PICKUP_HOVER;
     root.position.set(e.position[0], baseY, e.position[2]);
-    this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2) });
+    this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item });
   }
 
-  /** Spin and bob pickups; hide the ones currently taken. */
-  updatePickups(taken: ReadonlySet<string>, now: number): void {
+  /** The item a pickup is drawn as now (tests: a random pickup shows its roll). */
+  pickupItem(id: string): string | undefined {
+    return this.pickups.get(id)?.item;
+  }
+
+  /**
+   * Spin and bob pickups; hide the ones currently taken. `items`: random pickups holding something other than
+   * what was placed (the snapshot's `pw`); a pickup whose item changed is drawn again as the new one.
+   */
+  updatePickups(taken: ReadonlySet<string>, now: number, items?: ReadonlyMap<string, string>): void {
     for (const [id, p] of this.pickups) {
+      const want = items?.get(id) ?? p.placed;
+      if (want !== p.item) {
+        const at = p.root.position.clone();
+        p.root.dispose(false, true);
+        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true);
+        p.root.position.copyFrom(at);
+        p.item = want;
+      }
       p.root.setEnabled(!taken.has(id));
       p.root.rotation.y = now * 0.0015 + p.phase;
       p.root.position.y = p.baseY + Math.sin(now * 0.003 + p.phase) * 0.08;

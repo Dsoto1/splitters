@@ -6,6 +6,7 @@ All gameplay numbers live in `packages/shared/src/sim/weapons.ts` and
 | Slot | Weapon | Ammo | Second trigger (right mouse) |
 |---|---|---|---|
 | 1 | Knife | — | — |
+| 1 | Battle Axe (pickup) | — | Haft barrel: an 8-pellet scattershot, 2 shells of its own |
 | 2 | Pistol | Light rounds | — |
 | 3 | Assault Rifle | Rifle rounds | Underbarrel grenade (own ammo, 4 max) |
 | 4 | Shotgun | Shells | Both barrels (2 shells, 16 pellets) |
@@ -117,14 +118,39 @@ extra weapon). Weapons are keyed by a small code on the wire (`weaponCode`).
 Models are Quaternius Modular Sci Fi Guns (CC0; each energy weapon gets its
 own accent colour on the kit's orange trim, and its hold points are placed on
 the model's own grip, handguard and stock) and Quaternius Ultimate Gun Pack
-guns (CC0). The assault rifle, sniper rifle, SMG, shotgun, rocket launcher and
-frag grenade use Styloo's Guns Asset Pack (CC0: AK-47, AWP, MAC-10, pump
-shotgun, RPG, frag; `content/guns.json`), each keeping its Quaternius model as
-`view.fallback` in case the pack's file is missing. The Spin Gun is a Meshy
-community rotary-barrel gun with glowing blue barrels (CC0 per the owner,
-`guns/plasma_spin_gun.glb`, 6k triangles; no stock, so its rear handle sits in
-the shoulder), with its old rifle model as the fallback. No weapon stats
-changed with these models (GUNPLAY_DIRECTION.md: no roster growth for now). Sounds come from our own synthesiser
+guns (CC0). The assault rifle, shotgun, rocket launcher and frag grenade use
+Styloo's Guns Asset Pack (CC0: AK-47, pump shotgun, RPG, frag;
+`content/guns.json`), each keeping its Quaternius model as `view.fallback` in
+case the pack's file is missing. No weapon stats changed with these models.
+
+**The owner's Meshy models** (Meshy, owned; pack `meshy-owned-guns` in
+`content/guns.json`, built from the textured GLB downloads by
+`prepare-guns.mjs`, 3–6k triangles, a 512 px rebaked colour map each). Each
+falls back (`view.fallback`) to a model built from the repo (the Quaternius or
+Kenney one, the knife, or the medkit built in code), and its holds are read off
+its own grip, handguard and stock:
+
+| Model | Weapon or turret | Replaced |
+|---|---|---|
+| Tommy Gun | Submachine Gun (`core.smg`) | Styloo MAC-10 |
+| Rotary Gatling Gun | Spin Gun (`core.lmg`) | Meshy community plasma spin gun |
+| Military sniper rifle | Sniper Rifle (`core.sniper`) | Styloo AWP |
+| Neon Flux | Burst Rifle | Quaternius rifle |
+| Frontier Rifle | Marksman Rifle | Quaternius rifle |
+| Futuristic Blaster | Plasma Rifle | Quaternius sci-fi rifle |
+| Ornate energy handgun | Pulse Pistol | Quaternius sci-fi pistol |
+| Freeze Gun | Freeze Ray | Quaternius sci-fi gun |
+| Mystical Glue Gun | Goo Gun | Quaternius sci-fi gun |
+| Steampunk Battle Axe | Battle Axe (new) | — (the knife as the fallback) |
+| Plastic toy machine gun on a tripod | Heavy MG Turret (`turret_mg`, `core.mount_mg`) | Kenney twin turret |
+| Large Sentry Gun | Sentry Gun (`sentry`, `core.sentry_gun`) | Kenney turret |
+| Medkit | health pickups, Medkit and Medi-Beam | boxes built in code |
+
+The Freeze Gun, Glue Gun, Futuristic Blaster and toy machine gun became the
+models of the Freeze Ray, Goo Gun, Plasma Rifle and Heavy MG Turret rather than
+new weapons: each already does what the model shows, and a second freeze or
+glue gun would be one of the "statistically similar" weapons
+GUNPLAY_DIRECTION.md warns against. Sounds come from our own synthesiser
 recipes.
 
 | Slot | Weapon | How it fires |
@@ -153,6 +179,36 @@ recipes.
 | 9 | Arc Caster | Lightning that jumps to three more enemies; heat instead of ammo |
 | 9 | Flamethrower | Short-range flame stream: sets players burning, lights oil |
 | 9 | Freeze Ray | Beam that chills; enough chill freezes the target solid for 1.4 s |
+
+**Battle Axe** (`core.battle_axe`, slot 1, pickup `core.weapon_battle_axe`,
+category melee): 85 damage a swing, one swing per 0.8 s, 2.7 m reach, and a
+6 m/s shove along the swing; right mouse fires the haft's barrel (8 pellets of
+12, 0.08 spread, 22 m), two shells of its own refilled by ammo boxes and
+explosives like an underbarrel grenade. Bots value it at 0.45 for 0–2.5 m. It
+answers "why pick this up?" with a two-hit kill up close that throws people
+off ledges, and one emergency blast for the step just out of reach.
+
+## Weapon categories and random pickups
+
+Every weapon a pickup can hold has a `category` (`WEAPON_CATEGORIES` in
+`sim/weapons.ts`): pistols, SMGs and machine guns, rifles, shotguns, snipers,
+explosives, melee, specials. Tools (medkit, medi-beam, grapple, builder),
+mode-only weapons (arena disc) and mounted guns have none and never roll.
+
+- **Random from category** (MapMaker: select a weapon pickup → Weapon →
+  "Random from category: …"; map field `random` on the pickup, format v24):
+  the pickup holds a weapon of that category, rolled again each time it is
+  taken (so it comes back as something new; with more than one in the
+  category it never repeats the last). MapMaker shows a weapon of the category.
+- **Mix up weapon pickups** (`MatchRules.mixPickups`: match setup → Arsenal,
+  the pause menu's Host tab, where it applies at once): every weapon pickup not
+  marked **Keep fixed** (`keepFixed`) rolls within the category of the weapon
+  placed there. Off by default.
+- Rolls are `rollPickup(seed, pickup id, roll number)` (`sim/pickupRoll.ts`),
+  so a match replays the same; the snapshot's `pw` lists the pickups that hold
+  something other than what was placed, and clients draw that. Bots read what
+  lies there now. Validation warns when a random pickup shows a weapon of
+  another category (`pickup.random_item`).
 
 **Variants for Classes and Disc Arena** (added last, so older weapon codes
 are unchanged; each has a pickup like every weapon):

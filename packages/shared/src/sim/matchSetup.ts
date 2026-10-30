@@ -35,6 +35,8 @@ export interface MatchSetup {
   emotes?: boolean;
   botStyle?: 'arena' | 'tactical';
   killstreaks?: boolean;
+  /** Mix up weapon pickups (absent: off). */
+  mixPickups?: boolean;
   squadSpawn?: boolean;
   gravity?: number;
   fallDamage?: boolean;
@@ -226,6 +228,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument): { rules: Ma
   if (s.emotes === false) rules.emotes = false;
   if (s.botStyle) rules.botStyle = s.botStyle;
   if (s.killstreaks === false) rules.killstreaks = false;
+  if (s.mixPickups) rules.mixPickups = true;
   if (s.squadSpawn === false) rules.squadSpawn = false;
   if (s.gravity !== undefined) rules.gravity = s.gravity;
   if (s.fallDamage !== undefined) rules.fallDamage = s.fallDamage;

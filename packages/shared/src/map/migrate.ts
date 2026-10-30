@@ -53,6 +53,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [21, (doc) => ({ ...doc })],
   // v22 -> v23: one path primitive. Paths gain `closed` (was `loop`) and `uses`; the race `track` becomes a race path.
   [22, migratePathsV23],
+  // v23 -> v24: optional `random` (a weapon category) and `keepFixed` on pickups. Absent = the item as placed: additive.
+  [23, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

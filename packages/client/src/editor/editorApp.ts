@@ -26,6 +26,11 @@ import {
   coreMaterials,
   coreThemes,
   CORE_ITEMS,
+  WEAPON_CATEGORIES,
+  WEAPON_CATEGORY_LABELS,
+  categoryItems,
+  isWeaponCategory,
+  itemCategory,
   DESTRUCTIBLE_MODELS,
   DESTRUCTIBLE_SPECS,
   NPC_ROLES,
@@ -3050,7 +3055,7 @@ export class EditorApp {
   private entityInspector(el: HTMLElement, e: MapEntity): void {
     const doc = this.doc;
     const update = (label: string, patch: Partial<MapEntity>) => this.run(label, { kind: 'updateEntities', before: [e], after: [{ ...e, ...patch } as MapEntity] });
-    el.append(h2(e.kind === 'spawn' ? 'Player Spawn' : e.kind === 'pickup' ? (getItem(e.item)?.displayName ?? e.item) : entityLabel(doc, e)));
+    el.append(h2(e.kind === 'spawn' ? 'Player Spawn' : e.kind === 'pickup' ? (e.random ? `Random ${WEAPON_CATEGORY_LABELS[e.random]}` : (getItem(e.item)?.displayName ?? e.item)) : entityLabel(doc, e)));
     if (e.kind !== 'spawn' && e.kind !== 'pickup') {
       const name = document.createElement('input');
       name.type = 'text';
@@ -3116,7 +3121,31 @@ export class EditorApp {
         break;
       }
       case 'pickup': {
-        choose('Item', CORE_ITEMS.map((it) => [it.id, it.displayName] as const), e.item, (v) => ({ item: v }));
+        choose('Item', CORE_ITEMS.map((it) => [it.id, it.displayName] as const), e.item, (v) => ({ item: v, ...(e.random && itemCategory(getItem(v)) !== e.random ? { random: undefined } : {}) }));
+        // Weapon pickups: a fixed weapon, or a random one of a category rolled each time it comes back.
+        if (itemCategory(getItem(e.item)) || e.random) {
+          const mode = document.createElement('select');
+          mode.id = 'ed-pickup-weapon';
+          mode.append(new Option('Fixed: this weapon', '', false, !e.random));
+          for (const c of WEAPON_CATEGORIES) mode.append(new Option(`Random from category: ${WEAPON_CATEGORY_LABELS[c]}`, c, false, c === e.random));
+          mode.addEventListener('change', () => {
+            const c = isWeaponCategory(mode.value) ? mode.value : null;
+            // A random pickup shows a weapon of its category here (the first, unless it already holds one).
+            const item = c && itemCategory(getItem(e.item)) !== c ? categoryItems(c)[0]?.id : undefined;
+            update(c ? 'Random weapon pickup' : 'Fixed weapon pickup', { random: c ?? undefined, ...(item ? { item } : {}), ...(c ? { keepFixed: undefined } : {}) });
+          });
+          el.append(row('Weapon', mode));
+          if (e.random) el.append(small(`Rolls one of ${categoryItems(e.random).map((i) => i.displayName).join(', ')} each time it comes back.`));
+          else {
+            const keep = document.createElement('input');
+            keep.type = 'checkbox';
+            keep.id = 'ed-pickup-keep';
+            keep.checked = !!e.keepFixed;
+            keep.addEventListener('change', () => update('Set keep fixed', { keepFixed: keep.checked || undefined }));
+            el.append(row('Keep fixed', keep));
+            el.append(small(e.keepFixed ? 'Stays this weapon when the host mixes up weapon pickups.' : 'The host\'s "Mix up weapon pickups" swaps it for another weapon of its kind; tick to keep it.'));
+          }
+        }
         const def = getItem(e.item)?.respawnSeconds ?? 0;
         number('Respawn (s)', e.respawnSeconds ?? def, 5, (v) => ({ respawnSeconds: v === def ? null : clamp(v, 1, 600) }));
         el.append(small(e.respawnSeconds === null ? `Item default (${def}s)` : 'Custom respawn time'));

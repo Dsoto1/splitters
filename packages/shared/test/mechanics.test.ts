@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+  BUTTON_ALT,
   BUTTON_FIRE,
   BUTTON_ZOOM,
   BUTTON_THROW,
@@ -165,7 +166,8 @@ describe('extended arsenal', () => {
     const models = new Set([...repoModels, ...read('guns.json')]);
     for (const w of WEAPONS_BY_SLOT) {
       expect(models.has(w.view.model) || w.view.model.startsWith('procedural/'), `${w.id} model`).toBe(true);
-      if (!repoModels.has(w.view.model) && !w.view.model.startsWith('procedural/')) expect(repoModels.has(w.view.fallback ?? ''), `${w.id} fallback`).toBe(true);
+      // (or one built in code: the medkit's boxes).
+      if (!repoModels.has(w.view.model) && !w.view.model.startsWith('procedural/')) expect(repoModels.has(w.view.fallback ?? '') || !!w.view.fallback?.startsWith('procedural/'), `${w.id} fallback`).toBe(true);
       expect(weaponByCode(weaponCode(w))).toBe(w);
       // The Fort Wars Builder is handed out by the mode, never picked up.
       if (w.id !== 'core.knife' && w.id !== 'core.pistol' && w.id !== 'core.builder') expect(CORE_ITEMS.some((i) => i.effect.kind === 'weapon' && i.effect.weapon === w.id), `${w.id} pickup`).toBe(true);
@@ -176,6 +178,24 @@ describe('extended arsenal', () => {
       if (w.heat) expect(w.magazine).toBe(0);
     }
     for (const slot of [2, 3, 4, 6, 9]) expect(WEAPONS_BY_SLOT.filter((w) => w.slot === slot).length, `slot ${slot}`).toBeGreaterThanOrEqual(3);
+  });
+
+  it('the battle axe hits hard and shoves; its haft barrel fires a short scattershot from two shells of its own', () => {
+    const near = duel([[0, 0, 5.8]], 'core.battle_axe');
+    const target = near.others[0]!;
+    near.d.run(12, () => near.aim({ buttons: BUTTON_FIRE }));
+    expect(target.health).toBe(PLAYER.maxHealth - getWeapon('core.battle_axe').damage);
+    expect(target.move.vz ?? 0).toBeGreaterThan(2);
+    const far = duel([[0, 0, 10]], 'core.battle_axe');
+    heldWeapon(far.a).alt = 2;
+    // Out of the swing's reach, in the barrel's.
+    far.d.run(12, () => far.aim({ buttons: BUTTON_FIRE }));
+    expect(far.others[0]!.health).toBe(PLAYER.maxHealth);
+    // The swing's recovery first.
+    far.d.run(getWeapon('core.battle_axe').fireIntervalTicks, () => far.aim());
+    far.d.run(6, () => far.aim({ buttons: BUTTON_ALT }));
+    expect(far.others[0]!.health).toBeLessThan(PLAYER.maxHealth);
+    expect(heldWeapon(far.a).alt).toBe(1);
   });
 
   it('semi-auto fires once per press, burst fires three per press', () => {

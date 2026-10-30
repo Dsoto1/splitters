@@ -93,6 +93,7 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   item('disc_split', DISC_POWER_LABELS.split, { kind: 'disc', power: 'split' }, 25, 0.75),
   item('disc_freeze', DISC_POWER_LABELS.freeze, { kind: 'disc', power: 'freeze' }, 30, 0.8),
   item('weapon_revolver', 'Heavy Revolver', { kind: 'weapon', weapon: 'core.revolver' }, 20, 0.6),
+  item('weapon_battle_axe', 'Battle Axe', { kind: 'weapon', weapon: 'core.battle_axe' }, 20, 0.5),
 ];
 
 const byId = new Map(CORE_ITEMS.map((i) => [i.id, i]));

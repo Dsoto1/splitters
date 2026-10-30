@@ -9,7 +9,8 @@
 //
 // The out dir must be outside the repo (default: <tmp>/tiletrigger-grip-sheets). Every character
 // in content/characters/*.json by default; ONLY=<ids> for some (manifest ids such as meshy_knight,
-// or any look id such as core.ranger). CHROMIUM=<path> uses that browser build.
+// or any look id such as core.ranger); WEAPONS=<weapon ids> for other weapons than the four.
+// CHROMIUM=<path> uses that browser build.
 import { existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -23,13 +24,18 @@ const out = resolve(process.argv[3] ?? join(tmpdir(), 'tiletrigger-grip-sheets')
 if (!relative(ROOT, out).startsWith('..')) throw new Error(`grip sheets go outside the repo, not ${out}`);
 const only = process.env.ONLY?.split(',').filter(Boolean);
 
-/** What each character holds (one of each hold style; the knife rides in the hand in third person). */
-const WEAPONS = [
-  ['Pistol', 'core.pistol'],
-  ['Rifle', 'core.rifle'],
-  ['Shotgun', 'core.shotgun'],
-  ['Knife', 'core.knife'],
-];
+/**
+ * What each character holds (one of each hold style; the knife rides in the hand in third person).
+ * WEAPONS=core.smg,core.lmg holds those instead (a new weapon's grip on a few characters).
+ */
+const WEAPONS = process.env.WEAPONS
+  ? process.env.WEAPONS.split(',').filter(Boolean).map((id) => [id.replace(/^core\./, ''), id])
+  : [
+      ['Pistol', 'core.pistol'],
+      ['Rifle', 'core.rifle'],
+      ['Shotgun', 'core.shotgun'],
+      ['Knife', 'core.knife'],
+    ];
 const VIEWS = [
   ['third person', 'third'],
   ['first person', 'first'],

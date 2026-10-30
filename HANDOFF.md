@@ -124,8 +124,7 @@ Run the checks after each merge.
     time, by Grizzelda, Giggles, Vanguard and Dust Trooper. On ranger arms,
     `trim` colours the gloves.
 - **Not characters, still to bring in** (no pipeline path yet):
-  - the weapons: the Frontier Rifle (`rifle_`) and the Neon Flux (`Neon_Flux_Assault_Rif`);
-  - the Medkit;
+  - (done on `wip/weapons-variety`: the Frontier Rifle, the Neon Flux and the Medkit; see section 5)
   - the buggy (`Tactical_Off_Road_Bea`) and its wheel (`Rugged_Off_Road_Tire`), to replace the jeep;
   - the Triceratops (a creature: prepare-creatures.mjs);
   - five helmets: Aviator, Mk 2, Military, Steel and Viking (the helmet tool `prepare-gear.mjs` is on `wip/roster-cleanup`).
@@ -140,18 +139,41 @@ host-left screen shows only when no human remains to take over. Dedicated hosts 
 they are the server.
 
 ### 5. Queued next (owner's requests, 2026-10-29 night)
-Start these when agent slots free up; two batches:
-1. **New weapon assets** (owner's Meshy generations, provenance Meshy/owned; downloads outside the repo):
+Items 1 and 2 are **done on `wip/weapons-variety`** (based on this branch; not merged): see "Weapons variety" below.
+Start the rest when agent slots free up:
+1. **(done) New weapon assets** (owner's Meshy generations, provenance Meshy/owned; downloads outside the repo):
    - meshystuff: Tommy Gun, Rotary Gatling Gun, military sniper rifle, Steampunk Battle Axe, Freeze Gun, Mystical Glue Gun, Futuristic Blaster, Plastic Toy Machine Gun;
    - Drive: Large Sentry Gun (turret), "Ornate Hand Holding G…".
 
    Replace the in-house sculpted weapons and turret where one matches; the rest become new specials (freeze status, glue slow).
-2. **Weapon variety:** a weapon pickup option in MapMaker, "Random from category" (pistols, SMGs/MGs, rifles, shotguns, snipers, explosives, melee, specials), rolled per respawn. Add a host option "Mix up weapon pickups" (same category), with a "keep fixed" flag for pickups placed on purpose.
+2. **(done) Weapon variety:** a weapon pickup option in MapMaker, "Random from category" (pistols, SMGs/MGs, rifles, shotguns, snipers, explosives, melee, specials), rolled per respawn. Add a host option "Mix up weapon pickups" (same category), with a "keep fixed" flag for pickups placed on purpose.
 3. **Punch and kick:** add the jab, cross and kick clips from Universal Animation Library (tools/content/add-rig-clips.mjs) and an unarmed quick melee.
 4. **Stopping power:** per weapon, a small shove along the shot, a brief slow and a hit flinch at the body part hit; bots are affected too. Arcade-light (docs/GUNPLAY_DIRECTION.md).
 5. **Explosions** lift and throw people much more; blast kills fling ragdolls; keep rocket-jumping.
 6. **Bot hopping:** ARENA-tagged characters on the "Mixed" style hop only in fights and less often; constant hopping stays for the "Arena" style (packages/shared/src/bots/brain.ts ~1156).
 7. **Boglurker (toad):** the right hand isn't skinned to hand_r, so guns float. Needs the original FBX from the owner.
+
+#### Weapons variety (`wip/weapons-variety`, 2026-10-30)
+- **Models** (pack `meshy-owned-guns`, `prepare-guns.mjs` now reads Meshy's textured GLBs; mapping in docs/ARSENAL.md):
+  Tommy Gun → SMG, Gatling → Spin Gun, military sniper → Sniper Rifle, Neon Flux → Burst Rifle, Frontier Rifle →
+  Marksman Rifle, Futuristic Blaster → Plasma Rifle, ornate energy handgun → Pulse Pistol, Freeze Gun → Freeze Ray,
+  Glue Gun → Goo Gun, toy MG on a tripod → Heavy MG Turret, Large Sentry Gun → Sentry Gun, Medkit → health pickups
+  and the Medkit/Medi-Beam. New weapon: Battle Axe (heavy melee, haft-barrel alt). The Styloo MAC-10 and AWP and the
+  community plasma spin gun were dropped (replaced).
+- **Pickups:** `category` on weapon defs; `random` / `keepFixed` on pickups (map format v24); `mixPickups` rule
+  (setup → Arsenal; host panel, live); `sim/pickupRoll.ts`; snapshot `pw`.
+- **Checks run locally:** typecheck, content:check, test:changed (922 passed), build, e2e arsenal, editor, offline,
+  characters, visual, hostcontrols. Not run: the rest of the full suite (the shared change maps to all flows): run it
+  on a `check/` branch.
+- **Open:** the Tommy Gun's drum faces forward (Meshy modelled it that way); the axe is held blade-forward like the
+  knife (melee holds can't roll the model); the sniper's stock has a few px of illegible stencil; held guns have no LOD
+  (only merged props use LODs: `ModelLibrary.instantiate` would need it).
+- **Still in-house / pack models in use:** Quaternius pistol, revolver fallback, knife, grenade launcher, rocket
+  launchers (blast/guided), and the extended-arsenal sci-fi guns (hand cannon, gilded pistol, flare gun, machine pistol,
+  laser rifle, sawed-off, auto shotgun, flak, railgun, disc launcher, bubble blaster, oil slicker, nailgun, swarm,
+  singularity, arc caster, flamethrower); Styloo AK-47, shotgun, RPG and frag; Meshy community revolver and rocket
+  turret; Kenney rocket turret fallback, vehicles; the procedural spear and builder; the boxes-in-code armor, ammo and
+  powerup pickups.
 
 ## Earlier state (2026-10-28)
 

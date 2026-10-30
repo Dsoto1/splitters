@@ -10,22 +10,6 @@
       "sha256": "c214269d23dd0f29"
     },
     {
-      "file": "models/guns/awp.glb",
-      "source": "styloo-guns",
-      "src": "awp.glb",
-      "triangles": 2246,
-      "bytes": 123148,
-      "sha256": "2413e3cbbde93e6f"
-    },
-    {
-      "file": "models/guns/mac10.glb",
-      "source": "styloo-guns",
-      "src": "mac10.glb",
-      "triangles": 1770,
-      "bytes": 117244,
-      "sha256": "e9f38b843ccb7d87"
-    },
-    {
       "file": "models/guns/shotgun.glb",
       "source": "styloo-guns",
       "src": "shotgun.glb",
@@ -66,20 +50,116 @@
       "sha256": "2a643cacf9d91df7"
     },
     {
-      "file": "models/guns/plasma_spin_gun.glb",
-      "source": "meshy-community-guns",
-      "src": "Plasma Annihilator X (2026-01-18)",
-      "triangles": 5981,
-      "bytes": 336176,
-      "sha256": "794274b8f8376449"
-    },
-    {
       "file": "models/guns/arc_cannon_turret.glb",
       "source": "meshy-community-guns",
       "src": "Nebula Arc Cannon (2026-07-03)",
       "triangles": 4994,
       "bytes": 270280,
       "sha256": "4814d25364de9599"
+    },
+    {
+      "file": "models/guns/tommy_gun.glb",
+      "source": "meshy-owned-guns",
+      "src": "Tommy Gun (owner's Meshy generation, 2026-10-29)",
+      "triangles": 4995,
+      "bytes": 227348,
+      "sha256": "9cf0941ff1775342"
+    },
+    {
+      "file": "models/guns/gatling_gun.glb",
+      "source": "meshy-owned-guns",
+      "src": "Rotary Gatling Gun (owner's Meshy generation, 2026-10-29)",
+      "triangles": 5998,
+      "bytes": 331876,
+      "sha256": "efea6e576d36d138"
+    },
+    {
+      "file": "models/guns/sniper_rifle.glb",
+      "source": "meshy-owned-guns",
+      "src": "Military Sniper Rifle (owner's Meshy generation, 2026-10-29)",
+      "triangles": 4998,
+      "bytes": 239844,
+      "sha256": "ce5779b771bef2d3"
+    },
+    {
+      "file": "models/guns/battle_axe.glb",
+      "source": "meshy-owned-guns",
+      "src": "Steampunk Battle Axe (owner's Meshy generation, 2026-10-29)",
+      "triangles": 4998,
+      "bytes": 263608,
+      "sha256": "271d6c9dcd9d3f12"
+    },
+    {
+      "file": "models/guns/freeze_gun.glb",
+      "source": "meshy-owned-guns",
+      "src": "Freeze Gun (owner's Meshy generation, 2026-10-29)",
+      "triangles": 5000,
+      "bytes": 267988,
+      "sha256": "f5c8587e862a7ff2"
+    },
+    {
+      "file": "models/guns/glue_gun.glb",
+      "source": "meshy-owned-guns",
+      "src": "Mystical Glue Gun (owner's Meshy generation, 2026-10-29)",
+      "triangles": 4000,
+      "bytes": 141248,
+      "sha256": "7b92f9042bd2fce0"
+    },
+    {
+      "file": "models/guns/futuristic_blaster.glb",
+      "source": "meshy-owned-guns",
+      "src": "Futuristic Blaster (owner's Meshy generation, 2026-10-29)",
+      "triangles": 5986,
+      "bytes": 299052,
+      "sha256": "49102157c1fb2de9"
+    },
+    {
+      "file": "models/guns/neon_flux.glb",
+      "source": "meshy-owned-guns",
+      "src": "Neon Flux Assault Rifle (owner's Meshy generation, 2026-10-29)",
+      "triangles": 5992,
+      "bytes": 304640,
+      "sha256": "580c3b8d0faf1f9b"
+    },
+    {
+      "file": "models/guns/frontier_rifle.glb",
+      "source": "meshy-owned-guns",
+      "src": "Frontier Rifle (owner's Meshy generation, 2026-10-29)",
+      "triangles": 5997,
+      "bytes": 300984,
+      "sha256": "92df2157325c34a8"
+    },
+    {
+      "file": "models/guns/ornate_pistol.glb",
+      "source": "meshy-owned-guns",
+      "src": "Ornate Handgun (owner's Meshy generation, 2026-10-29)",
+      "triangles": 3994,
+      "bytes": 218876,
+      "sha256": "7be04c126998ef48"
+    },
+    {
+      "file": "models/guns/tripod_mg.glb",
+      "source": "meshy-owned-guns",
+      "src": "Plastic Toy Machine Gun on a tripod (owner's Meshy generation, 2026-10-29)",
+      "triangles": 5982,
+      "bytes": 273352,
+      "sha256": "9e9eae759b4c4de6"
+    },
+    {
+      "file": "models/guns/sentry_turret.glb",
+      "source": "meshy-owned-guns",
+      "src": "Large Sentry Gun (owner's Meshy generation, 2026-10-29)",
+      "triangles": 5981,
+      "bytes": 286024,
+      "sha256": "e5e6cdf6b9431e97"
+    },
+    {
+      "file": "models/guns/medkit.glb",
+      "source": "meshy-owned-guns",
+      "src": "Medkit (owner's Meshy generation, 2026-10-29)",
+      "triangles": 3286,
+      "bytes": 183696,
+      "sha256": "30bc3dc648c402b8"
     }
   ]
 }

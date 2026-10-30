@@ -8,6 +8,7 @@
 // and content/guns.lock.json (checked by `pnpm content:check`).
 //
 //   node tools/content/prepare-guns.mjs --downloads <dir holding the extracted pack>
+//   ONLY=guns/tommy_gun.glb node tools/content/prepare-guns.mjs --downloads <dir>   (just that one)
 //
 // Without --downloads (or when the pack's folder is not there) the built
 // files are kept and checked against the lock file.
@@ -23,6 +24,10 @@
 // [r, r-b, r-g] }` orange and red ones. `label` names the model in the lock
 // file and provenance instead of the download's file name. `centre: base`
 // centres a turret on its pedestal (centreOnBase).
+//
+// Packs with `glb: true` too (the owner's own Meshy generations, licence Owned) are Meshy's textured GLB
+// downloads instead: each entry names its file in `glb`, found directly in the downloads dir or one folder
+// down (so the owner's download folders can sit side by side in it), and is read the same way.
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -43,6 +48,7 @@ const arg = process.argv.indexOf('--downloads');
 const downloads = arg > 0 ? resolve(process.argv[arg + 1] ?? '') : null;
 const oldLock = existsSync(LOCK) ? JSON.parse(readFileSync(LOCK, 'utf8')) : { files: [] };
 const built = new Map(oldLock.files.map((f) => [f.file, f]));
+const only = process.env.ONLY?.split(',').filter(Boolean) ?? null;
 const sha = (b) => createHash('sha256').update(b).digest('hex').slice(0, 16);
 
 /** The folder of an extracted download: directly under the downloads dir or one level down. */
@@ -50,6 +56,15 @@ function downloadDir(folder) {
   if (!downloads) return null;
   if (existsSync(join(downloads, folder))) return join(downloads, folder);
   for (const d of readdirSync(downloads, { withFileTypes: true })) if (d.isDirectory() && existsSync(join(downloads, d.name, folder))) return join(downloads, d.name, folder);
+  return null;
+}
+
+/** A downloaded file (Meshy's textured GLB): directly under the downloads dir or one level down. */
+function downloadFile(name) {
+  if (!downloads) return null;
+  if (existsSync(join(downloads, name))) return join(downloads, name);
+  // Folders or links to them (the owner's download folders linked side by side).
+  for (const d of readdirSync(downloads)) if (existsSync(join(downloads, d, name))) return join(downloads, d, name);
   return null;
 }
 
@@ -159,11 +174,14 @@ for (const entry of manifest.models) {
   const pack = manifest.packs[entry.pack];
   const file = `models/${entry.out}`;
   const path = join(ROOT, 'packages/client/public', file);
-  const dir = downloadDir(entry.download ?? pack.download);
+  // ONLY=guns/a.glb,guns/b.glb rebuilds just those (the rest are kept and checked).
+  const skip = only && !only.includes(entry.out);
+  const src = entry.glb && !skip ? downloadFile(entry.glb) : null;
+  const dir = skip ? null : entry.glb ? src && dirname(src) : downloadDir(entry.download ?? pack.download);
   let glb;
   let triangles;
   if (dir) {
-    ({ glb, triangles } = await build(join(dir, pack.models ?? '.', entry.file), entry, pack));
+    ({ glb, triangles } = await build(src ?? join(dir, pack.models ?? '.', entry.file), entry, pack));
     writeFileSync(path, glb);
   } else {
     if (!existsSync(path)) throw new Error(`${file} is missing; rebuild it with --downloads <dir> (see docs/CONTENT_PIPELINE.md)`);
@@ -172,7 +190,7 @@ for (const entry of manifest.models) {
     if (was?.sha256 !== sha(glb)) throw new Error(`${file} does not match content/guns.lock.json; rebuild it with --downloads <dir>`);
     triangles = was.triangles;
   }
-  lock.files.push({ file, source: entry.pack, src: entry.label ?? entry.file, triangles, bytes: glb.byteLength, sha256: sha(glb) });
+  lock.files.push({ file, source: entry.pack, src: entry.label ?? entry.file ?? entry.glb, triangles, bytes: glb.byteLength, sha256: sha(glb) });
   console.log(`${dir ? 'built' : 'kept '} ${file.padEnd(32)} ${String(triangles).padStart(5)} tris ${String(glb.byteLength).padStart(7)} B`);
 }
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
