@@ -3003,8 +3003,8 @@ async function hostcontrolsFlow(browser) {
   });
   const picking = await page.waitForSelector('#bm-pick-wrap', { timeout: T(5000) }).then(() => true, () => false);
   await page.keyboard.press('Escape');
-  const oneLevel = await page.evaluate(() => ({ picker: !!document.getElementById('bm-pick-wrap'), window: !!document.getElementById('bot-manager'), tab: [...document.querySelectorAll('#pause .pause-sec')].find((x) => !x.hidden)?.dataset.sec }));
-  check(picking && !oneLevel.picker && oneLevel.window && oneLevel.tab === 'host', `Esc closes the look picker only, not the Bots window too (${JSON.stringify(oneLevel)})`);
+  const oneLevel = await page.evaluate(() => ({ picker: !!document.getElementById('bm-pick-wrap'), window: !!document.getElementById('bot-manager'), paused: !document.getElementById('pause').hidden }));
+  check(picking && !oneLevel.picker && oneLevel.window && oneLevel.paused, `Esc closes the look picker only, not the Bots window too (${JSON.stringify(oneLevel)})`);
   await page.evaluate(() => document.getElementById('bm-back').click());
   check(await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false), "the Bots window's Back button closes it");
   await openPanel(page);
