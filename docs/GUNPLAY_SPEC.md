@@ -754,6 +754,14 @@ Do not require the animation to finish before the weapon responds.
 
 Accuracy can smoothly interpolate toward ADS values.
 
+### Look speed while zoomed
+
+Zoomed look speed follows the zoom 1:1 at the crosshair ("monitor distance 0"): the mouse sensitivity is
+multiplied by `tan(fov/2) / tan(hipFov/2)`, so a given mouse movement moves the image at the screen centre
+as far as it does in hip fire, for sights and every scope level alike. The player's **Zoom sensitivity**
+(0.2–3×, default 1×) multiplies on top, easing in as the sights come up so nothing jumps
+(`zoomLookScale` in `packages/client/src/game/lookFilter.ts`).
+
 ---
 
 # 16. Animation Priority & Interrupt Rules

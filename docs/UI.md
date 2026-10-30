@@ -43,6 +43,11 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
   - bottom left: your portrait with health and armour bars;
   - bottom right: the weapon with magazine and reserve ammo;
   - centre: a target name and health bar after a hit.
+- **Pause menu** (`index.html` `#pause`, `src/game/pauseMenu.ts`, the host's panel `src/game/hostPanel.ts`):
+  tabs Match / Host / Settings, `min(1400px, 92vw)` wide. From 1000 px wide, Host is two columns
+  (Online and teams & bots | rules, Apply, Change map / Restart / End, rotation, people; the Online block
+  moves into the panel's first column while you run the match) and Settings shows its groups (Controls,
+  Sound and screen, Performance) side by side; below that, one column that scrolls.
 - **MapMaker** (`src/editor/`), laid out after the board's build and logic views:
   - **Top bar:** map name, file actions (icons), undo/redo, the validation pill, the workspace tabs
     **Build / Entities / Logic / Environment / Test**, then Grid, Snap and Theme, bots, skill and ▶ TEST.
