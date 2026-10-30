@@ -49,10 +49,14 @@ interface Part {
   key: string;
   bone: TransformNode;
   body: Body;
-  /** Body rotation and the bone's rotation (skeleton space) at the moment of death. */
+  /** Body rotation (and its inverse) and the bone's rotation (skeleton space) at the moment of death. */
   body0: Quaternion;
+  body0Inv: Quaternion;
   bone0: Quaternion;
 }
+
+/** Scratch values for posing (one ragdoll is posed at a time). */
+const TMP = { now: new Quaternion(), delta: new Quaternion(), q: new Quaternion(), m: new Matrix(), m2: new Matrix() };
 
 /**
  * A ragdoll: on death the character's body becomes physics capsules joined at
@@ -133,7 +137,7 @@ export class Ragdoll {
         spin: { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2, z: (Math.random() - 0.5) * 2 },
         density: seg.bone === 'pelvis' ? 1.2 : 0.9,
       });
-      const part: Part = { seg, key, bone, body, body0: rot.clone(), bone0: this.space.rot(bone) };
+      const part: Part = { seg, key, bone, body, body0: rot.clone(), body0Inv: Quaternion.Inverse(rot), bone0: this.space.rot(bone) };
       this.parts.push(part);
       byName.set(seg.bone, part);
       if (seg.parent) {
@@ -179,15 +183,14 @@ export class Ragdoll {
     if (this.frozen) return false;
     for (const part of this.parts) {
       const r = part.body.rotation();
-      const now = new Quaternion(r.x, r.y, r.z, r.w);
-      const delta = now.multiply(Quaternion.Inverse(part.body0));
+      const now = TMP.now.set(r.x, r.y, r.z, r.w);
+      const delta = now.multiplyToRef(part.body0Inv, TMP.delta);
       // Into skeleton space: S⁻¹·Δ·S on the linear parts (row vectors: v·toSpace⁻¹·Δ·toSpace).
-      const m = new Matrix();
-      Matrix.FromQuaternionToRef(delta, m);
-      const inSpace = this.fromSpace.multiply(m).multiply(this.toSpace);
-      const q = new Quaternion();
-      inSpace.decompose(undefined, q);
-      this.space.setRot(part.bone, q.multiply(part.bone0), 1);
+      Matrix.FromQuaternionToRef(delta, TMP.m);
+      this.fromSpace.multiplyToRef(TMP.m, TMP.m2);
+      TMP.m2.multiplyToRef(this.toSpace, TMP.m);
+      TMP.m.decompose(undefined, TMP.q);
+      this.space.setRot(part.bone, TMP.q.multiply(part.bone0), 1);
       if (part.bone === this.pelvis) {
         const t = part.body.translation();
         const at = new Vector3(this.pelvisLocal.x, this.pelvisLocal.y, this.pelvisLocal.z).applyRotationQuaternion(now).add(new Vector3(t.x, t.y, t.z));

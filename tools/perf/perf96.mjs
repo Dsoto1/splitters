@@ -15,8 +15,8 @@
 //   built while the match loads rather than mid-fight). Effects in the shadow pass always fail a budget run.
 //   PERF_BOTS=96 (players in the match), PERF_SCENARIOS=spread,clump (add `mass`: a mass casualty, one blast
 //   killing PERF_MASS_KILLS=20 bots 12 m in front of the camera; its frames are timed for 4 s after),
-//   PERF_MAX_MASS_MS=n (exit 1 when the worst frame's game JS after the blast takes longer: the deaths' own cost,
-//   which CPU rendering doesn't inflate),
+//   PERF_MAX_MASS_MS=n (exit 1 when a frame's ragdoll work after the blast takes longer: starting the bodies, the
+//   effects physics and posing the ragdolls, timed in the page; CPU rendering doesn't inflate it),
 //   PERF_MAX_MASS_DRAWS=n (exit 1 when frames after the blast average more draws), PERF_MAX_MASS_BODIES=n
 //   (exit 1 when more ragdoll bodies are awake at once than n).
 // SwiftShader renders on the CPU, so render times are far above a real GPU's: compare runs
@@ -81,8 +81,10 @@ const CLUMP = `(m, me, seed) => {
  * Runs inside the match: a mass casualty. Puts n living bots (either side) within 3 m of a point
  * 12 m in front of the player, then sets off one blast there that kills them (their armour and health don't matter).
  */
-const MASS_PLACE = `(m, me, n) => {
-  const d = { x: Math.sin(me.yaw), z: Math.cos(me.yaw) };
+const MASS_PLACE = `(m, me, arg) => {
+  const n = arg.n;
+  // Along the camera's view (from the page), so the blast is in front of you.
+  const d = arg.dir;
   const want = { x: me.move.pos.x + d.x * 12, y: me.move.pos.y, z: me.move.pos.z + d.z * 12 };
   const at = m.nav.closestPoint(want, { x: 6, y: 10, z: 6 }) ?? want;
   const victims = m.combatants().filter((c) => c.alive && c !== me && !c.mount).slice(0, n);
@@ -100,7 +102,7 @@ const MASS_PLACE = `(m, me, n) => {
     for (const [c, pos] of held) c.move = { ...c.move, pos: { ...pos }, velY: 0, grounded: true };
   }, 5);
   globalThis.__mass = { victims, at };
-  return victims.length;
+  return { slots: victims.map((c) => c.slot), at };
 }`;
 /** Runs inside the match: the blast (after MASS_PLACE). */
 const MASS = `(m) => {
@@ -129,26 +131,61 @@ const PROFILE = `(m, me, on, mod) => {
 }`;
 
 /**
- * The mass casualty: frames are recorded from just before the blast for 4 s: their times, the JS part, draw calls,
- * and (when the view reports them) the ragdolls by tier and the most ragdoll bodies awake at once.
+ * The mass casualty: the victims are placed (and their characters given time to get there in this view), then
+ * frames are recorded from the blast for 4 s (at least 12): their times, the JS part, draw calls, the ragdoll work
+ * in each frame (starting the deaths' bodies, plus the effects physics and posing the ragdolls: the view's
+ * startRagdoll and updateEffects, timed in the page, in both builds), and, when the view reports them, the
+ * ragdolls by tier and the most ragdoll bodies awake at once.
  */
 async function measureMass(page, sim) {
+  const dir = await page.evaluate(() => {
+    const f = window.__cs.view.camera.getForwardRay(1).direction;
+    const len = Math.hypot(f.x, f.z) || 1;
+    return { x: f.x / len, z: f.z / len };
+  });
+  const placed = await sim(MASS_PLACE, { n: MASS_KILLS, dir });
+  // Their characters walk over there in this view (a CPU-rendered page can take a while) before the blast.
+  for (let waited = 0; waited < 60000; waited += 1000) {
+    const near = await page.evaluate(({ slots, at }) => slots.filter((s) => {
+      const a = window.__cs.view.avatars.get(s);
+      return a?.anim && Math.hypot(a.root.position.x - at.x, a.root.position.z - at.z) < 5;
+    }).length, placed);
+    if (near >= placed.slots.length * 0.9) break;
+    await sleep(1000);
+  }
   await page.evaluate(() => {
-    const sc = window.__cs.view.scene;
+    const v = window.__cs.view;
+    const sc = v.scene;
     const engine = sc.getEngine();
     const counter = engine._drawCalls;
     const add = counter?.addCount;
-    const s = (window.__mass = { draws: [], bodies: 0, tiers: null, frameDraws: 0 });
+    const s = (window.__mass = { draws: [], work: [], cur: 0, bodies: 0, tiers: null, frameDraws: 0 });
     if (counter && add) counter.addCount = (n, f) => ((s.frameDraws += n), add.call(counter, n, f));
+    const timed = (name) => {
+      const f = v[name];
+      v[name] = function (...a) {
+        const t0 = performance.now();
+        try {
+          return f.apply(this, a);
+        } finally {
+          s.cur += performance.now() - t0;
+        }
+      };
+      return () => (v[name] = f);
+    };
+    const restore = [timed('startRagdoll'), timed('updateEffects')];
     s.undo = () => {
       if (counter && add) counter.addCount = add;
+      for (const r of restore) r();
       sc.onBeforeRenderObservable.remove(s.before);
       sc.onAfterRenderObservable.remove(s.after);
     };
     s.before = sc.onBeforeRenderObservable.add(() => (s.frameDraws = 0));
     s.after = sc.onAfterRenderObservable.add(() => {
       s.draws.push(s.frameDraws);
-      const st = window.__cs.view.ragdollStats?.();
+      s.work.push(s.cur);
+      s.cur = 0;
+      const st = v.ragdollStats?.();
       if (st) {
         s.bodies = Math.max(s.bodies, st.awakeBodies);
         s.tiers = st;
@@ -156,13 +193,6 @@ async function measureMass(page, sim) {
     });
     window.__perf.reset();
     window.__perf.on = true;
-  });
-  await sim(MASS_PLACE, MASS_KILLS);
-  // Their characters walk over there (and load) before the blast.
-  await sleep(3000);
-  await page.evaluate(() => {
-    window.__perf.reset();
-    window.__mass.draws.length = 0;
   });
   const killed = await sim(MASS, 0);
   await sleep(4000);
@@ -174,7 +204,7 @@ async function measureMass(page, sim) {
     s.undo();
     const frames = window.__perf.frames;
     const avg = (a) => Math.round(a.reduce((x, v) => x + v, 0) / Math.max(1, a.length));
-    return { frames, draws: avg(s.draws), bodies: s.bodies, tiers: s.tiers };
+    return { frames, draws: avg(s.draws), work: s.work, bodies: s.bodies, tiers: s.tiers };
   });
   const sorted = out.frames.map((f) => f.dt).sort((a, b) => a - b);
   const pct = (q) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] ?? 0;
@@ -185,10 +215,8 @@ async function measureMass(page, sim) {
     p95: pct(0.95),
     max: sorted[sorted.length - 1] ?? 0,
     jsMax: Math.max(0, ...out.frames.map((f) => f.js)),
-    jsP95: (() => {
-      const js = out.frames.map((f) => f.js).sort((a, b) => a - b);
-      return js[Math.min(js.length - 1, Math.floor(0.95 * js.length))] ?? 0;
-    })(),
+    workMax: Math.max(0, ...out.work),
+    workTotal: out.work.reduce((a, b) => a + b, 0),
     draws: out.draws,
     ragdolls: out.tiers ? { ...out.tiers, mostAwakeBodies: out.bodies } : 'not reported',
   };
@@ -252,7 +280,7 @@ for (const id of maps) {
             if (scenario === 'mass') {
               row.mass = await measureMass(page, sim);
               const r = row.mass;
-              console.log(`${id} ${graphics} ${mode} mass casualty: ${r.killed} killed by one blast; frames after it: ${r.frames}, p50 ${r.p50.toFixed(1)} ms, p95 ${r.p95.toFixed(1)}, worst ${r.max.toFixed(0)} ms; game JS worst ${r.jsMax.toFixed(1)} ms, p95 ${r.jsP95.toFixed(1)} ms, draws ${r.draws} avg; ragdolls ${JSON.stringify(r.ragdolls)}`);
+              console.log(`${id} ${graphics} ${mode} mass casualty: ${r.killed} killed by one blast; frames after it: ${r.frames}, p50 ${r.p50.toFixed(1)} ms, p95 ${r.p95.toFixed(1)}, worst ${r.max.toFixed(0)} ms; ragdoll work (deaths + effects physics + posing) worst frame ${r.workMax.toFixed(1)} ms, ${r.workTotal.toFixed(0)} ms in all; game JS worst ${r.jsMax.toFixed(1)} ms, draws ${r.draws} avg; ragdolls ${JSON.stringify(r.ragdolls)}`);
               continue;
             }
             if (scenario === 'clump') row.placed = await sim(CLUMP, 7);
@@ -421,11 +449,11 @@ for (const r of results.filter((x) => !x.stalled)) {
     continue;
   }
   if (r.mass.killed < MASS_KILLS / 2 && (massMs || massDraws || massBodies)) fails.push(`${r.map} ${r.graphics}: the mass-casualty blast killed only ${r.mass.killed}`);
-  if (massMs && r.mass.jsMax > massMs) fails.push(`${r.map} ${r.graphics}: worst frame's game JS after the mass-casualty blast ${r.mass.jsMax.toFixed(1)} ms > ${massMs}`);
+  if (massMs && r.mass.workMax > massMs) fails.push(`${r.map} ${r.graphics}: ragdoll work in a frame after the mass-casualty blast ${r.mass.workMax.toFixed(1)} ms > ${massMs}`);
   if (massDraws && r.mass.draws > massDraws) fails.push(`${r.map} ${r.graphics}: frames after the mass-casualty blast average ${r.mass.draws} draws > ${massDraws}`);
   if (massBodies && typeof r.mass.ragdolls === 'object' && r.mass.ragdolls.mostAwakeBodies > massBodies) fails.push(`${r.map} ${r.graphics}: ${r.mass.ragdolls.mostAwakeBodies} ragdoll bodies awake at once > ${massBodies}`);
 }
-if ((massMs || massDraws || massBodies) && SCENARIOS.includes('mass')) console.log(`mass casualty: ${results.filter((r) => r.mass).map((r) => `${r.map} ${r.graphics} ${r.mass.killed} killed, worst game JS ${r.mass.jsMax.toFixed(1)} ms, ${r.mass.draws} draws`).join('; ')}`);
+if ((massMs || massDraws || massBodies) && SCENARIOS.includes('mass')) console.log(`mass casualty: ${results.filter((r) => r.mass).map((r) => `${r.map} ${r.graphics} ${r.mass.killed} killed, worst frame's ragdoll work ${r.mass.workMax.toFixed(1)} ms, ${r.mass.draws} draws`).join('; ')}`);
 for (const f of fails) console.log(`OVER BUDGET: ${f}`);
 if (checking && !fails.length && results.some((r) => r.clump)) console.log(`shadow and effects budget: ${results.filter((r) => r.clump).map((r) => `${r.map} ${r.graphics} ${r.clump.scene.casters} casters, slowest effect ${Math.max(0, ...Object.values(r.fx ?? {}))} ms`).join('; ')}`);
 if (budget && !over.length && !unmeasured.length && !stalled.length) console.log(`draw budget: every clumped frame within ${budget} draws (${results.map((r) => `${r.map} ${r.graphics} ${r.clump.scene.draws}`).join(', ')})`);

@@ -645,3 +645,31 @@ GPUs (`PERF_GPU=1`), which this box can't.
 Turning off the effect exclusion and the flash materials' blocked dirty mechanism made the run fail with 124–129 effect meshes in the shadow pass and flash starts of 43–73 ms.
 
 **What the flash starts were.** In a 96-player scene (about 5,000 meshes) a new muzzle flash rig took 20–80 ms. Every new `ShaderMaterial`'s `backFaceCulling` / `alphaMode` setters walk every mesh and submesh to mark them dirty (three walks a piece, 15 pieces in a big flash), and `Mesh.clone` deep-copies the source's properties. Flash materials now block their dirty mechanism (they only ever take uniforms), and rig pieces and effect meshes share their source's geometry instead of cloning it.
+
+## Mass casualty: tiered ragdolls (30 Oct 2026)
+
+**Scenario** (`pnpm perf:mass`, CI's perf job): Frost Basin, Medium, a 24 v 24
+offline match (48 players, the browser's largest). 20 bots are held in a ring
+12 m in front of the camera until their characters stand there in this view,
+then one blast kills them all. For the frames after it (4 s, at least 12) it
+reports frame times, draws, and the **ragdoll work** per frame: starting the
+dead bodies plus the effects physics and posing the ragdolls (the view's
+`startRagdoll` and `updateEffects`, timed in the page, so it compares builds and
+CPU rendering doesn't inflate it), and the most ragdoll bodies awake at once.
+Budget: `PERF_MAX_MASS_MS=120` (a frame's ragdoll work: a stall guard, the
+runner renders on the CPU) and `PERF_MAX_MASS_BODIES=300`.
+
+**Before / after** (this shared 4-core box under other agents' load, two runs each, interleaved):
+
+| Build | Deaths handled | Worst frame's ragdoll work | Ragdoll work over 4 s | Game JS, worst frame |
+|---|---|---|---|---|
+| before (12 ragdolls, the rest the canned death) | 12 ragdolls + 8 canned | 17.8 / 23.8 ms | 145 / 155 ms | 34.6 / 45.1 ms |
+| after (tiers, pool, freeze, deaths spread over frames) | all 20 physical (11 full, 9 cheap in run 1) | 13.7 / 22.9 ms | 92 / 106 ms | 29.6 / 48.5 ms |
+
+Frame times themselves (p50 0.6 s, worst 2–3 s) are SwiftShader's and the
+box's load, not the game's. Most ragdoll bodies awake at once: 30–110 (of
+300). Without spreading the deaths over frames (`DEATH_START_MS`: 4 ms of
+starts a frame, at least one) the after build's worst frame was 28–49 ms:
+twenty bodies started in one frame. On this slow page a start takes over 4 ms,
+so the 20 deaths took about 13 frames to all go down (run 2 had handled 7 by
+the end of its window); on a normal machine several start per frame.

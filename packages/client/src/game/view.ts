@@ -190,6 +190,8 @@ export function bodiesPreference(): BodiesSetting {
 }
 /** Bodies kept at once (the oldest goes when another falls). */
 const MAX_CORPSES = 32;
+/** Time (ms) a frame may spend starting dead bodies before further fresh deaths wait for the next frame (at least one starts). */
+const DEATH_START_MS = 4;
 /** Ragdoll parts parked in the effects world's pool when the map is built (a standard body's, this many times). */
 const RAGDOLL_PREWARM_BODIES = 12;
 /**
@@ -1093,6 +1095,8 @@ export class GameView {
     const cam = crowd ? this.scene.activeCamera?.globalPosition : undefined;
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
     const seen = new Set<number>();
+    let deathMs = 0;
+    let deathsStarted = 0;
     for (const p of poses) {
       if (p.slot === localSlot) {
         // Your own body in first person: kept loaded but not drawn (and not animated), so switching to
@@ -1158,7 +1162,13 @@ export class GameView {
       }
       // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
       if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) {
+        // A blast that kills twenty doesn't start twenty bodies in one frame: past a few milliseconds of
+        // starting them, the rest hold their pose a frame or two and start on the next ones.
+        if (deathsStarted > 0 && deathMs > DEATH_START_MS) continue;
+        deathsStarted++;
+        const t0 = performance.now();
         this.startRagdoll(p.slot, a, planes);
+        deathMs += performance.now() - t0;
         if (a.ragdoll) {
           this.toCorpse(p.slot, a);
           continue;
