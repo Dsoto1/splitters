@@ -64,6 +64,7 @@ import {
   type Movers,
   MOUNT_WRECK_FADE_SECONDS,
   mountDamageState,
+  getLook,
 } from '@tiletrigger/shared';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
@@ -92,6 +93,8 @@ import { SkyEffects } from './skyEffects.ts';
 import { CharacterLibrary, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
+import { FirstPersonBodyRig } from './firstPersonBody.ts';
+import { loadFirstPersonMode, type FirstPersonMode } from './graphicsSettings.ts';
 import { CreatureLibrary, type AvatarSpec } from '../content/creatures.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -268,6 +271,18 @@ export class GameView {
   private viewWeapon?: string;
   /** Your own character's arms in first person, gripping the viewmodel. */
   private fpArms?: { look: string; anim: CharacterAnimator | null; root: TransformNode };
+  /** Your own look (setLocalLook): its arms are built when first person needs them. */
+  private localLook?: string;
+  /** First person: your whole character from its eyes, or arms only (Options → Display). */
+  private fpMode: FirstPersonMode = loadFirstPersonMode();
+  /** Full-body first person: your own avatar seen from its eyes, while it is (firstPersonBody.ts). */
+  private fpBody?: { a: Avatar; rig: FirstPersonBodyRig; vel: { x: number; z: number }; last?: { x: number; z: number; t: number } };
+  /** The camera is your own eyes this frame (not a vehicle's view, the kill cam or a spectator's): set by the session. */
+  firstPersonEye = false;
+  /** The gun is hidden this frame (scoped, third person, dead): the full body is too. */
+  private viewHidden = true;
+  /** The camera before any shake (the full body stands under the steady eye). */
+  private readonly steadyEye = { pos: new Vector3(), yaw: 0, pitch: 0 };
   private viewLoad = 0;
   /** First-person guns built so far, by weapon ID, with their measurements (see setViewmodel). */
   private readonly viewmodels = new Map<string, { node: TransformNode; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }>();
@@ -884,6 +899,9 @@ export class GameView {
   /** Place the view. `roll` is only ever set riding a vehicle (its gentle lean); on foot the view is always level. */
   setCamera(eye: Vec3, yaw: number, pitch: number, fov: number, roll = 0): void {
     this.camera.position.set(eye.x, eye.y, eye.z);
+    this.steadyEye.pos.set(eye.x, eye.y, eye.z);
+    this.steadyEye.yaw = yaw;
+    this.steadyEye.pitch = pitch;
     const shake = this.currentShake();
     if (shake > 0) {
       // Trauma squared: big blasts jolt, small ones barely tremble.
@@ -919,6 +937,7 @@ export class GameView {
       v.node.setEnabled(true);
       this.viewmodel = v.node;
       this.fpArms?.anim?.gripExternal(v.node, def.view.hold);
+      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, def.view.hold);
     };
     const kept = this.viewmodels.get(def.id);
     if (kept) return show(kept);
@@ -942,6 +961,29 @@ export class GameView {
    * viewmodel placement (bob, recoil, reload dip) and the hands follow it by IK.
    */
   setLocalLook(look: string | undefined): void {
+    this.localLook = look;
+    // Full body draws your own character instead: the arms are built only if first person falls back to them.
+    if (this.fpMode === 'arms') this.buildFpArms();
+  }
+
+  /** First person: your whole character ('body') or arms only ('arms'); applies from the next frame. */
+  setFirstPersonMode(mode: FirstPersonMode): void {
+    this.fpMode = mode;
+    if (mode === 'arms') this.buildFpArms();
+  }
+
+  get firstPersonMode(): FirstPersonMode {
+    return this.fpMode;
+  }
+
+  /** Whether your own whole body is drawn in first person now (tests). */
+  hasFirstPersonBody(): boolean {
+    return !!this.fpBody;
+  }
+
+  /** Build your look's first-person arms (arms-only first person, and full body's fallback in a seat). */
+  private buildFpArms(): void {
+    const look = this.localLook;
     if (!look || this.fpArms?.look === look) return;
     this.fpArms?.anim?.dispose();
     this.fpArms?.root.dispose();
@@ -977,6 +1019,7 @@ export class GameView {
     this.strikeMotion = { kind, t0: performance.now() };
     this.strikes[kind]++;
     if (kind === 'punch') this.fpArms?.anim?.trigger(jab ? 'jab' : 'melee');
+    if (kind === 'punch') this.fpBody?.a.anim?.trigger(jab ? 'jab' : 'melee');
     if (kind === 'kick' && !this.boot) {
       const boot = CreateBox('fpBoot', { width: 0.13, height: 0.11, depth: 0.3 }, this.scene);
       const mat = new StandardMaterial('fpBootMat', this.scene);
@@ -1081,8 +1124,11 @@ export class GameView {
   updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean; ads?: number; speed?: number }): void {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     this.viewRoot.setEnabled(!o.hidden && !!def);
-    this.fpArms?.root.setEnabled(!o.hidden && !!def);
-    if (def && this.fpArms?.anim) this.fpArms.anim.update(dt, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
+    this.viewHidden = o.hidden || !def;
+    // Full body: your own character's hands hold the gun instead of the arms.
+    const arms = !o.hidden && !!def && !this.fpBody;
+    this.fpArms?.root.setEnabled(arms);
+    if (arms && this.fpArms?.anim) this.fpArms.anim.update(dt, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
     if (!def) return;
     this.kickAmount = Math.max(0, this.kickAmount - dt * 6);
     // The bob keeps pace with how fast you're actually going (a wall stops it; a sprint quickens it).
@@ -1166,13 +1212,24 @@ export class GameView {
         }
         if (!a) this.avatars.set(p.slot, (a = this.createAvatar(p.slot, want, key)));
         a.hiddenSelf = true;
+        a.wasAlive = true;
+        a.last = undefined;
+        a.vel = { x: 0, z: 0 };
+        // Full-body first person (from your own eyes; in a vehicle its view keeps the arms): your own character,
+        // seen from its eyes, holding the gun.
+        // (A character whose hat or cape would fill the view from its own eyes keeps the arms: its look's whole.body.)
+        const bodyOk = !want.look || getLook(want.look).whole?.body !== false;
+        if (this.fpMode === 'body' && bodyOk && this.firstPersonEye && !seated.has(p.slot) && a.anim instanceof CharacterAnimator) {
+          this.showFpBody(a, p, now);
+          continue;
+        }
+        if (this.fpBody) this.dropFpBody();
+        // Arms only, or before your character has loaded.
+        if (this.fpMode === 'arms' || !bodyOk || !this.firstPersonEye || seated.has(p.slot)) this.buildFpArms();
         a.root.setEnabled(false);
         a.root.position.set(p.x, p.y, p.z);
         a.root.rotation.y = p.yaw;
         if (a.anim instanceof CharacterAnimator) a.anim.setDormant(true);
-        a.wasAlive = true;
-        a.last = undefined;
-        a.vel = { x: 0, z: 0 };
         continue;
       }
       seen.add(p.slot);
@@ -1203,6 +1260,7 @@ export class GameView {
       a.last = { x: p.x, y: p.y, z: p.z, t: now };
       if (a.hiddenSelf) {
         // Back to third person: draw it again (it was kept loaded while hidden).
+        if (this.fpBody?.a === a) this.dropFpBody();
         a.hiddenSelf = false;
         a.root.setEnabled(!a.culled);
         if (a.anim instanceof CharacterAnimator) a.anim.setDormant(!!a.culled);
@@ -1364,9 +1422,74 @@ export class GameView {
     this.avatars.get(slot)?.anim?.trigger(action);
   }
 
-  /** Whether your own first-person arms have loaded (for tests). */
+  /** Whether your own first-person arms (or full body) have loaded and hold the gun (for tests). */
   hasFirstPersonArms(): boolean {
-    return !!this.fpArms?.anim;
+    return !!this.fpArms?.anim || !!this.fpBody;
+  }
+
+  /**
+   * Full-body first person, each frame: your own character (`p` is where prediction has you) under the steady
+   * eye, its legs walking, running, crouching and jumping with you and its hands on the viewmodel. Hidden with
+   * the gun (scoped, dead).
+   */
+  private showFpBody(a: Avatar, p: RemotePose, now: number): void {
+    const anim = a.anim as CharacterAnimator;
+    let fp = this.fpBody;
+    if (fp?.a !== a) {
+      this.dropFpBody();
+      // The third-person gun comes out of the hands (it is put back on the way to third person).
+      anim.hold(null);
+      a.weaponSlot = -1;
+      a.weaponNode?.dispose();
+      a.weaponNode = undefined;
+      fp = { a, rig: new FirstPersonBodyRig(this.scene, anim.ch, anim, a.root), vel: { x: 0, z: 0 } };
+      this.fpBody = fp;
+      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold);
+      // Your own arms aren't needed while the body holds the gun.
+      this.fpArms?.root.setEnabled(false);
+    }
+    const shown = !this.viewHidden;
+    a.root.setEnabled(shown);
+    fp.rig.setEnabled(shown);
+    anim.setDormant(!shown);
+    if (!shown) return;
+    const dt = fp.last ? Math.min(0.1, (now - fp.last.t) / 1000) : 0;
+    if (fp.last && dt > 0) {
+      const k = Math.min(1, dt * 12);
+      fp.vel.x += ((p.x - fp.last.x) / dt - fp.vel.x) * k;
+      fp.vel.z += ((p.z - fp.last.z) / dt - fp.vel.z) * k;
+      if (Math.hypot(p.x - fp.last.x, p.z - fp.last.z) > 4) fp.vel = { x: 0, z: 0 };
+    }
+    fp.last = { x: p.x, z: p.z, t: now };
+    const { pos, yaw, pitch } = this.steadyEye;
+    fp.rig.base.set(p.x, p.y, p.z);
+    fp.rig.yaw = yaw;
+    fp.rig.eye.copyFrom(pos);
+    fp.rig.pitch = pitch;
+    a.root.position.set(p.x, p.y, p.z);
+    a.root.rotation.set(0, yaw, 0);
+    const speed = Math.hypot(fp.vel.x, fp.vel.z);
+    anim.stepAt(now, 0);
+    anim.update(dt, {
+      speed,
+      moveAngle: speed > 0.3 ? angleDelta(yaw, Math.atan2(fp.vel.x, fp.vel.z)) : 0,
+      airborne: !p.grounded,
+      alive: true,
+      pitch,
+      celebrate: false,
+      stance: p.stance ?? 0,
+      sprinting: !!p.sprinting,
+    });
+  }
+
+  /** Leave full-body first person: the head comes back and the body is hidden or drawn as anyone's. */
+  private dropFpBody(): void {
+    const fp = this.fpBody;
+    if (!fp) return;
+    this.fpBody = undefined;
+    fp.rig.dispose();
+    if (fp.a.anim instanceof CharacterAnimator) fp.a.anim.gripExternal(null, null);
+    fp.a.root.setEnabled(false);
   }
 
   /** Remote avatars currently shown as animated characters (for tests and the stats overlay). */
@@ -1548,6 +1671,7 @@ export class GameView {
   }
 
   private disposeAvatar(a: Avatar): void {
+    if (this.fpBody?.a === a) this.dropFpBody();
     this.atmosphere.shadowless.delete(a.root);
     // The flash texture is shared by every flash: dispose the material, never the texture.
     a.flash?.material?.dispose();

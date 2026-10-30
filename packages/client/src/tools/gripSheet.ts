@@ -14,10 +14,11 @@ import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
 import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
+import { FirstPersonBodyRig, fitFirstPersonBody } from '../game/firstPersonBody.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
 
-/** How a pose is shown: the character from outside, or its own first-person arms from the eye. */
-export type GripView = 'third' | 'first';
+/** How a pose is shown: the character from outside, its own first-person arms from the eye, or its whole body from the eye (full-body first person). */
+export type GripView = 'third' | 'first' | 'body';
 
 /**
  * Grip check (team tool, `?mode=grips`): one character at a time holding one
@@ -47,13 +48,23 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   const characters = new CharacterLibrary(scene, { atlas: true });
   const models = new ModelLibrary(scene);
   const still: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false };
+  /** Full-body first person: the view's pitch (radians, the game's: + looks up) and the body's motion (`__grips.motion`). */
+  let eyePitch = 0;
+  let eyeDrop = 0;
+  let rig: FirstPersonBodyRig | null = null;
   let current: { anim: CharacterAnimator; dispose(): void } | null = null;
   /** The posed character's joints (third person), for posture measurements. */
   let joints: Map<string, TransformNode> | null = null;
   let frames = 0;
 
   engine.runRenderLoop(() => {
-    current?.anim.update(1 / 30, still);
+    current?.anim.update(1 / 30, { ...still, pitch: eyePitch });
+    if (rig) {
+      eye.position.set(0, PLAYER.eyeHeight - eyeDrop, 0);
+      poseCamera(eye, 0, eyePitch);
+      rig.eye.copyFrom(eye.position);
+      rig.pitch = eyePitch;
+    }
     scene.render();
     frames++;
   });
@@ -67,8 +78,42 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     current?.dispose();
     current = null;
     joints = null;
+    rig = null;
     const def = getWeapon(weapon);
-    if (view === 'third') {
+    if (view === 'body') {
+      // Full-body first person, as the game draws it (firstPersonBody.ts): the whole character under the eye,
+      // its head shrunk away, the viewmodel placed as the game places it and gripped by IK.
+      ground.setEnabled(true);
+      const holder = new TransformNode('grip_body', scene);
+      const ch = await characters.create({ look }, 'grip_char');
+      fitFirstPersonBody(ch, holder);
+      const viewRoot = new TransformNode('grip_view', scene);
+      viewRoot.parent = eye;
+      const node = await models.instantiate(def.view.model, 'grip_viewmodel');
+      node.parent = viewRoot;
+      for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+      const [vx, vy, vz] = def.view.viewOffset;
+      viewRoot.position.set(vx, vy, vz);
+      const anim = new CharacterAnimator(scene, ch);
+      anim.gripExternal(node, def.view.hold);
+      const r = new FirstPersonBodyRig(scene, ch, anim, holder);
+      rig = r;
+      current = {
+        anim,
+        dispose: () => {
+          r.dispose();
+          anim.dispose();
+          node.dispose();
+          viewRoot.dispose();
+          holder.dispose();
+        },
+      };
+      joints = ch.joints;
+      eye.position.set(0, PLAYER.eyeHeight - eyeDrop, 0);
+      poseCamera(eye, 0, eyePitch);
+      scene.activeCamera = eye;
+      await settle(40);
+    } else if (view === 'third') {
       ground.setEnabled(true);
       const ch = await characters.create({ look }, 'grip_char');
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);
@@ -143,6 +188,28 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     /** First person: how far (model m) each palm is from its point on the gun (0: on it). */
     miss: () => current?.anim.gripMiss ?? null,
     body,
+    /**
+     * Full-body first person (`pose(look, weapon, 'body')`): the view's pitch (radians, the game's: + looks up), and the
+     * body's motion (speed m/s, stance 0 standing / 1 crouched, airborne); `drop` lowers the eye (m, a crouch).
+     */
+    /** Full body: look at the posed body from outside (from its right side, `alpha` round), or back through its eyes (null). */
+    outside: async (alpha: number | null) => {
+      if (alpha === null) scene.activeCamera = eye;
+      else {
+        orbit.target.set(0, 1.2, 0);
+        orbit.alpha = alpha;
+        orbit.beta = 1.3;
+        orbit.radius = 2.4;
+        scene.activeCamera = orbit;
+      }
+      await settle(4);
+    },
+    look: async (pitch: number, motion: { speed?: number; stance?: number; airborne?: boolean; sprinting?: boolean; drop?: number } = {}) => {
+      eyePitch = pitch;
+      eyeDrop = motion.drop ?? 0;
+      Object.assign(still, { speed: motion.speed ?? 0, stance: motion.stance ?? 0, airborne: !!motion.airborne, sprinting: !!motion.sprinting });
+      await settle(30);
+    },
     /** World positions of the posed character's joints (third person), by name. */
     joints: (): Record<string, [number, number, number]> =>
       Object.fromEntries(

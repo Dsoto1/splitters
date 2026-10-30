@@ -52,7 +52,7 @@ import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts'
 import { cachedProfile, checkUsername, loadProfile, myRegion, saveProfile, setRegion } from '../profile.ts';
 import { installTooltips } from './tooltip.ts';
 import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
-import { FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadGraphicsQuality, loadRenderScale, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
+import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfOverlay.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
@@ -1744,6 +1744,8 @@ export class FrontEnd {
     renderScale.addEventListener('change', () => saveRenderScale(renderScale.value as RenderScale));
     const frameCap = el('select', {}, ...FRAME_CAPS.map((c) => el('option', { value: String(c), textContent: c ? `${c} fps` : 'Unlimited (screen rate)', selected: c === currentFrameCap() })));
     frameCap.addEventListener('change', () => saveFrameCap(Number(frameCap.value) as FrameCap));
+    const firstPerson = el('select', {}, ...FIRST_PERSON_MODES.map((m) => el('option', { value: m, textContent: FIRST_PERSON_LABELS[m], selected: m === loadFirstPersonMode() })));
+    firstPerson.addEventListener('change', () => saveFirstPersonMode(firstPerson.value as FirstPersonMode));
     const perfOverlay = el('input', { type: 'checkbox', checked: loadPerfOverlay() });
     perfOverlay.addEventListener('change', () => savePerfOverlay(perfOverlay.checked));
     const fullscreen = el('button', { type: 'button' });
@@ -1889,6 +1891,7 @@ export class FrontEnd {
         row('Graphics', graphics, 'Applies from your next match. Medium suits most computers; drop to Low if the game stutters, try High on a strong graphics card.'),
         row('Render scale', renderScale, 'Pixels drawn per screen point. Native on a Retina screen is four times the work; Auto is barely softer and much cooler and quieter on laptops.'),
         row('Frame cap', frameCap, 'Most frames drawn a second. 60 is smooth and keeps laptops cool.'),
+        row('First person', firstPerson, 'Full body: look down and see your character, legs and feet. Arms only: just your arms on the gun. The gun handles the same either way.'),
         row('Performance overlay', toggle(perfOverlay), 'Frame time and what each frame costs, top left in a match (F3). If the game runs slowly, Pause → Settings → Copy performance report gives a report to send.'),
       ]],
       ['controls', 'Controls', [

@@ -32,18 +32,26 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     dark roof bars/dash (model geometry), tall heads touch the roof bars, the jeep's cab riders hidden behind its
     opaque windows, seated riders don't turn round past ~77°; Titan, Alien, Salamander not rebuilt (downloads
     missing); Bonesworth's left hand on his grip sheet; `visual` baselines may move if a buggy is in a picture.
-- **Next for the new account (owner agreed; not started): full-body first person.** Today first person draws
-  only an arms mesh (a second character, `setLocalLook` in view.ts) hung from the camera with IK to each gun's
-  `hold` points; an arms part is a body fragment, so on long guns (the AK's support point far forward) its open
-  end swings into view (owner's screenshot: a torn forearm, any character holding that gun). Plan: show the
-  player's own third-person avatar (already loaded and hidden in first person, `hiddenSelf`) with the camera at
-  its eyes, head hidden (shadow kept, or a cheap shadow-only stand-in), the third-person rig and hand IK holding
-  the gun; keep gun and hands in rendering group 1 (drawn over the world, one depth clear, as now) against wall
-  clipping; tune bob, recoil and reload so it stays as responsive as now (GUNPLAY_DIRECTION); a graphics option
-  "First person: Full body / Arms only", default full body once it feels right. Performance: about even (one
-  render either way; drops the second character and its animator and the per-character `_fparms` load, adds a
-  whole body's triangles), so it's for looks and consistency, not speed. Check with `?mode=grips` and the
-  `characters` e2e grip checks.
+- **Full-body first person: done on `wip/full-body-fp`, not merged** (owner agreed the plan; 2026-10-30
+  evening). First person draws your own third-person character from its eyes (`game/firstPersonBody.ts`
+  `FirstPersonBodyRig`, `View.showFpBody`): the body stands where prediction has you and animates with your
+  motion; after the clips and the spine's aim it is moved so the base of its neck sits just behind and below the
+  steady eye (further back looking down); the head is cut off the meshes (`cutHead`: head-weighted and
+  above-neck triangles, a headless copy per mesh) and a colourless ball casts its shadow; the hands grip the
+  unchanged viewmodel by IK (collarbones roll forward before shoulders move), forearm/hand triangles are also
+  drawn in group 1 with the gun. Options → Display → First person: Full body (default) / Arms only
+  (`tiletrigger.firstPerson`, applies at once). Falls back to the arms in vehicle seats, the kill cam,
+  spectating and for `firstPerson.body: false` characters (Grizzelda: her hat brim filled the view). Grip tool:
+  `?mode=grips`, `pose(look, weapon, 'body')`, `look(pitch, motion)`, `outside(alpha)`. Docs: CHARACTERS.md
+  "Full-body first person". Still off: the knight's left pauldron is a big dark wedge at the lower left; a
+  knife's free hand hangs at the side but a held knife still sits oddly in the open right hand (as in Arms
+  only); looking straight down the gun hides your right leg; seated passengers keep the arms. Cost (SwiftShader,
+  training_range, Scout): your own drawing is 4 meshes / 18.3k triangles in full body vs 3 / 5.1k arms only
+  (plus the body's shadow and the head ball's), no second character loaded; frame times too noisy on CPU
+  rendering to tell apart (perf96 frost_basin 48 bots ran, one-frame draw samples dominated by what was in view).
+  Local e2e: characters, designer, offline, visual pass (no baseline change); arsenal fails "hazards are drawn on
+  the ground", "R loads the barrel again", sometimes the Battle Axe swing, and the build from before this work
+  fails the same and more. Needs a check branch run before `main`.
 - **Field guide** (owner asked 2026-10-30): a reference page of every weapon, vehicle, character, map feature
   and pickup, generated from the shared data: https://claude.ai/artifact/GgiMK17TA5oCY3Cnyna3oy (PDF and HTML
   were sent to the owner). Regenerate it when the arsenal or roster changes.

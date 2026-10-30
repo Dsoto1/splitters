@@ -31,7 +31,8 @@
     "arms": "peasant_arms_f",
     "skin": "#7a8a3c",
     "cloth": "#4a4a2c",
-    "trim": "#3a2a1c"
+    "trim": "#3a2a1c",
+    "body": false
   },
   "fixes": {
     "triangles": 11000,

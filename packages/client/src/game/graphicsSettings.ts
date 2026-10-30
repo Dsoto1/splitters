@@ -102,6 +102,20 @@ export const saveFrameCap = (c: FrameCap): void => {
 /** The frame cap, read from storage once (it is checked every frame). */
 export const currentFrameCap = (): FrameCap => (frameCap ??= loadFrameCap());
 
+/**
+ * First person: your whole character seen from its eyes (look down and see your body and feet), or only arms
+ * holding the gun (the view before full body). Either way the gun is placed the same (bob, recoil, ADS).
+ */
+export const FIRST_PERSON_MODES = ['body', 'arms'] as const;
+export type FirstPersonMode = (typeof FIRST_PERSON_MODES)[number];
+export const FIRST_PERSON_LABELS: Record<FirstPersonMode, string> = { body: 'Full body', arms: 'Arms only' };
+export const loadFirstPersonMode = (): FirstPersonMode => load('tiletrigger.firstPerson', FIRST_PERSON_MODES, 'body', (s) => s as FirstPersonMode);
+export const saveFirstPersonMode = (m: FirstPersonMode): void => {
+  save('tiletrigger.firstPerson', m);
+  // Applied at once in a match (session.ts listens).
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('tiletrigger:first-person'));
+};
+
 /** Pixels drawn per CSS pixel for a setting on this screen. */
 export function renderRatio(scale: RenderScale, dpr = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1): number {
   switch (scale) {

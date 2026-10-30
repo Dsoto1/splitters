@@ -130,6 +130,7 @@ import { ScenarioState } from './scenarioState.ts';
 import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
+import { loadFirstPersonMode } from './graphicsSettings.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule, type CameraPose, type FreeBounds, type SpectateRule } from './spectatorCam.ts';
 
@@ -631,6 +632,8 @@ export class GameSession {
       },
       { signal },
     );
+    // First person: full body or arms only (Options → Display), applied at once.
+    window.addEventListener('tiletrigger:first-person', () => this.view.setFirstPersonMode(loadFirstPersonMode()), { signal });
     bindFullscreenButton($('pause-fullscreen') as HTMLButtonElement, signal);
     document.addEventListener('pointerlockchange', () => this.updatePause(), { signal });
     // Esc: in the game, the browser's own Esc releases the mouse and the menu opens (in fullscreen with
@@ -2170,6 +2173,8 @@ export class GameSession {
       const fov = this.fov;
       // Zoomed look speed: 1:1 with hip fire at the crosshair, times the player's zoom sensitivity.
       this.input.sensitivityScale = zoomLookScale(fov, DEFAULT_FOV, DEFAULT_FOV * ADS_FOV, this.input.mouse.zoomSensitivity);
+      // Full-body first person stands your character under the camera only while the camera is your own eyes.
+      this.view.firstPersonEye = false;
       if (ride && seatDef) {
         const seatIndex = this.seat![1];
         const feet = mountToWorld(ride.shown.pos, ride.shown.yaw, seatDef.offset);
@@ -2247,6 +2252,7 @@ export class GameSession {
           // First person: the view carries the weapon's mechanical recoil (it is where your rounds go).
           const aimed = local.aimAngles(this.input.yaw, this.input.pitch);
           this.view.setCamera(head, aimed.yaw, aimed.pitch, fov);
+          this.view.firstPersonEye = true;
         }
       }
       this.view.setViewmodel(weapon);
@@ -2325,9 +2331,11 @@ export class GameSession {
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
     this.forts?.frame(local?.alive ? local.eye : null, this.input.yaw, this.input.pitch, !!local?.alive && building, poses.filter((p) => p.slot !== this.slot), local?.alive ? local.state.pos : null);
     this.raceHud?.frame(this.view.camera.position, this.view.camera.rotation.y);
-    // Third person: your own character drawn where prediction has you (not the delayed server copy).
-    const self = this.thirdPerson && !this.tpClose && local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
-    if (self && local) Object.assign(self, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint });
+    // Your own character drawn where prediction has you (not the delayed server copy): in third person, and in
+    // full-body first person (under the camera).
+    const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
+    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint });
+    const self = this.thirdPerson && !this.tpClose ? mine : undefined;
     // Your own canopy in first person (third person draws it over your character).
     this.view.updateLocalCanopy(local?.alive && !self && !this.seat && local.state.chute ? this.drawnPos : null, this.input.yaw, local?.state.chute ?? 0);
     // Hostage Rescue: the hostages walk about like everyone else.

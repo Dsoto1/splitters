@@ -95,6 +95,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     need(typeof fp.arms === 'string' && /^(ranger|peasant)_arms_[mf]$/.test(fp.arms), 'firstPerson.arms: own (the character\'s own forearms and hands) or a universal arms part (ranger_arms_m, peasant_arms_f, …)');
     need([fp.skin, fp.cloth, fp.trim].every((c) => typeof c === 'string' && HEX.test(c)), 'firstPerson: universal arms take skin, cloth and trim as #rrggbb');
   }
+  need(fp.body === undefined || fp.body === false, 'firstPerson.body: false (arms only in first person: the model fills the view from its own eyes) or left out');
   const x = m.fixes ?? {};
   for (const k of Object.keys(x)) need(FIXES.has(k), `fixes.${k}: unknown (${[...FIXES].join(', ')})`);
   need(x.triangles === undefined || (Number.isInteger(x.triangles) && x.triangles >= 2000 && x.triangles <= 18000), 'fixes.triangles: 2000–18000');
@@ -195,7 +196,8 @@ const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 function lookLine(m) {
   const fp = m.firstPerson ?? {};
   const own = !fp.arms || fp.arms === 'own';
-  const whole = own ? `whole: { arms: ${q(armsOf(m))} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)} }`;
+  const body = fp.body === false ? ', body: false' : '';
+  const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
   const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), whole];
   return `  { ${parts.join(', ')} },`;
 }

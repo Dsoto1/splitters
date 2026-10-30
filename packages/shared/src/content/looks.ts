@@ -42,9 +42,11 @@ export interface CharacterLook {
    * separate head, hair, gear or dyes, and not a Designer base. In first person
    * it wears `arms`: its own forearms and hands (`<part>_fparms`, cut from the
    * same model), or a universal base-body arms part on the shared rig dyed to
-   * match (`cloth`/`trim` for the sleeves, `skin` for the hands).
+   * match (`cloth`/`trim` for the sleeves, `skin` for the hands). `body:
+   * false`: full-body first person shows these arms instead of the whole
+   * character (a model whose hat or cape fills the view from its own eyes).
    */
-  whole?: { arms: string; skin?: string; cloth?: string; trim?: string };
+  whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false };
 }
 
 /** Where a piece of gear goes; one per slot. */
