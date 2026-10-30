@@ -49,6 +49,14 @@ async function simWait(page, fn, arg, ms) {
 }
 
 /** Poll `pred()` (async, node side) until it holds; true if it did within `ms`. */
+/** MapMaker's New, on a map of the given size (m) of open ground, or 0 for the sky (no terrain: a blank map). */
+async function newMap(page, size = 0) {
+  await page.click('#ed-new');
+  await page.click(`#ed-new-sizes [data-size="${size}"]`);
+  await page.click('#ed-new-create');
+  await page.waitForFunction((size) => (size ? window.__editor.doc.terrain?.cols > 1 : !window.__editor.doc.terrain), size, { timeout: T(5000) });
+}
+
 async function until(pred, ms) {
   const end = Date.now() + ms;
   while (Date.now() < end) {
@@ -138,7 +146,7 @@ async function editorFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor&test=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
-  await page.click('#ed-new');
+  await newMap(page);
   await page.evaluate(() => window.__editor.view.focus({ x: 8, y: 0, z: 0 }));
   const doc = () => page.evaluate(() => window.__editor.doc);
   const clickWorld = async (x, z) => {
@@ -352,7 +360,7 @@ async function editoruxFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor&test=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
-  await page.click('#ed-new');
+  await newMap(page);
   await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
   const doc = () => page.evaluate(() => window.__editor.doc);
   const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
@@ -1049,7 +1057,14 @@ async function canyonFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
+  // New offers sizes of open ground (Medium by default) or the sky.
   await page.click('#ed-new');
+  const sizes = await page.$$eval('#ed-new-sizes button', (bs) => bs.map((b) => `${b.dataset.size}${b.classList.contains('on') ? '*' : ''}`));
+  await page.click('#ed-new-create');
+  await page.waitForFunction(() => window.__editor.doc.terrain, null, { timeout: T(5000) }).catch(() => {});
+  const span = await page.evaluate(() => { const t = window.__editor.doc.terrain; return t ? (t.cols - 1) * t.spacing : 0; });
+  check(sizes.join() === '96,160*,240,320,0' && span === 160, `a new map starts on 160 m of terrain; New offers 96/160/240/320 m or the sky (${sizes.join()}; ${span} m)`);
+  await newMap(page);
   // Terrain lives in the Environment workspace (one home per pane).
   await page.click('#ed-env-btn');
   await page.click('#ed-pal-tabs [data-pane="terrain"]');
@@ -1097,7 +1112,7 @@ async function sceneryFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
-  await page.click('#ed-new');
+  await newMap(page);
   // The backdrop lives in Environment → Sky.
   await page.click('#ed-env-btn');
   await page.click('#ed-pal-tabs [data-pane="sky"]');
@@ -2162,7 +2177,7 @@ async function raceFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
-  await page.click('#ed-new');
+  await newMap(page);
   await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: -2 }));
   const doc = () => page.evaluate(() => window.__editor.doc);
   const raceOf = (d) => d.paths?.find((p) => p.uses.includes('race'));

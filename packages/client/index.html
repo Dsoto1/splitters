@@ -343,6 +343,16 @@
         <ul id="ed-library"></ul>
         <form method="dialog"><button>Close</button></form>
       </dialog>
+      <dialog id="ed-new-dialog">
+        <h2>New map</h2>
+        <p class="ed-note">Start on open ground in the size you want, or in the sky (no terrain: build floating platforms). Terrain can be added or removed later in Environment → Terrain.</p>
+        <div id="ed-new-sizes" class="ed-new-sizes" role="radiogroup" aria-label="Map size"></div>
+        <label class="ed-dialog-field"><span>Ground</span><select id="ed-new-ground"></select></label>
+        <div class="ed-dialog-actions">
+          <button id="ed-new-create" class="primary">Create</button>
+          <button id="ed-new-cancel">Cancel</button>
+        </div>
+      </dialog>
       <dialog id="ed-publish-dialog"></dialog>
       <dialog id="ed-quit-dialog">
         <h2>Unsaved changes</h2>

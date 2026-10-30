@@ -247,6 +247,22 @@ export interface EditorHost {
   goHome(): void;
 }
 
+/** A new map starts on open ground this size (m); New offers the others, and the sky (0: no terrain). */
+const STARTER_TERRAIN = 160;
+const NEW_MAP_SIZES: readonly [number, string, string][] = [
+  [96, 'Skirmish', '96 m · a few players'],
+  [160, 'Medium', '160 m · most modes'],
+  [240, 'Large', '240 m · vehicles'],
+  [320, 'Huge', '320 m · big battles'],
+  [0, 'Sky map', 'No terrain · floating'],
+];
+
+/** A blank map: the starter room and spawn, on open ground of `size` metres (just under the floors) or none. */
+function starterMap(size: number | null, ground: TerrainMaterial): MapDocument {
+  const doc = newMapDocument('Untitled Map');
+  return size ? { ...doc, terrain: { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 } } : doc;
+}
+
 type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' };
 
 /** Palette icons for scenario objects (simple SVG glyphs). */
@@ -557,7 +573,7 @@ export class EditorApp {
       pointer: () => this.pointerAt,
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
-    this.history = new EditHistory(newMapDocument('Untitled Map'));
+    this.history = new EditHistory(starterMap(STARTER_TERRAIN, 'grass'));
     this.logic = new LogicPanel({
       doc: () => this.doc,
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
@@ -580,7 +596,7 @@ export class EditorApp {
    */
   startFresh(): void {
     if (this.autosaveTimer !== undefined) this.flushDraft();
-    this.replaceDocument(newMapDocument('Untitled Map'));
+    this.replaceDocument(starterMap(STARTER_TERRAIN, 'grass'));
     const drafts = listDrafts().length;
     this.toast(drafts ? `New blank map · ${drafts} unsaved draft${drafts > 1 ? 's' : ''} in Open…` : 'New blank map · Open… loads a saved map or template');
   }
@@ -2761,10 +2777,7 @@ export class EditorApp {
       const release = exportMap(this.doc).metadata.release;
       if (release) this.doc.metadata.release = release;
     });
-    $('ed-new').addEventListener('click', () => {
-      this.keepDraft();
-      this.replaceDocument(newMapDocument('Untitled Map'));
-    });
+    $('ed-new').addEventListener('click', () => this.newMapDialog());
     $('ed-open').addEventListener('click', () => this.openDialog());
     $('ed-import').addEventListener('click', () => $('ed-import-file').click());
     $('ed-publish').addEventListener('click', () => {
@@ -3902,6 +3915,40 @@ export class EditorApp {
     this.setLevel(0, true);
     this.view.focus({ x: 0, y: 0, z: 0 });
     this.refresh(true);
+  }
+
+  /** New: pick a size of open ground (or the sky, with no terrain) and a ground material. */
+  private newMapDialog(): void {
+    const dialog = $<HTMLDialogElement>('ed-new-dialog');
+    const sizes = $('ed-new-sizes');
+    let size = STARTER_TERRAIN;
+    const pick = (v: number) => {
+      size = v;
+      for (const b of sizes.querySelectorAll('button')) b.classList.toggle('on', Number((b as HTMLElement).dataset.size) === v);
+      $<HTMLSelectElement>('ed-new-ground').disabled = v === 0;
+    };
+    sizes.replaceChildren(
+      ...NEW_MAP_SIZES.map(([v, label, note]) => {
+        const b = document.createElement('button');
+        b.dataset.size = String(v);
+        b.setAttribute('role', 'radio');
+        b.innerHTML = `<b>${label}</b><small>${note}</small>`;
+        b.addEventListener('click', () => pick(v));
+        b.addEventListener('dblclick', () => $('ed-new-create').click());
+        return b;
+      }),
+    );
+    const ground = $<HTMLSelectElement>('ed-new-ground');
+    if (!ground.options.length) for (const m of TERRAIN_MATERIALS) ground.append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
+    pick(STARTER_TERRAIN);
+    $('ed-new-create').onclick = () => {
+      dialog.close();
+      this.keepDraft();
+      this.replaceDocument(starterMap(size || null, ground.value as TerrainMaterial));
+    };
+    $('ed-new-cancel').onclick = () => dialog.close();
+    dialog.showModal();
+    (sizes.querySelector('button.on') as HTMLButtonElement | null)?.focus();
   }
 
   private openDialog(): void {
