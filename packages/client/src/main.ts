@@ -7,7 +7,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { MapRotation, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, loadMap, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
@@ -19,14 +19,16 @@ import { MenuScene } from './frontend/menuScene.ts';
 import { ModelThumbnails } from './frontend/modelThumbs.ts';
 import { setWeaponIconSource } from './frontend/weaponIcons.ts';
 import { PortraitRenderer } from './frontend/portraits.ts';
-import type { GameSession, SessionOptions, Travel } from './game/session.ts';
+import type { GameSession, SessionEnd, SessionOptions, Travel } from './game/session.ts';
+import { dropListing } from './game/hub.ts';
 import { listLibrary, openFromLibrary } from './editor/storage.ts';
 import { MAP_INDEX, builtInMapJson, loadBuiltInMap, type MapIndexEntry } from './mapIndex.ts';
 import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
 import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
-import { loadSignaling, type Transport } from './game/transport.ts';
+import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
+import type { Handoff } from './game/peerLink.ts';
 import { seededRng, testMode } from './testMode.ts';
 import { bootStep, finishBoot, preloadImage } from './boot.ts';
 import { SHIPPED_PORTRAITS } from './frontend/portraitIndex.ts';
@@ -400,6 +402,21 @@ class App {
     });
   }
 
+  /**
+   * Host handoff: the host left and named this browser its successor. The match goes on here from its
+   * checkpoint (the clock moved on by the checkpoint's age), on the join code we opened when asked to
+   * stand by, where the others are reconnecting; the listing moves to it too.
+   */
+  private takeOver(end: SessionEnd, standby: HostLink, cp: MatchCheckpoint, age: number, old?: { id: string; secret: string }): void {
+    // Our listing (under the old one's name) goes up once the match runs. The old host takes its own down as it
+    // leaves, and gave us its secret with its goodbye in case that request didn't get out of its closing tab;
+    // a crashed host's is hidden once it misses a check-in (the checkpoint never carries a listing's secret).
+    if (old) dropListing(old.id, old.secret);
+    this.chain = null;
+    const restore: MatchCheckpoint = { ...cp, timeLeft: cp.timeLeft > 0 ? Math.max(1, Math.round(cp.timeLeft - age)) : 0 };
+    this.playLocal(end.map, cp.rules, cp.fill, cp.skill, undefined, { peer: standby, ...(cp.listing ? { listing: cp.listing.name } : {}) }, false, false, { restore, greeting: 'The host left: you host the match now' });
+  }
+
   /** Quick start from a URL (?offline=sandgate, &gamemode=core.ctf): the map's own mode (or the one asked for) and a default bot count; `extra` adds rules (Classes). */
   async playOffline(which: string = 'arena', mode: string | null = null, extra: Partial<MatchRules> = {}, bots = 0): Promise<void> {
     // Straight into a match: fetch its code alongside the engine.
@@ -446,12 +463,14 @@ class App {
 
   /** `hosting`: Host game carried over a map change (the same join code; friends rejoin it). */
   /** `autoHost`: open a join code for friends as soon as the match starts (Play → Host). */
-  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false): void {
-    void this.withMatch((m) => this.playLocalWith(m, map, rules, botFill, difficulty, carry, hosting, autoHost));
+  /** `autoList`: with autoHost, list it in the game browser too (Host this map, after a host left). */
+  /** `extra`: a match handed on from a host that left (its checkpoint), and a line to greet with. */
+  playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false, autoList = false, extra: { restore?: MatchCheckpoint; greeting?: string } = {}): void {
+    void this.withMatch((m) => this.playLocalWith(m, map, rules, botFill, difficulty, carry, hosting, autoHost, autoList, extra));
   }
 
-  private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean): void {
-    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, ...(carry ? { carry } : {}), ...(TEST ? { test: TEST } : {}) }), {
+  private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean, autoList: boolean, extra: { restore?: MatchCheckpoint; greeting?: string }): void {
+    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
@@ -459,6 +478,8 @@ class App {
       hosting,
       autoHost,
       rotation: this.rotationOpts(),
+      autoList,
+      ...(extra.greeting ? { greeting: extra.greeting } : {}),
       onExit: (reason, travel) => {
         // The host changed map (or the rotation moved on): the same rules, players and bot skill there (Host game friends follow).
         if (reason === 'travel' && travel?.host) {
@@ -523,23 +544,140 @@ class App {
     this.playLocal(loaded.map, next, chain?.botFill ?? botFill, chain?.difficulty ?? difficulty, carry, travel.hosting);
   }
 
-  /** Join a friend's hosted game (Host game) by its code. */
-  async joinCode(code: string, name: string): Promise<void> {
+  /**
+   * Join a friend's hosted game (Host game) by its code. `o`, after their host left: a try with a deadline
+   * (`within` ms to be let in, else `onFail`), `onReady` once in, and a line to greet with.
+   */
+  async joinCode(code: string, name: string, o: { within?: number; onFail?: (reason?: string, how?: 'lost' | 'rejected') => void; onReady?: () => void; greeting?: string } = {}): Promise<void> {
     void loadMatchCode().catch(() => undefined);
     await this.init();
-    if (!this.rejoin) this.front!.setStatus('Connecting…');
+    if (!this.rejoin && !o.onFail) this.front!.setStatus('Connecting…');
     const signaling = await loadSignaling();
     const again = () => void this.joinCode(code, name);
-    void this.withMatch((m) => this.startSession(m, signaling.join(code, name, this.front!.look), {
-      exitLabel: 'Leave match',
-      exitOnF5: false,
-      onReady: () => this.reconnected(),
-      onExit: (reason, travel, how) => {
-        // The host changed map: rejoin the same code in a moment (their next match lets us in).
-        if (reason === 'travel' && travel) return void window.setTimeout(again, 1200);
-        this.afterOnline(reason, how, again);
+    void this.withMatch((m) => {
+      const transport = signaling.join(code, name, this.front!.look);
+      let ready = false;
+      // A try with a deadline: not let in by then, it has failed (let in, the match may take its time to load).
+      // Linked but not let in yet (a successor still starting the match it took over): it gets longer, up to LINKED_WAIT_MS.
+      const t = transport as { welcomed?: boolean; linked?: boolean };
+      const t0 = Date.now();
+      let deadline: number | undefined;
+      let due = t0 + (o.within ?? 0);
+      const check = () => {
+        if (ready || t.welcomed) return;
+        // Late (this page stalled: a slow machine loading): that time wasn't the host's to answer in. Look again shortly.
+        const late = Date.now() - due > 2000;
+        if (late || (t.linked && Date.now() - t0 < LINKED_WAIT_MS)) {
+          due = Date.now() + 1000;
+          return void (deadline = window.setTimeout(check, 1000));
+        }
+        session.exit(`no answer within ${Math.round((Date.now() - t0) / 1000)} s`);
+      };
+      if (o.within) deadline = window.setTimeout(check, o.within);
+      const session = this.startSession(m, transport, {
+        exitLabel: 'Leave match',
+        exitOnF5: false,
+        ...(o.greeting ? { greeting: o.greeting } : {}),
+        onReady: () => {
+          ready = true;
+          window.clearTimeout(deadline);
+          this.reconnected();
+          o.onReady?.();
+        },
+        onExit: (reason, travel, how, end) => {
+          window.clearTimeout(deadline);
+          if (!ready && o.onFail) return o.onFail(reason, how);
+          // The host changed map: rejoin the same code in a moment (their next match lets us in).
+          if (reason === 'travel' && travel) return void window.setTimeout(again, 1200);
+          // A player's browser hosted it and it's gone (it left, or the link dropped): the host-left screen.
+          const peer = transport as { hostGone?: 'left' | 'dropped' | null; dedicated?: boolean; takeHandoff?: () => Handoff };
+          // What the host told us about who takes over (and, if it's us, our standby code and its checkpoint).
+          const handoff = peer.hostGone ? (peer.takeHandoff?.() ?? null) : null;
+          if (peer.hostGone && end && !peer.dedicated) return void this.afterHost(m, code, name, peer.hostGone, end, handoff);
+          handoff?.standby?.close();
+          this.afterOnline(reason, how, again);
+        },
+      });
+    });
+  }
+
+  /**
+   * The browser hosting our match went. Dropped: a few seconds of "Reconnecting to host…" first (a blip,
+   * a reload). Then the host-left screen: the last standings, and Host this map or Back to menu.
+   */
+  private async afterHost(m: MatchCode, code: string, name: string, gone: 'left' | 'dropped', end: SessionEnd, handoff: Handoff | null): Promise<void> {
+    this.stopRejoin();
+    const screen = new m.HostLeftScreen(end.board);
+    const standby = handoff?.standby ?? null;
+    if (gone === 'dropped') {
+      screen.wait('Reconnecting to host…', 'The connection to the host dropped. Trying to get back in.');
+      // Try again until let back in, or the time is up, or the broker says the game is gone (its tab closed).
+      let back = await keepJoining((left) => this.tryJoin(code, name, { within: Math.max(3000, left) }), { until: Date.now() + RECONNECT_HOST_MS });
+      // The successor, told the game is gone: make sure before carrying the match on. A host whose link to the
+      // broker blipped (it rejoins it in a second) may still be running the match with the others: a second copy here would fork it.
+      if (!back.ok && standby && gameIsGone(back.reason)) {
+        await new Promise((r) => window.setTimeout(r, 3000));
+        back = await this.tryJoin(code, name, { within: 5000 }).then((r) => ({ ...r, tries: back.tries + 1 }));
+      }
+      if (back.ok) {
+        screen.hide();
+        return void standby?.close();
+      }
+    }
+    // Host handoff: the successor the host named carries the match on; everyone else follows it there.
+    const next = handoff?.successor;
+    if (next && standby && standby.code === next.code) {
+      // We're the successor: host the match from the latest checkpoint, if it's fresh and for this map.
+      const cp = handoff.checkpoint;
+      const age = cp ? (performance.now() - cp.at) / 1000 : Infinity;
+      if (cp && age <= CHECKPOINT_MAX_AGE_SECONDS && cp.cp.map === end.map.metadata.id) {
+        screen.hide();
+        return this.takeOver(end, standby, cp.cp, age, handoff.listing);
+      }
+    }
+    standby?.close();
+    if (next && next.code !== standby?.code) {
+      screen.wait('The host left', `${next.name} is taking over…`);
+      // The successor is starting the match at this very moment (busy for a while on a slow machine): one try
+      // isn't enough, so keep at it while our place is held there, until let in, refused or it's gone.
+      const followed = await keepJoining(
+        async (left, n) => {
+          if (n > 1) screen.wait('The host left', `${next.name} is taking over… (try ${n})`);
+          const tried = await this.tryJoin(next.code, name, { within: Math.min(left, HANDOFF_JOIN_SECONDS * 1000), greeting: `The host left: ${next.name} took over` });
+          if (!tried.ok) console.warn(`couldn't follow ${next.name} to ${next.code} (try ${n}): ${tried.reason ?? 'no reason'}`);
+          return tried;
+        },
+        { until: Date.now() + HANDOFF_FOLLOW_SECONDS * 1000 },
+      );
+      if (followed.ok) return screen.hide();
+    }
+    void this.showMenu('');
+    screen.ended('The host left', gone === 'left' ? 'The host left the game, so this match is over.' : "The host's game is gone, so this match is over.", [
+      { id: 'hl-menu', label: 'Back to menu', run: () => screen.hide() },
+      {
+        id: 'hl-host',
+        label: 'Host this map',
+        primary: true,
+        run: () => {
+          screen.hide();
+          this.chain = null;
+          // The same map, mode and rules, about as many players; hosted and listed so the others can find it.
+          this.playLocal(end.map, end.rules, end.fill, 'normal', undefined, undefined, true, true);
+        },
       },
-    }));
+    ]);
+  }
+
+  /** One try at a friend's game (after its host left): `within` ms to be let in. */
+  private tryJoin(code: string, name: string, o: { within: number; greeting?: string }): Promise<JoinTry> {
+    return new Promise<JoinTry>((resolve) =>
+      void this.joinCode(code, name, {
+        ...o,
+        // Refused (banned, full): no use trying again, unless the host said to ("Too many people are joining right now: try again").
+        onFail: (reason, how) => resolve({ ok: false, ...(reason ? { reason } : {}), ...(how === 'rejected' && !/try again/i.test(reason ?? '') ? { rejected: true } : {}) }),
+        onReady: () => resolve({ ok: true }),
+      }),
+    );
   }
 
   async playOnline(url: string, name: string): Promise<void> {
@@ -614,12 +752,12 @@ class App {
     reconnectBanner(null);
   }
 
-  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; rotation?: SessionOptions['rotation']; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected') => void; onReady?: () => void }): void {
+  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; autoList?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
     // A match has its own loading screen (players, map and weapons).
     finishBoot();
     $('menu').hidden = true;
     this.mode = 'game';
-    this.session = new m.GameSession({
+    const session: GameSession = new m.GameSession({
       engine: this.engine,
       rendererKind: this.kind,
       canvas: this.canvas,
@@ -634,15 +772,29 @@ class App {
       portrait: this.portraits?.get(this.front!.look),
       hosting: o.hosting,
       autoHost: !!o.autoHost,
+      autoList: !!o.autoList,
+      ...(o.greeting ? { greeting: o.greeting } : {}),
       mapPicker: this.mapPicker,
       ...(o.rotation ? { rotation: o.rotation } : {}),
-      onExit: (reason, travel, how) => {
-        this.session = undefined;
-        o.onExit(reason, travel, how);
+      onExit: (reason, travel, how, end) => {
+        if (this.session === session) this.session = undefined;
+        o.onExit(reason, travel, how, end);
       },
     });
+    this.session = session;
+    return session;
   }
 }
+
+/**
+ * A friend's browser host dropped: how long we try to get back into its game before saying it's gone. A host
+ * whose tab closed or crashed is gone from the broker at once (we stop then); one whose machine lost its network
+ * stays registered until the broker gives up on it (about a minute). Only then does a successor take over:
+ * sooner, a successor that had only lost its own link would start a second copy of a match still running.
+ */
+const RECONNECT_HOST_MS = 60_000;
+/** A try with a deadline whose link opened (the host is there, still starting its match) may wait this long to be let in. */
+const LINKED_WAIT_MS = 60_000;
 
 /** How long a lost connection is tried again (the server keeps the place a minute). */
 const RECONNECT_FOR_MS = 60_000;

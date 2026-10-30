@@ -8,3 +8,4 @@ export { GameSession } from './session.ts';
 export { LocalTransport, prewarmSimWorker } from './localTransport.ts';
 export { NetTransport } from './netTransport.ts';
 export { initPhysics } from '@tiletrigger/shared';
+export { HostLeftScreen } from './hostLeft.ts';

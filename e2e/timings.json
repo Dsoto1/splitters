@@ -34,6 +34,7 @@
     "hostgame": 116,
     "hostcontrols": 190,
     "lobby": 154,
+    "handoff": 160,
     "dedicatedhost": 120,
     "hostpage": 60,
     "webgpu": 7,

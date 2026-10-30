@@ -58,6 +58,8 @@ export interface ModeLogic {
   reset(): void;
   /** Score per team ID (these replace kill totals for team scoring). */
   teamScores(): Map<string, number>;
+  /** Host handoff: take back the team scores a checkpoint carried (teamScores' numbers). */
+  restoreScores?(scores: ReadonlyMap<string, number>): void;
   snapshot(): ModeSnapshot;
   /** May this player not drive or ride vehicles right now (flag carriers)? */
   blocksVehicle(c: Combatant): boolean;

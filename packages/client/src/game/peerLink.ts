@@ -1,5 +1,5 @@
 import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
-import { MessageGuard, PROTOCOL_VERSION, SnapshotDecoder, type ClientMessage, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
+import { BROWSER_HOST_MAX_GUESTS, MessageGuard, PROTOCOL_VERSION, SnapshotDecoder, isJoinCode, parseCheckpoint, sanitizeName, type ClientMessage, type MatchCheckpoint, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { HostLink, RemoteLink, Signaling, Transport } from './transport.ts';
 import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, plainPiece, type ReassemblyLimits } from '@tiletrigger/shared/peerZip';
 import { hubAddress, hubSetting } from './hub.ts';
@@ -20,6 +20,8 @@ import { accessToken } from '../account.ts';
  * PeerJS: the game uses it through the Signaling interface (transport.ts).
  */
 const PREFIX = 'tiletrigger-';
+/** A friend's browser host that sends nothing for this long has dropped (it streams snapshots all the time). */
+const HOST_SILENT_MS = 20_000;
 export { makeJoinCode };
 export const cleanJoinCode = (code: string): string => code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 
@@ -66,13 +68,18 @@ function sendText(conn: DataConnection, text: string): void {
  * `guard` (the host, for each friend) messages past the rate budget are dropped. A link that breaks a limit is closed.
  */
 function onText(conn: DataConnection, cb: (text: string) => void, o: { limits: ReassemblyLimits; guard?: MessageGuard; wire?: (bytes: number) => void }): void {
+  conn.on('data', textHandler(conn, cb, o));
+}
+
+/** onText's handler for one link's data, for links that deliver it themselves (linkFor keeps what came early). */
+function textHandler(conn: DataConnection, cb: (text: string) => void, o: { limits: ReassemblyLimits; guard?: MessageGuard; wire?: (bytes: number) => void }): (data: unknown) => void {
   const parts = new Reassembler(o.limits);
   let unzip: Unzipper | null = null;
   const abuse = (why: string) => {
     console.warn(`closing a connection: ${why}`);
     conn.close();
   };
-  conn.on('data', (data) => {
+  return (data) => {
     if (!conn.open) return;
     const verdict = o.guard?.check() ?? 'ok';
     if (verdict === 'kick') return abuse('too many messages');
@@ -98,19 +105,29 @@ function onText(conn: DataConnection, cb: (text: string) => void, o: { limits: R
     } catch (e) {
       abuse((e as Error).message);
     }
-  });
+  };
 }
+
+/** A friend's link holds this many messages that come before the match listens (a successor's code, before it hosts). */
+const EARLY_MESSAGES = 32;
 
 function linkFor(conn: DataConnection): RemoteLink {
   // Friends that ask for it (every current client) get the compressed stream: the match host compresses it
   // (in its worker) and hands over pieces; what the page says itself goes as a plain piece between them.
   const zip = (conn.metadata as { z?: number } | undefined)?.z === 1;
+  // What the friend says before anyone listens (a standby code holding links until its match starts) waits for the listener.
+  let deliver: ((data: unknown) => void) | null = null;
+  const early: unknown[] = [];
+  conn.on('data', (data) => (deliver ? deliver(data) : early.length < EARLY_MESSAGES && early.push(data)));
   return {
     zip,
     send: (text) => (zip ? sendPieces(conn, [plainPiece(text)]) : sendText(conn, text)),
     sendPieces: (pieces) => sendPieces(conn, pieces),
     // A friend's messages are small and rate-limited (the same budget as the dedicated server's clients).
-    onMessage: (cb) => onText(conn, cb, { limits: GUEST_TO_HOST_LIMITS, guard: new MessageGuard() }),
+    onMessage: (cb) => {
+      deliver = textHandler(conn, cb, { limits: GUEST_TO_HOST_LIMITS, guard: new MessageGuard() });
+      for (const data of early.splice(0)) deliver(data);
+    },
     onClose: (cb) => {
       conn.on('close', cb);
       conn.on('error', cb);
@@ -128,8 +145,30 @@ export class PeerHost implements HostLink {
   code = '';
   relay = false;
 
-  /** `admit`: where friends' connections go; a map change points it at the next match (same code, friends rejoin). */
-  constructor(public admit: (link: RemoteLink) => void) {}
+  /** Friends' links that came while nothing took them (a successor's standby code before its match runs). */
+  private held: RemoteLink[] = [];
+  private admitTo: ((link: RemoteLink) => void) | null;
+
+  /**
+   * `admit`: where friends' connections go; a map change points it at the next match (same code, friends rejoin).
+   * Null: hold them until it's set (a successor's standby code, opened before there's a match to let them into).
+   */
+  constructor(admit: ((link: RemoteLink) => void) | null) {
+    this.admitTo = admit;
+  }
+
+  get admit(): (link: RemoteLink) => void {
+    return (link) => {
+      if (this.admitTo) return this.admitTo(link);
+      if (this.held.length < BROWSER_HOST_MAX_GUESTS) this.held.push(link);
+      else link.close();
+    };
+  }
+
+  set admit(f: (link: RemoteLink) => void) {
+    this.admitTo = f;
+    for (const link of this.held.splice(0)) f(link);
+  }
 
   /** The hub's relay credentials for this game, renewed before they expire (new friends' connections use the latest). */
   private async fetchIce(code: string): Promise<void> {
@@ -181,9 +220,22 @@ export class PeerHost implements HostLink {
 
   close(): void {
     window.clearTimeout(this.refresh);
+    for (const link of this.held.splice(0)) link.close();
     this.peer?.destroy();
     this.peer = undefined;
   }
+}
+
+/** What a friend knows when its host goes: who was named to take over, and (the successor itself) its code and checkpoint. */
+export interface Handoff {
+  /** The successor the host named last: the join code it hosts on, its place and name. */
+  successor: { code: string; slot: number | null; name: string } | null;
+  /** This browser is the successor: its standby code (open, holding friends' links until the match runs here)… */
+  standby: HostLink | null;
+  /** …and the latest checkpoint, with when it came (performance.now()). */
+  checkpoint: { cp: MatchCheckpoint; at: number } | null;
+  /** The host's game browser listing, which came with its goodbye (to the successor only). */
+  listing?: { id: string; secret: string };
 }
 
 /** The friend's side: a Transport to the host's browser, like the WebSocket one to a server. */
@@ -194,6 +246,23 @@ export class PeerTransport implements Transport {
   private closedByUs = false;
   rttMs = 0;
   bytesIn = 0;
+  /**
+   * How the host went, once the link to it closed after we were in: `left` (it said `bye`: on purpose) or
+   * `dropped` (the link just died: maybe a blip). Null while the host is there, or when we never got in.
+   */
+  hostGone: 'left' | 'dropped' | null = null;
+  /** Host handoff (net/handoff.ts): the successor the host named, and, asked to stand by, our standby code and checkpoint. */
+  private handoff: Handoff = { successor: null, standby: null, checkpoint: null };
+  private standbyOpening = false;
+  /** The successor named when the host asked us to stand by (null: nobody): we were asked to replace them. */
+  private standbyFor: string | null = null;
+  /** The host is a dedicated one (a Host Service: it keeps places and comes back), not a player's browser. */
+  dedicated = false;
+  /** The host let us in (its welcome came), even if the match is still loading here. */
+  welcomed = false;
+  /** Our link to the host is open (it may still be starting its match: a successor taking over). */
+  linked = false;
+  private saidBye = false;
 
   constructor(
     private readonly code: string,
@@ -227,6 +296,8 @@ export class PeerTransport implements Transport {
     const players = new SnapshotDecoder();
     let opened = false;
     let brokered = false;
+    /** When the host last sent anything: a host that goes silent (its machine slept, its tab was killed) has dropped. */
+    let heardAt = 0;
     const fail = (reason: string) => {
       if (this.closedByUs) return;
       this.closedByUs = true;
@@ -270,15 +341,34 @@ export class PeerTransport implements Transport {
       });
       conn.on('open', () => {
         opened = true;
+        this.linked = true;
         clearTimeout(timeout);
         const admin = adminToken(`code:${this.code}`);
         this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
-        this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: 0, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) }), 1000);
+        heardAt = performance.now();
+        let tickAt = heardAt;
+        this.pingTimer = window.setInterval(() => {
+          const now = performance.now();
+          // This page stalled (a long frame, a sleeping tab): the silence was ours, not the host's.
+          if (now - tickAt > 3000) heardAt = now;
+          tickAt = now;
+          // A player's browser host streams 20 snapshots a second and answers every ping: silence this long is a dropped host.
+          if (!this.dedicated && now - heardAt > HOST_SILENT_MS) return hostLost('silent');
+          this.send({ t: 'ping', id: 0, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) });
+        }, 1000);
       });
+      const hostLost = (why: string) => {
+        if (opened && !this.closedByUs) {
+          this.hostGone = this.saidBye ? 'left' : 'dropped';
+          console.warn(`the host's link went (${why}${this.saidBye ? ', after its goodbye' : ''})`);
+        }
+        fail(!opened ? noDirect : this.saidBye ? 'the host left the game' : 'lost the connection to the host');
+      };
       onText(
         conn,
         (text) => {
-          const t0 = netProbe.on ? performance.now() : 0;
+          const t0 = performance.now();
+          heardAt = t0;
           const msg = JSON.parse(text) as ServerMessage;
           if (netProbe.on) {
             const t1 = performance.now();
@@ -293,13 +383,77 @@ export class PeerTransport implements Transport {
             this.rttMs = this.rttMs ? this.rttMs * 0.8 + sample * 0.2 : sample;
             return;
           }
+          if (msg.t === 'bye') {
+            // The link closes next; if that close never comes, don't wait for it.
+            this.saidBye = true;
+            // The successor gets the host's listing to take down, should the host's own request not have got out.
+            const l = msg.listing;
+            if (this.handoff.standby && l && typeof l.id === 'string' && typeof l.secret === 'string') this.handoff.listing = { id: l.id, secret: l.secret };
+            return void window.setTimeout(() => hostLost('goodbye'), 1500);
+          }
+          if (msg.t === 'welcome') {
+            this.dedicated = !!msg.dedicated;
+            this.welcomed = true;
+          }
+          if (msg.t === 'standby' || msg.t === 'successor' || msg.t === 'checkpoint') return this.onHandoff(msg);
           if (msg.t === 'snapshot') players.snapshot(msg);
           snapshots.push(msg);
         },
         { limits: HOST_TO_GUEST_LIMITS, wire: (bytes) => (this.bytesIn += bytes) },
       );
-      conn.on('close', () => fail(opened ? 'the host left the game' : noDirect));
+      conn.on('close', () => hostLost('closed'));
     });
+  }
+
+  /** Host handoff messages: only what the host says over its own link counts (nobody else can name a successor). */
+  private onHandoff(msg: Extract<ServerMessage, { t: 'standby' | 'successor' | 'checkpoint' }>): void {
+    if (this.dedicated || this.closedByUs) return;
+    const h = this.handoff;
+    if (msg.t === 'standby') {
+      // Asked to stand by: open a join code of our own (it holds links until there's a match) and tell the host.
+      // (Asked while someone else is ready: we're to replace them, and they stay named until we answer.)
+      if (h.standby) return this.send({ t: 'standby', code: h.standby.code });
+      if (this.standbyOpening) return;
+      this.standbyOpening = true;
+      this.standbyFor = h.successor?.code ?? null;
+      const host = new PeerHost(null);
+      void host.start().then(
+        (code) => {
+          this.standbyOpening = false;
+          // Gone, or someone else was named meanwhile (we took too long): not needed after all.
+          if (this.closedByUs || (h.successor && h.successor.code !== this.standbyFor)) return host.close();
+          h.standby = host;
+          this.send({ t: 'standby', code });
+        },
+        () => (this.standbyOpening = false),
+      );
+      return;
+    }
+    if (msg.t === 'successor') {
+      h.successor = isJoinCode(msg.code) ? { code: msg.code, slot: typeof msg.slot === 'number' ? msg.slot : null, name: typeof msg.name === 'string' ? sanitizeName(msg.name) : 'A player' } : null;
+      // Someone else takes over now (not the one we were asked to replace): our standby code and checkpoint are no
+      // longer needed. Nobody named (the host between successors, maybe waiting for our answer): keep it.
+      const named = h.successor?.code;
+      // We're it: whoever we were asked to replace is just someone else from now on.
+      if (named && named === h.standby?.code) this.standbyFor = null;
+      if (h.standby && named && named !== h.standby.code && named !== this.standbyFor) {
+        h.standby.close();
+        h.standby = null;
+        h.checkpoint = null;
+      }
+      return;
+    }
+    // A checkpoint is only for the successor (we opened a standby code when asked).
+    if (!h.standby) return;
+    const cp = parseCheckpoint(msg.cp);
+    if (cp) h.checkpoint = { cp, at: performance.now() };
+  }
+
+  /** The host has gone: what we know for a handoff. The standby code (if any) is now the caller's to host on, or close. */
+  takeHandoff(): Handoff {
+    const h = this.handoff;
+    this.handoff = { successor: null, standby: null, checkpoint: null };
+    return h;
   }
 
   private snapshots?: SnapshotCoalescer;
@@ -324,6 +478,11 @@ export class PeerTransport implements Transport {
 
   close(): void {
     this.closedByUs = true;
+    // Leaving on our own: a standby code we opened isn't needed. After the host went, it waits for takeHandoff.
+    if (!this.hostGone) {
+      this.handoff.standby?.close();
+      this.handoff.standby = null;
+    }
     clearInterval(this.pingTimer);
     this.conn?.close();
     this.peer?.destroy();

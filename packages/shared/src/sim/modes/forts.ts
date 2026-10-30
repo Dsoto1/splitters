@@ -344,6 +344,11 @@ export class FortsMode implements ModeLogic {
     this.prevButtons.delete(c.slot);
   }
 
+  /** Host handoff: the team scores a checkpoint carried (as teamScores gives them). */
+  restoreScores(scores: ReadonlyMap<string, number>): void {
+    this.ctf.restoreScores(scores);
+  }
+
   teamScores(): Map<string, number> {
     return this.ctf.teamScores();
   }

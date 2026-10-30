@@ -1,5 +1,6 @@
 import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type GameMode, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type RotationCommand, type ServerMessage } from '@tiletrigger/shared';
-import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
+import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type HostListing, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
+import { playerKey } from './playerKey.ts';
 import { perfProbe } from './perfProbe.ts';
 import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
 import type { RemoteLink, Transport } from './transport.ts';
@@ -162,6 +163,17 @@ export class LocalTransport implements Transport {
     this.toHost({ k: 'drop', reason });
   }
 
+  /**
+   * The game browser listing (or none): if the match is handed on, the successor lists it under the same name.
+   * Its ID and secret stay on this page until we leave: then the successor gets them with its goodbye (sayGoodbye).
+   */
+  setListing(listing: (HostListing & { id?: string; secret?: string }) | null): void {
+    this.listing = listing?.id && listing.secret ? { id: listing.id, secret: listing.secret } : null;
+    this.toHost({ k: 'listing', listing: listing ? { name: listing.name } : null });
+  }
+
+  private listing: { id: string; secret: string } | null = null;
+
   /** Tell everyone the map is about to change ("Changing map to …"). */
   notice(text: string): void {
     // This player sees it now (the map change follows at once); friends get it from the match.
@@ -176,6 +188,22 @@ export class LocalTransport implements Transport {
     for (const r of this.links.values()) if (r.slot !== null) r.link.send(text);
     this.departing = true;
   }
+
+  /**
+   * This host is leaving on purpose (left the match, the tab is closing): every friend is told (`bye`) before the
+   * links close, so they know it wasn't a network drop. Sent from the page: the match may stop before it could.
+   */
+  sayGoodbye(): void {
+    if (this.departing || this.stopped || this.saidBye) return;
+    const text = JSON.stringify({ t: 'bye' } satisfies ServerMessage);
+    // The successor also gets the listing, to take it down should our own request not get out of a closing tab.
+    const heir = this.listing && this.facts?.successor !== undefined ? this.facts.successor : null;
+    const theirs = JSON.stringify({ t: 'bye', ...(this.listing ? { listing: this.listing } : {}) } satisfies ServerMessage);
+    for (const [id, r] of this.links) if (r.slot !== null) r.link.send(id === heir ? theirs : text);
+    this.saidBye = true;
+  }
+
+  private saidBye = false;
 
   /** Players connected from elsewhere (Host game). */
   get guests(): number {
@@ -196,7 +224,10 @@ export class LocalTransport implements Transport {
     this.onVisibility = () => this.toHost({ k: 'hidden', v: document.hidden });
     // (Unit tests run this without a real document.)
     if (typeof document.addEventListener === 'function') document.addEventListener('visibilitychange', this.onVisibility);
-    const start: ToSimHost = { k: 'start', map: this.map, opts: this.opts, hidden: document.hidden };
+    // The tab is closing (or reloading): friends hear it from us, not from a dead link.
+    if (typeof window.addEventListener === 'function') window.addEventListener('pagehide', this.onPageHide);
+    // This browser's key goes with the match: a successor keeps our place for it if the match is handed on.
+    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, ...this.opts }, hidden: document.hidden };
     if (simThreadWanted() === 'worker' && this.startWorker(start)) return;
     this.startHere(start);
   }
@@ -378,11 +409,18 @@ export class LocalTransport implements Transport {
     this.toHost({ k: 'ready' });
   }
 
+  private readonly onPageHide = () => this.sayGoodbye();
+
   close(): void {
     if (this.stopped) return;
+    // Leaving with friends in the match (not a map change): they're told first.
+    this.sayGoodbye();
     const links = [...this.links.values()].map((r) => r.link);
+    // A map change's `travel`, or the goodbye, gets a moment to arrive before the links close.
     if (this.departing) window.setTimeout(() => links.forEach((l) => l.close()), 3000);
+    else if (this.saidBye && links.length) window.setTimeout(() => links.forEach((l) => l.close()), 1000);
     else links.forEach((l) => l.close());
+    if (typeof window.removeEventListener === 'function') window.removeEventListener('pagehide', this.onPageHide);
     this.links.clear();
     this.toHost({ k: 'stop' });
     this.stopped = true;

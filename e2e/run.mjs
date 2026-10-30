@@ -2296,6 +2296,7 @@ async function lobbyFlow(browser) {
     listed = await host.waitForFunction(() => /^Listed:/.test(document.getElementById('host-public-status').textContent), null, { timeout: T(20000) }).then(() => true, () => false);
   }
   check(listed, `the host's match is listed (${await host.evaluate(() => document.getElementById('host-public-status').textContent)})`);
+  const hostCode = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
   const relayNote = await host.evaluate(() => document.getElementById('host-info').textContent);
   check(relayNote.includes('hub provides a relay'), 'the hub hands out relay credentials, and the host is told');
   const player = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
@@ -2309,14 +2310,16 @@ async function lobbyFlow(browser) {
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Friday Night')).querySelector('button').click());
   const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) }).then(() => true, () => false);
   check(joined, 'joining from the game browser puts the player in the match');
+  const lobbyGames = () => player.evaluate(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => JSON.stringify(d.games.map((g) => [g.name, g.code, g.players])))).catch((e) => e.message);
   if (joined) {
     // The next check-in reports two players.
     const two = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.find((g) => g.name === 'E2E Friday Night')?.players === 2), null, { timeout: T(30000), polling: 2000 }).then(() => true, () => false);
-    check(two, 'the listing updates to 2 players');
+    check(two, `the listing updates to 2 players${two ? '' : ` (${await lobbyGames()})`}`);
   }
   await host.context().close();
-  const gone = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night')), null, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
-  check(gone, 'the listing goes away when the host closes the game');
+  // The host's listing goes (the player may carry the match on under a listing of their own: host handoff).
+  const gone = await player.waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night' && g.code === c)), hostCode, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
+  check(gone, `the host's listing goes away when the host closes the game${gone ? '' : ` (${hostCode}: ${await lobbyGames()})`}`);
   await player.context().close();
 
   // Offline by default; "Go online" restarts the match and lists it; "Go offline" takes it down again.
@@ -2587,6 +2590,29 @@ async function hostgameFlow(browser) {
     const rate = ((await bytes()) - b0) / 5 / 1024;
     // Raw snapshots run ~40 KB/s; compressed, a few (bursty frames on CI push it up, but well under raw).
     check(rate > 0.2 && rate < 20, `the friend's stream is compressed (${rate.toFixed(1)} KB/s)`);
+    // The host leaves (Leave match, confirmed with a friend in): the friend gets the host-left screen, not a bare error.
+    // (The friend is the only one, so the host has named it successor: here it lets that go, as when no handoff
+    // can happen; the flow `handoff` covers a successor carrying the match on.)
+    await friend.evaluate(() => window.__cs.transport.takeHandoff?.().standby?.close());
+    await host.evaluate(() => document.getElementById('exitmatch').click());
+    await host.evaluate(() => document.getElementById('leave-yes')?.click());
+    const left = await friend
+      .waitForFunction(() => {
+        const el = document.getElementById('host-left');
+        if (el?.dataset.state !== 'ended') return null;
+        return { title: document.getElementById('hl-title').textContent, text: document.getElementById('hl-text').textContent, rows: el.querySelectorAll('.sb-row:not(.sb-hd)').length, host: !!document.getElementById('hl-host'), menu: !!document.getElementById('hl-menu') };
+      }, null, { timeout: T(30000) })
+      .then((h) => h.jsonValue(), () => null);
+    check(!!left && /host left/i.test(left.title) && left.host && left.menu, `the friend sees "The host left" with Host this map and Back to menu (${JSON.stringify(left)})`);
+    check(!!left && /left the game/.test(left.text), `the host said goodbye first, so it reads as leaving, not a dropped link (${left?.text})`);
+    check(!!left && left.rows >= 2, `the host-left screen shows the last standings (${left?.rows} rows)`);
+    // Host this map: one click, the same map hosted and listed.
+    await friend.evaluate(() => document.getElementById('hl-host').click());
+    const rehosted = await friend
+      .waitForFunction(() => window.__cs?.map === 'phase0_arena' && !document.getElementById('host-left') && /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '') && /^Listed:/.test(document.getElementById('host-public-status').textContent), null, { timeout: T(90000) })
+      .then(() => true, () => false);
+    const listing = await friend.evaluate(() => document.getElementById('host-public-status').textContent);
+    check(rehosted, `Host this map starts the same map, hosted and listed (${listing})`);
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await host.context().close();
@@ -2815,6 +2841,111 @@ async function hostcontrolsFlow(browser) {
   await solo.context().close();
 }
 
+/**
+ * Host handoff: a browser hosts (listed) with two friends in. The host names one of them its successor in
+ * advance and keeps it checkpointed; when the host leaves, the successor carries the match on in its own
+ * browser (the listing moves with it), and the other friend follows, keeping their place and score.
+ */
+async function handoffFlow(browser) {
+  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
+  await sleep(5000);
+  const hub = `&hub=127.0.0.1:${PEER_PORT}`;
+  const errors = [];
+  const logs = [];
+  const began = Date.now();
+  const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
+  const open = async (name, url) => {
+    const p = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
+    p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
+    // The friends' console (warnings and up, and timed lines), shown when a check after the handoff fails.
+    p.on('console', (m) => (m.type() === 'warning' || m.type() === 'error' || process.env.E2E_HANDOFF_LOG) && logs.push(`${((Date.now() - began) / 1000).toFixed(1)} ${name} ${m.type()}: ${m.text().slice(0, 300)}`));
+    await p.addInitScript((n) => localStorage.setItem('cs.name', n), name);
+    await p.goto(url, { waitUntil: 'domcontentloaded', timeout: T(60000) });
+    return p;
+  };
+  const host = await open('Hosty', `${CLIENT}/?offline=arena${hub}`);
+  await host.waitForFunction(playing, null, { timeout: T(90000) });
+  await host.evaluate(() => {
+    document.getElementById('host-name').value = 'E2E Handoff';
+    const box = document.getElementById('host-list');
+    box.checked = true;
+    box.dispatchEvent(new Event('change'));
+  });
+  let listed = false;
+  for (let i = 0; i < 3 && !listed; i++) {
+    await host.evaluate(() => document.getElementById('host-game').click());
+    listed = await host.waitForFunction(() => /^Listed:/.test(document.getElementById('host-public-status').textContent), null, { timeout: T(30000) }).then(() => true, () => false);
+  }
+  const code = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
+  check(listed && /^[A-Z0-9]{6}$/.test(code), `the host's match is listed with a code (${code})`);
+  const ann = await open('Ann', `${CLIENT}/?join=${code}${hub}`);
+  const bo = await open('Bo', `${CLIENT}/?join=${code}${hub}`);
+  const inBoth = (await ann.waitForFunction(playing, null, { timeout: T(120000) }).then(() => true, () => false)) && (await bo.waitForFunction(playing, null, { timeout: T(120000) }).then(() => true, () => false));
+  check(inBoth, 'two friends join the hosted match');
+  if (!inBoth) return void console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
+  // What each friend's link knows: its standby code (asked to stand by), the successor named, a checkpoint.
+  const known = (p) => p.evaluate(() => {
+    const h = window.__cs?.transport?.handoff;
+    const t = window.__cs?.transport;
+    return { standby: h?.standby?.code ?? null, next: h?.successor?.code ?? null, name: h?.successor?.name ?? null, cp: !!h?.checkpoint, label: t?.label ?? null, gone: t?.hostGone ?? null, screen: document.getElementById('hl-title')?.textContent ?? null };
+  });
+  let heir = null;
+  let other = null;
+  const t0 = Date.now();
+  const named = await until(async () => {
+    const [a, b] = [await known(ann), await known(bo)];
+    if (a?.standby && a.cp && b?.next === a.standby) [heir, other] = [{ page: ann, name: 'Ann' }, { page: bo, name: 'Bo' }];
+    else if (b?.standby && b.cp && a?.next === b.standby) [heir, other] = [{ page: bo, name: 'Bo' }, { page: ann, name: 'Ann' }];
+    return !!heir;
+  }, T(180000));
+  check(named, `the host names a successor in advance, everyone knows its code, and it gets checkpoints (${((Date.now() - t0) / 1000).toFixed(0)} s; ${JSON.stringify([await known(ann), await known(bo)])})`);
+  if (!named) return;
+  // Both friends score: the other one's must survive the handoff. No score limit: on a slow run a bot reaching
+  // it would end the round, and the next round's scores start from nothing.
+  const scores = { Ann: 7, Bo: 6 };
+  await sim(host, (m, me, k) => {
+    m.rules.scoreLimit = 0;
+    for (const c of m.combatants()) if (c.kind === 'human' && c.name in k) c.kills = k[c.name];
+  }, scores);
+  // On a loaded machine pings swing, and a clearly better one may take the successor's role over (at most every
+  // 30 s): look again for whoever is named now, with a checkpoint carrying the other's score.
+  const cpHas = (p, n, k) => p.evaluate(([n, k]) => !!window.__cs?.transport?.handoff?.checkpoint?.cp.players.some((x) => x.name === n && x.k === k), [n, scores[n]]).catch(() => false);
+  const carried = await until(async () => {
+    const [a, b] = [await known(ann), await known(bo)];
+    if (a?.standby && b?.next === a.standby && (await cpHas(ann, 'Bo'))) [heir, other] = [{ page: ann, name: 'Ann' }, { page: bo, name: 'Bo' }];
+    else if (b?.standby && a?.next === b.standby && (await cpHas(bo, 'Ann'))) [heir, other] = [{ page: bo, name: 'Bo' }, { page: ann, name: 'Ann' }];
+    else return false;
+    return true;
+  }, T(30000));
+  check(carried, "the successor's checkpoint carries the other friend's score");
+  if (!carried) return;
+  // The host leaves; whichever friend was named last carries the match on.
+  await host.evaluate(() => document.getElementById('exitmatch').click());
+  await host.evaluate(() => document.getElementById('leave-yes')?.click());
+  const hosting = (p) => p.evaluate(() => window.__cs?.transport?.label === 'local' && window.__cs.map === 'phase0_arena' && !!window.__cs.local && /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '')).catch(() => false);
+  const took = await until(async () => {
+    if (await hosting(heir.page)) return true;
+    if (!(await hosting(other.page))) return false;
+    [heir, other] = [other, heir];
+    return true;
+  }, T(60000));
+  check(took, `${heir.name} takes the match over and hosts it`);
+  if (!took) return void console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
+  const heirCode = await heir.page.evaluate(() => document.querySelector('#host-info .host-code b').textContent);
+  const followed = await other.page.waitForFunction((c) => window.__cs?.transport?.label === `code ${c}` && !!window.__cs.local && !document.getElementById('host-left'), heirCode, { timeout: T(95000) }).then(() => true, () => false);
+  check(followed, `${other.name} follows to ${heir.name}'s code (${heirCode}) by themselves`);
+  const back = await simWait(heir.page, (m, me, [n, k]) => m.combatants().some((c) => c.kind === 'human' && c.name === n && !c.away && c.kills >= k), [other.name, scores[other.name]], T(30000));
+  const seen = await sim(heir.page, (m) => m.combatants().map((c) => `${c.name}:${c.kind}:${c.kills}`));
+  check(back, `${other.name} has their place back, with their score (${seen.join(', ')})`);
+  if (!followed || !back) console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
+  const moved = await heir.page
+    .waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => { const g = d.games.filter((x) => x.name === 'E2E Handoff'); return g.length === 1 && g[0].code === c; }), heirCode, { timeout: T(40000), polling: 1000 })
+    .then(() => true, () => false);
+  check(moved, 'the listing moves to the new host');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+}
+
 /** Each flow's outcome: { flow, status PASS | FLAKY | FAIL, seconds, attempts, fails (failed checks per failed attempt) }. */
 const results = [];
 
@@ -2885,7 +3016,7 @@ try {
   };
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

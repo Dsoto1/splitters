@@ -3,6 +3,7 @@ import type { PlayerInput } from './sim/movement.ts';
 import type { BotSet } from './sim/botSet.ts';
 import type { RotationEntry, RotationState } from './sim/rotation.ts';
 import type { GameMode, MatchRules } from './sim/rules.ts';
+import type { MatchCheckpoint } from './net/handoff.ts';
 
 /**
  * Wire protocol, version 1. JSON over WebSocket for Phase 0; the message shapes
@@ -29,7 +30,9 @@ export type ClientMessage =
   /** Log in as the dedicated server's admin mid-match (pause menu → Server admin). */
   | { t: 'admin'; token: string }
   /** Run the match: only the host (offline, Host game) or a dedicated server's admin; anyone else gets an error. */
-  | { t: 'host'; cmd: HostCommand };
+  | { t: 'host'; cmd: HostCommand }
+  /** Host handoff: the friend the host asked to stand by has opened `code`, where it would host the match if the host went. */
+  | { t: 'standby'; code: string };
 
 /** Bot skills and styles a host can switch to mid-match. */
 export const HOST_BOT_SKILLS = ['easy', 'normal', 'hard'] as const;
@@ -506,4 +509,20 @@ export type ServerMessage =
   | { t: 'host'; state: HostState | null; error?: string }
   /** A line for everyone's feed and a toast: what the host changed ("Host set teams to 8v8"). */
   | { t: 'notice'; text: string }
+  /**
+   * A browser host is leaving on purpose (left the match, closed the tab): the link closes next. Friends
+   * know it wasn't a network drop, so they don't wait to reconnect (MULTIPLAYER_PROTOCOL.md, "Host leaves").
+   * To the successor only, the game browser listing's ID and secret, so it can take the listing down if the
+   * host's own request doesn't get out of its closing tab (never sooner: a live host's listing is the host's).
+   */
+  | { t: 'bye'; listing?: { id: string; secret: string } }
+  /** Host handoff (browser hosts, net/handoff.ts): you are asked to stand by as successor: open a join code and answer with it (ClientMessage standby). */
+  | { t: 'standby' }
+  /**
+   * Host handoff: who takes the match over if the host goes, and the join code they'll host it on (to everyone,
+   * whenever it changes; `code` '' when there's no successor). Only a code named here is ever followed.
+   */
+  | { t: 'successor'; code: string; slot?: number; name?: string }
+  /** Host handoff: the match as it stands, to the successor only, every few seconds. */
+  | { t: 'checkpoint'; cp: MatchCheckpoint }
   | ({ t: 'stats' } & ServerStats);

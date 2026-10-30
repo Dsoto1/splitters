@@ -78,6 +78,11 @@ export class KothMode implements ModeLogic {
 
   onLeave(): void {}
 
+  /** Host handoff: the team scores a checkpoint carried (as teamScores gives them). */
+  restoreScores(scores: ReadonlyMap<string, number>): void {
+    for (const t of this.host.teams) this.held.set(t.id, (scores.get(t.id) ?? 0) * TICK_RATE);
+  }
+
   teamScores(): Map<string, number> {
     return new Map(this.host.teams.map((t) => [t.id, Math.floor((this.held.get(t.id) ?? 0) / TICK_RATE)]));
   }
