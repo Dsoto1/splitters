@@ -1326,6 +1326,7 @@ export class GameSession {
         this.slot = msg.slot;
         this.rules = msg.rules;
         this.canSpectate = msg.spectate === 1;
+        this.drawSpectateButton();
         this.freeBounds = freeCamBounds(loaded.map);
         if (msg.lan?.length) this.showLanAddresses(msg.lan);
         // A Host Service joined by code has an admin login, as a dedicated server does.
@@ -2055,6 +2056,7 @@ export class GameSession {
       this.input.spectating = out;
       this.input.spectatingFree = out && this.specCam.free;
       this.hud.setWatching(out);
+      this.touch?.setWatching(out ? { join: this.spectator } : null);
       const picks = out ? this.input.takeSpectate() : { step: 0, toggle: false, used: false };
       let watched = picks.used || picks.step !== 0 || picks.toggle;
       this.input.frame(dt);

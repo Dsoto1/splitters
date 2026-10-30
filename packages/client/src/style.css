@@ -1086,3 +1086,8 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
 }
 /* No keyboard on a phone: the key hints in the pause menu and footer say nothing there. */
 html.touch .menu-footer .hintbar, html.touch .pause-foot .hint { display: none; }
+
+/* Touch, while watching (dead or spectating): previous / next player, camera, Join. */
+#touch-ui .tc-watch { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: auto; }
+#touch-ui .tc-watch[hidden] { display: none; }
+#touch-ui .tc-watch .tc-wbtn { position: static; width: auto; min-width: 52px; height: 44px; padding: 0 12px; border-radius: 22px; }

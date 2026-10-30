@@ -884,12 +884,11 @@ async function spectateChecks(browser) {
   await page.waitForFunction(() => /HP left|down/.test(document.getElementById('killcam')?.textContent ?? ''), null, { timeout: T(3000) }).catch(() => {});
   check(/HP left|down/.test(await page.evaluate(() => document.getElementById('killcam')?.textContent ?? '')), 'with the health they have left');
   await shot('killcam');
-  // Space skips it: watching someone else (free-for-all: anyone).
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => window.__cs.spec().killCam === null && window.__cs.spec().following >= 0, null, { timeout: T(3000) }).catch(() => {});
+  // When it ends (the match's own respawn delay, as this page knows it), you follow a player (free-for-all: anyone).
+  await page.waitForFunction(() => window.__cs.spec().killCam === null && window.__cs.spec().following >= 0, null, { timeout: T(8000) }).catch(() => {});
   const first = await spec();
   const watching = await page.evaluate(() => document.querySelector('#spectating b')?.textContent ?? '');
-  check(first.killCam === null && first.following >= 0 && !first.free && /^Watching /.test(watching), `a key skips the kill cam to following a player (${watching})`);
+  check(first.killCam === null && first.following >= 0 && !first.free && /^Watching /.test(watching), `after the kill cam you follow a player (${watching})`);
   await shot('follow');
   await page.keyboard.press('ArrowRight');
   await page.waitForFunction((f) => window.__cs.spec().following !== f, first.following, { timeout: T(3000) }).catch(() => {});
@@ -915,11 +914,21 @@ async function spectateChecks(browser) {
   await page.waitForFunction(() => window.__cs.local.alive && !window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
   const back = await page.evaluate(() => ({ alive: window.__cs.local.alive, out: window.__cs.spec().out, hud: document.getElementById('spectating')?.hidden !== false }));
   check(back.alive && !back.out && back.hud, `respawning ends watching (${JSON.stringify(back)})`);
+  // Die again and press Space at once: it skips the kill cam.
+  await sim(page, (m, me) => m.kill(me, m.combatants().find((c) => c.kind === 'bot' && c.alive), 'core.pistol'));
+  await page.waitForFunction(() => window.__cs.spec().killCam !== null, null, { timeout: T(5000) }).catch(() => {});
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.__cs.spec().killCam === null, null, { timeout: T(1500) }).catch(() => {});
+  const skipped = await spec();
+  check(skipped.killCam === null && !skipped.free, `a key skips the kill cam (${JSON.stringify({ killCam: skipped.killCam, following: skipped.following })})`);
+  await sim(page, (m, me) => void (me.respawnTick = m.tick));
+  await page.waitForFunction(() => window.__cs.local.alive && !window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
   // Spectate by choice (pause menu): out of the match, a bot in the place, the free camera; Join game puts you back.
   const before = await sim(page, (m) => m.combatants().length);
-  await page.waitForSelector('#pause-spectate:not([hidden])', { timeout: T(5000) }).catch(() => {});
-  check((await page.textContent('#pause-spectate').catch(() => '')) === 'Spectate', 'the pause menu offers Spectate');
-  await page.click('#pause-spectate').catch(() => {});
+  const offer = await page.evaluate(() => ({ shown: !document.getElementById('pause-spectate')?.hidden, text: document.getElementById('pause-spectate')?.textContent }));
+  check(offer.shown && offer.text === 'Spectate', `the pause menu offers Spectate (${JSON.stringify(offer)})`);
+  // The menu's button (clicked as the page would: the menu is hidden while a test plays).
+  await page.evaluate(() => document.getElementById('pause-spectate').click());
   await page.waitForFunction(() => window.__cs.spec().spectator, null, { timeout: T(5000) }).catch(() => {});
   const out = await sim(page, (m, me) => ({ empty: m.slots[me.slot] === null, spectator: m.isSpectator(me.slot), n: m.combatants().length }));
   const s1 = await spec();
@@ -929,7 +938,7 @@ async function spectateChecks(browser) {
   await until(async () => (await spec()).following >= 0 || (await spec()).free, T(3000));
   await page.evaluate(() => delete window.__autoInput);
   await shot('spectator');
-  await page.click('#pause-spectate').catch(() => {});
+  await page.evaluate(() => document.getElementById('pause-spectate').click());
   await page.waitForFunction(() => !window.__cs.spec().spectator && window.__cs.local.alive, null, { timeout: T(5000) }).catch(() => {});
   const joined = await sim(page, (m, me) => ({ human: m.slots[me.slot]?.kind === 'human', n: m.combatants().length }));
   check(joined.human && joined.n === before && (await page.evaluate(() => window.__cs.local.alive)), `Join game puts you back in play (${JSON.stringify(joined)})`);
