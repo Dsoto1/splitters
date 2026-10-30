@@ -11,17 +11,9 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
 ### Owner notes, 2026-10-30 evening (not done yet; next session start here)
-- **Release fix in flight (2026-10-30 ~20:45 UTC):** `check/release-fix` (1317b80) = current `main` (3831f35) plus the
-  ci.yml fix (no cancelled runs on main; a main commit not green on a check branch is tested against the nearest one that
-  was). When its CI is green: `git push origin 1317b80:main` (fast-forward). That run publishes `main-latest`; then the
-  owner runs `sudo tiletrigger-update` and gets 9a959ee's buggy model/seats and weapon drops. If it's red on a flake
-  (arsenal/physicsfx), rerun the failed job once. The same fix is on the session branch.
-- **The box is on an old build:** `sudo tiletrigger-update` says "Already on d582c4852690 (main-latest)", but
-  `main` is at `9a959ee` (buggy model and seats, weapon drops). So `main-latest` wasn't republished when `main`
-  was fast-forwarded to a commit already green on `check/candidate` (CI skips a push to main that went green on a
-  check branch, and the release job may be skipped with it). Fix the release path (ci.yml release job,
-  tools/ci/client-release.sh) so a fast-forwarded `main` always republishes `main-latest`, then have the owner rerun
-  the update. Until then the owner doesn't see the Meshy buggy.
+- **Release fixed (2026-10-30 21:50 UTC):** `main` fast-forwarded to 1317b80 (= 9a959ee's code + the ci.yml fix: no
+  cancelled runs on main; a main commit not green on a check branch is tested against the nearest one that was). Its run
+  published `main-latest`; the owner runs `sudo tiletrigger-update` to get the Meshy buggy and weapon drops.
 - **Asset quality:** many new weapons and props look "clumpy" (over-decimated). Revisit budgets: props are capped at
   6,000 triangles / 400 KB (content/props.json `budgets`), weapons in content/guns.json; consider a higher cap for
   hero/landmark pieces and weapons (first-person guns are seen up close), keeping LODs for distance, and rebuild the
@@ -41,9 +33,10 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     opted out of full-body first person). Look at both in the menu and in game.
   - Sizes live in packages/shared/src/content/looks.ts (`size`) and content/characters/*.json (`size`);
     regenerate characters.generated.ts with character-manifests.mjs; check portraits after.
-- **Release status:** CI on check/candidate is red: e2e `arsenal` "the Battle Axe swings" fails with Full body first
-  person (passes with Arms only). The full-body agent is fixing it on `wip/full-body-fp-fix` (plus the Knight's
-  gauntlet grip and ADS screenshots). Merge that, rerun CI, fast-forward `main`, fix the release (above), update the box.
+- **Release status:** `wip/full-body-fp-fix` merged (a715e60): the axe check waited on a lag-compensation race (the test
+  now waits until the page draws the moved bot); Knight's gauntlets curl (left closes; right still points up in first
+  person, and the armoured forearm still makes a dark wedge on long guns). CI on check/candidate a715e60 was running at
+  hand-off: if green, fast-forward main (`git push origin a715e60:main`, or the newer head) and tell the owner to update.
 - **St. John's rework merged into the session branch** (1cc6a4a, from `wip/st-johns` ce011f3): real campus from OSM
   (footprints, streets) + USGS 3DEP 1 m ground, 400 × 300 m; owner-only MapMaker "Real places" tools (height grid
   `.asc` import, trace image); details in docs/references/ST_JOHNS.md. Locally `maps6` timed out under heavy load (also on
