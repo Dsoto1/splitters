@@ -836,7 +836,8 @@ export class GameSession {
     $(net ? 'pause-admin-slot' : 'pause-host-slot').append(panel.root);
     if (local) this.showRotation(panel);
     // The Host tab's Online block sits at the top of the panel's first column.
-    if (local) panel.setLead($('pause-online-box'));
+    const online = document.getElementById('pause-online-box');
+    if (local && online) panel.setLead(online);
     return panel;
   }
 
@@ -1123,7 +1124,7 @@ export class GameSession {
       const listed = ($('host-list') as HTMLInputElement).checked;
       this.travel.hosting = { peer: this.peerHost, ...(listed ? { listing: ($('host-name') as HTMLInputElement).value } : {}) };
     } else this.peerHost?.close();
-    this.hostPanel.root.remove();
+    this.hostPanel.remove();
     this.mapPicker?.remove();
     document.getElementById('online-confirm')?.remove();
     document.getElementById('leave-confirm')?.remove();
@@ -1159,7 +1160,7 @@ export class GameSession {
         // A Host Service joined by code has an admin login, as a dedicated server does.
         if (msg.dedicated && !(this.opts.transport instanceof NetTransport) && !(this.opts.transport instanceof LocalTransport) && !this.dedicatedPanel) {
           this.dedicatedPanel = true;
-          this.hostPanel.root.remove();
+          this.hostPanel.remove();
           this.hostPanel = this.makeHostPanel(true);
           if (this.lastRoster) this.hostPanel.setPeople(this.peopleIn(this.lastRoster));
         }

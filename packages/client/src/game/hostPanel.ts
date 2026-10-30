@@ -94,6 +94,13 @@ export class HostPanel {
     if (this.state) this.render();
   }
 
+  /** Take the panel off the page; the lead goes back home (the next match's panel picks it up). */
+  remove(): void {
+    if (this.lead && this.lead.node.parentElement !== this.lead.home) this.lead.home.prepend(this.lead.node);
+    this.lead = null;
+    this.root.remove();
+  }
+
   get controlling(): boolean {
     return !!this.state;
   }
