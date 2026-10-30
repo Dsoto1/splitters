@@ -29,7 +29,7 @@ export interface MotionState {
   sprinting?: boolean;
 }
 
-export type OneShot = 'shoot' | 'melee' | 'melee_heavy' | 'reload' | 'hit' | 'throw' | 'interact';
+export type OneShot = 'shoot' | 'melee' | 'melee_heavy' | 'reload' | 'hit' | 'hit_head' | 'throw' | 'interact' | 'jab' | 'kick';
 
 /**
  * States crossfaded over time. 'run' stands for the whole upright gait: walk,
@@ -75,7 +75,19 @@ const UPPER_BODY = [
   ]),
 ];
 /** Actions during which the hands leave the grip (the weapon goes with the right hand). */
-const HANDS_OFF: ReadonlySet<OneShot> = new Set(['reload', 'melee', 'melee_heavy', 'throw', 'interact', 'hit']);
+const HANDS_OFF: ReadonlySet<OneShot> = new Set(['reload', 'melee', 'melee_heavy', 'throw', 'interact', 'hit', 'hit_head', 'jab']);
+/** Limb joints (arms, hands, legs, feet): a cheap ragdoll leaves them to a limp pose. */
+const LIMB = /^(clavicle|upperarm|lowerarm|hand|index|middle|ring|pinky|thumb|thigh|calf|foot|ball)_/;
+/** A hit flinch: how long it lasts (s), how fast it peaks (s), and how far each body part goes at full strength (radians). */
+const FLINCH_SECONDS = 0.42;
+const FLINCH_PEAK = 0.05;
+const FLINCH_HEAD = 0.55;
+const FLINCH_TWIST = 0.38;
+const FLINCH_BUCKLE = 0.22;
+/** The procedural kick (the library has no kick clip): length (s), thigh raise and lean back at its height (radians). */
+const KICK_SECONDS = 0.5;
+const KICK_THIGH = 1.35;
+const KICK_LEAN = 0.22;
 /** Upper-body turn (radians) that brings the left shoulder forward onto a long gun. */
 const LONG_GUN_BLADE = 0.45;
 /** Half the width of a rifle stock (m): torso skin within this of the barrel line is in its way. */
@@ -456,10 +468,85 @@ export class CharacterAnimator {
     return all;
   }
 
+  /** Body part hit (0 torso, 1 head, 2 legs), which way the round went (world), how hard (0..1), and when (ms). */
+  private flinchState: { zone: number; dir: Vector3; amount: number; t0: number } | null = null;
+  private kickAt = -1e9;
+
+  /**
+   * A hit flinch at the body part hit, added over whatever the clips do: the
+   * head snaps back, the shoulders twist away from the round, a leg hit
+   * buckles the body a little. Arcade-light: a fraction of a second, no
+   * lockout (docs/GUNPLAY_SPEC.md, "Stopping power").
+   */
+  flinch(zone: number, dir: { x: number; y: number; z: number }, strength: number): void {
+    if (this.dead || this.dormant) return;
+    const now = performance.now();
+    const left = this.flinchState ? this.flinchAmount(now) : 0;
+    this.flinchState = { zone, dir: new Vector3(dir.x, 0, dir.z).normalize(), amount: Math.min(1, Math.max(left, strength)), t0: now };
+  }
+
+  private flinchAmount(now: number): number {
+    const f = this.flinchState;
+    if (!f) return 0;
+    const t = (now - f.t0) / 1000;
+    if (t >= FLINCH_SECONDS) return 0;
+    return f.amount * (t < FLINCH_PEAK ? t / FLINCH_PEAK : Math.exp(-(t - FLINCH_PEAK) / 0.1));
+  }
+
+  /** Rotate a joint about a world axis by `angle` (after the clips). */
+  private turnJoint(bone: TransformNode | undefined, axisWorld: Vector3, angle: number): void {
+    const parent = bone?.parent as TransformNode | null | undefined;
+    if (!bone?.rotationQuaternion || !parent || Math.abs(angle) < 1e-4) return;
+    parent.computeWorldMatrix(true);
+    const inv = Quaternion.FromRotationMatrix(parent.getWorldMatrix().getRotationMatrix()).invert();
+    const axis = Vector3.TransformNormal(axisWorld, Matrix.FromQuaternionToRef(inv, new Matrix())).normalize();
+    bone.rotationQuaternion = Quaternion.RotationAxis(axis, angle).multiply(bone.rotationQuaternion);
+  }
+
+  /** The flinch and the kick, on top of the pose (afterAnimations). */
+  private applyReactions(right: Vector3, up: Vector3, rootRot: Quaternion): void {
+    const now = performance.now();
+    const e = this.flinchAmount(now);
+    const f = this.flinchState;
+    if (f && e > 0.001) {
+      const head = this.ch.joints.get('neck_01');
+      const chest = this.spine[this.spine.length - 1];
+      if (f.zone === 1) {
+        // Head snaps back, the neck and head sharing it.
+        this.turnJoint(head, right, FLINCH_HEAD * e * 0.5);
+        this.turnJoint(this.ch.joints.get('Head'), right, FLINCH_HEAD * e * 0.5);
+      } else if (f.zone === 2) {
+        // A leg hit buckles the body forward a little.
+        this.turnJoint(this.spine[0], right, -FLINCH_BUCKLE * e);
+      } else {
+        // The shoulders twist away from the round (the side it came in on goes back), and lean back a touch.
+        const forward = new Vector3(0, 0, 1).applyRotationQuaternion(rootRot);
+        const side = Math.sign(Vector3.Dot(f.dir, right)) || 1;
+        const facing = Vector3.Dot(f.dir, forward) < 0 ? 1 : -1;
+        this.turnJoint(chest, up, -FLINCH_TWIST * e * side * facing);
+        this.turnJoint(chest, right, FLINCH_TWIST * 0.4 * e);
+      }
+    } else if (f) this.flinchState = null;
+    const k = (now - this.kickAt) / 1000 / KICK_SECONDS;
+    if (k >= 0 && k < 1) {
+      // Up fast, down slower: the thigh swings forward and the body leans back to balance it.
+      const env = k < 0.35 ? Math.sin((k / 0.35) * (Math.PI / 2)) : Math.cos(((k - 0.35) / 0.65) * (Math.PI / 2));
+      this.turnJoint(this.spine[0], right, KICK_LEAN * env);
+      this.turnJoint(this.ch.joints.get('thigh_r'), right, KICK_THIGH * env);
+      // Chambered on the way up, straight at full reach.
+      this.turnJoint(this.ch.joints.get('calf_r'), right, -0.9 * env * (1 - Math.min(1, k / 0.35)));
+    }
+  }
+
   /** Play an upper-body action once, over whatever the legs are doing. */
   trigger(action: OneShot): void {
     if (this.dead || this.dormant) return;
-    const g = this.ch.clips.get(action);
+    if (action === 'kick') {
+      // A procedural kick on the legs (no clip); the hands come off the gun for it.
+      this.kickAt = performance.now();
+      return;
+    }
+    const g = this.ch.clips.get(action === 'hit_head' && !this.ch.clips.has('hit_head') ? 'hit' : action === 'jab' && !this.ch.clips.has('jab') ? 'melee' : (action as Clip));
     if (!g) return;
     this.overlay?.clip.stop();
     g.mask = this.mask;
@@ -486,7 +573,7 @@ export class CharacterAnimator {
    * Hand the body to a ragdoll: every animation stops where it is and the
    * weapon drops away; physics poses the bones until the next spawn.
    */
-  ragdoll(): void {
+  ragdoll(limbs: 'stop' | 'limp' = 'stop'): void {
     this.dead = true;
     // Physics poses the bones from now on: they must be drawn every frame.
     this.gate.skip = false;
@@ -495,6 +582,52 @@ export class CharacterAnimator {
     this.overlay = null;
     this.handsOff = false;
     this.weapon?.setEnabled(false);
+    // A cheap ragdoll moves only the pelvis, chest and head: the limbs take the death's final, limp pose.
+    if (limbs === 'limp') this.holdDeathPose([...this.ch.joints.keys()].filter((n) => LIMB.test(n)));
+  }
+
+  /**
+   * Lie down at once, no physics (a death out of view): the whole body takes
+   * the death's final pose. The caller lays the root on the ground along the hit.
+   */
+  lieDown(): void {
+    this.dead = true;
+    this.gate.skip = false;
+    this.prone = 0;
+    this.applyProne();
+    for (const g of this.ch.clips.values()) if (g.isPlaying) g.stop();
+    this.aimUpper?.stop();
+    this.overlay = null;
+    this.handsOff = false;
+    this.weapon?.setEnabled(false);
+    this.holdDeathPose(null);
+  }
+
+  /** The death clip's last frame, on these joints (null: all), held. */
+  private holdDeathPose(joints: string[] | null): void {
+    const d = this.ch.clips.get('death');
+    if (!d) return;
+    d.mask = joints ? new AnimationGroupMask(joints, AnimationGroupMaskMode.Include) : null;
+    d.weight = 1;
+    // One frame before the end, played out: the last frame stays.
+    d.start(false, 1, Math.max(d.from, d.to - 1), d.to);
+  }
+
+  /** The pose is final (a frozen ragdoll, a body laid down): skip the skeleton and joint updates until thawed. */
+  private frozenPose = false;
+
+  freezePose(): void {
+    if (this.frozenPose) return;
+    this.frozenPose = true;
+    this.gate.skip = true;
+    for (const j of this.ch.joints.values()) j.freezeWorldMatrix();
+  }
+
+  thawPose(): void {
+    if (!this.frozenPose) return;
+    this.frozenPose = false;
+    this.gate.skip = false;
+    for (const j of this.ch.joints.values()) j.unfreezeWorldMatrix();
   }
 
   /** Current forward tip of the body (0 standing, PRONE_TILT lying down). */
@@ -538,6 +671,9 @@ export class CharacterAnimator {
 
   private revive(): void {
     this.dead = false;
+    this.thawPose();
+    const d = this.ch.clips.get('death');
+    if (d) d.mask = null;
     this.ch.clips.get('death')?.stop();
     for (const c of LOOPS) this.weights.set(c, 0);
     this.current = 'aim_idle';
@@ -580,6 +716,7 @@ export class CharacterAnimator {
       const q = Quaternion.RotationAxis(pitchAxis, this.pitch * share).multiply(Quaternion.RotationAxis(twistAxis, -twist * share));
       bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
     }
+    this.applyReactions(right, up, rootRot);
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
     else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x);
   }

@@ -100,7 +100,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
   [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'zombies', 'teams', 'race', 'classes'], ['client']],
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols'], ['client']],
-  [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces'], ['client']],
+  [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx'], ['client']],
   [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies'], ['client']],
   [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual'], ['client']],
@@ -129,7 +129,7 @@ export function selectForPaths(paths, mapIds = []) {
     const p = raw.replace(/^\.\//, '');
     if (!p) continue;
     // Render-side changes get the draw-call budget check.
-    if (/^packages\/client\/src\/(game\/(view|propVisuals|scenarioVisuals|cityVisuals|canopyVisuals)\.ts|mapMeshes\.ts|foliage\.ts|backdrop\.ts|content\/|materials\/)|^packages\/shared\/src\/(content|map)\/|^tools\/perf\/|^content\//.test(p)) perf = true;
+    if (/^packages\/client\/src\/(game\/(view|ragdoll|ragdollBudget|characterAnimator|propVisuals|scenarioVisuals|cityVisuals|canopyVisuals)\.ts|mapMeshes\.ts|foliage\.ts|backdrop\.ts|content\/|materials\/)|^packages\/shared\/src\/(content|map)\/|^tools\/perf\/|^content\//.test(p)) perf = true;
     const map = /^maps\/([^/]+)\.json$/.exec(p);
     if (map) {
       const id = map[1];

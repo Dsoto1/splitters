@@ -77,6 +77,9 @@ const CLIPS = [
   [UAL1, 'Dance_Loop', 'dance'],
   [UAL1, 'Crouch_Idle_Loop', 'crouch_idle'],
   [UAL1, 'Crouch_Fwd_Loop', 'crouch_walk'],
+  // Unarmed quick melee and a hit to the head (also added on their own by add-rig-clips.mjs).
+  [UAL1, 'Punch_Jab', 'jab'],
+  [UAL1, 'Hit_Head', 'hit_head'],
   // Source edition only: lying prone and crawling.
   ...(SOURCE_EDITION
     ? [

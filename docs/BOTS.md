@@ -148,6 +148,16 @@ are per bot); when the leader is fighting, members within 45 m who aren't
 are told where its enemy is (`alert`) and close in. Squads keep 3.5 m apart
 (grunts 2 m).
 
+## Hopping
+
+ARENA bots hop to be harder to hit (`arenaHop`, `bots/brain.ts`):
+
+- **Arena style** (match setup or a bot set entry): constant bunny-hopping
+  while they strafe or run, every 0.5–1.1 s.
+- **Mixed style**: ARENA characters (Pathfinder and others) hop only in a
+  fight (a target, or shot at in the last 1.5 s), only while strafing, and
+  less often (every 1.3–2.4 s).
+
 ## Roles
 
 Roles are handed out per match (`assignRoles`), deterministic by slot and

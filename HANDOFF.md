@@ -118,16 +118,24 @@ they are the server.
 ### 5. Queued next (owner's requests, 2026-10-29 night)
 Items 1 and 2 are **done on `wip/weapons-variety`** (based on this branch; not merged): see "Weapons variety" below.
 Start the rest when agent slots free up:
+
+**Impact work (`wip/impact`, 2026-10-30; based on this branch, not merged):** items 3–6 below plus tiered ragdolls, all done:
+- **4 Stopping power (done):** `sim/impact.ts`: per-weapon `stoppingPower` (defaults by category: pistol 0.15, SMG 0.12, rifle 0.3, shotgun 0.8, sniper 0.9, melee 0.55; revolvers 0.45), shove up to 3.6 m/s × power along the shot and a slow up to 42 % × power for 0.12–0.42 s; per stagger window caps (4.5 m/s, 50 %, 0.6 s) then 0.5 s immunity. Server-side; prediction replays it (push velocity, `ms`). Flinch by body part in `characterAnimator.flinch`, heavy hits play `hit` / `hit_head`.
+- **5 Explosions (done):** every explosion of 35+ splash damage throws (`blastKnockback`: 4 + damage × 0.06, 6–13 m/s; rockets 11.2), up 0.9× (+0.35× from below) and out 0.85× (`blastThrow`); your own: 0.7× out, 0.8× up (a rocket at your feet: ~2.4 m rocket jump). Ragdolls of blast kills fly with the blast's force (`view.blast`, up to 16 m/s).
+- **3 Punch and kick (done):** quick melee `BUTTON_MELEE` (side mouse buttons or Y): punch 15 / kick 22 (moving forward or within 0.6 s of a punch), stagger, no gun lockout; with a melee weapon in hand it swings that; none in Disc Arena. Bots dry up close punch. Clips `jab` and `hit_head` from UAL1 Standard (CC0, add-rig-clips.mjs); neither free UAL edition has a kick, so the kick is procedural (third person) and a boot in first person. No controller binding yet.
+- **6 Bot hopping (done):** `arenaHop`: the Arena style hops constantly (0.5–1.1 s); ARENA characters on Mixed only in fights while strafing, every 1.3–2.4 s.
+- **Tiered ragdolls (done):** `ragdollBudget.ts` (full near or in view, cheap 3-body far, laid down out of view; 300 awake bodies, the farthest drops a tier), pool in `EffectsWorld`, settle and freeze by simulated time, fresh deaths spread over frames (`DEATH_START_MS`). Mass casualty: `pnpm perf:mass` (in CI's perf job), numbers in docs/PERF_96.md.
+- Open: the kick and flinch were only seen in tests and e2e screenshots, not judged by eye; "laid down" uses the death clip's last frame, assumed to fall backwards (the body faces against the push).
 1. **(done) New weapon assets** (owner's Meshy generations, provenance Meshy/owned; downloads outside the repo):
    - meshystuff: Tommy Gun, Rotary Gatling Gun, military sniper rifle, Steampunk Battle Axe, Freeze Gun, Mystical Glue Gun, Futuristic Blaster, Plastic Toy Machine Gun;
    - Drive: Large Sentry Gun (turret), "Ornate Hand Holding G…".
 
    Replace the in-house sculpted weapons and turret where one matches; the rest become new specials (freeze status, glue slow).
 2. **(done) Weapon variety:** a weapon pickup option in MapMaker, "Random from category" (pistols, SMGs/MGs, rifles, shotguns, snipers, explosives, melee, specials), rolled per respawn. Add a host option "Mix up weapon pickups" (same category), with a "keep fixed" flag for pickups placed on purpose.
-3. **Punch and kick:** add the jab, cross and kick clips from Universal Animation Library (tools/content/add-rig-clips.mjs) and an unarmed quick melee.
-4. **Stopping power:** per weapon, a small shove along the shot, a brief slow and a hit flinch at the body part hit; bots are affected too. Arcade-light (docs/GUNPLAY_DIRECTION.md).
-5. **Explosions** lift and throw people much more; blast kills fling ragdolls; keep rocket-jumping.
-6. **Bot hopping:** ARENA-tagged characters on the "Mixed" style hop only in fights and less often; constant hopping stays for the "Arena" style (packages/shared/src/bots/brain.ts ~1156).
+3. **(done on `wip/impact`) Punch and kick:** add the jab, cross and kick clips from Universal Animation Library (tools/content/add-rig-clips.mjs) and an unarmed quick melee.
+4. **(done on `wip/impact`) Stopping power:** per weapon, a small shove along the shot, a brief slow and a hit flinch at the body part hit; bots are affected too. Arcade-light (docs/GUNPLAY_DIRECTION.md).
+5. **(done on `wip/impact`) Explosions** lift and throw people much more; blast kills fling ragdolls; keep rocket-jumping.
+6. **(done on `wip/impact`) Bot hopping:** ARENA-tagged characters on the "Mixed" style hop only in fights and less often; constant hopping stays for the "Arena" style (packages/shared/src/bots/brain.ts ~1156).
 7. **Boglurker (toad):** the right hand isn't skinned to hand_r, so guns float. Needs the original FBX from the owner.
 
 #### Weapons variety (`wip/weapons-variety`, 2026-10-30)

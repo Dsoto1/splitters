@@ -312,6 +312,9 @@ jobs:
           for i in 1 2 3; do timeout 300 pnpm exec playwright install-deps chromium && exit 0; echo "playwright install-deps try $i failed"; sleep 10; done; exit 1
         timeout-minutes: 17
       - run: pnpm perf:budget
+      # Mass casualty (docs/PHYSICS_FX.md): one blast kills 20 in a 24 v 24; the worst frame's game JS after it and
+      # the ragdoll bodies awake at once stay within budget (CPU rendering doesn't inflate the JS part).
+      - run: pnpm perf:mass
 
   # Publishes the site package once everything this run needed is green (or the commit already went green on
   # a check branch: then that run's package, the very bytes it tested). Signs it with a Sigstore build-provenance

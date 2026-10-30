@@ -28,7 +28,7 @@ const HAZARD_DEATHS: Record<string, string> = {
   'core.roadkill': 'was run over',
 };
 /** Kill-feed labels for things that aren't weapons (no model to draw an icon from). */
-const OTHER_LABELS: Record<string, string> = { 'core.barrel': 'Barrel', 'core.wreck': '✹ Wreck', 'core.roadkill': 'Roadkill' };
+const OTHER_LABELS: Record<string, string> = { 'core.barrel': 'Barrel', 'core.wreck': '✹ Wreck', 'core.roadkill': 'Roadkill', 'core.punch': 'Punch', 'core.kick': 'Kick' };
 const weaponLabel = (id: string) => CORE_WEAPONS[id]?.displayName ?? OTHER_LABELS[id] ?? '✕';
 
 export class Hud {

@@ -55,7 +55,9 @@ export type Clip =
   | 'prone_crawl'
   | 'zombie_idle'
   | 'zombie_walk'
-  | 'zombie_attack';
+  | 'zombie_attack'
+  | 'jab'
+  | 'hit_head';
 
 export interface CharacterInstance {
   /** Place and turn this node; the model stands on its origin facing +Z. */

@@ -39,7 +39,13 @@ many parts use it.
 
 Clips: `idle`, `aim_idle`, `walk`, `run`, `sprint`, `jump_start`, `jump_air`,
 `jump_land`, `death`, `hit`, `shoot`, `reload`, `melee`, `melee_heavy`,
-`interact`, `dance`, `knockback`, `throw`, `cheer`, `idle_arms`.
+`interact`, `dance`, `knockback`, `throw`, `cheer`, `idle_arms`, `jab`,
+`hit_head`. `jab` (Punch_Jab) and `hit_head` (Hit_Head) come from Universal
+Animation Library 1 Standard (CC0), added with `node
+tools/content/add-rig-clips.mjs <UAL2_Standard.glb> <UAL1_Standard.glb>`; the
+cross is `melee` (Punch_Cross). Neither library's free edition has a kick, so
+the unarmed kick is procedural (`characterAnimator`: the right thigh swings
+up, the body leans back).
 
 ## Looks
 

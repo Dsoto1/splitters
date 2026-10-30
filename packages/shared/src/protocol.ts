@@ -241,7 +241,7 @@ export type GameEvent =
   | { e: 'mount'; s: number; m: number; seat: number }
   /** Someone threw a grenade or mine. */
   | { e: 'throw'; s: number }
-  | { e: 'melee'; s: number; hit: number | null }
+  | { e: 'melee'; s: number; hit: number | null; /** Unarmed: 1 punch, 2 kick. */ u?: 1 | 2 }
   /** `m`: a mount (map entity index) blowing up, drawn as a bigger, layered vehicle explosion. */
   | { e: 'explode'; s: number; p: Tuple3; r: number; m?: number }
   /** A vehicle hit something hard (another vehicle, a wreck, a turret, a person): `n` 0..1 how hard. */

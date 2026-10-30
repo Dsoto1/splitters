@@ -92,6 +92,11 @@ export class SessionAudio {
     this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id));
   }
 
+  /** Your own punch or kick: a swish as you throw it. */
+  localStrike(): void {
+    this.audio.play('fire.knife', { gain: 0.6 });
+  }
+
   /** The fire button is down with an empty magazine. */
   dryFire(now: number): void {
     if (now - this.dryFireAt < 300) return;
@@ -245,6 +250,18 @@ export class SessionAudio {
         break;
       }
       case 'melee': {
+        if (ev.u) {
+          // Punch or kick: a swish, and a meaty thump when it lands (yours swished when you pressed the key).
+          const at = poseOf(ev.s);
+          const hitAt = ev.hit !== null && ev.hit !== me ? poseOf(ev.hit) : undefined;
+          if (ev.s !== me && at) this.audio.play('fire.knife', { at, gain: 0.6 });
+          if (ev.hit !== null) {
+            this.audio.play('impact.body', hitAt ? { at: hitAt, gain: 0.9 } : { gain: 0.6 });
+            this.audio.play('impact.thud', hitAt ? { at: hitAt } : {});
+            if (ev.s === me) this.audio.play('ui.hit');
+          }
+          break;
+        }
         if (ev.s !== me) {
           const at = poseOf(ev.s);
           if (at) this.audio.play('fire.knife', { at });

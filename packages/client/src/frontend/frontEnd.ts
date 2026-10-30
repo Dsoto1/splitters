@@ -1618,6 +1618,7 @@ export class FrontEnd {
       ['Look (touchpad / keyboard)', 'Arrow keys'],
       ['Second trigger (alt fire)', 'Middle mouse · V'],
       ['Throw grenade or mine', 'Hold G to aim, let go to throw'],
+      ['Quick melee (punch; kick on the move or after a punch)', 'Side mouse button · Y'],
       ['Hold breath (scoped)', 'Shift'],
       ['Reload', 'R'],
       ['Use · get in or out of a vehicle', 'E'],

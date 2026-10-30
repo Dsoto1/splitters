@@ -26,6 +26,10 @@ import {
   viewDirection,
   type ZoneSnapshot,
   BUTTON_FIRE,
+  BUTTON_MELEE,
+  UNARMED,
+  stoppingPower,
+  unarmedStrike,
   BUTTON_RELOAD,
   PhysicsWorld,
   SPEED_BOOST,
@@ -43,6 +47,7 @@ import {
   matchPhysics,
   matchTeams,
   type Vec3,
+  type WeaponDefinition,
   npcLookRole,
   type CreatureModel,
   OBJECTIVE_STATES,
@@ -298,6 +303,41 @@ export class GameSession {
   private seat: [number, number, number] | null = null;
   private localStatus = 0;
   private lastWeapon = 0;
+
+  /**
+   * Quick melee pressed: a melee weapon in hand swings (its kick and sound
+   * here; the server lands it); otherwise a punch, or a kick moving forward or
+   * straight after a punch (the server's rule, sim UNARMED), shown at once.
+   */
+  private localStrike(def: WeaponDefinition | undefined, forward: number, now: number): void {
+    if (def?.kind === 'melee') {
+      this.view.kick(def);
+      this.sfx.localShot(def);
+      return;
+    }
+    // Disc Arena has no fists (nobody takes damage there).
+    if (now < this.meleeReadyAt || def?.projectile?.disc) return;
+    const kind = unarmedStrike(forward, ((now - this.punchedAt) / 1000) * TICK_RATE);
+    this.meleeReadyAt = now + (UNARMED[kind].cooldownTicks / TICK_RATE) * 1000;
+    this.punchedAt = kind === 'punch' ? now : -1e9;
+    this.view.localStrike(kind, this.jabNext);
+    if (kind === 'punch') this.jabNext = !this.jabNext;
+    this.sfx.localStrike();
+  }
+
+  /** A remote player's next punch: jab and cross in turn. */
+  private nextPunch(slot: number): 'jab' | 'melee' {
+    const jab = this.punches.get(slot) ?? true;
+    this.punches.set(slot, !jab);
+    return jab ? 'jab' : 'melee';
+  }
+  /** Quick melee, as you see it: the key held last input, when the next strike is ready, the last punch (ms), and jab or cross next. */
+  private meleeHeld = false;
+  private meleeReadyAt = 0;
+  private punchedAt = -1e9;
+  private jabNext = true;
+  /** Remote players' next punch: jab or cross, alternating. */
+  private readonly punches = new Map<number, boolean>();
   /** Capture the Flag, King of the Hill, Elimination: flags, hill, status line, markers, announcer. */
   private modeHud: ModeHud | null = null;
   /** Fort Wars: pieces, the build-phase barrier, the Builder's ghost and panel. */
@@ -1366,6 +1406,7 @@ export class GameSession {
                 const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
                 const len = Math.hypot(d.x, d.y, d.z) || 1;
                 this.view.pushPlayer(victim, { x: (d.x / len) * 1.4 * strength, y: zone === 1 ? 0.8 : 0.4, z: (d.z / len) * 1.4 * strength });
+                this.view.flinchPlayer(victim, d, zone, Math.max(strength, def ? stoppingPower(def) * 2.2 : 0));
               }
               // Your own rounds are already in the air (drawn when you fired); only your hits land here.
               if (mine) {
@@ -1397,6 +1438,7 @@ export class GameSession {
               const d = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
               const len = Math.hypot(d.x, d.y, d.z) || 1;
               this.view.pushPlayer(ev.hit, { x: (d.x / len) * 1.4 * strength, y: zone === 1 ? 0.8 : 0.4, z: (d.z / len) * 1.4 * strength });
+              this.view.flinchPlayer(ev.hit, d, zone, Math.max(strength, def ? stoppingPower(def) * 2.2 : 0));
             }
             for (const p of ev.pn ?? []) this.view.landRound({ eye: from, to: { x: p[0], y: p[1], z: p[2] }, victim: null, zone: 0, strength });
             // Your own misses already landed where your predicted round hit the level.
@@ -1404,16 +1446,19 @@ export class GameSession {
             if (mine) this.hitFeedback([ev.hit], [zone], !!ev.ar);
           } else if (ev.e === 'melee') {
             if (ev.s === this.slot && ev.hit !== null) this.hud.hit();
-            if (ev.s !== this.slot) this.view.avatarAction(ev.s, 'melee');
+            // Punches alternate jab and cross; a kick is the legs' own motion.
+            if (ev.s !== this.slot) this.view.avatarAction(ev.s, ev.u === 2 ? 'kick' : ev.u === 1 ? this.nextPunch(ev.s) : 'melee');
             const at = ev.hit !== null ? this.view.chestOf(ev.hit) : null;
             const from = this.view.chestOf(ev.s) ?? (ev.s === this.slot ? this.view.cameraPosition() : null);
             if (at && from) {
               const d = { x: at.x - from.x, y: 0, z: at.z - from.z };
               const len = Math.hypot(d.x, d.z) || 1;
               const dir = { x: d.x / len, y: 0.1, z: d.z / len };
-              this.view.blood.hit(at, dir, 1.4);
+              // Fists draw no blood, just the hit flash.
+              if (!ev.u) this.view.blood.hit(at, dir, 1.4);
               this.view.hitFx(at, 'melee');
               this.view.pushPlayer(ev.hit!, { x: dir.x * 4, y: 1.5, z: dir.z * 4 });
+              this.view.flinchPlayer(ev.hit!, dir, ev.u === 1 ? 1 : 0, ev.u === 1 ? 1 : 1.8);
             }
           } else if (ev.e === 'knock') {
             if (ev.s === this.slot) this.hud.hit();
@@ -1844,6 +1889,9 @@ export class GameSession {
         }
         moving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
+        const meleeNow = (sample.buttons & BUTTON_MELEE) !== 0;
+        if (meleeNow && !this.meleeHeld && local.alive && !this.seat) this.localStrike(local.weapon, sample.forward, now);
+        this.meleeHeld = meleeNow;
         const { input: cmd, shot, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
         if (local.portalTurn) {
           // Through a portal: you face the way you came out.

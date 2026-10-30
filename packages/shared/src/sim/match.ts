@@ -47,7 +47,7 @@ import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STRE
 import { pickupPool, rollPickup } from './pickupRoll.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
-import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
@@ -77,7 +77,8 @@ import {
   type BallisticMaterial, type GunState, type Gunplay, type ReloadRun,
 } from './gunplay.ts';
 import { GLASS, glassAt } from './glass.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, type HitZone, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
@@ -251,6 +252,9 @@ export interface Combatant {
   // Timers below count applied inputs (not server ticks) so client prediction can mirror them exactly.
   fireCooldown: number;
   throwCooldown: number;
+  /** Unarmed quick melee: ticks until the next strike, and the tick of the last punch (punch, then kick). */
+  meleeCooldown: number;
+  punchedAt: number;
   reloadTicks: number;
   raiseTicks: number;
   speedTicks: number;
@@ -280,6 +284,8 @@ export interface Combatant {
   breath: number;
   poisonTicks: number;
   slowTicks: number;
+  /** Stopping power: the stagger (shove, slow) from hits, its caps and immunity (sim/impact.ts). */
+  impact: ImpactState;
   chill: number;
   frozenTicks: number;
   statusBy: number | null;
@@ -636,7 +642,7 @@ export class Match {
       },
       blast: (at, radius, damage, edge, owner, weapon) => {
         this.pendingEvents.push({ e: 'explode', s: owner ?? -1, p: tuple(at), r: radius });
-        this.splash(at, radius, damage, edge, owner === null ? null : (this.actor(owner) ?? null), weapon, 1);
+        this.splash(at, radius, damage, edge, owner === null ? null : (this.actor(owner) ?? null), weapon, 1, blastKnockback({ splashDamage: damage }));
       },
       endRound: (winner, outcome, next) => this.endRound(winner, outcome, next),
       encounter: (id, op, order) => {
@@ -696,7 +702,7 @@ export class Match {
           path: (a, b) => this.nav.findPath(a, b),
           explode: (at, radius, damage, by) => {
             this.pendingEvents.push({ e: 'explode', s: by?.slot ?? -1, p: tuple(at), r: radius });
-            this.splash(at, radius, damage, damage * 0.15, by, 'core.bomb', 1, 8);
+            this.splash(at, radius, damage, damage * 0.15, by, 'core.bomb', 1, 12);
           },
           physics: this.physics,
           spawnPoints: this.spawnPoints,
@@ -1145,6 +1151,8 @@ export class Match {
       current: 0,
       throwable: null,
       fireCooldown: 0,
+      meleeCooldown: 0,
+      punchedAt: -1000,
       throwCooldown: 0,
       reloadTicks: 0,
       raiseTicks: 0,
@@ -1164,6 +1172,7 @@ export class Match {
       breath: 0,
       poisonTicks: 0,
       slowTicks: 0,
+      impact: newImpact(),
       chill: 0,
       frozenTicks: 0,
       statusBy: null,
@@ -2288,6 +2297,7 @@ export class Match {
       }
       if (c.fireCooldown > 0) c.fireCooldown--;
       if (c.throwCooldown > 0) c.throwCooldown--;
+      if (c.meleeCooldown > 0) c.meleeCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
       if (c.speedTicks > 0) c.speedTicks--;
       if (c.damageTicks > 0) c.damageTicks--;
@@ -2360,6 +2370,19 @@ export class Match {
           c.fireCooldown = alt.fireIntervalTicks;
           this.fire(c, altTrigger(held.def, alt), input.viewTick ?? 0);
         } else if (alt.ammo === 'shared') this.startReload(c);
+      }
+      // Quick melee: the held melee weapon swings; with a gun in hand, a punch or a kick (no lockout of the gun).
+      if (pressed & BUTTON_MELEE && !c.mount && !frozen && !fired) {
+        if (def.kind === 'melee' && !getWeapon(def.id).heal) {
+          if (ready && spendRound(held)) {
+            c.fireCooldown = def.fireIntervalTicks;
+            this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
+            fired = true;
+          }
+        } else if (c.meleeCooldown === 0 && !def.projectile?.disc) {
+          // (Not in Disc Arena, where nobody takes damage: discs only knock people off.)
+          this.strike(c, unarmedStrike(input.forward, this.tick - c.punchedAt), input.viewTick ?? 0);
+        }
       }
       if (fired && gun) gun.firedTick = this.tick;
       // Heat weapons cool when not firing (mounted guns cool in stepMounts); bloom settles.
@@ -2511,25 +2534,12 @@ export class Match {
     }
     const targets = this.targetsFor(shooter, viewTick);
     if (def.kind === 'melee') {
-      // Three short rays in a narrow fan make melee forgiving without a full sweep.
-      let hit: number | null = null;
-      let body: number | null = null;
-      for (const yawOffset of [0, -0.3, 0.3]) {
-        const dir = viewDirection(shooter.yaw + yawOffset, shooter.pitch);
-        const world = this.physics.raycastHit(eye, dir, def.range);
-        const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
-        // A swing at a window smashes it.
-        if (yawOffset === 0) this.scenario.shootGlass(eye, dir, shot.distance, shooter.slot);
-        if (shot.hitSlot !== null) {
-          hit = shot.hitSlot;
-          break;
-        }
-        if (world && body === null) body = world.handle;
-      }
+      const { hit, body } = this.meleeTrace(shooter, eye, def.range, targets);
       this.pendingEvents.push({ e: 'melee', s: shooter.slot, hit });
       if (hit !== null) {
         const victim = this.actor(hit)!;
         this.damage(victim, def.damage, shooter, def.id);
+        this.stagger(victim, this.powerOf(def.id), viewDirection(shooter.yaw, 0), 1);
         // Heavy melee (the battle axe) shoves the target along the swing.
         if (def.knockback && victim.alive) this.push(victim, viewDirection(shooter.yaw, 0), def.knockback);
       }
@@ -2585,6 +2595,7 @@ export class Match {
       const victim = this.actor(slot)!;
       this.damage(victim, def.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, dist) * keep, shooter, def.id, zone === 1);
       if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
+      this.stagger(victim, this.powerOf(def.id), dir, (falloffAt(gp.falloff, dist) * keep) / Math.max(1, def.pellets));
       if (def.knockback) this.push(victim, dir, def.knockback);
     }
     for (const b of bodies) if (!this.damageMountBody(b, this.boosted(shooter, def.damage), shooter)) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
@@ -2672,10 +2683,77 @@ export class Match {
     c.statusWeapon = weapon;
   }
 
+  /**
+   * Stopping power (sim/impact.ts): a hit by `weapon` with `share` of a full shot's damage shoves a
+   * living body a little along `dir` and slows it briefly, within the stagger caps and immunity.
+   * Stays on the ground (no lift), so the ground's grip takes the shove back off quickly.
+   */
+  private stagger(victim: Combatant, power: number, dir: Vec3, share: number): void {
+    if (!victim.alive || victim.mount || victim.invulnerable) return;
+    const shove = hitImpact(victim.impact, power, share);
+    if (shove <= 0) return;
+    const h = Math.hypot(dir.x, dir.z);
+    if (h < 0.05) return;
+    victim.move = { ...victim.move, vx: (victim.move.vx ?? 0) + (dir.x / h) * shove, vz: (victim.move.vz ?? 0) + (dir.z / h) * shove };
+  }
+
+  /** Stopping power by weapon id (cached). */
+  private readonly stopping = new Map<string, number>();
+  private powerOf(weapon: string): number {
+    let power = this.stopping.get(weapon);
+    if (power === undefined) {
+      power = stoppingPower(getWeapon(weapon));
+      this.stopping.set(weapon, power);
+    }
+    return power;
+  }
+
+  /** Three short rays in a narrow fan (forgiving melee without a full sweep): who it hits, or the body it strikes. A swing at a window smashes it. */
+  private meleeTrace(shooter: Combatant, eye: Vec3, range: number, targets: ReturnType<Match['targetsFor']>): { hit: number | null; body: number | null } {
+    let body: number | null = null;
+    for (const yawOffset of [0, -0.3, 0.3]) {
+      const dir = viewDirection(shooter.yaw + yawOffset, shooter.pitch);
+      const world = this.physics.raycastHit(eye, dir, range);
+      const shot = resolveHitscan(eye, dir, range, world?.dist ?? null, targets);
+      if (yawOffset === 0) this.scenario.shootGlass(eye, dir, shot.distance, shooter.slot);
+      if (shot.hitSlot !== null) return { hit: shot.hitSlot, body: null };
+      if (world && body === null) body = world.handle;
+    }
+    return { hit: null, body };
+  }
+
+  /**
+   * Unarmed quick melee (UNARMED): a punch or a kick at whoever is in reach. Small damage, a stagger
+   * (stopping power) and, for a kick, a shove. Breaks into a reload like any emergency action.
+   */
+  private strike(c: Combatant, kind: 'punch' | 'kick', viewTick: number): void {
+    const s = UNARMED[kind];
+    c.meleeCooldown = s.cooldownTicks;
+    if (kind === 'punch') c.punchedAt = this.tick;
+    else c.punchedAt = -1000;
+    if (c.reload) this.cancelReload(c);
+    const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
+    const { hit, body } = this.meleeTrace(c, eye, s.range * c.size, this.targetsFor(c, viewTick));
+    this.pendingEvents.push({ e: 'melee', s: c.slot, hit, u: kind === 'punch' ? 1 : 2 });
+    if (hit !== null) {
+      const victim = this.actor(hit)!;
+      const dir = viewDirection(c.yaw, 0);
+      this.damage(victim, s.damage, c, s.id);
+      this.stagger(victim, s.stopping, dir, 1);
+      if (s.shove && victim.alive && !victim.mount) this.push(victim, dir, s.shove);
+    } else if (body !== null && !this.damageMountBody(body, this.boosted(c, s.damage), c)) this.scenario.damageBody(body, this.boosted(c, s.damage), c.slot);
+  }
+
   /** Shove a player along `dir` (horizontal push plus a little lift). */
   private push(c: Combatant, dir: Vec3, speed: number): void {
     const h = Math.hypot(dir.x, dir.z) || 1;
     c.move = { ...c.move, vx: (c.move.vx ?? 0) + (dir.x / h) * speed, vz: (c.move.vz ?? 0) + (dir.z / h) * speed, velY: Math.max(c.move.velY, speed * 0.45 + dir.y * speed * 0.5), grounded: false };
+  }
+
+  /** A blast throw (blastThrow): adds its sideways speed to the push and lifts at least as hard as it says. */
+  private throwBy(c: Combatant, v: Vec3): void {
+    if (!v.x && !v.y && !v.z) return;
+    c.move = { ...c.move, vx: (c.move.vx ?? 0) + v.x, vz: (c.move.vz ?? 0) + v.z, velY: Math.max(c.move.velY, v.y), grounded: false };
   }
 
   /** Ground grip at a point: oil makes it slick. */
@@ -3175,6 +3253,7 @@ export class Match {
     if (!victim) return;
     this.damage(victim, end.damage, shooter, def.id, end.zone === 1);
     if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
+    this.stagger(victim, this.powerOf(def.id), end.dir, end.damage / Math.max(1, def.damage * Math.max(1, def.pellets)));
     if (def.knockback) this.push(victim, end.dir, def.knockback * (end.damage / Math.max(1, def.damage)));
   }
 
@@ -3213,7 +3292,7 @@ export class Match {
       return;
     }
     if (spec.splashRadius > 0) this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius });
-    if (spec.splashRadius > 0) this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.weapon, spec.selfDamageScale, spec.knockback, spec.status);
+    if (spec.splashRadius > 0) this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.weapon, spec.selfDamageScale, blastKnockback(spec), spec.status);
     // Flames, flares and real explosions set oil alight.
     if (spec.ignites || spec.splashDamage >= 30) this.ignite(at, Math.max(1, spec.splashRadius));
     if (spec.zone) this.spawnZone(spec.zone, at, p.owner, p.weapon);
@@ -3621,7 +3700,7 @@ export class Match {
     const at = { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z };
     this.pendingEvents.push({ e: 'explode', s: m.lastHitBy ?? -1, p: tuple(at), r: m.def.blast.radius, m: m.index });
     const by = m.lastHitBy === null ? null : (this.actor(m.lastHitBy) ?? null);
-    this.splash(at, m.def.blast.radius, m.def.blast.damage, m.def.blast.damage * 0.2, by, 'core.wreck', 1, 6);
+    this.splash(at, m.def.blast.radius, m.def.blast.damage, m.def.blast.damage * 0.2, by, 'core.wreck', 1, 9);
     this.ignite(at, m.def.blast.radius);
     if (m.wreckUntil && !m.alive) {
       this.physics.setBoxEnabled(m.body, true);
@@ -3985,7 +4064,7 @@ export class Match {
       if (z.kind === 'singularity') {
         // The field collapses with a bang.
         this.pendingEvents.push({ e: 'explode', s: z.owner, p: tuple(z.pos), r: 5 });
-        this.splash(z.pos, 5, 90, 20, this.actor(z.owner) ?? null, z.weapon, 0.6);
+        this.splash(z.pos, 5, 90, 20, this.actor(z.owner) ?? null, z.weapon, 0.6, blastKnockback({ splashDamage: 90 }));
         this.ignite(z.pos, 5);
       }
     }
@@ -4052,6 +4131,7 @@ export class Match {
       }
       if (c.alive) this.stepLiquid(c);
       if (c.slowTicks > 0) c.slowTicks--;
+      stepImpact(c.impact);
       if (c.frozenTicks > 0) c.frozenTicks--;
       else if (c.chill > 0) c.chill = Math.max(0, c.chill - 0.45 / TICK_RATE);
     }
@@ -4066,8 +4146,8 @@ export class Match {
       if (d > radius || !this.physics.lineOfSight(at, target)) continue;
       let dmg = damage + (edge - damage) * (d / radius);
       if (owner && c === owner) dmg *= selfScale;
-      // Knockback throws everyone (you too: disc jumps), friends included, but only enemies take damage.
-      if (knockback) this.push(c, d > 0.01 ? scale(sub(target, at), 1 / d) : { x: 0, y: 1, z: 0 }, knockback * (1 - (d / radius) * 0.6));
+      // Knockback throws everyone up and out (you too: rocket and disc jumps), friends included, but only enemies take damage.
+      if (knockback && !c.mount) this.throwBy(c, blastThrow(d > 0.01 ? scale(sub(target, at), 1 / d) : { x: 0, y: 1, z: 0 }, d, radius, knockback, c === owner));
       if (dmg > 0) this.damage(c, dmg, owner, weapon);
       if (status && c.alive) this.applyStatus(c, status, owner, weapon);
     }
@@ -4345,6 +4425,7 @@ export class Match {
     c.armor = 0;
     c.alive = true;
     c.burnTicks = c.poisonTicks = c.slowTicks = c.frozenTicks = 0;
+    c.impact = newImpact();
     c.jetFuel = null;
     c.glider = undefined;
     // A fall cut short by death (shot under a parachute, say) doesn't carry over to the new life.
@@ -5489,7 +5570,7 @@ function zoneScale(gp: Gunplay, zone: HitZone): number {
 /** Movement multiplier from status effects (frozen solid, chilled, slowed) and the mode (carrying a flag). */
 function statusSpeed(c: Combatant): number {
   if (c.frozenTicks > 0) return 0;
-  return (c.slowTicks > 0 ? 0.55 : 1) * (1 - 0.6 * c.chill) * (c.modeSpeed ?? 1) * (c.classSpeed ?? 1);
+  return (c.slowTicks > 0 ? 0.55 : 1) * impactSpeed(c.impact) * (1 - 0.6 * c.chill) * (c.modeSpeed ?? 1) * (c.classSpeed ?? 1);
 }
 
 const inZone = (z: Zone, feet: Vec3): boolean => zoneContains(z.kind, z.pos, z.radius, feet);

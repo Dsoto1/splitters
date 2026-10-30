@@ -269,8 +269,13 @@ export interface WeaponDefinition {
   chain?: { jumps: number; range: number; falloff: number };
   /** Status put on players it hits. */
   status?: StatusHit;
-  /** Hitscan push on the target (m/s). */
+  /** Hitscan push on the target (m/s), with a little lift: a deliberate shove on top of stopping power. */
   knockback?: number;
+  /**
+   * Stopping power 0..1 (sim/impact.ts): the small shove along the shot, the brief slow and the
+   * flinch a hit gives. Default: by category (a pistol barely, a shotgun or sniper noticeably).
+   */
+  stoppingPower?: number;
   /** Damage multiplier for a head hit (default HEAD_MULTIPLIER; 1 for weapons that don't care where they land). */
   headshot?: number;
   /** Damage multiplier for a leg hit (default: the family's, else LEG_MULTIPLIER). */
@@ -1174,6 +1179,26 @@ export interface ShotResult {
 export type HitZone = 0 | 1 | 2;
 /** Head hits hurt double (sniper rifles more); leg hits a bit less. */
 export const HEAD_MULTIPLIER = 2;
+
+/**
+ * Unarmed quick melee (BUTTON_MELEE with no melee weapon in hand): a punch,
+ * or a kick when moving forward or straight after a punch. Small damage and a
+ * stagger (stopping power, sim/impact.ts); the kick also shoves. No lockout:
+ * the gun stays ready, only the next strike waits for `cooldownTicks`.
+ */
+export const UNARMED = {
+  punch: { id: 'core.punch', damage: 15, range: 1.9, cooldownTicks: 22, stopping: 0.5, shove: 0 },
+  kick: { id: 'core.kick', damage: 22, range: 2.2, cooldownTicks: 42, stopping: 0.85, shove: 3.2 },
+  /** A second press this soon after a punch kicks (ticks). */
+  comboTicks: 36,
+  /** Moving forward at least this much (input) kicks. */
+  kickForward: 0.5,
+} as const;
+export type UnarmedStrike = 'punch' | 'kick';
+/** Which strike a melee press throws: a kick when moving forward or soon after a punch, otherwise a punch. */
+export function unarmedStrike(forward: number, ticksSincePunch: number): UnarmedStrike {
+  return forward >= UNARMED.kickForward || ticksSincePunch <= UNARMED.comboTicks ? 'kick' : 'punch';
+}
 export const LEG_MULTIPLIER = 0.75;
 
 /** The body zone at height `y` on a player standing at `feet` (`height` tall). */
