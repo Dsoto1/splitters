@@ -1,0 +1,39 @@
+{
+  "id": "meshy_vanguard",
+  "kind": "character",
+  "use": "player+npc",
+  "order": 49,
+  "name": "Vanguard",
+  "look": "core.vanguard",
+  "bio": "First in, last out, never seen in between.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: future trooper.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019485cc-4435-76fc-b859-f22eef2f296f",
+    "community": {
+      "model": "A futuristic warrior character"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_a_warrior_character__\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a06-dcea-72f8-a307-6aa4a8efc97e"
+    }
+  },
+  "finish": {
+    "metallic": 0.55,
+    "roughness": 0.4
+  },
+  "firstPerson": {
+    "arms": "ranger_arms_m",
+    "skin": "#2a2a2e",
+    "cloth": "#26262a",
+    "trim": "#2a2a2e"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

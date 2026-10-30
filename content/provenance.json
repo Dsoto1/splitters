@@ -3046,6 +3046,82 @@
       ]
     },
     {
+      "file": "characters/meshy_santa.glb",
+      "sha256": "2ea89242ca29da4d",
+      "triangles": 11000,
+      "bytes": 520364,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): T Pose Santa (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_santa_fparms.glb",
+      "sha256": "6cc61fed53600611",
+      "triangles": 5839,
+      "bytes": 315148,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): T Pose Santa (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_king.glb",
+      "sha256": "7c753577d6356197",
+      "triangles": 10999,
+      "bytes": 812492,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Regal Monarch in Velvet (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_king_fparms.glb",
+      "sha256": "f04821018dbc7161",
+      "triangles": 1883,
+      "bytes": 358328,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Regal Monarch in Velvet (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
       "file": "characters/meshy_lancer.glb",
       "sha256": "e3d764c21b453b6c",
       "triangles": 10996,
@@ -3073,6 +3149,82 @@
       "bytes": 382912,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Female lancer (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_grizzelda.glb",
+      "sha256": "ea5502177d3ec023",
+      "triangles": 14599,
+      "bytes": 948996,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Gloombraid Goblin Shaman (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_grizzelda_fparms.glb",
+      "sha256": "6d9bf8add0844403",
+      "triangles": 2727,
+      "bytes": 345664,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Gloombraid Goblin Shaman (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_brass_hare.glb",
+      "sha256": "6cf2856a7e626e82",
+      "triangles": 12593,
+      "bytes": 944588,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Energetic anthro rabbit (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_brass_hare_fparms.glb",
+      "sha256": "861504d430e6919e",
+      "triangles": 4955,
+      "bytes": 507396,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Energetic anthro rabbit (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
@@ -3661,6 +3813,766 @@
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_bandit.glb",
+      "sha256": "7d48a6075e7691a5",
+      "triangles": 10997,
+      "bytes": 614612,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): a raccoon warrior in T-pose (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_bandit_fparms.glb",
+      "sha256": "958372e13b3b9536",
+      "triangles": 1988,
+      "bytes": 259272,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): a raccoon warrior in T-pose (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_teddy.glb",
+      "sha256": "9414a46787bcf871",
+      "triangles": 11000,
+      "bytes": 628476,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): An adorable teddy bear (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_teddy_fparms.glb",
+      "sha256": "10844cf56185feb0",
+      "triangles": 3555,
+      "bytes": 322588,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): An adorable teddy bear (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_anubis.glb",
+      "sha256": "e93dbc8cd2edd2e9",
+      "triangles": 11000,
+      "bytes": 647500,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): An ancient Egyptian Anubis (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_anubis_fparms.glb",
+      "sha256": "dc3dc89ea2a9485b",
+      "triangles": 3620,
+      "bytes": 316344,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): An ancient Egyptian Anubis (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_brannock.glb",
+      "sha256": "a380b0968ea4bbb7",
+      "triangles": 10999,
+      "bytes": 660788,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Knight Stance (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_brannock_fparms.glb",
+      "sha256": "cfcb67c375ffe64d",
+      "triangles": 3444,
+      "bytes": 332904,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Knight Stance (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_monk.glb",
+      "sha256": "72c6164864628ffd",
+      "triangles": 13681,
+      "bytes": 980544,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Medieval Monk in Contemplation (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_monk_fparms.glb",
+      "sha256": "fcf44481362c8b8f",
+      "triangles": 2032,
+      "bytes": 293120,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Medieval Monk in Contemplation (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_big_bab.glb",
+      "sha256": "cb12f1cd510674fb",
+      "triangles": 10998,
+      "bytes": 561872,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): T Pose Monkey (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_big_bab_fparms.glb",
+      "sha256": "356ab89fbaf07a46",
+      "triangles": 4313,
+      "bytes": 308280,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): T Pose Monkey (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_zhao.glb",
+      "sha256": "c0ea55c45db42688",
+      "triangles": 10999,
+      "bytes": 720884,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Uniformed Worker in a Jacket (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_zhao_fparms.glb",
+      "sha256": "a30ca94eb6246d7f",
+      "triangles": 4623,
+      "bytes": 423896,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Uniformed Worker in a Jacket (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_desert_ranger.glb",
+      "sha256": "4d28b909e7e07b48",
+      "triangles": 10999,
+      "bytes": 714884,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Ultra detailed desert soldier (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_desert_ranger_fparms.glb",
+      "sha256": "e3851e2ab7e3870b",
+      "triangles": 2569,
+      "bytes": 328260,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Ultra detailed desert soldier (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_zombie_groaner.glb",
+      "sha256": "9074e8c6594a6e9d",
+      "triangles": 10000,
+      "bytes": 588748,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Zombie T Pose (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_zombie_groaner_fparms.glb",
+      "sha256": "c3195e583cf608a2",
+      "triangles": 1117,
+      "bytes": 277724,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Zombie T Pose (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_gorgle.glb",
+      "sha256": "d182f4757a1d2e58",
+      "triangles": 9997,
+      "bytes": 587200,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): A horrifying mutated creature (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_gorgle_fparms.glb",
+      "sha256": "5d8e4f50c58126dd",
+      "triangles": 1000,
+      "bytes": 269352,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): A horrifying mutated creature (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_giggles.glb",
+      "sha256": "bc6f44a5facc3f0d",
+      "triangles": 10999,
+      "bytes": 626016,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): A humanoid harlequin clown (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_giggles_fparms.glb",
+      "sha256": "56633c3bd2fded7e",
+      "triangles": 2442,
+      "bytes": 291796,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): A humanoid harlequin clown (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_vanguard.glb",
+      "sha256": "d31b9bc26c1ff31d",
+      "triangles": 11000,
+      "bytes": 654148,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): A futuristic warrior character (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_vanguard_fparms.glb",
+      "sha256": "55a9330cd75dda93",
+      "triangles": 1959,
+      "bytes": 304360,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): A futuristic warrior character (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_dust_trooper.glb",
+      "sha256": "b84d5cd4ce7af71b",
+      "triangles": 13454,
+      "bytes": 847172,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Full body of a man wearing a mask (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_dust_trooper_fparms.glb",
+      "sha256": "d56b354ef1841283",
+      "triangles": 1539,
+      "bytes": 262792,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Full body of a man wearing a mask (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_punkin.glb",
+      "sha256": "f0a1c9f889b12427",
+      "triangles": 11000,
+      "bytes": 631780,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Pumpkin head scarecrow (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_punkin_fparms.glb",
+      "sha256": "bc67b047169cc850",
+      "triangles": 3086,
+      "bytes": 317744,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Pumpkin head scarecrow (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_wizard.glb",
+      "sha256": "5d35cc1d80c8e436",
+      "triangles": 10998,
+      "bytes": 717536,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): wizard t pose (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_wizard_fparms.glb",
+      "sha256": "35d7dcfebb3d7bc1",
+      "triangles": 2779,
+      "bytes": 292904,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): wizard t pose (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_skeleton.glb",
+      "sha256": "a8d4db300ea64ff7",
+      "triangles": 15217,
+      "bytes": 930772,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Halloween 2025 ghoul (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_skeleton_fparms.glb",
+      "sha256": "6d48965374ac9871",
+      "triangles": 7565,
+      "bytes": 560404,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Halloween 2025 ghoul (download dated 2026-10-29)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_uncle_bao.glb",
+      "sha256": "14b698e7ee074f26",
+      "triangles": 11000,
+      "bytes": 608888,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_uncle_bao_fparms.glb",
+      "sha256": "e57d69b4f5315b1f",
+      "triangles": 3622,
+      "bytes": 346388,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_bonejack.glb",
+      "sha256": "9d9fe5f61242a54b",
+      "triangles": 10998,
+      "bytes": 682840,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_bonejack_fparms.glb",
+      "sha256": "662433948e433ae9",
+      "triangles": 3577,
+      "bytes": 357004,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_ashwalker.glb",
+      "sha256": "78eff3b2788941ce",
+      "triangles": 9904,
+      "bytes": 674380,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_ashwalker_fparms.glb",
+      "sha256": "4c98d9516c5c2bc8",
+      "triangles": 749,
+      "bytes": 296848,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_thornweaver.glb",
+      "sha256": "cf81e421722382fe",
+      "triangles": 16032,
+      "bytes": 1083628,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_thornweaver_fparms.glb",
+      "sha256": "f32f62510d4746c5",
+      "triangles": 2320,
+      "bytes": 399288,
+      "source": "meshy-owned",
+      "title": "Tile Trigger originals (made with Meshy)",
+      "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
       "modifications": [
         "arms cut from the body",
         "re-posed to the rig's T-pose",

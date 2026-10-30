@@ -460,6 +460,68 @@
       "hands": true
     },
     {
+      "role": "meshy",
+      "id": "meshy_santa",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fb-dbb4-7149-bf61-3776817a0c05"
+      },
+      "model": "T Pose Santa",
+      "date": "2026-10-29",
+      "file": "characters/meshy_santa.glb",
+      "sha256": "2ea89242ca29da4d",
+      "triangles": 11000,
+      "lodTriangles": 3250,
+      "bytes": 520364,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_santa_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fb-dbb4-7149-bf61-3776817a0c05"
+      },
+      "model": "T Pose Santa",
+      "date": "2026-10-29",
+      "file": "characters/meshy_santa_fparms.glb",
+      "sha256": "6cc61fed53600611",
+      "triangles": 5839,
+      "bytes": 315148,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_king",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fa-2941-7114-b236-ddbc173a1660"
+      },
+      "model": "Regal Monarch in Velvet",
+      "date": "2026-10-29",
+      "file": "characters/meshy_king.glb",
+      "sha256": "7c753577d6356197",
+      "triangles": 10999,
+      "lodTriangles": 3279,
+      "bytes": 812492,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_king_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fa-2941-7114-b236-ddbc173a1660"
+      },
+      "model": "Regal Monarch in Velvet",
+      "date": "2026-10-29",
+      "file": "characters/meshy_king_fparms.glb",
+      "sha256": "f04821018dbc7161",
+      "triangles": 1883,
+      "bytes": 358328,
+      "hands": true
+    },
+    {
       "role": "meshy-autorig",
       "id": "meshy_lancer",
       "source": "meshy-community-characters",
@@ -486,6 +548,64 @@
       "sha256": "ef6ef89a264e3382",
       "triangles": 925,
       "bytes": 382912,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_grizzelda",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fd-cff3-7368-a1ee-16386902dab0"
+      },
+      "model": "Gloombraid Goblin Shaman",
+      "date": "2026-10-29",
+      "file": "characters/meshy_grizzelda.glb",
+      "sha256": "ea5502177d3ec023",
+      "triangles": 14599,
+      "lodTriangles": 4339,
+      "bytes": 948996,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_grizzelda_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189fd-cff3-7368-a1ee-16386902dab0"
+      },
+      "model": "Gloombraid Goblin Shaman",
+      "date": "2026-10-29",
+      "file": "characters/meshy_grizzelda_fparms.glb",
+      "sha256": "6d9bf8add0844403",
+      "triangles": 2727,
+      "bytes": 345664,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_brass_hare",
+      "source": "meshy-community-characters",
+      "model": "Energetic anthro rabbit",
+      "date": "2026-10-29",
+      "src": "meshy_brass_hare.glb",
+      "file": "characters/meshy_brass_hare.glb",
+      "sha256": "6cf2856a7e626e82",
+      "triangles": 12593,
+      "lodTriangles": 3753,
+      "bytes": 944588,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_brass_hare_fparms",
+      "source": "meshy-community-characters",
+      "model": "Energetic anthro rabbit",
+      "date": "2026-10-29",
+      "src": "meshy_brass_hare.glb",
+      "file": "characters/meshy_brass_hare_fparms.glb",
+      "sha256": "861504d430e6919e",
+      "triangles": 4955,
+      "bytes": 507396,
       "hands": true
     },
     {
@@ -947,6 +1067,586 @@
       "sha256": "7d6af4e07cc824fa",
       "triangles": 2367,
       "bytes": 253184,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_bandit",
+      "source": "meshy-community-characters",
+      "model": "a raccoon warrior in T-pose",
+      "date": "2026-10-29",
+      "src": "meshy_bandit.glb",
+      "file": "characters/meshy_bandit.glb",
+      "sha256": "7d48a6075e7691a5",
+      "triangles": 10997,
+      "lodTriangles": 3201,
+      "bytes": 614612,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_bandit_fparms",
+      "source": "meshy-community-characters",
+      "model": "a raccoon warrior in T-pose",
+      "date": "2026-10-29",
+      "src": "meshy_bandit.glb",
+      "file": "characters/meshy_bandit_fparms.glb",
+      "sha256": "958372e13b3b9536",
+      "triangles": 1988,
+      "bytes": 259272,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_teddy",
+      "source": "meshy-community-characters",
+      "model": "An adorable teddy bear",
+      "date": "2026-10-29",
+      "src": "meshy_teddy.glb",
+      "file": "characters/meshy_teddy.glb",
+      "sha256": "9414a46787bcf871",
+      "triangles": 11000,
+      "lodTriangles": 3099,
+      "bytes": 628476,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_teddy_fparms",
+      "source": "meshy-community-characters",
+      "model": "An adorable teddy bear",
+      "date": "2026-10-29",
+      "src": "meshy_teddy.glb",
+      "file": "characters/meshy_teddy_fparms.glb",
+      "sha256": "10844cf56185feb0",
+      "triangles": 3555,
+      "bytes": 322588,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_anubis",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a01-fba4-71ae-972c-8c970781a3d2"
+      },
+      "model": "An ancient Egyptian Anubis",
+      "date": "2026-10-29",
+      "file": "characters/meshy_anubis.glb",
+      "sha256": "e93dbc8cd2edd2e9",
+      "triangles": 11000,
+      "lodTriangles": 3178,
+      "bytes": 647500,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_anubis_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a01-fba4-71ae-972c-8c970781a3d2"
+      },
+      "model": "An ancient Egyptian Anubis",
+      "date": "2026-10-29",
+      "file": "characters/meshy_anubis_fparms.glb",
+      "sha256": "dc3dc89ea2a9485b",
+      "triangles": 3620,
+      "bytes": 316344,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_brannock",
+      "source": "meshy-community-characters",
+      "model": "Knight Stance",
+      "date": "2026-10-29",
+      "src": "meshy_brannock.glb",
+      "file": "characters/meshy_brannock.glb",
+      "sha256": "a380b0968ea4bbb7",
+      "triangles": 10999,
+      "lodTriangles": 3203,
+      "bytes": 660788,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_brannock_fparms",
+      "source": "meshy-community-characters",
+      "model": "Knight Stance",
+      "date": "2026-10-29",
+      "src": "meshy_brannock.glb",
+      "file": "characters/meshy_brannock_fparms.glb",
+      "sha256": "cfcb67c375ffe64d",
+      "triangles": 3444,
+      "bytes": 332904,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_monk",
+      "source": "meshy-community-characters",
+      "model": "Medieval Monk in Contemplation",
+      "date": "2026-10-29",
+      "src": "meshy_monk.glb",
+      "file": "characters/meshy_monk.glb",
+      "sha256": "72c6164864628ffd",
+      "triangles": 13681,
+      "lodTriangles": 4029,
+      "bytes": 980544,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_monk_fparms",
+      "source": "meshy-community-characters",
+      "model": "Medieval Monk in Contemplation",
+      "date": "2026-10-29",
+      "src": "meshy_monk.glb",
+      "file": "characters/meshy_monk_fparms.glb",
+      "sha256": "fcf44481362c8b8f",
+      "triangles": 2032,
+      "bytes": 293120,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_big_bab",
+      "source": "meshy-community-characters",
+      "model": "T Pose Monkey",
+      "date": "2026-10-29",
+      "src": "meshy_big_bab.glb",
+      "file": "characters/meshy_big_bab.glb",
+      "sha256": "cb12f1cd510674fb",
+      "triangles": 10998,
+      "lodTriangles": 3270,
+      "bytes": 561872,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_big_bab_fparms",
+      "source": "meshy-community-characters",
+      "model": "T Pose Monkey",
+      "date": "2026-10-29",
+      "src": "meshy_big_bab.glb",
+      "file": "characters/meshy_big_bab_fparms.glb",
+      "sha256": "356ab89fbaf07a46",
+      "triangles": 4313,
+      "bytes": 308280,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_zhao",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a05-39b1-7653-b17c-03916e736722"
+      },
+      "model": "Uniformed Worker in a Jacket",
+      "date": "2026-10-29",
+      "file": "characters/meshy_zhao.glb",
+      "sha256": "c0ea55c45db42688",
+      "triangles": 10999,
+      "lodTriangles": 3237,
+      "bytes": 720884,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_zhao_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a05-39b1-7653-b17c-03916e736722"
+      },
+      "model": "Uniformed Worker in a Jacket",
+      "date": "2026-10-29",
+      "file": "characters/meshy_zhao_fparms.glb",
+      "sha256": "a30ca94eb6246d7f",
+      "triangles": 4623,
+      "bytes": 423896,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_desert_ranger",
+      "source": "meshy-community-characters",
+      "model": "Ultra detailed desert soldier",
+      "date": "2026-10-29",
+      "src": "meshy_desert_ranger.glb",
+      "file": "characters/meshy_desert_ranger.glb",
+      "sha256": "4d28b909e7e07b48",
+      "triangles": 10999,
+      "lodTriangles": 3249,
+      "bytes": 714884,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_desert_ranger_fparms",
+      "source": "meshy-community-characters",
+      "model": "Ultra detailed desert soldier",
+      "date": "2026-10-29",
+      "src": "meshy_desert_ranger.glb",
+      "file": "characters/meshy_desert_ranger_fparms.glb",
+      "sha256": "e3851e2ab7e3870b",
+      "triangles": 2569,
+      "bytes": 328260,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_zombie_groaner",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189e9-4224-722c-9042-798b11bf9b60"
+      },
+      "model": "Zombie T Pose",
+      "date": "2026-10-29",
+      "file": "characters/meshy_zombie_groaner.glb",
+      "sha256": "9074e8c6594a6e9d",
+      "triangles": 10000,
+      "lodTriangles": 2864,
+      "bytes": 588748,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_zombie_groaner_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a189e9-4224-722c-9042-798b11bf9b60"
+      },
+      "model": "Zombie T Pose",
+      "date": "2026-10-29",
+      "file": "characters/meshy_zombie_groaner_fparms.glb",
+      "sha256": "c3195e583cf608a2",
+      "triangles": 1117,
+      "bytes": 277724,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_gorgle",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a06-642d-75c0-91e0-b190e85219e8"
+      },
+      "model": "A horrifying mutated creature",
+      "date": "2026-10-29",
+      "file": "characters/meshy_gorgle.glb",
+      "sha256": "d182f4757a1d2e58",
+      "triangles": 9997,
+      "lodTriangles": 2905,
+      "bytes": 587200,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_gorgle_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a06-642d-75c0-91e0-b190e85219e8"
+      },
+      "model": "A horrifying mutated creature",
+      "date": "2026-10-29",
+      "file": "characters/meshy_gorgle_fparms.glb",
+      "sha256": "5d8e4f50c58126dd",
+      "triangles": 1000,
+      "bytes": 269352,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_giggles",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a06-9f14-748c-bf07-f3887878db9e"
+      },
+      "model": "A humanoid harlequin clown",
+      "date": "2026-10-29",
+      "file": "characters/meshy_giggles.glb",
+      "sha256": "bc6f44a5facc3f0d",
+      "triangles": 10999,
+      "lodTriangles": 3133,
+      "bytes": 626016,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_giggles_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a06-9f14-748c-bf07-f3887878db9e"
+      },
+      "model": "A humanoid harlequin clown",
+      "date": "2026-10-29",
+      "file": "characters/meshy_giggles_fparms.glb",
+      "sha256": "56633c3bd2fded7e",
+      "triangles": 2442,
+      "bytes": 291796,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_vanguard",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a06-dcea-72f8-a307-6aa4a8efc97e"
+      },
+      "model": "A futuristic warrior character",
+      "date": "2026-10-29",
+      "file": "characters/meshy_vanguard.glb",
+      "sha256": "d31b9bc26c1ff31d",
+      "triangles": 11000,
+      "lodTriangles": 3186,
+      "bytes": 654148,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_vanguard_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a06-dcea-72f8-a307-6aa4a8efc97e"
+      },
+      "model": "A futuristic warrior character",
+      "date": "2026-10-29",
+      "file": "characters/meshy_vanguard_fparms.glb",
+      "sha256": "55a9330cd75dda93",
+      "triangles": 1959,
+      "bytes": 304360,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_dust_trooper",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a07-581a-725a-b59f-a15dc27b2fda"
+      },
+      "model": "Full body of a man wearing a mask",
+      "date": "2026-10-29",
+      "file": "characters/meshy_dust_trooper.glb",
+      "sha256": "b84d5cd4ce7af71b",
+      "triangles": 13454,
+      "lodTriangles": 3797,
+      "bytes": 847172,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_dust_trooper_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a07-581a-725a-b59f-a15dc27b2fda"
+      },
+      "model": "Full body of a man wearing a mask",
+      "date": "2026-10-29",
+      "file": "characters/meshy_dust_trooper_fparms.glb",
+      "sha256": "d56b354ef1841283",
+      "triangles": 1539,
+      "bytes": 262792,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_punkin",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a08-101a-7320-bcaf-56ec55e9d823"
+      },
+      "model": "Pumpkin head scarecrow",
+      "date": "2026-10-29",
+      "file": "characters/meshy_punkin.glb",
+      "sha256": "f0a1c9f889b12427",
+      "triangles": 11000,
+      "lodTriangles": 3095,
+      "bytes": 631780,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_punkin_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a08-101a-7320-bcaf-56ec55e9d823"
+      },
+      "model": "Pumpkin head scarecrow",
+      "date": "2026-10-29",
+      "file": "characters/meshy_punkin_fparms.glb",
+      "sha256": "bc67b047169cc850",
+      "triangles": 3086,
+      "bytes": 317744,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_wizard",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a08-93d8-71f6-a9cc-d5754da6fbee"
+      },
+      "model": "wizard t pose",
+      "date": "2026-10-29",
+      "file": "characters/meshy_wizard.glb",
+      "sha256": "5d35cc1d80c8e436",
+      "triangles": 10998,
+      "lodTriangles": 2987,
+      "bytes": 717536,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_wizard_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a08-93d8-71f6-a9cc-d5754da6fbee"
+      },
+      "model": "wizard t pose",
+      "date": "2026-10-29",
+      "file": "characters/meshy_wizard_fparms.glb",
+      "sha256": "35d7dcfebb3d7bc1",
+      "triangles": 2779,
+      "bytes": 292904,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_skeleton",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a09-06d2-7788-a389-5088f4a1d26d"
+      },
+      "model": "Halloween 2025 ghoul",
+      "date": "2026-10-29",
+      "file": "characters/meshy_skeleton.glb",
+      "sha256": "a8d4db300ea64ff7",
+      "triangles": 15217,
+      "lodTriangles": 4413,
+      "bytes": 930772,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_skeleton_fparms",
+      "source": "meshy-community-characters",
+      "meshy": {
+        "rig": "01a18a09-06d2-7788-a389-5088f4a1d26d"
+      },
+      "model": "Halloween 2025 ghoul",
+      "date": "2026-10-29",
+      "file": "characters/meshy_skeleton_fparms.glb",
+      "sha256": "6d48965374ac9871",
+      "triangles": 7565,
+      "bytes": 560404,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_uncle_bao",
+      "source": "meshy-owned",
+      "meshy": {
+        "rig": "01a18a0a-0299-7411-ac24-653b171b3a1a"
+      },
+      "file": "characters/meshy_uncle_bao.glb",
+      "sha256": "14b698e7ee074f26",
+      "triangles": 11000,
+      "lodTriangles": 3213,
+      "bytes": 608888,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_uncle_bao_fparms",
+      "source": "meshy-owned",
+      "meshy": {
+        "rig": "01a18a0a-0299-7411-ac24-653b171b3a1a"
+      },
+      "file": "characters/meshy_uncle_bao_fparms.glb",
+      "sha256": "e57d69b4f5315b1f",
+      "triangles": 3622,
+      "bytes": 346388,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_bonejack",
+      "source": "meshy-owned",
+      "meshy": {
+        "rig": "01a18a0a-85ac-77dc-94a8-df489f7fe426"
+      },
+      "file": "characters/meshy_bonejack.glb",
+      "sha256": "9d9fe5f61242a54b",
+      "triangles": 10998,
+      "lodTriangles": 3241,
+      "bytes": 682840,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_bonejack_fparms",
+      "source": "meshy-owned",
+      "meshy": {
+        "rig": "01a18a0a-85ac-77dc-94a8-df489f7fe426"
+      },
+      "file": "characters/meshy_bonejack_fparms.glb",
+      "sha256": "662433948e433ae9",
+      "triangles": 3577,
+      "bytes": 357004,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_ashwalker",
+      "source": "meshy-owned",
+      "meshy": {
+        "rig": "01a18a0b-1e9b-7362-a818-d0779745bb32"
+      },
+      "file": "characters/meshy_ashwalker.glb",
+      "sha256": "78eff3b2788941ce",
+      "triangles": 9904,
+      "lodTriangles": 2850,
+      "bytes": 674380,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_ashwalker_fparms",
+      "source": "meshy-owned",
+      "meshy": {
+        "rig": "01a18a0b-1e9b-7362-a818-d0779745bb32"
+      },
+      "file": "characters/meshy_ashwalker_fparms.glb",
+      "sha256": "4c98d9516c5c2bc8",
+      "triangles": 749,
+      "bytes": 296848,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_thornweaver",
+      "source": "meshy-owned",
+      "meshy": {
+        "rig": "01a18a0b-64fb-7054-9580-9320b4285f70"
+      },
+      "file": "characters/meshy_thornweaver.glb",
+      "sha256": "cf81e421722382fe",
+      "triangles": 16032,
+      "lodTriangles": 4682,
+      "bytes": 1083628,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_thornweaver_fparms",
+      "source": "meshy-owned",
+      "meshy": {
+        "rig": "01a18a0b-64fb-7054-9580-9320b4285f70"
+      },
+      "file": "characters/meshy_thornweaver_fparms.glb",
+      "sha256": "f32f62510d4746c5",
+      "triangles": 2320,
+      "bytes": 399288,
       "hands": true
     }
   ]

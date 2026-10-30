@@ -1,0 +1,36 @@
+{
+  "id": "meshy_wizard",
+  "kind": "character",
+  "use": "player",
+  "order": 52,
+  "name": "Merrow the Wise",
+  "look": "core.merrow",
+  "bio": "Studied magic for four hundred years. Found the rifle quicker.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: wizard.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/0195cf8b-a824-750c-84a4-3ad6ce87e5ac",
+    "community": {
+      "model": "wizard t pose"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_wizard_t_pose_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a08-93d8-71f6-a9cc-d5754da6fbee"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.85
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

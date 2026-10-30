@@ -1,0 +1,36 @@
+{
+  "id": "meshy_gorgle",
+  "kind": "character",
+  "use": "npc+player",
+  "order": 47,
+  "name": "Gorgle",
+  "look": "core.gorgle",
+  "bio": "Crawled out of a lab vent. Nobody wants to know which lab.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: creature.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/0196daa9-6371-746f-b8ec-eb93815c0c4c",
+    "community": {
+      "model": "A horrifying mutated creature"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI__A_horrifying_mutated_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a06-642d-75c0-91e0-b190e85219e8"
+    }
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

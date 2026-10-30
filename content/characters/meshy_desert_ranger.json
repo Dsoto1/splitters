@@ -1,0 +1,36 @@
+{
+  "id": "meshy_desert_ranger",
+  "kind": "character",
+  "use": "player+npc",
+  "order": 44,
+  "name": "Desert Ranger",
+  "look": "core.desertranger",
+  "bio": "Two tours in the sand. Thinks the arena is a nice change of scenery.",
+  "body": "female",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: US soldier, desert.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019852b3-fb04-7b24-863c-fbe5855aac95",
+    "community": {
+      "model": "Ultra detailed desert soldier"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_Ultra_detailed_3D_mod_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a05-bda7-72d5-8ce2-0edc7a029806"
+    }
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

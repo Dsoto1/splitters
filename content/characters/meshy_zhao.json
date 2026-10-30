@@ -1,0 +1,40 @@
+{
+  "id": "meshy_zhao",
+  "kind": "character",
+  "use": "player",
+  "order": 43,
+  "name": "Agent Zhao",
+  "look": "core.zhao",
+  "bio": "Thirty years at customs. Nothing gets past him, and nobody gets through.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: customs agent.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019df47b-abde-7afe-955f-5350acdc8ff9",
+    "community": {
+      "model": "Uniformed Worker in a Jacket"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_Uniformed_Worker_in_a_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a05-39b1-7653-b17c-03916e736722"
+    }
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "hands": {
+      "scale": 0.85,
+      "curl": 1
+    }
+  }
+}

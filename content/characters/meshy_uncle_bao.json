@@ -1,0 +1,33 @@
+{
+  "id": "meshy_uncle_bao",
+  "kind": "character",
+  "use": "player",
+  "order": 54,
+  "name": "Uncle Bao",
+  "look": "core.unclebao",
+  "bio": "Retired, apparently. Nobody told his trigger finger.",
+  "body": "male",
+  "notes": "Not in the intake queue: found among the owner's downloads (2026-10-29) and brought in as a new character (named here; the owner reviews it on the grip and portrait sheets). Rigged by Meshy's rigging API from the unrigged textured GLB (source.modelUrl \"upload\").",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-10-29",
+    "url": null,
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_Arms_Outstretched_for_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a0a-0299-7411-ac24-653b171b3a1a"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

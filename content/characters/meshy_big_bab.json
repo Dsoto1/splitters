@@ -1,0 +1,37 @@
+{
+  "id": "meshy_big_bab",
+  "kind": "character",
+  "use": "player",
+  "order": 42,
+  "name": "Big Bab",
+  "look": "core.bigbab",
+  "bio": "Left the zoo for the city. Kept the attitude, lost the bananas.",
+  "body": "male",
+  "size": "large",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: baboon in street clothes.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019f6ba3-0841-7739-af7e-d60ab20641e0",
+    "community": {
+      "model": "T Pose Monkey"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_T_Pose_Monkey_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a04-5cb8-716b-9c78-6a1a0ed2b97b"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

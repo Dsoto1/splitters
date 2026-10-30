@@ -1,0 +1,39 @@
+{
+  "id": "meshy_giggles",
+  "kind": "character",
+  "use": "player+npc",
+  "order": 48,
+  "name": "Giggles",
+  "look": "core.giggles",
+  "bio": "The last birthday party he worked is still talked about. Quietly.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: clown.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/0196fae7-c794-7d54-bbaa-a14d04f1d66e",
+    "community": {
+      "model": "A humanoid harlequin clown"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_a_humanoid_HARLEQUINN_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a06-9f14-748c-bf07-f3887878db9e"
+    }
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "ranger_arms_m",
+    "skin": "#d8d0c8",
+    "cloth": "#c8c0b0",
+    "trim": "#2a2a2a"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "id": "meshy_dust_trooper",
+  "kind": "character",
+  "use": "player+npc",
+  "order": 50,
+  "name": "Dust Trooper",
+  "look": "core.dusttrooper",
+  "bio": "Crossed the wastes on foot. Kept the mask on for the smell of the arena.",
+  "body": "male",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: dust trooper.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/0195d603-a9a2-7f18-9198-d748d6f89ab3",
+    "community": {
+      "model": "Full body of a man wearing a mask"
+    },
+    "modelUrl": "upload",
+    "file": "^Meshy_AI_full_body_of_a_man_we_\\d+_(image-to-3d-)?texture\\.glb$",
+    "meshy": {
+      "rig": "01a18a07-581a-725a-b59f-a15dc27b2fda"
+    }
+  },
+  "finish": {
+    "metallic": 0.15,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "ranger_arms_m",
+    "skin": "#3a3028",
+    "cloth": "#5a4030",
+    "trim": "#3a3028"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}
