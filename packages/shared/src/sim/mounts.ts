@@ -119,14 +119,15 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     id: 'turret_mg',
     displayName: 'Heavy MG Turret',
     kind: 'turret',
-    model: 'turrets/mg.glb',
+    // The owner's toy machine gun on a tripod (Meshy, owned; content/guns.json, centred on its tripod).
+    model: 'guns/tripod_mg.glb',
     health: 400,
     half: [0.6, 0.5, 0.6],
     seats: [{ role: 'gunner', label: 'Gunner', offset: [0, 0, -1.1], weapon: 'core.mount_mg', arc: 1.4 }],
     enterRadius: 2.4,
     respawnSeconds: 45,
     blast: { radius: 3, damage: 60 },
-    blurb: 'A twin machine gun on a pedestal: one gunner, a wide arc, overheats instead of reloading',
+    blurb: 'A heavy machine gun on a tripod: one gunner, a wide arc, overheats instead of reloading',
   },
   turret_rocket: {
     id: 'turret_rocket',
@@ -146,7 +147,8 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     id: 'sentry',
     displayName: 'Sentry Gun',
     kind: 'sentry',
-    model: 'turrets/sentry.glb',
+    // The owner's Large Sentry Gun (Meshy, owned; content/guns.json, centred on its base).
+    model: 'guns/sentry_turret.glb',
     health: 220,
     half: [0.5, 0.5, 0.5],
     seats: [],

@@ -141,6 +141,8 @@ export interface AltFire {
   damage?: number;
   pellets?: number;
   spread?: number;
+  /** Hitscan reach (m); absent: the weapon's own range (a melee weapon's barrel needs its own). */
+  range?: number;
   projectile?: ProjectileSpec;
 }
 
@@ -199,11 +201,33 @@ export interface Recoil {
   recover: number;
 }
 
+/**
+ * Weapon categories, for random weapon pickups (a pickup set to "Random from
+ * category", or every weapon pickup when the host mixes them up, rolls a
+ * weapon of one category each time it comes back). Tools (medkit, grapple,
+ * builder), mode-only weapons and mounted guns have none and never roll.
+ */
+export const WEAPON_CATEGORIES = ['pistol', 'smg', 'rifle', 'shotgun', 'sniper', 'explosive', 'melee', 'special'] as const;
+export type WeaponCategory = (typeof WEAPON_CATEGORIES)[number];
+export const WEAPON_CATEGORY_LABELS: Record<WeaponCategory, string> = {
+  pistol: 'Pistols',
+  smg: 'SMGs and machine guns',
+  rifle: 'Rifles',
+  shotgun: 'Shotguns',
+  sniper: 'Snipers',
+  explosive: 'Explosives',
+  melee: 'Melee',
+  special: 'Specials',
+};
+export const isWeaponCategory = (v: unknown): v is WeaponCategory => typeof v === 'string' && (WEAPON_CATEGORIES as readonly string[]).includes(v);
+
 /** Data-driven weapon definition (v1 spec §5.2). Gameplay code never names a specific weapon. */
 export interface WeaponDefinition {
   id: string;
   displayName: string;
   kind: WeaponKind;
+  /** What random weapon pickups roll it as (absent: tools, mode-only weapons and mounted guns, which never roll). */
+  category?: WeaponCategory;
   /** Inventory slot and number key, 1..9. */
   slot: number;
   /** Damage per hit (per pellet for multi-pellet weapons). */
@@ -278,6 +302,7 @@ export interface WeaponDefinition {
 export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   'core.knife': {
     id: 'core.knife',
+    category: 'melee',
     displayName: 'Knife',
     kind: 'melee',
     slot: 1,
@@ -297,6 +322,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   'core.pistol': {
     id: 'core.pistol',
+    category: 'pistol',
     displayName: 'Pistol',
     kind: 'hitscan',
     slot: 2,
@@ -322,6 +348,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   'core.rifle': {
     id: 'core.rifle',
+    category: 'rifle',
     displayName: 'Assault Rifle',
     kind: 'hitscan',
     slot: 3,
@@ -355,6 +382,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   'core.shotgun': {
     id: 'core.shotgun',
+    category: 'shotgun',
     displayName: 'Shotgun',
     kind: 'hitscan',
     slot: 4,
@@ -381,6 +409,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   'core.sniper': {
     id: 'core.sniper',
+    category: 'sniper',
     displayName: 'Sniper Rifle',
     kind: 'hitscan',
     slot: 5,
@@ -402,10 +431,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     headshot: 3,
     botDesirability: 0.6,
     botRange: [18, 120],
-    view: { model: 'guns/awp.glb', fallback: 'weapons/sniper.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4, hold: { style: 'long', grip: [0, -0.06, -0.32], support: [0, -0.02, 0.03], shoulder: [0, -0.04, -0.56] } },
+    // Model: the owner's military sniper rifle (Meshy, owned; content/guns.json), the AWP it replaced as the fallback.
+    view: { model: 'guns/sniper_rifle.glb', fallback: 'guns/awp.glb', viewOffset: [0.2, -0.2, 0.65], tracer: '#9ad7ff', zoomFov: 0.4, hold: { style: 'long', grip: [0, -0.05, -0.27], support: [0, -0.02, 0.24], shoulder: [0, 0.06, -0.57] } },
   },
   'core.launcher': {
     id: 'core.launcher',
+    category: 'explosive',
     displayName: 'Grenade Launcher',
     kind: 'projectile',
     slot: 6,
@@ -427,6 +458,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   'core.smg': {
     id: 'core.smg',
+    category: 'smg',
     displayName: 'Submachine Gun',
     kind: 'hitscan',
     slot: 7,
@@ -446,10 +478,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'light',
     botDesirability: 0.6,
     botRange: [0, 18],
-    view: { model: 'guns/mac10.glb', fallback: 'weapons/smg.glb', viewOffset: [0.19, -0.19, 0.45], tracer: '#ffe9a8', hold: { style: 'long', grip: [0, 0.02, -0.04], support: [0, 0.06, 0.09], shoulder: [0, 0.06, -0.17] } },
+    // Model: the owner's Tommy Gun (Meshy, owned; content/guns.json), the MAC-10 it replaced as the fallback.
+    view: { model: 'guns/tommy_gun.glb', fallback: 'guns/mac10.glb', viewOffset: [0.2, -0.2, 0.5], tracer: '#ffe9a8', hold: { style: 'long', grip: [0, -0.04, -0.075], support: [0, 0.06, 0.22], shoulder: [0, -0.01, -0.41] } },
   },
   'core.rockets': {
     id: 'core.rockets',
+    category: 'explosive',
     displayName: 'Rocket Launcher',
     kind: 'projectile',
     slot: 8,
@@ -474,6 +508,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   'core.plasma': {
     id: 'core.plasma',
+    category: 'rifle',
     displayName: 'Plasma Rifle',
     kind: 'projectile',
     slot: 9,
@@ -499,7 +534,8 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
     botDesirability: 0.7,
     botRange: [3, 25],
-    view: { model: 'weapons/plasma.glb', viewOffset: [0.21, -0.21, 0.52], tracer: '#7dffb0', hold: { style: 'long', grip: [0, -0.08, 0.0], support: [0, -0.086, 0.204], shoulder: [0, -0.025, -0.405] } },
+    // Model: the owner's Futuristic Blaster (Meshy, owned; content/guns.json), the sci-fi kit rifle it replaced as the fallback.
+    view: { model: 'guns/futuristic_blaster.glb', fallback: 'weapons/plasma.glb', viewOffset: [0.21, -0.21, 0.52], tracer: '#7dffb0', hold: { style: 'long', grip: [0, -0.08, -0.08], support: [0, -0.05, 0.28], shoulder: [0, 0.02, -0.41] } },
   },
   ...arsenal(),
   ...mountWeapons(),
@@ -522,7 +558,8 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     heal: 25,
     botDesirability: 0,
     botRange: [0, 0],
-    view: { model: 'procedural/medkit', viewOffset: [0.2, -0.2, 0.42], tracer: '#ffffff', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, -0.02, 0] } },
+    // Model: the owner's Medkit (Meshy, owned), carried by its handle; the boxes-in-code case as the fallback.
+    view: { model: 'guns/medkit.glb', fallback: 'procedural/medkit', viewOffset: [0.2, -0.24, 0.42], tracer: '#ffffff', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, 0.1, 0] } },
   },
   'core.grapple': {
     id: 'core.grapple',
@@ -547,6 +584,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   'core.spear': {
     id: 'core.spear',
+    category: 'melee',
     displayName: 'Spear',
     kind: 'projectile',
     slot: 1,
@@ -591,7 +629,30 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   ...classWeapons(),
   // Added after the rest so existing weapon codes stay the same.
   ...gunplayWeapons(),
+  ...ownedWeapons(),
 };
+
+/**
+ * Weapons made for the owner's own Meshy models (content/guns.json, pack
+ * meshy-owned-guns), added last so every older weapon keeps its code. The
+ * Battle Axe is the heavy melee weapon: a slow, wide swing that hits hard and
+ * shoves, with a short scattergun barrel in the haft for the second trigger
+ * (two shells of its own, topped up by explosives and ammo boxes like an
+ * underbarrel grenade).
+ */
+function ownedWeapons(): Record<string, WeaponDefinition> {
+  const list: WeaponDefinition[] = [
+    weapon({
+      id: 'core.battle_axe', displayName: 'Battle Axe', category: 'melee', kind: 'melee', slot: 1, fireMode: 'semi',
+      damage: 85, fireIntervalTicks: 48, range: 2.7, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 18, knockback: 6,
+      alt: { label: 'Haft barrel', ammo: 'own', cost: 1, max: 2, pickup: 2, fireIntervalTicks: 40, kind: 'hitscan', damage: 12, pellets: 8, spread: 0.08, range: 22 },
+      botDesirability: 0.45, botRange: [0, 2.5],
+      // Model: the owner's Steampunk Battle Axe (Meshy, owned), held by its wrapped haft with the blade forward.
+      view: { model: 'guns/battle_axe.glb', fallback: 'weapons/knife.glb', viewOffset: [0.24, -0.26, 0.42], tracer: '#ffd9a0', sound: 'fire.knife', hold: { style: 'melee', grip: [0, 0, -0.3] } },
+    }),
+  ];
+  return Object.fromEntries(list.map((w) => [w.id, w]));
+}
 
 /**
  * Weapons of the gunplay pass (docs/GUNPLAY_SPEC.md). The Heavy Revolver is
@@ -604,7 +665,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
 function gunplayWeapons(): Record<string, WeaponDefinition> {
   const list: WeaponDefinition[] = [
     weapon({
-      id: 'core.revolver', displayName: 'Heavy Revolver', kind: 'hitscan', slot: 2, fireMode: 'semi', family: 'revolver',
+      id: 'core.revolver', displayName: 'Heavy Revolver', category: 'pistol', kind: 'hitscan', slot: 2, fireMode: 'semi', family: 'revolver',
       damage: 90, spread: 0.0005, fireIntervalTicks: 40, range: 300, magazine: 5, reserveMax: 30, pickupAmmo: 10,
       reloadTicks: 118, reload: { type: 'shell', start: 18, each: 18, end: 10 }, raiseTicks: 16,
       ammo: 'light', knockback: 4, botDesirability: 0.6, botRange: [3, 40],
@@ -638,7 +699,7 @@ function classWeapons(): Record<string, WeaponDefinition> {
       view: disc,
     }),
     weapon({
-      id: 'core.blast_rockets', displayName: 'Blast Rockets', kind: 'projectile', slot: 8,
+      id: 'core.blast_rockets', displayName: 'Blast Rockets', category: 'explosive', kind: 'projectile', slot: 8,
       fireIntervalTicks: 48, range: 0, magazine: 4, reserveMax: 20, pickupAmmo: 8, reloadTicks: 110, raiseTicks: 28, ammo: 'explosive',
       projectile: { speed: 26, gravity: 0, fuseSeconds: 4, splashRadius: 4.2, splashDamage: 95, splashEdgeDamage: 18, selfDamageScale: 0.3, visual: 'rocket', impactDamage: 20, knockback: 11 },
       botDesirability: 0.78, botRange: [6, 40],
@@ -648,7 +709,7 @@ function classWeapons(): Record<string, WeaponDefinition> {
       id: 'core.medi_beam', displayName: 'Medi-Beam', kind: 'melee', slot: 1,
       fireIntervalTicks: 12, range: 9, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 15, heal: 6,
       botDesirability: 0, botRange: [0, 0],
-      view: { model: 'procedural/medkit', viewOffset: [0.2, -0.2, 0.42], tracer: '#7dff9a', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, -0.02, 0] } },
+      view: { model: 'guns/medkit.glb', fallback: 'procedural/medkit', viewOffset: [0.2, -0.24, 0.42], tracer: '#7dff9a', sound: 'pickup.health', hold: { style: 'pistol', grip: [0, 0.1, 0] } },
     }),
   ];
   return Object.fromEntries(list.map((w) => [w.id, w]));
@@ -676,7 +737,8 @@ function mountWeapons(): Record<string, WeaponDefinition> {
       id: 'core.mount_mg', displayName: 'Mounted MG', kind: 'hitscan', slot: 0,
       damage: 11, spread: 0.018, fireIntervalTicks: 4, range: 160, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 0,
       heat: { perShot: 0.022, coolPerTick: 0.008 }, botDesirability: 0, botRange: [0, 80],
-      view: { model: 'turrets/mg.glb', viewOffset: [0, -0.35, 0.7], tracer: '#ffd36b', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.rifle' },
+      // Model: the owner's toy machine gun on a tripod (Meshy, owned), the space-kit twin gun as the fallback.
+      view: { model: 'guns/tripod_mg.glb', fallback: 'turrets/mg.glb', viewOffset: [0, -0.35, 0.7], tracer: '#ffd36b', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.rifle' },
     }),
     weapon({
       id: 'core.mount_rockets', displayName: 'Mounted Rockets', kind: 'projectile', slot: 0,
@@ -706,7 +768,8 @@ function mountWeapons(): Record<string, WeaponDefinition> {
       id: 'core.sentry_gun', displayName: 'Sentry Gun', kind: 'hitscan', slot: 0,
       damage: 7, spread: 0.03, fireIntervalTicks: 7, range: 40, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 0,
       botDesirability: 0, botRange: [0, 30],
-      view: { model: 'turrets/sentry.glb', viewOffset: [0, 0, 0], tracer: '#ff6a5a', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.smg' },
+      // Model: the owner's Large Sentry Gun (Meshy, owned), the space-kit turret as the fallback.
+      view: { model: 'guns/sentry_turret.glb', fallback: 'turrets/sentry.glb', viewOffset: [0, 0, 0], tracer: '#ff6a5a', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.smg' },
     }),
   ];
   return Object.fromEntries(list.map((w) => [w.id, w]));
@@ -727,70 +790,73 @@ function arsenal(): Record<string, WeaponDefinition> {
   const list: WeaponDefinition[] = [
     // ---------------------------------------------------------------- 2: sidearms
     weapon({
-      id: 'core.pulse_pistol', displayName: 'Pulse Pistol', kind: 'hitscan', slot: 2, fireMode: 'semi',
+      id: 'core.pulse_pistol', displayName: 'Pulse Pistol', category: 'pistol', kind: 'hitscan', slot: 2, fireMode: 'semi',
       damage: 24, spread: 0.004, fireIntervalTicks: 9, range: 110, magazine: 15, reserveMax: 90, pickupAmmo: 30, reloadTicks: 55, raiseTicks: 12,
       ammo: 'cells', recoil: { kick: 0.012, bloom: 0.004, maxBloom: 0.02, recover: 0.0015 }, botDesirability: 0.42, botRange: [2, 28],
-      view: sidearm('pulse_pistol', 0.3, '#c69bff', { hold: { style: 'pistol', grip: [0, -0.035, -0.157], support: [-0.02, -0.045, -0.147] }, sound: 'fire.pulse', beam: true }),
+      // Model: the owner's ornate energy handgun (Meshy, owned), the sci-fi kit pistol as the fallback.
+      view: sidearm('pulse_pistol', 0.3, '#c69bff', { model: 'guns/ornate_pistol.glb', fallback: 'weapons/pulse_pistol.glb', hold: { style: 'pistol', grip: [0, -0.05, -0.115], support: [-0.02, -0.06, -0.105] }, sound: 'fire.pulse', beam: true }),
     }),
     weapon({
-      id: 'core.hand_cannon', displayName: 'Hand Cannon', kind: 'hitscan', slot: 2, fireMode: 'semi', family: 'revolver',
+      id: 'core.hand_cannon', displayName: 'Hand Cannon', category: 'pistol', kind: 'hitscan', slot: 2, fireMode: 'semi', family: 'revolver',
       damage: 58, spread: 0.002, fireIntervalTicks: 30, range: 140, magazine: 6, reserveMax: 36, pickupAmmo: 12, reloadTicks: 100, raiseTicks: 22,
       ammo: 'light', knockback: 3, recoil: { kick: 0.09, bloom: 0.03, maxBloom: 0.05, recover: 0.0012 }, botDesirability: 0.55, botRange: [3, 35],
       view: sidearm('hand_cannon', 0.34, '#ffd08a', { sound: 'fire.heavy' }),
     }),
     weapon({
-      id: 'core.gilded_pistol', displayName: 'Gilded Pistol', kind: 'hitscan', slot: 2, fireMode: 'semi',
+      id: 'core.gilded_pistol', displayName: 'Gilded Pistol', category: 'special', kind: 'hitscan', slot: 2, fireMode: 'semi',
       damage: 999, spread: 0, fireIntervalTicks: 45, range: 160, magazine: 1, reserveMax: 6, pickupAmmo: 3, reloadTicks: 85, raiseTicks: 25,
       ammo: 'light', recoil: { kick: 0.05, bloom: 0, maxBloom: 0, recover: 0 }, botDesirability: 0.9, botRange: [2, 40],
       view: sidearm('gilded_pistol', 0.24, '#ffe070', { sound: 'fire.heavy' }),
     }),
     weapon({
-      id: 'core.flare_gun', displayName: 'Flare Gun', kind: 'projectile', slot: 2, fireMode: 'semi',
+      id: 'core.flare_gun', displayName: 'Flare Gun', category: 'special', kind: 'projectile', slot: 2, fireMode: 'semi',
       fireIntervalTicks: 40, magazine: 1, reserveMax: 10, pickupAmmo: 4, reloadTicks: 50, raiseTicks: 15, ammo: 'fuel',
       projectile: { speed: 30, gravity: 9, fuseSeconds: 5, splashRadius: 1.6, splashDamage: 25, splashEdgeDamage: 10, selfDamageScale: 0.3, visual: 'flare', impactDamage: 20, sticky: 'any', status: { kind: 'burn', seconds: 4 }, zone: { kind: 'fire', radius: 1.8, seconds: 4 }, ignites: true },
       botDesirability: 0.45, botRange: [5, 25],
       view: sidearm('flare_gun', 0.32, '#ff7a3a', { hold: { style: 'pistol', grip: [0, -0.045, -0.106], support: [-0.02, -0.055, -0.096] }, sound: 'fire.flare' }),
     }),
     weapon({
-      id: 'core.machine_pistol', displayName: 'Machine Pistol', kind: 'hitscan', slot: 2, family: 'machine_pistol',
+      id: 'core.machine_pistol', displayName: 'Machine Pistol', category: 'smg', kind: 'hitscan', slot: 2, family: 'machine_pistol',
       damage: 7, spread: 0.03, fireIntervalTicks: 3, range: 60, magazine: 24, reserveMax: 144, pickupAmmo: 48, reloadTicks: 60, raiseTicks: 12,
       ammo: 'light', recoil: { kick: 0.008, bloom: 0.006, maxBloom: 0.07, recover: 0.002 }, botDesirability: 0.5, botRange: [0, 14],
       view: sidearm('machine_pistol', 0.38, '#ffe9a8', { sound: 'fire.smg' }),
     }),
     // ---------------------------------------------------------------- 3: rifles
     weapon({
-      id: 'core.burst_rifle', displayName: 'Burst Rifle', kind: 'hitscan', slot: 3, family: 'rifle', fireMode: 'burst', burst: { count: 3, intervalTicks: 4 },
+      id: 'core.burst_rifle', displayName: 'Burst Rifle', category: 'rifle', kind: 'hitscan', slot: 3, family: 'rifle', fireMode: 'burst', burst: { count: 3, intervalTicks: 4 },
       damage: 17, spread: 0.008, fireIntervalTicks: 24, range: 160, magazine: 24, reserveMax: 144, pickupAmmo: 48, reloadTicks: 85, raiseTicks: 20,
       ammo: 'rifle', recoil: { kick: 0.018, bloom: 0.006, maxBloom: 0.03, recover: 0.002 }, botDesirability: 0.68, botRange: [5, 45],
-      view: longarm('burst_rifle', 0.75, '#ffd36b', { sound: 'fire.rifle' }),
+      // Model: the owner's Neon Flux (Meshy, owned), the gun-pack rifle as the fallback.
+      view: longarm('burst_rifle', 0.75, '#ffd36b', { model: 'guns/neon_flux.glb', fallback: 'weapons/burst_rifle.glb', hold: { style: 'long', grip: [0, -0.06, -0.16], support: [0, -0.04, 0.13], shoulder: [0, 0.05, -0.34] }, sound: 'fire.rifle' }),
     }),
     weapon({
-      id: 'core.laser_rifle', displayName: 'Laser Rifle', kind: 'hitscan', slot: 3,
+      id: 'core.laser_rifle', displayName: 'Laser Rifle', category: 'rifle', kind: 'hitscan', slot: 3,
       damage: 4, spread: 0, fireIntervalTicks: 2, range: 90, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 20,
       heat: { perShot: 0.022, coolPerTick: 0.01 }, botDesirability: 0.66, botRange: [3, 40],
       view: longarm('laser_rifle', 0.95, '#ff3b4a', { hold: { style: 'long', grip: [0, -0.06, -0.08], support: [0, -0.012, 0.328], shoulder: [0, 0.078, -0.455] }, sound: 'fire.laser', beam: true }),
     }),
     weapon({
-      id: 'core.marksman', displayName: 'Marksman Rifle', kind: 'hitscan', slot: 3, family: 'marksman', fireMode: 'semi',
+      id: 'core.marksman', displayName: 'Marksman Rifle', category: 'sniper', kind: 'hitscan', slot: 3, family: 'marksman', fireMode: 'semi',
       damage: 38, spread: 0.001, fireIntervalTicks: 14, range: 220, magazine: 10, reserveMax: 40, pickupAmmo: 20, reloadTicks: 90, raiseTicks: 22,
       ammo: 'sniper', recoil: { kick: 0.035, bloom: 0.01, maxBloom: 0.03, recover: 0.0015 }, botDesirability: 0.6, botRange: [12, 90],
-      view: longarm('marksman', 1.05, '#bfe4ff', { zoomFov: 0.7, sound: 'fire.sniper' }),
+      // Model: the owner's Frontier Rifle (Meshy, owned; a scoped rifle), the gun-pack rifle as the fallback.
+      view: longarm('marksman', 1.05, '#bfe4ff', { model: 'guns/frontier_rifle.glb', fallback: 'weapons/marksman.glb', hold: { style: 'long', grip: [0, -0.08, -0.24], support: [0, -0.06, 0.08], shoulder: [0, 0.04, -0.46] }, zoomFov: 0.7, sound: 'fire.sniper' }),
     }),
     // ---------------------------------------------------------------- 4: shotguns
     weapon({
-      id: 'core.sawed_off', displayName: 'Sawed-Off', kind: 'hitscan', slot: 4, family: 'shotgun', fireMode: 'semi',
+      id: 'core.sawed_off', displayName: 'Sawed-Off', category: 'shotgun', kind: 'hitscan', slot: 4, family: 'shotgun', fireMode: 'semi',
       damage: 8, pellets: 14, spread: 0.15, fireIntervalTicks: 14, range: 25, magazine: 2, reserveMax: 30, pickupAmmo: 10, reloadTicks: 70, raiseTicks: 14,
       ammo: 'shells', knockback: 1.2, recoil: { kick: 0.08, bloom: 0, maxBloom: 0, recover: 0 }, botDesirability: 0.62, botRange: [0, 6],
       view: longarm('sawed_off', 0.55, '#ffb38a', { sound: 'fire.shotgun' }),
     }),
     weapon({
-      id: 'core.auto_shotgun', displayName: 'Auto Shotgun', kind: 'hitscan', slot: 4, family: 'shotgun',
+      id: 'core.auto_shotgun', displayName: 'Auto Shotgun', category: 'shotgun', kind: 'hitscan', slot: 4, family: 'shotgun',
       damage: 7, pellets: 7, spread: 0.09, fireIntervalTicks: 18, range: 40, magazine: 8, reserveMax: 40, pickupAmmo: 16, reloadTicks: 100, raiseTicks: 22,
       ammo: 'shells', recoil: { kick: 0.045, bloom: 0.012, maxBloom: 0.04, recover: 0.0015 }, botDesirability: 0.64, botRange: [0, 10],
       view: longarm('auto_shotgun', 0.9, '#ffb38a', { sound: 'fire.shotgun' }),
     }),
     weapon({
-      id: 'core.flak', displayName: 'Flak Cannon', kind: 'projectile', slot: 4, pellets: 7, spread: 0.08,
+      id: 'core.flak', displayName: 'Flak Cannon', category: 'shotgun', kind: 'projectile', slot: 4, pellets: 7, spread: 0.08,
       fireIntervalTicks: 50, magazine: 4, reserveMax: 24, pickupAmmo: 8, reloadTicks: 95, raiseTicks: 24, ammo: 'shells',
       projectile: { speed: 48, gravity: 6, fuseSeconds: 1.2, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'shard', impactDamage: 13, bounce: 0.65, maxBounces: 2 },
       botDesirability: 0.62, botRange: [0, 14],
@@ -799,35 +865,36 @@ function arsenal(): Record<string, WeaponDefinition> {
     // ---------------------------------------------------------------- 5: precision
     weapon({
       // Charges briefly, then one body hit kills an unarmoured player.
-      id: 'core.railgun', displayName: 'Railgun', kind: 'hitscan', slot: 5, windupTicks: 24, windupResets: true,
+      id: 'core.railgun', displayName: 'Railgun', category: 'sniper', kind: 'hitscan', slot: 5, windupTicks: 24, windupResets: true,
       damage: 100, spread: 0, fireIntervalTicks: 40, range: 320, magazine: 4, reserveMax: 16, pickupAmmo: 8, reloadTicks: 110, raiseTicks: 28,
       ammo: 'cells', pierce: 3, knockback: 6, recoil: { kick: 0.09, bloom: 0, maxBloom: 0, recover: 0 }, botDesirability: 0.7, botRange: [15, 150],
       view: longarm('railgun', 1.1, '#5fe0ff', { hold: { style: 'long', grip: [0, -0.029, -0.165], support: [0, 0.083, 0.318], shoulder: [0, 0.002, -0.555] }, zoomFov: 0.5, sound: 'fire.railgun', beam: true }),
     }),
     // ---------------------------------------------------------------- 6: lobbers
     weapon({
-      id: 'core.disc_launcher', displayName: 'Disc Launcher', kind: 'projectile', slot: 6,
+      id: 'core.disc_launcher', displayName: 'Disc Launcher', category: 'explosive', kind: 'projectile', slot: 6,
       fireIntervalTicks: 50, magazine: 3, reserveMax: 18, pickupAmmo: 6, reloadTicks: 90, raiseTicks: 26, ammo: 'explosive',
       projectile: { speed: 34, gravity: 0, fuseSeconds: 3, splashRadius: 3.8, splashDamage: 75, splashEdgeDamage: 10, selfDamageScale: 0.45, visual: 'disc', impactDamage: 25, knockback: 10 },
       botDesirability: 0.72, botRange: [6, 35],
       view: longarm('disc_launcher', 0.85, '#7ad6ff', { hold: { style: 'long', grip: [0, -0.06, -0.06], support: [0, -0.022, 0.142], shoulder: [0, -0.076, -0.43] }, sound: 'fire.disc' }),
     }),
     weapon({
-      id: 'core.bubble_blaster', displayName: 'Bubble Blaster', kind: 'projectile', slot: 6,
+      id: 'core.bubble_blaster', displayName: 'Bubble Blaster', category: 'special', kind: 'projectile', slot: 6,
       fireIntervalTicks: 22, magazine: 6, reserveMax: 30, pickupAmmo: 12, reloadTicks: 80, raiseTicks: 20, ammo: 'chem',
       projectile: { speed: 10, gravity: -0.6, drag: 0.12, fuseSeconds: 7, splashRadius: 2.4, splashDamage: 22, splashEdgeDamage: 8, selfDamageScale: 0.5, visual: 'bubble', bounce: 0.95, maxBounces: 7, zone: { kind: 'toxic', radius: 3, seconds: 5 }, status: { kind: 'poison', seconds: 3 } },
       botDesirability: 0.5, botRange: [3, 16],
       view: longarm('bubble_blaster', 0.55, '#7dff6a', { hold: { style: 'long', grip: [0, -0.036, -0.163], support: [0, -0.006, 0.129], shoulder: [0, 0.043, -0.29] }, sound: 'fire.bubble' }),
     }),
     weapon({
-      id: 'core.goo_gun', displayName: 'Goo Gun', kind: 'projectile', slot: 6,
+      id: 'core.goo_gun', displayName: 'Goo Gun', category: 'special', kind: 'projectile', slot: 6,
       fireIntervalTicks: 12, magazine: 20, reserveMax: 80, pickupAmmo: 30, reloadTicks: 75, raiseTicks: 18, ammo: 'chem',
       projectile: { speed: 22, gravity: 12, fuseSeconds: 3, splashRadius: 1.8, splashDamage: 10, splashEdgeDamage: 6, selfDamageScale: 0, visual: 'goo', impactDamage: 8, zone: { kind: 'goo', radius: 2.4, seconds: 7 }, status: { kind: 'slow', seconds: 2.5 } },
       botDesirability: 0.45, botRange: [3, 20],
-      view: sidearm('goo_gun', 0.42, '#ff6ad0', { hold: { style: 'pistol', grip: [0, -0.006, -0.039], support: [-0.02, -0.016, -0.029] }, sound: 'fire.goo' }),
+      // Model: the owner's Mystical Glue Gun (Meshy, owned), the sci-fi kit gun as the fallback.
+      view: sidearm('goo_gun', 0.42, '#ff6ad0', { model: 'guns/glue_gun.glb', fallback: 'weapons/goo_gun.glb', hold: { style: 'pistol', grip: [0, -0.05, -0.11], support: [-0.02, -0.06, -0.1] }, sound: 'fire.goo' }),
     }),
     weapon({
-      id: 'core.oil_slicker', displayName: 'Oil Slicker', kind: 'projectile', slot: 6,
+      id: 'core.oil_slicker', displayName: 'Oil Slicker', category: 'special', kind: 'projectile', slot: 6,
       fireIntervalTicks: 10, magazine: 12, reserveMax: 48, pickupAmmo: 24, reloadTicks: 70, raiseTicks: 18, ammo: 'fuel',
       projectile: { speed: 17, gravity: 12, fuseSeconds: 3, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'oil', zone: { kind: 'oil', radius: 3, seconds: 16 } },
       alt: {
@@ -839,22 +906,23 @@ function arsenal(): Record<string, WeaponDefinition> {
     }),
     // ---------------------------------------------------------------- 7: automatics
     weapon({
-      id: 'core.lmg', displayName: 'Spin Gun', kind: 'hitscan', slot: 7, windupTicks: 28, family: 'lmg',
+      id: 'core.lmg', displayName: 'Spin Gun', category: 'smg', kind: 'hitscan', slot: 7, windupTicks: 28, family: 'lmg',
       // Huge belt, poor handling: slow to draw and a long, dangerous reload.
       damage: 9, spread: 0.035, fireIntervalTicks: 3, range: 300, magazine: 120, reserveMax: 240, pickupAmmo: 120, reloadTicks: 210, raiseTicks: 48,
       ammo: 'rifle', recoil: { kick: 0.006, bloom: 0.002, maxBloom: 0.04, recover: 0.001 }, botDesirability: 0.72, botRange: [3, 40],
       // Model: a Meshy community rotary-barrel gun (CC0 per the owner; content/guns.json): no stock, so the rear handle sits at the shoulder.
+      // Model: the owner's Rotary Gatling Gun (Meshy, owned; content/guns.json), the community spin gun it replaced as the fallback.
       view: longarm('lmg', 1.0, '#ffd36b', {
-        model: 'guns/plasma_spin_gun.glb',
-        fallback: 'weapons/lmg.glb',
-        // Chunky (side drums, a tall top): further out and lower than a rifle, so it doesn't fill the view.
+        model: 'guns/gatling_gun.glb',
+        fallback: 'guns/plasma_spin_gun.glb',
+        // Chunky (a tall body and a carry loop): further out and lower than a rifle, so it doesn't fill the view.
         viewOffset: [0.25, -0.28, 0.74],
-        hold: { style: 'long', grip: [0, -0.09, -0.36], support: [0, -0.075, 0.1], shoulder: [0, 0.06, -0.48] },
+        hold: { style: 'long', grip: [0, -0.1, -0.27], support: [0, -0.14, -0.02], shoulder: [0, 0.02, -0.47] },
         sound: 'fire.smg',
       }),
     }),
     weapon({
-      id: 'core.nailgun', displayName: 'Nailgun', kind: 'projectile', slot: 7, spread: 0.02,
+      id: 'core.nailgun', displayName: 'Nailgun', category: 'smg', kind: 'projectile', slot: 7, spread: 0.02,
       fireIntervalTicks: 5, magazine: 50, reserveMax: 200, pickupAmmo: 60, reloadTicks: 80, raiseTicks: 18, ammo: 'light',
       projectile: { speed: 75, gravity: 2, fuseSeconds: 1.5, splashRadius: 0, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'nail', impactDamage: 11, bounce: 0.75, maxBounces: 2 },
       botDesirability: 0.6, botRange: [2, 25],
@@ -862,7 +930,7 @@ function arsenal(): Record<string, WeaponDefinition> {
     }),
     // ---------------------------------------------------------------- 8: heavy
     weapon({
-      id: 'core.swarm', displayName: 'Swarm Launcher', kind: 'projectile', slot: 8, pellets: 4, spread: 0.14,
+      id: 'core.swarm', displayName: 'Swarm Launcher', category: 'explosive', kind: 'projectile', slot: 8, pellets: 4, spread: 0.14,
       fireIntervalTicks: 70, magazine: 4, reserveMax: 12, pickupAmmo: 4, reloadTicks: 100, raiseTicks: 30, ammo: 'explosive',
       projectile: { speed: 20, gravity: 0, fuseSeconds: 4, splashRadius: 2.6, splashDamage: 40, splashEdgeDamage: 8, selfDamageScale: 0.5, visual: 'swarm', impactDamage: 10, homing: { turnRate: 2.6, range: 45 } },
       botDesirability: 0.78, botRange: [8, 45],
@@ -870,14 +938,14 @@ function arsenal(): Record<string, WeaponDefinition> {
     }),
     weapon({
       // Laser-guided: the rocket flies wherever you keep your crosshair. Slow, so steer it round corners.
-      id: 'core.guided', displayName: 'Guided Rocket', kind: 'projectile', slot: 8, fireMode: 'semi',
+      id: 'core.guided', displayName: 'Guided Rocket', category: 'explosive', kind: 'projectile', slot: 8, fireMode: 'semi',
       fireIntervalTicks: 75, magazine: 1, reserveMax: 6, pickupAmmo: 3, reloadTicks: 90, raiseTicks: 32, ammo: 'explosive',
       projectile: { speed: 17, gravity: 0, fuseSeconds: 8, splashRadius: 5, splashDamage: 130, splashEdgeDamage: 20, selfDamageScale: 0.6, visual: 'rocket', impactDamage: 35, guided: { turnRate: 3.2 } },
       botDesirability: 0.7, botRange: [10, 60],
       view: { model: 'weapons/rockets.glb', viewOffset: [0.24, -0.24, 0.5], tracer: '#ff4a3a', sound: 'fire.rockets', hold: { style: 'long', grip: [0, -0.1, 0.0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] } },
     }),
     weapon({
-      id: 'core.singularity', displayName: 'Singularity Cannon', kind: 'projectile', slot: 8, fireMode: 'semi',
+      id: 'core.singularity', displayName: 'Singularity Cannon', category: 'special', kind: 'projectile', slot: 8, fireMode: 'semi',
       fireIntervalTicks: 90, magazine: 1, reserveMax: 4, pickupAmmo: 2, reloadTicks: 110, raiseTicks: 34, ammo: 'cells',
       projectile: { speed: 13, gravity: 0, fuseSeconds: 1.6, splashRadius: 1, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'vortex', zone: { kind: 'singularity', radius: 8, seconds: 2.4 } },
       botDesirability: 0.65, botRange: [8, 30],
@@ -885,23 +953,24 @@ function arsenal(): Record<string, WeaponDefinition> {
     }),
     // ---------------------------------------------------------------- 9: energy and chemical
     weapon({
-      id: 'core.arc_caster', displayName: 'Arc Caster', kind: 'hitscan', slot: 9,
+      id: 'core.arc_caster', displayName: 'Arc Caster', category: 'special', kind: 'hitscan', slot: 9,
       damage: 15, spread: 0.01, fireIntervalTicks: 9, range: 32, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 20,
       heat: { perShot: 0.08, coolPerTick: 0.009 }, chain: { jumps: 3, range: 9, falloff: 0.7 }, botDesirability: 0.62, botRange: [2, 25],
       view: longarm('arc_caster', 0.8, '#9fd8ff', { hold: { style: 'long', grip: [0, -0.08, 0.07], support: [0, -0.081, 0.192], shoulder: [0, 0.012, -0.38] }, sound: 'fire.arc', beam: true }),
     }),
     weapon({
-      id: 'core.flamethrower', displayName: 'Flamethrower', kind: 'projectile', slot: 9, spread: 0.05,
+      id: 'core.flamethrower', displayName: 'Flamethrower', category: 'special', kind: 'projectile', slot: 9, spread: 0.05,
       fireIntervalTicks: 3, magazine: 100, reserveMax: 200, pickupAmmo: 100, reloadTicks: 110, raiseTicks: 24, ammo: 'fuel',
       projectile: { speed: 17, gravity: -2, drag: 1.2, fuseSeconds: 0.55, splashRadius: 1.4, splashDamage: 5, splashEdgeDamage: 3, selfDamageScale: 0, visual: 'flame', impactDamage: 3, status: { kind: 'burn', seconds: 3 }, ignites: true },
       botDesirability: 0.58, botRange: [0, 8],
       view: longarm('flamethrower', 0.85, '#ff8a2a', { hold: { style: 'long', grip: [0, -0.084, -0.027], support: [0, -0.054, 0.328], shoulder: [0, 0.069, -0.455] }, sound: 'fire.flame' }),
     }),
     weapon({
-      id: 'core.freeze_ray', displayName: 'Freeze Ray', kind: 'hitscan', slot: 9,
+      id: 'core.freeze_ray', displayName: 'Freeze Ray', category: 'special', kind: 'hitscan', slot: 9,
       damage: 3, spread: 0, fireIntervalTicks: 3, range: 40, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 20,
       heat: { perShot: 0.018, coolPerTick: 0.01 }, status: { kind: 'chill', seconds: 2, amount: 0.07 }, botDesirability: 0.5, botRange: [2, 30],
-      view: sidearm('freeze_ray', 0.45, '#bff0ff', { hold: { style: 'pistol', grip: [0, -0.046, -0.207], support: [-0.02, -0.056, -0.197] }, sound: 'fire.freeze', beam: true }),
+      // Model: the owner's Freeze Gun (Meshy, owned), the sci-fi kit gun as the fallback.
+      view: sidearm('freeze_ray', 0.45, '#bff0ff', { model: 'guns/freeze_gun.glb', fallback: 'weapons/freeze_ray.glb', hold: { style: 'pistol', grip: [0, -0.06, -0.12], support: [-0.02, -0.07, -0.11] }, sound: 'fire.freeze', beam: true }),
     }),
   ];
   return Object.fromEntries(list.map((w) => [w.id, w]));

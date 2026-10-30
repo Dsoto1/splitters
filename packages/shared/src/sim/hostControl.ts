@@ -46,7 +46,7 @@ export class HostControl {
       teamNames: this.match.teams?.map((t) => t.name) ?? [],
       teamColors: this.match.teams?.map((t) => t.color) ?? [],
       sizes: teams ? Array.from({ length: teams }, (_, i) => sizes[i] ?? Math.max(1, Math.round(this.fill / teams))) : [],
-      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks },
+      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks, mixPickups: !!r.mixPickups },
       pending: { ...this.pending },
       botSet: this.bots.botSet,
       ...(this.bots.botSet && !this.bots.hostSet ? { mapBots: true } : {}),
@@ -66,11 +66,18 @@ export class HostControl {
       if (r.timeLimitSeconds !== undefined) p.timeLimitSeconds = Math.max(0, Math.min(7200, Math.round(r.timeLimitSeconds)));
       if (r.respawnDelayTicks !== undefined) p.respawnDelayTicks = Math.max(0, Math.min(1800, Math.round(r.respawnDelayTicks)));
       if (r.friendlyFire !== undefined) p.friendlyFire = r.friendlyFire;
+      // Mixing up weapon pickups needs no restart: the pickups roll (or go back) at once.
+      let mixed: string | undefined;
+      if (r.mixPickups !== undefined && r.mixPickups !== !!this.match.rules.mixPickups) {
+        this.match.setRules({ mixPickups: r.mixPickups || undefined });
+        mixed = `${who} ${r.mixPickups ? 'mixed up' : 'stopped mixing up'} the weapon pickups`;
+      }
       this.pending = { ...this.pending, ...p };
       // Back to what's playing now: nothing waits.
       const now = this.match.rules;
       for (const k of Object.keys(this.pending) as (keyof HostRulesPatch)[]) if ((k === 'friendlyFire' ? (now.friendlyFire ?? 'off') : now[k]) === this.pending[k]) delete this.pending[k];
-      return Object.keys(p).length ? { notice: `${who} changed the rules for the next restart` } : {};
+      if (Object.keys(p).length) return { notice: `${mixed ? `${mixed}; ` : ''}${who} changed the rules for the next restart` };
+      return mixed ? { notice: mixed } : {};
     }
     if (cmd.c === 'restart') {
       if (Object.keys(this.pending).length) {

@@ -113,6 +113,10 @@ function parseHostCommand(raw: unknown): HostCommand | null {
         if (p.friendlyFire !== 'off' && p.friendlyFire !== 'half' && p.friendlyFire !== 'on') return null;
         rules.friendlyFire = p.friendlyFire;
       }
+      if (p.mixPickups !== undefined) {
+        if (typeof p.mixPickups !== 'boolean') return null;
+        rules.mixPickups = p.mixPickups;
+      }
       return { c: 'rules', rules };
     }
     case 'map':

@@ -235,6 +235,11 @@ export class HostPanel {
       open.addEventListener('click', () => this.openBots(s));
       rows.push(settingRow('Bot set', 'Your own bots by name, look, skill, style, team and squad; random bots fill the rest unless the set says only these.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'hc-bots-sum', textContent: `${s.mapBots ? "The map's: " : ''}${botSetLabel(s.botSet)}`, title: `${s.mapBots ? "The map's own bots: " : ''}${botSetLabel(s.botSet)}` }), open), { live: true }));
     }
+    // Mix up weapon pickups: applies at once (hosts that know it send it in HostState.rules).
+    if (s.rules?.mixPickups !== undefined) {
+      const mix = s.rules.mixPickups;
+      rows.push(settingRow('Mix up weapon pickups', 'Every weapon pickup not marked "keep fixed" in MapMaker holds a random weapon of the same kind as the one placed there, and a new one each time it comes back. Applies at once.', choice([['off', 'Off'], ['on', 'On']] as const, mix ? 'on' : 'off', (v) => this.hooks.command({ c: 'rules', rules: { mixPickups: v === 'on' } }), 'hc-mix'), { live: true }));
+    }
     const liveChanged = d.fill !== s.fill || d.sizes.join() !== now.join() || d.skill !== s.skill || d.style !== s.style;
 
     // Rules that need the match to start over.

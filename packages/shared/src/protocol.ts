@@ -74,12 +74,14 @@ export type RotationCommand = Extract<HostCommand, { c: 'rotation' | 'skip' }>;
 /** Commands the match itself runs (HostControl). */
 export type MatchCommand = Exclude<HostCommand, { c: 'map' } | PlayerCommand | RotationCommand>;
 
-/** Rules a host can change mid-match; they wait for the next restart. */
+/** Rules a host can change mid-match; they wait for the next restart (all but mixPickups, which applies at once). */
 export interface HostRulesPatch {
   scoreLimit?: number;
   timeLimitSeconds?: number;
   friendlyFire?: 'off' | 'half' | 'on';
   respawnDelayTicks?: number;
+  /** Mix up weapon pickups (MatchRules.mixPickups): takes effect at once, not at the restart. */
+  mixPickups?: boolean;
 }
 
 /** The match's host settings, for the pause menu of whoever runs it. */
@@ -474,6 +476,8 @@ export type ServerMessage =
       pr: [number, number, number, number, number][];
       /** IDs of pickups currently taken (waiting to respawn). */
       pk: string[];
+      /** Random weapon pickups holding something other than what was placed: [pickup ID, item ID] (absent: none). */
+      pw?: [string, string][];
       /** Ground hazards and fields (oil, fire, toxic clouds, goo, singularities), when any. */
       zn?: ZoneSnapshot[];
       /** Turrets, sentries and vehicles, when the map has any. */

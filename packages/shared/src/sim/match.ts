@@ -9,7 +9,7 @@ import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, type DirectorMember } fr
 import { regionLayout } from '../bots/regions.ts';
 import { VantageBoard, vantageFor } from '../bots/vantage.ts';
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
-import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole } from '../map/schema.ts';
+import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole, type PickupEntity } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
@@ -44,6 +44,7 @@ import {
 import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
+import { pickupPool, rollPickup } from './pickupRoll.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
 import { BUTTON_ALT, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
@@ -403,7 +404,16 @@ const FROZEN_TICKS = Math.round(TICK_RATE * 1.4);
 
 interface PickupState {
   id: string;
+  /** What lies there now (a random pickup's latest roll). */
   item: ItemDefinition;
+  /** The item as placed in the map. */
+  placed: ItemDefinition;
+  /** Random from category (or mixed up by the host): what it rolls from; null keeps the placed item. */
+  pool: readonly ItemDefinition[] | null;
+  /** Rolls so far (the next roll's number, sim/pickupRoll.ts). */
+  rolls: number;
+  /** The map entity's own random settings. */
+  entity: Pick<PickupEntity, 'item' | 'random' | 'keepFixed'>;
   pos: Vec3;
   respawnTicks: number;
   availableAt: number;
@@ -547,7 +557,9 @@ export class Match {
       if (e.kind !== 'pickup') continue;
       const item = getItem(e.item);
       if (!item) continue;
-      this.pickups.push({ id: e.id, item, pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, respawnTicks: Math.round((e.respawnSeconds ?? item.respawnSeconds) * TICK_RATE), availableAt: 0, enabled: true });
+      const p: PickupState = { id: e.id, item, placed: item, pool: null, rolls: 0, entity: { item: e.item, random: e.random, keepFixed: e.keepFixed }, pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, respawnTicks: Math.round((e.respawnSeconds ?? item.respawnSeconds) * TICK_RATE), availableAt: 0, enabled: true };
+      this.pickups.push(p);
+      this.repool(p);
     }
     for (const e of map.entities) {
       if (e.kind !== 'prop') continue;
@@ -1330,6 +1342,8 @@ export class Match {
    */
   setRules(patch: Partial<MatchRules>): void {
     (this as { rules: MatchRules }).rules = { ...this.rules, ...patch };
+    // "Mix up weapon pickups" turned on or off: every pickup it touches rolls (or goes back to what was placed) now.
+    if ('mixPickups' in patch) for (const p of this.pickups) this.repool(p);
   }
 
   /** The host ends the match now: the results as they stand, then the scoreboard (and a fresh round after the intermission). */
@@ -2512,7 +2526,12 @@ export class Match {
         if (world && body === null) body = world.handle;
       }
       this.pendingEvents.push({ e: 'melee', s: shooter.slot, hit });
-      if (hit !== null) this.damage(this.actor(hit)!, def.damage, shooter, def.id);
+      if (hit !== null) {
+        const victim = this.actor(hit)!;
+        this.damage(victim, def.damage, shooter, def.id);
+        // Heavy melee (the battle axe) shoves the target along the swing.
+        if (def.knockback && victim.alive) this.push(victim, viewDirection(shooter.yaw, 0), def.knockback);
+      }
       else if (body !== null && !this.damageMountBody(body, this.boosted(shooter, def.damage), shooter)) this.scenario.damageBody(body, this.boosted(shooter, def.damage), shooter.slot);
       return;
     }
@@ -4176,7 +4195,29 @@ export class Match {
       p.availableAt = this.tick + p.respawnTicks;
       this.pendingEvents.push({ e: 'pickup', s: c.slot, id: p.id, item: p.item.id });
       this.scenario.pickupTaken(p.id, c.slot);
+      // A random pickup comes back as another weapon of its category.
+      this.reroll(p);
     }
+  }
+
+  /** Work out what a pickup rolls from (its own category, or the host's mix-up), and roll it afresh when that changed. */
+  private repool(p: PickupState): void {
+    const pool = pickupPool(p.entity, !!this.rules.mixPickups);
+    // Pools are shared per category (categoryItems), so the same pool is the same array.
+    if (pool === p.pool) return;
+    p.pool = pool;
+    if (pool) this.reroll(p);
+    else p.item = p.placed;
+  }
+
+  /** The next roll of a random pickup (deterministic: the match seed, its ID and its roll count). */
+  private reroll(p: PickupState): void {
+    if (p.pool) p.item = rollPickup(this.seed, p.id, p.rolls++, p.pool, p.item);
+  }
+
+  /** What random pickups hold now, where it isn't what was placed: [pickup ID, item ID] (the snapshot's `pw`). */
+  pickupItems(): [string, string][] {
+    return this.pickups.filter((p) => p.item !== p.placed).map((p) => [p.id, p.item.id]);
   }
 
   /** Returns false when the item would be wasted (full health, weapon already maxed), leaving it in place. */
@@ -4756,6 +4797,7 @@ export class Match {
       ev: events,
       pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)]),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
+      ...(this.pickups.some((p) => p.item !== p.placed) ? { pw: this.pickupItems() } : {}),
       ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
       ...(this.covers.length ? { cv: this.covers.map((c): CoverSnapshot => [c.id, r3(c.pos.x), r3(c.pos.y), r3(c.pos.z), r3(c.yaw), Math.ceil((Math.max(0, c.health) / c.max) * 100)]) } : {}),
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
@@ -5335,7 +5377,7 @@ function altTrigger(def: WeaponDefinition, alt: AltFire): Trigger {
     damage: alt.damage ?? def.damage,
     pellets: alt.pellets ?? def.pellets,
     spread: alt.spread ?? def.spread,
-    range: def.range,
+    range: alt.range ?? def.range,
     ...(alt.projectile ? { projectile: alt.projectile } : {}),
     alt: true,
   };

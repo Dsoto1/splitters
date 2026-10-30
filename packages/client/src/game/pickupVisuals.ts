@@ -10,6 +10,9 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { getItem, getWeapon , type AmmoType, type DiscPower } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 
+/** The health pickups' model: the medkit (it falls back to the boxes-in-code case when it can't load). */
+const HEALTH_MODEL = 'guns/medkit.glb';
+
 /** Height of a pickup's centre above the floor. */
 export const PICKUP_HOVER = 0.55;
 
@@ -33,8 +36,9 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
 
 /**
  * The look of a pickup, shared by the game and MapMaker so what creators
- * place is exactly what players see: weapon models on a glowing ring, and
- * simple in-house shapes for health, armor, ammo and powerups.
+ * place is exactly what players see: models on a glowing ring for weapons
+ * and health (the medkit), and simple in-house shapes for armor, ammo and
+ * powerups.
  * The returned root is centred on the item; place it PICKUP_HOVER above the floor.
  */
 export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false): TransformNode {
@@ -57,11 +61,14 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     });
     part(CreateCylinder(`${name}_ring`, { diameter: 0.9, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -0.5;
   } else if (fx.kind === 'health') {
-    const s = fx.amount >= 50 ? 1.25 : 1;
-    part(CreateBox(`${name}_hp`, { size: 0.42 * s }, scene), mat(scene, '#f2f2f2'));
-    const red = mat(scene, '#e23b3b', 0.6);
-    part(CreateBox(`${name}_hpx`, { width: 0.44 * s, height: 0.12 * s, depth: 0.43 * s }, scene), red);
-    part(CreateBox(`${name}_hpy`, { width: 0.12 * s, height: 0.44 * s, depth: 0.43 * s }, scene), red);
+    // The medkit model (the owner's Meshy medkit, content/guns.json); large health is a bigger case.
+    const s = fx.amount >= 50 ? 1.6 : 1.25;
+    void models.instantiate(HEALTH_MODEL, `${name}_hp`, instanced).then((model) => {
+      if (root.isDisposed()) return model.dispose();
+      model.parent = root;
+      model.scaling.setAll(s);
+    });
+    part(CreateCylinder(`${name}_ring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, '#e23b3b', 0.5)).position.y = -0.4;
   } else if (fx.kind === 'armor') {
     const s = fx.amount >= 50 ? 1.25 : 1;
     part(CreateCylinder(`${name}_ar`, { diameter: 0.6 * s, height: 0.12, tessellation: 6 }, scene), mat(scene, '#3c8dff', 0.35)).rotation.x = Math.PI / 2;

@@ -1,11 +1,14 @@
 // Meshy's textured FBX downloads ("Meshy_AI_<name>_<date>_texture_fbx": one
 // mesh with one material, its maps beside it as <stem>.png, _normal.png,
-// _metallic.png, _roughness.png and sometimes _emission.png) turned into light
-// game meshes. Used by prepare-guns.mjs (weapon models), prepare-props.mjs
+// _metallic.png, _roughness.png and sometimes _emission.png) and textured GLB
+// downloads ("Meshy_AI_<name>_<id>_texture.glb": the same mesh, its maps inside)
+// turned into light game meshes. Used by prepare-guns.mjs (weapon models), prepare-props.mjs
 // (props) and prepare-meshy-characters.mjs (the seam-aware simplifier).
 import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
-import { compactPrimitive, prune, weld } from '@gltf-transform/functions';
+import { NodeIO } from '@gltf-transform/core';
+import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
+import { clearNodeTransform, compactPrimitive, flatten, prune, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
@@ -112,12 +115,16 @@ const HIDDEN_WORK = 40000;
  * seat stuffing), so the budget goes to what shows. Returns { doc, sourceTriangles, triangles }.
  */
 export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, dropHidden = false } = {}) {
-  const { doc } = await fbxToDocument(fbxPath, { keepUv: true });
+  const glb = /\.glb$/i.test(fbxPath);
+  const { doc } = glb ? { doc: await glbDocument(fbxPath) } : await fbxToDocument(fbxPath, { keepUv: true });
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
   if (prims.length !== 1) throw new Error(`${basename(fbxPath)}: expected one mesh with one material, found ${prims.length} primitives`);
   const prim = prims[0];
-  // fbxToDocument writes unindexed triangles.
-  const sourceTriangles = prim.getAttribute('POSITION').getCount() / 3;
+  // fbxToDocument writes unindexed triangles; a GLB is indexed.
+  const sourceTriangles = (prim.getIndices()?.getCount() ?? prim.getAttribute('POSITION').getCount()) / 3;
+  // The GLB's colour map, taken before the old material goes.
+  const glbMap = glb ? prim.getMaterial()?.getBaseColorTexture()?.getImage() : null;
+  if (glb && !glbMap) throw new Error(`${basename(fbxPath)}: no base colour map in the GLB`);
   await doc.transform(weld());
   if (sourceTriangles > WORK_TRIANGLES) {
     const [cut] = MeshoptSimplifier.simplify(new Uint32Array(prim.getIndices().getArray()), new Float32Array(prim.getAttribute('POSITION').getArray()), 3, WORK_TRIANGLES * 3, Math.max(0.01, maxError), []);
@@ -125,8 +132,8 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
     compactPrimitive(prim);
   }
   const png = fbxPath.replace(/\.fbx$/i, '.png');
-  if (!existsSync(png)) throw new Error(`${basename(fbxPath)}: no base colour map ${basename(png)} beside it`);
-  const map = await sharp(readFileSync(png)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  if (!glb && !existsSync(png)) throw new Error(`${basename(fbxPath)}: no base colour map ${basename(png)} beside it`);
+  const map = await sharp(glb ? Buffer.from(glbMap) : readFileSync(png)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   if (recolor) await recolor(map);
   const image = () => sharp(map.data, { raw: { width: map.info.width, height: map.info.height, channels: 3 } });
   const jpeg = await image().resize(1024, 1024, { fit: 'inside', kernel: 'lanczos3' }).jpeg({ quality: 88 }).toBuffer();
@@ -159,6 +166,21 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
   prim.setMaterial(material);
   await doc.transform(prune());
   return { doc, sourceTriangles, triangles: prim.getIndices().getCount() / 3 };
+}
+
+/**
+ * A Meshy textured GLB as a document like fbxToDocument's: its node transforms baked into the vertices, every map
+ * but the base colour dropped (the build paints its own), the mesh left as Meshy wrote it.
+ */
+async function glbDocument(path) {
+  const doc = await new NodeIO().registerExtensions(ALL_EXTENSIONS).read(path);
+  await doc.transform(flatten());
+  for (const node of doc.getRoot().listNodes()) if (node.getMesh()) clearNodeTransform(node);
+  for (const mat of doc.getRoot().listMaterials()) {
+    mat.setNormalTexture(null).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
+    for (const ext of mat.listExtensions()) ext.dispose();
+  }
+  return doc;
 }
 
 /** Raw RGB pixels from a colour test: 1 where `marked(r, g, b)`. */

@@ -30,6 +30,7 @@ export * from './sim/mounts.ts';
 export * from './sim/parachute.ts';
 export * from './sim/airplane.ts';
 export * from './sim/items.ts';
+export * from './sim/pickupRoll.ts';
 export * from './sim/rules.ts';
 export * from './sim/playlist.ts';
 export * from './sim/rotation.ts';

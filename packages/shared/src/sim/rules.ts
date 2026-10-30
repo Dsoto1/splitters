@@ -74,6 +74,11 @@ export interface MatchRules {
   emotes?: boolean;
   /** How bots play: each character's own way (mixed, default), all arena-style or all tactical. */
   botStyle?: 'mixed' | 'arena' | 'tactical';
+  /**
+   * Mix up weapon pickups: every weapon pickup not marked "keep fixed" rolls a weapon of the same category
+   * as the one placed there each time it comes back (sim/pickupRoll.ts). Default off.
+   */
+  mixPickups?: boolean;
   /** Kill-streak rewards (UAV, supply pulse, Counter-UAV, airstrike). Default true. */
   killstreaks?: boolean;
   /** Team modes: respawn beside a teammate who isn't in a fight, when one is free. Default true. */

@@ -5,6 +5,7 @@ import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
 import { BORDER_STYLES } from './border.ts';
 import { ScenarioLogic } from './logic.ts';
 import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
+import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
 
 /**
  * Tile Trigger map document, format version 6 (v2 added per-surface tile styles, v3 pickup
@@ -12,7 +13,8 @@ import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
  * wall styles, trim and props, v7 terrain, v8 map boundary and team setup, v11 flag bases
  * and hills for Capture the Flag and King of the Hill, v18 the race `track`, v19 the transport plane and mount skins, v20 movers, logic-driven
  * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids, v21 vehicles that ride on water, v22 the map's picture: `metadata.thumbnail`
- * and the camera it was taken from, `metadata.thumbnailCamera`).
+ * and the camera it was taken from, `metadata.thumbnailCamera`, v23 one path primitive, v24 random weapon pickups:
+ * a pickup's `random` category and `keepFixed`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -23,7 +25,7 @@ import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 23;
+export const MAP_FORMAT_VERSION = 24;
 /** Content packs a map may name in `dependencies`. */
 export const MAX_MAP_DEPENDENCIES = 16;
 
@@ -185,9 +187,18 @@ export const SpawnEntity = EntityBase.extend({
 /** A pickup (health, armor, ammo, weapon, powerup) that respawns after being taken. */
 export const PickupEntity = EntityBase.extend({
   kind: z.literal('pickup'),
+  /** The item. A random pickup shows this one in MapMaker; in play it rolls a weapon of its category instead. */
   item: ContentId,
   /** Overrides the item's default respawn time; null = item default. */
   respawnSeconds: z.number().min(1).max(600).nullable().default(null),
+  /**
+   * Random from category (v24): a weapon pickup that rolls a weapon of this category (sim/weapons.ts
+   * WEAPON_CATEGORIES) each time it comes back, the same roll for host and clients (sim/pickupRoll.ts).
+   * Absent: the item as placed.
+   */
+  random: z.enum(WEAPON_CATEGORIES).optional(),
+  /** Keep fixed (v24): the host's "Mix up weapon pickups" leaves this pickup as placed. */
+  keepFixed: z.boolean().optional(),
 });
 
 /** Facing in radians. Doors snap to quarter turns in the editor. */
