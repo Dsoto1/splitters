@@ -11,6 +11,11 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
 ### Owner notes, 2026-10-30 evening (not done yet; next session start here)
+- **Release fix in flight (2026-10-30 ~20:45 UTC):** `check/release-fix` (1317b80) = current `main` (3831f35) plus the
+  ci.yml fix (no cancelled runs on main; a main commit not green on a check branch is tested against the nearest one that
+  was). When its CI is green: `git push origin 1317b80:main` (fast-forward). That run publishes `main-latest`; then the
+  owner runs `sudo tiletrigger-update` and gets 9a959ee's buggy model/seats and weapon drops. If it's red on a flake
+  (arsenal/physicsfx), rerun the failed job once. The same fix is on the session branch.
 - **The box is on an old build:** `sudo tiletrigger-update` says "Already on d582c4852690 (main-latest)", but
   `main` is at `9a959ee` (buggy model and seats, weapon drops). So `main-latest` wasn't republished when `main`
   was fast-forwarded to a commit already green on `check/candidate` (CI skips a push to main that went green on a
