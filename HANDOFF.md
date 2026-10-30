@@ -23,15 +23,11 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - `wip/roster-cleanup`'s first two commits;
   - the ladder path fix.
 - **Also on `main`** (`4176d3d`, green): `wip/pause-safari` (wider pause menu, Safari look filter, zoom sensitivity).
-- **Agents still running at hand-off; their work lives on these branches:**
-  - **`wip/impact`** (batch 2):
-    - stopping power;
-    - bigger explosion knockback;
-    - tiered ragdolls (full, cheap, posed; a body pool; a budget of awake bodies; a perf "mass casualty" check);
-    - unarmed punch and kick (Universal Animation Library clips);
-    - Arena-tagged bots hop only in fights on the "Mixed" style.
-
-    Section 5 below lists the items; check what was pushed and finish it.
+- **Also on `main`** (`384ffe7`, green): `wip/impact` (batch 2): stopping power, bigger explosion knockback, tiered ragdolls (full, cheap, posed; a body pool; a budget of awake bodies; `pnpm perf:mass`), unarmed punch and kick (Universal Animation Library clips), and Arena-tagged bots hopping only in fights on the "Mixed" style. **No agents are running; every requested branch is merged.**
+- **Open items:**
+  - `perf:mass` classes some deaths as out of view when they are on screen; check the view test before trusting its tier counts;
+  - kick and flinch feel not judged by eye yet;
+  - Safari look: the owner tests it; if it is still off, ask for `window.__lookStats` from the console.
 - **Not merged on purpose:** roster-cleanup's WIP commit 899537c (helmets worn on four looks; fit values are guesses, never checked visually). Finish the helmet fits (Commando, Engineer, beret and headband heights, Farmhand hat, Drifter mask, Dapper jacket weights) on a new branch.
 - **Owner to-dos:**
   - run `sudo tiletrigger-update` on the box after each `main` update;
