@@ -82,6 +82,15 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     dark roof bars/dash (model geometry), tall heads touch the roof bars, the jeep's cab riders hidden behind its
     opaque windows, seated riders don't turn round past ~77°; Titan, Alien, Salamander not rebuilt (downloads
     missing); Bonesworth's left hand on his grip sheet; `visual` baselines may move if a buggy is in a picture.
+- **`wip/full-body-fp-fix`** (on top of the session branch): arsenal's Battle Axe check failed on CI after full
+  body. Cause: lag compensation. The flow teleports the bot and swings at once; the match rewinds targets to
+  the tick the client's screen showed (`viewTick`, up to 18 ticks), so a swing sent before the page drew the bot
+  in front is aimed at where it was, and the semi-automatic axe swings only once. A slow page loses that race
+  (reproduced in arms-only too at ~4.7 s frames; full body is a few per cent slower per frame, enough on CI).
+  Fix in the test: `seenAt()` waits until the page draws the moved bot before the punch, the axe and the
+  blunderbuss. Also: the Knight's gauntlets (`fixes.hands.curl: 1`, rehanded) close on the grip, and shoulder
+  pads are cut from the full-body first-person view. Still: the Knight's right gauntlet in first person points
+  its fingers up behind the grip, and his armoured left forearm crosses the lower left on long guns.
 - **Full-body first person: done on `wip/full-body-fp`, not merged** (owner agreed the plan; 2026-10-30
   evening). First person draws your own third-person character from its eyes (`game/firstPersonBody.ts`
   `FirstPersonBodyRig`, `View.showFpBody`): the body stands where prediction has you and animates with your
