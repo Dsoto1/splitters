@@ -2284,15 +2284,16 @@ async function lobbyFlow(browser) {
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Friday Night')).querySelector('button').click());
   const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) }).then(() => true, () => false);
   check(joined, 'joining from the game browser puts the player in the match');
+  const lobbyGames = () => player.evaluate(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => JSON.stringify(d.games.map((g) => [g.name, g.code, g.players])))).catch((e) => e.message);
   if (joined) {
     // The next check-in reports two players.
     const two = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.find((g) => g.name === 'E2E Friday Night')?.players === 2), null, { timeout: T(30000), polling: 2000 }).then(() => true, () => false);
-    check(two, 'the listing updates to 2 players');
+    check(two, `the listing updates to 2 players${two ? '' : ` (${await lobbyGames()})`}`);
   }
   await host.context().close();
   // The host's listing goes (the player may carry the match on under a listing of their own: host handoff).
   const gone = await player.waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => !d.games.some((g) => g.name === 'E2E Friday Night' && g.code === c)), hostCode, { timeout: T(15000), polling: 1000 }).then(() => true, () => false);
-  check(gone, "the host's listing goes away when the host closes the game");
+  check(gone, `the host's listing goes away when the host closes the game${gone ? '' : ` (${hostCode}: ${await lobbyGames()})`}`);
   await player.context().close();
 
   // Offline by default; "Go online" restarts the match and lists it; "Go offline" takes it down again.
