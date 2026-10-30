@@ -1,0 +1,84 @@
+# AGENT BUILD BRIEF — MAP 01 — SUNKEN KINGDOM
+**Status:** Not implemented. This is a construction specification to apply using the **real Trigger MapMaker**. Read `AGENT_BUILD_CONTRACT.md` first.
+**Source:** `MAP_01_Sunken_Kingdom.md` in the design bible. Approved visual reference must be supplied/identified by the user. Do not treat image-generated geometry as engine coordinates.
+
+## Design targets
+- **Topology:** Irregular concentric districts and offset courtyard chains.
+- **Terrain and elevation:** Tiered cliffs, carved stairways, partially flooded lower courts.
+- **Required landmarks:** Ruined palace, market arcade, western colonnade, eastern gatehouse, buried cistern.
+- **Traversal:** Three surface loops plus one underground bypass; rooftops connect locally, not continuously.
+- **Combat:** Temple terraces offer midrange fights; markets favor close combat; cliff edges provide risky long sightlines.
+- **Movement:** Foot movement, short stair climbs, occasional water crossings. Use only where the geography and Trigger's supported mechanics justify them.
+- **Signature identity:** A partly flooded ruined city with water at the collection’s maximum density.
+
+## Concrete MapMaker build tasks
+1. Locate and document the existing map schema and editor terrain/structure workflows. Duplicate a known-good sample map as a new unique ID, without overwriting existing work.
+2. Using the approved overhead image, sketch and implement the **complete playable boundary** and the named landmark footprints. Record the map's origin, rotation, dimensions and world-unit scale.
+3. Sculpt landforms and elevation first. Ensure slope/ramp/stair access between intended playable levels and avoid inaccessible decorative islands.
+4. Build **Ruined palace, market arcade, western colonnade, eastern gatehouse, buried cistern.** with actual modular tiles/assets. Give every structure purposeful entry/exit geometry; where interiors are intended, use accessible rooms and clear door openings rather than sealed façades.
+5. Construct **Three surface loops plus one underground bypass; rooftops connect locally, not continuously.**. Write a traversal graph listing each route's endpoints, vertical change, expected travel time, chokepoints and alternate paths. Verify walking in-engine.
+6. Define cover, sightlines and engagement spaces consistent with: **Temple terraces offer midrange fights; markets favor close combat; cliff edges provide risky long sightlines.**. Avoid vast empty killing fields unless intentional for this specific map.
+7. Configure the supported game modes, real spawn entities, team assignment, objectives and pickups **after** geometry is stable. Select exact weapon IDs from Trigger's real registries. No invented placements from visual art.
+8. Generate/update bot navigation and test bot reachability through all major zones; scale spawn density to the map's documented player-count target.
+9. Apply materials, lighting and minimal themed dressing without obscuring gameplay. Re-check collision and sightlines.
+10. Save, reload, launch a bot match, capture an overhead screenshot and key first-person route screenshots, then complete QA checklist.
+
+## Mandatory map-specific constraints
+Avoid adding more bridges, perfectly mirrored bases, or treating water as the only traversal obstacle. Do not reuse the overhead silhouette, mirrored placement, water distribution, or radial bridge network of Sunken Kingdom or The Spillway. No filler architecture.
+
+## Do not guess
+- The reference image does not establish exact game-unit distances, exact interiors, exact spawn/pickup coordinates, or objective locations.
+- MapMaker APIs and asset identifiers must be discovered in the project; never fabricate them.
+- Ask before materially changing the approved geometry or adding features not supported by the current editor.
+
+## Required handoff
+- Native Trigger map data (must load in current MapMaker and game)
+- `MAP_IMPLEMENTATION_MANIFEST.md` (all world coordinates and real IDs)
+- `QA_REPORT.md` (checks, test commands, bot counts, failures, performance)
+- `DECISIONS_AND_DEVIATIONS.md` (differences from approved image/brief)
+- Top-down MapMaker screenshot and 3–6 in-game first-person screenshots
+
+## Original concept reference
+The following brief is design input, not a verified map implementation.
+
+# MAP 01 — SUNKEN KINGDOM
+
+**Status:** Proposed visual concept; not approved geometry.
+**Map scale:** Large arena. **Target combatants:** 16–32. **Recommended modes:** TDM, CTF, DM.
+
+## Environment and setting
+Ancient sandstone oasis ruins. The setting must be readable through its buildings, landforms, materials, and believable site organization rather than decorative labels.
+
+## Authoritative layout identity
+**Topology:** Irregular concentric districts and offset courtyard chains.
+
+**Terrain and elevation:** Tiered cliffs, carved stairways, partially flooded lower courts.
+
+**Required landmarks:** Ruined palace, market arcade, western colonnade, eastern gatehouse, buried cistern.
+
+**Traversable routes:** Three surface loops plus one underground bypass; rooftops connect locally, not continuously.
+
+**Combat-space variety:** Temple terraces offer midrange fights; markets favor close combat; cliff edges provide risky long sightlines.
+
+**Movement opportunities:** Foot movement, short stair climbs, occasional water crossings. Use only where the geography and Trigger's supported mechanics justify them.
+
+**Signature identity:** A partly flooded ruined city with water at the collection’s maximum density.
+
+## Explicit anti-repetition constraints
+Avoid adding more bridges, perfectly mirrored bases, or treating water as the only traversal obstacle. Do not reuse the overhead silhouette, mirrored placement, water distribution, or radial bridge network of Sunken Kingdom or The Spillway. No filler architecture.
+
+## Gameplay plausibility / developer review
+Central temple is a landmark, not an unavoidable choke; show distinct land routes around both sides. Routes must be physically connected and sized for the intended player count. Spawns, weapon pickups, objectives and exact vehicle placements are **not yet specified**; do not invent or depict their markers.
+
+## Exact image-generation brief — copy this section into an image request
+Create ONE premium high-detail stylized 3D overhead map reference for Trigger, titled conceptually “Sunken Kingdom” but with **no title text rendered**. The scene is ancient sandstone oasis ruins. Use this unique composition: irregular concentric districts and offset courtyard chains; terrain: tiered cliffs, carved stairways, partially flooded lower courts. Visibly incorporate ruined palace, market arcade, western colonnade, eastern gatehouse, buried cistern. Make navigation legible through three surface loops plus one underground bypass; rooftops connect locally, not continuously. The design's gameplay identity is a partly flooded ruined city with water at the collection’s maximum density. High oblique near-vertical aerial; entire irregular ruin boundary visible; weathered gold stone and turquoise pools, readable roofs and stairs. Show the COMPLETE playable map footprint and its borders in a single coherent frame. Convey realistic first-person-shooter traversability, distinct combat zones, modular buildable architecture integrated with sculptable terrain, cover, stairs and accessible routes. Absolutely NO text, letters, numbers, icons, legends, HUD, arrows, infographic panels, characters, or weapon pickups. Avoid water and bridges except where explicitly required. Specific prohibition: Avoid adding more bridges, perfectly mirrored bases, or treating water as the only traversal obstacle. Do not make a variant of any previously generated map.
+
+## Approval checklist
+- [ ] Entire map visible from near-overhead view.
+- [ ] Footprint/topology visually distinct from approved maps.
+- [ ] All named landmarks identifiable without labels.
+- [ ] Routes physically plausible, with more than one viable engagement approach.
+- [ ] Water, bridges and symmetry limited to the brief.
+- [ ] No generated labels, icons, or fictional item placements.
+- [ ] User approves image before any detailed placement work.
+
