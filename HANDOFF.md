@@ -45,8 +45,13 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   `?mode=grips`, `pose(look, weapon, 'body')`, `look(pitch, motion)`, `outside(alpha)`. Docs: CHARACTERS.md
   "Full-body first person". Still off: the knight's left pauldron is a big dark wedge at the lower left; a
   knife's free hand hangs at the side but a held knife still sits oddly in the open right hand (as in Arms
-  only); looking straight down the gun hides your right leg; seated passengers keep the arms. Needs a check
-  branch run before `main`.
+  only); looking straight down the gun hides your right leg; seated passengers keep the arms. Cost (SwiftShader,
+  training_range, Scout): your own drawing is 4 meshes / 18.3k triangles in full body vs 3 / 5.1k arms only
+  (plus the body's shadow and the head ball's), no second character loaded; frame times too noisy on CPU
+  rendering to tell apart (perf96 frost_basin 48 bots ran, one-frame draw samples dominated by what was in view).
+  Local e2e: characters, designer, offline, visual pass (no baseline change); arsenal fails "hazards are drawn on
+  the ground", "R loads the barrel again", sometimes the Battle Axe swing, and the build from before this work
+  fails the same and more. Needs a check branch run before `main`.
 - **Field guide** (owner asked 2026-10-30): a reference page of every weapon, vehicle, character, map feature
   and pickup, generated from the shared data: https://claude.ai/artifact/GgiMK17TA5oCY3Cnyna3oy (PDF and HTML
   were sent to the owner). Regenerate it when the arsenal or roster changes.
