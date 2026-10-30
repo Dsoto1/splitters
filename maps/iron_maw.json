@@ -4375,7 +4375,7 @@
         -8.03,
         41.63
       ],
-      "yaw": -0.97,
+      "yaw": -4.111,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4383,13 +4383,13 @@
     {
       "id": "prop_145",
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "prop.cargo_container_rusty_red",
       "position": [
         -135.54,
         -8.03,
         -61.17
       ],
-      "yaw": 2.913,
+      "yaw": 1.343,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4397,14 +4397,14 @@
     {
       "id": "prop_146",
       "kind": "prop",
-      "model": "prop.ammo_stack",
+      "model": "prop.cargo_crate_stack",
       "position": [
         107.25,
         -8.03,
         -85.09
       ],
-      "yaw": 1.996,
-      "scale": 1,
+      "yaw": -1.146,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -4417,7 +4417,7 @@
         -16.03,
         62.32
       ],
-      "yaw": -2.053,
+      "yaw": -3.623,
       "scale": 1.4,
       "solid": true,
       "tint": null
@@ -4425,14 +4425,14 @@
     {
       "id": "prop_148",
       "kind": "prop",
-      "model": "prop.fuel_drum",
+      "model": "prop.cargo_ibc_tank",
       "position": [
         -111.31,
         -16.03,
         15.67
       ],
-      "yaw": -1.131,
-      "scale": 1.2,
+      "yaw": -2.702,
+      "scale": 1.3,
       "solid": true,
       "tint": null
     },
@@ -4445,7 +4445,7 @@
         -16.03,
         -55.25
       ],
-      "yaw": 2.932,
+      "yaw": 1.361,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4453,13 +4453,13 @@
     {
       "id": "prop_150",
       "kind": "prop",
-      "model": "prop.shipping_container_blue",
+      "model": "prop.cargo_container_rusty_blue",
       "position": [
         -80.19,
         -16.03,
         -113.32
       ],
-      "yaw": 2.283,
+      "yaw": 0.712,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4473,7 +4473,7 @@
         -16.03,
         -125.17
       ],
-      "yaw": 1.634,
+      "yaw": 0.063,
       "scale": 1.2,
       "solid": true,
       "tint": null
@@ -4487,7 +4487,7 @@
         -24.03,
         26.41
       ],
-      "yaw": 0.893,
+      "yaw": -0.678,
       "scale": 0.55,
       "solid": true,
       "tint": null
@@ -4495,55 +4495,55 @@
     {
       "id": "prop_153",
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "prop.cargo_container_old_rusty",
       "position": [
         22.34,
         -24.03,
         50.76
       ],
-      "yaw": -1.198,
-      "scale": 1.2,
+      "yaw": -2.769,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_154",
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "prop.machine",
       "position": [
         -22.58,
         -24.03,
         52.31
       ],
-      "yaw": -0.148,
-      "scale": 1,
+      "yaw": -1.719,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_155",
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "prop.cargo_wooden_crate_low",
       "position": [
         -63.08,
         -24.03,
         35.17
       ],
-      "yaw": -2.24,
-      "scale": 1,
+      "yaw": -3.81,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_156",
       "kind": "prop",
-      "model": "prop.ammo_stack",
+      "model": "prop.jersey_barrier",
       "position": [
         -97.35,
         -24.03,
         3.04
       ],
-      "yaw": -1.189,
+      "yaw": -4.331,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4551,27 +4551,27 @@
     {
       "id": "prop_157",
       "kind": "prop",
-      "model": "prop.mc_cart",
+      "model": "prop.cargo_container_rusty_red",
       "position": [
         -101.97,
         -24.03,
         -44.88
       ],
-      "yaw": 3.002,
-      "scale": 1.4,
+      "yaw": 1.432,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_158",
       "kind": "prop",
-      "model": "prop.fuel_drum",
+      "model": "prop.cargo_crate_stack",
       "position": [
         -85.23,
         -24.03,
         -90.35
       ],
-      "yaw": 4.053,
+      "yaw": 0.911,
       "scale": 1.2,
       "solid": true,
       "tint": null
@@ -4579,69 +4579,69 @@
     {
       "id": "prop_159",
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "prop.mc_cart",
       "position": [
         22.2,
-        -31.71,
+        -31.8,
         25.14
       ],
-      "yaw": -1.058,
-      "scale": 1,
+      "yaw": -2.628,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_160",
       "kind": "prop",
-      "model": "prop.shipping_container_blue",
+      "model": "prop.cargo_ibc_tank",
       "position": [
         -4.35,
-        -32.03,
+        -31.92,
         31.28
       ],
       "yaw": -1.482,
-      "scale": 1,
+      "scale": 1.3,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_161",
       "kind": "prop",
-      "model": "prop.hesco_wall",
+      "model": "prop.jersey_barrier_striped",
       "position": [
         -57.5,
         -32.03,
         18.05
       ],
-      "yaw": -2.33,
-      "scale": 1.2,
+      "yaw": -3.901,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_162",
       "kind": "prop",
-      "model": "prop.mc_mound",
+      "model": "prop.cargo_container_rusty_blue",
       "position": [
         -78.46,
         -32.03,
         -4.06
       ],
-      "yaw": -1.183,
-      "scale": 0.55,
+      "yaw": -4.325,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_163",
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "prop.hesco_wall",
       "position": [
         51.43,
         -32.03,
         -70.54
       ],
-      "yaw": 0.56,
+      "yaw": -1.011,
       "scale": 1.2,
       "solid": true,
       "tint": null
@@ -4649,27 +4649,27 @@
     {
       "id": "prop_164",
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "prop.mc_mound",
       "position": [
         67.37,
         -32.03,
         -42.6
       ],
-      "yaw": 1.707,
-      "scale": 1,
+      "yaw": 0.136,
+      "scale": 0.55,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_165",
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "prop.cargo_container_old_rusty",
       "position": [
         47.56,
         -40.03,
         -16.58
       ],
-      "yaw": -0.262,
+      "yaw": -1.833,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4677,55 +4677,55 @@
     {
       "id": "prop_166",
       "kind": "prop",
-      "model": "prop.ammo_stack",
+      "model": "prop.machine",
       "position": [
         31.58,
         -40.03,
         -2.88
       ],
-      "yaw": 0.96,
-      "scale": 1,
+      "yaw": -0.611,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_167",
       "kind": "prop",
-      "model": "prop.mc_cart",
+      "model": "prop.cargo_wooden_crate_low",
       "position": [
         14.87,
         -40.03,
         3.52
       ],
-      "yaw": -0.96,
-      "scale": 1.4,
+      "yaw": -2.531,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_168",
       "kind": "prop",
-      "model": "prop.fuel_drum",
+      "model": "prop.jersey_barrier",
       "position": [
         1.1,
-        -39.89,
+        -40.03,
         9.44
       ],
-      "yaw": 0.262,
-      "scale": 1.2,
+      "yaw": -2.88,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_169",
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "prop.cargo_container_rusty_red",
       "position": [
         -13.93,
-        -40,
+        -40.03,
         12.92
       ],
-      "yaw": -1.658,
+      "yaw": -3.229,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -4733,69 +4733,69 @@
     {
       "id": "prop_170",
       "kind": "prop",
-      "model": "prop.shipping_container_blue",
+      "model": "prop.cargo_crate_stack",
       "position": [
         -5.86,
         -40.03,
         -79.28
       ],
-      "yaw": 1.484,
-      "scale": 1,
+      "yaw": -0.087,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_171",
       "kind": "prop",
-      "model": "prop.hesco_wall",
+      "model": "prop.mc_cart",
       "position": [
         8.58,
         -40.03,
         -71.84
       ],
-      "yaw": 1.134,
-      "scale": 1.2,
+      "yaw": -0.436,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_172",
       "kind": "prop",
-      "model": "prop.mc_mound",
+      "model": "prop.cargo_ibc_tank",
       "position": [
         26.05,
-        -40.02,
+        -40.03,
         -68.05
       ],
-      "yaw": 2.356,
-      "scale": 0.55,
+      "yaw": 0.785,
+      "scale": 1.3,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_173",
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "prop.jersey_barrier_striped",
       "position": [
         41.04,
         -40.03,
         -55.8
       ],
-      "yaw": 0.436,
-      "scale": 1.2,
+      "yaw": -1.134,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
     {
       "id": "prop_174",
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "prop.cargo_container_rusty_blue",
       "position": [
         50.58,
         -40.03,
         -37.3
       ],
-      "yaw": 1.658,
+      "yaw": -1.484,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -12604,6 +12604,104 @@
     {
       "id": "prop_248",
       "kind": "prop",
+      "model": "prop.cargo_ibc_tank",
+      "position": [
+        -40,
+        -0.03,
+        134
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_249",
+      "kind": "prop",
+      "model": "prop.cargo_ibc_tank",
+      "position": [
+        -38,
+        -0.03,
+        134
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_250",
+      "kind": "prop",
+      "model": "prop.cargo_ibc_tank",
+      "position": [
+        20,
+        -0.03,
+        134
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_251",
+      "kind": "prop",
+      "model": "prop.cargo_container_red",
+      "position": [
+        -86,
+        -0.03,
+        166
+      ],
+      "yaw": 1.57,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_252",
+      "kind": "prop",
+      "model": "prop.cargo_container_red",
+      "position": [
+        66,
+        -0.03,
+        166
+      ],
+      "yaw": 1.57,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_253",
+      "kind": "prop",
+      "model": "prop.cargo_crate_stack",
+      "position": [
+        -16,
+        -0.03,
+        186
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_254",
+      "kind": "prop",
+      "model": "prop.cargo_wooden_crate",
+      "position": [
+        10,
+        -0.03,
+        176
+      ],
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_255",
+      "kind": "prop",
       "model": "prop.floodlight",
       "position": [
         6,
@@ -12616,7 +12714,7 @@
       "tint": null
     },
     {
-      "id": "prop_249",
+      "id": "prop_256",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -12630,7 +12728,7 @@
       "tint": null
     },
     {
-      "id": "prop_250",
+      "id": "prop_257",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -12644,7 +12742,7 @@
       "tint": null
     },
     {
-      "id": "prop_251",
+      "id": "prop_258",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -12658,7 +12756,7 @@
       "tint": null
     },
     {
-      "id": "prop_252",
+      "id": "prop_259",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -12672,13 +12770,55 @@
       "tint": null
     },
     {
-      "id": "prop_253",
+      "id": "prop_260",
       "kind": "prop",
-      "model": "prop.shipping_container_green",
+      "model": "prop.cargo_container_red",
       "position": [
         -172,
-        -0.03,
+        -0.04,
         128
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_261",
+      "kind": "prop",
+      "model": "prop.cargo_army_crate",
+      "position": [
+        -141,
+        -0.03,
+        150
+      ],
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_262",
+      "kind": "prop",
+      "model": "prop.cargo_army_crate",
+      "position": [
+        -139.5,
+        -0.03,
+        152
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_263",
+      "kind": "prop",
+      "model": "prop.cargo_container",
+      "position": [
+        -180,
+        -0.05,
+        170
       ],
       "yaw": 1.571,
       "scale": 1,
@@ -12686,7 +12826,7 @@
       "tint": null
     },
     {
-      "id": "prop_254",
+      "id": "prop_264",
       "kind": "prop",
       "model": "prop.ammo_stack",
       "position": [
@@ -12700,7 +12840,7 @@
       "tint": null
     },
     {
-      "id": "prop_255",
+      "id": "prop_265",
       "kind": "prop",
       "model": "prop.sandbag_nest",
       "position": [
@@ -12714,7 +12854,7 @@
       "tint": null
     },
     {
-      "id": "prop_256",
+      "id": "prop_266",
       "kind": "prop",
       "model": "prop.camo_net",
       "position": [
@@ -12728,7 +12868,7 @@
       "tint": null
     },
     {
-      "id": "prop_257",
+      "id": "prop_267",
       "kind": "prop",
       "model": "prop.fuel_drum",
       "position": [
@@ -12742,7 +12882,7 @@
       "tint": null
     },
     {
-      "id": "prop_258",
+      "id": "prop_268",
       "kind": "prop",
       "model": "prop.jersey_barrier_striped",
       "position": [
@@ -12756,7 +12896,7 @@
       "tint": null
     },
     {
-      "id": "prop_259",
+      "id": "prop_269",
       "kind": "prop",
       "model": "prop.jersey_barrier_striped",
       "position": [
@@ -12770,7 +12910,7 @@
       "tint": null
     },
     {
-      "id": "prop_260",
+      "id": "prop_270",
       "kind": "prop",
       "model": "prop.yard_lamp",
       "position": [
@@ -12784,7 +12924,7 @@
       "tint": null
     },
     {
-      "id": "prop_261",
+      "id": "prop_271",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -12798,7 +12938,7 @@
       "tint": null
     },
     {
-      "id": "prop_262",
+      "id": "prop_272",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -12812,7 +12952,7 @@
       "tint": null
     },
     {
-      "id": "prop_263",
+      "id": "prop_273",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -12826,7 +12966,7 @@
       "tint": null
     },
     {
-      "id": "prop_264",
+      "id": "prop_274",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -12840,13 +12980,55 @@
       "tint": null
     },
     {
-      "id": "prop_265",
+      "id": "prop_275",
       "kind": "prop",
-      "model": "prop.shipping_container_green",
+      "model": "prop.cargo_container_red",
       "position": [
         172,
         -0.03,
         128
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_276",
+      "kind": "prop",
+      "model": "prop.cargo_army_crate",
+      "position": [
+        141,
+        -0.15,
+        150
+      ],
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_277",
+      "kind": "prop",
+      "model": "prop.cargo_army_crate",
+      "position": [
+        139.5,
+        -0.03,
+        152
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_278",
+      "kind": "prop",
+      "model": "prop.cargo_container",
+      "position": [
+        180,
+        -0.05,
+        170
       ],
       "yaw": 1.571,
       "scale": 1,
@@ -12854,7 +13036,7 @@
       "tint": null
     },
     {
-      "id": "prop_266",
+      "id": "prop_279",
       "kind": "prop",
       "model": "prop.ammo_stack",
       "position": [
@@ -12868,7 +13050,7 @@
       "tint": null
     },
     {
-      "id": "prop_267",
+      "id": "prop_280",
       "kind": "prop",
       "model": "prop.sandbag_nest",
       "position": [
@@ -12882,7 +13064,7 @@
       "tint": null
     },
     {
-      "id": "prop_268",
+      "id": "prop_281",
       "kind": "prop",
       "model": "prop.camo_net",
       "position": [
@@ -12896,7 +13078,7 @@
       "tint": null
     },
     {
-      "id": "prop_269",
+      "id": "prop_282",
       "kind": "prop",
       "model": "prop.fuel_drum",
       "position": [
@@ -12910,7 +13092,7 @@
       "tint": null
     },
     {
-      "id": "prop_270",
+      "id": "prop_283",
       "kind": "prop",
       "model": "prop.jersey_barrier_striped",
       "position": [
@@ -12924,7 +13106,7 @@
       "tint": null
     },
     {
-      "id": "prop_271",
+      "id": "prop_284",
       "kind": "prop",
       "model": "prop.jersey_barrier_striped",
       "position": [
@@ -12938,7 +13120,7 @@
       "tint": null
     },
     {
-      "id": "prop_272",
+      "id": "prop_285",
       "kind": "prop",
       "model": "prop.yard_lamp",
       "position": [
@@ -12952,7 +13134,7 @@
       "tint": null
     },
     {
-      "id": "prop_273",
+      "id": "prop_286",
       "kind": "prop",
       "model": "prop.storage_tank",
       "position": [
@@ -12966,7 +13148,7 @@
       "tint": null
     },
     {
-      "id": "prop_274",
+      "id": "prop_287",
       "kind": "prop",
       "model": "prop.storage_tank",
       "position": [
@@ -12980,7 +13162,7 @@
       "tint": null
     },
     {
-      "id": "prop_275",
+      "id": "prop_288",
       "kind": "prop",
       "model": "prop.fuel_tank",
       "position": [
@@ -12994,7 +13176,7 @@
       "tint": null
     },
     {
-      "id": "prop_276",
+      "id": "prop_289",
       "kind": "prop",
       "model": "prop.shipping_container_red",
       "position": [
@@ -13008,7 +13190,7 @@
       "tint": null
     },
     {
-      "id": "prop_277",
+      "id": "prop_290",
       "kind": "prop",
       "model": "prop.shipping_container_blue",
       "position": [
@@ -13022,7 +13204,7 @@
       "tint": null
     },
     {
-      "id": "prop_278",
+      "id": "prop_291",
       "kind": "prop",
       "model": "prop.fuel_tank",
       "position": [
@@ -13036,7 +13218,7 @@
       "tint": null
     },
     {
-      "id": "prop_279",
+      "id": "prop_292",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -13050,7 +13232,7 @@
       "tint": null
     },
     {
-      "id": "prop_280",
+      "id": "prop_293",
       "kind": "prop",
       "model": "prop.steel_water_tower",
       "position": [
@@ -13064,7 +13246,7 @@
       "tint": null
     },
     {
-      "id": "prop_281",
+      "id": "prop_294",
       "kind": "prop",
       "model": "prop.jersey_barrier",
       "position": [
@@ -13078,7 +13260,7 @@
       "tint": null
     },
     {
-      "id": "prop_282",
+      "id": "prop_295",
       "kind": "prop",
       "model": "prop.ammo_stack",
       "position": [
@@ -13092,13 +13274,27 @@
       "tint": null
     },
     {
-      "id": "prop_283",
+      "id": "prop_296",
       "kind": "prop",
-      "model": "prop.shipping_container_green",
+      "model": "prop.cargo_container_old_rusty",
       "position": [
         184,
         -0.03,
         72
+      ],
+      "yaw": 1.57,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_297",
+      "kind": "prop",
+      "model": "prop.cargo_gantry_crane",
+      "position": [
+        186,
+        -0.03,
+        -30
       ],
       "yaw": 0,
       "scale": 1,
@@ -13106,7 +13302,35 @@
       "tint": null
     },
     {
-      "id": "prop_284",
+      "id": "prop_298",
+      "kind": "prop",
+      "model": "prop.cargo_container_rusty_blue",
+      "position": [
+        158,
+        -0.03,
+        60
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_299",
+      "kind": "prop",
+      "model": "prop.cargo_scifi_crate",
+      "position": [
+        176,
+        -0.03,
+        96
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_300",
       "kind": "prop",
       "model": "prop.supply_truck",
       "position": [
@@ -13120,7 +13344,7 @@
       "tint": null
     },
     {
-      "id": "prop_285",
+      "id": "prop_301",
       "kind": "prop",
       "model": "prop.machine",
       "position": [
@@ -13134,7 +13358,7 @@
       "tint": null
     },
     {
-      "id": "prop_286",
+      "id": "prop_302",
       "kind": "prop",
       "model": "prop.shipping_container_red",
       "position": [
@@ -13148,7 +13372,7 @@
       "tint": null
     },
     {
-      "id": "prop_287",
+      "id": "prop_303",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -13162,7 +13386,7 @@
       "tint": null
     },
     {
-      "id": "prop_288",
+      "id": "prop_304",
       "kind": "prop",
       "model": "prop.jersey_barrier",
       "position": [
@@ -13176,7 +13400,7 @@
       "tint": null
     },
     {
-      "id": "prop_289",
+      "id": "prop_305",
       "kind": "prop",
       "model": "prop.fuel_drum",
       "position": [
@@ -13190,7 +13414,7 @@
       "tint": null
     },
     {
-      "id": "prop_290",
+      "id": "prop_306",
       "kind": "prop",
       "model": "prop.railroad",
       "position": [
@@ -13204,7 +13428,7 @@
       "tint": null
     },
     {
-      "id": "prop_291",
+      "id": "prop_307",
       "kind": "prop",
       "model": "prop.railroad",
       "position": [
@@ -13218,7 +13442,7 @@
       "tint": null
     },
     {
-      "id": "prop_292",
+      "id": "prop_308",
       "kind": "prop",
       "model": "prop.railroad",
       "position": [
@@ -13232,7 +13456,7 @@
       "tint": null
     },
     {
-      "id": "prop_293",
+      "id": "prop_309",
       "kind": "prop",
       "model": "prop.railroad",
       "position": [
@@ -13246,7 +13470,7 @@
       "tint": null
     },
     {
-      "id": "prop_294",
+      "id": "prop_310",
       "kind": "prop",
       "model": "prop.railroad",
       "position": [
@@ -13260,7 +13484,7 @@
       "tint": null
     },
     {
-      "id": "prop_295",
+      "id": "prop_311",
       "kind": "prop",
       "model": "prop.railroad",
       "position": [
@@ -13274,7 +13498,7 @@
       "tint": null
     },
     {
-      "id": "prop_296",
+      "id": "prop_312",
       "kind": "prop",
       "model": "prop.railroad",
       "position": [
@@ -13288,7 +13512,7 @@
       "tint": null
     },
     {
-      "id": "prop_297",
+      "id": "prop_313",
       "kind": "prop",
       "model": "prop.railroad",
       "position": [
@@ -13302,7 +13526,7 @@
       "tint": null
     },
     {
-      "id": "prop_298",
+      "id": "prop_314",
       "kind": "prop",
       "model": "prop.railroad",
       "position": [
@@ -13316,7 +13540,7 @@
       "tint": null
     },
     {
-      "id": "prop_299",
+      "id": "prop_315",
       "kind": "prop",
       "model": "prop.ore_wagon",
       "position": [
@@ -13330,7 +13554,7 @@
       "tint": null
     },
     {
-      "id": "prop_300",
+      "id": "prop_316",
       "kind": "prop",
       "model": "prop.hopper_wagon",
       "position": [
@@ -13344,7 +13568,7 @@
       "tint": null
     },
     {
-      "id": "prop_301",
+      "id": "prop_317",
       "kind": "prop",
       "model": "prop.ore_wagon",
       "position": [
@@ -13358,7 +13582,7 @@
       "tint": null
     },
     {
-      "id": "prop_302",
+      "id": "prop_318",
       "kind": "prop",
       "model": "prop.hopper_wagon",
       "position": [
@@ -13372,7 +13596,7 @@
       "tint": null
     },
     {
-      "id": "prop_303",
+      "id": "prop_319",
       "kind": "prop",
       "model": "prop.diesel",
       "position": [
@@ -13585,7 +13809,7 @@
       "pitch": 0.5841785304099641
     },
     {
-      "id": "prop_304",
+      "id": "prop_320",
       "kind": "prop",
       "model": "prop.steel_water_tower",
       "position": [
@@ -13599,7 +13823,7 @@
       "tint": null
     },
     {
-      "id": "prop_305",
+      "id": "prop_321",
       "kind": "prop",
       "model": "prop.storage_tank",
       "position": [
@@ -13613,7 +13837,7 @@
       "tint": null
     },
     {
-      "id": "prop_306",
+      "id": "prop_322",
       "kind": "prop",
       "model": "prop.shipping_container_blue",
       "position": [
@@ -13627,13 +13851,27 @@
       "tint": null
     },
     {
-      "id": "prop_307",
+      "id": "prop_323",
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "prop.cargo_container_rusty_red",
       "position": [
         146,
-        0.82,
+        0.92,
         -178
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_324",
+      "kind": "prop",
+      "model": "prop.cargo_gantry_crane",
+      "position": [
+        116,
+        -0.03,
+        -176
       ],
       "yaw": 1.571,
       "scale": 1,
@@ -13641,7 +13879,21 @@
       "tint": null
     },
     {
-      "id": "prop_308",
+      "id": "prop_325",
+      "kind": "prop",
+      "model": "prop.cargo_container_rusty_blue",
+      "position": [
+        160,
+        -0.03,
+        -140
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_326",
       "kind": "prop",
       "model": "prop.mn_rock_spires",
       "position": [
@@ -13655,7 +13907,7 @@
       "tint": null
     },
     {
-      "id": "prop_309",
+      "id": "prop_327",
       "kind": "prop",
       "model": "prop.rocks_tall",
       "position": [
@@ -13669,7 +13921,7 @@
       "tint": null
     },
     {
-      "id": "prop_310",
+      "id": "prop_328",
       "kind": "prop",
       "model": "prop.boulder_round",
       "position": [
@@ -13683,7 +13935,7 @@
       "tint": null
     },
     {
-      "id": "prop_311",
+      "id": "prop_329",
       "kind": "prop",
       "model": "prop.rock_spire_tall",
       "position": [
@@ -13697,7 +13949,7 @@
       "tint": null
     },
     {
-      "id": "prop_312",
+      "id": "prop_330",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -13711,7 +13963,7 @@
       "tint": null
     },
     {
-      "id": "prop_313",
+      "id": "prop_331",
       "kind": "prop",
       "model": "prop.rocks_tall",
       "position": [
@@ -13725,7 +13977,7 @@
       "tint": null
     },
     {
-      "id": "prop_314",
+      "id": "prop_332",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -13739,7 +13991,7 @@
       "tint": null
     },
     {
-      "id": "prop_315",
+      "id": "prop_333",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -13753,7 +14005,7 @@
       "tint": null
     },
     {
-      "id": "prop_316",
+      "id": "prop_334",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -13767,7 +14019,7 @@
       "tint": null
     },
     {
-      "id": "prop_317",
+      "id": "prop_335",
       "kind": "prop",
       "model": "prop.rock_large",
       "position": [
@@ -13781,7 +14033,7 @@
       "tint": null
     },
     {
-      "id": "prop_318",
+      "id": "prop_336",
       "kind": "prop",
       "model": "prop.rock_large",
       "position": [
@@ -13795,7 +14047,7 @@
       "tint": null
     },
     {
-      "id": "prop_319",
+      "id": "prop_337",
       "kind": "prop",
       "model": "prop.rocks_tall",
       "position": [
@@ -13809,7 +14061,7 @@
       "tint": null
     },
     {
-      "id": "prop_320",
+      "id": "prop_338",
       "kind": "prop",
       "model": "prop.boulder_round",
       "position": [
@@ -13823,7 +14075,7 @@
       "tint": null
     },
     {
-      "id": "prop_321",
+      "id": "prop_339",
       "kind": "prop",
       "model": "prop.mining_excavator",
       "position": [
@@ -13838,7 +14090,7 @@
       "name": "The Maw (bucket-wheel excavator)"
     },
     {
-      "id": "prop_322",
+      "id": "prop_340",
       "kind": "prop",
       "model": "prop.mining_haul_truck",
       "position": [
@@ -13853,7 +14105,7 @@
       "name": "Haul truck (floor)"
     },
     {
-      "id": "prop_323",
+      "id": "prop_341",
       "kind": "prop",
       "model": "prop.mining_haul_truck",
       "position": [
@@ -13868,7 +14120,7 @@
       "name": "Haul truck (L2)"
     },
     {
-      "id": "prop_324",
+      "id": "prop_342",
       "kind": "prop",
       "model": "prop.mining_haul_truck",
       "position": [
@@ -13883,7 +14135,7 @@
       "name": "Haul truck (L4)"
     },
     {
-      "id": "prop_325",
+      "id": "prop_343",
       "kind": "prop",
       "model": "prop.mc_mound",
       "position": [
@@ -13897,7 +14149,7 @@
       "tint": null
     },
     {
-      "id": "prop_326",
+      "id": "prop_344",
       "kind": "prop",
       "model": "prop.mc_mound",
       "position": [
@@ -13911,7 +14163,7 @@
       "tint": null
     },
     {
-      "id": "prop_327",
+      "id": "prop_345",
       "kind": "prop",
       "model": "prop.rock_pile",
       "position": [
@@ -13925,7 +14177,7 @@
       "tint": null
     },
     {
-      "id": "prop_328",
+      "id": "prop_346",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -13939,7 +14191,7 @@
       "tint": null
     },
     {
-      "id": "prop_329",
+      "id": "prop_347",
       "kind": "prop",
       "model": "prop.mc_cart",
       "position": [
@@ -13953,7 +14205,7 @@
       "tint": null
     },
     {
-      "id": "prop_330",
+      "id": "prop_348",
       "kind": "prop",
       "model": "prop.mc_cart_tipper",
       "position": [
@@ -13967,7 +14219,7 @@
       "tint": null
     },
     {
-      "id": "prop_331",
+      "id": "prop_349",
       "kind": "prop",
       "model": "prop.fuel_tank",
       "position": [
@@ -13981,7 +14233,7 @@
       "tint": null
     },
     {
-      "id": "prop_332",
+      "id": "prop_350",
       "kind": "prop",
       "model": "prop.jersey_barrier",
       "position": [
@@ -13995,7 +14247,7 @@
       "tint": null
     },
     {
-      "id": "prop_333",
+      "id": "prop_351",
       "kind": "prop",
       "model": "prop.jersey_barrier",
       "position": [
@@ -14009,7 +14261,7 @@
       "tint": null
     },
     {
-      "id": "prop_334",
+      "id": "prop_352",
       "kind": "prop",
       "model": "prop.machine",
       "position": [
@@ -14023,7 +14275,7 @@
       "tint": null
     },
     {
-      "id": "prop_335",
+      "id": "prop_353",
       "kind": "prop",
       "model": "prop.hesco_wall",
       "position": [
@@ -14037,7 +14289,7 @@
       "tint": null
     },
     {
-      "id": "prop_336",
+      "id": "prop_354",
       "kind": "prop",
       "model": "prop.mc_rail",
       "position": [
@@ -14051,7 +14303,7 @@
       "tint": null
     },
     {
-      "id": "prop_337",
+      "id": "prop_355",
       "kind": "prop",
       "model": "prop.mc_rail",
       "position": [
@@ -14065,7 +14317,7 @@
       "tint": null
     },
     {
-      "id": "prop_338",
+      "id": "prop_356",
       "kind": "prop",
       "model": "prop.mc_rail",
       "position": [
@@ -14079,7 +14331,7 @@
       "tint": null
     },
     {
-      "id": "prop_339",
+      "id": "prop_357",
       "kind": "prop",
       "model": "prop.mc_rail",
       "position": [
@@ -14093,7 +14345,7 @@
       "tint": null
     },
     {
-      "id": "prop_340",
+      "id": "prop_358",
       "kind": "prop",
       "model": "prop.mc_rail",
       "position": [
@@ -14107,7 +14359,7 @@
       "tint": null
     },
     {
-      "id": "prop_341",
+      "id": "prop_359",
       "kind": "prop",
       "model": "prop.floodlight",
       "position": [
@@ -14121,7 +14373,7 @@
       "tint": null
     },
     {
-      "id": "prop_342",
+      "id": "prop_360",
       "kind": "prop",
       "model": "prop.floodlight",
       "position": [
@@ -15319,7 +15571,7 @@
       "id": "pickup_002",
       "kind": "pickup",
       "position": [
-        -140,
+        -138.5,
         0.05,
         150
       ],
@@ -15418,9 +15670,9 @@
       "id": "pickup_011",
       "kind": "pickup",
       "position": [
-        140,
+        138.7,
         0.05,
-        150
+        150.75
       ],
       "item": "core.armor_small",
       "respawnSeconds": null
