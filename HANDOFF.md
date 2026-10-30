@@ -41,6 +41,12 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - send Boglurker's original FBX (right hand not skinned);
   - review the new characters (section 4);
   - confirm the Plains Scout model is respectful.
+- **On `wip/pause-menu`** (not merged; touches style.css, so CI runs everything): the pause menu's card layout and one-level Back.
+  - Host tab: cards in CSS columns (`.hc-grid`, `columns: 2 400px`, each card `break-inside: avoid`); `#hc-apply` applies players and bots only, the new `#hc-apply-rules` the restart rules.
+  - Back: `#pause-back`, `#screen-back` (front-end screens), `#bm-back`, `#hm-back`; footer hints are buttons (`#pause-hint-*`, `#hint-*`).
+  - Esc: `fullscreen.ts` `browserTookEscape()` skips a repeating Esc, one the browser uses to leave fullscreen (no Keyboard Lock: Safari), and one within 250 ms of the mouse being freed. The pause handler stops the event, so the Bots window doesn't act on it again (that closed the look picker and the window in one press).
+  - `inputMode.ts`: `data-input="kbm" | "pad"` on `<html>` picks the glyphs; it also feeds controller presses to the main menu (`FrontEnd.onPad`).
+  - Not checked on a real Safari or with a real controller: the owner should try Esc in fullscreen on Safari and a pad in the main menu.
 
 ### Machine notes (agents share one container)
 - **Ports:** run e2e on your own ports (`E2E_CLIENT_PORT`/`E2E_SERVER_PORT`; the lobby flow has hub ports too). The defaults collide between checkouts.

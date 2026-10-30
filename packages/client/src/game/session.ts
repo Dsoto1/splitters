@@ -94,7 +94,7 @@ import {
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
-import { bindFullscreenButton, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
+import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
@@ -459,6 +459,8 @@ export class GameSession {
         },
         overlay: () => document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('leave-confirm') ?? document.getElementById('online-confirm') ?? this.mapPicker,
         opened: () => this.drawPause(true),
+        // MapMaker TEST: back from the top goes back to MapMaker.
+        ...(opts.exitOnF5 ? { top: { label: 'MapMaker', act: () => this.exit() } } : {}),
       },
       signal,
     );
@@ -600,8 +602,10 @@ export class GameSession {
     );
     bindFullscreenButton($('pause-fullscreen') as HTMLButtonElement, signal);
     document.addEventListener('pointerlockchange', () => this.updatePause(), { signal });
-    // A second Esc (the first one releases the pointer) leaves. In fullscreen the
-    // page holds Esc (Keyboard Lock), so the first press releases the pointer here.
+    // Esc: in the game, the browser's own Esc releases the mouse and the menu opens (in fullscreen with
+    // Keyboard Lock the page holds Esc, so the press releases the mouse here). In the menu, each press goes
+    // back one level (dialog, then tab, then resume). A press the browser used (leaving fullscreen in Safari,
+    // releasing the mouse) or a held Esc repeating does nothing more (fullscreen.ts browserTookEscape).
     window.addEventListener(
       'keydown',
       (e) => {
@@ -612,16 +616,19 @@ export class GameSession {
           return;
         }
         if (e.code !== 'Escape') return;
-        // Normally the browser's own Esc releases the mouse (in Safari the first Esc only
-        // closes its banner); only when the page holds Esc in fullscreen do we release it.
         if (this.input.locked) {
-          if (pageHoldsEscape()) document.exitPointerLock();
-        } else if (paused) {
-          // In the menu: back a level (dialog, then tab), then resume; a MapMaker test goes back to MapMaker instead.
-          e.preventDefault();
-          if (this.opts.exitOnF5 && this.pauseMenu.atTop) this.exit();
-          else this.pauseMenu.back();
+          if (pageHoldsEscape() && !e.repeat) document.exitPointerLock();
+          return;
         }
+        if (!paused) return;
+        // The menu takes this Esc: a dialog under it (the Bots window) doesn't also act on it.
+        e.preventDefault();
+        e.stopPropagation();
+        if (browserTookEscape(e)) return;
+        // Typing in a box: the first Esc only leaves the box.
+        const t = e.target as HTMLElement | null;
+        if (t && (t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'button'].includes((t as HTMLInputElement).type)))) return t.blur();
+        this.pauseMenu.back();
       },
       { signal, capture: true },
     );

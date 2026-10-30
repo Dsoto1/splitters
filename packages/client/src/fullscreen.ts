@@ -51,8 +51,34 @@ export function bindFullscreenButton(button: HTMLButtonElement, signal?: AbortSi
   document.addEventListener('fullscreenchange', onChange, { signal });
 }
 
+/** When fullscreen last ended and when the mouse was last released (performance.now()), for `browserTookEscape`. */
+let fullscreenEndedAt = -1e9;
+let unlockedAt = -1e9;
+
+/**
+ * This Esc press isn't the page's to act on: the browser leaves fullscreen with it (fullscreen without
+ * Keyboard Lock, e.g. Safari) or just did, the browser released the mouse with it a moment ago, or it is a
+ * held Esc repeating (Chrome leaves fullscreen when Esc is held). Menus go back one level per press, so they
+ * skip these: one Esc never both leaves fullscreen and moves the menu, nor jumps several levels.
+ */
+export function browserTookEscape(e: KeyboardEvent): boolean {
+  if (e.key !== 'Escape' && e.code !== 'Escape') return false;
+  if (e.repeat) return true;
+  if (isFullscreen() && !pageHoldsEscape()) return true;
+  const t = performance.now();
+  return t - fullscreenEndedAt < 500 || t - unlockedAt < 250;
+}
+
 /** F11 and Alt+Enter toggle fullscreen anywhere in the app. */
 export function installFullscreenKeys(): void {
+  document.addEventListener('fullscreenchange', () => {
+    if (isFullscreen()) return;
+    fullscreenEndedAt = performance.now();
+    escapeHeld = false;
+  });
+  document.addEventListener('pointerlockchange', () => {
+    if (!document.pointerLockElement) unlockedAt = performance.now();
+  });
   window.addEventListener(
     'keydown',
     (e) => {

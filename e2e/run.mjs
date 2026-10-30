@@ -2967,6 +2967,22 @@ async function hostcontrolsFlow(browser) {
     return { first, settings, back: open(), host: !tab('host').hidden };
   });
   check(menu.first === 'match' && menu.settings === 'settings' && menu.back === 'match' && menu.host, `pause menu tabs: Match first, Esc back to it, a Host tab for the host (${JSON.stringify(menu)})`);
+  // Mouse users never need Esc: the Back button (top left) and the footer's key hints are buttons.
+  const clicks = await page.evaluate(() => {
+    const open = () => [...document.querySelectorAll('#pause .pause-sec')].find((x) => !x.hidden)?.dataset.sec;
+    document.getElementById('pause-hint-tabs').click();
+    const next = open();
+    const label = document.querySelector('#pause-back .back-label').textContent;
+    document.getElementById('pause-back').click();
+    const back = open();
+    // A held Esc (key repeat) doesn't go back again and again.
+    document.querySelector('#pause [data-tab="settings"]').click();
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', key: 'Escape', repeat: true, bubbles: true }));
+    const held = open();
+    document.getElementById('pause-hint-back').click();
+    return { next, label, back, held, top: document.querySelector('#pause-back .back-label').textContent, after: open() };
+  });
+  check(clicks.next === 'host' && clicks.label === 'Back' && clicks.back === 'match' && clicks.held === 'settings' && clicks.after === 'match' && clicks.top === 'Resume', `the pause menu's Back button and footer hints work by click; a repeating Esc does nothing (${JSON.stringify(clicks)})`);
   const fits = await page.evaluate(() => {
     const r = document.querySelector('#pause .pause-card').getBoundingClientRect();
     return r.top >= 0 && r.bottom <= innerHeight + 1 && r.right <= innerWidth + 1;
@@ -2988,13 +3004,27 @@ async function hostcontrolsFlow(browser) {
   check(hard, 'bot skill changes live');
   // Bots…: the Bots window. Esc closes it (the pause menu's back); then name a bot, give it a look and a skill, Apply.
   await page.evaluate(() => document.getElementById('hc-bots').click());
-  const opened = await page.waitForSelector('#bot-manager', { timeout: T(5000) }).then(() => true, () => false);
+  const opened = await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
   await page.keyboard.press('Escape');
   const escClosed = await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false);
   check(opened && escClosed, `Bots… opens the Bots window and Esc closes it (${opened}, ${escClosed})`);
+  // One level per Esc: the look picker over the Bots window closes first, the window stays.
   await openPanel(page);
   await page.evaluate(() => document.getElementById('hc-bots').click());
-  await page.waitForSelector('#bot-manager', { timeout: T(5000) });
+  await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) });
+  await page.evaluate(() => {
+    document.getElementById('bm-add').click();
+    document.getElementById('bm-look-0').click();
+  });
+  const picking = await page.waitForSelector('#bm-pick-wrap', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
+  await page.keyboard.press('Escape');
+  const oneLevel = await page.evaluate(() => ({ picker: !!document.getElementById('bm-pick-wrap'), window: !!document.getElementById('bot-manager'), paused: !document.getElementById('pause').hidden }));
+  check(picking && !oneLevel.picker && oneLevel.window && oneLevel.paused, `Esc closes the look picker only, not the Bots window too (${JSON.stringify(oneLevel)})`);
+  await page.evaluate(() => document.getElementById('bm-back').click());
+  check(await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false), "the Bots window's Back button closes it");
+  await openPanel(page);
+  await page.evaluate(() => document.getElementById('hc-bots').click());
+  await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) });
   // (Clicks by script: the pause menu may be hidden behind the pointer lock it never got here.)
   await page.evaluate(() => {
     document.getElementById('bm-add').click();
@@ -3021,7 +3051,7 @@ async function hostcontrolsFlow(browser) {
   // A rule change waits for the restart (the panel says so), then Restart match plays with it.
   await page.evaluate(() => {
     document.getElementById('hc-score-plus').click();
-    document.getElementById('hc-apply').click();
+    document.getElementById('hc-apply-rules').click();
   });
   const waiting = await page.waitForFunction(() => window.__cs.host()?.pending?.scoreLimit === 16 && document.getElementById('hc-pending'), null, { timeout: T(5000) }).then(() => true, () => false);
   const still = await sim(page, (m) => m.rules.scoreLimit);

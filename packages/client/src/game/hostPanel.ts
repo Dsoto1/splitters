@@ -165,11 +165,14 @@ export class HostPanel {
     const clear = el('button', { id: 'hc-rot-clear', textContent: 'Clear', title: 'Empty the rotation (matches replay their map)', disabled: !r.entries.length });
     clear.addEventListener('click', () => set([]));
     return [
-      el('h4', { textContent: 'Rotation' }),
-      head,
-      ...(r.entries.length ? [list] : []),
-      el('div', { class: 'hc-row hc-rot-tools' }, add, preset),
-      el('div', { class: 'hc-row hc-rot-tools' }, el('label', { class: 'hc-check' }, shuffle, ' Shuffle'), skip, clear),
+      card(
+        'Rotation',
+        null,
+        head,
+        ...(r.entries.length ? [list] : []),
+        el('div', { class: 'hc-row hc-rot-tools' }, add, preset),
+        el('div', { class: 'hc-row hc-rot-tools' }, el('label', { class: 'hc-check' }, shuffle, ' Shuffle'), skip, clear),
+      ),
     ];
   }
 
@@ -225,7 +228,7 @@ export class HostPanel {
         redraw();
       });
       rows.push(
-        settingRow('Quick sizes', 'Set every team to one size; then change any team on its own.', even, { live: true }),
+        settingRow('Quick sizes', 'Set every team to one size; then change any team on its own.', even),
         teamEditor({
           id: 'hc',
           state: { sizes: d.sizes, names: d.sizes.map((_, i) => s.teamNames?.[i] ?? DEFAULT_TEAMS[i]?.name ?? `Team ${i + 1}`), colors: d.sizes.map((_, i) => s.teamColors?.[i] ?? DEFAULT_TEAMS[i]?.color ?? '#00d1ff'), you: null },
@@ -241,20 +244,20 @@ export class HostPanel {
       rows.push(el('p', { class: 'setup-hint', textContent: 'Team sizes change live: bots join or leave to fit. Drag a bot pip to move it to another team.' }));
     } else {
       const coop = s.mode === 'core.coop' || s.mode === 'core.zombies';
-      rows.push(settingRow(coop ? 'Squad' : 'Players', coop ? 'You and your bot squadmates.' : 'Everyone in the match, you included; bots fill the rest.', stepper({ value: d.fill, min: 1, max: s.max, id: 'hc-players', label: coop ? 'squad' : 'players', onChange: (v) => ((d.fill = v), redraw()) }), { live: true }));
+      rows.push(settingRow(coop ? 'Squad' : 'Players', coop ? 'You and your bot squadmates.' : 'Everyone in the match, you included; bots fill the rest.', stepper({ value: d.fill, min: 1, max: s.max, id: 'hc-players', label: coop ? 'squad' : 'players', onChange: (v) => ((d.fill = v), redraw()) })));
     }
-    rows.push(settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice(HOST_BOT_SKILLS.map((v) => [v, SKILL_LABELS[v]] as const), d.skill, (v) => ((d.skill = v), redraw()), 'hc-skill'), { live: true }));
-    rows.push(settingRow('Bot style', 'Mixed: every character plays its own way. Arena: always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', choice(HOST_BOT_STYLES.map((v) => [v, STYLE_LABELS[v]] as const), d.style, (v) => ((d.style = v), redraw()), 'hc-style'), { live: true }));
+    rows.push(settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice(HOST_BOT_SKILLS.map((v) => [v, SKILL_LABELS[v]] as const), d.skill, (v) => ((d.skill = v), redraw()), 'hc-skill')));
+    rows.push(settingRow('Bot style', 'Mixed: every character plays its own way. Arena: always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', choice(HOST_BOT_STYLES.map((v) => [v, STYLE_LABELS[v]] as const), d.style, (v) => ((d.style = v), redraw()), 'hc-style')));
     // The host's own bots (names, looks, skills, teams, squads): hosts that know bot sets say so (HostState.botSet).
     if (s.botSet !== undefined) {
       const open = el('button', { id: 'hc-bots', textContent: 'Bots…', title: 'Your own bots: names, looks, skill, style, team and squad (applies live: bots swap in one at a time)' });
       open.addEventListener('click', () => this.openBots(s));
-      rows.push(settingRow('Bot set', 'Your own bots by name, look, skill, style, team and squad; random bots fill the rest unless the set says only these.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'hc-bots-sum', textContent: `${s.mapBots ? "The map's: " : ''}${botSetLabel(s.botSet)}`, title: `${s.mapBots ? "The map's own bots: " : ''}${botSetLabel(s.botSet)}` }), open), { live: true }));
+      rows.push(settingRow('Bot set', 'Your own bots by name, look, skill, style, team and squad; random bots fill the rest unless the set says only these.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'hc-bots-sum', textContent: `${s.mapBots ? "The map's: " : ''}${botSetLabel(s.botSet)}`, title: `${s.mapBots ? "The map's own bots: " : ''}${botSetLabel(s.botSet)}` }), open)));
     }
     // Mix up weapon pickups: applies at once (hosts that know it send it in HostState.rules).
     if (s.rules?.mixPickups !== undefined) {
       const mix = s.rules.mixPickups;
-      rows.push(settingRow('Mix up weapon pickups', 'Every weapon pickup not marked "keep fixed" in MapMaker holds a random weapon of the same kind as the one placed there, and a new one each time it comes back. Applies at once.', choice([['off', 'Off'], ['on', 'On']] as const, mix ? 'on' : 'off', (v) => this.hooks.command({ c: 'rules', rules: { mixPickups: v === 'on' } }), 'hc-mix'), { live: true }));
+      rows.push(settingRow('Mix up weapon pickups', 'Every weapon pickup not marked "keep fixed" in MapMaker holds a random weapon of the same kind as the one placed there, and a new one each time it comes back. Applies at once.', choice([['off', 'Off'], ['on', 'On']] as const, mix ? 'on' : 'off', (v) => this.hooks.command({ c: 'rules', rules: { mixPickups: v === 'on' } }), 'hc-mix')));
     }
     const liveChanged = d.fill !== s.fill || d.sizes.join() !== now.join() || d.skill !== s.skill || d.style !== s.style;
 
@@ -264,10 +267,10 @@ export class HostPanel {
     const r = d.rules;
     if (r) {
       ruleRows.push(
-        settingRow('Score limit', 'Score that wins (0: none).', stepper({ value: r.scoreLimit, min: 0, max: 1000, id: 'hc-score', label: 'score limit', onChange: (v) => ((r.scoreLimit = v), redraw()) }), { restart: true }),
-        settingRow('Time limit', 'Minutes until the match ends (∞: none).', stepper({ value: Math.round(r.timeLimitSeconds / 60), min: 0, max: 120, id: 'hc-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => ((r.timeLimitSeconds = v * 60), redraw()) }), { restart: true }),
-        settingRow('Respawn delay', 'Seconds before players are back in.', stepper({ value: Math.round(r.respawnDelayTicks / TICK_RATE), min: 0, max: 30, id: 'hc-respawn', fmt: (v) => `${v} s`, onChange: (v) => ((r.respawnDelayTicks = v * TICK_RATE), redraw()) }), { restart: true }),
-        settingRow('Friendly fire', 'Whether shots and blasts hurt teammates.', choice((['off', 'half', 'on'] as const).map((v) => [v, FF_LABELS[v]] as const), r.friendlyFire, (v) => ((r.friendlyFire = v), redraw()), 'hc-ff', isTeamMode(s.mode) || s.mode === 'core.coop' || s.mode === 'core.zombies' ? null : `No teammates in ${MODE_LABELS[s.mode]}.`), { restart: true }),
+        settingRow('Score limit', 'Score that wins (0: none).', stepper({ value: r.scoreLimit, min: 0, max: 1000, id: 'hc-score', label: 'score limit', onChange: (v) => ((r.scoreLimit = v), redraw()) })),
+        settingRow('Time limit', 'Minutes until the match ends (∞: none).', stepper({ value: Math.round(r.timeLimitSeconds / 60), min: 0, max: 120, id: 'hc-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => ((r.timeLimitSeconds = v * 60), redraw()) })),
+        settingRow('Respawn delay', 'Seconds before players are back in.', stepper({ value: Math.round(r.respawnDelayTicks / TICK_RATE), min: 0, max: 30, id: 'hc-respawn', fmt: (v) => `${v} s`, onChange: (v) => ((r.respawnDelayTicks = v * TICK_RATE), redraw()) })),
+        settingRow('Friendly fire', 'Whether shots and blasts hurt teammates.', choice((['off', 'half', 'on'] as const).map((v) => [v, FF_LABELS[v]] as const), r.friendlyFire, (v) => ((r.friendlyFire = v), redraw()), 'hc-ff', isTeamMode(s.mode) || s.mode === 'core.coop' || s.mode === 'core.zombies' ? null : `No teammates in ${MODE_LABELS[s.mode]}.`)),
       );
     }
     const rulesChanged = !!r && !!want && (Object.keys(r) as (keyof HostRulesPatch)[]).some((k) => r[k] !== want[k]);
@@ -275,71 +278,89 @@ export class HostPanel {
     const total = (sizes: readonly number[], fill: number) => (s.teams ? sizes.reduce((a, b) => a + b, 0) : fill);
     const delta = total(d.sizes, d.fill) - total(now, s.fill);
     const what = delta > 0 ? `: +${delta} bot${delta === 1 ? '' : 's'}` : delta < 0 ? `: −${-delta} bot${delta === -1 ? '' : 's'}` : '';
-    const apply = el('button', { class: 'primary', id: 'hc-apply', textContent: rulesChanged && !liveChanged ? 'Apply on restart' : `Apply${what}`, disabled: !liveChanged && !rulesChanged });
+    // Each Apply sits under what it applies: the players and bots now, the rules at the restart.
+    const apply = el('button', { class: 'primary hc-apply', id: 'hc-apply', textContent: `Apply${what}`, disabled: !liveChanged, title: 'Apply the players and bots now (bots join or leave one at a time)' });
     apply.addEventListener('click', () => {
-      if (liveChanged) {
-        const cmd: Extract<HostCommand, { c: 'bots' }> = { c: 'bots' };
-        if (s.teams) {
-          if (d.sizes.join() !== now.join()) {
-            // Every team the same size: the plain command older servers know too.
-            if (d.sizes.every((n) => n === d.sizes[0])) cmd.teamSize = d.sizes[0]!;
-            else cmd.teamSizes = [...d.sizes];
-          }
-        } else if (d.fill !== s.fill) cmd.fill = d.fill;
-        if (d.skill !== s.skill) cmd.skill = d.skill;
-        if (d.style !== s.style) cmd.style = d.style;
-        this.hooks.command(cmd);
-      }
-      if (rulesChanged && r && s.rules) {
-        const patch: HostRulesPatch = {};
-        for (const k of Object.keys(r) as (keyof HostRulesPatch)[]) if (r[k] !== want![k]) (patch as Record<string, unknown>)[k] = r[k];
-        this.hooks.command({ c: 'rules', rules: patch });
-      }
+      if (!liveChanged) return;
+      const cmd: Extract<HostCommand, { c: 'bots' }> = { c: 'bots' };
+      if (s.teams) {
+        if (d.sizes.join() !== now.join()) {
+          // Every team the same size: the plain command older servers know too.
+          if (d.sizes.every((n) => n === d.sizes[0])) cmd.teamSize = d.sizes[0]!;
+          else cmd.teamSizes = [...d.sizes];
+        }
+      } else if (d.fill !== s.fill) cmd.fill = d.fill;
+      if (d.skill !== s.skill) cmd.skill = d.skill;
+      if (d.style !== s.style) cmd.style = d.style;
+      this.hooks.command(cmd);
+    });
+    const applyRules = el('button', { class: 'primary hc-apply', id: 'hc-apply-rules', textContent: 'Apply on restart', disabled: !rulesChanged, title: 'Keep these rules for the next restart (Restart match plays with them)' });
+    applyRules.addEventListener('click', () => {
+      if (!rulesChanged || !r || !s.rules) return;
+      const patch: HostRulesPatch = {};
+      for (const k of Object.keys(r) as (keyof HostRulesPatch)[]) if (r[k] !== want![k]) (patch as Record<string, unknown>)[k] = r[k];
+      this.hooks.command({ c: 'rules', rules: patch });
     });
     const pending = s.pending && Object.keys(s.pending).length ? s.pending : null;
     const waiting = pending
       ? [el('p', { class: 'hc-pending', id: 'hc-pending', textContent: `Waiting for the restart: ${[pending.scoreLimit !== undefined ? `score ${pending.scoreLimit}` : '', pending.timeLimitSeconds !== undefined ? `time ${pending.timeLimitSeconds ? `${Math.round(pending.timeLimitSeconds / 60)} min` : '∞'}` : '', pending.respawnDelayTicks !== undefined ? `respawn ${Math.round(pending.respawnDelayTicks / TICK_RATE)} s` : '', pending.friendlyFire ? `friendly fire ${FF_LABELS[pending.friendlyFire].toLowerCase()}` : ''].filter(Boolean).join(', ')}. Restart match to play with them.` })]
       : [];
-    const actions = el('div', { class: 'hc-actions' });
+    // The match: Change map (routine), then what undoes everyone's match (restart, end), set apart in red.
+    const routine: HTMLElement[] = [];
     if (this.hooks.changeMap) {
-      const map = el('button', { id: 'hc-map', textContent: 'Change map…' });
+      const map = el('button', { id: 'hc-map', textContent: 'Change map…', title: 'Pick another map (and mode): the match starts over there with the same players and bots' });
       map.addEventListener('click', () => this.hooks.changeMap?.());
-      actions.append(map);
+      routine.push(map);
     }
-    const restart = el('button', { id: 'hc-restart', textContent: 'Restart match', title: pending ? 'Start over with the waiting rule changes' : 'Start the match over on this map' });
+    const restart = el('button', { id: 'hc-restart', class: 'danger', textContent: 'Restart match', title: pending ? 'Start over with the waiting rule changes (asks for a second click)' : 'Start the match over on this map (asks for a second click)' });
     confirmTwice(restart, 'Click again to restart', () => this.hooks.command({ c: 'restart' }));
     const rotation = this.rotationSection(s);
-    const end = el('button', { id: 'hc-end', textContent: 'End match', title: 'End the match now and show the scoreboard' });
+    const end = el('button', { id: 'hc-end', class: 'danger', textContent: 'End match', title: 'End the match now and show the scoreboard (asks for a second click)' });
     confirmTwice(end, 'Click again to end', () => this.hooks.command({ c: 'end' }));
-    actions.append(restart, end);
+    const matchCard = card('Match', null, ...(routine.length ? [el('div', { class: 'hc-actions' }, ...routine)] : []), el('div', { class: 'hc-actions hc-danger' }, restart, end));
     // People: kick (they may come back) or ban (kept out: their account when signed in, else weakly by browser).
     const people = this.people.length
       ? [
-          el('h4', { textContent: 'Players' }),
-          ...this.people.map((p) => {
-            const kick = el('button', { id: `hc-kick-${p.slot}`, textContent: 'Kick', title: `Remove ${p.name} (they may rejoin)` });
-            kick.addEventListener('click', () => this.hooks.command({ c: 'kick', slot: p.slot }));
-            const ban = el('button', { id: `hc-ban-${p.slot}`, textContent: 'Ban', title: `Remove ${p.name} and keep them out` });
-            ban.addEventListener('click', () => window.confirm(`Ban ${p.name} from this ${this.title === 'Admin' ? 'server' : 'game'}?`) && this.hooks.command({ c: 'ban', slot: p.slot }));
-            return el('div', { class: 'hc-row hc-person' }, el('span', { textContent: p.name }), kick, ban);
-          }),
+          card(
+            'Players',
+            null,
+            ...this.people.map((p) => {
+              const kick = el('button', { id: `hc-kick-${p.slot}`, textContent: 'Kick', title: `Remove ${p.name} (they may rejoin)` });
+              kick.addEventListener('click', () => this.hooks.command({ c: 'kick', slot: p.slot }));
+              const ban = el('button', { id: `hc-ban-${p.slot}`, class: 'danger', textContent: 'Ban', title: `Remove ${p.name} and keep them out` });
+              ban.addEventListener('click', () => window.confirm(`Ban ${p.name} from this ${this.title === 'Admin' ? 'server' : 'game'}?`) && this.hooks.command({ c: 'ban', slot: p.slot }));
+              return el('div', { class: 'hc-row hc-person' }, el('span', { textContent: p.name }), kick, ban);
+            }),
+          ),
         ]
       : [];
     const label = s.teams ? (now.every((n) => n === now[0]) ? teamsLabel(s.teams, now[0]!) : now.join('v')) : `${s.fill} players`;
     const summary = el('summary', {}, `Match (${this.title.toLowerCase()})`, el('small', { textContent: ` ${label} · ${MODE_LABELS[s.mode]} · ${SKILL_LABELS[s.skill]} bots` }));
-    // Two columns on wide screens (style.css): who plays (Online, teams and bots), then how (rules, Apply,
-    // the match buttons, the rotation, the people). One column below that.
+    // Cards in balanced columns (style.css: as many as fit, each card whole): Online, who plays and the
+    // live Apply; the rules and their Apply; the match buttons; the rotation; the people.
+    const live = el('span', { class: 'when-tag live', textContent: 'Live', title: 'Changes the match now, mid-match' });
+    const later = el('span', { class: 'when-tag restart', textContent: '⟳ On restart', title: 'Kept for the next restart: Restart match plays with them' });
     this.root.replaceChildren(
       summary,
       el(
         'div',
-        { class: 'hc-cols' },
-        el('div', { class: 'hc-col' }, ...(this.lead ? [this.lead.node] : []), el('h4', { textContent: s.teams ? 'Teams & bots' : 'Players & bots' }), ...rows),
-        el('div', { class: 'hc-col' }, ...(ruleRows.length ? [el('h4', { textContent: 'Rules' }), ...ruleRows] : []), apply, ...waiting, actions, ...rotation, ...people, this.status),
+        { class: 'hc-grid' },
+        ...(this.lead ? [this.lead.node] : []),
+        card(s.teams ? 'Teams & bots' : 'Players & bots', live, ...rows, apply),
+        ...(ruleRows.length ? [card('Rules', later, ...ruleRows, applyRules, ...waiting)] : []),
+        matchCard,
+        ...rotation,
+        ...people,
       ),
+      this.status,
     );
     this.root.open = open;
   }
+}
+
+/** A titled card of the Host tab; `tag`: a small badge after the title (Live, On restart). */
+function card(title: string, tag: HTMLElement | null, ...children: HTMLElement[]): HTMLElement {
+  return el('section', { class: 'hc-card' }, el('h4', { class: 'hc-card-title' }, el('span', { textContent: title }), ...(tag ? [tag] : [])), ...children);
 }
 
 /**

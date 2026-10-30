@@ -71,8 +71,16 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .tabs .tab { background: transparent; border: 1px solid transparent; color: var(--muted); padding: 6px 12px; }
 .tabs .tab.on { color: var(--text); background: rgba(0, 209, 255, 0.14); border-color: rgba(0, 209, 255, 0.6); }
 .tabs .bumper, kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 20px; padding: 0 6px; border-radius: 4px; background: #e6f0ff; color: #0b0f1a; font: 700 11px var(--font-display); }
-.hintbar { display: flex; align-items: center; gap: 22px; font: 600 13px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-.hintbar span { display: inline-flex; align-items: center; gap: 7px; }
+.bumper-btn { display: inline-flex; padding: 0; background: none; border: 0; cursor: pointer; }
+.bumper-btn:hover kbd, .bumper-btn:focus-visible kbd { background: var(--cyan); }
+.hintbar { display: flex; align-items: center; gap: 4px 10px; white-space: nowrap; font: 600 13px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.hintbar > span { display: inline-flex; align-items: center; gap: 7px; }
+/* A hint you can click does what its key does (Back, the tabs, Start, fullscreen…). */
+.hintbar .hint-btn { display: inline-flex; align-items: center; gap: 7px; padding: 4px 8px; margin: -4px 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: transparent; border: 1px solid transparent; border-radius: 4px; cursor: pointer; }
+.hintbar .hint-btn:hover, .hintbar .hint-btn:focus-visible { color: var(--text); background: rgba(255, 255, 255, 0.06); border-color: var(--line); }
+.hintbar .hint-btn kbd + kbd.g-kbm, .hintbar .hint-btn kbd + kbd.g-any { margin-left: -3px; }
+/* Keyboard glyphs, or the controller's when a controller was used last (inputMode.ts sets data-input). */
+:root:not([data-input='pad']) kbd.g-pad, :root[data-input='pad'] kbd.g-kbm { display: none; }
 .hintbar kbd.a { background: var(--success); color: #062012; border-radius: 50%; min-width: 20px; }
 .hintbar kbd.b { background: var(--error); color: #fff; border-radius: 50%; min-width: 20px; }
 .hintbar kbd.x { background: var(--info); color: #fff; border-radius: 50%; min-width: 20px; }
@@ -381,54 +389,62 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 
 /* Pause */
 #pause { position: fixed; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: 8px; box-sizing: border-box; background: radial-gradient(circle at 50% 50%, rgba(11, 15, 26, 0.55), rgba(11, 15, 26, 0.85)); }
-#pause .pause-card { display: flex; flex-direction: column; width: min(1400px, 92vw, 100%); max-height: 100%; box-sizing: border-box; padding: 14px 16px 10px; background: var(--glass); }
-#pause .pause-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-#pause .pause-title { margin: 0; font: italic 700 30px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+#pause .pause-card { display: flex; flex-direction: column; width: min(1360px, 94vw, 100%); max-height: 100%; box-sizing: border-box; padding: 12px 16px 10px; background: var(--glass); }
+#pause .pause-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+#pause .pause-title { margin: 0; font: italic 700 28px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
 #pause .pause-context { margin: 0; color: var(--muted); font: 600 13px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
-#pause .pause-tabs { margin: 10px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+#pause .pause-tabs { margin: 8px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
 #pause .pause-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 2px; }
-#pause .pause-sec { display: flex; flex-direction: column; gap: 8px; }
+#pause .pause-sec { display: flex; flex-direction: column; gap: 10px; }
 #pause .pause-sec[hidden] { display: none; }
 #pause .pause-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 #pause .pause-actions button { flex: 1 1 140px; padding: 11px 14px; font-size: 16px; }
 #pause .pause-actions #resume { flex: 2 1 200px; }
-#pause .pause-h { margin: 2px 0 0; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
+#pause .pause-h { margin: 0; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
 #pause .pause-note { padding: 6px 10px; border-left: 3px solid var(--line); color: var(--muted); font: 500 13px var(--font-body); }
 #pause .pause-note.on { border-left-color: var(--success); color: var(--text); }
 #pause .pause-online { display: flex; flex-direction: column; gap: 8px; }
-#pause .pause-row { display: flex; align-items: center; gap: 10px; min-height: 30px; color: var(--muted); font: 600 13px var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; }
-#pause .pause-row > span:first-child { flex: 0 0 150px; }
-#pause .pause-row input[type='range'] { flex: 1; min-width: 0; }
+#pause .pause-online .hint { margin: 0; }
+#pause .pause-online .hint:empty { display: none; }
+#pause #host-public { display: flex; flex-direction: column; gap: 6px; }
+#pause .pause-row.host-public-row { display: flex; flex-wrap: wrap; }
+#pause .host-public-row label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+#pause .host-public-row #host-name { flex: 1 1 160px; min-width: 0; padding: 5px 8px; background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); }
+/* Settings rows: a label column and a control column, the same in every card. */
+#pause .pause-row { display: grid; grid-template-columns: minmax(110px, 38%) minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 30px; color: var(--muted); font: 600 12px var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; }
+#pause .pause-row > :nth-child(2):last-child { grid-column: 2 / -1; justify-self: start; }
+#pause .pause-row > input[type='range'] { width: 100%; min-width: 0; justify-self: stretch; }
 #pause .pause-row output { min-width: 44px; text-align: right; }
 #pause .pause-scores { font-size: 13px; }
 #pause .pause-scores:empty { display: none; }
 #pause .pause-foot { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
-#pause .pause-foot .hint { flex: 1; margin: 0; }
+#pause .pause-foot .pause-hints { flex: 1; min-width: 0; flex-wrap: wrap; gap: 4px 6px; }
 #pause .hint { color: var(--muted); font-size: 12px; }
-#pause .perf-report-text { width: 100%; font: 11px/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--muted); resize: vertical; }
+#pause .perf-report-text { width: 100%; box-sizing: border-box; font: 11px/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--muted); resize: vertical; }
 #pause button:focus-visible, #pause input:focus-visible, #pause select:focus-visible, #pause summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 #pause button.danger, #pause .confirm button.danger { background: transparent; border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #pause button.danger:hover { background: rgba(231, 76, 60, 0.16); }
 #pause #host-info, #pause .host-controls { max-width: none; width: auto; }
 /*
- * Wide windows: the menu uses the width. Settings is two columns of groups; the Host tab's panel is two
- * columns (Online, teams and bots | rules, Apply, match buttons, rotation, people: hostPanel.ts). Below
- * 1000 px wide, one column as before.
+ * Cards: Settings' groups and the Host tab's sections (Online, teams and bots, rules, match, rotation,
+ * people: hostPanel.ts) sit in balanced columns, as many as fit (one on narrow windows), each card whole,
+ * so no column ends in a big gap. The body scrolls only when the cards don't fit the window's height.
  */
-#pause .pause-groups { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px 28px; align-items: start; }
-#pause .pause-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-#pause .pause-online-box { display: flex; flex-direction: column; gap: 8px; }
-/* Nothing to show online (no hub here, or not yours to host): no empty heading either. */
+#pause .pause-groups { columns: 3 300px; column-gap: 12px; }
+#pause .pause-group, #pause .hc-card { display: flex; flex-direction: column; gap: 6px; min-width: 0; box-sizing: border-box; margin: 0 0 12px; padding: 10px 12px; break-inside: avoid; background: rgba(0, 0, 0, 0.22); border: 1px solid var(--line); border-radius: 4px; }
+#pause .pause-group > .pause-h, #pause .hc-card-title { display: flex; align-items: center; gap: 8px; margin: 0 0 2px; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
+#pause .hc-card-title .when-tag { margin-left: auto; }
+#pause .pause-sec[data-sec='settings'] > .hint { margin: 0; }
+/* Nothing to show online (no hub here, or not yours to host): no empty card either. */
 #pause .pause-online-box:not(:has(.pause-online > :not([hidden]))) { display: none; }
-#pause .host-controls .hc-col { min-width: 0; }
 @media (min-width: 1000px) {
-  #pause .pause-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  #pause .host-controls .hc-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; align-items: start; }
-  #pause .host-controls .hc-col + .hc-col { padding-left: 28px; margin-left: -1px; border-left: 1px solid var(--line); }
-  #pause .host-controls .hc-col > h4:first-child, #pause .host-controls .hc-col > .pause-online-box:first-child { margin-top: 4px; }
   /* The Match tab's buttons and board don't need the full width. */
   #pause .pause-sec[data-sec='match'] .pause-actions { max-width: 760px; }
 }
+/* Back (top left of every menu screen and window): goes back one level, like Esc. */
+.back-btn { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 6px 12px 6px 9px; font: 700 13px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+.back-btn:hover, .back-btn:focus-visible { background: rgba(0, 209, 255, 0.14); border-color: var(--cyan); }
+.back-btn > span[aria-hidden] { font-size: 11px; color: var(--cyan); }
 #pause .confirm { position: fixed; left: 50%; top: 50%; z-index: 6; transform: translate(-50%, -50%); width: min(420px, calc(100vw - 32px)); padding: 16px 18px; background: rgba(10, 14, 24, 0.97); }
 #pause .confirm p { margin: 0 0 12px; color: var(--text); font: 500 14px var(--font-body); }
 #pause .confirm .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
@@ -794,31 +810,37 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #class-menu button small { display: block; margin-top: 4px; opacity: 0.75; font-size: 12px; }
 #class-menu > small { display: block; margin-top: 10px; opacity: 0.7; }
 
-/* Pause menu → Match: the host's bots, map, restart and end (hostPanel.ts), and the Change map picker. */
+/* Pause menu → Host: the host's cards (hostPanel.ts), and the Change map picker. */
 .host-controls summary { cursor: pointer; font: 600 15px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
 .host-controls summary small { font-size: 12px; letter-spacing: 0.02em; text-transform: none; opacity: 0.7; }
 .host-controls h4 { margin: 8px 0 4px; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
-.host-controls .row { display: grid; grid-template-columns: minmax(120px, 170px) minmax(0, 1fr); align-items: center; gap: 8px; margin: 6px 0; color: var(--muted); font: 600 12px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
+.host-controls .hc-grid { columns: 2 400px; column-gap: 12px; margin-top: 8px; }
+.host-controls .row { display: grid; grid-template-columns: minmax(110px, 38%) minmax(0, 1fr); align-items: center; gap: 8px; margin: 0; min-height: 30px; color: var(--muted); font: 600 12px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
+.host-controls .row > :last-child { justify-self: start; max-width: 100%; }
 .host-controls .row.off { opacity: 0.5; }
 .host-controls .row.off > *:last-child { pointer-events: none; }
 .host-controls .tabs .tab { padding: 4px 9px; font-size: 12px; }
-.host-controls .team-editor { margin: 6px 0; }
+.host-controls .team-editor { margin: 2px 0; }
 .host-controls .team-cards { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
-.host-controls .hc-pending { margin: 6px 0 0; padding: 5px 8px; color: var(--orange); border-left: 2px solid var(--orange); background: rgba(255, 179, 71, 0.08); font-size: 13px; }
-.host-controls .hc-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.host-controls .setup-hint { font-size: 12px; }
+.host-controls .hc-pending { margin: 0; padding: 5px 8px; color: var(--orange); border-left: 2px solid var(--orange); background: rgba(255, 179, 71, 0.08); font-size: 13px; }
+.host-controls .hc-row { display: flex; align-items: center; gap: 8px; margin: 0; }
 .host-controls .hc-row > span { flex: 0 0 80px; color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
 .host-controls .hc-row input { flex: 1; min-width: 0; padding: 5px 8px; background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); }
 .host-controls .stepper { display: flex; align-items: center; gap: 6px; }
 .host-controls .stepper b { min-width: 52px; text-align: center; font: 700 16px var(--font-display); }
-.host-controls select { background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); padding: 4px; }
+.host-controls select { background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(255, 255, 255, 0.15); padding: 4px; max-width: 100%; }
 .host-controls .tabs { flex-wrap: wrap; }
-#pause .host-controls #hc-apply { width: 100%; margin-top: 4px; }
-.host-controls .hc-actions { display: flex; gap: 6px; margin-top: 8px; }
+#pause .host-controls .hc-apply { width: 100%; margin-top: 4px; }
+.host-controls .hc-actions { display: flex; gap: 6px; }
 .host-controls .hc-actions button { flex: 1; }
-.host-controls .hc-status { margin: 6px 0 0; }
+/* Restart and End undo everyone's match: set apart under a thin red rule. */
+.host-controls .hc-danger { margin-top: 4px; padding-top: 8px; border-top: 1px dashed rgba(231, 76, 60, 0.35); }
+.host-controls .hc-status { margin: 0; }
+.host-controls .hc-status:empty { display: none; }
 .host-controls .hc-status.error { color: #ff8a6b; }
-.host-controls .hc-rot-next { margin: 4px 0; color: var(--cyan); font: 600 14px var(--font-display); }
-.host-controls .hc-rot { margin: 4px 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; counter-reset: rot; }
+.host-controls .hc-rot-next { margin: 0; color: var(--cyan); font: 600 13px var(--font-display); }
+.host-controls .hc-rot { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; counter-reset: rot; }
 .host-controls .hc-rot li { counter-increment: rot; display: flex; align-items: center; gap: 4px; padding: 3px 6px; background: rgba(0, 0, 0, 0.25); border-radius: 3px; font-size: 13px; }
 .host-controls .hc-rot li::before { content: counter(rot); min-width: 18px; color: var(--muted); font: 700 12px var(--font-display); }
 .host-controls .hc-rot li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -845,6 +867,10 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .sb-note[hidden] { display: none; }
 
 .host-controls { padding: 8px 12px; border: 1px solid rgba(0, 209, 255, 0.4); border-radius: 4px; background: rgba(0, 20, 30, 0.5); }
+/* The Host tab: the cards are the frames. */
+#pause [data-sec='host'] .host-controls { padding: 0; border: 0; background: none; }
+#pause [data-sec='host'] .host-controls > summary { display: none; }
+#pause [data-sec='host'] { gap: 0; }
 #pause .host-controls button { padding: 6px 10px; }
 #pause [data-sec='host'] .host-controls > summary { pointer-events: none; list-style: none; }
 #pause [data-sec='host'] .host-controls > summary::-webkit-details-marker { display: none; }
