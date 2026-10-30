@@ -27,6 +27,7 @@ import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
 import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { installInputMode } from './inputMode.ts';
+import { markTouchDevice } from './touchDevice.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
 import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
 import type { Handoff } from './game/peerLink.ts';
@@ -39,6 +40,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const params = new URLSearchParams(location.search);
 // Browser tests' deterministic mode (?test=1): offline only, see testMode.ts.
 const TEST = testMode();
+// Phones and tablets: html.touch (bigger tap targets; the match shows on-screen controls).
+markTouchDevice();
 // Browser tests drive the page at once: no start-up loading screen in test mode.
 if (TEST) finishBoot();
 if (TEST) {

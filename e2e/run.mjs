@@ -12,7 +12,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, write
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { chromium } from 'playwright';
+import { chromium, devices } from 'playwright';
 import { COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
 import { assignShards, loadTimings } from './shards.mjs';
 
@@ -854,6 +854,120 @@ async function offlineFlow(browser) {
   check(played > 0, `match events play sounds (${played} played)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+}
+
+/**
+ * A phone held sideways (Pixel 7, landscape, touch): the on-screen controls appear only there, and moving,
+ * looking, firing, jumping, crouching, the weapon wheel, pausing and the turn-sideways prompt work by touch
+ * (CDP touch events, so the browser makes real touch pointers).
+ */
+async function mobileFlow(browser) {
+  const phone = devices['Pixel 7'];
+  const ctx = await browser.newContext({ ...phone, viewport: { width: phone.viewport.height, height: phone.viewport.width }, screen: { width: phone.screen.height, height: phone.screen.width } });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const cdp = await ctx.newCDPSession(page);
+  const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points });
+  const centre = async (sel) => {
+    const b = await page.locator(sel).boundingBox();
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2, w: b.width, h: b.height };
+  };
+  const state = () => page.evaluate(() => ({ pos: { ...window.__cs.local.state.pos }, yaw: window.__cs.input.yaw, held: window.__cs.local.held, mag: window.__cs.local.inventory.get(window.__cs.local.held)?.[0] }));
+  /** Hold a finger at (x, y) until `pred` (page side) holds, then lift it; whether it held in time. */
+  const holdUntil = async (x, y, id, pred, ms, arg) => {
+    await touch('touchStart', [{ x, y, id }]);
+    const ok = await page.waitForFunction(pred, arg, { timeout: T(ms) }).then(() => true, () => false);
+    await touch('touchEnd', []);
+    return ok;
+  };
+
+  await page.goto(CLIENT);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  check(await page.evaluate(() => document.documentElement.classList.contains('touch')), 'a phone is detected as a touch device (html.touch)');
+  // Lighter defaults on a phone: Low graphics, 75% render scale.
+  await page.tap('#nav-options');
+  await page.waitForSelector('.opt-nav');
+  await page.tap('.opt-nav button[data-tab="display"]');
+  const display = await page.$$eval('.opt-row select', (ss) => ss.map((s) => s.value));
+  check(display.includes('low') && display.includes('performance'), `a phone starts on Low graphics and the Performance render scale (${display.join(', ')})`);
+  await page.tap('.opt-nav button[data-tab="controls"]');
+  check(await page.isVisible('.opt-sub:has-text("Touch")'), 'Options → Controls lists the touch controls on a phone');
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-options.png` });
+
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  check(await page.evaluate(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden), 'the match opens paused; the controls wait for Resume');
+  await page.tap('#resume');
+  await page.waitForFunction(() => !document.getElementById('touch-ui').hidden && document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
+  check(await page.isVisible('#touch-ui .tc-pad') && (await page.isVisible('#touch-ui .tc-fire')) && (await page.isVisible('#touch-ui .tc-wheel')), 'Resume starts touch play: pad, Fire and Weapons buttons show (no pointer lock)');
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-play.png` });
+
+  // Move: push the pad forward.
+  const pad = await centre('#touch-ui .tc-pad');
+  let before = await state();
+  const moved = await holdUntil(pad.x, pad.y - pad.h * 0.4, 1, (p) => Math.hypot(window.__cs.local.state.pos.x - p.x, window.__cs.local.state.pos.z - p.z) > 1, 8000, before.pos);
+  check(moved, 'pushing the pad walks you');
+  // Look: drag on the right half.
+  before = await state();
+  const vw = page.viewportSize().width;
+  await touch('touchStart', [{ x: vw * 0.62, y: 140, id: 2 }]);
+  for (let i = 1; i <= 8; i++) await touch('touchMove', [{ x: vw * 0.62 + i * 20, y: 140, id: 2 }]);
+  await touch('touchEnd', []);
+  const looked = await page.waitForFunction((y) => Math.abs(window.__cs.input.yaw - y) > 0.3, before.yaw, { timeout: T(5000) }).then(() => true, () => false);
+  check(looked, 'dragging on the right half turns the view');
+  // Fire: hold the button until a round goes.
+  const fire = await centre('#touch-ui .tc-fire');
+  before = await state();
+  check(await holdUntil(fire.x, fire.y, 3, (m) => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] < m, 8000, before.mag), `holding Fire shoots (magazine ${before.mag} went down)`);
+  // Jump: a tap on the pad's middle. Tap or hold is read from the events' own times (a slow software-rendered
+  // page handles the lift late), so the tap says when it happened: 80 ms apart.
+  before = await state();
+  const t0 = Date.now() / 1000;
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: pad.x, y: pad.y, id: 4 }], timestamp: t0 });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [], timestamp: t0 + 0.08 });
+  const jumped = await page.waitForFunction((y) => window.__cs.local.state.pos.y > y + 0.3, before.pos.y, { timeout: T(5000) }).then(() => true, () => false);
+  check(jumped, 'a tap on the pad middle jumps');
+  await page.waitForFunction((y) => Math.abs(window.__cs.local.state.pos.y - y) < 0.1, before.pos.y, { timeout: T(5000) }).catch(() => {});
+  // Crouch: hold the middle (and again to stand).
+  check(await holdUntil(pad.x, pad.y, 5, () => window.__cs.input.crouchOn, 5000), 'holding the pad middle crouches');
+  await holdUntil(pad.x, pad.y, 6, () => !window.__cs.input.crouchOn, 5000);
+  // The weapon wheel: the Weapons button opens it; a tap on a weapon switches.
+  const wb = await centre('#touch-ui .tc-wheel');
+  await touch('touchStart', [{ x: wb.x, y: wb.y, id: 7 }]);
+  await touch('touchEnd', []);
+  const opened = await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden && document.querySelectorAll('#weapon-wheel .ww-item').length > 1, null, { timeout: T(5000) }).then(() => true, () => false);
+  const items = await page.$$eval('#weapon-wheel .ww-item', (is) => is.map((i) => ({ code: Number(i.dataset.code), held: i.classList.contains('held'), icon: !!i.querySelector('img'), text: i.textContent })));
+  check(opened && items.some((i) => i.held) && items.every((i) => i.icon), `Weapons opens the wheel with each weapon's icon, name and ammo (${items.map((i) => i.text).join(' | ')})`);
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-wheel.png` });
+  const other = items.find((i) => !i.held);
+  if (other) {
+    const it = await centre(`#weapon-wheel .ww-item[data-code="${other.code}"]`);
+    await touch('touchStart', [{ x: it.x, y: it.y, id: 8 }]);
+    await touch('touchEnd', []);
+    const switched = await page.waitForFunction((c) => window.__cs.local.held === c && document.getElementById('weapon-wheel').hidden, other.code, { timeout: T(5000) }).then(() => true, () => false);
+    check(switched, 'tapping a weapon on the wheel switches to it and closes the wheel');
+    // Weapons again, then Weapons once more (outside the ring): it closes without switching.
+    await touch('touchStart', [{ x: wb.x, y: wb.y, id: 10 }]);
+    await touch('touchEnd', []);
+    await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden, null, { timeout: T(5000) }).catch(() => {});
+    await touch('touchStart', [{ x: wb.x, y: wb.y, id: 11 }]);
+    await touch('touchEnd', []);
+    const kept = await page.waitForFunction((c) => document.getElementById('weapon-wheel').hidden && window.__cs.local.held === c, other.code, { timeout: T(5000) }).then(() => true, () => false);
+    check(kept, 'a tap outside the wheel closes it and keeps your weapon');
+  }
+  // Held upright: the turn-sideways prompt.
+  await page.setViewportSize({ width: phone.viewport.width, height: phone.viewport.height });
+  check(await page.waitForFunction(() => getComputedStyle(document.getElementById('touch-rotate')).display !== 'none', null, { timeout: T(3000) }).then(() => true, () => false), 'portrait shows the turn-sideways prompt');
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-portrait.png` });
+  await page.setViewportSize({ width: phone.viewport.height, height: phone.viewport.width });
+  // The pause button stops touch play.
+  const pb = await centre('#touch-ui .tc-pause');
+  await touch('touchStart', [{ x: pb.x, y: pb.y, id: 9 }]);
+  await touch('touchEnd', []);
+  check(await page.waitForFunction(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).then(() => true, () => false), 'the pause button opens the pause menu and hides the controls');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await ctx.close();
 }
 
 async function vaultFlow(browser) {
@@ -2308,6 +2422,9 @@ async function designerFlow(browser) {
   await page.waitForFunction(() => !document.getElementById('menu').hidden);
   const selected = await page.evaluate(() => window.__front.look);
   check(selected === id, `the saved look is selected on the menu (${selected})`);
+  // Its portrait is drawn once when it's saved and kept in this browser (never drawn again on Character Select).
+  const kept = await until(() => page.evaluate((id) => /^data:image\//.test(JSON.parse(localStorage.getItem('cs.portraits') ?? '{}')[id] ?? ''), id), T(20000));
+  check(kept, 'saving a design keeps its portrait in the browser');
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: T(20000) }).catch(() => {});
@@ -3203,7 +3320,7 @@ try {
   };
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, ctf: ctfFlow, forts: fortsFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, characters: charactersFlow, online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

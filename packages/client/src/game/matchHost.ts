@@ -1,7 +1,7 @@
 import {
+  BROWSER_MAX_PLAYERS,
   BOT_DIFFICULTIES,
   BROWSER_HOST_MAX_GUESTS,
-  BROWSER_MAX_PLAYERS,
   CHECKPOINT_EVERY_SECONDS,
   STANDBY_ANSWER_SECONDS,
   handoffKey,
@@ -58,6 +58,8 @@ export interface LocalMatchOptions {
   restore?: MatchCheckpoint;
   /** This browser's own key (`pk:…`): if the match is handed on, the next host keeps this player's place for it. */
   selfKey?: string;
+  /** Most players the host may set (the page's deviceMaxPlayers: a phone hosts fewer); default BROWSER_MAX_PLAYERS. */
+  maxPlayers?: number;
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
@@ -220,8 +222,8 @@ export class MatchHost {
     }
     me.account = !!this.opts.verified;
     if (test?.god) me.invulnerable = true;
-    // Load tests (?bots=96) start past the browser's cap; the host can't raise it further.
-    const control = new HostControl(match, bots, fill, 'Host', Math.max(BROWSER_MAX_PLAYERS, fill));
+    // Load tests (?bots=96) start past the browser's cap; the host can't raise it further. A phone hosts fewer (opts.maxPlayers).
+    const control = new HostControl(match, bots, fill, 'Host', Math.max(this.opts.maxPlayers ?? BROWSER_MAX_PLAYERS, fill));
     Object.assign(this, { match, me, mod, control, bots });
     if (!cp) bots.rebalance(control.fill);
     this.onMatch?.(match, me, mod);

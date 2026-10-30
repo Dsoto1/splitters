@@ -5,6 +5,7 @@ import {
   type BotProfile,
   type BotSet,
   NPC_LOOKS,
+  PLAYER_NPC_LOOKS,
   NPC_ROLE_SPECS,
   npcLookRole,
   validLookId,
@@ -14,7 +15,6 @@ import {
   MODE_LABELS,
   isTeamMode,
   LOOK_BIOS,
-  BROWSER_MAX_PLAYERS,
   TEAM_PRESETS,
   SETUP_PRESETS,
   BIG_MATCH,
@@ -46,11 +46,12 @@ import {
   usernameProblem,
   type Region,
 } from '@tiletrigger/shared';
-import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
+import { DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadMousePrefs, loadWheelKey, saveMousePrefs, saveWheelKey } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
 import { cachedProfile, checkUsername, loadProfile, myRegion, saveProfile, setRegion } from '../profile.ts';
 import { installTooltips } from './tooltip.ts';
+import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadGraphicsQuality, loadRenderScale, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfOverlay.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
@@ -397,6 +398,8 @@ export class FrontEnd {
     this.look = validLookId(look);
     storage('cs.look', this.look);
     this.scene.setLook(this.look);
+    // A new design gets its picture now (kept in this browser), so the grid shows it rather than drawing it there.
+    void this.portraits.get(this.look).catch(() => undefined);
   }
 
   private go(screen: ScreenId): void {
@@ -902,7 +905,7 @@ export class FrontEnd {
           state: { sizes, names: sizes.map((_, i) => s.teamNames?.[i] || sides[i]!.name), colors: sizes.map((_, i) => s.teamColors?.[i] || sides[i]!.color), you },
           countLocked: two ? `${MODE_LABEL[s.mode]} is always two teams.` : null,
           youLabel: 'You',
-          maxPlayers: BROWSER_MAX_PLAYERS,
+          maxPlayers: deviceMaxPlayers(),
           onChange: (next) => this.change((x) => {
             x.teams = next.sizes;
             // Only names and colours changed from the map's are kept.
@@ -918,7 +921,7 @@ export class FrontEnd {
         }),
       );
     } else {
-      playerRows.push(settingRow(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper({ value: s.bots, min: 0, max: BROWSER_MAX_PLAYERS - 1, id: 'arcade-bots', label: coop ? 'squadmates' : 'bots', onChange: (v) => this.change((x) => (x.bots = v)) })));
+      playerRows.push(settingRow(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', stepper({ value: s.bots, min: 0, max: deviceMaxPlayers() - 1, id: 'arcade-bots', label: coop ? 'squadmates' : 'bots', onChange: (v) => this.change((x) => (x.bots = v)) })));
       playerRows.push(el('p', { class: 'setup-hint', textContent: `You + ${s.bots} bot${s.bots === 1 ? '' : 's'} = ${players} player${players === 1 ? '' : 's'}${coop ? ' on your side' : ''}` }));
     }
     if (s.mode === 'core.coop' && PLAYLISTS.length) {
@@ -1144,14 +1147,14 @@ export class FrontEnd {
     const ffa = el('optgroup', { label: 'Free-for-all' });
     // Past the browser's cap (24 v 24): a dedicated host's sizes.
     for (const p of SETUP_PRESETS) {
-      if (presetPlayers(p) > BROWSER_MAX_PLAYERS) continue;
+      if (presetPlayers(p) > deviceMaxPlayers()) continue;
       if (p.sizes) {
         shown.add(p.sizes.join(','));
         add(teams, p.sizes.join(','), p.label, presetPlayers(p), teamWhy(p.sizes));
       } else add(ffa, `ffa:${p.ffa}`, p.label, presetPlayers(p), isTeamMode(s.mode) || isCoopMode(s.mode) ? (ffaModes.length ? null : 'no free-for-all on this map') : null);
     }
     const more = el('optgroup', { label: 'More layouts' });
-    for (const p of TEAM_PRESETS) if (!shown.has(p.join(',')) && p.reduce((a, b) => a + b, 0) <= BROWSER_MAX_PLAYERS) add(more, p.join(','), teamLayoutLabel(p), p.reduce((a, b) => a + b, 0), teamWhy(p));
+    for (const p of TEAM_PRESETS) if (!shown.has(p.join(',')) && p.reduce((a, b) => a + b, 0) <= deviceMaxPlayers()) add(more, p.join(','), teamLayoutLabel(p), p.reduce((a, b) => a + b, 0), teamWhy(p));
     select.append(teams, ffa, more);
     select.addEventListener('change', () => {
       const v = select.value;
@@ -1281,7 +1284,7 @@ export class FrontEnd {
     const family = (id: string) => partInfo(getLook(id).parts.find((p) => partInfo(p)?.slot === 'torso') ?? '')?.outfit ?? 'ranger';
     const all = [
       ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
-      ...NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
+      ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
       ...saved.map((s) => ({ id: s.id, name: s.name, mine: true })),
     ];
     const filters: [string, string][] = [['all', 'All'], ['originals', 'Originals'], ['ranger', 'Ranger'], ['peasant', 'Peasant'], ['athlete', 'Sportswear'], ['npc', 'NPCs'], ['mine', 'Yours']];
@@ -1782,22 +1785,58 @@ export class FrontEnd {
       ['Reload', 'R'],
       ['Use · get in or out of a vehicle', 'E'],
       ['Third person · in a vehicle: cockpit or chase camera', 'H'],
-      ['Weapons', '1–9 · Wheel · Q'],
+      ['Weapons (Q tap: your last weapon)', '1–9 · Wheel · Q'],
       ['Scores', 'Tab'],
       ['Fullscreen', 'F11 · Alt+Enter'],
       ['Controller: move / look', 'Left stick / right stick'],
       ['Controller: fire / aim', 'RT / LT'],
       ['Controller: jump / crouch', 'A / B'],
       ['Controller: reload / next weapon', 'X / Y'],
+      ['Controller: weapon wheel (right stick points, let go to switch)', 'Hold Y'],
       ['Controller: use / throw', 'RB / hold LB'],
       ['Controller: sprint / ping', 'L3 / D-pad up'],
       ['Controller: third person / vehicle camera', 'R3'],
     ];
     const bindingList = (rows: [string, string][]) => el('div', { class: 'controls' }, ...rows.map(([a, k]) => el('div', {}, el('span', { textContent: a }), kbd(k))));
     const pad = 'Controller: ';
+    // Phones and tablets (game/touchControls.ts).
+    const touchList = bindingList([
+      ['Move (push past the rim to sprint)', 'Left pad'],
+      ['Jump · crouch', "Tap · hold the pad's middle"],
+      ['Look', 'Drag on the right half'],
+      ['Fire (drag it to aim while firing)', 'Fire'],
+      ['Aim down sights (toggle)', 'Aim'],
+      ['Quick melee · reload · use · throw', 'Melee · Reload · Use · Throw'],
+      ['Weapon wheel', 'Weapons'],
+      ['Pause', 'II (top left)'],
+    ]);
     const keyboard = bindingList(bindings.filter(([a]) => !a.startsWith(pad)));
     const controller = bindingList(bindings.filter(([a]) => a.startsWith(pad)).map(([a, k]) => [a.slice(pad.length).replace(/^./, (c) => c.toUpperCase()), k]));
     // Crosshair styles and colours (reference board: crosshair styles).
+    // The weapon wheel's key: press the button, then the key (Esc keeps the old one).
+    const wheelKey = el('button', { type: 'button', class: 'key-bind', textContent: keyLabel(loadWheelKey()) });
+    const wheelNote = el('small', { class: 'key-bind-note' });
+    wheelKey.addEventListener('click', () => {
+      wheelKey.textContent = 'Press a key…';
+      wheelNote.textContent = '';
+      const take = (e: KeyboardEvent) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window.removeEventListener('keydown', take, true);
+        if (e.code !== 'Escape') {
+          if (RESERVED_KEYS.has(e.code)) wheelNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
+          else saveWheelKey(e.code);
+        }
+        wheelKey.textContent = keyLabel(loadWheelKey());
+      };
+      window.addEventListener('keydown', take, true);
+    });
+    const wheelReset = el('button', { type: 'button', class: 'link', textContent: 'Default (Q)' });
+    wheelReset.addEventListener('click', () => {
+      saveWheelKey(DEFAULT_WHEEL_KEY);
+      wheelKey.textContent = keyLabel(DEFAULT_WHEEL_KEY);
+      wheelNote.textContent = '';
+    });
     const crosshairs = el('div', { class: 'crosshair-pick' });
     const colours = el('div', { class: 'crosshair-pick colours' });
     const renderPick = () => {
@@ -1855,7 +1894,9 @@ export class FrontEnd {
         row('Mouse sensitivity', el('span', { class: 'opt-range' }, sens, sensVal)),
         row('Zoom sensitivity', el('span', { class: 'opt-range' }, zoomSens, zoomSensVal), 'Look speed when aiming down the sights or through a scope. At 1.00× the view moves on screen just as it does in hip fire; lower is steadier, higher is quicker.'),
         row('Invert look', toggle(invert), 'Mouse up looks down.'),
-        row('Aim assist', toggle(assist), 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
+        row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
+        row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open a wheel of the weapons you carry, point with the mouse and let go to switch (a click picks too). A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
+        ...(isTouchDevice() ? [el('h3', { class: 'opt-sub', textContent: 'Touch' }), touchList] : []),
         el('h3', { class: 'opt-sub', textContent: 'Keyboard and mouse' }),
         keyboard,
         el('h3', { class: 'opt-sub', textContent: 'Controller' }),
