@@ -539,6 +539,21 @@ small and exact.
   "Paint steep slopes as stone" turns every face over 35° into rock. Spawns,
   pickups and props placed over terrain stand on it. New terrain sits 15 cm
   under level 0, so tiles placed on flat ground do not flicker against it.
+- **MapMaker, Terrain → Real places (owner only, like Publish).** For a map of
+  a real place. **Heights from a height grid file** reads an ESRI ASCII grid
+  (`.asc`: `ncols`, `nrows`, `xllcorner`/`yllcorner` or `xllcenter`/`yllcenter`,
+  `cellsize`, `NODATA_value`, then the heights, north row first) whose x is the
+  map's x (east) and y the map's z (north), in metres. It becomes the terrain
+  in one undo step: its cell size as the grid (coarser when the file has more
+  than 161 heights along a side: 401 × 301 heights at 1 m become 161 × 121 at
+  2.5 m), the height typed into "Ground level" (or the file's height at the
+  centre point) at y 0, ground paint and plants kept where the old terrain
+  reached, missing data filled from its neighbours (`editor/heightGrid.ts`).
+  **Trace image** lays a picture (a plan, a map render; north up) over the
+  ground at the edges typed in, see-through, drawn over everything, to build
+  on. Neither file is kept in the map, and players never bring files in
+  (CLAUDE.md, content rules). St. John's was made this way
+  (docs/references/ST_JOHNS.md).
 - **Rockfall Canyon** (`maps/canyon.json`, built by
   `pnpm --filter @tiletrigger/server build-canyon`) is the worked example: a
   240 m canyon between rock walls, two hills, a ledge along the west wall, a
