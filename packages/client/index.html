@@ -90,6 +90,7 @@
     <div id="pause" hidden>
       <div class="pause-card panel" role="dialog" aria-labelledby="pause-heading">
         <header class="pause-head">
+          <button id="pause-back" class="back-btn" type="button" title="Back to the game (Esc)"><span aria-hidden="true">◀</span> <span class="back-label">Resume</span></button>
           <h2 class="pause-title" id="pause-heading">Paused</h2>
           <p id="pause-context" class="pause-context"></p>
         </header>
@@ -103,6 +104,7 @@
             <div class="pause-actions">
               <button id="resume" class="primary">Resume</button>
               <button id="respawn-now" title="Stuck? Die here and respawn (counts as a suicide). Hotkey: K">Respawn</button>
+              <button id="pause-spectate" hidden>Spectate</button>
               <button id="pause-class" hidden title="Pick your class for your next spawn (L)">Change class</button>
             </div>
             <div id="pause-online-state" class="pause-note" hidden></div>
@@ -110,8 +112,8 @@
             <div id="pause-admin-slot"></div>
           </section>
           <section class="pause-sec" data-sec="host" hidden>
-            <div id="pause-online-box" class="pause-online-box">
-              <h4 class="pause-h">Online</h4>
+            <div id="pause-online-box" class="pause-online-box hc-card">
+              <h4 class="pause-h hc-card-title"><span>Online</span></h4>
               <div class="pause-online">
                 <button id="go-online" class="primary" hidden title="Restart this match and list it in the game browser">Go online</button>
                 <button id="go-offline" hidden title="Disconnect friends and stop listing this match">Go offline</button>
@@ -120,8 +122,7 @@
                 <div id="host-info" hidden></div>
                 <button id="host-game" hidden title="Let friends join this match from their browsers with a code (not listed)">Host with code only (not listed)</button>
                 <div id="host-public" hidden>
-                  <label class="pause-row" title="Anyone can find and join this match from Online → Game browser"><span>List in the game browser</span> <input id="host-list" type="checkbox" /></label>
-                  <input id="host-name" maxlength="40" placeholder="Server name" aria-label="Server name" />
+                  <div class="pause-row host-public-row"><label title="Anyone can find and join this match from Online → Game browser"><input id="host-list" type="checkbox" /> <span>List in the game browser</span></label> <input id="host-name" maxlength="40" placeholder="Server name" aria-label="Server name" /></div>
                   <p class="hint" id="host-public-status"></p>
                 </div>
               </div>
@@ -156,7 +157,7 @@
           </section>
         </div>
         <footer class="pause-foot">
-          <p class="hint">Esc back · Q/E tabs · F11 fullscreen</p>
+          <div class="hintbar pause-hints" id="pause-hints"></div>
           <button id="exitmatch" class="danger">Leave</button>
         </footer>
       </div>

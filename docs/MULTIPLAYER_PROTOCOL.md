@@ -456,3 +456,48 @@ answers `standby` and is passed over), so `PROTOCOL_VERSION` stays 4.
 Dedicated servers never send them and ignore a `standby` answer. No hub
 change was needed: the standby code is an ordinary broker registration and
 the listing moves with the existing `POST` / `DELETE /lobby/games`.
+
+## 15. Spectating (October 2026)
+
+Players can leave play to watch, and a watcher's camera input counts as being
+there (`shared/src/sim/match.ts` `Match.spectate` / `joinFromSpectating`,
+`BotFiller.spectate` / `rejoin` / `watch`; `client/src/game/spectatorCam.ts`).
+All additions are optional, so `PROTOCOL_VERSION` stays 4:
+
+- **`welcome.spectate: 1`**: the host (dedicated server, Host Service or a
+  browser host) lets players spectate by choice. Without it the pause menu
+  doesn't offer Spectate.
+- **`ClientMessage { t: "spectate", on }`**: `on: true` takes the sender's
+  player out of the match: their body goes (as if they left, so a mode's
+  `onLeave` runs: a carried flag drops), the bot fill brings in a bot for the
+  place, their slot is kept with nothing in it (no newcomer or bot takes it),
+  and their kills, deaths and objective plays wait for them. `on: false` puts
+  them back in that slot with that score (team: the rules' assignment) and a
+  bot gives way. Older hosts ignore the message (`parseClientMessage` returns
+  null for unknown types and the hosts drop it).
+- **`RosterEntry.sp: 1`**: a spectator (after the players, `team: null`, not
+  a bot). Snapshots to a spectator carry no `me` and don't list them among
+  the players; interest management sends them everyone (a viewer with no
+  body, like the dead).
+- **`PlayerInput.sp: 1`**: camera input from someone watching (a spectator,
+  or a dead player in the kill cam, following someone or flying the free
+  camera): they turned, moved the free camera or picked whom to watch that
+  tick. `Match.noteActivity` counts it as activity, for spectators too (their
+  inputs move nothing, they only count). So the away rule (`AWAY.afkSeconds`:
+  a bot plays for an idle player) never fires on someone watching and
+  touching the controls. A spectator has no body for a bot to play, so the
+  only idle rule for them is the idle kick: no input at all for
+  `AWAY.kickMinutes` (`IDLE_KICK_MINUTES`) and they are removed, freeing the
+  slot. Older hosts drop the field and go by turning alone.
+
+**Who may watch what** (client side, `spectateRule`): in team modes a dead
+player follows only their own team and has no free camera (it would scout for
+their side); a pure spectator (on no team), free-for-all modes, offline
+matches, and whoever runs the match (its browser host, or a dedicated
+server's admin) may follow anyone and fly the free camera. The rule is the
+client's: a modified client could ignore it (casual play, as everywhere in
+this design; see MULTIPLAYER_DIRECTION.md).
+
+Not carried: a map change (`travel`) or a host handoff brings spectators back
+as players (they reconnect with `hello`); they choose Spectate again.
+

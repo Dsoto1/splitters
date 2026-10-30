@@ -202,7 +202,11 @@ Portals appear only on pantry_raid and sandfall_colosseum.
 - Away/reconnect.
 
 ### Spectating
-Only following teammates while dead. **No free spectator mode.**
+- **Kill cam**: as you die the view turns to your killer and follows them from behind your body (3.5 s, or until you respawn), with a banner: who, the weapon, their health left. A killer out of view: it looks where the shot came from. Any spectator key skips it.
+- **Watching while dead** (after the kill cam; the whole round in Elimination, Bomb, Hostage): follow a player over the shoulder (click / → next, right click / ← previous; a controller's RB / LB), or fly a free camera (Space or Y; WASD, E/Q up and down, Shift faster), kept inside the map's bounds. Touch: ◀ Camera ▶ buttons.
+- **Spectate by choice**: pause menu → Spectate (a bot fills your place, your slot and score wait); Join game (or J) puts you back.
+- **Rule**: in team modes a dead player follows only their team, no free camera; pure spectators, free-for-all modes, offline matches and whoever runs the match may follow anyone and use the free camera.
+- Watching with the controls counts as activity: the away and idle rules leave you alone (docs/MULTIPLAYER_PROTOCOL.md §15).
 
 ### Hidden entry points
 | URL flag | What it does |

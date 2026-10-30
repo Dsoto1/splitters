@@ -54,6 +54,12 @@ export interface PlayerInput {
    * (gunplay.ts counterRecoil), so the aim never overshoots on recovery.
    */
   rc?: [number, number];
+  /**
+   * A spectator's camera input (or a dead player's while watching: kill cam, follow or free camera): they
+   * turned, moved the free camera or picked whom to watch this tick. Counts as activity for the idle and
+   * away rules (Match.noteActivity). Optional: hosts that don't know it go by turning alone.
+   */
+  sp?: 1;
 }
 
 /** Quick messages players can send (keys 1-6 while the quick-message menu is open). */

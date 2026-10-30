@@ -274,6 +274,10 @@ export class GameView {
   /** Barrel height of the loaded viewmodel (the same estimate as remote guns: the bounds include the grip). */
   private muzzleY = 0.02;
   private kickAmount = 0;
+  /** The last kick was a melee weapon's barrel going off (a gun's recoil, heavier), not a swing. */
+  private kickShot = false;
+  /** Smoke clouds from your own shots so far (tests). */
+  readonly smokeClouds = { local: 0, remote: 0 };
   private bobPhase = 0;
   /** Weapon bob strength (0..1), eased so starting or stopping doesn't pop the gun. */
   private bobAmount = 0;
@@ -706,10 +710,20 @@ export class GameView {
   }
 
   /** A brief muzzle flash on a remote player's gun: the pack's flash for that weapon (muzzleFlash.ts), else the plain star. */
-  remoteFlash(slot: number, def?: WeaponDefinition): void {
+  remoteFlash(slot: number, def?: WeaponDefinition, alt = false): void {
     const a = this.avatars.get(slot);
     if (!a?.muzzle) return;
-    const fx = def ? muzzleEffectFor(def) : null;
+    const barrel = alt ? def?.view.altShot : undefined;
+    const fx = barrel ? { id: barrel.flash.effect, scale: barrel.flash.scale ?? 0.2 } : def ? muzzleEffectFor(def) : null;
+    if (barrel?.smoke) {
+      // The cloud hangs where they fired, rolling out along the barrel.
+      a.muzzle.node.computeWorldMatrix(true);
+      const m = a.muzzle.node.getWorldMatrix();
+      const at = Vector3.TransformCoordinates(a.muzzle.local, m);
+      const fwd = Vector3.TransformNormal(new Vector3(0, 0, 1), m).normalize();
+      this.muzzleSmoke(at, fwd, barrel.smoke);
+      this.smokeClouds.remote++;
+    }
     // The pack's flash only near the camera, on a few guns at a time (each rig is a dozen meshes);
     // further off, or in a crowd, the plain star does.
     const near = Vector3.DistanceSquared(a.root.position, this.camera.globalPosition) < REMOTE_FLASH_RANGE * REMOTE_FLASH_RANGE;
@@ -912,7 +926,8 @@ export class GameView {
       node.parent = this.viewRoot;
       // Draw on top of the world so the gun never clips into walls.
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-      const v = { node, muzzleZ: bounds.max.z, muzzleY: (bounds.min.y + bounds.max.y) / 2 + (bounds.max.y - bounds.min.y) * 0.2, sightTop: bounds.max.y, stockZ: bounds.min.z };
+      const at = def.view.muzzleAt;
+      const v = { node, muzzleZ: at ? at[2] : bounds.max.z, muzzleY: at ? at[1] : (bounds.min.y + bounds.max.y) / 2 + (bounds.max.y - bounds.min.y) * 0.2, sightTop: bounds.max.y, stockZ: bounds.min.z };
       this.viewmodels.set(def.id, v);
       node.setEnabled(false);
       if (load === this.viewLoad) show(v);
@@ -983,8 +998,25 @@ export class GameView {
     return t < 0.3 ? Math.sin((t / 0.3) * (Math.PI / 2)) : Math.cos(((t - 0.3) / 0.7) * (Math.PI / 2));
   }
 
-  /** Recoil kick and muzzle flash for a predicted shot. */
-  kick(def: WeaponDefinition): void {
+  /** Recoil kick and muzzle flash for a predicted shot (`alt`: the second trigger). */
+  kick(def: WeaponDefinition, alt = false): void {
+    const barrel = alt ? def.view.altShot : undefined;
+    this.kickShot = !!barrel;
+    if (barrel) {
+      // A melee weapon's own barrel (the Battle Axe's blunderbuss): a gun's kick, a big flash and a cloud of smoke.
+      this.kickAmount = 1;
+      this.flashUntil = performance.now() + 60;
+      this.starFlash = !this.flashRig.fire(barrel.flash.effect, (barrel.flash.scale ?? 0.2) * OWN_FLASH_SCALE);
+      if (this.starFlash) kickFlash(this.flash, 1.8);
+      const at = this.localMuzzle();
+      if (at && barrel.smoke) {
+        const m = this.viewRoot.getWorldMatrix();
+        const fwd = Vector3.TransformNormal(new Vector3(0, 0, 1), m).normalize();
+        this.muzzleSmoke(at, fwd, barrel.smoke);
+        this.smokeClouds.local++;
+      }
+      return;
+    }
     const rail = def.id === 'core.railgun';
     // Visual recoil (GUNPLAY_SPEC §29): the weapon's own kick strength when it has one; the camera's real climb is mechanical.
     const visual = gunplayOf(def).kick?.visual;
@@ -1002,6 +1034,21 @@ export class GameView {
     this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale * OWN_FLASH_SCALE));
     if (this.starFlash) kickFlash(this.flash, def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1);
     if (def.kind === 'hitscan' && def.ammo) this.ejectCasing(def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1);
+  }
+
+  /**
+   * Black-powder smoke: a cloud of grey-white puffs rolling out along the barrel from the
+   * muzzle, thinning and rising as it hangs in the air. `amount` 1 is a blunderbuss.
+   */
+  muzzleSmoke(at: Vec3, dir: { x: number; y: number; z: number }, amount: number): void {
+    const n = Math.round(7 * amount);
+    for (let i = 0; i < n; i++) {
+      const t = 0.1 + (i / n) * 0.9 * amount + Math.random() * 0.15;
+      const j = () => (Math.random() - 0.5) * 0.18 * (1 + t);
+      const p = { x: at.x + dir.x * t + j(), y: at.y + dir.y * t + j() * 0.6, z: at.z + dir.z * t + j() };
+      const speed = (1 - i / n) * 2.6 + 0.4;
+      this.impacts.puff(p, i % 3 === 0 ? '#bdb7ad' : '#dcd8d0', (0.45 + Math.random() * 0.35) * amount * (0.7 + t * 0.4), 1.6 + Math.random() * 1.4, 0.25 + Math.random() * 0.3, false, { x: dir.x * speed, y: dir.y * speed + 0.1, z: dir.z * speed });
+    }
   }
 
   /** A spent case flips out of the right side of your gun and rattles on the floor. */
@@ -1051,13 +1098,15 @@ export class GameView {
     const x = vx * (1 - ads);
     const y = vy + (adsY - vy) * ads;
     const z = vz + (adsZ - vz) * ads;
-    const melee = def.kind === 'melee';
+    // A melee weapon's barrel kicks like a heavy gun (back and up), not a swing.
+    const melee = def.kind === 'melee' && !this.kickShot;
+    const heavy = this.kickShot ? 2.6 : 1;
     this.viewRoot.position.set(
       x + Math.sin(this.bobPhase) * 0.012 * bob,
       y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - o.reload * 0.08,
-      z - this.kickAmount * (melee ? -0.25 : 0.06) * (1 - ads * 0.5),
+      z - this.kickAmount * (melee ? -0.25 : 0.06 * heavy) * (1 - ads * 0.5),
     );
-    this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
+    this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12 * heavy) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
     // A punch or kick: the gun dips out of the way (aside for a punch) while the fist or boot comes in.
     const now = performance.now();
     const kicking = this.strikeMotion?.kind === 'kick';
@@ -1340,7 +1389,8 @@ export class GameView {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
       // The muzzle is the front of the gun along its forward axis, measured before it's put in a hand.
       const { min, max } = node.getHierarchyBoundingVectors(true);
-      a.muzzle = { node, local: new Vector3(0, (min.y + max.y) / 2 + (max.y - min.y) * 0.2, max.z) };
+      const at = def.view.muzzleAt;
+      a.muzzle = { node, local: at ? new Vector3(at[0], at[1], at[2]) : new Vector3(0, (min.y + max.y) / 2 + (max.y - min.y) * 0.2, max.z) };
       if (a.anim) {
         a.anim.hold(node, def.view.hold);
         return;
