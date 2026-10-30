@@ -262,7 +262,7 @@ describe('bot vehicle sense in a match', () => {
       expect(enterMount.call(match, human)).toBe(true);
       if (!dodge) (bot.bot as unknown as { watchTraffic(): void }).watchTraffic = () => {};
       let seq = 0;
-      let minHealth = PLAYER.maxHealth;
+      let minHealth: number = PLAYER.maxHealth;
       for (let t = 0; t < 60 * 3; t++) {
         const i: PlayerInput = { seq: ++seq, forward: 1, right: 0, yaw: human.yaw, pitch: 0, buttons: 0 };
         match.queueInputs(human.slot, [i]);
