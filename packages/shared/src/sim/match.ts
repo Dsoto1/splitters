@@ -2027,6 +2027,8 @@ export class Match {
       enterRadius: m.def.enterRadius,
       seats: m.def.seats.map((s, i) => ({ role: s.role, free: m.seats[i] === null, ...(m.seats[i] !== null ? { by: m.seats[i]! } : {}), ...(s.weapon ? { weapon: getWeapon(s.weapon) } : {}), ...(s.arc !== undefined ? { arc: s.arc } : {}), ...(s.facing ? { facing: s.facing } : {}) })),
       ...(m.def.vehicle ? { maxSpeed: m.def.vehicle.maxSpeed, speed: Math.abs(m.speed) } : {}),
+      ...(m.def.vehicle && m.speed < -0.5 ? { reversing: true } : {}),
+      ...(m.burning ? { burning: true } : {}),
       ...(m.floats ? { floats: true } : {}),
       humanNear: humans.some((h) => horizontalDistance(h.move.pos, m.pos) < 35),
     }));

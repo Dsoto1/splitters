@@ -24,6 +24,12 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - the ladder path fix.
 - **Also on `main`** (`4176d3d`, green): `wip/pause-safari` (wider pause menu, Safari look filter, zoom sensitivity).
 - **Also on `main`** (`384ffe7`, green): `wip/impact` (batch 2): stopping power, bigger explosion knockback, tiered ragdolls (full, cheap, posed; a body pool; a budget of awake bodies; `pnpm perf:mass`), unarmed punch and kick (Universal Animation Library clips), and Arena-tagged bots hopping only in fights on the "Mixed" style. **No agents are running; every requested branch is merged.**
+- **On `wip/bot-vehicles`** (not merged; full CI not run yet): bot vehicle sense (`bots/vehicles.ts`, `brain.ts`; tests in `test/botVehicles.test.ts`).
+  - Stuck drivers back out for 1 s, then get out if still stuck within 3 s, and avoid that vehicle for 30 s.
+  - Riders leave a stuck bot-driven vehicle; everyone leaves a burning one.
+  - Enemies in vehicles: bots prefer launchers (aimed low at the hull), throw grenades at a stopped one, fetch a launcher within 30 m, take cover when they can't hurt it, and dodge one driven at them.
+  - The sim has no roll or pitch on vehicles, so "flipped" isn't detected; a wedged vehicle is caught by the headway check instead.
+  - Merge it through `check/candidate` (the shared sim changed, so CI runs the full suite).
 - **Open items:**
   - `perf:mass` classes some deaths as out of view when they are on screen; check the view test before trusting its tier counts;
   - kick and flinch feel not judged by eye yet;
