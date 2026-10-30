@@ -12151,6 +12151,34 @@
         7.96,
         4.852
       ]
+    },
+    {
+      "file": "props/mining_excavator.glb",
+      "source": "meshy-owned-mining",
+      "title": "Bucket-Wheel Excavator (text to 3D, for Iron Maw) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Bucket_Wheel_Excavator_20261030_texture.glb",
+      "triangles": 4549,
+      "bytes": 301460,
+      "sha256": "7b98b41301c338c4",
+      "size": [
+        29.367,
+        16.001,
+        13.678
+      ]
+    },
+    {
+      "file": "props/mining_haul_truck.glb",
+      "source": "meshy-owned-mining",
+      "title": "Mining Haul Truck (text to 3D, for Iron Maw) (download dated 2026-10-30)",
+      "src": "Meshy_AI_Mining_Haul_Truck_20261030_texture.glb",
+      "triangles": 5946,
+      "bytes": 352568,
+      "sha256": "b943cdeba9a81369",
+      "size": [
+        11.934,
+        7.4,
+        6.86
+      ]
     }
   ]
 }

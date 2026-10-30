@@ -24749,6 +24749,40 @@
       ]
     },
     {
+      "file": "props/mining_excavator.glb",
+      "sha256": "7b98b41301c338c4",
+      "triangles": 4549,
+      "bytes": 301460,
+      "source": "meshy-owned-mining/Meshy_AI_Bucket_Wheel_Excavator_20261030_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): mining machines: Bucket-Wheel Excavator (text to 3D, for Iron Maw) (download dated 2026-10-30)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "map re-encoded as a 768 px JPEG"
+      ]
+    },
+    {
+      "file": "props/mining_haul_truck.glb",
+      "sha256": "b943cdeba9a81369",
+      "triangles": 5946,
+      "bytes": 352568,
+      "source": "meshy-owned-mining/Meshy_AI_Mining_Haul_Truck_20261030_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): mining machines: Mining Haul Truck (text to 3D, for Iron Maw) (download dated 2026-10-30)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "map re-encoded as a 768 px JPEG"
+      ]
+    },
+    {
       "file": "skies/clear.jpg",
       "sha256": "4ba9d3b02f1b3acf",
       "bytes": 37359,

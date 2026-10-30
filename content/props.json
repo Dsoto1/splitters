@@ -476,6 +476,18 @@
       "retrieved": "2026-10-27",
       "download": "meshy-community-nature",
       "nature": true
+    },
+    "meshy-owned-mining": {
+      "title": "Tile Trigger originals (made with Meshy): mining machines",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "licenseFile": "assets-src/meshy-owned/License.txt",
+      "retrieved": "2026-10-30",
+      "download": "owned_mining",
+      "meshy": true,
+      "convert": true,
+      "textureSize": 768
     }
   },
   "budgets": {
@@ -12019,6 +12031,36 @@
         "flags": [
           "Permissive"
         ]
+      }
+    },
+    {
+      "id": "mining_excavator",
+      "pack": "meshy-owned-mining",
+      "src": "Meshy_AI_Bucket_Wheel_Excavator_20261030_texture.glb",
+      "name": "Bucket-Wheel Excavator",
+      "category": "Mines & Caves",
+      "height": 16,
+      "collide": "shell",
+      "triangles": 4800,
+      "maxError": 0.1,
+      "source": {
+        "model": "Bucket-Wheel Excavator (text to 3D, for Iron Maw)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "mining_haul_truck",
+      "pack": "meshy-owned-mining",
+      "src": "Meshy_AI_Mining_Haul_Truck_20261030_texture.glb",
+      "name": "Mining Haul Truck",
+      "category": "Mines & Caves",
+      "height": 7.4,
+      "collide": "shell",
+      "triangles": 6000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Mining Haul Truck (text to 3D, for Iron Maw)",
+        "date": "2026-10-30"
       }
     }
   ]
