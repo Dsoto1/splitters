@@ -18,12 +18,11 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - `wip/character-intake` (24 new Meshy characters and hand fixes);
   - `wip/host-handoff` (the second friend rejoins the successor);
   - universal first-person arms for Brass Hare, Teddy and Saint Nick.
-- **In CI on `check/candidate` at hand-off** (`d6ecee1`):
-  - `wip/weapons-variety` (new weapon and turret models, Battle Axe, random pickups and "Mix up weapon pickups");
-  - `wip/roster-cleanup`'s first two commits (six looks retired; helmet tool and models, not yet worn);
-  - the ladder path fix (bots treated tower ladders as blocked).
-
-  If it's green, fast-forward `main`. If it's red, read the failed jobs' logs (`mcp__github__get_job_logs` with `failed_only`).
+- **Also on `main`** (`d6ecee1`, green):
+  - `wip/weapons-variety`: the owner's weapon and turret models, the Battle Axe, random pickups and "Mix up weapon pickups";
+  - `wip/roster-cleanup`'s first two commits;
+  - the ladder path fix.
+- **In CI on `check/candidate`:** `4176d3d`, `wip/pause-safari` merged. If it's green, fast-forward `main`; if it's red, read the failed jobs' logs.
 - **Agents still running at hand-off; their work lives on these branches:**
   - **`wip/pause-safari`: merged onto the session branch, waiting for its CI run.** The pause menu uses wide screens (Host and Settings in columns from 1000 px). Mouse look goes through `lookFilter.ts`: Safari's coalesced moves are re-summed, and the lock jump and spikes are dropped; `window.__lookStats` in the console shows what it did. Zoomed look speed is 1:1 at the crosshair, with a Zoom sensitivity setting. It hasn't been tried in real Safari: ask the owner to try it, and to paste `__lookStats` from Safari's console if it still feels off.
   - **`wip/impact`** (batch 2):
