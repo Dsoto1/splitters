@@ -22,9 +22,8 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - `wip/weapons-variety`: the owner's weapon and turret models, the Battle Axe, random pickups and "Mix up weapon pickups";
   - `wip/roster-cleanup`'s first two commits;
   - the ladder path fix.
-- **In CI on `check/candidate`:** `4176d3d`, `wip/pause-safari` merged. If it's green, fast-forward `main`; if it's red, read the failed jobs' logs.
+- **Also on `main`** (`4176d3d`, green): `wip/pause-safari` (wider pause menu, Safari look filter, zoom sensitivity).
 - **Agents still running at hand-off; their work lives on these branches:**
-  - **`wip/pause-safari`: merged onto the session branch, waiting for its CI run.** The pause menu uses wide screens (Host and Settings in columns from 1000 px). Mouse look goes through `lookFilter.ts`: Safari's coalesced moves are re-summed, and the lock jump and spikes are dropped; `window.__lookStats` in the console shows what it did. Zoomed look speed is 1:1 at the crosshair, with a Zoom sensitivity setting. It hasn't been tried in real Safari: ask the owner to try it, and to paste `__lookStats` from Safari's console if it still feels off.
   - **`wip/impact`** (batch 2):
     - stopping power;
     - bigger explosion knockback;
