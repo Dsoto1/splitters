@@ -33,11 +33,21 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     `wip/battle-axe` (details below).
 - **Still open as branches** (agents stopped at hand-off; read their HANDOFF notes on the branch, merge through
   `check/candidate`):
-  - `wip/posture-buggy`: hunched tall Meshy characters (Bonesworth etc.) via `fixes.lean`, feet pointing up
-    (King Aldric and others; `fixes.feet`), and the owner's Meshy buggy (Drive `Tactical_Off_Road_Bea` +
-    `Rugged_Off_Road_Tire`) replacing the Kenney buggy. Caution: rebuilding Bonesworth with
-    `pnpm content:meshy` alone gave 15.5k triangles vs the shipped 18.8k and a worse left arm; the shipped file
-    came from commit 75712f9's landmark fix, so reproduce that before rebuilding.
+  - `wip/posture-buggy` (`5e2de5e`; typecheck, all unit tests, content:check, build and the `characters`,
+    `designer`, `race` e2e pass; **`vehicles` and `canyon` e2e timed out under load, not re-run**):
+    - Bonesworth rebuilds byte-identical again: the looser triangle cut (2d9ad08) is now for rigged downloads only.
+    - Feet: Meshy's rig put the toe joint high, so 19 Meshy-rigged characters stood 7–23° toes up (King Aldric
+      ~21°); each foot is now levelled about its ankle (heel and forefoot lows level, ±3° left alone), rebuilt
+      from their recorded rig tasks (no new credits).
+    - Lean: Bonesworth (spine 10°→1°, neck 48°→16°), Rustwalker, Rotter, Grandpa Chains.
+    - Buggy: the owner's Meshy buggy body + tyre (`vehicles/offroad_buggy.glb` 6.8k tris, `offroad_tire.glb`
+      0.7k), `MountDef.wheels` places tyres at the hubs; old Kenney buggy deleted; gun jeep unchanged.
+      Suggested 4 seats (+Z forward, +X right): driver [-0.32, 0.72, 0.2], front passenger [0.32, 0.72, 0.2],
+      back [∓0.32, 0.75, -0.55]; roof gunner standing [0, 0.6, -1.15]. Driver side is a guess from the wheel.
+    - Open: buggy hit box still [1.0, 0.6, 2.0] half-extents (model ~4.4×2.0×1.7 m); dark coarse dash in the
+      cockpit view; Titan, Alien, Salamander not rebuilt (downloads not available); Monk and Merrow (robes)
+      restored as shipped; Bonesworth's left hand hovers open over the handguard on his grip sheet.
+    - Next: re-run `vehicles`, `canyon` on a quiet machine, then merge through `check/candidate`.
   - `wip/fp-grips` (`5bdc56a`, typecheck and unit tests pass; **e2e not run**): first-person support hand no
     longer floats off big guns. Causes: the first-person arms were placed by the character's head height (a
     hunched body's shoulders ended up 0.43 m in front of the eye) and first person had no reach handling (the IK
