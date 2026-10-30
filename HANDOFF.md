@@ -48,17 +48,23 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
       cockpit view; Titan, Alien, Salamander not rebuilt (downloads not available); Monk and Merrow (robes)
       restored as shipped; Bonesworth's left hand hovers open over the handguard on his grip sheet.
     - Next: re-run `vehicles`, `canyon` on a quiet machine, then merge through `check/candidate`.
-  - `wip/fp-grips` (`5bdc56a`, typecheck and unit tests pass; **e2e not run**): first-person support hand no
+  - `wip/fp-grips` (merged with `claude/launcher-ui-map-cards` at `988462b`; typecheck, build, `test:changed`
+    pass (hub/host tests timed out once under load, pass alone); e2e `characters`, `designer`, `visual` pass,
+    no baseline moved (arena 1.6 % off, within 8 %); `arsenal` failed on load timing only (frames of 1.5–3 s on a
+    shared, loaded machine: a different one check each run, every check passed in some run; with `CI=1` timeouts
+    one fail)): first-person support hand no
     longer floats off big guns. Causes: the first-person arms were placed by the character's head height (a
     hunched body's shoulders ended up 0.43 m in front of the eye) and first person had no reach handling (the IK
     stretched and stopped short by 6–13 cm). Fix in `characterAnimator.ts` (shoulders set from the view, come
     forward only as far as needed; the support hand slides back along the handguard, at least 12 cm from the grip;
     cups long guns from below; a free left hand hangs out of view) and `firstPersonArms.ts` (body 8 cm behind the
     eye). New `__grips.miss()` and a `characters` e2e check (both palms within 2 cm on rifle, Singularity Cannon,
-    Spin Gun, flamethrower for Scout, Biscuit, Grizzelda). Next: run `characters`, `designer`, `arsenal`,
-    `visual` (baselines may move with the arms: look before regenerating), then merge through
-    `check/candidate`. Left alone: the Salamander Warlord's big claws cover pistols (a hand-size content fix);
-    `__give('core.singularity')` didn't switch weapons in one offline test (not looked into).
+    Spin Gun, flamethrower for Scout, Biscuit, Grizzelda). Also fixed (`session.ts`): after any manual weapon
+    switch the client sent that weapon with every input for the rest of the life, so the server's own switches
+    (a better gun picked up, a caught spear, `__give`) were taken back at once; the request now clears once the
+    server holds it (checked offline: number key, then `__give('core.singularity')` now switches). Next: re-run
+    `arsenal` on a quiet machine, then merge through `check/candidate` (characterAnimator.ts maps to the full
+    suite). Left alone: the Salamander Warlord's big claws cover pistols (a hand-size content fix).
 - **Owner's requests not started yet:**
   - Buggy (and any vehicle that fits) seats a driver + 3 passengers, seated, who can shoot
     (sim: `packages/shared/src/sim/mounts.ts` seats).
