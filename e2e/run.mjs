@@ -2304,6 +2304,8 @@ async function vehiclesFlow(browser) {
   const ride = await page.evaluate(() => {
     const match = window.__match;
     const me = match.slots[window.__cs.slot];
+    // Out of any ride first (a slow frame can let a second E press land and climb back in above).
+    if (me.mount) match.leaveMount(me, true);
     // Everyone holds still and holds fire (the buggy's health is checked below).
     for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
     const m = match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null)).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];

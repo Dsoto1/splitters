@@ -33,21 +33,48 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     `wip/battle-axe` (details below).
 - **Still open as branches** (agents stopped at hand-off; read their HANDOFF notes on the branch, merge through
   `check/candidate`):
-  - `wip/posture-buggy` (`5e2de5e`; typecheck, all unit tests, content:check, build and the `characters`,
-    `designer`, `race` e2e pass; **`vehicles` and `canyon` e2e timed out under load, not re-run**):
+  - `wip/posture-buggy` (head at hand-off: the branch's last commit; `claude/launcher-ui-map-cards` merged in;
+    typecheck, `test:changed` (all unit tests), build and the `vehicles`, `canyon`, `race` e2e pass locally;
+    earlier also `characters`, `designer`. CI's full suite not run yet: the shared sim changed):
     - Bonesworth rebuilds byte-identical again: the looser triangle cut (2d9ad08) is now for rigged downloads only.
     - Feet: Meshy's rig put the toe joint high, so 19 Meshy-rigged characters stood 7–23° toes up (King Aldric
       ~21°); each foot is now levelled about its ankle (heel and forefoot lows level, ±3° left alone), rebuilt
       from their recorded rig tasks (no new credits).
     - Lean: Bonesworth (spine 10°→1°, neck 48°→16°), Rustwalker, Rotter, Grandpa Chains.
     - Buggy: the owner's Meshy buggy body + tyre (`vehicles/offroad_buggy.glb` 6.8k tris, `offroad_tire.glb`
-      0.7k), `MountDef.wheels` places tyres at the hubs; old Kenney buggy deleted; gun jeep unchanged.
-      Suggested 4 seats (+Z forward, +X right): driver [-0.32, 0.72, 0.2], front passenger [0.32, 0.72, 0.2],
-      back [∓0.32, 0.75, -0.55]; roof gunner standing [0, 0.6, -1.15]. Driver side is a guess from the wheel.
-    - Open: buggy hit box still [1.0, 0.6, 2.0] half-extents (model ~4.4×2.0×1.7 m); dark coarse dash in the
-      cockpit view; Titan, Alien, Salamander not rebuilt (downloads not available); Monk and Merrow (robes)
-      restored as shipped; Bonesworth's left hand hovers open over the handguard on his grip sheet.
-    - Next: re-run `vehicles`, `canyon` on a quiet machine, then merge through `check/candidate`.
+      0.7k), `MountDef.wheels` places tyres at the hubs; old Kenney buggy deleted.
+    - **Seats (owner's ask: driver + 3 seated passengers who shoot).** `SeatDef.seated` (offset = the cushion),
+      `legDrop` (floor under the cushion, drawing only), `facing` now also turns a seated rider's hips. Sim:
+      a seated rider gets the crouching eye/height (`stance: 1`, `Match.seatMove`), their own shots and
+      projectiles pass through the vehicle they ride (`PhysicsWorld.shotSkip`, `Projectile.fromMount`), and
+      riders' `moveSpeed` is the vehicle's speed (moving-fire spread). Client: `CharacterAnimator` seated pose
+      (thighs level, knees bent to the floor, body dropped onto the cushion, hips toward the seat's facing up
+      to the waist's turn), `MountState.sitters()`, seated passengers' view at `cockpitEye`, no "Crouch" on the
+      HUD while riding. Seats measured on the models with ray probes (side, top and cockpit screenshots checked):
+      - Buggy (4): driver [-0.32, 0.8, 0.3] (the wheel is on the left, at z 0.75), front passenger
+        [0.32, 0.8, 0.3], back [∓0.32, 0.8, -0.45]; all passengers fire their own weapons, free look; the roof
+        gunner was dropped (4 seats as asked; the roof gun is scenery). Cockpit eye [-0.32, 1.36, 0.32] (under
+        the front roof bar). Hit box half-extents [1.05, 0.8, 2.2] (was [1.0, 0.6, 2.0]).
+      - Gun jeep (5): cab driver [-0.4, 0.7, 0.15] and passenger [0.4, 0.7, 0.15] seated (the model's cab is
+        closed and has no seats of its own), roof gunner unchanged (standing), two rail riders seated on the
+        bed's side rails [∓0.78, 1.3, -1.65] facing out, legs over the side. Hit box [1.1, 0.95, 2.2] (was
+        [1.0, 0.7, 2.1]; model 2.24 × 1.94 × 4.4 m).
+      - Not changed: tanks, aircraft, single-seaters, hauler/dropship/armored rover/ice cream truck/snow sled
+        (their riders still stand; mark seats `seated` with offsets on the model's seats to change one).
+      - Bots ride as passengers already (`rideFor` takes any free non-driver seat) and fire their own weapons;
+        `botMovement.test.ts` covers a buggy passenger and the jeep's gunner.
+      - Tests: `mounts.test.ts` (4 riders in order, the driver can't shoot, each passenger fires its own gun
+        all round without hurting the buggy, a 5th can't get in until a seat frees), `vehicles` e2e (three bots
+        + you fill the buggy, everyone drawn sitting with hips on the cushions, you fire out of the side, a 5th
+        can't board). The `vehicles` flow's chase-camera check now waits for the chase view first (its first
+        frame can take over a second in software rendering; it failed that way twice before the change).
+    - Open: dark coarse dash/roof bars in the buggy's cockpit view (the model's own geometry); seated riders
+      aiming far behind them keep their legs at most ~77° off the seat's facing (no turning round in the seat);
+      heads of tall characters touch the buggy's roof bars; the jeep's cab riders are hidden by its opaque
+      windows; Titan, Alien, Salamander not rebuilt (downloads not available); Monk and Merrow (robes) restored
+      as shipped; Bonesworth's left hand hovers open over the handguard on his grip sheet.
+    - Next: merge through `check/candidate` (full suite: the shared sim changed); the `visual` flow may need new
+      baselines if one shows a buggy.
   - `wip/fp-grips` (`5bdc56a`, typecheck and unit tests pass; **e2e not run**): first-person support hand no
     longer floats off big guns. Causes: the first-person arms were placed by the character's head height (a
     hunched body's shoulders ended up 0.43 m in front of the eye) and first person had no reach handling (the IK
@@ -60,8 +87,7 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     `check/candidate`. Left alone: the Salamander Warlord's big claws cover pistols (a hand-size content fix);
     `__give('core.singularity')` didn't switch weapons in one offline test (not looked into).
 - **Owner's requests not started yet:**
-  - Buggy (and any vehicle that fits) seats a driver + 3 passengers, seated, who can shoot
-    (sim: `packages/shared/src/sim/mounts.ts` seats).
+  - (done on `wip/posture-buggy`: the buggy seats a driver + 3 seated passengers who shoot; the gun jeep too.)
   - St. John's from real data: the owner's Google Maps key (`GOOGLE_MAPS_API_KEY`) is refused (Geocoding not
     allowed by the key's API restrictions, Elevation needs billing, Static 403, 3D Tiles 404). The owner set up a
     key on another Google account: they must update the environment variable and start a new session. Google's
@@ -86,7 +112,7 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   - Meshy feet levelled on their soles (`fixes.feet` in prepare-meshy-characters.mjs): Meshy's rig left 19 characters 7-23 degrees toes up (Bonesworth and Rotter's right foot toes down); rebuilt from their recorded rigs (no new rigging). Monk and Merrow (robes) were tried and kept as they were.
   - `fixes.lean` on Bonesworth, Rustwalker, Rotter and Grandpa Chains. The looser triangle cut now applies to rigged downloads only, so an unrigged rebuild reproduces its shipped file (Bonesworth was byte for byte).
   - Not rebuilt (community downloads not in either folder): Titan (head forward), Alien and Salamander (toes up 8-11 degrees). Download them by hand to fix.
-  - The owner's buggy (`vehicles/offroad_buggy.glb` + `offroad_tire.glb` drawn at the hubs from the def's `wheels`); seats moved onto the model. The owner wants driver + 3 shooting passengers (sim work for another agent): front passenger [0.32, 0.72, 0.2], back seats [-0.32, 0.75, -0.55] and [0.32, 0.75, -0.55]. The cockpit view looks over a dark, coarse dash; the chase camera is the better view. The hit box is still the old 4 x 1.2 m one (model 4.4 x 1.7 m).
+  - The owner's buggy (`vehicles/offroad_buggy.glb` + `offroad_tire.glb` drawn at the hubs from the def's `wheels`); a driver + 3 seated passengers who shoot their own weapons, the gun jeep seats five, riders sit (see "Start here" for the details). The cockpit view looks over a dark, coarse dash; the chase camera is the better view.
 - **On `wip/battle-axe`** (not merged; full CI not run): the Battle Axe is also a black-powder blunderbuss (owner's ask). Swing on fire, blunderbuss on the alt trigger (right mouse with a melee weapon in hand). Numbers and the ammo choice (shotgun shells loaded by hand into a 2-load barrel) are in docs/ARSENAL.md.
   - Sim: `AltFire.reload` / `kick` / `falloff` / `headshot`; `barrelLoader` in gunplay.ts runs the barrel's reload as a shell-by-shell magazine; client prediction mirrors it.
   - Client: `view.muzzleAt` (the bore, measured from the GLB) and `view.altShot` (sound, rate, flash, smoke) in the weapon data; `View.muzzleSmoke`.
