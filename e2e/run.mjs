@@ -2739,6 +2739,18 @@ async function designerFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: T(20000) }).catch(() => {});
   check(await page.evaluate(() => window.__cs.view.hasFirstPersonArms()), 'first-person arms of the custom look hold the weapon');
+  // First person is full body by default (Options → Display → First person); Arms only applies at once, and back.
+  const fpBody = await page.waitForFunction(() => window.__cs.view.hasFirstPersonBody(), null, { timeout: T(20000) }).then(() => true, () => false);
+  check(fpBody, 'full-body first person: your own character is drawn from its eyes');
+  const setFp = (mode) => page.evaluate((m) => {
+    localStorage.setItem('tiletrigger.firstPerson', m);
+    window.dispatchEvent(new Event('tiletrigger:first-person'));
+  }, mode);
+  await setFp('arms');
+  const armsOnly = await page.waitForFunction(() => !window.__cs.view.hasFirstPersonBody() && window.__cs.view.hasFirstPersonArms(), null, { timeout: T(20000) }).then(() => true, () => false);
+  await setFp('body');
+  const bodyAgain = await page.waitForFunction(() => window.__cs.view.hasFirstPersonBody(), null, { timeout: T(20000) }).then(() => true, () => false);
+  check(armsOnly && bodyAgain, `First person: Arms only and back to Full body apply in the match (${armsOnly}, ${bodyAgain})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -2840,6 +2852,20 @@ async function charactersFlow(browser) {
     }
   }
   check(misses.length === 0, `first-person palms are on large guns' grip and handguard (${misses.join('; ') || 'all within 2 cm'})`);
+  // Full-body first person (your own whole character from its eyes): the same palms on the same guns, looking ahead
+  // and down at your feet.
+  const bodyMisses = [];
+  for (const look of ['core.scout', 'core.galloway']) {
+    for (const weapon of ['core.rifle', 'core.lmg', 'core.pistol']) {
+      await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'body'), [look, weapon]);
+      for (const pitch of [0, -1.3]) {
+        await page.evaluate((p) => window.__grips.look(p), pitch);
+        const m = await page.evaluate(() => window.__grips.miss());
+        if (!m || m.r > 0.02 || m.l > 0.02) bodyMisses.push(`${look} ${weapon} pitch ${pitch}: ${m ? `${(m.r * 100).toFixed(0)}/${(m.l * 100).toFixed(0)} cm` : 'no grip'}`);
+      }
+    }
+  }
+  check(bodyMisses.length === 0, `full-body first person: palms on the gun's grip and handguard (${bodyMisses.join('; ') || 'all within 2 cm'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

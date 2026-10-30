@@ -179,7 +179,31 @@ How the hands close on the weapon:
   close as far as the hand allows (`curl`: 0 for a fist or gauntlet that is
   already closed).
 
-### First-person arms
+### Full-body first person (default)
+
+Options → Display → **First person: Full body / Arms only** (`tiletrigger.firstPerson`, `graphicsSettings.ts`;
+applies at once in a match). Full body draws your own third-person character (the avatar the view already keeps
+loaded for third person, `hiddenSelf`) from its eyes, `FirstPersonBodyRig` in `game/firstPersonBody.ts`:
+- **Placement:** the body stands where prediction has you, animated by your own motion (walk, run, sprint,
+  crouch, jump; `View.showFpBody`). After the clips and the spine's aim (the spine bends by only a quarter of
+  the pitch, `FP_BODY_PITCH`) the whole body is moved so the base of its neck sits `FP_NECK_BACK` behind and
+  `FP_NECK_DROP` below the steady (unshaken) eye; looking down, the neck goes further back, as a tipping head
+  carries the eyes out over the chest, so you see your chest, legs and feet, never down the collar.
+- **Head:** the neck joint is scaled to nothing each frame (head, hair, hats and anything skinned to them go
+  with it), meshes wholly on the head aren't drawn, and a colourless ball where the head would be casts its
+  shadow.
+- **Hands:** the gun is the same viewmodel as before (bob, recoil, ADS, reload dip, switch timings untouched);
+  the body's hands grip it by IK (`gripExternal`), each shoulder starting from its own place on the body and
+  coming forward only as far as the arm needs. Copies of the forearm, hand and finger triangles (same skeleton
+  and material) are drawn in rendering group 1 with the gun, so the hands never clip into a wall the gun is
+  drawn over; the rest of the body is in the world (group 0). A free hand (knife, axe) hangs at your side.
+- **When:** only while the camera is your own eyes. In a vehicle seat, the kill cam, spectating, third person
+  or before your character has loaded it falls back to the arms below (built only when needed); scoped, the
+  body is hidden with the gun.
+- **Check:** `?mode=grips`, `__grips.pose(look, weapon, 'body')`, then `__grips.look(pitch, { speed, stance,
+  drop })` (game pitch: + looks up) and `__grips.miss()`; the `characters` e2e flow checks palms in this view.
+
+### First-person arms (Arms only, and full body's fallback)
 
 Your own view shows your look's arms holding the viewmodel:
 - **Which arms:** the arms part of your look. Under a sportswear top it's `athlete_fparms_m/f`, bare arms cut from the base body for this view only.
