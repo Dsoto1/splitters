@@ -61,28 +61,74 @@ session branch to `check/candidate` (fast-forward), fix, and repeat until green.
 |---|---|
 | `wip/bot-manager` (624ec87) | Bots window for hosts, `BOTSET` / console `botset`, scenario maps naming their own bots (`MapDocument.bots`, edited in MapMaker), docs and e2e. Typecheck, unit tests (run file by file under load) and the `teams` flow pass. In `hostcontrols`, every new check passes, but two older checks failed on a loaded run ("a friend joins the hosted match", "the end-of-match scoreboard says where the match goes next") and haven't been rerun clean. Deferred: named NPCs in encounters, per-bot loadouts, editing bot sets on /host. |
 | `wip/host-handoff` (a759e34, based on f015af3: merge it onto the session branch) | Part 1 works: goodbye, reconnect and a host-left screen with "Host this map"; `hostgame` passed. Part 2 mostly works: a low-ping successor gets checkpoints every 3 s, takes the match over and moves the listing. **Open bug:** in the e2e flow `handoff`, the other friend never rejoins the successor's match; their place is held as "(away)". Start from the friend's console line "the host's link went…" and the held-links path (`PeerHost` admit → `linkFor` → `LocalTransport.accept`). Risks: a forked match if the host is unreachable but still registered; the successor holds the old listing's secret. Run `hostgame`, `lobby`, `hostcontrols` and `handoff` on a `check/` branch. |
-| `wip/character-intake` (2358cdf) | The unified Meshy character pipeline: landmark rigger or Meshy rigging API, a grip sheet. 18 new characters shipped from the owner's downloads; five are held back as queued manifests (King Aldric, Saint Nick, Brass Hare, Grizzelda, Bandit; the reasons are in their notes). The owner confirmed (2026-10-29): Hector and Ricochet are right, and `_Halloween2025_a_ul` is Rattles (build it from that file). `Tribal_Warrior_Charac` (a woman in tribal dress) is still unidentified: ask the owner. Before merging, render the grip sheets again (the sizes changed) and fix the Lancer's oversized hands and the cowboy's flat hands (`fixes.hands`). Checks: typecheck, content:check and the e2e `characters`/`designer`/`visual` flows pass; `physicsfx` timed out locally, so run it on CI. Docs: adding a Meshy character. Sizes are in the manifests. The intake queue on the branch drops the 18 characters it shipped. |
+| `wip/character-intake` (2358cdf), merged on `wip/merge-character-intake` | Merged with bot-manager on top of the session branch. The Phase A fixes are done: Lancer Mei, Count Bonesworth and Rotter had arm landmarks that were too short (their hands took in half the forearm) and now have landmarks read off the model; Dusty Colt has `fixes.hands.curl`. All 32 grip sheets were rendered again. 24 more characters are rigged by Meshy (section 4). Checks: typecheck, content:check, test:changed, and the e2e `characters`/`designer`/`visual` flows pass locally; run `physicsfx` on CI. |
 | `wip/roster-cleanup` (899537c) | Six retired looks (Champion, Desperado, Miller, Raider, Sprinter, Striker; old ids load as kept looks); a helmet tool (`prepare-gear.mjs`) and five helmets; model gear on the Head joint. The per-look fixes are WIP. Commando's and Engineer's helmet fits are off; beret and headband sit high; Farmhand's hat and Drifter's mask aren't done; the Dapper's jacket skin weights are diagnosed but not fixed (arm weights on torso vertices; see the commit). No CHANGELOG entry or portraits yet. |
 
 Merge order suggestion: bot-manager, character-intake, roster-cleanup (expect a
 small conflict in `content/meshy.lock.json` and looks.ts), then host-handoff.
 Run the checks after each merge.
 
-### 4. Meshy models still to bring in
-- The owner's downloads come from Drive folder
+### 4. Meshy models (state on `wip/merge-character-intake`, 2026-10-30)
+- **Downloads:** the owner's files come from the Drive folder
   `18MaKefMCWARf1Y3gAjhZuxTto86vGAYl` and the private repo `Dsoto1/meshystuff`.
   They aren't in a new container: fetch them again with `gdown` (Python API
   `download_folder`) and by cloning meshystuff, outside the repo. Never commit
   raw downloads.
-- 32 models are unrigged: rig them with Meshy's rigging API (`MESHY_API_KEY`
-  is set in new sessions; pass the public Drive links as `model_url`) or with
-  the landmark rigger on `wip/character-intake`.
-- Not done yet:
-  - the weapons (Frontier Rifle, Neon Flux);
-  - the medkit;
-  - the buggy and its wheel, to replace the jeep.
-- About 18 queued models haven't been delivered yet.
-- The owner may have added extra models to the Drive folder or meshystuff that aren't in the queue. Add any you find as new characters: name each one, give it a manifest, and add it to the intake queue. Don't ask about each one; the owner reviews them on the grip and portrait sheets. `Tribal_Warrior_Charac` counts as one of these.
+- **How they are rigged now:** Meshy's rigging API through the pipeline. A
+  manifest says `source.modelUrl: "upload"`, and `pnpm content:meshy <dir>`
+  (fetch-meshy.mjs) sends the download itself as a data URI. A download over
+  300k triangles is cut to 200k first: Meshy failed the 917k-triangle king and
+  rigged the same model once it was cut. Each manifest records its task in
+  `source.meshy.rig`, so a rebuild fetches the same rig again without a new
+  call. Meshy refuses Drive links ("invalid model file format": the link has
+  to end in `.glb`). 26 rigging tasks were run, one of which failed (about
+  125 credits, 5 per task).
+- **Shipped (24, all rigged by Meshy):**
+  - the five that were held back: King Aldric, Saint Nick, Brass Hare,
+    Grizzelda, Bandit;
+  - Rattles, from `_Halloween2025_a_ul` (the owner's call);
+  - from the queue: Teddy, Anubis, Ser Brannock, Brother Ansel, Big Bab, Agent
+    Zhao, Desert Ranger, Groaner, Gorgle (it was queued as a creature; it ships
+    as an `npc+player` character so the owner can see it), Giggles,
+    Vanguard, Dust Trooper, Punkin, Merrow the Wise;
+  - new, from downloads that weren't in the queue (license `owned`, named here,
+    and added to the queue as "extra download", for the owner to review on the
+    grip and portrait sheets): Uncle Bao (`Arms_Outstretched_for`), Bonejack
+    (`The_object_is_a_reali`, a skeleton), Ashwalker (`a_black_tribal_man_wi`),
+    Thornweaver (`Tribal_Warrior_Charac`).
+- **For the owner to check:**
+  - Ashwalker and Thornweaver against the respect note that Plains Scout carries.
+  - Uncle Bao and Agent Zhao against the likeness screen: both are photo-real
+    older men.
+  - Is Rattles's queue URL (a skeleton post) the post the Halloween model came from?
+  - The four extras are recorded as `owned` with no URL. If they are community
+    posts, switch them to CC0 with the post URL.
+  - Hats, ears and tall heads count towards a model's height, so their bodies
+    come out shorter: Saint Nick, Anubis, Merrow, Teddy, Brass Hare and Giggles
+    stand short in their size class.
+- **Held back:**
+  - **Lurcher:** Meshy weighted its hands, which hang against the thighs, partly
+    to the legs, so the hands stretch to the hips. Its rig task is in the
+    manifest. It needs landmarks read off the model or a fix to the weights.
+  - **Plains Scout** (`meshy_tracker`): waiting for the owner to confirm that
+    the model is respectful.
+  - **Not delivered:** Little Cal, Longshadow, Prism Cat and Seer Vela; no
+    download matches them.
+- **Portraits:** the 24 new looks have shipped portraits (`capture-portraits.mjs`, partial run). Grizzelda, Bandit and Rattles are framed too close (a hunched or big-headed body), so frame them again once `portraits.ts` handles those bodies.
+- **e2e ports:** another checkout on this machine served on the default e2e port (4173), and a run there tested the other build. Run with `E2E_CLIENT_PORT`/`E2E_SERVER_PORT` set to free ports.
+- **Grip-sheet notes:**
+  - Boglurker (toad): the right hand isn't skinned to `hand_r`, so the guns
+    float beside it. Fixing it needs the original FBX, which isn't in either
+    folder.
+  - Universal first-person arms (`firstPerson.arms`) are used for the first
+    time, by Grizzelda, Giggles, Vanguard and Dust Trooper. On ranger arms,
+    `trim` colours the gloves.
+- **Not characters, still to bring in** (no pipeline path yet):
+  - the weapons: the Frontier Rifle (`rifle_`) and the Neon Flux (`Neon_Flux_Assault_Rif`);
+  - the Medkit;
+  - the buggy (`Tactical_Off_Road_Bea`) and its wheel (`Rugged_Off_Road_Tire`), to replace the jeep;
+  - the Triceratops (a creature: prepare-creatures.mjs);
+  - five helmets: Aviator, Mk 2, Military, Steel and Viking (the helmet tool `prepare-gear.mjs` is on `wip/roster-cleanup`).
 - The owner's review results are kept in the review artifact
   https://claude.ai/artifact/Cwq57yDPtBzmnrpaf7josr (its db collection
   `reviews`).
