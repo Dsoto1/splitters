@@ -143,11 +143,11 @@ Items 1 and 2 are **done on `wip/weapons-variety`** (based on this branch; not m
 Start the rest when agent slots free up:
 
 **Impact work (`wip/impact`, in progress, 2026-10-30):** items 3–6 below plus tiered ragdolls. Status:
-- 4 Stopping power: sim done (`sim/impact.ts`, per-weapon `stoppingPower`, caps and immunity; unit tests). Hit flinch on the body: pending.
-- 5 Explosions: sim done (every real explosion throws, `blastThrow` up and out, rocket jumps ~2.4 m). Ragdoll fling: pending.
-- 3 Punch and kick: sim done (`BUTTON_MELEE`, `UNARMED`, bots punch when dry up close). Clips, key, first-person motion, sound: pending.
+- 4 Stopping power: sim done (`sim/impact.ts`, per-weapon `stoppingPower`, caps and immunity; unit tests); hit flinch in `characterAnimator.flinch` (not yet looked at in a browser).
+- 5 Explosions: sim done (every real explosion throws, `blastThrow` up and out, rocket jumps ~2.4 m); blast kills fling ragdolls harder (`view.blast`).
+- 3 Punch and kick: sim done (`BUTTON_MELEE` on a side mouse button or Y, `UNARMED`, bots punch when dry up close); jab and hit_head clips added to rig.glb (UAL1 has no kick clip: the kick is procedural); first-person fist/boot, sounds. e2e pending.
 - 6 Bot hopping: done (`arenaHop`; Arena style always, Mixed only in fights and less often).
-- Tiered ragdolls and the mass-casualty perf scenario: pending.
+- Tiered ragdolls (`ragdollBudget.ts`, `ragdoll.ts` pool and freeze) written, not yet checked in a browser; mass-casualty perf scenario in `perf96.mjs` (`PERF_SCENARIOS=mass`); e2e and docs pending.
 1. **(done) New weapon assets** (owner's Meshy generations, provenance Meshy/owned; downloads outside the repo):
    - meshystuff: Tommy Gun, Rotary Gatling Gun, military sniper rifle, Steampunk Battle Axe, Freeze Gun, Mystical Glue Gun, Futuristic Blaster, Plastic Toy Machine Gun;
    - Drive: Large Sentry Gun (turret), "Ornate Hand Holding G…".

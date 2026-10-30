@@ -22,6 +22,16 @@ export interface Quat {
   w: number;
 }
 
+/** Same shape to within a centimetre (a pooled collider is kept). */
+function sameShape(a: EffectShape, b: EffectShape): boolean {
+  if (a.kind !== b.kind) return false;
+  const near = (x: number, y: number) => Math.abs(x - y) < 0.01;
+  if (a.kind === 'capsule' && b.kind === 'capsule') return near(a.halfHeight, b.halfHeight) && near(a.radius, b.radius);
+  if (a.kind === 'ball' && b.kind === 'ball') return near(a.radius, b.radius);
+  if (a.kind === 'box' && b.kind === 'box') return near(a.half.x, b.half.x) && near(a.half.y, b.half.y) && near(a.half.z, b.half.z);
+  return false;
+}
+
 export class EffectsWorld {
   readonly world: RAPIER.World;
   private acc = 0;
@@ -85,9 +95,77 @@ export class EffectsWorld {
   }
 
   /** A ball joint holding two bodies together at a shared point (anchors in each body's own frame). */
-  ballJoint(a: RAPIER.RigidBody, b: RAPIER.RigidBody, anchorA: Vec3, anchorB: Vec3): void {
-    this.world.createImpulseJoint(RAPIER.JointData.spherical(anchorA, anchorB), a, b, true);
+  ballJoint(a: RAPIER.RigidBody, b: RAPIER.RigidBody, anchorA: Vec3, anchorB: Vec3): RAPIER.ImpulseJoint {
+    return this.world.createImpulseJoint(RAPIER.JointData.spherical(anchorA, anchorB), a, b, true);
   }
+
+  removeJoint(j: RAPIER.ImpulseJoint): void {
+    this.world.removeImpulseJoint(j, true);
+  }
+
+  // Ragdoll body pool: a body that stops simulating is parked (disabled) and reused by the next death, so a
+  // blast that kills ten allocates nothing. Keyed by part (a forearm comes back as a forearm, nearly its size).
+  private readonly parked = new Map<string, { body: RAPIER.RigidBody; shape: EffectShape }[]>();
+  /** Bodies handed out by the pool and not yet given back. */
+  pooledOut = 0;
+
+  /** Park a few ragdolls' worth of bodies up front (key and shape for each). */
+  prewarm(parts: readonly { key: string; shape: EffectShape }[], times: number): void {
+    for (let i = 0; i < times; i++) {
+      for (const p of parts) {
+        const body = this.addBody(p.shape, { x: 0, y: -1000 - i, z: 0 }, { x: 0, y: 0, z: 0, w: 1 }, 'ragdoll');
+        body.setEnabled(false);
+        let list = this.parked.get(p.key);
+        if (!list) this.parked.set(p.key, (list = []));
+        list.push({ body, shape: p.shape });
+      }
+    }
+  }
+
+  /** A ragdoll part from the pool (or a new one): placed, moving, awake. */
+  takeRagdollBody(key: string, shape: EffectShape, pos: Vec3, rot: Quat, o: { vel?: Vec3; spin?: Vec3; density?: number } = {}): RAPIER.RigidBody {
+    this.pooledOut++;
+    const p = this.parked.get(key)?.pop();
+    if (!p) {
+      const body = this.addBody(shape, pos, rot, 'ragdoll', o);
+      this.shapes.set(body.handle, shape);
+      return body;
+    }
+    const body = p.body;
+    body.setEnabled(true);
+    const c = body.collider(0);
+    if (!sameShape(p.shape, shape) || !c) {
+      if (c) this.world.removeCollider(c, false);
+      const desc = shape.kind === 'box' ? RAPIER.ColliderDesc.cuboid(shape.half.x, shape.half.y, shape.half.z) : shape.kind === 'capsule' ? RAPIER.ColliderDesc.capsule(shape.halfHeight, shape.radius) : RAPIER.ColliderDesc.ball(shape.radius);
+      desc.setDensity(o.density ?? 1).setFriction(0.8).setRestitution(0.05).setCollisionGroups(groups(GROUP_RAGDOLL, GROUP_STATIC));
+      this.world.createCollider(desc, body);
+    } else c.setDensity(o.density ?? 1);
+    this.shapes.set(body.handle, shape);
+    body.setTranslation(pos, false);
+    body.setRotation(rot, false);
+    body.setLinvel(o.vel ?? { x: 0, y: 0, z: 0 }, false);
+    body.setAngvel(o.spin ?? { x: 0, y: 0, z: 0 }, false);
+    body.setLinearDamping(0.6);
+    body.setAngularDamping(1.6);
+    body.wakeUp();
+    return body;
+  }
+
+  /** Give a ragdoll part back to the pool (its joints must be gone). */
+  parkRagdollBody(key: string, body: RAPIER.RigidBody): void {
+    this.pooledOut--;
+    body.setEnabled(false);
+    const shape = this.shapes.get(body.handle);
+    if (!shape) {
+      this.world.removeRigidBody(body);
+      return;
+    }
+    let list = this.parked.get(key);
+    if (!list) this.parked.set(key, (list = []));
+    list.push({ body, shape });
+  }
+
+  private readonly shapes = new Map<number, EffectShape>();
 
   remove(body: RAPIER.RigidBody): void {
     this.world.removeRigidBody(body);

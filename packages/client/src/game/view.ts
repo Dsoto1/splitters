@@ -68,7 +68,8 @@ import {
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
-import { Ragdoll } from './ragdoll.ts';
+import { PosedBody, RAGDOLL_PREWARM, Ragdoll, type DeadBody } from './ragdoll.ts';
+import { fitBudget, tierFor, type RagdollTier } from './ragdollBudget.ts';
 import { Atmosphere } from './atmosphere.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
@@ -140,9 +141,9 @@ interface Avatar {
   shown?: number;
   /** Parachute or glider over them, and which. */
   canopy?: { node: TransformNode; kind: number };
-  /** Physics body after death (until the next spawn). */
-  ragdoll?: Ragdoll;
-  /** A body that died without a ragdoll (too many tumbling, or a creature) falls to the ground under gravity. */
+  /** The body after death (until the next spawn): a ragdoll (full or cheap) or laid down (ragdoll.ts, ragdollBudget.ts). */
+  ragdoll?: DeadBody;
+  /** A body that died without a ragdoll (a creature) falls to the ground under gravity. */
   fall?: { y: number; vy: number; ground: number };
   wasAlive?: boolean;
   /** The held weapon and its muzzle in the weapon's own space (for tracers and flashes). */
@@ -189,8 +190,8 @@ export function bodiesPreference(): BodiesSetting {
 }
 /** Bodies kept at once (the oldest goes when another falls). */
 const MAX_CORPSES = 32;
-/** Ragdolls still tumbling at once; past this a death plays the death animation instead (96-player matches). */
-const MAX_ACTIVE_RAGDOLLS = 12;
+/** Ragdoll parts parked in the effects world's pool when the map is built (a standard body's, this many times). */
+const RAGDOLL_PREWARM_BODIES = 12;
 /**
  * Crowd animation LOD: with more than this many remote characters, ones in
  * view past ANIM_LOD_NEAR metres are animated (clips sampled, bones, aim and
@@ -377,6 +378,8 @@ export class GameView {
     this.physics?.free();
     try {
       this.physics = new EffectsWorld(boxes, mapTerrainMesh(doc));
+      // A blast that kills ten takes its ragdolls from the pool rather than allocating them mid-fight.
+      this.physics.prewarm(RAGDOLL_PREWARM, RAGDOLL_PREWARM_BODIES);
     } catch {
       this.physics = null;
     }
@@ -438,9 +441,22 @@ export class GameView {
     const sum = { x: keep.x + v.x, y: keep.y + v.y, z: keep.z + v.z };
     const flat = Math.hypot(sum.x, sum.z);
     const k = flat > max ? max / flat : 1;
-    this.pushes.set(slot, { v: { x: sum.x * k, y: Math.min(sum.y, max * 0.6), z: sum.z * k }, t: now });
+    this.pushes.set(slot, { v: { x: sum.x * k, y: Math.min(sum.y, max * 0.9), z: sum.z * k }, t: now });
     const anim = this.avatars.get(slot)?.anim;
     if (anim instanceof CreatureAnimator) anim.flinch();
+  }
+
+  /**
+   * A round or blow landed on a player: their body flinches at the part hit
+   * (head, torso, legs), harder for heavier hits, and a heavy hit plays the
+   * hit reaction on the upper body (characterAnimator flinch).
+   */
+  flinchPlayer(slot: number, dir: Vec3, zone: number, strength: number): void {
+    const anim = this.avatars.get(slot)?.anim;
+    if (!(anim instanceof CharacterAnimator)) return;
+    const k = Math.min(1, strength / 2);
+    anim.flinch(zone, dir, 0.35 + 0.65 * k);
+    if (strength >= 1.6) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
   }
 
   cameraPosition(): Vec3 {
@@ -448,14 +464,23 @@ export class GameView {
     return { x: p.x, y: p.y, z: p.z };
   }
 
-  /** A blast throws anyone near it (so the ones it kills fly away from it). */
+  /**
+   * A blast throws anyone near it, so the ones it kills fly up and away from
+   * it with its force (shaped like the game's own throw, sim/impact.ts
+   * blastThrow: out, and up harder from below).
+   */
   blast(at: Vec3, radius: number): void {
+    // Bigger blasts throw harder (a frag about 12 m/s at its heart, a big bomb 16).
+    const force = Math.min(16, 6 + radius * 1.4);
     for (const [slot, a] of this.avatars) {
       const d = { x: a.root.position.x - at.x, y: a.root.position.y + 1 - at.y, z: a.root.position.z - at.z };
       const dist = Math.hypot(d.x, d.y, d.z);
       if (dist > radius * 1.5) continue;
-      const k = (8 * (1 - dist / (radius * 1.5))) / Math.max(0.3, dist);
-      this.pushPlayer(slot, { x: d.x * k, y: 4 + Math.max(0, d.y) * k, z: d.z * k }, 8);
+      const speed = force * (1 - 0.6 * (dist / (radius * 1.5)));
+      const flat = Math.hypot(d.x, d.z) || 1;
+      const out = speed * 0.85;
+      const up = speed * Math.max(0.5, 0.9 + 0.35 * (d.y / Math.max(0.3, dist)));
+      this.pushPlayer(slot, { x: (d.x / flat) * out, y: up, z: (d.z / flat) * out }, force);
     }
   }
 
@@ -466,26 +491,98 @@ export class GameView {
     return { x: a.root.position.x, y: a.root.position.y + 1.1, z: a.root.position.z };
   }
 
-  private startRagdoll(slot: number, a: Avatar): void {
+  /**
+   * A fresh death becomes a dead body of the tier its place calls for (near or
+   * in view: a full ragdoll; far: a cheap one; out of view: laid down), fitted
+   * into the budget of awake ragdoll bodies: farther ragdolls drop a tier
+   * first (ragdollBudget.ts). Every death ends up on the ground.
+   */
+  private startRagdoll(slot: number, a: Avatar, planes: readonly Plane[] | null): void {
     const root = a.anim?.skeletonRoot;
     if (!(a.anim instanceof CharacterAnimator) || !root || !this.physics) return;
     const push = this.pushes.get(slot);
     const fresh = push && performance.now() - push.t < 600 ? push.v : { x: 0, y: 0, z: 0 };
     const v = { x: a.vel.x * 0.6 + fresh.x, y: 0.5 + fresh.y, z: a.vel.z * 0.6 + fresh.z };
+    const p = a.root.position;
+    const cam = this.scene.activeCamera?.globalPosition;
+    const dist = cam ? Math.hypot(p.x - cam.x, p.y - cam.y, p.z - cam.z) : 0;
+    const view = planes ?? (this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null);
+    const seen = !view || inView(view, p.x, p.y + 0.9, p.z, CULL_RADIUS);
+    const moving = this.movingRagdolls();
+    const fit = fitBudget(tierFor(dist, seen), dist, moving.map((m) => ({ tier: m.body.tier, dist: m.dist })));
+    for (const i of fit.drop) this.dropTier(moving[i]!.a);
+    this.ragdollTiers[fit.tier]++;
     try {
-      a.anim.ragdoll();
-      a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, v);
+      if (fit.tier === 'posed') this.layDown(a, v);
+      else {
+        a.anim.ragdoll(fit.tier === 'cheap' ? 'limp' : 'stop');
+        a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, v, fit.tier);
+      }
     } catch {
       a.ragdoll = undefined;
     }
   }
 
-  /** Ragdolls still moving (resting ones cost next to nothing). */
-  private activeRagdolls(): number {
-    let n = 0;
-    for (const a of this.avatars.values()) if (a.ragdoll && !a.ragdoll.resting) n++;
-    for (const c of this.corpses) if (c.a.ragdoll && !c.a.ragdoll.resting) n++;
-    return n;
+  /** Deaths so far by the tier they got (tests and the perf check read these). */
+  readonly ragdollTiers: Record<RagdollTier, number> = { full: 0, cheap: 0, posed: 0 };
+
+  /** Ragdolls still simulating, with their distance from the camera. */
+  private movingRagdolls(): { a: Avatar; body: Ragdoll; dist: number }[] {
+    const cam = this.scene.activeCamera?.globalPosition;
+    const out: { a: Avatar; body: Ragdoll; dist: number }[] = [];
+    const add = (a: Avatar) => {
+      const r = a.ragdoll;
+      if (!(r instanceof Ragdoll) || r.frozen) return;
+      const p = a.root.position;
+      out.push({ a, body: r, dist: cam ? Math.hypot(p.x - cam.x, p.y - cam.y, p.z - cam.z) : 0 });
+    };
+    for (const a of this.avatars.values()) add(a);
+    for (const c of this.corpses) add(c.a);
+    return out;
+  }
+
+  /** Past the budget: a full ragdoll carries on as a cheap one (same motion); a cheap one freezes where it is. */
+  private dropTier(a: Avatar): void {
+    const r = a.ragdoll;
+    const root = a.anim?.skeletonRoot;
+    if (!(r instanceof Ragdoll) || !(a.anim instanceof CharacterAnimator)) return;
+    if (r.tier === 'cheap' || !root || !this.physics) {
+      r.freeze();
+      a.anim.freezePose();
+      return;
+    }
+    const v = r.velocity;
+    r.dispose();
+    a.anim.ragdoll('limp');
+    a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, v, 'cheap');
+  }
+
+  /** Out of view: no simulation; the body lies on the ground along the hit, in the death's final pose. */
+  private layDown(a: Avatar, v: Vec3): void {
+    const anim = a.anim as CharacterAnimator;
+    const p = a.root.position;
+    const hit = this.physics?.raycast({ x: p.x, y: p.y + 1, z: p.z }, { x: 0, y: -1, z: 0 }, 60);
+    if (hit) p.y = p.y + 1 - hit.dist;
+    // The death falls backwards: face against the push, so the body lies along the way it was thrown.
+    if (Math.hypot(v.x, v.z) > 0.3) a.root.rotation.y = Math.atan2(-v.x, -v.z);
+    a.root.rotation.x = 0;
+    anim.lieDown();
+    a.ragdoll = new PosedBody();
+  }
+
+  /** Dead bodies now: by tier, frozen, and physics bodies awake (the perf check reads these). */
+  ragdollStats(): { full: number; cheap: number; posed: number; frozen: number; awakeBodies: number; pooled: number; deaths: Record<RagdollTier, number> } {
+    const out = { full: 0, cheap: 0, posed: 0, frozen: 0, awakeBodies: 0, pooled: this.physics?.pooledOut ?? 0, deaths: { ...this.ragdollTiers } };
+    const add = (a: Avatar) => {
+      const r = a.ragdoll;
+      if (!r) return;
+      out[r.tier]++;
+      if (r.frozen) out.frozen++;
+      out.awakeBodies += r.bodies;
+    };
+    for (const a of this.avatars.values()) add(a);
+    for (const c of this.corpses) add(c.a);
+    return out;
   }
 
   /** Where a body that died without a ragdoll comes to rest: the first solid thing below it. */
@@ -670,9 +767,13 @@ export class GameView {
     for (const c of this.corpses) if (c.a.fall && !c.a.ragdoll) this.stepFall(c.a, dt);
     if (this.physics) {
       this.physics.step(dt);
-      for (const a of this.avatars.values()) a.ragdoll?.update();
+      // A body that stops (it rested, or its time ran out) keeps its pose as it is, at no cost per frame.
+      const settle = (a: Avatar) => {
+        if (a.ragdoll && !a.ragdoll.frozen && a.ragdoll.update() && a.anim instanceof CharacterAnimator) a.anim.freezePose();
+      };
+      for (const a of this.avatars.values()) settle(a);
       this.corpses = this.corpses.filter((c) => {
-        if (!c.a.ragdoll?.resting) c.a.ragdoll?.update();
+        settle(c.a);
         if (this.bodies !== 'fade') return true;
         const age = (now - c.born) / 1000 - CORPSE_STAY;
         if (age <= 0) return true;
@@ -684,6 +785,7 @@ export class GameView {
         if (c.a.ragdoll) {
           c.a.ragdoll.dispose();
           c.a.ragdoll = undefined;
+          if (c.a.anim instanceof CharacterAnimator) c.a.anim.thawPose();
         }
         c.a.root.position.y -= dt * 0.5;
         return true;
@@ -829,6 +931,42 @@ export class GameView {
     });
   }
 
+  /** Your own quick melee in first person: since when (ms), and a punch or a kick. */
+  private strikeMotion: { kind: 'punch' | 'kick'; t0: number } | null = null;
+  /** Your boot, seen for a kick (made on first need). */
+  private boot?: Mesh;
+
+  /**
+   * Your own punch or kick (quick melee) in first person: for a punch the
+   * gun dips aside and the arms throw a jab or a cross; for a kick the gun
+   * dips and your boot comes up into view and snaps forward.
+   */
+  localStrike(kind: 'punch' | 'kick', jab: boolean): void {
+    this.strikeMotion = { kind, t0: performance.now() };
+    if (kind === 'punch') this.fpArms?.anim?.trigger(jab ? 'jab' : 'melee');
+    if (kind === 'kick' && !this.boot) {
+      const boot = CreateBox('fpBoot', { width: 0.13, height: 0.11, depth: 0.3 }, this.scene);
+      const mat = new StandardMaterial('fpBootMat', this.scene);
+      mat.diffuseColor = new Color3(0.16, 0.13, 0.11);
+      mat.specularColor = new Color3(0.05, 0.05, 0.05);
+      boot.material = mat;
+      boot.isPickable = false;
+      boot.parent = this.camera;
+      boot.renderingGroupId = this.viewRoot.getChildMeshes()[0]?.renderingGroupId ?? 0;
+      boot.setEnabled(false);
+      this.boot = boot;
+    }
+  }
+
+  /** 0..1..0 over a strike: quick out, slower back. */
+  private strikeAmount(now: number, seconds: number): number {
+    const m = this.strikeMotion;
+    if (!m) return 0;
+    const t = (now - m.t0) / 1000 / seconds;
+    if (t >= 1) return 0;
+    return t < 0.3 ? Math.sin((t / 0.3) * (Math.PI / 2)) : Math.cos(((t - 0.3) / 0.7) * (Math.PI / 2));
+  }
+
   /** Recoil kick and muzzle flash for a predicted shot. */
   kick(def: WeaponDefinition): void {
     const rail = def.id === 'core.railgun';
@@ -904,6 +1042,23 @@ export class GameView {
       z - this.kickAmount * (melee ? -0.25 : 0.06) * (1 - ads * 0.5),
     );
     this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
+    // A punch or kick: the gun dips out of the way (aside for a punch) while the fist or boot comes in.
+    const now = performance.now();
+    const kicking = this.strikeMotion?.kind === 'kick';
+    const strike = this.strikeAmount(now, kicking ? 0.5 : 0.36);
+    if (strike > 0) {
+      this.viewRoot.position.y -= strike * (kicking ? 0.1 : 0.14);
+      this.viewRoot.position.x += strike * (kicking ? 0 : 0.06);
+      this.viewRoot.rotation.z += strike * (kicking ? 0.1 : 0.45);
+    } else if (this.strikeMotion && now - this.strikeMotion.t0 > 600) this.strikeMotion = null;
+    if (this.boot) {
+      this.boot.setEnabled(kicking && strike > 0);
+      if (kicking && strike > 0) {
+        // From below the view, up and forward, toes first.
+        this.boot.position.set(0.12, -0.95 + strike * 0.55, 0.35 + strike * 0.6);
+        this.boot.rotation.set(-0.5 + strike * 0.4, 0, 0);
+      }
+    }
     const flashing = performance.now() < this.flashUntil;
     this.flash.setEnabled(flashing && this.starFlash);
     this.flashRig.root.position.set(0, this.muzzleY, this.muzzleZ + OWN_FLASH_AHEAD);
@@ -995,8 +1150,8 @@ export class GameView {
         continue;
       }
       // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
-      if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll && this.activeRagdolls() < MAX_ACTIVE_RAGDOLLS) {
-        this.startRagdoll(p.slot, a);
+      if (a.wasAlive && !p.alive && a.anim && this.physics && !a.ragdoll) {
+        this.startRagdoll(p.slot, a, planes);
         if (a.ragdoll) {
           this.toCorpse(p.slot, a);
           continue;
@@ -1005,6 +1160,7 @@ export class GameView {
       if (p.alive && a.ragdoll) {
         a.ragdoll.dispose();
         a.ragdoll = undefined;
+        if (a.anim instanceof CharacterAnimator) a.anim.thawPose();
       }
       a.wasAlive = p.alive;
       // While ragdolled the body stays where it fell; physics moves the bones.

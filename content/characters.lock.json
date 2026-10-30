@@ -72,10 +72,10 @@
       "role": "rig",
       "source": "quaternius-universal-animation-library, quaternius-universal-animation-library-2",
       "file": "characters/rig.glb",
-      "sha256": "688a699faa4c4bb8",
+      "sha256": "a2033afb99ce675f",
       "triangles": 6872,
       "lodTriangles": 2059,
-      "bytes": 734588
+      "bytes": 810544
     },
     {
       "role": "head",

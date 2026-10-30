@@ -1,4 +1,4 @@
-import { CLASS_SAY_BASE, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
+import { CLASS_SAY_BASE, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'tiletrigger.mouse';
@@ -76,6 +76,8 @@ export class InputState {
   altTrigger = false;
   /** Middle mouse (or V): the held weapon's second trigger. */
   private altDown = false;
+  /** A side mouse button (or Y): quick melee. */
+  private meleeDown = false;
   /** Weapon slot requested with number keys (0 = none pending). */
   private slotRequest = 0;
   /** Mouse wheel steps since last read (+ = next weapon). */
@@ -149,7 +151,7 @@ export class InputState {
       'blur',
       () => {
         this.keys.clear();
-        this.fireDown = this.zoomDown = this.altDown = this.throwAiming = this.keyFire = false;
+        this.fireDown = this.zoomDown = this.altDown = this.meleeDown = this.throwAiming = this.keyFire = false;
       },
       opts,
     );
@@ -161,10 +163,19 @@ export class InputState {
       this.fireDown = (e.buttons & 1) !== 0 && (press || this.fireDown);
       this.zoomDown = (e.buttons & 2) !== 0 && (press || this.zoomDown);
       this.altDown = (e.buttons & 4) !== 0 && (press || this.altDown);
+      this.meleeDown = (e.buttons & 24) !== 0 && (press || this.meleeDown);
     };
     window.addEventListener('pointerdown', buttons, opts);
     window.addEventListener('pointerup', buttons, opts);
     canvas.addEventListener('contextmenu', (e) => e.preventDefault(), opts);
+    // The side buttons are quick melee in play, not the browser's back and forward.
+    window.addEventListener(
+      'mouseup',
+      (e) => {
+        if (this.locked && (e.button === 3 || e.button === 4)) e.preventDefault();
+      },
+      opts,
+    );
     window.addEventListener(
       'wheel',
       (e) => {
@@ -313,6 +324,8 @@ export class InputState {
     // Middle mouse or V: the second trigger (grenade launcher, alt fire…).
     if (this.altDown || this.keys.has('KeyV')) buttons |= BUTTON_ALT;
     if (this.throwQueued) buttons |= BUTTON_THROW;
+    // Side mouse button or Y: quick melee (punch or kick, or a swing of a melee weapon in hand).
+    if (this.meleeDown || this.keys.has('KeyY')) buttons |= BUTTON_MELEE;
     // Shift sprints, except through a scope, where it holds your breath.
     if ((this.keys.has('ShiftLeft') || this.pad.sprint) && !aim) buttons |= BUTTON_SPRINT;
     if (this.crouchOn) buttons |= BUTTON_CROUCH;

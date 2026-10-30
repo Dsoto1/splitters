@@ -13,6 +13,12 @@
 //   PERF_MAX_CASTERS=n (exit 1 when a clumped frame averages more shadow casters than n), PERF_MAX_FX_MS=n
 //   (exit 1 when starting an effect takes longer: an explosion, a hit, a muzzle flash of each kind, each
 //   built while the match loads rather than mid-fight). Effects in the shadow pass always fail a budget run.
+//   PERF_BOTS=96 (players in the match), PERF_SCENARIOS=spread,clump (add `mass`: a mass casualty, one blast
+//   killing PERF_MASS_KILLS=20 bots 12 m in front of the camera; its frames are timed for 4 s after),
+//   PERF_MAX_MASS_MS=n (exit 1 when the worst frame's game JS after the blast takes longer: the deaths' own cost,
+//   which CPU rendering doesn't inflate),
+//   PERF_MAX_MASS_DRAWS=n (exit 1 when frames after the blast average more draws), PERF_MAX_MASS_BODIES=n
+//   (exit 1 when more ragdoll bodies are awake at once than n).
 // SwiftShader renders on the CPU, so render times are far above a real GPU's: compare runs
 // on the same machine, and read the sim and JS columns as the portable part.
 import { spawn } from 'node:child_process';
@@ -26,6 +32,9 @@ const PORT = process.env.PERF_PORT ?? '4296';
 const GRAPHICS = (process.env.PERF_GRAPHICS ?? 'medium,low').split(',');
 const SECONDS = Number(process.env.PERF_SECONDS ?? 8);
 const SIM = process.env.PERF_SIM ?? '';
+const BOTS = Number(process.env.PERF_BOTS ?? 96);
+const SCENARIOS = (process.env.PERF_SCENARIOS ?? 'spread,clump').split(',');
+const MASS_KILLS = Number(process.env.PERF_MASS_KILLS ?? 20);
 const CLIENT = `http://localhost:${PORT}`;
 
 // PERF_DIST=dir serves another build (say, one saved from before a change) for a before/after.
@@ -68,6 +77,30 @@ const CLUMP = `(m, me, seed) => {
   }
   return placed;
 }`;
+/**
+ * Runs inside the match: a mass casualty. Puts n living bots (either side) within 3 m of a point
+ * 12 m in front of the player, then sets off one blast there that kills them (their armour and health don't matter).
+ */
+const MASS = `(m, me, n) => {
+  const d = { x: Math.sin(me.yaw), z: Math.cos(me.yaw) };
+  const want = { x: me.move.pos.x + d.x * 12, y: me.move.pos.y, z: me.move.pos.z + d.z * 12 };
+  const at = m.nav.closestPoint(want, { x: 6, y: 10, z: 6 }) ?? want;
+  const victims = m.combatants().filter((c) => c.alive && c !== me && !c.mount).slice(0, n);
+  let i = 0;
+  for (const c of victims) {
+    const a = (i++ / victims.length) * Math.PI * 2;
+    const p = m.nav.closestPoint({ x: at.x + Math.cos(a) * 2.5, y: at.y, z: at.z + Math.sin(a) * 2.5 }, { x: 3, y: 6, z: 3 }) ?? at;
+    c.move = { ...c.move, pos: { x: p.x, y: p.y + 0.05, z: p.z }, velY: 0, grounded: true };
+    c.armor = 0;
+    c.health = 1;
+  }
+  const centre = { x: at.x, y: at.y + 0.5, z: at.z };
+  m.pendingEvents.push({ e: 'explode', s: -1, p: [centre.x, centre.y, centre.z], r: 6 });
+  m.splash(centre, 6, 500, 400, null, 'core.rockets', 1, 12);
+  // Anyone the blast didn't reach (a wall in the way) dies with it all the same.
+  for (const c of victims) if (c.alive) m.kill(c, null, 'core.rockets');
+  return victims.filter((c) => !c.alive).length;
+}`;
 /** Runs inside the match: per-tick sections since the last call (simProfile), and ticks run. */
 const PROFILE = `(m, me, on, mod) => {
   const p = mod.simProfile;
@@ -82,6 +115,65 @@ const PROFILE = `(m, me, on, mod) => {
   w?.reset();
   return out;
 }`;
+
+/**
+ * The mass casualty: frames are recorded from just before the blast for 4 s: their times, the JS part, draw calls,
+ * and (when the view reports them) the ragdolls by tier and the most ragdoll bodies awake at once.
+ */
+async function measureMass(page, sim) {
+  await page.evaluate(() => {
+    const sc = window.__cs.view.scene;
+    const engine = sc.getEngine();
+    const counter = engine._drawCalls;
+    const add = counter?.addCount;
+    const s = (window.__mass = { draws: [], bodies: 0, tiers: null, frameDraws: 0 });
+    if (counter && add) counter.addCount = (n, f) => ((s.frameDraws += n), add.call(counter, n, f));
+    s.undo = () => {
+      if (counter && add) counter.addCount = add;
+      sc.onBeforeRenderObservable.remove(s.before);
+      sc.onAfterRenderObservable.remove(s.after);
+    };
+    s.before = sc.onBeforeRenderObservable.add(() => (s.frameDraws = 0));
+    s.after = sc.onAfterRenderObservable.add(() => {
+      s.draws.push(s.frameDraws);
+      const st = window.__cs.view.ragdollStats?.();
+      if (st) {
+        s.bodies = Math.max(s.bodies, st.awakeBodies);
+        s.tiers = st;
+      }
+    });
+    window.__perf.reset();
+    window.__perf.on = true;
+  });
+  const killed = await sim(MASS, MASS_KILLS);
+  await sleep(4000);
+  // A CPU-rendered page under load can draw only a frame or two in 4 s: wait for at least 12 (up to 60 s more).
+  for (let waited = 0; waited < 60000 && (await page.evaluate(() => window.__perf.frames.length)) < 12; waited += 1000) await sleep(1000);
+  const out = await page.evaluate(() => {
+    window.__perf.on = false;
+    const s = window.__mass;
+    s.undo();
+    const frames = window.__perf.frames;
+    const avg = (a) => Math.round(a.reduce((x, v) => x + v, 0) / Math.max(1, a.length));
+    return { frames, draws: avg(s.draws), bodies: s.bodies, tiers: s.tiers };
+  });
+  const sorted = out.frames.map((f) => f.dt).sort((a, b) => a - b);
+  const pct = (q) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] ?? 0;
+  return {
+    killed,
+    frames: out.frames.length,
+    p50: pct(0.5),
+    p95: pct(0.95),
+    max: sorted[sorted.length - 1] ?? 0,
+    jsMax: Math.max(0, ...out.frames.map((f) => f.js)),
+    jsP95: (() => {
+      const js = out.frames.map((f) => f.js).sort((a, b) => a - b);
+      return js[Math.min(js.length - 1, Math.floor(0.95 * js.length))] ?? 0;
+    })(),
+    draws: out.draws,
+    ragdolls: out.tiers ? { ...out.tiers, mostAwakeBodies: out.bodies } : 'not reported',
+  };
+}
 
 /** A page that didn't answer for PERF_STALL_S seconds. */
 class Stalled extends Error {}
@@ -118,7 +210,7 @@ for (const id of maps) {
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    await page.goto(`${CLIENT}/?offline=${id}&gamemode=core.tdm&bots=96`);
+    await page.goto(`${CLIENT}/?offline=${id}&gamemode=core.tdm&bots=${BOTS}`);
     const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__sim, null, { timeout: 600000 }).then(() => true, () => false);
     if (!ok) {
       console.log(`${id}/${graphics}: match did not start ${errors.join('; ')}`);
@@ -137,7 +229,13 @@ for (const id of maps) {
           // Let streaming props, textures and shaders settle, and the bots spread out.
           await sleep(5000);
           const row = { map: id, graphics, players, sim: mode, load: loadavg()[0] };
-          for (const scenario of ['spread', 'clump']) {
+          for (const scenario of SCENARIOS) {
+            if (scenario === 'mass') {
+              row.mass = await measureMass(page, sim);
+              const r = row.mass;
+              console.log(`${id} ${graphics} ${mode} mass casualty: ${r.killed} killed by one blast; frames after it: ${r.frames}, p50 ${r.p50.toFixed(1)} ms, p95 ${r.p95.toFixed(1)}, worst ${r.max.toFixed(0)} ms; game JS worst ${r.jsMax.toFixed(1)} ms, p95 ${r.jsP95.toFixed(1)} ms, draws ${r.draws} avg; ragdolls ${JSON.stringify(r.ragdolls)}`);
+              continue;
+            }
             if (scenario === 'clump') row.placed = await sim(CLUMP, 7);
             await sim(PROFILE, true);
             await page.evaluate(() => {
@@ -293,6 +391,22 @@ for (const r of results.filter((x) => !x.stalled)) {
   for (const sc of ['spread', 'clump']) if (checking && r[sc]?.scene.effectCasters) fails.push(`${r.map} ${r.graphics} ${sc}: ${r[sc].scene.effectCasters} effect meshes in the shadow pass`);
   for (const [k, ms] of Object.entries(r.fx ?? {})) if (fxBudget && ms > fxBudget) fails.push(`${r.map} ${r.graphics}: starting ${k} took ${ms} ms > ${fxBudget}`);
 }
+// Mass casualty: the worst frame after the blast, its draws, and ragdoll bodies awake at once.
+const massMs = Number(process.env.PERF_MAX_MASS_MS ?? 0);
+const massDraws = Number(process.env.PERF_MAX_MASS_DRAWS ?? 0);
+const massBodies = Number(process.env.PERF_MAX_MASS_BODIES ?? 0);
+for (const r of results.filter((x) => !x.stalled)) {
+  if (!SCENARIOS.includes('mass')) break;
+  if (!r.mass || r.mass.frames === 0) {
+    if (massMs || massDraws || massBodies) fails.push(`${r.map} ${r.graphics}: mass casualty not measured`);
+    continue;
+  }
+  if (r.mass.killed < MASS_KILLS / 2 && (massMs || massDraws || massBodies)) fails.push(`${r.map} ${r.graphics}: the mass-casualty blast killed only ${r.mass.killed}`);
+  if (massMs && r.mass.jsMax > massMs) fails.push(`${r.map} ${r.graphics}: worst frame's game JS after the mass-casualty blast ${r.mass.jsMax.toFixed(1)} ms > ${massMs}`);
+  if (massDraws && r.mass.draws > massDraws) fails.push(`${r.map} ${r.graphics}: frames after the mass-casualty blast average ${r.mass.draws} draws > ${massDraws}`);
+  if (massBodies && typeof r.mass.ragdolls === 'object' && r.mass.ragdolls.mostAwakeBodies > massBodies) fails.push(`${r.map} ${r.graphics}: ${r.mass.ragdolls.mostAwakeBodies} ragdoll bodies awake at once > ${massBodies}`);
+}
+if ((massMs || massDraws || massBodies) && SCENARIOS.includes('mass')) console.log(`mass casualty: ${results.filter((r) => r.mass).map((r) => `${r.map} ${r.graphics} ${r.mass.killed} killed, worst game JS ${r.mass.jsMax.toFixed(1)} ms, ${r.mass.draws} draws`).join('; ')}`);
 for (const f of fails) console.log(`OVER BUDGET: ${f}`);
 if (checking && !fails.length && results.some((r) => r.clump)) console.log(`shadow and effects budget: ${results.filter((r) => r.clump).map((r) => `${r.map} ${r.graphics} ${r.clump.scene.casters} casters, slowest effect ${Math.max(0, ...Object.values(r.fx ?? {}))} ms`).join('; ')}`);
 if (budget && !over.length && !unmeasured.length && !stalled.length) console.log(`draw budget: every clumped frame within ${budget} draws (${results.map((r) => `${r.map} ${r.graphics} ${r.clump.scene.draws}`).join(', ')})`);

@@ -1,8 +1,10 @@
-// Add clips from Quaternius' Universal Animation Library 2 (CC0) to the
+// Add clips from Quaternius' Universal Animation Library 1 and 2 (CC0) to the
 // shared rig without rebuilding every character (that needs all the source
 // packs; see prepare-characters.mjs, whose CLIPS list includes these too):
 //
-//   node tools/content/add-rig-clips.mjs <path to UAL2_Standard.glb>
+//   node tools/content/add-rig-clips.mjs <path to UAL2_Standard.glb> [<path to UAL1_Standard.glb>]
+//
+// (the free Standard editions from quaternius.itch.io/universal-animation-library and -2).
 //
 // The clips get the same treatment as in prepare-characters.mjs: only the
 // root and pelvis keep translations (so they fit every body), finger tracks
@@ -22,22 +24,28 @@ export const UAL2_EXTRA_CLIPS = [
   ['Zombie_Walk_Fwd_Loop', 'zombie_walk'],
   ['Zombie_Scratch', 'zombie_attack'],
 ];
+/** [UAL1 clip, name in the rig]: unarmed quick melee (the cross is the rig's `melee`) and a hit to the head. */
+export const UAL1_EXTRA_CLIPS = [
+  ['Punch_Jab', 'jab'],
+  ['Hit_Head', 'hit_head'],
+];
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const RIG = join(ROOT, 'packages/client/public/characters/rig.glb');
 const LOCK = join(ROOT, 'content/characters.lock.json');
 const source = process.argv[2];
-if (!source) throw new Error('usage: add-rig-clips.mjs <UAL2_Standard.glb>');
+const ual1 = process.argv[3];
+if (!source) throw new Error('usage: add-rig-clips.mjs <UAL2_Standard.glb> [<UAL1_Standard.glb>]');
 
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 const doc = await io.read(RIG);
-const src = await io.read(source);
 const nodes = new Map(doc.getRoot().listNodes().map((n) => [n.getName(), n]));
 const buffer = doc.getRoot().listBuffers()[0];
+const sets = [[await io.read(source), UAL2_EXTRA_CLIPS, 'UAL2'], ...(ual1 ? [[await io.read(ual1), UAL1_EXTRA_CLIPS, 'UAL1']] : [])];
 
-for (const [clip, name] of UAL2_EXTRA_CLIPS) {
+for (const [src, clips, lib] of sets) for (const [clip, name] of clips) {
   const from = src.getRoot().listAnimations().find((a) => a.getName() === clip);
-  if (!from) throw new Error(`UAL2 has no clip ${clip}`);
+  if (!from) throw new Error(`${lib} has no clip ${clip}`);
   doc.getRoot().listAnimations().find((a) => a.getName() === name)?.dispose();
   const anim = doc.createAnimation(name);
   for (const ch of from.listChannels()) {
