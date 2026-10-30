@@ -64,6 +64,7 @@ import {
   type Movers,
   MOUNT_WRECK_FADE_SECONDS,
   mountDamageState,
+  getLook,
 } from '@tiletrigger/shared';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
@@ -1216,13 +1217,15 @@ export class GameView {
         a.vel = { x: 0, z: 0 };
         // Full-body first person (from your own eyes; in a vehicle its view keeps the arms): your own character,
         // seen from its eyes, holding the gun.
-        if (this.fpMode === 'body' && this.firstPersonEye && !seated.has(p.slot) && a.anim instanceof CharacterAnimator) {
+        // (A character whose hat or cape would fill the view from its own eyes keeps the arms: its look's whole.body.)
+        const bodyOk = !want.look || getLook(want.look).whole?.body !== false;
+        if (this.fpMode === 'body' && bodyOk && this.firstPersonEye && !seated.has(p.slot) && a.anim instanceof CharacterAnimator) {
           this.showFpBody(a, p, now);
           continue;
         }
         if (this.fpBody) this.dropFpBody();
         // Arms only, or before your character has loaded.
-        if (this.fpMode === 'arms' || !this.firstPersonEye || seated.has(p.slot)) this.buildFpArms();
+        if (this.fpMode === 'arms' || !bodyOk || !this.firstPersonEye || seated.has(p.slot)) this.buildFpArms();
         a.root.setEnabled(false);
         a.root.position.set(p.x, p.y, p.z);
         a.root.rotation.y = p.yaw;

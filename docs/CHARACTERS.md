@@ -197,6 +197,12 @@ loaded for third person, `hiddenSelf`) from its eyes, `FirstPersonBodyRig` in `g
   coming forward only as far as the arm needs. Copies of the forearm, hand and finger triangles (same skeleton
   and material) are drawn in rendering group 1 with the gun, so the hands never clip into a wall the gun is
   drawn over; the rest of the body is in the world (group 0). A free hand (knife, axe) hangs at your side.
+- **Head cut:** besides the shrunk neck, `cutHead` hides the meshes wholly on the head and draws a copy of
+  each mesh partly on it without the triangles on the head or (bind pose) above the base of the neck: a Meshy
+  character is one mesh, its hat and collar included. A character whose model still fills the view (Grizzelda's
+  hat brim) opts out in its manifest, `firstPerson.body: false`, and keeps the arms.
+- **Shoulders:** a shoulder that must come forward to reach the gun first rolls its collarbone (up to
+  `FP_CLAVICLE_MAX`), then the joint moves the rest (which stretches skin, and that's in view looking down).
 - **When:** only while the camera is your own eyes. In a vehicle seat, the kill cam, spectating, third person
   or before your character has loaded it falls back to the arms below (built only when needed); scoped, the
   body is hidden with the gun.
@@ -379,6 +385,7 @@ repo; they live in a downloads dir outside it.
 | `source.file` | A regular expression for the download's file name (a rigged `.glb`, or the textured `.fbx`), when it isn't saved as `<id>.glb`. |
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
+| `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
 | `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
