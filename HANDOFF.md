@@ -68,7 +68,8 @@ session branch to `check/candidate` (fast-forward), fix, and repeat until green.
 columns from 1000 px); mouse look goes through `lookFilter.ts` (Safari's coalesced moves re-summed, the
 lock jump and spikes dropped, applied once per frame; `window.__lookStats` in the console shows what it
 did); zoomed look speed is 1:1 at the crosshair (tan ratio) with a Zoom sensitivity setting. Not tested
-in real Safari: ask the owner to try it, and to paste `__lookStats` from Safari's console after a minute
+in real Safari (e2e offline, visual and hostcontrols pass locally; the full suite has not run on a check
+branch): ask the owner to try it, and to paste `__lookStats` from Safari's console after a minute
 of play if it still feels off.
 
 Merge order suggestion: bot-manager, character-intake, roster-cleanup (expect a
