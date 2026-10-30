@@ -1485,7 +1485,8 @@ async function physicsfxFlow(browser) {
   const thrown = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    const bot = m.slots.find((c) => c && c !== me && c.alive && c.move.grounded);
+    const bot = m.slots.find((c) => c && c !== me && c.alive && c.move.grounded && !c.mount);
+    // (Not one seated in a vehicle: a blast doesn't throw a seated rider.)
     if (!bot) return null;
     // Right beside it, where it stands (open ground: it got there), at waist height.
     const at = { x: bot.move.pos.x - 1, y: bot.move.pos.y + 0.6, z: bot.move.pos.z };
@@ -1512,7 +1513,8 @@ async function physicsfxFlow(browser) {
     const f = window.__cs.view.camera.getForwardRay(1).direction;
     const len = Math.hypot(f.x, f.z) || 1;
     const at = { x: me.move.pos.x + (f.x / len) * 10, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 10 };
-    const victims = m.combatants().filter((c) => c !== me && c.alive && !c.mount);
+    // Only bots the view has drawn alive (one that respawned since the last drawn frame has no body to drop yet).
+    const victims = m.combatants().filter((c) => c !== me && c.alive && !c.mount && window.__cs.view.avatars.get(c.slot)?.wasAlive);
     victims.forEach((c, i) => {
       const a = (i / victims.length) * Math.PI * 2;
       c.move = { ...c.move, pos: { x: at.x + Math.cos(a) * 2, y: at.y + 0.2, z: at.z + Math.sin(a) * 2 }, velY: 0, grounded: false };
@@ -1526,10 +1528,19 @@ async function physicsfxFlow(browser) {
     return victims.length;
   });
   const t0 = Date.now();
-  const down = await page.waitForFunction(() => window.__massSlots.every((s) => window.__cs.view.corpses.some((c) => c.slot === s)), null, { timeout: T(10000) }).then(() => true, () => false);
+  // Each body counts once it has become a corpse (on a 1 fps CI page the first can sink away before the last lands).
+  await page.evaluate(() => (window.__massDown = new Set()));
+  const down = await page.waitForFunction(() => {
+    const v = window.__cs.view;
+    for (const c of v.corpses) if (window.__massSlots.includes(c.slot)) window.__massDown.add(c.slot);
+    // A body with no ragdoll (its model not loaded yet) falls under gravity as itself: down once it lands.
+    for (const s of window.__massSlots) { const f = v.avatars.get(s)?.fall; if (f && f.y <= f.ground + 0.05) window.__massDown.add(s); }
+    return window.__massSlots.every((s) => window.__massDown.has(s));
+  }, null, { timeout: T(10000), polling: 50 }).then(() => true, () => false);
   await frames(page, 10);
   const massStats = await page.evaluate(() => window.__cs.view.ragdollStats());
-  check(mass > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}`);
+  const notDown = down ? [] : await page.evaluate(() => window.__massSlots.filter((s) => !window.__massDown.has(s)).map((s) => { const a = window.__cs.view.avatars.get(s); const b = window.__match.slots[s]; return { s, avatar: !!a, anim: !!a?.anim, fall: a?.fall ?? null, alive: b?.alive }; }));
+  check(mass > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}${notDown.length ? ` not down: ${JSON.stringify(notDown)}` : ''}`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
   await page.waitForFunction(() => !!window.__cs.view.physics, null, { timeout: T(3000) }).catch(() => {});
   await page.evaluate(() => {
