@@ -133,6 +133,12 @@ Run the checks after each merge.
   https://claude.ai/artifact/Cwq57yDPtBzmnrpaf7josr (its db collection
   `reviews`).
 
+### Owner decision (2026-10-30): who carries on when a browser host leaves
+When the host of a browser-hosted match (Host game) leaves and at least one human is still playing, a human
+becomes the host and the match carries on, even if only one is left (they keep playing with the bots). The
+host-left screen shows only when no human remains to take over. Dedicated hosts (the Host Service) don't hand off:
+they are the server.
+
 ### 5. Queued next (owner's requests, 2026-10-29 night)
 Start these when agent slots free up; two batches:
 1. **New weapon assets** (owner's Meshy generations, provenance Meshy/owned; downloads outside the repo):
