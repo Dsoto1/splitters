@@ -11,6 +11,8 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
 ### Owner notes, 2026-10-30 evening (not done yet; next session start here)
+- **main at b4d55de (2026-10-30 ~22:40 UTC), released as main-latest:** everything through the full-body fix,
+  St. John's, props and sizes. Sunken Kingdom (2814838) is on check/candidate next; Iron Maw still building.
 - **Release fixed (2026-10-30 21:50 UTC):** `main` fast-forwarded to 1317b80 (= 9a959ee's code + the ci.yml fix: no
   cancelled runs on main; a main commit not green on a check branch is tested against the nearest one that was). Its run
   published `main-latest`; the owner runs `sudo tiletrigger-update` to get the Meshy buggy and weapon drops.
