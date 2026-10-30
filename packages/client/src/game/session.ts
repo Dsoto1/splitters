@@ -408,7 +408,7 @@ export class GameSession {
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
     // Watching: Space switches between following someone and the free camera (or skips the kill cam).
     this.input.onToggle.set('Space', () => {
-      if (this.outOfPlay) this.input.toggleSpectateCamera();
+      if (this.outOfPlay || this.spectator || (this.local && !this.local.alive && this.phase === 'playing')) this.input.toggleSpectateCamera();
     });
     // Spectating by choice: J joins the game again.
     this.input.onToggle.set('KeyJ', () => {
@@ -774,14 +774,14 @@ export class GameSession {
     this.spectator = on;
     this.specCam.reset();
     if (on && this.local) this.local.alive = false;
-    this.hud.showMessage(on ? 'Spectating: click or ←/→ for the next player, Space for the free camera, J to join' : 'Back in the game', 4);
+    this.hud.showMessage(on ? 'Spectating · J to join the game' : 'Back in the game', 3);
     this.drawSpectateButton();
   }
 
   /** For browser tests: what the out-of-play camera is doing. */
-  private specState(): { spectator: boolean; out: boolean; killCam: number | null; following: number; free: boolean; camera: Vec3; rule: SpectateRule } {
+  private specState(): { spectator: boolean; can: boolean; out: boolean; killCam: number | null; following: number; free: boolean; camera: Vec3; rule: SpectateRule } {
     const c = this.view.cameraPosition();
-    return { spectator: this.spectator, out: this.outOfPlay, killCam: this.specCam.killCam(performance.now())?.killer ?? null, following: this.specCam.following, free: this.specCam.free, camera: { x: c.x, y: c.y, z: c.z }, rule: this.spectateRule() };
+    return { spectator: this.spectator, can: this.canSpectate, out: this.outOfPlay, killCam: this.specCam.killCam(performance.now())?.killer ?? null, following: this.specCam.following, free: this.specCam.free, camera: { x: c.x, y: c.y, z: c.z }, rule: this.spectateRule() };
   }
 
   /** Who you may watch and whether the free camera is yours (spectatorCam.ts spectateRule). */
@@ -1866,15 +1866,16 @@ export class GameSession {
   }
 
   /**
-   * You died to `killer`: the kill cam turns to them from by your body. With a short respawn delay it lasts
-   * until you're back; with a long one (or none: Elimination) KILL_CAM_SECONDS, then you watch.
+   * You died to `killer`: the kill cam turns to them from by your body, for KILL_CAM_SECONDS or until you
+   * respawn (a delay just past that stretches it to the respawn); with a long delay (or none: Elimination)
+   * you then watch.
    */
   private startKillCam(killer: number, weapon: string): void {
     const local = this.local!;
     const now = performance.now();
     const hit = this.lastHitBy && this.lastHitBy.slot === killer && now - this.lastHitBy.at < 3000 ? this.lastHitBy.from : null;
     const delay = (this.rules?.respawnDelayTicks ?? 0) / TICK_RATE;
-    const seconds = delay > 0 && delay <= KILL_CAM_SECONDS + 1 ? delay + 0.5 : KILL_CAM_SECONDS;
+    const seconds = Math.max(KILL_CAM_SECONDS, delay > 0 && delay <= KILL_CAM_SECONDS + 1 ? delay + 0.5 : 0);
     this.specCam.startKillCam({ killer, weapon, body: this.drawnPos, from: hit, yaw: this.input.yaw, pitch: this.input.pitch, now, seconds });
   }
 

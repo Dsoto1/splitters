@@ -871,24 +871,31 @@ async function spectateChecks(browser) {
   await page.goto(`${CLIENT}/?offline&test=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
   const spec = () => page.evaluate(() => window.__cs.spec());
-  // A long respawn delay, so there's time to watch; then a bot kills you.
+  // A bot kills you; your respawn waits a minute, so there's time to watch (the bots respawn as usual).
   const killer = await sim(page, (m, me) => {
-    m.setRules({ respawnDelayTicks: 60 * 60 });
     const bot = m.combatants().find((c) => c.kind === 'bot' && c.alive);
     m.kill(me, bot, 'core.pistol');
+    me.respawnTick = m.tick + 60 * 60;
     return { slot: bot.slot, name: bot.name };
   });
-  await page.waitForFunction((k) => window.__cs.spec().killCam === k, killer.slot, { timeout: T(5000) }).catch(() => {});
-  const banner = await page.evaluate(() => document.getElementById('killcam')?.hidden === false && document.getElementById('killcam').textContent);
-  check((await spec()).killCam === killer.slot && typeof banner === 'string' && banner.includes(killer.name), `the kill cam shows the killer (${banner || 'no banner'})`);
-  await page.waitForFunction(() => /HP left|down/.test(document.getElementById('killcam')?.textContent ?? ''), null, { timeout: T(3000) }).catch(() => {});
-  check(/HP left|down/.test(await page.evaluate(() => document.getElementById('killcam')?.textContent ?? '')), 'with the health they have left');
+  // The banner, read the moment it's up (the kill cam lasts a few seconds).
+  const banner = await page
+    .waitForFunction(() => {
+      const el = document.getElementById('killcam');
+      return el && !el.hidden && window.__cs.spec().killCam !== null && { text: el.textContent, killer: window.__cs.spec().killCam };
+    }, null, { timeout: T(5000), polling: 50 })
+    .then((h) => h.jsonValue())
+    .catch(() => null);
+  check(banner?.killer === killer.slot && banner.text.includes(killer.name), `the kill cam shows the killer (${banner?.text ?? 'no banner'})`);
+  check(/HP left|down/.test(banner?.text ?? ''), 'with the health they have left');
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
   await shot('killcam');
   // When it ends (the match's own respawn delay, as this page knows it), you follow a player (free-for-all: anyone).
   await page.waitForFunction(() => window.__cs.spec().killCam === null && window.__cs.spec().following >= 0, null, { timeout: T(8000) }).catch(() => {});
   const first = await spec();
   const watching = await page.evaluate(() => document.querySelector('#spectating b')?.textContent ?? '');
   check(first.killCam === null && first.following >= 0 && !first.free && /^Watching /.test(watching), `after the kill cam you follow a player (${watching})`);
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
   await shot('follow');
   await page.keyboard.press('ArrowRight');
   await page.waitForFunction((f) => window.__cs.spec().following !== f, first.following, { timeout: T(3000) }).catch(() => {});
@@ -905,6 +912,7 @@ async function spectateChecks(browser) {
   }, T(5000));
   await page.evaluate(() => delete window.__autoInput);
   check((await spec()).free && flown, 'Space switches to the free camera, which flies');
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
   await shot('freecam');
   // Camera input while dead goes out as activity (PlayerInput.sp), so the idle rules leave a watcher alone.
   const idle = await sim(page, (m, me) => m.idleSeconds(me.slot));
@@ -915,7 +923,10 @@ async function spectateChecks(browser) {
   const back = await page.evaluate(() => ({ alive: window.__cs.local.alive, out: window.__cs.spec().out, hud: document.getElementById('spectating')?.hidden !== false }));
   check(back.alive && !back.out && back.hud, `respawning ends watching (${JSON.stringify(back)})`);
   // Die again and press Space at once: it skips the kill cam.
-  await sim(page, (m, me) => m.kill(me, m.combatants().find((c) => c.kind === 'bot' && c.alive), 'core.pistol'));
+  await sim(page, (m, me) => {
+    m.kill(me, m.combatants().find((c) => c.kind === 'bot' && c.alive), 'core.pistol');
+    me.respawnTick = m.tick + 60 * 60;
+  });
   await page.waitForFunction(() => window.__cs.spec().killCam !== null, null, { timeout: T(5000) }).catch(() => {});
   await page.keyboard.press('Space');
   await page.waitForFunction(() => window.__cs.spec().killCam === null, null, { timeout: T(1500) }).catch(() => {});
@@ -937,6 +948,7 @@ async function spectateChecks(browser) {
   await page.evaluate(() => (window.__autoInput = { right: 1 }));
   await until(async () => (await spec()).following >= 0 || (await spec()).free, T(3000));
   await page.evaluate(() => delete window.__autoInput);
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
   await shot('spectator');
   await page.evaluate(() => document.getElementById('pause-spectate').click());
   await page.waitForFunction(() => !window.__cs.spec().spectator && window.__cs.local.alive, null, { timeout: T(5000) }).catch(() => {});
@@ -2955,6 +2967,22 @@ async function hostgameFlow(browser) {
     const rate = ((await bytes()) - b0) / 5 / 1024;
     // Raw snapshots run ~40 KB/s; compressed, a few (bursty frames on CI push it up, but well under raw).
     check(rate > 0.2 && rate < 20, `the friend's stream is compressed (${rate.toFixed(1)} KB/s)`);
+    // The friend spectates (pause menu): out of the host's match, a bot in the place, and their camera input
+    // keeps them from going idle (PlayerInput.sp); Join game puts them back.
+    const fslot = await friend.evaluate(() => window.__cs.slot);
+    await friend.evaluate(() => document.getElementById('pause-spectate').click());
+    const specOn = await simWait(host, (m, _me, s) => m.isSpectator(s) && m.slots[s] === null, fslot, T(10000));
+    await friend.evaluate(() => (window.__autoInput = { forward: 1 }));
+    await friend.waitForFunction(() => window.__cs.spec().spectator && window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
+    await friend.waitForTimeout(1500); // wait-ok: the free camera's input reaches the host for a while
+    await friend.evaluate(() => delete window.__autoInput);
+    const idle = await sim(host, (m, _me, s) => m.idleSeconds(s), fslot);
+    const fstate = await friend.evaluate(() => window.__cs.spec());
+    check(specOn && fstate.spectator && fstate.out && idle < 2, `a friend spectates in the hosted match, their camera input counting as activity (${idle.toFixed(1)} s idle; spectator ${fstate.spectator}, ${fstate.free ? 'free camera' : `following ${fstate.following}`})`);
+    await friend.evaluate(() => document.getElementById('pause-spectate').click());
+    const backIn = await simWait(host, (m, _me, s) => m.slots[s]?.kind === 'human' && !m.isSpectator(s), fslot, T(10000));
+    await friend.waitForFunction(() => !window.__cs.spec().spectator, null, { timeout: T(5000) }).catch(() => {});
+    check(specOn && backIn && !(await friend.evaluate(() => window.__cs.spec().spectator)), 'and joins the game again');
     // The host leaves (Leave match, confirmed with a friend in): the friend gets the host-left screen, not a bare error.
     // (The friend is the only one, so the host has named it successor: here it lets that go, as when no handoff
     // can happen; the flow `handoff` covers a successor carrying the match on.)
