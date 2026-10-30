@@ -409,6 +409,10 @@ export class LocalTransport implements Transport {
     this.toHost({ k: 'ready' });
   }
 
+  sendSpectate(on: boolean): void {
+    this.toHost({ k: 'spectate', on });
+  }
+
   private readonly onPageHide = () => this.sayGoodbye();
 
   close(): void {

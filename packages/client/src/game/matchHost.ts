@@ -226,7 +226,7 @@ export class MatchHost {
     if (!cp) bots.rebalance(control.fill);
     this.onMatch?.(match, me, mod);
 
-    this.sink.local({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState() });
+    this.sink.local({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState(), spectate: 1 });
     this.sink.local({ t: 'roster', players: match.roster() });
     this.sink.local({ t: 'host', state: control.state() });
     this.sendFacts();
@@ -236,10 +236,10 @@ export class MatchHost {
       r.early = null;
       for (const text of early) this.message(r.id, text);
     }
-    this.loop(match, me);
+    this.loop(match);
   }
 
-  private loop(match: MatchT, me: Combatant): void {
+  private loop(match: MatchT): void {
     let events: GameEvent[] = [];
     const tickMs = 1000 / TICK_RATE;
     let next = performance.now();
@@ -266,6 +266,8 @@ export class MatchHost {
         if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
           const snap = match.snapshot(events);
           const l0 = performance.now();
+          // this.me: the host's own player (a new one after spectating and joining again).
+          const me = this.me!;
           this.sink.local({ t: 'snapshot', ack: me.lastSeq, me: match.privateState(me.slot), ...snap });
           localMs += performance.now() - l0;
           const guests = [...this.remotes.values()].filter((r): r is Remote & { slot: number } => r.slot !== null);
@@ -328,7 +330,7 @@ export class MatchHost {
         if (this.remotes.size || this.successor) this.tendSuccessor(match);
         // Host game, every other second: each friend's ping (the host's own is 0) for everyone's scoreboard.
         if (this.remotes.size && ++pingRounds % 2 === 0) {
-          const p = [me.slot, 0, ...[...this.remotes.values()].flatMap((r) => (r.slot !== null && r.rtt !== undefined ? [r.slot, r.rtt] : []))];
+          const p = [this.me!.slot, 0, ...[...this.remotes.values()].flatMap((r) => (r.slot !== null && r.rtt !== undefined ? [r.slot, r.rtt] : []))];
           this.announce({ t: 'pings', p });
         }
       }
@@ -393,6 +395,33 @@ export class MatchHost {
 
   ready(): void {
     if (this.match && this.me) this.match.ready(this.me.slot);
+  }
+
+  /** This browser's own player spectates by choice (a bot fills the place), or joins play again. */
+  spectate(on: boolean): void {
+    const { match, me, bots, control } = this;
+    if (!match || !me || !bots || !control) return;
+    if (on) {
+      if (!bots.spectate(me.slot, control.fill)) return;
+    } else {
+      const back = bots.rejoin(me.slot, control.fill);
+      if (!back) return;
+      back.account = me.account;
+      if (me.invulnerable) back.invulnerable = true;
+      this.me = back;
+    }
+    this.announce({ t: 'notice', text: `${me.name} ${on ? 'is spectating' : 'joined the game'}` }, true);
+    this.rosterToAll();
+  }
+
+  /** A friend spectates by choice, or joins play again. */
+  private friendSpectates(r: Remote & { slot: number }, on: boolean): void {
+    const { match, bots, control } = this;
+    if (!match || !bots || !control) return;
+    const name = match.slots[r.slot]?.name ?? match.roster().find((p) => p.slot === r.slot)?.name ?? 'A player';
+    if (!(on ? bots.spectate(r.slot, control.fill) : bots.rejoin(r.slot, control.fill))) return;
+    this.announce({ t: 'notice', text: `${name} ${on ? 'is spectating' : 'joined the game'}` });
+    this.rosterToAll();
   }
 
   /** What the local player would take into the next map of a chain (score and weapons). */
@@ -518,7 +547,7 @@ export class MatchHost {
       r.slot = player.slot;
       player.account = !!r.account?.name;
       this.sink.guest(id, player.slot);
-      this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState() } satisfies ServerMessage));
+      this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState(), spectate: 1 } satisfies ServerMessage));
       if (back) this.announce({ t: 'notice', text: `${name} is back` });
       this.rosterToAll();
       // Who takes over if this host goes: everyone knows in advance.
@@ -530,6 +559,7 @@ export class MatchHost {
         this.rosterToAll();
       }
     }
+    else if (msg.t === 'spectate' && r.slot !== null) this.friendSpectates(r as Remote & { slot: number }, msg.on);
     else if (msg.t === 'ready' && r.slot !== null) {
       r.loaded = true;
       match.ready(r.slot);
@@ -777,6 +807,8 @@ export type ToSimHost =
   | { k: 'start'; map: MapDocument; opts: LocalMatchOptions; hidden: boolean }
   | { k: 'input'; inputs: PlayerInput[] }
   | { k: 'ready' }
+  /** The page's own player spectates by choice (on) or joins play again. */
+  | { k: 'spectate'; on: boolean }
   | { k: 'cmd'; cmd: Exclude<HostCommand, { c: 'map' } | RotationCommand> }
   /** The map rotation's next map and mode (the page keeps the rotation), for the end-of-match scoreboard. */
   | { k: 'upnext'; next: { map: string; mode: GameMode } | null }
@@ -844,6 +876,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return host.input(m.inputs);
     case 'ready':
       return host.ready();
+    case 'spectate':
+      return host.spectate(m.on);
     case 'cmd': {
       const error = host.command(m.cmd);
       // A refused command: the host's panel shows why (as a dedicated server would tell it).
