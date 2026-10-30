@@ -49,6 +49,10 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     terms don't allow copying its map content into the game; OpenStreetMap (footprints, roads, lake shore) plus
     USGS 3DEP elevation (public domain) are the suggested sources, used to guide editing in MapMaker (no map
     build scripts).
+- **Local e2e at hand-off (machine load 12–25, so timing-sensitive):** `mobile`, `offline`, `designer`,
+  `editor`, `editorux`, `canyon`, `scenery`, `race` passed. `arsenal` failed "hazards are drawn on the ground"
+  (failed under load before the axe merge too) and "the Battle Axe swings: the bot in front takes the blow"
+  (passed in the axe agent's own run). If CI shows the same, look at the axe swing check first.
 - **Not checked by eye / on real hardware:** Esc in Safari fullscreen, a real controller in the menus, touch
   controls on a real phone, the kill-cam framing, the axe's smoke and kick.
 
