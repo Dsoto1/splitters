@@ -11,14 +11,13 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
 ### Where things stand (2026-10-30 evening)
-- **`main` is at `d582c48`** (green): everything through `wip/impact`, the 2026-10-30 afternoon work (Character
+- **`main` is at `9a959ee`** (green; everything requested is merged, no agents running): everything through `wip/impact`, the 2026-10-30 afternoon work (Character
   Select spin and shipped portraits, muzzle-flash light fix, wheel/trackpad weapon switching, MapMaker new-map
   sizes, `wip/bot-vehicles`, `wip/weapon-wheel-mobile`, `wip/pause-menu`, `wip/spectate`, `wip/battle-axe`), the
   physicsfx e2e fixes, the white-gun fix (a re-rolled pickup disposed the shared gun materials: every copy of that
   gun, first person included, drew plain white) and `wip/fp-grips` (first-person support hand on big guns;
   server weapon switches no longer undone by the client's last request).
-- **On the session branch, in CI on `check/candidate`** (merged, local typecheck/unit/e2e pass; fast-forward
-  `main` when green):
+- **Also on `main`** (CI green on `9a959ee`):
   - `wip/weapon-drops`: rule **Drop weapon on death** (`MatchRules.dropWeapons`, default on; match setup →
     Arsenal, pause menu → Host). `sim/drops.ts`: the weapon in hand, else the most desirable non-starting gun with
     ammo, drops at the body with exactly its ammo; 30 s, at most 24; picking it up gives the gun, or its ammo up to
