@@ -192,6 +192,18 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
      * Full-body first person (`pose(look, weapon, 'body')`): the view's pitch (radians, the game's: + looks up), and the
      * body's motion (speed m/s, stance 0 standing / 1 crouched, airborne); `drop` lowers the eye (m, a crouch).
      */
+    /** Full body: look at the posed body from outside (from its right side, `alpha` round), or back through its eyes (null). */
+    outside: async (alpha: number | null) => {
+      if (alpha === null) scene.activeCamera = eye;
+      else {
+        orbit.target.set(0, 1.2, 0);
+        orbit.alpha = alpha;
+        orbit.beta = 1.3;
+        orbit.radius = 2.4;
+        scene.activeCamera = orbit;
+      }
+      await settle(4);
+    },
     look: async (pitch: number, motion: { speed?: number; stance?: number; airborne?: boolean; sprinting?: boolean; drop?: number } = {}) => {
       eyePitch = pitch;
       eyeDrop = motion.drop ?? 0;

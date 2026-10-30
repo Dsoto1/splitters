@@ -49,8 +49,8 @@ export class FirstPersonBodyRig {
   readonly eye = new Vector3();
   pitch = 0;
   private readonly forearms: Mesh[];
-  /** Meshes wholly on the head (a head, hair, a hat): not drawn at all while seen from inside (the ball casts their shadow). */
-  private readonly headOnly: AbstractMesh[];
+  /** The head taken off (cutHead): meshes not drawn while seen from inside, and the headless copies drawn instead (the ball casts the head's shadow). */
+  private readonly headless: { hidden: AbstractMesh[]; cuts: Mesh[]; shrink: boolean };
   private readonly headShadow: Mesh;
   private readonly neck?: TransformNode;
   private readonly headSize: number;
@@ -66,8 +66,8 @@ export class FirstPersonBodyRig {
     this.neck = ch.joints.get('neck_01') ?? ch.joints.get('Head');
     this.headSize = 0.24;
     this.forearms = forearmMeshes(ch);
-    this.headOnly = this.neck ? headMeshes(ch, this.neck) : [];
-    for (const m of this.headOnly) m.setEnabled(false);
+    this.headless = this.neck ? cutHead(ch, this.neck) : { hidden: [], cuts: [], shrink: true };
+    for (const m of this.headless.hidden) m.setEnabled(false);
     // The head's shadow: a ball drawn into the shadow map only (no colour, no depth on screen).
     const ball = CreateSphere(`${ch.root.name}_fpHead`, { diameter: 1, segments: 6 }, scene);
     const mat = new StandardMaterial(`${ch.root.name}_fpHeadMat`, scene);
@@ -77,7 +77,7 @@ export class FirstPersonBodyRig {
     ball.isPickable = false;
     ball.scaling.set(this.headSize * 0.8, this.headSize, this.headSize * 0.9);
     this.headShadow = ball;
-    anim.setFirstPerson({ place: () => this.place() });
+    anim.setFirstPerson({ place: () => this.place(), shrinkHead: this.headless.shrink });
   }
 
   /** The head's stand-in for shadows. */
@@ -90,6 +90,7 @@ export class FirstPersonBodyRig {
     if (on === this.enabled) return;
     this.enabled = on;
     for (const m of this.forearms) m.setEnabled(on);
+    for (const m of this.headless.cuts) m.setEnabled(on);
     this.headShadow.setEnabled(on);
   }
 
@@ -121,7 +122,8 @@ export class FirstPersonBodyRig {
   dispose(): void {
     this.anim.setFirstPerson(null);
     for (const m of this.forearms) m.dispose();
-    for (const m of this.headOnly) if (!m.isDisposed()) m.setEnabled(true);
+    for (const m of this.headless.cuts) m.dispose();
+    for (const m of this.headless.hidden) if (!m.isDisposed()) m.setEnabled(true);
     this.headShadow.material?.dispose();
     this.headShadow.dispose();
   }
@@ -136,35 +138,6 @@ export function fitFirstPersonBody(ch: CharacterInstance, holder: TransformNode)
   if (h > 0.5) ch.root.scaling.scaleInPlace((PLAYER.height * ch.root.scaling.y) / h);
 }
 
-/** A character's meshes that lie wholly on the neck and head (skinned only to them, or hung from them). */
-function headMeshes(ch: CharacterInstance, neck: TransformNode): AbstractMesh[] {
-  const onHead = new Set<TransformNode>([neck, ...neck.getDescendants(false).filter((n): n is TransformNode => n instanceof TransformNode)]);
-  const out: AbstractMesh[] = [];
-  for (const m of ch.meshes) {
-    if (m.isDisposed()) continue;
-    if (m.parent && onHead.has(m.parent as TransformNode) && !m.skeleton) {
-      out.push(m);
-      continue;
-    }
-    if (!m.skeleton || !m.getTotalVertices()) continue;
-    const bi = m.getVerticesData(VertexBuffer.MatricesIndicesKind);
-    const bw = m.getVerticesData(VertexBuffer.MatricesWeightsKind);
-    if (!bi || !bw || m.getVerticesData(VertexBuffer.MatricesIndicesExtraKind)) continue;
-    const head = m.skeleton.bones.map((b) => {
-      const t = b.getTransformNode();
-      return !!t && onHead.has(t);
-    });
-    let all = true;
-    for (let v = 0; v < bi.length && all; v += 4) {
-      let w = 0;
-      for (let k = 0; k < 4; k++) if (head[bi[v + k]!]) w += bw[v + k]!;
-      if (w < 0.99) all = false;
-    }
-    if (all) out.push(m);
-  }
-  return out;
-}
-
 /** World matrices from `top` down to `node` (the joint chain, the clips have just moved it). */
 function refreshDown(node: TransformNode, top: TransformNode): void {
   const chain: TransformNode[] = [];
@@ -175,6 +148,53 @@ function refreshDown(node: TransformNode, top: TransformNode): void {
   for (let i = chain.length - 1; i >= 0; i--) chain[i]!.computeWorldMatrix(true);
 }
 
+/** Per vertex: the share of its skin on the joints `on` picks (0..1). */
+function boneShares(m: Mesh, on: (joint: TransformNode | null, name: string) => boolean): Float32Array | null {
+  const bi = m.getVerticesData(VertexBuffer.MatricesIndicesKind);
+  const bw = m.getVerticesData(VertexBuffer.MatricesWeightsKind);
+  if (!bi || !bw || !m.skeleton) return null;
+  const bix = m.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
+  const bwx = m.getVerticesData(VertexBuffer.MatricesWeightsExtraKind);
+  const pick = m.skeleton.bones.map((b) => on(b.getTransformNode(), b.getTransformNode()?.name ?? b.name));
+  const n = m.getTotalVertices();
+  const share = new Float32Array(n);
+  for (let v = 0; v < n; v++) {
+    let w = 0;
+    for (let k = 0; k < 4; k++) {
+      if (pick[bi[v * 4 + k]!]) w += bw[v * 4 + k]!;
+      if (bix && bwx && pick[bix[v * 4 + k]!]) w += bwx[v * 4 + k]!;
+    }
+    share[v] = w;
+  }
+  return share;
+}
+
+/** A copy of some of a skinned mesh's triangles, on the same skeleton and material, in its place. */
+function copyTriangles(m: Mesh, kept: number[], suffix: string): Mesh {
+  const vd = VertexData.ExtractFromMesh(m, false, true);
+  vd.indices = kept;
+  const fm = new Mesh(`${m.name}_${suffix}`, m.getScene());
+  vd.applyToMesh(fm);
+  fm.parent = m.parent;
+  fm.position.copyFrom(m.position);
+  if (m.rotationQuaternion) fm.rotationQuaternion = m.rotationQuaternion.clone();
+  else fm.rotation.copyFrom(m.rotation);
+  fm.scaling.copyFrom(m.scaling);
+  fm.skeleton = m.skeleton;
+  fm.numBoneInfluencers = m.numBoneInfluencers;
+  fm.material = m.material;
+  fm.sideOrientation = m.sideOrientation;
+  fm.hasVertexAlpha = m.hasVertexAlpha;
+  fm.useVertexColors = m.useVertexColors;
+  fm.receiveShadows = m.receiveShadows;
+  fm.isPickable = false;
+  fm.alwaysSelectAsActiveMesh = true;
+  fm.renderingGroupId = m.renderingGroupId;
+  return fm;
+}
+
+const usable = (m: AbstractMesh): m is Mesh => m instanceof Mesh && !m.isDisposed() && !m.isBlocked && !!m.skeleton && !m.morphTargetManager && m.getTotalVertices() > 0 && !!m.getIndices();
+
 /**
  * Copies of a character's forearm, hand and finger triangles (the skin mostly
  * on those joints), on the same skeleton and material, drawn in rendering
@@ -184,51 +204,95 @@ function refreshDown(node: TransformNode, top: TransformNode): void {
 export function forearmMeshes(ch: CharacterInstance): Mesh[] {
   const out: Mesh[] = [];
   for (const m of ch.meshes) {
-    if (!(m instanceof Mesh) || m.isDisposed() || m.isBlocked || !m.skeleton || m.morphTargetManager || !m.getTotalVertices()) continue;
-    const indices = m.getIndices();
-    const bi = m.getVerticesData(VertexBuffer.MatricesIndicesKind);
-    const bw = m.getVerticesData(VertexBuffer.MatricesWeightsKind);
-    if (!indices || !bi || !bw) continue;
-    const bix = m.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
-    const bwx = m.getVerticesData(VertexBuffer.MatricesWeightsExtraKind);
-    const arm = m.skeleton.bones.map((b) => FOREARM.test(b.getTransformNode()?.name ?? b.name));
-    const n = m.getTotalVertices();
-    const share = new Float32Array(n);
-    for (let v = 0; v < n; v++) {
-      let w = 0;
-      for (let k = 0; k < 4; k++) {
-        if (arm[bi[v * 4 + k]!]) w += bw[v * 4 + k]!;
-        if (bix && bwx && arm[bix[v * 4 + k]!]) w += bwx[v * 4 + k]!;
-      }
-      share[v] = w;
-    }
+    if (!usable(m)) continue;
+    const share = boneShares(m, (_j, name) => FOREARM.test(name));
+    const indices = m.getIndices()!;
+    if (!share) continue;
     const kept: number[] = [];
     for (let t = 0; t < indices.length; t += 3) {
       const [a, b, c] = [indices[t]!, indices[t + 1]!, indices[t + 2]!];
       if (share[a]! + share[b]! + share[c]! > 1.5) kept.push(a, b, c);
     }
     if (!kept.length) continue;
-    const vd = VertexData.ExtractFromMesh(m, false, true);
-    vd.indices = kept;
-    const fm = new Mesh(`${m.name}_fpForearms`, m.getScene());
-    vd.applyToMesh(fm);
-    fm.parent = m.parent;
-    fm.position.copyFrom(m.position);
-    if (m.rotationQuaternion) fm.rotationQuaternion = m.rotationQuaternion.clone();
-    else fm.rotation.copyFrom(m.rotation);
-    fm.scaling.copyFrom(m.scaling);
-    fm.skeleton = m.skeleton;
-    fm.numBoneInfluencers = m.numBoneInfluencers;
-    fm.material = m.material;
-    fm.sideOrientation = m.sideOrientation;
-    fm.hasVertexAlpha = m.hasVertexAlpha;
-    fm.useVertexColors = m.useVertexColors;
-    fm.receiveShadows = m.receiveShadows;
-    fm.isPickable = false;
-    fm.alwaysSelectAsActiveMesh = true;
+    const fm = copyTriangles(m, kept, 'fpForearms');
     fm.renderingGroupId = 1;
     fm.metadata = { castsNoShadow: true };
     out.push(fm);
   }
   return out;
+}
+
+/** A vertex this much on the neck and head goes with the head (a collar's top edge, a hat brim). */
+const HEAD_SHARE = 0.3;
+
+/** How far above the base of the neck (a share of the hips-to-neck length) the body is cut: a hat's brim, a tall collar, a hood. */
+const ABOVE_NECK = 0.12;
+
+/**
+ * Per vertex, 1 where the bind pose has it above the base of the neck (along
+ * the spine, from the hips), except on the arms: a wide hat brim or a tall
+ * collar a Meshy character's skin puts on the spine still rings the eye.
+ */
+function aboveNeck(m: Mesh): Uint8Array | null {
+  const bones = m.skeleton?.bones ?? [];
+  const find = (re: RegExp) => bones.find((b) => re.test(b.getTransformNode()?.name ?? b.name));
+  const neck = find(/^(neck_01|Head)$/);
+  const hips = find(/^pelvis$/);
+  const pos = m.getVerticesData(VertexBuffer.PositionKind);
+  if (!neck || !hips || !pos) return null;
+  const at = (b: typeof neck) => {
+    const inv = b.getAbsoluteInverseBindMatrix();
+    return inv.clone().invert().getTranslation();
+  };
+  const n0 = at(neck);
+  const spine = n0.subtract(at(hips));
+  const len = spine.length();
+  if (len < 1e-6) return null;
+  const up = spine.scale(1 / len);
+  const arms = boneShares(m, (_j, name) => /^(upperarm|lowerarm|hand|index|middle|ring|pinky|thumb)_/.test(name));
+  const out = new Uint8Array(pos.length / 3);
+  for (let v = 0; v < out.length; v++) {
+    const h = (pos[v * 3]! - n0.x) * up.x + (pos[v * 3 + 1]! - n0.y) * up.y + (pos[v * 3 + 2]! - n0.z) * up.z;
+    if (h > ABOVE_NECK * len && (!arms || arms[v]! < 0.5)) out[v] = 1;
+  }
+  return out;
+}
+
+/**
+ * Take the head off a character seen from inside it: meshes wholly on the
+ * neck and head (or hung from them) are hidden; a mesh partly on them is
+ * hidden and drawn instead as a copy without the triangles that touch the
+ * head (Meshy characters are one mesh). `shrink`: a mesh that couldn't be
+ * cut (morph targets, no skin weights) touches the head, so the neck is
+ * shrunk away as well.
+ */
+function cutHead(ch: CharacterInstance, neck: TransformNode): { hidden: AbstractMesh[]; cuts: Mesh[]; shrink: boolean } {
+  const onHead = new Set<TransformNode>([neck, ...neck.getDescendants(false).filter((n): n is TransformNode => n instanceof TransformNode && !(n instanceof AbstractMesh))]);
+  const hidden: AbstractMesh[] = [];
+  const cuts: Mesh[] = [];
+  let shrink = false;
+  for (const m of ch.meshes) {
+    if (m.isDisposed() || (m instanceof Mesh && m.isBlocked)) continue;
+    if (!m.skeleton) {
+      if (m.parent && onHead.has(m.parent as TransformNode)) hidden.push(m);
+      continue;
+    }
+    const share = usable(m) ? boneShares(m, (j) => !!j && onHead.has(j)) : null;
+    if (!share) {
+      shrink = true;
+      continue;
+    }
+    const high = aboveNeck(m as Mesh);
+    const off = (v: number) => share[v]! >= HEAD_SHARE || (!!high && high[v] === 1);
+    const indices = m.getIndices()!;
+    const kept: number[] = [];
+    for (let t = 0; t < indices.length; t += 3) {
+      const [a, b, c] = [indices[t]!, indices[t + 1]!, indices[t + 2]!];
+      if (!off(a) && !off(b) && !off(c)) kept.push(a, b, c);
+    }
+    if (kept.length === indices.length) continue;
+    hidden.push(m);
+    if (kept.length) cuts.push(copyTriangles(m as Mesh, kept, 'fpBody'));
+  }
+  return { hidden, cuts, shrink };
 }

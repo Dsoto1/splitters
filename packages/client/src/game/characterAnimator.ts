@@ -46,6 +46,8 @@ export interface MotionState {
 export interface FirstPersonBody {
   /** Called after the clips and the spine's aim, before the grip: puts the body under the camera (FirstPersonBodyRig). */
   place?: () => void;
+  /** Shrink the neck (and the head, hair and hat with it) away: for a body whose head couldn't be cut off its meshes. */
+  shrinkHead?: boolean;
 }
 
 export type OneShot = 'shoot' | 'melee' | 'melee_heavy' | 'reload' | 'hit' | 'hit_head' | 'throw' | 'interact' | 'jab' | 'kick';
@@ -138,6 +140,8 @@ const FP_SHOULDER_EASY = 0.12;
 const FP_BEND = 0.9;
 /** Full-body first person: the share of the aim pitch the spine bends by (the rest is the view's own). */
 const FP_BODY_PITCH = 0.25;
+/** Full-body first person: furthest (radians) a collarbone rolls to bring its shoulder toward the gun. */
+const FP_CLAVICLE_MAX = 0.8;
 /** Full-body first person: the scale the neck (and with it the head, hair and hat) is shrunk to. */
 const FP_HIDDEN = 1e-4;
 /** Furthest (model m) a stock the arms can't hold clear of the chest tucks out past the shoulder. */
@@ -845,7 +849,7 @@ export class CharacterAnimator {
     if (this.fp) {
       // Your own body seen from its eyes: the head shrunk away, then the body (bent for the aim) moved under the
       // camera, before the hands go to the gun.
-      (this.ch.joints.get('neck_01') ?? this.ch.joints.get('Head'))?.scaling.setAll(FP_HIDDEN);
+      if (this.fp.shrinkHead) (this.ch.joints.get('neck_01') ?? this.ch.joints.get('Head'))?.scaling.setAll(FP_HIDDEN);
       this.fp.place?.();
     }
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
@@ -994,6 +998,33 @@ export class CharacterAnimator {
           back = Math.min(room, back + 0.01);
           supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale);
         }
+      }
+      // Shoulders come forward by rolling the collarbone first (a shrug toward the gun bends the skin as a body
+      // does); only what is still out of reach moves the shoulder joint, which stretches the skin round it, and
+      // that is in view when you look down.
+      for (const [arm, target] of [[arms.r, gripAt], [arms.l, supportAt]] as const) {
+        if (!target) continue;
+        const clav = arm.upper.parent as TransformNode | null;
+        const s0 = pos(arm.upper);
+        const d = Vector3.Distance(s0, target);
+        const want = armReach(arm.upper, arm.lower, arm.hand, arm.palm) * FP_BEND;
+        if (!clav || d <= want) continue;
+        const desired = s0.add(target.subtract(s0).normalize().scale(Math.min(d - want, shift)));
+        const c = pos(clav);
+        const v0 = s0.subtract(c);
+        const v1 = desired.subtract(c);
+        const axis = Vector3.Cross(v0, v1);
+        if (axis.lengthSquared() < 1e-10) continue;
+        axis.normalize();
+        const angle = Math.min(FP_CLAVICLE_MAX, Math.acos(Math.max(-1, Math.min(1, Vector3.Dot(v0.normalizeToNew(), v1.normalizeToNew())))));
+        const turn = (a: number) => {
+          this.turnJoint(clav, axis, a);
+          clav.computeWorldMatrix(true);
+          refreshArm(arm);
+        };
+        turn(angle);
+        // (Joint space is mirrored from the world: when the turn went the wrong way, turn back past the start.)
+        if (Vector3.Distance(pos(arm.upper), desired) > Vector3.Distance(s0, desired)) turn(-2 * angle);
       }
       placeShoulder(arms.r, pos(arms.r.upper), gripAt, shift);
       if (supportAt) placeShoulder(arms.l, pos(arms.l.upper), supportAt, shift);
