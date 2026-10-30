@@ -5,6 +5,7 @@ import {
   type BotProfile,
   type BotSet,
   NPC_LOOKS,
+  PLAYER_NPC_LOOKS,
   NPC_ROLE_SPECS,
   npcLookRole,
   validLookId,
@@ -388,6 +389,8 @@ export class FrontEnd {
     this.look = validLookId(look);
     storage('cs.look', this.look);
     this.scene.setLook(this.look);
+    // A new design gets its picture now (kept in this browser), so the grid shows it rather than drawing it there.
+    void this.portraits.get(this.look).catch(() => undefined);
   }
 
   private go(screen: ScreenId): void {
@@ -1175,7 +1178,7 @@ export class FrontEnd {
     const family = (id: string) => partInfo(getLook(id).parts.find((p) => partInfo(p)?.slot === 'torso') ?? '')?.outfit ?? 'ranger';
     const all = [
       ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
-      ...NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
+      ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
       ...saved.map((s) => ({ id: s.id, name: s.name, mine: true })),
     ];
     const filters: [string, string][] = [['all', 'All'], ['originals', 'Originals'], ['ranger', 'Ranger'], ['peasant', 'Peasant'], ['athlete', 'Sportswear'], ['npc', 'NPCs'], ['mine', 'Yours']];

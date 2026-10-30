@@ -2308,6 +2308,9 @@ async function designerFlow(browser) {
   await page.waitForFunction(() => !document.getElementById('menu').hidden);
   const selected = await page.evaluate(() => window.__front.look);
   check(selected === id, `the saved look is selected on the menu (${selected})`);
+  // Its portrait is drawn once when it's saved and kept in this browser (never drawn again on Character Select).
+  const kept = await until(() => page.evaluate((id) => /^data:image\//.test(JSON.parse(localStorage.getItem('cs.portraits') ?? '{}')[id] ?? ''), id), T(20000));
+  check(kept, 'saving a design keeps its portrait in the browser');
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: T(20000) }).catch(() => {});
