@@ -20,7 +20,7 @@ export function wheelEntries(codes: readonly number[], inventory: ReadonlyMap<nu
     const def = weaponByCode(code);
     const a = inventory.get(code);
     if (!def || !a) continue;
-    const ammo = def.heat ? `${Math.round(a[3])}°` : def.magazine === 0 ? '∞' : `${a[0]} / ${a[1]}`;
+    const ammo = def.heat ? `${Math.round(a[3])}°` : def.magazine === 0 ? (def.alt?.reload ? `∞ · ${a[2]} / ${a[1]}` : '∞') : `${a[0]} / ${a[1]}`;
     out.push({ code, name: def.displayName, ammo, empty: def.magazine > 0 && !def.heat && a[0] === 0 && a[1] === 0, held: code === held, weaponId: def.id });
   }
   return out;

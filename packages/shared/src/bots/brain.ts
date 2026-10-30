@@ -911,11 +911,13 @@ export class BotBrain {
         } else {
           const squadAdvance = view.squad?.advance === true;
           // Range bands with hysteresis: once closing in (or backing off), carry on until well inside the band.
+          // A melee weapon has to get right up to them: it closes all the way in, and again as soon as they step off.
+          const reach = def?.kind === 'melee';
           if (this.spacing === 'close') {
-            if (dist < preferred + 2.5 && !(squadAdvance && dist > 8)) this.spacing = 'hold';
+            if (dist < preferred + (reach ? 0.3 : 2.5) && !(squadAdvance && dist > 8)) this.spacing = 'hold';
           } else if (this.spacing === 'back') {
             if (dist > preferred - 1.5) this.spacing = 'hold';
-          } else if (dist > preferred + 4 || (squadAdvance && dist > 8)) this.spacing = 'close';
+          } else if (dist > preferred + (reach ? 1 : 4) || (squadAdvance && dist > 8)) this.spacing = 'close';
           else if (dist < preferred - 4) this.spacing = 'back';
           if (this.outnumbered() && dist < preferred + 6) this.spacing = 'back';
           this.strafing = this.strafing ? dist < 15.5 : dist < 13;

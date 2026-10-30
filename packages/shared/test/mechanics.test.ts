@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   BUTTON_ALT,
   BUTTON_FIRE,
+  BUTTON_RELOAD,
   BUTTON_ZOOM,
   BUTTON_THROW,
   CORE_ITEMS,
@@ -196,6 +197,118 @@ describe('extended arsenal', () => {
     far.d.run(6, () => far.aim({ buttons: BUTTON_ALT }));
     expect(far.others[0]!.health).toBeLessThan(PLAYER.maxHealth);
     expect(heldWeapon(far.a).alt).toBe(1);
+  });
+
+  it("the battle axe's blunderbuss: a wide pellet blast that kicks the aim, and swings still work right after", () => {
+    const axe = getWeapon('core.battle_axe');
+    const alt = axe.alt!;
+    const { d, a, others, aim } = duel([[0, 0, 7]], 'core.battle_axe');
+    heldWeapon(a).alt = 2;
+    const target = others[0]!;
+    const ev = d.run(2, () => aim({ buttons: BUTTON_ALT }));
+    const shot = ev.find((e) => e.e === 'shot');
+    expect(shot?.e === 'shot' && shot.alt).toBe(1);
+    expect(shot?.e === 'shot' && shot.to.length).toBe(alt.pellets);
+    // 3 m: most of the pattern lands, at full damage.
+    expect(target.health).toBeLessThan(PLAYER.maxHealth - 30);
+    expect(target.health).toBeGreaterThan(PLAYER.maxHealth - alt.damage! * alt.pellets! - 1);
+    // The heavy kick moved the aim up.
+    expect(a.gun.rp).toBeGreaterThan(0.05);
+    expect(heldWeapon(a).alt).toBe(1);
+    // The aim settles back.
+    d.run(120, () => aim());
+    expect(a.gun.rp).toBe(0);
+    // Swinging still works (and spends no shells).
+    target.move = { pos: { x: 0, y: 0, z: 6 }, velY: 0, grounded: true };
+    const before = target.health;
+    d.run(6, () => d.input(a, { ...lookAngles(eye(a.move.pos), chest(target.move.pos)), buttons: BUTTON_FIRE }));
+    expect(target.health).toBe(Math.max(0, before - axe.damage));
+    expect(heldWeapon(a).alt).toBe(1);
+  });
+
+  it("the battle axe's barrel falls off fast: at 14 m it does far less than the Shotgun", () => {
+    const hurt = (id: string, buttons: number) => {
+      let total = 0;
+      for (let i = 0; i < 6; i++) {
+        const { d, a, others, aim } = duel([[14, 0, 4]], id);
+        heldWeapon(a).alt = 2;
+        const shot = d.run(2, () => aim({ buttons })).find((e) => e.e === 'shot');
+        // Pellets reach well past the swing (the barrel's own range, not the blade's).
+        if (shot?.e === 'shot') expect(Math.max(...shot.to.map((t) => Math.hypot(t[0] - shot.from[0], t[2] - shot.from[2])))).toBeGreaterThan(12);
+        total += PLAYER.maxHealth - others[0]!.health;
+      }
+      return total / 6;
+    };
+    const axe = hurt('core.battle_axe', BUTTON_ALT);
+    const shotgun = hurt('core.shotgun', BUTTON_FIRE);
+    expect(axe).toBeLessThan(shotgun);
+    expect(axe).toBeLessThan(25);
+  });
+
+  it("the battle axe's barrel loads one shot at a time from its shells, slowly; a swing interrupts loading", () => {
+    const axe = getWeapon('core.battle_axe');
+    const alt = axe.alt!;
+    const r = alt.reload!;
+    const { match, d, a, aim } = duel([[20, 0, 4]], 'core.battle_axe');
+    const w = heldWeapon(a);
+    w.alt = 0;
+    w.reserve = 3;
+    // An empty barrel: the alt trigger starts loading instead of firing.
+    const empty = d.run(2, () => aim({ buttons: BUTTON_ALT }));
+    expect(empty.some((e) => e.e === 'shot')).toBe(false);
+    expect(a.reloadTicks).toBeGreaterThan(0);
+    // One load is in after the opening and one `each`, not before.
+    d.run(r.start + r.each - 4, () => aim());
+    expect(w.alt).toBe(0);
+    d.run(6, () => aim());
+    expect(w.alt).toBe(1);
+    expect(w.reserve).toBe(2);
+    d.run(r.each + r.end + 4, () => aim());
+    expect(w.alt).toBe(alt.max);
+    expect(w.reserve).toBe(1);
+    expect(a.reloadTicks).toBe(0);
+    // Both loads go; the reload key loads the last shell; a swing mid-load stops it with nothing lost.
+    d.run(alt.fireIntervalTicks * 2 + 4, () => aim({ buttons: BUTTON_ALT }));
+    expect(w.alt).toBe(0);
+    d.run(2, () => aim({ buttons: BUTTON_RELOAD }));
+    expect(a.reloadTicks).toBeGreaterThan(0);
+    d.run(10, () => aim());
+    d.run(2, () => aim({ buttons: BUTTON_FIRE }));
+    expect(a.reloadTicks).toBe(0);
+    expect(w.alt).toBe(0);
+    expect(w.reserve).toBe(1);
+    // Out of shells: nothing to load. A shell box tops the reserve up (not past its cap).
+    w.reserve = 0;
+    d.run(2, () => aim({ buttons: BUTTON_RELOAD }));
+    expect(a.reloadTicks).toBe(0);
+    const shells = CORE_ITEMS.find((i) => i.effect.kind === 'ammo' && i.effect.ammo === 'shells')!;
+    expect((match as unknown as { applyItem(c: Combatant, i: typeof shells): boolean }).applyItem(a, shells)).toBe(true);
+    expect(w.reserve).toBe(axe.pickupAmmo);
+    expect(w.alt).toBe(0);
+  });
+
+  it('a second trigger with its own barrel leaves the other weapons as they were', () => {
+    // The rifle's underbarrel grenade still refills from explosives and doesn't reload from the rifle's reserve.
+    const rifle = getWeapon('core.rifle');
+    expect(rifle.alt?.reload).toBeUndefined();
+    const { d, a, aim } = duel([[20, 0, 4]], 'core.rifle');
+    const w = heldWeapon(a);
+    w.alt = 0;
+    w.mag = rifle.magazine - 5;
+    d.run(2, () => aim({ buttons: BUTTON_RELOAD }));
+    d.run(rifle.reloadTicks + 5, () => aim());
+    expect(w.mag).toBe(rifle.magazine);
+    expect(w.alt).toBe(0);
+    // Shotgun double barrel unchanged: 16 pellets from the magazine, no kick from the alt.
+    give(a, 'core.shotgun');
+    d.run(5, () => aim());
+    const shots = d.run(2, () => aim({ buttons: BUTTON_ALT })).filter((e) => e.e === 'shot');
+    expect(shots).toHaveLength(1);
+    expect(shots[0]!.e === 'shot' && shots[0]!.to.length).toBe(16);
+    // The knife swings as before (melee without a barrel: the alt button does nothing).
+    give(a, 'core.knife');
+    d.run(5, () => aim());
+    expect(d.run(3, () => aim({ buttons: BUTTON_ALT })).some((e) => e.e === 'shot' || e.e === 'melee')).toBe(false);
   });
 
   it('semi-auto fires once per press, burst fires three per press', () => {
