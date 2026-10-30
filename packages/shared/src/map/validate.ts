@@ -122,7 +122,7 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     if (b.kind === 'block' && b.material && !coreMaterials.get(b.material)) issues.push({ severity: 'error', code: 'material.unknown', message: `block ${b.id} uses unknown material "${b.material}"`, targetId: b.id });
   }
   if (map.classicStructure.tiles.length === 0 && !map.terrain && blocks.length === 0) {
-    issues.push({ severity: 'error', code: 'tile.none', message: 'map has no structural tiles' });
+    issues.push({ severity: 'error', code: 'tile.none', message: 'nothing to stand on: add terrain (Environment → Terrain), a structure tile or a block' });
   }
 
   issues.push(...budgetIssues(map));
