@@ -38,8 +38,17 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     `Rugged_Off_Road_Tire`) replacing the Kenney buggy. Caution: rebuilding Bonesworth with
     `pnpm content:meshy` alone gave 15.5k triangles vs the shipped 18.8k and a worse left arm; the shipped file
     came from commit 75712f9's landmark fix, so reproduce that before rebuilding.
-  - `wip/fp-grips`: first-person grips on large weapons (the support hand floats off the Singularity Cannon
-    and others; the Battle Axe's left hand too).
+  - `wip/fp-grips` (`5bdc56a`, typecheck and unit tests pass; **e2e not run**): first-person support hand no
+    longer floats off big guns. Causes: the first-person arms were placed by the character's head height (a
+    hunched body's shoulders ended up 0.43 m in front of the eye) and first person had no reach handling (the IK
+    stretched and stopped short by 6–13 cm). Fix in `characterAnimator.ts` (shoulders set from the view, come
+    forward only as far as needed; the support hand slides back along the handguard, at least 12 cm from the grip;
+    cups long guns from below; a free left hand hangs out of view) and `firstPersonArms.ts` (body 8 cm behind the
+    eye). New `__grips.miss()` and a `characters` e2e check (both palms within 2 cm on rifle, Singularity Cannon,
+    Spin Gun, flamethrower for Scout, Biscuit, Grizzelda). Next: run `characters`, `designer`, `arsenal`,
+    `visual` (baselines may move with the arms: look before regenerating), then merge through
+    `check/candidate`. Left alone: the Salamander Warlord's big claws cover pistols (a hand-size content fix);
+    `__give('core.singularity')` didn't switch weapons in one offline test (not looked into).
 - **Owner's requests not started yet:**
   - Buggy (and any vehicle that fits) seats a driver + 3 passengers, seated, who can shoot
     (sim: `packages/shared/src/sim/mounts.ts` seats).
