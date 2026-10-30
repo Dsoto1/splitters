@@ -201,6 +201,8 @@ loaded for third person, `hiddenSelf`) from its eyes, `FirstPersonBodyRig` in `g
   each mesh partly on it without the triangles on the head or (bind pose) above the base of the neck: a Meshy
   character is one mesh, its hat and collar included. A character whose model still fills the view (Grizzelda's
   hat brim) opts out in its manifest, `firstPerson.body: false`, and keeps the arms.
+  Shoulder pads (skin on the clavicle or upper arm well out from the upper arm's bone, near the shoulder: the
+  Knight's pauldrons) are cut the same way; the arm stays.
 - **Shoulders:** a shoulder that must come forward to reach the gun first rolls its collarbone (up to
   `FP_CLAVICLE_MAX`), then the joint moves the rest (which stretches skin, and that's in view looking down).
 - **When:** only while the camera is your own eyes. In a vehicle seat, the kill cam, spectating, third person
@@ -493,7 +495,9 @@ The steps on their own:
 The log prints each hand's size and what it got (`split`, `mitten`, `none`).
 For an odd model, `fixes.hands` overrides: `palm` (`[x, y, z]` in the hand
 joint's space, metres), `curl` (0–1.5, how far the fingers close), `scale`
-(shrink or grow the hand about the wrist), for both hands or one (`l`, `r`).
+(shrink or grow the hand about the wrist), for both hands or one (`l`, `r`). A rigid gauntlet
+(`fingers: none`, curl 0) given a `curl` is skinned as a mitten that closes on the grip: the Knight has
+`fixes.hands.curl: 1` (rehanded with rehand-built.mjs).
 
 `node tools/content/rehand-built.mjs` (`ONLY=<ids>`) does the same to
 characters already built, from their shipped files, when the downloads

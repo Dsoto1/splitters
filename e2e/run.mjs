@@ -48,6 +48,21 @@ async function simWait(page, fn, arg, ms) {
   return false;
 }
 
+/**
+ * After a flow moves an actor in the match: wait until this page draws it there. Shots and blows are lag
+ * compensated (the match rewinds targets to the tick your screen showed when you fired, up to 300 ms), so a
+ * swing sent before your screen caught up with the move is aimed at where the actor was: on a slow page it
+ * misses (and a semi-automatic weapon swings only once per press).
+ */
+async function seenAt(page, slot, at, ms) {
+  return page
+    .waitForFunction(([s, p]) => {
+      const a = window.__cs.view.avatars.get(s);
+      return !!a && Math.hypot(a.root.position.x - p.x, a.root.position.z - p.z) < 0.25;
+    }, [slot, at], { timeout: ms })
+    .then(() => true, () => false);
+}
+
 /** Poll `pred()` (async, node side) until it holds; true if it did within `ms`. */
 /** MapMaker's New, on a map of the given size (m) of open ground, or 0 for the sky (no terrain: a blank map). */
 async function newMap(page, size = 0) {
@@ -2033,8 +2048,10 @@ async function arsenalFlow(browser) {
     bot.health = 100;
     bot.armor = 0;
     bot.speedMul = 0;
-    return { slot: bot.slot, hp: bot.health };
+    return { slot: bot.slot, hp: bot.health, at: bot.move.pos };
   });
+  // Struck only once this screen shows the bot in front (lag compensation: see seenAt).
+  if (target) await seenAt(page, target.slot, target.at, T(5000));
   await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2048 }));
   // Your fist comes in at once (first person); the server lands the punch (15 damage).
   await page.waitForFunction(() => window.__cs.view.strikes.punch > 0, null, { timeout: T(5000) }).catch(() => {});
@@ -2060,8 +2077,8 @@ async function arsenalFlow(browser) {
       bot.health = 100;
       bot.armor = 0;
       bot.speedMul = 0;
-      return bot.health;
-    }, { slot: target.slot, dist });
+      return bot.move.pos;
+    }, { slot: target.slot, dist }).then((at) => seenAt(page, target.slot, at, T(5000)));
     await stand(1.6);
     // The trigger held (one swing: it's semi-automatic) until the blow lands.
     await page.evaluate(() => (window.__autoInput = { buttons: 2 }));

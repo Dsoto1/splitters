@@ -258,6 +258,51 @@ function aboveNeck(m: Mesh): Uint8Array | null {
   return out;
 }
 
+/** A pauldron: skin on the shoulder this far (a share of the upper arm's length) out from the upper arm's bone, on its upper part. */
+const PAD_OUT = 0.33;
+const PAD_ALONG = 0.45;
+
+/**
+ * Per vertex, 1 on a shoulder pad (a pauldron, a big puffed shoulder): skin
+ * on the clavicle or upper arm well out from the upper arm's bone, near the
+ * shoulder. Seen from the eyes it is a wall beside the face (the knight's
+ * left pauldron filled the lower left of the view as that arm reached the
+ * handguard); the arm itself stays.
+ */
+function shoulderPads(m: Mesh): Uint8Array | null {
+  const bones = m.skeleton?.bones ?? [];
+  const pos = m.getVerticesData(VertexBuffer.PositionKind);
+  if (!pos) return null;
+  const at = (name: string) => {
+    const b = bones.find((x) => (x.getTransformNode()?.name ?? x.name) === name);
+    return b ? b.getAbsoluteInverseBindMatrix().clone().invert().getTranslation() : null;
+  };
+  const sides = (['l', 'r'] as const).map((side) => {
+    const a = at(`upperarm_${side}`);
+    const e = at(`lowerarm_${side}`);
+    const share = boneShares(m, (_j, name) => name === `upperarm_${side}` || name === `clavicle_${side}`);
+    return a && e && share ? { a, axis: e.subtract(a), share } : null;
+  });
+  if (!sides.some((x) => x)) return null;
+  const out = new Uint8Array(pos.length / 3);
+  for (let v = 0; v < out.length; v++) {
+    for (const sd of sides) {
+      if (!sd || sd.share[v]! < 0.5) continue;
+      const len2 = sd.axis.lengthSquared();
+      const dx = pos[v * 3]! - sd.a.x;
+      const dy = pos[v * 3 + 1]! - sd.a.y;
+      const dz = pos[v * 3 + 2]! - sd.a.z;
+      const t = (dx * sd.axis.x + dy * sd.axis.y + dz * sd.axis.z) / len2;
+      if (t > PAD_ALONG) continue;
+      const px = dx - sd.axis.x * t;
+      const py = dy - sd.axis.y * t;
+      const pz = dz - sd.axis.z * t;
+      if (px * px + py * py + pz * pz > PAD_OUT * PAD_OUT * len2) out[v] = 1;
+    }
+  }
+  return out;
+}
+
 /**
  * Take the head off a character seen from inside it: meshes wholly on the
  * neck and head (or hung from them) are hidden; a mesh partly on them is
@@ -283,7 +328,8 @@ function cutHead(ch: CharacterInstance, neck: TransformNode): { hidden: Abstract
       continue;
     }
     const high = aboveNeck(m as Mesh);
-    const off = (v: number) => share[v]! >= HEAD_SHARE || (!!high && high[v] === 1);
+    const pads = shoulderPads(m as Mesh);
+    const off = (v: number) => share[v]! >= HEAD_SHARE || (!!high && high[v] === 1) || (!!pads && pads[v] === 1);
     const indices = m.getIndices()!;
     const kept: number[] = [];
     for (let t = 0; t < indices.length; t += 3) {

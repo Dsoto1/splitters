@@ -500,6 +500,18 @@
       "meshy": true,
       "convert": true,
       "textureSize": 512
+    },
+    "meshy-owned-street": {
+      "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "licenseFile": "assets-src/meshy-owned/License.txt",
+      "retrieved": "2026-10-30",
+      "download": "owned_props2",
+      "meshy": true,
+      "convert": true,
+      "textureSize": 512
     }
   },
   "budgets": {
@@ -12279,6 +12291,255 @@
       "maxError": 0.15,
       "source": {
         "model": "IBC Tank (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "street_barrel",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Barrel_1_1029205916_texture.glb",
+      "name": "Wooden Barrel",
+      "category": "Crates & Barrels",
+      "height": 0.9,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Wooden Barrel (owner's Meshy)",
+        "date": "2026-10-30"
+      },
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      }
+    },
+    {
+      "id": "street_blue_barrel",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Blue_Barrel_1030200127_stylize.glb",
+      "name": "Blue Barrel",
+      "category": "Crates & Barrels",
+      "height": 0.9,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Blue Barrel (owner's Meshy)",
+        "date": "2026-10-30"
+      },
+      "breakable": {
+        "health": 40,
+        "debris": "#6a4a32"
+      }
+    },
+    {
+      "id": "street_post_barrel",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Post_Barrel_1030164958_texture.glb",
+      "name": "Yellow Hazard Barrel",
+      "category": "Crates & Barrels",
+      "height": 0.9,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Yellow Hazard Barrel (owner's Meshy)",
+        "date": "2026-10-30"
+      },
+      "breakable": {
+        "health": 40,
+        "debris": "#6a4a32"
+      }
+    },
+    {
+      "id": "street_rusty_barrel",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Rusty_Barrel_1030200140_texture.glb",
+      "name": "Rusty Barrel",
+      "category": "Crates & Barrels",
+      "height": 0.9,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Rusty Barrel (owner's Meshy)",
+        "date": "2026-10-30"
+      },
+      "breakable": {
+        "health": 40,
+        "debris": "#6a4a32"
+      }
+    },
+    {
+      "id": "street_rusty_barrel_2",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Rusty_Barrel_1030200142_texture.glb",
+      "name": "Rusty Barrel (Dented)",
+      "category": "Crates & Barrels",
+      "height": 0.9,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Rusty Barrel (Dented) (owner's Meshy)",
+        "date": "2026-10-30"
+      },
+      "breakable": {
+        "health": 40,
+        "debris": "#6a4a32"
+      }
+    },
+    {
+      "id": "street_rusty_barrel_3",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_rusty_barrel_1030200155_texture.glb",
+      "name": "Rusty Barrel (Old)",
+      "category": "Crates & Barrels",
+      "height": 0.9,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Rusty Barrel (Old) (owner's Meshy)",
+        "date": "2026-10-30"
+      },
+      "breakable": {
+        "health": 40,
+        "debris": "#6a4a32"
+      }
+    },
+    {
+      "id": "street_trash_can",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_trash_can__1030195940_texture.glb",
+      "name": "Trash Can",
+      "category": "Town & Market",
+      "height": 1.0,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Trash Can (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "street_trash_can_classic",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Trash_Can_Classic_1030200011_texture.glb",
+      "name": "Classic Trash Can",
+      "category": "Town & Market",
+      "height": 0.9,
+      "collide": "box",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Classic Trash Can (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "street_city_trash",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Realistic_city_trash__1029214806_texture.glb",
+      "name": "Wheelie Bin",
+      "category": "Town & Market",
+      "height": 1.1,
+      "collide": "box",
+      "triangles": 3500,
+      "maxError": 0.1,
+      "source": {
+        "model": "Wheelie Bin (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "street_trash_pile",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Trash_Pile_1030195949_texture.glb",
+      "name": "Trash Pile",
+      "category": "Town & Market",
+      "height": 1.0,
+      "collide": "shell",
+      "triangles": 3500,
+      "maxError": 0.1,
+      "source": {
+        "model": "Trash Pile (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "street_trash_pile_low",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Trash_Pile_1030195954_texture.glb",
+      "name": "Low Trash Pile",
+      "category": "Town & Market",
+      "height": 0.5,
+      "collide": "shell",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Low Trash Pile (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "street_dumpster",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Urban_Container_1030200046_texture.glb",
+      "name": "Urban Dumpster",
+      "category": "Town & Market",
+      "height": 1.3,
+      "collide": "box",
+      "triangles": 3500,
+      "maxError": 0.1,
+      "source": {
+        "model": "Urban Dumpster (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "street_fuel_can",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Fuel_Container_1030200055_texture.glb",
+      "name": "Fuel Can",
+      "category": "Industrial",
+      "height": 0.45,
+      "collide": "box",
+      "triangles": 2500,
+      "maxError": 0.1,
+      "source": {
+        "model": "Fuel Can (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "street_panel",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Create_a_3D_model_of__1030200310_texture.glb",
+      "name": "Hanging Shop Sign",
+      "category": "Town & Market",
+      "height": 0.9,
+      "collide": "none",
+      "triangles": 3000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Hanging Shop Sign (owner's Meshy)",
+        "date": "2026-10-30"
+      }
+    },
+    {
+      "id": "street_historic_building",
+      "pack": "meshy-owned-street",
+      "src": "Meshy_AI_Historic_City_Buildin_1030200355_texture.glb",
+      "name": "Historic City Building",
+      "category": "Town & Market",
+      "height": 12.0,
+      "collide": "shell",
+      "triangles": 6000,
+      "maxError": 0.1,
+      "source": {
+        "model": "Historic City Building (owner's Meshy)",
         "date": "2026-10-30"
       }
     }

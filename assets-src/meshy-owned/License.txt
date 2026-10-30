@@ -25,3 +25,8 @@ tools/content/prepare-props.mjs (pack meshy-owned-mining) from the textured GLB 
 The crates and cargo props (cargo_*: army, wooden, stacked and sci-fi crates, six shipping containers, a
 gantry crane and an IBC tank) were generated on 2026-10-29/30 on the owner's subscription and built by
 tools/content/prepare-props.mjs (pack meshy-owned-cargo) from the textured GLB downloads.
+
+The barrels, bins and street props (street_*: wooden, blue, yellow hazard and rusty barrels, trash cans, a
+wheelie bin, trash piles, a dumpster, a fuel can, a hanging shop sign and a historic city building) were
+generated on 2026-10-29/30 on the owner's subscription and built by tools/content/prepare-props.mjs
+(pack meshy-owned-street) from the textured GLB downloads.

@@ -11,10 +11,10 @@
         "rig": "01a173c0-4d21-712b-97ba-7f08daf670c7"
       },
       "file": "characters/meshy_knight.glb",
-      "sha256": "f410af9b3f4c1107",
+      "sha256": "5e3d69cf34be9c0c",
       "triangles": 11057,
       "lodTriangles": 3192,
-      "bytes": 1041812,
+      "bytes": 1041816,
       "hands": true
     },
     {
@@ -27,9 +27,9 @@
         "rig": "01a173c0-4d21-712b-97ba-7f08daf670c7"
       },
       "file": "characters/meshy_knight_fparms.glb",
-      "sha256": "3d34ce4e00e501c0",
+      "sha256": "8486b1072e19af5c",
       "triangles": 1119,
-      "bytes": 350864,
+      "bytes": 350868,
       "hands": true
     },
     {

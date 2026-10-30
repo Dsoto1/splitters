@@ -10,6 +10,49 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Owner notes, 2026-10-30 evening (not done yet; next session start here)
+- **Release fixed (2026-10-30 21:50 UTC):** `main` fast-forwarded to 1317b80 (= 9a959ee's code + the ci.yml fix: no
+  cancelled runs on main; a main commit not green on a check branch is tested against the nearest one that was). Its run
+  published `main-latest`; the owner runs `sudo tiletrigger-update` to get the Meshy buggy and weapon drops.
+- **Asset quality:** many new weapons and props look "clumpy" (over-decimated). Revisit budgets: props are capped at
+  6,000 triangles / 400 KB (content/props.json `budgets`), weapons in content/guns.json; consider a higher cap for
+  hero/landmark pieces and weapons (first-person guns are seen up close), keeping LODs for distance, and rebuild the
+  owner's Meshy weapons and props with more triangles and 1024 px maps where it shows. Measure perf at 96 after.
+- **Character sizes (owner):**
+  - Small (same as Sprout), if not already: Shiba, Bandit, Teddy, Giggles, Botboy, Brass Hare, Grizzelda, The
+    Visitor, Wealthy Otter, Biscuit, Goblin.
+  - Large: Big Bogdan, Count Bonesworth, Ivory Rustwalker, Boglurker, Rattles.
+  - Punkin is small and should be normal.
+  - DONE (session branch): Giggles, The Visitor small; Boglurker, Rattles large; Punkin normal. The rest of the
+    list was already set (the box was on an old build).
+  - Bandit's scale is far too big in general. Found: its model is wider (1.27×) and deeper (1.23×) than tall
+    (every other small character is tallest along its height), so at Sprout's height it carries much more bulk.
+    Fix in the character pipeline: a per-character scale in the manifest, or size it by its bulk; check the
+    download for a tail/cloak/weapon making it wide.
+  - Dust Trooper looks odd; Grizzelda "is not looking right these days" (hat brim, hunched torso; she was also
+    opted out of full-body first person). Look at both in the menu and in game.
+  - Sizes live in packages/shared/src/content/looks.ts (`size`) and content/characters/*.json (`size`);
+    regenerate characters.generated.ts with character-manifests.mjs; check portraits after.
+- **Release status:** `wip/full-body-fp-fix` merged (a715e60): the axe check waited on a lag-compensation race (the test
+  now waits until the page draws the moved bot); Knight's gauntlets curl (left closes; right still points up in first
+  person, and the armoured forearm still makes a dark wedge on long guns). CI on check/candidate a715e60 was running at
+  hand-off: if green, fast-forward main (`git push origin a715e60:main`, or the newer head) and tell the owner to update.
+- **St. John's rework merged into the session branch** (1cc6a4a, from `wip/st-johns` ce011f3): real campus from OSM
+  (footprints, streets) + USGS 3DEP 1 m ground, 400 × 300 m; owner-only MapMaker "Real places" tools (height grid
+  `.asc` import, trace image); details in docs/references/ST_JOHNS.md. Locally `maps6` timed out under heavy load (also on
+  untouched maps); needs the check/ run. Clump draws ~600 (budget 900).
+- **In flight on branches:** `wip/sunken-kingdom`, `wip/iron-maw`
+  (both under docs/map-briefs/AGENT_BUILD_CONTRACT.md), `wip/full-body-fp-fix`. Read each branch's HANDOFF/docs before
+  merging; all need a check/ run.
+- **Props added this session (on the session branch):** Meshy mining props (excavator, haul truck), 13 cargo props
+  (crates, containers, gantry crane, IBC tank), 15 street props (barrels, bins, trash, dumpster, fuel can, shop sign,
+  historic building; palette pictures and provenance committed, `content:check` OK). Downloads live outside the repo in
+  /home/user/meshy-downloads/{owned_mining,owned_cargo,owned_props2} (gone in a new container: re-fetch from the
+  Drive folder and meshystuff).
+- **T-pose:** frozen bodies' skins could keep an older pose; fixed in characterAnimator `freezePose` (every skin
+  takes the final pose). Owner's console check showed the mismatch on the live site; verify after the update with the
+  console line in this session's notes (skin vs joint hand span).
+
 ### Where things stand (2026-10-30 evening)
 - **`main` is at `9a959ee`** (green; everything requested is merged, no agents running): everything through `wip/impact`, the 2026-10-30 afternoon work (Character
   Select spin and shipped portraits, muzzle-flash light fix, wheel/trackpad weapon switching, MapMaker new-map
@@ -32,6 +75,15 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
     dark roof bars/dash (model geometry), tall heads touch the roof bars, the jeep's cab riders hidden behind its
     opaque windows, seated riders don't turn round past ~77°; Titan, Alien, Salamander not rebuilt (downloads
     missing); Bonesworth's left hand on his grip sheet; `visual` baselines may move if a buggy is in a picture.
+- **`wip/full-body-fp-fix`** (on top of the session branch): arsenal's Battle Axe check failed on CI after full
+  body. Cause: lag compensation. The flow teleports the bot and swings at once; the match rewinds targets to
+  the tick the client's screen showed (`viewTick`, up to 18 ticks), so a swing sent before the page drew the bot
+  in front is aimed at where it was, and the semi-automatic axe swings only once. A slow page loses that race
+  (reproduced in arms-only too at ~4.7 s frames; full body is a few per cent slower per frame, enough on CI).
+  Fix in the test: `seenAt()` waits until the page draws the moved bot before the punch, the axe and the
+  blunderbuss. Also: the Knight's gauntlets (`fixes.hands.curl: 1`, rehanded) close on the grip, and shoulder
+  pads are cut from the full-body first-person view. Still: the Knight's right gauntlet in first person points
+  its fingers up behind the grip, and his armoured left forearm crosses the lower left on long guns.
 - **Full-body first person: done on `wip/full-body-fp`, not merged** (owner agreed the plan; 2026-10-30
   evening). First person draws your own third-person character from its eyes (`game/firstPersonBody.ts`
   `FirstPersonBodyRig`, `View.showFpBody`): the body stands where prediction has you and animates with your
@@ -55,13 +107,20 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - **Field guide** (owner asked 2026-10-30): a reference page of every weapon, vehicle, character, map feature
   and pickup, generated from the shared data: https://claude.ai/artifact/GgiMK17TA5oCY3Cnyna3oy (PDF and HTML
   were sent to the owner). Regenerate it when the arsenal or roster changes.
-- **Owner's requests not started yet:**
-  - St. John's from real data: the owner's Google Maps key (`GOOGLE_MAPS_API_KEY`) is refused (Geocoding not
-    allowed by the key's API restrictions, Elevation needs billing, Static 403, 3D Tiles 404). The owner set up a
-    key on another Google account: they must update the environment variable and start a new session. Google's
-    terms don't allow copying its map content into the game; OpenStreetMap (footprints, roads, lake shore) plus
-    USGS 3DEP elevation (public domain) are the suggested sources, used to guide editing in MapMaker (no map
-    build scripts).
+- **`wip/st-johns`** (not merged; needs a `check/` run: it changes `public/maps/shots`, so CI runs everything):
+  St. John's on the real campus from OpenStreetMap footprints and streets and USGS 3DEP ground (no Google), 400 ×
+  300 m round the drill field at true scale (Genesee St and the lake are past the east edge); how, the region,
+  the frame and what's where: docs/references/ST_JOHNS.md. New owner-only MapMaker tools (Environment → Terrain →
+  Real places): heights from an ESRI ASCII height grid file, and a trace image over the ground (never saved;
+  `editor/heightGrid.ts`, BUILDING_KIT.md). Credits (OSM ODbL, 3DEP) in the map's description and ASSET_SOURCES.md.
+  Checked: MapMaker, the validator and the nav check report nothing; bots move all over it; the `maps6` tour
+  part (St. John's) and the editor flows. Open: the halls' rooms are the first pass's, stretched to the real
+  footprints (wider rooms and windows); OSM has the halls as merged outlines, so where Knight, Welles and DeKoven
+  meet is a guess. Perf (perf96, 48 bots, Medium, SwiftShader under heavy machine load, so noisy): draws
+  spread ~415 → 420-530, clump ~420-460 → ~520-600 (bigger halls, 26 street meshes), shadow casters about the
+  same or fewer, server tick a little cheaper; loading about the same as before (67-71 s old vs 73-81 s new at
+  load 30). The `maps6`/`maps` e2e "match starts" check timed out here at load 20-30 (the old map and other
+  untouched maps did too); it passed at lower load (39 s). Not judged by eye on real hardware.
 - **Local e2e at hand-off (machine load 12–25, so timing-sensitive):** `mobile`, `offline`, `designer`,
   `editor`, `editorux`, `canyon`, `scenery`, `race` passed. `arsenal` failed "hazards are drawn on the ground"
   (failed under load before the axe merge too) and "the Battle Axe swings: the bot in front takes the blow"

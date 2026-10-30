@@ -50,6 +50,17 @@ The authoritative per-file list is generated at `content/provenance.json` (`pnpm
 | Tile Trigger — Style Pack pieces modelled in code (03 Imperial Arena, 09 Sands of Egypt) | Owned (our own work; `assets-src/tiletrigger-ancient/License.txt`) | 32 props built from boxes, cylinders, cones, spheres, rings and flat sheets by `tools/content/prepare-ancient.mjs` (no pack, scan or AI service): Ionic column, brazier, emperor statue, amphorae, gladius rack, training post, eagle standard, legion banner, chariot, beast cage, stake barricade, altar, bench, bust, fountain, velarium, throne; obelisk, sphinx, seated pharaoh, Anubis shrine, sarcophagus, canopic jars, papyrus column, felucca, reed boat, date palm, papyrus, fire stand, gilded chest, stele, Bastet statue. The hieroglyph, mosaic, gold-leaf and lapis materials are procedural paint of ours (`client/materials/patterns.ts`) |
 | Chakra Petch (Cadson Demak) and Barlow (Jeremy Tribby), via the `@fontsource` npm packages | SIL Open Font License 1.1 | UI type: Chakra Petch for headings, buttons and HUD numbers; Barlow for body text (see UI.md) |
 
+### Map data for real places
+
+No file from these sources is in the repository: they guided the layout and the
+ground of a map, made in MapMaker (docs/references/ST_JOHNS.md). Credit them in
+the map's description and here.
+
+| Source | Licence | Used for |
+|---|---|---|
+| [OpenStreetMap](https://www.openstreetmap.org/copyright) (API extract round St. John's Northwestern Academies, Delafield WI, 2026-10-30) | ODbL 1.0: credit "Map data © OpenStreetMap contributors" | St. John's: building footprints, streets and walks, the drill field and churchyard outlines, traced into the map's own pieces |
+| [USGS 3D Elevation Program (3DEP)](https://www.usgs.gov/3d-elevation-program), 1 m lidar DEM through the National Map's elevation service | Public domain (US Government work); credited as a courtesy | St. John's: the terrain heights (Terrain → Real places → Heights from a height grid file) |
+
 ### Vetted and not imported (October 2026)
 
 | Pack | Why not |

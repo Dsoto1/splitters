@@ -6,6 +6,7 @@
   "name": "Giggles",
   "look": "core.giggles",
   "bio": "The last birthday party he worked is still talked about. Quietly.",
+  "size": "small",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: clown.",
   "source": {

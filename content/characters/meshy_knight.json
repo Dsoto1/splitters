@@ -26,5 +26,9 @@
   "firstPerson": {
     "arms": "own"
   },
-  "fixes": {}
+  "fixes": {
+    "hands": {
+      "curl": 1
+    }
+  }
 }
