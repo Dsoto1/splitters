@@ -98,7 +98,6 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.warden', name: 'Warden', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#3a3030', cloth: '#2a3a5c', trim: '#3a2a22', gear: ['beret', 'radio'] },
   { id: 'core.scout', name: 'Scout', body: 'female', head: 'head_female', parts: ranger('f', true, false), hair: ['hair_buns'], colorways: ['ranger_moss'], skin: SKIN_TONES[2], hairColor: '#4a3428', cloth: '#c8b88a', trim: '#6a4a30', gear: ['goggles', 'scarf'] },
   { id: 'core.farmhand', name: 'Farmhand', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c09060', gear: ['brim'] },
-  { id: 'core.miller', name: 'Miller', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: ['peasant_dusk'], skin: null, hairColor: '#6a4a3a', gear: ['scarf'] },
   {
     id: 'core.tracker',
     name: 'Tracker',
@@ -153,17 +152,12 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
     gear: ['pack'],
   },
   { id: 'core.brawler', name: 'Brawler', body: 'male', head: 'head_male', parts: ['athlete_torso_m', 'peasant_legs_m', 'peasant_feet_m'], hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[2], hairColor: '#2a2422', cloth: '#c0392b', gear: ['headband'] },
-  { id: 'core.sprinter', name: 'Sprinter', body: 'female', head: 'head_female', parts: ['athlete_torso_f', 'athlete_legs_f', 'athlete_feet_f'], hair: ['hair_buzzedfemale'], colorways: [], skin: SKIN_TONES[1], hairColor: '#d0a060', cloth: '#3d6ea8', gear: ['shades'] },
-  { id: 'core.champion', name: 'Champion', body: 'male', head: 'head_male', parts: ['athlete_torso_m', 'athlete_legs_m', 'athlete_feet_m', 'ranger_pauldron_m'], hair: ['hair_simpleparted'], colorways: ['athlete_light_m'], skin: SKIN_TONES[1], hairColor: '#2a2422', cloth: '#d0a020' },
-  { id: 'core.striker', name: 'Striker', body: 'female', head: 'head_female', parts: ['athlete_torso_f', 'ranger_legs_f', 'ranger_feet_f', 'ranger_pauldron_f'], hair: ['hair_long'], colorways: ['athlete_light_f'], skin: null, hairColor: '#8a3a2a', cloth: '#c0392b', trim: '#1e2126', gear: ['headband'] },
   // Uniforms and specialists: one outfit dyed and kitted out differently each time.
   { id: 'core.commando', name: 'Commando', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[4], hairColor: '#1e1a18', cloth: '#262a30', trim: '#1a1c20', gear: ['helmet', 'goggles', 'vest'] },
   { id: 'core.frost', name: 'Frost', body: 'female', head: 'head_female', parts: ranger('f', false, false), hair: ['hair_long'], colorways: [], skin: SKIN_TONES[1], hairColor: '#f0e0c0', cloth: '#e8e4dc', trim: '#7a8088', gear: ['beanie', 'goggles', 'pack'] },
   { id: 'core.operative', name: 'Operative', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_simpleparted'], colorways: [], skin: SKIN_TONES[1], hairColor: '#2a2422', cloth: '#1e2126', trim: '#1e2126', gear: ['shades'] },
   { id: 'core.medic', name: 'Medic', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[2], hairColor: '#3a2a22', cloth: '#e8e4dc', trim: '#a83030', gear: ['cap', 'pack'] },
   { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['helmet', 'tank'] },
-  { id: 'core.desperado', name: 'Desperado', body: 'male', head: 'head_male', parts: ['peasant_torso_m', 'peasant_arms_m', 'peasant_legs_m', 'ranger_feet_m'], hair: ['hair_simpleparted', 'hair_beard'], colorways: [], skin: SKIN_TONES[2], hairColor: '#2a2422', cloth: '#8a7a52', trim: '#4a3020', gear: ['brim', 'mask', 'bandolier'] },
-  { id: 'core.raider', name: 'Raider', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buzzedfemale'], colorways: [], skin: SKIN_TONES[4], hairColor: '#8a3a2a', cloth: '#6a3a7a', trim: '#1e2126', gear: ['goggles', 'bandolier'] },
   // Whole-body characters, one per manifest in content/characters (generated: characters.generated.ts).
   ...WHOLE_BODY_LOOKS,
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'] },
@@ -178,23 +172,17 @@ export const LOOK_BIOS: Readonly<Record<string, string>> = {
   'core.warden': 'Keeps the forest roads safe, and keeps score while doing it.',
   'core.scout': 'First in, first out, usually carrying the flag of someone else.',
   'core.farmhand': 'Up before dawn, armed by noon. Hits like a hay bale.',
-  'core.miller': 'Grinds grain and opponents with equal patience.',
   'core.tracker': 'Half ranger, half drifter, fully lost on purpose.',
   'core.pathfinder': 'Knows every shortcut, including the ones through walls.',
   'core.drifter': 'Hooded traveller with a pauldron and no forwarding address.',
   'core.wayfarer': 'Walked here from somewhere. Will walk away the winner.',
   'core.brawler': 'Skipped the shirt, kept the attitude.',
-  'core.sprinter': 'Track star turned arena regular. Never stops moving.',
-  'core.champion': 'Undefeated in the ring; considering the arena a warm-up.',
-  'core.striker': 'Sports top, ranger boots, zero patience for campers.',
   'core.commando': 'Helmet, goggles, plates. Treats every room as a breach.',
   'core.frost': 'Came down from the mountain pass. Brought the cold with her.',
   'core.operative': 'Dark suit of armour, darker glasses. Never seen arriving.',
   'core.medic': 'Patches up her team, then patches holes in yours.',
   ...WHOLE_BODY_BIOS,
   'core.engineer': 'Hard hat, fuel tank, short temper. Builds things; breaks more.',
-  'core.desperado': 'Wanted in three maps. The poster doesn\'t do him justice.',
-  'core.raider': 'Goggles down, bandolier full, already halfway across the map.',
   'core.sentinel': 'Holds the line because nobody has ever moved her off it.',
 };
 
@@ -345,8 +333,24 @@ export function decodeLook(id: string): CharacterLook | null {
   return lookProblems(look).length ? null : look;
 }
 
-/** A preset or custom look by ID; anything unknown or invalid falls back to the default. */
-export const getLook = (id: string | undefined): CharacterLook => CORE_LOOKS.find((l) => l.id === id) ?? (id ? decodeLook(id) : null) ?? CORE_LOOKS[0]!;
+/**
+ * Presets that were retired, and the kept look each one now resolves to, so a
+ * saved profile, setup or map that still names one keeps working.
+ */
+export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
+  'core.champion': 'core.brawler',
+  'core.desperado': 'core.drifter',
+  'core.miller': 'core.wayfarer',
+  'core.raider': 'core.huntress',
+  'core.sprinter': 'core.scout',
+  'core.striker': 'core.huntress',
+};
+
+/** A preset or custom look by ID (a retired preset gives its replacement); anything unknown or invalid falls back to the default. */
+export const getLook = (id: string | undefined): CharacterLook => {
+  const key = (id && RETIRED_LOOKS[id]) || id;
+  return CORE_LOOKS.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? CORE_LOOKS[0]!;
+};
 
 /** A stable look for a Player Bot, spread across the roster. */
 export const lookForBot = (index: number): string => CORE_LOOKS[(index + 1) % CORE_LOOKS.length]!.id;
