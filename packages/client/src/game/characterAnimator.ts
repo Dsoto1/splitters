@@ -44,9 +44,7 @@ export interface MotionState {
  * keeps its own first-person placement (bob, recoil, reload dip).
  */
 export interface FirstPersonBody {
-  /** The camera: the shoulders come forward toward the gun as the arms-only view's do (gripPlaced). */
-  view: TransformNode;
-  /** Called after the clips, before the aim and the grip: puts the body under the camera (firstPersonArms.ts pinBody). */
+  /** Called after the clips and the spine's aim, before the grip: puts the body under the camera (FirstPersonBodyRig). */
   place?: () => void;
 }
 
@@ -813,8 +811,6 @@ export class CharacterAnimator {
   private afterAnimations(): void {
     // Not evaluated this frame (animation LOD): the bones still hold last evaluation's aim and grip.
     if (this.dead || this.dormant || this.gate.skip || !this.spine.length) return;
-    // Your own body seen from its eyes: under the camera before anything is aimed or gripped.
-    this.fp?.place?.();
     const root = this.ch.root;
     root.computeWorldMatrix(true);
     const rootRot = Quaternion.FromRotationMatrix(root.getWorldMatrix().getRotationMatrix());
@@ -846,7 +842,12 @@ export class CharacterAnimator {
     }
     this.applySit(right);
     this.applyReactions(right, up, rootRot);
-    if (this.fp) (this.ch.joints.get('neck_01') ?? this.ch.joints.get('Head'))?.scaling.setAll(FP_HIDDEN);
+    if (this.fp) {
+      // Your own body seen from its eyes: the head shrunk away, then the body (bent for the aim) moved under the
+      // camera, before the hands go to the gun.
+      (this.ch.joints.get('neck_01') ?? this.ch.joints.get('Head'))?.scaling.setAll(FP_HIDDEN);
+      this.fp.place?.();
+    }
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
     else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x);
   }
@@ -974,7 +975,7 @@ export class CharacterAnimator {
     if (grip.style === 'long' && grip.support) cupHand(space, arms.l, world, w);
     const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
     let supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale) : null;
-    const view = this.fp?.view ?? (this.ch.root.parent as TransformNode | null);
+    const view = this.ch.root.parent as TransformNode | null;
     if (this.fp) {
       // Full body: each shoulder starts from its own place on the body and comes forward toward the gun only as
       // far as the arm needs (the arms-only view sets them beside the eye instead, its body being out of view).
