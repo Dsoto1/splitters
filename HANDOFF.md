@@ -64,6 +64,13 @@ session branch to `check/candidate` (fast-forward), fix, and repeat until green.
 | `wip/character-intake` (2358cdf) | The unified Meshy character pipeline: landmark rigger or Meshy rigging API, a grip sheet. 18 new characters shipped from the owner's downloads; five are held back as queued manifests (King Aldric, Saint Nick, Brass Hare, Grizzelda, Bandit; the reasons are in their notes). The owner confirmed (2026-10-29): Hector and Ricochet are right, and `_Halloween2025_a_ul` is Rattles (build it from that file). `Tribal_Warrior_Charac` (a woman in tribal dress) is still unidentified: ask the owner. Before merging, render the grip sheets again (the sizes changed) and fix the Lancer's oversized hands and the cowboy's flat hands (`fixes.hands`). Checks: typecheck, content:check and the e2e `characters`/`designer`/`visual` flows pass; `physicsfx` timed out locally, so run it on CI. Docs: adding a Meshy character. Sizes are in the manifests. The intake queue on the branch drops the 18 characters it shipped. |
 | `wip/roster-cleanup` (899537c) | Six retired looks (Champion, Desperado, Miller, Raider, Sprinter, Striker; old ids load as kept looks); a helmet tool (`prepare-gear.mjs`) and five helmets; model gear on the Head joint. The per-look fixes are WIP. Commando's and Engineer's helmet fits are off; beret and headband sit high; Farmhand's hat and Drifter's mask aren't done; the Dapper's jacket skin weights are diagnosed but not fixed (arm weights on torso vertices; see the commit). No CHANGELOG entry or portraits yet. |
 
+`wip/pause-safari` (on the session branch): the pause menu uses wide screens (Host and Settings in two
+columns from 1000 px); mouse look goes through `lookFilter.ts` (Safari's coalesced moves re-summed, the
+lock jump and spikes dropped, applied once per frame; `window.__lookStats` in the console shows what it
+did); zoomed look speed is 1:1 at the crosshair (tan ratio) with a Zoom sensitivity setting. Not tested
+in real Safari: ask the owner to try it, and to paste `__lookStats` from Safari's console after a minute
+of play if it still feels off.
+
 Merge order suggestion: bot-manager, character-intake, roster-cleanup (expect a
 small conflict in `content/meshy.lock.json` and looks.ts), then host-handoff.
 Run the checks after each merge.
