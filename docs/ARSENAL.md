@@ -6,7 +6,7 @@ All gameplay numbers live in `packages/shared/src/sim/weapons.ts` and
 | Slot | Weapon | Ammo | Second trigger (right mouse) |
 |---|---|---|---|
 | 1 | Knife | — | — |
-| 1 | Battle Axe (pickup) | — | Haft barrel: an 8-pellet scattershot, 2 shells of its own |
+| 1 | Battle Axe (pickup) | Shells (12, for the barrel) | Blunderbuss: 9 wide pellets, 2 loads, each loaded by hand from the shells |
 | 2 | Pistol | Light rounds | — |
 | 3 | Assault Rifle | Rifle rounds | Underbarrel grenade (own ammo, 4 max) |
 | 4 | Shotgun | Shells | Both barrels (2 shells, 16 pellets) |
@@ -181,12 +181,36 @@ recipes.
 | 9 | Freeze Ray | Beam that chills; enough chill freezes the target solid for 1.4 s |
 
 **Battle Axe** (`core.battle_axe`, slot 1, pickup `core.weapon_battle_axe`,
-category melee): 85 damage a swing, one swing per 0.8 s, 2.7 m reach, and a
-6 m/s shove along the swing; right mouse fires the haft's barrel (8 pellets of
-12, 0.08 spread, 22 m), two shells of its own refilled by ammo boxes and
-explosives like an underbarrel grenade. Bots value it at 0.45 for 0–2.5 m. It
-answers "why pick this up?" with a two-hit kill up close that throws people
-off ledges, and one emergency blast for the step just out of reach.
+category melee). The model is a flintlock blunderbuss with an axe blade under
+its muzzle, so it is both:
+
+- **Swing** (left mouse, and the quick-melee key): 85 damage, one swing per
+  0.8 s, 2.7 m reach, a 6 m/s shove along the swing. Spends nothing.
+- **Blunderbuss** (right mouse with the axe in hand, or middle mouse / V like
+  every second trigger): 9 pellets of 11 (99 at most) in a wide 0.12 rad cone,
+  24 m reach, steep falloff (full to 4 m, down to a fifth at 16 m), head ×1.25.
+  Measured on a still target: 99 at 2 m, ~85 at 4 m, ~43 at 6 m, ~26 at 8 m,
+  ~16 at 10 m, ~6 at 14 m (the Shotgun kills to about 6 m and still does ~40
+  at 10 m). Shots 0.6 s apart; a heavy kick (0.1 rad up, settling over about
+  a second), a big flash and a cloud of black-powder smoke from the barrel's
+  mouth (`view.muzzleAt`, first and third person), the Shotgun's report
+  pitched down.
+- **Ammo**: the barrel holds 2 loads (`alt.max`; HUD: loads big, shells small,
+  "RMB Blunderbuss"). Loads come from a reserve of **shotgun shells** (12 at
+  most, 4 from a pickup, filled by shell boxes and the general ammo box), one
+  at a time: R, or the alt trigger on an empty barrel, loads them (0.27 s
+  open, 1.1 s a load, 0.23 s close: 1.6 s for one, 2.7 s for two). A swing
+  stops loading at once (loads already in stay); the alt trigger fires as
+  soon as one is in. Shells rather than an ammo type of its own: shell boxes
+  already lie on the maps and a shotgun's shot is what it fires; a "powder
+  and shot" type would need its own boxes everywhere for one weapon.
+- **Bots** value it at 0.45 for 0–2.5 m, and out to ~7 m while the barrel is
+  loaded (`barrelReach`): they close in to swing, fire the barrel at a target a
+  few steps beyond the blade, and load it again when nobody is near.
+
+It answers "why pick this up?" with a two-hit kill up close that throws people
+off ledges, and a blast for the step just out of reach (blast and swing kill
+together).
 
 ## Weapon categories and random pickups
 

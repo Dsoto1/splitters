@@ -74,7 +74,7 @@ import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, 
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
   RELOAD_KINDS, RICOCHET_MAX_ANGLE, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
-  type BallisticMaterial, type GunState, type Gunplay, type ReloadRun,
+  type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
 import { GLASS, glassAt } from './glass.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
@@ -180,6 +180,19 @@ interface MountRt {
   /** The transport plane: the route it flies and how players board it (see airplane.ts). */
   route?: AirRoute;
   airdrop?: 'off' | 'start' | 'always';
+}
+
+/** A spectator by choice (Match.spectate): who they are and the score they had, kept for when they join again. */
+export interface Spectator {
+  name: string;
+  look: string;
+  account?: boolean;
+  kills: number;
+  deaths: number;
+  selfKills: number;
+  objective: number;
+  /** Tick they started watching. */
+  since: number;
 }
 
 export interface Combatant {
@@ -1379,9 +1392,10 @@ export class Match {
     if (!c.alive) c.health = spec.health;
   }
 
-  private addCombatant(kind: Combatant['kind'], name: string, team?: string | null): Combatant | null {
-    const slot = this.slots.indexOf(null);
-    if (slot < 0) return null;
+  /** `at`: this slot (a spectator joining again takes back the slot kept for them); else the first free one. */
+  private addCombatant(kind: Combatant['kind'], name: string, team?: string | null, at?: number): Combatant | null {
+    const slot = at ?? this.slots.findIndex((s, i) => s === null && !this.spectators.has(i));
+    if (slot < 0 || this.slots[slot]) return null;
     const c = this.blankCombatant(slot, kind, name, team);
     this.slots[slot] = c;
     this.spawnOrQueue(c);
@@ -1390,7 +1404,11 @@ export class Match {
 
   remove(slot: number): void {
     const c = this.slots[slot];
-    if (!c) return;
+    // A spectator leaving (or removed): the slot kept for them is free again.
+    if (!c) {
+      if (this.spectators.delete(slot)) this.activity.delete(slot);
+      return;
+    }
     this.activity.delete(slot);
     if (this.phase === 'playing') this.mode?.onLeave(c);
     this.classes?.onLeave(c);
@@ -1404,6 +1422,60 @@ export class Match {
     this.squadLeads = null;
   }
 
+  /**
+   * Spectators by choice (pause menu → Spectate): out of the match (no body, no team, not counted for team
+   * sizes or the bot fill, so a bot can take the place), their slot kept for them with nothing in it, and
+   * their score kept for when they join again (joinFromSpectating). Their connection keeps its slot.
+   */
+  private readonly spectators = new Map<number, Spectator>();
+
+  /** A player leaves play to watch: their body goes (as if they left), their slot and score wait for them. False if not a player in the match. */
+  spectate(slot: number): boolean {
+    const c = this.slots[slot];
+    if (!c || c.kind !== 'human') return false;
+    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}) };
+    this.remove(slot);
+    this.spectators.set(slot, s);
+    // Watching counts as being there (camera input: noteActivity); the clock starts now.
+    this.activity.set(slot, { tick: this.tick, yaw: NaN, pitch: NaN });
+    return true;
+  }
+
+  /** A spectator joins play again, in the slot kept for them, with the score they had (team: the rules' assignment). */
+  joinFromSpectating(slot: number): Combatant | null {
+    const s = this.spectators.get(slot);
+    if (!s) return null;
+    this.spectators.delete(slot);
+    const c = this.addCombatant('human', s.name, undefined, slot);
+    if (!c) return null;
+    c.look = validLookId(s.look);
+    this.applyBodySize(c);
+    c.kills = s.kills;
+    c.deaths = s.deaths;
+    c.selfKills = s.selfKills;
+    c.objective = s.objective;
+    if (s.account) c.account = true;
+    // Their client has the match loaded already (the start gate needn't wait for them).
+    this.readySlots.add(slot);
+    this.resetIdle(slot);
+    return c;
+  }
+
+  /** Whether this slot is kept for a spectator. */
+  isSpectator(slot: number): boolean {
+    return this.spectators.has(slot);
+  }
+
+  /** How many spectators there are (each keeps a slot). */
+  get spectatorCount(): number {
+    return this.spectators.size;
+  }
+
+  /** The spectators' slots. */
+  spectatorSlots(): number[] {
+    return [...this.spectators.keys()];
+  }
+
   /** When each player last really played (moved, turned or pressed something), and where they last looked. */
   private activity = new Map<number, { tick: number; yaw: number; pitch: number }>();
 
@@ -1414,14 +1486,15 @@ export class Match {
    */
   noteActivity(slot: number, inputs: readonly PlayerInput[]): boolean {
     const c = this.slots[slot];
-    if (!c || (c.kind !== 'human' && !c.away)) return false;
+    // Spectators (and the dead watching) count too: their camera input (`sp`, or turning) says they're there.
+    if (c ? c.kind !== 'human' && !c.away : !this.spectators.has(slot)) return false;
     const was = this.activity.get(slot);
     let active = false;
     let yaw = was?.yaw ?? NaN;
     let pitch = was?.pitch ?? NaN;
     for (const i of inputs) {
       const turned = Number.isFinite(yaw) && (Math.abs(i.yaw - yaw) > 0.02 || Math.abs(i.pitch - pitch) > 0.02);
-      if (i.forward || i.right || i.buttons || turned) active = true;
+      if (i.forward || i.right || i.buttons || i.sp || turned) active = true;
       yaw = i.yaw;
       pitch = i.pitch;
     }
@@ -1956,7 +2029,8 @@ export class Match {
         v.def = w.def;
         v.mag = w.mag;
         v.reserve = w.reserve;
-      } else list[i] = { def: w.def, mag: w.mag, reserve: w.reserve };
+        v.alt = w.alt;
+      } else list[i] = { def: w.def, mag: w.mag, reserve: w.reserve, alt: w.alt };
       i++;
     }
     list.length = i;
@@ -2332,7 +2406,12 @@ export class Match {
       const gp = gunplayOf(def);
       stepAds(c.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !gun);
       // Firing interrupts a reload whenever a round is ready: a loaded shell, a tactical reload's chambered round.
-      if (fireDown && c.reload && !gun && !c.semiLatch && c.fireCooldown === 0 && c.raiseTicks === 0 && roundsReady(held) > 0) this.cancelReload(c);
+      // A melee weapon loading its barrel always swings (the loads already in stay); its barrel fires once one is in.
+      if (c.reload && !gun && c.fireCooldown === 0 && c.raiseTicks === 0) {
+        const swing = def.kind === 'melee' && ((fireDown && !c.semiLatch) || (pressed & BUTTON_MELEE) !== 0);
+        const shoot = (fireDown && !c.semiLatch && roundsReady(held) > 0) || (input.buttons & BUTTON_ALT && !fireDown && def.alt?.reload && held.alt >= def.alt.cost);
+        if (swing || shoot) this.cancelReload(c);
+      }
       const ready = c.fireCooldown === 0 && (gun ? true : c.raiseTicks === 0) && c.reloadTicks === 0 && !frozen && !unarmed;
       // Spin-up and charge: the trigger has to be held this long first.
       if (def.windupTicks) {
@@ -2371,7 +2450,7 @@ export class Match {
           else held.mag -= alt.cost;
           c.fireCooldown = alt.fireIntervalTicks;
           this.fire(c, altTrigger(held.def, alt), input.viewTick ?? 0);
-        } else if (alt.ammo === 'shared') this.startReload(c);
+        } else if (alt.ammo === 'shared' || alt.reload) this.startReload(c);
       }
       // Quick melee: the held melee weapon swings; with a gun in hand, a punch or a kick (no lockout of the gun).
       if (pressed & BUTTON_MELEE && !c.mount && !frozen && !fired) {
@@ -2512,8 +2591,9 @@ export class Match {
       spread = aimSpread(shooter, def, def.spread + (def.alt ? 0 : shooter.bloom) + movementSpread(shooter, def)) * STANCE_SPREAD[stanceOf(shooter.move)];
       if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
     }
-    // Mechanical recoil: this round kicks the aim for the next one.
+    // Mechanical recoil: this round kicks the aim for the next one (a second trigger only by its own kick).
     if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, gp.kick);
+    else if (def.alt && def.kick) recoilShot(shooter.gun, def.kick);
     if (def.kind === 'projectile' && def.projectile?.disc && !def.alt) {
       this.throwDisc(shooter, def.projectile, def.id);
       return;
@@ -2593,11 +2673,14 @@ export class Match {
       else if (world) bodies.push(world.handle);
     }
     this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(zones.some((z) => z) ? { z: zones } : {}), ...(def.alt ? { alt: 1 as const } : {}) });
+    // A second trigger can bring its own falloff and head multiple (the Battle Axe's blunderbuss).
+    const falloff = def.falloff ?? gp.falloff;
     for (const { slot, dir, zone, dist, keep } of struck) {
       const victim = this.actor(slot)!;
-      this.damage(victim, def.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, dist) * keep, shooter, def.id, zone === 1);
+      const zoneK = zone === 1 && def.alt && def.headshot !== undefined ? def.headshot : zoneScale(gp, zone);
+      this.damage(victim, def.damage * zoneK * falloffAt(falloff, dist) * keep, shooter, def.id, zone === 1);
       if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
-      this.stagger(victim, this.powerOf(def.id), dir, (falloffAt(gp.falloff, dist) * keep) / Math.max(1, def.pellets));
+      this.stagger(victim, this.powerOf(def.id), dir, (falloffAt(falloff, dist) * keep) / Math.max(1, def.pellets));
       if (def.knockback) this.push(victim, dir, def.knockback);
     }
     for (const b of bodies) if (!this.damageMountBody(b, this.boosted(shooter, def.damage), shooter)) this.scenario.damageBody(b, this.boosted(shooter, def.damage), shooter.slot);
@@ -4319,7 +4402,8 @@ export class Match {
         // A typed box fills weapons of that type (fully); the general box gives half a pickup to everything.
         let used = false;
         for (const w of c.weapons.values()) {
-          if (w.def.magazine === 0 || (e.ammo && w.def.ammo !== e.ammo)) continue;
+          // (A melee weapon with a reserve keeps it for its barrel: the Battle Axe's shells.)
+          if (w.def.reserveMax === 0 || (e.ammo && w.def.ammo !== e.ammo)) continue;
           if (w.reserve < w.def.reserveMax) {
             w.reserve = Math.min(w.def.reserveMax, w.reserve + (e.ammo ? w.def.pickupAmmo : Math.ceil(w.def.pickupAmmo / 2)));
             used = true;
@@ -4329,7 +4413,7 @@ export class Match {
         if (!e.ammo || e.ammo === 'explosive') {
           for (const w of c.weapons.values()) {
             const alt = w.def.alt;
-            if (alt?.ammo === 'own' && w.alt < (alt.max ?? 0)) {
+            if (alt?.ammo === 'own' && !alt.reload && w.alt < (alt.max ?? 0)) {
               w.alt = Math.min(alt.max ?? 0, w.alt + (e.ammo ? (alt.pickup ?? 1) : 1));
               used = true;
             }
@@ -4988,7 +5072,10 @@ export class Match {
   }
 
   roster(): RosterEntry[] {
-    return this.combatants().map((c) => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}) }));
+    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}) }));
+    // Spectators by choice, last: on no team, marked `sp`.
+    if (!this.spectators.size) return players;
+    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}) }))];
   }
 
   destroy(): void {
@@ -5266,7 +5353,8 @@ export class BotFiller {
   /** A player leaves: their slot empties and the fill spawns a fresh bot normally (or, with `takeBack`, a bot takes their place where they were). */
   leave(slot: number, fill: number): void {
     const c = this.match.slots[slot];
-    if (!c) return;
+    // A spectator leaving: only the slot kept for them frees up.
+    if (!c) return this.match.remove(slot);
     if (c.away) {
       // Gone for good while away: the bot playing their place stays, as a bot of its own.
       this.release(slot);
@@ -5275,12 +5363,30 @@ export class BotFiller {
     const all = this.match.combatants();
     const humans = all.filter(isPerson).length - (c.kind === 'human' ? 1 : 0);
     const bots = all.filter((x) => x.kind === 'bot' && !x.away).length;
-    const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans));
+    const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans - this.match.spectatorCount));
     if (this.opts.takeBack === true && c.kind === 'human' && bots < want) {
       const { name, profile } = this.nextBot();
       this.match.handToBot(slot, name, profile, this.difficulty, true);
     } else this.match.remove(slot);
     this.rebalance(fill);
+  }
+
+  /**
+   * A player chooses to spectate (Match.spectate): their body leaves the match and the fill brings in a bot
+   * for the place, as when a player leaves. False when they aren't a player in the match.
+   */
+  spectate(slot: number, fill: number): boolean {
+    if (!this.match.spectate(slot)) return false;
+    this.warned.delete(slot);
+    this.rebalance(fill);
+    return true;
+  }
+
+  /** A spectator joins play again (their kept slot and score); a bot gives way to keep the fill, as when a player joins. */
+  rejoin(slot: number, fill: number): Combatant | null {
+    const c = this.match.joinFromSpectating(slot);
+    if (c) this.rebalance(fill);
+    return c;
   }
 
   private warned = new Set<number>();
@@ -5397,6 +5503,8 @@ export class BotFiller {
         const a = c.away;
         if (a?.why === 'afk' && people.has(c.slot) && a.since !== undefined && m.tick - a.since >= kickMinutes * 60 * TICK_RATE) out.kick.push(c.slot);
       }
+      // A spectator has no body for a bot to play: one who sends no camera input at all for as long is removed too.
+      for (const slot of m.spectatorSlots()) if (people.has(slot) && m.idleSeconds(slot) >= kickMinutes * 60) out.kick.push(slot);
     }
     for (const c of m.combatants()) {
       if (c.kind !== 'human' || !people.has(c.slot)) continue;
@@ -5452,7 +5560,8 @@ export class BotFiller {
     const all = this.match.combatants();
     const humans = all.filter(isPerson).length;
     const bots = all.filter((c) => c.kind === 'bot' && !c.away);
-    const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans));
+    // Spectators aren't in the match (a bot plays in their place) but each keeps a slot.
+    const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans - this.match.spectatorCount));
     const targets = this.match.teamTargets();
     for (let i = bots.length; i > want; i--) {
       // In team modes, take bots from the team most over its size so the sides stay as set.
@@ -5484,6 +5593,9 @@ interface Trigger {
   knockback?: number;
   recoil?: WeaponDefinition['recoil'];
   headshot?: number;
+  /** Second triggers: their own kick and falloff (AltFire). */
+  kick?: KickSpec;
+  falloff?: FalloffSpec;
 }
 
 /** Leader variant (rules.leaders 'vip'): extra points for downing an enemy team's leader. */
@@ -5591,6 +5703,9 @@ function altTrigger(def: WeaponDefinition, alt: AltFire): Trigger {
     spread: alt.spread ?? def.spread,
     range: alt.range ?? def.range,
     ...(alt.projectile ? { projectile: alt.projectile } : {}),
+    ...(alt.kick ? { kick: alt.kick } : {}),
+    ...(alt.falloff ? { falloff: alt.falloff } : {}),
+    ...(alt.headshot !== undefined ? { headshot: alt.headshot } : {}),
     alt: true,
   };
 }

@@ -311,12 +311,16 @@ export function botManager(o: BotManagerOptions): HTMLElement {
       b.addEventListener('click', () => ((draft.fill = value), redraw()));
       return b;
     };
+    // Back, top left (as on every screen and window): the same as Cancel.
+    const back = el('button', { type: 'button', class: 'back-btn', id: 'bm-back', title: 'Back without applying (Esc)' }, el('span', { textContent: '◀' }), 'Back');
+    back.firstElementChild!.setAttribute('aria-hidden', 'true');
+    back.addEventListener('click', close);
     const cancel = el('button', { type: 'button', id: 'bm-cancel', textContent: 'Cancel' });
     cancel.dataset.cancel = '';
     cancel.addEventListener('click', close);
     applyBtn.onclick = apply;
     panel.replaceChildren(
-      el('div', { class: 'bm-head' }, el('h3', { textContent: 'Bots' }), name, from, save, del),
+      el('div', { class: 'bm-head' }, back, el('h3', { textContent: 'Bots' }), name, from, save, del),
       ...(o.note ? [el('p', { class: 'bm-note', textContent: o.note })] : []),
       table,
       el('div', { class: 'bm-tools' }, add, clear, el('span', { class: 'bm-gap' }), el('div', { class: 'tabs bm-fill' }, fill('random', 'Fill the rest randomly', 'These bots first, then random bots up to the player count'), fill('only', 'Only these bots', 'Just these bots (people still join)'))),

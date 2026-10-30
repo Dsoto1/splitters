@@ -76,6 +76,28 @@ describe('host controls in a browser match (offline, Host game)', () => {
     expect(t.liveRules()!.teamSizes).toEqual([8, 8]);
   });
 
+  it('the host and a friend spectate (a bot fills each place) and join again', async () => {
+    const { t, got } = await host(4);
+    const f = friend();
+    t.accept(f.link);
+    f.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Friend' });
+    const welcome = f.got.find((m): m is Extract<ServerMessage, { t: 'welcome' }> => m.t === 'welcome')!;
+    expect(welcome.spectate).toBe(1);
+    expect(got.find((m): m is Extract<ServerMessage, { t: 'welcome' }> => m.t === 'welcome')!.spectate).toBe(1);
+    const roster = (list: ServerMessage[]) => [...list].reverse().find((m): m is Extract<ServerMessage, { t: 'roster' }> => m.t === 'roster')!.players;
+    f.say({ t: 'spectate', on: true });
+    expect(roster(f.got).find((p) => p.slot === welcome.slot)).toMatchObject({ name: 'Friend', sp: 1 });
+    expect(roster(f.got).filter((p) => !p.sp)).toHaveLength(4);
+    t.sendSpectate(true);
+    await until(() => roster(got).filter((p) => p.sp).length === 2);
+    expect(roster(got).filter((p) => !p.sp && !p.bot)).toHaveLength(0);
+    t.sendSpectate(false);
+    f.say({ t: 'spectate', on: false });
+    await until(() => roster(got).every((p) => !p.sp));
+    expect(roster(got).filter((p) => !p.bot).map((p) => p.name).sort()).toEqual(['Friend', 'Host']);
+    expect(roster(got)).toHaveLength(4);
+  });
+
   it('a browser host keeps 48 v 48 with friends in, and takes up to BROWSER_HOST_MAX_GUESTS of them', async () => {
     const t = new LocalTransport(yard(), { name: 'Host', botFill: 96, difficulty: 'normal', rules: { ...DEFAULT_RULES['core.tdm'], teamSizes: [48, 48] } });
     open.push(t);

@@ -180,6 +180,28 @@ describe('dedicated server', () => {
     expect(server.match.combatants().every((c) => c.kind === 'bot')).toBe(true);
   });
 
+  it('lets a player spectate (a bot fills their place, snapshots go on without them) and join again in the same slot', async () => {
+    server = await startServer({ port: 0, map: room, botFill: 3, seed: 6, startGate: false });
+    const a = new TestClient(server.port, 'Alice');
+    const welcome = await a.waitFor('welcome');
+    expect(welcome.spectate).toBe(1);
+    a.ws.send(JSON.stringify({ t: 'spectate', on: true }));
+    await a.waitFor('roster', (r) => r.players.some((p) => p.slot === welcome.slot && p.sp === 1));
+    expect(server.match.slots[welcome.slot]).toBeNull();
+    expect(server.match.combatants().filter((c) => c.kind === 'bot')).toHaveLength(3);
+    const n = a.messages.length;
+    const snap = await a.waitFor('snapshot', (s) => a.messages.indexOf(s) >= n);
+    expect(snap.me).toBeUndefined();
+    expect(a.latest!.players.some((p) => p.s === welcome.slot)).toBe(false);
+    // Camera input from the spectator is taken (activity) without a body to move.
+    a.ws.send(JSON.stringify({ t: 'input', inputs: [{ seq: ++a.seq, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0, sp: 1 }] }));
+    const m = a.messages.length;
+    a.ws.send(JSON.stringify({ t: 'spectate', on: false }));
+    await a.waitFor('roster', (r) => a.messages.indexOf(r) >= m && r.players.some((p) => p.slot === welcome.slot && !p.sp && p.name === 'Alice'));
+    expect(server.match.slots[welcome.slot]).toMatchObject({ kind: 'human', name: 'Alice' });
+    expect(server.match.combatants()).toHaveLength(3);
+  });
+
   it('rejects mismatched protocol versions', async () => {
     server = await startServer({ port: 0, map: room, botFill: 0 });
     const ws = new WebSocket(`ws://127.0.0.1:${server.port}`);

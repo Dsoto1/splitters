@@ -3,6 +3,7 @@ import {
   CLASS_IDS,
   BUTTON_ALT,
   BUTTON_FIRE,
+  BUTTON_MELEE,
   BUTTON_RELOAD,
   BUTTON_SPRINT,
   BUTTON_USE,
@@ -261,12 +262,13 @@ export class LocalPlayer {
 
   /** The held weapon's ammunition as the reload code sees it (written back with `storeBox`). */
   private box(code: number, ammo: [number, number, number, number]): AmmoBox {
-    return { mag: ammo[0], reserve: ammo[1], unchambered: this.unchambered.has(code) };
+    return { mag: ammo[0], reserve: ammo[1], unchambered: this.unchambered.has(code), alt: ammo[2] };
   }
 
   private storeBox(code: number, ammo: [number, number, number, number], b: AmmoBox): void {
     ammo[0] = b.mag;
     ammo[1] = b.reserve;
+    ammo[2] = b.alt ?? ammo[2];
     if (b.unchambered) this.unchambered.add(code);
     else this.unchambered.delete(code);
   }
@@ -349,7 +351,12 @@ export class LocalPlayer {
     const gp = gunplayOf(def);
     stepAds(this.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !this.seatGun);
     const ready = (a: [number, number, number, number]) => (this.seatGun ? a[0] : roundsReady(this.box(this.held, a)));
-    if (fireDown && this.reload && !this.seatGun && !this.semiLatch && this.fireCooldown === 0 && this.raiseTicks === 0 && ready(ammo) > 0) this.cancelReload();
+    // As the server: a swing always interrupts a melee weapon's barrel reload; its barrel fires once a load is in.
+    if (this.reload && !this.seatGun && this.fireCooldown === 0 && this.raiseTicks === 0) {
+      const swing = def.kind === 'melee' && ((fireDown && !this.semiLatch) || (pressed & BUTTON_MELEE) !== 0);
+      const shoot = (fireDown && !this.semiLatch && ready(ammo) > 0) || (input.buttons & BUTTON_ALT && !fireDown && def.alt?.reload && ammo[2] >= def.alt.cost);
+      if (swing || shoot) this.cancelReload();
+    }
     const { shot, fired } = this.trigger(def, ammo, input, fireDown, ready);
     if (!fired) recoilIdle(this.gun, gp.kick, gp.accuracy, def.fireIntervalTicks);
     return shot;
@@ -399,14 +406,17 @@ export class LocalPlayer {
       // Mirrors the server: own-ammo triggers spend their own rounds, shared ones the magazine.
       const a = def.alt;
       if (a.ammo === 'own' ? ammo[2] < a.cost : ammo[0] < a.cost) {
-        if (a.ammo === 'shared' && !this.seatGun) this.startReload();
+        if ((a.ammo === 'shared' || a.reload) && !this.seatGun) this.startReload();
         return none;
       }
       if (a.ammo === 'own') ammo[2] -= a.cost;
       else ammo[0] -= a.cost;
       this.fireCooldown = a.fireIntervalTicks;
+      // Its own kick after the aim it fired along (Match.fireNow).
+      const aim = this.aimAngles(input.yaw, input.pitch);
+      if (a.kick) recoilShot(this.gun, a.kick);
       if (a.kind !== 'hitscan') return { shot: { def, ends: [], alt: true }, fired: false };
-      return { shot: this.hitscanShot(def, this.aimAngles(input.yaw, input.pitch), a.pellets ?? def.pellets, a.spread ?? def.spread, true), fired: false };
+      return { shot: this.hitscanShot(def, aim, a.pellets ?? def.pellets, a.spread ?? def.spread, true, a.range), fired: false };
     }
     return none;
   }
@@ -425,7 +435,7 @@ export class LocalPlayer {
     return shot;
   }
 
-  private hitscanShot(def: WeaponDefinition, aim: { yaw: number; pitch: number }, pellets: number, spread: number, alt: boolean): PredictedShot {
+  private hitscanShot(def: WeaponDefinition, aim: { yaw: number; pitch: number }, pellets: number, spread: number, alt: boolean, reach = def.range): PredictedShot {
     const eye = this.eye;
     const ends: Vec3[] = [];
     const times: number[] = [];
@@ -444,7 +454,7 @@ export class LocalPlayer {
         times.push(t.time);
         continue;
       }
-      const d = this.physics.raycastHit(eye, dir, def.range)?.dist ?? def.range;
+      const d = this.physics.raycastHit(eye, dir, reach)?.dist ?? reach;
       ends.push({ x: eye.x + dir.x * d, y: eye.y + dir.y * d, z: eye.z + dir.z * d });
     }
     return { def, ends, ...(alt ? { alt } : {}), ...(phys ? { speed: phys.speed, times } : {}) };

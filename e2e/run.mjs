@@ -49,6 +49,14 @@ async function simWait(page, fn, arg, ms) {
 }
 
 /** Poll `pred()` (async, node side) until it holds; true if it did within `ms`. */
+/** MapMaker's New, on a map of the given size (m) of open ground, or 0 for the sky (no terrain: a blank map). */
+async function newMap(page, size = 0) {
+  await page.click('#ed-new');
+  await page.click(`#ed-new-sizes [data-size="${size}"]`);
+  await page.click('#ed-new-create');
+  await page.waitForFunction((size) => (size ? window.__editor.doc.terrain?.cols > 1 : !window.__editor.doc.terrain), size, { timeout: T(5000) });
+}
+
 async function until(pred, ms) {
   const end = Date.now() + ms;
   while (Date.now() < end) {
@@ -138,7 +146,7 @@ async function editorFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor&test=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
-  await page.click('#ed-new');
+  await newMap(page);
   await page.evaluate(() => window.__editor.view.focus({ x: 8, y: 0, z: 0 }));
   const doc = () => page.evaluate(() => window.__editor.doc);
   const clickWorld = async (x, z) => {
@@ -352,7 +360,7 @@ async function editoruxFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor&test=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
-  await page.click('#ed-new');
+  await newMap(page);
   await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
   const doc = () => page.evaluate(() => window.__editor.doc);
   const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
@@ -854,6 +862,109 @@ async function offlineFlow(browser) {
   check(played > 0, `match events play sounds (${played} played)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await spectateChecks(browser);
+}
+
+/**
+ * Out of play (spectatorCam.ts): dying shows the kill cam on the killer, a key skips it to following
+ * players (cycled with the arrow keys), Space flies the free camera, and you respawn as usual; then
+ * spectating by choice from the pause menu (a bot fills the place) and joining again.
+ */
+async function spectateChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/spectate-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?offline&test=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+  const spec = () => page.evaluate(() => window.__cs.spec());
+  // A bot kills you; your respawn waits a minute, so there's time to watch (the bots respawn as usual).
+  const killer = await sim(page, (m, me) => {
+    const bot = m.combatants().find((c) => c.kind === 'bot' && c.alive);
+    m.kill(me, bot, 'core.pistol');
+    me.respawnTick = m.tick + 60 * 60;
+    return { slot: bot.slot, name: bot.name };
+  });
+  // The banner, read the moment it's up (the kill cam lasts a few seconds).
+  const banner = await page
+    .waitForFunction(() => {
+      const el = document.getElementById('killcam');
+      return el && !el.hidden && window.__cs.spec().killCam !== null && { text: el.textContent, killer: window.__cs.spec().killCam };
+    }, null, { timeout: T(5000), polling: 50 })
+    .then((h) => h.jsonValue())
+    .catch(() => null);
+  check(banner?.killer === killer.slot && banner.text.includes(killer.name), `the kill cam shows the killer (${banner?.text ?? 'no banner'})`);
+  check(/HP left|down/.test(banner?.text ?? ''), 'with the health they have left');
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
+  await shot('killcam');
+  // When it ends (the match's own respawn delay, as this page knows it), you follow a player (free-for-all: anyone).
+  await page.waitForFunction(() => window.__cs.spec().killCam === null && window.__cs.spec().following >= 0, null, { timeout: T(8000) }).catch(() => {});
+  const first = await spec();
+  const watching = await page.evaluate(() => document.querySelector('#spectating b')?.textContent ?? '');
+  check(first.killCam === null && first.following >= 0 && !first.free && /^Watching /.test(watching), `after the kill cam you follow a player (${watching})`);
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
+  await shot('follow');
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction((f) => window.__cs.spec().following !== f, first.following, { timeout: T(3000) }).catch(() => {});
+  const second = await spec();
+  check(second.following >= 0 && second.following !== first.following, `→ follows the next player (${first.following} → ${second.following})`);
+  // Space again: the free camera, flown with the movement keys.
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.__cs.spec().free, null, { timeout: T(3000) }).catch(() => {});
+  const from = (await spec()).camera;
+  await page.evaluate(() => (window.__autoInput = { forward: 1, up: 1 }));
+  const flown = await until(async () => {
+    const c = (await spec()).camera;
+    return Math.hypot(c.x - from.x, c.y - from.y, c.z - from.z) > 4;
+  }, T(5000));
+  await page.evaluate(() => delete window.__autoInput);
+  check((await spec()).free && flown, 'Space switches to the free camera, which flies');
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
+  await shot('freecam');
+  // Camera input while dead goes out as activity (PlayerInput.sp), so the idle rules leave a watcher alone.
+  const idle = await sim(page, (m, me) => m.idleSeconds(me.slot));
+  check(idle < 2, `watching counts as activity (${idle.toFixed(1)} s idle)`);
+  // Respawn as usual: the normal view is back.
+  await sim(page, (m, me) => void (me.respawnTick = m.tick));
+  await page.waitForFunction(() => window.__cs.local.alive && !window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
+  const back = await page.evaluate(() => ({ alive: window.__cs.local.alive, out: window.__cs.spec().out, hud: document.getElementById('spectating')?.hidden !== false }));
+  check(back.alive && !back.out && back.hud, `respawning ends watching (${JSON.stringify(back)})`);
+  // Die again and press Space at once: it skips the kill cam.
+  await sim(page, (m, me) => {
+    m.kill(me, m.combatants().find((c) => c.kind === 'bot' && c.alive), 'core.pistol');
+    me.respawnTick = m.tick + 60 * 60;
+  });
+  await page.waitForFunction(() => window.__cs.spec().killCam !== null, null, { timeout: T(5000) }).catch(() => {});
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.__cs.spec().killCam === null, null, { timeout: T(1500) }).catch(() => {});
+  const skipped = await spec();
+  check(skipped.killCam === null && !skipped.free, `a key skips the kill cam (${JSON.stringify({ killCam: skipped.killCam, following: skipped.following })})`);
+  await sim(page, (m, me) => void (me.respawnTick = m.tick));
+  await page.waitForFunction(() => window.__cs.local.alive && !window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
+  // Spectate by choice (pause menu): out of the match, a bot in the place, the free camera; Join game puts you back.
+  const before = await sim(page, (m) => m.combatants().length);
+  const offer = await page.evaluate(() => ({ shown: !document.getElementById('pause-spectate')?.hidden, text: document.getElementById('pause-spectate')?.textContent }));
+  check(offer.shown && offer.text === 'Spectate', `the pause menu offers Spectate (${JSON.stringify(offer)})`);
+  // The menu's button (clicked as the page would: the menu is hidden while a test plays).
+  await page.evaluate(() => document.getElementById('pause-spectate').click());
+  await page.waitForFunction(() => window.__cs.spec().spectator, null, { timeout: T(5000) }).catch(() => {});
+  const out = await sim(page, (m, me) => ({ empty: m.slots[me.slot] === null, spectator: m.isSpectator(me.slot), n: m.combatants().length }));
+  const s1 = await spec();
+  check(s1.spectator && out.empty && out.spectator && out.n === before && s1.rule.freeCam, `spectating takes you out of the match, a bot fills the place (${JSON.stringify(out)}, ${before} before)`);
+  check((await page.textContent('#pause-spectate')) === 'Join game', 'and the button says Join game');
+  await page.evaluate(() => (window.__autoInput = { right: 1 }));
+  await until(async () => (await spec()).following >= 0 || (await spec()).free, T(3000));
+  await page.evaluate(() => delete window.__autoInput);
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
+  await shot('spectator');
+  await page.evaluate(() => document.getElementById('pause-spectate').click());
+  await page.waitForFunction(() => !window.__cs.spec().spectator && window.__cs.local.alive, null, { timeout: T(5000) }).catch(() => {});
+  const joined = await sim(page, (m, me) => ({ human: m.slots[me.slot]?.kind === 'human', n: m.combatants().length }));
+  check(joined.human && joined.n === before && (await page.evaluate(() => window.__cs.local.alive)), `Join game puts you back in play (${JSON.stringify(joined)})`);
+  check(errors.length === 0, `no page errors while spectating (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
 }
 
 /**
@@ -1049,7 +1160,14 @@ async function canyonFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
+  // New offers sizes of open ground (Medium by default) or the sky.
   await page.click('#ed-new');
+  const sizes = await page.$$eval('#ed-new-sizes button', (bs) => bs.map((b) => `${b.dataset.size}${b.classList.contains('on') ? '*' : ''}`));
+  await page.click('#ed-new-create');
+  await page.waitForFunction(() => window.__editor.doc.terrain, null, { timeout: T(5000) }).catch(() => {});
+  const span = await page.evaluate(() => { const t = window.__editor.doc.terrain; return t ? (t.cols - 1) * t.spacing : 0; });
+  check(sizes.join() === '96,160*,240,320,0' && span === 160, `a new map starts on 160 m of terrain; New offers 96/160/240/320 m or the sky (${sizes.join()}; ${span} m)`);
+  await newMap(page);
   // Terrain lives in the Environment workspace (one home per pane).
   await page.click('#ed-env-btn');
   await page.click('#ed-pal-tabs [data-pane="terrain"]');
@@ -1097,7 +1215,7 @@ async function sceneryFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
-  await page.click('#ed-new');
+  await newMap(page);
   // The backdrop lives in Environment → Sky.
   await page.click('#ed-env-btn');
   await page.click('#ed-pal-tabs [data-pane="sky"]');
@@ -1904,6 +2022,54 @@ async function arsenalFlow(browser) {
     if (b) b.speedMul = 1;
   }, target);
   check(!!target && punched && swung > 0, `quick melee with a gun in hand punches the bot in front (${JSON.stringify(target)}, hit ${punched}, first-person punches: ${swung})`);
+  // The Battle Axe: the trigger swings it at the bot in front; the second trigger (right mouse) fires the
+  // blunderbuss in its stock at the bot a few steps out (pellets, smoke, the HUD counting its loads); R loads it again.
+  if (target) {
+    await page.evaluate(() => {
+      window.__autoInput = { buttons: 0 };
+      window.__give('core.battle_axe');
+      window.__cs.input.pitch = -0.12;
+    });
+    await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.battle_axe' && window.__cs.local.raiseTicks === 0, null, { timeout: T(8000) }).catch(() => {});
+    const stand = (dist) => sim(page, (m, me, a) => {
+      const bot = m.actor(a.slot);
+      bot.move = { ...bot.move, pos: { x: me.move.pos.x + Math.sin(me.yaw) * a.dist, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * a.dist }, velY: 0, grounded: true };
+      bot.health = 100;
+      bot.armor = 0;
+      bot.speedMul = 0;
+      return bot.health;
+    }, { slot: target.slot, dist });
+    await stand(1.6);
+    // The trigger held (one swing: it's semi-automatic) until the blow lands.
+    await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+    const chopped = await simWait(page, (m, _me, t) => m.actor(t.slot).health <= 100 - 80, target, T(5000));
+    await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    check(chopped, 'the Battle Axe swings: the bot in front takes the blow');
+    await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] === 2, null, { timeout: T(5000) }).catch(() => {});
+    await stand(5);
+    // After the swing's recovery: the barrel (bit 32, the alt trigger, as right mouse sends with a melee weapon in hand).
+    await page.waitForTimeout(T(900)); // wait-ok: the swing's recovery (48 ticks) before the barrel can fire
+    const clouds = await page.evaluate(() => window.__cs.view.smokeClouds.local);
+    // Held until it goes off (a slow page samples its input seldom), then let go.
+    await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
+    await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] < 2, null, { timeout: T(8000) }).catch(() => {});
+    await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    const blasted = await simWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, T(5000));
+    await page.waitForFunction((n) => window.__cs.view.smokeClouds.local > n, clouds, { timeout: T(5000) }).catch(() => {});
+    const after = await page.evaluate(() => ({ smoke: window.__cs.view.smokeClouds.local, loads: window.__cs.local.inventory.get(window.__cs.local.held)?.[2], hud: `${document.getElementById('ammo-count')?.textContent} ${document.getElementById('ammo-reserve')?.textContent} · ${document.getElementById('ammo-alt')?.textContent}` }));
+    const hp = await sim(page, (m, _me, t) => m.actor(t.slot).health, target);
+    check(blasted && after.smoke > clouds && after.loads < 2 && /RMB Blunderbuss/.test(after.hud), `the Battle Axe's blunderbuss shoots the bot 5 m out from its barrel, in a cloud of smoke (bot at ${hp} HP, loads left ${after.loads}, HUD "${after.hud}", smoke clouds ${after.smoke})`);
+    // R loads the barrel again from its shells (slowly: about a second and a half for one).
+    await page.evaluate(() => (window.__autoInput = { buttons: 4 }));
+    await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] === 2, null, { timeout: T(8000) }).catch(() => {});
+    await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    const ammo = await page.evaluate(() => window.__cs.local.inventory.get(window.__cs.local.held));
+    check(ammo?.[0] === 0 && ammo[2] > after.loads && ammo[1] === 12 - (ammo[2] - after.loads), `R loads the barrel again from its shells (loads ${ammo?.[2]}, shells ${ammo?.[1]})`);
+    await sim(page, (m, _me, t) => {
+      const b = m.actor(t.slot);
+      if (b) b.speedMul = 1;
+    }, target);
+  }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -2162,7 +2328,7 @@ async function raceFlow(browser) {
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
-  await page.click('#ed-new');
+  await newMap(page);
   await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: -2 }));
   const doc = () => page.evaluate(() => window.__editor.doc);
   const raceOf = (d) => d.paths?.find((p) => p.uses.includes('race'));
@@ -2864,6 +3030,22 @@ async function hostgameFlow(browser) {
     const rate = ((await bytes()) - b0) / 5 / 1024;
     // Raw snapshots run ~40 KB/s; compressed, a few (bursty frames on CI push it up, but well under raw).
     check(rate > 0.2 && rate < 20, `the friend's stream is compressed (${rate.toFixed(1)} KB/s)`);
+    // The friend spectates (what the pause menu's button does; the offline flow clicks it): out of the host's
+    // match, a bot in the place, and their camera input keeps them from going idle (PlayerInput.sp); Join game puts them back.
+    const fslot = await friend.evaluate(() => window.__cs.slot);
+    await friend.evaluate(() => window.__cs.spectate(true));
+    const specOn = await simWait(host, (m, _me, s) => m.isSpectator(s) && m.slots[s] === null, fslot, T(10000));
+    await friend.evaluate(() => (window.__autoInput = { forward: 1 }));
+    await friend.waitForFunction(() => window.__cs.spec().spectator && window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
+    await friend.waitForTimeout(1500); // wait-ok: the free camera's input reaches the host for a while
+    await friend.evaluate(() => delete window.__autoInput);
+    const idle = await sim(host, (m, _me, s) => m.idleSeconds(s), fslot);
+    const fstate = await friend.evaluate(() => window.__cs.spec());
+    check(specOn && fstate.spectator && fstate.out && idle < 2, `a friend spectates in the hosted match, their camera input counting as activity (${idle.toFixed(1)} s idle; spectator ${fstate.spectator}, ${fstate.free ? 'free camera' : `following ${fstate.following}`})`);
+    await friend.evaluate(() => window.__cs.spectate(false));
+    const backIn = await simWait(host, (m, _me, s) => m.slots[s]?.kind === 'human' && !m.isSpectator(s), fslot, T(10000));
+    await friend.waitForFunction(() => !window.__cs.spec().spectator, null, { timeout: T(5000) }).catch(() => {});
+    check(specOn && backIn && !(await friend.evaluate(() => window.__cs.spec().spectator)), 'and joins the game again');
     // The host leaves (Leave match, confirmed with a friend in): the friend gets the host-left screen, not a bare error.
     // (The friend is the only one, so the host has named it successor: here it lets that go, as when no handoff
     // can happen; the flow `handoff` covers a successor carrying the match on.)
@@ -2952,6 +3134,22 @@ async function hostcontrolsFlow(browser) {
     return { first, settings, back: open(), host: !tab('host').hidden };
   });
   check(menu.first === 'match' && menu.settings === 'settings' && menu.back === 'match' && menu.host, `pause menu tabs: Match first, Esc back to it, a Host tab for the host (${JSON.stringify(menu)})`);
+  // Mouse users never need Esc: the Back button (top left) and the footer's key hints are buttons.
+  const clicks = await page.evaluate(() => {
+    const open = () => [...document.querySelectorAll('#pause .pause-sec')].find((x) => !x.hidden)?.dataset.sec;
+    document.getElementById('pause-hint-tabs').click();
+    const next = open();
+    const label = document.querySelector('#pause-back .back-label').textContent;
+    document.getElementById('pause-back').click();
+    const back = open();
+    // A held Esc (key repeat) doesn't go back again and again.
+    document.querySelector('#pause [data-tab="settings"]').click();
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', key: 'Escape', repeat: true, bubbles: true }));
+    const held = open();
+    document.getElementById('pause-hint-back').click();
+    return { next, label, back, held, top: document.querySelector('#pause-back .back-label').textContent, after: open() };
+  });
+  check(clicks.next === 'host' && clicks.label === 'Back' && clicks.back === 'match' && clicks.held === 'settings' && clicks.after === 'match' && clicks.top === 'Resume', `the pause menu's Back button and footer hints work by click; a repeating Esc does nothing (${JSON.stringify(clicks)})`);
   const fits = await page.evaluate(() => {
     const r = document.querySelector('#pause .pause-card').getBoundingClientRect();
     return r.top >= 0 && r.bottom <= innerHeight + 1 && r.right <= innerWidth + 1;
@@ -2973,13 +3171,27 @@ async function hostcontrolsFlow(browser) {
   check(hard, 'bot skill changes live');
   // Bots…: the Bots window. Esc closes it (the pause menu's back); then name a bot, give it a look and a skill, Apply.
   await page.evaluate(() => document.getElementById('hc-bots').click());
-  const opened = await page.waitForSelector('#bot-manager', { timeout: T(5000) }).then(() => true, () => false);
+  const opened = await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
   await page.keyboard.press('Escape');
   const escClosed = await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false);
   check(opened && escClosed, `Bots… opens the Bots window and Esc closes it (${opened}, ${escClosed})`);
+  // One level per Esc: the look picker over the Bots window closes first, the window stays.
   await openPanel(page);
   await page.evaluate(() => document.getElementById('hc-bots').click());
-  await page.waitForSelector('#bot-manager', { timeout: T(5000) });
+  await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) });
+  await page.evaluate(() => {
+    document.getElementById('bm-add').click();
+    document.getElementById('bm-look-0').click();
+  });
+  const picking = await page.waitForSelector('#bm-pick-wrap', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
+  await page.keyboard.press('Escape');
+  const oneLevel = await page.evaluate(() => ({ picker: !!document.getElementById('bm-pick-wrap'), window: !!document.getElementById('bot-manager'), paused: !document.getElementById('pause').hidden }));
+  check(picking && !oneLevel.picker && oneLevel.window && oneLevel.paused, `Esc closes the look picker only, not the Bots window too (${JSON.stringify(oneLevel)})`);
+  await page.evaluate(() => document.getElementById('bm-back').click());
+  check(await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false), "the Bots window's Back button closes it");
+  await openPanel(page);
+  await page.evaluate(() => document.getElementById('hc-bots').click());
+  await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) });
   // (Clicks by script: the pause menu may be hidden behind the pointer lock it never got here.)
   await page.evaluate(() => {
     document.getElementById('bm-add').click();
@@ -3006,7 +3218,7 @@ async function hostcontrolsFlow(browser) {
   // A rule change waits for the restart (the panel says so), then Restart match plays with it.
   await page.evaluate(() => {
     document.getElementById('hc-score-plus').click();
-    document.getElementById('hc-apply').click();
+    document.getElementById('hc-apply-rules').click();
   });
   const waiting = await page.waitForFunction(() => window.__cs.host()?.pending?.scoreLimit === 16 && document.getElementById('hc-pending'), null, { timeout: T(5000) }).then(() => true, () => false);
   const still = await sim(page, (m) => m.rules.scoreLimit);

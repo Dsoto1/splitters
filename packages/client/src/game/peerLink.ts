@@ -470,6 +470,10 @@ export class PeerTransport implements Transport {
     this.send({ t: 'ready' });
   }
 
+  sendSpectate(on: boolean): void {
+    this.send({ t: 'spectate', on });
+  }
+
   /** Admin login and commands: a dedicated host (Host Service) runs them for its admin; a browser host refuses them. */
   sendCommand(msg: Extract<ClientMessage, { t: 'host' | 'admin' }>): void {
     if (msg.t === 'admin') rememberAdminToken(`code:${this.code}`, msg.token);

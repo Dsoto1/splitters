@@ -156,6 +156,9 @@ export class Hud {
     this.classes.clear();
     this.statusLines = [];
     this.setClassMenu(false, null);
+    this.setSpectating(null);
+    this.setKillCam(null);
+    this.setWatching(false);
   }
 
   /** The match's mode, for the scoreboard: its objective column, and co-op as one list. */
@@ -494,17 +497,20 @@ export class Hud {
     }
     const def = weaponByCode(held);
     const altDef = def?.alt;
-    const altText = alive && altDef ? (altDef.ammo === 'own' ? `RMB ${altDef.label} · ${owned.get(held)?.[2] ?? 0}` : `RMB ${altDef.label}`) : '';
+    // A melee weapon's barrel loaded from a reserve (the Battle Axe): the counter shows its loads and shells.
+    const barrel = !!def && def.magazine === 0 && !!altDef?.reload;
+    const altText = alive && altDef ? (altDef.ammo === 'own' && !barrel ? `RMB ${altDef.label} · ${owned.get(held)?.[2] ?? 0}` : `RMB ${altDef.label}`) : '';
     if (this.altEl.textContent !== altText) this.altEl.textContent = altText;
     const ammo = owned.get(held);
     this.weaponName.textContent = alive && def ? def.displayName : '';
-    this.ammoReserve.textContent = alive && def && ammo && def.magazine > 0 && !reloading ? String(ammo[1]) : '';
+    this.ammoReserve.textContent = alive && def && ammo && (def.magazine > 0 || barrel) && !reloading ? String(ammo[1]) : '';
     if (!alive || !def || !ammo) this.ammoCount.textContent = '';
+    else if (barrel) this.ammoCount.textContent = reloading ? 'Loading…' : String(ammo[2]);
     else if (def.heat) this.ammoCount.textContent = ammo[3] >= 100 ? 'OVERHEAT' : `${Math.round(ammo[3])}°`;
     else if (def.magazine === 0) this.ammoCount.textContent = '∞';
     else this.ammoCount.textContent = reloading ? 'Reloading…' : String(ammo[0]);
     this.ammoCount.classList.toggle('reloading', reloading || (!!def?.heat && !!ammo && ammo[3] >= 100));
-    this.ammoCount.classList.toggle('low', !!def && def.magazine > 0 && !!ammo && ammo[0] <= Math.ceil(def.magazine / 4));
+    this.ammoCount.classList.toggle('low', !!def && !!ammo && (barrel ? ammo[2] === 0 : def.magazine > 0 && ammo[0] <= Math.ceil(def.magazine / 4)));
     const key = `${alive}|${held}|${[...owned.keys()].join(',')}`;
     if (key === this.lastWeaponBar) return;
     this.lastWeaponBar = key;
@@ -563,16 +569,50 @@ export class Hud {
     this.scope.hidden = !on;
   }
 
-  /** While out of the round: whom you're watching (null hides it). */
-  setSpectating(name: string | null): void {
+  /** While out of play: what you're watching ("Watching Ana", "Free camera") and the controls for it (null hides it). */
+  setSpectating(title: string | null, hint = ''): void {
     let el = document.getElementById('spectating');
     if (!el) {
+      if (!title) return;
       el = document.createElement('div');
       el.id = 'spectating';
-      document.getElementById('crosshair')?.after(el);
+      el.innerHTML = '<b></b><small></small>';
+      this.root.append(el);
     }
-    el.hidden = !name;
-    if (name) el.textContent = `Watching ${name} · Space: next teammate`;
+    el.hidden = !title;
+    if (!title) return;
+    const [b, small] = [el.querySelector('b')!, el.querySelector('small')!];
+    if (b.textContent !== title) b.textContent = title;
+    if (small.textContent !== hint) small.textContent = hint;
+  }
+
+  /** The kill cam's banner: who killed you, with what, and the health they have left (null hides it). */
+  setKillCam(k: { name: string; color: string; weapon: string; hp: number | null } | null): void {
+    let el = document.getElementById('killcam');
+    if (!el) {
+      if (!k) return;
+      el = document.createElement('div');
+      el.id = 'killcam';
+      this.root.append(el);
+    }
+    el.hidden = !k;
+    if (!k) return;
+    const key = `${k.name}|${k.color}|${k.weapon}|${k.hp}`;
+    if (el.dataset.key === key) return;
+    el.dataset.key = key;
+    el.innerHTML = `<small>Killed by</small> <b style="color:${escapeHtml(k.color)}">${escapeHtml(k.name)}</b> <span class="kc-w"></span>${k.hp === null ? '' : ` <span class="kc-hp">${k.hp > 0 ? `${k.hp} HP left` : 'down'}</span>`}<em>Click or Space: skip</em>`;
+    const icon = weaponIcon(k.weapon);
+    const slot = el.querySelector('.kc-w')!;
+    slot.textContent = weaponLabel(k.weapon);
+    if (icon) {
+      icon.title = weaponLabel(k.weapon);
+      slot.replaceChildren(icon);
+    }
+  }
+
+  /** Out of play (dead, or spectating): the crosshair goes. */
+  setWatching(on: boolean): void {
+    if (this.root.classList.contains('watching') !== on) this.root.classList.toggle('watching', on);
   }
 
   /** Aiming down the sights (0..1): the crosshair fades out and a red-dot reticle takes its place. */
@@ -848,7 +888,9 @@ export class Hud {
     };
     const sorted = [...scores].sort(race ? (a, b) => (race.get(a.s)?.[0] ?? 999) - (race.get(b.s)?.[0] ?? 999) || a.s - b.s : (a, b) => b.k - a.k || (b.o ?? 0) - (a.o ?? 0) || a.d - b.d || a.s - b.s);
     const clock = this.timer.textContent ? ` · ${this.timer.textContent} left` : '';
-    const note = final && this.nextMap ? [this.nextMap, this.onlineNote].filter(Boolean).join(' · ') : this.onlineNote;
+    const watching = [...this.roster.values()].filter((p) => p.sp).map((p) => p.name);
+    const spectators = watching.length ? `Spectating: ${watching.join(', ')}` : '';
+    const note = [final && this.nextMap ? this.nextMap : '', this.onlineNote, spectators].filter(Boolean).join(' · ');
     const head = `${final ? 'Final · ' : ''}${this.mapName} · ${this.modeLabel.textContent ?? ''}${final ? '' : clock}`;
     const flags = { cls: this.classes.size > 0, obj: race ? 'Lap' : this.objLabel, ping: this.pings.size > 0 };
     if (!this.teams) {

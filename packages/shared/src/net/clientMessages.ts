@@ -41,6 +41,8 @@ export function parseClientMessage(text: string): ClientMessage | null {
     }
     case 'ready':
       return { t: 'ready' };
+    case 'spectate':
+      return typeof o.on === 'boolean' ? { t: 'spectate', on: o.on } : null;
     case 'standby':
       return typeof o.code === 'string' && /^[A-HJKMNP-Z2-9]{6}$/.test(o.code) ? { t: 'standby', code: o.code } : null;
     case 'ping':
@@ -60,6 +62,7 @@ export function parseClientMessage(text: string): ClientMessage | null {
         if (typeof r.viewTick === 'number') input.viewTick = r.viewTick;
         if (typeof r.say === 'number') input.say = r.say;
         if (typeof r.build === 'number') input.build = r.build;
+        if (r.sp === 1) input.sp = 1;
         inputs.push(input);
       }
       return { t: 'input', inputs };

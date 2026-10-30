@@ -47,6 +47,8 @@ describe('sound manifest', () => {
   it('has a fire sound for every weapon and a pickup sound for every item kind', () => {
     const ids = Object.keys(SOUNDS);
     for (const w of WEAPONS_BY_SLOT) expect(ids, w.id).toContain(w.view.sound ?? `fire.${w.id.replace(/^core\./, '')}`);
+    // A second trigger with its own report (the Battle Axe's blunderbuss).
+    for (const w of WEAPONS_BY_SLOT) if (w.view.altShot) expect(ids, `${w.id} alt`).toContain(w.view.altShot.sound);
     for (const item of CORE_ITEMS) expect(ids, item.id).toContain(`pickup.${item.effect.kind}`);
   });
 });

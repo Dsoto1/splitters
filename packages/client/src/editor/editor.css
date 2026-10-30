@@ -60,6 +60,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
 #ed-quit-dialog p { color: var(--muted); margin: 0 0 12px; }
 .ed-dialog-field { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: var(--muted); }
 .ed-dialog-field input { flex: 1; }
+.ed-new-sizes { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin: 12px 0 14px; }
+.ed-new-sizes button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px; text-align: left; }
+.ed-new-sizes button small { color: var(--muted); font-size: 11px; }
+.ed-new-sizes button.on { border-color: var(--cyan); box-shadow: inset 0 0 0 1px var(--cyan); }
 .ed-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 @media (max-width: 900px) {
   #ed-right { display: none; }

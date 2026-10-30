@@ -32,7 +32,12 @@ export type ClientMessage =
   /** Run the match: only the host (offline, Host game) or a dedicated server's admin; anyone else gets an error. */
   | { t: 'host'; cmd: HostCommand }
   /** Host handoff: the friend the host asked to stand by has opened `code`, where it would host the match if the host went. */
-  | { t: 'standby'; code: string };
+  | { t: 'standby'; code: string }
+  /**
+   * Spectate by choice (`on`), or join play again (off): hosts whose welcome said `spectate` act on it;
+   * others ignore it. The roster marks spectators (`sp`).
+   */
+  | { t: 'spectate'; on: boolean };
 
 /** Bot skills and styles a host can switch to mid-match. */
 export const HOST_BOT_SKILLS = ['easy', 'normal', 'hard'] as const;
@@ -344,6 +349,8 @@ export interface RosterEntry {
   team: string | null;
   /** A signed-in player whose name is their username (checked by the host: account ticket). Other people are guests. */
   acct?: 1;
+  /** A spectator by choice: not in the match (no body, no team, no score in the snapshot); their slot is kept for them. */
+  sp?: 1;
 }
 
 export interface ServerStats {
@@ -456,6 +463,8 @@ export type ServerMessage =
        * (ADMIN_TOKEN), so the pause menu offers the Server admin login, also to players who joined by code.
        */
       dedicated?: boolean;
+      /** The host lets players spectate by choice (ClientMessage spectate); absent from older hosts. */
+      spectate?: 1;
     }
   | { t: 'reject'; reason: string }
   | { t: 'roster'; players: RosterEntry[] }

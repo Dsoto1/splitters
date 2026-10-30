@@ -323,4 +323,48 @@ describe('bot tactics', () => {
     expect(prone).toBeGreaterThan(60 * 3);
     expect(shots).toBeGreaterThan(0);
   });
+
+  it("with the Battle Axe: fires the blunderbuss a few steps out, swings up close, and loads the barrel again when clear", () => {
+    let barrelShots = 0;
+    let swings = 0;
+    let firstBarrelDist = 0;
+    for (const seed of [1, 2, 3]) {
+      const match = new Match(yard(), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, seed);
+      const me = match.addHuman('me')!;
+      const bot = match.addBot('axe', { ...CORE_BOT_PROFILES[3]!, tags: [] }, BOT_DIFFICULTIES.hard)!;
+      place(bot, 0, 8, Math.PI / 2);
+      place(me, 8, 8, -Math.PI / 2);
+      bot.weapons.clear();
+      give(bot, 'core.battle_axe');
+      const axe = [...bot.weapons.values()][0]!;
+      axe.alt = 2;
+      const input = driver(match, me);
+      for (let t = 0; t < 60 * 6; t++) {
+        input();
+        me.health = 100;
+        bot.health = 100;
+        for (const e of match.step()) {
+          if (e.e === 'shot' && e.s === bot.slot && e.alt) {
+            if (!barrelShots) firstBarrelDist = Math.hypot(bot.move.pos.x - me.move.pos.x, bot.move.pos.z - me.move.pos.z);
+            barrelShots++;
+          }
+          if (e.e === 'melee' && e.s === bot.slot) swings++;
+        }
+      }
+      // Nobody about: it loads the barrel again from its shells.
+      me.alive = false;
+      axe.alt = 0;
+      const reserve = axe.reserve;
+      let loaded = 0;
+      for (let t = 0; t < 60 * 4; t++) {
+        match.step();
+        loaded = Math.max(loaded, axe.alt);
+      }
+      expect(loaded).toBeGreaterThan(0);
+      expect(axe.reserve).toBeLessThan(reserve);
+    }
+    expect(barrelShots).toBeGreaterThan(0);
+    expect(firstBarrelDist).toBeGreaterThan(getWeapon('core.battle_axe').range);
+    expect(swings).toBeGreaterThan(0);
+  });
 });

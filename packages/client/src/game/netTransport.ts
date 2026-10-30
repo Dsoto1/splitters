@@ -88,6 +88,10 @@ export class NetTransport implements Transport {
     this.send({ t: 'ready' });
   }
 
+  sendSpectate(on: boolean): void {
+    this.send({ t: 'spectate', on });
+  }
+
   sendCommand(msg: Extract<ClientMessage, { t: 'host' | 'admin' }>): void {
     if (msg.t === 'admin') rememberAdminToken(this.url, msg.token);
     this.send(msg);

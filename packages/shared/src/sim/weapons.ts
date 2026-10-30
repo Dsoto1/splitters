@@ -144,6 +144,19 @@ export interface AltFire {
   /** Hitscan reach (m); absent: the weapon's own range (a melee weapon's barrel needs its own). */
   range?: number;
   projectile?: ProjectileSpec;
+  /**
+   * Own rounds loaded one at a time (cosmetic open, `each` per round, close; ticks) from the
+   * weapon's reserve (`reserveMax` / `pickupAmmo` / `ammo` of the weapon), up to `max`: the
+   * Battle Axe's barrel. The reload key and an empty trigger start it. Absent: own rounds only
+   * come from pickups (an underbarrel grenade).
+   */
+  reload?: { start: number; each: number; end: number };
+  /** Mechanical recoil of this trigger (absent: none); a melee weapon also settles by it. */
+  kick?: KickSpec;
+  /** Damage over distance for this trigger's hitscan (absent: the weapon's own). */
+  falloff?: FalloffSpec;
+  /** Head multiple for this trigger's hitscan (absent: the weapon's own). */
+  headshot?: number;
 }
 
 /** First-person and third-person presentation (client only; the server ignores it). */
@@ -166,6 +179,13 @@ export interface WeaponPresentation {
   beam?: boolean;
   /** Muzzle flash: an effect of public/vfx/muzzle_flash.json and its size (default: by family, client game/muzzleFlash.ts). */
   muzzle?: { effect: string; scale?: number };
+  /** Where the muzzle is on the model (default: the front of its bounds, a little above the middle). */
+  muzzleAt?: ModelPoint;
+  /**
+   * The second trigger's shot when it isn't the weapon's own (a melee weapon's barrel): its
+   * sound and playback rate, its flash, and how much smoke it leaves (0..1.5, a puff cloud).
+   */
+  altShot?: { sound: string; rate?: number; flash: { effect: string; scale?: number }; smoke?: number };
 }
 
 /** A point on a weapon model, in model space (metres; +Z along the barrel, +Y up, +X right). */
@@ -641,19 +661,33 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
  * Weapons made for the owner's own Meshy models (content/guns.json, pack
  * meshy-owned-guns), added last so every older weapon keeps its code. The
  * Battle Axe is the heavy melee weapon: a slow, wide swing that hits hard and
- * shoves, with a short scattergun barrel in the haft for the second trigger
- * (two shells of its own, topped up by explosives and ammo boxes like an
- * underbarrel grenade).
+ * shoves, and a black-powder blunderbuss for the second trigger (two loads in
+ * the barrel, reloaded one at a time from a reserve of shotgun shells).
  */
 function ownedWeapons(): Record<string, WeaponDefinition> {
   const list: WeaponDefinition[] = [
     weapon({
       id: 'core.battle_axe', displayName: 'Battle Axe', category: 'melee', kind: 'melee', slot: 1, fireMode: 'semi',
-      damage: 85, fireIntervalTicks: 48, range: 2.7, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 18, knockback: 6,
-      alt: { label: 'Haft barrel', ammo: 'own', cost: 1, max: 2, pickup: 2, fireIntervalTicks: 40, kind: 'hitscan', damage: 12, pellets: 8, spread: 0.08, range: 22 },
+      damage: 85, fireIntervalTicks: 48, range: 2.7, magazine: 0, reloadTicks: 0, raiseTicks: 18, knockback: 6,
+      // Powder and shot: shotgun shells (shell boxes and the general ammo box top it up), loaded into the barrel by hand.
+      ammo: 'shells', reserveMax: 12, pickupAmmo: 4,
+      // The blunderbuss (docs/ARSENAL.md): a wide, short cone of nine pellets that falls off fast (it
+      // never outreaches the Shotgun), two loads, each rammed home in a slow 1.1 s, and a big kick.
+      alt: {
+        label: 'Blunderbuss', ammo: 'own', cost: 1, max: 2, pickup: 2, fireIntervalTicks: 36, kind: 'hitscan',
+        damage: 11, pellets: 9, spread: 0.12, range: 24, headshot: 1.25,
+        falloff: { start: 4, end: 16, min: 0.2, curve: 'steep' },
+        reload: { start: 16, each: 66, end: 14 },
+        kick: { pitch: [0.1], yaw: [0.016, -0.012], variance: 0.006, delay: 10, settle: 4, rate: 0.12, visual: 1.4 },
+      },
       botDesirability: 0.45, botRange: [0, 2.5],
-      // Model: the owner's Steampunk Battle Axe (Meshy, owned), held by its wrapped haft with the blade forward.
-      view: { model: 'guns/battle_axe.glb', fallback: 'weapons/knife.glb', viewOffset: [0.24, -0.26, 0.42], tracer: '#ffd9a0', sound: 'fire.knife', hold: { style: 'melee', grip: [0, 0, -0.3] } },
+      // Model: the owner's Steampunk Battle Axe (Meshy, owned): a flintlock blunderbuss with an axe blade under the
+      // muzzle, held by its stock with the blade forward. The bore's mouth is the front of the barrel, on top.
+      view: {
+        model: 'guns/battle_axe.glb', fallback: 'weapons/knife.glb', viewOffset: [0.24, -0.26, 0.42], tracer: '#ffd9a0', sound: 'fire.knife', hold: { style: 'melee', grip: [0, 0, -0.3] },
+        muzzleAt: [0, 0.062, 0.4],
+        altShot: { sound: 'fire.shotgun', rate: 0.78, flash: { effect: 'wide_flash_02', scale: 0.32 }, smoke: 1.2 },
+      },
     }),
   ];
   return Object.fromEntries(list.map((w) => [w.id, w]));

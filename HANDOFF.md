@@ -1,29 +1,81 @@
-# Handoff: where Tile Trigger stands (2026-10-29, evening)
+# Handoff: where Tile Trigger stands (2026-10-30, afternoon)
 
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
-## Start here (session of 2026-10-30, handed off to a new account)
+## Start here (session of 2026-10-30 afternoon, handed off)
 
 **Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.
 The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
+Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
-### Where things stand
-- **On `main`** (green on CI):
-  - the perf96 drawn-frame fix and the hostcontrols End-match double click;
-  - `wip/bot-manager`;
-  - High graphics no longer blurry (the sun-ray pass at full size);
-  - bodies without a ragdoll fall under gravity;
-  - `wip/character-intake` (24 new Meshy characters and hand fixes);
-  - `wip/host-handoff` (the second friend rejoins the successor);
-  - universal first-person arms for Brass Hare, Teddy and Saint Nick.
-- **Also on `main`** (`d6ecee1`, green):
-  - `wip/weapons-variety`: the owner's weapon and turret models, the Battle Axe, random pickups and "Mix up weapon pickups";
-  - `wip/roster-cleanup`'s first two commits;
-  - the ladder path fix.
-- **Also on `main`** (`4176d3d`, green): `wip/pause-safari` (wider pause menu, Safari look filter, zoom sensitivity).
-- **Also on `main`** (`384ffe7`, green): `wip/impact` (batch 2): stopping power, bigger explosion knockback, tiered ragdolls (full, cheap, posed; a body pool; a budget of awake bodies; `pnpm perf:mass`), unarmed punch and kick (Universal Animation Library clips), and Arena-tagged bots hopping only in fights on the "Mixed" style. **No agents are running; every requested branch is merged.**
+### Where things stand (end of the 2026-10-30 afternoon session)
+- **`main` is at `cf8c3e5`** (everything up to `wip/impact`, green).
+- **The session branch is ahead of `main`** with everything below, all merged. CI on `check/candidate` was
+  running on **`77a2fee`** at hand-off. Earlier runs: `b36156e` failed only on the MapMaker screenshot baseline
+  (regenerated since) and on the mobile "a tap on the pad middle jumps" check (fixed since in `bb06a47`: the
+  hold timer crouched before a late lift was seen). **Next step: read that run; if green, fast-forward `main`
+  (`git push origin 77a2fee:main`, or the newer head if you pushed fixes); if red, fix and push to
+  `check/candidate` again.**
+- **What's on the session branch and not on `main` yet** (owner's requests of 2026-10-30):
+  - Character Select: drag to turn the character (`MenuScene.spin`/`resetSpin`, `.char-spin` in frontEnd.ts);
+    all built-in portraits shipped (26 were drawn live, freezing the page for seconds); your designs' portraits
+    kept in localStorage `cs.portraits` on save; one mannequin and no cyclops/oculus blobs in the list
+    (`PLAYER_NPC_LOOKS`).
+  - Muzzle flashes no longer brighten the whole scene's ambient light (it lit every wall, indoors and out).
+  - Sounds synthesise one per task (the first click froze the page).
+  - Weapon switching: one step per wheel notch / ~60 px of trackpad (`InputState.scroll`), first-person guns
+    kept once built (`View.viewmodels`).
+  - MapMaker: new maps start on 160 m of grass terrain; New opens a size dialog (96/160/240/320 m or Sky map);
+    "nothing to stand on" check message mentions terrain.
+  - Merged agent branches: `wip/bot-vehicles`, `wip/weapon-wheel-mobile`, `wip/pause-menu`, `wip/spectate`,
+    `wip/battle-axe` (details below).
+- **Still open as branches** (agents stopped at hand-off; read their HANDOFF notes on the branch, merge through
+  `check/candidate`):
+  - `wip/posture-buggy` (`5e2de5e`; typecheck, all unit tests, content:check, build and the `characters`,
+    `designer`, `race` e2e pass; **`vehicles` and `canyon` e2e timed out under load, not re-run**):
+    - Bonesworth rebuilds byte-identical again: the looser triangle cut (2d9ad08) is now for rigged downloads only.
+    - Feet: Meshy's rig put the toe joint high, so 19 Meshy-rigged characters stood 7–23° toes up (King Aldric
+      ~21°); each foot is now levelled about its ankle (heel and forefoot lows level, ±3° left alone), rebuilt
+      from their recorded rig tasks (no new credits).
+    - Lean: Bonesworth (spine 10°→1°, neck 48°→16°), Rustwalker, Rotter, Grandpa Chains.
+    - Buggy: the owner's Meshy buggy body + tyre (`vehicles/offroad_buggy.glb` 6.8k tris, `offroad_tire.glb`
+      0.7k), `MountDef.wheels` places tyres at the hubs; old Kenney buggy deleted; gun jeep unchanged.
+      Suggested 4 seats (+Z forward, +X right): driver [-0.32, 0.72, 0.2], front passenger [0.32, 0.72, 0.2],
+      back [∓0.32, 0.75, -0.55]; roof gunner standing [0, 0.6, -1.15]. Driver side is a guess from the wheel.
+    - Open: buggy hit box still [1.0, 0.6, 2.0] half-extents (model ~4.4×2.0×1.7 m); dark coarse dash in the
+      cockpit view; Titan, Alien, Salamander not rebuilt (downloads not available); Monk and Merrow (robes)
+      restored as shipped; Bonesworth's left hand hovers open over the handguard on his grip sheet.
+    - Next: re-run `vehicles`, `canyon` on a quiet machine, then merge through `check/candidate`.
+  - `wip/fp-grips` (`5bdc56a`, typecheck and unit tests pass; **e2e not run**): first-person support hand no
+    longer floats off big guns. Causes: the first-person arms were placed by the character's head height (a
+    hunched body's shoulders ended up 0.43 m in front of the eye) and first person had no reach handling (the IK
+    stretched and stopped short by 6–13 cm). Fix in `characterAnimator.ts` (shoulders set from the view, come
+    forward only as far as needed; the support hand slides back along the handguard, at least 12 cm from the grip;
+    cups long guns from below; a free left hand hangs out of view) and `firstPersonArms.ts` (body 8 cm behind the
+    eye). New `__grips.miss()` and a `characters` e2e check (both palms within 2 cm on rifle, Singularity Cannon,
+    Spin Gun, flamethrower for Scout, Biscuit, Grizzelda). Next: run `characters`, `designer`, `arsenal`,
+    `visual` (baselines may move with the arms: look before regenerating), then merge through
+    `check/candidate`. Left alone: the Salamander Warlord's big claws cover pistols (a hand-size content fix);
+    `__give('core.singularity')` didn't switch weapons in one offline test (not looked into).
+- **Owner's requests not started yet:**
+  - Buggy (and any vehicle that fits) seats a driver + 3 passengers, seated, who can shoot
+    (sim: `packages/shared/src/sim/mounts.ts` seats).
+  - St. John's from real data: the owner's Google Maps key (`GOOGLE_MAPS_API_KEY`) is refused (Geocoding not
+    allowed by the key's API restrictions, Elevation needs billing, Static 403, 3D Tiles 404). The owner set up a
+    key on another Google account: they must update the environment variable and start a new session. Google's
+    terms don't allow copying its map content into the game; OpenStreetMap (footprints, roads, lake shore) plus
+    USGS 3DEP elevation (public domain) are the suggested sources, used to guide editing in MapMaker (no map
+    build scripts).
+- **Local e2e at hand-off (machine load 12–25, so timing-sensitive):** `mobile`, `offline`, `designer`,
+  `editor`, `editorux`, `canyon`, `scenery`, `race` passed. `arsenal` failed "hazards are drawn on the ground"
+  (failed under load before the axe merge too) and "the Battle Axe swings: the bot in front takes the blow"
+  (passed in the axe agent's own run). If CI shows the same, look at the axe swing check first.
+- **Not checked by eye / on real hardware:** Esc in Safari fullscreen, a real controller in the menus, touch
+  controls on a real phone, the kill-cam framing, the axe's smoke and kick.
+
+### Notes from this session's agents (all merged)
 - **On `wip/bot-vehicles`** (not merged; full CI not run yet): bot vehicle sense (`bots/vehicles.ts`, `brain.ts`; tests in `test/botVehicles.test.ts`).
   - Stuck drivers back out for 1 s, then get out if still stuck within 3 s, and avoid that vehicle for 30 s.
   - Riders leave a stuck bot-driven vehicle; everyone leaves a burning one.
@@ -35,10 +87,17 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - `fixes.lean` on Bonesworth, Rustwalker, Rotter and Grandpa Chains. The looser triangle cut now applies to rigged downloads only, so an unrigged rebuild reproduces its shipped file (Bonesworth was byte for byte).
   - Not rebuilt (community downloads not in either folder): Titan (head forward), Alien and Salamander (toes up 8-11 degrees). Download them by hand to fix.
   - The owner's buggy (`vehicles/offroad_buggy.glb` + `offroad_tire.glb` drawn at the hubs from the def's `wheels`); seats moved onto the model. The owner wants driver + 3 shooting passengers (sim work for another agent): front passenger [0.32, 0.72, 0.2], back seats [-0.32, 0.75, -0.55] and [0.32, 0.75, -0.55]. The cockpit view looks over a dark, coarse dash; the chase camera is the better view. The hit box is still the old 4 x 1.2 m one (model 4.4 x 1.7 m).
+- **On `wip/battle-axe`** (not merged; full CI not run): the Battle Axe is also a black-powder blunderbuss (owner's ask). Swing on fire, blunderbuss on the alt trigger (right mouse with a melee weapon in hand). Numbers and the ammo choice (shotgun shells loaded by hand into a 2-load barrel) are in docs/ARSENAL.md.
+  - Sim: `AltFire.reload` / `kick` / `falloff` / `headshot`; `barrelLoader` in gunplay.ts runs the barrel's reload as a shell-by-shell magazine; client prediction mirrors it.
+  - Client: `view.muzzleAt` (the bore, measured from the GLB) and `view.altShot` (sound, rate, flash, smoke) in the weapon data; `View.muzzleSmoke`.
+  - Bots: `barrelReach`; melee bots now close all the way in (they used to hover at ~4.5 m and never swing).
+  - Not judged by eye at full frame rate: the smoke cloud's size and life, and the kick. The machine ran at ~0.3 fps during the checks.
+  - The touched files map to the FULL e2e set; only `arsenal` was run locally. Merge through `check/candidate`.
 - **Open items:**
   - `perf:mass` classes some deaths as out of view when they are on screen; check the view test before trusting its tier counts;
   - kick and flinch feel not judged by eye yet;
   - Safari look: the owner tests it; if it is still off, ask for `window.__lookStats` from the console.
+- **`wip/spectate`** (not merged; needs a `check/` run, the shared sim changed so CI runs everything): kill cam, watching while dead (follow / free camera) and spectating by choice (`game/spectatorCam.ts`, `Match.spectate` / `joinFromSpectating`, `BotFiller.spectate` / `rejoin`; protocol additions in docs/MULTIPLAYER_PROTOCOL.md §15: `spectate` message, `welcome.spectate`, `RosterEntry.sp`, `PlayerInput.sp`, all optional, protocol stays 4). Rule: dead team players follow teammates only, no free camera; pure spectators, FFA, offline and the host/admin get everything. Spectators come back as players after a map change or a handoff. Tested: unit (`shared/test/spectate.test.ts`, `client/test/spectatorCam.test.ts`, a server test), e2e `offline` (spectate checks at its end) and `hostgame` (a friend spectates). Not judged by eye on a real match: kill-cam framing (can be blocked by a wall between your body and the killer) and the touch buttons.
 - **`wip/weapon-wheel-mobile`** (not merged yet; needs a `check/` run): the weapon wheel (`game/weaponWheel.ts`; hold Q, a tap keeps the last-weapon switch; hold Y on a controller; Options → Controls rebinds the key) and touch controls for phones (`game/touchControls.ts`, `touchDevice.ts`; every on-screen button is `InputState.virtualKey`, the pad `setTouchMove`, look `addTouchLook`, and `touchEngaged` stands in for pointer lock). New e2e flow `mobile` (Pixel 7 landscape, CDP touches). Pad-middle tap vs hold is decided from the events' timestamps, since a slow software-rendered page handles the lift late. Not judged on a real phone yet: the button layout, look speed (`TOUCH_LOOK`) and the 16-player phone host cap are first guesses.
 - **Not merged on purpose:** roster-cleanup's WIP commit 899537c (helmets worn on four looks; fit values are guesses, never checked visually). Finish the helmet fits (Commando, Engineer, beret and headband heights, Farmhand hat, Drifter mask, Dapper jacket weights) on a new branch.
 - **Owner to-dos:**
@@ -46,6 +105,12 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
   - send Boglurker's original FBX (right hand not skinned);
   - review the new characters (section 4);
   - confirm the Plains Scout model is respectful.
+- **On `wip/pause-menu`** (not merged; touches style.css, so CI runs everything): the pause menu's card layout and one-level Back.
+  - Host tab: cards in CSS columns (`.hc-grid`, `columns: 2 400px`, each card `break-inside: avoid`); `#hc-apply` applies players and bots only, the new `#hc-apply-rules` the restart rules.
+  - Back: `#pause-back`, `#screen-back` (front-end screens), `#bm-back`, `#hm-back`; footer hints are buttons (`#pause-hint-*`, `#hint-*`).
+  - Esc: `fullscreen.ts` `browserTookEscape()` skips a repeating Esc, one the browser uses to leave fullscreen (no Keyboard Lock: Safari), and one within 250 ms of the mouse being freed. The pause handler stops the event, so the Bots window doesn't act on it again (that closed the look picker and the window in one press).
+  - `inputMode.ts`: `data-input="kbm" | "pad"` on `<html>` picks the glyphs; it also feeds controller presses to the main menu (`FrontEnd.onPad`).
+  - Not checked on a real Safari or with a real controller: the owner should try Esc in fullscreen on Safari and a pad in the main menu.
 
 ### Machine notes (agents share one container)
 - **Ports:** run e2e on your own ports (`E2E_CLIENT_PORT`/`E2E_SERVER_PORT`; the lobby flow has hub ports too). The defaults collide between checkouts.
@@ -151,7 +216,7 @@ Start the rest when agent slots free up:
   Tommy Gun → SMG, Gatling → Spin Gun, military sniper → Sniper Rifle, Neon Flux → Burst Rifle, Frontier Rifle →
   Marksman Rifle, Futuristic Blaster → Plasma Rifle, ornate energy handgun → Pulse Pistol, Freeze Gun → Freeze Ray,
   Glue Gun → Goo Gun, toy MG on a tripod → Heavy MG Turret, Large Sentry Gun → Sentry Gun, Medkit → health pickups
-  and the Medkit/Medi-Beam. New weapon: Battle Axe (heavy melee, haft-barrel alt). The Styloo MAC-10 and AWP and the
+  and the Medkit/Medi-Beam. New weapon: Battle Axe (heavy melee, blunderbuss alt). The Styloo MAC-10 and AWP and the
   community plasma spin gun were dropped (replaced).
 - **Pickups:** `category` on weapon defs; `random` / `keepFixed` on pickups (map format v24); `mixPickups` rule
   (setup → Arsenal; host panel, live); `sim/pickupRoll.ts`; snapshot `pw`.

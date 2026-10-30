@@ -1,18 +1,23 @@
 /**
  * The pause menu's navigation: one level of tabs (Match, Host, Settings),
- * a dialog or picker over them at most. Esc / gamepad B goes back a level
- * (dialog → tab → Match), then resumes. Q / E and LB / RB switch tabs; ↑ / ↓
- * and the d-pad move the focus, Enter / A presses.
+ * a dialog or picker over them at most. Esc / gamepad B / the Back button
+ * (top left) go back one level per press (dialog → tab → Match), then resume.
+ * Q / E and LB / RB switch tabs; ↑ / ↓ and the d-pad move the focus, Enter /
+ * A presses. The footer's key hints are buttons too (Back, Tabs, Fullscreen),
+ * with the controller's glyphs when a controller was used last.
  */
+import { fullscreenSupported, isFullscreen, toggleFullscreen } from '../fullscreen.ts';
+import { PAD, glyphs } from '../inputMode.ts';
+
 export type PauseTab = 'match' | 'host' | 'settings';
 
 const $ = (id: string) => document.getElementById(id)!;
-/** Standard-mapping gamepad buttons the menu reads. */
-const PAD = { a: 0, b: 1, lb: 4, rb: 5, start: 9, up: 12, down: 13, left: 14, right: 15 } as const;
 
 export class PauseMenu {
   tab: PauseTab = 'match';
   private prevPad: boolean[] = [];
+  private readonly backLabels: HTMLElement[] = [];
+  private fullscreenLabel: HTMLElement | null = null;
 
   constructor(
     private readonly hooks: {
@@ -22,11 +27,60 @@ export class PauseMenu {
       overlay: () => HTMLElement | null;
       /** Called when a tab opens (to refresh what it shows). */
       opened?: (tab: PauseTab) => void;
+      /** Back from the top (Match, nothing open) goes here instead of resuming (MapMaker TEST: back to MapMaker). */
+      top?: { label: string; act: () => void };
     },
     signal: AbortSignal,
   ) {
     for (const b of this.tabButtons()) b.addEventListener('click', () => this.show(b.dataset.tab as PauseTab), { signal });
+    const back = document.getElementById('pause-back');
+    if (back) {
+      back.addEventListener('click', () => this.back(), { signal });
+      const label = back.querySelector<HTMLElement>('.back-label');
+      if (label) this.backLabels.push(label);
+    }
+    this.buildHints(signal);
+    // Dialogs and pickers open over the tabs by joining #pause: the Back labels follow.
+    const pause = document.getElementById('pause');
+    if (pause) {
+      const watch = new MutationObserver(() => this.refresh());
+      watch.observe(pause, { childList: true });
+      signal.addEventListener('abort', () => watch.disconnect());
+    }
+    document.addEventListener('fullscreenchange', () => this.refresh(), { signal });
     this.show('match');
+  }
+
+  /** The footer's key hints, each a button doing what its key does. */
+  private buildHints(signal: AbortSignal): void {
+    const bar = document.getElementById('pause-hints');
+    if (!bar) return;
+    const hint = (id: string, keys: HTMLElement[], label: string, title: string, act: () => void) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.id = id;
+      b.className = 'hint-btn';
+      b.title = title;
+      const text = document.createElement('span');
+      text.textContent = label;
+      b.append(...keys, text);
+      b.addEventListener('click', act, { signal });
+      bar.append(b);
+      return text;
+    };
+    bar.replaceChildren();
+    this.backLabels.push(hint('pause-hint-back', glyphs('Esc', 'B', 'b'), 'Back', 'Back one level (Esc, controller B)', () => this.back()));
+    hint('pause-hint-tabs', [...glyphs('Q', 'LB'), ...glyphs('E', 'RB')], 'Tabs', 'Next tab (Q / E, controller LB / RB)', () => this.cycle(1));
+    if (fullscreenSupported()) this.fullscreenLabel = hint('pause-hint-fullscreen', glyphs('F11'), 'Fullscreen', 'Fullscreen on or off (F11)', () => void toggleFullscreen());
+  }
+
+  /** What Back does from here, on the Back button and the footer's hint. */
+  private refresh(): void {
+    const label = this.hooks.overlay() ? 'Back' : this.tab !== 'match' ? 'Back' : (this.hooks.top?.label ?? 'Resume');
+    for (const l of this.backLabels) l.textContent = label;
+    const back = document.getElementById('pause-back');
+    if (back) back.title = this.hooks.overlay() ? 'Close the window (Esc)' : this.tab !== 'match' ? 'Back to Match (Esc)' : `${label} (Esc)`;
+    if (this.fullscreenLabel) this.fullscreenLabel.textContent = isFullscreen() ? 'Exit fullscreen' : 'Fullscreen';
   }
 
   private tabButtons(): HTMLButtonElement[] {
@@ -48,6 +102,7 @@ export class PauseMenu {
       b.setAttribute('aria-selected', String(on));
     }
     for (const s of document.querySelectorAll<HTMLElement>('#pause .pause-sec')) s.hidden = s.dataset.sec !== tab;
+    this.refresh();
     this.hooks.opened?.(tab);
   }
 
@@ -59,21 +114,23 @@ export class PauseMenu {
     if (next) this.show(next.dataset.tab as PauseTab);
   }
 
-  /** Esc / B: close the dialog, else back to Match, else resume. */
   /** On the Match tab with no dialog open: one more Esc would leave the menu. */
   get atTop(): boolean {
     return !this.hooks.overlay() && this.tab === 'match';
   }
 
+  /** Esc / B / Back: close the dialog, else back to Match, else resume (or the `top` hook). One level per call. */
   back(): void {
     const overlay = this.hooks.overlay();
     if (overlay) {
       const cancel = overlay.querySelector<HTMLButtonElement>('[data-cancel], #hm-close');
       if (cancel) cancel.click();
       else overlay.remove();
+      this.refresh();
       return;
     }
     if (this.tab !== 'match') return this.show('match');
+    if (this.hooks.top) return this.hooks.top.act();
     this.hooks.resume();
   }
 

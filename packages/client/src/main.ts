@@ -26,6 +26,7 @@ import { MAP_INDEX, builtInMapJson, loadBuiltInMap, type MapIndexEntry } from '.
 import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
 import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
+import { installInputMode } from './inputMode.ts';
 import { markTouchDevice } from './touchDevice.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
 import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
@@ -223,6 +224,7 @@ volumeInput.addEventListener('input', () => {
 });
 for (const type of ['pointerdown', 'keydown'] as const) window.addEventListener(type, () => audio.unlock(), { capture: true });
 installFullscreenKeys();
+installInputMode();
 (window as unknown as { __audio: AudioSystem }).__audio = audio;
 
 /** Top-level shell: one Babylon engine shared by the main menu, MapMaker and game sessions. */
