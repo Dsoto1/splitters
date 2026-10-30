@@ -510,3 +510,23 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 .ed-ctx button:focus-visible { background: rgba(255, 255, 255, 0.08); outline: none; }
 .ed-ctx button[disabled] { opacity: 0.4; cursor: default; }
 .ed-ctx kbd { opacity: 0.6; font: 12px var(--font-mono, monospace); }
+
+/* The top bar fits itself (editorApp fitTopBar): whenever its contents overflow, whatever the browser draws them
+   at (Safari's controls are wider than Chrome's), it steps through these until they fit; PLAY TEST never leaves. */
+#ed-top #ed-test { flex-shrink: 0; }
+#ed-top.fit-1 .ed-brand { display: none; }
+#ed-top.fit-2 .wide { display: none; }
+#ed-top.fit-2 .narrow { display: inline; }
+#ed-top.fit-2 #ed-name { width: 120px; }
+#ed-top.fit-2 .ed-pick > span { display: none; }
+#ed-top.fit-2 #ed-theme { max-width: 104px; }
+#ed-top.fit-2 #ed-bots, #ed-top.fit-2 #ed-skill { max-width: 76px; }
+#ed-top.fit-3 .ed-file button:nth-child(n + 4) { display: none; }
+#ed-top.fit-3 #ed-name { width: 96px; }
+#ed-top.fit-3 #ed-snap { max-width: 84px; }
+#ed-top.fit-4 #ed-skill { display: none; }
+#ed-top.fit-4 #ed-grid { padding: 5px; }
+#ed-top.fit-4 #ed-theme { max-width: 84px; }
+#ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
+#ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }
+#ed-tr-edit .ed-tr-swap button { flex: none; margin: 0; }

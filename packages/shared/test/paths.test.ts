@@ -18,9 +18,14 @@ describe('paths', () => {
     expect(Math.max(...across) - Math.min(...across)).toBeLessThan(0.05);
     // Far away it is untouched.
     expect(terrainHeightAt(t, 4, 16)).toBeCloseTo(terrainHeightAt(doc.terrain!, 4, 16)!, 5);
-    // Painted dirt under it.
+    // Painted dirt only where a whole cell is under it: a 4 m path on a 2 m grid covers no whole cell, so no
+    // squares of paint stick out past its edges.
     const cell = (x: number, z: number) => Math.floor((z - t.origin[1]) / t.spacing) * (t.cols - 1) + Math.floor((x - t.origin[0]) / t.spacing);
-    expect(t.materials[cell(0, 0.5)]).not.toBe(doc.terrain!.materials[cell(0, 0.5)]);
+    expect(t.materials).toEqual(doc.terrain!.materials);
+    const wide = sloped({ width: 8 });
+    const tw = layPathsIntoTerrain(wide.terrain!, wide.paths!);
+    expect(tw.materials[cell(0, 0.5)]).not.toBe(wide.terrain!.materials[cell(0, 0.5)]);
+    expect(tw.materials[cell(0, 3.5)]).toBe(wide.terrain!.materials[cell(0, 3.5)]);
   });
 
   it('load lays them once, and a loaded map loads the same again', () => {

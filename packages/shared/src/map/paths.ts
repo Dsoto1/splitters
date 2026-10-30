@@ -38,8 +38,8 @@ const smooth = (v: number): number => {
 /**
  * The terrain with every laid path in it: under a path the ground is the
  * path's height, flat across; over `shoulder` metres either side it blends
- * back; the cells under it are painted the path's ground and lose their
- * plants. Returns the same terrain when no path lays.
+ * back; the cells wholly under it are painted the path's ground, and the
+ * cells it crosses lose their plants. Returns the same terrain when no path lays.
  */
 export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): TerrainData {
   const laid = paths.filter((p) => p.lay && pathDrawn(p) && p.points.length >= 2);
@@ -102,10 +102,13 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
         const x = t.origin[0] + (c + 0.5) * t.spacing;
         const z = t.origin[1] + (r + 0.5) * t.spacing;
         const near = g.nearest(x, z, half + 2);
-        if (!near || Math.abs(near.lateral) > half + t.spacing * 0.35) continue;
+        if (!near) continue;
+        const d = Math.abs(near.lateral);
         const i = r * (t.cols - 1) + c;
-        if (paint >= 0) materials[i] = paint;
-        if (foliage.length) foliage[i] = 0;
+        // Paint only cells wholly under the path (the ground is one material per cell, so painting the edge
+        // cells drew a staircase of squares along the road); plants go a little wider.
+        if (paint >= 0 && d <= half - t.spacing * 0.71) materials[i] = paint;
+        if (foliage.length && d <= half + t.spacing * 0.35) foliage[i] = 0;
       }
     }
   }

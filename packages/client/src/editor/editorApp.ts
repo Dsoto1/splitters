@@ -257,6 +257,27 @@ const NEW_MAP_SIZES: readonly [number, string, string][] = [
   [0, 'Sky map', 'No terrain · floating'],
 ];
 
+/** The material most of the terrain is (its index in TERRAIN_MATERIALS). */
+function mainGround(t: TerrainData): number {
+  const counts = new Map<number, number>();
+  for (const m of t.materials) counts.set(m, (counts.get(m) ?? 0) + 1);
+  let best = 0;
+  let most = -1;
+  for (const [m, n] of counts) if (n > most) (best = m), (most = n);
+  return best;
+}
+
+/** The top bar's compact layouts (editor.css, fit-1..4): the fewest that make its contents fit its width. */
+function fitTopBar(top: HTMLElement): void {
+  if (top.offsetParent === null) return;
+  const levels = ['fit-1', 'fit-2', 'fit-3', 'fit-4'];
+  top.classList.remove(...levels);
+  for (const c of levels) {
+    if (top.scrollWidth <= top.clientWidth + 1) break;
+    top.classList.add(c);
+  }
+}
+
 /** A blank map: the starter room and spawn, on open ground of `size` metres (just under the floors) or none. */
 function starterMap(size: number | null, ground: TerrainMaterial): MapDocument {
   const doc = newMapDocument('Untitled Map');
@@ -573,6 +594,11 @@ export class EditorApp {
       pointer: () => this.pointerAt,
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
+    // The top bar steps through its compact layouts until it fits, whenever its width or contents change.
+    const top = $('ed-top');
+    new ResizeObserver(() => fitTopBar(top)).observe(top);
+    new MutationObserver(() => fitTopBar(top)).observe($('ed-status'), { childList: true, characterData: true, subtree: true });
+    void document.fonts?.ready.then(() => fitTopBar(top));
     this.history = new EditHistory(starterMap(STARTER_TERRAIN, 'grass'));
     this.logic = new LogicPanel({
       doc: () => this.doc,
@@ -2466,6 +2492,7 @@ export class EditorApp {
     if (t) {
       $<HTMLInputElement>('ed-tr-boundary').checked = t.boundary;
       $('ed-tr-size').textContent = `${((t.cols - 1) * t.spacing).toFixed(0)} × ${((t.rows - 1) * t.spacing).toFixed(0)} m · ${t.spacing} m grid`;
+      $<HTMLSelectElement>('ed-tr-base').value = TERRAIN_MATERIALS[mainGround(t)] ?? 'grass';
     }
   }
 
@@ -2531,6 +2558,16 @@ export class EditorApp {
       // Undoable like every edit (Ctrl+Z), so no question first.
       this.setTerrain('Remove terrain', null);
       this.toast('Terrain removed · Ctrl+Z brings it back');
+    });
+    for (const m of TERRAIN_MATERIALS) $<HTMLSelectElement>('ed-tr-base').append(new Option(TERRAIN_MATERIAL_LABELS[m], m));
+    $('ed-tr-base-set').addEventListener('click', () => {
+      const t = this.doc.terrain;
+      if (!t) return;
+      const to = TERRAIN_MATERIALS.indexOf($<HTMLSelectElement>('ed-tr-base').value as TerrainMaterial);
+      const from = mainGround(t);
+      if (to < 0 || to === from) return;
+      // Undoable, one step: the main ground becomes the new one; cells painted another material keep it.
+      this.setTerrain(`Main ground: ${TERRAIN_MATERIAL_LABELS[TERRAIN_MATERIALS[to]!]}`, { ...t, materials: t.materials.map((m) => (m === from ? to : m)) });
     });
     $('ed-tr-cliffs').addEventListener('click', () => {
       if (this.doc.terrain) this.setTerrain('Paint cliffs as stone', paintSlopes(this.doc.terrain, 35, 'stone'));
