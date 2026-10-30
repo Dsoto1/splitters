@@ -28,10 +28,12 @@ permissions:
   contents: read
   actions: read
 
-# A newer commit makes the run for the older one pointless (the nightly run has its own group).
+# A newer commit makes the run for the older one pointless (the nightly run has its own group), except on main:
+# every main commit must finish and publish main-latest (a fast-forward followed seconds later by a notes-only
+# commit cancelled the release of 9a959ee, and the box stayed on an older build).
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'schedule' && 'nightly' || 'push' }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   plan:
@@ -70,6 +72,20 @@ jobs:
             // Its packaged site (client-release), so main publishes that very build instead of building again.
             core.setOutput('run_id', green ? String(green.id) : '');
             if (green) core.notice(`Commit ${context.sha.slice(0, 7)} already passed CI on ${green.head_branch}: ${green.html_url}`);
+            // Not itself green on a check branch (a notes-only commit pushed straight to main): test what changed since
+            // the nearest earlier main commit that was, rather than everything (a flaky flow then held back the release).
+            if (!green) {
+              const { execSync } = require('child_process');
+              const shas = execSync('git rev-list --first-parent -n 30 HEAD~1', { encoding: 'utf8' }).split('\n').filter(Boolean);
+              for (const sha of shas) {
+                const prior = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, { owner: context.repo.owner, repo: context.repo.repo, head_sha: sha, status: 'success', per_page: 100 });
+                if (prior.some((r) => r.path === '.github/workflows/ci.yml' && r.event === 'push' && (r.head_branch ?? '').startsWith('check/'))) {
+                  core.setOutput('green_base', sha);
+                  core.notice(`Testing what changed since ${sha.slice(0, 7)}, the nearest commit that passed on a check branch`);
+                  break;
+                }
+              }
+            }
       - name: Plan
         id: plan
         env:
@@ -78,6 +94,7 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
           DISPATCH_FULL: ${{ github.event_name == 'workflow_dispatch' && inputs.full }}
           GREEN: ${{ steps.prior.outputs.green }}
+          GREEN_BASE: ${{ steps.prior.outputs.green_base }}
         run: |
           if [ "$GREEN" = "true" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -91,7 +108,7 @@ jobs:
           case "$EVENT" in
             schedule) full=--full ;;
             workflow_dispatch) [ "$DISPATCH_FULL" = "true" ] && full=--full ;;
-            push) case "$REF" in refs/tags/*|refs/heads/main) full=--full ;; esac ;;
+            push) case "$REF" in refs/tags/*) full=--full ;; refs/heads/main) if [ -n "$GREEN_BASE" ]; then base="$GREEN_BASE"; else full=--full; fi ;; esac ;;
           esac
           node tools/ci/select.mjs --github --base "$base" $full
 
