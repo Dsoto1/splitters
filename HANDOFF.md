@@ -40,7 +40,11 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - **Release status:** CI on check/candidate is red: e2e `arsenal` "the Battle Axe swings" fails with Full body first
   person (passes with Arms only). The full-body agent is fixing it on `wip/full-body-fp-fix` (plus the Knight's
   gauntlet grip and ADS screenshots). Merge that, rerun CI, fast-forward `main`, fix the release (above), update the box.
-- **In flight on branches:** `wip/st-johns` (St. John's from OSM + USGS), `wip/sunken-kingdom`, `wip/iron-maw`
+- **St. John's rework merged into the session branch** (1cc6a4a, from `wip/st-johns` ce011f3): real campus from OSM
+  (footprints, streets) + USGS 3DEP 1 m ground, 400 × 300 m; owner-only MapMaker "Real places" tools (height grid
+  `.asc` import, trace image); details in docs/references/ST_JOHNS.md. Locally `maps6` timed out under heavy load (also on
+  untouched maps); needs the check/ run. Clump draws ~600 (budget 900).
+- **In flight on branches:** `wip/sunken-kingdom`, `wip/iron-maw`
   (both under docs/map-briefs/AGENT_BUILD_CONTRACT.md), `wip/full-body-fp-fix`. Read each branch's HANDOFF/docs before
   merging; all need a check/ run.
 - **Props added this session (on the session branch):** Meshy mining props (excavator, haul truck), 13 cargo props
