@@ -251,15 +251,15 @@
     {
       "id": "block_061",
       "position": [
-        -180.26,
+        -180.597,
         -1.151,
-        -0.839
+        -20.172
       ],
       "kind": "block",
       "size": [
         0.251,
         0.101,
-        77.342
+        38.671
       ],
       "yaw": 0.01745,
       "material": "core.paint_matte",
@@ -273,15 +273,15 @@
     {
       "id": "block_062",
       "position": [
-        -148.177,
+        -148.514,
         -1.151,
-        -1.399
+        -20.732
       ],
       "kind": "block",
       "size": [
         0.251,
         0.101,
-        77.342
+        38.671
       ],
       "yaw": 0.01745,
       "material": "core.paint_matte",
@@ -37917,13 +37917,13 @@
     {
       "id": "block_1827",
       "position": [
-        154.293,
+        133.042,
         0.85,
-        28.497
+        29.276
       ],
       "kind": "block",
       "size": [
-        85.062,
+        42.531,
         0.5,
         47.278
       ],
@@ -39457,13 +39457,13 @@
     {
       "id": "block_1897",
       "position": [
-        154.293,
+        133.042,
         10.25,
-        28.497
+        29.276
       ],
       "kind": "block",
       "size": [
-        85.062,
+        42.531,
         0.3000000000000007,
         47.278
       ],
@@ -39479,13 +39479,13 @@
     {
       "id": "block_1898",
       "position": [
-        153.414,
+        131.863,
         10.55,
-        4.524
+        5.314
       ],
       "kind": "block",
       "size": [
-        86.262,
+        43.131,
         0.9000000000000004,
         0.5
       ],
@@ -39501,13 +39501,13 @@
     {
       "id": "block_1899",
       "position": [
-        155.185,
+        133.634,
         10.55,
-        52.828
+        53.618
       ],
       "kind": "block",
       "size": [
-        86.262,
+        43.131,
         0.9000000000000004,
         0.93
       ],
@@ -61568,6 +61568,138 @@
       "scale": 1.16,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "block_1827_s1",
+      "position": [
+        175.544,
+        0.85,
+        27.718
+      ],
+      "kind": "block",
+      "size": [
+        42.531,
+        0.5,
+        47.278
+      ],
+      "yaw": 0.03665,
+      "material": "core.pbr_floorboards",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_1897_s1",
+      "position": [
+        175.544,
+        10.25,
+        27.718
+      ],
+      "kind": "block",
+      "size": [
+        42.531,
+        0.3000000000000007,
+        47.278
+      ],
+      "yaw": 0.03665,
+      "material": "core.pbr_flagstone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_1898_s1",
+      "position": [
+        174.965,
+        10.55,
+        3.734
+      ],
+      "kind": "block",
+      "size": [
+        43.131,
+        0.9000000000000004,
+        0.5
+      ],
+      "yaw": 0.03665,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_1899_s1",
+      "position": [
+        176.736,
+        10.55,
+        52.038
+      ],
+      "kind": "block",
+      "size": [
+        43.131,
+        0.9000000000000004,
+        0.93
+      ],
+      "yaw": 0.03665,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_061_s1",
+      "position": [
+        -179.923,
+        -1.151,
+        18.494
+      ],
+      "kind": "block",
+      "size": [
+        0.251,
+        0.101,
+        38.671
+      ],
+      "yaw": 0.01745,
+      "material": "core.paint_matte",
+      "tint": "#eeede6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_062_s1",
+      "position": [
+        -147.84,
+        -1.151,
+        17.934
+      ],
+      "kind": "block",
+      "size": [
+        0.251,
+        0.101,
+        38.671
+      ],
+      "yaw": 0.01745,
+      "material": "core.paint_matte",
+      "tint": "#eeede6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
     }
   ],
   "factions": [],
