@@ -16,7 +16,28 @@ import type { VantageBoard, VantageKind } from './vantage.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hasTag, type BotDifficulty, type BotProfile } from './profile.ts';
 import { fanPoints, isDoorway, solveThrow, turnAngle } from './tactics.ts';
-import { freshDrive, inArc, rideFor, steer, turretFor, vehicleFor, type DriveState, type MountView, type SeatView } from './vehicles.ts';
+import {
+  ANTI_VEHICLE_SPLASH,
+  ROADKILL_SPEED,
+  RIDER_MIN_PROGRESS,
+  RIDER_STUCK_TICKS,
+  STUCK_AVOID_SECONDS,
+  aboutToBlow,
+  antiVehicle,
+  freshDrive,
+  inArc,
+  inVehiclePath,
+  mountOf,
+  noHeadway,
+  rideFor,
+  steer,
+  turretFor,
+  vehicleFor,
+  type DriveState,
+  type Headway,
+  type MountView,
+  type SeatView,
+} from './vehicles.ts';
 import { followGuide, type Guide } from './guides.ts';
 
 export type { MountView, SeatView } from './vehicles.ts';
@@ -159,6 +180,14 @@ const VEHICLE_TRIP = 55;
 const GUN_DETOUR = 30;
 /** How far (m) a bot goes to hop into a teammate's vehicle. */
 const RIDE_REACH = 25;
+/** Enemy vehicles: how far (m, plus height) a bot goes for a rocket or grenade launcher once one has been seen lately (VEHICLE_MEMORY s). */
+const LAUNCHER_DETOUR = 30;
+const VEHICLE_MEMORY = 12;
+/** Score bonus (weaponScore) for an anti-vehicle weapon against a target in a vehicle; melee is worse than useless. */
+const ANTI_VEHICLE_BONUS = 1.2;
+/** Stepping out of a vehicle's path: committed for this long (s); sprinting when it is this close (s away). */
+const DODGE_SECONDS = 0.8;
+const DODGE_SPRINT_ETA = 1.2;
 /** A path corner counts as reached this close (m), or once passed and within PASS_RADIUS. */
 const CORNER_RADIUS = 0.45;
 const PASS_RADIUS = 1.4;
@@ -316,6 +345,19 @@ export class BotBrain {
   private lastTargetTick = -Infinity;
   private useLatch = false;
   private lastUseTick = -Infinity;
+  /** Vehicles (by mount index) this bot got stuck in, and until when it leaves them alone. */
+  private readonly avoidMounts = new Map<number, number>();
+  private readonly skipMount = (m: MountView): boolean => (this.avoidMounts.get(m.index) ?? -Infinity) > this.lastThinkTick;
+  /** Riding with a bot at the wheel: is it getting anywhere? */
+  private riderHeadway: Headway = { pos: null, tick: 0 };
+  /** The target's mount, when it is in one (refreshed each think). */
+  private targetMount: MountView | null = null;
+  /** Last tick an enemy in a vehicle was in sight (launchers are worth fetching for a while after). */
+  private vehicleSeenTick = -Infinity;
+  /** Getting out of an enemy vehicle's way: which way, until when, and whether to sprint. */
+  private dodge: { yaw: number; until: number; sprint: boolean } | null = null;
+  /** The vehicle bearing down (mount index), when it was first noticed, and whether this bot reacts to it at all this time. */
+  private roadkill: { index: number; since: number; notice: boolean } | null = null;
   /** Going to press a button that opens a door in the way. */
   private pressPlan: { stand: Vec3; face: Vec3; until: number } | null = null;
   private pressedAt = -Infinity;
@@ -460,6 +502,9 @@ export class BotBrain {
     const target = this.targetSlot === null ? undefined : view.others.find((o) => o.slot === this.targetSlot && o.alive);
     if (this.targetSlot !== null && !target) this.targetSlot = null;
     if (target) this.lastTargetTick = view.tick;
+    // An enemy in a vehicle (or on a gun): a hard target (only looked up when they are sitting in something).
+    this.targetMount = target?.mounted && view.mounts ? (mountOf(view.mounts, target.slot)?.mount ?? null) : null;
+    if (this.targetMount?.kind === 'vehicle') this.vehicleSeenTick = view.tick;
 
     const ctx = this.aimContext(view);
     const ta = simProfile.on ? performance.now() : 0;
@@ -666,10 +711,17 @@ export class BotBrain {
     const holding = this.posted(me.pos);
     const stayPut = (p: Vec3) => !!this.post && horizontalDistance(me.pos, p) > 10;
 
+    // Enemy vehicles about: out of the way of one bearing down.
+    this.watchTraffic(view);
+    const armedForVehicles = this.canHurtVehicles(view);
+
     // A lift from a teammate is worth taking even when hurt or with someone about.
     if (this.mountPlan && (this.mountPlan.ride || (!hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)))) this.state = 'mount';
     else if (target && hurt && !this.berserker) this.state = 'retreat';
-    else if (target) this.state = this.cover ? 'cover' : 'engage';
+    else if (!underFire && !armedForVehicles && this.fetchLauncher(view, target)) {
+      // An enemy vehicle about and nothing that hurts it: a launcher close by first.
+      this.state = 'advance';
+    } else if (target) this.state = this.cover ? 'cover' : 'engage';
     else if (this.cover && (underFire || tick - this.lastTargetTick < TICK_RATE * (2.5 + (1 - this.profile.aggression / 100) * 3))) {
       // Ducked out of sight behind cover: keep up the hide-and-peek rather than charging off.
       this.state = 'cover';
@@ -699,12 +751,14 @@ export class BotBrain {
     // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
     const threat = target?.pos ?? (underFire ? this.threatFrom : null);
     // Better bots take cover far more often; arena bots mostly keep moving instead.
-    const coverChance = this.arena ? this.tactical * 0.4 : 0.15 + this.tactical * 1.7 + (this.methodical ? 0.3 : 0);
+    // An enemy vehicle it has nothing to hurt with: cover (any bot that thinks at all).
+    const outgunned = !!target && this.targetMount?.kind === 'vehicle' && !armedForVehicles;
+    const coverChance = Math.max(this.arena ? this.tactical * 0.4 : 0.15 + this.tactical * 1.7 + (this.methodical ? 0.3 : 0), outgunned ? 0.4 + this.tactical * 0.6 : 0);
     if (threat && !this.berserker && !holding && this.rng() < coverChance) {
       const dist = horizontalDistance(me.pos, threat);
       const held = this.heldWeapon(view);
       const lowAmmo = !!held && held.def.magazine > 0 && held.mag <= Math.ceil(held.def.magazine * 0.25);
-      const wantCover = underFire || hurt || lowAmmo || !!view.reloading || dist > 11 || this.state === 'retreat';
+      const wantCover = underFire || hurt || lowAmmo || !!view.reloading || dist > 11 || this.state === 'retreat' || outgunned;
       const threatEye = { x: threat.x, y: threat.y + PLAYER.eyeHeight, z: threat.z };
       if (this.cover && (horizontalDistance(this.cover.threat, threatEye) > 4 || (tick % 30 < DECIDE_TICKS && !stillCovered(view.physics, this.cover.pos, threatEye)))) {
         // Threat moved round our cover: find another.
@@ -771,7 +825,7 @@ export class BotBrain {
     const aimAtTarget = (t: CombatantView) => {
       aimedTarget = true;
       const ta = simProfile.on ? performance.now() : 0;
-      sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: t.stance });
+      sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: this.aimStance(def, t) });
       if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
       this.turnToward(sol.yaw, sol.pitch);
       lookDone = true;
@@ -1046,6 +1100,17 @@ export class BotBrain {
       this.clearing = null;
     }
 
+    // An enemy vehicle bearing down: out of its path, whatever else was going on (still shooting unless it is close).
+    const dodge = this.dodge && tick < this.dodge.until ? this.dodge : null;
+    if (dodge) {
+      moveYaw = dodge.yaw;
+      moveScale = 1;
+      backOff = false;
+      strafe = false;
+      stance = 0;
+      sprint = dodge.sprint;
+    }
+
     // Grenade throw in progress: line it up and let go.
     let throwNow = false;
     if (this.throwPlan) {
@@ -1180,7 +1245,7 @@ export class BotBrain {
         this.lastUseTick = tick;
       }
     }
-    this.steerable = aimedTarget && wantFire && !sprint && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount';
+    this.steerable = aimedTarget && wantFire && !sprint && !dodge && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount';
     return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon: this.chooseWeapon(view, target) };
   }
 
@@ -1218,7 +1283,7 @@ export class BotBrain {
     const aimed = this.aimed;
     aimed.slot = target.slot;
     aimed.pos = target.pos;
-    aimed.stance = target.stance ?? 0;
+    aimed.stance = this.aimStance(ctx.weapon, target) ?? 0;
     this.aim.track(ctx, aimed);
     const sol = this.aim.solve(ctx, aimed);
     this.turnToward(sol.yaw, sol.pitch);
@@ -1310,8 +1375,7 @@ export class BotBrain {
 
   private reacted(view: Pick<BotWorldView, 'tick'>, target: CombatantView): boolean {
     const since = this.visibleSince.get(target.slot);
-    const reactionTicks = (this.difficulty.reactionMs / 1000) * TICK_RATE * (1.5 - this.profile.reactionSpeed / 100);
-    return since !== undefined && view.tick - since >= reactionTicks;
+    return since !== undefined && view.tick - since >= this.reactionTicks();
   }
 
   private wantsProne(view: BotWorldView, dist: number): boolean {
@@ -1515,6 +1579,10 @@ export class BotBrain {
     } else if (!target && this.heard && tick - this.heard.tick < TICK_RATE * 6 && this.pie) {
       const d = horizontalDistance(me.pos, this.heard.pos);
       if (d > 5.5 && d < 22) at = this.heard.pos;
+    } else if (target && this.targetMount?.kind === 'vehicle' && (this.targetMount.speed ?? 0) < 3 && THROWABLE_DEFS[view.throwable].projectile.splashDamage >= ANTI_VEHICLE_SPLASH) {
+      // An enemy vehicle stopped (or crawling) within throwing range: a grenade under it.
+      const d = horizontalDistance(me.pos, this.targetMount.pos);
+      if (d > 8 && d < 22) at = this.targetMount.pos;
     } else if (target && this.cover && this.peekPhase === 'hide') {
       // Pinned behind cover: lob one at them.
       const d = horizontalDistance(me.pos, target.pos);
@@ -1534,6 +1602,84 @@ export class BotBrain {
 
   // ------------------------------------------------------------------ turrets and vehicles
 
+  /** Carries something that hurts vehicles properly: a launcher with rounds, or a grenade with a big blast. */
+  private canHurtVehicles(view: BotWorldView): boolean {
+    for (const w of view.inventory) if (antiVehicle(w.def) && w.mag + w.reserve > 0) return true;
+    const t = view.throwable;
+    return !!t && t !== 'mine' && t !== 'sandbag' && (view.throwables ?? 0) > 0 && THROWABLE_DEFS[t].projectile.splashDamage >= ANTI_VEHICLE_SPLASH;
+  }
+
+  /**
+   * An enemy vehicle seen lately (or in sight, not too close) and nothing
+   * that hurts it: go for a launcher lying close by. True when it set off.
+   */
+  private fetchLauncher(view: BotWorldView, target: CombatantView | undefined): boolean {
+    const tick = view.tick;
+    if (tick - this.vehicleSeenTick > TICK_RATE * VEHICLE_MEMORY || view.orderGoal) return false;
+    // Fighting someone on foot, or a vehicle right on top of us: fight (or dodge) first.
+    if (target && (this.targetMount?.kind !== 'vehicle' || horizontalDistance(view.self.pos, target.pos) < 15)) return false;
+    const p = this.pickupGoal(view, 'weapon', LAUNCHER_DETOUR, antiVehicle);
+    if (!p) return false;
+    this.roamGoal = p;
+    this.gunNearby = p;
+    this.via = null;
+    return true;
+  }
+
+  /** How long (ticks) this bot takes to react to something it sees. */
+  private reactionTicks(): number {
+    return (this.difficulty.reactionMs / 1000) * TICK_RATE * (1.5 - this.profile.reactionSpeed / 100);
+  }
+
+  /**
+   * An enemy vehicle bearing down on the bot (driven at it, or just coming
+   * its way): step out of its path, after its reaction time, if it notices
+   * at all (easier bots often don't). Arithmetic only, at decision rate; one
+   * sight ray when a dodge starts, to pick a side with room.
+   */
+  private watchTraffic(view: BotWorldView): void {
+    const tick = view.tick;
+    if (this.dodge && tick >= this.dodge.until) this.dodge = null;
+    const mounts = view.mounts;
+    if (!mounts?.length) {
+      this.roadkill = null;
+      return;
+    }
+    const me = view.self;
+    const hostile = slotsOf(view.others);
+    let worst: MountView | null = null;
+    let hit: { eta: number; away: number } | null = null;
+    for (const m of mounts) {
+      if (m.kind !== 'vehicle' || !m.alive || (m.speed ?? 0) < ROADKILL_SPEED) continue;
+      let enemyAboard = false;
+      for (const s of m.seats) if (s.role === 'driver' && s.by !== undefined && hostile.has(s.by)) enemyAboard = true;
+      if (!enemyAboard) continue;
+      const h = inVehiclePath(m, me.pos);
+      if (h && (!hit || h.eta < hit.eta)) {
+        worst = m;
+        hit = h;
+      }
+    }
+    if (!worst || !hit) {
+      this.roadkill = null;
+      return;
+    }
+    if (this.roadkill?.index !== worst.index) this.roadkill = { index: worst.index, since: tick, notice: this.rng() < 0.4 + 0.6 * this.difficulty.tactics };
+    if (!this.roadkill.notice || tick - this.roadkill.since < this.reactionTicks()) return;
+    let yaw = hit.away;
+    if (!this.dodge && hit.eta > 1.5) {
+      // A wall that side: the other side, while there is time to cross.
+      const chest = { x: me.pos.x, y: me.pos.y + 1, z: me.pos.z };
+      if (!view.physics.lineOfSight(chest, { x: chest.x + Math.sin(yaw) * 3, y: chest.y, z: chest.z + Math.cos(yaw) * 3 })) yaw += Math.PI;
+    } else if (this.dodge) yaw = this.dodge.yaw;
+    this.dodge = { yaw, until: tick + Math.round(TICK_RATE * DODGE_SECONDS), sprint: hit.eta < DODGE_SPRINT_ETA };
+  }
+
+  /** Explosives at an enemy in a vehicle go at the hull (low), not at the head poking out of it. */
+  private aimStance(def: WeaponDefinition | undefined, t: CombatantView): Stance | undefined {
+    return def && this.targetMount && t.slot === this.targetSlot && antiVehicle(def) ? 2 : t.stance;
+  }
+
   private considerMount(view: BotWorldView, target: CombatantView | undefined): void {
     const mounts = view.mounts;
     if (!mounts?.length || this.mountPlan || hasTag(this.profile, 'NPC') || view.tick < this.nextMountTick) return;
@@ -1542,7 +1688,7 @@ export class BotBrain {
     // A teammate driving by with a seat free: hop in (unless on station somewhere it was sent, or in a close fight).
     const g = view.orderGoal;
     const onStation = !!g && horizontalDistance(me.pos, g.pos) < g.radius + 8;
-    const ride = view.allies?.length ? rideFor(mounts, me.pos, me.slot, view.allies, RIDE_REACH) : null;
+    const ride = view.allies?.length ? rideFor(mounts, me.pos, me.slot, view.allies, RIDE_REACH, this.skipMount) : null;
     if (ride && !(onStation && horizontalDistance(g!.pos, ride.pos) > g!.radius + 4)) {
       const close = target && horizontalDistance(me.pos, target.pos) < 12 && horizontalDistance(me.pos, ride.pos) > 6;
       if (!close && this.rng() < 0.6 + (this.profile.teamLoyalty / 100) * 0.4) {
@@ -1555,7 +1701,7 @@ export class BotBrain {
     if (enemy) {
       // A turret covering the enemy, closer to us than they are.
       if (target && horizontalDistance(me.pos, target.pos) < 12) return;
-      const m = turretFor(mounts, me.pos, enemy, Math.min(14, horizontalDistance(me.pos, enemy) * 0.6));
+      const m = turretFor(mounts, me.pos, enemy, Math.min(14, horizontalDistance(me.pos, enemy) * 0.6), this.skipMount);
       if (m && this.rng() < 0.4 + this.tactical * 0.6) {
         this.mountPlan = { index: m.index, until: view.tick + TICK_RATE * 6, drive: false };
         this.state = 'mount';
@@ -1570,7 +1716,7 @@ export class BotBrain {
       goal = farthest(view.spawnPoints, me.pos) ?? goal;
     }
     if (!goal) return;
-    const v = vehicleFor(mounts, me.pos, goal, 22);
+    const v = vehicleFor(mounts, me.pos, goal, 22, this.skipMount);
     if (v && this.rng() < 0.5) {
       // Drive only along an open route (no long detours).
       // A boat (a vehicle that rides on water) may head straight across instead (see thinkMounted).
@@ -1599,6 +1745,9 @@ export class BotBrain {
       this.moveX = this.moveZ = 0;
       this.rideIdleSince = this.noDriverSince = -Infinity;
       this.bailDelay = Math.round(TICK_RATE * (0.35 + this.rng() * 0.5));
+      this.riderHeadway = { pos: null, tick: 0 };
+      this.dodge = null;
+      this.roadkill = null;
     }
     this.mountPlan = null;
     let forward = 0;
@@ -1639,20 +1788,26 @@ export class BotBrain {
         const a = Math.atan2(aimPt.x - m.pos.x, aimPt.z - m.pos.z);
         this.turnToward(a, 0);
       }
-      // Get out: arrived, wrecked soon, stuck for good, or a fight with no gun.
-      if (left < 14 || m.health < 0.3 || this.drive.unstick >= 3 || (target && !seat.weapon && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
+      // Get out: arrived, about to blow (or on fire), stuck for good (a back-out didn't free it), or a fight with no gun.
+      if (left < 14 || aboutToBlow(m) || this.drive.stuck || (target && !seat.weapon && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
+      // Don't climb straight back into the one that got stuck.
+      if (this.drive.stuck) this.avoidMounts.set(m.index, tick + TICK_RATE * STUCK_AVOID_SECONDS);
     } else if (m && m.kind === 'vehicle') {
-      // Riding along: stay while a teammate drives; get out when they do, when it is about to blow,
-      // or when it has sat parked a while with nothing to shoot.
+      // Riding along: stay while a teammate drives; get out when they do, when it is about to blow (or on fire),
+      // when a bot at the wheel has got it stuck, or when it has sat parked a while with nothing to shoot.
       if (fireAt) this.lastTargetTick = tick;
       const driver = m.seats.find((s) => s.role === 'driver')?.by;
-      const driven = driver !== undefined && driver !== view.self.slot && !!view.allies?.some((a) => a.slot === driver);
+      const ally = driver !== undefined && driver !== view.self.slot ? view.allies?.find((a) => a.slot === driver) : undefined;
+      const driven = !!ally;
       if (driven) this.noDriverSince = -Infinity;
       else if (this.noDriverSince === -Infinity) this.noDriverSince = tick;
       if ((m.speed ?? 0) > 0.5 || fireAt) this.rideIdleSince = -Infinity;
       else if (this.rideIdleSince === -Infinity) this.rideIdleSince = tick;
       const parked = tick - this.rideIdleSince > TICK_RATE * 8 && tick - this.lastTargetTick > TICK_RATE * 4;
-      if ((!driven && tick - this.noDriverSince >= this.bailDelay) || m.health < 0.3 || parked) leave = true;
+      // (A human at the wheel may stop on purpose; a bot driver never parks with riders.)
+      const stuck = driven && !ally.human && noHeadway(this.riderHeadway, m.pos, tick, RIDER_STUCK_TICKS, RIDER_MIN_PROGRESS);
+      if (stuck) this.avoidMounts.set(m.index, tick + TICK_RATE * STUCK_AVOID_SECONDS);
+      if ((!driven && tick - this.noDriverSince >= this.bailDelay) || aboutToBlow(m) || parked || stuck) leave = true;
       if (!fireAt) this.turnToward(m.yaw, 0);
     } else if (m) {
       // Gunner: stay while there is something to shoot.
@@ -1663,7 +1818,7 @@ export class BotBrain {
       if (!fireAt) this.turnToward(m.yaw + (seat.facing ?? 0), 0);
     }
     if (fireAt) {
-      const sol = this.aim.solve(gunCtx, { slot: fireAt.slot, pos: fireAt.pos, stance: fireAt.stance });
+      const sol = this.aim.solve(gunCtx, { slot: fireAt.slot, pos: fireAt.pos, stance: this.aimStance(gunCtx.weapon, fireAt) });
       this.turnToward(sol.yaw, sol.pitch);
       const cool = !seat.overheated && seat.heat < 0.85;
       if (cool && this.aim.trigger(gunCtx, sol, this.yaw, this.pitch, this.reacted(view, fireAt))) buttons |= BUTTON_FIRE;
@@ -1698,7 +1853,7 @@ export class BotBrain {
     let best = view.held;
     let bestScore = -Infinity;
     for (const w of view.inventory) {
-      const score = weaponScore(w, { dist, target, held: weaponCode(w.def) === view.held, loadedElsewhere: others - (w.def.magazine === 0 || w.mag > 0 ? 1 : 0) > 0, profile: this.profile });
+      const score = weaponScore(w, { dist, target, held: weaponCode(w.def) === view.held, loadedElsewhere: others - (w.def.magazine === 0 || w.mag > 0 ? 1 : 0) > 0, profile: this.profile, vehicle: !!target && this.targetMount?.kind === 'vehicle' });
       if (score > bestScore) {
         bestScore = score;
         best = weaponCode(w.def);
@@ -1712,7 +1867,7 @@ export class BotBrain {
    * depends on need (health/armor missing, weapon not owned, ammo low) and the
    * bot's item greed, discounted by distance.
    */
-  private pickupGoal(view: BotWorldView, only?: 'health' | 'weapon', within = Infinity): Vec3 | null {
+  private pickupGoal(view: BotWorldView, only?: 'health' | 'weapon', within = Infinity, weapons?: (def: WeaponDefinition) => boolean): Vec3 | null {
     const me = view.self;
     let best: { pos: Vec3; score: number } | null = null;
     const owned = new Map(view.inventory.map((w) => [w.def.id, w]));
@@ -1723,6 +1878,7 @@ export class BotBrain {
       if (!p.available && !timed) continue;
       const e = p.item.effect;
       if (only && e.kind !== only) continue;
+      if (weapons && (e.kind !== 'weapon' || !weapons(getWeapon(e.weapon)))) continue;
       let need = pickupNeed(e, me, view.inventory, owned, view.throwables ?? 0, view.throwable ?? null);
       if (need <= 0) continue;
       // A new gun is worth what it adds: a rifle to a bot holding a pistol, far more than a second SMG.
@@ -2201,6 +2357,8 @@ export interface WeaponChoiceContext {
   /** Another owned weapon can fire right now (melee, or rounds in its magazine). */
   loadedElsewhere: boolean;
   profile: BotProfile;
+  /** The target is in a vehicle: launchers first, knives last. */
+  vehicle?: boolean;
 }
 
 /**
@@ -2219,12 +2377,18 @@ export function weaponScore(w: InventoryView, c: WeaponChoiceContext): number {
   if (def.projectile && dist < def.projectile.splashRadius + 1) score -= 1.5 * (profile.selfPreservation / 100);
   if (profile.tags.includes('EXPLOSIVES_FAN') && def.projectile) score += 0.4;
   if (def.kind === 'melee') score += (profile.meleePreference / 100) * 0.5;
+  // A target in a vehicle: a launcher (from outside its own blast), never a knife.
+  if (c.vehicle) {
+    if (antiVehicle(def) && !(def.projectile && dist < def.projectile.splashRadius + 1)) score += ANTI_VEHICLE_BONUS;
+    else if (def.kind === 'melee') score -= 1;
+  }
   if (profile.weaponPreferences.includes(def.id)) score += 0.25;
   if (def.magazine > 0) {
     // Scarce ammo (under two magazines', or a third of a full load's, worth left): worth less, and wasted on a target that's nearly dead anyway.
     const scarcity = Math.max(0, 1 - rounds / Math.max(def.magazine * 2, def.reserveMax / 3));
     score -= scarcity * def.botDesirability * 0.5;
-    if (target && target.health + target.armor <= 35) score -= scarcity * def.botDesirability * 0.6;
+    // (A vehicle's driver being nearly dead doesn't make the vehicle any softer.)
+    if (target && !c.vehicle && target.health + target.armor <= 35) score -= scarcity * def.botDesirability * 0.6;
     if (target && dist < 15 && c.loadedElsewhere) {
       // Empty magazine with an enemy close: switching is faster than reloading.
       if (w.mag === 0) score -= 0.5;
