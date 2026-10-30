@@ -65,7 +65,8 @@ import { weaponIcon } from './weaponIcons.ts';
 import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
 import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
-import { bindFullscreenButton } from '../fullscreen.ts';
+import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscreen, toggleFullscreen } from '../fullscreen.ts';
+import { PAD, glyphs, onPadPress } from '../inputMode.ts';
 import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
 import { botManager } from './botManager.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
@@ -268,7 +269,14 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
   return e;
 };
 const kbd = (key: string, cls = '') => el('kbd', { class: cls, textContent: key });
-const hint = (key: Node, label: string) => el('span', {}, key, label);
+/** A key hint that only says what a key does (no click: turning, arrows). */
+const hint = (keys: HTMLElement[], label: string) => el('span', {}, ...keys, label);
+/** A key hint you can click: it does what the key does. */
+const hintButton = (id: string, keys: HTMLElement[], label: string, title: string, act: () => void) => {
+  const b = el('button', { type: 'button', class: 'hint-btn', id, title }, ...keys, el('span', { textContent: label }));
+  b.addEventListener('click', act);
+  return b;
+};
 
 /**
  * The front end (main menu): Home, Arcade setup, Character select, Online and
@@ -351,6 +359,7 @@ export class FrontEnd {
       ),
     );
     window.addEventListener('keydown', this.keyHandler);
+    onPadPress((b) => this.onPad(b));
     this.go('home');
     (window as unknown as { __front: FrontEnd }).__front = this;
     void loadProfile().then((p) => this.applyProfile(p?.username ?? null));
@@ -402,19 +411,112 @@ export class FrontEnd {
     if (screen === 'home') (this.body.querySelector('.nav button.on') as HTMLButtonElement | null)?.focus({ preventScroll: true });
   }
 
+  /**
+   * The footer's key hints: keyboard glyphs, or the controller's once one is used (inputMode.ts). Each
+   * hint that stands for an action is a button doing it (Back, the tabs, Start…); Fullscreen is always there.
+   */
   private hints(screen: ScreenId): HTMLElement[] {
+    const back = () => hintButton('hint-back', glyphs('Esc', 'B', 'b'), 'Back', 'Back to the main menu (Esc, controller B)', () => this.back());
+    const cycle = (label: string) => hintButton('hint-cycle', [...glyphs('Q', 'LB'), ...glyphs('E', 'RB')], label, `Next ${label.toLowerCase()} (Q / E, controller LB / RB)`, () => this.cycle(1));
+    const list: HTMLElement[] = [];
     switch (screen) {
       case 'home':
-        return [hint(kbd('↑↓'), 'Navigate'), hint(kbd('↵', 'a'), 'Select')];
+        list.push(hint(glyphs('↑↓', '✛'), 'Navigate'), hintButton('hint-ok', glyphs('↵', 'A', 'a'), 'Select', 'Open the highlighted item (Enter, controller A)', () => this.navItems[this.navIndex]!.act()));
+        break;
       case 'play':
-        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Mode'), hint(kbd('↵', 'a'), 'Start')];
+        list.push(back(), cycle('Mode'), hintButton('hint-ok', glyphs('↵', 'A', 'a'), 'Start', 'Start the match (Enter, controller A)', () => this.start()));
+        break;
       case 'characters':
-        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Filter'), hint(kbd('D', 'x'), 'Design new'), hint(kbd('C', 'y'), 'Customise'), hint(kbd(', .'), 'Turn'), hint(kbd('↵', 'a'), 'Select')];
+        list.push(
+          back(),
+          cycle('Filter'),
+          hintButton('hint-design', glyphs('D', 'X', 'x'), 'Design new', 'Design a new character (D, controller X)', () => this.hooks.openDesigner(this.look)),
+          hintButton('hint-customise', glyphs('C', 'Y', 'y'), 'Customise', 'Customise this character (C, controller Y)', () => this.hooks.openDesigner(this.hovered ?? this.look)),
+          hint(glyphs(', .'), 'Turn'),
+          hint(glyphs('↵', 'A', 'a'), 'Select'),
+        );
+        break;
       case 'options':
-        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('Q E'), 'Section')];
+        list.push(back(), cycle('Section'));
+        break;
       default:
-        return [hint(kbd('Esc', 'b'), 'Back'), hint(kbd('↵', 'a'), 'Confirm')];
+        list.push(back());
     }
+    if (fullscreenSupported()) {
+      const fs = hintButton('hint-fullscreen', glyphs('F11'), isFullscreen() ? 'Exit fullscreen' : 'Fullscreen', 'Fullscreen on or off (F11)', () => void toggleFullscreen());
+      const label = fs.lastElementChild as HTMLElement;
+      const update = () => (fs.isConnected ? (label.textContent = isFullscreen() ? 'Exit fullscreen' : 'Fullscreen') : document.removeEventListener('fullscreenchange', update));
+      document.addEventListener('fullscreenchange', update);
+      list.push(fs);
+    }
+    return list;
+  }
+
+  /** The screen's title with Back before it (top left: back to the main menu, as Esc does). */
+  private head(title: string, ...extra: HTMLElement[]): HTMLElement {
+    const back = el('button', { type: 'button', class: 'back-btn', id: 'screen-back', title: 'Back to the main menu (Esc)' }, el('span', { textContent: '◀' }), 'Back');
+    back.firstElementChild!.setAttribute('aria-hidden', 'true');
+    back.addEventListener('click', () => this.back());
+    return el('div', { class: 'screen-head' }, back, el('h2', { innerHTML: title }), ...extra);
+  }
+
+  /** Back one level: every screen is one step from the main menu. */
+  private back(): void {
+    if (this.screen !== 'home') this.go('home');
+  }
+
+  /** Q / E (LB / RB): the next or previous mode, character filter or Options section. */
+  private cycle(dir: 1 | -1): void {
+    if (this.screen === 'play') {
+      const m = this.currentMap();
+      const i = m.modes.indexOf(this.setup.mode);
+      this.setMode(m.modes[(i + (dir > 0 ? 1 : m.modes.length - 1)) % m.modes.length]!);
+    } else if (this.screen === 'options') {
+      const tabs = FrontEnd.OPTION_TABS;
+      this.optionsTab = tabs[(tabs.indexOf(this.optionsTab) + (dir > 0 ? 1 : tabs.length - 1)) % tabs.length]!;
+      this.go('options');
+    } else if (this.screen === 'characters') {
+      const order = ['all', 'originals', 'ranger', 'peasant', 'athlete', 'npc', 'mine'];
+      this.charFilter = order[(order.indexOf(this.charFilter) + (dir > 0 ? 1 : order.length - 1)) % order.length]!;
+      this.go('characters');
+    }
+  }
+
+  /** A controller in the menus: the d-pad moves, A presses, B goes back, LB / RB switch, X / Y design. */
+  private onPad(button: number): void {
+    if (this.root.hidden) return;
+    // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
+    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager');
+    const scope: HTMLElement = top ?? this.root;
+    const move = (dir: 1 | -1) => {
+      const items = [...scope.querySelectorAll<HTMLElement>('button, input, select, summary, [tabindex="0"]')].filter((e) => !(e as HTMLButtonElement).disabled && e.offsetParent !== null);
+      if (!items.length) return;
+      const at = items.indexOf(document.activeElement as HTMLElement);
+      const next = items[at < 0 ? (dir > 0 ? 0 : items.length - 1) : (at + dir + items.length) % items.length]!;
+      next.focus();
+      next.scrollIntoView({ block: 'nearest' });
+    };
+    if (button === PAD.b) {
+      if (top) return top.querySelector<HTMLButtonElement>('[data-cancel]')?.click();
+      return this.back();
+    }
+    if (button === PAD.a) {
+      const f = document.activeElement as HTMLElement | null;
+      if (f && f !== document.body && scope.contains(f)) return f.click();
+      if (!top && this.screen === 'home') return this.navItems[this.navIndex]!.act();
+      return;
+    }
+    if (button === PAD.up || button === PAD.down) {
+      const dir = button === PAD.down ? 1 : -1;
+      if (!top && this.screen === 'home') return this.setNav(this.navIndex + dir);
+      return move(dir);
+    }
+    if (button === PAD.left || button === PAD.right) return move(button === PAD.right ? 1 : -1);
+    if (top) return;
+    if (button === PAD.lb || button === PAD.rb) return this.cycle(button === PAD.rb ? 1 : -1);
+    if (this.screen === 'characters' && button === PAD.x) return this.hooks.openDesigner(this.look);
+    if (this.screen === 'characters' && button === PAD.y) return this.hooks.openDesigner(this.hovered ?? this.look);
+    if (this.screen === 'play' && button === PAD.start) return this.start();
   }
 
   private build(screen: ScreenId): HTMLElement {
@@ -671,7 +773,7 @@ export class FrontEnd {
     return el(
       'div',
       { class: 'screen play' },
-      el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Match <em>Setup</em>' })),
+      this.head('Match <em>Setup</em>'),
       el('div', { class: 'arcade' }, el('div', { class: 'map-browse' }, el('div', { class: 'map-bar' }, tabs, tools), cards), panel),
     );
   }
@@ -1129,6 +1231,10 @@ export class FrontEnd {
     const go = el('button', { class: 'primary', id: 'hm-go', textContent: o.title ?? 'Change map', disabled: true });
     const close = el('button', { class: 'hm-close', id: 'hm-close', textContent: 'Cancel' });
     close.addEventListener('click', () => o.onClose());
+    // Back, top left (as on every screen and window): the same as Cancel.
+    const back = el('button', { type: 'button', class: 'back-btn', id: 'hm-back', title: 'Back without changing the map (Esc)' }, el('span', { textContent: '◀' }), 'Back');
+    back.firstElementChild!.setAttribute('aria-hidden', 'true');
+    back.addEventListener('click', () => o.onClose());
     go.addEventListener('click', () => picked && o.onPick(picked, mode));
     const lazy = lazyPlans(cards);
     const draw = () => {
@@ -1165,7 +1271,7 @@ export class FrontEnd {
       go.disabled = !picked;
     };
     draw();
-    return el('div', { class: 'host-maps', id: 'host-maps' }, el('div', { class: 'hm-head' }, el('h3', { textContent: o.title ?? 'Change map' }), tabs), cards, el('div', { class: 'hm-foot' }, chosen, close, go));
+    return el('div', { class: 'host-maps', id: 'host-maps' }, el('div', { class: 'hm-head' }, back, el('h3', { textContent: o.title ?? 'Change map' }), tabs), cards, el('div', { class: 'hm-foot' }, chosen, close, go));
   }
 
   // ---------------------------------------------------------------- character select
@@ -1183,13 +1289,19 @@ export class FrontEnd {
     const shown = all.filter((c) => this.charFilter === 'all' || (this.charFilter === 'mine' ? c.mine : !c.mine && groupOf(c.id) === this.charFilter));
     const selected = this.hovered ?? this.look;
 
-    const tabs = el('div', { class: 'tabs' }, el('span', { class: 'bumper', textContent: 'Q' }));
+    // Q / E (LB / RB) at the ends of the filters: buttons too.
+    const bumper = (dir: 1 | -1) => {
+      const b = el('button', { type: 'button', class: 'bumper-btn', title: `${dir > 0 ? 'Next' : 'Previous'} filter (${dir > 0 ? 'E' : 'Q'})` }, ...glyphs(dir > 0 ? 'E' : 'Q', dir > 0 ? 'RB' : 'LB'));
+      b.addEventListener('click', () => this.cycle(dir));
+      return b;
+    };
+    const tabs = el('div', { class: 'tabs' }, bumper(-1));
     for (const [v, label] of filters) {
       const b = el('button', { class: `tab${v === this.charFilter ? ' on' : ''}`, textContent: label });
       b.addEventListener('click', () => ((this.charFilter = v), this.go('characters')));
       tabs.append(b);
     }
-    tabs.append(el('span', { class: 'bumper', textContent: 'E' }));
+    tabs.append(bumper(1));
 
     const grid = el('div', { class: 'char-grid loading' });
     // The shipped pictures appear together once they're all decoded (not face by face); a portrait drawn live
@@ -1235,7 +1347,7 @@ export class FrontEnd {
 
     const info = el('div', { class: 'char-info panel' });
     this.fillInfo(info, selected);
-    return el('div', { class: 'screen characters' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Character <em>Select</em>' }), tabs), grid, info, this.spinZone());
+    return el('div', { class: 'screen characters' }, this.head('Character <em>Select</em>', tabs), grid, info, this.spinZone());
   }
 
   /** Over the hero, beside the grid: drag (mouse or touch) to turn them round and see the whole look; or the turn buttons. */
@@ -1371,7 +1483,7 @@ export class FrontEnd {
     });
     // Hosting: from a match (nothing to install), or a dedicated server (the optional Host Service, explained on /host).
     const hosting = el('div', { class: 'form panel host-options' }, el('h4', { textContent: 'Host a game' }), el('p', { class: 'hint', textContent: 'From any match: Esc → Host game. Nothing to install.' }), el('a', { href: '/host', id: 'host-dedicated', class: 'link', textContent: 'Host a dedicated server…' }));
-    return el('div', { class: 'screen online' }, el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Online <em>Play</em>' })), el('div', { class: 'online-grid' }, this.gameBrowser(), el('div', { class: 'online-side' }, codeForm, hosting, this.lanPanel(), form)));
+    return el('div', { class: 'screen online' }, this.head('Online <em>Play</em>'), el('div', { class: 'online-grid' }, this.gameBrowser(), el('div', { class: 'online-side' }, codeForm, hosting, this.lanPanel(), form)));
   }
 
   /** Online → LAN: dedicated servers on your network (see game/lan.ts for how, and the limits). */
@@ -1548,7 +1660,7 @@ export class FrontEnd {
     change.addEventListener('click', () => this.go('characters'));
     const look = el('label', {}, 'Character', el('div', { class: 'current-look' }, img, el('b', { textContent: this.lookName(this.look) }), change));
     const privacy = el('p', { class: 'hint', textContent: 'Your Google name and email are never shown to anyone: players see your username.' });
-    const head = el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Your <em>Profile</em>' }));
+    const head = this.head('Your <em>Profile</em>');
     if (!who) {
       const signin = el('button', { type: 'button', class: 'primary', id: 'profile-sign-in', textContent: 'Sign in' });
       signin.addEventListener('click', () => void signIn());
@@ -1782,7 +1894,7 @@ export class FrontEnd {
     return el(
       'div',
       { class: 'screen options' },
-      el('div', { class: 'screen-head' }, el('h2', { innerHTML: 'Game <em>Options</em>' })),
+      this.head('Game <em>Options</em>'),
       el('div', { class: 'opt-layout panel' }, nav, body),
     );
   }
@@ -1795,9 +1907,14 @@ export class FrontEnd {
 
   private onKey(e: KeyboardEvent): void {
     if (this.root.hidden || (e.target instanceof HTMLInputElement && e.key !== 'Escape')) return;
-    if (e.key === 'Escape' && this.screen !== 'home') {
+    if (e.key === 'Escape') {
+      // One level per press, and never a press the browser used (leaving fullscreen, a held Esc repeating).
+      if (browserTookEscape(e)) return;
       e.preventDefault();
-      this.go('home');
+      // Typing in a box (search, name): the first Esc only leaves the box.
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'TEXTAREA' || (t instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return t.blur();
+      this.back();
     } else if (this.screen === 'home' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       e.preventDefault();
       this.setNav(this.navIndex + (e.key === 'ArrowDown' ? 1 : -1));
@@ -1807,18 +1924,10 @@ export class FrontEnd {
     } else if (this.screen === 'play' && e.key === 'Enter' && !(e.target instanceof HTMLButtonElement || e.target instanceof HTMLSelectElement || (e.target as HTMLElement | null)?.tagName === 'SUMMARY')) {
       e.preventDefault();
       this.start();
-    } else if (this.screen === 'play' && (e.key === 'q' || e.key === 'e') && !(e.target instanceof HTMLSelectElement)) {
-      const m = this.currentMap();
-      const i = m.modes.indexOf(this.setup.mode);
-      this.setMode(m.modes[(i + (e.key === 'e' ? 1 : m.modes.length - 1)) % m.modes.length]!);
-    } else if (this.screen === 'options' && (e.key === 'q' || e.key === 'e') && !(e.target instanceof HTMLSelectElement)) {
-      const tabs = FrontEnd.OPTION_TABS;
-      this.optionsTab = tabs[(tabs.indexOf(this.optionsTab) + (e.key === 'e' ? 1 : tabs.length - 1)) % tabs.length]!;
-      this.go('options');
+    } else if ((this.screen === 'play' || this.screen === 'options') && (e.key === 'q' || e.key === 'e') && !(e.target instanceof HTMLSelectElement)) {
+      this.cycle(e.key === 'e' ? 1 : -1);
     } else if (this.screen === 'characters' && (e.key === 'q' || e.key === 'e')) {
-      const order = ['all', 'originals', 'ranger', 'peasant', 'athlete', 'npc', 'mine'];
-      this.charFilter = order[(order.indexOf(this.charFilter) + (e.key === 'e' ? 1 : order.length - 1)) % order.length]!;
-      this.go('characters');
+      this.cycle(e.key === 'e' ? 1 : -1);
     } else if (this.screen === 'characters' && e.key === 'd') {
       this.hooks.openDesigner(this.look);
     } else if (this.screen === 'characters' && e.key === 'c') {
