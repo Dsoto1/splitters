@@ -30,6 +30,8 @@ export class TouchControls {
   private readonly abort = new AbortController();
   private readonly aimBtn: HTMLButtonElement;
   private readonly wheelBtn: HTMLButtonElement;
+  private readonly watchBar: HTMLDivElement;
+  private readonly joinBtn: HTMLButtonElement;
 
   constructor(
     private readonly input: InputState,
@@ -64,6 +66,26 @@ export class TouchControls {
     this.wheelBtn = btn('tc-wheel', 'Weapons', 'Weapon wheel');
     const pause = btn('tc-pause', 'II', 'Pause');
     this.el.append(look, pad, fire, this.aimBtn, melee, reload, use, thrw, this.wheelBtn, pause);
+    // Watching (dead, or spectating): previous / next player, follow or free camera, and Join (spectators).
+    this.watchBar = div('tc-watch');
+    this.watchBar.hidden = true;
+    const watchBtn = (label: string, title: string, code: string) => {
+      const b = btn('tc-wbtn', label, title);
+      b.addEventListener(
+        'pointerdown',
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.input.virtualKey(code, true);
+          this.input.virtualKey(code, false);
+        },
+        { signal },
+      );
+      return b;
+    };
+    this.joinBtn = watchBtn('Join', 'Join the game', 'KeyJ');
+    this.watchBar.append(watchBtn('◀', 'Previous player', 'ArrowLeft'), watchBtn('Camera', 'Follow players or fly the free camera', 'Space'), watchBtn('▶', 'Next player', 'ArrowRight'), this.joinBtn);
+    this.el.append(this.watchBar);
     this.rotate = div('');
     this.rotate.id = 'touch-rotate';
     this.rotate.innerHTML = '<div><b>Turn your phone sideways</b><small>Tile Trigger plays in landscape</small></div>';
@@ -254,6 +276,12 @@ export class TouchControls {
   setActive(on: boolean): void {
     if (this.el.hidden === !on) return;
     this.el.hidden = !on;
+  }
+
+  /** Out of play: the watching buttons (Join for spectators by choice); null hides them. */
+  setWatching(w: { join: boolean } | null): void {
+    if (this.watchBar.hidden !== !w) this.watchBar.hidden = !w;
+    if (w && this.joinBtn.hidden === w.join) this.joinBtn.hidden = !w.join;
   }
 
   /** Once a frame: the toggle buttons show their state. */

@@ -511,6 +511,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           rules: match.rules,
           sc: match.scenario.fullState(),
           dedicated: true,
+          spectate: 1,
           ...(lan.length ? { lan } : {}),
         });
         broadcast({ t: 'roster', players: match.roster() });
@@ -530,6 +531,14 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         // An idle player's place goes back to them the moment they play.
         if (bots.input(client.slot, msg.inputs)) {
           notice(`${client.who?.name ?? 'A player'} is back`);
+          broadcast({ t: 'roster', players: match.roster() });
+        }
+      } else if (msg.t === 'spectate' && client.slot !== null) {
+        // Spectate by choice (a bot fills the place), or join play again (a bot gives way).
+        const name = client.who?.name ?? 'A player';
+        if (msg.on ? bots.spectate(client.slot, control.fill) : bots.rejoin(client.slot, control.fill)) {
+          event(`${name} ${msg.on ? 'is spectating' : 'joined play again'}`);
+          notice(msg.on ? `${name} is spectating` : `${name} joined the game`);
           broadcast({ t: 'roster', players: match.roster() });
         }
       } else if (msg.t === 'ready' && client.slot !== null) {

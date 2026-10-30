@@ -709,6 +709,18 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .lan-panel .gb-hub input { flex: 1; min-width: 0; }
 
 #spectating { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); padding: 6px 14px; background: rgba(10, 14, 24, 0.75); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; font-size: 14px; letter-spacing: 0.04em; pointer-events: none; }
+#spectating b { display: block; text-align: center; font-weight: 700; }
+#spectating small { display: block; text-align: center; margin-top: 2px; font-size: 12px; opacity: 0.75; }
+#spectating small:empty { display: none; }
+/* Out of play (dead, or spectating): no crosshair. The kill cam's banner: who killed you, with what, their health. */
+#hud.watching #crosshair, #hud.watching #reddot { display: none; }
+#killcam { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; max-width: calc(100vw - 32px); padding: 8px 16px; background: rgba(40, 8, 12, 0.78); border: 1px solid rgba(255, 90, 90, 0.45); border-radius: 4px; font-size: 16px; letter-spacing: 0.03em; pointer-events: none; }
+#killcam small { text-transform: uppercase; font-size: 11px; letter-spacing: 0.14em; opacity: 0.8; }
+#killcam b { font-size: 18px; }
+#killcam .kc-w { display: inline-flex; align-items: center; font-size: 13px; opacity: 0.9; }
+#killcam .kc-w img { height: 22px; width: auto; }
+#killcam .kc-hp { font-size: 13px; padding: 1px 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.12); }
+#killcam em { flex-basis: 100%; text-align: center; font-style: normal; font-size: 11px; opacity: 0.6; }
 
 /* Online: the game browser beside Join by code and direct server. */
 .online-grid { display: grid; grid-template-columns: 1fr min(400px, 34vw); gap: 18px; margin-top: 18px; height: calc(100% - 70px); }
@@ -1100,3 +1112,8 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
 }
 /* No keyboard on a phone: the key hints in the pause menu and footer say nothing there. */
 html.touch .menu-footer .hintbar, html.touch .pause-foot .hint { display: none; }
+
+/* Touch, while watching (dead or spectating): previous / next player, camera, Join. */
+#touch-ui .tc-watch { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: auto; }
+#touch-ui .tc-watch[hidden] { display: none; }
+#touch-ui .tc-watch .tc-wbtn { position: static; width: auto; min-width: 52px; height: 44px; padding: 0 12px; border-radius: 22px; }

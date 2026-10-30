@@ -862,6 +862,109 @@ async function offlineFlow(browser) {
   check(played > 0, `match events play sounds (${played} played)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await spectateChecks(browser);
+}
+
+/**
+ * Out of play (spectatorCam.ts): dying shows the kill cam on the killer, a key skips it to following
+ * players (cycled with the arrow keys), Space flies the free camera, and you respawn as usual; then
+ * spectating by choice from the pause menu (a bot fills the place) and joining again.
+ */
+async function spectateChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/spectate-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?offline&test=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+  const spec = () => page.evaluate(() => window.__cs.spec());
+  // A bot kills you; your respawn waits a minute, so there's time to watch (the bots respawn as usual).
+  const killer = await sim(page, (m, me) => {
+    const bot = m.combatants().find((c) => c.kind === 'bot' && c.alive);
+    m.kill(me, bot, 'core.pistol');
+    me.respawnTick = m.tick + 60 * 60;
+    return { slot: bot.slot, name: bot.name };
+  });
+  // The banner, read the moment it's up (the kill cam lasts a few seconds).
+  const banner = await page
+    .waitForFunction(() => {
+      const el = document.getElementById('killcam');
+      return el && !el.hidden && window.__cs.spec().killCam !== null && { text: el.textContent, killer: window.__cs.spec().killCam };
+    }, null, { timeout: T(5000), polling: 50 })
+    .then((h) => h.jsonValue())
+    .catch(() => null);
+  check(banner?.killer === killer.slot && banner.text.includes(killer.name), `the kill cam shows the killer (${banner?.text ?? 'no banner'})`);
+  check(/HP left|down/.test(banner?.text ?? ''), 'with the health they have left');
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
+  await shot('killcam');
+  // When it ends (the match's own respawn delay, as this page knows it), you follow a player (free-for-all: anyone).
+  await page.waitForFunction(() => window.__cs.spec().killCam === null && window.__cs.spec().following >= 0, null, { timeout: T(8000) }).catch(() => {});
+  const first = await spec();
+  const watching = await page.evaluate(() => document.querySelector('#spectating b')?.textContent ?? '');
+  check(first.killCam === null && first.following >= 0 && !first.free && /^Watching /.test(watching), `after the kill cam you follow a player (${watching})`);
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
+  await shot('follow');
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction((f) => window.__cs.spec().following !== f, first.following, { timeout: T(3000) }).catch(() => {});
+  const second = await spec();
+  check(second.following >= 0 && second.following !== first.following, `→ follows the next player (${first.following} → ${second.following})`);
+  // Space again: the free camera, flown with the movement keys.
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.__cs.spec().free, null, { timeout: T(3000) }).catch(() => {});
+  const from = (await spec()).camera;
+  await page.evaluate(() => (window.__autoInput = { forward: 1, up: 1 }));
+  const flown = await until(async () => {
+    const c = (await spec()).camera;
+    return Math.hypot(c.x - from.x, c.y - from.y, c.z - from.z) > 4;
+  }, T(5000));
+  await page.evaluate(() => delete window.__autoInput);
+  check((await spec()).free && flown, 'Space switches to the free camera, which flies');
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
+  await shot('freecam');
+  // Camera input while dead goes out as activity (PlayerInput.sp), so the idle rules leave a watcher alone.
+  const idle = await sim(page, (m, me) => m.idleSeconds(me.slot));
+  check(idle < 2, `watching counts as activity (${idle.toFixed(1)} s idle)`);
+  // Respawn as usual: the normal view is back.
+  await sim(page, (m, me) => void (me.respawnTick = m.tick));
+  await page.waitForFunction(() => window.__cs.local.alive && !window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
+  const back = await page.evaluate(() => ({ alive: window.__cs.local.alive, out: window.__cs.spec().out, hud: document.getElementById('spectating')?.hidden !== false }));
+  check(back.alive && !back.out && back.hud, `respawning ends watching (${JSON.stringify(back)})`);
+  // Die again and press Space at once: it skips the kill cam.
+  await sim(page, (m, me) => {
+    m.kill(me, m.combatants().find((c) => c.kind === 'bot' && c.alive), 'core.pistol');
+    me.respawnTick = m.tick + 60 * 60;
+  });
+  await page.waitForFunction(() => window.__cs.spec().killCam !== null, null, { timeout: T(5000) }).catch(() => {});
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.__cs.spec().killCam === null, null, { timeout: T(1500) }).catch(() => {});
+  const skipped = await spec();
+  check(skipped.killCam === null && !skipped.free, `a key skips the kill cam (${JSON.stringify({ killCam: skipped.killCam, following: skipped.following })})`);
+  await sim(page, (m, me) => void (me.respawnTick = m.tick));
+  await page.waitForFunction(() => window.__cs.local.alive && !window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
+  // Spectate by choice (pause menu): out of the match, a bot in the place, the free camera; Join game puts you back.
+  const before = await sim(page, (m) => m.combatants().length);
+  const offer = await page.evaluate(() => ({ shown: !document.getElementById('pause-spectate')?.hidden, text: document.getElementById('pause-spectate')?.textContent }));
+  check(offer.shown && offer.text === 'Spectate', `the pause menu offers Spectate (${JSON.stringify(offer)})`);
+  // The menu's button (clicked as the page would: the menu is hidden while a test plays).
+  await page.evaluate(() => document.getElementById('pause-spectate').click());
+  await page.waitForFunction(() => window.__cs.spec().spectator, null, { timeout: T(5000) }).catch(() => {});
+  const out = await sim(page, (m, me) => ({ empty: m.slots[me.slot] === null, spectator: m.isSpectator(me.slot), n: m.combatants().length }));
+  const s1 = await spec();
+  check(s1.spectator && out.empty && out.spectator && out.n === before && s1.rule.freeCam, `spectating takes you out of the match, a bot fills the place (${JSON.stringify(out)}, ${before} before)`);
+  check((await page.textContent('#pause-spectate')) === 'Join game', 'and the button says Join game');
+  await page.evaluate(() => (window.__autoInput = { right: 1 }));
+  await until(async () => (await spec()).following >= 0 || (await spec()).free, T(3000));
+  await page.evaluate(() => delete window.__autoInput);
+  await page.evaluate(() => (document.getElementById('pause').hidden = true));
+  await shot('spectator');
+  await page.evaluate(() => document.getElementById('pause-spectate').click());
+  await page.waitForFunction(() => !window.__cs.spec().spectator && window.__cs.local.alive, null, { timeout: T(5000) }).catch(() => {});
+  const joined = await sim(page, (m, me) => ({ human: m.slots[me.slot]?.kind === 'human', n: m.combatants().length }));
+  check(joined.human && joined.n === before && (await page.evaluate(() => window.__cs.local.alive)), `Join game puts you back in play (${JSON.stringify(joined)})`);
+  check(errors.length === 0, `no page errors while spectating (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
 }
 
 /**
@@ -2879,6 +2982,22 @@ async function hostgameFlow(browser) {
     const rate = ((await bytes()) - b0) / 5 / 1024;
     // Raw snapshots run ~40 KB/s; compressed, a few (bursty frames on CI push it up, but well under raw).
     check(rate > 0.2 && rate < 20, `the friend's stream is compressed (${rate.toFixed(1)} KB/s)`);
+    // The friend spectates (what the pause menu's button does; the offline flow clicks it): out of the host's
+    // match, a bot in the place, and their camera input keeps them from going idle (PlayerInput.sp); Join game puts them back.
+    const fslot = await friend.evaluate(() => window.__cs.slot);
+    await friend.evaluate(() => window.__cs.spectate(true));
+    const specOn = await simWait(host, (m, _me, s) => m.isSpectator(s) && m.slots[s] === null, fslot, T(10000));
+    await friend.evaluate(() => (window.__autoInput = { forward: 1 }));
+    await friend.waitForFunction(() => window.__cs.spec().spectator && window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
+    await friend.waitForTimeout(1500); // wait-ok: the free camera's input reaches the host for a while
+    await friend.evaluate(() => delete window.__autoInput);
+    const idle = await sim(host, (m, _me, s) => m.idleSeconds(s), fslot);
+    const fstate = await friend.evaluate(() => window.__cs.spec());
+    check(specOn && fstate.spectator && fstate.out && idle < 2, `a friend spectates in the hosted match, their camera input counting as activity (${idle.toFixed(1)} s idle; spectator ${fstate.spectator}, ${fstate.free ? 'free camera' : `following ${fstate.following}`})`);
+    await friend.evaluate(() => window.__cs.spectate(false));
+    const backIn = await simWait(host, (m, _me, s) => m.slots[s]?.kind === 'human' && !m.isSpectator(s), fslot, T(10000));
+    await friend.waitForFunction(() => !window.__cs.spec().spectator, null, { timeout: T(5000) }).catch(() => {});
+    check(specOn && backIn && !(await friend.evaluate(() => window.__cs.spec().spectator)), 'and joins the game again');
     // The host leaves (Leave match, confirmed with a friend in): the friend gets the host-left screen, not a bare error.
     // (The friend is the only one, so the host has named it successor: here it lets that go, as when no handoff
     // can happen; the flow `handoff` covers a successor carrying the match on.)
