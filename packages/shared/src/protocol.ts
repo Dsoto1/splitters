@@ -82,7 +82,7 @@ export type RotationCommand = Extract<HostCommand, { c: 'rotation' | 'skip' }>;
 /** Commands the match itself runs (HostControl). */
 export type MatchCommand = Exclude<HostCommand, { c: 'map' } | PlayerCommand | RotationCommand>;
 
-/** Rules a host can change mid-match; they wait for the next restart (all but mixPickups, which applies at once). */
+/** Rules a host can change mid-match; they wait for the next restart (all but mixPickups and dropWeapons, which apply at once). */
 export interface HostRulesPatch {
   scoreLimit?: number;
   timeLimitSeconds?: number;
@@ -90,6 +90,8 @@ export interface HostRulesPatch {
   respawnDelayTicks?: number;
   /** Mix up weapon pickups (MatchRules.mixPickups): takes effect at once, not at the restart. */
   mixPickups?: boolean;
+  /** Drop weapon on death (MatchRules.dropWeapons): takes effect at once (off clears the drops lying about). */
+  dropWeapons?: boolean;
 }
 
 /** The match's host settings, for the pause menu of whoever runs it. */
@@ -490,6 +492,8 @@ export type ServerMessage =
       pk: string[];
       /** Random weapon pickups holding something other than what was placed: [pickup ID, item ID] (absent: none). */
       pw?: [string, string][];
+      /** Weapons dropped by the fallen (MatchRules.dropWeapons), lying now: [drop ID, item ID, x, y, z, yaw] (absent: none). */
+      dw?: [number, string, number, number, number, number][];
       /** Ground hazards and fields (oil, fire, toxic clouds, goo, singularities), when any. */
       zn?: ZoneSnapshot[];
       /** Turrets, sentries and vehicles, when the map has any. */

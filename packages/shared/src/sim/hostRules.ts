@@ -3,7 +3,7 @@ import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { MODE_LABELS, isTeamMode, mapCanRun, rulesForMap, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /** Rules that aren't about the map or the mode: they stay as the host set them when the map changes. */
-const KEPT = ['teamAssign', 'hostTeam', 'bodySizes', 'emotes', 'botStyle', 'killstreaks', 'mixPickups', 'squadSpawn', 'friendlyFire', 'weapons', 'classes', 'classLimit', 'vehicleDamage', 'gravity', 'fallDamage'] as const;
+const KEPT = ['teamAssign', 'hostTeam', 'bodySizes', 'emotes', 'botStyle', 'killstreaks', 'mixPickups', 'dropWeapons', 'squadSpawn', 'friendlyFire', 'weapons', 'classes', 'classLimit', 'vehicleDamage', 'gravity', 'fallDamage'] as const;
 /** Kept too when the mode stays the same (they mean different things in different modes). */
 const SAME_MODE = ['scoreLimit', 'timeLimitSeconds', 'respawnDelayTicks', 'fortBuildSeconds', 'fortCombatSeconds', 'fortCycles', 'fortBudget'] as const;
 

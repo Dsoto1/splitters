@@ -45,6 +45,7 @@ import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './cons
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { pickupPool, rollPickup } from './pickupRoll.ts';
+import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
 import { BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
@@ -52,10 +53,10 @@ import { BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUT
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
-import { DEFAULT_DEATHMATCH_RULES, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
+import { DEFAULT_DEATHMATCH_RULES, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
 import type { CheckpointPlayer, MatchCheckpoint } from '../net/handoff.ts';
-import { ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
+import { CLASS_DEFS, ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
 import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
 import { Scenario } from './scenario.ts';
@@ -469,6 +470,9 @@ export class Match {
   /** The map's spawn points, then any made up for this match (see ensureSpawnCapacity). */
   readonly spawnPoints: SpawnSpot[];
   readonly pickups: PickupState[];
+  /** Weapons dropped by the fallen (rules.dropWeapons, sim/drops.ts), oldest first. */
+  readonly drops: WeaponDrop[] = [];
+  private nextDropId = 1;
   /** Doors, buttons, destructibles, zones, traps and the map's logic rules. */
   readonly scenario: Scenario;
   /** NPC squads spawned by encounter entities. */
@@ -1367,6 +1371,8 @@ export class Match {
     (this as { rules: MatchRules }).rules = { ...this.rules, ...patch };
     // "Mix up weapon pickups" turned on or off: every pickup it touches rolls (or goes back to what was placed) now.
     if ('mixPickups' in patch) for (const p of this.pickups) this.repool(p);
+    // Weapon drops turned off: the ones lying about go too.
+    if (!dropsInPlay(this.rules)) this.drops.length = 0;
   }
 
   /** The host ends the match now: the results as they stand, then the scoreboard (and a fresh round after the intermission). */
@@ -1616,6 +1622,7 @@ export class Match {
       this.stepMounts();
       if (prof) lap('mounts');
       this.stepProjectiles();
+      this.stepDrops();
       this.stepBullets();
       this.stepZones();
       this.stepStatuses();
@@ -1706,6 +1713,8 @@ export class Match {
       const item = lyingItem(p);
       if (item) lying.push({ id: `${p.spec.disc ? 'disc' : 'spear'}_${p.id}`, item, pos: p.pos, available: true });
     }
+    // Weapons dropped by the fallen count as weapon pickups.
+    for (const d of this.drops) lying.push({ id: `drop_${d.id}`, item: d.item, pos: d.pos, available: true });
     const pickups: PickupView[] = [...lying, ...this.pickups.filter((p) => !restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
     const npcPickups: PickupView[] = [];
     // Team-only doors block other teams; buttons a bot may press can open the doors in its way.
@@ -4320,6 +4329,7 @@ export class Match {
     this.leaveMount(victim, false);
     victim.alive = false;
     victim.health = 0;
+    if (!victim.npc) this.dropWeapon(victim);
     this.pendingEvents.push({ e: 'kill', killer: killer?.slot ?? null, victim: victim.slot, weapon, ...(head ? { hs: 1 as const } : {}) });
     // Only players score; NPC kills of players count as the player's death.
     // Kills never go down: a team kill just earns nothing (no kill, no streak).
@@ -4364,6 +4374,61 @@ export class Match {
       // A random pickup comes back as another weapon of its category.
       this.reroll(p);
     }
+    for (let i = 0; i < this.drops.length; i++) {
+      const d = this.drops[i]!;
+      if (horizontalDistance(d.pos, c.move.pos) > PICKUP_RADIUS || Math.abs(d.pos.y - c.move.pos.y) > 1.5) continue;
+      if (!this.takeDrop(c, d)) continue;
+      this.pendingEvents.push({ e: 'pickup', s: c.slot, id: `drop_${d.id}`, item: d.item.id });
+      if (!dropSpent(d)) continue;
+      this.drops.splice(i--, 1);
+    }
+  }
+
+  /**
+   * A fallen player's or bot's primary with ammo left drops at the body (rules.dropWeapons; sim/drops.ts):
+   * the weapon in hand unless it's part of the starting loadout, else their best one with ammo. It lies on
+   * the ground below them (none over the void) for DROP_LIE_SECONDS; past MAX_DROPS the oldest goes.
+   */
+  private dropWeapon(c: Combatant): void {
+    if (!dropsInPlay(this.rules)) return;
+    const defaults = new Set([...this.rules.startingWeapons, ...(c.cls ? CLASS_DEFS[c.cls.id].weapons : [])]);
+    const w = chooseDrop(c.weapons.values(), c.weapons.get(c.current), defaults);
+    const item = w && dropItem(w.def);
+    if (!w || !item) return;
+    const at = c.move.pos;
+    const down = this.physics.raycastHit({ x: at.x, y: at.y + 0.5, z: at.z }, { x: 0, y: -1, z: 0 }, DROP_REACH);
+    if (!down) return;
+    if (this.drops.length >= MAX_DROPS) this.drops.splice(0, this.drops.length - MAX_DROPS + 1);
+    this.drops.push({ id: this.nextDropId++, def: w.def, item, mag: w.mag, reserve: w.reserve, alt: w.alt, pos: { x: at.x, y: at.y + 0.5 - down.dist, z: at.z }, yaw: c.yaw, until: this.tick + Math.round(DROP_LIE_SECONDS * TICK_RATE) });
+    // (The fallen's inventory stays as it was until they respawn with a fresh loadout: the rest is recycled.)
+  }
+
+  /**
+   * Picking up a dropped weapon: someone without it gets it with exactly the ammo it held (and comes up like a
+   * map pickup's); someone with it takes its ammo as far as their reserve has room. False: nothing taken.
+   */
+  private takeDrop(c: Combatant, d: WeaponDrop): boolean {
+    const code = weaponCode(d.def);
+    const owned = c.weapons.get(code);
+    if (owned) return takeDropAmmo(owned, d);
+    c.weapons.set(code, { def: d.def, mag: Math.min(d.def.magazine, d.mag), reserve: Math.min(d.def.reserveMax, d.reserve), alt: d.alt });
+    d.mag = d.reserve = d.alt = 0;
+    if (d.def.slot > (weaponByCode(c.current)?.slot ?? 0)) this.switchTo(c, code);
+    // Taken whole: it goes (a heat weapon has no ammo to run out of).
+    d.until = -1;
+    return true;
+  }
+
+  /** Dropped weapons lying past their time go. */
+  private stepDrops(): void {
+    if (!this.drops.length) return;
+    const keep = this.drops.filter((d) => d.until > this.tick);
+    if (keep.length !== this.drops.length) this.drops.splice(0, this.drops.length, ...keep);
+  }
+
+  /** Dropped weapons lying now, for the snapshot (`dw`): [id, item ID, x, y, z, yaw]. */
+  dropSnapshots(): [number, string, number, number, number, number][] {
+    return this.drops.map((d) => [d.id, d.item.id, r3(d.pos.x), r3(d.pos.y), r3(d.pos.z), r3(d.yaw)]);
   }
 
   /** Work out what a pickup rolls from (its own category, or the host's mix-up), and roll it afresh when that changed. */
@@ -4831,6 +4896,7 @@ export class Match {
     this.phase = 'playing';
     this.phaseEndTick = this.roundEndTick();
     for (const p of this.pickups) p.availableAt = 0;
+    this.drops.length = 0;
     for (const id of [...this.npcs.keys()]) this.removeNpc(id);
     this.encounters.reset();
     this.scenario.reset();
@@ -5061,6 +5127,7 @@ export class Match {
       pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)]),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
       ...(this.pickups.some((p) => p.item !== p.placed) ? { pw: this.pickupItems() } : {}),
+      ...(this.drops.length ? { dw: this.dropSnapshots() } : {}),
       ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
       ...(this.covers.length ? { cv: this.covers.map((c): CoverSnapshot => [c.id, r3(c.pos.x), r3(c.pos.y), r3(c.pos.z), r3(c.yaw), Math.ceil((Math.max(0, c.health) / c.max) * 100)]) } : {}),
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),

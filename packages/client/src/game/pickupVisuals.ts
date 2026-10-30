@@ -15,6 +15,8 @@ const HEALTH_MODEL = 'guns/medkit.glb';
 
 /** Height of a pickup's centre above the floor. */
 export const PICKUP_HOVER = 0.55;
+/** A dropped weapon lies on its side: its centre this high above the ground. */
+export const DROP_LIE_HEIGHT = 0.08;
 
 const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();
 
@@ -40,8 +42,9 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
  * and health (the medkit), and simple in-house shapes for armor, ammo and
  * powerups.
  * The returned root is centred on the item; place it PICKUP_HOVER above the floor.
+ * `lying`: a weapon dropped by the fallen, on its side on a small ring (place it DROP_LIE_HEIGHT above the ground).
  */
-export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false): TransformNode {
+export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false): TransformNode {
   const root = new TransformNode(name, scene);
   const item = getItem(itemId);
   const part = (m: Mesh, material: StandardMaterial) => {
@@ -58,8 +61,11 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       if (root.isDisposed()) return model.dispose();
       model.parent = root;
       model.rotation.y = Math.PI / 2;
+      // Rolled onto its side about the barrel.
+      if (lying) model.rotation.z = Math.PI / 2;
     });
-    part(CreateCylinder(`${name}_ring`, { diameter: 0.9, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -0.5;
+    if (lying) part(CreateCylinder(`${name}_ring`, { diameter: 0.6, height: 0.02, tessellation: 20 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -DROP_LIE_HEIGHT + 0.01;
+    else part(CreateCylinder(`${name}_ring`, { diameter: 0.9, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -0.5;
   } else if (fx.kind === 'health') {
     // The medkit model (the owner's Meshy medkit, content/guns.json); large health is a bigger case.
     const s = fx.amount >= 50 ? 1.6 : 1.25;

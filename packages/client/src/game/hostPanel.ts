@@ -259,6 +259,11 @@ export class HostPanel {
       const mix = s.rules.mixPickups;
       rows.push(settingRow('Mix up weapon pickups', 'Every weapon pickup not marked "keep fixed" in MapMaker holds a random weapon of the same kind as the one placed there, and a new one each time it comes back. Applies at once.', choice([['off', 'Off'], ['on', 'On']] as const, mix ? 'on' : 'off', (v) => this.hooks.command({ c: 'rules', rules: { mixPickups: v === 'on' } }), 'hc-mix')));
     }
+    // Drop weapon on death: applies at once too (not in Disc Arena or races, where nothing drops).
+    if (s.rules?.dropWeapons !== undefined && s.mode !== 'core.discs' && s.mode !== 'core.race') {
+      const drop = s.rules.dropWeapons;
+      rows.push(settingRow('Drop weapon on death', "A fallen player's or bot's primary with ammo left lies at the body for 30 s, with exactly that ammo; the rest of what they carried is recycled. Applies at once (off clears the ones lying about).", choice([['on', 'On'], ['off', 'Off']] as const, drop ? 'on' : 'off', (v) => this.hooks.command({ c: 'rules', rules: { dropWeapons: v === 'on' } }), 'hc-drops')));
+    }
     const liveChanged = d.fill !== s.fill || d.sizes.join() !== now.join() || d.skill !== s.skill || d.style !== s.style;
 
     // Rules that need the match to start over.

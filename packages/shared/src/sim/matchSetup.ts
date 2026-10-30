@@ -37,6 +37,8 @@ export interface MatchSetup {
   killstreaks?: boolean;
   /** Mix up weapon pickups (absent: off). */
   mixPickups?: boolean;
+  /** Drop weapon on death (absent: on). */
+  dropWeapons?: boolean;
   squadSpawn?: boolean;
   gravity?: number;
   fallDamage?: boolean;
@@ -229,6 +231,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument): { rules: Ma
   if (s.botStyle) rules.botStyle = s.botStyle;
   if (s.killstreaks === false) rules.killstreaks = false;
   if (s.mixPickups) rules.mixPickups = true;
+  if (s.dropWeapons === false) rules.dropWeapons = false;
   if (s.squadSpawn === false) rules.squadSpawn = false;
   if (s.gravity !== undefined) rules.gravity = s.gravity;
   if (s.fallDamage !== undefined) rules.fallDamage = s.fallDamage;

@@ -55,11 +55,11 @@ export class SnapshotStream {
 /**
  * Snapshot fields that mostly stay the same from one snapshot to the next
  * (the scoreboard, vehicles standing about, taken pickups and what random
- * pickups hold): a receiver with
+ * pickups hold, weapons lying where the fallen dropped them): a receiver with
  * a stream is sent them only when they changed, and the snapshot lists the
  * ones it repeats in `same` (the receiver fills them in from its last copy).
  */
-export const REPEATABLE = ['score', 'mt', 'pk', 'pw', 'cv', 'ld'] as const;
+export const REPEATABLE = ['score', 'mt', 'pk', 'pw', 'dw', 'cv', 'ld'] as const;
 
 type WireSnapshot = Omit<Extract<ServerMessage, { t: 'snapshot' }>, 'players'> & { players: (PlayerSnapshot | PlayerDelta)[]; same?: string[] };
 

@@ -84,7 +84,7 @@ const SHAKE_MS = 650;
 import { MapStyler } from '../mapMeshes.ts';
 import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
-import { PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
+import { DROP_LIE_HEIGHT, PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
 import { CityVisuals } from './cityVisuals.ts';
@@ -252,6 +252,8 @@ export class GameView {
   /** More remote players than ANIM_LOD_CROWD (the last updateAvatars): big-match savings apply. */
   private crowd = false;
   private readonly pickups = new Map<string, PickupVisual>();
+  /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
+  private readonly drops = new Map<number, { root: TransformNode; item: string }>();
   private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
   private readonly props = new Map<number, TransformNode>();
@@ -1593,6 +1595,36 @@ export class GameView {
       p.root.rotation.y = now * 0.0015 + p.phase;
       p.root.position.y = p.baseY + Math.sin(now * 0.003 + p.phase) * 0.08;
     }
+  }
+
+  /**
+   * Weapons dropped by the fallen, as the latest snapshot lists them ([drop ID, item ID, x, y, z, yaw]): new ones
+   * appear lying on the ground, gone ones are removed.
+   */
+  updateDrops(drops: readonly (readonly [number, string, number, number, number, number])[]): void {
+    if (!drops.length && !this.drops.size) return;
+    const live = new Set<number>();
+    for (const [id, item, x, y, z, yaw] of drops) {
+      live.add(id);
+      const had = this.drops.get(id);
+      if (had && had.item === item) continue;
+      // Never the materials: they're shared (see updatePickups).
+      had?.root.dispose(false, false);
+      const root = createPickupVisual(this.scene, this.models, item, `drop_${id}`, true, true);
+      root.position.set(x, y + DROP_LIE_HEIGHT, z);
+      root.rotation.y = yaw;
+      this.drops.set(id, { root, item });
+    }
+    for (const [id, d] of this.drops) {
+      if (live.has(id)) continue;
+      d.root.dispose(false, false);
+      this.drops.delete(id);
+    }
+  }
+
+  /** Dropped weapons drawn now: [drop ID, item ID] (tests). */
+  dropsDrawn(): [number, string][] {
+    return [...this.drops].map(([id, d]) => [id, d.item]);
   }
 
   // ---------------------------------------------------------------- projectiles & effects

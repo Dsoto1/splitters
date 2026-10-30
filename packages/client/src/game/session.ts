@@ -279,6 +279,8 @@ export class GameSession {
   private taken = new Set<string>();
   /** Random weapon pickups holding something other than what was placed (snapshot `pw`). */
   private pickupItems = new Map<string, string>();
+  /** Weapons the fallen dropped, lying now (snapshot `dw`). */
+  private drops: readonly [number, string, number, number, number, number][] = [];
   /** Weapon slot the player asked for (0 = no request). */
   private wantWeapon = 0;
   /** Ground hazards from the latest snapshot, and your own status effects. */
@@ -1447,6 +1449,7 @@ export class GameSession {
         this.myDisc = msg.me?.dp ?? null;
         this.taken = new Set(msg.pk);
         this.pickupItems = new Map(msg.pw ?? []);
+        this.drops = msg.dw ?? [];
         this.modeHud?.snapshot(msg.md);
         this.forts?.apply(msg.md);
         this.raceHud?.snapshot(msg.md?.rc);
@@ -2294,6 +2297,7 @@ export class GameSession {
       this.view.applyPropStates(this.scenario.entities);
     }
     this.view.updatePickups(this.taken, now, this.pickupItems);
+    this.view.updateDrops(this.drops);
     const shells = this.interp.sampleProjectiles(now);
     this.view.updateProjectiles(shells);
     this.view.updateZones(this.zones, now);

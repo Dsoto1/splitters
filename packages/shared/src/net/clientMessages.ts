@@ -122,6 +122,10 @@ function parseHostCommand(raw: unknown): HostCommand | null {
         if (typeof p.mixPickups !== 'boolean') return null;
         rules.mixPickups = p.mixPickups;
       }
+      if (p.dropWeapons !== undefined) {
+        if (typeof p.dropWeapons !== 'boolean') return null;
+        rules.dropWeapons = p.dropWeapons;
+      }
       return { c: 'rules', rules };
     }
     case 'map':

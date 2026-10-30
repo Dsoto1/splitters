@@ -79,6 +79,11 @@ export interface MatchRules {
    * as the one placed there each time it comes back (sim/pickupRoll.ts). Default off.
    */
   mixPickups?: boolean;
+  /**
+   * Drop weapon on death: a fallen player's or bot's primary with ammo left lies at the body for anyone to
+   * pick up, with exactly that ammo (sim/drops.ts). Default true; never in Disc Arena, races or spears/discs only.
+   */
+  dropWeapons?: boolean;
   /** Kill-streak rewards (UAV, supply pulse, Counter-UAV, airstrike). Default true. */
   killstreaks?: boolean;
   /** Team modes: respawn beside a teammate who isn't in a fight, when one is free. Default true. */
@@ -130,6 +135,9 @@ export interface MatchRules {
 
 /** Weapons-only rules (spears, discs) take away weapon, ammo and grenade pickups. */
 export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons && rules.weapons !== 'normal';
+
+/** Whether weapons drop on death in this match: the rule (default on), and never where it makes no sense. */
+export const dropsInPlay = (rules: MatchRules): boolean => rules.dropWeapons !== false && !restrictedWeapons(rules) && rules.mode !== 'core.discs' && rules.mode !== 'core.race';
 
 /** The gravity multiple and fall damage a match plays with: its own rules, else the map's, else normal / off. */
 export function matchPhysics(rules: MatchRules, map: { physics?: { gravity: number; fallDamage: boolean } | null }): { gravity: number; fallDamage: boolean } {

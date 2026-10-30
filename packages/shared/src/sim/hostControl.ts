@@ -46,7 +46,7 @@ export class HostControl {
       teamNames: this.match.teams?.map((t) => t.name) ?? [],
       teamColors: this.match.teams?.map((t) => t.color) ?? [],
       sizes: teams ? Array.from({ length: teams }, (_, i) => sizes[i] ?? Math.max(1, Math.round(this.fill / teams))) : [],
-      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks, mixPickups: !!r.mixPickups },
+      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks, mixPickups: !!r.mixPickups, dropWeapons: r.dropWeapons !== false },
       pending: { ...this.pending },
       botSet: this.bots.botSet,
       ...(this.bots.botSet && !this.bots.hostSet ? { mapBots: true } : {}),
@@ -71,6 +71,12 @@ export class HostControl {
       if (r.mixPickups !== undefined && r.mixPickups !== !!this.match.rules.mixPickups) {
         this.match.setRules({ mixPickups: r.mixPickups || undefined });
         mixed = `${who} ${r.mixPickups ? 'mixed up' : 'stopped mixing up'} the weapon pickups`;
+      }
+      // So does weapon dropping: off clears the drops lying about.
+      if (r.dropWeapons !== undefined && r.dropWeapons !== (this.match.rules.dropWeapons !== false)) {
+        this.match.setRules({ dropWeapons: r.dropWeapons ? undefined : false });
+        const line = `${who} turned weapon drops ${r.dropWeapons ? 'on' : 'off'}`;
+        mixed = mixed ? `${mixed}; ${line}` : line;
       }
       this.pending = { ...this.pending, ...p };
       // Back to what's playing now: nothing waits.
