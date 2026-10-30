@@ -35,6 +35,21 @@ export interface MotionState {
   seatFacing?: number;
 }
 
+/**
+ * Your own whole body seen from its eyes (full-body first person): the view
+ * sets this on your character's animator. The camera is where the eyes are;
+ * the head and neck are shrunk away (the camera is inside them), the spine
+ * follows the aim only a little (so looking down shows your chest and feet,
+ * not the inside of your shoulders), and the hands grip the viewmodel, which
+ * keeps its own first-person placement (bob, recoil, reload dip).
+ */
+export interface FirstPersonBody {
+  /** The camera: the shoulders come forward toward the gun as the arms-only view's do (gripPlaced). */
+  view: TransformNode;
+  /** Called after the clips, before the aim and the grip: puts the body under the camera (firstPersonArms.ts pinBody). */
+  place?: () => void;
+}
+
 export type OneShot = 'shoot' | 'melee' | 'melee_heavy' | 'reload' | 'hit' | 'hit_head' | 'throw' | 'interact' | 'jab' | 'kick';
 
 /**
@@ -123,6 +138,10 @@ const FP_SHOULDER_REACH = 0.4;
 /** First person: how far (m) a shoulder comes forward before the support hand slides back along the handguard instead. */
 const FP_SHOULDER_EASY = 0.12;
 const FP_BEND = 0.9;
+/** Full-body first person: the share of the aim pitch the spine bends by (the rest is the view's own). */
+const FP_BODY_PITCH = 0.25;
+/** Full-body first person: the scale the neck (and with it the head, hair and hat) is shrunk to. */
+const FP_HIDDEN = 1e-4;
 /** Furthest (model m) a stock the arms can't hold clear of the chest tucks out past the shoulder. */
 const TUCK_MAX = 0.12;
 const TUCK_FROM = 0.04;
@@ -290,6 +309,7 @@ export class CharacterAnimator {
     this.weapon?.dispose();
     this.weapon = weapon;
     this.grip = weapon ? grip : null;
+    this.external = null;
     this.inHand.valid = false;
     if (weapon) {
       weapon.parent = this.ch.root;
@@ -308,6 +328,33 @@ export class CharacterAnimator {
   }
 
   private external: { node: TransformNode; grip: WeaponHold } | null = null;
+  private fp: FirstPersonBody | null = null;
+
+  /**
+   * Show this body from its own eyes (full-body first person), or null to draw
+   * it as everyone else is drawn (the head comes back). See FirstPersonBody.
+   */
+  setFirstPerson(fp: FirstPersonBody | null): void {
+    if (fp === this.fp) return;
+    this.fp = fp;
+    if (!fp) {
+      const neck = this.ch.joints.get('neck_01') ?? this.ch.joints.get('Head');
+      neck?.scaling.setAll(1);
+      for (const arm of this.arms ? [this.arms.r, this.arms.l] : []) this.restoreShoulder(arm);
+    }
+  }
+
+  get firstPerson(): FirstPersonBody | null {
+    return this.fp;
+  }
+
+  /** The shoulder joints' own places (gripPlaced moves them toward the gun), to put back when leaving first person. */
+  private readonly shoulderHome = new Map<TransformNode, Vector3>();
+
+  private restoreShoulder(arm: Arm): void {
+    const home = this.shoulderHome.get(arm.upper);
+    if (home) arm.upper.position.copyFrom(home);
+  }
 
   /** Anything in the hands? Unarmed (hostages), the arms swing with the walk instead of holding the aim pose. */
   private get armed(): boolean {
@@ -766,6 +813,8 @@ export class CharacterAnimator {
   private afterAnimations(): void {
     // Not evaluated this frame (animation LOD): the bones still hold last evaluation's aim and grip.
     if (this.dead || this.dormant || this.gate.skip || !this.spine.length) return;
+    // Your own body seen from its eyes: under the camera before anything is aimed or gripped.
+    this.fp?.place?.();
     const root = this.ch.root;
     root.computeWorldMatrix(true);
     const rootRot = Quaternion.FromRotationMatrix(root.getWorldMatrix().getRotationMatrix());
@@ -792,11 +841,12 @@ export class CharacterAnimator {
       const pitchAxis = Vector3.TransformNormal(right, toLocal).normalize();
       const twistAxis = Vector3.TransformNormal(up, toLocal).normalize();
       const share = 1 / this.spine.length;
-      const q = Quaternion.RotationAxis(pitchAxis, this.pitch * share).multiply(Quaternion.RotationAxis(twistAxis, -twist * share));
+      const q = Quaternion.RotationAxis(pitchAxis, this.pitch * share * (this.fp ? FP_BODY_PITCH : 1)).multiply(Quaternion.RotationAxis(twistAxis, -twist * share));
       bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
     }
     this.applySit(right);
     this.applyReactions(right, up, rootRot);
+    if (this.fp) (this.ch.joints.get('neck_01') ?? this.ch.joints.get('Head'))?.scaling.setAll(FP_HIDDEN);
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
     else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x);
   }
@@ -924,8 +974,29 @@ export class CharacterAnimator {
     if (grip.style === 'long' && grip.support) cupHand(space, arms.l, world, w);
     const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
     let supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale) : null;
-    const view = this.ch.root.parent as TransformNode | null;
-    if (view) {
+    const view = this.fp?.view ?? (this.ch.root.parent as TransformNode | null);
+    if (this.fp) {
+      // Full body: each shoulder starts from its own place on the body and comes forward toward the gun only as
+      // far as the arm needs (the arms-only view sets them beside the eye instead, its body being out of view).
+      for (const arm of [arms.r, arms.l]) {
+        if (!this.shoulderHome.has(arm.upper)) this.shoulderHome.set(arm.upper, arm.upper.position.clone());
+        this.restoreShoulder(arm);
+        refreshArm(arm);
+      }
+      const shift = FP_SHOULDER_REACH;
+      if (grip.support && supportAt) {
+        const s = pos(arms.l.upper);
+        const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm) * FP_BEND + FP_SHOULDER_EASY;
+        const room = Math.max(0, grip.support[2] - grip.grip[2] - SUPPORT_MIN_AHEAD);
+        let back = 0;
+        while (back < room && Vector3.Distance(s, supportAt) > reachL) {
+          back = Math.min(room, back + 0.01);
+          supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale);
+        }
+      }
+      placeShoulder(arms.r, pos(arms.r.upper), gripAt, shift);
+      if (supportAt) placeShoulder(arms.l, pos(arms.l.upper), supportAt, shift);
+    } else if (view) {
       view.computeWorldMatrix(true);
       const vm = view.getWorldMatrix();
       // A free left hand (a knife) hangs out of view.
