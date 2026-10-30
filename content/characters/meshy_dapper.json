@@ -1,0 +1,30 @@
+{
+  "id": "meshy_dapper",
+  "kind": "character",
+  "use": "player",
+  "order": 3,
+  "name": "The Dapper",
+  "look": "core.dapper",
+  "bio": "Chicago, 1927. Runs the numbers, the speakeasy and, lately, the leaderboard.",
+  "body": "male",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-10-25",
+    "url": null,
+    "meshy": {
+      "preview": "01a17408-78ca-7473-b379-648d7e9aa349",
+      "refine": "01a17409-66cf-7542-bf7f-d39040dd0f4f",
+      "remesh": "01a1740b-3ff1-71f3-8005-cd3e767884b8",
+      "rig": "01a1740d-0845-7780-8c84-b7f26c5ea616"
+    }
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {}
+}

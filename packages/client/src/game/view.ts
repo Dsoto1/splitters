@@ -90,6 +90,7 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { CharacterLibrary, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
+import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { CreatureLibrary, type AvatarSpec } from '../content/creatures.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -815,16 +816,7 @@ export class GameView {
     this.fpArms = arms;
     void this.characters.create({ look: armsLookFor(look), armsOnly: true }, 'fpArmsChar').then((ch) => {
       if (this.fpArms !== arms) return ch.dispose();
-      // Same size as the full character (fitted to the player height: the head joint sits
-      // about 0.2 m below the top of the head), placed so the eyes are at the camera.
-      const head = ch.joints.get('Head');
-      head?.computeWorldMatrix(true);
-      const headY = head ? head.getAbsolutePosition().y : PLAYER.eyeHeight;
-      const scale = PLAYER.height / (headY + 0.2);
-      ch.root.parent = root;
-      ch.root.scaling.setAll(scale);
-      // A little forward of the eyes, so the support hand reaches long guns (the shoulders are never in view).
-      ch.root.position.set(0, -(headY + 0.07) * scale, 0.2);
+      fitFirstPersonArms(ch, root);
       for (const m of ch.meshes) {
         m.renderingGroupId = 1;
         m.receiveShadows = false;

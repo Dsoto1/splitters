@@ -1,15 +1,20 @@
-// Whole-body characters made on the owner's Meshy subscription (text-to-3d,
-// textured, auto-rigged by Meshy), turned into parts that ride the game's own
-// rig, so every clip in rig.glb drives them unchanged.
+// Whole-body Meshy characters (made on the owner's Meshy subscription, or CC0
+// Meshy community models), turned into parts that ride the game's own rig, so
+// every clip in rig.glb drives them unchanged. Each character is one manifest,
+// content/characters/<id>.json (docs/CHARACTERS.md): adding one needs no code.
 //
 //   node tools/content/prepare-meshy-characters.mjs <downloads dir>
+//   ONLY=<ids> node tools/content/prepare-meshy-characters.mjs <downloads dir>   just those
 //
-// The downloads dir holds each character's Meshy rigged GLB as <id>.glb (about
-// 10 MB each, so they stay out of the repo; the Meshy task IDs below say where
-// they came from). Outputs go to packages/client/public/characters/<id>.glb
-// (the body, with a low-detail copy) and <id>_fparms.glb (its arms for the
-// first-person view), recorded in content/meshy.lock.json, which
-// `pnpm content:check` verifies.
+// The downloads dir (outside the repo: the files are large, and raw downloads
+// are never committed) holds what tools/content/fetch-meshy.mjs saves: a
+// rigged Meshy GLB as <id>.glb, or an unrigged textured FBX (with its .png
+// beside it) anywhere under it, matched by the manifest's `source.fbx`.
+// Outputs go to packages/client/public/characters/<id>.glb (the body, with a
+// low-detail copy) and, with `firstPerson.ownArms`, <id>_fparms.glb (its
+// forearms for the first-person view), recorded in content/meshy.lock.json,
+// which `pnpm content:check` verifies. A character whose download isn't there
+// (or isn't in ONLY) is kept as built, checked against the lock.
 //
 // What it does to each:
 // - skins the Meshy mesh in its rest pose, then turns its arms out level and its
@@ -21,36 +26,35 @@
 // - keeps the base colour only (1024 px JPEG), simplifies the mesh and adds the
 //   low-detail copy the game draws for distant characters.
 //
-// Some models came as Meshy's textured FBX download with no rig (FBX_CHARACTERS:
-// the unzipped "Meshy_AI_<name>_..._texture_fbx" folders, anywhere under the
-// downloads dir, 2.5–61 MB each). Those are rigged here first: the mesh is
-// welded and pre-simplified, the joints go where FBX_CHARACTERS places them
+// An unrigged FBX download is rigged here first: the mesh is welded and
+// pre-simplified, the joints go where the manifest's `landmarks` place them
 // (by hand, read off front and side views and side profiles, in units of the
 // model's height), and the skin weights come from autoskin.mjs (bone heat with
 // sight tests through a voxel fill of the body; cloth below the hips follows
 // the pelvis, the chest stays off the clavicles and arms; four influences);
-// a tail rides on the hips, hunched bodies lean back (`lean`), and the feet
-// are turned to the rig's too (bent knees leave toes pointing down once the
-// legs are straightened). SKIN_DEBUG=<dir> writes each rest mesh coloured by
-// its joints (and <id>.cloth.glb: red where no bone is in sight, green what
-// counts as cloth), to check the weights; ONLY=<ids> rebuilds just those. Then it goes through the same
-// steps as the rest. Their first-person arms are the universal ones (looks.ts),
-// so they get no _fparms file. A character whose download isn't there is kept
-// as built (checked against the lock). The Meshy community T-pose downloads
-// (CC0 per the owner) are FBX_CHARACTERS too, with their own `source` pack and
-// the model's name and download date (`community`) recorded in the lock.
+// a tail rides on the hips, hunched bodies lean back (`fixes.lean`), and the
+// feet are turned to the rig's too (`fixes.feet`: bent knees leave toes
+// pointing down once the legs are straightened). SKIN_DEBUG=<dir> writes each
+// rest mesh coloured by its joints (and <id>.cloth.glb: red where no bone is in
+// sight, green what counts as cloth), to check the weights. Then it goes
+// through the same steps as the rest. The manifest's licence picks the
+// provenance pack (owned: meshy-owned; CC0: meshy-community-characters, with
+// the model's name and date recorded in the lock).
 
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NodeIO, PropertyType } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { compactPrimitive, dedup, prune, quantize, simplify, weld } from '@gltf-transform/functions';
+import { compactPrimitive, dedup, dequantize, prune, quantize, simplify, transformMesh, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { autoSkin } from './autoskin.mjs';
+import { buildSpec, jointsFromLandmarks, readManifests } from './character-manifests.mjs';
+import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
+import { fitHands } from './hands.mjs';
 import { seamAwareSimplify } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -59,231 +63,8 @@ const LOCK = join(ROOT, 'content/meshy.lock.json');
 const downloads = process.argv[2];
 if (!downloads) throw new Error('usage: prepare-meshy-characters.mjs <downloads dir>');
 
-/** The characters: Meshy task IDs (preview, textured refine, rig) and the finish their one material gets. */
-const CHARACTERS = [
-  {
-    id: 'meshy_knight',
-    meshy: { preview: '01a173bc-08fd-7255-a545-bb6519425146', refine: '01a173bd-fc9c-7307-bff2-a15a52b42102', rig: '01a173c0-4d21-712b-97ba-7f08daf670c7' },
-    metallic: 0.35,
-    roughness: 0.45,
-  },
-  {
-    id: 'meshy_nova',
-    meshy: { preview: '01a17408-6ee3-7596-80cc-44711c118d2f', refine: '01a17409-5c80-7338-a476-32f6a5f454ec', remesh: '01a1740b-3c5d-7717-8fc8-6a15ce6dce9a', rig: '01a1740c-f882-7213-bc97-68ffda286170' },
-    metallic: 0.05,
-    roughness: 0.6,
-  },
-  {
-    id: 'meshy_dapper',
-    meshy: { preview: '01a17408-78ca-7473-b379-648d7e9aa349', refine: '01a17409-66cf-7542-bf7f-d39040dd0f4f', remesh: '01a1740b-3ff1-71f3-8005-cd3e767884b8', rig: '01a1740d-0845-7780-8c84-b7f26c5ea616' },
-    metallic: 0.05,
-    roughness: 0.7,
-  },
-];
-
-/**
- * Landmarks in model space, in units of the model's height with the feet at
- * y = 0 (+x is the character's left, +z its front): the body's joints (Meshy's
- * names, so JOINT_MAP and REPOSE apply), plus the ends of the head, hands and
- * toes. `L`/`R` give the left and right side's joints in the same order.
- */
-const SIDE_JOINTS = ['Shoulder', 'Arm', 'ForeArm', 'Hand', 'HandTip', 'UpLeg', 'Leg', 'Foot', 'ToeBase', 'ToeTip'];
-const landmarks = ({ spine, L, R }) => {
-  const out = Object.fromEntries(['Hips', 'Spine02', 'Spine01', 'Spine', 'neck', 'Head', 'head_end'].map((n, i) => [n, spine[i]]));
-  SIDE_JOINTS.forEach((n, i) => {
-    out[`Left${n}`] = L[i];
-    out[`Right${n}`] = R[i];
-  });
-  return out;
-};
-
-/**
- * Unrigged Meshy FBX downloads, rigged here: the download's file name, the
- * triangles to keep, the finish, and the landmarks (spine: hips to head end;
- * each side: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip).
- */
-const FBX_CHARACTERS = [
-  {
-    id: 'meshy_goblin',
-    // Its rags are hundreds of small texture islands; seamAwareSimplify collapses across the seams where the texture matches.
-    seamWeld: true,
-    // Hunched, head hung in front of the chest: sat up (degrees back per spine joint; the head keeps facing ahead).
-    lean: { Spine02: 5, Spine01: 8, Spine: 8, neck: 12 },
-    // Cloth hangs below its hips (autoskin.mjs: it follows the pelvis more than the legs).
-    cloth: true,
-    fbx: /^Meshy_AI_Goblin_.*_texture\.fbx$/,
-    triangles: 11000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.75,
-    joints: landmarks({
-      spine: [[0, 0.43, -0.03], [0, 0.5, -0.03], [0, 0.58, -0.01], [0, 0.65, 0.02], [0, 0.7, 0.07], [0, 0.74, 0.11], [0, 0.95, 0.14]],
-      L: [[0.05, 0.665, 0.03], [0.217, 0.667, 0.04], [0.317, 0.525, 0.075], [0.3, 0.408, 0.15], [0.258, 0.317, 0.2], [0.085, 0.41, -0.01], [0.13, 0.32, 0.17], [0.24, 0.083, 0.06], [0.26, 0.025, 0.23], [0.27, 0.02, 0.3]],
-      R: [[-0.05, 0.665, 0], [-0.175, 0.68, -0.06], [-0.25, 0.53, -0.24], [-0.29, 0.41, -0.19], [-0.29, 0.31, -0.17], [-0.085, 0.41, -0.03], [-0.183, 0.333, -0.2], [-0.15, 0.083, -0.25], [-0.16, 0.025, -0.13], [-0.16, 0.02, -0.083]],
-    }),
-  },
-  {
-    id: 'meshy_otter',
-    fbx: /^Meshy_AI_Wealthy_Otter_.*_texture\.fbx$/,
-    tail: [[-0.03, 0.3, -0.06], [0.18, 0.13, -0.18], [0.36, 0.22, -0.3]],
-    triangles: 11000,
-    feet: true,
-    metallic: 0.1,
-    roughness: 0.6,
-    joints: landmarks({
-      spine: [[-0.07, 0.36, 0.06], [-0.07, 0.45, 0.05], [-0.07, 0.55, 0.09], [-0.07, 0.66, 0.1], [-0.07, 0.78, 0.08], [-0.06, 0.82, 0.07], [-0.05, 0.98, 0.1]],
-      L: [[-0.02, 0.74, 0.08], [0.06, 0.72, 0.07], [0.142, 0.608, 0.08], [0.175, 0.525, 0.1], [0.208, 0.45, 0.12], [0.03, 0.32, 0.06], [0.09, 0.17, 0.05], [0.11, 0.05, 0.03], [0.11, 0.025, 0.12], [0.11, 0.02, 0.23]],
-      R: [[-0.12, 0.74, 0.08], [-0.2, 0.72, 0.07], [-0.25, 0.608, 0.08], [-0.29, 0.525, 0.1], [-0.342, 0.458, 0.12], [-0.16, 0.32, 0.06], [-0.2, 0.17, 0.05], [-0.22, 0.05, 0.03], [-0.22, 0.025, 0.1], [-0.22, 0.02, 0.17]],
-    }),
-  },
-  {
-    id: 'meshy_toad',
-    lean: { Spine01: 4, Spine: 6, neck: 14 },
-    // Cloth hangs below its hips (autoskin.mjs: it follows the pelvis more than the legs).
-    cloth: true,
-    fbx: /^Meshy_AI_Boglurker_the_toad_.*_texture\.fbx$/,
-    triangles: 11000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.7,
-    joints: landmarks({
-      spine: [[0, 0.46, -0.07], [0, 0.54, -0.08], [0, 0.62, -0.07], [0, 0.7, -0.07], [0, 0.77, -0.03], [0, 0.8, 0], [0, 0.97, 0.05]],
-      L: [[0.06, 0.74, -0.03], [0.17, 0.74, -0.01], [0.3, 0.533, 0.03], [0.325, 0.4, 0.05], [0.342, 0.308, 0.05], [0.09, 0.44, -0.06], [0.167, 0.267, 0.06], [0.2, 0.08, -0.12], [0.21, 0.025, 0], [0.22, 0.02, 0.07]],
-      R: [[-0.06, 0.74, -0.03], [-0.17, 0.74, -0.01], [-0.295, 0.533, 0.03], [-0.33, 0.408, 0.05], [-0.355, 0.35, 0.05], [-0.09, 0.44, -0.06], [-0.15, 0.267, 0.06], [-0.183, 0.08, -0.12], [-0.2, 0.025, 0], [-0.21, 0.02, 0.07]],
-    }),
-  },
-  {
-    id: 'meshy_salamander',
-    // Cloth hangs below its hips (autoskin.mjs: it follows the pelvis more than the legs).
-    cloth: true,
-    fbx: /^Meshy_AI_Salamander_Warlord_.*_texture\.fbx$/,
-    triangles: 11000,
-    feet: true,
-    metallic: 0.3,
-    roughness: 0.5,
-    joints: landmarks({
-      spine: [[0, 0.52, -0.02], [0, 0.58, -0.03], [0, 0.65, -0.03], [0, 0.72, -0.04], [0, 0.79, -0.02], [0, 0.83, 0], [0, 0.94, 0]],
-      L: [[0.05, 0.76, -0.02], [0.15, 0.725, -0.03], [0.217, 0.6, 0], [0.233, 0.49, 0], [0.242, 0.367, 0.04], [0.07, 0.5, -0.03], [0.083, 0.325, -0.02], [0.1, 0.1, -0.05], [0.1, 0.025, 0.03], [0.1, 0.02, 0.07]],
-      R: [[-0.05, 0.76, -0.02], [-0.15, 0.725, -0.03], [-0.217, 0.6, 0], [-0.233, 0.49, 0], [-0.242, 0.367, 0.04], [-0.07, 0.5, -0.03], [-0.083, 0.325, -0.02], [-0.1, 0.1, -0.05], [-0.1, 0.025, 0.03], [-0.1, 0.02, 0.07]],
-    }),
-  },
-  {
-    id: 'meshy_hyena',
-    // Digitigrade: the leg joints sit on the leg's centre line (read off a side profile), so straightening it turns
-    // the thigh and shin only a little and the knee doesn't fold; the hock is the ankle, the paw the foot.
-    fbx: /^Meshy_AI_Hyena_Warrior_.*_texture\.fbx$/,
-    tail: [[0, 0.5, -0.06], [0, 0.33, -0.11], [0, 0.22, -0.17], [0, 0.15, -0.14]],
-    triangles: 10000,
-    feet: true,
-    metallic: 0.15,
-    roughness: 0.6,
-    joints: landmarks({
-      spine: [[0, 0.53, -0.02], [0, 0.6, -0.02], [0, 0.67, 0], [0, 0.74, 0], [0, 0.83, 0], [0, 0.87, 0.03], [0, 0.99, 0.05]],
-      L: [[0.04, 0.8, 0], [0.11, 0.78, 0], [0.158, 0.642, 0], [0.175, 0.508, 0.02], [0.183, 0.442, 0.03], [0.06, 0.51, 0.05], [0.105, 0.33, 0.055], [0.11, 0.15, -0.01], [0.11, 0.03, 0.09], [0.11, 0.02, 0.14]],
-      R: [[-0.04, 0.8, 0], [-0.11, 0.78, 0], [-0.158, 0.642, 0], [-0.175, 0.508, 0.02], [-0.183, 0.442, 0.03], [-0.06, 0.51, 0.05], [-0.105, 0.33, 0.055], [-0.11, 0.15, -0.01], [-0.11, 0.03, 0.09], [-0.11, 0.02, 0.14]],
-    }),
-  },
-  // Meshy community downloads (CC0 per the owner; `community`: the model's name and the download's file date), all
-  // modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm.
-  {
-    id: 'meshy_elder',
-    source: 'meshy-community-characters',
-    community: { model: 'Elder T-pose', date: '2025-11-14' },
-    fbx: /^Meshy_AI_Elder_T_POSE_.*_texture\.fbx$/,
-    // Its robe hangs below the hips (autoskin.mjs: it follows the pelvis more than the legs).
-    cloth: true,
-    triangles: 11000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.75,
-    joints: landmarks({
-      spine: [[0, 0.52, 0], [0, 0.585, 0], [0, 0.65, 0], [0, 0.72, -0.005], [0, 0.825, -0.01], [0, 0.865, 0], [0, 1, 0]],
-      L: [[0.035, 0.79, 0], [0.115, 0.775, -0.01], [0.26, 0.772, 0], [0.4, 0.768, 0.012], [0.49, 0.768, 0.015], [0.085, 0.5, 0], [0.09, 0.28, 0], [0.093, 0.065, -0.015], [0.1, 0.02, 0.06], [0.1, 0.015, 0.11]],
-      R: [[-0.035, 0.79, 0], [-0.115, 0.775, -0.01], [-0.26, 0.772, 0], [-0.4, 0.768, 0.012], [-0.49, 0.768, 0.015], [-0.085, 0.5, 0], [-0.09, 0.28, 0], [-0.093, 0.065, -0.015], [-0.1, 0.02, 0.06], [-0.1, 0.015, 0.11]],
-    }),
-  },
-  {
-    id: 'meshy_alien',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Alien', date: '2026-07-21' },
-    fbx: /^Meshy_AI_T_Pose_Alien_.*_texture\.fbx$/,
-    triangles: 10000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.55,
-    joints: landmarks({
-      spine: [[0, 0.5, -0.025], [0, 0.565, -0.02], [0, 0.63, -0.015], [0, 0.7, -0.02], [0, 0.775, -0.025], [0, 0.815, -0.02], [0, 1, 0]],
-      L: [[0.025, 0.755, -0.02], [0.075, 0.75, -0.045], [0.2, 0.733, -0.062], [0.33, 0.722, -0.055], [0.41, 0.71, -0.06], [0.04, 0.48, -0.02], [0.042, 0.3, -0.03], [0.048, 0.08, -0.054], [0.055, 0.02, 0], [0.06, 0.01, 0.05]],
-      R: [[-0.025, 0.755, -0.02], [-0.075, 0.75, -0.045], [-0.2, 0.733, -0.062], [-0.33, 0.722, -0.055], [-0.41, 0.71, -0.06], [-0.04, 0.48, -0.02], [-0.042, 0.3, -0.03], [-0.048, 0.08, -0.054], [-0.055, 0.02, 0], [-0.06, 0.01, 0.05]],
-    }),
-  },
-  {
-    id: 'meshy_cat',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Cat', date: '2026-03-11' },
-    fbx: /^Meshy_AI_T_Pose_Cat_.*_texture\.fbx$/,
-    // Digitigrade hind legs: joints on the leg's centre line (hock as the ankle, paw as the foot), as for the hyena.
-    tail: [[0, 0.27, 0], [0, 0.17, -0.1], [0, 0.07, -0.27]],
-    triangles: 10000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.8,
-    joints: landmarks({
-      spine: [[0, 0.3, 0.06], [0, 0.42, 0.08], [0, 0.54, 0.09], [0, 0.66, 0.085], [0, 0.79, 0.08], [0, 0.83, 0.1], [0, 0.97, 0.13]],
-      L: [[0.04, 0.775, 0.07], [0.13, 0.765, 0.06], [0.26, 0.755, 0.085], [0.38, 0.763, 0.11], [0.45, 0.762, 0.12], [0.1, 0.27, 0.08], [0.13, 0.16, 0.1], [0.145, 0.07, 0.07], [0.17, 0.025, 0.15], [0.19, 0.01, 0.21]],
-      R: [[-0.04, 0.775, 0.07], [-0.13, 0.765, 0.06], [-0.26, 0.755, 0.085], [-0.38, 0.763, 0.11], [-0.45, 0.762, 0.12], [-0.1, 0.27, 0.08], [-0.13, 0.16, 0.1], [-0.145, 0.07, 0.07], [-0.17, 0.025, 0.15], [-0.19, 0.01, 0.21]],
-    }),
-  },
-  {
-    id: 'meshy_pilot',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Pilot', date: '2026-05-10' },
-    fbx: /^Meshy_AI_T_Pose_Pilot_.*_texture\.fbx$/,
-    // The suit's blue sleeve patch (a red swoosh on a blue field) goes to the suit's orange.
-    scrubBlue: '#a8582a',
-    triangles: 11000,
-    feet: true,
-    metallic: 0.05,
-    roughness: 0.65,
-    joints: landmarks({
-      spine: [[0, 0.5, -0.005], [0, 0.57, 0], [0, 0.64, 0], [0, 0.72, -0.005], [0, 0.83, -0.01], [0, 0.87, 0], [0, 1, 0]],
-      L: [[0.035, 0.79, -0.01], [0.11, 0.78, -0.02], [0.25, 0.76, -0.02], [0.385, 0.753, -0.013], [0.475, 0.748, -0.012], [0.07, 0.48, 0], [0.075, 0.28, -0.01], [0.088, 0.07, -0.03], [0.095, 0.02, 0.05], [0.095, 0.015, 0.095]],
-      R: [[-0.035, 0.79, -0.01], [-0.11, 0.78, -0.02], [-0.25, 0.76, -0.02], [-0.385, 0.753, -0.013], [-0.475, 0.748, -0.012], [-0.07, 0.48, 0], [-0.075, 0.28, -0.01], [-0.088, 0.07, -0.03], [-0.095, 0.02, 0.05], [-0.095, 0.015, 0.095]],
-    }),
-  },
-  {
-    id: 'meshy_pirate',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Pirate', date: '2026-07-14' },
-    fbx: /^Meshy_AI_T_Pose_Pirate_.*_texture\.fbx$/,
-    // Long coat tails below the hips.
-    cloth: true,
-    triangles: 11000,
-    // No foot turn: the left leg is a wooden peg (its "foot" bones run down the peg).
-    metallic: 0.05,
-    roughness: 0.7,
-    joints: landmarks({
-      spine: [[0, 0.5, 0], [0, 0.57, -0.005], [0, 0.64, -0.005], [0, 0.72, -0.01], [0, 0.815, -0.01], [0, 0.85, 0], [0, 0.97, 0]],
-      L: [[0.035, 0.77, -0.02], [0.115, 0.758, -0.045], [0.22, 0.748, -0.05], [0.33, 0.74, -0.05], [0.424, 0.732, -0.047], [0.07, 0.48, 0], [0.065, 0.25, -0.013], [0.068, 0.07, -0.007], [0.069, 0.02, -0.005], [0.069, 0, -0.004]],
-      R: [[-0.035, 0.77, -0.02], [-0.115, 0.758, -0.045], [-0.22, 0.748, -0.05], [-0.33, 0.74, -0.05], [-0.424, 0.732, -0.047], [-0.07, 0.48, 0], [-0.065, 0.26, -0.02], [-0.075, 0.07, -0.04], [-0.085, 0.02, 0.02], [-0.085, 0.015, 0.06]],
-    }),
-  },
-  {
-    id: 'meshy_titan',
-    source: 'meshy-community-characters',
-    community: { model: 'T Pose Titan', date: '2026-05-03' },
-    fbx: /^Meshy_AI_T_Pose_Titan_.*_texture\.fbx$/,
-    triangles: 11000,
-    feet: true,
-    metallic: 0,
-    roughness: 0.6,
-    joints: landmarks({
-      spine: [[0, 0.48, -0.01], [0, 0.56, -0.01], [0, 0.64, -0.01], [0, 0.73, -0.02], [0, 0.855, -0.02], [0, 0.89, -0.005], [0, 1, -0.005]],
-      L: [[0.045, 0.83, -0.02], [0.14, 0.8, -0.03], [0.29, 0.795, -0.045], [0.44, 0.79, -0.03], [0.565, 0.784, -0.03], [0.085, 0.46, 0], [0.095, 0.27, -0.015], [0.125, 0.07, -0.04], [0.14, 0.02, 0.04], [0.14, 0.015, 0.085]],
-      R: [[-0.045, 0.83, -0.02], [-0.14, 0.8, -0.03], [-0.29, 0.795, -0.045], [-0.44, 0.79, -0.03], [-0.565, 0.784, -0.03], [-0.085, 0.46, 0], [-0.095, 0.27, -0.015], [-0.125, 0.07, -0.04], [-0.14, 0.02, 0.04], [-0.14, 0.015, 0.085]],
-    }),
-  },
-];
+/** The characters: one manifest each in content/characters (character-manifests.mjs reads and checks them). */
+const SPECS = readManifests({ ready: true }).map(buildSpec);
 
 /** Meshy's joints onto the rig's (its head's end markers fold into the head). */
 const JOINT_MAP = {
@@ -504,7 +285,6 @@ function pose(skel, verts, ual, c) {
     pos.set(p, v * 3);
     nrm.set(n, v * 3);
   }
-  if (c.mitts) mitten(pos, nrm, J, W, names, posed, index);
   // Meshy sizes the model as it was posed (bent knees and all): stand it at the rig's height, feet on the ground.
   let [low, high] = [Infinity, -Infinity];
   for (let v = 1; v < pos.length; v += 3) [low, high] = [Math.min(low, pos[v]), Math.max(high, pos[v])];
@@ -566,21 +346,50 @@ const FBX_BONES = [
     ].map(([a, b]) => [`${S}${a}`, `${S}${a}`, `${S}${b}`]),
   ),
 ];
-/** Triangles the FBX mesh is cut to before rigging (the rig is fitted at this detail, then build() simplifies further). */
+/** Triangles an unrigged mesh is cut to before rigging (the rig is fitted at this detail, then build() simplifies further). */
 const WORK_TRIANGLES = 40000;
-/** An unrigged Meshy FBX, rigged from its landmarks and re-posed to the rig's stance. */
-async function readFbx(file, c, ual) {
-  const { doc } = await fbxToDocument(file);
+/**
+ * An unrigged Meshy download (a textured FBX, or a textured GLB with no skin), rigged from its
+ * landmarks (the manifest's, or found from the mesh by landmarks.mjs) and re-posed to the rig's stance.
+ */
+async function readUnrigged(file, c, ual) {
+  const glb = /\.glb$/i.test(file);
+  let doc;
+  let sourceTriangles;
+  if (glb) {
+    doc = await io.read(file);
+    if (doc.getRoot().listSkins().length) throw new Error(`${file}: has a skin; save it as ${c.id}.glb to import it as a rigged download`);
+    // Node transforms into the vertices (the downloads are one node, but may be turned or scaled).
+    await doc.transform(dequantize());
+    for (const node of doc.getRoot().listNodes()) {
+      if (!node.getMesh()) continue;
+      transformMesh(node.getMesh(), node.getWorldMatrix());
+      node.setMatrix([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+    }
+    const p0 = doc.getRoot().listMeshes()[0]?.listPrimitives()[0];
+    sourceTriangles = p0 ? (p0.getIndices()?.getCount() ?? p0.getAttribute('POSITION').getCount()) / 3 : 0;
+  } else {
+    doc = (await fbxToDocument(file)).doc;
+    // fbxToDocument writes unindexed triangles.
+    sourceTriangles = doc.getRoot().listMeshes()[0].listPrimitives()[0].getAttribute('POSITION').getCount() / 3;
+  }
   const mesh = doc.getRoot().listMeshes()[0];
   if (doc.getRoot().listMeshes().length !== 1 || mesh.listPrimitives().length !== 1) throw new Error(`${file}: expected one mesh with one material`);
-  // fbxToDocument writes unindexed triangles.
-  const sourceTriangles = mesh.listPrimitives()[0].getAttribute('POSITION').getCount() / 3;
+  // Million-triangle downloads: a first rough cut, so welding and the careful cut below stay quick.
+  {
+    const p = mesh.listPrimitives()[0];
+    if (!p.getIndices()) p.setIndices(doc.createAccessor().setType('SCALAR').setArray(Uint32Array.from({ length: p.getAttribute('POSITION').getCount() }, (_, i) => i)));
+  }
   await doc.transform(weld());
   {
-    // Cut to the working detail (texture seams are kept, so the base colour still fits).
+    // Cut to the working detail (texture seams are kept, so the base colour still fits); a mesh the
+    // seams hold above twice that gets a looser cut, then a sloppy one.
     const p = mesh.listPrimitives()[0];
     const target = Math.min(p.getIndices().getCount(), WORK_TRIANGLES * 3);
-    const [cut] = MeshoptSimplifier.simplify(new Uint32Array(p.getIndices().getArray()), new Float32Array(p.getAttribute('POSITION').getArray()), 3, target, 0.01, []);
+    const pos = new Float32Array(p.getAttribute('POSITION').getArray());
+    let cut = new Uint32Array(p.getIndices().getArray());
+    for (const error of [0.01, 0.03]) if (cut.length > target * 1.5) [cut] = MeshoptSimplifier.simplify(cut, pos, 3, target, error, []);
+    if (cut.length > target * 2) [cut] = MeshoptSimplifier.simplifySloppy(cut, pos, 3, null, target, 0.05);
     p.getIndices().setArray(cut);
     compactPrimitive(p);
   }
@@ -592,8 +401,17 @@ async function readFbx(file, c, ual) {
   let [low, high] = [Infinity, -Infinity];
   for (let v = 1; v < P.length; v += 3) [low, high] = [Math.min(low, P[v]), Math.max(high, P[v])];
   const H = high - low;
+  // Landmarks: the manifest's, else found from the mesh (T-pose or A-pose).
+  let joints = c.joints;
+  let found = null;
+  if (!joints) {
+    found = findLandmarks(P, indices);
+    joints = jointsFromLandmarks(found.landmarks);
+    if (process.env.LANDMARK_PRINT) console.log(`${c.id} landmarks (paste into content/characters/${c.id}.json to adjust):\n${JSON.stringify(found.landmarks)}`);
+    if (process.env.LANDMARK_DEBUG) await landmarkPicture(P, indices, found, join(process.env.LANDMARK_DEBUG, `${c.id}.landmarks.png`));
+  }
   const at = (name) => {
-    const l = c.joints[name];
+    const l = joints[name];
     if (!l) throw new Error(`${c.id}: no landmark ${name}`);
     return [l[0] * H, low + l[1] * H, l[2] * H];
   };
@@ -623,32 +441,40 @@ async function readFbx(file, c, ual) {
       knee: at(`${S}Leg`),
     })),
   };
-  const { joints, weights, stats } = autoSkin(P, N, indices, bones, H, names.length, body);
+  const { joints: J, weights, stats } = autoSkin(P, N, indices, bones, H, names.length, body);
   console.log(`${c.id}: ${(stats.inside * 100).toFixed(0)}% of the grid inside, ${stats.unseen} vertices with no bone in sight, ${stats.cloth} cloth vertices`);
   if (process.env.SKIN_DEBUG) {
-    await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.glb`), P, indices, joints, weights);
+    await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.glb`), P, indices, J, weights);
     // Red: no bone in sight; green: treated as cloth.
-    await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.cloth.glb`), P, indices, joints, weights, stats.debugColor);
-    writeFileSync(join(process.env.SKIN_DEBUG, `${c.id}.marks.json`), JSON.stringify(c.joints));
+    await writeSkinDebug(join(process.env.SKIN_DEBUG, `${c.id}.cloth.glb`), P, indices, J, weights, stats.debugColor);
+    writeFileSync(join(process.env.SKIN_DEBUG, `${c.id}.marks.json`), JSON.stringify(joints));
   }
-  // The base colour map sits beside the FBX (Meshy embeds it too, but not every download links it).
-  const png = file.replace(/\.fbx$/i, '.png');
-  if (!existsSync(png)) throw new Error(`${file}: no base colour map ${basename(png)} beside it`);
+  // The base colour: the GLB's own, or the map beside the FBX (Meshy embeds it too, but not every download links it).
+  let baseColor;
+  if (glb) {
+    const image = prim.getMaterial()?.getBaseColorTexture()?.getImage();
+    if (!image) throw new Error(`${file}: no base colour texture`);
+    baseColor = Buffer.from(image);
+  } else {
+    const png = file.replace(/\.fbx$/i, '.png');
+    if (!existsSync(png)) throw new Error(`${file}: no base colour map ${basename(png)} beside it`);
+    baseColor = readFileSync(png);
+  }
   const src = pose(
     { names, parent: FBX_JOINTS.map(([, p]) => (p ? index.get(p) : -1)), rest: names.map(at) },
     {
       count: P.length / 3,
-      joints,
+      joints: J,
       weights,
       at: (v) => [[P[v * 3], P[v * 3 + 1], P[v * 3 + 2]], [N[v * 3], N[v * 3 + 1], N[v * 3 + 2]]],
       uv: prim.getAttribute('TEXCOORD_0').getArray(),
       indices,
-      baseColor: readFileSync(png),
+      baseColor,
     },
     ual,
     c,
   );
-  return { src, sourceTriangles, workTriangles: indices.length / 3 };
+  return { src, sourceTriangles, workTriangles: indices.length / 3, landmarks: found ? 'found' : 'manifest' };
 }
 
 const SKIN_DEBUG_COLORS = [
@@ -676,36 +502,6 @@ async function writeSkinDebug(path, P, indices, joints, weights, given) {
   const prim = doc.createPrimitive().setAttribute('POSITION', acc('VEC3', new Float32Array(P))).setAttribute('COLOR_0', acc('VEC4', col)).setIndices(acc('SCALAR', new Uint32Array(indices))).setMaterial(doc.createMaterial('debug'));
   doc.createScene().addChild(doc.createNode('debug').setMesh(doc.createMesh('debug').addPrimitive(prim)));
   writeFileSync(path, await io.writeBinary(doc));
-}
-
-/**
- * Close open, spread hands into mittens: past the knuckles everything is drawn
- * back towards them and together, and the whole hand shrinks a little (so a
- * gun grip reads, and a bulky glove doesn't fill the first-person view).
- */
-function mitten(pos, nrm, J, W, names, posed, index) {
-  for (const side of ['Left', 'Right']) {
-    const h = index.get(`${side}Hand`);
-    const H = posed[h];
-    const d = norm(sub(H, posed[index.get(`${side}ForeArm`)]));
-    const verts = [];
-    for (let v = 0; v < pos.length / 3; v++) {
-      let best = 0;
-      for (let k = 1; k < 4; k++) if (W[v * 4 + k] > W[v * 4 + best]) best = k;
-      if (J[v * 4 + best] === h) verts.push(v);
-    }
-    let L = 0;
-    for (const v of verts) L = Math.max(L, dot(sub(pos.subarray(v * 3, v * 3 + 3), H), d));
-    const knuckle = L * 0.4;
-    for (const v of verts) {
-      let p = sub(Array.from(pos.subarray(v * 3, v * 3 + 3)), H);
-      const along = dot(p, d);
-      const across = sub(p, scale(d, along));
-      if (along > knuckle) p = add(scale(d, knuckle + (along - knuckle) * 0.4), scale(across, 0.75));
-      pos.set(add(H, scale(p, 0.85)), v * 3);
-    }
-  }
-  void nrm;
 }
 
 /** How much of the first-person arms shows and how bulky: the elbow end goes, sleeves pull in towards the bone, hands shrink. */
@@ -813,16 +609,6 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     return t;
   };
   for (const j of joints) place(j);
-  for (const j of joints) {
-    const parent = j.getParentNode();
-    const pw = parent ? worldRest(parent) : { q: [0, 0, 0, 1], t: [0, 0, 0] };
-    const pt = parent && ual.has(parent.getName()) ? target.get(parent.getName()) : pw.t;
-    j.setTranslation(qrot(qinv(pw.q), sub(target.get(j.getName()), pt)));
-  }
-  // Bind matrices at the fitted rest pose (rotations are the rig's own).
-  const ibm = new Float32Array(joints.length * 16);
-  joints.forEach((j, i) => ibm.set(inverseRigid(ual.get(j.getName()).q, target.get(j.getName())), i * 16));
-  skin.getInverseBindMatrices().setArray(ibm);
 
   // Out with the mannequin and the clips; in with the character.
   for (const a of root.listAnimations()) {
@@ -856,6 +642,22 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     major[v] = rigNames[top[0]?.[0] ?? 0];
   }
   const fp = firstPerson ? slimArms(src, major) : null;
+  // Hands: measured from the mesh, the finger joints fitted to them and the fingers weighted (hands.mjs).
+  const pos = fp ? fp.pos : new Float32Array(src.pos);
+  const fitted = new Map(rigNames.map((n) => [n, { q: ual.get(n).q, t: target.get(n) }]));
+  const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, log: (l) => console.log(`  ${out} ${l}`) });
+  for (const [n, t] of hands.moved) target.set(n, t);
+  for (const j of joints) if (hands.data[j.getName().slice(-1)] && j.getName().startsWith('hand_')) j.setExtras({ hand: hands.data[j.getName().slice(-1)] });
+  for (const j of joints) {
+    const parent = j.getParentNode();
+    const pw = parent ? worldRest(parent) : { q: [0, 0, 0, 1], t: [0, 0, 0] };
+    const pt = parent && ual.has(parent.getName()) ? target.get(parent.getName()) : pw.t;
+    j.setTranslation(qrot(qinv(pw.q), sub(target.get(j.getName()), pt)));
+  }
+  // Bind matrices at the fitted rest pose (rotations are the rig's own).
+  const ibm = new Float32Array(joints.length * 16);
+  joints.forEach((j, i) => ibm.set(inverseRigid(ual.get(j.getName()).q, target.get(j.getName())), i * 16));
+  skin.getInverseBindMatrices().setArray(ibm);
   const kept = [];
   for (let i = 0; i < src.indices.length; i += 3) {
     const a = src.indices[i];
@@ -874,7 +676,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   const prim = doc
     .createPrimitive()
     .setMaterial(material)
-    .setAttribute('POSITION', acc('VEC3', fp ? fp.pos : src.pos))
+    .setAttribute('POSITION', acc('VEC3', pos))
     .setAttribute('NORMAL', acc('VEC3', src.nrm))
     .setAttribute('TEXCOORD_0', acc('VEC2', src.uv))
     .setAttribute('JOINTS_0', acc('VEC4', J))
@@ -898,7 +700,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   writeFileSync(join(OUT, out), glb);
   const lodTris = triangles(doc) - fullTris;
   console.log(`${out.padEnd(28)} ${String(fullTris).padStart(6)} tris ${lod ? `(+${lodTris} low-detail)` : ''} ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
-  return { file: `characters/${out}`, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: fullTris, ...(lod ? { lodTriangles: lodTris } : {}), bytes: glb.byteLength };
+  return { file: `characters/${out}`, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: fullTris, ...(lod ? { lodTriangles: lodTris } : {}), bytes: glb.byteLength, hands: true };
 }
 
 const lock = { $comment: 'Generated by tools/content/prepare-meshy-characters.mjs. Do not edit by hand.', files: [] };
@@ -910,6 +712,10 @@ const ual = new Map(rigDoc.getRoot().listSkins()[0].listJoints().map((j) => [j.g
 /** Keep a character whose download isn't in the downloads dir as built (its files must still match the lock). */
 function keepAsBuilt(id) {
   const was = oldLock.files.filter((f) => f.id === id || f.id === `${id}_fparms`);
+  if (!was.length && only && !only.includes(id)) {
+    console.log(`${id.padEnd(28)} not built yet (not in ONLY)`);
+    return;
+  }
   if (!was.length) throw new Error(`no download for ${id} in ${downloads}, and it was never built`);
   for (const f of was) {
     const path = join(ROOT, 'packages/client/public', f.file);
@@ -919,30 +725,54 @@ function keepAsBuilt(id) {
   lock.files.push(...was);
 }
 
-for (const c of CHARACTERS) {
-  const file = join(downloads, `${c.id}.glb`);
-  if (!existsSync(file)) {
-    keepAsBuilt(c.id);
-    continue;
-  }
-  const src = await readMeshy(file, ual, c);
-  const meshy = { meshy: c.meshy };
-  lock.files.push({ role: 'meshy', id: c.id, source: 'meshy-owned', ...meshy, ...(await build(c, src, `${c.id}.glb`)) });
-  lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: 'meshy-owned', ...meshy, ...(await build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio: 0.8, lod: false, firstPerson: true })) });
-}
-
-// The unrigged FBX downloads (found by file name anywhere under the downloads dir).
+// ONLY=meshy_goblin,meshy_toad rebuilds just those (the rest kept as built).
+const only = process.env.ONLY?.split(',').filter(Boolean);
+for (const id of only ?? []) if (!SPECS.some((c) => c.id === id)) throw new Error(`ONLY: no manifest content/characters/${id}.json`);
+// Downloads are found by name anywhere under the downloads dir.
 const downloaded = readdirSync(downloads, { recursive: true }).map((f) => join(downloads, String(f)));
-for (const c of FBX_CHARACTERS) {
-  const file = downloaded.find((f) => c.fbx.test(basename(f)));
-  // ONLY=meshy_goblin,meshy_toad rebuilds just those (the rest kept as built).
-  if (!file || (process.env.ONLY && !process.env.ONLY.split(',').includes(c.id))) {
+/** A character's download: a rigged GLB (<id>.glb, or a .glb matching the manifest's `source.file`) or an unrigged textured FBX. */
+function findDownload(c) {
+  const own = join(downloads, `${c.id}.glb`);
+  if (existsSync(own)) return { file: own, rigged: glbHasSkin(own) };
+  const named = downloaded.filter((f) => (c.file && c.file.test(basename(f))) || basename(f) === `${c.id}_texture.fbx`);
+  const glb = named.find((f) => /\.glb$/i.test(f));
+  if (glb) return { file: glb, rigged: glbHasSkin(glb) };
+  const fbx = named.find((f) => /\.fbx$/i.test(f));
+  return fbx ? { file: fbx, rigged: false } : null;
+}
+/** Whether a GLB carries a skin (a rigged download) or is a plain textured mesh (rigged here), from its JSON chunk alone. */
+function glbHasSkin(file) {
+  const fd = openSync(file, 'r');
+  try {
+    const head = Buffer.alloc(20);
+    readSync(fd, head, 0, 20, 0);
+    const json = Buffer.alloc(head.readUInt32LE(12));
+    readSync(fd, json, 0, json.length, 20);
+    return (JSON.parse(json.toString('utf8')).skins ?? []).length > 0;
+  } finally {
+    closeSync(fd);
+  }
+}
+/** The first-person arms (forearms and hands) every character gets, from the same source as its body. */
+const fparms = (c, src) => build(c, src, `${c.id}_fparms.glb`, { keep: (j) => ARM_JOINT.test(j), ratio: 0.8, lod: false, firstPerson: true });
+for (const c of SPECS) {
+  const found = only && !only.includes(c.id) ? null : findDownload(c);
+  if (!found) {
     keepAsBuilt(c.id);
     continue;
   }
-  const { src, sourceTriangles, workTriangles } = await readFbx(file, c, ual);
-  const built = await build(c, src, `${c.id}.glb`, { ratio: c.triangles / workTriangles });
-  lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.source ?? 'meshy-owned', ...(c.community ?? {}), src: basename(file), sourceTriangles, ...built });
+  if (found.rigged) {
+    const src = await readMeshy(found.file, ual, c);
+    const from = { ...(c.meshy ? { meshy: c.meshy } : {}), ...(c.community ?? {}), ...(c.meshy ? {} : { src: basename(found.file) }) };
+    lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...from, ...(await build(c, src, `${c.id}.glb`, c.triangles ? { ratio: c.triangles / (src.indices.length / 3) } : {})) });
+    lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src)) });
+    continue;
+  }
+  const { src, sourceTriangles, workTriangles, landmarks } = await readUnrigged(found.file, c, ual);
+  const built = await build(c, src, `${c.id}.glb`, { ratio: Math.min(1, (c.triangles ?? 11000) / workTriangles) });
+  const from = { ...(c.community ?? {}), src: basename(found.file), sourceTriangles, ...(landmarks === 'found' ? { landmarks } : {}) };
+  lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.pack, ...from, ...built });
+  lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src)) });
 }
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
 console.log(`wrote ${lock.files.length} files and content/meshy.lock.json`);

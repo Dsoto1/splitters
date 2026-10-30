@@ -1,0 +1,42 @@
+{
+  "id": "meshy_grizzelda",
+  "kind": "character",
+  "use": "player",
+  "status": "queued",
+  "order": 20,
+  "name": "Grizzelda",
+  "look": "core.grizzelda",
+  "bio": "Brews potions, curses rivals and keeps exact count of both.",
+  "body": "female",
+  "size": "small",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: lady goblin. Held back: hunched, with clawed hands and a cape: the found hands tear and the cape follows the arms on the grip sheet. Needs Meshy's rigging (source.modelUrl) or landmarks read off the model.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "date": "2026-10-29",
+    "url": "https://www.meshy.ai/posts/019e40b6-5e91-7d09-b4ef-eac45a40e626",
+    "community": {
+      "model": "Gloombraid Goblin Shaman"
+    },
+    "modelUrl": "https://drive.usercontent.google.com/download?id=1Ml4Sb6jivvgGQ8f5pBeHeJLiW_WLuUGR&export=download&confirm=t",
+    "file": "^Meshy_AI_Gloombraid_Goblin_Sha_\\d+_(image-to-3d-)?texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "cloth": true,
+    "lean": {
+      "Spine02": 4,
+      "Spine01": 6,
+      "Spine": 6,
+      "neck": 10
+    }
+  }
+}
