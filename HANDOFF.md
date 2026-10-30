@@ -331,7 +331,8 @@ Details: docs/MULTIPLAYER_PROTOCOL.md sections 13 and 14.
   the last standings, **Host this map** and **Back to menu**. e2e: `hostgame`.
 - **Handoff:** the host keeps the best-ping friend named successor (`matchHost.ts` `tendSuccessor`:
   `standby` → the friend opens a code of its own → `successor` to all) and sends it a `checkpoint` every
-  3 s (`shared/net/handoff.ts`; people by hashed key only; the listing's name only, never its secret). When
+  3 s (`shared/net/handoff.ts`; people by hashed key only; the listing's name only: its id and secret go to
+  the successor only with the host's `bye`). When
   the host goes the successor restores the match (`BotFiller.restore`, `Match.resume`, `main.ts`
   `takeOver`) and the others follow its code (`afterHost`, `keepJoining`). No hub change. Tests:
   `shared/test/handoff.test.ts`, `client/test/localHost.test.ts`, e2e `handoff` (prints the friends'
@@ -344,7 +345,8 @@ Details: docs/MULTIPLAYER_PROTOCOL.md sections 13 and 14.
   The successor checks twice (3 s apart) that the host is gone before taking over (fork guard).
 - **Left as is:** a successor whose own link drops while the host and the others carry on stays out
   (its reconnect fails, its checkpoint goes stale, no second copy): fine. A crashed host's listing is
-  hidden after a missed check-in and expires in 65 s, so for a moment two listings may share a name.
+  hidden after a missed check-in (30 s) and expires in 65 s, so for a moment two listings may share a name
+  (a hub-side fix would hide listings whose code has left the hub's broker).
   The successor doesn't carry the host's bot set (the checkpoint has bots by name and look, not the set).
   Vehicles, pickups, map logic, NPCs, flags and waves restart (by design).
 

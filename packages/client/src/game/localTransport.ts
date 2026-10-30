@@ -163,10 +163,16 @@ export class LocalTransport implements Transport {
     this.toHost({ k: 'drop', reason });
   }
 
-  /** The game browser listing (or none): if the match is handed on, the successor takes it over. */
-  setListing(listing: HostListing | null): void {
-    this.toHost({ k: 'listing', listing });
+  /**
+   * The game browser listing (or none): if the match is handed on, the successor lists it under the same name.
+   * Its ID and secret stay on this page until we leave: then the successor gets them with its goodbye (sayGoodbye).
+   */
+  setListing(listing: (HostListing & { id?: string; secret?: string }) | null): void {
+    this.listing = listing?.id && listing.secret ? { id: listing.id, secret: listing.secret } : null;
+    this.toHost({ k: 'listing', listing: listing ? { name: listing.name } : null });
   }
+
+  private listing: { id: string; secret: string } | null = null;
 
   /** Tell everyone the map is about to change ("Changing map to …"). */
   notice(text: string): void {
@@ -190,7 +196,10 @@ export class LocalTransport implements Transport {
   sayGoodbye(): void {
     if (this.departing || this.stopped || this.saidBye) return;
     const text = JSON.stringify({ t: 'bye' } satisfies ServerMessage);
-    for (const r of this.links.values()) if (r.slot !== null) r.link.send(text);
+    // The successor also gets the listing, to take it down should our own request not get out of a closing tab.
+    const heir = this.listing && this.facts?.successor !== undefined ? this.facts.successor : null;
+    const theirs = JSON.stringify({ t: 'bye', ...(this.listing ? { listing: this.listing } : {}) } satisfies ServerMessage);
+    for (const [id, r] of this.links) if (r.slot !== null) r.link.send(id === heir ? theirs : text);
     this.saidBye = true;
   }
 

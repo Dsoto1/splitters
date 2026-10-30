@@ -70,6 +70,8 @@ export interface HostFacts {
   state: HostState;
   rules: MatchRules;
   carry: CarryOver;
+  /** Host handoff: the link (the page's id for it) of the friend named successor, once ready. */
+  successor?: number;
 }
 
 /** Where a MatchHost's output goes: this browser's player, and friends' links (by the id the page gave them). */
@@ -622,6 +624,7 @@ export class MatchHost {
     this.candidate = c;
     this.successor = s;
     this.announceSuccessor();
+    this.sendFacts();
     if (s?.code && now - this.checkpointAt >= CHECKPOINT_EVERY_SECONDS * 1000) this.sendCheckpoint();
   }
 
@@ -638,6 +641,7 @@ export class MatchHost {
     this.passedOver.delete(r.id);
     this.successor = { id: r.id, code, askedAt: s?.id === r.id ? s.askedAt : Date.now(), since: s?.id === r.id && s.code === code ? s.since : Date.now() };
     this.announceSuccessor();
+    this.sendFacts();
     this.sendCheckpoint();
   }
 
@@ -760,7 +764,7 @@ export class MatchHost {
   private sendFacts(): void {
     const c = this.control;
     if (!c || !this.match || !this.me || this.stopped) return;
-    const facts: HostFacts = { state: c.state(), rules: this.match.rules, carry: this.match.carryOf(this.me) };
+    const facts: HostFacts = { state: c.state(), rules: this.match.rules, carry: this.match.carryOf(this.me), ...(this.successor?.code ? { successor: this.successor.id } : {}) };
     const key = JSON.stringify(facts);
     if (key === this.factsSent) return;
     this.factsSent = key;

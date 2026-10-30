@@ -414,8 +414,12 @@ A browser-hosted match with friends in no longer has to end with its host
   match from it (`LocalMatchOptions.restore`: `BotFiller.restore`,
   `Match.resume`) on its standby code, with the clock moved on by the
   checkpoint's age, and lists the match under its own code with the old
-  listing's name. (A host leaving on purpose took its listing down; a crashed
-  host's listing is hidden once it misses a check-in and expires after 65 s.) Everyone else gets "The host left: <name> is
+  listing's name. A host leaving on purpose takes its listing down itself,
+  and its `bye` to the successor alone carries the listing's id and secret
+  (`{ t: "bye", listing }`), which the successor uses to take it down too,
+  in case the host's request didn't get out of its closing tab. A crashed
+  host's listing is hidden once it misses a check-in (30 s) and expires
+  after 65 s. Everyone else gets "The host left: <name> is
   taking over…" and joins the successor's code with the usual hello, ticket
   and join checks; their places wait for them as away players held 120 s by
   hashed key (`reclaim` tries the key and its hash), so they get back their
@@ -426,8 +430,9 @@ A browser-hosted match with friends in no longer has to end with its host
   (section 13).
 - **Trust**: friends only ever follow a code their own host named over its
   link; nobody can claim to be the successor. The successor sees no other
-  player's key, nor the listing's id or secret (with those, any friend named
-  successor could take the host's listing down or point it elsewhere).
+  player's key, and gets the listing's id and secret only with the host's
+  goodbye (sooner, any friend named successor could take a live host's
+  listing down or point it at another game).
 - **Forks**: a successor takes over only when its host said `bye`, or when
   its own reconnect to the host ends with the broker saying the code is gone,
   twice, 3 s apart (a host whose broker link blipped is back on it within

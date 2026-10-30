@@ -20,6 +20,7 @@ import { ModelThumbnails } from './frontend/modelThumbs.ts';
 import { setWeaponIconSource } from './frontend/weaponIcons.ts';
 import { PortraitRenderer } from './frontend/portraits.ts';
 import type { GameSession, SessionEnd, SessionOptions, Travel } from './game/session.ts';
+import { dropListing } from './game/hub.ts';
 import { listLibrary, openFromLibrary } from './editor/storage.ts';
 import { MAP_INDEX, builtInMapJson, loadBuiltInMap, type MapIndexEntry } from './mapIndex.ts';
 import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
@@ -406,9 +407,11 @@ class App {
    * checkpoint (the clock moved on by the checkpoint's age), on the join code we opened when asked to
    * stand by, where the others are reconnecting; the listing moves to it too.
    */
-  private takeOver(end: SessionEnd, standby: HostLink, cp: MatchCheckpoint, age: number): void {
-    // Our listing (under the old one's name) goes up once the match runs. The old host took its own down when it
-    // left; a crashed host's is hidden once it misses a check-in (the checkpoint never carries a listing's secret).
+  private takeOver(end: SessionEnd, standby: HostLink, cp: MatchCheckpoint, age: number, old?: { id: string; secret: string }): void {
+    // Our listing (under the old one's name) goes up once the match runs. The old host takes its own down as it
+    // leaves, and gave us its secret with its goodbye in case that request didn't get out of its closing tab;
+    // a crashed host's is hidden once it misses a check-in (the checkpoint never carries a listing's secret).
+    if (old) dropListing(old.id, old.secret);
     this.chain = null;
     const restore: MatchCheckpoint = { ...cp, timeLeft: cp.timeLeft > 0 ? Math.max(1, Math.round(cp.timeLeft - age)) : 0 };
     this.playLocal(end.map, cp.rules, cp.fill, cp.skill, undefined, { peer: standby, ...(cp.listing ? { listing: cp.listing.name } : {}) }, false, false, { restore, greeting: 'The host left: you host the match now' });
@@ -629,7 +632,7 @@ class App {
       const age = cp ? (performance.now() - cp.at) / 1000 : Infinity;
       if (cp && age <= CHECKPOINT_MAX_AGE_SECONDS && cp.cp.map === end.map.metadata.id) {
         screen.hide();
-        return this.takeOver(end, standby, cp.cp, age);
+        return this.takeOver(end, standby, cp.cp, age, handoff.listing);
       }
     }
     standby?.close();

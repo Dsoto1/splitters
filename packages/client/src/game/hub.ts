@@ -91,8 +91,8 @@ export class LobbyAdvertiser {
   constructor(
     private readonly advert: () => Omit<LobbyAdvert, 'version'>,
     private readonly changed: () => void = () => undefined,
-    /** The listing's id once listed (null once it's down). Its secret stays here: a successor (host handoff) only gets the name. */
-    private readonly onListed: (id: string | null) => void = () => undefined,
+    /** The listing's id and secret once listed (null once it's down): the successor gets them only with the host's goodbye. */
+    private readonly onListed: (id: string | null, secret: string) => void = () => undefined,
   ) {}
 
   start(): void {
@@ -121,7 +121,7 @@ export class LobbyAdvertiser {
       if (!res.ok || !data.id) return this.set(data.error ?? `game browser answered ${res.status}`);
       this.id = data.id;
       this.secret = data.secret ?? '';
-      this.onListed(this.id);
+      this.onListed(this.id, this.secret);
       this.set(null);
     } catch {
       this.set("couldn't reach the game browser");
@@ -147,6 +147,13 @@ export class LobbyAdvertiser {
     clearInterval(this.timer);
     window.removeEventListener('pagehide', this.onHide);
     this.takeDown(false);
-    this.onListed(null);
+    this.onListed(null, '');
   }
+}
+
+/** Take down a listing with its secret (a successor host, given it with its host's goodbye). */
+export function dropListing(id: string, secret: string): void {
+  const url = lobbyUrl();
+  if (!url || !/^[\w-]{1,64}$/.test(id) || !/^[\w-]{1,128}$/.test(secret)) return;
+  void fetch(`${url}/${id}`, { method: 'DELETE', headers: { 'X-Lobby-Secret': secret } }).catch(() => undefined);
 }

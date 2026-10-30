@@ -512,8 +512,10 @@ export type ServerMessage =
   /**
    * A browser host is leaving on purpose (left the match, closed the tab): the link closes next. Friends
    * know it wasn't a network drop, so they don't wait to reconnect (MULTIPLAYER_PROTOCOL.md, "Host leaves").
+   * To the successor only, the game browser listing's ID and secret, so it can take the listing down if the
+   * host's own request doesn't get out of its closing tab (never sooner: a live host's listing is the host's).
    */
-  | { t: 'bye' }
+  | { t: 'bye'; listing?: { id: string; secret: string } }
   /** Host handoff (browser hosts, net/handoff.ts): you are asked to stand by as successor: open a join code and answer with it (ClientMessage standby). */
   | { t: 'standby' }
   /**

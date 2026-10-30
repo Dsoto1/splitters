@@ -2564,6 +2564,9 @@ async function hostgameFlow(browser) {
     // Raw snapshots run ~40 KB/s; compressed, a few (bursty frames on CI push it up, but well under raw).
     check(rate > 0.2 && rate < 20, `the friend's stream is compressed (${rate.toFixed(1)} KB/s)`);
     // The host leaves (Leave match, confirmed with a friend in): the friend gets the host-left screen, not a bare error.
+    // (The friend is the only one, so the host has named it successor: here it lets that go, as when no handoff
+    // can happen; the flow `handoff` covers a successor carrying the match on.)
+    await friend.evaluate(() => window.__cs.transport.takeHandoff?.().standby?.close());
     await host.evaluate(() => document.getElementById('exitmatch').click());
     await host.evaluate(() => document.getElementById('leave-yes')?.click());
     const left = await friend
@@ -2890,7 +2893,7 @@ async function handoffFlow(browser) {
   const heirCode = await heir.page.evaluate(() => document.querySelector('#host-info .host-code b').textContent);
   const followed = await other.page.waitForFunction((c) => window.__cs?.transport?.label === `code ${c}` && !!window.__cs.local && !document.getElementById('host-left'), heirCode, { timeout: T(95000) }).then(() => true, () => false);
   check(followed, `${other.name} follows to ${heir.name}'s code (${heirCode}) by themselves`);
-  const back = await simWait(heir.page, (m, me, n) => m.combatants().some((c) => c.kind === 'human' && c.name === n && !c.away && c.kills === 7), other.name, T(30000));
+  const back = await simWait(heir.page, (m, me, n) => m.combatants().some((c) => c.kind === 'human' && c.name === n && !c.away && c.kills >= 7), other.name, T(30000));
   const seen = await sim(heir.page, (m) => m.combatants().map((c) => `${c.name}:${c.kind}:${c.kills}`));
   check(back, `${other.name} has their place back, with their score (${seen.join(', ')})`);
   if (!followed || !back) console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);

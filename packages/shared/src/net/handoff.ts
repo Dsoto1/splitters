@@ -85,8 +85,8 @@ export interface MatchCheckpoint {
   /**
    * The game browser listing's name, so the successor lists the match under it. Never the listing's ID or
    * secret: with those, whichever friend was named successor could take the host's listing down or point it
-   * at another game while the host still runs it. A host leaving on purpose takes its listing down itself;
-   * a crashed host's listing is hidden once it misses a check-in and expires soon after (LOBBY_EXPIRY_SECONDS).
+   * at another game while the host still runs it. They come only with the host's goodbye (`bye`, to the
+   * successor); a crashed host's listing is hidden once it misses a check-in and expires soon after.
    */
   listing?: { name: string };
 }

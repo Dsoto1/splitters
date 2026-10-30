@@ -204,6 +204,27 @@ describe('host controls in a browser match (offline, Host game)', () => {
     await until(() => again.got.some((m) => m.t === 'snapshot' && m.score.some((s) => s.s === welcome.slot && s.k === 4)));
   }, 60_000);
 
+  it('host handoff: the listing stays the host\'s; only its goodbye gives the successor its ID and secret', async () => {
+    const { t } = await host(4);
+    t.setListing({ name: 'Friday', id: 'abc123', secret: 'deadbeef' });
+    const ann = friend();
+    const bo = friend();
+    t.accept(ann.link);
+    ann.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Ann', pk: 'p_annkey1234' });
+    t.accept(bo.link);
+    bo.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Bo', pk: 'p_bokey12345' });
+    await until(() => [ann, bo].some((f) => f.got.some((m) => m.t === 'standby')));
+    const [heir, other] = ann.got.some((m) => m.t === 'standby') ? [ann, bo] : [bo, ann];
+    heir.say({ t: 'standby', code: 'ABC234' });
+    const cp = heir.got.filter((m) => m.t === 'checkpoint').at(-1);
+    if (cp?.t !== 'checkpoint') throw new Error('no checkpoint');
+    expect(cp.cp.listing).toEqual({ name: 'Friday' });
+    expect(JSON.stringify(heir.got)).not.toContain('deadbeef');
+    t.close();
+    expect(heir.got.at(-1)).toEqual({ t: 'bye', listing: { id: 'abc123', secret: 'deadbeef' } });
+    expect(other.got.at(-1)).toEqual({ t: 'bye' });
+  });
+
   it('host handoff: a better connection replaces a ready successor only now and then, and the old one stays named until it answers', async () => {
     const { t } = await host(4);
     const ann = friend();

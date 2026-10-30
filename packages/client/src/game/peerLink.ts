@@ -234,6 +234,8 @@ export interface Handoff {
   standby: HostLink | null;
   /** …and the latest checkpoint, with when it came (performance.now()). */
   checkpoint: { cp: MatchCheckpoint; at: number } | null;
+  /** The host's game browser listing, which came with its goodbye (to the successor only). */
+  listing?: { id: string; secret: string };
 }
 
 /** The friend's side: a Transport to the host's browser, like the WebSocket one to a server. */
@@ -384,6 +386,9 @@ export class PeerTransport implements Transport {
           if (msg.t === 'bye') {
             // The link closes next; if that close never comes, don't wait for it.
             this.saidBye = true;
+            // The successor gets the host's listing to take down, should the host's own request not have got out.
+            const l = msg.listing;
+            if (this.handoff.standby && l && typeof l.id === 'string' && typeof l.secret === 'string') this.handoff.listing = { id: l.id, secret: l.secret };
             return void window.setTimeout(() => hostLost('goodbye'), 1500);
           }
           if (msg.t === 'welcome') {
