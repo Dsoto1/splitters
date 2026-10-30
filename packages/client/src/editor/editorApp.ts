@@ -2550,7 +2550,11 @@ export class EditorApp {
     const traceHead = document.createElement('div');
     traceHead.className = 'sub-h';
     traceHead.textContent = 'Trace image';
-    const traceFile = file('ed-trace-file', 'image/png,image/jpeg,image/webp');
+    // The picture is chosen through a file box that is never part of the page (MapMaker has no image upload:
+    // the picture stays in this browser tab, is never saved into the map and never sent anywhere).
+    const traceFile = document.createElement('input');
+    traceFile.type = 'file';
+    traceFile.accept = 'image/png,image/jpeg,image/webp';
     const trace = button('ed-trace', 'Trace image…', 'Lay a picture (a plan or map of the place, north up) over the ground to build on; editing only, never saved');
     trace.addEventListener('click', () => traceFile.click());
     const place = document.createElement('div');
@@ -2595,7 +2599,7 @@ export class EditorApp {
       this.toast(`Trace image ${f.name}: type its edges in (map metres) to line it up; it is never saved`);
     });
     place.append(west.l, east.l, south.l, north.l, opLabel, clear);
-    box.append(head, note, datum.l, heights, heightsFile, traceHead, trace, traceFile, place);
+    box.append(head, note, datum.l, heights, heightsFile, traceHead, trace, place);
     pane.append(box);
   }
 
