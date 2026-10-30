@@ -6,8 +6,8 @@
     "name": "Sunken Kingdom",
     "author": "Tile Trigger",
     "description": "A partly flooded sandstone oasis city. A ruined palace round a circular courtyard sits in the middle of the low town; the western colonnade (Embers) looks down over the turquoise lagoon from its cliff, the eastern gatehouse (Tide) holds the road in. The market arcade, the north spring and the stepped temple sit on the upper terraces; falls pour into the lower courts. Three loops on the surface (the high northern terraces, the palace ring, the southern water courts) and the buried cistern underneath, from the west stair court to the east, with rockets in its flooded hall.",
-    "createdAt": "2026-10-30T19:54:35.287Z",
-    "updatedAt": "2026-10-30T19:54:35.287Z",
+    "createdAt": "2026-10-30T20:04:14.535Z",
+    "updatedAt": "2026-10-30T20:04:14.535Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 16,
@@ -1106,7 +1106,7 @@
         }
       },
       {
-        "id": "tile_0141",
+        "id": "tile_0140",
         "tile": "egypt.house",
         "x": -10,
         "y": -7,
@@ -1114,7 +1114,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0142",
+        "id": "tile_0141",
         "tile": "egypt.house",
         "x": -10,
         "y": -9,
@@ -1122,7 +1122,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_0143",
+        "id": "tile_0142",
         "tile": "jungle.temple_wall",
         "x": -9,
         "y": -10,
@@ -1130,7 +1130,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0144",
+        "id": "tile_0143",
         "tile": "jungle.ruined_court",
         "x": -8,
         "y": -8,
@@ -1138,7 +1138,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0145",
+        "id": "tile_0144",
         "tile": "jungle.temple_gate",
         "x": -5,
         "y": -9,
@@ -1146,7 +1146,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_0146",
+        "id": "tile_0145",
         "tile": "egypt.house",
         "x": -4,
         "y": -9,
@@ -1154,7 +1154,7 @@
         "rotation": 3
       },
       {
-        "id": "tile_0147",
+        "id": "tile_0146",
         "tile": "core.room_columns",
         "x": -5,
         "y": -10,
@@ -1171,7 +1171,7 @@
         }
       },
       {
-        "id": "tile_0148",
+        "id": "tile_0147",
         "tile": "core.room_columns",
         "x": -2,
         "y": -9,
@@ -1188,7 +1188,7 @@
         }
       },
       {
-        "id": "tile_0149",
+        "id": "tile_0148",
         "tile": "core.room_columns",
         "x": 2,
         "y": -9,
@@ -1205,7 +1205,7 @@
         }
       },
       {
-        "id": "tile_0150",
+        "id": "tile_0149",
         "tile": "jungle.temple_wall",
         "x": -2,
         "y": -10,
@@ -1213,7 +1213,7 @@
         "rotation": 2
       },
       {
-        "id": "tile_0151",
+        "id": "tile_0150",
         "tile": "jungle.temple_wall",
         "x": 2,
         "y": -10,
@@ -1221,7 +1221,7 @@
         "rotation": 2
       },
       {
-        "id": "tile_0152",
+        "id": "tile_0151",
         "tile": "egypt.house",
         "x": 9,
         "y": -8,
@@ -1229,7 +1229,7 @@
         "rotation": 3
       },
       {
-        "id": "tile_0153",
+        "id": "tile_0152",
         "tile": "egypt.house",
         "x": 4,
         "y": -8,
@@ -1237,7 +1237,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_0154",
+        "id": "tile_0153",
         "tile": "jungle.temple_wall",
         "x": 9,
         "y": -5,
@@ -1245,7 +1245,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0155",
+        "id": "tile_0154",
         "tile": "core.room_large",
         "x": 5,
         "y": 0,
@@ -1264,7 +1264,7 @@
         }
       },
       {
-        "id": "tile_0156",
+        "id": "tile_0155",
         "tile": "egypt.house",
         "x": 5,
         "y": -2,
@@ -1272,7 +1272,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0157",
+        "id": "tile_0156",
         "tile": "jungle.temple_wall",
         "x": 7,
         "y": 3,
@@ -1280,7 +1280,7 @@
         "rotation": 3
       },
       {
-        "id": "tile_0158",
+        "id": "tile_0157",
         "tile": "egypt.house",
         "x": 5,
         "y": 3,
@@ -1288,7 +1288,7 @@
         "rotation": 2
       },
       {
-        "id": "tile_0159",
+        "id": "tile_0158",
         "tile": "egypt.house",
         "x": 2,
         "y": 7,
@@ -1296,7 +1296,7 @@
         "rotation": 2
       },
       {
-        "id": "tile_0160",
+        "id": "tile_0159",
         "tile": "egypt.house",
         "x": 3,
         "y": 9,
@@ -1304,7 +1304,7 @@
         "rotation": 2
       },
       {
-        "id": "tile_0161",
+        "id": "tile_0160",
         "tile": "jungle.ruined_court",
         "x": 3,
         "y": 7,
@@ -1312,7 +1312,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0162",
+        "id": "tile_0161",
         "tile": "core.room_columns",
         "x": -11,
         "y": 8,
@@ -1502,28 +1502,6 @@
       "id": "block_0111",
       "kind": "block",
       "position": [
-        -63,
-        0,
-        -53
-      ],
-      "size": [
-        6,
-        0.9,
-        1
-      ],
-      "yaw": 0,
-      "material": "core.pbr_rough_sandstone",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_0112",
-      "kind": "block",
-      "position": [
         -55,
         0,
         -43
@@ -1543,7 +1521,7 @@
       "health": 120
     },
     {
-      "id": "block_0113",
+      "id": "block_0112",
       "kind": "block",
       "position": [
         63,
@@ -1565,7 +1543,7 @@
       "health": 120
     },
     {
-      "id": "block_0114",
+      "id": "block_0113",
       "kind": "block",
       "position": [
         55,
@@ -1587,7 +1565,7 @@
       "health": 120
     },
     {
-      "id": "block_0115",
+      "id": "block_0114",
       "kind": "block",
       "position": [
         -5,
@@ -1609,7 +1587,7 @@
       "health": 120
     },
     {
-      "id": "block_0116",
+      "id": "block_0115",
       "kind": "block",
       "position": [
         5,
@@ -1631,7 +1609,7 @@
       "health": 120
     },
     {
-      "id": "block_0117",
+      "id": "block_0116",
       "kind": "block",
       "position": [
         -55,
@@ -1653,7 +1631,7 @@
       "health": 120
     },
     {
-      "id": "block_0118",
+      "id": "block_0117",
       "kind": "block",
       "position": [
         -32,
@@ -1675,7 +1653,7 @@
       "health": 120
     },
     {
-      "id": "block_0119",
+      "id": "block_0118",
       "kind": "block",
       "position": [
         -40.5,
@@ -1697,7 +1675,7 @@
       "health": 120
     },
     {
-      "id": "block_0120",
+      "id": "block_0119",
       "kind": "block",
       "position": [
         -31.5,
@@ -1719,7 +1697,7 @@
       "health": 120
     },
     {
-      "id": "block_0121",
+      "id": "block_0120",
       "kind": "block",
       "position": [
         -10,
@@ -1741,7 +1719,7 @@
       "health": 120
     },
     {
-      "id": "block_0122",
+      "id": "block_0121",
       "kind": "block",
       "position": [
         10,
@@ -1763,7 +1741,7 @@
       "health": 120
     },
     {
-      "id": "block_0123",
+      "id": "block_0122",
       "kind": "block",
       "position": [
         3.5,
@@ -1785,7 +1763,7 @@
       "health": 120
     },
     {
-      "id": "block_0124",
+      "id": "block_0123",
       "kind": "block",
       "position": [
         12.5,
@@ -1807,7 +1785,7 @@
       "health": 120
     },
     {
-      "id": "block_0125",
+      "id": "block_0124",
       "kind": "block",
       "position": [
         42,
@@ -1829,7 +1807,7 @@
       "health": 120
     },
     {
-      "id": "block_0126",
+      "id": "block_0125",
       "kind": "block",
       "position": [
         -59,
@@ -1851,7 +1829,7 @@
       "health": 120
     },
     {
-      "id": "block_0127",
+      "id": "block_0126",
       "kind": "block",
       "position": [
         -59.6,
@@ -1873,7 +1851,7 @@
       "health": 120
     },
     {
-      "id": "block_0128",
+      "id": "block_0127",
       "kind": "block",
       "position": [
         -59.6,
@@ -1895,7 +1873,7 @@
       "health": 120
     },
     {
-      "id": "block_0129",
+      "id": "block_0128",
       "kind": "block",
       "position": [
         -59,
@@ -1917,7 +1895,7 @@
       "health": 120
     },
     {
-      "id": "block_0130",
+      "id": "block_0129",
       "kind": "block",
       "position": [
         -59.6,
@@ -1939,7 +1917,7 @@
       "health": 120
     },
     {
-      "id": "block_0131",
+      "id": "block_0130",
       "kind": "block",
       "position": [
         -59.6,
@@ -1961,7 +1939,7 @@
       "health": 120
     },
     {
-      "id": "block_0132",
+      "id": "block_0131",
       "kind": "block",
       "position": [
         -59.6,
@@ -1983,7 +1961,7 @@
       "health": 120
     },
     {
-      "id": "block_0133",
+      "id": "block_0132",
       "kind": "block",
       "position": [
         -59,
@@ -2005,7 +1983,7 @@
       "health": 120
     },
     {
-      "id": "block_0134",
+      "id": "block_0133",
       "kind": "block",
       "position": [
         60,
@@ -2027,7 +2005,7 @@
       "health": 120
     },
     {
-      "id": "block_0135",
+      "id": "block_0134",
       "kind": "block",
       "position": [
         55.5,
@@ -2049,7 +2027,7 @@
       "health": 120
     },
     {
-      "id": "block_0136",
+      "id": "block_0135",
       "kind": "block",
       "position": [
         64.5,
@@ -2071,7 +2049,7 @@
       "health": 120
     },
     {
-      "id": "block_0137",
+      "id": "block_0136",
       "kind": "block",
       "position": [
         84,
@@ -2093,7 +2071,7 @@
       "health": 120
     },
     {
-      "id": "block_0138",
+      "id": "block_0137",
       "kind": "block",
       "position": [
         79.5,
@@ -2115,7 +2093,7 @@
       "health": 120
     },
     {
-      "id": "block_0139",
+      "id": "block_0138",
       "kind": "block",
       "position": [
         88.5,
@@ -2137,7 +2115,7 @@
       "health": 120
     },
     {
-      "id": "block_0140",
+      "id": "block_0139",
       "kind": "block",
       "position": [
         43,
@@ -2159,7 +2137,7 @@
       "health": 120
     },
     {
-      "id": "water_0163",
+      "id": "water_0162",
       "kind": "water",
       "position": [
         -45.5,
@@ -2175,7 +2153,7 @@
       "tint": "#2fc8c4"
     },
     {
-      "id": "water_0164",
+      "id": "water_0163",
       "kind": "water",
       "position": [
         -4,
@@ -2191,7 +2169,7 @@
       "tint": "#2fc8c4"
     },
     {
-      "id": "water_0165",
+      "id": "water_0164",
       "kind": "water",
       "position": [
         -4,
@@ -2207,7 +2185,7 @@
       "tint": "#2fc8c4"
     },
     {
-      "id": "water_0166",
+      "id": "water_0165",
       "kind": "water",
       "position": [
         -4,
@@ -2223,7 +2201,7 @@
       "tint": "#2fc8c4"
     },
     {
-      "id": "water_0167",
+      "id": "water_0166",
       "kind": "water",
       "position": [
         36,
@@ -2239,7 +2217,7 @@
       "tint": "#2fc8c4"
     },
     {
-      "id": "water_0168",
+      "id": "water_0167",
       "kind": "water",
       "position": [
         58,
@@ -2255,7 +2233,7 @@
       "tint": "#2fc8c4"
     },
     {
-      "id": "water_0169",
+      "id": "water_0168",
       "kind": "water",
       "position": [
         -65,
@@ -2271,7 +2249,7 @@
       "tint": "#2fc8c4"
     },
     {
-      "id": "water_0170",
+      "id": "water_0169",
       "kind": "water",
       "position": [
         0,
@@ -2287,7 +2265,7 @@
       "tint": "#3aa8a0"
     },
     {
-      "id": "water_0171",
+      "id": "water_0170",
       "kind": "water",
       "position": [
         8,
@@ -2303,7 +2281,7 @@
       "tint": "#2fc8c4"
     },
     {
-      "id": "water_0172",
+      "id": "water_0171",
       "kind": "water",
       "position": [
         -16,
@@ -2319,7 +2297,7 @@
       "tint": "#2fc8c4"
     },
     {
-      "id": "prop_0173",
+      "id": "prop_0172",
       "kind": "prop",
       "model": "prop.jg_waterfall",
       "position": [
@@ -2333,7 +2311,7 @@
       "tint": null
     },
     {
-      "id": "prop_0174",
+      "id": "prop_0173",
       "kind": "prop",
       "model": "prop.jg_waterfall",
       "position": [
@@ -2347,7 +2325,7 @@
       "tint": null
     },
     {
-      "id": "prop_0175",
+      "id": "prop_0174",
       "kind": "prop",
       "model": "prop.jg_waterfall",
       "position": [
@@ -2361,7 +2339,7 @@
       "tint": null
     },
     {
-      "id": "prop_0176",
+      "id": "prop_0175",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2375,7 +2353,7 @@
       "tint": null
     },
     {
-      "id": "prop_0177",
+      "id": "prop_0176",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2389,7 +2367,7 @@
       "tint": null
     },
     {
-      "id": "prop_0178",
+      "id": "prop_0177",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2403,7 +2381,7 @@
       "tint": null
     },
     {
-      "id": "prop_0179",
+      "id": "prop_0178",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2417,7 +2395,7 @@
       "tint": null
     },
     {
-      "id": "prop_0180",
+      "id": "prop_0179",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2431,7 +2409,7 @@
       "tint": null
     },
     {
-      "id": "prop_0181",
+      "id": "prop_0180",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2445,7 +2423,7 @@
       "tint": null
     },
     {
-      "id": "prop_0182",
+      "id": "prop_0181",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2459,7 +2437,7 @@
       "tint": null
     },
     {
-      "id": "prop_0183",
+      "id": "prop_0182",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2473,7 +2451,7 @@
       "tint": null
     },
     {
-      "id": "prop_0184",
+      "id": "prop_0183",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2487,7 +2465,7 @@
       "tint": null
     },
     {
-      "id": "prop_0185",
+      "id": "prop_0184",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2501,7 +2479,7 @@
       "tint": null
     },
     {
-      "id": "prop_0186",
+      "id": "prop_0185",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2515,7 +2493,7 @@
       "tint": null
     },
     {
-      "id": "prop_0187",
+      "id": "prop_0186",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2529,7 +2507,7 @@
       "tint": null
     },
     {
-      "id": "prop_0188",
+      "id": "prop_0187",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2543,7 +2521,7 @@
       "tint": null
     },
     {
-      "id": "prop_0189",
+      "id": "prop_0188",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2557,7 +2535,7 @@
       "tint": null
     },
     {
-      "id": "prop_0190",
+      "id": "prop_0189",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2571,7 +2549,7 @@
       "tint": null
     },
     {
-      "id": "prop_0191",
+      "id": "prop_0190",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2585,7 +2563,7 @@
       "tint": null
     },
     {
-      "id": "prop_0192",
+      "id": "prop_0191",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2599,7 +2577,7 @@
       "tint": null
     },
     {
-      "id": "prop_0193",
+      "id": "prop_0192",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2613,7 +2591,7 @@
       "tint": null
     },
     {
-      "id": "prop_0194",
+      "id": "prop_0193",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2627,7 +2605,7 @@
       "tint": null
     },
     {
-      "id": "prop_0195",
+      "id": "prop_0194",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2641,7 +2619,7 @@
       "tint": null
     },
     {
-      "id": "prop_0196",
+      "id": "prop_0195",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2655,7 +2633,7 @@
       "tint": null
     },
     {
-      "id": "prop_0197",
+      "id": "prop_0196",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2669,7 +2647,7 @@
       "tint": null
     },
     {
-      "id": "prop_0198",
+      "id": "prop_0197",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2683,7 +2661,7 @@
       "tint": null
     },
     {
-      "id": "prop_0199",
+      "id": "prop_0198",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2697,7 +2675,7 @@
       "tint": null
     },
     {
-      "id": "prop_0200",
+      "id": "prop_0199",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2711,7 +2689,7 @@
       "tint": null
     },
     {
-      "id": "prop_0201",
+      "id": "prop_0200",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2725,7 +2703,7 @@
       "tint": null
     },
     {
-      "id": "prop_0202",
+      "id": "prop_0201",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2739,7 +2717,7 @@
       "tint": null
     },
     {
-      "id": "prop_0203",
+      "id": "prop_0202",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2753,7 +2731,7 @@
       "tint": null
     },
     {
-      "id": "prop_0204",
+      "id": "prop_0203",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2767,7 +2745,7 @@
       "tint": null
     },
     {
-      "id": "prop_0205",
+      "id": "prop_0204",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2781,7 +2759,7 @@
       "tint": null
     },
     {
-      "id": "prop_0206",
+      "id": "prop_0205",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2795,7 +2773,7 @@
       "tint": null
     },
     {
-      "id": "prop_0207",
+      "id": "prop_0206",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2809,7 +2787,7 @@
       "tint": null
     },
     {
-      "id": "prop_0208",
+      "id": "prop_0207",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2823,7 +2801,7 @@
       "tint": null
     },
     {
-      "id": "prop_0209",
+      "id": "prop_0208",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2837,7 +2815,7 @@
       "tint": null
     },
     {
-      "id": "prop_0210",
+      "id": "prop_0209",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2851,7 +2829,7 @@
       "tint": null
     },
     {
-      "id": "prop_0211",
+      "id": "prop_0210",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2865,7 +2843,7 @@
       "tint": null
     },
     {
-      "id": "prop_0212",
+      "id": "prop_0211",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2879,7 +2857,7 @@
       "tint": null
     },
     {
-      "id": "prop_0213",
+      "id": "prop_0212",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2893,7 +2871,7 @@
       "tint": null
     },
     {
-      "id": "prop_0214",
+      "id": "prop_0213",
       "kind": "prop",
       "model": "prop.nt_palm_curved",
       "position": [
@@ -2907,7 +2885,7 @@
       "tint": null
     },
     {
-      "id": "prop_0215",
+      "id": "prop_0214",
       "kind": "prop",
       "model": "prop.palm_tall",
       "position": [
@@ -2921,7 +2899,7 @@
       "tint": null
     },
     {
-      "id": "prop_0216",
+      "id": "prop_0215",
       "kind": "prop",
       "model": "prop.eg_palm",
       "position": [
@@ -2935,7 +2913,7 @@
       "tint": null
     },
     {
-      "id": "prop_0217",
+      "id": "prop_0216",
       "kind": "prop",
       "model": "prop.nt_palm_tall",
       "position": [
@@ -2949,7 +2927,7 @@
       "tint": null
     },
     {
-      "id": "prop_0218",
+      "id": "prop_0217",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -2963,7 +2941,7 @@
       "tint": null
     },
     {
-      "id": "prop_0219",
+      "id": "prop_0218",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -2977,7 +2955,7 @@
       "tint": null
     },
     {
-      "id": "prop_0220",
+      "id": "prop_0219",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -2991,7 +2969,7 @@
       "tint": null
     },
     {
-      "id": "prop_0221",
+      "id": "prop_0220",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3005,7 +2983,7 @@
       "tint": null
     },
     {
-      "id": "prop_0222",
+      "id": "prop_0221",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3019,7 +2997,7 @@
       "tint": null
     },
     {
-      "id": "prop_0223",
+      "id": "prop_0222",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3033,7 +3011,7 @@
       "tint": null
     },
     {
-      "id": "prop_0224",
+      "id": "prop_0223",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3047,7 +3025,7 @@
       "tint": null
     },
     {
-      "id": "prop_0225",
+      "id": "prop_0224",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3061,7 +3039,7 @@
       "tint": null
     },
     {
-      "id": "prop_0226",
+      "id": "prop_0225",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3075,7 +3053,7 @@
       "tint": null
     },
     {
-      "id": "prop_0227",
+      "id": "prop_0226",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3089,7 +3067,7 @@
       "tint": null
     },
     {
-      "id": "prop_0228",
+      "id": "prop_0227",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3103,7 +3081,7 @@
       "tint": null
     },
     {
-      "id": "prop_0229",
+      "id": "prop_0228",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3117,7 +3095,7 @@
       "tint": null
     },
     {
-      "id": "prop_0230",
+      "id": "prop_0229",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3131,7 +3109,7 @@
       "tint": null
     },
     {
-      "id": "prop_0231",
+      "id": "prop_0230",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3145,7 +3123,7 @@
       "tint": null
     },
     {
-      "id": "prop_0232",
+      "id": "prop_0231",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3159,7 +3137,7 @@
       "tint": null
     },
     {
-      "id": "prop_0233",
+      "id": "prop_0232",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3173,7 +3151,7 @@
       "tint": null
     },
     {
-      "id": "prop_0234",
+      "id": "prop_0233",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3187,7 +3165,7 @@
       "tint": null
     },
     {
-      "id": "prop_0235",
+      "id": "prop_0234",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3201,7 +3179,7 @@
       "tint": null
     },
     {
-      "id": "prop_0236",
+      "id": "prop_0235",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3215,7 +3193,7 @@
       "tint": null
     },
     {
-      "id": "prop_0237",
+      "id": "prop_0236",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3229,7 +3207,7 @@
       "tint": null
     },
     {
-      "id": "prop_0238",
+      "id": "prop_0237",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3243,7 +3221,7 @@
       "tint": null
     },
     {
-      "id": "prop_0239",
+      "id": "prop_0238",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3257,7 +3235,7 @@
       "tint": null
     },
     {
-      "id": "prop_0240",
+      "id": "prop_0239",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3271,7 +3249,7 @@
       "tint": null
     },
     {
-      "id": "prop_0241",
+      "id": "prop_0240",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3285,7 +3263,7 @@
       "tint": null
     },
     {
-      "id": "prop_0242",
+      "id": "prop_0241",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3299,7 +3277,7 @@
       "tint": null
     },
     {
-      "id": "prop_0243",
+      "id": "prop_0242",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3313,7 +3291,7 @@
       "tint": null
     },
     {
-      "id": "prop_0244",
+      "id": "prop_0243",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3327,7 +3305,7 @@
       "tint": null
     },
     {
-      "id": "prop_0245",
+      "id": "prop_0244",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3341,7 +3319,7 @@
       "tint": null
     },
     {
-      "id": "prop_0246",
+      "id": "prop_0245",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3355,7 +3333,7 @@
       "tint": null
     },
     {
-      "id": "prop_0247",
+      "id": "prop_0246",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3369,7 +3347,7 @@
       "tint": null
     },
     {
-      "id": "prop_0248",
+      "id": "prop_0247",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3383,7 +3361,7 @@
       "tint": null
     },
     {
-      "id": "prop_0249",
+      "id": "prop_0248",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3397,7 +3375,7 @@
       "tint": null
     },
     {
-      "id": "prop_0250",
+      "id": "prop_0249",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3411,7 +3389,7 @@
       "tint": null
     },
     {
-      "id": "prop_0251",
+      "id": "prop_0250",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3425,7 +3403,7 @@
       "tint": null
     },
     {
-      "id": "prop_0252",
+      "id": "prop_0251",
       "kind": "prop",
       "model": "prop.eg_papyrus",
       "position": [
@@ -3439,7 +3417,7 @@
       "tint": null
     },
     {
-      "id": "block_0253",
+      "id": "block_0252",
       "kind": "block",
       "position": [
         68,
@@ -3461,7 +3439,7 @@
       "health": 120
     },
     {
-      "id": "block_0254",
+      "id": "block_0253",
       "kind": "block",
       "position": [
         60,
@@ -3483,7 +3461,7 @@
       "health": 120
     },
     {
-      "id": "block_0255",
+      "id": "block_0254",
       "kind": "block",
       "position": [
         74,
@@ -3505,7 +3483,7 @@
       "health": 120
     },
     {
-      "id": "block_0256",
+      "id": "block_0255",
       "kind": "block",
       "position": [
         52,
@@ -3527,7 +3505,7 @@
       "health": 120
     },
     {
-      "id": "block_0257",
+      "id": "block_0256",
       "kind": "block",
       "position": [
         44,
@@ -3549,7 +3527,7 @@
       "health": 120
     },
     {
-      "id": "block_0258",
+      "id": "block_0257",
       "kind": "block",
       "position": [
         30,
@@ -3571,7 +3549,7 @@
       "health": 120
     },
     {
-      "id": "block_0259",
+      "id": "block_0258",
       "kind": "block",
       "position": [
         -30,
@@ -3593,7 +3571,7 @@
       "health": 120
     },
     {
-      "id": "block_0260",
+      "id": "block_0259",
       "kind": "block",
       "position": [
         -48,
@@ -3615,7 +3593,7 @@
       "health": 120
     },
     {
-      "id": "block_0261",
+      "id": "block_0260",
       "kind": "block",
       "position": [
         -16,
@@ -3637,7 +3615,7 @@
       "health": 120
     },
     {
-      "id": "block_0262",
+      "id": "block_0261",
       "kind": "block",
       "position": [
         16,
@@ -3659,7 +3637,7 @@
       "health": 120
     },
     {
-      "id": "block_0263",
+      "id": "block_0262",
       "kind": "block",
       "position": [
         -24,
@@ -3681,7 +3659,7 @@
       "health": 120
     },
     {
-      "id": "prop_0264",
+      "id": "prop_0263",
       "kind": "prop",
       "model": "prop.eg_sphinx",
       "position": [
@@ -3695,7 +3673,7 @@
       "tint": null
     },
     {
-      "id": "prop_0265",
+      "id": "prop_0264",
       "kind": "prop",
       "model": "prop.eg_sphinx",
       "position": [
@@ -3709,7 +3687,7 @@
       "tint": null
     },
     {
-      "id": "prop_0266",
+      "id": "prop_0265",
       "kind": "prop",
       "model": "prop.eg_obelisk",
       "position": [
@@ -3723,7 +3701,7 @@
       "tint": null
     },
     {
-      "id": "prop_0267",
+      "id": "prop_0266",
       "kind": "prop",
       "model": "prop.eg_obelisk",
       "position": [
@@ -3737,7 +3715,7 @@
       "tint": null
     },
     {
-      "id": "prop_0268",
+      "id": "prop_0267",
       "kind": "prop",
       "model": "prop.eg_statue_pharaoh",
       "position": [
@@ -3751,7 +3729,7 @@
       "tint": null
     },
     {
-      "id": "prop_0269",
+      "id": "prop_0268",
       "kind": "prop",
       "model": "prop.eg_statue_pharaoh",
       "position": [
@@ -3765,7 +3743,7 @@
       "tint": null
     },
     {
-      "id": "prop_0270",
+      "id": "prop_0269",
       "kind": "prop",
       "model": "prop.fountain",
       "position": [
@@ -3779,7 +3757,7 @@
       "tint": null
     },
     {
-      "id": "prop_0271",
+      "id": "prop_0270",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -3793,7 +3771,7 @@
       "tint": null
     },
     {
-      "id": "prop_0272",
+      "id": "prop_0271",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -3807,7 +3785,7 @@
       "tint": null
     },
     {
-      "id": "prop_0273",
+      "id": "prop_0272",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -3821,7 +3799,7 @@
       "tint": null
     },
     {
-      "id": "prop_0274",
+      "id": "prop_0273",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -3835,7 +3813,7 @@
       "tint": null
     },
     {
-      "id": "prop_0275",
+      "id": "prop_0274",
       "kind": "prop",
       "model": "prop.jg_stone_idol",
       "position": [
@@ -3849,7 +3827,7 @@
       "tint": null
     },
     {
-      "id": "prop_0276",
+      "id": "prop_0275",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -3863,7 +3841,7 @@
       "tint": null
     },
     {
-      "id": "prop_0277",
+      "id": "prop_0276",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -3877,7 +3855,7 @@
       "tint": null
     },
     {
-      "id": "prop_0278",
+      "id": "prop_0277",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -3891,7 +3869,7 @@
       "tint": null
     },
     {
-      "id": "prop_0279",
+      "id": "prop_0278",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -3905,7 +3883,7 @@
       "tint": null
     },
     {
-      "id": "prop_0280",
+      "id": "prop_0279",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -3919,7 +3897,7 @@
       "tint": null
     },
     {
-      "id": "prop_0281",
+      "id": "prop_0280",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -3933,7 +3911,7 @@
       "tint": null
     },
     {
-      "id": "prop_0282",
+      "id": "prop_0281",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -3947,7 +3925,7 @@
       "tint": null
     },
     {
-      "id": "prop_0283",
+      "id": "prop_0282",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -3961,7 +3939,7 @@
       "tint": null
     },
     {
-      "id": "prop_0284",
+      "id": "prop_0283",
       "kind": "prop",
       "model": "prop.eg_stele",
       "position": [
@@ -3975,7 +3953,7 @@
       "tint": null
     },
     {
-      "id": "prop_0285",
+      "id": "prop_0284",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -3989,7 +3967,7 @@
       "tint": null
     },
     {
-      "id": "prop_0286",
+      "id": "prop_0285",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -4003,7 +3981,7 @@
       "tint": null
     },
     {
-      "id": "prop_0287",
+      "id": "prop_0286",
       "kind": "prop",
       "model": "prop.eg_stele",
       "position": [
@@ -4017,7 +3995,7 @@
       "tint": null
     },
     {
-      "id": "prop_0288",
+      "id": "prop_0287",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4031,7 +4009,7 @@
       "tint": null
     },
     {
-      "id": "prop_0289",
+      "id": "prop_0288",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -4045,7 +4023,7 @@
       "tint": null
     },
     {
-      "id": "prop_0290",
+      "id": "prop_0289",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4059,7 +4037,7 @@
       "tint": null
     },
     {
-      "id": "prop_0291",
+      "id": "prop_0290",
       "kind": "prop",
       "model": "prop.eg_column_papyrus",
       "position": [
@@ -4073,7 +4051,7 @@
       "tint": null
     },
     {
-      "id": "prop_0292",
+      "id": "prop_0291",
       "kind": "prop",
       "model": "prop.eg_column_papyrus",
       "position": [
@@ -4087,7 +4065,7 @@
       "tint": null
     },
     {
-      "id": "prop_0293",
+      "id": "prop_0292",
       "kind": "prop",
       "model": "prop.eg_anubis",
       "position": [
@@ -4101,7 +4079,7 @@
       "tint": null
     },
     {
-      "id": "prop_0294",
+      "id": "prop_0293",
       "kind": "prop",
       "model": "prop.eg_anubis",
       "position": [
@@ -4115,7 +4093,7 @@
       "tint": null
     },
     {
-      "id": "prop_0295",
+      "id": "prop_0294",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4129,7 +4107,7 @@
       "tint": null
     },
     {
-      "id": "prop_0296",
+      "id": "prop_0295",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4143,7 +4121,7 @@
       "tint": null
     },
     {
-      "id": "prop_0297",
+      "id": "prop_0296",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -4157,7 +4135,7 @@
       "tint": null
     },
     {
-      "id": "prop_0298",
+      "id": "prop_0297",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -4171,7 +4149,7 @@
       "tint": null
     },
     {
-      "id": "prop_0299",
+      "id": "prop_0298",
       "kind": "prop",
       "model": "prop.eg_obelisk",
       "position": [
@@ -4185,7 +4163,7 @@
       "tint": null
     },
     {
-      "id": "prop_0300",
+      "id": "prop_0299",
       "kind": "prop",
       "model": "prop.eg_cat_statue",
       "position": [
@@ -4199,7 +4177,7 @@
       "tint": null
     },
     {
-      "id": "prop_0301",
+      "id": "prop_0300",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4213,7 +4191,7 @@
       "tint": null
     },
     {
-      "id": "prop_0302",
+      "id": "prop_0301",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -4227,7 +4205,7 @@
       "tint": null
     },
     {
-      "id": "prop_0303",
+      "id": "prop_0302",
       "kind": "prop",
       "model": "prop.eg_sphinx",
       "position": [
@@ -4241,7 +4219,7 @@
       "tint": null
     },
     {
-      "id": "prop_0304",
+      "id": "prop_0303",
       "kind": "prop",
       "model": "prop.eg_obelisk",
       "position": [
@@ -4255,7 +4233,7 @@
       "tint": null
     },
     {
-      "id": "prop_0305",
+      "id": "prop_0304",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4269,7 +4247,7 @@
       "tint": null
     },
     {
-      "id": "prop_0306",
+      "id": "prop_0305",
       "kind": "prop",
       "model": "prop.eg_statue_pharaoh",
       "position": [
@@ -4283,7 +4261,7 @@
       "tint": null
     },
     {
-      "id": "prop_0307",
+      "id": "prop_0306",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4297,7 +4275,7 @@
       "tint": null
     },
     {
-      "id": "prop_0308",
+      "id": "prop_0307",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4311,7 +4289,7 @@
       "tint": null
     },
     {
-      "id": "prop_0309",
+      "id": "prop_0308",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -4325,7 +4303,7 @@
       "tint": null
     },
     {
-      "id": "prop_0310",
+      "id": "prop_0309",
       "kind": "prop",
       "model": "prop.eg_stele",
       "position": [
@@ -4339,7 +4317,7 @@
       "tint": null
     },
     {
-      "id": "prop_0311",
+      "id": "prop_0310",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4353,7 +4331,7 @@
       "tint": null
     },
     {
-      "id": "prop_0312",
+      "id": "prop_0311",
       "kind": "prop",
       "model": "prop.jg_carved_pillar",
       "position": [
@@ -4367,7 +4345,7 @@
       "tint": null
     },
     {
-      "id": "prop_0313",
+      "id": "prop_0312",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4381,7 +4359,7 @@
       "tint": null
     },
     {
-      "id": "prop_0314",
+      "id": "prop_0313",
       "kind": "prop",
       "model": "prop.eg_sarcophagus",
       "position": [
@@ -4395,7 +4373,7 @@
       "tint": null
     },
     {
-      "id": "prop_0315",
+      "id": "prop_0314",
       "kind": "prop",
       "model": "prop.stall",
       "position": [
@@ -4409,7 +4387,7 @@
       "tint": null
     },
     {
-      "id": "prop_0316",
+      "id": "prop_0315",
       "kind": "prop",
       "model": "prop.stall_green",
       "position": [
@@ -4423,7 +4401,7 @@
       "tint": null
     },
     {
-      "id": "prop_0317",
+      "id": "prop_0316",
       "kind": "prop",
       "model": "prop.stall",
       "position": [
@@ -4437,7 +4415,7 @@
       "tint": null
     },
     {
-      "id": "prop_0318",
+      "id": "prop_0317",
       "kind": "prop",
       "model": "prop.stall_green",
       "position": [
@@ -4451,7 +4429,7 @@
       "tint": null
     },
     {
-      "id": "prop_0319",
+      "id": "prop_0318",
       "kind": "prop",
       "model": "prop.stall",
       "position": [
@@ -4465,7 +4443,7 @@
       "tint": null
     },
     {
-      "id": "prop_0320",
+      "id": "prop_0319",
       "kind": "prop",
       "model": "prop.im_amphorae",
       "position": [
@@ -4479,7 +4457,7 @@
       "tint": null
     },
     {
-      "id": "prop_0321",
+      "id": "prop_0320",
       "kind": "prop",
       "model": "prop.im_amphorae",
       "position": [
@@ -4493,7 +4471,7 @@
       "tint": null
     },
     {
-      "id": "prop_0322",
+      "id": "prop_0321",
       "kind": "prop",
       "model": "prop.crate_large",
       "position": [
@@ -4507,7 +4485,7 @@
       "tint": null
     },
     {
-      "id": "prop_0323",
+      "id": "prop_0322",
       "kind": "prop",
       "model": "prop.barrel",
       "position": [
@@ -4521,7 +4499,7 @@
       "tint": null
     },
     {
-      "id": "prop_0324",
+      "id": "prop_0323",
       "kind": "prop",
       "model": "prop.barrel",
       "position": [
@@ -4535,7 +4513,7 @@
       "tint": null
     },
     {
-      "id": "prop_0325",
+      "id": "prop_0324",
       "kind": "prop",
       "model": "prop.rn_cart",
       "position": [
@@ -4549,7 +4527,7 @@
       "tint": null
     },
     {
-      "id": "prop_0326",
+      "id": "prop_0325",
       "kind": "prop",
       "model": "prop.eg_chest",
       "position": [
@@ -4563,7 +4541,7 @@
       "tint": null
     },
     {
-      "id": "prop_0327",
+      "id": "prop_0326",
       "kind": "prop",
       "model": "prop.crate_large",
       "position": [
@@ -4577,7 +4555,7 @@
       "tint": null
     },
     {
-      "id": "prop_0328",
+      "id": "prop_0327",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -4591,7 +4569,7 @@
       "tint": null
     },
     {
-      "id": "prop_0329",
+      "id": "prop_0328",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -4605,7 +4583,7 @@
       "tint": null
     },
     {
-      "id": "prop_0330",
+      "id": "prop_0329",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -4619,7 +4597,7 @@
       "tint": null
     },
     {
-      "id": "prop_0331",
+      "id": "prop_0330",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -4633,7 +4611,7 @@
       "tint": null
     },
     {
-      "id": "prop_0332",
+      "id": "prop_0331",
       "kind": "prop",
       "model": "prop.jg_rubble_blocks",
       "position": [
@@ -4647,7 +4625,7 @@
       "tint": null
     },
     {
-      "id": "prop_0333",
+      "id": "prop_0332",
       "kind": "prop",
       "model": "prop.rn_urn_broken",
       "position": [
@@ -4661,7 +4639,7 @@
       "tint": null
     },
     {
-      "id": "prop_0334",
+      "id": "prop_0333",
       "kind": "prop",
       "model": "prop.rn_urn",
       "position": [
@@ -4675,7 +4653,7 @@
       "tint": null
     },
     {
-      "id": "prop_0335",
+      "id": "prop_0334",
       "kind": "prop",
       "model": "prop.mn_rock_spires",
       "position": [
@@ -4689,7 +4667,7 @@
       "tint": null
     },
     {
-      "id": "prop_0336",
+      "id": "prop_0335",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -4703,7 +4681,7 @@
       "tint": null
     },
     {
-      "id": "prop_0337",
+      "id": "prop_0336",
       "kind": "prop",
       "model": "prop.rocks_tall",
       "position": [
@@ -4717,7 +4695,7 @@
       "tint": null
     },
     {
-      "id": "prop_0338",
+      "id": "prop_0337",
       "kind": "prop",
       "model": "prop.boulder_flat",
       "position": [
@@ -4731,7 +4709,7 @@
       "tint": null
     },
     {
-      "id": "prop_0339",
+      "id": "prop_0338",
       "kind": "prop",
       "model": "prop.mn_rock_spires",
       "position": [
@@ -4745,7 +4723,7 @@
       "tint": null
     },
     {
-      "id": "prop_0340",
+      "id": "prop_0339",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -4759,7 +4737,7 @@
       "tint": null
     },
     {
-      "id": "prop_0341",
+      "id": "prop_0340",
       "kind": "prop",
       "model": "prop.rocks_tall",
       "position": [
@@ -4773,7 +4751,7 @@
       "tint": null
     },
     {
-      "id": "prop_0342",
+      "id": "prop_0341",
       "kind": "prop",
       "model": "prop.boulder_flat",
       "position": [
@@ -4787,7 +4765,7 @@
       "tint": null
     },
     {
-      "id": "prop_0343",
+      "id": "prop_0342",
       "kind": "prop",
       "model": "prop.mn_rock_spires",
       "position": [
@@ -4801,7 +4779,7 @@
       "tint": null
     },
     {
-      "id": "prop_0344",
+      "id": "prop_0343",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -4815,7 +4793,7 @@
       "tint": null
     },
     {
-      "id": "prop_0345",
+      "id": "prop_0344",
       "kind": "prop",
       "model": "prop.rocks_tall",
       "position": [
@@ -4829,7 +4807,7 @@
       "tint": null
     },
     {
-      "id": "prop_0346",
+      "id": "prop_0345",
       "kind": "prop",
       "model": "prop.boulder_flat",
       "position": [
@@ -4843,7 +4821,7 @@
       "tint": null
     },
     {
-      "id": "prop_0347",
+      "id": "prop_0346",
       "kind": "prop",
       "model": "prop.mn_rock_spires",
       "position": [
@@ -4857,7 +4835,7 @@
       "tint": null
     },
     {
-      "id": "prop_0348",
+      "id": "prop_0347",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -4871,7 +4849,7 @@
       "tint": null
     },
     {
-      "id": "prop_0349",
+      "id": "prop_0348",
       "kind": "prop",
       "model": "prop.rocks_tall",
       "position": [
@@ -4885,7 +4863,7 @@
       "tint": null
     },
     {
-      "id": "prop_0350",
+      "id": "prop_0349",
       "kind": "prop",
       "model": "prop.boulder_flat",
       "position": [
@@ -4899,7 +4877,7 @@
       "tint": null
     },
     {
-      "id": "prop_0351",
+      "id": "prop_0350",
       "kind": "prop",
       "model": "prop.mn_rock_spires",
       "position": [
@@ -4913,7 +4891,7 @@
       "tint": null
     },
     {
-      "id": "prop_0352",
+      "id": "prop_0351",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -4927,7 +4905,7 @@
       "tint": null
     },
     {
-      "id": "prop_0353",
+      "id": "prop_0352",
       "kind": "prop",
       "model": "prop.rocks_tall",
       "position": [
@@ -4941,7 +4919,7 @@
       "tint": null
     },
     {
-      "id": "prop_0354",
+      "id": "prop_0353",
       "kind": "prop",
       "model": "prop.boulder_flat",
       "position": [
@@ -4955,7 +4933,7 @@
       "tint": null
     },
     {
-      "id": "prop_0355",
+      "id": "prop_0354",
       "kind": "prop",
       "model": "prop.mn_rock_spires",
       "position": [
@@ -4969,7 +4947,7 @@
       "tint": null
     },
     {
-      "id": "prop_0356",
+      "id": "prop_0355",
       "kind": "prop",
       "model": "prop.boulder_jagged",
       "position": [
@@ -4983,7 +4961,7 @@
       "tint": null
     },
     {
-      "id": "light_0357",
+      "id": "light_0356",
       "kind": "light",
       "position": [
         -44,
@@ -4998,7 +4976,7 @@
       "blink": 0.4
     },
     {
-      "id": "light_0358",
+      "id": "light_0357",
       "kind": "light",
       "position": [
         -20,
@@ -5013,7 +4991,7 @@
       "blink": 0.4
     },
     {
-      "id": "light_0359",
+      "id": "light_0358",
       "kind": "light",
       "position": [
         20,
@@ -5028,7 +5006,7 @@
       "blink": 0.4
     },
     {
-      "id": "light_0360",
+      "id": "light_0359",
       "kind": "light",
       "position": [
         44,
@@ -5043,7 +5021,7 @@
       "blink": 0.4
     },
     {
-      "id": "light_0361",
+      "id": "light_0360",
       "kind": "light",
       "position": [
         -8,
@@ -5058,7 +5036,7 @@
       "blink": 0.4
     },
     {
-      "id": "light_0362",
+      "id": "light_0361",
       "kind": "light",
       "position": [
         0,
@@ -5073,10 +5051,25 @@
       "blink": 0.4
     },
     {
-      "id": "light_0363",
+      "id": "light_0362",
       "kind": "light",
       "position": [
         -32,
+        2.4,
+        -4
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_0363",
+      "kind": "light",
+      "position": [
+        24,
         2.4,
         -4
       ],
@@ -5091,21 +5084,6 @@
       "id": "light_0364",
       "kind": "light",
       "position": [
-        24,
-        2.4,
-        -4
-      ],
-      "yaw": 0,
-      "color": "#ff9a3c",
-      "intensity": 1.4,
-      "range": 11,
-      "fixture": "bulb",
-      "blink": 0.4
-    },
-    {
-      "id": "light_0365",
-      "kind": "light",
-      "position": [
         -4,
         -2,
         -48
@@ -5117,7 +5095,7 @@
       "fixture": "none"
     },
     {
-      "id": "prop_0366",
+      "id": "prop_0365",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -5131,7 +5109,7 @@
       "tint": null
     },
     {
-      "id": "prop_0367",
+      "id": "prop_0366",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -5145,7 +5123,7 @@
       "tint": null
     },
     {
-      "id": "prop_0368",
+      "id": "prop_0367",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -5159,7 +5137,7 @@
       "tint": null
     },
     {
-      "id": "prop_0369",
+      "id": "prop_0368",
       "kind": "prop",
       "model": "prop.eg_torch",
       "position": [
@@ -5173,7 +5151,7 @@
       "tint": null
     },
     {
-      "id": "spawn_0370",
+      "id": "spawn_0369",
       "kind": "spawn",
       "position": [
         -80,
@@ -5184,7 +5162,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0371",
+      "id": "spawn_0370",
       "kind": "spawn",
       "position": [
         -80,
@@ -5195,7 +5173,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0372",
+      "id": "spawn_0371",
       "kind": "spawn",
       "position": [
         -80,
@@ -5206,12 +5184,23 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0373",
+      "id": "spawn_0372",
       "kind": "spawn",
       "position": [
         -80,
         4,
         -12
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_0373",
+      "kind": "spawn",
+      "position": [
+        -80,
+        4,
+        12
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5222,7 +5211,7 @@
       "position": [
         -80,
         4,
-        12
+        20
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5233,7 +5222,7 @@
       "position": [
         -80,
         4,
-        20
+        28
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
@@ -5244,24 +5233,13 @@
       "position": [
         -80,
         4,
-        28
-      ],
-      "yaw": 1.5707963267948966,
-      "faction": "embers"
-    },
-    {
-      "id": "spawn_0377",
-      "kind": "spawn",
-      "position": [
-        -80,
-        4,
         36
       ],
       "yaw": 1.5707963267948966,
       "faction": "embers"
     },
     {
-      "id": "spawn_0378",
+      "id": "spawn_0377",
       "kind": "spawn",
       "position": [
         -96,
@@ -5272,7 +5250,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0379",
+      "id": "spawn_0378",
       "kind": "spawn",
       "position": [
         -96,
@@ -5283,7 +5261,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0380",
+      "id": "spawn_0379",
       "kind": "spawn",
       "position": [
         -96,
@@ -5294,7 +5272,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0381",
+      "id": "spawn_0380",
       "kind": "spawn",
       "position": [
         -96,
@@ -5305,7 +5283,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0382",
+      "id": "spawn_0381",
       "kind": "spawn",
       "position": [
         -88,
@@ -5316,7 +5294,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0383",
+      "id": "spawn_0382",
       "kind": "spawn",
       "position": [
         -80,
@@ -5327,7 +5305,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0384",
+      "id": "spawn_0383",
       "kind": "spawn",
       "position": [
         -88,
@@ -5338,7 +5316,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0385",
+      "id": "spawn_0384",
       "kind": "spawn",
       "position": [
         -72,
@@ -5349,7 +5327,7 @@
       "faction": "embers"
     },
     {
-      "id": "spawn_0386",
+      "id": "spawn_0385",
       "kind": "spawn",
       "position": [
         80,
@@ -5360,7 +5338,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0387",
+      "id": "spawn_0386",
       "kind": "spawn",
       "position": [
         80,
@@ -5371,7 +5349,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0388",
+      "id": "spawn_0387",
       "kind": "spawn",
       "position": [
         80,
@@ -5382,7 +5360,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0389",
+      "id": "spawn_0388",
       "kind": "spawn",
       "position": [
         80,
@@ -5393,7 +5371,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0390",
+      "id": "spawn_0389",
       "kind": "spawn",
       "position": [
         72,
@@ -5404,10 +5382,21 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0391",
+      "id": "spawn_0390",
       "kind": "spawn",
       "position": [
         64,
+        0,
+        16
+      ],
+      "yaw": -1.5707963267948966,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_0391",
+      "kind": "spawn",
+      "position": [
+        56,
         0,
         16
       ],
@@ -5420,7 +5409,7 @@
       "position": [
         56,
         0,
-        16
+        -8
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5431,7 +5420,7 @@
       "position": [
         56,
         0,
-        -8
+        0
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5440,9 +5429,9 @@
       "id": "spawn_0394",
       "kind": "spawn",
       "position": [
-        56,
+        64,
         0,
-        0
+        -8
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5451,7 +5440,7 @@
       "id": "spawn_0395",
       "kind": "spawn",
       "position": [
-        64,
+        72,
         0,
         -8
       ],
@@ -5462,9 +5451,9 @@
       "id": "spawn_0396",
       "kind": "spawn",
       "position": [
-        72,
+        80,
         0,
-        -8
+        24
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5473,9 +5462,9 @@
       "id": "spawn_0397",
       "kind": "spawn",
       "position": [
-        80,
+        88,
         0,
-        24
+        16
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
@@ -5486,24 +5475,13 @@
       "position": [
         88,
         0,
-        16
-      ],
-      "yaw": -1.5707963267948966,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_0399",
-      "kind": "spawn",
-      "position": [
-        88,
-        0,
         24
       ],
       "yaw": -1.5707963267948966,
       "faction": "tide"
     },
     {
-      "id": "spawn_0400",
+      "id": "spawn_0399",
       "kind": "spawn",
       "position": [
         48,
@@ -5514,7 +5492,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0401",
+      "id": "spawn_0400",
       "kind": "spawn",
       "position": [
         72,
@@ -5525,7 +5503,7 @@
       "faction": "tide"
     },
     {
-      "id": "spawn_0402",
+      "id": "spawn_0401",
       "kind": "spawn",
       "position": [
         -56,
@@ -5536,7 +5514,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0403",
+      "id": "spawn_0402",
       "kind": "spawn",
       "position": [
         -36,
@@ -5547,7 +5525,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0404",
+      "id": "spawn_0403",
       "kind": "spawn",
       "position": [
         -80,
@@ -5558,7 +5536,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0405",
+      "id": "spawn_0404",
       "kind": "spawn",
       "position": [
         -28,
@@ -5569,7 +5547,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0406",
+      "id": "spawn_0405",
       "kind": "spawn",
       "position": [
         20,
@@ -5580,7 +5558,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0407",
+      "id": "spawn_0406",
       "kind": "spawn",
       "position": [
         24,
@@ -5591,7 +5569,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0408",
+      "id": "spawn_0407",
       "kind": "spawn",
       "position": [
         -28,
@@ -5602,7 +5580,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0409",
+      "id": "spawn_0408",
       "kind": "spawn",
       "position": [
         20,
@@ -5613,7 +5591,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0410",
+      "id": "spawn_0409",
       "kind": "spawn",
       "position": [
         36,
@@ -5624,7 +5602,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0411",
+      "id": "spawn_0410",
       "kind": "spawn",
       "position": [
         80,
@@ -5635,7 +5613,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0412",
+      "id": "spawn_0411",
       "kind": "spawn",
       "position": [
         -20,
@@ -5646,7 +5624,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0413",
+      "id": "spawn_0412",
       "kind": "spawn",
       "position": [
         20,
@@ -5657,7 +5635,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0414",
+      "id": "spawn_0413",
       "kind": "spawn",
       "position": [
         -80,
@@ -5668,7 +5646,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0415",
+      "id": "spawn_0414",
       "kind": "spawn",
       "position": [
         -36,
@@ -5679,7 +5657,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0416",
+      "id": "spawn_0415",
       "kind": "spawn",
       "position": [
         -20,
@@ -5690,7 +5668,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0417",
+      "id": "spawn_0416",
       "kind": "spawn",
       "position": [
         8,
@@ -5701,7 +5679,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0418",
+      "id": "spawn_0417",
       "kind": "spawn",
       "position": [
         24,
@@ -5712,7 +5690,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0419",
+      "id": "spawn_0418",
       "kind": "spawn",
       "position": [
         76,
@@ -5723,7 +5701,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0420",
+      "id": "spawn_0419",
       "kind": "spawn",
       "position": [
         84,
@@ -5734,7 +5712,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0421",
+      "id": "spawn_0420",
       "kind": "spawn",
       "position": [
         36,
@@ -5745,7 +5723,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0422",
+      "id": "spawn_0421",
       "kind": "spawn",
       "position": [
         -24,
@@ -5756,7 +5734,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0423",
+      "id": "spawn_0422",
       "kind": "spawn",
       "position": [
         24,
@@ -5767,7 +5745,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0424",
+      "id": "spawn_0423",
       "kind": "spawn",
       "position": [
         -96,
@@ -5778,7 +5756,7 @@
       "faction": null
     },
     {
-      "id": "spawn_0425",
+      "id": "spawn_0424",
       "kind": "spawn",
       "position": [
         76,
@@ -5789,7 +5767,7 @@
       "faction": null
     },
     {
-      "id": "flag_0426",
+      "id": "flag_0425",
       "kind": "flag",
       "position": [
         -80,
@@ -5800,7 +5778,7 @@
       "team": "embers"
     },
     {
-      "id": "flag_0427",
+      "id": "flag_0426",
       "kind": "flag",
       "position": [
         76,
@@ -5811,7 +5789,7 @@
       "team": "tide"
     },
     {
-      "id": "hill_0428",
+      "id": "hill_0427",
       "kind": "hill",
       "position": [
         -4,
@@ -5820,7 +5798,7 @@
       ]
     },
     {
-      "id": "hill_0429",
+      "id": "hill_0428",
       "kind": "hill",
       "position": [
         -58,
@@ -5829,7 +5807,7 @@
       ]
     },
     {
-      "id": "hill_0430",
+      "id": "hill_0429",
       "kind": "hill",
       "position": [
         46,
@@ -5838,7 +5816,7 @@
       ]
     },
     {
-      "id": "hill_0431",
+      "id": "hill_0430",
       "kind": "hill",
       "position": [
         36,
@@ -5847,7 +5825,7 @@
       ]
     },
     {
-      "id": "pickup_0432",
+      "id": "pickup_0431",
       "kind": "pickup",
       "position": [
         0,
@@ -5858,7 +5836,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0433",
+      "id": "pickup_0432",
       "kind": "pickup",
       "position": [
         -64,
@@ -5869,7 +5847,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0434",
+      "id": "pickup_0433",
       "kind": "pickup",
       "position": [
         88,
@@ -5880,7 +5858,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0435",
+      "id": "pickup_0434",
       "kind": "pickup",
       "position": [
         56,
@@ -5891,7 +5869,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0436",
+      "id": "pickup_0435",
       "kind": "pickup",
       "position": [
         -4,
@@ -5902,7 +5880,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0437",
+      "id": "pickup_0436",
       "kind": "pickup",
       "position": [
         -8,
@@ -5913,7 +5891,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0438",
+      "id": "pickup_0437",
       "kind": "pickup",
       "position": [
         -40,
@@ -5924,7 +5902,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0439",
+      "id": "pickup_0438",
       "kind": "pickup",
       "position": [
         -64,
@@ -5935,7 +5913,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0440",
+      "id": "pickup_0439",
       "kind": "pickup",
       "position": [
         -40,
@@ -5946,7 +5924,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0441",
+      "id": "pickup_0440",
       "kind": "pickup",
       "position": [
         -84,
@@ -5957,7 +5935,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0442",
+      "id": "pickup_0441",
       "kind": "pickup",
       "position": [
         -32,
@@ -5968,7 +5946,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0443",
+      "id": "pickup_0442",
       "kind": "pickup",
       "position": [
         32,
@@ -5979,7 +5957,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0444",
+      "id": "pickup_0443",
       "kind": "pickup",
       "position": [
         -16,
@@ -5990,7 +5968,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0445",
+      "id": "pickup_0444",
       "kind": "pickup",
       "position": [
         0,
@@ -6001,7 +5979,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0446",
+      "id": "pickup_0445",
       "kind": "pickup",
       "position": [
         -64,
@@ -6012,7 +5990,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0447",
+      "id": "pickup_0446",
       "kind": "pickup",
       "position": [
         46,
@@ -6023,7 +6001,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0448",
+      "id": "pickup_0447",
       "kind": "pickup",
       "position": [
         44,
@@ -6034,7 +6012,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0449",
+      "id": "pickup_0448",
       "kind": "pickup",
       "position": [
         36,
@@ -6045,7 +6023,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0450",
+      "id": "pickup_0449",
       "kind": "pickup",
       "position": [
         80,
@@ -6056,7 +6034,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0451",
+      "id": "pickup_0450",
       "kind": "pickup",
       "position": [
         -44,
@@ -6067,7 +6045,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0452",
+      "id": "pickup_0451",
       "kind": "pickup",
       "position": [
         -24,
@@ -6078,7 +6056,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0453",
+      "id": "pickup_0452",
       "kind": "pickup",
       "position": [
         16,
@@ -6089,7 +6067,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0454",
+      "id": "pickup_0453",
       "kind": "pickup",
       "position": [
         -72,
@@ -6100,7 +6078,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0455",
+      "id": "pickup_0454",
       "kind": "pickup",
       "position": [
         64,
@@ -6111,7 +6089,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0456",
+      "id": "pickup_0455",
       "kind": "pickup",
       "position": [
         -40,
@@ -6122,7 +6100,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0457",
+      "id": "pickup_0456",
       "kind": "pickup",
       "position": [
         28,
@@ -6133,7 +6111,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0458",
+      "id": "pickup_0457",
       "kind": "pickup",
       "position": [
         20,
@@ -6144,7 +6122,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0459",
+      "id": "pickup_0458",
       "kind": "pickup",
       "position": [
         -60,
@@ -6155,7 +6133,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0460",
+      "id": "pickup_0459",
       "kind": "pickup",
       "position": [
         64,
@@ -6166,7 +6144,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0461",
+      "id": "pickup_0460",
       "kind": "pickup",
       "position": [
         -4,
@@ -6177,7 +6155,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0462",
+      "id": "pickup_0461",
       "kind": "pickup",
       "position": [
         -4,
@@ -6188,7 +6166,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0463",
+      "id": "pickup_0462",
       "kind": "pickup",
       "position": [
         -4,
@@ -6199,7 +6177,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0464",
+      "id": "pickup_0463",
       "kind": "pickup",
       "position": [
         4,
@@ -6210,7 +6188,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0465",
+      "id": "pickup_0464",
       "kind": "pickup",
       "position": [
         -84,
@@ -6221,7 +6199,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0466",
+      "id": "pickup_0465",
       "kind": "pickup",
       "position": [
         -84,
@@ -6232,7 +6210,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0467",
+      "id": "pickup_0466",
       "kind": "pickup",
       "position": [
         72,
@@ -6243,7 +6221,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0468",
+      "id": "pickup_0467",
       "kind": "pickup",
       "position": [
         64,
@@ -6254,7 +6232,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0469",
+      "id": "pickup_0468",
       "kind": "pickup",
       "position": [
         -56,
@@ -6265,7 +6243,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0470",
+      "id": "pickup_0469",
       "kind": "pickup",
       "position": [
         40,
@@ -6276,7 +6254,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0471",
+      "id": "pickup_0470",
       "kind": "pickup",
       "position": [
         -32,
@@ -6287,7 +6265,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0472",
+      "id": "pickup_0471",
       "kind": "pickup",
       "position": [
         24,
@@ -6298,7 +6276,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0473",
+      "id": "pickup_0472",
       "kind": "pickup",
       "position": [
         -16,
@@ -6309,7 +6287,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0474",
+      "id": "pickup_0473",
       "kind": "pickup",
       "position": [
         16,
@@ -6320,7 +6298,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0475",
+      "id": "pickup_0474",
       "kind": "pickup",
       "position": [
         32,
@@ -6331,7 +6309,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0476",
+      "id": "pickup_0475",
       "kind": "pickup",
       "position": [
         -36,
@@ -6342,7 +6320,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0477",
+      "id": "pickup_0476",
       "kind": "pickup",
       "position": [
         -72,
@@ -6353,7 +6331,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0478",
+      "id": "pickup_0477",
       "kind": "pickup",
       "position": [
         72,
@@ -6364,7 +6342,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0479",
+      "id": "pickup_0478",
       "kind": "pickup",
       "position": [
         -4,
@@ -6375,7 +6353,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0480",
+      "id": "pickup_0479",
       "kind": "pickup",
       "position": [
         -48,
@@ -6386,7 +6364,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0481",
+      "id": "pickup_0480",
       "kind": "pickup",
       "position": [
         60,
@@ -6397,7 +6375,7 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_0482",
+      "id": "pickup_0481",
       "kind": "pickup",
       "position": [
         0,
