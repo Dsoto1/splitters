@@ -207,7 +207,7 @@ import { MAP_INDEX, isBuiltInMap, loadBuiltInMap } from '../mapIndex.ts';
 
 /** IDs of the built-in maps (they have automatic pictures): the files in maps/, which load on demand (mapIndex.ts). */
 const SHIPPED_IDS = { has: isBuiltInMap };
-import { EditorView } from './editorView.ts';
+import { EditorView, type TraceImage } from './editorView.ts';
 import { LIQUID_LOOKS } from '../game/scenarioVisuals.ts';
 import { clearDraft, deleteFromLibrary, exportMap, importMapFile, inLibrary, listDrafts, listLibrary, openFromLibrary, saveToLibrary, writeDraft } from './storage.ts';
 import { tileIcon } from './tileIcon.ts';
@@ -224,6 +224,7 @@ import { NATURE_PROP_CATEGORIES, PROP_GROUPS, propGroup, scenarioGroup } from '.
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { libraryThumb } from './libraryThumbs.ts';
 import { isOwner, openPublishDialog } from './ownerPublish.ts';
+import { MAX_HEIGHT_GRID_BYTES, parseAsciiGrid, terrainFromHeightGrid } from './heightGrid.ts';
 import { publishedMaps } from '../publishedMaps.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
@@ -649,10 +650,15 @@ export class EditorApp {
     $('editor').hidden = false;
     this.refresh(true);
     // The owner (signed in, and listed on the hub) edits our maps as they are and publishes them.
-    void isOwner().then((owner) => {
-      this.owner = owner;
-      $('ed-publish').hidden = !owner;
-    });
+    void isOwner().then((owner) => this.setOwner(owner));
+  }
+
+  /** Show or hide the owner's tools: Publish, and Terrain → Real places (height grid files, trace image). */
+  setOwner(owner: boolean): void {
+    this.owner = owner;
+    $('ed-publish').hidden = !owner;
+    for (const el of document.querySelectorAll<HTMLElement>('.ed-owner-only')) el.hidden = !owner;
+    if (!owner) this.setTrace(null);
   }
 
   /** Signed in as an owner of the game (ownerPublish.ts): official maps open as they are, and Publish shows. */
@@ -2496,7 +2502,136 @@ export class EditorApp {
     }
   }
 
+  /** The trace image laid over the ground (owner, editor-only, never saved). */
+  private trace: TraceImage | null = null;
+
+  private setTrace(t: TraceImage | null): void {
+    if (this.trace && this.trace.url !== t?.url) URL.revokeObjectURL(this.trace.url);
+    this.trace = t;
+    this.view.setTrace(t);
+    const box = document.getElementById('ed-trace-place');
+    if (box) box.hidden = !t;
+  }
+
+  /**
+   * Terrain → Real places (owner only, like Publish: players never bring files into a map). Heights from a
+   * height grid file (an ESRI ASCII grid in map metres: heightGrid.ts) become the terrain in one undo step; a
+   * trace image (a plan or survey drawing of the place) lies over the ground to build on, and is never saved.
+   */
+  private buildRealPlaceTools(): void {
+    const pane = document.querySelector<HTMLElement>('.ed-pane[data-pane="terrain"]');
+    if (!pane) return;
+    const box = document.createElement('div');
+    box.id = 'ed-tr-real';
+    box.className = 'ed-owner-only';
+    box.hidden = !this.owner;
+    const num = (id: string, label: string, title: string) => {
+      const l = document.createElement('label');
+      l.className = 'stack';
+      l.title = title;
+      const i = document.createElement('input');
+      i.id = id;
+      i.type = 'number';
+      i.step = 'any';
+      l.append(label, i);
+      return { l, i };
+    };
+    const file = (id: string, accept: string) => {
+      const i = document.createElement('input');
+      i.id = id;
+      i.type = 'file';
+      i.accept = accept;
+      i.hidden = true;
+      return i;
+    };
+    const button = (id: string, text: string, title: string) => {
+      const b = document.createElement('button');
+      b.id = id;
+      b.textContent = text;
+      b.title = title;
+      return b;
+    };
+    const head = document.createElement('div');
+    head.className = 'sub-h';
+    head.textContent = 'Real places (owner)';
+    const note = small('Build a real place to scale: its ground from a height grid file (ESRI ASCII .asc in metres, x east, y north, in map metres), and a plan or map of it laid over the ground to trace. Neither file is kept in the map.');
+    const datum = num('ed-tr-datum', 'Ground level: file height at y 0 (m)', 'Blank: the height at the centre point (0, 0)');
+    datum.i.placeholder = 'auto';
+    const heightsFile = file('ed-tr-heights-file', '.asc,.txt');
+    const heights = button('ed-tr-heights', 'Heights from a height grid file…', 'Replace the terrain with the heights in an ESRI ASCII grid (.asc); ground paint and plants are kept where the old terrain reached');
+    heights.addEventListener('click', () => heightsFile.click());
+    heightsFile.addEventListener('change', async () => {
+      const f = heightsFile.files?.[0];
+      heightsFile.value = '';
+      if (!f) return;
+      if (f.size > MAX_HEIGHT_GRID_BYTES) return this.toast('Height grid: the file is larger than 32 MB', true);
+      const grid = parseAsciiGrid(await f.text());
+      if ('error' in grid) return this.toast(`Height grid: ${grid.error}`, true);
+      const typed = datum.i.value.trim() === '' ? null : Number(datum.i.value);
+      const r = terrainFromHeightGrid(grid, { current: this.doc.terrain, datum: typed !== null && Number.isFinite(typed) ? typed : null });
+      this.setTerrain(`Heights from ${f.name}`, r.terrain);
+      if (typed === null) datum.i.value = String(Math.round(r.datum * 100) / 100);
+      const t = r.terrain;
+      this.toast(`Heights from ${f.name}: ${((t.cols - 1) * t.spacing).toFixed(0)} × ${((t.rows - 1) * t.spacing).toFixed(0)} m, ${t.spacing} m grid${r.resampled ? ' (thinned to fit)' : ''}; y 0 is ${r.datum.toFixed(2)} m`);
+    });
+    const traceHead = document.createElement('div');
+    traceHead.className = 'sub-h';
+    traceHead.textContent = 'Trace image';
+    // The picture is chosen through a file box that is never part of the page (MapMaker has no image upload:
+    // the picture stays in this browser tab, is never saved into the map and never sent anywhere).
+    const traceFile = document.createElement('input');
+    traceFile.type = 'file';
+    traceFile.accept = 'image/png,image/jpeg,image/webp';
+    const trace = button('ed-trace', 'Trace image…', 'Lay a picture (a plan or map of the place, north up) over the ground to build on; editing only, never saved');
+    trace.addEventListener('click', () => traceFile.click());
+    const place = document.createElement('div');
+    place.id = 'ed-trace-place';
+    place.hidden = true;
+    const west = num('ed-trace-x0', 'West edge x', 'Map x of the picture\'s left edge');
+    const east = num('ed-trace-x1', 'East edge x', 'Map x of the picture\'s right edge');
+    const south = num('ed-trace-z0', 'South edge z', 'Map z of the picture\'s bottom edge');
+    const north = num('ed-trace-z1', 'North edge z', 'Map z of the picture\'s top edge');
+    const opacity = document.createElement('input');
+    opacity.id = 'ed-trace-opacity';
+    opacity.type = 'range';
+    opacity.min = '10';
+    opacity.max = '100';
+    opacity.value = '60';
+    const opLabel = document.createElement('label');
+    opLabel.className = 'stack';
+    opLabel.append('Opacity', opacity);
+    const clear = button('ed-trace-clear', 'Remove trace image', 'Take the picture away (it was never part of the map)');
+    clear.addEventListener('click', () => this.setTrace(null));
+    const apply = () => {
+      if (!this.trace) return;
+      const v = (i: HTMLInputElement, d: number) => (i.value.trim() !== '' && Number.isFinite(Number(i.value)) ? Number(i.value) : d);
+      this.setTrace({ ...this.trace, x0: v(west.i, this.trace.x0), x1: v(east.i, this.trace.x1), z0: v(south.i, this.trace.z0), z1: v(north.i, this.trace.z1), opacity: Number(opacity.value) / 100 });
+    };
+    for (const i of [west.i, east.i, south.i, north.i, opacity]) i.addEventListener('input', apply);
+    traceFile.addEventListener('change', () => {
+      const f = traceFile.files?.[0];
+      traceFile.value = '';
+      if (!f) return;
+      if (!f.type.startsWith('image/')) return this.toast('Trace image: choose a PNG, JPEG or WebP picture', true);
+      // At first it covers the terrain (or 100 m round the centre); type the real edges in to place it.
+      const t = this.doc.terrain;
+      const rect = t ? { x0: t.origin[0], z0: t.origin[1], x1: t.origin[0] + (t.cols - 1) * t.spacing, z1: t.origin[1] + (t.rows - 1) * t.spacing } : { x0: -50, z0: -50, x1: 50, z1: 50 };
+      const keep = this.trace;
+      this.setTrace({ url: URL.createObjectURL(f), ...(keep ? { x0: keep.x0, z0: keep.z0, x1: keep.x1, z1: keep.z1 } : rect), opacity: Number(opacity.value) / 100 });
+      const r = this.trace!;
+      west.i.value = String(r.x0);
+      east.i.value = String(r.x1);
+      south.i.value = String(r.z0);
+      north.i.value = String(r.z1);
+      this.toast(`Trace image ${f.name}: type its edges in (map metres) to line it up; it is never saved`);
+    });
+    place.append(west.l, east.l, south.l, north.l, opLabel, clear);
+    box.append(head, note, datum.l, heights, heightsFile, traceHead, trace, place);
+    pane.append(box);
+  }
+
   private buildTerrainPalette(): void {
+    this.buildRealPlaceTools();
     const icons: Record<TerrainBrush, string> = {
       raise: '<path d="M6 46 Q28 6 50 46Z" fill="#8fbf5a"/><path d="M28 12v-6m-5 5l5-5 5 5" stroke="#ffd34d" stroke-width="3" fill="none"/>',
       lower: '<path d="M6 20 Q28 56 50 20V50H6Z" fill="#8a6a3f"/><path d="M28 8v10m-5-5l5 5 5-5" stroke="#ff7a4d" stroke-width="3" fill="none"/>',

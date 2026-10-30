@@ -1,30 +1,89 @@
 # St. John's: reference notes
 
-The map `maps/st_johns.json` (built by
-`packages/server/src/tools/maps/st_johns.ts`) is a look-alike of the
+The map `maps/st_johns.json` is a look-alike of the
 St. John's Northwestern Military Academy campus (St. John's Military Academy
 until 1995, later St. John's Northwestern Academies, "SJN" since 2026) at
 1101 N. Genesee Street (County Highway C), Delafield, Waukesha County,
 Wisconsin, just north of downtown Delafield and across Genesee Street from
 Lake Nagawicka. The historic campus is on the National Register as
 "St. John's Military Academy" (NRHP 77000059, 1977; State Register 1989).
+It is an ordinary MapMaker map: edit it there (Open → St. John's), not with a
+script (the first pass was built by a script that no longer exists).
 
 No photos are stored in the repository: everything below is a link.
 
-## How this was researched
+## Real layout and ground (2026-10-30)
 
-- Web searches (October 2026). Direct page fetches, the Overpass API and the
-  OpenStreetMap API were all refused by the build session's network policy,
-  so **OSM footprints could not be downloaded**. The layout stays on the
-  school's own campus map (source 31, traced at 0.2 m per pixel, north up),
-  which the earlier build already used; it agrees with every position the
-  inventory records give (Smythe on the west side of Farrand Lane between
-  St. John's Road and Church Street; the Argonne Gate on Exeter Street
-  between the Knight (classroom) block and Welles Hall; the church marker on
-  Exeter Street just west of Genesee Street; the lake across Genesee).
-- Next time the network allows it, query Overpass for
-  `way["building"](43.056,-88.410,43.068,-88.392)` and swap the traced
-  rectangles for real footprints.
+The halls, streets and ground follow the real place, from two public sources
+(credited in the map's description and in docs/ASSET_SOURCES.md):
+
+- **OpenStreetMap** (map data © OpenStreetMap contributors, ODbL): the API's
+  `map` call for small boxes round the campus (Overpass was not reachable).
+  The school's polygon (way 489206015, "St. John's Northwestern Military
+  Academy") covers the whole 110-acre grounds; the halls are mapped as a few
+  merged outlines (way 974696764 is Knight, the Argonne Gate, Welles and
+  DeKoven in one), not by name. Also used: the drill field's two L-shaped
+  outlines (ways 1312099828/9, tagged as flagpole rows), St. John Chrysostom
+  (way 974677582, 1111 Genesee St), the sports hall and pool (974677581), the
+  cemetery, the post office, Mouso Hall's L (990215783), the tennis courts and
+  every street and walk in the box.
+- **USGS 3DEP** (public domain): a 1 m lidar elevation grid from the National
+  Map's elevation service (`3DEPElevation/ImageServer/exportImage`, checked
+  against point queries to the centimetre). The campus sits on a terrace at
+  277-281 m; St. John Chrysostom stands on a knoll at its south-east corner,
+  and a bluff falls about 8 m to the Bark River flats (270-272 m) south of
+  Exeter Street and east of the church.
+
+**Region.** The real campus is far bigger than a match wants (the school's
+grounds run 800 m across, the lake is 450 m east of the drill field), so the
+map is the 400 × 300 m round the drill field and the halls, at true scale:
+from Kemper Road on the west to the churchyard and the Farrand gym on the
+east (Genesee Street and the lake are just past the east edge), from the
+houses on St. John's Road on the north to the tennis courts and Mouso Hall
+south of Exeter Street. Map frame: map x = metres east of the school
+polygon's centroid (43.065474 N, 88.408018 W) − 106, map z = metres north of
+it + 125; the terrain is 161 × 121 heights at 2.5 m (MAP_BUDGETS: fine for
+open ground); y 0 is 279.0 m above sea level.
+
+**How it was made, in MapMaker.** No map script: MapMaker's owner tools,
+Environment → Terrain → Real places (BUILDING_KIT.md, Terrain), and its own
+edit commands.
+1. A 1 m height grid of the region in map metres (ESRI ASCII, 401 × 301
+   heights) went in through **Heights from a height grid file** with ground
+   level 279; an OSM render of the same box went over it as the **Trace
+   image**.
+2. Each hall's pieces moved as a whole onto its OSM footprint: centred on
+   it, turned to its angle (0-2.4°), stretched along each side to its length
+   with the end 6 m (towers, end walls) kept as they were, and never squeezed
+   below 0.9 (narrower than the real footprint the halls stay a little wider:
+   doorways and stairwells close up otherwise and bots can't climb). Walls
+   stretched past 64 m became two blocks. Each hall stands at the median
+   ground height of its footprint, on ground levelled under it (1.5 m round,
+   blended over 6 m).
+3. The rest of the old map's pieces (trees, benches, lamps, spawns, pickups,
+   vehicles) followed the halls they stood near; the churchyard's
+   headstones and railings went to the real cemetery; the old streets,
+   lakefront boathouse and pier and eleven of the sixteen houses went; five
+   houses stand on real houses on St. John's Road.
+4. The streets and walks are MapMaker paths from the OSM lines (asphalt
+   streets with lines, concrete campus drives, flagstone walks; laid into the
+   ground), with trees along the streets.
+5. "Settle all props on ground", then the map was saved as MapMaker saves
+   it. MapMaker, the navigation check and the validator report nothing.
+
+The throwaway scripts that fetched, converted and computed this lived
+outside the repository; the map is edited from here on in MapMaker like any
+other.
+
+**What's where now** (map metres, x east, z north): drill field (-156, -2)
+and its flagpole (-128, -2) (west team: spawns, flag); Hazelwood and Scott Johnston
+(-108, -78) along Exeter Street (z ≈ -97); Knight block (-24, -80); Argonne
+Gate (9, -78); Welles (47, -81) and its clock tower; DeKoven (47, -45);
+Memorial Hall (-47, -52); Victory Memorial Chapel (-9, 56) on St. John's
+Road (z ≈ 87); Smythe (45, 22); Farrand gym and pool (154, 32) (east team);
+St. John Chrysostom (113, -59) and its churchyard (148, -48); rectory
+(184, -80) and post office (148, -130) down on the flats; Mouso Hall
+(-83, -130); the Nave Gateway over Church Street at the east edge (196, -16).
 
 ## Sources
 
@@ -82,24 +141,29 @@ No photos are stored in the repository: everything below is a link.
 | 50 | https://usheritage.com/project/st-johns-military-academy-johnson-hall/ | Masonry restoration photos (grey stone, dressed trim) |
 | 51 | https://sjnacademies.org/news/st-johns-northwestern-military-academy-to-pay-tribute-to-nations-veterans/ | Veterans ceremony on the parade field, 21-gun salute |
 
-## Campus layout (map metres: x east, z north; flagpole at -58, -5)
+## Campus layout
 
-- The drill (parade) field lies west of the halls, between Spanjer Street and
-  the flagpole; the halls make a U round it: Hazelwood / Scott Johnston on
-  the south, Memorial and the Knight (Stangeland Cord) block and the
-  Welles-DeKoven range on the east, the chapel and Smythe on the north.
-- Genesee Street (Cty C) runs north-south on the east edge; Lake Nagawicka
-  is across it to the east. Church Street runs east from the halls to
-  Genesee past Farrand Gymnasium; Exeter Street is the south edge;
-  Wisconsin Avenue the north edge with private houses; St. John's Road
-  crosses north of the chapel; Farrand Lane runs north-south past Smythe.
-- Ground: the drill field and halls are level; the land falls gently east
-  across Genesee to the lakeshore. Mature deciduous trees line the streets
-  and lawns; lots by Exeter Street and along Farrand Lane.
+- The drill (parade) field lies west of the halls with the flagpole on its
+  east side; the halls make a U round the lawns east of it: Hazelwood /
+  Scott Johnston, the Knight block, the Argonne Gate and Welles along Exeter
+  Street on the south, DeKoven's long wing north from Welles on the east,
+  Memorial Hall in the middle, the chapel and Smythe on the north.
+- Genesee Street (Cty C) runs north-south just past the east edge; Lake
+  Nagawicka is beyond it. Church Street runs east past the Farrand gym;
+  Exeter Street is the south edge of the halls; St. John's Road the north,
+  with private houses past it; Smyth Lane runs north-south between the drill
+  field and the halls, Farrand Street past Smythe.
+- Ground (3DEP): the drill field and halls sit on a level terrace; the church
+  stands on a knoll and the ground falls about 8 m to the Bark River flats in
+  the south-east. Trees line the streets.
 
 ## Buildings
 
-| Building | Date / architect | Footprint (map, m) | Storeys | Roof, towers | Materials, colour | Windows, entrances | Where |
+Footprints in this table are the first pass's (traced from the school's
+campus map at about 0.6 of real size); the halls now stand on their OSM
+footprints (above).
+
+| Building | Date / architect | Footprint (first pass, m) | Storeys | Roof, towers | Materials, colour | Windows, entrances | Where |
 |---|---|---|---|---|---|---|---|
 | DeKoven Hall | 1906, rebuilt 1940, Van Alyea | 17 x 39 | 4 (2 used as barracks) | flat behind crenellated parapet; octagonal towers at the four corners | grey lannonstone (dolomite), dressed limestone trim | paired rectangular sash windows; wide pointed-arch doorways | east side of the U, joined to Welles at its south end |
 | Welles Hall | 1906, c. 1940, Van Alyea | 24 x 17 | 2-3 | battlements; large square clock tower | lannonstone | tall refectory windows; doors to the drill field and the Argonne Gate | south end of DeKoven, on Exeter St |
@@ -119,10 +183,15 @@ No photos are stored in the repository: everything below is a link.
 
 ## What the map can't show
 
-- True OSM footprints (see above); the halls are traced rectangles.
+- The halls' insides are the first pass's rooms, stretched to the real
+  footprints (wider rooms and windows than the real ones); where OSM's
+  outline is narrower than a hall, the hall is a little wider than it.
+- OSM has the halls as merged outlines, so where one hall ends and the next
+  begins inside them is the first pass's guess.
+- Lake Nagawicka, Genesee Street and St. Johns Park are past the map's east
+  edge; only one of the tennis courts is built.
 - Real pointed-arch heads and tracery: doorways are square cuts with dressed
   surrounds; gothic arches use the ruins kit's arch prop as a frame.
 - Stained glass: coloured glow panels set into the stone, not see-through glass.
 - Conical caps and gables are stepped blocks, not smooth slopes.
-- The campus is level; the real fall toward the lake is only modelled east
-  of Genesee Street.
+- The ground is 3DEP's at 2.5 m: kerbs, steps and anything smaller are gone.

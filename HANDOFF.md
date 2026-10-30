@@ -97,13 +97,20 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - **Field guide** (owner asked 2026-10-30): a reference page of every weapon, vehicle, character, map feature
   and pickup, generated from the shared data: https://claude.ai/artifact/GgiMK17TA5oCY3Cnyna3oy (PDF and HTML
   were sent to the owner). Regenerate it when the arsenal or roster changes.
-- **Owner's requests not started yet:**
-  - St. John's from real data: the owner's Google Maps key (`GOOGLE_MAPS_API_KEY`) is refused (Geocoding not
-    allowed by the key's API restrictions, Elevation needs billing, Static 403, 3D Tiles 404). The owner set up a
-    key on another Google account: they must update the environment variable and start a new session. Google's
-    terms don't allow copying its map content into the game; OpenStreetMap (footprints, roads, lake shore) plus
-    USGS 3DEP elevation (public domain) are the suggested sources, used to guide editing in MapMaker (no map
-    build scripts).
+- **`wip/st-johns`** (not merged; needs a `check/` run: it changes `public/maps/shots`, so CI runs everything):
+  St. John's on the real campus from OpenStreetMap footprints and streets and USGS 3DEP ground (no Google), 400 ×
+  300 m round the drill field at true scale (Genesee St and the lake are past the east edge); how, the region,
+  the frame and what's where: docs/references/ST_JOHNS.md. New owner-only MapMaker tools (Environment → Terrain →
+  Real places): heights from an ESRI ASCII height grid file, and a trace image over the ground (never saved;
+  `editor/heightGrid.ts`, BUILDING_KIT.md). Credits (OSM ODbL, 3DEP) in the map's description and ASSET_SOURCES.md.
+  Checked: MapMaker, the validator and the nav check report nothing; bots move all over it; the `maps6` tour
+  part (St. John's) and the editor flows. Open: the halls' rooms are the first pass's, stretched to the real
+  footprints (wider rooms and windows); OSM has the halls as merged outlines, so where Knight, Welles and DeKoven
+  meet is a guess. Perf (perf96, 48 bots, Medium, SwiftShader under heavy machine load, so noisy): draws
+  spread ~415 → 420-530, clump ~420-460 → ~520-600 (bigger halls, 26 street meshes), shadow casters about the
+  same or fewer, server tick a little cheaper; loading about the same as before (67-71 s old vs 73-81 s new at
+  load 30). The `maps6`/`maps` e2e "match starts" check timed out here at load 20-30 (the old map and other
+  untouched maps did too); it passed at lower load (39 s). Not judged by eye on real hardware.
 - **Local e2e at hand-off (machine load 12–25, so timing-sensitive):** `mobile`, `offline`, `designer`,
   `editor`, `editorux`, `canyon`, `scenery`, `race` passed. `arsenal` failed "hazards are drawn on the ground"
   (failed under load before the axe merge too) and "the Battle Axe swings: the bot in front takes the blow"
