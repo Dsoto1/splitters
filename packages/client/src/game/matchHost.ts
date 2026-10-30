@@ -615,9 +615,9 @@ export class MatchHost {
     } else if (!s && best) {
       s = { id: best.id, code: null, askedAt: now, since: 0 };
       this.ask(best.id);
-    } else if (s?.code && current && best && !c && best.id !== s.id && rtt(best) + 80 < rtt(current) && now - s.since >= SUCCESSOR_KEEP_SECONDS * 1000) {
-      // A clearly better connection takes the role over (well better, and not more often than every so often: a
-      // loaded machine's pings swing by seconds). The successor stays named until the new one is ready.
+    } else if (s?.code && current && best && !c && best.id !== s.id && rtt(best) + 80 < rtt(current) && rtt(best) < rtt(current) * 0.6 && now - s.since >= SUCCESSOR_KEEP_SECONDS * 1000) {
+      // A clearly better connection takes the role over (80 ms and 40 % better, and not more often than every so
+      // often: a loaded machine's pings swing by seconds). The successor stays named until the new one is ready.
       c = { id: best.id, askedAt: now };
       this.ask(best.id);
     }

@@ -2874,26 +2874,41 @@ async function handoffFlow(browser) {
   }, T(180000));
   check(named, `the host names a successor in advance, everyone knows its code, and it gets checkpoints (${((Date.now() - t0) / 1000).toFixed(0)} s; ${JSON.stringify([await known(ann), await known(bo)])})`);
   if (!named) return;
-  // The other friend scores: that must survive the handoff. No score limit: on a slow run a bot reaching it
-  // would end the round, and the next round's scores start from nothing.
-  await sim(host, (m, me, n) => {
+  // Both friends score: the other one's must survive the handoff. No score limit: on a slow run a bot reaching
+  // it would end the round, and the next round's scores start from nothing.
+  const scores = { Ann: 7, Bo: 6 };
+  await sim(host, (m, me, k) => {
     m.rules.scoreLimit = 0;
-    m.combatants().find((c) => c.kind === 'human' && c.name === n).kills = 7;
-  }, other.name);
-  const carried = await heir.page.waitForFunction((n) => window.__cs.transport.handoff.checkpoint?.cp.players.some((p) => p.name === n && p.k === 7), other.name, { timeout: T(15000) }).then(() => true, () => false);
+    for (const c of m.combatants()) if (c.kind === 'human' && c.name in k) c.kills = k[c.name];
+  }, scores);
+  // On a loaded machine pings swing, and a clearly better one may take the successor's role over (at most every
+  // 30 s): look again for whoever is named now, with a checkpoint carrying the other's score.
+  const cpHas = (p, n, k) => p.evaluate(([n, k]) => !!window.__cs?.transport?.handoff?.checkpoint?.cp.players.some((x) => x.name === n && x.k === k), [n, scores[n]]).catch(() => false);
+  const carried = await until(async () => {
+    const [a, b] = [await known(ann), await known(bo)];
+    if (a?.standby && b?.next === a.standby && (await cpHas(ann, 'Bo'))) [heir, other] = [{ page: ann, name: 'Ann' }, { page: bo, name: 'Bo' }];
+    else if (b?.standby && a?.next === b.standby && (await cpHas(bo, 'Ann'))) [heir, other] = [{ page: bo, name: 'Bo' }, { page: ann, name: 'Ann' }];
+    else return false;
+    return true;
+  }, T(30000));
   check(carried, "the successor's checkpoint carries the other friend's score");
-  // The host leaves.
+  if (!carried) return;
+  // The host leaves; whichever friend was named last carries the match on.
   await host.evaluate(() => document.getElementById('exitmatch').click());
   await host.evaluate(() => document.getElementById('leave-yes')?.click());
-  const took = await heir.page
-    .waitForFunction(() => window.__cs?.transport?.label === 'local' && window.__cs.map === 'phase0_arena' && !!window.__cs.local && /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? ''), null, { timeout: T(60000) })
-    .then(() => true, () => false);
+  const hosting = (p) => p.evaluate(() => window.__cs?.transport?.label === 'local' && window.__cs.map === 'phase0_arena' && !!window.__cs.local && /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '')).catch(() => false);
+  const took = await until(async () => {
+    if (await hosting(heir.page)) return true;
+    if (!(await hosting(other.page))) return false;
+    [heir, other] = [other, heir];
+    return true;
+  }, T(60000));
   check(took, `${heir.name} takes the match over and hosts it`);
-  if (!took) return;
+  if (!took) return void console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
   const heirCode = await heir.page.evaluate(() => document.querySelector('#host-info .host-code b').textContent);
   const followed = await other.page.waitForFunction((c) => window.__cs?.transport?.label === `code ${c}` && !!window.__cs.local && !document.getElementById('host-left'), heirCode, { timeout: T(95000) }).then(() => true, () => false);
   check(followed, `${other.name} follows to ${heir.name}'s code (${heirCode}) by themselves`);
-  const back = await simWait(heir.page, (m, me, n) => m.combatants().some((c) => c.kind === 'human' && c.name === n && !c.away && c.kills >= 7), other.name, T(30000));
+  const back = await simWait(heir.page, (m, me, [n, k]) => m.combatants().some((c) => c.kind === 'human' && c.name === n && !c.away && c.kills >= k), [other.name, scores[other.name]], T(30000));
   const seen = await sim(heir.page, (m) => m.combatants().map((c) => `${c.name}:${c.kind}:${c.kills}`));
   check(back, `${other.name} has their place back, with their score (${seen.join(', ')})`);
   if (!followed || !back) console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);

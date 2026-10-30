@@ -388,7 +388,7 @@ A browser-hosted match with friends in no longer has to end with its host
 
 - **Successor, named in advance**: once a second the host keeps one friend
   named, the one with the lowest ping (away players are skipped). A friend
-  clearly better by 80 ms replaces a ready successor, but only after that one
+  clearly better (by 80 ms and 40 %) replaces a ready successor, but only after that one
   has been ready 30 s (pings on a loaded machine swing by seconds), and the
   successor stays named until the replacement answers, so there's always
   one (a friend asked while another is named keeps its standby code unless
