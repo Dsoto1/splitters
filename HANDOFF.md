@@ -71,6 +71,22 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   never committed. Then map effects to weapons (muzzle, tracer, impact per surface, explosions per weapon), gameplay
   (pickups, spawns, portals, jump pads, hazards) and check performance at 96.
 
+### Queued (owner, 2026-10-31 evening): grip audit and fix for every character
+Owner: The Visitor's grip is "almost perfect, not sure why others are jank"; Shade and Big Bogdan hold guns with an
+open palm on each hand ("sure there are others too"). The Visitor (meshy_alien) was fitted in-house from a T-pose
+download with long separate fingers, so its fingers curl round the grip. Bogdan was fitted the same way and doesn't
+curl, so the likely cause is **finger skinning**: the grip pose curls finger joints, but where the skin isn't weighted
+to them (fused/mitten fingers in the model, or no finger weights in the rig, as with the dapper) the hand stays flat
+and the IK presses the open palm onto the grip. Rigs differ too: 14 in-house fits (landmarks), 28 Meshy auto-rigs
+(task id in source; hand joints can sit a quarter turn round, handled approximately by handProbe.skinHandFrame),
+16 pre-rigged downloads.
+Plan: (1) audit every character: curl test (does the skin move when the finger joints bend), palm-to-grip distance
+and finger direction from `View.gripReport()` / `__grips.drawn()`, per weapon class, as a ranked sheet with pictures;
+(2) fix by kind: automatic finger weights in the in-house fit (fingers found along the hand axis, weighted to finger
+joints; rebuild from the recorded downloads, no new Meshy credits); a whole-hand "fist" curl for models whose fingers
+are fused; per-character hand rotation / palm offset / hand scale in the manifest for rotated hands and gauntlets
+(Iron Knight 12 cm off); re-fit the worst Meshy auto-rigs in-house. Start with Big Bogdan, Shade and the dapper.
+
 ### After the style packs (owner, 2026-10-31): MapMaker overhaul and a pass over every map
 Once all the style packs are done (10 Medieval, 11 Harbor, 12 Snow, 09 Desert City, 06 Jungle Ruins refresh, and the
 unassigned Sci-Fi Research and Industrial Factory refreshes), the owner wants:
