@@ -232,6 +232,15 @@ it beyond 18 m (`LOD_DISTANCE`). In the viewer from 30 m, 253k triangles drop to
 90k. The copies live in the same file because separate low-detail files loaded
 in the background were seen to stall in the browser.
 
+**Meshy characters' normal maps.** A Meshy body is cut from hundreds of
+thousands of triangles to about 11,000, which alone shades as lumpy facets.
+`prepare-meshy-characters.mjs` bakes a 512 px tangent-space normal map from the
+surface before the cut (and Meshy's own normal map) into the download's texture
+layout (`bakeNormals` in `tools/content/meshy-mesh.mjs`, with a TANGENT
+attribute), for the body, its low-detail copy (same material) and the
+first-person arms. Characters not rebuilt since (their download or rig task
+not at hand) keep the plain cut until they are; HANDOFF.md lists which.
+
 ## Tools
 
 - `?mode=characters`: viewer with every look and the male and female NPC

@@ -60,114 +60,154 @@
     {
       "file": "models/guns/tommy_gun.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Tommy Gun (owner's Meshy generation, 2026-10-29)",
-      "triangles": 4995,
-      "bytes": 227348,
-      "sha256": "9cf0941ff1775342"
+      "triangles": 13998,
+      "lodTriangles": 2799,
+      "normalMap": true,
+      "bytes": 754760,
+      "sha256": "4f89b18de53b1f38"
     },
     {
       "file": "models/guns/gatling_gun.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Rotary Gatling Gun (owner's Meshy generation, 2026-10-29)",
-      "triangles": 5998,
-      "bytes": 331876,
-      "sha256": "efea6e576d36d138"
+      "triangles": 13998,
+      "lodTriangles": 2798,
+      "normalMap": true,
+      "bytes": 952124,
+      "sha256": "11aae6af5e98304b"
     },
     {
       "file": "models/guns/sniper_rifle.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Military Sniper Rifle (owner's Meshy generation, 2026-10-29)",
-      "triangles": 4998,
-      "bytes": 239844,
-      "sha256": "ce5779b771bef2d3"
+      "triangles": 10000,
+      "lodTriangles": 1978,
+      "normalMap": true,
+      "bytes": 646372,
+      "sha256": "5c45d3286a199c23"
     },
     {
       "file": "models/guns/battle_axe.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Steampunk Battle Axe (owner's Meshy generation, 2026-10-29)",
-      "triangles": 4998,
-      "bytes": 263608,
-      "sha256": "271d6c9dcd9d3f12"
+      "triangles": 12000,
+      "lodTriangles": 2400,
+      "normalMap": true,
+      "bytes": 830924,
+      "sha256": "97e9e978886e2cb4"
     },
     {
       "file": "models/guns/freeze_gun.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Freeze Gun (owner's Meshy generation, 2026-10-29)",
-      "triangles": 5000,
-      "bytes": 267988,
-      "sha256": "f5c8587e862a7ff2"
+      "triangles": 12000,
+      "lodTriangles": 2400,
+      "normalMap": true,
+      "bytes": 865504,
+      "sha256": "1f8d30ccd5241c09"
     },
     {
       "file": "models/guns/glue_gun.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Mystical Glue Gun (owner's Meshy generation, 2026-10-29)",
-      "triangles": 4000,
-      "bytes": 141248,
-      "sha256": "7b92f9042bd2fce0"
+      "triangles": 10000,
+      "lodTriangles": 2000,
+      "normalMap": true,
+      "bytes": 420688,
+      "sha256": "5b8a6fec11aeae09"
     },
     {
       "file": "models/guns/futuristic_blaster.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Futuristic Blaster (owner's Meshy generation, 2026-10-29)",
-      "triangles": 5986,
-      "bytes": 299052,
-      "sha256": "49102157c1fb2de9"
+      "triangles": 13998,
+      "lodTriangles": 2798,
+      "normalMap": true,
+      "bytes": 931112,
+      "sha256": "32385f7c26edca93"
     },
     {
       "file": "models/guns/neon_flux.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Neon Flux Assault Rifle (owner's Meshy generation, 2026-10-29)",
-      "triangles": 5992,
-      "bytes": 304640,
-      "sha256": "580c3b8d0faf1f9b"
+      "triangles": 14000,
+      "lodTriangles": 2798,
+      "normalMap": true,
+      "bytes": 988628,
+      "sha256": "15d1cc80fa2510f2"
     },
     {
       "file": "models/guns/frontier_rifle.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Frontier Rifle (owner's Meshy generation, 2026-10-29)",
-      "triangles": 5997,
-      "bytes": 300984,
-      "sha256": "92df2157325c34a8"
+      "triangles": 13988,
+      "lodTriangles": 2796,
+      "normalMap": true,
+      "bytes": 975764,
+      "sha256": "b6b019a2b4bea892"
     },
     {
       "file": "models/guns/ornate_pistol.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Ornate Handgun (owner's Meshy generation, 2026-10-29)",
-      "triangles": 3994,
-      "bytes": 218876,
-      "sha256": "7be04c126998ef48"
+      "triangles": 10000,
+      "lodTriangles": 1996,
+      "normalMap": true,
+      "bytes": 819876,
+      "sha256": "623a9c00dbaf3d8e"
     },
     {
       "file": "models/guns/tripod_mg.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Plastic Toy Machine Gun on a tripod (owner's Meshy generation, 2026-10-29)",
-      "triangles": 5982,
-      "bytes": 273352,
-      "sha256": "9e9eae759b4c4de6"
+      "triangles": 11983,
+      "lodTriangles": 2382,
+      "normalMap": true,
+      "bytes": 619680,
+      "sha256": "ead1c10fa72a3a2d"
     },
     {
       "file": "models/guns/sentry_turret.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Large Sentry Gun (owner's Meshy generation, 2026-10-29)",
-      "triangles": 5981,
-      "bytes": 286024,
-      "sha256": "e5e6cdf6b9431e97"
+      "triangles": 11977,
+      "lodTriangles": 2390,
+      "normalMap": true,
+      "bytes": 713980,
+      "sha256": "080af751fcece762"
     },
     {
       "file": "models/guns/medkit.glb",
       "source": "meshy-owned-guns",
       "src": "Medkit (owner's Meshy generation, 2026-10-29)",
-      "triangles": 3286,
-      "bytes": 183696,
-      "sha256": "30bc3dc648c402b8"
+      "triangles": 4469,
+      "normalMap": true,
+      "bytes": 358668,
+      "sha256": "8424c89e962a6971"
     },
     {
       "file": "models/vehicles/offroad_buggy.glb",
       "source": "meshy-owned-guns",
+      "budget": "hero",
       "src": "Tactical Off-Road Beast, the buggy (owner's Meshy generation, 2026-10-29)",
-      "triangles": 6780,
-      "bytes": 474216,
-      "sha256": "41ea94b219b5ba0b"
+      "triangles": 13894,
+      "lodTriangles": 3404,
+      "normalMap": true,
+      "bytes": 1202964,
+      "sha256": "ed61ba067f52403e"
     },
     {
       "file": "models/vehicles/offroad_tire.glb",

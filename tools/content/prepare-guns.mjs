@@ -24,8 +24,11 @@
 // [r, r-b, r-g] }` orange and red ones. `label` names the model in the lock
 // file and provenance instead of the download's file name. `centre: base`
 // centres a turret on its pedestal (centreOnBase). `textureSize` (px, default 512) sizes the colour map of a
-// bigger model (the buggy); `sloppy: true` cuts a mesh of many small separate pieces (the tire's tread) to its
-// budget regardless of its topology.
+// bigger model (the buggy) or a first-person weapon (1024: seen from a hand's length); `sloppy: true` cuts a mesh
+// of many small separate pieces (the tire's tread) to its budget regardless of its topology. Every Meshy model
+// gets a normal map baked from the full download (`normalSize`, default 512 px; meshy-mesh.mjs bakeNormals).
+// `budget: "hero"` holds an entry to `budgets.tiers.hero` instead of the default caps (content:check), and
+// `lod: [share, metres]` adds a lower level of detail that instanced copies (a crowd's guns) draw from that far.
 //
 // Packs with `glb: true` too (the owner's own Meshy generations, licence Owned) are Meshy's textured GLB
 // downloads instead: each entry names its file in `glb`, found directly in the downloads dir or one folder
