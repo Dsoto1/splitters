@@ -97,6 +97,13 @@ Owner's screenshots, Character Select holding the AK (2026-10-31 evening), worst
 - Big Bogdan, Shade: open palms (above). The Visitor: the good reference.
 - **Saint Nick** (Meshy auto-rig) and **the Dapper** (Meshy auto-rig): flat, open hands under the gun, which rests on
   the palms (no finger curl, palms facing up).
+- **Hyena Warrior** (in-house fit): the same failure as Cap'n Barnacle: arms crossed over the chest, the gun tiny and
+  held up by the face. Two in-house fits failing the same way: look for a shared cause (arm landmarks / shoulder
+  placement / arm length read off a bulky shoulder) before fixing them one by one.
+- **Grizzelda** (Meshy auto-rig): hunched over, gun at the face, a hand draped over the gun.
+- **Lancer Mei** (in-house): support hand flat and open under the handguard; also her **face is lumpy** (owner): a
+  mesh-cut or normal-map issue on the face (check the triangle cut and baked normals for her).
+- Fair: Flt. Lt. Ember (gloves near the grip, support hand open below), Brass Hare (paws on the gun).
 - Close to right (owner's second batch): Wealthy Otter, Salamander Warlord (both in-house fits: paws/claws round the
   gun), Goblin (in-house; fingers a little splayed but both hands on the gun).
 
