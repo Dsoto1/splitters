@@ -3639,9 +3639,11 @@ async function hostgameFlow(browser) {
     const specOn = await simWait(host, (m, _me, s) => m.isSpectator(s) && m.slots[s] === null, fslot, T(10000));
     await friend.evaluate(() => (window.__autoInput = { forward: 1 }));
     await friend.waitForFunction(() => window.__cs.spec().spectator && window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
-    await friend.waitForTimeout(1500); // wait-ok: the free camera's input reaches the host for a while
-    await friend.evaluate(() => delete window.__autoInput);
+    // While the camera input is held, the host must see the spectator as active (measured then, not after letting
+    // go: on a slow runner the last input can reach the host a second or two before a later reading).
+    await simWait(host, (m, _me, s) => m.idleSeconds(s) < 1, fslot, T(8000));
     const idle = await sim(host, (m, _me, s) => m.idleSeconds(s), fslot);
+    await friend.evaluate(() => delete window.__autoInput);
     const fstate = await friend.evaluate(() => window.__cs.spec());
     check(specOn && fstate.spectator && fstate.out && idle < 2, `a friend spectates in the hosted match, their camera input counting as activity (${idle.toFixed(1)} s idle; spectator ${fstate.spectator}, ${fstate.free ? 'free camera' : `following ${fstate.following}`})`);
     await friend.evaluate(() => window.__cs.spectate(false));
