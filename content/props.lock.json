@@ -12797,6 +12797,134 @@
       "triangles": 204,
       "bytes": 12964,
       "sha256": "97bafb08076ec9ee"
+    },
+    {
+      "file": "props/so_satellite_dish.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_satellite_dish.glb",
+      "triangles": 440,
+      "bytes": 15344,
+      "sha256": "bb413820e1449393"
+    },
+    {
+      "file": "props/so_antenna_mast.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_antenna_mast.glb",
+      "triangles": 572,
+      "bytes": 30616,
+      "sha256": "38024b1307411298"
+    },
+    {
+      "file": "props/so_heater.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_heater.glb",
+      "triangles": 340,
+      "bytes": 17024,
+      "sha256": "7177dd76c3877121"
+    },
+    {
+      "file": "props/so_generator.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_generator.glb",
+      "triangles": 232,
+      "bytes": 14660,
+      "sha256": "c89793b87159013e"
+    },
+    {
+      "file": "props/so_snowmobile.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_snowmobile.glb",
+      "triangles": 216,
+      "bytes": 14272,
+      "sha256": "76fa17cff6286238"
+    },
+    {
+      "file": "props/so_tarp_crates.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_tarp_crates.glb",
+      "triangles": 328,
+      "bytes": 19064,
+      "sha256": "c1cb5ca47b6e1686"
+    },
+    {
+      "file": "props/so_lamp_post.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_lamp_post.glb",
+      "triangles": 124,
+      "bytes": 8536,
+      "sha256": "e940cc1619e34722"
+    },
+    {
+      "file": "props/so_flagpole.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_flagpole.glb",
+      "triangles": 152,
+      "bytes": 8124,
+      "sha256": "e5f5adb54e42d800"
+    },
+    {
+      "file": "props/so_chainlink_fence.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_chainlink_fence.glb",
+      "triangles": 436,
+      "bytes": 24676,
+      "sha256": "0cce6911841079b7"
+    },
+    {
+      "file": "props/so_snow_fence.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_snow_fence.glb",
+      "triangles": 264,
+      "bytes": 15124,
+      "sha256": "28cc827189d4fef1"
+    },
+    {
+      "file": "props/so_pipe_run.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_pipe_run.glb",
+      "triangles": 508,
+      "bytes": 24928,
+      "sha256": "c9d45ff2b00117b4"
+    },
+    {
+      "file": "props/so_drums.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_drums.glb",
+      "triangles": 1212,
+      "bytes": 49940,
+      "sha256": "d594ee684fed416c"
+    },
+    {
+      "file": "props/so_radio_console.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_radio_console.glb",
+      "triangles": 386,
+      "bytes": 18260,
+      "sha256": "2ca37270248a7f98"
+    },
+    {
+      "file": "props/so_ski_rack.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_ski_rack.glb",
+      "triangles": 228,
+      "bytes": 15000,
+      "sha256": "2dfcbbdcb1ce5a27"
+    },
+    {
+      "file": "props/so_supply_sled.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_supply_sled.glb",
+      "triangles": 348,
+      "bytes": 21424,
+      "sha256": "52d4083109663ae7"
+    },
+    {
+      "file": "props/so_snow_pile.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_snow_pile.glb",
+      "triangles": 176,
+      "bytes": 7468,
+      "sha256": "7117b27be96d6ced"
     }
   ]
 }

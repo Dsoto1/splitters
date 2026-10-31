@@ -41,7 +41,7 @@ export const PANE_CATEGORY: Readonly<Record<string, PaletteCategory>> = {
  * own categories. Nature and parked vehicles have their own tabs.
  */
 export const PROP_GROUPS = [
-  { id: 'industrial', label: 'Industrial & Military', categories: ['Crates & Barrels', 'Industrial', 'Military', 'Survival', 'Trains & Rail', 'Fences & Walls'] },
+  { id: 'industrial', label: 'Industrial & Military', categories: ['Snow Outpost', 'Crates & Barrels', 'Industrial', 'Military', 'Survival', 'Trains & Rail', 'Fences & Walls'] },
   { id: 'everyday', label: 'Home & Town', categories: ['Furniture', 'Home', 'Household', 'Decor', 'Shop', 'Garage & Garden', 'Gas Station', 'Hospital', 'Metro', 'Suburban Chaos'] },
   { id: 'scifi', label: 'Sci-Fi', categories: ['Sci-Fi', 'Sci-Fi Base', 'Sci-Fi Platforms', 'Sci-Fi Walls', 'Sci-Fi Decals', 'Orbital Station', 'Neon Megacity'] },
   { id: 'medieval', label: 'Medieval & Gothic', categories: ['Medieval Village', 'Medieval', 'Castle & Siege', 'Town & Market', 'Pirate & Coast', 'Ruins', 'Gothic', 'Gothic Estate'] },

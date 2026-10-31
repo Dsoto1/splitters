@@ -49,7 +49,17 @@ export type PatternId =
   /** Style Pack 10: rows of curved clay roof tiles (pantiles), each row lapping the one below. */
   | 'pantiles'
   /** Style Pack 10: half-timbering: dark oak posts, rails and braces with plaster panels between (repeats every storey). */
-  | 'timber';
+  | 'timber'
+  /** Style Pack 12: wind-packed snow, soft ripples of drift and a glint of frost. */
+  | 'snow'
+  /** Style Pack 12: clear ice over dark water, white cracks running through it and trapped bubbles. */
+  | 'ice'
+  /** Style Pack 12: insulated sandwich panels: vertical seams, a rib down each panel, rivets top and bottom (one storey a repeat). */
+  | 'prefab'
+  /** Style Pack 12: concrete with snow lodged in its pores and drifted in patches. */
+  | 'snowcrete'
+  /** Style Pack 12: dark layered rock rimed with frost on its ledges. */
+  | 'frostrock';
 
 export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
@@ -140,6 +150,17 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('packed_dirt', 'Packed Dirt', 'Ground', 'noise', '#7a6448', '#635038', 3),
   m('whitewash', 'Whitewash', 'Stone', 'noise', '#ece6d6', '#d8d0bc', 2.5),
   m('oak_beam', 'Oak Beam', 'Wood', 'planks', '#4a3220', '#30200f', 1.5),
+  // Style Pack 12 Snow Outpost: our own procedural paint (prefab panels repeat every 4 m storey).
+  m('packed_snow', 'Packed Snow', 'Ground', 'snow', '#e4eaf0', '#bccad8', 4, 0.15),
+  m('drift_snow', 'Snow Drift', 'Ground', 'snow', '#f4f7fa', '#d0dce8', 3, 0.2),
+  m('lake_ice', 'Lake Ice', 'Ground', 'ice', '#4f8eaa', '#e6f4fc', 5, 0.85),
+  m('glacier_ice', 'Glacier Ice', 'Stone', 'ice', '#9cd2e8', '#f2fbff', 3, 0.7),
+  m('prefab_red', 'Red Prefab Panels', 'Metal', 'prefab', '#b4402e', '#e8e4dc', 4, 0.35),
+  m('prefab_white', 'White Prefab Panels', 'Metal', 'prefab', '#e2e6e8', '#8e989e', 4, 0.35),
+  m('snowy_concrete', 'Snowy Concrete', 'Stone', 'snowcrete', '#8c9094', '#eef2f6', 4),
+  m('frozen_rock', 'Frozen Rock', 'Stone', 'frostrock', '#565c64', '#dce6ee', 5),
+  m('steel_grating', 'Steel Grating', 'Metal', 'grate', '#6e767c', '#202428', 1, 0.5),
+  m('beacon_red', 'Red Beacon', 'Tech', 'plain', '#ff3a2a', '#ff3a2a', 1, 0.3, true),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -260,6 +281,7 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('gothic_estate', 'Gothic Estate', '#231d2c', 'pbr_floorboards', 'wallpaper_damask', 'pbr_walnut', 'dark_wood', 'brass'),
   theme('jungle_temple', 'Jungle Temple', '#a8c8a0', 'pbr_mossy_cobble', 'pbr_castle_stone', 'pbr_jungle_rock', 'pbr_rock', ['pbr_travertine', '#b8c0a0']),
   theme('medieval', 'Medieval Village', '#a8c8e8', 'cobblestones', 'timber_frame', ['oak_beam', '#c8a888'], 'pbr_floorboards', 'oak_beam'),
+  theme('snow_outpost', 'Snow Outpost', '#c4d8ea', 'packed_snow', 'prefab_red', 'snowy_concrete', ['pbr_steel', '#b8c0c8'], 'prefab_white'),
   theme('suburban', 'Suburban', '#9cc8f0', 'oak_planks', 'pbr_plaster_white', 'pbr_clapboard', 'pbr_plaster_white', ['paint_matte', '#f4f2ec']),
 ];
 

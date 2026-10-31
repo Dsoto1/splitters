@@ -368,6 +368,14 @@
       "licenseFile": "assets-src/tiletrigger-medieval/License.txt",
       "retrieved": "2026-10-31"
     },
+    "tiletrigger-snow": {
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "licenseFile": "assets-src/tiletrigger-snow/License.txt",
+      "retrieved": "2026-10-31"
+    },
     "madduck-hospital": {
       "title": "Modular 3D Hospital Environment",
       "creator": "madduck",
@@ -12754,6 +12762,150 @@
       "name": "Tarp Tent",
       "category": "Medieval Village",
       "height": 1.85,
+      "collide": "box"
+    },
+    {
+      "id": "so_satellite_dish",
+      "pack": "tiletrigger-snow",
+      "src": "so_satellite_dish.glb",
+      "name": "Satellite Dish",
+      "category": "Snow Outpost",
+      "height": 3.73,
+      "collide": "box"
+    },
+    {
+      "id": "so_antenna_mast",
+      "pack": "tiletrigger-snow",
+      "src": "so_antenna_mast.glb",
+      "name": "Antenna Mast",
+      "category": "Snow Outpost",
+      "height": 7.4,
+      "collide": "trunk"
+    },
+    {
+      "id": "so_heater",
+      "pack": "tiletrigger-snow",
+      "src": "so_heater.glb",
+      "name": "Diesel Heater",
+      "category": "Snow Outpost",
+      "height": 1.5,
+      "collide": "box"
+    },
+    {
+      "id": "so_generator",
+      "pack": "tiletrigger-snow",
+      "src": "so_generator.glb",
+      "name": "Diesel Generator",
+      "category": "Snow Outpost",
+      "height": 2.52,
+      "collide": "box"
+    },
+    {
+      "id": "so_snowmobile",
+      "pack": "tiletrigger-snow",
+      "src": "so_snowmobile.glb",
+      "name": "Snowmobile",
+      "category": "Snow Outpost",
+      "height": 1.24,
+      "collide": "box"
+    },
+    {
+      "id": "so_tarp_crates",
+      "pack": "tiletrigger-snow",
+      "src": "so_tarp_crates.glb",
+      "name": "Crates under a Tarp",
+      "category": "Snow Outpost",
+      "height": 1.66,
+      "collide": "box"
+    },
+    {
+      "id": "so_lamp_post",
+      "pack": "tiletrigger-snow",
+      "src": "so_lamp_post.glb",
+      "name": "Arctic Lamp Post",
+      "category": "Snow Outpost",
+      "height": 6.0,
+      "collide": "none"
+    },
+    {
+      "id": "so_flagpole",
+      "pack": "tiletrigger-snow",
+      "src": "so_flagpole.glb",
+      "name": "Flagpole",
+      "category": "Snow Outpost",
+      "height": 8.18,
+      "collide": "none"
+    },
+    {
+      "id": "so_chainlink_fence",
+      "pack": "tiletrigger-snow",
+      "src": "so_chainlink_fence.glb",
+      "name": "Chain-link Fence",
+      "category": "Snow Outpost",
+      "height": 2.36,
+      "collide": "box"
+    },
+    {
+      "id": "so_snow_fence",
+      "pack": "tiletrigger-snow",
+      "src": "so_snow_fence.glb",
+      "name": "Snow Fence",
+      "category": "Snow Outpost",
+      "height": 1.5,
+      "collide": "box"
+    },
+    {
+      "id": "so_pipe_run",
+      "pack": "tiletrigger-snow",
+      "src": "so_pipe_run.glb",
+      "name": "Insulated Pipe Run",
+      "category": "Snow Outpost",
+      "height": 1.45,
+      "collide": "box"
+    },
+    {
+      "id": "so_drums",
+      "pack": "tiletrigger-snow",
+      "src": "so_drums.glb",
+      "name": "Oil Drums",
+      "category": "Snow Outpost",
+      "height": 0.94,
+      "collide": "box"
+    },
+    {
+      "id": "so_radio_console",
+      "pack": "tiletrigger-snow",
+      "src": "so_radio_console.glb",
+      "name": "Radio Console",
+      "category": "Snow Outpost",
+      "height": 1.5,
+      "collide": "box"
+    },
+    {
+      "id": "so_ski_rack",
+      "pack": "tiletrigger-snow",
+      "src": "so_ski_rack.glb",
+      "name": "Ski Rack",
+      "category": "Snow Outpost",
+      "height": 1.87,
+      "collide": "box"
+    },
+    {
+      "id": "so_supply_sled",
+      "pack": "tiletrigger-snow",
+      "src": "so_supply_sled.glb",
+      "name": "Supply Sled",
+      "category": "Snow Outpost",
+      "height": 1.15,
+      "collide": "box"
+    },
+    {
+      "id": "so_snow_pile",
+      "pack": "tiletrigger-snow",
+      "src": "so_snow_pile.glb",
+      "name": "Snow Pile",
+      "category": "Snow Outpost",
+      "height": 1.35,
       "collide": "box"
     }
   ]

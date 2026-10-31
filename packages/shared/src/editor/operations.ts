@@ -477,12 +477,16 @@ export const SCENARIO_PALETTE = [
   // Style Pack gameplay pieces (10 Medieval Village).
   { key: 'door:oak', label: 'Oak Door', search: 'door oak wooden plank ironbound iron bound hinged medieval village house castle' },
   { key: 'block:wattle', label: 'Wattle Hurdle', search: 'block wattle hurdle fence woven breakable wood medieval village farm' },
+  // Style Pack gameplay pieces (12 Snow Outpost).
+  { key: 'mover:rollup_door', label: 'Roll-up Door', search: 'mover roll up rolling shutter door hangar garage warehouse wide steel logic snow outpost' },
+  { key: 'block:ice', label: 'Ice Block', search: 'block ice glacier breakable shatter cover frozen snow outpost' },
+  { key: 'block:thin_ice', label: 'Thin Ice', search: 'block thin ice frozen lake crack give way fall water trap snow' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 
 /** Entities that sit in a doorway and snap to cell edges. */
-export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field' || key === 'block:glass' || key === 'block:glass_reinforced' || key === 'mover:bookcase' || key === 'mover:garage_door' || key === 'mover:portcullis';
+export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field' || key === 'block:glass' || key === 'block:glass_reinforced' || key === 'mover:bookcase' || key === 'mover:garage_door' || key === 'mover:rollup_door' || key === 'mover:portcullis';
 
 /** Palette entries that place several entities at once (movers with their blocks, rope bridges, roofs). */
 const MULTI_KEYS = new Set<string>(['block:rope_bridge', 'block:roof']);
@@ -559,6 +563,11 @@ export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, 
     const [ex, , ez] = local(secret ? 3.2 : 4, 0, 0);
     const end: [number, number, number] = [Math.round((ex - x) * 100) / 100, 0, Math.round((ez - z) * 100) / 100];
     return [b, shelf, { ...mover([b.id], [[0, 0, 0], end], secret ? { mode: 'trigger', speed: 1.2, wait: 0, name: 'Secret bookcase' } : { speed: 0.8, wait: 3, name: 'Moving bookshelf' }), props: [shelf.id] }];
+  }
+  if (key === 'mover:rollup_door') {
+    // A hangar's 6 × 4.6 m steel shutter: rolls up 4.4 m into the lintel when logic sends it, and down again.
+    const b = { ...block([6, 4.6, 0.2], [x, y, z]), material: 'core.pbr_grey_corrugated', tint: '#d8dce0', name: 'Roll-up door' };
+    return [b, mover([b.id], [[0, 0, 0], [0, 4.4, 0]], { mode: 'trigger', speed: 1.6, wait: 0, name: 'Roll-up door' })];
   }
   if (key === 'mover:garage_door') {
     // An up-and-over door: a 3.6 × 2.8 m panel hinged at its top, swinging up level under the ceiling when logic sends it.
@@ -704,6 +713,10 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 0.15, 1.5], material: 'core.pbr_weathered_planks', tint: '#8a7a68', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.4, respawnSeconds: 12, health: 120 };
     case 'block:wattle':
       return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 1.2, 0.15], material: 'core.wattle', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 25, health: 50 };
+    case 'block:ice':
+      return { id: newId('block'), kind: 'block', position, yaw, size: [2, 1.4, 1], material: 'core.glacier_ice', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 30, health: 150 };
+    case 'block:thin_ice':
+      return { id: newId('block'), kind: 'block', position, yaw, size: [4, 0.15, 4], material: 'core.lake_ice', tint: '#c8e4f0', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.7, respawnSeconds: 12, health: 60 };
     case 'block:fence':
       return { id: newId('block'), kind: 'block', position, yaw, size: [4, 1.1, 0.2], material: 'core.paint_matte', tint: '#f2f0ea', behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 25, health: 40 };
     case 'ladder:vines':
@@ -808,7 +821,8 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'mover:train':
     case 'mover:bookcase':
     case 'mover:shelf':
-    case 'mover:garage_door': {
+    case 'mover:garage_door':
+    case 'mover:rollup_door': {
       const all = newScenarioEntities(key, position, yaw, doc);
       return all[all.length - 1]!;
     }

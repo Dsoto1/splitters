@@ -41,7 +41,11 @@ export interface StylePack {
   demo: string;
 }
 
-const props = (...ids: string[]) => ids.map((id) => `prop.${id}`);
+/** `prop.<id>` for each id. Marked pure so the packs (MapMaker only) are left out of bundles that never read them (the menu). */
+/* @__NO_SIDE_EFFECTS__ */
+function props(...ids: string[]): string[] {
+  return ids.map((id) => `prop.${id}`);
+}
 
 export const STYLE_PACKS: readonly StylePack[] = [
   {
@@ -418,6 +422,46 @@ export const STYLE_PACKS: readonly StylePack[] = [
     mounts: [],
     pickups: ['core.weapon_battle_axe', 'core.weapon_spear', 'core.weapon_marksman', 'core.weapon_sniper', 'core.weapon_shotgun', 'core.weapon_sawed_off', 'core.weapon_hand_cannon', 'core.weapon_rifle', 'core.weapon_smg', 'core.incendiaries', 'core.grenades', 'core.sheep', 'core.armor_small', 'core.armor_large', 'core.health_small', 'core.health_large'],
     demo: 'market_town',
+  },
+  {
+    id: 'snow',
+    number: '12',
+    displayName: 'Snow Outpost',
+    style: 'Arctic military outpost',
+    blurb: 'A research and military outpost in the snow: prefab huts and barracks with snow roofs you climb onto, a vehicle hangar with a roll-up door, a snowy bunker, a steel watchtower, a radar dome and a comms mast, a fuel depot, steel catwalks and stairs, ice walls, frozen cliffs and the drifts that climb them, a frozen lake with thin ice over black water. Snowmobiles and sleds, breakable ice, blast doors.',
+    themes: ['core.snow_outpost', 'core.arctic', 'core.military'],
+    tiles: [
+      'snow.hut', 'snow.barracks', 'snow.comms_hut', 'snow.hangar', 'snow.bunker', 'snow.watchtower', 'snow.radar_dome', 'snow.fuel_depot',
+      'snow.catwalk', 'snow.metal_stair', 'snow.ice_wall', 'snow.ice_cliff', 'snow.drift_ramp', 'snow.frozen_lake', 'snow.ice_ridge', 'snow.ice_hole', 'snow.road',
+      'core.yard', 'core.room', 'core.catwalk', 'core.stairwell', 'military.wall', 'military.gate', 'military.trench', 'military.helipad',
+    ],
+    props: props(
+      'so_satellite_dish', 'so_antenna_mast', 'so_heater', 'so_generator', 'so_snowmobile', 'so_tarp_crates', 'so_lamp_post', 'so_flagpole',
+      'so_chainlink_fence', 'so_snow_fence', 'so_pipe_run', 'so_drums', 'so_radio_console', 'so_ski_rack', 'so_supply_sled', 'so_snow_pile',
+      // Already in the game: snowy trees and rocks, sandbags and barriers, containers, crates, barrels and tanks, lights.
+      'nt_pine_snow_tall', 'nt_birch_snow', 'nt_common_tree_snow', 'nt_bush_snow', 'nt_boulder_snow', 'nt_rock_snow', 'nt_log_snow',
+      'sandbag_wall', 'sandbag_wall_low', 'sandbag_corner', 'sandbag_nest', 'hesco_wall', 'hedgehog', 'razor_wire', 'camo_net', 'jersey_barrier',
+      'ammo_crate', 'ammo_stack', 'fuel_drum', 'fuel_tank', 'storage_tank', 'cargo_container', 'cargo_container_red', 'cargo_army_crate', 'cargo_crate_stack',
+      'shipping_container_blue', 'metal_crate', 'floodlight', 'yard_lamp', 'pallet', 'supply_truck', 'street_barrel', 'street_rusty_barrel', 'sv_radio', 'sv_propane',
+      'bunk_bed', 'os_satellite_dish', 'lf_wooden_fence_closed',
+    ),
+    materials: ['core.packed_snow', 'core.drift_snow', 'core.lake_ice', 'core.glacier_ice', 'core.prefab_red', 'core.prefab_white', 'core.snowy_concrete', 'core.frozen_rock', 'core.steel_grating', 'core.beacon_red'],
+    facades: ['prefab', 'snow_bunker'],
+    gameplay: ['mover:rollup_door', 'block:ice', 'block:thin_ice', 'door:blast', 'door', 'button', 'ladder', 'light:alarm', 'light:wall', 'water:water', 'block:barrier', 'barrel', 'gas', 'generator', 'trap:mine', 'zone', 'glass'],
+    gameplayNotes: {
+      'mover:rollup_door': 'Roll-up door: the hangar\'s steel shutter, rolled up by a button and a rule (Send mover)',
+      'block:ice': 'Ice block: cover that shatters when shot or blown up, back after 30 s',
+      'block:thin_ice': 'Thin ice: gives way under you (over an Ice Hole full of water), freezes over again after 12 s',
+      'door:blast': 'Blast door: the bunker\'s steel door',
+      ladder: 'Ladder: up the comms mast, onto a hangar roof or a watchtower',
+      'light:alarm': 'Alarm light: red beacon for the outpost alert',
+      'water:water': 'Water under the ice: fill an Ice Hole (2 m deep, steps to climb out)',
+      generator: 'Generator: blow it to cut the lights (logic)',
+      'trap:mine': 'Mines buried in the snow',
+    },
+    mounts: ['snow_sled', 'buggy', 'gun_jeep', 'turret_mg', 'tank'],
+    pickups: ['core.weapon_sniper', 'core.weapon_marksman', 'core.weapon_rifle', 'core.weapon_lmg', 'core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_rockets', 'core.weapon_flamethrower', 'core.grenades', 'core.mines', 'core.armor_small', 'core.armor_large', 'core.health_small', 'core.health_large'],
+    demo: 'whiteout_station',
   },
 ];
 

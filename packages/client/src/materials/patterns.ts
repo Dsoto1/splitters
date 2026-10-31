@@ -199,6 +199,35 @@ function timberPaint(u: number, v: number, b: RGB, a: RGB): RGB {
   return edge < 0.03 ? shade(plaster, 0.9) : plaster;
 }
 
+/**
+ * Lake and glacier ice (Style Pack 12): clear ice whose colour deepens and
+ * pales with depth, white cracks along the edges of wrapping Voronoi cells
+ * (a haze either side of each), and trapped bubbles.
+ */
+function icePaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const n = 5;
+  const [x, y] = [u * n, v * n];
+  let d1 = Infinity;
+  let d2 = Infinity;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const cx = Math.floor(x) + dx;
+      const cy = Math.floor(y) + dy;
+      const [wx, wy] = [((cx % n) + n) % n, ((cy % n) + n) % n];
+      const d = Math.hypot(x - cx - hash(wx, wy, 131), y - cy - hash(wx, wy, 132));
+      if (d < d1) [d2, d1] = [d1, d];
+      else if (d < d2) d2 = d;
+    }
+  }
+  const rim = d2 - d1;
+  const depth = fbm(u, v, 133);
+  let c = shade(mix(b, a, depth * 0.2), 0.82 + depth * 0.32);
+  if (rim < 0.035) c = mix(c, a, 0.8 - rim * 12);
+  else if (rim < 0.1) c = mix(c, a, 0.12);
+  if (hash(Math.floor(u * 64), Math.floor(v * 64), 134) > 0.985) c = mix(c, a, 0.55);
+  return c;
+}
+
 const PAINTERS: Record<PatternId, Painter> = {
   grid: (u, v, b, a) => {
     const e = edgeDist(u, v);
@@ -340,6 +369,37 @@ const PAINTERS: Record<PatternId, Painter> = {
   },
   pantiles: pantilePaint,
   timber: timberPaint,
+  // Style Pack 12 Snow Outpost.
+  snow: (u, v, b, a) => {
+    // Drift ripples across the repeat, broken up by noise; a few grains glint.
+    const ripple = 0.5 + 0.5 * Math.sin((v * 6 + noise(u, v, 4, 123) * 1.5) * Math.PI * 2);
+    const c = mix(a, b, clamp01(0.4 + fbm(u, v, 121) * 0.5 + ripple * 0.2));
+    return hash(Math.floor(u * 128), Math.floor(v * 128), 125) > 0.992 ? shade(c, 1.1) : c;
+  },
+  ice: icePaint,
+  prefab: (u, v, b, a) => {
+    // Four panels a repeat: seams and the top and bottom channels in the accent, a pressed rib, rivets.
+    const fu = fract(u * 4);
+    const fv = fract(v);
+    if (fu < 0.025 || fu > 0.975 || fv < 0.035 || fv > 0.965) return shade(a, 0.9);
+    const rib = Math.abs(fu - 0.5) < 0.035 ? 1.08 : Math.abs(fu - 0.5) < 0.05 ? 0.86 : 1;
+    const rivet = (Math.abs(fv - 0.08) < 0.012 || Math.abs(fv - 0.92) < 0.012) && Math.abs(fract(fu * 4) - 0.5) < 0.08;
+    return shade(b, (rivet ? 0.7 : rib) * (0.94 + fbm(u, v, 141) * 0.1));
+  },
+  snowcrete: (u, v, b, a) => {
+    // Concrete, snow drifted in patches and lodged in its pores.
+    const patch = clamp01((noise(u, v, 4, 153) - 0.55) * 6);
+    const speck = hash(Math.floor(u * 96), Math.floor(v * 96), 155) > 0.9 ? 0.5 : 0;
+    return mix(shade(b, 0.85 + fbm(u, v, 151) * 0.3), a, Math.max(patch, speck) * 0.9);
+  },
+  frostrock: (u, v, b, a) => {
+    // Rock strata (each layer its own shade), rime along the top of each ledge and in flecks.
+    const w = v * 5 + noise(u, v, 4, 161) * 0.8;
+    const layer = (((Math.floor(w) % 5) + 5) % 5);
+    const c = shade(b, 0.75 + hash(layer, 1, 163) * 0.35 + fbm(u, v, 165) * 0.15);
+    const band = fract(w);
+    return mix(c, a, (band > 0.82 ? clamp01((band - 0.82) * 8) * 0.85 : 0) + (fbm(u, v, 167) > 0.7 ? 0.25 : 0));
+  },
   weave: (u, v, b, a) => {
     const n = 24;
     const cu = Math.floor(u * n);
@@ -352,8 +412,8 @@ const PAINTERS: Record<PatternId, Painter> = {
 
 const cache = new Map<string, Uint8Array>();
 
-/** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles) are painted at twice the usual size so their shapes read. */
-const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles']);
+/** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles, ice, prefab panels) are painted at twice the usual size so their shapes read. */
+const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles', 'ice', 'prefab']);
 export const patternSize = (def: MaterialDefinition): number => (FINE_PATTERNS.has(def.pattern) ? 256 : 128);
 
 /** RGBA pixels for a material's pattern (cached per material). */

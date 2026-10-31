@@ -1,0 +1,16 @@
+Style Pack pieces: 12 Snow Outpost (built in code)
+
+These models are original to Tile Trigger. They are not taken from any pack
+and no generative AI service made them: each one is assembled from plain
+geometry (boxes, cylinders, cones, spheres, rings, dishes and flat sheets) by
+tools/content/prepare-snow.mjs with tools/content/pieces.mjs, which write
+the GLB files in this folder. Re-run that script to rebuild them; the same
+code writes the same files.
+
+They belong to the Tile Trigger owner and ship as part of the game
+(licence "Owned" in content/props.json and the provenance ledger).
+
+Pieces: satellite dish, antenna mast, diesel heater, diesel generator,
+snowmobile, crates under a tarp, arctic lamp post, flagpole, chain-link fence,
+snow fence, insulated pipe run, oil drums, radio console, ski rack, supply
+sled and snow pile (Style Pack 12 Snow Outpost).
