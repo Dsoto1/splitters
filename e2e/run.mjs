@@ -462,6 +462,8 @@ async function dropRouteChecks(browser) {
     const p = m.dropPlanFor(c);
     return { x: Math.round(c.pos.x), ok: p.ok.map((v) => (v ? '#' : '.')).join('') };
   }).catch((e) => String(e));
+  // TEST's bots hold their fire (they would shoot you under the canopy).
+  await holdBots(page);
   check(aboard, `TEST starts you aboard the dropship (${JSON.stringify(plan)})`);
   // Still off the map's west edge: a jump is refused, with a hint.
   const offMap = await sim(page, (m, me) => m.mounts[me.mount.index].pos.x < -60).catch(() => false);
@@ -478,9 +480,10 @@ async function dropRouteChecks(browser) {
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   const after = await sim(page, (m, me) => ({ mount: me.mount ?? null, y: Math.round(me.move.pos.y), craft: Math.round(m.mounts.find((x) => x.route).pos.x) })).catch((e) => String(e));
   check(over && out, `over the map the jump goes (over ${over}, out ${out}, ${JSON.stringify(after)})`);
-  const landed = await meWait(page, (m, me) => me.alive && me.move.grounded, null, 40, T(120000));
-  const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z, alive: me.alive })).catch(() => null);
-  check(landed && at && Math.abs(at.x) < 48 && Math.abs(at.z) < 48, `you parachute down and land in the map (${JSON.stringify(at)})`);
+  const landed = await meWait(page, (m, me) => (me.move.chute ? false : me.alive && me.move.grounded), null, 40, T(120000));
+  const unhurt = await sim(page, (m, me) => me.deaths === 0).catch(() => false);
+  const at = await sim(page, (m, me) => ({ x: Math.round(me.move.pos.x), z: Math.round(me.move.pos.z), alive: me.alive, deaths: me.deaths, health: me.health })).catch(() => null);
+  check(landed && unhurt && at && Math.abs(at.x) < 48 && Math.abs(at.z) < 48, `you parachute down and land in the map, alive (${JSON.stringify(at)})`);
   await page.evaluate(() => delete window.__autoInput);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
