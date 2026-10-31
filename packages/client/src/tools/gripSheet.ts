@@ -16,6 +16,9 @@ import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { FirstPersonBodyRig, fitFirstPersonBody } from '../game/firstPersonBody.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
+import { auditGrip } from './gripAudit.ts';
+import type { CharacterInstance } from '../content/characters.ts';
+import type { WeaponHold } from '@tiletrigger/shared';
 
 /** How a pose is shown: the character from outside, its own first-person arms from the eye, or its whole body from the eye (full-body first person). */
 export type GripView = 'third' | 'first' | 'body';
@@ -55,6 +58,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   let current: { anim: CharacterAnimator; dispose(): void } | null = null;
   /** The posed character's joints (third person), for posture measurements. */
   let joints: Map<string, TransformNode> | null = null;
+  /** The third-person pose's character, gun and hold (`__grips.audit`). */
+  let posed: { ch: CharacterInstance; weapon: TransformNode; hold: WeaponHold } | null = null;
   let frames = 0;
 
   engine.runRenderLoop(() => {
@@ -78,6 +83,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     current?.dispose();
     current = null;
     joints = null;
+    posed = null;
     rig = null;
     const def = getWeapon(weapon);
     if (view === 'body') {
@@ -123,6 +129,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       anim.hold(node, def.view.hold);
       current = { anim, dispose: () => anim.dispose() };
       joints = ch.joints;
+      posed = { ch, weapon: node, hold: def.view.hold };
       scene.activeCamera = orbit;
       await settle(40);
       // Framed on the hands, from the front and to the character's right (the gun hand's side).
@@ -182,6 +189,22 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     await settle(4);
   }
 
+  /**
+   * After a third-person pose, the upper body (hips up) from the gun hand's side or the front, as Character
+   * Select shows it (the audit's views: the side is where a gun at the face shows; the front foreshortens a gun
+   * pointed at the camera).
+   */
+  async function upper(from: 'side' | 'front'): Promise<void> {
+    const j = joints?.get('upperarm_r');
+    j?.computeWorldMatrix(true);
+    const side = Math.sign(j?.getAbsolutePosition().x ?? 1) || 1;
+    orbit.target.set(0, PLAYER.height * 0.66, 0.12);
+    orbit.alpha = from === 'side' ? (side > 0 ? 0 : Math.PI) : Math.PI / 2;
+    orbit.beta = Math.PI / 2 - 0.08;
+    orbit.radius = 2.3;
+    await settle(4);
+  }
+
   const api = {
     looks: () => CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, parts: l.parts })),
     pose,
@@ -192,6 +215,9 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     /** Where the posed hands are drawn on the gun (model m from each hand's skin centre to its point; handProbe.ts). */
     drawn: () => current?.anim.drawnGrip([...(rig?.drawnMeshes ?? []), ...(current?.anim.ch.meshes ?? [])]) ?? null,
     body,
+    upper,
+    /** Measurements of the third-person pose as drawn (tools/gripAudit.ts; tools/content/grip-audit.mjs ranks them). */
+    audit: () => (posed ? auditGrip(posed.ch, posed.weapon, posed.hold) : null),
     /**
      * Full-body first person (`pose(look, weapon, 'body')`): the view's pitch (radians, the game's: + looks up), and the
      * body's motion (speed m/s, stance 0 standing / 1 crouched, airborne); `drop` lowers the eye (m, a crouch).
