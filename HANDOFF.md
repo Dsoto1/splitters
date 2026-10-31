@@ -38,9 +38,16 @@ map area)".
     not void/lava/acid); refused jump → per-player `msg` (new optional `s` on the msg event); riders still aboard are
     dropped at the last good point; bots pick a nav-reachable landing near their objective. Old 60 m bounds warning
     replaced by `airplane.nodrop`. Unit tests in airplane.test.ts.
-- **Next:** run the new e2e `dropRouteChecks` (end of the `editor` flow, e2e/run.mjs) locally; rebuild the palette
-  atlas (tiles/props changed: build, vite preview, temp copy of build-palette-atlas.mjs, `pnpm content:build`,
-  `pnpm content:check`); bundle budget; CHANGELOG/BUILDING_KIT; push `check/medieval-fixes` and get CI green.
+- **Also:** drop routes now start their clock when play begins (`MountRt.routeT0`, set in beginPlay/startRound):
+  timed from tick 0, the loading wait and countdown could fly a dropship across the whole map before anyone could
+  jump. Market Town's tarp tents stood half through the south border fence: moved to z -72 (east one to x 27, clear
+  of a spawn). Palette atlas + provenance rebuilt.
+- **Local checks:** typecheck OK; test:changed 3 load flakes (npc/scenario bot matches) that pass alone; airplane
+  and medieval tests pass; content:check OK; validate-map market_town/eagle_spires/frost_basin/runway_nine 0 issues;
+  bundle budget 799.9 / 800 KB gzip (was 799.0: the drop plan is reached from validate.ts in the menu bundle, so
+  there's ~0.1 KB left); e2e editor (with the new dropRouteChecks), editorux, vehicles PASS. In the e2e, TEST's
+  bots must hold fire (one shot the player under the canopy).
+- **Next:** CI on `check/medieval-fixes`; if red, fix forward on the wip branch.
 - Screenshots (before/after, real match, prod build): session scratchpad `mt-fix/` (not in the repo).
 
 ### `wip/grips-live` (agent, 2026-10-31): "the grips are not working at all" (owner, live 6c0f8a6)
