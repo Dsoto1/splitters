@@ -128,3 +128,28 @@ describe('Snow pack navigation', () => {
     });
   }
 });
+
+describe('Whiteout Station (the pack\'s demo map)', () => {
+  it('validates with no issues, navigation included, and has the outpost\'s landmarks', { timeout: 180_000 }, () => {
+    const r = loadMap(read('maps/whiteout_station.json'));
+    if (!r.ok) throw new Error(JSON.stringify(r.issues));
+    expect(r.issues).toEqual([]);
+    const map = r.map;
+    expect(map.classicStructure.theme).toBe('core.snow_outpost');
+    const tiles = new Set(map.classicStructure.tiles.map((x) => x.tile));
+    for (const id of ['snow.hut', 'snow.barracks', 'snow.comms_hut', 'snow.hangar', 'snow.bunker', 'snow.watchtower', 'snow.radar_dome', 'snow.fuel_depot', 'snow.catwalk', 'snow.metal_stair', 'snow.ice_wall', 'snow.ice_cliff', 'snow.drift_ramp', 'snow.frozen_lake', 'snow.ice_ridge', 'snow.ice_hole', 'snow.road']) expect(tiles.has(id), id).toBe(true);
+    const spawns = map.entities.filter((e) => e.kind === 'spawn');
+    for (const team of ['embers', 'tide']) expect(spawns.filter((e) => e.faction === team).length, team).toBeGreaterThanOrEqual(12);
+    expect(map.entities.filter((e) => e.kind === 'flag')).toHaveLength(2);
+    expect(map.entities.filter((e) => e.kind === 'hill').length).toBeGreaterThanOrEqual(3);
+    for (const e of map.entities) if (e.kind === 'pickup') expect(getItem(e.item), e.item).toBeDefined();
+    // The hangar's roll-up door is wired to its button.
+    expect(map.logic.rules.some((r) => r.when.target === 'hangar_button' && r.do.some((a) => a.type === 'mover_go' && a.target === 'hangar_door'))).toBe(true);
+    const geometry = buildMapGeometry(map);
+    const physics = new PhysicsWorld(geometry, mapTerrainMesh(map));
+    const nav = NavWorld.build([...geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), [...navLinks(map.entities, physics), ...liftLinks(map)]);
+    physics.free();
+    expect(validateNavigation(map, nav)).toEqual([]);
+    nav.destroy();
+  });
+});

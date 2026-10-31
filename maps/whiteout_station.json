@@ -1,0 +1,3713 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 24,
+  "metadata": {
+    "id": "whiteout_station",
+    "name": "Whiteout Station",
+    "author": "Tile Trigger",
+    "description": "An arctic research outpost on the shore of a frozen lake (Style Pack 12: Snow Outpost). The Embers hold the vehicle hangar and barracks on the south shore; the Tide hold the radar dome, the comms mast and their barracks on the north shore. Cross the lake between pressure ridges (mind the thin ice over the holes), take the frozen ridge in the west up its snow drifts (the sniper waits up there), or push up the east side past the bunkers, along the pipe catwalk and the snow road where the snowmobiles run. Climb onto hut and barracks roofs by their outside stairs; roll the hangar door down from the button inside.",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 8,
+      "max": 24
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm",
+      "core.ctf",
+      "core.koth"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.snow_outpost",
+    "tiles": [
+      {
+        "id": "tile_5cvakca2xt",
+        "tile": "snow.hangar",
+        "x": 0,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_3kiniikbe1",
+        "tile": "snow.barracks",
+        "x": -4,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4cadd75zav",
+        "tile": "snow.barracks",
+        "x": 2,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dtrzuv3dwx",
+        "tile": "snow.hut",
+        "x": -5,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_v5mxenburo",
+        "tile": "snow.hut",
+        "x": 1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fq8udq2bsa",
+        "tile": "snow.fuel_depot",
+        "x": 2,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_05is0pqkk6",
+        "tile": "snow.watchtower",
+        "x": 4,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ds0vsjecku",
+        "tile": "snow.watchtower",
+        "x": -6,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rtl3hi6iwd",
+        "tile": "snow.radar_dome",
+        "x": 0,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_azep5kn4i6",
+        "tile": "snow.comms_hut",
+        "x": -1,
+        "y": 7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_uzuq0ta8u8",
+        "tile": "snow.barracks",
+        "x": -3,
+        "y": 7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_zj4m32cv86",
+        "tile": "snow.barracks",
+        "x": 3,
+        "y": 7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_9notb1terw",
+        "tile": "snow.hut",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_59p4haicpc",
+        "tile": "snow.hut",
+        "x": -5,
+        "y": 5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_jjy5we5kdj",
+        "tile": "snow.fuel_depot",
+        "x": -2,
+        "y": 6,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_0o8csoqk8r",
+        "tile": "snow.watchtower",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_kim6we4eid",
+        "tile": "snow.watchtower",
+        "x": 6,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_e0roi4ip1z",
+        "tile": "snow.frozen_lake",
+        "x": -2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bhmnn9oydm",
+        "tile": "snow.frozen_lake",
+        "x": -2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mkvqrgydlk",
+        "tile": "snow.frozen_lake",
+        "x": -2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hly1nnmnq4",
+        "tile": "snow.frozen_lake",
+        "x": -2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_s066oy995w",
+        "tile": "snow.frozen_lake",
+        "x": -2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wg7w9t5nsz",
+        "tile": "snow.frozen_lake",
+        "x": -2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i1vew15zhq",
+        "tile": "snow.frozen_lake",
+        "x": -2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9nbopt8o1d",
+        "tile": "snow.frozen_lake",
+        "x": -1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_67q3blnckc",
+        "tile": "snow.frozen_lake",
+        "x": -1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8flnjvcjux",
+        "tile": "snow.ice_hole",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4czifbi69h",
+        "tile": "snow.frozen_lake",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_uzqpwv4ofr",
+        "tile": "snow.frozen_lake",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ir4f4h14rd",
+        "tile": "snow.ice_ridge",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_34r150tjot",
+        "tile": "snow.frozen_lake",
+        "x": -1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_sh8fpt0pc6",
+        "tile": "snow.frozen_lake",
+        "x": 0,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zyshmnu7i5",
+        "tile": "snow.frozen_lake",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xc6o9oc44a",
+        "tile": "snow.frozen_lake",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0z0x37dq2y",
+        "tile": "snow.ice_ridge",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_5ax6hpiuog",
+        "tile": "snow.frozen_lake",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_v8ckbgdg1c",
+        "tile": "snow.frozen_lake",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ksyjtht3vf",
+        "tile": "snow.frozen_lake",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fig0xi6jk3",
+        "tile": "snow.frozen_lake",
+        "x": 1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_drhyy8opz5",
+        "tile": "snow.ice_ridge",
+        "x": 1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_879py72yul",
+        "tile": "snow.frozen_lake",
+        "x": 1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6r5u7ipjca",
+        "tile": "snow.frozen_lake",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_q3288gcdrh",
+        "tile": "snow.ice_hole",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tc4cc3l75c",
+        "tile": "snow.frozen_lake",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cdiyq1s7iv",
+        "tile": "snow.frozen_lake",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fpz0jqnlpy",
+        "tile": "snow.frozen_lake",
+        "x": 2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xaxiimk3yp",
+        "tile": "snow.frozen_lake",
+        "x": 2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ewb7wo2825",
+        "tile": "snow.frozen_lake",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_urt1vj0sbz",
+        "tile": "snow.frozen_lake",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_twnis7438t",
+        "tile": "snow.frozen_lake",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vmwtwif5zx",
+        "tile": "snow.frozen_lake",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_e6i4bcvdn0",
+        "tile": "snow.frozen_lake",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5tch537uud",
+        "tile": "snow.ice_cliff",
+        "x": -5,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_f5vnrrip9l",
+        "tile": "snow.ice_cliff",
+        "x": -5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_uojpqowfuh",
+        "tile": "snow.ice_cliff",
+        "x": -5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_yde2nf66t7",
+        "tile": "snow.ice_cliff",
+        "x": -5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nr9s7s8q6d",
+        "tile": "snow.ice_cliff",
+        "x": -5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wzj05tqedg",
+        "tile": "snow.drift_ramp",
+        "x": -5,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_il7snb1gp9",
+        "tile": "snow.drift_ramp",
+        "x": -5,
+        "y": 3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_54zfhs63lm",
+        "tile": "snow.ice_cliff",
+        "x": -4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3jq43ls93n",
+        "tile": "snow.ice_cliff",
+        "x": -4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ifcvpbc5t3",
+        "tile": "snow.ice_cliff",
+        "x": -4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zlaxjtzrpw",
+        "tile": "snow.ice_cliff",
+        "x": -4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nibgnncnl2",
+        "tile": "snow.ice_cliff",
+        "x": -4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2re4zuy2ch",
+        "tile": "snow.drift_ramp",
+        "x": -4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_azxr1ip0ie",
+        "tile": "snow.drift_ramp",
+        "x": -4,
+        "y": 3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_fsawoqh4nx",
+        "tile": "snow.ice_wall",
+        "x": -6,
+        "y": -3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_lwr1lkkdmz",
+        "tile": "snow.ice_wall",
+        "x": -6,
+        "y": -2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_8e7x8hecvy",
+        "tile": "snow.ice_wall",
+        "x": -6,
+        "y": -1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_l71k6db1nl",
+        "tile": "snow.ice_wall",
+        "x": -6,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_c4g34p5i9j",
+        "tile": "snow.ice_wall",
+        "x": -6,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_a6balw22sv",
+        "tile": "snow.ice_wall",
+        "x": -6,
+        "y": 2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_jptwx3s8bu",
+        "tile": "snow.ice_wall",
+        "x": -6,
+        "y": 3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_ihtt5nle2a",
+        "tile": "snow.metal_stair",
+        "x": 3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nv20mb68tb",
+        "tile": "snow.catwalk",
+        "x": 3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_v00m9x5as7",
+        "tile": "snow.catwalk",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_56su1p19ey",
+        "tile": "snow.catwalk",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dz4yewpxza",
+        "tile": "snow.catwalk",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_eyzaxhpa2w",
+        "tile": "snow.catwalk",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_k07fhgmbka",
+        "tile": "snow.metal_stair",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_a65wfwrdti",
+        "tile": "snow.bunker",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_91bniell96",
+        "tile": "snow.bunker",
+        "x": 4,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_fauxz4e2o6",
+        "tile": "snow.road",
+        "x": 5,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9cd6h48rzs",
+        "tile": "snow.road",
+        "x": 5,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wnuzkkim0d",
+        "tile": "snow.road",
+        "x": 5,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ybsx3dmjqy",
+        "tile": "snow.road",
+        "x": 5,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_42zf0bh1c4",
+        "tile": "snow.road",
+        "x": 5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ya9vnrdknt",
+        "tile": "snow.road",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_kd6sov2ven",
+        "tile": "snow.road",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ta8ltzmcy7",
+        "tile": "snow.road",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5pscqao38o",
+        "tile": "snow.road",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lpqgsekgn7",
+        "tile": "snow.road",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mlz6jkqh5c",
+        "tile": "snow.road",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rgqihl1ha9",
+        "tile": "snow.ice_wall",
+        "x": 6,
+        "y": -3,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_1q899a6qm8",
+        "tile": "snow.ice_wall",
+        "x": 6,
+        "y": -2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_ogrhenke05",
+        "tile": "snow.ice_wall",
+        "x": 6,
+        "y": -1,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_w68knozajr",
+        "tile": "snow.ice_wall",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_kcctvn8nhn",
+        "tile": "snow.ice_wall",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_7azdbjyk5v",
+        "tile": "snow.ice_wall",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_qcqzupsqsl",
+        "tile": "snow.ice_wall",
+        "x": 6,
+        "y": 3,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_07keenu77i",
+        "tile": "snow.fuel_depot",
+        "x": 6,
+        "y": -4,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_d8t86x1eqo",
+        "tile": "snow.fuel_depot",
+        "x": 6,
+        "y": 4,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_sfut9od0nk",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jwn3u6n1wh",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_n722po2a52",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_evsdjw1aod",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7jo4b69v7h",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vq41bj0y5j",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_d312lcd9n9",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z9g9sxalq5",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_k6s4xnzx95",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ui37hs8fas",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fngny6icz1",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_s5c3omettn",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3varkorick",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_uqsbtgntad",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hl4qwm8p92",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6p5h2dvjfn",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cvznj7ocpa",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qkljc3unw7",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tnbx9j9sgm",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_70a1ryogvj",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9jovhe2s5w",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dq6924h2n8",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_utkc6yiexv",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_byneptsdkg",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_e5qbdpruig",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_k5en1ablv5",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hgc0nvync5",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_su8trhj88e",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vrwngpyi7w",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1757zigyhg",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_w0kqdhg17d",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4zpbknxdr6",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qnysdpmrsk",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_aogu5x2vst",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_kil0c7klew",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2joiuve5zj",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_y968ojbwpn",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7lmdrae958",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_uaqxrhaf7q",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_m3xtwyut6e",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nc40myhoe2",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pgzt3dih5j",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_yq3p4zsq4y",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7r3dqx6v1q",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jhezrmp0i5",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_c435msc7eo",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gvmizzjffr",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_k65wvwpx7p",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_kn7ojtpuuo",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_p2cnanofkk",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0o397liaou",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0syrbredu9",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ch1g62bpuo",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z4m5eokya6",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_86hz2tz7yn",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_50ohvvopgp",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_51aqw5309f",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_as9q41x9fe",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6kfqamagx9",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_to7p0tkfna",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5f4z1d6nik",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gjpskdqdqm",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_scnp707766",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bh4zwpw63e",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_w1a9p7z0of",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bk0ym98juo",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_k9w3qqtu2i",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_y924fdsthh",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5jw8bcaar3",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_h62k81ruw7",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1e41p4oc5c",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9zq47ud60y",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qyg8dwry1s",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_58tob2834l",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pf61z4x3cb",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pp6nwdv8a6",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6lfg47c1mj",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rpu5rh5130",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xbef5w9f0w",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_aew4b9us4t",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mxlx6w34ev",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gw5aigpexf",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wsvn1qtahg",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pnzsp93wae",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gwugfackq8",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tcgjlyzbe6",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dvnwouxcr8",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fu9at50bal",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_emlcb1x9ey",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6xccjr7z8w",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9d9jp2emrd",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8vu2wgxljy",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lfe2bo9i83",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_164ulm9fvn",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rrz80k0fhs",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wcmcqfoxes",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1k1dwvah57",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wqf39wllff",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nyp5z99ihy",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jbazhlac3x",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rcgpvkgw6n",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_52blo8greo",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vtgv935bro",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9cdxhiybjf",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xa98e7820f",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7b8kq4qexk",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_p9rsqc53sl",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lgoyfwhfnh",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xid6l3y2db",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6mbp77mu4b",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_kdyjywmxa9",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_efpq8yoi3n",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "spawn_001",
+      "kind": "spawn",
+      "position": [
+        -36,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_002",
+      "kind": "spawn",
+      "position": [
+        -28,
+        0,
+        -62
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_003",
+      "kind": "spawn",
+      "position": [
+        -20,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_004",
+      "kind": "spawn",
+      "position": [
+        -12,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_005",
+      "kind": "spawn",
+      "position": [
+        12,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_006",
+      "kind": "spawn",
+      "position": [
+        20,
+        0,
+        -62
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_007",
+      "kind": "spawn",
+      "position": [
+        28,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_008",
+      "kind": "spawn",
+      "position": [
+        44,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_009",
+      "kind": "spawn",
+      "position": [
+        36,
+        0,
+        -54
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_010",
+      "kind": "spawn",
+      "position": [
+        -44,
+        0,
+        -50
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_011",
+      "kind": "spawn",
+      "position": [
+        -20,
+        0,
+        -50
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_012",
+      "kind": "spawn",
+      "position": [
+        20,
+        0,
+        -48
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_013",
+      "kind": "spawn",
+      "position": [
+        -36,
+        0,
+        66
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_014",
+      "kind": "spawn",
+      "position": [
+        -28,
+        0,
+        62
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_015",
+      "kind": "spawn",
+      "position": [
+        -12,
+        0,
+        66
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_016",
+      "kind": "spawn",
+      "position": [
+        -4,
+        0,
+        66
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_017",
+      "kind": "spawn",
+      "position": [
+        12,
+        0,
+        66
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_018",
+      "kind": "spawn",
+      "position": [
+        20,
+        0,
+        62
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_019",
+      "kind": "spawn",
+      "position": [
+        28,
+        0,
+        66
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_020",
+      "kind": "spawn",
+      "position": [
+        36,
+        0,
+        66
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_021",
+      "kind": "spawn",
+      "position": [
+        44,
+        0,
+        56
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_022",
+      "kind": "spawn",
+      "position": [
+        -44,
+        0,
+        46
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_023",
+      "kind": "spawn",
+      "position": [
+        -24,
+        0,
+        48
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_024",
+      "kind": "spawn",
+      "position": [
+        20,
+        0,
+        50
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_025",
+      "kind": "spawn",
+      "position": [
+        -24,
+        0,
+        -32
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_026",
+      "kind": "spawn",
+      "position": [
+        24,
+        0,
+        -32
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_027",
+      "kind": "spawn",
+      "position": [
+        -24,
+        0,
+        32
+      ],
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_028",
+      "kind": "spawn",
+      "position": [
+        24,
+        0,
+        32
+      ],
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_029",
+      "kind": "spawn",
+      "position": [
+        -24,
+        0,
+        0
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_030",
+      "kind": "spawn",
+      "position": [
+        -46,
+        0,
+        -16
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_031",
+      "kind": "spawn",
+      "position": [
+        -46,
+        0,
+        16
+      ],
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_032",
+      "kind": "spawn",
+      "position": [
+        40,
+        0,
+        8
+      ],
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_033",
+      "kind": "spawn",
+      "position": [
+        40,
+        0,
+        -8
+      ],
+      "yaw": -1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_034",
+      "kind": "spawn",
+      "position": [
+        40,
+        0,
+        20
+      ],
+      "yaw": 3.141592653589793,
+      "faction": null
+    },
+    {
+      "id": "spawn_035",
+      "kind": "spawn",
+      "position": [
+        40,
+        0,
+        -20
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_036",
+      "kind": "spawn",
+      "position": [
+        8,
+        0,
+        -32
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "flag_embers",
+      "kind": "flag",
+      "position": [
+        -4,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "team": "embers"
+    },
+    {
+      "id": "flag_tide",
+      "kind": "flag",
+      "position": [
+        4,
+        0,
+        66
+      ],
+      "yaw": 3.141592653589793,
+      "team": "tide"
+    },
+    {
+      "id": "hill_lake",
+      "kind": "hill",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "radius": 6
+    },
+    {
+      "id": "hill_ridge",
+      "kind": "hill",
+      "position": [
+        -36,
+        4,
+        0
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_catwalk",
+      "kind": "hill",
+      "position": [
+        32,
+        0,
+        0
+      ],
+      "radius": 6
+    },
+    {
+      "id": "pickup_037",
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "position": [
+        -36,
+        4,
+        4
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_038",
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "position": [
+        24,
+        4,
+        0
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_039",
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
+      "position": [
+        32,
+        0,
+        -8
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_040",
+      "kind": "pickup",
+      "item": "core.weapon_flamethrower",
+      "position": [
+        32,
+        0,
+        8
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_041",
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "position": [
+        0,
+        0,
+        -12
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_042",
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "position": [
+        0,
+        0,
+        12
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_043",
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "position": [
+        32,
+        7,
+        -42.6
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_044",
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "position": [
+        32,
+        7,
+        37.4
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_045",
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "position": [
+        -28,
+        0,
+        -57
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_046",
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "position": [
+        28,
+        0,
+        57
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_047",
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "position": [
+        20,
+        0,
+        -57
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_048",
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "position": [
+        -20,
+        0,
+        57
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_049",
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "position": [
+        -4,
+        0,
+        -52
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_050",
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "position": [
+        4,
+        0,
+        52
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_051",
+      "kind": "pickup",
+      "item": "core.grenades",
+      "position": [
+        -24,
+        0,
+        -20
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_052",
+      "kind": "pickup",
+      "item": "core.grenades",
+      "position": [
+        24,
+        0,
+        20
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_053",
+      "kind": "pickup",
+      "item": "core.mines",
+      "position": [
+        40,
+        0,
+        0
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_054",
+      "kind": "pickup",
+      "item": "core.health_large",
+      "position": [
+        -24,
+        0,
+        20
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_055",
+      "kind": "pickup",
+      "item": "core.health_large",
+      "position": [
+        24,
+        0,
+        -20
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_056",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        -12,
+        0,
+        -28
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_057",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        12,
+        0,
+        28
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_058",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        -48,
+        0,
+        -28
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_059",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        48,
+        0,
+        28
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_060",
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "position": [
+        -48,
+        0,
+        28
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_061",
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "position": [
+        48,
+        0,
+        -28
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_062",
+      "kind": "mount",
+      "model": "snow_sled",
+      "position": [
+        36,
+        0,
+        -46
+      ],
+      "yaw": 0,
+      "faction": "embers",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_063",
+      "kind": "mount",
+      "model": "snow_sled",
+      "position": [
+        44,
+        0,
+        -46
+      ],
+      "yaw": 0,
+      "faction": "embers",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_064",
+      "kind": "mount",
+      "model": "snow_sled",
+      "position": [
+        36,
+        0,
+        46
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_065",
+      "kind": "mount",
+      "model": "snow_sled",
+      "position": [
+        44,
+        0,
+        46
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide",
+      "respawnSeconds": null
+    },
+    {
+      "id": "hangar_door_panel",
+      "kind": "block",
+      "position": [
+        -4,
+        4.4,
+        -44.35
+      ],
+      "yaw": 3.141592653589793,
+      "size": [
+        6,
+        4.6,
+        0.2
+      ],
+      "material": "core.pbr_grey_corrugated",
+      "tint": "#d8dce0",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "name": "Roll-up door"
+    },
+    {
+      "id": "hangar_door",
+      "kind": "mover",
+      "position": [
+        -4,
+        4.4,
+        -44.35
+      ],
+      "yaw": 3.141592653589793,
+      "blocks": [
+        "hangar_door_panel"
+      ],
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -4.4,
+          0
+        ]
+      ],
+      "mode": "trigger",
+      "speed": 1.6,
+      "turnSpeed": 45,
+      "wait": 0,
+      "startActive": true,
+      "name": "Roll-up door"
+    },
+    {
+      "id": "hangar_button",
+      "kind": "button",
+      "position": [
+        -8.6,
+        1.2,
+        -44.8
+      ],
+      "yaw": 6.283185307179586,
+      "label": "Hangar door",
+      "once": false,
+      "cooldownSeconds": 1,
+      "startEnabled": true
+    },
+    {
+      "id": "thin_ice_066",
+      "kind": "block",
+      "position": [
+        -8,
+        -0.13,
+        -8
+      ],
+      "yaw": 0,
+      "size": [
+        4,
+        0.15,
+        4
+      ],
+      "material": "core.lake_ice",
+      "tint": "#c8e4f0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.7,
+      "respawnSeconds": 12,
+      "health": 60
+    },
+    {
+      "id": "water_067",
+      "kind": "water",
+      "position": [
+        -8,
+        -2,
+        -8
+      ],
+      "size": [
+        3.6,
+        1.6,
+        3.6
+      ],
+      "liquid": "water",
+      "tint": "#1a3a4a"
+    },
+    {
+      "id": "thin_ice_068",
+      "kind": "block",
+      "position": [
+        8,
+        -0.13,
+        8
+      ],
+      "yaw": 0,
+      "size": [
+        4,
+        0.15,
+        4
+      ],
+      "material": "core.lake_ice",
+      "tint": "#c8e4f0",
+      "behaviour": "crumble",
+      "trigger": "step",
+      "delaySeconds": 0.7,
+      "respawnSeconds": 12,
+      "health": 60
+    },
+    {
+      "id": "water_069",
+      "kind": "water",
+      "position": [
+        8,
+        -2,
+        8
+      ],
+      "size": [
+        3.6,
+        1.6,
+        3.6
+      ],
+      "liquid": "water",
+      "tint": "#1a3a4a"
+    },
+    {
+      "id": "ice_070",
+      "kind": "block",
+      "position": [
+        -10,
+        0,
+        6
+      ],
+      "yaw": 0.3,
+      "size": [
+        2,
+        1.4,
+        1
+      ],
+      "material": "core.glacier_ice",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 150
+    },
+    {
+      "id": "ice_071",
+      "kind": "block",
+      "position": [
+        10,
+        0,
+        -6
+      ],
+      "yaw": -0.3,
+      "size": [
+        2,
+        1.4,
+        1
+      ],
+      "material": "core.glacier_ice",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 150
+    },
+    {
+      "id": "ice_072",
+      "kind": "block",
+      "position": [
+        -14,
+        0,
+        -16
+      ],
+      "yaw": 0,
+      "size": [
+        2,
+        1.4,
+        1
+      ],
+      "material": "core.glacier_ice",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 150
+    },
+    {
+      "id": "ice_073",
+      "kind": "block",
+      "position": [
+        14,
+        0,
+        16
+      ],
+      "yaw": 0,
+      "size": [
+        2,
+        1.4,
+        1
+      ],
+      "material": "core.glacier_ice",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 30,
+      "health": 150
+    },
+    {
+      "id": "prop_074",
+      "kind": "prop",
+      "model": "prop.sandbag_nest",
+      "position": [
+        -36,
+        4,
+        -8
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "kind": "prop",
+      "model": "prop.sandbag_nest",
+      "position": [
+        -36,
+        4,
+        10
+      ],
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "position": [
+        -44,
+        4,
+        0
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "kind": "prop",
+      "model": "prop.nt_pine_snow_tall",
+      "position": [
+        -46,
+        4,
+        -14
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "kind": "prop",
+      "model": "prop.nt_pine_snow_tall",
+      "position": [
+        -42,
+        4,
+        14
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "kind": "prop",
+      "model": "prop.ammo_stack",
+      "position": [
+        -40,
+        4,
+        -2
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "position": [
+        -24,
+        0,
+        -28
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "position": [
+        -24,
+        0,
+        28
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "position": [
+        16,
+        0,
+        -28
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "position": [
+        -16,
+        0,
+        28
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "position": [
+        -8,
+        0,
+        -30
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "position": [
+        8,
+        0,
+        30
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "kind": "prop",
+      "model": "prop.nt_boulder_snow",
+      "position": [
+        -20,
+        0,
+        -10
+      ],
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_087",
+      "kind": "prop",
+      "model": "prop.nt_boulder_snow",
+      "position": [
+        -20,
+        0,
+        12
+      ],
+      "yaw": -0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "kind": "prop",
+      "model": "prop.nt_rock_snow",
+      "position": [
+        -26,
+        0,
+        -12
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "kind": "prop",
+      "model": "prop.nt_rock_snow",
+      "position": [
+        -26,
+        0,
+        14
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "kind": "prop",
+      "model": "prop.nt_rock_snow",
+      "position": [
+        44,
+        0,
+        34
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "kind": "prop",
+      "model": "prop.nt_rock_snow",
+      "position": [
+        44,
+        0,
+        -34
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "kind": "prop",
+      "model": "prop.so_satellite_dish",
+      "position": [
+        -44,
+        0,
+        -62
+      ],
+      "yaw": 0.7853981633974483,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "kind": "prop",
+      "model": "prop.so_generator",
+      "position": [
+        12,
+        0,
+        -50
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "kind": "prop",
+      "model": "prop.so_heater",
+      "position": [
+        4,
+        0,
+        -36
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "kind": "prop",
+      "model": "prop.so_tarp_crates",
+      "position": [
+        -12,
+        0,
+        -40
+      ],
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_096",
+      "kind": "prop",
+      "model": "prop.so_drums",
+      "position": [
+        -30,
+        0,
+        -44
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_097",
+      "kind": "prop",
+      "model": "prop.so_supply_sled",
+      "position": [
+        40,
+        0,
+        -60
+      ],
+      "yaw": 0.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_098",
+      "kind": "prop",
+      "model": "prop.so_snowmobile",
+      "position": [
+        4,
+        0,
+        -48
+      ],
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_099",
+      "kind": "prop",
+      "model": "prop.so_flagpole",
+      "position": [
+        -4,
+        0,
+        -60
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_100",
+      "kind": "prop",
+      "model": "prop.so_lamp_post",
+      "position": [
+        -20,
+        0,
+        -42
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "kind": "prop",
+      "model": "prop.so_lamp_post",
+      "position": [
+        28,
+        0,
+        -42
+      ],
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_102",
+      "kind": "prop",
+      "model": "prop.so_ski_rack",
+      "position": [
+        -36,
+        0,
+        -50
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "kind": "prop",
+      "model": "prop.cargo_container",
+      "position": [
+        48,
+        0,
+        -52
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "kind": "prop",
+      "model": "prop.so_chainlink_fence",
+      "position": [
+        -48,
+        0,
+        -40
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "kind": "prop",
+      "model": "prop.so_chainlink_fence",
+      "position": [
+        -44,
+        0,
+        -40
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_106",
+      "kind": "prop",
+      "model": "prop.so_snow_fence",
+      "position": [
+        16,
+        0,
+        -40
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_107",
+      "kind": "prop",
+      "model": "prop.so_satellite_dish",
+      "position": [
+        44,
+        0,
+        62
+      ],
+      "yaw": -2.356194490192345,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_108",
+      "kind": "prop",
+      "model": "prop.so_antenna_mast",
+      "position": [
+        -28,
+        0,
+        44
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_109",
+      "kind": "prop",
+      "model": "prop.so_generator",
+      "position": [
+        -12,
+        0,
+        50
+      ],
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_110",
+      "kind": "prop",
+      "model": "prop.so_radio_console",
+      "position": [
+        -2.4,
+        0,
+        56
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_111",
+      "kind": "prop",
+      "model": "prop.so_heater",
+      "position": [
+        -4,
+        0,
+        36
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_112",
+      "kind": "prop",
+      "model": "prop.so_tarp_crates",
+      "position": [
+        12,
+        0,
+        40
+      ],
+      "yaw": -0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_113",
+      "kind": "prop",
+      "model": "prop.so_drums",
+      "position": [
+        30,
+        0,
+        44
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_114",
+      "kind": "prop",
+      "model": "prop.so_supply_sled",
+      "position": [
+        40,
+        0,
+        60
+      ],
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_115",
+      "kind": "prop",
+      "model": "prop.so_flagpole",
+      "position": [
+        4,
+        0,
+        60
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_116",
+      "kind": "prop",
+      "model": "prop.so_lamp_post",
+      "position": [
+        20,
+        0,
+        42
+      ],
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_117",
+      "kind": "prop",
+      "model": "prop.so_lamp_post",
+      "position": [
+        -28,
+        0,
+        36
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_118",
+      "kind": "prop",
+      "model": "prop.cargo_container_red",
+      "position": [
+        -48,
+        0,
+        52
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_119",
+      "kind": "prop",
+      "model": "prop.so_chainlink_fence",
+      "position": [
+        48,
+        0,
+        40
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_120",
+      "kind": "prop",
+      "model": "prop.so_chainlink_fence",
+      "position": [
+        44,
+        0,
+        40
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_121",
+      "kind": "prop",
+      "model": "prop.so_snow_fence",
+      "position": [
+        -16,
+        0,
+        40
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_122",
+      "kind": "prop",
+      "model": "prop.so_pipe_run",
+      "position": [
+        27.5,
+        0,
+        -12
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_123",
+      "kind": "prop",
+      "model": "prop.so_pipe_run",
+      "position": [
+        27.5,
+        0,
+        -4
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_124",
+      "kind": "prop",
+      "model": "prop.so_pipe_run",
+      "position": [
+        27.5,
+        0,
+        4
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_125",
+      "kind": "prop",
+      "model": "prop.so_pipe_run",
+      "position": [
+        27.5,
+        0,
+        12
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_126",
+      "kind": "prop",
+      "model": "prop.so_drums",
+      "position": [
+        36,
+        0,
+        14
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_127",
+      "kind": "prop",
+      "model": "prop.so_drums",
+      "position": [
+        36,
+        0,
+        -14
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_128",
+      "kind": "prop",
+      "model": "prop.so_lamp_post",
+      "position": [
+        46,
+        0,
+        0
+      ],
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_129",
+      "kind": "prop",
+      "model": "prop.nt_pine_snow_tall",
+      "position": [
+        -50,
+        0,
+        -67
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_130",
+      "kind": "prop",
+      "model": "prop.nt_pine_snow_tall",
+      "position": [
+        -50,
+        0,
+        67
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_131",
+      "kind": "prop",
+      "model": "prop.nt_pine_snow_tall",
+      "position": [
+        -42,
+        0,
+        -67
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_132",
+      "kind": "prop",
+      "model": "prop.nt_pine_snow_tall",
+      "position": [
+        -42,
+        0,
+        67
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_133",
+      "kind": "prop",
+      "model": "prop.nt_pine_snow_tall",
+      "position": [
+        50,
+        0,
+        -67
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_134",
+      "kind": "prop",
+      "model": "prop.nt_pine_snow_tall",
+      "position": [
+        50,
+        0,
+        67
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_135",
+      "kind": "light",
+      "position": [
+        0,
+        8.6,
+        56
+      ],
+      "yaw": 0,
+      "color": "#ff3020",
+      "intensity": 1.4,
+      "range": 12,
+      "fixture": "bulb",
+      "blink": 1.5
+    },
+    {
+      "id": "light_136",
+      "kind": "light",
+      "position": [
+        -4,
+        7.5,
+        -44
+      ],
+      "yaw": 0,
+      "color": "#ffb060",
+      "intensity": 1.2,
+      "range": 14,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_137",
+      "kind": "light",
+      "position": [
+        40,
+        6,
+        0
+      ],
+      "yaw": 0,
+      "color": "#ffd090",
+      "intensity": 1,
+      "range": 14,
+      "fixture": "bulb"
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": [
+      {
+        "id": "rule_hangar_door",
+        "name": "Hangar roll-up door",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "hangar_button"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "sound",
+            "target": null,
+            "value": 0,
+            "text": "",
+            "state": "buzzer"
+          },
+          {
+            "type": "mover_go",
+            "target": "hangar_door",
+            "value": 0,
+            "text": "",
+            "state": ""
+          }
+        ]
+      }
+    ]
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -52,
+      -68
+    ],
+    "max": [
+      52,
+      68
+    ],
+    "style": "invisible",
+    "height": 20
+  },
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "backdrop": {
+    "sky": "snowy",
+    "scenery": "peaks",
+    "ground": "snow",
+    "haze": 0.6,
+    "mist": 0.25,
+    "border": "cliffs"
+  },
+  "blood": null,
+  "physics": null,
+  "dependencies": []
+}
