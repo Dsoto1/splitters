@@ -9,6 +9,7 @@ made only on a commit that passed CI on a check branch.
 ## Unreleased
 
 **Characters**
+- Scolitex is no longer a playable character (owner's call); it stays an enemy and a saved choice of it still loads.
 - Body sizes (owner's call): Giggles and The Visitor are small, Boglurker and Rattles large, and Punkin back to normal.
 
 **Maps**
