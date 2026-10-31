@@ -10,6 +10,39 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### `wip/medieval-fixes-dropship` (agent, 2026-10-31; in progress, not merged)
+Owner asks: Market Town "some roofs upside down, the fountain floating and too large, a few buildings look off",
+and "add the drop ship to the path tool (drawn in and out of bounds; players/bots only drop out and land in a valid
+map area)".
+- **Done (committed):**
+  - Market Hall roof was a V: `gableRoof` rolled ridge-north-south slabs the wrong way (`roll: -s*PITCH` → `s*PITCH`).
+    Houses/forge/watchtower (ridge east-west, pitch) were right at every rotation; a test now checks every medieval
+    tile's roof slabs face up and out at all 4 rotations.
+  - Odd pieces fixed in `packTilesMedieval.ts`: house ceilings and the balcony deck no longer share faces with the
+    walls (z-fighting along every facade top / balcony edge), hall's floor band is now a fascia (it fought the floor),
+    shop awning slopes on two wall brackets (were posts hanging in mid-air), shop shelves moved off the east door,
+    street plinth cut at doorways, watchtower "braces" were a 7 × 5 m board through the lookout (now X-beams),
+    bell tower's belfry floor duplicated the stair landing in another tint, forge chimney / stream lip / watchtower
+    posts nudged off coplanar faces. Test: no coplanar faces between different materials in medieval tiles.
+  - Props (`prepare-medieval.mjs`, rebuilt with `ONLY=mv_tarp_tent,mv_hay_cart,mv_shop_sign prepare-props`):
+    tarp tent canvas now meets its ridge pole (used the complement angle), hay cart shafts rest on the ground,
+    shop sign board hangs clear of its strut.
+  - Fountain: `prop.fountain_square` scale 1 → 0.4 in `maps/market_town.json` (9.2 m basin over a 3.8 m plinth step
+    → fits the upper step at 0.5 m). Portcullis: `startOpen: true`, sim and visuals start raised; what looked like a
+    lowered grille in the QA shot is the timber-framed border fence seen through the passage (unchanged).
+  - Drop routes: `AirplaneEntity.craft` ('plane' | 'dropship', optional, additive); `DROPSHIP_DROP_DEF` (dropship.glb,
+    12 benches); MapMaker Paths group has Plane/Dropship Drop Route cards + palette key `airplane:dropship`;
+    inspector Aircraft choice; route tool colours the route green over the play area, grey outside.
+    Sim (`sim/airplane.ts` dropPlan/dropArea/canDrop/dropStretchEnds/botDropIndex, `match.ts` dropPlanFor/mayJumpOut):
+    jumps only when exit and landing points are over ground in the play area (bounds, else tiles+terrain, 3 m in;
+    not void/lava/acid); refused jump → per-player `msg` (new optional `s` on the msg event); riders still aboard are
+    dropped at the last good point; bots pick a nav-reachable landing near their objective. Old 60 m bounds warning
+    replaced by `airplane.nodrop`. Unit tests in airplane.test.ts.
+- **Next:** run the new e2e `dropRouteChecks` (end of the `editor` flow, e2e/run.mjs) locally; rebuild the palette
+  atlas (tiles/props changed: build, vite preview, temp copy of build-palette-atlas.mjs, `pnpm content:build`,
+  `pnpm content:check`); bundle budget; CHANGELOG/BUILDING_KIT; push `check/medieval-fixes` and get CI green.
+- Screenshots (before/after, real match, prod build): session scratchpad `mt-fix/` (not in the repo).
+
 ### `wip/grips-live` (agent, 2026-10-31): "the grips are not working at all" (owner, live 6c0f8a6)
 - **Root cause:** the clips' hold is made for the rig's hand; a Meshy hand can sit on its joint a quarter turn
   round (core.dapper's), so its palm faced the camera and its edge the grip, in every view. Not specific to real

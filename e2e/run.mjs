@@ -405,6 +405,78 @@ async function editorFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   // Close it, or its render loop keeps eating CPU through the later flows.
   await page.context().close();
+  await dropRouteChecks(browser);
+}
+
+/**
+ * A dropship drop route from the Paths group, drawn in and out of the map's bounds; in TEST you start aboard,
+ * a jump while it is still off the map is refused with a hint, over the map it goes, and you land in the map.
+ */
+async function dropRouteChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  // Open ground 96 m across (x and z -48..48): the play area riders may come down on.
+  await newMap(page, 96);
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const clickWorld = async (x, z) => {
+    const p = await page.evaluate(([x, z]) => window.__editor.view.project({ x, y: 0, z }), [x, z]);
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.click(p.x, p.y);
+  };
+  await clickTool(page, '[data-tool="path-drop-dropship"]');
+  await clickWorld(0, 0);
+  await page.keyboard.press('Escape');
+  let plane = (await doc()).entities.find((e) => e.kind === 'airplane');
+  check(plane?.craft === 'dropship' && plane.route.some(([x]) => Math.abs(x) > 60), `Paths → Dropship Drop Route places a dropship whose route runs in from off the map (${JSON.stringify(plane && { craft: plane.craft, route: plane.route })})`);
+  // Select it: the inspector offers the aircraft and the air drop.
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), plane?.id);
+  const craftSel = await page.waitForFunction(() => [...document.querySelectorAll('#editor select')].some((s) => [...s.options].some((o) => o.value === 'dropship')), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(craftSel, 'the inspector has an Aircraft choice (plane or dropship)');
+  await page.evaluate(() => {
+    const drop = [...document.querySelectorAll('#editor select')].find((s) => [...s.options].some((o) => o.value === 'start'));
+    drop.value = 'start';
+    drop.dispatchEvent(new Event('change'));
+  });
+  await page.waitForFunction(() => window.__editor.doc.entities.some((e) => e.kind === 'airplane' && e.airdrop === 'start'), null, { timeout: T(10000) }).catch(() => {});
+  // Draw route: a point far outside the map's edge is fine (riders only jump over the map).
+  await page.click('#ed-draw-route');
+  await page.evaluate(() => window.__editor.view.focus({ x: 60, y: 0, z: 20 }));
+  await clickWorld(62, 22);
+  await page.keyboard.press('Escape');
+  plane = (await doc()).entities.find((e) => e.kind === 'airplane');
+  check(plane?.airdrop === 'start' && plane.route.length === 4 && plane.route[3][0] > 55, `the route tool adds a point outside the boundary (${JSON.stringify(plane && { airdrop: plane.airdrop, route: plane.route })})`);
+  const issues = await page.textContent('#ed-issues');
+  check(!/airplane|outside the map's boundary/i.test(issues ?? ''), `no warning for flying outside the boundary (${(issues ?? '').slice(0, 200)})`);
+
+  await page.keyboard.press('F5');
+  await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(20000) });
+  const aboard = await simWait(page, (m, me) => !!me.mount && m.mounts[me.mount.index].def.id === 'dropship_drop', null, T(20000));
+  check(aboard, 'TEST starts you aboard the dropship');
+  // Still off the map's west edge: a jump is refused, with a hint.
+  const offMap = await sim(page, (m, me) => m.mounts[me.mount.index].pos.x < -60).catch(() => false);
+  await page.keyboard.down('Space');
+  const hinted = await page.waitForFunction(() => /drop zone/.test(document.getElementById('message')?.textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
+  await page.keyboard.up('Space');
+  const stillAboard = await sim(page, (m, me) => !!me.mount).catch(() => false);
+  check(offMap && hinted && stillAboard, `a jump off the map is refused with a hint (off the map ${offMap}, hint ${hinted}, still aboard ${stillAboard})`);
+  // Over the map: jump.
+  const over = await simWait(page, (m, me) => !me.mount || m.mounts[me.mount.index].pos.x > -30, null, T(60000));
+  await page.keyboard.down('Space');
+  const out = await simWait(page, (m, me) => !me.mount, null, T(15000));
+  await page.keyboard.up('Space');
+  check(over && out, `over the map the jump goes (over ${over}, out ${out})`);
+  const landed = await meWait(page, (m, me) => me.alive && me.move.grounded, null, 40, T(120000));
+  const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z, alive: me.alive })).catch(() => null);
+  check(landed && at && Math.abs(at.x) < 48 && Math.abs(at.z) < 48, `you parachute down and land in the map (${JSON.stringify(at)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
 }
 
 /** MapMaker tool bar, Erase tool, level strip and NPC palette. Screenshots go to E2E_SHOTS when set. */
