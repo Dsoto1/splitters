@@ -3,7 +3,8 @@ import { horizontalDistance, type Vec3, hypot } from '../math.ts';
 import { TICK_RATE } from './constants.ts';
 
 /**
- * The transport plane set piece (map entity `airplane`): it flies a fixed
+ * The transport plane set piece (map entity `airplane`; a dropship when its
+ * `craft` says so): it flies a fixed
  * route over the map at a set altitude, once round every `loopSeconds`.
  * Players ride it as passengers (spawned aboard by the air drop setting, or
  * never), and jump out with E or jump to parachute down (parachute.ts).
@@ -77,6 +78,141 @@ export function ticksToRouteEnd(r: AirRoute, tick: number): number {
   if (r.closed) return Infinity;
   return Math.round((1 - routePhase(r, tick)) * r.loopSeconds * TICK_RATE);
 }
+
+/** How far along the route (m from its first point) the craft is at `tick`. */
+export const routeDistance = (r: AirRoute, tick: number): number => routePhase(r, tick) * r.length;
+
+/** The route's point `d` metres along it (wrapping round a closed loop). */
+export function routePointAt(r: AirRoute, d: number): { x: number; z: number } {
+  const t = ((d % r.length) + r.length) % r.length;
+  let i = 0;
+  while (i < r.at.length - 2 && r.at[i + 1]! < t) i++;
+  const a = r.points[i]!;
+  const b = r.points[(i + 1) % r.points.length]!;
+  const k = Math.min(1, Math.max(0, (t - r.at[i]!) / Math.max(1e-6, r.at[i + 1]! - r.at[i]!)));
+  return { x: a.x + (b.x - a.x) * k, z: a.z + (b.z - a.z) * k };
+}
+
+/**
+ * Where riders may jump out along a drop route. The route is cut into
+ * samples `step` metres apart; `ok[i]` says whether sample i (the stretch
+ * from i·step) is over ground a parachutist can land on (inside the map's
+ * play area, over a floor or terrain, not lava, acid or the void), `bot[i]`
+ * whether bots may pick it (that ground is on their navmesh too). `any`:
+ * some sample is good. A route with no good sample at all (a map whose drop
+ * area can't be worked out) lets riders jump anywhere, as before.
+ */
+export interface DropPlan {
+  step: number;
+  ok: boolean[];
+  bot: boolean[];
+  any: boolean;
+}
+
+/** Metres between drop samples: a sample lasts at least ~1.5 ticks at the craft's speed, so none is skipped. */
+export const dropStep = (r: AirRoute): number => Math.max(4, (routeSpeed(r) / TICK_RATE) * 1.5);
+
+/**
+ * Where, along the route from the craft, a rider who jumps comes out and
+ * comes down: out of the tail ramp (`exit`, behind the craft: its half
+ * length and a metre) and, carried on by half the craft's speed until the
+ * canopy opens (about JUMP_CARRY_SECONDS), roughly where they land. Both
+ * must be over good ground for a jump there to be allowed.
+ */
+export const JUMP_CARRY_SECONDS = 2.5;
+export function dropOffsets(r: AirRoute, halfLength: number): number[] {
+  const exit = -(halfLength + 1);
+  return [exit, Math.max(exit, exit + routeSpeed(r) * 0.5 * JUMP_CARRY_SECONDS)];
+}
+
+/**
+ * Work out a route's drop plan from `land` (can a rider land under (x, z)?)
+ * and `reach` (can a bot walk on from there?), checked `offsets` metres
+ * along the route from each sample (dropOffsets; the last one is where they
+ * land, which is where bots need to be able to walk from).
+ */
+export function dropPlan(r: AirRoute, land: (x: number, z: number) => boolean, reach: (x: number, z: number) => boolean = () => true, offsets: readonly number[] = [0]): DropPlan {
+  const step = dropStep(r);
+  const n = Math.max(1, Math.ceil(r.length / step));
+  const ok: boolean[] = [];
+  const bot: boolean[] = [];
+  // Off the ends of an open route there is nothing to fly over: a point there is taken at the route's end.
+  const at = (d: number) => routePointAt(r, r.closed ? d : Math.max(0, Math.min(r.length, d)));
+  for (let i = 0; i < n; i++) {
+    const d = Math.min(r.length, (i + 0.5) * step);
+    const good = offsets.every((o) => {
+      const p = at(d + o);
+      return land(p.x, p.z);
+    });
+    ok.push(good);
+    const p = at(d + offsets[offsets.length - 1]!);
+    bot.push(good && reach(p.x, p.z));
+  }
+  return { step, ok, bot, any: ok.some(Boolean) };
+}
+
+/** The drop sample the craft is over at `tick`. */
+export const dropIndex = (plan: DropPlan, r: AirRoute, tick: number): number => Math.min(plan.ok.length - 1, Math.floor(routeDistance(r, tick) / plan.step));
+
+/** Whether a rider may jump out at `tick` (always, on a route with no good sample at all). */
+export const canDrop = (plan: DropPlan, r: AirRoute, tick: number): boolean => !plan.any || plan.ok[dropIndex(plan, r, tick)]!;
+
+/**
+ * Whether `tick` is the last one over a good stretch: the craft is over
+ * good ground now and won't be next tick (or an open route ends). Anyone
+ * still aboard is dropped then, at the stretch's last good point.
+ */
+export function dropStretchEnds(plan: DropPlan, r: AirRoute, tick: number): boolean {
+  if (!plan.any || !canDrop(plan, r, tick)) return false;
+  if (ticksToRouteEnd(r, tick) <= 1) return true;
+  return !canDrop(plan, r, tick + 1);
+}
+
+/**
+ * The sample a bot aiming for `target` jumps at: one of the bot-good samples
+ * whose landing point (`landOffset` m on along the route) is within `spread`
+ * metres of the nearest one to the target, chosen by `pick` (0..1), so a
+ * planeload aiming for one place doesn't all jump at once (-1: none; a bot
+ * then jumps at the first good moment its target is passing, as shouldJump
+ * decides).
+ */
+export function botDropIndex(plan: DropPlan, r: AirRoute, target: Vec3, landOffset = 0, pick = 0, spread = 12): number {
+  const dist: { i: number; d: number }[] = [];
+  plan.bot.forEach((good, i) => {
+    if (!good) return;
+    const along = Math.min(r.length, (i + 0.5) * plan.step) + landOffset;
+    const p = routePointAt(r, r.closed ? along : Math.max(0, Math.min(r.length, along)));
+    dist.push({ i, d: hypot(p.x - target.x, p.z - target.z) });
+  });
+  if (!dist.length) return -1;
+  const best = Math.min(...dist.map((x) => x.d));
+  const near = dist.filter((x) => x.d <= best + spread);
+  return near[Math.min(near.length - 1, Math.floor(pick * near.length))]!.i;
+}
+
+/** The ground riders may come down on: the map's boundary (or, without one, what's built and its terrain), `margin` m in from the edge. */
+export function dropArea(map: MapDocument, margin = DROP_MARGIN): { x0: number; z0: number; x1: number; z1: number } | null {
+  let a: { x0: number; z0: number; x1: number; z1: number } | null = null;
+  if (map.bounds) a = { x0: map.bounds.min[0], z0: map.bounds.min[1], x1: map.bounds.max[0], z1: map.bounds.max[1] };
+  else {
+    const { cellSize } = map.classicStructure;
+    const grow = (x0: number, z0: number, x1: number, z1: number) => {
+      a = a ? { x0: Math.min(a.x0, x0), z0: Math.min(a.z0, z0), x1: Math.max(a.x1, x1), z1: Math.max(a.z1, z1) } : { x0, z0, x1, z1 };
+    };
+    for (const t of map.classicStructure.tiles) grow(t.x * cellSize - cellSize / 2, t.y * cellSize - cellSize / 2, t.x * cellSize + cellSize / 2, t.y * cellSize + cellSize / 2);
+    const t = map.terrain;
+    if (t) grow(t.origin[0], t.origin[1], t.origin[0] + (t.cols - 1) * t.spacing, t.origin[1] + (t.rows - 1) * t.spacing);
+  }
+  if (!a) return null;
+  const r = a as { x0: number; z0: number; x1: number; z1: number };
+  // A small area keeps at least its middle.
+  const mx = Math.min(margin, (r.x1 - r.x0) / 4);
+  const mz = Math.min(margin, (r.z1 - r.z0) / 4);
+  return { x0: r.x0 + mx, z0: r.z0 + mz, x1: r.x1 - mx, z1: r.z1 - mz };
+}
+
+/** How far in from the play area's edge a jump must be (a parachute drifts; the boundary walls stop you landing past them anyway). */
+export const DROP_MARGIN = 3;
 
 /** The map's transport planes (index into map.entities and the entity). */
 export function mapAirplanes(map: MapDocument): { index: number; entity: AirplaneEntity }[] {
@@ -159,9 +295,11 @@ export function airplaneIssues(map: MapDocument, groundAt: (x: number, z: number
       }
     }
     if (lowest < 12) out.push({ severity: 'warning', code: 'airplane.low', message: `transport plane ${e.id} passes ${Math.max(0, Math.round(lowest))} m over the ground or buildings (fly it at least 12 m up, 40+ for a parachute drop)`, targetId: e.id });
-    const b = map.bounds;
-    if (b && r.points.some((p) => p.x < b.min[0] - 60 || p.x > b.max[0] + 60 || p.z < b.min[1] - 60 || p.z > b.max[1] + 60)) {
-      out.push({ severity: 'warning', code: 'airplane.bounds', message: `transport plane ${e.id} flies more than 60 m outside the map's boundary: riders who jump there can't get back in`, targetId: e.id });
+    // The route may run outside the boundary (riders can only jump over the play area), but some of it must be over it.
+    const area = dropArea(map);
+    if (area && e.airdrop !== 'off') {
+      const plan = dropPlan(r, (x, z) => x >= area.x0 && x <= area.x1 && z >= area.z0 && z <= area.z1);
+      if (!plan.any) out.push({ severity: 'warning', code: 'airplane.nodrop', message: `${e.craft === 'dropship' ? 'dropship' : 'transport plane'} ${e.id} never flies over the play area: its riders can't jump out anywhere (draw some of its route over the map)`, targetId: e.id });
     }
   }
   return out;

@@ -78,7 +78,7 @@ export interface SeatDef {
 }
 
 export interface MountDef {
-  id: MountModel | typeof AIRPLANE_MODEL;
+  id: MountModel | typeof AIRPLANE_MODEL | typeof DROPSHIP_DROP_MODEL;
   displayName: string;
   kind: 'turret' | 'sentry' | 'vehicle';
   /** Built model (content/models.json). */
@@ -461,7 +461,33 @@ export const AIRPLANE_DEF: MountDef = {
   blurb: 'Flies a fixed route; jump out with E or jump and parachute down',
 };
 
-export const getMountDef = (id: string): MountDef | undefined => (id === AIRPLANE_MODEL ? AIRPLANE_DEF : MOUNT_DEFS[id as MountModel]);
+/** The dropship flying a drop route (an `airplane` entity with craft `dropship`): not the placeable Dropship vehicle. */
+export const DROPSHIP_DROP_MODEL = 'dropship_drop';
+
+/**
+ * The dropship on a drop route: the Dropship's model, 12 riders on benches
+ * along its deck; like the transport plane it cannot be hurt and nobody
+ * flies it.
+ */
+export const DROPSHIP_DROP_DEF: MountDef = {
+  id: DROPSHIP_DROP_MODEL,
+  displayName: 'Dropship',
+  kind: 'vehicle',
+  model: 'vehicles/dropship.glb',
+  health: 1_000_000,
+  half: [2.0, 0.85, 4.8],
+  seats: Array.from({ length: 12 }, (_, i): SeatDef => ({ role: 'passenger', label: `Bench ${i + 1}`, offset: [i % 2 ? 1.1 : -1.1, 2.0, 2.5 - Math.floor(i / 2)] })),
+  enterRadius: 0,
+  respawnSeconds: 600,
+  blast: { radius: 0, damage: 0 },
+  airplane: true,
+  blurb: 'Flies a fixed route; jump out with E or jump and parachute down',
+};
+
+/** The mount that flies an `airplane` entity's route (its craft). */
+export const airCraftDef = (craft: string | undefined): MountDef => (craft === 'dropship' ? DROPSHIP_DROP_DEF : AIRPLANE_DEF);
+
+export const getMountDef = (id: string): MountDef | undefined => (id === AIRPLANE_MODEL ? AIRPLANE_DEF : id === DROPSHIP_DROP_MODEL ? DROPSHIP_DROP_DEF : MOUNT_DEFS[id as MountModel]);
 
 /**
  * Vehicles placed to ride on water (MountEntity.onWater). Over water or

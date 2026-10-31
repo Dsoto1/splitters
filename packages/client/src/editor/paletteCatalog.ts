@@ -84,7 +84,7 @@ export function pictureKeys(): { key: string; tile?: string; file?: string }[] {
 
 /** Scenario palette entries (Objects & Logic tab) by sub-group; game-mode objects, lights and NPC spawners have their own tabs. */
 export function scenarioGroup(key: string): { pane: 'entities' | 'scenario' | 'lights' | 'npcs'; group: string } {
-  if (['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'airplane'].includes(key)) return { pane: 'entities', group: 'Game Modes & Objectives' };
+  if (['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'airplane', 'airplane:dropship'].includes(key)) return { pane: 'entities', group: 'Game Modes & Objectives' };
   if (key.startsWith('light:')) return { pane: 'lights', group: 'Lights' };
   if (key.startsWith('encounter')) return { pane: 'npcs', group: 'Spawners' };
   if (key.startsWith('door') || key === 'mover:portcullis' || key === 'mover:garage_door' || key === 'mover:bookcase') return { pane: 'scenario', group: 'Doors & Gates' };

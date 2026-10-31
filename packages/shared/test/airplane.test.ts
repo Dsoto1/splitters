@@ -9,13 +9,20 @@ import {
   MAP_FORMAT_VERSION,
   PLAYER,
   TICK_RATE,
+  DROPSHIP_DROP_DEF,
   airRoute,
+  canDrop,
+  dropArea,
+  dropPlan,
+  dropStretchEnds,
   initPhysics,
+  newScenarioEntities,
   loadMap,
   migrateMapDocument,
   routePose,
   validateMap,
   type AirplaneEntity,
+  type GameEvent,
   type MapDocument,
   type PlayerInput,
 } from '../src/index.ts';
@@ -194,5 +201,156 @@ describe('airplane map entity', () => {
   it('the plane seats 24', () => {
     expect(AIRPLANE_DEF.seats).toHaveLength(24);
     expect(AIRPLANE_DEF.seats.every((s) => s.role === 'passenger')).toBe(true);
+  });
+});
+
+/** The craft flying the map's drop route (the match keeps its mounts to itself). */
+const craftOf = (m: Match) => (m as unknown as { mounts: { route?: unknown; pos: { x: number }; def: unknown }[] }).mounts.find((x) => x.route)!;
+
+/** The yard with a route from far off its west edge, across it (x -4..36) and far off its east edge. */
+const runIn = (plane: Partial<AirplaneEntity> = {}) => yard({ closed: false, route: [[-116, 0], [124, 0]], loopSeconds: 24, ...plane });
+
+describe('drop routes in and out of bounds', () => {
+  it('the drop plan marks only the stretch over the play area (pure)', () => {
+    const r = airRoute({ position: [0, 0, 0], route: [[-100, 0], [100, 0]], altitude: 50, loopSeconds: 20, closed: false });
+    const plan = dropPlan(r, (x) => x >= -20 && x <= 20);
+    expect(plan.any).toBe(true);
+    const tickAt = (x: number) => Math.round(((x + 100) / 200) * 20 * TICK_RATE);
+    expect(canDrop(plan, r, tickAt(-60))).toBe(false);
+    expect(canDrop(plan, r, tickAt(0))).toBe(true);
+    expect(canDrop(plan, r, tickAt(60))).toBe(false);
+    // The stretch ends once, at its last good point (within a sample of x = 20).
+    const ends = Array.from({ length: 20 * TICK_RATE }, (_, t) => t).filter((t) => dropStretchEnds(plan, r, t));
+    expect(ends).toHaveLength(1);
+    expect(-100 + (ends[0]! / (20 * TICK_RATE)) * 200).toBeGreaterThan(14);
+    expect(-100 + (ends[0]! / (20 * TICK_RATE)) * 200).toBeLessThanOrEqual(20);
+    // A route nowhere over good ground lets riders jump anywhere (old maps keep working).
+    const none = dropPlan(r, () => false);
+    expect(none.any).toBe(false);
+    expect(canDrop(none, r, 0)).toBe(true);
+  });
+
+  it('the play area is the boundary, else what is built, a little in from the edge', () => {
+    const map = yard();
+    expect(dropArea(map)).toEqual({ x0: -1, z0: -1, x1: 33, z1: 25 });
+    expect(dropArea({ ...map, bounds: { min: [-50, -40], max: [50, 40], style: 'invisible', height: 8 } })).toEqual({ x0: -47, z0: -37, x1: 47, z1: 37 });
+  });
+
+  for (const craft of ['plane', 'dropship'] as const) {
+    it(`${craft}: a jump outside the map is refused with a hint; over the map it goes`, () => {
+      const match = new Match(runIn({ craft }), rules);
+      const a = match.addHuman('a')!;
+      expect(a.mount).toBeDefined();
+      const d = new Driver(match);
+      const events: GameEvent[] = [];
+      d.input(a);
+      events.push(...match.step());
+      for (const buttons of [BUTTON_JUMP, BUTTON_USE]) {
+        d.input(a, { buttons });
+        events.push(...match.step());
+        expect(a.mount, 'still aboard off the map').toBeDefined();
+      }
+      const hints = events.filter((e) => e.e === 'msg' && e.s === a.slot);
+      // Told once (not every tick the key is down), and only them.
+      expect(hints).toHaveLength(1);
+      expect(hints[0]).toMatchObject({ text: expect.stringMatching(/drop zone/) });
+      // Ride on until the craft is over the yard, then jump.
+      for (let i = 0; i < TICK_RATE * 24 && craftOf(match).pos.x < 14; i++) {
+        d.input(a);
+        match.step();
+      }
+      d.input(a, { buttons: BUTTON_JUMP });
+      match.step();
+      expect(a.mount).toBeUndefined();
+      for (let i = 0; i < TICK_RATE * 25 && !a.move.grounded; i++) {
+        d.input(a);
+        match.step();
+      }
+      expect(a.alive).toBe(true);
+      expect(a.move.pos.x).toBeGreaterThan(-4);
+      expect(a.move.pos.x).toBeLessThan(36);
+    });
+
+    it(`${craft}: anyone still aboard is dropped at the last good point, and lands in the map`, () => {
+      const match = new Match(runIn({ craft }), rules);
+      const a = match.addHuman('a')!;
+      const d = new Driver(match);
+      let outAt: number | null = null;
+      for (let i = 0; i < TICK_RATE * 24 && a.mount; i++) {
+        d.input(a);
+        match.step();
+        if (!a.mount) outAt = craftOf(match).pos.x;
+      }
+      expect(a.mount).toBeUndefined();
+      // Out over the yard's far side, well before the route ends 100 m further on.
+      expect(outAt).toBeGreaterThan(10);
+      expect(outAt).toBeLessThan(40);
+      for (let i = 0; i < TICK_RATE * 25 && !a.move.grounded; i++) {
+        d.input(a);
+        match.step();
+      }
+      expect(a.alive).toBe(true);
+      expect(a.move.pos.x).toBeGreaterThan(-4);
+      expect(a.move.pos.x).toBeLessThan(36);
+      expect(a.move.pos.y).toBeLessThan(2);
+    });
+
+    it(`${craft}: bots jump only over the map and land where they can walk`, () => {
+      const match = new Match(runIn({ craft, loopSeconds: 30 }), { ...rules, startingWeapons: ['core.knife'], startingGrenades: 0 });
+      const bots = [0, 1, 2].map((i) => match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal)!);
+      expect(bots.every((b) => b.mount)).toBe(true);
+      const jumpedAt = new Map<number, number>();
+      for (let i = 0; i < TICK_RATE * 40; i++) {
+        match.step();
+        for (const b of bots) if (!b.mount && !jumpedAt.has(b.slot)) jumpedAt.set(b.slot, craftOf(match).pos.x);
+        if (bots.every((b) => !b.mount && b.move.grounded)) break;
+      }
+      expect(jumpedAt.size).toBe(bots.length);
+      for (const x of jumpedAt.values()) {
+        expect(x).toBeGreaterThan(-1);
+        expect(x).toBeLessThan(40);
+      }
+      for (const b of bots) {
+        expect(b.alive).toBe(true);
+        expect(b.move.pos.y).toBeLessThan(2);
+        expect(b.move.pos.x).toBeGreaterThan(-4);
+        expect(b.move.pos.x).toBeLessThan(36);
+      }
+    });
+  }
+
+  it('no jumping out over the void: only over a floor or the terrain', () => {
+    // A boundary twice the yard's size: its east half is inside the boundary but has nothing to land on.
+    // No ground slab round the built area (a sky map): past the yard is the void.
+    const base = runIn();
+    const map: MapDocument = { ...base, backdrop: { ...base.backdrop, ground: 'none' } as MapDocument['backdrop'], bounds: { min: [-4, -4] as [number, number], max: [76, 28] as [number, number], style: 'invisible' as const, height: 8 } };
+    const match = new Match(map, rules);
+    const a = match.addHuman('a')!;
+    const d = new Driver(match);
+    for (let i = 0; i < TICK_RATE * 24 && craftOf(match).pos.x < 56; i++) {
+      d.input(a);
+      match.step();
+    }
+    expect(a.mount).toBeUndefined();
+    // Dropped at the yard's edge, not over the empty half.
+    expect(a.move.pos.x).toBeLessThan(40);
+  });
+
+  it('the dropship is a drop route choice: 12 riders, its own model, the same rules', () => {
+    expect(DROPSHIP_DROP_DEF).toMatchObject({ model: 'vehicles/dropship.glb', airplane: true });
+    expect(DROPSHIP_DROP_DEF.seats).toHaveLength(12);
+    const [e] = newScenarioEntities('airplane:dropship', [0, 0, 0], 0);
+    expect(e).toMatchObject({ kind: 'airplane', craft: 'dropship', closed: false });
+    const match = new Match(runIn({ craft: 'dropship' }), rules);
+    expect(craftOf(match).def).toBe(DROPSHIP_DROP_DEF);
+    const loaded = loadMap(JSON.stringify(runIn({ craft: 'dropship' })));
+    expect(loaded.ok && loaded.map.entities.find((x) => x.kind === 'airplane')).toMatchObject({ craft: 'dropship' });
+  });
+
+  it('routes may run far outside the boundary; one that never crosses the play area is flagged', () => {
+    const far = { ...runIn({ route: [[-416, 0], [424, 0]], loopSeconds: 60 }), bounds: { min: [-4, -4] as [number, number], max: [36, 28] as [number, number], style: 'invisible' as const, height: 8 } };
+    expect(validateMap(far).filter((i) => i.code.startsWith('airplane') && i.severity !== 'suggestion')).toEqual([]);
+    const away = runIn({ route: [[-200, 100], [200, 100]], loopSeconds: 30 });
+    expect(validateMap(away).some((i) => i.code === 'airplane.nodrop')).toBe(true);
   });
 });

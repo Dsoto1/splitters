@@ -13,9 +13,9 @@ import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type En
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3, hypot } from '../math.ts';
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
-  AIRPLANE_DEF, BUILT_MOUNT_BASE, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
+  airCraftDef, BUILT_MOUNT_BASE, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
 } from './mounts.ts';
-import { airRoute, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute } from './airplane.ts';
+import { airRoute, botDropIndex, canDrop, dropArea, dropIndex, dropOffsets, dropPlan, dropStretchEnds, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute, type DropPlan } from './airplane.ts';
 import { CHUTE, heightAboveGround } from './parachute.ts';
 import { NavWorld } from '../nav/index.ts';
 import {
@@ -181,6 +181,8 @@ interface MountRt {
   /** The transport plane: the route it flies and how players board it (see airplane.ts). */
   route?: AirRoute;
   airdrop?: 'off' | 'start' | 'always';
+  /** Where along the route riders may jump out (worked out on first use: dropPlanFor). */
+  drops?: DropPlan;
 }
 
 /** A spectator by choice (Match.spectate): who they are and the score they had, kept for when they join again. */
@@ -508,7 +510,9 @@ export class Match {
   private readonly mountBodies = new Map<number, MountRt>();
   /** Air drop: who has had this round's start in the plane, and where each bot aboard means to jump (target, last distance). */
   private readonly airdropped = new Set<number>();
-  private readonly planeDrops = new Map<number, { target: Vec3; prev?: number }>();
+  private readonly planeDrops = new Map<number, { target: Vec3; prev?: number; at?: number }>();
+  /** The tick each rider was last told they can't jump out here (the hint isn't repeated every tick the key is held). */
+  private readonly dropHints = new Map<number, number>();
   private nextProjectileId = 1;
   private covers: Cover[] = [];
   /** UAV sweeps running: side (team, or one player in free-for-all) -> tick it ends. */
@@ -633,7 +637,7 @@ export class Match {
       if (e.kind !== 'airplane') return;
       const route = airRoute(e);
       const pose = routePose(route, 0);
-      this.addMount(index, AIRPLANE_DEF, { x: pose.pos.x, y: pose.pos.y, z: pose.pos.z }, pose.yaw, null, null);
+      this.addMount(index, airCraftDef(e.craft), { x: pose.pos.x, y: pose.pos.y, z: pose.pos.z }, pose.yaw, null, null);
       const m = this.mounts[this.mounts.length - 1]!;
       m.route = route;
       m.airdrop = e.airdrop;
@@ -2328,8 +2332,10 @@ export class Match {
         const m = this.mounts[c.mount!.index]!;
         // The plane: jump (or E, below) jumps out.
         if (m.def.airplane && input.buttons & BUTTON_JUMP && !(input.buttons & BUTTON_USE)) {
-          this.leaveMount(c, true);
-          continue;
+          if (this.mayJumpOut(c, m)) {
+            this.leaveMount(c, true);
+            continue;
+          }
         }
         if (seat.role === 'driver') {
           const up = !!(input.buttons & BUTTON_JUMP);
@@ -2401,8 +2407,10 @@ export class Match {
       if (input.buttons & BUTTON_USE) {
         c.useTick = this.tick;
         // Get out, get in, or use whatever you are looking at.
-        if (c.mount) this.leaveMount(c, true);
-        else if (!this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
+        if (c.mount) {
+          const ride = this.mounts[c.mount.index];
+          if (!ride?.route || this.mayJumpOut(c, ride)) this.leaveMount(c, true);
+        } else if (!this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
         if (this.phase !== 'playing') break;
       }
       // A mode tool (the Fort Wars Builder) takes the trigger for itself.
@@ -3748,13 +3756,63 @@ export class Match {
     const m = c.mount ? this.mounts[c.mount.index] : undefined;
     if (!m?.route) return;
     input.buttons &= ~(BUTTON_USE | BUTTON_JUMP);
+    const drops = this.dropPlanFor(m);
     let plan = this.planeDrops.get(c.slot);
-    if (!plan) this.planeDrops.set(c.slot, (plan = { target: dropTarget(this.map, c.faction, this.rng(), this.rules.mode) }));
+    if (!plan) {
+      const target = dropTarget(this.map, c.faction, this.rng(), this.rules.mode);
+      // The good stretch nearest its target where it lands on ground it can walk on from.
+      const at = botDropIndex(drops, m.route, target, dropOffsets(m.route, m.def.half[2])[1], this.rng());
+      this.planeDrops.set(c.slot, (plan = { target, ...(at >= 0 ? { at } : {}) }));
+    }
     // Stay aboard through the countdown.
     if (this.phase !== 'playing') return;
+    if (!canDrop(drops, m.route, this.tick)) return;
+    if (plan.at !== undefined) {
+      if (dropIndex(drops, m.route, this.tick) === plan.at) input.buttons |= BUTTON_USE;
+      return;
+    }
     const { jump, dist } = shouldJump(m.pos, plan.target, plan.prev, ticksToRouteEnd(m.route, this.tick));
     plan.prev = dist;
     if (jump) input.buttons |= BUTTON_USE;
+  }
+
+  /**
+   * Where riders of a drop route may jump out: over the map's play area
+   * (dropArea), above a floor or the terrain (not the void), clear of lava
+   * and acid; bots also want ground on their navmesh. Worked out once.
+   */
+  dropPlanFor(m: MountRt): DropPlan {
+    if (m.drops) return m.drops;
+    const route = m.route!;
+    const area = dropArea(this.map);
+    const ground = (x: number, z: number): number | null => {
+      if (area && (x < area.x0 || x > area.x1 || z < area.z0 || z > area.z1)) return null;
+      const top = route.y - 4;
+      const d = this.physics.raycastWorld({ x, y: top, z }, { x: 0, y: -1, z: 0 }, top - this.killY);
+      if (d === null) return null;
+      const y = top - d;
+      if (y < this.killY + 2) return null;
+      const wet = liquidAt(this.liquids, { x, y: y + 0.3, z });
+      if (wet && (wet.liquid === 'lava' || wet.liquid === 'acid')) return null;
+      return y;
+    };
+    const reach = (x: number, z: number): boolean => {
+      const y = ground(x, z);
+      if (y === null) return false;
+      const q = this.nav.closestPoint({ x, y: y + 0.5, z }, { x: 2, y: 2, z: 2 });
+      return !!q && Math.abs(q.y - y) < 1.5;
+    };
+    return (m.drops = dropPlan(route, (x, z) => ground(x, z) !== null, reach, dropOffsets(route, m.def.half[2])));
+  }
+
+  /** Whether a rider of mount `m` may jump out now; if not, they're told why (once a second at most). */
+  private mayJumpOut(c: Combatant, m: MountRt): boolean {
+    if (!m.route || canDrop(this.dropPlanFor(m), m.route, this.tick)) return true;
+    if (!c.npc && this.tick - (this.dropHints.get(c.slot) ?? -Infinity) >= TICK_RATE) {
+      this.dropHints.set(c.slot, this.tick);
+      this.pendingEvents.push({ e: 'msg', text: `Not over the drop zone: you can jump when the ${m.def.displayName.toLowerCase()} is over the map`, secs: 2, s: c.slot });
+    }
+    return false;
   }
 
   /** Air drop: seat a spawning player in a transport plane with a free bench; false when there is none. */
@@ -3913,7 +3971,10 @@ export class Match {
   private flyPlane(m: MountRt): void {
     const route = m.route!;
     const pose = routePose(route, this.tick);
-    if (ticksToRouteEnd(route, this.tick) <= 1) {
+    const drops = this.dropPlanFor(m);
+    // Leaving the stretch riders can land from (or the end of an open route over it): out they go, here.
+    // A route with no good stretch at all throws them out where an open route ends, as it always did.
+    if (drops.any ? dropStretchEnds(drops, route, this.tick) : ticksToRouteEnd(route, this.tick) <= 1) {
       for (const slot of m.seats) {
         const c = slot === null ? undefined : this.actor(slot);
         if (c) this.leaveMount(c, true);

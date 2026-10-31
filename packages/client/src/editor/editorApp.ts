@@ -183,6 +183,9 @@ import {
   MOUNT_SKIN_LABELS,
   type MountSkin,
   AIRDROP_MODES,
+  AIR_CRAFTS,
+  AIR_CRAFT_LABELS,
+  type AirCraft,
   type AirdropMode,
   MAX_TEAMS,
   PLAYER,
@@ -335,6 +338,7 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   'water:lava': '<rect x="6" y="24" width="44" height="22" fill="#ff5a1a"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#ffd34d" stroke-width="2" fill="none"/><circle cx="20" cy="34" r="3" fill="#ffd34d"/>',
   'water:acid': '<rect x="6" y="24" width="44" height="22" fill="#8aff3a" fill-opacity=".85"/><circle cx="18" cy="32" r="3" fill="#d8ffb0"/><circle cx="34" cy="38" r="2" fill="#d8ffb0"/><path d="M6 24q5-4 11 0t11 0 11 0 11 0" stroke="#d8ffb0" stroke-width="2" fill="none"/>',
   airplane: '<path d="M28 6l4 10v8l16 8v4l-16-4v10l5 4v3l-9-2-9 2v-3l5-4V32L8 36v-4l16-8v-8z" fill="#e2703a"/><path d="M10 50h36" stroke="#e2703a" stroke-width="2" stroke-dasharray="4 3"/>',
+  'airplane:dropship': '<path d="M14 22h28l8 8-8 8H14l-6-8z" fill="#5a6b7a"/><rect x="18" y="26" width="16" height="8" fill="#9fb3c4"/><path d="M24 22l-6-10h6l6 10M24 38l-6 10h6l6-10" fill="#7a8a98"/><path d="M4 52h48" stroke="#e2703a" stroke-width="2" stroke-dasharray="4 3"/>',
   'mover:lift': '<rect x="14" y="8" width="4" height="40" fill="#5a5f68"/><rect x="38" y="8" width="4" height="40" fill="#5a5f68"/><rect x="16" y="30" width="24" height="5" fill="#2ec4b6"/><path d="M28 12v12M23 17l5-5 5 5" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
   'mover:slider': '<rect x="10" y="12" width="20" height="32" fill="#8a8f98"/><path d="M34 28h14M43 23l5 5-5 5" stroke="#2ec4b6" stroke-width="2.5" fill="none"/>',
   'mover:drawbridge': '<rect x="6" y="40" width="10" height="10" fill="#5a5f68"/><path d="M16 42L44 18" stroke="#8a6a42" stroke-width="5"/><path d="M40 44a20 20 0 0 0-6-18" stroke="#2ec4b6" stroke-width="2" fill="none"/>',
@@ -2085,9 +2089,23 @@ export class EditorApp {
       this.palette.register(b, { key: tool, name: label, tags });
       return b;
     };
+    const dropCard = (tool: string, key: ScenarioPaletteKey, svg: string, label: string, title: string, tags: string) => {
+      const b = document.createElement('button');
+      b.className = 'tile-btn';
+      b.dataset.tool = tool;
+      b.innerHTML = `<svg viewBox="0 0 56 56">${svg}</svg>${label}`;
+      b.title = title;
+      b.addEventListener('click', () => this.setTool({ kind: 'scenario', key }));
+      this.palette.register(b, { key: tool, name: label, tags });
+      return b;
+    };
     pathGroup.append(
       pathCard('path', 'road', '<rect x="4" y="4" width="48" height="48" rx="4" fill="#5c7a3a"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#c9a36b" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M6 46 C18 40 20 18 34 16 S50 10 52 6" stroke="#e3c48f" stroke-width="2" stroke-dasharray="3 4" fill="none"/>', 'Paths', 'Paths (G): roads, streets, trails and walkways, the race track and AI routes: click points; join the ends for a loop; uses and settings in the pane', 'path road street trail walkway sidewalk pavement asphalt cobble dirt gravel boardwalk loop'),
       pathCard('path-route', 'route', '<rect x="4" y="4" width="48" height="48" rx="4" fill="#4a5a3a"/><path d="M8 46 C20 40 18 18 32 18 S48 12 50 8" stroke="#c58bff" stroke-width="3" stroke-dasharray="5 4" fill="none"/><path d="M44 6l6 2-3 6" stroke="#c58bff" stroke-width="3" fill="none"/>', 'Route', 'A route for the AI (never drawn in the game): bots driving vehicles follow it, NPC squads patrol it', 'route patrol waypoint npc guide ai vehicle follow'),
+      // Drop routes (air drop): the transport plane's or a dropship's flight path. They are entities with a route
+      // (placed like any marker, then "Draw route on the map"), drawn in and out of the map's boundary as you like.
+      dropCard('path-drop-plane', 'airplane', '<rect x="4" y="4" width="48" height="48" rx="4" fill="#3a4a5a"/><path d="M4 40 C20 34 30 22 52 14" stroke="#e2703a" stroke-width="2.5" stroke-dasharray="5 4" fill="none"/><path d="M30 14l3 7v6l11 6v3l-11-3v7l4 3v2l-7-1-7 1v-2l4-3v-7l-11 3v-3l11-6v-6z" fill="#e2703a"/>', 'Plane Drop Route', 'A transport plane flying a route (battle-royale drop): place it, then Draw route; riders jump out over the map and parachute down', 'path route plane airplane drop air drop parachute battle royale fly'),
+      dropCard('path-drop-dropship', 'airplane:dropship', '<rect x="4" y="4" width="48" height="48" rx="4" fill="#3a4a5a"/><path d="M4 40 C20 34 30 22 52 14" stroke="#e2703a" stroke-width="2.5" stroke-dasharray="5 4" fill="none"/><path d="M18 22h22l6 6-6 6H18l-5-6z" fill="#9fb3c4"/><rect x="22" y="25" width="12" height="6" fill="#5a6b7a"/>', 'Dropship Drop Route', 'A dropship flying a route in from off the map (drop ship): place it, then Draw route in and out of bounds; riders can only jump out over the map', 'path route dropship drop ship air drop parachute battle royale fly gunship'),
     );
     const pathPane = document.createElement('div');
     pathPane.id = 'ed-paths';
@@ -3689,6 +3707,8 @@ export class EditorApp {
         break;
       }
       case 'airplane': {
+        // What flies it: the transport plane or a dropship (looks and benches; the same route and drop rules).
+        choose('Aircraft', AIR_CRAFTS.map((c) => [c, AIR_CRAFT_LABELS[c]] as const), e.craft ?? 'plane', (v) => ({ craft: v as AirCraft }));
         // The route as a point list: [x, z] offsets from the plane's anchor, flown in order.
         number('Altitude (m)', e.altitude, 5, (v) => ({ altitude: clamp(v, 15, 400) }));
         number('Lap time (s)', e.loopSeconds, 5, (v) => ({ loopSeconds: clamp(v, 10, 600) }));
@@ -3723,7 +3743,7 @@ export class EditorApp {
         }));
         const length = e.route.reduce((sum, p, i) => (i ? sum + Math.hypot(p[0] - e.route[i - 1]![0], p[1] - e.route[i - 1]![1]) : 0), 0) + (e.closed ? Math.hypot(e.route[0]![0] - e.route[e.route.length - 1]![0], e.route[0]![1] - e.route[e.route.length - 1]![1]) : 0);
         el.append(this.drawRouteButton(e.id));
-        el.append(small(`Points are metres from the marker (moving it moves the whole route). ${Math.round(length)} m a lap at ${Math.round(length / e.loopSeconds)} m/s. Riders jump out with E or Space and parachute down; bots jump over their objective.`));
+        el.append(small(`Points are metres from the marker (moving it moves the whole route). ${Math.round(length)} m a lap at ${Math.round(length / e.loopSeconds)} m/s. Draw it in and out of the map's boundary as you like: riders (players and bots) can only jump out while it is over the play area, above ground they can land on (not the void, lava or acid); anyone still aboard when it leaves that stretch is dropped at its last good point. Bots jump where they land nearest their objective.`));
         break;
       }
       case 'mover': {

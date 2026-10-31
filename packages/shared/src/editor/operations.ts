@@ -435,6 +435,7 @@ export const SCENARIO_PALETTE = [
   { key: 'water:acid', label: 'Acid', search: 'acid toxic liquid hazard pool' },
   { key: 'water:swamp', label: 'Swamp', search: 'swamp mud bog marsh liquid slow' },
   { key: 'airplane', label: 'Transport Plane', search: 'airplane plane transport air drop parachute route fly over battle royale jump' },
+  { key: 'airplane:dropship', label: 'Dropship Drop', search: 'dropship drop ship gunship air drop parachute route fly over battle royale jump transport' },
   { key: 'mover:lift', label: 'Lift', search: 'mover lift elevator platform moving up down ride' },
   { key: 'mover:slider', label: 'Sliding Wall', search: 'mover sliding wall door gate moving platform train car shuttle' },
   { key: 'mover:drawbridge', label: 'Drawbridge', search: 'mover drawbridge bridge hinge lower raise castle moat' },
@@ -794,6 +795,10 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'airplane':
       // A square loop 160 m across, 70 m up, once a minute; no air drop until the creator picks one.
       return { id: newId('plane'), kind: 'airplane', position, route: [[-80, -80], [80, -80], [80, 80], [-80, 80]], altitude: 70, loopSeconds: 60, closed: true, airdrop: 'off' };
+    case 'airplane:dropship':
+      // A dropship's run-in: in from off the map's edge, across it and out the far side (draw it in and out of bounds;
+      // riders can only jump over the map), 45 m up, slower than the plane.
+      return { id: newId('dropship'), kind: 'airplane', craft: 'dropship', position, route: [[-140, 0], [0, 0], [140, 0]], altitude: 45, loopSeconds: 30, closed: false, airdrop: 'off' };
     case 'water:water':
     case 'water:lava':
     case 'water:acid':
