@@ -86,6 +86,16 @@ and finger direction from `View.gripReport()` / `__grips.drawn()`, per weapon cl
 joints; rebuild from the recorded downloads, no new Meshy credits); a whole-hand "fist" curl for models whose fingers
 are fused; per-character hand rotation / palm offset / hand scale in the manifest for rotated hands and gauntlets
 (Iron Knight 12 cm off); re-fit the worst Meshy auto-rigs in-house. Start with Big Bogdan, Shade and the dapper.
+Owner's screenshots, Character Select holding the AK (2026-10-31 evening), worst first:
+- **Ivory Rustwalker** (pre-rigged download) and **Iron Knight** (Meshy auto-rig): the right arm bends backwards
+  (elbow flipped the wrong way under the IK; check the elbow pole/hint and the upper-arm joint's roll on these rigs).
+- **King Aldric** (Meshy auto-rig, the 917k-tri download cut to 200k): hands badly imported, fingers splayed and
+  stiff, neither hand on the gun; likely needs a re-rig (in-house fit) or finger weights rebuilt.
+- **Cap'n Barnacle** (in-house fit): arms crossed over the chest, gun held near the face and turned; the hold
+  doesn't reach a sensible pose at all (shoulder/arm landmarks or arm length off).
+- **Capt. Nova** (Meshy auto-rig): fingers splayed open, support hand off the handguard.
+- Big Bogdan, Shade: open palms (above). The Visitor: the good reference.
+
 
 ### After the style packs (owner, 2026-10-31): MapMaker overhaul and a pass over every map
 Once all the style packs are done (10 Medieval, 11 Harbor, 12 Snow, 09 Desert City, 06 Jungle Ruins refresh, and the
