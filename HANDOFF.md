@@ -10,6 +10,30 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### `wip/grips-live` (agent, 2026-10-31): "the grips are not working at all" (owner, live 6c0f8a6)
+- **Root cause:** the clips' hold is made for the rig's hand; a Meshy hand can sit on its joint a quarter turn
+  round (core.dapper's), so its palm faced the camera and its edge the grip, in every view. Not specific to real
+  play: the grip tool showed it too. The tests passed because `gripMiss` / `__grips.miss()` measure the JOINTS (the
+  palm point the IK placed), not the skin. Real-play paths (switching, cached viewmodels, respawn, LOD, prod build)
+  were measured and were fine.
+- **Fix:** `handProbe.skinHandFrame` reads each measured hand's frame (fingers, palm normal on the thumb's side)
+  off its bind-pose skin; `gripHand` turns the shooting hand (and a pistol's support hand) onto the gun, first
+  person for every rig (follows the gun's pitch), third person for measured hands. Full body keeps that turn while
+  the shoulders move and draws your hands at 0.85 (`FP_HAND_SCALE`). Looking up, the head tips back over the neck
+  (`FP_HEAD_TIP`): the coat no longer crosses the sky. The dapper's fingers can't curl (no finger weights): a flat
+  hand lies along the grip; a finger rig for him is a content fix.
+- **Grapple:** the rope starts at the viewmodel's muzzle (third person: your gun's) and follows it (`View.addRope`).
+  The owner's "third person holds nothing" with the grapple wasn't reproduced; when the third-person camera is
+  squeezed against a wall (`tpClose`) your body isn't drawn at all, which may be what was seen.
+- **Creature skins (Imp, Puglin):** `CreatureAnimator` held the gun backwards at the clip's hand; now along the aim
+  at the chest with both hands by IK (`armsFrom`/`holdWith`), IK after the clips (a shadow pass drew the skin before
+  onBeforeRender), shots don't play the claw attack; `fitPlayerSkin` sizes the skin to a player's height (no wider
+  than 1.3 m: the puglin's ears). Not done: the Imp's slight lean (its idle clip).
+- **Checks:** `__grips.drawn()` and `View.gripReport()` measure where hands are DRAWN (skin centre to grip,
+  fingers along the gun, flat to its side); `characters` e2e: 4 looks × pistol/rifle/grapple × body/arms/third and
+  pitch ±1.45, plus `gripsInPlay` (canyon DM, 12 bots, dapper: keys, wheel, give, third person, respawn, bots near
+  and far, rope from the muzzle, an Imp's gun). Knight's gauntlet measures 12 cm off (left out of the check).
+
 ### Owner notes, 2026-10-30 evening (not done yet; next session start here)
 - **Flaky e2e to fix properly:** `mobile` "a tap on the pad middle jumps" fails intermittently on CI (both attempts on
   e8f449a, passed on a715e60/b4d55de; passes locally). The crouch-on-next-frame change (bb06a47) didn't cure it. Look at

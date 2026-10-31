@@ -9,6 +9,10 @@ made only on a commit that passed CI on a check branch.
 ## Unreleased
 
 **Characters**
+- Hands on guns, fixed for the Meshy characters (the Dapper and others): their hands were turned a quarter round on the grip, palm to the camera and fingers spread beside the gun, in first person (Full body and Arms only) and third person. Each hand is now turned onto the gun by its own shape; in Full body your hands are drawn a little smaller and the shooting hand follows the gun when you look up or down.
+- Full body first person: looking up no longer shows a strip of your own coat across the sky.
+- The Grapple Hook's rope leaves the launcher's muzzle (it seemed to come out of your chest) and stays on it while you're pulled in.
+- Imp and Puglin players hold their guns forward at the chest with both hands (the gun hung backwards at the hip), and stand about a player's height (the Imp was half one). Looks only: the hitbox is unchanged.
 - Scolitex is no longer a playable character (owner's call); it stays an enemy and a saved choice of it still loads.
 - Body sizes (owner's call): Giggles and The Visitor are small, Boglurker and Rattles large, and Punkin back to normal.
 

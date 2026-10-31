@@ -219,6 +219,12 @@ Your own view shows your look's arms holding the viewmodel:
 - **Placement:** they hang from the camera at the character's own size, the body a little behind the eyes. While a gun is held, the shoulder joints are set from the view, not from the character's build (a hunched cat's would sit in front of the eyes): beside and below the eye (`FP_SHOULDER` in characterAnimator.ts), so the forearms rise from the bottom of the screen. A shoulder comes forward toward its point on the gun as far as the arm needs to keep a natural bend (only the off-screen shoulder region stretches); the support hand first slides back along the handguard (no nearer the grip than 12 cm) before the shoulder comes further. A hand with nothing to hold (a knife) hangs out of view.
 - **Grip:** the gun keeps its tuned viewmodel placement, with bob, recoil and the reload dip. `gripExternal` IKs the palms onto its grip and support points with the same solver as third person; on a long gun the support hand is turned to cup the handguard from below (palm up, fingers round its far side). `window.__grips.miss()` in `?mode=grips` says how far each palm ended from its point (the `characters` e2e flow checks large guns).
 
+**Where hands are drawn:** `gripMiss` and `__grips.miss()` measure the joints. A Meshy hand needn't sit on its
+joint as the rig's does (the dapper's lay a quarter turn round), so each measured hand's own frame is read off its
+skin (`handProbe.skinHandFrame`) and the hand is turned onto the gun by it (`gripHand`). `__grips.drawn()` and, in a
+match, `__cs.view.gripReport()` measure the drawn skin: model metres from each hand's skin to its point on the gun,
+`aheadR` (fingers along the barrel) and `sideR` (flat against the grip's side); the `characters` e2e checks both.
+
 To fit a new weapon, read the grip, support and butt positions off a side view
 of the model, then check them in `?mode=characters`.
 
