@@ -1122,7 +1122,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'desert_ashlar' | 'desert_plaster';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'desert_ashlar' | 'desert_plaster' | 'harbour_render' | 'tarred_timber';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1147,6 +1147,12 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   // 10 Medieval Village.
   timber_frame: { skin: 'core.timber_frame', tint: null, depth: 0.1 },
   village_plaster: { skin: 'core.whitewash', tint: null, depth: 0.1 },
+  // 12 Snow Outpost.
+  prefab: { skin: 'core.prefab_red', tint: null, depth: 0.08 },
+  snow_bunker: { skin: 'core.snowy_concrete', tint: null, depth: 0.15 },
+  // 11 Coastal Harbor.
+  harbour_render: { skin: 'core.harbour_render', tint: null, depth: 0.1 },
+  tarred_timber: { skin: 'core.tarred_boards', tint: null, depth: 0.08 },
   // 09 Desert City.
   desert_ashlar: { skin: 'core.ashlar', tint: null, depth: 0.1 },
   desert_plaster: { skin: 'core.stucco', tint: null, depth: 0.08 },
@@ -1342,6 +1348,36 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
             if (o.top < levelHeight - 0.3) add(side, o.u0 - 0.15, o.u1 + 0.15, o.top, o.top + 0.18, out0 - 0.08, out0, oakBeam);
           }
           if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.3, out0 - 0.3, TILE_DIMENSIONS.wallThickness, 'core.roof_tiles_red');
+          break;
+        }
+        case 'prefab':
+        case 'snow_bunker': {
+          // Snow Outpost: white corner posts and a steel plinth (prefab), or a snow berm (bunker); steel hoods over
+          // the openings with snow on them; a snow cap along the top.
+          const snow = 'core.drift_snow';
+          if (facade === 'prefab') {
+            if (ground) add(side, -half, half, 0, 0.35, out0 - 0.06, -base, 'core.pbr_steel', '#8a9098');
+            if (full) for (const u of [-half, half - 0.2]) add(side, u, u + 0.2, 0, levelHeight, out0 - 0.04, out0, 'core.prefab_white');
+          } else if (ground) add(side, -half, half, 0, 0.6, out0 - 0.3, -base, snow);
+          for (const o of facadeOpenings(segs)) {
+            add(side, o.u0 - 0.15, o.u1 + 0.15, o.top, o.top + 0.12, out0 - 0.25, out0, 'core.pbr_steel', '#a8b0b8');
+            add(side, o.u0 - 0.15, o.u1 + 0.15, o.top + 0.12, o.top + 0.2, out0 - 0.25, out0, snow);
+          }
+          if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.2, out0 - 0.15, TILE_DIMENSIONS.wallThickness, snow);
+          break;
+        }
+        case 'harbour_render':
+        case 'tarred_timber': {
+          // Coastal Harbor: a granite plinth, frames and sills round the windows (harbour blue on the render,
+          // white on the tarred boards) and a slate drip course under the eaves.
+          const frame = facade === 'harbour_render' ? 'core.harbour_paint' : 'core.paint_matte';
+          if (ground) add(side, -half, half, 0, 0.5, out0 - 0.08, -base, 'core.quay_granite');
+          for (const o of facadeOpenings(segs)) {
+            if (o.sill > 0.3) add(side, o.u0 - 0.1, o.u1 + 0.1, o.sill - 0.1, o.sill, out0 - 0.12, out0, frame);
+            if (o.top < levelHeight - 0.3) add(side, o.u0 - 0.1, o.u1 + 0.1, o.top, o.top + 0.14, out0 - 0.08, out0, frame);
+            for (const u of [o.u0 - 0.1, o.u1]) add(side, u, u + 0.1, o.sill, o.top, out0 - 0.06, out0, frame);
+          }
+          if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.2, out0 - 0.25, TILE_DIMENSIONS.wallThickness, 'core.pbr_slate_roof');
           break;
         }
         case 'desert_ashlar':

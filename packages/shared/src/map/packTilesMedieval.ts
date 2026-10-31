@@ -10,20 +10,21 @@
  * (`LocalBox.surface`).
  *
  * Only types come from catalog.ts (which lists these tiles), so there is no
- * runtime import cycle; the few box helpers are repeated here.
+ * runtime import cycle. The box helpers are exported for the other packs'
+ * tiles (packTilesHarbor.ts, packTilesSnow.ts).
  */
 import type { LocalBox, Side, TileDefinition, TilePort } from './catalog.ts';
 
 // ---------------------------------------------------------------- helpers
 
 type Box = LocalBox;
-const b = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, kind?: LocalBox['kind']): Box => ({ min: [x0, y0, z0], max: [x1, y1, z1], ...(kind ? { kind } : {}) });
+export const b = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, kind?: LocalBox['kind']): Box => ({ min: [x0, y0, z0], max: [x1, y1, z1], ...(kind ? { kind } : {}) });
 /** A box in a library material (any theme). */
-const paint = (box: Box, material: string, tint?: string): Box => ({ ...box, surface: { material: `core.${material}`, ...(tint ? { tint } : {}) } });
+export const paint = (box: Box, material: string, tint?: string): Box => ({ ...box, surface: { material: `core.${material}`, ...(tint ? { tint } : {}) } });
 /** Visual only (never collides). */
-const trim = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, material: string, tint?: string): Box => paint(b(x0, y0, z0, x1, y1, z1, 'trim'), material, tint);
+export const trim = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, material: string, tint?: string): Box => paint(b(x0, y0, z0, x1, y1, z1, 'trim'), material, tint);
 /** A box `size` centred on (cx, cy, cz), turned and tilted (radians). */
-const tilted = (cx: number, cy: number, cz: number, size: readonly [number, number, number], o: { yaw?: number; pitch?: number; roll?: number; kind?: LocalBox['kind'] } = {}): Box => ({
+export const tilted = (cx: number, cy: number, cz: number, size: readonly [number, number, number], o: { yaw?: number; pitch?: number; roll?: number; kind?: LocalBox['kind'] } = {}): Box => ({
   min: [cx - size[0] / 2, cy - size[1] / 2, cz - size[2] / 2],
   max: [cx + size[0] / 2, cy + size[1] / 2, cz + size[2] / 2],
   ...(o.yaw ? { yaw: o.yaw } : {}),
@@ -32,16 +33,16 @@ const tilted = (cx: number, cy: number, cz: number, size: readonly [number, numb
   ...(o.kind ? { kind: o.kind } : {}),
 });
 const SIDES_ALL: Side[] = ['N', 'E', 'S', 'W'];
-const ALL: TilePort[] = SIDES_ALL.map((side) => ({ side, level: 0 }));
-const at = (level: number, ...sides: Side[]): TilePort[] => sides.map((side) => ({ side, level }));
+export const ALL: TilePort[] = SIDES_ALL.map((side) => ({ side, level: 0 }));
+export const at = (level: number, ...sides: Side[]): TilePort[] => sides.map((side) => ({ side, level }));
 
-function footprint(w: number, d: number, h = 1): [number, number, number][] {
+export function footprint(w: number, d: number, h = 1): [number, number, number][] {
   const cells: [number, number, number][] = [];
   for (let z = 0; z < h; z++) for (let y = 0; y < d; y++) for (let x = 0; x < w; x++) cells.push([x, y, z]);
   return cells;
 }
 
-function perimeter(w: number, d: number, level = 0): TilePort[] {
+export function perimeter(w: number, d: number, level = 0): TilePort[] {
   const ports: TilePort[] = [];
   for (let x = 0; x < w; x++) ports.push({ side: 'S', level, cell: [x, 0] }, { side: 'N', level, cell: [x, d - 1] });
   for (let y = 0; y < d; y++) ports.push({ side: 'W', level, cell: [0, y] }, { side: 'E', level, cell: [w - 1, y] });
@@ -49,7 +50,7 @@ function perimeter(w: number, d: number, level = 0): TilePort[] {
 }
 
 /** Steps of 0.25 m climbing along +x/-x or +z/-z from `from`, between a0 and a1 across, each a block down to `floor`. */
-function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: number, n: number, base = 0, run = 0.5, floor = 0): Box[] {
+export function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: number, n: number, base = 0, run = 0.5, floor = 0): Box[] {
   return Array.from({ length: n }, (_, i) => {
     const u0 = from + dir * i * run;
     const u1 = from + dir * (i + 1) * run;
@@ -60,19 +61,19 @@ function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: numb
 }
 
 /** A 1 m rail (solid: it stops you) along an axis-aligned line at height y. */
-function rail(x0: number, z0: number, x1: number, z1: number, y = 0, material = 'oak_beam', h = 1): Box {
+export function rail(x0: number, z0: number, x1: number, z1: number, y = 0, material = 'oak_beam', h = 1): Box {
   const t = 0.07;
   const r = x0 === x1 ? b(x0 - t, y, Math.min(z0, z1), x0 + t, y + h, Math.max(z0, z1)) : b(Math.min(x0, x1), y, z0 - t, Math.max(x0, x1), y + h, z0 + t);
   return paint(r, material);
 }
 
 /** An opening in a wall run: [from, to] along the wall, [bottom, top] above the wall's foot. */
-type Opening = readonly [number, number, number, number];
-const door = (c: number, w = 2.2, h = 2.8): Opening => [c - w / 2, c + w / 2, 0, h];
-const win = (c: number, w = 1.2, y0 = 1.0, y1 = 2.3): Opening => [c - w / 2, c + w / 2, y0, y1];
+export type Opening = readonly [number, number, number, number];
+export const door = (c: number, w = 2.2, h = 2.8): Opening => [c - w / 2, c + w / 2, 0, h];
+export const win = (c: number, w = 1.2, y0 = 1.0, y1 = 2.3): Opening => [c - w / 2, c + w / 2, y0, y1];
 
 /** A wall in `material` along x at z = `at` or along z at x = `at`, from a0 to a1 and y0 to y1, `t` thick, with openings cut out. */
-function wall(axis: 'x' | 'z', at: number, a0: number, a1: number, openings: readonly Opening[], y0: number, y1: number, material: string, t = 0.3, tint?: string): Box[] {
+export function wall(axis: 'x' | 'z', at: number, a0: number, a1: number, openings: readonly Opening[], y0: number, y1: number, material: string, t = 0.3, tint?: string): Box[] {
   const out: Box[] = [];
   const piece = (u0: number, u1: number, v0: number, v1: number) => {
     if (u1 - u0 < 0.01 || v1 - v0 < 0.01) return;
@@ -94,7 +95,7 @@ function wall(axis: 'x' | 'z', at: number, a0: number, a1: number, openings: rea
 }
 
 /** Outer walls round x0..x1, z0..z1 with openings per side (coordinates along each wall). */
-function shell(x0: number, z0: number, x1: number, z1: number, open: Partial<Record<Side, readonly Opening[]>>, y0: number, y1: number, material: string, t = 0.3, tint?: string): Box[] {
+export function shell(x0: number, z0: number, x1: number, z1: number, open: Partial<Record<Side, readonly Opening[]>>, y0: number, y1: number, material: string, t = 0.3, tint?: string): Box[] {
   return [
     ...wall('x', z0 + t / 2, x0, x1, open.S ?? [], y0, y1, material, t, tint),
     ...wall('x', z1 - t / 2, x0, x1, open.N ?? [], y0, y1, material, t, tint),
@@ -104,7 +105,7 @@ function shell(x0: number, z0: number, x1: number, z1: number, open: Partial<Rec
 }
 
 /** Rectangles [x0, z0, x1, z1] of `r` not covered by any of `holes`. */
-function subtract(r: readonly [number, number, number, number], holes: readonly (readonly [number, number, number, number])[]): [number, number, number, number][] {
+export function subtract(r: readonly [number, number, number, number], holes: readonly (readonly [number, number, number, number])[]): [number, number, number, number][] {
   let parts: [number, number, number, number][] = [[...r]];
   for (const h of holes) {
     const next: [number, number, number, number][] = [];
@@ -129,7 +130,7 @@ function subtract(r: readonly [number, number, number, number], holes: readonly 
 const grow = (r: readonly [number, number, number, number], m = 0.3): [number, number, number, number] => [r[0] - m, r[1] - m, r[2] + m, r[3] + m];
 
 /** The roof's pitch: walkable (players and bots climb to 50°). */
-const PITCH = (35 * Math.PI) / 180;
+const ROOF_PITCH = (35 * Math.PI) / 180;
 const SLAB = 0.22;
 
 /**
@@ -139,9 +140,10 @@ const SLAB = 0.22;
  * rising at PITCH; a ridge cap; the gable ends filled from `wallTop` in
  * stepped courses of `gableMaterial`.
  */
-function gableRoof(x0: number, z0: number, x1: number, z1: number, eave: number, wallTop: number, o: { ridge?: 'x' | 'z'; material?: string; gableMaterial?: string; gableInset?: number } = {}): Box[] {
+export function gableRoof(x0: number, z0: number, x1: number, z1: number, eave: number, wallTop: number, o: { ridge?: 'x' | 'z'; material?: string; gableMaterial?: string; gableInset?: number; pitch?: number; ridgeMaterial?: string } = {}): Box[] {
   const material = o.material ?? 'roof_tiles_red';
   const alongX = (o.ridge ?? 'x') === 'x';
+  const PITCH = o.pitch ?? ROOF_PITCH;
   const tan = Math.tan(PITCH);
   const [a0, a1] = alongX ? [z0, z1] : [x0, x1];
   const [l0, l1] = alongX ? [x0, x1] : [z0, z1];
@@ -158,10 +160,12 @@ function gableRoof(x0: number, z0: number, x1: number, z1: number, eave: number,
     const ac = c + s * Math.sin(PITCH) * (SLAB / 2);
     const yc = yTop - Math.cos(PITCH) * (SLAB / 2);
     const lc = (l0 + l1) / 2;
-    out.push(paint(alongX ? tilted(lc, yc, ac, [len, SLAB, L], { pitch: s * PITCH }) : tilted(ac, yc, lc, [L, SLAB, len], { roll: -s * PITCH }), material));
+    out.push(paint(alongX ? tilted(lc, yc, ac, [len, SLAB, L], { pitch: s * PITCH }) : tilted(ac, yc, lc, [L, SLAB, len], { roll: s * PITCH }), material));
   }
   const ridgeY = eave + (mid - a0) * tan;
-  out.push(alongX ? trim(l0, ridgeY - 0.05, mid - 0.18, l1, ridgeY + 0.16, mid + 0.18, 'roof_tiles_red', '#8a6a60') : trim(mid - 0.18, ridgeY - 0.05, l0, mid + 0.18, ridgeY + 0.16, l1, 'roof_tiles_red', '#8a6a60'));
+  const rm = o.ridgeMaterial ?? 'roof_tiles_red';
+  const rt = o.ridgeMaterial ? undefined : '#8a6a60';
+  out.push(alongX ? trim(l0, ridgeY - 0.05, mid - 0.18, l1, ridgeY + 0.16, mid + 0.18, rm, rt) : trim(mid - 0.18, ridgeY - 0.05, l0, mid + 0.18, ridgeY + 0.16, l1, rm, rt));
   // Gable ends: courses stepping in under the slabs.
   const gm = o.gableMaterial ?? 'timber_frame';
   const inset = o.gableInset ?? 0.2;
@@ -190,7 +194,7 @@ function gableRoof(x0: number, z0: number, x1: number, z1: number, eave: number,
  * bots' navmesh. Steps are slabs 0.3 m thick (each lap leaves headroom for the
  * one below). Returns the steps and each step's footprint [x0, z0, x1, z1].
  */
-function switchback(h: number, w: number, n: number, flights: readonly number[], base = 0): { steps: Box[]; prints: [number, number, number, number][] } {
+export function switchback(h: number, w: number, n: number, flights: readonly number[], base = 0): { steps: Box[]; prints: [number, number, number, number][] } {
   const steps: Box[] = [];
   const prints: [number, number, number, number][] = [];
   const inner = h - w;
@@ -273,15 +277,17 @@ function townHouse(kind: HouseKind): Box[] {
   const S1 = S0 + 16 * run;
   const floorRects = subtract([-3.5, front + T, 11.5, 3.5], [[S0, 1.3, S1, 3.5]]);
   out.push(...floorRects.map(([x0, z0, x1, z1]) => paint(b(x0, 3.75, z0, x1, 4.0, z1), FLOOR)));
-  out.push(paint(b(X0, 7.75, front, X1, 8.0, 3.8), PLANKS, '#a08870'));
+  // The ceiling inside the walls (flush with their outer faces it would fight them along the top of every facade).
+  out.push(paint(b(X0 + T, 7.75, front + T, X1 - T, 8.0, 3.8 - T), PLANKS, '#a08870'));
   // The stair along the north wall, west to east: 3.5 m of floor before its foot, the upper floor on ahead of its head.
   out.push(...flight('x', 1, S0, 1.3, 3.5, 16, 0, run).map((s) => paint(s, PLANKS, '#b09070')));
   out.push(rail(S0, 1.3, S1 - 1.2, 1.3, 4.0));
   // Balcony: plank deck on the ground storey's ceiling, a rail along its edge.
   if (kind === 'balcony') {
-    out.push(paint(b(X0, 3.75, -3.8, X1, 4.0, front), PLANKS, '#c0a080'));
+    // The deck stands 5 cm proud of the ground storey's walls (flush, its edge would fight their faces).
+    out.push(paint(b(X0 - 0.05, 3.75, -3.85, X1 + 0.05, 4.02, front), PLANKS, '#c0a080'));
     out.push(rail(X0, -3.75, X1, -3.75, 4.0));
-    out.push(oak(b(8.7, 3.75, front, 10.9, 4.0, front + T)));
+    out.push(oak(b(8.7, 3.75, front, 10.9, 4.02, front + T)));
     for (const x of [-3.6, 4.0, 11.6]) out.push(trim(x - 0.12, 4.0, -3.8, x + 0.12, 8.0, -3.6, OAK));
   }
   // Furniture: a hearth and a table downstairs, beds and a chest upstairs.
@@ -291,14 +297,29 @@ function townHouse(kind: HouseKind): Box[] {
   out.push(oak(b(5.0, 4, front + T, 6.2, 4.6, front + T + 0.6)));
   if (kind === 'shop') {
     // A counter behind the shop front, shelves, a red awning over the street.
-    out.push(oak(b(4.4, 0, -3.2, 9.6, 1.0, -2.7)), oak(b(10.9, 0, -3.3, 11.5, 2.2, -0.6)));
-    out.push(trim(3.2, 2.75, -5.4, 10.8, 2.85, -3.8, 'pbr_canvas', '#a03028'));
-    for (const x of [3.4, 10.6]) out.push(trim(x - 0.05, 2.2, -5.4, x + 0.05, 2.8, -5.3, OAK));
+    // The shelves stand along the east wall north of the hearth, clear of the east door (z -2.7..-0.5).
+    out.push(oak(b(4.4, 0, -3.2, 9.6, 1.0, -2.7)), oak(b(10.9, 0, 2.15, 11.5, 2.2, 3.45)));
+    // The awning slopes from the wall (3.0 m) down to its front edge (2.6 m), a valance along that edge,
+    // held by two oak brackets from the wall (not posts hanging in mid-air).
+    const awn = Math.atan2(0.4, 1.6);
+    out.push(paint(tilted(7.0, 2.8, -4.6, [7.6, 0.08, Math.hypot(1.6, 0.4)], { pitch: awn, kind: 'trim' }), 'pbr_canvas', '#a03028'));
+    out.push(trim(3.2, 2.4, -5.42, 10.8, 2.62, -5.38, 'pbr_canvas', '#a03028'));
+    for (const x of [3.25, 10.75]) out.push(oak(tilted(x, 2.3, -4.55, [0.1, 0.1, Math.hypot(1.5, 0.6)], { pitch: -Math.atan2(0.6, 1.5), kind: 'trim' })));
   }
   // The jetty beams and posts of the upper storey; a stone plinth.
-  out.push(trim(X0 - 0.1, 3.85, front - 0.12, X1 + 0.1, 4.15, front, OAK), trim(X0 - 0.1, 3.85, 3.8, X1 + 0.1, 4.15, 3.92, OAK));
+  // (The balcony house's upper storey stands back behind its deck: no jetty beam along the front, it would hide in the deck.)
+  if (kind !== 'balcony') out.push(trim(X0 - 0.1, 3.85, front - 0.12, X1 + 0.1, 4.15, front, OAK));
+  out.push(trim(X0 - 0.1, 3.85, 3.8, X1 + 0.1, 4.15, 3.92, OAK));
   for (const x of [X0, 3.9, X1 - 0.15]) for (const z of [front, 3.65]) out.push(trim(x - 0.03, 4.0, z - 0.03, x + 0.18, 8.0, z + 0.18, OAK));
-  if (kind !== 'balcony') out.push(trim(X0 - 0.05, 0, -3.85, X1 + 0.05, 0.4, -3.8, STONE, '#8a8478'));
+  // A stone plinth along the street front, cut at the doorways (and the shop's wide opening).
+  if (kind !== 'balcony') {
+    const gaps = groundS.filter((o) => o[2] <= 0.01).map((o) => [o[0], o[1]] as const).sort((p, q) => p[0] - q[0]);
+    let x = X0 - 0.05;
+    for (const [g0, g1] of [...gaps, [X1 + 0.05, X1 + 0.05] as const]) {
+      if (g0 - x > 0.05) out.push(trim(x, 0, -3.85, g0, 0.4, -3.8, STONE, '#8a8478'));
+      x = Math.max(x, g1);
+    }
+  }
   // Floorboards over the ground floor.
   out.push(trim(-3.5, 0, -3.5, 11.5, 0.02, 3.5, FLOOR));
   // The roof, its eaves on the cell edges; a chimney over the hearth.
@@ -442,7 +463,9 @@ function otherTiles(): TileDefinition[] {
         ...shell(-3.8, -3.8, 3.8, 11.8, { S: [win(-1.6, 2.2, 0.9, 2.6), win(1.6, 2.2, 0.9, 2.6)], N: [win(0, 3.0, 0.9, 2.6)], W: [-1.6, 2.4, 6.4, 10.4].map((c) => win(c, 2.2, 0.9, 2.6)), E: [6.4, 10.4].map((c) => win(c, 2.2, 0.9, 2.6)) }, 4.0, 7.75, TIMBER),
         paint(b(-3.8, 7.75, -3.8, 3.8, 8.0, 11.8), PLANKS, '#a08870'),
         ...gableRoof(-4, -4, 4, 12, MEDIEVAL_EAVES, 8.0, { ridge: 'z' }),
-        trim(-3.9, 3.7, -3.9, 3.9, 4.0, 11.9, OAK),
+        // An oak fascia round the hall's floor edge (outside it: a box round the floor would fight it for the same faces).
+        trim(-3.9, 3.7, -3.9, 3.9, 4.0, -3.8, OAK), trim(-3.9, 3.7, 11.8, 3.9, 4.0, 11.9, OAK),
+        trim(-3.9, 3.7, -3.8, -3.8, 4.0, 11.8, OAK), trim(3.8, 3.7, -3.8, 3.9, 4.0, 11.8, OAK),
         trim(-3.8, 0, -3.8, 3.8, 0.03, 11.8, 'road_setts'),
       ],
     });
@@ -525,8 +548,7 @@ function otherTiles(): TileDefinition[] {
       ...wall('z', -3.65, -3.4, 3.4, [win(0, 0.25, 7, 9), win(-2.2, 1.6, 11.1, 13.4), win(1.6, 1.4, 11.1, 13.4)], 0, 14.5, LIME, 0.5, '#c8c0b0'),
       ...wall('z', 3.65, -3.4, 3.4, [win(0, 0.25, 3, 5), win(-2.2, 1.6, 11.1, 13.4), win(1.6, 1.4, 11.1, 13.4)], 0, 14.5, LIME, 0.5, '#c8c0b0'),
       ...steps.map((s) => paint(s, LIME, '#a8a090')),
-      // The belfry floor: a gallery the width of the south side, level with the top landing, railed along the stairwell.
-      S(b(-3.4, 9.7, -3.4, 3.4, 10.0, -1.0)),
+      // The belfry floor is the stair's top landing (a gallery the width of the south side), railed along the stairwell.
       rail(-1.0, -1.0, 1.0, -1.0, 10.0, OAK),
       // The belfry: a bell frame, a ceiling, the spire in stepped courses of tiles.
       trim(-1.6, 10.0, 0.9, 1.6, 13.5, 1.1, OAK), trim(-1.6, 13.3, 0.85, 1.6, 13.6, 1.15, OAK),
@@ -569,7 +591,8 @@ function otherTiles(): TileDefinition[] {
       open: true,
       edgeDefault: 'open',
       solids: [
-        ...[[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sz]) => oak(b(sx! * 3.6 - 0.2, 0, sz! * 3.6 - 0.2, sx! * 3.6 + 0.2, 10.0, sz! * 3.6 + 0.2))),
+        // The posts stand 2 cm proud of the parapet's outer faces (flush, the two would fight).
+        ...[[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sz]) => oak(b(sx! * 3.61 - 0.2, 0, sz! * 3.61 - 0.2, sx! * 3.61 + 0.2, 10.0, sz! * 3.61 + 0.2))),
         ...steps.map((s) => planks(s)),
         // The lookout: a gallery along the south side, level with the top landing; the stairwell stays open.
         planks(b(-3.8, 6.75, -3.8, 3.8, 7.0, -1.4)),
@@ -580,7 +603,8 @@ function otherTiles(): TileDefinition[] {
           [3.6, -3.6, 3.8, 3.6],
         ].map(([x0, z0, x1, z1]) => planks(b(x0!, 7.0, z0!, x1!, 8.1, z1!))),
         ...gableRoof(-4, -4, 4, 4, 9.8, 10.0, { gableMaterial: 'pbr_planks', gableInset: 0.4 }),
-        ...[-1, 1].flatMap((s) => [trim(-3.5, 1.0, s * 3.5 - 0.06, 3.5, 6.0, s * 3.5 + 0.06, OAK)].map((t) => ({ ...t, ...{ roll: s * 0.7 } }))),
+        // X-braces between the posts on the north and south sides, above head height (a beam each way).
+        ...[-1, 1].flatMap((s) => [-1, 1].map((d) => oak(tilted(0, 4.8, s * 3.6, [Math.hypot(7.2, 3.2), 0.2, 0.12], { roll: d * Math.atan2(3.2, 7.2), kind: 'trim' })))),
       ],
     });
   }
@@ -600,7 +624,7 @@ function otherTiles(): TileDefinition[] {
     extraFloors: [b(-4, BED - 0.5, -4, 4, BED, 4)],
     solids: [
       paint(b(-4, BED, -4, 4, 0, -2.5), STONE, '#a8a090'),
-      trim(-4, -0.05, -2.62, 4, 0.05, -2.5, LIME, '#a09888'),
+      trim(-4, -0.05, -2.62, 4, 0.05, -2.47, LIME, '#a09888'),
       // The north bank: a grass slope from the bed up to the ground.
       ...(() => {
         // From the bed at z = 0.8 up to a grass ledge level with the ground along the north edge (36°: walkable).
@@ -695,7 +719,7 @@ function otherTiles(): TileDefinition[] {
       stone(b(-3.6, 0, 3.0, 3.6, 1.2, 3.6)),
       stone(b(-1.6, 0, 1.6, 1.6, 1.0, 3.0)),
       trim(-1.2, 1.0, 1.9, 1.2, 1.06, 2.8, 'pbr_lava'),
-      paint(b(-0.8, 1.0, 2.6, 0.8, 7.0, 3.6), 'pbr_brick_old'),
+      paint(b(-0.8, 1.0, 2.6, 0.8, 7.0, 3.65), 'pbr_brick_old'),
       paint(b(-0.6, 1.0, 1.7, 0.6, 2.4, 2.6), 'pbr_brick_old'),
       oak(b(2.0, 0, 0.8, 3.2, 0.7, 1.6)),
       trim(2.1, 0.62, 0.9, 3.1, 0.66, 1.5, 'pbr_steel', '#405060'),

@@ -435,6 +435,7 @@ export const SCENARIO_PALETTE = [
   { key: 'water:acid', label: 'Acid', search: 'acid toxic liquid hazard pool' },
   { key: 'water:swamp', label: 'Swamp', search: 'swamp mud bog marsh liquid slow' },
   { key: 'airplane', label: 'Transport Plane', search: 'airplane plane transport air drop parachute route fly over battle royale jump' },
+  { key: 'airplane:dropship', label: 'Dropship Drop', search: 'dropship drop ship gunship air drop parachute route fly over battle royale jump transport' },
   { key: 'mover:lift', label: 'Lift', search: 'mover lift elevator platform moving up down ride' },
   { key: 'mover:slider', label: 'Sliding Wall', search: 'mover sliding wall door gate moving platform train car shuttle' },
   { key: 'mover:drawbridge', label: 'Drawbridge', search: 'mover drawbridge bridge hinge lower raise castle moat' },
@@ -477,6 +478,12 @@ export const SCENARIO_PALETTE = [
   // Style Pack gameplay pieces (10 Medieval Village).
   { key: 'door:oak', label: 'Oak Door', search: 'door oak wooden plank ironbound iron bound hinged medieval village house castle' },
   { key: 'block:wattle', label: 'Wattle Hurdle', search: 'block wattle hurdle fence woven breakable wood medieval village farm' },
+  // Style Pack gameplay pieces (12 Snow Outpost).
+  { key: 'mover:rollup_door', label: 'Roll-up Door', search: 'mover roll up rolling shutter door hangar garage warehouse wide steel logic snow outpost' },
+  { key: 'block:ice', label: 'Ice Block', search: 'block ice glacier breakable shatter cover frozen snow outpost' },
+  { key: 'block:thin_ice', label: 'Thin Ice', search: 'block thin ice frozen lake crack give way fall water trap snow' },
+  // Style Pack gameplay pieces (11 Coastal Harbor).
+  { key: 'water:harbour', label: 'Harbour Water', search: 'water harbour harbor sea deep swim boat quay pier coast' },
   // Style Pack gameplay pieces (09 Desert City).
   { key: 'block:lattice', label: 'Lattice Screen', search: 'block lattice screen mashrabiya window wood breakable desert city arab middle eastern' },
 ] as const;
@@ -484,7 +491,7 @@ export const SCENARIO_PALETTE = [
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
 
 /** Entities that sit in a doorway and snap to cell edges. */
-export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field' || key === 'block:glass' || key === 'block:glass_reinforced' || key === 'mover:bookcase' || key === 'mover:garage_door' || key === 'mover:portcullis';
+export const snapsToDoorway = (key: ScenarioPaletteKey): boolean => key === 'door' || key === 'door_locked' || key.startsWith('door:') || key === 'wall' || key === 'glass' || key === 'boards' || key === 'trap:laser' || key === 'block:field' || key === 'block:glass' || key === 'block:glass_reinforced' || key === 'mover:bookcase' || key === 'mover:garage_door' || key === 'mover:rollup_door' || key === 'mover:portcullis';
 
 /** Palette entries that place several entities at once (movers with their blocks, rope bridges, roofs). */
 const MULTI_KEYS = new Set<string>(['block:rope_bridge', 'block:roof']);
@@ -561,6 +568,11 @@ export function newScenarioEntities(key: ScenarioPaletteKey, position: [number, 
     const [ex, , ez] = local(secret ? 3.2 : 4, 0, 0);
     const end: [number, number, number] = [Math.round((ex - x) * 100) / 100, 0, Math.round((ez - z) * 100) / 100];
     return [b, shelf, { ...mover([b.id], [[0, 0, 0], end], secret ? { mode: 'trigger', speed: 1.2, wait: 0, name: 'Secret bookcase' } : { speed: 0.8, wait: 3, name: 'Moving bookshelf' }), props: [shelf.id] }];
+  }
+  if (key === 'mover:rollup_door') {
+    // A hangar's 6 × 4.6 m steel shutter: rolls up 4.4 m into the lintel when logic sends it, and down again.
+    const b = { ...block([6, 4.6, 0.2], [x, y, z]), material: 'core.pbr_grey_corrugated', tint: '#d8dce0', name: 'Roll-up door' };
+    return [b, mover([b.id], [[0, 0, 0], [0, 4.4, 0]], { mode: 'trigger', speed: 1.6, wait: 0, name: 'Roll-up door' })];
   }
   if (key === 'mover:garage_door') {
     // An up-and-over door: a 3.6 × 2.8 m panel hinged at its top, swinging up level under the ceiling when logic sends it.
@@ -709,12 +721,19 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('block'), kind: 'block', position, yaw, size: [2.2, 2.4, 0.12], material: 'core.mashrabiya', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 30, health: 45 };
     case 'block:wattle':
       return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 1.2, 0.15], material: 'core.wattle', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 25, health: 50 };
+    case 'block:ice':
+      return { id: newId('block'), kind: 'block', position, yaw, size: [2, 1.4, 1], material: 'core.glacier_ice', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 30, health: 150 };
+    case 'block:thin_ice':
+      return { id: newId('block'), kind: 'block', position, yaw, size: [4, 0.15, 4], material: 'core.lake_ice', tint: '#c8e4f0', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.7, respawnSeconds: 12, health: 60 };
     case 'block:fence':
       return { id: newId('block'), kind: 'block', position, yaw, size: [4, 1.1, 0.2], material: 'core.paint_matte', tint: '#f2f0ea', behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 25, health: 40 };
     case 'ladder:vines':
       return { id: newId('ladder'), kind: 'ladder', ...base, height: 6, width: 1.2, style: 'vines' };
     case 'trap:rockfall':
       return { id: newId('rockfall'), kind: 'trap', trap: 'crusher', ...base, activation: 'proximity', onSeconds: 1.2, offSeconds: 8, offsetSeconds: 0, startEnabled: true, damage: null, style: 'rockfall' };
+    case 'water:harbour':
+      // Sea water for a harbour: place it on the bed (HARBOR_BED) and its surface sits at HARBOR_SEA, 1.5 m under the quay: deep enough to swim.
+      return { id: newId('harbour'), kind: 'water', position, size: [16, 2.5, 16], liquid: 'water', tint: '#2e5a66' };
     case 'water:pool':
       return { id: newId('pool'), kind: 'water', position, size: [5, 1.75, 12], liquid: 'water', tint: '#3fc8e8' };
     case 'block:rope_bridge':
@@ -799,6 +818,10 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'airplane':
       // A square loop 160 m across, 70 m up, once a minute; no air drop until the creator picks one.
       return { id: newId('plane'), kind: 'airplane', position, route: [[-80, -80], [80, -80], [80, 80], [-80, 80]], altitude: 70, loopSeconds: 60, closed: true, airdrop: 'off' };
+    case 'airplane:dropship':
+      // A dropship's run-in: in from off the map's edge, across it and out the far side (draw it in and out of bounds;
+      // riders can only jump over the map), 45 m up, slower than the plane.
+      return { id: newId('dropship'), kind: 'airplane', craft: 'dropship', position, route: [[-140, 0], [0, 0], [140, 0]], altitude: 45, loopSeconds: 30, closed: false, airdrop: 'off' };
     case 'water:water':
     case 'water:lava':
     case 'water:acid':
@@ -813,7 +836,8 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'mover:train':
     case 'mover:bookcase':
     case 'mover:shelf':
-    case 'mover:garage_door': {
+    case 'mover:garage_door':
+    case 'mover:rollup_door': {
       const all = newScenarioEntities(key, position, yaw, doc);
       return all[all.length - 1]!;
     }

@@ -148,6 +148,8 @@ of the repo).
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
+alongside the set), then 10 Medieval Village and 11 Coastal Harbor (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then 10 Medieval Village and 12 Snow Outpost (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
 alongside the set), then 10 Medieval Village (the owner's tileset sheets); 09 is
 now **Desert City**, which replaced Sands of Egypt (owner, 2026-10-31) and still
 carries all its pieces. One registry (`STYLE_PACKS`, in pack-number order). A Style
@@ -528,6 +530,47 @@ you come close) and *Wattle Hurdle* (a breakable woven fence, back after 25 s), 
 portcullis gate, drawbridge, breakable and crumbling planks, boards, ladders, braziers, lanterns, candles,
 water and trigger zones.
 
+### 11 Coastal Harbor (working fishing harbour)
+
+From the owner's concept sheet "Tileset 03 – Coastal Harbor". Theme `core.coastal` (harbour setts floor, quay
+granite walls, decking solids and undersides, harbour-blue trim; also Harbour and Downtown); facades **Harbour
+render** (granite plinth, blue window frames and sills, a slate drip course) and **Tarred timber** (tarred lap
+boards with white frames). Demo map: Saltmarsh Harbor.
+
+**Levels.** Quay and decks at 0; the water's surface at −1.5 m (`HARBOR_SEA`: too high to climb out of without
+steps, the slipway, the beach or a Ladder); the harbour bed at −4 m (`HARBOR_BED`). Water tiles carry the bed
+as an extra floor; fill them with **Harbour Water** (gameplay piece `water:harbour`: put it on the bed and its
+surface lands at −1.5 m).
+
+**Tiles** (`map/packTilesHarbor.ts`, 20; the box helpers are shared with `packTilesMedieval.ts`):
+*Timber Pier* (5 m deck on piles, 1.25 m of air over the water: swim under it), *Pier Head* (full-cell deck,
+north rail with a gap; join Breakwaters east and west), *Boardwalk* and *Boardwalk Corner* (2.4 m, a rope rail
+that only looks like it holds you), *Quay Wall* (ground on the south half, a 4 m sheer face, bollards, coping,
+two fenders framing a bay for a Ladder), *Quay Corner* / *Quay Inside Corner*, *Sea Wall Steps* (2 × 1: steps cut
+along the face down to the bed), *Slipway* and *Shingle Beach* (27° down to the bed; you walk on 32 low steps
+under the drawn slope, which keeps them on the navmesh in every rotation), *Harbour Basin* (open water),
+*Breakwater* (a concrete walk level with the quay, a wave wall on its west side, rocks to climb out on),
+*Harbour Warehouse*, *Net Shed* and *Harbourmaster's Office* (2 × 1, two storeys, a straight stair along the
+north wall, upper doors east and west at 4 m; roofs with eaves at 8.25 m like the Medieval houses, so an Outside
+Stair north of one reaches its roof; the warehouse has a loading door and a loft door with a hoist, the net shed
+an open ground storey in two bays, the office a balcony over the quay), *Fish Market* (2 × 1, open hall,
+counters as cover), *Lighthouse* (a skeleton tower of four banded legs, a switchback stair inside to a gallery
+10.5 m up, the lantern house; a granite plinth to the bed so it also stands in water), *Harbour Crane* (portal
+legs, a platform 6 m up with a hatch for a Ladder, cab and raised jib), *Harbour Arch*, *Quayside* (setts and
+crane rails).
+
+**Props** (`tools/content/prepare-harbor.mjs`, licence Owned, category and palette group Coastal Harbor):
+bollard, capstan, lobster pots, mooring and channel-marker buoys, net rack, fish stall, fish boxes, fishing
+boat (a stand-in under a stable id), anchor, rope coils, harbour lamp post, life ring, heap of nets, herring
+gull, tide board, mooring dolphin, tyre fenders. The pack also lists the rowing boat, felucca, mast, cargo
+containers and crates, barrels, lamps and rocks already in the game.
+
+**Gameplay.** Harbour Water, Ladders (out of the water up a quay, up the crane), drawbridge/lift/slider movers,
+doors, breakable and rotten planks; boats are vehicles placed with *Rides on water* (hover bike, speeder).
+
+**Navmesh notes.** A switchback stair inside four walls falls off Recast's navmesh (its watershed regions lose
+the stacked laps); open sides keep it (the lighthouse is a skeleton tower for that reason, like the Medieval
+watchtower). The 2 × 1 buildings use the Medieval houses' straight stair.
 ### 09 Desert City (Middle Eastern city; replaces 09 Sands of Egypt)
 
 From the owner's concept sheet "Tileset 02 – Desert City" (Middle Eastern / arid / stone + plaster). Pack id
@@ -611,6 +654,53 @@ grenades, discs, spears) go through too.
   with no rule to enable it, and ground in front of either end that nobody
   can stand on (navigation).
 
+
+### 12 Snow Outpost (arctic military outpost)
+
+From the owner's concept sheet "Tileset 05 – Snow Outpost". Theme `core.snow_outpost` (packed snow floors,
+red prefab walls, snowy concrete), backdrop: snowy sky, snowy peaks, snow, light mist. Demo map
+`maps/whiteout_station.json`. Tiles in `map/packTilesSnow.ts` (box helpers shared with packTilesMedieval.ts):
+
+| Tile | Cells | What it is |
+|---|---|---|
+| `snow.hut` Prefab Hut | 1 × 1 | red panel hut, doors S and N; flat snow roof 3.5 m up by an outside steel stair from the north edge up the east strip |
+| `snow.barracks` Barracks | 2 × 1 | bunk rows, doors on every side, 25° snow roof (walkable); stair from the NW to a deck at the eaves (3.5 m) along the north |
+| `snow.comms_hut` Comms Tower | 1 × 1 (7 levels) | white Prefab Hut under a 24 m lattice mast with a red beacon |
+| `snow.hangar` Vehicle Hangar | 2 × 2 | 7 m corrugated shed, 6 × 4.6 m doorway S (hang a Roll-up Door), doors W/E/N, grating mezzanine 4 m up along N |
+| `snow.bunker` Snow Bunker | 1 × 1 | concrete room, firing slits S and W, door N; snow drift up the east side onto the roof (3.2 m), sandbags |
+| `snow.watchtower` Steel Watchtower | 1 × 1 | switchback grating stair to a lookout 7 m up, snow roof, floodlight |
+| `snow.radar_dome` Radar Dome | 1 × 1 | eight-sided drum (door S, consoles) under a 7.5 m radome |
+| `snow.fuel_depot` Fuel Depot | 1 × 1 | two tanks on cradles, pipe, valve rack, bund wall |
+| `snow.catwalk` / `snow.metal_stair` | 1 × 1 | grating catwalk 4 m up N–S; a stair from the ground (S) up to it (N edge) |
+| `snow.ice_wall` Ice Wall | 1 × 1 | jagged ice 4–6 m high along the S edge (turn it to line a map edge) |
+| `snow.ice_cliff` / `snow.drift_ramp` | 1 × 1 | frozen rock with a snow top 4 m high; a 27° snow drift from the ground (S) to 4 m (N) |
+| `snow.frozen_lake` / `snow.ice_ridge` / `snow.ice_hole` | 1 × 1 | lake ice; with a pressure ridge (cover); broken open 3.6 m over water 2 m down, steps out on the N side |
+| `snow.road` Snow Road | 1 × 1 | ploughed road N–S with tyre tracks and snow banks |
+
+Navmesh note (on top of Medieval's): a landing must start exactly where a sloped slab's top surface ends; a
+landing lapping over the slope leaves a sliver the navmesh can't stand on and bots stop a metre short
+(`zTop` in `bunker()` / `rampUp()`). `test/stylePacksSnow.test.ts` walks bots onto every roof, deck, lookout,
+mezzanine, catwalk and cliff top in all four rotations.
+
+**Props** (16, category *Snow Outpost*, `tools/content/prepare-snow.mjs`, built in code, licence Owned):
+Satellite Dish, Antenna Mast, Diesel Heater, Diesel Generator, Snowmobile, Crates under a Tarp, Arctic Lamp
+Post, Flagpole, Chain-link Fence, Snow Fence, Insulated Pipe Run, Oil Drums, Radio Console, Ski Rack, Supply
+Sled, Snow Pile. Snowmobile, Satellite Dish and Generator are stand-ins under stable ids (`so_snowmobile`,
+`so_satellite_dish`, `so_generator`) for Meshy or community hero versions later. The pack also lists the
+snowy trees and rocks, sandbags, barriers, containers, crates, barrels, tanks and lights already in the game;
+the drivable snowmobile is the `snow_sled` mount.
+
+**Materials** (procedural, `client/materials/patterns.ts`): Packed Snow and Snow Drift (wind ripples,
+glints), Lake Ice and Glacier Ice (cracks, bubbles), Red and White Prefab Panels (seams, ribs, rivets; one
+storey a repeat), Snowy Concrete, Frozen Rock (strata rimed with frost), Steel Grating, Red Beacon (glows).
+
+**Facades**: *Prefab panels* (`prefab`: white corner posts, steel plinth, snow on the hoods and the top) and
+*Snowy concrete* (`snow_bunker`: a snow berm, snow-capped hoods and top).
+
+**Gameplay pieces**: *Roll-up Door* (`mover:rollup_door`: a 6 × 4.6 m shutter a rule rolls up 4.4 m and
+down), *Ice Block* (breakable cover, back after 30 s), *Thin Ice* (4 × 4 m, gives way 0.7 s after you step
+on it, back after 12 s), with blast doors, ladders, alarm lights, water, mines and the generator.
+Not in the game yet: falling snow (the `snowy` sky has no precipitation) and slippery ice.
 
 ## Materials and themes (`map/materials.ts`)
 
@@ -714,6 +804,27 @@ in the same themes and paint slots as straight walls.
   invisible barrier always reaches 60 m up, so nothing is thrown or jumped
   out. MapMaker shows it as an orange outline, and spawns outside it are an
   error.
+
+## Drop routes: transport plane and dropship (`sim/airplane.ts`)
+
+The **Paths, Roads & Routes** group (Terrain pane) has **Plane Drop Route** and
+**Dropship Drop Route**; both place an `airplane` entity (the Transport Plane is
+also in Game Modes & Objectives). Its inspector picks the **Aircraft** (`craft`:
+transport plane, 24 benches, or the Dropship's model, 12), altitude, lap time,
+loop or one way, and **Air drop** (off / round start / every spawn). **Draw route
+on the map** edits the points with the Paths tool's hands (click adds, drag
+moves, Shift-click inserts, right-click or Del removes). Draw it in and out of
+the map's boundary freely (a run-in from off the map): the route is drawn green
+over the play area and grey outside it.
+
+Riders (players and bots) can only jump out (Space or E) while the craft's tail
+ramp and the spot they'd land on are over the **play area** (the boundary, or
+without one what's built and the terrain, 3 m in from the edge) and over ground:
+not the void of a sky map, lava or acid. A jump elsewhere is refused with "Not
+over the drop zone". Anyone still aboard when the craft leaves that stretch (or
+an open route ends over it) is dropped at its last good point. Bots choose a
+jump point near their objective whose landing is on their navmesh. A route that
+never crosses the play area is flagged (`airplane.nodrop`).
 
 ## Jump pads
 
