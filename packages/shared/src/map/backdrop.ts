@@ -100,6 +100,7 @@ export const THEME_BACKDROPS: Record<string, Backdrop> = {
   'core.imperial': b('clear', 'hills', 'dirt', 0.4),
   'core.egypt': b('clear', 'mesas', 'sand', 0.55),
   'core.medieval': b('cloudy', 'hills', 'grass', 0.45),
+  'core.snow_outpost': { ...b('snowy', 'peaks', 'snow', 0.6), mist: 0.25 },
   'core.coastal': b('overcast', 'ocean', 'water', 0.5),
 };
 

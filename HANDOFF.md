@@ -137,6 +137,14 @@ unassigned Sci-Fi Research and Industrial Factory refreshes), the owner wants:
   validate-map clean, its card shot redone. Overlaps the older queued "Map revisit pass".
 Not started; plan it with the owner when the packs are on main.
 
+### Menu bundle (2026-10-31): style packs push the menu's first JS over budget
+The menu's first JS grows ~6–12 kB gzipped per style pack (Harbor 798, Snow 805, Desert City 816 kB): each pack's
+tiles (catalog.ts imports packTiles*.ts statically), materials and the whole props table (props.generated.ts via
+getProp in geometry/match/validate) come in through the shared map and sim code the menu loads. The budget in
+tools/ci/bundle-budget.mjs was raised to 840 kB gzipped / 3000 kB raw for Snow, Desert City and Jungle Ruins.
+**To do:** load pack tiles and the props table on demand (a registry the editor and the match fill before they need
+it; the menu draws neither), then bring the budget back to ~800 kB.
+
 ### Work split between the owner's two accounts (2026-10-31 ~06:40 UTC)
 The owner is splitting the style packs across two accounts. Each pack goes on its own `wip/<pack>-pack` branch built
 on `main`. They collide in generated files (props.generated.ts, thumbs/palette.json + atlases, provenance.json,
@@ -351,6 +359,35 @@ Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, ta
   build, validate-map, e2e editor / editorux / maps (E2E_MAPS=market_town) / visual pass; bot audit 8 bots 180 s;
   perf idle 836 draws (budget 900), 1.87 M triangles (mostly the forest border). Not run here: the other 34 e2e
   flows the CI plan lists (shared code changed: full suite) and 96-player perf. Merge through a `check/` branch.
+
+### Style Pack 12 Snow Outpost (`wip/snow-pack`, agent, 2026-10-31; built, on `check/snow`, not merged)
+- **Done (committed on `wip/snow-pack`):** 17 tiles in `packages/shared/src/map/packTilesSnow.ts` (hut, barracks, comms
+  tower, hangar, bunker, watchtower, radar dome, fuel depot, catwalk, metal stair, ice wall, frozen cliff, snow drift,
+  frozen lake, pressure ridge, ice hole, snow road; helpers imported from packTilesMedieval.ts, now exported); 16 props
+  built in code (`tools/content/prepare-snow.mjs`, `assets-src/tiletrigger-snow/`, licence Owned, ids `so_*`, category
+  "Snow Outpost" in the Industrial & Military palette group); procedural materials (patterns snow, ice, prefab,
+  snowcrete, frostrock in materials.ts + client patterns.ts); theme `core.snow_outpost` + snowy backdrop with mist;
+  facades `prefab`, `snow_bunker`; palette pieces `mover:rollup_door`, `block:ice`, `block:thin_ice`; STYLE_PACKS
+  entry `snow` (12); test `packages/shared/test/stylePacksSnow.test.ts` (nav per tile in all rotations, demo map);
+  demo map `maps/whiteout_station.json` (validate-map 0 issues incl. navigation); palette atlas + map card shot.
+- **Bundle:** STYLE_PACKS used to sit in the menu bundle (its `props()` calls kept it); `props` is now a
+  `/* @__NO_SIDE_EFFECTS__ */` function, so the packs drop out of the menu (797.6 of 800 KB gzip with this pack).
+- **Navmesh rule learned:** a landing that laps over a sloped slab breaks the navmesh there; start the landing exactly
+  where the slope's top surface ends (`zTop` in bunker()/rampUp()).
+- **Checks run locally:** typecheck; test:changed (121 files pass); content:check; build + bundle-budget
+  (797.6 / 800 KB gzip); validate-map 0 issues; e2e editor, editorux, maps (E2E_MAPS=whiteout_station), visual pass;
+  bot audit 8 bots 180 s (27 kills, 0 stuck, sleds used). Docs: BUILDING_KIT "12 Snow Outpost", CHANGELOG,
+  `docs/map-briefs/whiteout_station/` (manifest, QA, decisions, screenshots). Pushed to `check/snow` for the full
+  CI suite (shared code changed); merge to main only once that run is green.
+- **Known/related:** the gable helper's ridge-along-z roof (`roll`) was inverted in my copy (fixed in packTilesSnow);
+  packTilesMedieval.ts has the same `roll: -s * PITCH`, which may be the Market Town "upside-down roofs" item (the
+  Market Hall's roof); not changed here (that fix is on the other task).
+- **Resume:** the demo map came from a scratchpad helper (MapMaker operations, not in the repo); edit it in MapMaker.
+  After any tile change, re-render the palette atlas (temp copy of build-palette-atlas.mjs with executablePath
+  '/opt/pw-browsers/chromium') and run `pnpm content:build`.
+- **Stand-ins (Meshy/community candidates, stable ids):** `so_snowmobile`, `so_satellite_dish`, `so_generator`
+  (also worth a hero version: radar dome, comms mast). Not done: falling-snow particles (the sky system has a
+  `snowy` sky but no precipitation), slippery ice (no friction surfaces in movement).
 
 ### St. John's smooth ground (`wip/st-johns-smooth`, agent, 2026-10-31; merged to the session branch)
 - Owner: "the terrain is slightly jagged". Cause: the 3DEP 1 m grid was point-sampled to 2.5 m (aliasing lidar's small

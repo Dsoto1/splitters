@@ -11,7 +11,7 @@
  *
  * Only types come from catalog.ts (which lists these tiles), so there is no
  * runtime import cycle. The box helpers are exported for the other packs'
- * tiles (packTilesHarbor.ts).
+ * tiles (packTilesHarbor.ts, packTilesSnow.ts).
  */
 import type { LocalBox, Side, TileDefinition, TilePort } from './catalog.ts';
 
