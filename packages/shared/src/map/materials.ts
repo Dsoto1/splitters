@@ -71,7 +71,21 @@ export type PatternId =
   /** Style Pack 11: tarred horizontal lap boards (net sheds). */
   | 'lapboards'
   /** Style Pack 11: two horizontal bands per repeat (lighthouse stripes). */
-  | 'bands';
+  | 'bands'
+  /** Style Pack 09 Desert City: coursed sandstone ashlar, long and short blocks, fine joints, tooled faces. */
+  | 'sandstone_ashlar'
+  /** Style Pack 09 Desert City: lime plaster, sun-faded, flaked away in patches to the stone beneath (the accent). */
+  | 'stucco'
+  /** Style Pack 09 Desert City: glazed fish-scale tiles (a dome), each its own shade, a few in the accent. */
+  | 'scales'
+  /** Style Pack 09 Desert City: zellige: eight-point stars in the accent in a field of the base, crosses between, grouted. */
+  | 'zellige'
+  /** Style Pack 09 Desert City: worn flagstones: courses of uneven slabs, joints in the accent. */
+  | 'flags'
+  /** Style Pack 09 Desert City: a woven rug: borders, a lozenge medallion and small motifs in the accent and cream on the base. */
+  | 'rug'
+  /** Style Pack 09 Desert City: a mashrabiya lattice: diagonal turned-wood bars (base) with knots, the dark (accent) between. */
+  | 'lattice';
 
 export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
@@ -186,6 +200,17 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('lighthouse_bands', 'Lighthouse Bands', 'Paint', 'bands', '#f2efe8', '#b8262a', 6),
   m('harbour_paint', 'Harbour Blue Paint', 'Paint', 'plain', '#2e5a7a', '#2a5270', 4, 0.4),
   m('lamp_glow', 'Lamp Glow', 'Tech', 'plain', '#ffe2a0', '#ffd27a', 1, 0.3, true),
+  // Style Pack 09 Desert City (the owner's "Tileset 02" sheet): our own procedural paint.
+  m('ashlar', 'Sandstone Ashlar', 'Stone', 'sandstone_ashlar', '#d6b688', '#9a7c56', 2),
+  m('stucco', 'Weathered Plaster', 'Stone', 'stucco', '#eadcbe', '#c4a476', 3),
+  m('dome_tiles', 'Blue Dome Tiles', 'Tile', 'scales', '#2a5aa8', '#6ec0d8', 1.5, 0.55),
+  m('zellige', 'Zellige Mosaic', 'Tile', 'zellige', '#ece2cc', '#1e4a8a', 1.6, 0.4),
+  m('worn_paving', 'Worn Paving', 'Stone', 'flags', '#cfb68e', '#8a7258', 3),
+  m('sandstone_tiles', 'Sandstone Tiles', 'Tile', 'tiles', '#dcc49a', '#a88a62', 2, 0.1),
+  m('rug_red', 'Market Rug', 'Fabric', 'rug', '#9e2a24', '#22305a', 2.5),
+  m('mashrabiya', 'Mashrabiya Lattice', 'Wood', 'lattice', '#6e4628', '#1a120c', 1),
+  m('canopy_red', 'Red Canopy', 'Fabric', 'weave', '#b4322a', '#8a2420', 1.5),
+  m('cedar', 'Cedar Beam', 'Wood', 'planks', '#7a5434', '#54381f', 1.5),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -306,6 +331,7 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('gothic_estate', 'Gothic Estate', '#231d2c', 'pbr_floorboards', 'wallpaper_damask', 'pbr_walnut', 'dark_wood', 'brass'),
   theme('jungle_temple', 'Jungle Temple', '#a8c8a0', 'pbr_mossy_cobble', 'pbr_castle_stone', 'pbr_jungle_rock', 'pbr_rock', ['pbr_travertine', '#b8c0a0']),
   theme('coastal', 'Coastal Harbor', '#a8c0d4', 'harbour_setts', 'quay_granite', ['pier_decking', '#c0b090'], 'pier_decking', 'harbour_paint'),
+  theme('desert_city', 'Desert City', '#f4dcb0', 'worn_paving', 'ashlar', ['stucco', '#f2e6cc'], 'cedar', ['sandstone_tiles', '#e8d8b8']),
   theme('medieval', 'Medieval Village', '#a8c8e8', 'cobblestones', 'timber_frame', ['oak_beam', '#c8a888'], 'pbr_floorboards', 'oak_beam'),
   theme('snow_outpost', 'Snow Outpost', '#c4d8ea', 'packed_snow', 'prefab_red', 'snowy_concrete', ['pbr_steel', '#b8c0c8'], 'prefab_white'),
   theme('suburban', 'Suburban', '#9cc8f0', 'oak_planks', 'pbr_plaster_white', 'pbr_clapboard', 'pbr_plaster_white', ['paint_matte', '#f4f2ec']),

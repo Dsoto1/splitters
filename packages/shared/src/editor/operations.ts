@@ -484,6 +484,8 @@ export const SCENARIO_PALETTE = [
   { key: 'block:thin_ice', label: 'Thin Ice', search: 'block thin ice frozen lake crack give way fall water trap snow' },
   // Style Pack gameplay pieces (11 Coastal Harbor).
   { key: 'water:harbour', label: 'Harbour Water', search: 'water harbour harbor sea deep swim boat quay pier coast' },
+  // Style Pack gameplay pieces (09 Desert City).
+  { key: 'block:lattice', label: 'Lattice Screen', search: 'block lattice screen mashrabiya window wood breakable desert city arab middle eastern' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
@@ -714,6 +716,9 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('block'), kind: 'block', position, yaw: 0, size: [3, 0.3, 3], material: 'core.pbr_floorboards', tint: '#9a8a7a', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.5, respawnSeconds: 15, health: 120 };
     case 'block:old_planks':
       return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 0.15, 1.5], material: 'core.pbr_weathered_planks', tint: '#8a7a68', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.4, respawnSeconds: 12, health: 120 };
+    case 'block:lattice':
+      // A carved cedar lattice (mashrabiya) across a window or a gap: shoot it to pieces; back after 30 s.
+      return { id: newId('block'), kind: 'block', position, yaw, size: [2.2, 2.4, 0.12], material: 'core.mashrabiya', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 30, health: 45 };
     case 'block:wattle':
       return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 1.2, 0.15], material: 'core.wattle', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 25, health: 50 };
     case 'block:ice':

@@ -102,6 +102,7 @@ export const THEME_BACKDROPS: Record<string, Backdrop> = {
   'core.medieval': b('cloudy', 'hills', 'grass', 0.45),
   'core.snow_outpost': { ...b('snowy', 'peaks', 'snow', 0.6), mist: 0.25 },
   'core.coastal': b('overcast', 'ocean', 'water', 0.5),
+  'core.desert_city': b('clear', 'mesas', 'sand', 0.5),
 };
 
 /** The backdrop a map is drawn with: its own, or its theme's (the ground carrying on in the terrain's commonest edge material). */
