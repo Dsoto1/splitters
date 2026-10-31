@@ -25259,6 +25259,291 @@
       ]
     },
     {
+      "file": "props/mv_well.glb",
+      "sha256": "8cf768332d7e8fcf",
+      "triangles": 480,
+      "bytes": 21636,
+      "source": "tiletrigger-medieval/mv_well.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_awning.glb",
+      "sha256": "d365ee459a2f8caa",
+      "triangles": 240,
+      "bytes": 11044,
+      "source": "tiletrigger-medieval/mv_awning.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_pavilion.glb",
+      "sha256": "0c1f9b02ec32a63a",
+      "triangles": 308,
+      "bytes": 15448,
+      "source": "tiletrigger-medieval/mv_pavilion.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_shop_sign.glb",
+      "sha256": "5801f87fae211caf",
+      "triangles": 132,
+      "bytes": 8124,
+      "source": "tiletrigger-medieval/mv_shop_sign.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_hay_cart.glb",
+      "sha256": "35bbe5983e6a7ab3",
+      "triangles": 852,
+      "bytes": 34532,
+      "source": "tiletrigger-medieval/mv_hay_cart.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_forge.glb",
+      "sha256": "0d9db18d12213df3",
+      "triangles": 204,
+      "bytes": 12800,
+      "source": "tiletrigger-medieval/mv_forge.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_workbench.glb",
+      "sha256": "94423844972b5731",
+      "triangles": 144,
+      "bytes": 10748,
+      "source": "tiletrigger-medieval/mv_workbench.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_planter.glb",
+      "sha256": "4d9a639439ffe1c9",
+      "triangles": 570,
+      "bytes": 15924,
+      "source": "tiletrigger-medieval/mv_planter.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_tarp_crates.glb",
+      "sha256": "5921b606bd6267e0",
+      "triangles": 292,
+      "bytes": 17916,
+      "source": "tiletrigger-medieval/mv_tarp_crates.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_chimney.glb",
+      "sha256": "2371250fa4687e7e",
+      "triangles": 88,
+      "bytes": 5300,
+      "source": "tiletrigger-medieval/mv_chimney.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_wattle_fence.glb",
+      "sha256": "23021f0b38ffc9ab",
+      "triangles": 788,
+      "bytes": 42584,
+      "source": "tiletrigger-medieval/mv_wattle_fence.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_spiked_fence.glb",
+      "sha256": "4688cf799e19f040",
+      "triangles": 402,
+      "bytes": 16512,
+      "source": "tiletrigger-medieval/mv_spiked_fence.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_bell.glb",
+      "sha256": "7765479a2eaac761",
+      "triangles": 356,
+      "bytes": 14296,
+      "source": "tiletrigger-medieval/mv_bell.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_market_cross.glb",
+      "sha256": "003b0a6376a60ce6",
+      "triangles": 164,
+      "bytes": 7980,
+      "source": "tiletrigger-medieval/mv_market_cross.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_stocks.glb",
+      "sha256": "983419948e5a3ef3",
+      "triangles": 224,
+      "bytes": 12216,
+      "source": "tiletrigger-medieval/mv_stocks.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_timber_post.glb",
+      "sha256": "33fd6f299e722a69",
+      "triangles": 60,
+      "bytes": 5344,
+      "source": "tiletrigger-medieval/mv_timber_post.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_sacks.glb",
+      "sha256": "9d401a662c8df503",
+      "triangles": 540,
+      "bytes": 14320,
+      "source": "tiletrigger-medieval/mv_sacks.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_bay_window.glb",
+      "sha256": "27a303528f4d77cf",
+      "triangles": 144,
+      "bytes": 11184,
+      "source": "tiletrigger-medieval/mv_bay_window.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/mv_shutters.glb",
+      "sha256": "155c92d9a0015c98",
+      "triangles": 156,
+      "bytes": 9532,
+      "source": "tiletrigger-medieval/mv_shutters.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
       "file": "skies/clear.jpg",
       "sha256": "4ba9d3b02f1b3acf",
       "bytes": 37359,

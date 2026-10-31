@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { MODEL_FACADES, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, initPhysics, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
+import { readFileSync } from 'node:fs';
+import { MODEL_FACADES, SCENARIO_PALETTE, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getProp, getStylePack, initPhysics, newScenarioEntities, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
 import { NavWorld, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -7,6 +8,38 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
 type Tile = MapDocument['classicStructure']['tiles'][number];
 const t = (id: string, tile: string, x: number, y: number, z = 0, rotation: Rotation = 0, extra: Partial<Tile> = {}): Tile => ({ id, tile, x, y, z, rotation, ...extra });
+
+const read = (p: string) => readFileSync(new URL(`../../../${p}`, import.meta.url)).toString();
+
+describe('Style Pack 10 Medieval Village', () => {
+  it('is registered with its theme, demo map and 25–40 pieces of its own', () => {
+    const pack = getStylePack('medieval')!;
+    expect(pack).toMatchObject({ number: '10', displayName: 'Medieval Village', demo: 'market_town' });
+    expect(pack.themes[0]).toBe('core.medieval');
+    expect(coreThemes.get('core.medieval')).toBeDefined();
+    const own = pack.props.filter((p) => getProp(p)?.category === 'Medieval Village').length + pack.tiles.filter((x) => x.startsWith('medieval.')).length;
+    expect(own).toBeGreaterThanOrEqual(25);
+    expect(own).toBeLessThanOrEqual(40);
+    for (const p of pack.props) expect(getProp(p), p).toBeDefined();
+    for (const k of pack.gameplay) expect(SCENARIO_PALETTE.some((e) => e.key === k), k).toBe(true);
+  });
+
+  it('our own props come from code, licence Owned; the hero stand-ins keep stable ids', () => {
+    const manifest = JSON.parse(read('content/props.json')) as { packs: Record<string, { license: string; url: string }>; props: { id: string; pack: string }[] };
+    expect(manifest.packs['tiletrigger-medieval']).toMatchObject({ license: 'Owned', url: 'tools/content/prepare-medieval.mjs' });
+    const ours = manifest.props.filter((p) => p.id.startsWith('mv_'));
+    expect(ours.length).toBeGreaterThanOrEqual(18);
+    for (const p of ours) expect(p.pack, p.id).toBe('tiletrigger-medieval');
+    // The owner may swap these for community downloads later under the same ids (HANDOFF.md).
+    for (const id of ['mv_forge', 'mv_hay_cart', 'mv_well', 'mv_tarp_tent']) expect(ours.some((p) => p.id === id), id).toBe(true);
+    expect(read('assets-src/tiletrigger-medieval/License.txt')).toMatch(/no generative AI/);
+  });
+
+  it('the oak door and wattle hurdle are palette pieces', () => {
+    expect(newScenarioEntities('door:oak', [0, 0, 0], 0)[0]).toMatchObject({ kind: 'door', style: 'oak', auto: true });
+    expect(newScenarioEntities('block:wattle', [0, 0, 0], 0)[0]).toMatchObject({ kind: 'block', behaviour: 'breakable', material: 'core.wattle' });
+  });
+});
 
 describe('Style Pack 10 Medieval Village tiles', () => {
   it('every tile is in the catalog and validates on its own', () => {

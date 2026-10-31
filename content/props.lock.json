@@ -12571,6 +12571,166 @@
         12,
         18.38
       ]
+    },
+    {
+      "file": "props/mv_well.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_well.glb",
+      "triangles": 480,
+      "bytes": 21636,
+      "sha256": "8cf768332d7e8fcf"
+    },
+    {
+      "file": "props/mv_awning.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_awning.glb",
+      "triangles": 240,
+      "bytes": 11044,
+      "sha256": "d365ee459a2f8caa"
+    },
+    {
+      "file": "props/mv_pavilion.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_pavilion.glb",
+      "triangles": 308,
+      "bytes": 15448,
+      "sha256": "0c1f9b02ec32a63a"
+    },
+    {
+      "file": "props/mv_shop_sign.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_shop_sign.glb",
+      "triangles": 132,
+      "bytes": 8124,
+      "sha256": "5801f87fae211caf"
+    },
+    {
+      "file": "props/mv_hay_cart.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_hay_cart.glb",
+      "triangles": 852,
+      "bytes": 34532,
+      "sha256": "35bbe5983e6a7ab3"
+    },
+    {
+      "file": "props/mv_forge.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_forge.glb",
+      "triangles": 204,
+      "bytes": 12800,
+      "sha256": "0d9db18d12213df3"
+    },
+    {
+      "file": "props/mv_workbench.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_workbench.glb",
+      "triangles": 144,
+      "bytes": 10748,
+      "sha256": "94423844972b5731"
+    },
+    {
+      "file": "props/mv_planter.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_planter.glb",
+      "triangles": 570,
+      "bytes": 15924,
+      "sha256": "4d9a639439ffe1c9"
+    },
+    {
+      "file": "props/mv_tarp_crates.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_tarp_crates.glb",
+      "triangles": 292,
+      "bytes": 17916,
+      "sha256": "5921b606bd6267e0"
+    },
+    {
+      "file": "props/mv_chimney.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_chimney.glb",
+      "triangles": 88,
+      "bytes": 5300,
+      "sha256": "2371250fa4687e7e"
+    },
+    {
+      "file": "props/mv_wattle_fence.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_wattle_fence.glb",
+      "triangles": 788,
+      "bytes": 42584,
+      "sha256": "23021f0b38ffc9ab"
+    },
+    {
+      "file": "props/mv_spiked_fence.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_spiked_fence.glb",
+      "triangles": 402,
+      "bytes": 16512,
+      "sha256": "4688cf799e19f040"
+    },
+    {
+      "file": "props/mv_bell.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_bell.glb",
+      "triangles": 356,
+      "bytes": 14296,
+      "sha256": "7765479a2eaac761"
+    },
+    {
+      "file": "props/mv_market_cross.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_market_cross.glb",
+      "triangles": 164,
+      "bytes": 7980,
+      "sha256": "003b0a6376a60ce6"
+    },
+    {
+      "file": "props/mv_stocks.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_stocks.glb",
+      "triangles": 224,
+      "bytes": 12216,
+      "sha256": "983419948e5a3ef3"
+    },
+    {
+      "file": "props/mv_timber_post.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_timber_post.glb",
+      "triangles": 60,
+      "bytes": 5344,
+      "sha256": "33fd6f299e722a69"
+    },
+    {
+      "file": "props/mv_sacks.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_sacks.glb",
+      "triangles": 540,
+      "bytes": 14320,
+      "sha256": "9d401a662c8df503"
+    },
+    {
+      "file": "props/mv_bay_window.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_bay_window.glb",
+      "triangles": 144,
+      "bytes": 11184,
+      "sha256": "27a303528f4d77cf"
+    },
+    {
+      "file": "props/mv_shutters.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_shutters.glb",
+      "triangles": 156,
+      "bytes": 9532,
+      "sha256": "155c92d9a0015c98"
+    },
+    {
+      "file": "props/mv_tarp_tent.glb",
+      "source": "tiletrigger-medieval",
+      "src": "mv_tarp_tent.glb",
+      "triangles": 204,
+      "bytes": 12964,
+      "sha256": "97bafb08076ec9ee"
     }
   ]
 }

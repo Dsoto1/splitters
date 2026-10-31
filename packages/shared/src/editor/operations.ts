@@ -474,6 +474,9 @@ export const SCENARIO_PALETTE = [
   { key: 'mover:portcullis', label: 'Portcullis Gate', search: 'mover portcullis gate iron grille bars raise lift wide arena gladiator roman logic' },
   { key: 'mover:cage', label: 'Lift Cage', search: 'mover lift cage elevator hypogeum arena floor rise beast gladiator roman hatch' },
   { key: 'light:brazier', label: 'Brazier', search: 'light brazier fire torch flame bowl warm roman egypt temple' },
+  // Style Pack gameplay pieces (10 Medieval Village).
+  { key: 'door:oak', label: 'Oak Door', search: 'door oak wooden plank ironbound iron bound hinged medieval village house castle' },
+  { key: 'block:wattle', label: 'Wattle Hurdle', search: 'block wattle hurdle fence woven breakable wood medieval village farm' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
@@ -683,6 +686,9 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'light:brazier':
       // A warm, flickering fire bowl (lighting only: put a brazier prop under it).
       return { id: newId('light'), kind: 'light', position, yaw, color: '#ff9a3c', intensity: 1.4, range: 11, fixture: 'bulb', blink: 0.4 };
+    case 'door:oak':
+      // An iron-bound plank door on one side's hinges: opens as anyone comes close (or lock it and wire it to logic).
+      return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: false, auto: true, style: 'oak' };
     case 'door:portcullis':
       // Raised by logic or E (a winch beside the gate).
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: false, auto: false, style: 'portcullis' };
@@ -696,6 +702,8 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('block'), kind: 'block', position, yaw: 0, size: [3, 0.3, 3], material: 'core.pbr_floorboards', tint: '#9a8a7a', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.5, respawnSeconds: 15, health: 120 };
     case 'block:old_planks':
       return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 0.15, 1.5], material: 'core.pbr_weathered_planks', tint: '#8a7a68', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.4, respawnSeconds: 12, health: 120 };
+    case 'block:wattle':
+      return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 1.2, 0.15], material: 'core.wattle', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 25, health: 50 };
     case 'block:fence':
       return { id: newId('block'), kind: 'block', position, yaw, size: [4, 1.1, 0.2], material: 'core.paint_matte', tint: '#f2f0ea', behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 25, health: 40 };
     case 'ladder:vines':

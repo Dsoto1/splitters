@@ -360,6 +360,14 @@
       "licenseFile": "assets-src/tiletrigger-ancient/License.txt",
       "retrieved": "2026-10-26"
     },
+    "tiletrigger-medieval": {
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "licenseFile": "assets-src/tiletrigger-medieval/License.txt",
+      "retrieved": "2026-10-31"
+    },
     "madduck-hospital": {
       "title": "Modular 3D Hospital Environment",
       "creator": "madduck",
@@ -12542,6 +12550,186 @@
         "model": "Historic City Building (owner's Meshy)",
         "date": "2026-10-30"
       }
+    },
+    {
+      "id": "mv_well",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_well.glb",
+      "name": "Stone Well",
+      "category": "Medieval Village",
+      "height": 2.62,
+      "collide": "box"
+    },
+    {
+      "id": "mv_awning",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_awning.glb",
+      "name": "Market Awning",
+      "category": "Medieval Village",
+      "height": 2.73,
+      "collide": "none"
+    },
+    {
+      "id": "mv_pavilion",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_pavilion.glb",
+      "name": "Market Pavilion",
+      "category": "Medieval Village",
+      "height": 4.05,
+      "collide": "trunk"
+    },
+    {
+      "id": "mv_shop_sign",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_shop_sign.glb",
+      "name": "Hanging Shop Sign",
+      "category": "Medieval Village",
+      "height": 2.5,
+      "collide": "none"
+    },
+    {
+      "id": "mv_hay_cart",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_hay_cart.glb",
+      "name": "Hay Cart",
+      "category": "Medieval Village",
+      "height": 1.88,
+      "collide": "box"
+    },
+    {
+      "id": "mv_forge",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_forge.glb",
+      "name": "Blacksmith Forge",
+      "category": "Medieval Village",
+      "height": 3.4,
+      "collide": "box"
+    },
+    {
+      "id": "mv_workbench",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_workbench.glb",
+      "name": "Workbench",
+      "category": "Medieval Village",
+      "height": 0.98,
+      "collide": "box"
+    },
+    {
+      "id": "mv_planter",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_planter.glb",
+      "name": "Flower Planter",
+      "category": "Medieval Village",
+      "height": 0.55,
+      "collide": "none"
+    },
+    {
+      "id": "mv_tarp_crates",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_tarp_crates.glb",
+      "name": "Tarpaulined Crates",
+      "category": "Medieval Village",
+      "height": 1.45,
+      "collide": "box"
+    },
+    {
+      "id": "mv_chimney",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_chimney.glb",
+      "name": "Chimney Stack",
+      "category": "Medieval Village",
+      "height": 2.95,
+      "collide": "box"
+    },
+    {
+      "id": "mv_wattle_fence",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_wattle_fence.glb",
+      "name": "Wattle Fence",
+      "category": "Medieval Village",
+      "height": 1.25,
+      "collide": "box"
+    },
+    {
+      "id": "mv_spiked_fence",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_spiked_fence.glb",
+      "name": "Spiked Fence",
+      "category": "Medieval Village",
+      "height": 1.85,
+      "collide": "box"
+    },
+    {
+      "id": "mv_bell",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_bell.glb",
+      "name": "Church Bell",
+      "category": "Medieval Village",
+      "height": 1.45,
+      "collide": "box"
+    },
+    {
+      "id": "mv_market_cross",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_market_cross.glb",
+      "name": "Market Cross",
+      "category": "Medieval Village",
+      "height": 4.95,
+      "collide": "box"
+    },
+    {
+      "id": "mv_stocks",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_stocks.glb",
+      "name": "The Stocks",
+      "category": "Medieval Village",
+      "height": 0.95,
+      "collide": "box"
+    },
+    {
+      "id": "mv_timber_post",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_timber_post.glb",
+      "name": "Oak Post",
+      "category": "Medieval Village",
+      "height": 3.9,
+      "collide": "trunk"
+    },
+    {
+      "id": "mv_sacks",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_sacks.glb",
+      "name": "Grain Sacks",
+      "category": "Medieval Village",
+      "height": 0.65,
+      "collide": "box"
+    },
+    {
+      "id": "mv_bay_window",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_bay_window.glb",
+      "name": "Bay Window",
+      "category": "Medieval Village",
+      "height": 2.63,
+      "collide": "none"
+    },
+    {
+      "id": "mv_shutters",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_shutters.glb",
+      "name": "Shuttered Window",
+      "category": "Medieval Village",
+      "height": 1.4,
+      "collide": "none"
+    },
+    {
+      "id": "mv_tarp_tent",
+      "pack": "tiletrigger-medieval",
+      "src": "mv_tarp_tent.glb",
+      "name": "Tarp Tent",
+      "category": "Medieval Village",
+      "height": 1.85,
+      "collide": "box"
     }
   ]
 }
