@@ -44,6 +44,15 @@ function edge(axis: 'x' | 'z', at0: number, a0: number, a1: number, n: 1 | -1): 
     ? [paint(b(a0, 0, c0, a1, 0.12, c1), GRANITE, '#a8a8a0'), trim(a0, HARBOR_SEA - 0.4, w0, a1, HARBOR_SEA + 0.25, w1, 'sea_bed')]
     : [paint(b(c0, 0, a0, c1, 0.12, a1), GRANITE, '#a8a8a0'), trim(w0, HARBOR_SEA - 0.4, a0, w1, HARBOR_SEA + 0.25, a1, 'sea_bed')];
 }
+/**
+ * A ramp from the quay (z = -4) down to the bed (z = 4): what you walk on is 32 low steps (0.125 m rise, the
+ * navmesh keeps them in every rotation), each just under the drawn slope (a visual slab) so the slope is what you see.
+ */
+function ramp(x0: number, x1: number, material: string): Box[] {
+  const steps = Array.from({ length: 31 }, (_, i) => paint(b(x0, BED - 0.5, 4 - (i + 1) * 0.25, x1, BED + (i + 1) * 0.125, 4 - i * 0.25), material));
+  steps.push(paint(b(x0, BED - 0.5, -4, x1, 0, -3.75), material));
+  return [...steps, slope((x0 + x1) / 2, x1 - x0, 0, BED, material, 0.3, 'trim')];
+}
 /** A slab of `size` [width, thickness, length] whose top surface runs from y0 at z = -4 down to y1 at z = 4 (ramps, beaches). */
 function slope(x: number, w: number, y0: number, y1: number, material: string, t = 0.4, kind?: LocalBox['kind']): Box {
   const a = Math.atan2(y0 - y1, 8);
@@ -142,7 +151,7 @@ function waterfront(): TileDefinition[] {
   // Slipway: a ramp from the quay into the water between two quay ends.
   tiles.push(
     tile('slipway', 'Slipway', 'Open', 'A concrete slipway from the quay (south) down into the water (north), 27°: walk or drive a boat in and out; quay ends either side with bollards and a winch post', [
-      slope(0, 5.2, 0, BED, 'pbr_concrete'),
+      ...ramp(-2.6, 2.6, 'pbr_concrete'),
       ...[-1.2, 1.2].map((x) => paint(slopeRail(x), STEEL, '#4a4a48')),
       ...quayBlock(-4, -4, -2.6, 0),
       ...quayBlock(2.6, -4, 4, 0),
@@ -152,7 +161,7 @@ function waterfront(): TileDefinition[] {
       ...bollard(3.3, -1.0),
     ], { extraFloors: [bed(-4, 0, -2.6, 4), bed(2.6, 0, 4, 4)] }),
     tile('beach', 'Shingle Beach', 'Open', 'A shingle beach sloping from the ground (south) down to the harbour bed (north), 27°: the easy way out of the water', [
-      slope(0, 8, 0, BED, 'shingle'),
+      ...ramp(-4, 4, 'shingle'),
       paint(b(-3.2, -2.4, 0.6, -2.2, -1.7, 1.6), 'pbr_rock', '#8a8a80'),
       paint(b(2.0, -3.2, 2.4, 3.2, -2.4, 3.4), 'pbr_rock', '#8a8a80'),
       paint(tilted(1.0, -1.05, -1.2, [2.2, 0.25, 0.35], { yaw: 0.5, kind: 'trim' }), 'pbr_weathered_planks', '#a89880'),
@@ -192,7 +201,7 @@ function slopeRail(x: number): Box {
 
 // ---------------------------------------------------------------- buildings
 
-type ShedKind = 'warehouse' | 'office';
+type ShedKind = 'warehouse' | 'net_shed' | 'office';
 
 /**
  * A 2 × 1 harbour building, two storeys, eaves on the north and south cell edges at
@@ -202,16 +211,19 @@ type ShedKind = 'warehouse' | 'office';
  * The warehouse: brick, a wide loading door, a loft door with a hoist beam over the
  * quay (south), crates, a rusty corrugated roof. The office: whitewashed render, its
  * upper storey set back behind a railed balcony (a lookout over the quay), slates.
+ * The net shed: tarred boards, the ground storey open to the quay in two wide bays, a
+ * net loft with a hoist, red tiles.
  */
 function harbourShed(kind: ShedKind): Box[] {
   const T = 0.3;
   const X0 = -3.8;
   const X1 = 11.8;
   const office = kind === 'office';
-  const skin = office ? 'harbour_render' : 'pbr_brick_red';
+  const nets = kind === 'net_shed';
+  const skin = office ? 'harbour_render' : nets ? 'tarred_boards' : 'pbr_brick_red';
   const front = office ? -1.2 : -3.8;
   const out: Box[] = [];
-  const groundS: Opening[] = office ? [door(1.0), win(-2.0), win(5.0, 2.4), win(9.0)] : [door(4.0, 4.0, 3.4), win(-2.0), win(10.0)];
+  const groundS: Opening[] = office ? [door(1.0), win(-2.0), win(5.0, 2.4), win(9.0)] : nets ? [[-3.5, 3.2, 0, 3.2], [4.8, 11.5, 0, 3.2]] : [door(4.0, 4.0, 3.4), win(-2.0), win(10.0)];
   out.push(
     ...shell(X0, -3.8, X1, 3.8, { S: groundS, N: [door(-2.0), win(4.5), win(9.5, 1.2, 1.2, 2.4)], W: [door(-1.6)], E: [door(-1.6)] }, 0, 4, skin, T),
     ...wall('x', front + T / 2, X0, X1, office ? [win(-2.0, 1.6), win(2.5, 1.6), door(6.5, 2.2, 2.6), win(10.0, 1.6)] : [win(-2.0, 1.1, 1.0, 2.4), door(4.0, 2.4, 2.8), win(10.0, 1.1, 1.0, 2.4)], 4, 8, skin),
@@ -227,13 +239,18 @@ function harbourShed(kind: ShedKind): Box[] {
   out.push(paint(b(X0, 7.75, front, X1, 8.0, 3.8), 'pbr_planks', '#a08870'));
   out.push(...flight('x', 1, 0, 1.3, 3.5, 16, 0, run).map((s) => paint(s, 'pbr_planks', '#b09070')));
   out.push(rail(0, 1.3, S1 - 1.2, 1.3, 4.0, STEEL));
-  out.push(trim(-3.5, 0, -3.5, 11.5, 0.02, 3.5, office ? 'pbr_floorboards' : 'pbr_concrete'));
+  out.push(trim(-3.5, 0, -3.5, 11.5, 0.02, 3.5, office ? 'pbr_floorboards' : nets ? 'harbour_setts' : 'pbr_concrete'));
   if (office) {
     // The balcony over the quay, its rail and posts; a counter and a chart table inside; a flagstaff.
-    out.push(paint(b(X0, 3.75, -3.8, X1, 4.0, front), DECK), rail(X0, -3.75, X1, -3.75, 4.0, 'harbour_paint'));
+    out.push(paint(b(X0, 3.75, -3.8, X1, 4.0, front), DECK), paint(b(5.3, 3.75, front, 7.7, 4.0, front + T), 'oak_beam'), rail(X0, -3.75, X1, -3.75, 4.0, 'harbour_paint'));
     for (const x of [-3.6, 4.0, 11.6]) out.push(trim(x - 0.1, 4.0, -3.8, x + 0.1, 8.0, -3.6, 'harbour_paint'));
     out.push(paint(b(3.0, 0, -1.6, 7.0, 1.0, -1.0), 'pbr_walnut'), paint(b(8.5, 4, 0.5, 10.5, 0.9 + 4, 1.8), 'pbr_walnut'));
     out.push(trim(11.3, 4.0, -3.75, 11.4, 11.5, -3.65, 'paint_matte'), trim(11.4, 10.6, -3.72, 12, 11.4, -3.68, 'paint_matte', '#2a4a8a'));
+  } else if (nets) {
+    // Nets hung from the beams, lobster pots and a net loft table upstairs, a hoist over the loft door.
+    out.push(trim(-3.4, 1.0, 3.3, 3.0, 3.6, 3.36, 'canvas', '#4a5a4a'), trim(5.0, 1.2, 3.3, 11.4, 3.6, 3.36, 'canvas', '#5a4a3a'));
+    out.push(paint(b(9.6, 0, -1.2, 11.2, 0.9, 0.4), 'crate_wood', '#6a5a48'), paint(b(8.6, 4.0, -3.3, 11.0, 4.9, -2.4), 'pbr_weathered_planks'));
+    out.push(trim(3.9, 7.0, -4, 4.1, 7.2, -3.5, 'oak_beam'), trim(3.97, 5.3, -3.98, 4.03, 7.0, -3.92, 'pbr_burlap', '#a08a5a'));
   } else {
     // Crates on both floors (cover), a hoist beam over the loft door.
     out.push(paint(b(6.6, 0, -3.3, 8.6, 1.2, -2.1), 'crate_wood'), paint(b(9.4, 0, -1.0, 11.0, 1.4, 0.6), 'crate_wood'), paint(b(-3.2, 0, -3.2, -1.8, 1.0, -2.0), 'crate_wood'));
@@ -241,7 +258,7 @@ function harbourShed(kind: ShedKind): Box[] {
     out.push(trim(3.9, 7.0, -4, 4.1, 7.2, -3.5, STEEL), trim(3.97, 5.3, -3.98, 4.03, 7.0, -3.92, 'pbr_burlap', '#a08a5a'));
   }
   out.push(trim(X0 - 0.05, 0, -3.85, X1 + 0.05, 0.45, -3.8, GRANITE));
-  out.push(...gableRoof(-4, -4, 12, 4, EAVES, 8.0, office ? { material: 'pbr_slate_roof', gableMaterial: skin, ridgeMaterial: 'pbr_slate_roof' } : { material: 'rusty_corrugated', gableMaterial: skin, ridgeMaterial: STEEL }));
+  out.push(...gableRoof(-4, -4, 12, 4, EAVES, 8.0, office ? { material: 'pbr_slate_roof', gableMaterial: skin, ridgeMaterial: 'pbr_slate_roof' } : nets ? { gableMaterial: skin } : { material: 'rusty_corrugated', gableMaterial: skin, ridgeMaterial: STEEL }));
   return out;
 }
 
@@ -255,24 +272,9 @@ function buildings(): TileDefinition[] {
     });
   const tiles = [
     shed('warehouse', 'Harbour Warehouse', '2 × 1 cells, two storeys of brick: a wide loading door on the quay side (south) and a loft door with a hoist beam above it, crates for cover, a stair inside, upper doors east and west; a rusty corrugated roof you can walk on (eaves 8.25 m on the north and south edges: climb an Outside Stair beside it)', 'warehouse'),
+    shed('net_shed', 'Net Shed', "2 × 1 cells of tarred boards: the ground storey open to the quay (south) in two wide bays where the nets and pots are kept, a net loft upstairs with a loft door and hoist over the quay, a stair inside, upper doors east and west; a red tile roof you can walk on (eaves 8.25 m)", 'net_shed'),
     shed('office', "Harbourmaster's Office", '2 × 1 cells of whitewashed render: the upper storey stands back behind a railed balcony over the quay (south, 4 m up), a flagstaff, a stair inside, doors on every side; a slate roof you can walk on (eaves 8.25 m)', 'office'),
   ];
-
-  // Net Shed: a tall tarred-timber shed, a switchback stair inside to a net loft (3.5 m) and a top loft (7 m) with a loft door.
-  {
-    const { steps } = switchback(3.4, 2.0, 28, [6]);
-    tiles.push(
-      tile('net_shed', 'Net Shed', 'Buildings', 'A tall, narrow net shed of tarred boards: a door south, a stair switching back up the inside to a net loft 3.5 m up and a top loft 7 m up with a loft door over the south side (a perch), small windows east and west, a red tile roof', [
-        ...shell(-3.85, -3.85, 3.85, 3.85, { S: [door(-2.0, 2.0, 2.6), [-1.5, 1.5, 7.0, 9.2]], E: [win(0, 1.0, 5.0, 6.2), win(-2.4, 1.0, 1.0, 2.2)], W: [win(2.0, 1.0, 4.4, 5.6), win(-2.2, 1.0, 8.0, 9.2)] }, 0, 10, 'tarred_boards'),
-        ...steps.map((s) => paint(s, 'pbr_weathered_planks')),
-        paint(b(-3.55, 6.75, -3.55, 3.55, 7.0, -1.4), 'pbr_weathered_planks'),
-        rail(-1.4, -1.4, 1.4, -1.4, 7.0, 'oak_beam'),
-        ...gableRoof(-4, -4, 4, 4, 9.8, 10.0, { gableMaterial: 'tarred_boards', gableInset: 0.15 }),
-        trim(-3.95, 0.8, -3.92, -0.8, 3.4, -3.86, 'canvas', '#5a5a48'),
-        trim(-3.6, 0, -3.6, 3.6, 0.02, 3.6, 'pbr_weathered_planks'),
-      ], { cells: footprint(1, 1, 3), floors: [0], extraFloors: [] }),
-    );
-  }
 
   // Fish Market: an open hall on posts under a low corrugated roof, granite counters with ice in two rows.
   {
@@ -295,22 +297,21 @@ function buildings(): TileDefinition[] {
 function landmarks(): TileDefinition[] {
   const tiles: TileDefinition[] = [];
 
-  // Lighthouse: a banded tower, a switchback stair inside (flights of six: headroom on every lap) to a lamp gallery 10.5 m up
-  // behind windows on every side, the lantern on top.
+  // Lighthouse: a skeleton tower of four banded legs (open sides keep the stacked stair on the bots' navmesh), a switchback
+  // stair inside (flights of six: headroom on every lap) to a gallery 10.5 m up behind a parapet, the lantern house on top.
   {
     const { steps } = switchback(3.4, 2.0, 42, [6]);
     const W = 'lighthouse_bands';
-    const slots = (c: readonly number[]): Opening[] => c.map((u) => win(u, 1.6, 11.2, 12.4));
+    const brace = (x: number, z: number, y: number, along: 'x' | 'z', s: 1 | -1): Box => paint(tilted(x, y, z, along === 'x' ? [7.2, 0.12, 0.12] : [0.12, 0.12, 7.2], along === 'x' ? { roll: s * 0.42, kind: 'trim' } : { pitch: s * 0.42, kind: 'trim' }), STEEL, '#e8e6e0');
     tiles.push(
-      tile('lighthouse', 'Lighthouse', 'Vertical', 'A red and white lighthouse: a door south, a stair switching back up the inside to a gallery 10.5 m up with windows on every side (the harbour\'s sniper perch), the lantern on top. Put it at the end of a pier or the breakwater', [
-        ...wall('x', -3.65, -3.9, 3.9, [door(0, 2.2, 2.4), ...slots([-1.8, 1.8])], 0, 12.8, W, 0.5),
-        ...wall('x', 3.65, -3.9, 3.9, [win(0, 0.4, 5, 6.5), ...slots([-1.8, 1.8])], 0, 12.8, W, 0.5),
-        ...wall('z', -3.65, -3.4, 3.4, [win(0, 0.4, 7, 8.5), ...slots([-1.6, 1.6])], 0, 12.8, W, 0.5),
-        ...wall('z', 3.65, -3.4, 3.4, [win(0, 0.4, 3, 4.5), ...slots([-1.6, 1.6])], 0, 12.8, W, 0.5),
+      tile('lighthouse', 'Lighthouse', 'Vertical', "A red and white skeleton lighthouse: four banded legs, a stair switching back up inside them to a gallery 10.5 m up behind a parapet (the harbour's sniper perch), the lantern house on top. Put it at the end of a pier or the breakwater", [
+        ...[[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sz]) => paint(b(sx! * 3.6 - 0.2, 0, sz! * 3.6 - 0.2, sx! * 3.6 + 0.2, 12.8, sz! * 3.6 + 0.2), W)),
+        ...[2.4, 6.4].flatMap((y) => ([-1, 1] as const).flatMap((s) => [brace(0, s * 3.75, y + 1.4, 'x', s), brace(s * 3.75, 0, y + 1.4, 'z', s)])),
         ...steps.map((s) => paint(s, 'pbr_concrete', '#b8b4ac')),
         paint(b(-3.4, 10.2, -3.4, 3.4, 10.5, -1.4), 'pbr_tread_plate'),
-        rail(-1.4, -1.4, 1.4, -1.4, 10.5, STEEL),
+        paint(b(-3.4, 10.5, -3.4, 3.4, 11.5, -3.25), 'harbour_paint', '#b8262a'),
         paint(b(-3.9, 12.8, -3.9, 3.9, 13.1, 3.9), 'paint_matte', '#e8e6e0'),
+        trim(-2.2, 13.1, -2.2, 2.2, 13.6, 2.2, W),
         trim(-0.8, 13.1, -0.8, 0.8, 14.6, 0.8, 'lamp_glow'),
         ...[[-1.5, -1.5], [1.3, -1.5], [-1.5, 1.3], [1.3, 1.3]].map(([x, z]) => trim(x!, 13.1, z!, x! + 0.2, 15.0, z! + 0.2, 'harbour_paint', '#20262a')),
         trim(-1.8, 15.0, -1.8, 1.8, 15.4, 1.8, 'harbour_paint', '#b8262a'),
