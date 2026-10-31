@@ -13284,6 +13284,396 @@
       ]
     },
     {
+      "file": "props/jt_zipline_post.glb",
+      "sha256": "d72cb973a3f0182a",
+      "triangles": 304,
+      "bytes": 16100,
+      "source": "tiletrigger-jungle/jt_zipline_post.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_crane.glb",
+      "sha256": "c65d256af51b32d8",
+      "triangles": 256,
+      "bytes": 14464,
+      "source": "tiletrigger-jungle/jt_crane.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_wooden_platform.glb",
+      "sha256": "232facd3c3b37e6c",
+      "triangles": 464,
+      "bytes": 25016,
+      "source": "tiletrigger-jungle/jt_wooden_platform.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_statue_large.glb",
+      "sha256": "4b990bae4ccce4ea",
+      "triangles": 784,
+      "bytes": 27956,
+      "source": "tiletrigger-jungle/jt_statue_large.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_statue_small.glb",
+      "sha256": "7907f8e7832b0c63",
+      "triangles": 376,
+      "bytes": 18588,
+      "source": "tiletrigger-jungle/jt_statue_small.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_obelisk.glb",
+      "sha256": "c00db64515921771",
+      "triangles": 276,
+      "bytes": 14684,
+      "source": "tiletrigger-jungle/jt_obelisk.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_temple_spire.glb",
+      "sha256": "9c60ad1c45dc2ee8",
+      "triangles": 300,
+      "bytes": 11332,
+      "source": "tiletrigger-jungle/jt_temple_spire.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_fire_bowl.glb",
+      "sha256": "6dde756acc43235a",
+      "triangles": 351,
+      "bytes": 15704,
+      "source": "tiletrigger-jungle/jt_fire_bowl.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_hanging_brazier.glb",
+      "sha256": "920da6dfc96c91d5",
+      "triangles": 455,
+      "bytes": 19992,
+      "source": "tiletrigger-jungle/jt_hanging_brazier.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_wall_torch.glb",
+      "sha256": "9c07e33da390c015",
+      "triangles": 263,
+      "bytes": 12820,
+      "source": "tiletrigger-jungle/jt_wall_torch.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_banner_teal.glb",
+      "sha256": "c607aa3cc188da01",
+      "triangles": 378,
+      "bytes": 17196,
+      "source": "tiletrigger-jungle/jt_banner_teal.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_banner_red.glb",
+      "sha256": "9b7b4c515c2b75e5",
+      "triangles": 354,
+      "bytes": 16956,
+      "source": "tiletrigger-jungle/jt_banner_red.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_tree_root_arch.glb",
+      "sha256": "ebc37b179ee8755e",
+      "triangles": 1032,
+      "bytes": 50128,
+      "source": "tiletrigger-jungle/jt_tree_root_arch.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_tree_trunk.glb",
+      "sha256": "a0eec73d62e0dec7",
+      "triangles": 760,
+      "bytes": 26040,
+      "source": "tiletrigger-jungle/jt_tree_trunk.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_plant_cluster.glb",
+      "sha256": "45050eb116e33733",
+      "triangles": 492,
+      "bytes": 21696,
+      "source": "tiletrigger-jungle/jt_plant_cluster.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_planter.glb",
+      "sha256": "19651d3da4fb75b6",
+      "triangles": 228,
+      "bytes": 15824,
+      "source": "tiletrigger-jungle/jt_planter.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_pottery.glb",
+      "sha256": "27e2d36bff6e8724",
+      "triangles": 560,
+      "bytes": 19540,
+      "source": "tiletrigger-jungle/jt_pottery.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_rubble_pile.glb",
+      "sha256": "aeba7de5170d525d",
+      "triangles": 300,
+      "bytes": 15080,
+      "source": "tiletrigger-jungle/jt_rubble_pile.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_collapsed_column.glb",
+      "sha256": "5c83f1273ce66ee7",
+      "triangles": 204,
+      "bytes": 9232,
+      "source": "tiletrigger-jungle/jt_collapsed_column.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_broken_column.glb",
+      "sha256": "e138694be74ebd40",
+      "triangles": 252,
+      "bytes": 11452,
+      "source": "tiletrigger-jungle/jt_broken_column.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_sarcophagus.glb",
+      "sha256": "60dbe7df648cbb0b",
+      "triangles": 240,
+      "bytes": 11916,
+      "source": "tiletrigger-jungle/jt_sarcophagus.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_spikes.glb",
+      "sha256": "4ff2933afd447add",
+      "triangles": 252,
+      "bytes": 11392,
+      "source": "tiletrigger-jungle/jt_spikes.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_chain_rail.glb",
+      "sha256": "1dd31a797d289ddd",
+      "triangles": 336,
+      "bytes": 19564,
+      "source": "tiletrigger-jungle/jt_chain_rail.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_rope_rail.glb",
+      "sha256": "1d4fb235a6fffbf7",
+      "triangles": 360,
+      "bytes": 17932,
+      "source": "tiletrigger-jungle/jt_rope_rail.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_altar_fire.glb",
+      "sha256": "99d4668c969cc114",
+      "triangles": 375,
+      "bytes": 17812,
+      "source": "tiletrigger-jungle/jt_altar_fire.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_overgrown_beam.glb",
+      "sha256": "429a0d1eae72f267",
+      "triangles": 996,
+      "bytes": 45348,
+      "source": "tiletrigger-jungle/jt_overgrown_beam.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
       "file": "props/mp_dino_statue.glb",
       "sha256": "768e8589f3da410a",
       "triangles": 4980,
