@@ -130,6 +130,13 @@ Owner's screenshots, Character Select holding the AK (2026-10-31 evening), worst
   grip. Check every coat/robe/cape character with arms raised.
 - **Brother Ansel** (robe): lumpy model (owner) and ballooned sleeves; on the lumpy list with Dale, Lancer Mei and
   Sir Galloway.
+- **Merrow the Wise** (wizard, Meshy auto-rig): hands not imported right (owner): the support hand is a thin shard
+  inside the sleeve, the shooting hand barely there: the hands were lost in the robe sleeves at the cut/rig; rebuild
+  from the download (keep the hand geometry; check the triangle cut doesn't eat thin fingers inside sleeves).
+- The older man in the plaid shirt (likely Agent Zhao): flat open palms under the gun (the no-curl group).
+- Bonejack (pirate skeleton): gun held tight to the chest, hands on it; acceptable but cramped.
+- Close to right: Punkin (hands on the gun, fingers a little splayed) and the skeleton in the suit (Rattles): a good
+  rifle hold, both hands wrapped (a second reference besides The Visitor).
 - **Uncle Bao**: close to right (gloved hands on the grip and handguard).
 - **Dale** (pre-rigged): grip passable, but his import is lumpy (owner) like Lancer Mei and Sir Galloway, and the
   forearm skin tears/stretches near the wrist.
