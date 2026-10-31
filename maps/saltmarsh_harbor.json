@@ -26,7 +26,7 @@
     "theme": "core.coastal",
     "tiles": [
       {
-        "id": "tile_3ybjxubtri",
+        "id": "tile_eou7tl0cx1",
         "tile": "harbor.slipway",
         "x": -4,
         "y": 0,
@@ -34,7 +34,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_gowawn062s",
+        "id": "tile_eekieosmnl",
         "tile": "harbor.quay",
         "x": -2,
         "y": 0,
@@ -42,7 +42,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_6s79zj1fbp",
+        "id": "tile_leod4jjihy",
         "tile": "harbor.quay",
         "x": -1,
         "y": 0,
@@ -50,7 +50,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_k1lolzupsj",
+        "id": "tile_zkagee4bx4",
         "tile": "harbor.quay",
         "x": 3,
         "y": 0,
@@ -58,7 +58,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ock128ihsj",
+        "id": "tile_6pbca7qaei",
         "tile": "harbor.quayside",
         "x": -3,
         "y": 0,
@@ -66,7 +66,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_z31by07z8x",
+        "id": "tile_x49nesvr4v",
         "tile": "harbor.quay_steps",
         "x": 1,
         "y": 0,
@@ -74,7 +74,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_dgc7681roy",
+        "id": "tile_hn4k3lgexu",
         "tile": "harbor.quay_inner",
         "x": 4,
         "y": 0,
@@ -82,7 +82,7 @@
         "rotation": 3
       },
       {
-        "id": "tile_ewzuo29muk",
+        "id": "tile_ll55ac4z7c",
         "tile": "harbor.pier",
         "x": 0,
         "y": 1,
@@ -90,7 +90,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_k7v6t1eoq1",
+        "id": "tile_gy0tioc8e2",
         "tile": "harbor.pier",
         "x": 0,
         "y": 2,
@@ -98,7 +98,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ijj5f1qiz1",
+        "id": "tile_9c69p0m8pc",
         "tile": "harbor.pier",
         "x": 0,
         "y": 3,
@@ -106,7 +106,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_nedkozrke4",
+        "id": "tile_ueffssaizx",
         "tile": "harbor.pier",
         "x": 0,
         "y": 4,
@@ -114,7 +114,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_wcxbzl12x6",
+        "id": "tile_7o3ad2jh9s",
         "tile": "harbor.pier_head",
         "x": 0,
         "y": 5,
@@ -122,7 +122,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0gz3wk1o98",
+        "id": "tile_8pvrlh2fzz",
         "tile": "harbor.boardwalk",
         "x": -3,
         "y": 1,
@@ -130,7 +130,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_w32t2x2t03",
+        "id": "tile_4d3cf27qig",
         "tile": "harbor.boardwalk",
         "x": -3,
         "y": 2,
@@ -138,7 +138,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ww6ia4x2ba",
+        "id": "tile_1rkocabhra",
         "tile": "harbor.boardwalk",
         "x": -3,
         "y": 3,
@@ -146,7 +146,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_w93hqnjacd",
+        "id": "tile_o9n28qi4ts",
         "tile": "harbor.boardwalk",
         "x": -3,
         "y": 4,
@@ -154,7 +154,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0okuf24pnz",
+        "id": "tile_sqw7knhydo",
         "tile": "harbor.lighthouse",
         "x": -3,
         "y": 5,
@@ -162,7 +162,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ncamunkudl",
+        "id": "tile_evkpyo4lb0",
         "tile": "harbor.breakwater",
         "x": -2,
         "y": 5,
@@ -170,7 +170,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_7tf5roimkb",
+        "id": "tile_a7bxk76n59",
         "tile": "harbor.breakwater",
         "x": -1,
         "y": 5,
@@ -178,7 +178,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_68vya7ed1h",
+        "id": "tile_y0hj8j8vyg",
         "tile": "harbor.breakwater",
         "x": 1,
         "y": 5,
@@ -186,7 +186,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_cepo9uivd0",
+        "id": "tile_kj1km3pool",
         "tile": "harbor.breakwater",
         "x": 2,
         "y": 5,
@@ -194,7 +194,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_expnwlntt8",
+        "id": "tile_bc92auh565",
         "tile": "harbor.breakwater",
         "x": 3,
         "y": 5,
@@ -202,7 +202,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_uim9j7m8od",
+        "id": "tile_72vzxplulp",
         "tile": "harbor.breakwater",
         "x": 4,
         "y": 5,
@@ -210,7 +210,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_5cvsrlzja3",
+        "id": "tile_oz8y7enyoq",
         "tile": "harbor.beach",
         "x": -5,
         "y": 1,
@@ -218,7 +218,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_w940t28p56",
+        "id": "tile_xs3j4zdd6l",
         "tile": "harbor.beach",
         "x": -5,
         "y": 2,
@@ -226,7 +226,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_1y7b1i3isp",
+        "id": "tile_tulnttr6vl",
         "tile": "harbor.beach",
         "x": -5,
         "y": 3,
@@ -234,7 +234,7 @@
         "rotation": 1
       },
       {
-        "id": "tile_gxgdma5d83",
+        "id": "tile_co9h238oxd",
         "tile": "harbor.quay",
         "x": 4,
         "y": 1,
@@ -242,7 +242,7 @@
         "rotation": 3
       },
       {
-        "id": "tile_zvv91uyyil",
+        "id": "tile_1zv7hct87s",
         "tile": "harbor.quay",
         "x": 4,
         "y": 2,
@@ -250,7 +250,7 @@
         "rotation": 3
       },
       {
-        "id": "tile_e8fp418lje",
+        "id": "tile_zqyghmq4o3",
         "tile": "harbor.quay",
         "x": 4,
         "y": 3,
@@ -258,7 +258,7 @@
         "rotation": 3
       },
       {
-        "id": "tile_xmad3hmwxz",
+        "id": "tile_aaegah2gie",
         "tile": "harbor.quay",
         "x": 4,
         "y": 4,
@@ -266,7 +266,7 @@
         "rotation": 3
       },
       {
-        "id": "tile_segyz1p8sb",
+        "id": "tile_hawn4dse69",
         "tile": "harbor.quay",
         "x": 4,
         "y": 6,
@@ -274,7 +274,7 @@
         "rotation": 3
       },
       {
-        "id": "tile_o0bv9vqk0u",
+        "id": "tile_b0e8gmbngx",
         "tile": "harbor.crane",
         "x": 5,
         "y": 3,
@@ -282,7 +282,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_afxxhbsbhf",
+        "id": "tile_rbg7d7wiyu",
         "tile": "harbor.office",
         "x": 5,
         "y": 1,
@@ -290,7 +290,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_by2qcxq2r4",
+        "id": "tile_fdh617e12n",
         "tile": "harbor.warehouse",
         "x": 5,
         "y": 4,
@@ -298,15 +298,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_xr37dw6ehy",
-        "tile": "medieval.outside_stair",
-        "x": 6,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_gq0capq0de",
+        "id": "tile_upn73sk1co",
         "tile": "harbor.fish_market",
         "x": -3,
         "y": -1,
@@ -314,7 +306,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_a52vme673y",
+        "id": "tile_8ij15d0tae",
         "tile": "harbor.net_shed",
         "x": 2,
         "y": -1,
@@ -322,7 +314,7 @@
         "rotation": 2
       },
       {
-        "id": "tile_ny83wemmrg",
+        "id": "tile_xk6z1epmiq",
         "tile": "harbor.net_shed",
         "x": -6,
         "y": -3,
@@ -330,7 +322,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_5gr6d8xc03",
+        "id": "tile_hb46alixfa",
         "tile": "harbor.net_shed",
         "x": -6,
         "y": -5,
@@ -338,7 +330,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ksb21mou5k",
+        "id": "tile_hr75mcll59",
         "tile": "harbor.warehouse",
         "x": -4,
         "y": -5,
@@ -346,7 +338,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_z5ihj3x9h4",
+        "id": "tile_zs45ej5ws3",
         "tile": "medieval.outside_stair",
         "x": -4,
         "y": -4,
@@ -354,7 +346,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0m9cm5aybi",
+        "id": "tile_y1g8btt09m",
         "tile": "harbor.warehouse",
         "x": 2,
         "y": -4,
@@ -362,7 +354,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_h11ym4b1cg",
+        "id": "tile_x7gm181edl",
         "tile": "medieval.outside_stair",
         "x": 2,
         "y": -3,
@@ -370,7 +362,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_g1k9id0yfb",
+        "id": "tile_yrjrasf5mj",
         "tile": "harbor.arch",
         "x": 0,
         "y": -3,
@@ -378,7 +370,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_09o6v2eraj",
+        "id": "tile_8gw567adlo",
         "tile": "core.yard",
         "x": -6,
         "y": -6,
@@ -386,7 +378,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_gnhj5jks98",
+        "id": "tile_qpds6vih6p",
         "tile": "core.yard",
         "x": -5,
         "y": -6,
@@ -394,7 +386,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_4fudedcxri",
+        "id": "tile_h65hxzvq9r",
         "tile": "core.yard",
         "x": -4,
         "y": -6,
@@ -402,7 +394,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_wqrmp9vras",
+        "id": "tile_p2jhjf23t9",
         "tile": "core.yard",
         "x": -3,
         "y": -6,
@@ -410,7 +402,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_yk5g5v1ajp",
+        "id": "tile_bi2xcjr005",
         "tile": "core.yard",
         "x": -2,
         "y": -6,
@@ -418,7 +410,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_o59kmi6a5i",
+        "id": "tile_lo341c7lzd",
         "tile": "core.yard",
         "x": -1,
         "y": -6,
@@ -426,7 +418,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_1109ius0do",
+        "id": "tile_xkuel8uwgb",
         "tile": "harbor.quayside",
         "x": 0,
         "y": -6,
@@ -434,7 +426,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_wpe1q3699o",
+        "id": "tile_3mx87nltd8",
         "tile": "core.yard",
         "x": 1,
         "y": -6,
@@ -442,7 +434,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_hy4g9v4fg8",
+        "id": "tile_mbjqdu0sqi",
         "tile": "core.yard",
         "x": 2,
         "y": -6,
@@ -450,7 +442,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_bsob39yspw",
+        "id": "tile_o88sju68la",
         "tile": "core.yard",
         "x": 3,
         "y": -6,
@@ -458,7 +450,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_auf7uai1ds",
+        "id": "tile_rekhacyw08",
         "tile": "core.yard",
         "x": 4,
         "y": -6,
@@ -466,7 +458,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_3ugcz93hzi",
+        "id": "tile_yubrqabz3p",
         "tile": "harbor.quayside",
         "x": 5,
         "y": -6,
@@ -474,7 +466,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_4tjqnbolyq",
+        "id": "tile_5h8ve1b1au",
         "tile": "harbor.quayside",
         "x": 6,
         "y": -6,
@@ -482,7 +474,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_4oqsmxxkkp",
+        "id": "tile_i5et83ndgh",
         "tile": "core.yard",
         "x": -2,
         "y": -5,
@@ -490,7 +482,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_io28g9b83f",
+        "id": "tile_l38f5goqml",
         "tile": "core.yard",
         "x": -1,
         "y": -5,
@@ -498,7 +490,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_9i5i65bvxv",
+        "id": "tile_n73u16habd",
         "tile": "harbor.quayside",
         "x": 0,
         "y": -5,
@@ -506,7 +498,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_fk7eevg30d",
+        "id": "tile_ph313kehuj",
         "tile": "core.yard",
         "x": 1,
         "y": -5,
@@ -514,7 +506,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_wrutyify09",
+        "id": "tile_ndbvhz3mfx",
         "tile": "core.yard",
         "x": 2,
         "y": -5,
@@ -522,7 +514,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_apxhp94h64",
+        "id": "tile_w3mrqrie0q",
         "tile": "core.yard",
         "x": 3,
         "y": -5,
@@ -530,7 +522,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_yfpjgw2tgg",
+        "id": "tile_bbp8pa9tl0",
         "tile": "core.yard",
         "x": 4,
         "y": -5,
@@ -538,7 +530,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_bjiyhs9s7g",
+        "id": "tile_ltjn4ppuwt",
         "tile": "harbor.quayside",
         "x": 5,
         "y": -5,
@@ -546,7 +538,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0rjwg9qv6f",
+        "id": "tile_twi8fpl3eg",
         "tile": "harbor.quayside",
         "x": 6,
         "y": -5,
@@ -554,7 +546,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_akdwwx5e57",
+        "id": "tile_97mn45h1gb",
         "tile": "core.yard",
         "x": -6,
         "y": -4,
@@ -562,7 +554,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_n0qyxkuahb",
+        "id": "tile_lhw30xefgr",
         "tile": "core.yard",
         "x": -5,
         "y": -4,
@@ -570,7 +562,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_wb20d9bjh0",
+        "id": "tile_hxub8mcilv",
         "tile": "core.yard",
         "x": -3,
         "y": -4,
@@ -578,7 +570,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_7umdn5913a",
+        "id": "tile_r49expyr1e",
         "tile": "core.yard",
         "x": -2,
         "y": -4,
@@ -586,7 +578,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_m1saqk4gcs",
+        "id": "tile_7cft9rqj6r",
         "tile": "core.yard",
         "x": -1,
         "y": -4,
@@ -594,7 +586,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_teh1q0cya3",
+        "id": "tile_e67lqgedu3",
         "tile": "harbor.quayside",
         "x": 0,
         "y": -4,
@@ -602,7 +594,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_5r4wnw68tw",
+        "id": "tile_58p7lca418",
         "tile": "core.yard",
         "x": 1,
         "y": -4,
@@ -610,7 +602,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_6esz14lk65",
+        "id": "tile_yd977lspe3",
         "tile": "core.yard",
         "x": 4,
         "y": -4,
@@ -618,7 +610,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_1sfjeuyqpk",
+        "id": "tile_amc4z8nrci",
         "tile": "harbor.quayside",
         "x": 5,
         "y": -4,
@@ -626,7 +618,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_jaihkpxevy",
+        "id": "tile_j8x003s7kj",
         "tile": "harbor.quayside",
         "x": 6,
         "y": -4,
@@ -634,7 +626,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_wwccksun6l",
+        "id": "tile_h4mou07x0m",
         "tile": "core.yard",
         "x": -4,
         "y": -3,
@@ -642,7 +634,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_67ifqiix5f",
+        "id": "tile_tzq5cqgoto",
         "tile": "core.yard",
         "x": -3,
         "y": -3,
@@ -650,7 +642,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_i6t4wtabg2",
+        "id": "tile_allbr1d7fa",
         "tile": "core.yard",
         "x": -2,
         "y": -3,
@@ -658,7 +650,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_937nki1og3",
+        "id": "tile_cix9liehu7",
         "tile": "core.yard",
         "x": -1,
         "y": -3,
@@ -666,7 +658,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_3re3sqs0wo",
+        "id": "tile_xy28873xv6",
         "tile": "core.yard",
         "x": 1,
         "y": -3,
@@ -674,7 +666,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ofxkxsn9yx",
+        "id": "tile_zrkioqz1yq",
         "tile": "core.yard",
         "x": 3,
         "y": -3,
@@ -682,7 +674,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_hcd2sgpmlr",
+        "id": "tile_fp2igz609c",
         "tile": "core.yard",
         "x": 4,
         "y": -3,
@@ -690,7 +682,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_myorci2yyc",
+        "id": "tile_a4wzynnrre",
         "tile": "harbor.quayside",
         "x": 5,
         "y": -3,
@@ -698,7 +690,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_q0jso1eic0",
+        "id": "tile_pniukbprgq",
         "tile": "harbor.quayside",
         "x": 6,
         "y": -3,
@@ -706,7 +698,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_oh7yodmfj3",
+        "id": "tile_2e8ivo81of",
         "tile": "core.yard",
         "x": -6,
         "y": -2,
@@ -714,7 +706,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_dhcraxeaep",
+        "id": "tile_nl8iakgv4c",
         "tile": "core.yard",
         "x": -5,
         "y": -2,
@@ -722,7 +714,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_qwfpq1u76y",
+        "id": "tile_be3ltgei1h",
         "tile": "core.yard",
         "x": -4,
         "y": -2,
@@ -730,7 +722,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_crkua10hmm",
+        "id": "tile_p78wwx35u5",
         "tile": "core.yard",
         "x": -3,
         "y": -2,
@@ -738,7 +730,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_hixng0r1bw",
+        "id": "tile_4r4j5do11n",
         "tile": "core.yard",
         "x": -2,
         "y": -2,
@@ -746,7 +738,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_nl37k0ifnk",
+        "id": "tile_wqkcq6xc26",
         "tile": "core.yard",
         "x": -1,
         "y": -2,
@@ -754,7 +746,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_mdp7n16ob2",
+        "id": "tile_tu72625a5f",
         "tile": "harbor.quayside",
         "x": 0,
         "y": -2,
@@ -762,7 +754,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_8l6bh5mo27",
+        "id": "tile_qohslsw2nl",
         "tile": "core.yard",
         "x": 1,
         "y": -2,
@@ -770,7 +762,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_8v84tz8ow7",
+        "id": "tile_qtb58o5gu7",
         "tile": "core.yard",
         "x": 2,
         "y": -2,
@@ -778,7 +770,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_2x6020v8df",
+        "id": "tile_2cyet4a5um",
         "tile": "core.yard",
         "x": 3,
         "y": -2,
@@ -786,7 +778,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_u2yykvqghg",
+        "id": "tile_cp6epgz4zt",
         "tile": "core.yard",
         "x": 4,
         "y": -2,
@@ -794,7 +786,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_lvv5zahe46",
+        "id": "tile_u3vgqplftw",
         "tile": "harbor.quayside",
         "x": 5,
         "y": -2,
@@ -802,7 +794,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_1td4qgqrjm",
+        "id": "tile_pyfkstqklf",
         "tile": "harbor.quayside",
         "x": 6,
         "y": -2,
@@ -810,7 +802,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_2kssb9m3x9",
+        "id": "tile_w2qgo5x7uy",
         "tile": "harbor.quayside",
         "x": -6,
         "y": -1,
@@ -818,7 +810,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_27yf84ji34",
+        "id": "tile_ohjfp3l4xp",
         "tile": "harbor.quayside",
         "x": -5,
         "y": -1,
@@ -826,7 +818,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_jikh5hx22i",
+        "id": "tile_b9vkt4cefc",
         "tile": "harbor.quayside",
         "x": -4,
         "y": -1,
@@ -834,7 +826,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_cnk0y92fbg",
+        "id": "tile_i1yvt0dlos",
         "tile": "harbor.quayside",
         "x": -1,
         "y": -1,
@@ -842,7 +834,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_z4nt6bfzg9",
+        "id": "tile_9gg3n5pwnw",
         "tile": "harbor.quayside",
         "x": 0,
         "y": -1,
@@ -850,7 +842,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_bvi6cjbvxu",
+        "id": "tile_25txvyb9t4",
         "tile": "harbor.quayside",
         "x": 3,
         "y": -1,
@@ -858,7 +850,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ak2nczkk3o",
+        "id": "tile_qfguj29m1p",
         "tile": "harbor.quayside",
         "x": 4,
         "y": -1,
@@ -866,7 +858,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_6mslbdbvub",
+        "id": "tile_tx5yflmhfg",
         "tile": "harbor.quayside",
         "x": 5,
         "y": -1,
@@ -874,7 +866,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_vmqo031e9f",
+        "id": "tile_idij2jugcy",
         "tile": "harbor.quayside",
         "x": 6,
         "y": -1,
@@ -882,7 +874,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_bv8yu0dhr2",
+        "id": "tile_j35yk6zltj",
         "tile": "core.yard",
         "x": -6,
         "y": 0,
@@ -890,7 +882,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_u3zmjrm736",
+        "id": "tile_spmdeuuyci",
         "tile": "core.yard",
         "x": -5,
         "y": 0,
@@ -898,7 +890,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ygcjuosp49",
+        "id": "tile_tfskug0550",
         "tile": "core.yard",
         "x": 0,
         "y": 0,
@@ -906,7 +898,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_8dtepvnuue",
+        "id": "tile_cu2chphxss",
         "tile": "harbor.quayside",
         "x": 5,
         "y": 0,
@@ -914,7 +906,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_60zdo4qr4a",
+        "id": "tile_1fr01lvqv7",
         "tile": "harbor.quayside",
         "x": 6,
         "y": 0,
@@ -922,7 +914,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_4w7ox19123",
+        "id": "tile_35s1lxma32",
         "tile": "core.yard",
         "x": -6,
         "y": 1,
@@ -930,7 +922,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_z1p4jpucb0",
+        "id": "tile_wea5f3qxpy",
         "tile": "harbor.basin",
         "x": -4,
         "y": 1,
@@ -938,7 +930,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_2lp7sv1y08",
+        "id": "tile_hy2ut9knrp",
         "tile": "harbor.basin",
         "x": -2,
         "y": 1,
@@ -946,7 +938,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ukdutebn99",
+        "id": "tile_u6alzfzlzx",
         "tile": "harbor.basin",
         "x": -1,
         "y": 1,
@@ -954,7 +946,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_51mf2g9so9",
+        "id": "tile_cnoem8zwcw",
         "tile": "harbor.basin",
         "x": 1,
         "y": 1,
@@ -962,7 +954,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_th371o2q28",
+        "id": "tile_k23a4jqznp",
         "tile": "harbor.basin",
         "x": 2,
         "y": 1,
@@ -970,7 +962,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_2tg1v8u6w7",
+        "id": "tile_qq0xvwwbyj",
         "tile": "harbor.basin",
         "x": 3,
         "y": 1,
@@ -978,7 +970,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_meolxne3lc",
+        "id": "tile_ektgymbc7m",
         "tile": "core.yard",
         "x": -6,
         "y": 2,
@@ -986,7 +978,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_h71ttz7qkz",
+        "id": "tile_6zuc417pgy",
         "tile": "harbor.basin",
         "x": -4,
         "y": 2,
@@ -994,7 +986,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_88ty7p6r4g",
+        "id": "tile_jqn7dv7pa1",
         "tile": "harbor.basin",
         "x": -2,
         "y": 2,
@@ -1002,7 +994,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_55xujts7na",
+        "id": "tile_6t8qyh5ngc",
         "tile": "harbor.basin",
         "x": -1,
         "y": 2,
@@ -1010,7 +1002,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_i480m36vbz",
+        "id": "tile_dubw2t9okw",
         "tile": "harbor.basin",
         "x": 1,
         "y": 2,
@@ -1018,7 +1010,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_5r19fx27oc",
+        "id": "tile_uytcve160r",
         "tile": "harbor.basin",
         "x": 2,
         "y": 2,
@@ -1026,7 +1018,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_lo4sza9l6v",
+        "id": "tile_rnjznvevxg",
         "tile": "harbor.basin",
         "x": 3,
         "y": 2,
@@ -1034,7 +1026,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_8nefr1yf36",
+        "id": "tile_rrvokpbvaq",
         "tile": "harbor.quayside",
         "x": 5,
         "y": 2,
@@ -1042,7 +1034,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_3pz3jkh6ko",
+        "id": "tile_r91jf9lmv6",
         "tile": "harbor.quayside",
         "x": 6,
         "y": 2,
@@ -1050,7 +1042,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_zrjg95dfpj",
+        "id": "tile_0ar5rrcgkm",
         "tile": "core.yard",
         "x": -6,
         "y": 3,
@@ -1058,7 +1050,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_a06iq50ksy",
+        "id": "tile_0r0jcgojbh",
         "tile": "harbor.basin",
         "x": -4,
         "y": 3,
@@ -1066,7 +1058,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_a7qe7sbcwy",
+        "id": "tile_zheb0uly0o",
         "tile": "harbor.basin",
         "x": -2,
         "y": 3,
@@ -1074,7 +1066,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_80qytgmsan",
+        "id": "tile_akltlxoe6g",
         "tile": "harbor.basin",
         "x": -1,
         "y": 3,
@@ -1082,7 +1074,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_x8szhgrkxf",
+        "id": "tile_uiuq8w8rh7",
         "tile": "harbor.basin",
         "x": 1,
         "y": 3,
@@ -1090,7 +1082,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_nnrasy4vi4",
+        "id": "tile_ndhyb71ft5",
         "tile": "harbor.basin",
         "x": 2,
         "y": 3,
@@ -1098,7 +1090,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_ra1t8kpz0f",
+        "id": "tile_e62x8jb822",
         "tile": "harbor.basin",
         "x": 3,
         "y": 3,
@@ -1106,7 +1098,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_nqf89xxxls",
+        "id": "tile_ckpuoqsj6p",
         "tile": "harbor.quayside",
         "x": 6,
         "y": 3,
@@ -1114,7 +1106,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_pbp9oay4gd",
+        "id": "tile_cfl91s9zbb",
         "tile": "harbor.basin",
         "x": -6,
         "y": 4,
@@ -1122,7 +1114,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_i36ygh00r7",
+        "id": "tile_zlgm3mlxkd",
         "tile": "harbor.basin",
         "x": -5,
         "y": 4,
@@ -1130,7 +1122,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_e3cvd7qt0t",
+        "id": "tile_l36gal52po",
         "tile": "harbor.basin",
         "x": -4,
         "y": 4,
@@ -1138,7 +1130,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_bh7aqlkrtg",
+        "id": "tile_ngll5de3fz",
         "tile": "harbor.basin",
         "x": -2,
         "y": 4,
@@ -1146,7 +1138,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_he70niy58s",
+        "id": "tile_aihq7s1efl",
         "tile": "harbor.basin",
         "x": -1,
         "y": 4,
@@ -1154,7 +1146,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_mlbkw524o5",
+        "id": "tile_2wwkce5ei6",
         "tile": "harbor.basin",
         "x": 1,
         "y": 4,
@@ -1162,7 +1154,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_hcl546d7bn",
+        "id": "tile_9n87470a3s",
         "tile": "harbor.basin",
         "x": 2,
         "y": 4,
@@ -1170,7 +1162,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_jaee9spzc1",
+        "id": "tile_vx1otfmm0q",
         "tile": "harbor.basin",
         "x": 3,
         "y": 4,
@@ -1178,7 +1170,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_kjiuv6sqfg",
+        "id": "tile_7ti8lcrilm",
         "tile": "harbor.basin",
         "x": -6,
         "y": 5,
@@ -1186,7 +1178,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_mzgl9i4dzq",
+        "id": "tile_mhmv8f6muw",
         "tile": "harbor.basin",
         "x": -5,
         "y": 5,
@@ -1194,7 +1186,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_2263fsrmlk",
+        "id": "tile_dcby84krru",
         "tile": "harbor.basin",
         "x": -4,
         "y": 5,
@@ -1202,7 +1194,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_d7nkoqps17",
+        "id": "tile_hdhnrchpyz",
         "tile": "harbor.quayside",
         "x": 5,
         "y": 5,
@@ -1210,7 +1202,15 @@
         "rotation": 0
       },
       {
-        "id": "tile_3mog87bviu",
+        "id": "tile_nzydf91313",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8p85wlue0i",
         "tile": "harbor.basin",
         "x": -6,
         "y": 6,
@@ -1218,7 +1218,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_x2qtz2t4um",
+        "id": "tile_4u0qr49dhs",
         "tile": "harbor.basin",
         "x": -5,
         "y": 6,
@@ -1226,7 +1226,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_dz1xhqo5rh",
+        "id": "tile_allnhvap7x",
         "tile": "harbor.basin",
         "x": -4,
         "y": 6,
@@ -1234,7 +1234,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_wnduperbdc",
+        "id": "tile_xayswiajs1",
         "tile": "harbor.basin",
         "x": -3,
         "y": 6,
@@ -1242,7 +1242,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_dr19o7vm2l",
+        "id": "tile_xbtsxbnarx",
         "tile": "harbor.basin",
         "x": -2,
         "y": 6,
@@ -1250,7 +1250,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_i95thfc2f9",
+        "id": "tile_ji6tu4cip9",
         "tile": "harbor.basin",
         "x": -1,
         "y": 6,
@@ -1258,7 +1258,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_hva23hk5rc",
+        "id": "tile_51xflrpx2d",
         "tile": "harbor.basin",
         "x": 0,
         "y": 6,
@@ -1266,7 +1266,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_fgck4elz2a",
+        "id": "tile_hpyrepxms9",
         "tile": "harbor.basin",
         "x": 1,
         "y": 6,
@@ -1274,7 +1274,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_qdz592j2un",
+        "id": "tile_3cun9uryx2",
         "tile": "harbor.basin",
         "x": 2,
         "y": 6,
@@ -1282,7 +1282,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_0kgg9jwb1j",
+        "id": "tile_2uwwqcohg0",
         "tile": "harbor.basin",
         "x": 3,
         "y": 6,
@@ -1290,7 +1290,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_gbvr92g3w6",
+        "id": "tile_oiab9vornn",
         "tile": "harbor.quayside",
         "x": 5,
         "y": 6,
@@ -1298,7 +1298,7 @@
         "rotation": 0
       },
       {
-        "id": "tile_z6crgfp5tw",
+        "id": "tile_8aarsoqif1",
         "tile": "harbor.quayside",
         "x": 6,
         "y": 6,
@@ -2924,7 +2924,7 @@
       "fixture": "bulb"
     },
     {
-      "id": "light_qqyywkq7o7",
+      "id": "light_blu1v9us8f",
       "kind": "light",
       "position": [
         -30,
@@ -2938,7 +2938,7 @@
       "fixture": "bulb"
     },
     {
-      "id": "light_chsge242qq",
+      "id": "light_km54j0dpw1",
       "kind": "light",
       "position": [
         22,
@@ -2952,7 +2952,7 @@
       "fixture": "bulb"
     },
     {
-      "id": "light_wnthj5yo5t",
+      "id": "light_a8b38d3b2r",
       "kind": "light",
       "position": [
         35,
