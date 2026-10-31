@@ -464,6 +464,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     const r = control.apply(cmd);
     if (r.error) return r.error;
     if (r.notice) notice(r.notice);
+    // A restart that put the waiting rules in play, or a live rule: everyone's HUD (score limit, timer) follows.
+    if (cmd.c === 'restart' || cmd.c === 'rules') broadcast({ t: 'rules', rules: match.rules });
     broadcast({ t: 'roster', players: match.roster() });
     refreshAdmins();
     return null;
@@ -874,6 +876,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         const r = control.apply({ c: 'rules', rules: patch });
         if (r.error) return r.error;
         if (r.notice) notice(r.notice.replace(/^Admin/, by));
+        broadcast({ t: 'rules', rules: match.rules });
         refreshAdmins();
         return null;
       }

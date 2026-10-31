@@ -3107,6 +3107,25 @@ async function dedicatedhostFlow(browser) {
         : ` (player: ${await player.evaluate(() => JSON.stringify({ phase: window.__cs?.phase?.(), slot: window.__cs?.slot, text: document.body.innerText.replace(/\s+/g, ' ').slice(0, 240) })).catch((e) => `gone: ${e.message.slice(0, 80)}`)}; host log: ${(() => { try { return readFileSync(join(hostState, 'logs', 'host.log'), 'utf8').split('\n').filter(Boolean).slice(-8).join(' / ').slice(0, 500); } catch { return 'none'; } })()})`;
       check(kicked, `the kicked player is told and leaves the match${why}`);
     }
+    if (adminIn) {
+      // The owner changes the score and time limits from the Host Service's console (as the launcher does), then
+      // restarts: the match plays with them, and the admin's game shows them (score limit, the clock).
+      const key = readFileSync(join(hostState, 'pairing-token'), 'utf8').trim();
+      const consoleLine = (line) => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/console`, { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ line }) }).then((r) => r.status);
+      const status = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${key}` } }).then((r) => r.json());
+      const ran = [await consoleLine('rules score 5'), await consoleLine('rules time 3')];
+      const waiting = await until(async () => { const s = await status(); return ['score', 'time'].every((k) => s.host?.ruleRows?.find((r) => r.key === k)?.pending); }, T(15000));
+      check(ran.every((c) => c === 200) && waiting, `score and time limits set from the console wait for the restart (${ran.join(', ')})`);
+      await consoleLine('restart');
+      const live = await until(async () => { const s = await status(); return s.host?.rules?.now?.scoreLimit === 5 && s.host.rules.now.timeLimitSeconds === 180; }, T(20000));
+      check(live, 'after the restart the match plays to 5, with 3 minutes on the clock');
+      // (The rules arrive at once; the clock once the restarted match is under way: it waits for everyone to load first.)
+      const seen = (await admin.waitForFunction(() => window.__cs?.rules?.()?.scoreLimit === 5 && window.__cs.rules().timeLimitSeconds === 180, null, { timeout: T(20000), polling: 500 }).then(() => true, () => false)) && (await admin.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.timeLeft() > 0 && window.__cs.timeLeft() <= 180, null, { timeout: T(90000), polling: 500 }).then(() => true, () => false));
+      check(seen, `the player's game follows: score limit 5, clock under 3 minutes (${await admin.evaluate(() => JSON.stringify({ limit: window.__cs?.rules?.()?.scoreLimit, time: window.__cs?.rules?.()?.timeLimitSeconds, left: window.__cs?.timeLeft?.(), phase: window.__cs?.phase?.() })).catch(() => '')})`);
+      // Kept for the next start too.
+      const saved = await until(async () => (await status()).config?.rules?.modes?.tdm?.score === 5, T(10000));
+      check(saved, 'the Host Service keeps them in its settings for the next start');
+    }
   }
   check(probes.length === 0, `pages other than /host never look for a Host Service (${probes.join(', ')})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -3167,6 +3186,24 @@ async function hostpageFlow(browser) {
     await launcher.click('#f-vis button[data-v="listed"]');
     const ran = await launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
     check(ran, 'a right-bar toggle runs its console command (visibility listed)');
+    // Match rules: the score and time limit steppers run rules commands, wait for the restart, and Restart now plays them.
+    const status = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
+    await launcher.waitForFunction(() => !!document.querySelector('#rules-main .rule[data-k="score"] .stepper') && !!document.querySelector('#rules-main .rule[data-k="time"] .stepper'), null, { timeout: T(20000) }).catch(() => {});
+    const now = (await status()).host?.rules?.now ?? {};
+    const score = (now.scoreLimit ?? 0) + 3;
+    const minutes = Math.round((now.timeLimitSeconds ?? 0) / 60) + 2;
+    for (let i = 0; i < 3; i++) await launcher.click('#rules-main .rule[data-k="score"] .stepper button[aria-label="More"]');
+    for (let i = 0; i < 2; i++) await launcher.click('#rules-main .rule[data-k="time"] .stepper button[aria-label="More"]');
+    const cmds = await launcher.waitForFunction((w) => { const t = [...document.querySelectorAll('#log .ln.cmd')].map((l) => l.textContent).join('\n'); return t.includes(`rules score ${w[0]}`) && t.includes(`rules time ${w[1]}`); }, [score, minutes], { timeout: T(10000) }).then(() => true, () => false);
+    const waits = await launcher.waitForFunction(() => !document.getElementById('rules-wait').hidden && /score limit/i.test(document.getElementById('rules-wait-text').textContent), null, { timeout: T(15000) }).then(() => true, () => false);
+    check(cmds && waits, `the Match rules card sets the score limit to ${score} and the time limit to ${minutes} min (rules commands), waiting for the restart`);
+    // A Match setup rule too (applies at the next match): low gravity.
+    await launcher.evaluate(() => (document.getElementById('rules-more-box').open = true));
+    await launcher.click('#rules-more .rule[data-k="gravity"] .seg button[data-v="low"]');
+    await launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /rules gravity low/.test(l.textContent)), null, { timeout: T(10000) }).catch(() => {});
+    await launcher.click('#rules-restart');
+    const applied = await until(async () => { const n = (await status()).host?.rules?.now; return n?.scoreLimit === score && n.timeLimitSeconds === minutes * 60 && n.gravity === 0.4; }, T(30000));
+    check(applied, `Restart now plays them: score ${score}, ${minutes} min, low gravity (${JSON.stringify(((await status()).host?.rules?.now) ?? {}, ['scoreLimit', 'timeLimitSeconds', 'gravity'])})`);
     await launcher.click('#b-stop');
     await launcher.waitForFunction(() => document.getElementById('pill')?.dataset.state === 'stopped', null, { timeout: T(30000) }).catch(() => {});
   }

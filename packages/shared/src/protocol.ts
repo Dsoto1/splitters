@@ -527,6 +527,11 @@ export type ServerMessage =
   /** A line for everyone's feed and a toast: what the host changed ("Host set teams to 8v8"). */
   | { t: 'notice'; text: string }
   /**
+   * The match's rules changed without a new match (a restart with new rules, a live rule): dedicated servers
+   * send it so the HUD's score limit and the rest follow. Older clients ignore it.
+   */
+  | { t: 'rules'; rules: MatchRules }
+  /**
    * A browser host is leaving on purpose (left the match, closed the tab): the link closes next. Friends
    * know it wasn't a network drop, so they don't wait to reconnect (MULTIPLAYER_PROTOCOL.md, "Host leaves").
    * To the successor only, the game browser listing's ID and secret, so it can take the listing down if the
