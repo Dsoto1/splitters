@@ -145,7 +145,7 @@ Overlap with existing packs: 04 = Jungle Ruins (06), 08 = Military Compound (01)
 06 = Orbital Station (04), 02 = Sands of Egypt (09) / Frontier Dust, 07 = Jungle/Imperial/Egypt temple pieces.
 New: 01 Medieval Village, 03 Coastal Harbor, 05 Snow Outpost (snow nature props exist, no snow buildings).
 Proposed: refresh existing packs from the sheets in-house; new packs 10 Medieval, 11 Harbor, 12 Snow Outpost;
-Meshy only for hero pieces after the owner approves a list. Nothing started yet.
+Meshy only for hero pieces after the owner approves a list. 10 Medieval built on `wip/medieval-pack` (see below).
 Owner's answer (2026-10-31): style packs; Medieval first; "replace n update n combine respectively", read as:
 Desert City replaces 09 Sands of Egypt, the Jungle Ruins sheet updates 06 Jungle Ruins, Ancient Temple is combined
 into 03 Imperial Arena (confirm with the owner if unsure). Order: 10 Medieval Village, then Harbor, Snow, the rest.
@@ -156,6 +156,33 @@ Reuse what exists: castle_* pieces, siege_tower, stall*, cart, hay_bale, anvil, 
 lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster houses with tile roofs, market
 square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
 Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
+
+### Style Pack 10 Medieval Village (`wip/medieval-pack`, agent, 2026-10-31; not merged)
+- **Built** (from the owner's tileset sheet 01): 16 tiles in `packages/shared/src/map/packTilesMedieval.ts` (2 × 1 Timber,
+  Shop and Plaster houses with walkable 35° red tile roofs, eaves at 8.25 m on the cell edges; Outside Stair,
+  Timber Walkway, Market Square, Market Hall, Town Wall, Wall Stair (2 × 1), Town Gate (3 × 1, roof by ladder
+  hatch), Bell Tower, Watchtower, Stream, Stone Bridge, Cobbled Road, Blacksmith Forge); 20 props built in code
+  (`tools/content/prepare-medieval.mjs`, `assets-src/tiletrigger-medieval/`, licence Owned); theme
+  `core.medieval`; procedural materials (cobblestones, setts, market tiles, pantiles, timber-and-plaster,
+  wattle, packed dirt, whitewash, oak beam); facades `timber_frame`, `village_plaster`; MapMaker **Oak Door**
+  (door style `oak`, schema `DOOR_STYLES`) and **Wattle Hurdle** (`block:wattle`); STYLE_PACKS entry `medieval`
+  (10); demo map `maps/market_town.json` (validate-map 0 issues); docs BUILDING_KIT "10 Medieval Village",
+  `docs/map-briefs/market_town/`.
+- **Stand-in hero props with stable ids** (owner is sourcing community/CC0 downloads instead of Meshy for now):
+  `mv_forge`, `mv_hay_cart`, `mv_well`, `mv_tarp_tent`. Replace them by pointing those ids in
+  `content/props.json` at the downloads (same id, new pack/src); Market Town needs no change.
+- **ambientCG was refused by this container's proxy**, so the new materials are procedural, not CC0 scans; if
+  the owner wants scans (e.g. PavingStones/RoofingTiles sets) add them via `prepare-textures.mjs --only` where
+  the network allows.
+- **Navmesh rules learned** (Recast, 0.2 m cells, 0.6 m erosion): treads ≥ 0.42 m, flights ≥ 2 m wide, ~2 m of
+  floor before a stair's foot and after its head, turns on full-width landings (2 × 2 corner steps become
+  ledges), floor holes grown 0.3 m past the steps. Known gaps: bots don't reach the **Bell Tower belfry** (stacked
+  switchback inside walls) or the **NW watchtower lookout** in Market Town (the same tile elsewhere works);
+  players climb both. Worth a look if bots should snipe from there.
+- Checks: typecheck, test:changed (3 failures fixed; host.test flaked under load, passes alone), content:check,
+  build, validate-map, e2e editor / editorux / maps (E2E_MAPS=market_town) / visual pass; bot audit 8 bots 180 s;
+  perf idle 836 draws (budget 900), 1.87 M triangles (mostly the forest border). Not run here: the other 34 e2e
+  flows the CI plan lists (shared code changed: full suite) and 96-player perf. Merge through a `check/` branch.
 
 ### St. John's smooth ground (`wip/st-johns-smooth`, agent, 2026-10-31; merged to the session branch)
 - Owner: "the terrain is slightly jagged". Cause: the 3DEP 1 m grid was point-sampled to 2.5 m (aliasing lidar's small

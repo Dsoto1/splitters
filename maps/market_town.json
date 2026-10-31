@@ -1,0 +1,3276 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 24,
+  "metadata": {
+    "id": "market_town",
+    "name": "Market Town",
+    "author": "Tile Trigger",
+    "description": "A walled market town (Style Pack 10: Medieval Village). The Embers camp outside the south wall; the Tide hold the churchyard round the bell tower. Through the gate (a portcullis; a ladder up to its roof) or the gaps at either end of the wall, over the stream by one of three stone bridges, up the high street to the market square, its fountain and the market hall. Half-timbered houses to fight through room by room, upper floors joined door to door and by a walkway over the street, outside stairs onto red tile roofs you can run along, a watchtower at each end and the bell tower watching the whole high street.",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 8,
+      "max": 24
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm",
+      "core.ctf",
+      "core.koth"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.medieval",
+    "tiles": [
+      {
+        "id": "tile_ogyz1f1xl7",
+        "tile": "medieval.wall_stair",
+        "x": -5,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_89vxxhbvvq",
+        "tile": "medieval.town_wall",
+        "x": -3,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hgh0adrfls",
+        "tile": "medieval.town_wall",
+        "x": -2,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_p6qcpylmxv",
+        "tile": "medieval.town_gate",
+        "x": -1,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cxg8if2nfu",
+        "tile": "medieval.town_wall",
+        "x": 2,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8h9hdbtgcp",
+        "tile": "medieval.town_wall",
+        "x": 3,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5x6gj4bi29",
+        "tile": "medieval.wall_stair",
+        "x": 4,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tsvbwszlqt",
+        "tile": "medieval.forge",
+        "x": -5,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wqlryqwvhe",
+        "tile": "medieval.house_shop",
+        "x": -3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xer56vjfb8",
+        "tile": "medieval.house",
+        "x": 2,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3sm8teg8k2",
+        "tile": "medieval.watchtower",
+        "x": 5,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_shjb6kpgik",
+        "tile": "medieval.outside_stair",
+        "x": -3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_eubgy9f47k",
+        "tile": "medieval.outside_stair",
+        "x": 3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_uo5voxz8kp",
+        "tile": "medieval.stream",
+        "x": -6,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_42dyzoqexo",
+        "tile": "medieval.stream",
+        "x": -5,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vyqkfm16t0",
+        "tile": "medieval.bridge",
+        "x": -4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qolq3oxp7n",
+        "tile": "medieval.stream",
+        "x": -3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i7ooho6v7b",
+        "tile": "medieval.stream",
+        "x": -2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rxvba3yvgx",
+        "tile": "medieval.stream",
+        "x": -1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_x93jjr8oo7",
+        "tile": "medieval.bridge",
+        "x": 0,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cgaamhvxlk",
+        "tile": "medieval.stream",
+        "x": 1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ftzga073qz",
+        "tile": "medieval.stream",
+        "x": 2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_85uvhd1p21",
+        "tile": "medieval.stream",
+        "x": 3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_x54m52bvr8",
+        "tile": "medieval.bridge",
+        "x": 4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lrhqrxu417",
+        "tile": "medieval.stream",
+        "x": 5,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8mccw0jl6b",
+        "tile": "medieval.stream",
+        "x": 6,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hnveiq8mkg",
+        "tile": "medieval.house",
+        "x": -6,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fsyme7y4pc",
+        "tile": "medieval.house_balcony",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_a4sv8ahyx6",
+        "tile": "medieval.house_shop",
+        "x": 2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dsymoezexa",
+        "tile": "medieval.house",
+        "x": 5,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_d32dr9cqp8",
+        "tile": "medieval.market_square",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2m86t36nnp",
+        "tile": "medieval.market_hall",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_m9l9h90ur5",
+        "tile": "medieval.house",
+        "x": -6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i5npb458ur",
+        "tile": "medieval.house_shop",
+        "x": -4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z16yfgqj35",
+        "tile": "medieval.house_balcony",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hzqo3tencq",
+        "tile": "medieval.house",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0ku4nm89c9",
+        "tile": "medieval.house_shop",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fwt9c13zg0",
+        "tile": "medieval.house",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cnq0cqrgrz",
+        "tile": "medieval.house",
+        "x": -6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_afx9iqpeny",
+        "tile": "medieval.house",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cpog227b8q",
+        "tile": "medieval.outside_stair",
+        "x": -3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_sg1wa55w7r",
+        "tile": "medieval.outside_stair",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1314b317yn",
+        "tile": "medieval.house",
+        "x": -2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jmz0ng35e9",
+        "tile": "medieval.walkway",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_0ilde65com",
+        "tile": "medieval.house",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fj3lorqddf",
+        "tile": "medieval.house_balcony",
+        "x": -6,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_m0aocly93n",
+        "tile": "medieval.bell_tower",
+        "x": 0,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_oiobjff0ln",
+        "tile": "medieval.watchtower",
+        "x": -5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qg1reqtc5c",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2k11glwybi",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2bbyuhpp7b",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_m41xlacr6a",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_u84s5187df",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9et2kauihr",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ox8qs1undk",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_80m5zts4s1",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gf962ts51h",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5a5hc0yiei",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_470kgv9dkd",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_b9s89sv4yi",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_kfoco804tb",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -9,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lkf2lb5z08",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6khsmwcjah",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_oulwpium6v",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6k6kkvmjas",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gjjnyldf8i",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_m8rgrsn616",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8uf66r3r66",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pf6vpxghb9",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_uitt4fggq2",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mcseb3238x",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3tqz0ps3aw",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_alaidzumo2",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_e5q7fur8et",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -8,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_41xlbml70k",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_r2b67jdqb9",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_j0lszoouuk",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8ph2y4q7it",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_60al6xcba9",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gnwjrqcxvp",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7yxyjrao7o",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fz5l5o4gpx",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ob4op3ul9x",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_uc87gipuu2",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mnaxny6ngb",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_32gr35xjp0",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0v3rarnipl",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_j5wdapolj1",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gozd8pmjml",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vit4vru9rs",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1cljusddbu",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8ml7ayuxmj",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4a56e2h61s",
+        "tile": "medieval.road",
+        "x": 0,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5uhow53ima",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ceoqize6dq",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_71tpl11sav",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4jmotp6w4l",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_s6172jc3um",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bdkolnfzv6",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rca6s1h5s7",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hh3x47jb9x",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i2thnskzrv",
+        "tile": "medieval.road",
+        "x": 0,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_yh3ggoe4qa",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_12gxzb7rpr",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pk3r08u0wr",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_b0gh9j91uz",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_grgj8wyley",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_86o6exz5nx",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tmxgpw2atv",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8h80q6ab0k",
+        "tile": "medieval.road",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2fwxevp5ik",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0t5sapcnlk",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xzr10w4u4w",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ehtvnyvu6z",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z7zux0qi10",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_eyiq79eqs8",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jzm47m8n88",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gh8dp7ieid",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_a0cjzay7fn",
+        "tile": "medieval.road",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_flbm22210n",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jv8x458629",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_12utshlgz2",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_txidgr7xuq",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pkdtml9ypb",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0rqldxb6u1",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jsvrwfybtf",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_q9qszje2lg",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ohdhhnlh3a",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_360q5sf2gk",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_r3eg7l91eo",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nwy1rlv05x",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jg8wk9dkpp",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6kjsk7mjnw",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_995ebwfqle",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cstxe6lglo",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i8eb6vb1y6",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wnq5d755ak",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2s2guccbhe",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_22pxkjfah8",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_53cbjtd8qk",
+        "tile": "medieval.road",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rmw3qid9nc",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5qzxeao2c0",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7qkjgtvxl9",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rtt90j6er2",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bn4kextdf0",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ddxg7hzvjq",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3c1yz2se07",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fphjqyb5sb",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_d6d7vfex4e",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_v560y2v0sl",
+        "tile": "medieval.road",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lc35j5wx3k",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i8ok647u2h",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4lgh2mmvcw",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8mp4qd9nbq",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_318n3oerj5",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zup18p969l",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6jbide3x4m",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nxw95kegw2",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5o0kba2u3f",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_k0065jfj7b",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9ajwtcvquq",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ppuvaq2zp9",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mufgjv86k8",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6wdsfh0tov",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_205aq8shw6",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_anxw9q4idv",
+        "tile": "medieval.road",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jb7t71iqui",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_kyui67593e",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5m216f8u11",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3sor5fnram",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cvzi9gbz0v",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gupukspqiq",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_n3axmwkxbh",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_p1khpga105",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pkz82rvvqs",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tg4p7fbozd",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_skosukmc92",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_yikgnj18e8",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_n599gdq12w",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rumjt83pkg",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fe6d85nv9l",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tejkk6s3hh",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z7q4tjrh6i",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9bakc5p9vk",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_t476gmdyoi",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_llyezisyln",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_q73f02ub1u",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3p64yv2798",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wwigerq0at",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ldm6gwkkcm",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tz9xki5cad",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5prvofwt7g",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bthnm7b1av",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_e34a8o4r0u",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_189dz1zajy",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ogq69jsey4",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "spawn_001",
+      "kind": "spawn",
+      "position": [
+        -36,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_002",
+      "kind": "spawn",
+      "position": [
+        -28,
+        0,
+        -70
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_003",
+      "kind": "spawn",
+      "position": [
+        -20,
+        0,
+        -64
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_004",
+      "kind": "spawn",
+      "position": [
+        -12,
+        0,
+        -72
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_005",
+      "kind": "spawn",
+      "position": [
+        -4,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_006",
+      "kind": "spawn",
+      "position": [
+        4,
+        0,
+        -70
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_007",
+      "kind": "spawn",
+      "position": [
+        12,
+        0,
+        -64
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_008",
+      "kind": "spawn",
+      "position": [
+        20,
+        0,
+        -72
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_009",
+      "kind": "spawn",
+      "position": [
+        28,
+        0,
+        -66
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_010",
+      "kind": "spawn",
+      "position": [
+        36,
+        0,
+        -70
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_011",
+      "kind": "spawn",
+      "position": [
+        -44,
+        0,
+        -60
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_012",
+      "kind": "spawn",
+      "position": [
+        44,
+        0,
+        -60
+      ],
+      "yaw": 0,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_013",
+      "kind": "spawn",
+      "position": [
+        -30,
+        0,
+        52
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_014",
+      "kind": "spawn",
+      "position": [
+        -28,
+        0,
+        58
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_015",
+      "kind": "spawn",
+      "position": [
+        -20,
+        0,
+        50
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_016",
+      "kind": "spawn",
+      "position": [
+        -12,
+        0,
+        58
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_017",
+      "kind": "spawn",
+      "position": [
+        12,
+        0,
+        58
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_018",
+      "kind": "spawn",
+      "position": [
+        20,
+        0,
+        50
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_019",
+      "kind": "spawn",
+      "position": [
+        28,
+        0,
+        58
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_020",
+      "kind": "spawn",
+      "position": [
+        36,
+        0,
+        52
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_021",
+      "kind": "spawn",
+      "position": [
+        -48,
+        0,
+        40
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_022",
+      "kind": "spawn",
+      "position": [
+        44,
+        0,
+        44
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_023",
+      "kind": "spawn",
+      "position": [
+        -12,
+        0,
+        44
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_024",
+      "kind": "spawn",
+      "position": [
+        12,
+        0,
+        44
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_025",
+      "kind": "spawn",
+      "position": [
+        -40,
+        0,
+        -14
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_026",
+      "kind": "spawn",
+      "position": [
+        40,
+        0,
+        -14
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_027",
+      "kind": "spawn",
+      "position": [
+        -28,
+        0,
+        10
+      ],
+      "yaw": 1.6,
+      "faction": null
+    },
+    {
+      "id": "spawn_028",
+      "kind": "spawn",
+      "position": [
+        28,
+        0,
+        12
+      ],
+      "yaw": -1.6,
+      "faction": null
+    },
+    {
+      "id": "spawn_029",
+      "kind": "spawn",
+      "position": [
+        -44,
+        0,
+        28
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_030",
+      "kind": "spawn",
+      "position": [
+        44,
+        0,
+        20
+      ],
+      "yaw": 3.1,
+      "faction": null
+    },
+    {
+      "id": "spawn_031",
+      "kind": "spawn",
+      "position": [
+        -12,
+        0,
+        -30
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_032",
+      "kind": "spawn",
+      "position": [
+        16,
+        0,
+        -30
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_033",
+      "kind": "spawn",
+      "position": [
+        -20,
+        0,
+        28
+      ],
+      "yaw": 3.1,
+      "faction": null
+    },
+    {
+      "id": "spawn_034",
+      "kind": "spawn",
+      "position": [
+        20,
+        0,
+        36
+      ],
+      "yaw": 3.1,
+      "faction": null
+    },
+    {
+      "id": "spawn_035",
+      "kind": "spawn",
+      "position": [
+        -36,
+        0,
+        -30
+      ],
+      "yaw": 0.8,
+      "faction": null
+    },
+    {
+      "id": "spawn_036",
+      "kind": "spawn",
+      "position": [
+        36,
+        0,
+        -30
+      ],
+      "yaw": -0.8,
+      "faction": null
+    },
+    {
+      "id": "flag_embers",
+      "kind": "flag",
+      "position": [
+        -12,
+        0,
+        -68
+      ],
+      "yaw": 0,
+      "team": "embers"
+    },
+    {
+      "id": "flag_tide",
+      "kind": "flag",
+      "position": [
+        12,
+        0,
+        56
+      ],
+      "yaw": 3.141592653589793,
+      "team": "tide"
+    },
+    {
+      "id": "hill_square",
+      "kind": "hill",
+      "position": [
+        -4,
+        0,
+        9
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_bridge",
+      "kind": "hill",
+      "position": [
+        0,
+        1,
+        -24
+      ],
+      "radius": 4
+    },
+    {
+      "id": "hill_hall",
+      "kind": "hill",
+      "position": [
+        6,
+        4,
+        8
+      ],
+      "radius": 4
+    },
+    {
+      "id": "water_stream",
+      "kind": "water",
+      "position": [
+        0,
+        -2,
+        -24.15
+      ],
+      "size": [
+        104,
+        0.8,
+        4.7
+      ],
+      "liquid": "water",
+      "tint": "#3a6a7a"
+    },
+    {
+      "id": "door_f4eutv4d8u",
+      "kind": "door",
+      "position": [
+        0,
+        0,
+        -50.5
+      ],
+      "yaw": 0,
+      "startOpen": true,
+      "locked": false,
+      "auto": false,
+      "style": "portcullis"
+    },
+    {
+      "id": "ladder_gate",
+      "kind": "ladder",
+      "position": [
+        1.85,
+        4,
+        -45.6
+      ],
+      "yaw": 1.5707963267948966,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "block_9g8hhmbb36",
+      "kind": "block",
+      "position": [
+        -49,
+        0,
+        -48
+      ],
+      "yaw": 0,
+      "size": [
+        2.4,
+        1.2,
+        0.15
+      ],
+      "material": "core.wattle",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 25,
+      "health": 50
+    },
+    {
+      "id": "block_3yyz0ja8jn",
+      "kind": "block",
+      "position": [
+        49,
+        0,
+        -48
+      ],
+      "yaw": 0,
+      "size": [
+        2.4,
+        1.2,
+        0.15
+      ],
+      "material": "core.wattle",
+      "tint": null,
+      "behaviour": "breakable",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 25,
+      "health": 50
+    },
+    {
+      "id": "pickup_037",
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "position": [
+        40,
+        7,
+        -42.6
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_038",
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "position": [
+        -2,
+        8,
+        -49
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_039",
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "position": [
+        -24,
+        4,
+        -49.5
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_040",
+      "kind": "pickup",
+      "item": "core.weapon_battle_axe",
+      "position": [
+        -40,
+        0,
+        -42.5
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_041",
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "position": [
+        -14,
+        4,
+        16
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_042",
+      "kind": "pickup",
+      "item": "core.weapon_sawed_off",
+      "position": [
+        -18,
+        0,
+        -17
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_043",
+      "kind": "pickup",
+      "item": "core.weapon_hand_cannon",
+      "position": [
+        30,
+        0,
+        -1
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_044",
+      "kind": "pickup",
+      "item": "core.weapon_spear",
+      "position": [
+        -10,
+        0,
+        10
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_045",
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "position": [
+        -30,
+        0,
+        -60
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_046",
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "position": [
+        30,
+        0,
+        50
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_047",
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "position": [
+        30,
+        0,
+        -60
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_048",
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "position": [
+        -30,
+        0,
+        50
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_049",
+      "kind": "pickup",
+      "item": "core.incendiaries",
+      "position": [
+        0,
+        4,
+        32
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_050",
+      "kind": "pickup",
+      "item": "core.grenades",
+      "position": [
+        -36,
+        0,
+        4
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_051",
+      "kind": "pickup",
+      "item": "core.grenades",
+      "position": [
+        36,
+        0,
+        -12
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_052",
+      "kind": "pickup",
+      "item": "core.sheep",
+      "position": [
+        0,
+        0,
+        38
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_053",
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "position": [
+        6,
+        4,
+        8
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_054",
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "position": [
+        -44,
+        0,
+        -24
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_055",
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "position": [
+        44,
+        0,
+        -24
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_056",
+      "kind": "pickup",
+      "item": "core.health_large",
+      "position": [
+        -4,
+        0,
+        -34
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_057",
+      "kind": "pickup",
+      "item": "core.health_large",
+      "position": [
+        4,
+        0,
+        26
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_058",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        -24,
+        0,
+        6
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_059",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        24,
+        0,
+        30
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_060",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        -12,
+        0,
+        -12
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_061",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        16,
+        0,
+        -12
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_062",
+      "kind": "prop",
+      "model": "prop.fountain_square",
+      "position": [
+        -4,
+        0.5,
+        4
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_063",
+      "kind": "prop",
+      "model": "prop.stall",
+      "position": [
+        -10,
+        0,
+        -1
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_064",
+      "kind": "prop",
+      "model": "prop.stall_green",
+      "position": [
+        -10,
+        0,
+        9
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_065",
+      "kind": "prop",
+      "model": "prop.mv_awning",
+      "position": [
+        1,
+        0,
+        10
+      ],
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_066",
+      "kind": "prop",
+      "model": "prop.mv_pavilion",
+      "position": [
+        -9,
+        0,
+        15
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_067",
+      "kind": "prop",
+      "model": "prop.stall_bench",
+      "position": [
+        -6,
+        0,
+        -2
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_068",
+      "kind": "prop",
+      "model": "prop.mv_market_cross",
+      "position": [
+        -16,
+        0,
+        40
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_069",
+      "kind": "prop",
+      "model": "prop.mv_sacks",
+      "position": [
+        6.5,
+        0,
+        -2
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_070",
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "position": [
+        9.5,
+        0,
+        9
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_071",
+      "kind": "prop",
+      "model": "prop.barrel",
+      "position": [
+        6.5,
+        0,
+        12
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "kind": "prop",
+      "model": "prop.mv_tarp_crates",
+      "position": [
+        9.5,
+        0,
+        1
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "kind": "prop",
+      "model": "prop.cart",
+      "position": [
+        -14,
+        0,
+        -6
+      ],
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "kind": "prop",
+      "model": "prop.anvil",
+      "position": [
+        -40,
+        0,
+        -40
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "kind": "prop",
+      "model": "prop.mv_hay_cart",
+      "position": [
+        -30,
+        0,
+        -44
+      ],
+      "yaw": 0.6,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "kind": "prop",
+      "model": "prop.hay_bale",
+      "position": [
+        -26,
+        0,
+        -40
+      ],
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "kind": "prop",
+      "model": "prop.hay_bale",
+      "position": [
+        -27,
+        0,
+        -38.5
+      ],
+      "yaw": 1.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "kind": "prop",
+      "model": "prop.mv_workbench",
+      "position": [
+        -44,
+        0,
+        -45
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "kind": "prop",
+      "model": "prop.woodpile",
+      "position": [
+        -36,
+        0,
+        -46
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "kind": "prop",
+      "model": "prop.mv_well",
+      "position": [
+        -40,
+        0,
+        8
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "kind": "prop",
+      "model": "prop.bucket",
+      "position": [
+        -38.5,
+        0,
+        9.5
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "kind": "prop",
+      "model": "prop.mv_tarp_tent",
+      "position": [
+        -22,
+        0,
+        -76
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "kind": "prop",
+      "model": "prop.mv_tarp_tent",
+      "position": [
+        22,
+        0,
+        -76
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "kind": "prop",
+      "model": "prop.dg_woodfire",
+      "position": [
+        0,
+        0,
+        -74
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "kind": "prop",
+      "model": "prop.cart_high",
+      "position": [
+        40,
+        0,
+        -74
+      ],
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "kind": "prop",
+      "model": "prop.mv_spiked_fence",
+      "position": [
+        -12,
+        0,
+        -55
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_087",
+      "kind": "prop",
+      "model": "prop.mv_spiked_fence",
+      "position": [
+        12,
+        0,
+        -55
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "kind": "prop",
+      "model": "prop.banner_long",
+      "position": [
+        -5,
+        0,
+        -52.6
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "kind": "prop",
+      "model": "prop.banner_long",
+      "position": [
+        5,
+        0,
+        -52.6
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "kind": "prop",
+      "model": "prop.mv_bell",
+      "position": [
+        0,
+        11.6,
+        49
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "kind": "prop",
+      "model": "prop.lantern_post",
+      "position": [
+        5,
+        0,
+        -14
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "kind": "prop",
+      "model": "prop.lantern_post",
+      "position": [
+        -5,
+        0,
+        20
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "kind": "prop",
+      "model": "prop.lantern_post",
+      "position": [
+        5,
+        0,
+        36
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "kind": "prop",
+      "model": "prop.lantern_post",
+      "position": [
+        -5,
+        0,
+        -36
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "kind": "prop",
+      "model": "prop.mv_shop_sign",
+      "position": [
+        -21,
+        0,
+        -44.2
+      ],
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_096",
+      "kind": "prop",
+      "model": "prop.mv_shop_sign",
+      "position": [
+        19,
+        0,
+        -20.2
+      ],
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_097",
+      "kind": "prop",
+      "model": "prop.mv_shop_sign",
+      "position": [
+        -29,
+        0,
+        -4.2
+      ],
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_098",
+      "kind": "prop",
+      "model": "prop.barrel",
+      "position": [
+        -12.5,
+        0,
+        -22
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_099",
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "position": [
+        12,
+        0,
+        -36
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_100",
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "position": [
+        13,
+        0,
+        -37.5
+      ],
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "kind": "prop",
+      "model": "prop.mv_wattle_fence",
+      "position": [
+        -28,
+        0,
+        60
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_102",
+      "kind": "prop",
+      "model": "prop.mv_wattle_fence",
+      "position": [
+        28,
+        0,
+        60
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "kind": "prop",
+      "model": "prop.lf_wooden_fence_closed",
+      "position": [
+        -48,
+        0,
+        34
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
+      "position": [
+        -47,
+        0,
+        57
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "kind": "prop",
+      "model": "prop.nt_common_tree_2",
+      "position": [
+        40,
+        0,
+        54
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_106",
+      "kind": "prop",
+      "model": "prop.nt_common_tree_2",
+      "position": [
+        -22,
+        0,
+        52
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_107",
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
+      "position": [
+        24,
+        0,
+        44
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_108",
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
+      "position": [
+        -46,
+        0,
+        -72
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_109",
+      "kind": "prop",
+      "model": "prop.nt_common_tree_2",
+      "position": [
+        46,
+        0,
+        -64
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_110",
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
+      "position": [
+        -46,
+        0,
+        -12
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_111",
+      "kind": "prop",
+      "model": "prop.nt_common_tree",
+      "position": [
+        46,
+        0,
+        28
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_112",
+      "kind": "prop",
+      "model": "prop.banner_red",
+      "position": [
+        -12,
+        0,
+        30
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_113",
+      "kind": "prop",
+      "model": "prop.banner_green",
+      "position": [
+        12,
+        0,
+        30
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_114",
+      "kind": "prop",
+      "model": "prop.mv_planter",
+      "position": [
+        -22,
+        0,
+        -12.1
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_115",
+      "kind": "prop",
+      "model": "prop.mv_planter",
+      "position": [
+        26,
+        0,
+        3.9
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_kn1clvd1rd",
+      "kind": "light",
+      "position": [
+        -3,
+        9,
+        -51
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_g55b7b4mis",
+      "kind": "light",
+      "position": [
+        3,
+        9,
+        -51
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_tqh3svl42r",
+      "kind": "light",
+      "position": [
+        -40,
+        2,
+        -38
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_qyfwi3698o",
+      "kind": "light",
+      "position": [
+        -4,
+        3,
+        4
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_aa2nbqpmsu",
+      "kind": "light",
+      "position": [
+        8,
+        3,
+        4
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -52,
+      -78
+    ],
+    "max": [
+      52,
+      62
+    ],
+    "style": "invisible",
+    "height": 16
+  },
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "backdrop": {
+    "sky": "cloudy",
+    "scenery": "hills",
+    "ground": "grass",
+    "haze": 0.45,
+    "border": "forest"
+  },
+  "blood": null,
+  "physics": null,
+  "dependencies": []
+}

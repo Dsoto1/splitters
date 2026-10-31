@@ -1,0 +1,17 @@
+Style Pack pieces: 10 Medieval Village (built in code)
+
+These models are original to Tile Trigger. They are not taken from any pack
+and no generative AI service made them: each one is assembled from plain
+geometry (boxes, cylinders, cones, spheres, rings and flat sheets) by
+tools/content/prepare-medieval.mjs with tools/content/pieces.mjs, which write
+the GLB files in this folder. Re-run that script to rebuild them; the same
+code writes the same files.
+
+They belong to the Tile Trigger owner and ship as part of the game
+(licence "Owned" in content/props.json and the provenance ledger).
+
+Pieces: stone well, market awning, market pavilion, shop sign, hay cart,
+blacksmith's forge, workbench, flower planter, tarpaulined crates, chimney
+stack, tarp tent, wattle fence, spiked fence, church bell, market cross, the stocks,
+oak post with knee braces, grain sacks, bay window and shuttered window
+(Style Pack 10 Medieval Village).

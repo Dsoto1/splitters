@@ -1122,7 +1122,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1144,6 +1144,9 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   suburban_brick: { skin: 'core.pbr_brick_red', tint: null, depth: 0.1 },
   roman: { skin: 'core.pbr_limestone', tint: null, depth: 0.1 },
   egyptian: { skin: 'core.pbr_sandstone_blocks', tint: null, depth: 0.12 },
+  // 10 Medieval Village.
+  timber_frame: { skin: 'core.timber_frame', tint: null, depth: 0.1 },
+  village_plaster: { skin: 'core.whitewash', tint: null, depth: 0.1 },
 };
 /** Openings in a dressed wall (from its segments): `top` is the lintel, `sill` the sill (0 for a doorway). */
 function facadeOpenings(segs: readonly [number, number, number, number, number][]): { u0: number; u1: number; sill: number; top: number }[] {
@@ -1319,6 +1322,25 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
             add(side, -half, half, top - 0.3, top + 0.45, out0 - 0.35, TILE_DIMENSIONS.wallThickness, 'core.pbr_sandstone_blocks');
           }
           break;
+        case 'timber_frame':
+        case 'village_plaster': {
+          // Medieval Village: a stone ground storey under the half-timbering (or whitewash), a jetty beam
+          // at each floor, oak corner posts, shutters beside the windows and an oak eaves board.
+          const oakBeam = 'core.oak_beam';
+          if (ground && facade === 'timber_frame') add(side, -half, half, 0, Math.min(top, levelHeight), out0 - 0.04, out0, 'core.pbr_castle_stone', '#c8c2b0');
+          else if (ground) add(side, -half, half, 0, 0.45, out0 - 0.08, -base, 'core.pbr_castle_stone', '#a8a090');
+          if (full) add(side, -half, half, levelHeight - 0.2, levelHeight + 0.05, out0 - 0.14, out0, oakBeam);
+          if (facade === 'village_plaster' && full) for (const u of [-half, half - 0.25]) add(side, u, u + 0.25, 0, levelHeight, out0 - 0.06, out0, oakBeam);
+          for (const o of facadeOpenings(segs)) {
+            if (o.sill > 0.3) {
+              for (const [a, b] of [[o.u0 - 0.55, o.u0 - 0.05], [o.u1 + 0.05, o.u1 + 0.55]] as const) if (a > -half + 0.2 && b < half - 0.2) add(side, a, b, o.sill, o.top, out0 - 0.06, out0, 'core.oak_beam', '#6a4a30');
+              add(side, o.u0 - 0.1, o.u1 + 0.1, o.sill - 0.08, o.sill, out0 - 0.12, out0, oakBeam);
+            }
+            if (o.top < levelHeight - 0.3) add(side, o.u0 - 0.15, o.u1 + 0.15, o.top, o.top + 0.18, out0 - 0.08, out0, oakBeam);
+          }
+          if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.3, out0 - 0.3, TILE_DIMENSIONS.wallThickness, 'core.roof_tiles_red');
+          break;
+        }
         case 'adobe':
           if (!roofed && full) {
             add(side, -half, half, top, top + 0.4, out0, TILE_DIMENSIONS.wallThickness, look.skin);

@@ -220,9 +220,9 @@ const TeamFilter = z
  * half-doors, `vault` a round bank-vault door that swings open. Looks only:
  * every style opens, locks and blocks the same way.
  */
-export const DOOR_STYLES = ['sliding', 'blast', 'saloon', 'vault', 'portcullis'] as const;
+export const DOOR_STYLES = ['sliding', 'blast', 'saloon', 'vault', 'portcullis', 'oak'] as const;
 export type DoorStyle = (typeof DOOR_STYLES)[number];
-export const DOOR_STYLE_LABELS: Record<DoorStyle, string> = { sliding: 'Sliding steel', blast: 'Blast door', saloon: 'Saloon doors', vault: 'Vault door', portcullis: 'Portcullis' };
+export const DOOR_STYLE_LABELS: Record<DoorStyle, string> = { sliding: 'Sliding steel', blast: 'Blast door', saloon: 'Saloon doors', vault: 'Vault door', portcullis: 'Portcullis', oak: 'Oak door (iron-bound)' };
 
 /** A sliding double door, sized for a Classic Grid doorway (3 m × 3 m). */
 export const DoorEntity = EntityBase.extend({

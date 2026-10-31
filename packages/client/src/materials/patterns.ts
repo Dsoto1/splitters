@@ -119,6 +119,86 @@ function glyphPaint(u: number, v: number, b: RGB, a: RGB, painted: boolean): RGB
   return shade(palette[fill]!, 0.92 + fbm(u, v, 79) * 0.12);
 }
 
+/**
+ * Cobblestones (Style Pack 10): a jittered grid of stones (Voronoi cells that
+ * wrap at the repeat), each its own shade, darkening toward its rim so it
+ * reads as rounded, set in dark mortar.
+ */
+function cobblePaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const n = 7;
+  const x = u * n;
+  const y = v * n;
+  const xi = Math.floor(x);
+  const yi = Math.floor(y);
+  let d1 = Infinity;
+  let d2 = Infinity;
+  let cell = 0;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const cx = xi + dx;
+      const cy = yi + dy;
+      const wx = ((cx % n) + n) % n;
+      const wy = ((cy % n) + n) % n;
+      const px = cx + 0.2 + hash(wx, wy, 91) * 0.6;
+      const py = cy + 0.2 + hash(wx, wy, 92) * 0.6;
+      const d = Math.hypot(x - px, (y - py) * 1.1);
+      if (d < d1) {
+        d2 = d1;
+        d1 = d;
+        cell = wx * 31 + wy;
+      } else if (d < d2) d2 = d;
+    }
+  }
+  const rim = d2 - d1;
+  if (rim < 0.09) return shade(a, 0.85 + fbm(u, v, 93) * 0.3);
+  const warm: RGB = [b[0] * 0.8 + 30, b[1] * 0.8 + 24, b[2] * 0.8 + 18];
+  const stone = shade(mix(b, warm, hash(cell, 3, 94)), 0.78 + hash(cell, 1, 95) * 0.34);
+  return shade(stone, 0.72 + Math.min(1, rim / 0.45) * 0.3 + fbm(u, v, 96) * 0.08);
+}
+
+/** Pantiles (Style Pack 10): columns of barrel-curved clay tiles, rows lapping down the slope, each tile its own fired shade. */
+function pantilePaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const cols = 6;
+  const rows = 8;
+  const cu = Math.floor(u * cols);
+  const fu = fract(u * cols);
+  const row = Math.floor(v * rows);
+  const fv = fract(v * rows);
+  // The curve across the tile (light on the crown, dark in the trough) and the lapped lower edge's shadow.
+  const crown = Math.sin(fu * Math.PI);
+  const lap = fv < 0.14 ? 0.55 + fv * 2.5 : 1;
+  const tile = mix(b, a, hash(cu, row, 97) * 0.35 + (fu < 0.06 || fu > 0.94 ? 0.5 : 0));
+  return shade(tile, (0.62 + crown * 0.45) * lap * (0.92 + fbm(u, v, 98) * 0.14));
+}
+
+/**
+ * Half-timbering (Style Pack 10), one storey a repeat: a sill and a head
+ * beam, a rail at sill height, posts every metre and a long brace in every
+ * other bay, plaster between. Oak accent, plaster base.
+ */
+function timberPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const oak = (k: number) => shade(a, 0.85 + Math.sin((u * 7 + v * 31 + fbm(u, v, 101) * 3) * Math.PI) * 0.08 + k);
+  const plaster = shade(b, 0.92 + fbm(u, v, 103) * 0.12);
+  const bay = Math.floor(u * 4);
+  const fu = fract(u * 4);
+  // Sill and head (they meet across the repeat), the rail a quarter up.
+  if (v < 0.045 || v > 0.955) return oak(-0.05);
+  if (Math.abs(v - 0.27) < 0.022) return oak(0);
+  // Posts.
+  if (fu < 0.07 || fu > 0.93) return oak(0.02);
+  // A brace across the bay above the rail, leaning one way then the other.
+  if (v > 0.29 && bay % 2 === 0) {
+    const t = (v - 0.29) / (0.955 - 0.29);
+    const along = bay % 4 === 0 ? t : 1 - t;
+    if (Math.abs(fu - along) < 0.075) return oak(-0.02);
+  }
+  // Short struts below the rail in the other bays.
+  if (v < 0.25 && bay % 2 === 1 && Math.abs(fu - 0.5) < 0.05) return oak(0);
+  // Plaster panels darken a touch against the timbers.
+  const edge = Math.min(fu - 0.07, 0.93 - fu);
+  return edge < 0.03 ? shade(plaster, 0.9) : plaster;
+}
+
 const PAINTERS: Record<PatternId, Painter> = {
   grid: (u, v, b, a) => {
     const e = edgeDist(u, v);
@@ -235,6 +315,31 @@ const PAINTERS: Record<PatternId, Painter> = {
     if (grout) return shade(mix(b, [120, 110, 95], 0.6), 0.8);
     return shade(c, 0.88 + hash(cu, cv, 61) * 0.2);
   },
+  cobbles: cobblePaint,
+  setts: (u, v, b, a) => {
+    // Rows of oblong granite setts, each row shifted half a stone.
+    const rows = 6;
+    const row = Math.floor(v * rows);
+    const su = u * 3 + (row % 2) * 0.5;
+    const stone = Math.floor(su);
+    const fu = fract(su);
+    const fv = fract(v * rows);
+    if (fu < 0.05 || fv < 0.09) return shade(a, 0.85 + fbm(u, v, 107) * 0.3);
+    const rim = Math.min(fu - 0.05, 1 - fu, fv - 0.09, 1 - fv) * 4;
+    return shade(b, (0.8 + hash(stone, row, 109) * 0.3) * (0.82 + Math.min(1, rim) * 0.18) + fbm(u, v, 111) * 0.08);
+  },
+  diamonds: (u, v, b, a) => {
+    // Square tiles on the diagonal, alternating terracotta and cream, grouted.
+    const s = (u + v) * 3;
+    const t = (u - v) * 3;
+    const fs = fract(s);
+    const ft = fract(t);
+    if (fs < 0.06 || ft < 0.06) return shade(mix(b, a, 0.5), 0.6);
+    const c = (((Math.floor(s) + Math.floor(t)) % 2) + 2) % 2 === 0 ? b : a;
+    return shade(c, 0.9 + hash(Math.floor(s), Math.floor(t), 113) * 0.12 + fbm(u, v, 115) * 0.06);
+  },
+  pantiles: pantilePaint,
+  timber: timberPaint,
   weave: (u, v, b, a) => {
     const n = 24;
     const cu = Math.floor(u * n);
@@ -247,8 +352,9 @@ const PAINTERS: Record<PatternId, Painter> = {
 
 const cache = new Map<string, Uint8Array>();
 
-/** Fine patterns (hieroglyphs, mosaics) are painted at twice the usual size so their shapes read. */
-export const patternSize = (def: MaterialDefinition): number => (def.pattern === 'glyphs' || def.pattern === 'glyphs_painted' || def.pattern === 'mosaic' ? 256 : 128);
+/** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles) are painted at twice the usual size so their shapes read. */
+const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles']);
+export const patternSize = (def: MaterialDefinition): number => (FINE_PATTERNS.has(def.pattern) ? 256 : 128);
 
 /** RGBA pixels for a material's pattern (cached per material). */
 export function materialPixels(def: MaterialDefinition, size = 128): Uint8Array {

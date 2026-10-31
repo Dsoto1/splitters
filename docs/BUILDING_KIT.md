@@ -143,12 +143,12 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
-## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`)
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`)
 
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
-alongside the set), one registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then 10 Medieval Village (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
 Pack is a themed selection of the kit: the **Style Pack** picker under the
 MapMaker palette's search box narrows the tiles, props, gameplay pieces
 (Entities → Scenario), vehicles and pickups to one pack (headings left empty
@@ -467,6 +467,59 @@ Content: `tools/content/prepare-ancient.mjs` models the 32 props in code
 (`tools/content/pieces.mjs`, licence Owned, `assets-src/tiletrigger-ancient/`);
 the five new texture sets come from ambientCG (CC0) through
 `prepare-textures.mjs --only`.
+
+### 10 Medieval Village (medieval town)
+
+From the owner's concept sheet "Tileset 01 – Medieval Village / Town". Theme `core.medieval` (cobblestone
+floor, half-timbered walls, oak solids, floorboard undersides, oak trim; also Castle Keep and Walled Garden);
+facades **Half-timbered** (a stone ground storey under the timbering, jetty beams, shutters, an oak eaves
+board) and **Village whitewash** (whitewash with oak corner posts, shutters and sills). Demo map: Market Town.
+
+**Tiles** (`map/packTilesMedieval.ts`, 16). Houses are 2 × 1 cells, two storeys, with walkable red tile
+roofs (35°; the eaves on the north and south cell edges with their top surface at 8.25 m, so a row of houses
+makes one roofline and an Outside Stair's deck steps straight onto it):
+*Timber House* (stone below, half-timbering above; doors on every side, a stair along the north wall,
+upper doors east and west at 4 m, centred, for walkways and the next house in the row), *Shop House* (a wide
+shop front and counter under a red awning), *Plaster House* (whitewash, the upper storey set back behind a
+railed balcony over the street). *Outside Stair* (timber switchback round an open well: a landing at 4 m
+along the south side, a deck at 8.25 m along the south edge: put it north of a house to reach the roof),
+*Timber Walkway* (a railed deck 4 m up on posts; turn it east–west between two houses' upper doors),
+*Market Square* (2 × 2, diagonal market tiles, a stepped plinth for a fountain or market cross, bollards),
+*Market Hall* (1 × 2: an open arcade of oak posts, a stair to a timber-framed hall 4 m up),
+*Town Wall* (a curtain wall on the south edge, a 3.4 m wall-walk behind merlons 4 m up), *Wall Stair*
+(2 × 1: steps up the town face and a landing the length of the second cell), *Town Gate* (3 × 1: a gate
+tower over a 4 m arched passage, the wall either side, a guard room opening onto both walks, a battlemented
+roof through a hatch: hang a Ladder in it), *Bell Tower* (a door south, a switchback stair to a belfry
+gallery 10 m up behind arched openings, a tiled spire), *Watchtower* (oak posts, a switchback stair to a
+lookout 7 m up, a tiled roof), *Stream* (a bed 2 m down running east–west, a quay on the south bank, a grass
+slope and ledge up the north bank; fill it with Water), *Stone Bridge* (humped, 1 m up at its crown, the
+stream passing under its arch), *Cobbled Road*, *Blacksmith Forge* (an open smithy, a glowing hearth and
+chimney, quench trough).
+
+Every stair is built for the bots' navmesh as well as for players: treads 0.42 m or longer, 2 m or wider,
+at least ~2 m of floor before the foot and after the head, turns on full-width landings (a 2 × 2 corner step
+gets marked as a ledge), floor holes grown 0.3 m past the steps (a floor's edge bleeds a voxel). The tests
+walk bots up every piece in all four rotations (`test/stylePacksMedieval.test.ts`) except the Bell Tower's
+belfry: its stacked switchback inside walls drops out of the navmesh, so bots stay below (players climb it).
+
+**Props** (20, category *Medieval Village*, `tools/content/prepare-medieval.mjs`, built in code, licence
+Owned): Stone Well, Market Awning, Market Pavilion, Hanging Shop Sign, Hay Cart, Blacksmith Forge,
+Workbench, Flower Planter, Tarpaulined Crates, Tarp Tent, Chimney Stack, Wattle Fence, Spiked Fence, Church
+Bell, Market Cross, The Stocks, Oak Post, Grain Sacks, Bay Window, Shuttered Window. The Forge, Hay Cart,
+Well and Tarp Tent are simple stand-ins under stable ids (`mv_forge`, `mv_hay_cart`, `mv_well`,
+`mv_tarp_tent`): community downloads can replace them later through `content/props.json` without touching
+a map. The pack also lists the castle, siege, market, cart, barrel, banner, lantern, fence and tree props
+already in the game.
+
+**Materials** (procedural, `client/materials/patterns.ts`; ambientCG was not reachable from the build
+container, so no new scans): Cobblestones (rounded stones in mortar), Granite Setts (running bond), Market
+Tiles (diagonal terracotta and cream), Red Roof Tiles (pantiles), Timber and Plaster (half-timbering, one
+storey a repeat, so beams line up at 0, 4, 8 m), Wattle, Packed Dirt, Whitewash, Oak Beam.
+
+**Gameplay pieces**: *Oak Door* (door style `oak`: an iron-bound plank door on one side's hinges, opens as
+you come close) and *Wattle Hurdle* (a breakable woven fence, back after 25 s), with the portcullis,
+portcullis gate, drawbridge, breakable and crumbling planks, boards, ladders, braziers, lanterns, candles,
+water and trigger zones.
 
 ### Portals (`sim/portals.ts`)
 

@@ -1317,7 +1317,7 @@ export class ScenarioVisuals {
 
   private door(name: string, e: Extract<MapEntity, { kind: 'door' }>): Visual {
     const style = e.style ?? 'sliding';
-    if (style === 'saloon' || style === 'vault') return this.swingDoor(name, e, style);
+    if (style === 'saloon' || style === 'vault' || style === 'oak') return this.swingDoor(name, e, style);
     if (style === 'portcullis') return this.portcullis(name, e);
     const root = new TransformNode(name, this.scene);
     const w = DOOR.width / 2;
@@ -1419,12 +1419,31 @@ export class ScenarioVisuals {
    * hinged at both posts, or a round `vault` door hinged on one side. The
    * collider is the same as any door's; only the look differs.
    */
-  private swingDoor(name: string, e: Extract<MapEntity, { kind: 'door' }>, style: 'saloon' | 'vault'): Visual {
+  private swingDoor(name: string, e: Extract<MapEntity, { kind: 'door' }>, style: 'saloon' | 'vault' | 'oak'): Visual {
     const root = new TransformNode(name, this.scene);
     const w = DOOR.width / 2;
     const hinges: { node: TransformNode; dir: number }[] = [];
     let lampMat: StandardMaterial | null = null;
-    if (style === 'saloon') {
+    if (style === 'oak') {
+      // Style Pack 10: an oak plank door, iron straps and a ring handle, hung from one post in an oak frame.
+      const oak = this.mat('oakDoor', '#7a5232');
+      const dark = this.mat('oakDoorDark', '#4e3420');
+      const iron = this.mat('oakDoorIron', '#3a3634', { spec: 0.4 });
+      for (const side of [-1, 1]) this.box(`${name}_post${side}`, root, [0.25, DOOR.height + 0.25, 0.4], [side * (w + 0.12), (DOOR.height + 0.25) / 2, 0], dark);
+      this.box(`${name}_lintel`, root, [DOOR.width + 0.5, 0.25, 0.4], [0, DOOR.height + 0.12, 0], dark);
+      const hinge = new TransformNode(`${name}_hinge`, this.scene);
+      hinge.parent = root;
+      hinge.position.set(w, 0, 0);
+      const leafW = DOOR.width - 0.06;
+      for (let k = 0; k < 6; k++) this.box(`${name}_plank${k}`, hinge, [leafW / 6 - 0.02, DOOR.height - 0.04, 0.12], [-0.03 - leafW / 12 - (k * leafW) / 6, DOOR.height / 2, 0], k % 2 ? oak : dark);
+      for (const y of [0.45, DOOR.height / 2, DOOR.height - 0.45]) this.box(`${name}_strap${y}`, hinge, [leafW * 0.8, 0.12, 0.15], [-leafW * 0.4 - 0.03, y, 0], iron);
+      const ring = CreateCylinder(`${name}_ringHandle`, { diameter: 0.18, height: 0.04, tessellation: 10 }, this.scene);
+      ring.parent = hinge;
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(-leafW + 0.3, 1.1, -0.1);
+      ring.material = iron;
+      hinges.push({ node: hinge, dir: 1 });
+    } else if (style === 'saloon') {
       const wood = this.mat('saloonDoor', '#8a5a32');
       const slat = this.mat('saloonSlat', '#5e3c20');
       for (const side of [-1, 1]) {
@@ -1473,8 +1492,8 @@ export class ScenarioVisuals {
       lampMat = this.ownMat(e.locked ? '#e0412f' : '#3fd26b', 0.9);
       lamp.material = lampMat;
     }
-    // Saloon doors swing both halves out; the vault door swings wide on its one hinge.
-    const swing = style === 'saloon' ? Math.PI / 2 : Math.PI * 0.6;
+    // Saloon doors swing both halves out; the vault and oak doors swing wide on their one hinge.
+    const swing = style === 'saloon' ? Math.PI / 2 : style === 'oak' ? Math.PI * 0.55 : Math.PI * 0.6;
     const place = (open: number) => {
       for (const h of hinges) h.node.rotation.y = h.dir * open * swing;
     };

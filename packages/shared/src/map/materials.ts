@@ -39,7 +39,17 @@ export type PatternId =
   /** Style Pack 09: hieroglyphs painted in ochre, turquoise and the accent on the base. */
   | 'glyphs_painted'
   /** Style Pack 03: small tesserae with a key-pattern border (Roman floor mosaic). */
-  | 'mosaic';
+  | 'mosaic'
+  /** Style Pack 10: rounded cobblestones of uneven size set in mortar. */
+  | 'cobbles'
+  /** Style Pack 10: rectangular granite setts in running bond (a paved road). */
+  | 'setts'
+  /** Style Pack 10: square tiles laid on the diagonal in two colours (a market floor). */
+  | 'diamonds'
+  /** Style Pack 10: rows of curved clay roof tiles (pantiles), each row lapping the one below. */
+  | 'pantiles'
+  /** Style Pack 10: half-timbering: dark oak posts, rails and braces with plaster panels between (repeats every storey). */
+  | 'timber';
 
 export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
@@ -120,6 +130,16 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('mosaic', 'Roman Mosaic', 'Tile', 'mosaic', '#e8dcc0', '#8a2a1e', 2, 0.2),
   m('gold_leaf', 'Gold Leaf', 'Metal', 'plain', '#d8a83a', '#c89830', 4, 0.8),
   m('lapis', 'Lapis Paint', 'Paint', 'noise', '#2a4aa0', '#1e3478', 2, 0.3),
+  // Style Pack 10 Medieval Village: our own procedural paint (half-timbering repeats every 4 m storey).
+  m('cobblestones', 'Cobblestones', 'Stone', 'cobbles', '#8c8478', '#4e4a44', 2.5),
+  m('road_setts', 'Granite Setts', 'Stone', 'setts', '#7e7a74', '#46423e', 2.5),
+  m('market_tiles', 'Market Tiles', 'Tile', 'diamonds', '#b8694a', '#d9c7a2', 2, 0.15),
+  m('roof_tiles_red', 'Red Roof Tiles', 'Tile', 'pantiles', '#a84a30', '#5e2618', 1.6),
+  m('timber_frame', 'Timber and Plaster', 'Wood', 'timber', '#e6dcc4', '#3e2a1c', 4),
+  m('wattle', 'Wattle', 'Wood', 'weave', '#8a6a44', '#5a4228', 2),
+  m('packed_dirt', 'Packed Dirt', 'Ground', 'noise', '#7a6448', '#635038', 3),
+  m('whitewash', 'Whitewash', 'Stone', 'noise', '#ece6d6', '#d8d0bc', 2.5),
+  m('oak_beam', 'Oak Beam', 'Wood', 'planks', '#4a3220', '#30200f', 1.5),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -239,6 +259,7 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('adobe', 'Frontier Adobe', '#f4d2a0', ['pbr_floorboards', '#d8b890'], 'pbr_adobe', ['pbr_adobe', '#e8d0b0'], 'pbr_weathered_planks', 'pbr_walnut'),
   theme('gothic_estate', 'Gothic Estate', '#231d2c', 'pbr_floorboards', 'wallpaper_damask', 'pbr_walnut', 'dark_wood', 'brass'),
   theme('jungle_temple', 'Jungle Temple', '#a8c8a0', 'pbr_mossy_cobble', 'pbr_castle_stone', 'pbr_jungle_rock', 'pbr_rock', ['pbr_travertine', '#b8c0a0']),
+  theme('medieval', 'Medieval Village', '#a8c8e8', 'cobblestones', 'timber_frame', ['oak_beam', '#c8a888'], 'pbr_floorboards', 'oak_beam'),
   theme('suburban', 'Suburban', '#9cc8f0', 'oak_planks', 'pbr_plaster_white', 'pbr_clapboard', 'pbr_plaster_white', ['paint_matte', '#f4f2ec']),
 ];
 
