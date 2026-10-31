@@ -12155,29 +12155,39 @@
     {
       "file": "props/mining_excavator.glb",
       "source": "meshy-owned-mining",
+      "budget": "hero",
       "title": "Bucket-Wheel Excavator (text to 3D, for Iron Maw) (download dated 2026-10-30)",
       "src": "Meshy_AI_Bucket_Wheel_Excavator_20261030_texture.glb",
-      "triangles": 4549,
-      "bytes": 301460,
-      "sha256": "7b98b41301c338c4",
+      "triangles": 13824,
+      "lodTriangles": [
+        3416
+      ],
+      "normalMap": true,
+      "bytes": 1042040,
+      "sha256": "28b1a2e1cd04af97",
       "size": [
-        29.367,
+        29.289,
         16.001,
-        13.678
+        13.788
       ]
     },
     {
       "file": "props/mining_haul_truck.glb",
       "source": "meshy-owned-mining",
+      "budget": "hero",
       "title": "Mining Haul Truck (text to 3D, for Iron Maw) (download dated 2026-10-30)",
       "src": "Meshy_AI_Mining_Haul_Truck_20261030_texture.glb",
-      "triangles": 5946,
-      "bytes": 352568,
-      "sha256": "b943cdeba9a81369",
+      "triangles": 13950,
+      "lodTriangles": [
+        3403
+      ],
+      "normalMap": true,
+      "bytes": 1027128,
+      "sha256": "2e76d249312ff72d",
       "size": [
-        11.934,
+        11.89,
         7.4,
-        6.86
+        6.892
       ]
     },
     {
@@ -12185,13 +12195,14 @@
       "source": "meshy-owned-cargo",
       "title": "Army Crate (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Army_Crate_1030191818_texture.glb",
-      "triangles": 2996,
-      "bytes": 128160,
-      "sha256": "8f9e0bf06f9e583b",
+      "triangles": 4500,
+      "normalMap": true,
+      "bytes": 193720,
+      "sha256": "3bc5149b844ad9e7",
       "size": [
-        1.383,
+        1.38,
         1,
-        1.25
+        1.247
       ]
     },
     {
@@ -12199,9 +12210,10 @@
       "source": "meshy-owned-cargo",
       "title": "Wooden Crate (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Wooden_Crate_1030191900_texture.glb",
-      "triangles": 3222,
-      "bytes": 139156,
-      "sha256": "349bab80f3c0e5e0",
+      "triangles": 4500,
+      "normalMap": true,
+      "bytes": 216788,
+      "sha256": "e2266602ef36f553",
       "size": [
         1.202,
         1,
@@ -12213,9 +12225,10 @@
       "source": "meshy-owned-cargo",
       "title": "Wooden Crate (Cube) (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Wooden_Crate_1030191909_texture.glb",
-      "triangles": 2500,
-      "bytes": 124496,
-      "sha256": "35c585e135de1e62",
+      "triangles": 4500,
+      "normalMap": true,
+      "bytes": 212744,
+      "sha256": "3a20f19eabfd598c",
       "size": [
         1.213,
         1.2,
@@ -12227,13 +12240,14 @@
       "source": "meshy-owned-cargo",
       "title": "Low Wooden Crate (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Wooden_Crate_1030191926_texture.glb",
-      "triangles": 2000,
-      "bytes": 114156,
-      "sha256": "f7cdde2d35ec3a80",
+      "triangles": 4500,
+      "normalMap": true,
+      "bytes": 219620,
+      "sha256": "d9a1cdcff21ed0f5",
       "size": [
-        2.54,
+        2.549,
         0.6,
-        1.191
+        1.202
       ]
     },
     {
@@ -12241,13 +12255,14 @@
       "source": "meshy-owned-cargo",
       "title": "Crate Stack (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_crates__1030191803_texture.glb",
-      "triangles": 3496,
-      "bytes": 174568,
-      "sha256": "f2e1e0af4d4293e9",
+      "triangles": 4498,
+      "normalMap": true,
+      "bytes": 247728,
+      "sha256": "957607994eb54bc8",
       "size": [
         2.093,
         1.6,
-        0.872
+        0.873
       ]
     },
     {
@@ -12255,39 +12270,50 @@
       "source": "meshy-owned-cargo",
       "title": "Sci-Fi Cargo Crate (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_object_Sci_Fi_Cargo__1030192137_texture.glb",
-      "triangles": 3461,
-      "bytes": 168668,
-      "sha256": "bc133a07a01be87f",
+      "triangles": 4462,
+      "normalMap": true,
+      "bytes": 243184,
+      "sha256": "6551c59d3316833f",
       "size": [
-        1.762,
+        1.758,
         1.2,
-        1.284
+        1.282
       ]
     },
     {
       "file": "props/cargo_container_old_rusty.glb",
       "source": "meshy-owned-cargo",
+      "budget": "hero",
       "title": "Old Rusty Container (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Old_rusty_shipping_co_1030192102_texture.glb",
-      "triangles": 2996,
-      "bytes": 148016,
-      "sha256": "d6a37fda96fcba32",
+      "triangles": 7000,
+      "lodTriangles": [
+        1746
+      ],
+      "normalMap": true,
+      "bytes": 583388,
+      "sha256": "bdf30beb64ace297",
       "size": [
-        5.922,
+        5.916,
         2.6,
-        3.433
+        3.429
       ]
     },
     {
       "file": "props/cargo_container_rusty_blue.glb",
       "source": "meshy-owned-cargo",
+      "budget": "hero",
       "title": "Rusty Blue Container (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Rusty_Blue_Shipping_C_1030192043_texture.glb",
-      "triangles": 2991,
-      "bytes": 172572,
-      "sha256": "7424fe7b92daa349",
+      "triangles": 6999,
+      "lodTriangles": [
+        1735
+      ],
+      "normalMap": true,
+      "bytes": 645844,
+      "sha256": "7ee17668c92f4d0a",
       "size": [
-        4.976,
+        4.987,
         2.6,
         2.23
       ]
@@ -12295,57 +12321,77 @@
     {
       "file": "props/cargo_container_rusty_red.glb",
       "source": "meshy-owned-cargo",
+      "budget": "hero",
       "title": "Rusty Red Container (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Rusty_Red_Shipping_Co_1030115909_texture.glb",
-      "triangles": 3437,
-      "bytes": 166132,
-      "sha256": "dd2c9b979f625d28",
+      "triangles": 6912,
+      "lodTriangles": [
+        1706
+      ],
+      "normalMap": true,
+      "bytes": 645116,
+      "sha256": "1d0a3336db374302",
       "size": [
-        5.657,
+        5.663,
         2.6,
-        2.329
+        2.333
       ]
     },
     {
       "file": "props/cargo_container_red.glb",
       "source": "meshy-owned-cargo",
+      "budget": "hero",
       "title": "Red Container (Long) (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Red_Shipping_Containe_1030192040_texture.glb",
-      "triangles": 3740,
-      "bytes": 180656,
-      "sha256": "2a2e6fe7873dfcde",
+      "triangles": 6977,
+      "lodTriangles": [
+        1728
+      ],
+      "normalMap": true,
+      "bytes": 580796,
+      "sha256": "7ca0e2811d314e0a",
       "size": [
-        8.086,
+        8.082,
         2.6,
-        3.853
+        3.855
       ]
     },
     {
       "file": "props/cargo_container.glb",
       "source": "meshy-owned-cargo",
+      "budget": "hero",
       "title": "White Container (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Shipping_Container_1029214643_texture.glb",
-      "triangles": 3499,
-      "bytes": 169388,
-      "sha256": "ef77aa80671d7d3e",
+      "triangles": 6994,
+      "lodTriangles": [
+        1725
+      ],
+      "normalMap": true,
+      "bytes": 591108,
+      "sha256": "71d5d5cb38b6130b",
       "size": [
         5.793,
         2.6,
-        2.347
+        2.348
       ]
     },
     {
       "file": "props/cargo_gantry_crane.glb",
       "source": "meshy-owned-cargo",
+      "budget": "hero",
       "title": "Yellow Gantry Crane (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Large_yellow_containe_1030192123_texture.glb",
-      "triangles": 3479,
-      "bytes": 193892,
-      "sha256": "b4e9ba2bc37ef706",
+      "triangles": 11934,
+      "lodTriangles": [
+        2948
+      ],
+      "normalMap": true,
+      "bytes": 854292,
+      "sha256": "3ba7d93c5b4e91ea",
       "size": [
-        3.285,
+        3.3,
         6,
-        9.034
+        9.039
       ]
     },
     {
@@ -12353,13 +12399,14 @@
       "source": "meshy-owned-cargo",
       "title": "IBC Tank (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_container_2_1030192151_texture.glb",
-      "triangles": 5767,
-      "bytes": 306416,
-      "sha256": "86d134434b9fe29c",
+      "triangles": 5777,
+      "normalMap": true,
+      "bytes": 362980,
+      "sha256": "cb7dfa148d4275f7",
       "size": [
-        1.059,
+        1.061,
         1.2,
-        1.057
+        1.06
       ]
     },
     {
@@ -12367,9 +12414,10 @@
       "source": "meshy-owned-street",
       "title": "Wooden Barrel (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Barrel_1_1029205916_texture.glb",
-      "triangles": 3000,
-      "bytes": 112668,
-      "sha256": "7b422b0789bd025c",
+      "triangles": 4500,
+      "normalMap": true,
+      "bytes": 153252,
+      "sha256": "bacc71534db034b4",
       "size": [
         0.656,
         0.9,
@@ -12381,9 +12429,10 @@
       "source": "meshy-owned-street",
       "title": "Blue Barrel (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Blue_Barrel_1030200127_stylize.glb",
-      "triangles": 3000,
-      "bytes": 104788,
-      "sha256": "d43e74022c02a070",
+      "triangles": 4500,
+      "normalMap": true,
+      "bytes": 149552,
+      "sha256": "71234bb0ef07bbd7",
       "size": [
         0.746,
         0.9,
@@ -12395,11 +12444,12 @@
       "source": "meshy-owned-street",
       "title": "Yellow Hazard Barrel (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Post_Barrel_1030164958_texture.glb",
-      "triangles": 2977,
-      "bytes": 151724,
-      "sha256": "7330096637dbf1ac",
+      "triangles": 4468,
+      "normalMap": true,
+      "bytes": 231220,
+      "sha256": "a8fbf277975886b1",
       "size": [
-        0.632,
+        0.633,
         0.9,
         0.642
       ]
@@ -12409,11 +12459,12 @@
       "source": "meshy-owned-street",
       "title": "Rusty Barrel (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Rusty_Barrel_1030200140_texture.glb",
-      "triangles": 3000,
-      "bytes": 92516,
-      "sha256": "02a12a59d79d276b",
+      "triangles": 4500,
+      "normalMap": true,
+      "bytes": 134812,
+      "sha256": "eef4a0b5683e649c",
       "size": [
-        0.567,
+        0.568,
         0.9,
         0.569
       ]
@@ -12423,13 +12474,14 @@
       "source": "meshy-owned-street",
       "title": "Rusty Barrel (Dented) (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Rusty_Barrel_1030200142_texture.glb",
-      "triangles": 2996,
-      "bytes": 122724,
-      "sha256": "d40e3cef32c07d6f",
+      "triangles": 4498,
+      "normalMap": true,
+      "bytes": 193584,
+      "sha256": "759d6d934094157e",
       "size": [
         0.554,
         0.9,
-        0.554
+        0.555
       ]
     },
     {
@@ -12437,13 +12489,14 @@
       "source": "meshy-owned-street",
       "title": "Rusty Barrel (Old) (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_rusty_barrel_1030200155_texture.glb",
-      "triangles": 3000,
-      "bytes": 120816,
-      "sha256": "26be8ffb1c386e6f",
+      "triangles": 4500,
+      "normalMap": true,
+      "bytes": 175716,
+      "sha256": "182c9d7ce845bb26",
       "size": [
-        0.601,
+        0.603,
         0.9,
-        0.602
+        0.603
       ]
     },
     {
@@ -12451,13 +12504,14 @@
       "source": "meshy-owned-street",
       "title": "Trash Can (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_trash_can__1030195940_texture.glb",
-      "triangles": 3000,
-      "bytes": 126268,
-      "sha256": "751328bea7f6499b",
+      "triangles": 4498,
+      "normalMap": true,
+      "bytes": 193620,
+      "sha256": "15041120c82d273f",
       "size": [
         0.705,
         1,
-        0.64
+        0.641
       ]
     },
     {
@@ -12465,9 +12519,10 @@
       "source": "meshy-owned-street",
       "title": "Classic Trash Can (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Trash_Can_Classic_1030200011_texture.glb",
-      "triangles": 3000,
-      "bytes": 122852,
-      "sha256": "518e2f16e0d203b7",
+      "triangles": 4500,
+      "normalMap": true,
+      "bytes": 189952,
+      "sha256": "40303b449e772023",
       "size": [
         0.577,
         0.9,
@@ -12479,13 +12534,14 @@
       "source": "meshy-owned-street",
       "title": "Wheelie Bin (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Realistic_city_trash__1029214806_texture.glb",
-      "triangles": 3493,
-      "bytes": 173440,
-      "sha256": "6e8548d8b26599d9",
+      "triangles": 4485,
+      "normalMap": true,
+      "bytes": 245136,
+      "sha256": "0f9c04050fc941eb",
       "size": [
         0.715,
         1.1,
-        0.768
+        0.774
       ]
     },
     {
@@ -12493,13 +12549,14 @@
       "source": "meshy-owned-street",
       "title": "Trash Pile (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Trash_Pile_1030195949_texture.glb",
-      "triangles": 3453,
-      "bytes": 208988,
-      "sha256": "0a4a4c765bde86e7",
+      "triangles": 4001,
+      "normalMap": true,
+      "bytes": 279272,
+      "sha256": "0dc5bf4d68a9d3ef",
       "size": [
-        1.119,
+        1.114,
         1,
-        1.121
+        1.117
       ]
     },
     {
@@ -12507,11 +12564,12 @@
       "source": "meshy-owned-street",
       "title": "Low Trash Pile (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Trash_Pile_1030195954_texture.glb",
-      "triangles": 2994,
-      "bytes": 188588,
-      "sha256": "956371d2952c2afd",
+      "triangles": 4483,
+      "normalMap": true,
+      "bytes": 297720,
+      "sha256": "2065fe1a3cec4e14",
       "size": [
-        1.203,
+        1.208,
         0.5,
         1.25
       ]
@@ -12521,13 +12579,14 @@
       "source": "meshy-owned-street",
       "title": "Urban Dumpster (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Urban_Container_1030200046_texture.glb",
-      "triangles": 3498,
-      "bytes": 157828,
-      "sha256": "54b6bf9d6a243162",
+      "triangles": 4496,
+      "normalMap": true,
+      "bytes": 221460,
+      "sha256": "5bdbd8b7ec9af5ce",
       "size": [
-        1.855,
+        1.858,
         1.3,
-        1.022
+        1.024
       ]
     },
     {
@@ -12535,9 +12594,10 @@
       "source": "meshy-owned-street",
       "title": "Fuel Can (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Fuel_Container_1030200055_texture.glb",
-      "triangles": 2500,
-      "bytes": 129956,
-      "sha256": "027627502288fb54",
+      "triangles": 4492,
+      "normalMap": true,
+      "bytes": 212316,
+      "sha256": "a35e1de5ea380c7d",
       "size": [
         0.38,
         0.45,
@@ -12549,9 +12609,10 @@
       "source": "meshy-owned-street",
       "title": "Hanging Shop Sign (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Create_a_3D_model_of__1030200310_texture.glb",
-      "triangles": 3000,
-      "bytes": 135044,
-      "sha256": "28818cdbe74aabfb",
+      "triangles": 4498,
+      "normalMap": true,
+      "bytes": 199512,
+      "sha256": "f75e51650beab609",
       "size": [
         1.147,
         0.9,
@@ -12561,15 +12622,20 @@
     {
       "file": "props/street_historic_building.glb",
       "source": "meshy-owned-street",
+      "budget": "hero",
       "title": "Historic City Building (owner's Meshy) (download dated 2026-10-30)",
       "src": "Meshy_AI_Historic_City_Buildin_1030200355_texture.glb",
-      "triangles": 5978,
-      "bytes": 293640,
-      "sha256": "d099cf7c1aa03617",
+      "triangles": 13893,
+      "lodTriangles": [
+        3430
+      ],
+      "normalMap": true,
+      "bytes": 1088412,
+      "sha256": "9b2db4441a25f291",
       "size": [
-        16.881,
+        16.452,
         12,
-        18.38
+        17.946
       ]
     }
   ]

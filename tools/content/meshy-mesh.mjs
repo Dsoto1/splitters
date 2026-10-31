@@ -15,6 +15,12 @@ import { fbxToDocument } from './fbx.mjs';
 
 await MeshoptSimplifier.ready;
 
+/**
+ * KHR_mesh_quantization for the Meshy models' vertices: normals and tangents in 8 bits (4 bytes each, against 8 at the
+ * default 10 bits; the baked normal map carries the fine shading), positions and texture coordinates as usual.
+ */
+export const MESHY_QUANTIZE = { quantizeNormal: 8 };
+
 /** Texture seams whose two sides, or the texture between them, differ by more than this (0-255 RGB distance, averaged over a few texels) stay put. */
 const SEAM_COLOUR = 18;
 
@@ -112,11 +118,15 @@ const HIDDEN_WORK = 40000;
  *   (rebake) and its own `textureSize` map painted from the download's surface. Hard edges keep their crease.
  * - `vertex`: the colours go into the vertices instead (no image ships).
  * `dropHidden` drops the triangles no ray from outside can reach first (hiddenTriangles: a wreck's engine bay and
- * seat stuffing), so the budget goes to what shows. Returns { doc, sourceTriangles, triangles }.
+ * seat stuffing), so the budget goes to what shows.
+ * The shape the cut takes away comes back as a normal map (`normalSize` px, lossless PNG: the builds re-encode it with
+ * normalJpeg at its shipped size; 0 for none): baked from the full download's surface, its own normal map included,
+ * onto the cut mesh's texture coordinates (bakeNormals), with the TANGENT attribute it is drawn with. Without it the
+ * cut mesh shades as flat, lumpy facets. Returns { doc, sourceTriangles, triangles }.
  */
-export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, dropHidden = false, sloppy = false } = {}) {
+export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null } = {}) {
   const glb = /\.glb$/i.test(fbxPath);
-  const { doc } = glb ? { doc: await glbDocument(fbxPath) } : await fbxToDocument(fbxPath, { keepUv: true });
+  const { doc, normalImage } = glb ? await glbDocument(fbxPath) : { ...(await fbxToDocument(fbxPath, { keepUv: true })), normalImage: existsSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) : null };
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
   if (prims.length !== 1) throw new Error(`${basename(fbxPath)}: expected one mesh with one material, found ${prims.length} primitives`);
   const prim = prims[0];
@@ -138,6 +148,20 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
   const image = () => sharp(map.data, { raw: { width: map.info.width, height: map.info.height, channels: 3 } });
   const jpeg = await image().resize(1024, 1024, { fit: 'inside', kernel: 'lanczos3' }).jpeg({ quality: 88 }).toBuffer();
   const material = doc.createMaterial(prim.getMaterial()?.getName() || 'meshy').setMetallicFactor(metallic).setRoughnessFactor(roughness);
+  const buffer = doc.getRoot().listBuffers()[0];
+  const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(buffer);
+  // The download's own normal map (raw RGB), bent into the baked one; and the bake onto the cut mesh.
+  const hiMap = normalSize && normalImage ? await sharp(Buffer.from(normalImage)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
+  const bake = async (low, hi) => {
+    if (!normalSize) return;
+    let [lo, up] = [[Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]];
+    for (let i = 0; i < hi.P.length; i += 3) for (let k = 0; k < 3; k++) [lo[k], up[k]] = [Math.min(lo[k], hi.P[i + k]), Math.max(up[k], hi.P[i + k])];
+    const reach = Math.hypot(up[0] - lo[0], up[1] - lo[1], up[2] - lo[2]) * Math.max(0.03, maxError * 1.5);
+    const { tangents, png } = await bakeNormals(low, hi, { size: normalSize, reach, hiMap });
+    prim.setAttribute('TANGENT', acc('VEC4', tangents));
+    material.setNormalTexture(doc.createTexture('normal').setImage(new Uint8Array(png)).setMimeType('image/png'));
+  };
+  const highCopy = () => ({ P: prim.getAttribute('POSITION').getArray().slice(), N: prim.getAttribute('NORMAL').getArray().slice(), UV: prim.getAttribute('TEXCOORD_0').getArray().slice(), I: prim.getIndices().getArray().slice() });
   if (surface === 'texture') {
     if (dropHidden) {
       // At the working detail (the plain simplifier keeps the texture seams), then the careful cut.
@@ -146,14 +170,16 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
       prim.getIndices().setArray(dropHiddenTriangles(P, cut));
       compactPrimitive(prim);
     }
+    const hi = highCopy();
     if (prim.getIndices().getCount() / 3 > triangles) await seamAwareSimplify(prim, jpeg, triangles, maxError);
+    prim.setAttribute('TANGENT', null);
+    await bake({ P: prim.getAttribute('POSITION').getArray(), N: prim.getAttribute('NORMAL').getArray(), UV: prim.getAttribute('TEXCOORD_0').getArray(), idx: prim.getIndices().getArray() }, hi);
     material.setBaseColorTexture(doc.createTexture('albedo').setImage(new Uint8Array(jpeg)).setMimeType('image/jpeg'));
   } else {
-    const hi = { P: prim.getAttribute('POSITION').getArray().slice(), UV: prim.getAttribute('TEXCOORD_0').getArray().slice(), I: prim.getIndices().getArray().slice() };
+    const hi = highCopy();
+    prim.setAttribute('TANGENT', null);
     // Vertex colours need the vertices where the colour changes; a rebaked map carries the colour itself.
     const low = closeSeams(prim, map, triangles, maxError, dropHidden, surface === 'vertex' ? 2 : 0.25, sloppy);
-    const buffer = doc.getRoot().listBuffers()[0];
-    const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(buffer);
     if (surface === 'vertex') {
       prim.setAttribute('TEXCOORD_0', null).setAttribute('POSITION', acc('VEC3', low.pos)).setAttribute('NORMAL', acc('VEC3', low.nrm)).setAttribute('COLOR_0', acc('VEC3', low.col)).setIndices(acc('SCALAR', low.idx));
       compactPrimitive(prim);
@@ -161,26 +187,54 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
       const out = await rebake(low, hi, map, textureSize, maxError);
       prim.setAttribute('POSITION', acc('VEC3', out.pos)).setAttribute('NORMAL', acc('VEC3', out.nrm)).setAttribute('TEXCOORD_0', acc('VEC2', out.uv)).setIndices(acc('SCALAR', out.idx));
       material.setBaseColorTexture(doc.createTexture('albedo').setImage(new Uint8Array(out.jpeg)).setMimeType('image/jpeg'));
+      await bake({ P: out.pos, N: out.nrm, UV: out.uv, idx: out.idx }, hi);
     }
   }
   prim.setMaterial(material);
+  if (lod) addLod(doc, prim, lod);
   await doc.transform(prune());
   return { doc, sourceTriangles, triangles: prim.getIndices().getCount() / 3 };
 }
 
 /**
+ * `lod: [ratio, distance]`: a lower level of detail beside the mesh (a node whose extras say `lod: 1` and the
+ * `distance` in metres from which it is drawn; the game's ModelLibrary takes it out of the model and hands it to
+ * Babylon as the mesh's LOD level, see models.ts). Same material and texture coordinates (the colour and normal maps
+ * fit it), cut to `ratio` of the triangles, the charts' seams allowed to collapse where their sides sit together.
+ */
+function addLod(doc, prim, [ratio, distance]) {
+  const P = new Float32Array(prim.getAttribute('POSITION').getArray());
+  const UV = new Float32Array(prim.getAttribute('TEXCOORD_0')?.getArray() ?? new Float32Array((P.length / 3) * 2));
+  const idx = new Uint32Array(prim.getIndices().getArray());
+  const target = Math.floor((idx.length / 3) * ratio) * 3;
+  let [cut] = MeshoptSimplifier.simplifyWithAttributes(idx, P, 3, UV, 2, [0.5, 0.5], null, target, 0.05, ['Permissive']);
+  if (cut.length > target * 1.5) [cut] = MeshoptSimplifier.simplifySloppy(idx, P, 3, null, target, 0.05);
+  const low = doc.createPrimitive().setMaterial(prim.getMaterial()).setMode(prim.getMode());
+  for (const sem of prim.listSemantics()) low.setAttribute(sem, prim.getAttribute(sem).clone());
+  low.setIndices(prim.getIndices().clone().setArray(cut));
+  compactPrimitive(low);
+  const node = doc.getRoot().listNodes().find((n) => n.getMesh()?.listPrimitives().includes(prim));
+  const lodNode = doc.createNode(`${node.getName() || 'mesh'}_lod`).setMesh(doc.createMesh('lod').addPrimitive(low)).setExtras({ lod: 1, distance });
+  (node.getParentNode() ?? doc.getRoot().listScenes()[0]).addChild(lodNode);
+  lodNode.setMatrix(node.getMatrix());
+  console.log(`  level of detail: ${cut.length / 3} triangles from ${distance} m`);
+}
+
+/**
  * A Meshy textured GLB as a document like fbxToDocument's: its node transforms baked into the vertices, every map
- * but the base colour dropped (the build paints its own), the mesh left as Meshy wrote it.
+ * but the base colour dropped (the build paints its own; the normal map, returned as `normalImage`, is baked into
+ * the cut mesh's), the mesh left as Meshy wrote it.
  */
 async function glbDocument(path) {
   const doc = await new NodeIO().registerExtensions(ALL_EXTENSIONS).read(path);
   await doc.transform(flatten());
   for (const node of doc.getRoot().listNodes()) if (node.getMesh()) clearNodeTransform(node);
+  const normalImage = doc.getRoot().listMaterials().map((m) => m.getNormalTexture()?.getImage()).find(Boolean) ?? null;
   for (const mat of doc.getRoot().listMaterials()) {
     mat.setNormalTexture(null).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
     for (const ext of mat.listExtensions()) ext.dispose();
   }
-  return doc;
+  return { doc, normalImage };
 }
 
 /** Raw RGB pixels from a colour test: 1 where `marked(r, g, b)`. */
@@ -529,6 +583,177 @@ export async function rebake(low, hi, map, size, maxError) {
   const jpeg = await sharp(img, { raw: { width: size, height: size, channels: 3 } }).jpeg({ quality: 88 }).toBuffer();
   return { pos: P2, nrm: N2, uv, idx: outIdx, jpeg };
 }
+
+/**
+ * Per-vertex tangents (glTF TANGENT: xyz along increasing u, w the handedness, so that cross(normal, tangent) * w
+ * runs along increasing v) from a mesh's positions, normals and texture coordinates: each triangle's tangent and
+ * bitangent summed at its corners (by surface area), then made perpendicular to the vertex normal.
+ * Returns Float32Array(n * 4).
+ */
+export function vertexTangents(P, N, UV, idx) {
+  const n = P.length / 3;
+  const tan = new Float64Array(n * 3);
+  const bit = new Float64Array(n * 3);
+  for (let i = 0; i < idx.length; i += 3) {
+    const [a, b, c] = [idx[i], idx[i + 1], idx[i + 2]];
+    const e1 = [P[b * 3] - P[a * 3], P[b * 3 + 1] - P[a * 3 + 1], P[b * 3 + 2] - P[a * 3 + 2]];
+    const e2 = [P[c * 3] - P[a * 3], P[c * 3 + 1] - P[a * 3 + 1], P[c * 3 + 2] - P[a * 3 + 2]];
+    const [du1, dv1, du2, dv2] = [UV[b * 2] - UV[a * 2], UV[b * 2 + 1] - UV[a * 2 + 1], UV[c * 2] - UV[a * 2], UV[c * 2 + 1] - UV[a * 2 + 1]];
+    const det = du1 * dv2 - du2 * dv1;
+    if (Math.abs(det) < 1e-14) continue;
+    // dP/du and dP/dv times |det|: summed by surface area.
+    const s = Math.sign(det);
+    for (let k = 0; k < 3; k++) {
+      const t = (e1[k] * dv2 - e2[k] * dv1) * s;
+      const bt = (e2[k] * du1 - e1[k] * du2) * s;
+      for (const v of [a, b, c]) {
+        tan[v * 3 + k] += t;
+        bit[v * 3 + k] += bt;
+      }
+    }
+  }
+  const out = new Float32Array(n * 4);
+  for (let v = 0; v < n; v++) {
+    const nv = [N[v * 3], N[v * 3 + 1], N[v * 3 + 2]];
+    let t = [tan[v * 3], tan[v * 3 + 1], tan[v * 3 + 2]];
+    const d = t[0] * nv[0] + t[1] * nv[1] + t[2] * nv[2];
+    t = [t[0] - nv[0] * d, t[1] - nv[1] * d, t[2] - nv[2] * d];
+    let len = Math.hypot(...t);
+    if (len < 1e-12) {
+      // No usable texture direction: any direction across the normal.
+      t = Math.abs(nv[0]) < 0.9 ? [0, -nv[2], nv[1]] : [nv[2], 0, -nv[0]];
+      const d2 = t[0] * nv[0] + t[1] * nv[1] + t[2] * nv[2];
+      t = [t[0] - nv[0] * d2, t[1] - nv[1] * d2, t[2] - nv[2] * d2];
+      len = Math.hypot(...t) || 1;
+    }
+    t = t.map((x) => x / len);
+    const cx = [nv[1] * t[2] - nv[2] * t[1], nv[2] * t[0] - nv[0] * t[2], nv[0] * t[1] - nv[1] * t[0]];
+    const w = cx[0] * bit[v * 3] + cx[1] * bit[v * 3 + 1] + cx[2] * bit[v * 3 + 2] < 0 ? -1 : 1;
+    out.set([t[0], t[1], t[2], w], v * 4);
+  }
+  return out;
+}
+
+/**
+ * A baked normal map (PNG, or any image sharp reads) as the JPEG that ships: `size` px, chroma kept at full
+ * resolution (the red and green channels are the normal's direction).
+ */
+export async function normalJpeg(image, size, quality = 85) {
+  return sharp(Buffer.from(image)).resize(size, size, { fit: 'inside', kernel: 'lanczos3' }).removeAlpha().jpeg({ quality, chromaSubsampling: '4:4:4', mozjpeg: true }).toBuffer();
+}
+
+/**
+ * Which way a normal map's green channel points against cross(normal, tangent) * w (vertexTangents' bitangent, along
+ * increasing v), as Babylon (the game's loader) draws a glTF normal map with a TANGENT attribute. Checked by rendering
+ * cut props against their full download with the shading only (no colour map): this sign tracks the download, the
+ * other lights every dent from the wrong side and came out further from it than no normal map at all. The download's
+ * own map is read with the same sign (Babylon draws it the same way).
+ */
+const GREEN = 1;
+
+/**
+ * A tangent-space normal map for a low-detail mesh, from the high-detail surface it was cut from: every texel a
+ * triangle of `low` covers (its `UV`, in a `size` px square) casts a ray along the low mesh's normal through its
+ * point (as rebake does), takes the high mesh's normal where it lands (its vertex normals interpolated, bent by the
+ * download's own normal map `hiMap` when there is one: raw RGB in the high mesh's texture coordinates and tangent
+ * space) and writes it in the low mesh's tangent space (`vertexTangents`, shipped as its TANGENT attribute). Texels
+ * nothing reached, and the gutters, are filled from their neighbours. `low`: { P, N, UV, idx }, `hi`: { P, N, UV, I };
+ * `reach`: how far from the low surface the high one may be. Returns { tangents, png }.
+ */
+export async function bakeNormals(low, hi, { size, reach, hiMap = null, caster = null }) {
+  const T = vertexTangents(low.P, low.N, low.UV, low.idx);
+  caster ??= bvh(hi.P, hi.I);
+  const HT = hiMap ? vertexTangents(hi.P, hi.N, hi.UV, hi.I) : null;
+  const img = Buffer.alloc(size * size * 3);
+  const empty = new Uint8Array(size * size).fill(1);
+  const sampleMap = (u, v) => {
+    const { data, info } = hiMap;
+    const x = Math.min(info.width - 1.001, Math.max(0, u * info.width - 0.5));
+    const y = Math.min(info.height - 1.001, Math.max(0, v * info.height - 0.5));
+    const [x0, y0] = [Math.floor(x), Math.floor(y)];
+    const [fx, fy] = [x - x0, y - y0];
+    const out = [0, 0, 0];
+    for (const [dx, dy, w] of [[0, 0, (1 - fx) * (1 - fy)], [1, 0, fx * (1 - fy)], [0, 1, (1 - fx) * fy], [1, 1, fx * fy]]) {
+      const i = ((y0 + dy) * info.width + x0 + dx) * 3;
+      for (let ch = 0; ch < 3; ch++) out[ch] += data[i + ch] * w;
+    }
+    return out.map((c) => (c / 255) * 2 - 1);
+  };
+  const { P, N, UV, idx } = low;
+  let [painted, missed, bent] = [0, 0, 0];
+  for (let t = 0; t < idx.length; t += 3) {
+    const [a, b, c] = [idx[t], idx[t + 1], idx[t + 2]];
+    const A = [UV[a * 2] * size, UV[a * 2 + 1] * size];
+    const B = [UV[b * 2] * size, UV[b * 2 + 1] * size];
+    const C = [UV[c * 2] * size, UV[c * 2 + 1] * size];
+    const den = (B[1] - C[1]) * (A[0] - C[0]) + (C[0] - B[0]) * (A[1] - C[1]);
+    if (Math.abs(den) < 1e-9) continue;
+    const xs = [Math.floor(Math.min(A[0], B[0], C[0]) - 1), Math.ceil(Math.max(A[0], B[0], C[0]) + 1)];
+    const ys = [Math.floor(Math.min(A[1], B[1], C[1]) - 1), Math.ceil(Math.max(A[1], B[1], C[1]) + 1)];
+    // A texel counts when its centre is within a texel of the triangle (barycentrics slightly negative).
+    const slack = 1.2 / Math.sqrt(Math.abs(den));
+    for (let y = Math.max(0, ys[0]); y <= Math.min(size - 1, ys[1]); y++) {
+      for (let x = Math.max(0, xs[0]); x <= Math.min(size - 1, xs[1]); x++) {
+        if (!empty[y * size + x]) continue;
+        const [px, py] = [x + 0.5, y + 0.5];
+        let l1 = ((B[1] - C[1]) * (px - C[0]) + (C[0] - B[0]) * (py - C[1])) / den;
+        let l2 = ((C[1] - A[1]) * (px - C[0]) + (A[0] - C[0]) * (py - C[1])) / den;
+        let l3 = 1 - l1 - l2;
+        if (l1 < -slack || l2 < -slack || l3 < -slack) continue;
+        [l1, l2, l3] = [Math.max(0, l1), Math.max(0, l2), Math.max(0, l3)];
+        const s = l1 + l2 + l3;
+        [l1, l2, l3] = [l1 / s, l2 / s, l3 / s];
+        const lerp = (arr, stride, k) => arr[a * stride + k] * l1 + arr[b * stride + k] * l2 + arr[c * stride + k] * l3;
+        const p = [0, 1, 2].map((k) => lerp(P, 3, k));
+        const n = unit([0, 1, 2].map((k) => lerp(N, 3, k)));
+        // The texel's tangent frame as the shader builds it (the interpolated tangent made perpendicular to the normal).
+        const tg = unit(across([0, 1, 2].map((k) => lerp(T, 4, k)), n));
+        const bt = cross3(n, tg).map((v) => v * T[a * 4 + 3]);
+        const hit = caster.nearest([p[0] - n[0] * reach, p[1] - n[1] * reach, p[2] - n[2] * reach], n, 2 * reach, reach);
+        let h = n;
+        if (hit) {
+          const [i0, i1, i2] = [hi.I[hit.tri * 3], hi.I[hit.tri * 3 + 1], hi.I[hit.tri * 3 + 2]];
+          const w0 = 1 - hit.u - hit.v;
+          const at = (arr, stride, k) => arr[i0 * stride + k] * w0 + arr[i1 * stride + k] * hit.u + arr[i2 * stride + k] * hit.v;
+          h = unit([0, 1, 2].map((k) => at(hi.N, 3, k)));
+          if (hiMap) {
+            const m = sampleMap(at(hi.UV, 2, 0), at(hi.UV, 2, 1));
+            const ht = unit(across([0, 1, 2].map((k) => at(HT, 4, k)), h));
+            const hb = cross3(h, ht).map((v) => v * HT[i0 * 4 + 3] * GREEN);
+            const bentN = [0, 1, 2].map((k) => ht[k] * m[0] + hb[k] * m[1] + h[k] * m[2]);
+            if (Math.hypot(...bentN) > 1e-6) {
+              h = unit(bentN);
+              bent++;
+            }
+          }
+          painted++;
+        } else missed++;
+        // Into the low mesh's tangent space (green as GREEN says), kept on the outside of the surface.
+        let ts = [dot3(h, tg), dot3(h, bt) * GREEN, dot3(h, n)];
+        if (ts[2] < 0.2) ts = unit([ts[0], ts[1], 0.2 * Math.hypot(ts[0], ts[1]) + 1e-6]);
+        img.set(ts.map((v) => Math.round((v * 0.5 + 0.5) * 255)), (y * size + x) * 3);
+        empty[y * size + x] = 0;
+      }
+    }
+  }
+  await fillMasked({ data: img, info: { width: size, height: size } }, empty);
+  // Lossless here: the builds re-encode it at its shipped size (normalJpeg).
+  const png = await sharp(img, { raw: { width: size, height: size, channels: 3 } }).png({ compressionLevel: 3 }).toBuffer();
+  console.log(`  normal map: ${size} px, ${painted} texels from the high mesh${hiMap ? ` (${bent} bent by its normal map)` : ''}, ${missed} missed`);
+  return { tangents: T, png };
+}
+
+const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const unit = (a) => {
+  const l = Math.hypot(...a) || 1;
+  return a.map((v) => v / l);
+};
+/** `a` with its part along the unit vector `n` taken out. */
+const across = (a, n) => {
+  const d = dot3(a, n);
+  return [a[0] - n[0] * d, a[1] - n[1] * d, a[2] - n[2] * d];
+};
 
 /**
  * A bounding-volume hierarchy over a triangle mesh, for rays: `blocked(o, d, self)` says whether a ray from `o`

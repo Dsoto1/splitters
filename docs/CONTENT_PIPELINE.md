@@ -129,6 +129,35 @@ colour rules (near-white, orange); `stone` (props) turns the map to stone of
 one colour; `centre: base` (guns) centres a turret on its pedestal.
 `surface: vertex` keeps the colours in the vertices instead (no image).
 
+**Normal maps (shape kept past the cut).** The cut mesh alone shades as flat,
+lumpy facets: the download's 10k–1.8M triangles become a few thousand. So
+`bakeNormals` (meshy-mesh.mjs) bakes a tangent-space normal map onto the cut
+mesh's texture coordinates: each texel casts along the cut surface's normal to
+the full download (as the colour rebake does), takes the download's
+interpolated normal there, bent by Meshy's own normal map, and writes it in the
+cut mesh's tangent space; the GLB carries the TANGENT attribute it was baked
+against (`vertexTangents`) and the map as the material's `normalTexture`
+(JPEG, 4:4:4, half the colour map's size; 512 px for weapons). The green
+channel's sign was settled by rendering in Babylon against the download with
+the colour map off (`GREEN` in meshy-mesh.mjs). Meshy characters get the same,
+in their own texture layout (`prepare-meshy-characters.mjs`, 512 px). Vertices
+are quantized with 8-bit normals and tangents (`MESHY_QUANTIZE`).
+`ONLY=<id>,… node tools/content/prepare-props.mjs --downloads <dir>` rebuilds
+just those props.
+
+**Budget tiers.** `budgets` in `content/props.json` and `content/guns.json` are
+the default caps (props 6,000 triangles / 400 KB; guns 8,000 / 512 KB);
+`budgets.tiers.hero` (20,000 triangles, 1.6 MB, and a lower level of detail
+required above 8,000) applies to entries marked `"budget": "hero"`: big landmark
+props (excavator, haul truck, historic building, gantry crane, the shipping
+containers; 1024 px colour map) and the first-person weapons, turrets and the
+buggy. `content:check` reads the tier from the lock file entry. A hero entry
+carries `lod: [share of triangles, metres]` (props default `[0.25, 40]`, guns
+`[0.2, 12]`): a node with `extras.lod` that `ModelLibrary` turns into a Babylon
+LOD level for placed props (merged instances) and for instanced copies (a
+crowd's held guns, pickups); the first-person gun, a plain copy, always draws
+full detail.
+
 Pieces we make ourselves in code are licence `Owned`, which `content:check`
 accepts for our own work:
 

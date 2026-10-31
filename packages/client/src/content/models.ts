@@ -159,6 +159,37 @@ export class ModelLibrary {
     return out;
   }
 
+  private readonly lodSources = new Set<string>();
+
+  /**
+   * GPU instances of a one-mesh model that carries lower levels of detail (a weapon held by a crowd, a hero prop
+   * copied unmerged): its source mesh gets them as Babylon LOD levels, so each instance picks its own by distance.
+   * Plain copies (the first-person gun) stay at full detail.
+   */
+  private instanceLods(path: string, container: AssetContainer): void {
+    if (this.lodSources.has(path)) return;
+    this.lodSources.add(path);
+    const levels = (this.lods.get(path) ?? []).filter((l) => !l.billboard);
+    const meshes = container.meshes.filter((m): m is Mesh => m instanceof Mesh && m.getTotalVertices() > 0);
+    const src = meshes[0];
+    if (!levels.length || meshes.length !== 1 || !src || src.skeleton || src.morphTargetManager) return;
+    src.computeWorldMatrix(true);
+    // The levels are in the model's space; the source draws its own geometry under its node's transform.
+    const toLocal = src.getWorldMatrix().clone().invert();
+    let i = 0;
+    for (const l of levels) {
+      const data = l.data.clone();
+      data.transform(toLocal);
+      const lod = new Mesh(`${src.name}_lod${++i}`, this.scene);
+      data.applyToMesh(lod, false);
+      lod.material = l.material;
+      lod.sideOrientation = src.sideOrientation;
+      lod.isPickable = false;
+      lod.position.y = -10000;
+      src.addLODLevel(l.distance, lod);
+    }
+  }
+
   /**
    * A new copy of the model under its own root node. With `instanced`, its
    * meshes are GPU instances of the first copy (one draw call for all of
@@ -166,6 +197,7 @@ export class ModelLibrary {
    */
   async instantiate(path: string, name: string, instanced = false): Promise<TransformNode> {
     const container = await this.load(path);
+    if (instanced) this.instanceLods(path, container);
     const entries = container.instantiateModelsToScene((n) => `${name}_${n}`, false, { doNotInstantiate: !instanced });
     const root = new TransformNode(name, this.scene);
     for (const node of entries.rootNodes) node.parent = root;

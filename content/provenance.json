@@ -2953,9 +2953,9 @@
     },
     {
       "file": "characters/meshy_rustmech.glb",
-      "sha256": "5efa30fd56c0d2fc",
+      "sha256": "e94e5305e4f78add",
       "triangles": 11000,
-      "bytes": 869912,
+      "bytes": 1124108,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): White Rusty Mech (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -2974,9 +2974,9 @@
     },
     {
       "file": "characters/meshy_rustmech_fparms.glb",
-      "sha256": "f50e75f7f7cc978a",
+      "sha256": "30e51c03ff05ab25",
       "triangles": 4102,
-      "bytes": 478524,
+      "bytes": 537828,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): White Rusty Mech (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -2992,9 +2992,9 @@
     },
     {
       "file": "characters/meshy_t350.glb",
-      "sha256": "eb8f37145cc40894",
+      "sha256": "1e41145bc77de99b",
       "triangles": 9986,
-      "bytes": 772020,
+      "bytes": 1007368,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Automaton (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3013,9 +3013,9 @@
     },
     {
       "file": "characters/meshy_t350_fparms.glb",
-      "sha256": "e44566ac317430bb",
+      "sha256": "91d8ec0a0b081ada",
       "triangles": 706,
-      "bytes": 344320,
+      "bytes": 397476,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Automaton (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3031,17 +3031,18 @@
     },
     {
       "file": "characters/meshy_santa.glb",
-      "sha256": "2ea89242ca29da4d",
-      "triangles": 11000,
-      "bytes": 520364,
+      "sha256": "d869a7b8659b909b",
+      "triangles": 10998,
+      "bytes": 677936,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Santa (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
       "modifications": [
+        "rigged in-house (joints found from the mesh's silhouette (tools/content/landmarks.mjs), skin weights computed from the mesh)",
         "re-posed to the rig's T-pose",
-        "rebound to the rig's skeleton",
+        "bound to the rig's skeleton",
         "simplified",
         "base colour only, downscaled to a JPEG",
         "vertices quantized",
@@ -3051,9 +3052,9 @@
     },
     {
       "file": "characters/meshy_santa_fparms.glb",
-      "sha256": "6cc61fed53600611",
-      "triangles": 5839,
-      "bytes": 315148,
+      "sha256": "57f4dd370fe43eb1",
+      "triangles": 5759,
+      "bytes": 366672,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Santa (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3069,9 +3070,9 @@
     },
     {
       "file": "characters/meshy_king.glb",
-      "sha256": "e0a648b35b0dc9f3",
+      "sha256": "6000955fcb03682b",
       "triangles": 11000,
-      "bytes": 810284,
+      "bytes": 1050764,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Regal Monarch in Velvet (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3089,9 +3090,9 @@
     },
     {
       "file": "characters/meshy_king_fparms.glb",
-      "sha256": "83a97fc0f1d0474a",
+      "sha256": "547889157b850280",
       "triangles": 1883,
-      "bytes": 358356,
+      "bytes": 392776,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Regal Monarch in Velvet (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3107,9 +3108,9 @@
     },
     {
       "file": "characters/meshy_lancer.glb",
-      "sha256": "e3d764c21b453b6c",
+      "sha256": "1dd63aaa89eada22",
       "triangles": 10996,
-      "bytes": 840360,
+      "bytes": 1100936,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Female lancer (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3128,9 +3129,9 @@
     },
     {
       "file": "characters/meshy_lancer_fparms.glb",
-      "sha256": "ef6ef89a264e3382",
+      "sha256": "27bc8cecc738c68c",
       "triangles": 925,
-      "bytes": 382912,
+      "bytes": 404008,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Female lancer (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3146,9 +3147,9 @@
     },
     {
       "file": "characters/meshy_grizzelda.glb",
-      "sha256": "790e41be4f28463c",
+      "sha256": "684d4776cbb95ef1",
       "triangles": 14558,
-      "bytes": 943116,
+      "bytes": 1247708,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Gloombraid Goblin Shaman (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3166,9 +3167,9 @@
     },
     {
       "file": "characters/meshy_grizzelda_fparms.glb",
-      "sha256": "4fa79ae0fc10f53b",
+      "sha256": "a1b0f15e19fc5f52",
       "triangles": 2726,
-      "bytes": 345548,
+      "bytes": 397968,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Gloombraid Goblin Shaman (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3184,9 +3185,9 @@
     },
     {
       "file": "characters/meshy_brass_hare.glb",
-      "sha256": "d83211a320ef14da",
+      "sha256": "c32cd301ac7b192d",
       "triangles": 12653,
-      "bytes": 944164,
+      "bytes": 1294420,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Energetic anthro rabbit (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3204,9 +3205,9 @@
     },
     {
       "file": "characters/meshy_brass_hare_fparms.glb",
-      "sha256": "e0e607bf105b3a35",
+      "sha256": "0d6d0b47e5db9f41",
       "triangles": 4955,
-      "bytes": 507440,
+      "bytes": 643264,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Energetic anthro rabbit (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3222,9 +3223,9 @@
     },
     {
       "file": "characters/meshy_grunt68.glb",
-      "sha256": "bbcb0f25d4174226",
+      "sha256": "0194a36f22157769",
       "triangles": 11000,
-      "bytes": 603376,
+      "bytes": 772160,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Realistic T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3243,9 +3244,9 @@
     },
     {
       "file": "characters/meshy_grunt68_fparms.glb",
-      "sha256": "7b6a60bbbd48d529",
+      "sha256": "ccc67643cdd31090",
       "triangles": 1914,
-      "bytes": 283248,
+      "bytes": 313328,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Realistic T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3261,9 +3262,9 @@
     },
     {
       "file": "characters/meshy_galloway.glb",
-      "sha256": "5fac8de98b33bd40",
-      "triangles": 11000,
-      "bytes": 525380,
+      "sha256": "8fdc15d28e65d887",
+      "triangles": 10998,
+      "bytes": 693432,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Medieval Knight Character (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3282,9 +3283,9 @@
     },
     {
       "file": "characters/meshy_galloway_fparms.glb",
-      "sha256": "c2a1310ac622742f",
-      "triangles": 3211,
-      "bytes": 250792,
+      "sha256": "881cc5b46708599c",
+      "triangles": 3212,
+      "bytes": 283352,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Medieval Knight Character (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3300,9 +3301,9 @@
     },
     {
       "file": "characters/meshy_hector.glb",
-      "sha256": "7b04553c9c9266dc",
+      "sha256": "0389672681bd8db5",
       "triangles": 10999,
-      "bytes": 642672,
+      "bytes": 837224,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Untitled (bald man in leathers) (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3321,9 +3322,9 @@
     },
     {
       "file": "characters/meshy_hector_fparms.glb",
-      "sha256": "ba7559c2679e0786",
-      "triangles": 3376,
-      "bytes": 296820,
+      "sha256": "917b720cf2dfd2e8",
+      "triangles": 3375,
+      "bytes": 337888,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Untitled (bald man in leathers) (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3339,9 +3340,9 @@
     },
     {
       "file": "characters/meshy_bonesworth.glb",
-      "sha256": "e44dea7990e93f33",
+      "sha256": "db7b8be5a4248f64",
       "triangles": 18841,
-      "bytes": 1213716,
+      "bytes": 1535924,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Dapper Elegant Ghoul (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3360,9 +3361,9 @@
     },
     {
       "file": "characters/meshy_bonesworth_fparms.glb",
-      "sha256": "87de9ce94e30215e",
+      "sha256": "63fc8e9b9a7a2a4f",
       "triangles": 5078,
-      "bytes": 434080,
+      "bytes": 501760,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Dapper Elegant Ghoul (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3378,9 +3379,9 @@
     },
     {
       "file": "characters/meshy_ricochet.glb",
-      "sha256": "1c341b69b51ea67a",
+      "sha256": "975aad3694d37b35",
       "triangles": 11000,
-      "bytes": 578232,
+      "bytes": 734208,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Low Poly T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3399,9 +3400,9 @@
     },
     {
       "file": "characters/meshy_ricochet_fparms.glb",
-      "sha256": "7bc15e328eed8dd2",
+      "sha256": "e856f05db26f15ba",
       "triangles": 4398,
-      "bytes": 333116,
+      "bytes": 384688,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Low Poly T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3417,9 +3418,9 @@
     },
     {
       "file": "characters/meshy_zombie_shambler.glb",
-      "sha256": "6206b6a7bc2be030",
+      "sha256": "10a8dd02040f69c2",
       "triangles": 10997,
-      "bytes": 688776,
+      "bytes": 959816,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): A highly realistic zombie (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3438,9 +3439,9 @@
     },
     {
       "file": "characters/meshy_zombie_shambler_fparms.glb",
-      "sha256": "4e17c8e07ac4a2b8",
+      "sha256": "dcaa25c1a1e72f66",
       "triangles": 4801,
-      "bytes": 399652,
+      "bytes": 518580,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): A highly realistic zombie (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3456,9 +3457,9 @@
     },
     {
       "file": "characters/meshy_zombie_rotter.glb",
-      "sha256": "bdf256ece7560692",
+      "sha256": "380d30a051570909",
       "triangles": 11000,
-      "bytes": 667948,
+      "bytes": 878828,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): zombie (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3477,9 +3478,9 @@
     },
     {
       "file": "characters/meshy_zombie_rotter_fparms.glb",
-      "sha256": "502e5c0109c44616",
+      "sha256": "f6171509aad1001d",
       "triangles": 3192,
-      "bytes": 274648,
+      "bytes": 315336,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): zombie (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3495,9 +3496,9 @@
     },
     {
       "file": "characters/meshy_dale.glb",
-      "sha256": "077be7f56007eaed",
+      "sha256": "e9b06cf76d707d47",
       "triangles": 10995,
-      "bytes": 669076,
+      "bytes": 939568,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): t pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3516,9 +3517,9 @@
     },
     {
       "file": "characters/meshy_dale_fparms.glb",
-      "sha256": "835f0dadfcf11b26",
+      "sha256": "919a9f6991643038",
       "triangles": 3083,
-      "bytes": 328268,
+      "bytes": 416816,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): t pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3534,9 +3535,9 @@
     },
     {
       "file": "characters/meshy_grandpa_chains.glb",
-      "sha256": "68f4905140531d4f",
+      "sha256": "89fabf334ef6dc82",
       "triangles": 11000,
-      "bytes": 655568,
+      "bytes": 809880,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Elderly Man with Outstretched arms (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3555,9 +3556,9 @@
     },
     {
       "file": "characters/meshy_grandpa_chains_fparms.glb",
-      "sha256": "f5dc7fe9907f720d",
+      "sha256": "882030afe050ea5e",
       "triangles": 4640,
-      "bytes": 371032,
+      "bytes": 420292,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Elderly Man with Outstretched arms (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3573,9 +3574,9 @@
     },
     {
       "file": "characters/meshy_hazmat.glb",
-      "sha256": "124f042fe2e0ffbe",
+      "sha256": "91316a7a0dfc6243",
       "triangles": 11000,
-      "bytes": 548336,
+      "bytes": 687432,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Hazmat T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3594,9 +3595,9 @@
     },
     {
       "file": "characters/meshy_hazmat_fparms.glb",
-      "sha256": "5553eb122174db4f",
+      "sha256": "146301178f76c8d9",
       "triangles": 3189,
-      "bytes": 289296,
+      "bytes": 326096,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Hazmat T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3612,9 +3613,9 @@
     },
     {
       "file": "characters/meshy_ninja.glb",
-      "sha256": "b6fae6c966e9b93c",
+      "sha256": "5f3289a7508046ac",
       "triangles": 11000,
-      "bytes": 549196,
+      "bytes": 724036,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Iron Shadow Warrior (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3633,9 +3634,9 @@
     },
     {
       "file": "characters/meshy_ninja_fparms.glb",
-      "sha256": "f1431709c9e0132e",
-      "triangles": 2604,
-      "bytes": 258428,
+      "sha256": "55c6aa409d838378",
+      "triangles": 2603,
+      "bytes": 295436,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Iron Shadow Warrior (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3651,9 +3652,9 @@
     },
     {
       "file": "characters/meshy_botboy.glb",
-      "sha256": "676592ab3df2d61c",
+      "sha256": "2160a127cf1b90ee",
       "triangles": 11000,
-      "bytes": 646920,
+      "bytes": 831200,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Robot in T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3672,9 +3673,9 @@
     },
     {
       "file": "characters/meshy_botboy_fparms.glb",
-      "sha256": "ef176cf1facb880e",
+      "sha256": "e7569da5baeeec10",
       "triangles": 5266,
-      "bytes": 376736,
+      "bytes": 447412,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Robot in T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3690,9 +3691,9 @@
     },
     {
       "file": "characters/meshy_chef.glb",
-      "sha256": "43dd9c10a2accab3",
+      "sha256": "7dc6688afad938bf",
       "triangles": 10999,
-      "bytes": 694636,
+      "bytes": 883556,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Chef (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3711,9 +3712,9 @@
     },
     {
       "file": "characters/meshy_chef_fparms.glb",
-      "sha256": "a4ea00ba490b7d1b",
+      "sha256": "d5175cdb3381aa95",
       "triangles": 3315,
-      "bytes": 348120,
+      "bytes": 393228,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Chef (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3729,9 +3730,9 @@
     },
     {
       "file": "characters/meshy_cowboy.glb",
-      "sha256": "d74f8fc2fcca1509",
+      "sha256": "1e5d33aad42bd1b4",
       "triangles": 10999,
-      "bytes": 637048,
+      "bytes": 809712,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Cowboy (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3750,9 +3751,9 @@
     },
     {
       "file": "characters/meshy_cowboy_fparms.glb",
-      "sha256": "3cc249c3350d7b0d",
+      "sha256": "ac7b7ea976414498",
       "triangles": 4620,
-      "bytes": 337672,
+      "bytes": 390024,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Cowboy (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3768,9 +3769,9 @@
     },
     {
       "file": "characters/meshy_shiba.glb",
-      "sha256": "3f3ce296d16b2428",
+      "sha256": "01a0a9cfa9dc517a",
       "triangles": 10999,
-      "bytes": 639072,
+      "bytes": 811156,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Shiba Inu (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3789,9 +3790,9 @@
     },
     {
       "file": "characters/meshy_shiba_fparms.glb",
-      "sha256": "7d6af4e07cc824fa",
+      "sha256": "da3b871a6a92db4e",
       "triangles": 2367,
-      "bytes": 253184,
+      "bytes": 282220,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Shiba Inu (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3807,17 +3808,18 @@
     },
     {
       "file": "characters/meshy_bandit.glb",
-      "sha256": "7d48a6075e7691a5",
-      "triangles": 10997,
-      "bytes": 614612,
+      "sha256": "e8858bdeb4908ee0",
+      "triangles": 10995,
+      "bytes": 834324,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): a raccoon warrior in T-pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
       "modifications": [
+        "rigged in-house (joints found from the mesh's silhouette (tools/content/landmarks.mjs), skin weights computed from the mesh)",
         "re-posed to the rig's T-pose",
-        "rebound to the rig's skeleton",
+        "bound to the rig's skeleton",
         "simplified",
         "base colour only, downscaled to a JPEG",
         "vertices quantized",
@@ -3827,9 +3829,9 @@
     },
     {
       "file": "characters/meshy_bandit_fparms.glb",
-      "sha256": "958372e13b3b9536",
-      "triangles": 1988,
-      "bytes": 259272,
+      "sha256": "a1fc435ac63f18a9",
+      "triangles": 4270,
+      "bytes": 390968,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): a raccoon warrior in T-pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3845,9 +3847,9 @@
     },
     {
       "file": "characters/meshy_teddy.glb",
-      "sha256": "72b797011e34c394",
+      "sha256": "ba92811a7f73e07a",
       "triangles": 11000,
-      "bytes": 629432,
+      "bytes": 762692,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): An adorable teddy bear (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3865,9 +3867,9 @@
     },
     {
       "file": "characters/meshy_teddy_fparms.glb",
-      "sha256": "5f1d2a6cc11472e3",
+      "sha256": "618bbb7d842beb04",
       "triangles": 3554,
-      "bytes": 322856,
+      "bytes": 356736,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): An adorable teddy bear (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3883,9 +3885,9 @@
     },
     {
       "file": "characters/meshy_anubis.glb",
-      "sha256": "bf269df828adbfff",
+      "sha256": "388b369b75d9daf3",
       "triangles": 11000,
-      "bytes": 647508,
+      "bytes": 790052,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): An ancient Egyptian Anubis (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3903,9 +3905,9 @@
     },
     {
       "file": "characters/meshy_anubis_fparms.glb",
-      "sha256": "ccc21d530f697ffd",
+      "sha256": "215dbc3aff519562",
       "triangles": 3620,
-      "bytes": 316344,
+      "bytes": 349488,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): An ancient Egyptian Anubis (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3921,9 +3923,9 @@
     },
     {
       "file": "characters/meshy_brannock.glb",
-      "sha256": "47b0f01d6a8e1749",
+      "sha256": "33c19432059420fb",
       "triangles": 10997,
-      "bytes": 660824,
+      "bytes": 869780,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Knight Stance (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3941,9 +3943,9 @@
     },
     {
       "file": "characters/meshy_brannock_fparms.glb",
-      "sha256": "deaef895f4da7b82",
+      "sha256": "a5b9959d62703d5b",
       "triangles": 3443,
-      "bytes": 333020,
+      "bytes": 397484,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Knight Stance (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3959,9 +3961,9 @@
     },
     {
       "file": "characters/meshy_monk.glb",
-      "sha256": "72c6164864628ffd",
-      "triangles": 13681,
-      "bytes": 980544,
+      "sha256": "0ea90ecb3d71715b",
+      "triangles": 13721,
+      "bytes": 1346676,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Medieval Monk in Contemplation (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3979,9 +3981,9 @@
     },
     {
       "file": "characters/meshy_monk_fparms.glb",
-      "sha256": "fcf44481362c8b8f",
-      "triangles": 2032,
-      "bytes": 293120,
+      "sha256": "8eb315885abf0c0c",
+      "triangles": 2031,
+      "bytes": 375944,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Medieval Monk in Contemplation (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3997,17 +3999,18 @@
     },
     {
       "file": "characters/meshy_big_bab.glb",
-      "sha256": "cb12f1cd510674fb",
-      "triangles": 10998,
-      "bytes": 561872,
+      "sha256": "7c251e57eb9aaa43",
+      "triangles": 11000,
+      "bytes": 692736,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Monkey (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
       "modifications": [
+        "rigged in-house (joints found from the mesh's silhouette (tools/content/landmarks.mjs), skin weights computed from the mesh)",
         "re-posed to the rig's T-pose",
-        "rebound to the rig's skeleton",
+        "bound to the rig's skeleton",
         "simplified",
         "base colour only, downscaled to a JPEG",
         "vertices quantized",
@@ -4017,9 +4020,9 @@
     },
     {
       "file": "characters/meshy_big_bab_fparms.glb",
-      "sha256": "356ab89fbaf07a46",
-      "triangles": 4313,
-      "bytes": 308280,
+      "sha256": "68b78529d2ece93b",
+      "triangles": 4655,
+      "bytes": 355556,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Monkey (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4035,9 +4038,9 @@
     },
     {
       "file": "characters/meshy_zhao.glb",
-      "sha256": "7344eed30981ba55",
+      "sha256": "af4f9b80b86ecf35",
       "triangles": 10999,
-      "bytes": 719276,
+      "bytes": 862036,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Uniformed Worker in a Jacket (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4055,9 +4058,9 @@
     },
     {
       "file": "characters/meshy_zhao_fparms.glb",
-      "sha256": "56ffa1b43ccfd160",
+      "sha256": "e9824435368177a5",
       "triangles": 4623,
-      "bytes": 423876,
+      "bytes": 469488,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Uniformed Worker in a Jacket (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4073,9 +4076,9 @@
     },
     {
       "file": "characters/meshy_desert_ranger.glb",
-      "sha256": "dd495a8fdaf7c481",
+      "sha256": "55ad1fd08349bb6e",
       "triangles": 10999,
-      "bytes": 714772,
+      "bytes": 890084,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Ultra detailed desert soldier (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4093,9 +4096,9 @@
     },
     {
       "file": "characters/meshy_desert_ranger_fparms.glb",
-      "sha256": "32089d4d085920c7",
+      "sha256": "6887e76ab0fcd7a2",
       "triangles": 2569,
-      "bytes": 328380,
+      "bytes": 361264,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Ultra detailed desert soldier (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4111,9 +4114,9 @@
     },
     {
       "file": "characters/meshy_zombie_groaner.glb",
-      "sha256": "4848ed1d76c8e2fa",
+      "sha256": "6f81a706e605831e",
       "triangles": 10000,
-      "bytes": 588228,
+      "bytes": 676152,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Zombie T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4131,9 +4134,9 @@
     },
     {
       "file": "characters/meshy_zombie_groaner_fparms.glb",
-      "sha256": "2064f0bead2e6d6a",
+      "sha256": "b1e08be450772085",
       "triangles": 1117,
-      "bytes": 277712,
+      "bytes": 303932,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Zombie T Pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4149,9 +4152,9 @@
     },
     {
       "file": "characters/meshy_gorgle.glb",
-      "sha256": "2661957f13d4f7c7",
+      "sha256": "eb125956158014b0",
       "triangles": 9997,
-      "bytes": 587316,
+      "bytes": 671904,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): A horrifying mutated creature (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4169,9 +4172,9 @@
     },
     {
       "file": "characters/meshy_gorgle_fparms.glb",
-      "sha256": "404a5eacbff9ca52",
+      "sha256": "15c2d6877507232a",
       "triangles": 1000,
-      "bytes": 269360,
+      "bytes": 290892,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): A horrifying mutated creature (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4187,9 +4190,9 @@
     },
     {
       "file": "characters/meshy_giggles.glb",
-      "sha256": "e4d94c0e4baf50c8",
+      "sha256": "b85989363204c9c6",
       "triangles": 11000,
-      "bytes": 626552,
+      "bytes": 756656,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): A humanoid harlequin clown (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4207,9 +4210,9 @@
     },
     {
       "file": "characters/meshy_giggles_fparms.glb",
-      "sha256": "5de89aad6556ccb3",
+      "sha256": "2fbd8cde5be5cb4b",
       "triangles": 2442,
-      "bytes": 291944,
+      "bytes": 327348,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): A humanoid harlequin clown (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4225,9 +4228,9 @@
     },
     {
       "file": "characters/meshy_vanguard.glb",
-      "sha256": "0ee29a1eaf6874c0",
+      "sha256": "fac04236fea2ba6e",
       "triangles": 11000,
-      "bytes": 654180,
+      "bytes": 834884,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): A futuristic warrior character (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4245,9 +4248,9 @@
     },
     {
       "file": "characters/meshy_vanguard_fparms.glb",
-      "sha256": "d5cb2d2ef2f06685",
+      "sha256": "bfc5e03234333ece",
       "triangles": 1959,
-      "bytes": 304356,
+      "bytes": 347468,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): A futuristic warrior character (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4263,9 +4266,9 @@
     },
     {
       "file": "characters/meshy_dust_trooper.glb",
-      "sha256": "8acbd7fe383d63a9",
+      "sha256": "42b3cab063a090f3",
       "triangles": 13420,
-      "bytes": 845596,
+      "bytes": 1161340,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Full body of a man wearing a mask (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4283,9 +4286,9 @@
     },
     {
       "file": "characters/meshy_dust_trooper_fparms.glb",
-      "sha256": "74f0eb7abb3996b5",
+      "sha256": "ee4df1372668a291",
       "triangles": 1539,
-      "bytes": 262792,
+      "bytes": 303796,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Full body of a man wearing a mask (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4301,9 +4304,9 @@
     },
     {
       "file": "characters/meshy_punkin.glb",
-      "sha256": "7d002253f39f77ca",
+      "sha256": "bdf8d8efc8d7f21c",
       "triangles": 11000,
-      "bytes": 632788,
+      "bytes": 796944,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Pumpkin head scarecrow (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4321,9 +4324,9 @@
     },
     {
       "file": "characters/meshy_punkin_fparms.glb",
-      "sha256": "93bd43cf272e6a33",
+      "sha256": "4bb346666a9caa23",
       "triangles": 3087,
-      "bytes": 317780,
+      "bytes": 356268,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Pumpkin head scarecrow (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4339,9 +4342,9 @@
     },
     {
       "file": "characters/meshy_wizard.glb",
-      "sha256": "5d35cc1d80c8e436",
-      "triangles": 10998,
-      "bytes": 717536,
+      "sha256": "b49c2bf0b6a23cb3",
+      "triangles": 11000,
+      "bytes": 981328,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): wizard t pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4359,9 +4362,9 @@
     },
     {
       "file": "characters/meshy_wizard_fparms.glb",
-      "sha256": "35d7dcfebb3d7bc1",
-      "triangles": 2779,
-      "bytes": 292904,
+      "sha256": "bf866ed92713ae1c",
+      "triangles": 2780,
+      "bytes": 345272,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): wizard t pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4377,9 +4380,9 @@
     },
     {
       "file": "characters/meshy_skeleton.glb",
-      "sha256": "509acc663f183b11",
+      "sha256": "5bf6e51071f09e45",
       "triangles": 15211,
-      "bytes": 930960,
+      "bytes": 1276692,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Halloween 2025 ghoul (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4397,9 +4400,9 @@
     },
     {
       "file": "characters/meshy_skeleton_fparms.glb",
-      "sha256": "cc5194b37bf135d3",
+      "sha256": "480cd9a8dd796c67",
       "triangles": 7565,
-      "bytes": 560300,
+      "bytes": 734220,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Halloween 2025 ghoul (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4415,9 +4418,9 @@
     },
     {
       "file": "characters/meshy_uncle_bao.glb",
-      "sha256": "a821e4554a8c5fef",
+      "sha256": "ca059ad94cec0f94",
       "triangles": 10998,
-      "bytes": 607452,
+      "bytes": 721056,
       "source": "meshy-owned",
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -4435,9 +4438,9 @@
     },
     {
       "file": "characters/meshy_uncle_bao_fparms.glb",
-      "sha256": "68d6f907dae3a4d9",
+      "sha256": "b5e8ea00f3928ec2",
       "triangles": 3622,
-      "bytes": 346388,
+      "bytes": 382088,
       "source": "meshy-owned",
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -4453,9 +4456,9 @@
     },
     {
       "file": "characters/meshy_bonejack.glb",
-      "sha256": "4839ff05ee2b1468",
+      "sha256": "a7e5dcbd0d6e2d5f",
       "triangles": 10996,
-      "bytes": 682704,
+      "bytes": 892388,
       "source": "meshy-owned",
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -4473,9 +4476,9 @@
     },
     {
       "file": "characters/meshy_bonejack_fparms.glb",
-      "sha256": "7722eb8d2af5155b",
+      "sha256": "cca065ca419a1b0f",
       "triangles": 3577,
-      "bytes": 357616,
+      "bytes": 402944,
       "source": "meshy-owned",
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -4491,9 +4494,9 @@
     },
     {
       "file": "characters/meshy_ashwalker.glb",
-      "sha256": "a4053d6b233dc7fd",
+      "sha256": "0a824a024a15f95f",
       "triangles": 9904,
-      "bytes": 674916,
+      "bytes": 789808,
       "source": "meshy-owned",
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -4511,9 +4514,9 @@
     },
     {
       "file": "characters/meshy_ashwalker_fparms.glb",
-      "sha256": "fc67218e53137cf9",
+      "sha256": "90cc91320d4ccb30",
       "triangles": 749,
-      "bytes": 296852,
+      "bytes": 316660,
       "source": "meshy-owned",
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -4529,9 +4532,9 @@
     },
     {
       "file": "characters/meshy_thornweaver.glb",
-      "sha256": "cd2d432beeea5103",
+      "sha256": "76da9fda5b0e62c4",
       "triangles": 16100,
-      "bytes": 1086460,
+      "bytes": 1478460,
       "source": "meshy-owned",
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -4549,9 +4552,9 @@
     },
     {
       "file": "characters/meshy_thornweaver_fparms.glb",
-      "sha256": "703dc0ee36321595",
+      "sha256": "3ed4ccab4640549d",
       "triangles": 2320,
-      "bytes": 399292,
+      "bytes": 486968,
       "source": "meshy-owned",
       "title": "Tile Trigger originals (made with Meshy)",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -9192,7 +9195,7 @@
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
@@ -13295,7 +13298,7 @@
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
         "colour map turned to stone",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
@@ -16713,7 +16716,7 @@
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
         "triangles nothing outside can see dropped",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
@@ -24750,9 +24753,9 @@
     },
     {
       "file": "props/mining_excavator.glb",
-      "sha256": "7b98b41301c338c4",
-      "triangles": 4549,
-      "bytes": 301460,
+      "sha256": "28b1a2e1cd04af97",
+      "triangles": 13824,
+      "bytes": 1042040,
       "source": "meshy-owned-mining/Meshy_AI_Bucket_Wheel_Excavator_20261030_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): mining machines: Bucket-Wheel Excavator (text to 3D, for Iron Maw) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24761,15 +24764,17 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 768 px JPEG"
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
       "file": "props/mining_haul_truck.glb",
-      "sha256": "b943cdeba9a81369",
-      "triangles": 5946,
-      "bytes": 352568,
+      "sha256": "2e76d249312ff72d",
+      "triangles": 13950,
+      "bytes": 1027128,
       "source": "meshy-owned-mining/Meshy_AI_Mining_Haul_Truck_20261030_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): mining machines: Mining Haul Truck (text to 3D, for Iron Maw) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24778,15 +24783,17 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 768 px JPEG"
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
       "file": "props/cargo_army_crate.glb",
-      "sha256": "8f9e0bf06f9e583b",
-      "triangles": 2996,
-      "bytes": 128160,
+      "sha256": "3bc5149b844ad9e7",
+      "triangles": 4500,
+      "bytes": 193720,
       "source": "meshy-owned-cargo/Meshy_AI_Army_Crate_1030191818_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Army Crate (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24795,15 +24802,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/cargo_wooden_crate.glb",
-      "sha256": "349bab80f3c0e5e0",
-      "triangles": 3222,
-      "bytes": 139156,
+      "sha256": "e2266602ef36f553",
+      "triangles": 4500,
+      "bytes": 216788,
       "source": "meshy-owned-cargo/Meshy_AI_Wooden_Crate_1030191900_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Wooden Crate (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24812,15 +24820,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/cargo_wooden_crate_cube.glb",
-      "sha256": "35c585e135de1e62",
-      "triangles": 2500,
-      "bytes": 124496,
+      "sha256": "3a20f19eabfd598c",
+      "triangles": 4500,
+      "bytes": 212744,
       "source": "meshy-owned-cargo/Meshy_AI_Wooden_Crate_1030191909_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Wooden Crate (Cube) (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24829,15 +24838,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/cargo_wooden_crate_low.glb",
-      "sha256": "f7cdde2d35ec3a80",
-      "triangles": 2000,
-      "bytes": 114156,
+      "sha256": "d9a1cdcff21ed0f5",
+      "triangles": 4500,
+      "bytes": 219620,
       "source": "meshy-owned-cargo/Meshy_AI_Wooden_Crate_1030191926_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Low Wooden Crate (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24846,15 +24856,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/cargo_crate_stack.glb",
-      "sha256": "f2e1e0af4d4293e9",
-      "triangles": 3496,
-      "bytes": 174568,
+      "sha256": "957607994eb54bc8",
+      "triangles": 4498,
+      "bytes": 247728,
       "source": "meshy-owned-cargo/Meshy_AI_crates__1030191803_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Crate Stack (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24863,15 +24874,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/cargo_scifi_crate.glb",
-      "sha256": "bc133a07a01be87f",
-      "triangles": 3461,
-      "bytes": 168668,
+      "sha256": "6551c59d3316833f",
+      "triangles": 4462,
+      "bytes": 243184,
       "source": "meshy-owned-cargo/Meshy_AI_object_Sci_Fi_Cargo__1030192137_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Sci-Fi Cargo Crate (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24880,15 +24892,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/cargo_container_old_rusty.glb",
-      "sha256": "d6a37fda96fcba32",
-      "triangles": 2996,
-      "bytes": 148016,
+      "sha256": "bdf30beb64ace297",
+      "triangles": 7000,
+      "bytes": 583388,
       "source": "meshy-owned-cargo/Meshy_AI_Old_rusty_shipping_co_1030192102_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Old Rusty Container (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24897,15 +24910,17 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
       "file": "props/cargo_container_rusty_blue.glb",
-      "sha256": "7424fe7b92daa349",
-      "triangles": 2991,
-      "bytes": 172572,
+      "sha256": "7ee17668c92f4d0a",
+      "triangles": 6999,
+      "bytes": 645844,
       "source": "meshy-owned-cargo/Meshy_AI_Rusty_Blue_Shipping_C_1030192043_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Rusty Blue Container (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24914,15 +24929,17 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
       "file": "props/cargo_container_rusty_red.glb",
-      "sha256": "dd2c9b979f625d28",
-      "triangles": 3437,
-      "bytes": 166132,
+      "sha256": "1d0a3336db374302",
+      "triangles": 6912,
+      "bytes": 645116,
       "source": "meshy-owned-cargo/Meshy_AI_Rusty_Red_Shipping_Co_1030115909_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Rusty Red Container (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24931,15 +24948,17 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
       "file": "props/cargo_container_red.glb",
-      "sha256": "2a2e6fe7873dfcde",
-      "triangles": 3740,
-      "bytes": 180656,
+      "sha256": "7ca0e2811d314e0a",
+      "triangles": 6977,
+      "bytes": 580796,
       "source": "meshy-owned-cargo/Meshy_AI_Red_Shipping_Containe_1030192040_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Red Container (Long) (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24948,15 +24967,17 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
       "file": "props/cargo_container.glb",
-      "sha256": "ef77aa80671d7d3e",
-      "triangles": 3499,
-      "bytes": 169388,
+      "sha256": "71d5d5cb38b6130b",
+      "triangles": 6994,
+      "bytes": 591108,
       "source": "meshy-owned-cargo/Meshy_AI_Shipping_Container_1029214643_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: White Container (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24965,15 +24986,17 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
       "file": "props/cargo_gantry_crane.glb",
-      "sha256": "b4e9ba2bc37ef706",
-      "triangles": 3479,
-      "bytes": 193892,
+      "sha256": "3ba7d93c5b4e91ea",
+      "triangles": 11934,
+      "bytes": 854292,
       "source": "meshy-owned-cargo/Meshy_AI_Large_yellow_containe_1030192123_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: Yellow Gantry Crane (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24982,15 +25005,17 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
       "file": "props/cargo_ibc_tank.glb",
-      "sha256": "86d134434b9fe29c",
-      "triangles": 5767,
-      "bytes": 306416,
+      "sha256": "cb7dfa148d4275f7",
+      "triangles": 5777,
+      "bytes": 362980,
       "source": "meshy-owned-cargo/Meshy_AI_container_2_1030192151_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): crates and cargo containers: IBC Tank (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -24999,15 +25024,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_barrel.glb",
-      "sha256": "7b422b0789bd025c",
-      "triangles": 3000,
-      "bytes": 112668,
+      "sha256": "bacc71534db034b4",
+      "triangles": 4500,
+      "bytes": 153252,
       "source": "meshy-owned-street/Meshy_AI_Barrel_1_1029205916_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Wooden Barrel (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25016,15 +25042,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_blue_barrel.glb",
-      "sha256": "d43e74022c02a070",
-      "triangles": 3000,
-      "bytes": 104788,
+      "sha256": "71234bb0ef07bbd7",
+      "triangles": 4500,
+      "bytes": 149552,
       "source": "meshy-owned-street/Meshy_AI_Blue_Barrel_1030200127_stylize.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Blue Barrel (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25033,15 +25060,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_post_barrel.glb",
-      "sha256": "7330096637dbf1ac",
-      "triangles": 2977,
-      "bytes": 151724,
+      "sha256": "a8fbf277975886b1",
+      "triangles": 4468,
+      "bytes": 231220,
       "source": "meshy-owned-street/Meshy_AI_Post_Barrel_1030164958_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Yellow Hazard Barrel (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25050,15 +25078,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_rusty_barrel.glb",
-      "sha256": "02a12a59d79d276b",
-      "triangles": 3000,
-      "bytes": 92516,
+      "sha256": "eef4a0b5683e649c",
+      "triangles": 4500,
+      "bytes": 134812,
       "source": "meshy-owned-street/Meshy_AI_Rusty_Barrel_1030200140_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Rusty Barrel (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25067,15 +25096,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_rusty_barrel_2.glb",
-      "sha256": "d40e3cef32c07d6f",
-      "triangles": 2996,
-      "bytes": 122724,
+      "sha256": "759d6d934094157e",
+      "triangles": 4498,
+      "bytes": 193584,
       "source": "meshy-owned-street/Meshy_AI_Rusty_Barrel_1030200142_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Rusty Barrel (Dented) (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25084,15 +25114,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_rusty_barrel_3.glb",
-      "sha256": "26be8ffb1c386e6f",
-      "triangles": 3000,
-      "bytes": 120816,
+      "sha256": "182c9d7ce845bb26",
+      "triangles": 4500,
+      "bytes": 175716,
       "source": "meshy-owned-street/Meshy_AI_rusty_barrel_1030200155_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Rusty Barrel (Old) (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25101,15 +25132,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_trash_can.glb",
-      "sha256": "751328bea7f6499b",
-      "triangles": 3000,
-      "bytes": 126268,
+      "sha256": "15041120c82d273f",
+      "triangles": 4498,
+      "bytes": 193620,
       "source": "meshy-owned-street/Meshy_AI_trash_can__1030195940_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Trash Can (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25118,15 +25150,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_trash_can_classic.glb",
-      "sha256": "518e2f16e0d203b7",
-      "triangles": 3000,
-      "bytes": 122852,
+      "sha256": "40303b449e772023",
+      "triangles": 4500,
+      "bytes": 189952,
       "source": "meshy-owned-street/Meshy_AI_Trash_Can_Classic_1030200011_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Classic Trash Can (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25135,15 +25168,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_city_trash.glb",
-      "sha256": "6e8548d8b26599d9",
-      "triangles": 3493,
-      "bytes": 173440,
+      "sha256": "0f9c04050fc941eb",
+      "triangles": 4485,
+      "bytes": 245136,
       "source": "meshy-owned-street/Meshy_AI_Realistic_city_trash__1029214806_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Wheelie Bin (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25152,15 +25186,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_trash_pile.glb",
-      "sha256": "0a4a4c765bde86e7",
-      "triangles": 3453,
-      "bytes": 208988,
+      "sha256": "0dc5bf4d68a9d3ef",
+      "triangles": 4001,
+      "bytes": 279272,
       "source": "meshy-owned-street/Meshy_AI_Trash_Pile_1030195949_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Trash Pile (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25169,15 +25204,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_trash_pile_low.glb",
-      "sha256": "956371d2952c2afd",
-      "triangles": 2994,
-      "bytes": 188588,
+      "sha256": "2065fe1a3cec4e14",
+      "triangles": 4483,
+      "bytes": 297720,
       "source": "meshy-owned-street/Meshy_AI_Trash_Pile_1030195954_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Low Trash Pile (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25186,15 +25222,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_dumpster.glb",
-      "sha256": "54b6bf9d6a243162",
-      "triangles": 3498,
-      "bytes": 157828,
+      "sha256": "5bdbd8b7ec9af5ce",
+      "triangles": 4496,
+      "bytes": 221460,
       "source": "meshy-owned-street/Meshy_AI_Urban_Container_1030200046_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Urban Dumpster (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25203,15 +25240,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_fuel_can.glb",
-      "sha256": "027627502288fb54",
-      "triangles": 2500,
-      "bytes": 129956,
+      "sha256": "a35e1de5ea380c7d",
+      "triangles": 4492,
+      "bytes": 212316,
       "source": "meshy-owned-street/Meshy_AI_Fuel_Container_1030200055_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Fuel Can (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25220,15 +25258,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_panel.glb",
-      "sha256": "28818cdbe74aabfb",
-      "triangles": 3000,
-      "bytes": 135044,
+      "sha256": "f75e51650beab609",
+      "triangles": 4498,
+      "bytes": 199512,
       "source": "meshy-owned-street/Meshy_AI_Create_a_3D_model_of__1030200310_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Hanging Shop Sign (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25237,15 +25276,16 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (512 px colour)"
       ]
     },
     {
       "file": "props/street_historic_building.glb",
-      "sha256": "d099cf7c1aa03617",
-      "triangles": 5978,
-      "bytes": 293640,
+      "sha256": "9b2db4441a25f291",
+      "triangles": 13893,
+      "bytes": 1088412,
       "source": "meshy-owned-street/Meshy_AI_Historic_City_Buildin_1030200355_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): barrels, bins and street props: Historic City Building (owner's Meshy) (download dated 2026-10-30)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
@@ -25254,8 +25294,10 @@
       "modifications": [
         "converted to glTF (FBX via three.js FBXLoader)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned to face +Z, centred, stood on the ground and scaled to metres",
-        "map re-encoded as a 512 px JPEG"
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
@@ -25724,9 +25766,9 @@
     },
     {
       "file": "models/guns/tommy_gun.glb",
-      "sha256": "9cf0941ff1775342",
-      "triangles": 4995,
-      "bytes": 227348,
+      "sha256": "4f89b18de53b1f38",
+      "triangles": 13998,
+      "bytes": 754760,
       "source": "meshy-owned-guns/Tommy Gun (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25735,15 +25777,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/gatling_gun.glb",
-      "sha256": "efea6e576d36d138",
-      "triangles": 5998,
-      "bytes": 331876,
+      "sha256": "11aae6af5e98304b",
+      "triangles": 13998,
+      "bytes": 952124,
       "source": "meshy-owned-guns/Rotary Gatling Gun (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25752,15 +25796,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/sniper_rifle.glb",
-      "sha256": "ce5779b771bef2d3",
-      "triangles": 4998,
-      "bytes": 239844,
+      "sha256": "5c45d3286a199c23",
+      "triangles": 10000,
+      "bytes": 646372,
       "source": "meshy-owned-guns/Military Sniper Rifle (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25769,15 +25815,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/battle_axe.glb",
-      "sha256": "271d6c9dcd9d3f12",
-      "triangles": 4998,
-      "bytes": 263608,
+      "sha256": "97e9e978886e2cb4",
+      "triangles": 12000,
+      "bytes": 830924,
       "source": "meshy-owned-guns/Steampunk Battle Axe (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25786,15 +25834,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/freeze_gun.glb",
-      "sha256": "f5c8587e862a7ff2",
-      "triangles": 5000,
-      "bytes": 267988,
+      "sha256": "1f8d30ccd5241c09",
+      "triangles": 12000,
+      "bytes": 865504,
       "source": "meshy-owned-guns/Freeze Gun (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25803,15 +25853,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/glue_gun.glb",
-      "sha256": "7b92f9042bd2fce0",
-      "triangles": 4000,
-      "bytes": 141248,
+      "sha256": "5b8a6fec11aeae09",
+      "triangles": 10000,
+      "bytes": 420688,
       "source": "meshy-owned-guns/Mystical Glue Gun (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25820,15 +25872,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/futuristic_blaster.glb",
-      "sha256": "49102157c1fb2de9",
-      "triangles": 5986,
-      "bytes": 299052,
+      "sha256": "32385f7c26edca93",
+      "triangles": 13998,
+      "bytes": 931112,
       "source": "meshy-owned-guns/Futuristic Blaster (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25837,15 +25891,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/neon_flux.glb",
-      "sha256": "580c3b8d0faf1f9b",
-      "triangles": 5992,
-      "bytes": 304640,
+      "sha256": "15d1cc80fa2510f2",
+      "triangles": 14000,
+      "bytes": 988628,
       "source": "meshy-owned-guns/Neon Flux Assault Rifle (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25854,15 +25910,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/frontier_rifle.glb",
-      "sha256": "92df2157325c34a8",
-      "triangles": 5997,
-      "bytes": 300984,
+      "sha256": "b6b019a2b4bea892",
+      "triangles": 13988,
+      "bytes": 975764,
       "source": "meshy-owned-guns/Frontier Rifle (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25871,15 +25929,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/ornate_pistol.glb",
-      "sha256": "7be04c126998ef48",
-      "triangles": 3994,
-      "bytes": 218876,
+      "sha256": "623a9c00dbaf3d8e",
+      "triangles": 10000,
+      "bytes": 819876,
       "source": "meshy-owned-guns/Ornate Handgun (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25888,15 +25948,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/tripod_mg.glb",
-      "sha256": "9e9eae759b4c4de6",
-      "triangles": 5982,
-      "bytes": 273352,
+      "sha256": "ead1c10fa72a3a2d",
+      "triangles": 11983,
+      "bytes": 619680,
       "source": "meshy-owned-guns/Plastic Toy Machine Gun on a tripod (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25905,15 +25967,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/sentry_turret.glb",
-      "sha256": "e5e6cdf6b9431e97",
-      "triangles": 5981,
-      "bytes": 286024,
+      "sha256": "080af751fcece762",
+      "triangles": 11977,
+      "bytes": 713980,
       "source": "meshy-owned-guns/Large Sentry Gun (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25922,15 +25986,17 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/guns/medkit.glb",
-      "sha256": "30bc3dc648c402b8",
-      "triangles": 3286,
-      "bytes": 183696,
+      "sha256": "8424c89e962a6971",
+      "triangles": 4469,
+      "bytes": 358668,
       "source": "meshy-owned-guns/Medkit (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25939,15 +26005,16 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]
     },
     {
       "file": "models/vehicles/offroad_buggy.glb",
-      "sha256": "41ea94b219b5ba0b",
-      "triangles": 6780,
-      "bytes": 474216,
+      "sha256": "ed61ba067f52403e",
+      "triangles": 13894,
+      "bytes": 1202964,
       "source": "meshy-owned-guns/Tactical Off-Road Beast, the buggy (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -25956,6 +26023,8 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]

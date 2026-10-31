@@ -33,6 +33,31 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   fingers along the gun, flat to its side); `characters` e2e: 4 looks × pistol/rifle/grapple × body/arms/third and
   pitch ±1.45, plus `gripsInPlay` (canyon DM, 12 bots, dapper: keys, wheel, give, third person, respawn, bots near
   and far, rope from the muzzle, an Imp's gun). Knight's gauntlet measures 12 cm off (left out of the check).
+### Model fidelity (`wip/model-fidelity`, agent, 2026-10-31; not merged)
+- **What was wrong:** the Meshy pipeline (tools/content/meshy-mesh.mjs) cut downloads of 10k–1.8M triangles to
+  2–6k and shipped only a rebaked colour map: the normal map was dropped, so the cut mesh shaded as flat lumps.
+- **Now:** `bakeNormals` bakes a tangent-space normal map from the full download (its normals plus Meshy's own
+  normal map) onto the cut mesh, with a TANGENT attribute (green sign checked by rendering in Babylon against the
+  download). Props, guns and Meshy characters all get one. Budget tiers: `budgets.tiers.hero` in props.json /
+  guns.json (20k tris, 1.6 MB, LOD required above 8k), `"budget": "hero"` on landmark props (excavator, haul truck,
+  historic building, gantry crane, 5 containers) and on first-person weapons, turrets and the buggy; hero entries
+  carry a LOD (`lod: [share, m]`) that models.ts gives to merged prop instances and to instanced copies (crowd guns).
+  Character byte budget 1.5 → 1.8 MB. `ONLY=` for prepare-props.
+- **Rebuilt:** all 30 owned Meshy props, 13 guns + medkit + buggy (incl. ornate pistol and sentry, whose GLBs were
+  in the session scratch `dl/`), 42 of 56 Meshy characters. **Not rebuilt (no download here):** community props
+  mp_control_cabinet, mp_dino_statue, mp_burnt_car; community guns ironclad_revolver, arc_cannon_turret;
+  offroad_tire (kept at 800 tris on purpose); characters knight, nova, dapper (rigged by task ID: `fetch-meshy.mjs`
+  can re-fetch them), goblin, otter, toad, salamander, hyena, elder, alien, cat, pilot, pirate, titan (FBX downloads).
+- **Cost:** Meshy props 4.9 → 11.1 MB, guns/vehicles 3.6 → 10.6 MB, characters 41.9 → 52.4 MB; site dist 169 → 192 MB.
+  Next lever: EXT_meshopt_compression (geometry is most of each file; needs the decoder served with the site).
+  perf96 iron_maw medium (box at load 14–18, 1–7 frames a run, so frame times mean nothing): draws ~1,000–1,060
+  either way (normal maps and LODs add none), casters 120–200 (budget 600), triangles in matched spread views
+  1.86 M before vs 1.98–2.47 M after. GPU memory: +~1.4 MB per normal map at 512 px, first-person gun colour
+  maps 512 → 1024 px (+~2.8 MB each loaded). Re-measure on a GPU (`PERF_GPU=1`).
+- Checks: typecheck, test:changed (1005 pass), content:check OK; e2e vehicles, characters, visual PASS; arsenal
+  FAILS here on "R loads the barrel again" (and once the axe swing / hazards) with the old models too (load).
+- Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
+  need `pnpm e2e:baselines`.
 
 ### Owner notes, 2026-10-30 evening (not done yet; next session start here)
 - **Flaky e2e to fix properly:** `mobile` "a tap on the pad middle jumps" fails intermittently on CI (both attempts on
