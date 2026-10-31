@@ -578,6 +578,35 @@ player getting **~19 KB/s** compressed at 30 snapshots a second (so 16
 players ≈ 300 KB/s ≈ 2.5 Mbit/s of upload). The download is ~50 MB
 (Linux .tar.gz), ~170 MB unpacked, most of it the Node runtime.
 
+### Performance: Iron Maw at 96 (October 2026)
+
+The owner saw hiccups with 96 bots on Iron Maw. `pnpm bench 96 60 maps/iron_maw.json --mode=core.tdm --warmup=10 --spikes`
+(new: `--spikes[=MS]` breaks every tick slower than MS, 12 by default, into bots, moves, mounts by kind,
+projectiles, snapshots, the slowest single bot think, CPU time and whether a garbage collection ran in it)
+found that about half the slow ticks had a garbage collection in them, and the rest were spread over bot
+thinks, vehicles and projectiles with no one cause; path queries were cheap (67 a second, 0.1 ms a tick,
+including the narrow benches) and snapshots small (10.5 KB). The server tick made **1.7 MB of garbage a tick**:
+`Math.hypot` (V8 boxes its result: ~20,000 heap numbers a tick from pickup and distance checks), the
+lifts' poses worked out again for every body, movement building its state with object spreads, and the
+lag-compensation history allocating per tick. Now ~1.0 MB (`hypot` in shared/src/math.ts, memoised mover
+poses, field-by-field move state, a reused history ring), and the match process runs with
+`--max-semi-space-size=64` (`CHILD_V8_FLAGS` in supervisor.ts).
+
+Before / after, the same 96-bot match run alternately (3 pairs, 40 s each, server tick time, this shared
+4-core container at load 7–9: compare the pairs, not the absolute numbers):
+
+| Iron Maw TDM 48 v 48 | before | after |
+|---|---|---|
+| tick avg | 4.5 ms | 3.6 ms |
+| p95 / p99 | 8.8 / 14.3 ms | 6.7 / 11.2 ms |
+| ticks over 12 ms (of 2,400) | 40 | 19 |
+| ticks with a garbage collection | 265 | 45 |
+| ... of them over 12 ms | 21 | 4 |
+
+CTF (one pair): avg 5.1 → 4.3 ms, collections 311 → 45, worst tick 141 → 36 ms. The worst single ticks
+(30–90 ms) still happen now and then: on this box most of them had well under their wall time on the
+CPU (waiting for a core), so a quiet host PC should see fewer.
+
 ### Run on boot (optional)
 
 The service starts when you double-click it; to start it with the computer:
