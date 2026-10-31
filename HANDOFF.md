@@ -103,6 +103,13 @@ Owner's screenshots, Character Select holding the AK (2026-10-31 evening), worst
 - **Grizzelda** (Meshy auto-rig): hunched over, gun at the face, a hand draped over the gun.
 - **Lancer Mei** (in-house): support hand flat and open under the handguard; also her **face is lumpy** (owner): a
   mesh-cut or normal-map issue on the face (check the triangle cut and baked normals for her).
+- **Grunt '68, Hector, Sir Galloway** (all pre-rigged downloads): arms straight out, both hands flat and open, the gun
+  resting on the palms. Same no-curl failure across the whole pre-rigged group so far (with Shade): check whether
+  those rigs have finger bones at all. **Sir Galloway's face is lumpy** too (owner), like Lancer Mei's.
+- **Ricochet** (pre-rigged): arms crossed in front of the face, gun turned up toward the camera (the Barnacle/Hyena
+  failure, on a pre-rigged body: so not only the in-house fit; look at the hold's shoulder/elbow solve for short or
+  oddly proportioned arms).
+- **Count Bonesworth** (in-house): hands round the gun but the gun is held out to the side, not along his facing.
 - Fair: Flt. Lt. Ember (gloves near the grip, support hand open below), Brass Hare (paws on the gun).
 - Close to right (owner's second batch): Wealthy Otter, Salamander Warlord (both in-house fits: paws/claws round the
   gun), Goblin (in-house; fingers a little splayed but both hands on the gun).
