@@ -656,6 +656,27 @@ in the same themes and paint slots as straight walls.
   out. MapMaker shows it as an orange outline, and spawns outside it are an
   error.
 
+## Drop routes: transport plane and dropship (`sim/airplane.ts`)
+
+The **Paths, Roads & Routes** group (Terrain pane) has **Plane Drop Route** and
+**Dropship Drop Route**; both place an `airplane` entity (the Transport Plane is
+also in Game Modes & Objectives). Its inspector picks the **Aircraft** (`craft`:
+transport plane, 24 benches, or the Dropship's model, 12), altitude, lap time,
+loop or one way, and **Air drop** (off / round start / every spawn). **Draw route
+on the map** edits the points with the Paths tool's hands (click adds, drag
+moves, Shift-click inserts, right-click or Del removes). Draw it in and out of
+the map's boundary freely (a run-in from off the map): the route is drawn green
+over the play area and grey outside it.
+
+Riders (players and bots) can only jump out (Space or E) while the craft's tail
+ramp and the spot they'd land on are over the **play area** (the boundary, or
+without one what's built and the terrain, 3 m in from the edge) and over ground:
+not the void of a sky map, lava or acid. A jump elsewhere is refused with "Not
+over the drop zone". Anyone still aboard when the craft leaves that stretch (or
+an open route ends over it) is dropped at its last good point. Bots choose a
+jump point near their objective whose landing is on their navmesh. A route that
+never crosses the play area is flagged (`airplane.nodrop`).
+
 ## Jump pads
 
 A **Jump Pad** (Entities → Scenario) throws whoever steps on it

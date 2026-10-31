@@ -8,6 +8,15 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker: drop routes**
+- The **Dropship** can fly a drop route: Paths has **Plane Drop Route** and **Dropship Drop Route**, and the inspector an **Aircraft** choice. Routes can be drawn in and out of the map's boundary (green over the play area, grey outside).
+- Players and bots can only jump out over the map, above ground they can land on (not off the map, over the void, lava or acid); a jump elsewhere says "Not over the drop zone", and anyone still aboard when the craft leaves the map is dropped at the last good point. Bots pick a jump point near their objective that lands them somewhere they can walk from. Same rules for the transport plane.
+
+**Market Town and Style Pack 10 Medieval Village**
+- The Market Hall's roof was upside down (a V); it's an A now, on every map that uses it.
+- The square's fountain is sized to its plinth and stands on it (it was 9 m across, overhanging and floating).
+- Building details: no more flickering bands along the tops of house fronts and the balcony edge or on the hall's floor; the shop awning slopes on brackets instead of hanging posts; the shop shelves no longer block the side door; the stone plinth stops at doorways; the watchtower has cross-beams instead of a board through its lookout; the bell tower's belfry floor no longer flickers; the tarp tent's canvas meets its ridge pole, the hay cart's shafts rest on the ground and the shop sign hangs clear of its bracket.
+
 **Graphics**
 - Models made with Meshy keep their shape: props, weapons and several characters were cut down from the downloads so hard that they turned lumpy and flat-shaded. Each now carries a normal map baked from the full download (its fine shape and Meshy's own surface detail), so a cut mesh shades like the original.
 - More detail where it shows: the first-person weapons, turrets and the buggy carry 10,000–14,000 triangles (from 4,000–6,000) with a sharper 1024 px colour map, the big landmark props (excavator, haul truck, historic building, gantry crane, shipping containers) 7,000–14,000, small props 4,500. Copies far away (a crowd's guns past 12 m, landmark props past 40 m) draw a lighter version.
