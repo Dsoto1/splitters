@@ -25601,6 +25601,246 @@
       ]
     },
     {
+      "file": "props/so_satellite_dish.glb",
+      "sha256": "bb413820e1449393",
+      "triangles": 440,
+      "bytes": 15344,
+      "source": "tiletrigger-snow/so_satellite_dish.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_antenna_mast.glb",
+      "sha256": "38024b1307411298",
+      "triangles": 572,
+      "bytes": 30616,
+      "source": "tiletrigger-snow/so_antenna_mast.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_heater.glb",
+      "sha256": "7177dd76c3877121",
+      "triangles": 340,
+      "bytes": 17024,
+      "source": "tiletrigger-snow/so_heater.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_generator.glb",
+      "sha256": "c89793b87159013e",
+      "triangles": 232,
+      "bytes": 14660,
+      "source": "tiletrigger-snow/so_generator.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_snowmobile.glb",
+      "sha256": "76fa17cff6286238",
+      "triangles": 216,
+      "bytes": 14272,
+      "source": "tiletrigger-snow/so_snowmobile.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_tarp_crates.glb",
+      "sha256": "c1cb5ca47b6e1686",
+      "triangles": 328,
+      "bytes": 19064,
+      "source": "tiletrigger-snow/so_tarp_crates.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_lamp_post.glb",
+      "sha256": "e940cc1619e34722",
+      "triangles": 124,
+      "bytes": 8536,
+      "source": "tiletrigger-snow/so_lamp_post.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_flagpole.glb",
+      "sha256": "e5f5adb54e42d800",
+      "triangles": 152,
+      "bytes": 8124,
+      "source": "tiletrigger-snow/so_flagpole.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_chainlink_fence.glb",
+      "sha256": "0cce6911841079b7",
+      "triangles": 436,
+      "bytes": 24676,
+      "source": "tiletrigger-snow/so_chainlink_fence.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_snow_fence.glb",
+      "sha256": "28cc827189d4fef1",
+      "triangles": 264,
+      "bytes": 15124,
+      "source": "tiletrigger-snow/so_snow_fence.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_pipe_run.glb",
+      "sha256": "c9d45ff2b00117b4",
+      "triangles": 508,
+      "bytes": 24928,
+      "source": "tiletrigger-snow/so_pipe_run.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_drums.glb",
+      "sha256": "d594ee684fed416c",
+      "triangles": 1212,
+      "bytes": 49940,
+      "source": "tiletrigger-snow/so_drums.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_radio_console.glb",
+      "sha256": "2ca37270248a7f98",
+      "triangles": 386,
+      "bytes": 18260,
+      "source": "tiletrigger-snow/so_radio_console.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_ski_rack.glb",
+      "sha256": "2dfcbbdcb1ce5a27",
+      "triangles": 228,
+      "bytes": 15000,
+      "source": "tiletrigger-snow/so_ski_rack.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_supply_sled.glb",
+      "sha256": "52d4083109663ae7",
+      "triangles": 348,
+      "bytes": 21424,
+      "source": "tiletrigger-snow/so_supply_sled.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_snow_pile.glb",
+      "sha256": "7117b27be96d6ced",
+      "triangles": 176,
+      "bytes": 7468,
+      "source": "tiletrigger-snow/so_snow_pile.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
       "file": "skies/clear.jpg",
       "sha256": "4ba9d3b02f1b3acf",
       "bytes": 37359,
