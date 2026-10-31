@@ -17,8 +17,8 @@
 //   face     the rifle's line runs within FACE_M of the head joint, or its grip sits above the shoulder joint
 //   crossed  the shooting elbow is at or across the body's midline (arms crossed over the chest)
 //   elbow    an elbow bends against its own skin (the forearm folds toward the upper arm's back: "bent backwards")
-//   flat     a hand's skin barely follows its finger joints, or closing the hand doesn't bring its fingertips
-//            toward the grip (curl test: fingertips open against closed); an open, flat hand on the gun
+//   flat     a hand's skin barely follows its finger joints, or closing the shooting hand doesn't bring its
+//            fingertips toward the grip (curl test: fingertips open against closed); an open, flat hand on the gun
 //   back     closing the hand moves its fingertips AWAY from the grip (the fingers curl backwards: splayed)
 //   open     the drawn fingertips end far from the hand's point on the gun (not closed round it)
 //            (a long gun's support hand slides back along the handguard on short arms, so its distance counts on pistols only)
@@ -99,6 +99,13 @@ export function flagsOf(r) {
       if (h && h.fingerShare < FLAGS.FLAT_SHARE) f.add('flat');
       if (h && h.tips !== null && h.tips > (s === 'r' ? FLAGS.OPEN_R : FLAGS.OPEN_L)) f.add('open');
     }
+    for (const [side, gain] of Object.entries(m.curl ?? {})) {
+      if (gain === null) continue;
+      if (gain < -FLAGS.CURL_GAIN) {
+        f.add('back');
+        notes.push(`${side} hand curls away from the grip (${gain} m)`);
+      } else if (side === 'r' && gain < FLAGS.CURL_GAIN) f.add('flat');
+    }
     const d = m.drawn;
     // A long gun's support hand slides back along the handguard when the arms are short (by design), so only a
     // pistol's support hand is held to its point.
@@ -170,6 +177,13 @@ if (rescore) {
         if (shots && VIEWS.some(([vw, v]) => vw === w && v === 'hands')) tiles[`${w}-hands`] = await page.screenshot({ type: 'png' });
         m.audit = await page.evaluate(() => window.__grips.audit());
         m.drawn = await page.evaluate(() => window.__grips.drawn());
+        if (w === 'rifle') {
+          // Curl test: the fingertips with the hands open, against closed as the game closes them.
+          await page.evaluate(() => window.__grips.curl(0));
+          const open = await page.evaluate(() => window.__grips.audit());
+          await page.evaluate(() => window.__grips.curl(1));
+          m.curl = Object.fromEntries(['l', 'r'].map((s) => [s, open?.hands[s]?.tips != null && m.audit?.hands[s]?.tips != null ? Math.round((open.hands[s].tips - m.audit.hands[s].tips) * 1000) / 1000 : null]));
+        }
         for (const [vw, v] of VIEWS) {
           if (vw !== w || v === 'hands' || !shots) continue;
           await page.evaluate((from) => window.__grips.upper(from), v);
