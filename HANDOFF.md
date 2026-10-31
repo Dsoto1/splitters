@@ -67,6 +67,15 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   takes the final pose). Owner's console check showed the mismatch on the live site; verify after the update with the
   console line in this session's notes (skin vs joint hand span).
 
+### Owner tileset sheets (2026-10-31): eight concept sheets, awaiting the owner's answer
+01 Medieval Village, 02 Desert City, 03 Coastal Harbor, 04 Jungle Ruins, 05 Snow Outpost, 06 Sci-Fi Research,
+07 Ancient Temple, 08 Industrial Factory. These are pictures, not model files: references for MapMaker style packs.
+Overlap with existing packs: 04 = Jungle Ruins (06), 08 = Military Compound (01) plus the mining/cargo props,
+06 = Orbital Station (04), 02 = Sands of Egypt (09) / Frontier Dust, 07 = Jungle/Imperial/Egypt temple pieces.
+New: 01 Medieval Village, 03 Coastal Harbor, 05 Snow Outpost (snow nature props exist, no snow buildings).
+Proposed: refresh existing packs from the sheets in-house; new packs 10 Medieval, 11 Harbor, 12 Snow Outpost;
+Meshy only for hero pieces after the owner approves a list. Nothing started yet.
+
 ### Where things stand (2026-10-30 evening)
 - **Iron Maw on `wip/iron-maw`, not merged** (agent, 2026-10-30 night): `maps/iron_maw.json`, the open-pit
   mine of BUILD_06 (480 m terrain at 3 m spacing, 408 m play area, 48 v 48): six bench levels, a clockwise
