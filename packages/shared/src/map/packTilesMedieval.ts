@@ -579,7 +579,7 @@ function otherTiles(): TileDefinition[] {
           [-3.8, -3.6, -3.6, 3.6],
           [3.6, -3.6, 3.8, 3.6],
         ].map(([x0, z0, x1, z1]) => planks(b(x0!, 7.0, z0!, x1!, 8.1, z1!))),
-        ...gableRoof(-4.2, -4.2, 4.2, 4.2, 9.8, 10.0, { gableMaterial: 'pbr_planks', gableInset: 0.6 }),
+        ...gableRoof(-4, -4, 4, 4, 9.8, 10.0, { gableMaterial: 'pbr_planks', gableInset: 0.4 }),
         ...[-1, 1].flatMap((s) => [trim(-3.5, 1.0, s * 3.5 - 0.06, 3.5, 6.0, s * 3.5 + 0.06, OAK)].map((t) => ({ ...t, ...{ roll: s * 0.7 } }))),
       ],
     });
@@ -603,12 +603,15 @@ function otherTiles(): TileDefinition[] {
       trim(-4, -0.05, -2.62, 4, 0.05, -2.5, LIME, '#a09888'),
       // The north bank: a grass slope from the bed up to the ground.
       ...(() => {
-        // From the bed at z = 1 up to the ground at the north edge (34°: walkable).
-        const run = 3.0;
+        // From the bed at z = 0.8 up to a grass ledge level with the ground along the north edge (36°: walkable).
+        const run = 2.8;
         const ang = Math.atan2(-BED, run);
         const L = Math.hypot(run, BED);
         const T = 0.4;
-        return [paint(tilted(0, BED / 2 - (Math.cos(ang) * T) / 2, 2.5 + (Math.sin(ang) * T) / 2, [8, T, L + 0.1], { pitch: ang }), 'pbr_grass')];
+        return [
+          paint(tilted(0, BED / 2 - (Math.cos(ang) * T) / 2, 0.8 + run / 2 + (Math.sin(ang) * T) / 2, [8, T, L + 0.05], { pitch: ang }), 'pbr_grass'),
+          paint(b(-4, BED, 3.6, 4, 0, 4), 'pbr_grass'),
+        ];
       })(),
       trim(-4, BED, -2.5, 4, BED + 0.03, 1.0, 'pbr_gravel', '#8a8a80'),
     ],
@@ -625,12 +628,12 @@ function otherTiles(): TileDefinition[] {
     const S = (box: Box) => paint(box, STONE, '#b8b0a0');
     const solids: Box[] = [
       // Ramps up from both banks and the level crown.
-      ...[1, -1].map((s) => S(tilted(0, crown / 2 - (Math.cos(ang) * T) / 2, s * (1.2 + 1.4) - s * (Math.sin(ang) * T) / 2, [W * 2, T, L + 0.05], { pitch: -s * ang }))),
+      ...[1, -1].map((s) => S(tilted(0, crown / 2 - (Math.cos(ang) * T) / 2, s * (1.2 + 1.4) - s * (Math.sin(ang) * T) / 2, [W * 2, T, L - 0.1], { pitch: -s * ang }))),
       S(b(-W, crown - T, -1.25, W, crown, 1.25)),
       // Parapets following the deck.
       ...[-1, 1].flatMap((sx) => [
         S(b(sx > 0 ? W - 0.35 : -W, crown, -1.25, sx > 0 ? W : -W + 0.35, crown + 0.9, 1.25)),
-        ...[1, -1].map((s) => S(tilted(sx * (W - 0.175), crown / 2 + 0.45, s * 2.6, [0.35, 0.9, L], { pitch: -s * ang }))),
+        ...[1, -1].map((s) => S(tilted(sx * (W - 0.175), crown / 2 + 0.45, s * 2.6, [0.35, 0.9, L - 0.4], { pitch: -s * ang }))),
       ]),
       // The arch: slices from the curve up under the deck; abutments on the banks.
       ...Array.from({ length: 12 }, (_, i) => {
