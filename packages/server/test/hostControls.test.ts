@@ -233,4 +233,50 @@ describe('host controls on a dedicated server', () => {
     expect(names()).toEqual(['Newbie', 'Sir Clank', 'Zorp']);
     admin.ws.close();
   }, 30_000);
+
+  it('keeps its own match rules (RULES): restart rules at the restart, the rest at the next match, per map too; live people cap and join message', async () => {
+    const dir = suite();
+    server = await startServer({ port: 0, map: join(dir, 'room_a.json'), mapsDir: dir, botFill: 2, seed: 1, startGate: false, mode: 'core.deathmatch', serverRules: { modes: { deathmatch: { score: 7 } } }, motd: 'Welcome to the yard' });
+    const s = server;
+    const until = async (ok: () => boolean) => {
+      for (let i = 0; i < 200 && !ok(); i++) await new Promise((r) => setTimeout(r, 20));
+      return ok();
+    };
+    expect(s.match.rules.scoreLimit).toBe(7);
+    // The join message reaches each player as they join.
+    const p = connect(s.port, 'Visitor');
+    await p.waitFor('welcome');
+    expect(await until(() => p.got.some((m) => m.t === 'notice' && m.text === 'Welcome to the yard'))).toBe(true);
+    // Score: waits for the restart, as the pause menu's does.
+    expect(s.setRule('score', 9, 'Console')).toBeNull();
+    expect(s.match.rules.scoreLimit).toBe(7);
+    expect(s.rules().pending).toContain('score');
+    expect(s.command({ c: 'restart' }, 'Console')).toBeNull();
+    expect(s.match.rules.scoreLimit).toBe(9);
+    // A Match setup rule: the restart is a fresh match on the same map, with it.
+    const before = s.match;
+    expect(s.setRule('gravity', 'low', 'Console')).toBeNull();
+    expect(s.rules().pending).toContain('gravity');
+    expect(s.command({ c: 'restart' }, 'Console')).toBeNull();
+    expect(await until(() => s.match !== before)).toBe(true);
+    expect([s.match.map.metadata.id, s.match.rules.gravity, s.match.rules.scoreLimit]).toEqual(['room_a', 0.4, 9]);
+    expect(s.rules().pending).toEqual([]);
+    // This map only: room_b plays the mode's own time limit; the score limit (this mode's) carries on.
+    expect(s.setRule('time', 3, 'Console', { map: true })).toBeNull();
+    expect(s.command({ c: 'map', map: 'room_b' }, 'Console')).toBeNull();
+    expect(await until(() => s.match.map.metadata.id === 'room_b')).toBe(true);
+    expect([s.match.rules.timeLimitSeconds, s.match.rules.scoreLimit, s.match.rules.gravity]).toEqual([DEFAULT_DEATHMATCH_RULES.timeLimitSeconds, 9, 0.4]);
+    expect(s.rules().set).toEqual({ modes: { deathmatch: { score: 9 } }, gravity: 'low', maps: { room_a: { time: 3 } } });
+    // An in-game admin's rules (the pause menu) are the server's too.
+    s.command({ c: 'rules', rules: { friendlyFire: 'half', mixPickups: true } }, 'Admin');
+    expect([s.rules().set.ff, s.rules().set.mix, s.match.rules.mixPickups]).toEqual(['half', true, true]);
+    // People at most, live: the map change sent the visitor off to reconnect, so one comes in and the next is turned away.
+    s.setLive({ maxPlayers: 1 });
+    const q = connect(s.port, 'Second');
+    await q.waitFor('welcome');
+    const r = connect(s.port, 'Third');
+    const rej = await r.waitFor('reject');
+    expect(rej.reason).toMatch(/full/);
+    for (const c of [p, q, r]) c.ws.close();
+  }, 30_000);
 });

@@ -8,6 +8,7 @@ import { PLAYER } from '../sim/constants.ts';
 import { trackGeometry } from '../map/track.ts';
 import { mapPortals, portalEntry, PORTAL_EXIT } from '../sim/portals.ts';
 import { simProfile } from '../sim/profile.ts';
+import { hypot } from '../math.ts';
 
 let initPromise: Promise<void> | undefined;
 
@@ -147,7 +148,7 @@ export class NavWorld {
     sp.straightPathFlags.destroy();
     sp.straightPathRefs.destroy();
     const last = out[out.length - 1];
-    if (!last || Math.hypot(last.x - end.x, last.z - end.z) > 0.5 || Math.abs(last.y - end.y) > 1) return null;
+    if (!last || hypot(last.x - end.x, last.z - end.z) > 0.5 || Math.abs(last.y - end.y) > 1) return null;
     return out;
   }
 
@@ -175,7 +176,7 @@ export class NavWorld {
         const cz = Math.floor(p.z / PLACE_CELL);
         const key = ((cx + 2048) * 4096 + (cz + 2048)) * 256 + (Math.floor(p.y / 2.5) + 128);
         // Keep the sample nearest the cell's centre.
-        const d = Math.hypot(p.x - (cx + 0.5) * PLACE_CELL, p.z - (cz + 0.5) * PLACE_CELL);
+        const d = hypot(p.x - (cx + 0.5) * PLACE_CELL, p.z - (cz + 0.5) * PLACE_CELL);
         const prev = best.get(key);
         if (!prev || d < prev.d) best.set(key, { p, d });
       }
@@ -221,7 +222,7 @@ export function validateNavigation(map: MapDocument, nav: NavWorld): ValidationI
       const to = { x: p.position[0], y: p.position[1], z: p.position[2] };
       const path = nav.findPath(from, to);
       const end = path?.[path.length - 1];
-      if (!end || Math.hypot(end.x - to.x, end.z - to.z) > 1.5 || Math.abs(end.y - to.y) > 2) {
+      if (!end || hypot(end.x - to.x, end.z - to.z) > 1.5 || Math.abs(end.y - to.y) > 2) {
         issues.push({ severity: 'warning', code: `nav.${p.kind}_unreachable`, message: `${what[p.kind]} ${p.id} cannot be reached on foot from spawn ${first.id}`, targetId: p.id });
       }
     }

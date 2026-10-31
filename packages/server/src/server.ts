@@ -30,12 +30,19 @@ import {
   MapRotation,
   validateRotation,
   botSetLabel,
+  applyServerRules,
+  ruleSpec,
+  setServerRule,
+  serverRuleFor,
+  SERVER_RULES,
+  type ServerRules,
   type BotSet,
   type BotSetPreset,
   type RotationPreset,
   type RotationState,
   type BotDifficulty,
   type HostCommand,
+  type HostState,
   type CarryOver,
   type Playlist,
   type GameEvent,
@@ -116,6 +123,24 @@ export interface ServerOptions {
   verifyTicket?: (ticket: string) => { sub: string; name?: string } | null;
   /** Joins, leaves, kicks, bans, admin changes and match results, as lines for a server console. */
   onEvent?: (line: string) => void;
+  /**
+   * The server's own match rules (RULES; shared sim/serverRules.ts), applied to every match it plays (a restart
+   * with new rules, a map change, the rotation's next map). The Host Service passes them; given (even empty),
+   * the rules a browser host sets in Match setup come from here alone at each new match.
+   */
+  serverRules?: ServerRules;
+  /** A message each player gets when they join (MOTD). */
+  motd?: string;
+}
+
+/** The server's rules now, for a console or the launcher. */
+export interface RulesState {
+  /** What the server keeps (RULES), what the match plays now, and the rules waiting for the next match. */
+  set: ServerRules;
+  now: MatchRules;
+  map: string;
+  /** Rules changed since this match began that wait for the next one ("next" rules) or the restart. */
+  pending: string[];
 }
 
 /** What a server knows of who a player is (for bans). Only `sub` is proof (a hub-signed ticket); `pk` and `address` are best effort. */
@@ -180,6 +205,18 @@ export interface RunningServer {
   botSet(): BotSet | null;
   /** The built-in bot sets (maps/botsets/). */
   readonly botSetPresets: readonly BotSetPreset[];
+  /** The server's match rules (RULES), the match's, and what waits. */
+  rules(): RulesState;
+  /**
+   * Set one rule (undefined: back to the default) for every map, or (`map`) the one playing now. Live rules
+   * apply at once, restart rules at the restart, the rest at the next match. Returns an error, or null.
+   */
+  setRule(key: string, value: unknown, by: string, where?: { map?: boolean }): string | null;
+  /** Live settings a console changes without a restart: people at most, the join message, idle limits. */
+  setLive(o: { maxPlayers?: number; motd?: string | null; afkSeconds?: number; idleKickMinutes?: number }): void;
+  live(): { maxPlayers: number; motd: string | null; afkSeconds: number; idleKickMinutes: number };
+  /** The match's host settings (players to keep, team sizes, bot skill and style), as admins see them. */
+  hostState(): HostState;
   close(): Promise<void>;
 }
 
@@ -267,10 +304,22 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     return want && mapCanRun(m, want) ? rulesForMode(m, want) : rulesForMap(m);
   };
   const baseRules = first ? chainRules(first, opts.playlist!.maps[0]!.mode) : (opts.rules ?? (opts.mode ? rulesForMode(map, opts.mode) : rulesForMap(map)));
-  const withLeaders = (r: MatchRules): MatchRules => (opts.leaders ? { ...r, leaders: opts.leaders } : r);
-  let match = new Match(map, withLeaders(baseRules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
+  /** The server's own rules (RULES): given, every new match takes the Match setup rules from them (LEADERS among them). */
+  const managed = opts.serverRules !== undefined;
+  let serverRules: ServerRules = { ...(opts.serverRules ?? {}) };
+  if (managed && opts.leaders && serverRules.leaders === undefined) serverRules.leaders = opts.leaders === 'vip' ? 'vip' : 'on';
+  /** Rules changed since this match began that wait for the next one. */
+  let nextPending = new Set<string>();
+  const withLeaders = (r: MatchRules): MatchRules => (!managed && opts.leaders ? { ...r, leaders: opts.leaders } : r);
+  /** A new match's rules and players: the server's rules over them (when it keeps its own). */
+  const forMatch = (r: MatchRules, m: MapDocument, fill: number): { rules: MatchRules; fill: number } => (managed ? applyServerRules(r, serverRules, m, fill) : { rules: withLeaders(r), fill });
+  const firstMatch = forMatch(baseRules, map, Math.min(opts.botFill, MAX_PLAYER_SLOTS));
+  let match = new Match(map, firstMatch.rules, opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
   for (const issue of validateNavigation(map, match.nav)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
-  const botFill = Math.min(opts.botFill, MAX_PLAYER_SLOTS);
+  const botFill = firstMatch.fill;
+  let motd = opts.motd?.trim().slice(0, 200) || null;
+  let afkSeconds = opts.afkSeconds ?? AWAY.afkSeconds;
+  let idleKickMinutes = opts.idleKickMinutes ?? AWAY.kickMinutes;
 
   const clients = new Set<Client>();
   const stats = new StatsWindow();
@@ -376,6 +425,27 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       refreshAdmins();
       return null;
     }
+    // Restart with rules waiting for the next match: a fresh match on this map (everyone comes along).
+    if (cmd.c === 'restart' && managed && nextPending.size) {
+      if (travel) return 'Already changing map';
+      travelTo(map, match.rules.mode, match.tick + HOST_TRAVEL_TICKS);
+      notice(`${by} restarted the match with new rules`);
+      event(`${by} restarted the match with new rules (${[...nextPending].join(', ')})`);
+      return null;
+    }
+    // In-game admins' rule changes are the server's rules too (they last past this match).
+    if (managed && cmd.c === 'rules') {
+      const r = cmd.rules;
+      const mode = match.rules.mode;
+      const put = (key: string, v: unknown) => (serverRules = setServerRule(serverRules, key, v, { mode }));
+      if (r.scoreLimit !== undefined) put('score', Math.max(0, Math.min(1000, Math.round(r.scoreLimit))));
+      if (r.timeLimitSeconds !== undefined) put('time', Math.max(0, Math.min(120, Math.round(r.timeLimitSeconds / 60))));
+      if (r.respawnDelayTicks !== undefined) put('respawn', Math.max(0, Math.min(30, Math.round(r.respawnDelayTicks / TICK_RATE))));
+      if (r.friendlyFire !== undefined) put('ff', r.friendlyFire);
+      if (r.mixPickups !== undefined) put('mix', r.mixPickups);
+      if (r.dropWeapons !== undefined) put('drops', r.dropWeapons);
+    }
+    if (managed && cmd.c === 'bots' && cmd.style) serverRules = setServerRule(serverRules, 'style', cmd.style, { mode: match.rules.mode });
     if (cmd.c === 'kick' || cmd.c === 'ban') {
       const target = clientAt(cmd.slot);
       if (!target?.who) return 'No such player (bots come and go by themselves: change the players instead)';
@@ -394,6 +464,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     const r = control.apply(cmd);
     if (r.error) return r.error;
     if (r.notice) notice(r.notice);
+    // A restart that put the waiting rules in play, or a live rule: everyone's HUD (score limit, timer) follows.
+    if (cmd.c === 'restart' || cmd.c === 'rules') broadcast({ t: 'rules', rules: match.rules });
     broadcast({ t: 'roster', players: match.roster() });
     refreshAdmins();
     return null;
@@ -411,7 +483,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const humans = () => [...clients].filter((c) => c.slot !== null).length;
   const joinsBy = new KeyedLimiter({ perMinute: JOIN_LIMITS.perMinute, burst: JOIN_LIMITS.perMinute });
   const joinsAll = new KeyedLimiter({ perMinute: JOIN_LIMITS.totalPerMinute, burst: JOIN_LIMITS.totalPerMinute });
-  const maxPlayers = Math.max(1, Math.min(opts.maxPlayers ?? MAX_PLAYER_SLOTS, MAX_PLAYER_SLOTS));
+  let maxPlayers = Math.max(1, Math.min(opts.maxPlayers ?? MAX_PLAYER_SLOTS, MAX_PLAYER_SLOTS));
 
   /** A player's connection, from the WebSocket listener or the Host Service's WebRTC links: hello, then play. */
   function accept(conn: PlayerConn): void {
@@ -515,6 +587,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           ...(lan.length ? { lan } : {}),
         });
         broadcast({ t: 'roster', players: match.roster() });
+        if (motd) send(client, { t: 'notice', text: motd });
         client.admin = isAdminToken(msg.admin);
         if (client.admin) hostState(client);
       } else if (msg.t === 'admin' && client.slot !== null) {
@@ -663,9 +736,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     match.destroy();
     map = t.map;
     playIndex = t.index;
-    match = new Match(map, withLeaders(t.rules), opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
+    const next = forMatch(t.rules, map, t.fill ?? control.fill);
+    match = new Match(map, next.rules, opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
+    nextPending = new Set();
     bots = new BotFiller(match, bots.skill, { takeBack: opts.botTakeBack, botSet: bots.hostSet });
-    control = new HostControl(match, bots, t.fill ?? control.fill, 'Admin');
+    control = new HostControl(match, bots, next.fill, 'Admin');
     bots.rebalance(control.fill);
     // A map the owner published since is picked up from here on.
     lookup.forget();
@@ -718,7 +793,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       broadcast({ t: 'stats', ...summary });
       opts.onStats?.(StatsWindow.format(summary), summary);
       // Away players: warn the idle, hand idle places to bots, end holds that ran out; close silent connections.
-      const away = bots.watch(control.fill, new Set(connected.map((c) => c.slot!)), opts.afkSeconds ?? AWAY.afkSeconds, opts.idleKickMinutes ?? AWAY.kickMinutes);
+      const away = bots.watch(control.fill, new Set(connected.map((c) => c.slot!)), afkSeconds, idleKickMinutes);
       for (const slot of away.warn) {
         const c = clientAt(slot);
         if (c) send(c, { t: 'notice', text: `You're idle: move or a bot plays for you in ${AWAY.warnSeconds} s` });
@@ -732,8 +807,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       for (const slot of away.kick) {
         const c = clientAt(slot);
         if (!c) continue;
-        event(`${c.who?.name ?? 'a player'} removed: idle for ${opts.idleKickMinutes ?? AWAY.kickMinutes} min`);
-        kick(c, `Removed for being idle (${opts.idleKickMinutes ?? AWAY.kickMinutes} minutes)`);
+        event(`${c.who?.name ?? 'a player'} removed: idle for ${idleKickMinutes} min`);
+        kick(c, `Removed for being idle (${idleKickMinutes} minutes)`);
       }
       if (away.away.length || away.released.length) broadcast({ t: 'roster', players: match.roster() });
       const nowMs = Date.now();
@@ -761,6 +836,62 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     rotationPresets,
     botSet: () => bots.hostSet,
     botSetPresets,
+    rules: () => {
+      const now = match.rules;
+      const id = map.metadata.id;
+      const waiting = new Set(nextPending);
+      // Restart rules the match is waiting on (HostControl's), and any server rule that differs from what plays.
+      for (const k of Object.keys(control.state().pending ?? {})) waiting.add(k === 'scoreLimit' ? 'score' : k === 'timeLimitSeconds' ? 'time' : k === 'respawnDelayTicks' ? 'respawn' : k === 'friendlyFire' ? 'ff' : k);
+      for (const spec of SERVER_RULES) {
+        if (spec.modes && !spec.modes(now.mode)) continue;
+        const got = serverRuleFor(serverRules, spec.key, id, now.mode);
+        if (got && JSON.stringify(spec.read(now)) !== JSON.stringify(spec.key === 'teamnames' || spec.key === 'teamcolors' ? (got.value as string[]).join(', ') : got.value)) waiting.add(spec.key);
+      }
+      return { set: JSON.parse(JSON.stringify(serverRules)) as ServerRules, now: { ...now }, map: id, pending: [...waiting] };
+    },
+    setRule: (key, value, by, where = {}) => {
+      if (!managed) return 'This server keeps no rules of its own';
+      const spec = ruleSpec(key);
+      if (!spec) return `unknown rule "${key}"`;
+      const mode = match.rules.mode;
+      serverRules = setServerRule(serverRules, spec.key, value, { mode, ...(where.map ? { map: map.metadata.id } : {}) });
+      const eff = serverRuleFor(serverRules, spec.key, map.metadata.id, mode);
+      const v = eff?.value;
+      const applies = !spec.modes || spec.modes(mode);
+      const where_ = where.map ? ` on ${map.metadata.name}` : spec.perMode ? ` in ${MODE_LABELS[mode]}` : '';
+      event(`${by} set ${spec.key} to ${value === undefined ? 'default' : JSON.stringify(value)}${where_}`);
+      if (!applies) return null;
+      // Live rules (and the restart ones, which then wait as the pause menu's do) go to the match now.
+      if (spec.key === 'style') return runCommand({ c: 'bots', style: (v ?? 'mixed') as 'mixed' | 'arena' | 'tactical' }, by);
+      if (spec.apply === 'live' || spec.apply === 'restart') {
+        const base = rulesForMode(map, mode);
+        const read = v === undefined ? spec.read(base) : v;
+        const patch: Extract<HostCommand, { c: 'rules' }>['rules'] = {};
+        if (spec.key === 'score') patch.scoreLimit = read as number;
+        if (spec.key === 'time') patch.timeLimitSeconds = (read as number) * 60;
+        if (spec.key === 'respawn') patch.respawnDelayTicks = Math.round((read as number) * TICK_RATE);
+        if (spec.key === 'ff') patch.friendlyFire = read as 'off' | 'half' | 'on';
+        if (spec.key === 'mix') patch.mixPickups = !!read;
+        if (spec.key === 'drops') patch.dropWeapons = read !== false;
+        const r = control.apply({ c: 'rules', rules: patch });
+        if (r.error) return r.error;
+        if (r.notice) notice(r.notice.replace(/^Admin/, by));
+        broadcast({ t: 'rules', rules: match.rules });
+        refreshAdmins();
+        return null;
+      }
+      nextPending.add(spec.key);
+      refreshAdmins();
+      return null;
+    },
+    setLive: (o) => {
+      if (o.maxPlayers !== undefined) maxPlayers = Math.max(1, Math.min(MAX_PLAYER_SLOTS, Math.round(o.maxPlayers)));
+      if (o.motd !== undefined) motd = o.motd?.trim().slice(0, 200) || null;
+      if (o.afkSeconds !== undefined) afkSeconds = Math.max(0, Math.round(o.afkSeconds));
+      if (o.idleKickMinutes !== undefined) idleKickMinutes = Math.max(0, Math.round(o.idleKickMinutes));
+    },
+    live: () => ({ maxPlayers, motd, afkSeconds, idleKickMinutes }),
+    hostState: () => control.state(),
     setAdminToken: (token) => {
       adminHash = token ? createHash('sha256').update(token).digest() : null;
       // Admins logged in with the old token stay admin until they leave.

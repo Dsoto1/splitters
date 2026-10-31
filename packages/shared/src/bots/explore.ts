@@ -1,4 +1,4 @@
-import { horizontalDistance, type Vec3 } from '../math.ts';
+import { horizontalDistance, type Vec3, hypot } from '../math.ts';
 import { TICK_RATE } from '../sim/constants.ts';
 
 /**
@@ -66,7 +66,7 @@ export function pickExploreGoal(places: readonly Vec3[], extra: readonly Vec3[],
 export function laneWaypoint(places: readonly Vec3[], from: Vec3, to: Vec3, lane: number): Vec3 | null {
   const dx = to.x - from.x;
   const dz = to.z - from.z;
-  const D = Math.hypot(dx, dz);
+  const D = hypot(dx, dz);
   if (D < 30) return null;
   const ux = dx / D;
   const uz = dz / D;

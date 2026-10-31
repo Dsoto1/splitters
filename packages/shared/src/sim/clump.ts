@@ -1,4 +1,4 @@
-import { createRng, horizontalDistance, type Vec3 } from '../math.ts';
+import { createRng, horizontalDistance, type Vec3, hypot } from '../math.ts';
 import type { Match } from './match.ts';
 
 /**
@@ -27,7 +27,7 @@ export function clumpArea(match: Match, radius = 20): ClumpArea {
   const b = centroid(own.filter((s) => s.team === teams[1]).map((s) => s.pos).concat(all.length ? [] : [mid]));
   let ax = b.x - a.x;
   let az = b.z - a.z;
-  const al = Math.hypot(ax, az);
+  const al = hypot(ax, az);
   if (!Number.isFinite(al) || al < 1) {
     ax = 1;
     az = 0;

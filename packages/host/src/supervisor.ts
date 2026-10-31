@@ -23,7 +23,16 @@ export interface SupervisorStatus {
 /** How to start a match process (tests pass a fake). */
 export type Spawner = () => ChildProcess;
 
-export const forkChild = (entry = process.argv[1]!): Spawner => () => fork(entry, ['--child'], { execArgv: process.execArgv, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
+/**
+ * The match process's V8 flags: a bigger young generation (64 MB semi-spaces, not 16). A 96-bot match makes
+ * about a megabyte of short-lived garbage a tick; with the default every ~15 ticks a scavenge ran, and what
+ * lived a little longer (bot plans, noises) was promoted and later swept by a full collection, both of them
+ * tick hiccups. Measured on Iron Maw 48 v 48 (docs/HOSTING.md, "Performance"): a third as many collections.
+ */
+export const CHILD_V8_FLAGS = ['--max-semi-space-size=64'];
+
+export const forkChild = (entry = process.argv[1]!): Spawner => () =>
+  fork(entry, ['--child'], { execArgv: [...process.execArgv, ...CHILD_V8_FLAGS.filter((f) => !process.execArgv.some((a) => a.startsWith(f.split('=')[0]!)))], stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
 
 /**
  * Runs the match in a child process and keeps it running: restarts it after a

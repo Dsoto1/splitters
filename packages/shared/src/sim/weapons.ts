@@ -1,4 +1,4 @@
-import { add, dot, scale, type Vec3 } from '../math.ts';
+import { add, dot, scale, type Vec3, hypot } from '../math.ts';
 import { PLAYER } from './constants.ts';
 import type { AccuracySpec, BallisticSpec, FalloffSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
 
@@ -50,8 +50,8 @@ export const ZONE_KINDS = ['fire', 'toxic', 'goo', 'oil', 'singularity'] as cons
 export type ZoneKind = (typeof ZONE_KINDS)[number];
 /** Whether a player standing at `feet` is inside a zone: puddles are shallow discs, clouds and fields are spheres around the chest. */
 export function zoneContains(kind: ZoneKind, center: Vec3, radius: number, feet: Vec3): boolean {
-  if (kind === 'toxic' || kind === 'singularity') return Math.hypot(center.x - feet.x, center.y - (feet.y + PLAYER.height * 0.55), center.z - feet.z) <= radius;
-  return Math.hypot(center.x - feet.x, center.z - feet.z) <= radius && feet.y >= center.y - 0.6 && feet.y <= center.y + 1.5;
+  if (kind === 'toxic' || kind === 'singularity') return hypot(center.x - feet.x, center.y - (feet.y + PLAYER.height * 0.55), center.z - feet.z) <= radius;
+  return hypot(center.x - feet.x, center.z - feet.z) <= radius && feet.y >= center.y - 0.6 && feet.y <= center.y + 1.5;
 }
 
 /** Ground grip for movement: oil makes it slick. */

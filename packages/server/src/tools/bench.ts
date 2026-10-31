@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { cpus, loadavg } from 'node:os';
+import { PerformanceObserver, type PerformanceEntry } from 'node:perf_hooks';
+import { getHeapStatistics } from 'node:v8';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, MAX_PLAYER_SLOTS, SNAPSHOT_INTERVAL_TICKS, TICK_RATE, encodeSnapshots, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent, type GameMode } from '@tiletrigger/shared';
@@ -146,6 +148,13 @@ const clumpSize = clumpFlag?.includes('=') ? Number(clumpFlag.slice(8)) : 40;
 /** --skills=mixed: bots are easy, normal and hard in turn (accuracy is then reported per skill); default all normal. */
 const mixedSkills = flags.includes('--skills=mixed');
 const SKILLS = ['easy', 'normal', 'hard'] as const;
+/**
+ * --spikes[=MS]: ticks slower than MS (default 12) are broken down section by section (the same sections as
+ * the per-tick line, plus garbage collection pauses inside the tick), summed over the spiky ticks and listed
+ * for the worst few, so a hiccup can be pinned on bots, moves, mounts, snapshots or GC.
+ */
+const spikeFlag = flags.find((f) => f === '--spikes' || f.startsWith('--spikes='));
+const spikeMs = spikeFlag ? (spikeFlag.includes('=') ? Number(spikeFlag.slice(9)) : 12) : 0;
 const variants = (flags.find((f) => f.startsWith('--variants='))?.slice(11).split(',') ?? [clumpFlag ? 'clump' : 'spread']) as ('spread' | 'clump')[];
 const here = (p: string) => resolve(process.env.INIT_CWD ?? process.cwd(), p);
 const mapPaths = args.length > 2 ? args.slice(2).map(here) : [fileURLToPath(new URL('../../../../maps/phase0_arena.json', import.meta.url))];
@@ -226,7 +235,24 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   let pending: GameEvent[] = [];
   const cpuTick: number[] = [];
   let lastCpu = cpu0;
+  // Spike breakdown: the profile's sections before each tick, and GC pauses (by start time) to match against ticks.
+  const gcs: { start: number; ms: number }[] = [];
+  const gcObs = spikeMs ? new PerformanceObserver((list) => list.getEntries().forEach((e: PerformanceEntry) => gcs.push({ start: e.startTime, ms: e.duration }))) : null;
+  gcObs?.observe({ entryTypes: ['gc'] });
+  const spikes: Spike[] = [];
+  const before = new Map<string, number>();
+  const beforeN = new Map<string, number>();
   for (let i = 0; i < seconds * TICK_RATE; i++) {
+    if (spikeMs) {
+      // A per-tick maximum, not a sum: back to nothing before each tick.
+      simProfile.ms.set('botThink slowest', 0);
+      before.clear();
+      for (const [k, v] of simProfile.ms) before.set(k, v);
+      beforeN.clear();
+      for (const [k, v] of simProfile.n) beforeN.set(k, v);
+    }
+    const cpuA = spikeMs ? process.cpuUsage() : null;
+    const heapA = spikeMs ? getHeapStatistics().used_heap_size : 0;
     const t0 = performance.now();
     const events = match.step();
     // Clumped: respawned bots go straight back into the fight.
@@ -236,6 +262,7 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
     }
     for (const e of events) pending.push(e);
     let t1 = performance.now();
+    const tStep = t1;
     if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
       const body = match.snapshot(pending);
       encodeSnapshots(body, Array.from({ length: Math.min(viewers, bots) }, (_, s) => ({ slot: s, ack: match.slots[s]?.lastSeq ?? 0, me: match.privateState(s) })));
@@ -260,6 +287,20 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
     }
     if (mode) events.forEach(count);
     tickMs.push(t1 - t0);
+    if (spikeMs && t1 - t0 > spikeMs) {
+      const cpuB = process.cpuUsage(cpuA!);
+      // The heap shrank during the tick: a garbage collection ran in it.
+      const heapDrop = heapA - getHeapStatistics().used_heap_size;
+      const parts = new Map<string, number>();
+      for (const [k, v] of simProfile.ms) if (v - (before.get(k) ?? 0) > 0.05) parts.set(k, v - (before.get(k) ?? 0));
+      if (t1 - tStep > 0.05) parts.set('snapshot', t1 - tStep);
+      // What the step's own laps don't cover (history, the waiting phase, events): the rest of the tick.
+      const timed = ['bots', 'scenario', 'players', 'mounts', 'projectiles', 'snapshot'].reduce((a, k) => a + (parts.get(k) ?? 0), 0);
+      if (t1 - t0 - timed > 0.05) parts.set('untimed', t1 - t0 - timed);
+      const counts = new Map<string, number>();
+      for (const [k, v] of simProfile.n) if (v - (beforeN.get(k) ?? 0) > 0) counts.set(k, v - (beforeN.get(k) ?? 0));
+      spikes.push({ tick: match.tick, ms: t1 - t0, t0, t1, parts, counts, cpu: (cpuB.user + cpuB.system) / 1000, gcMB: heapDrop > 1e6 ? heapDrop / 1e6 : 0 });
+    }
     const nowCpu = process.cpuUsage();
     cpuTick.push((nowCpu.user - lastCpu.user + nowCpu.system - lastCpu.system) / 1000);
     lastCpu = nowCpu;
@@ -279,6 +320,10 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
     }
   }
   simProfile.on = false;
+  if (gcObs) {
+    for (const e of gcObs.takeRecords()) gcs.push({ start: e.startTime, ms: e.duration });
+    gcObs.disconnect();
+  }
   const wall = (performance.now() - start) / 1000;
   const cpu = process.cpuUsage(cpu0);
   const cpuMs = (cpu.user + cpu.system) / 1000;
@@ -319,8 +364,43 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
     const scores = [...match.teamScores()].map(([t, s]) => `${t} ${s}`).join(', ');
     console.log(`${mode}: ${[...objective].map(([k, v]) => `${k} ${v}`).join(' | ') || 'no objective events'} | team scores: ${scores}`);
   }
+  if (spikeMs) reportSpikes(spikes, gcs, tickMs.length);
   match.destroy();
   const cpuRow = `| ${map.metadata.id} | ${clump ? 'clumped' : 'spread'} | ${(cpuMs / ticks).toFixed(2)} | ${cpuP95.toFixed(1)} | ${c2(think)} | ${c2(per('botPerceive'))} | ${c2(per('botDecide'))} | ${c2(per('botPath'))} | ${c2(per('botAim'))} | ${(n('los') / ticks).toFixed(0)}) | ${c2(movement)} | ${c2(combat)} | ${c2(rest)} | ${kills} | ${load.toFixed(1)} |`;
   return { cpuRow, row: `| ${map.metadata.id}${clump ? ' (clumped)' : ''} | ${avg(tickMs).toFixed(1)} | ${pct(0.95).toFixed(1)} | ${sorted[sorted.length - 1]!.toFixed(0)} | ${per('bots').toFixed(1)} | ${per('move').toFixed(1)} | ${(n('nav') / seconds).toFixed(0)} (${n('navFail')}) | ${(cpuMs / ticks).toFixed(1)} | ${kills} | ${idlePct.toFixed(0)}% | ${load.toFixed(1)} |` };
 }
 
+
+interface Spike {
+  tick: number;
+  ms: number;
+  t0: number;
+  t1: number;
+  parts: Map<string, number>;
+  counts: Map<string, number>;
+  /** Process CPU time in the tick (well under `ms`: the process was waiting for a core, the box is loaded). */
+  cpu: number;
+  /** MB the heap shrank by in the tick (a garbage collection ran), else 0. */
+  gcMB: number;
+}
+
+/** The spiky ticks' breakdown: what the time went on, on average and for the worst ten (sections overlap: bots holds botThink, nav, los...). */
+function reportSpikes(spikes: Spike[], gcs: { start: number; ms: number }[], ticks: number): void {
+  const gcIn = (s: { t0: number; t1: number }) => gcs.filter((g) => g.start < s.t1 && g.start + g.ms > s.t0).reduce((a, g) => a + g.ms, 0);
+  const total = new Map<string, number>();
+  let gcTotal = 0;
+  for (const s of spikes) {
+    for (const [k, v] of s.parts) total.set(k, (total.get(k) ?? 0) + v);
+    gcTotal += gcIn(s);
+  }
+  const gcAll = gcs.reduce((a, g) => a + g.ms, 0);
+  const fmt = (m: Map<string, number>, n = 1) => [...m].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k, v]) => `${k} ${(v / n).toFixed(1)}`).join(', ');
+  const preempted = spikes.filter((s) => s.cpu < s.ms * 0.6).length;
+  const gcd = spikes.filter((s) => s.gcMB > 0).length;
+  console.log(`spikes over ${spikeMs} ms: ${spikes.length} of ${ticks} ticks (${((spikes.length / ticks) * 100).toFixed(2)}%) | GC: ${gcs.length} pauses, ${gcAll.toFixed(0)} ms in all (max ${Math.max(0, ...gcs.map((g) => g.ms)).toFixed(1)}), ${gcTotal.toFixed(0)} ms inside spiky ticks | ${preempted} spiky ticks had under 60% of their wall time on the CPU (waiting for a core: the box's load, not the server), ${gcd} had a garbage collection (heap shrank)`);
+  if (spikes.length) console.log(`  average spiky tick (ms): ${fmt(total, spikes.length)}, gc ${(gcTotal / spikes.length).toFixed(1)}`);
+  for (const s of [...spikes].sort((a, b) => b.ms - a.ms).slice(0, 10)) {
+    const c = ['nav', 'navFail', 'navSearch', 'botThink', 'botPerceive', 'los', 'move', 'moveCoarse', 'fire'].map((k) => `${k} ${s.counts.get(k) ?? 0}`).join(' ');
+    console.log(`  tick ${s.tick}: ${s.ms.toFixed(1)} ms (CPU ${s.cpu.toFixed(1)}${s.gcMB ? `, GC freed ${s.gcMB.toFixed(0)} MB` : ''}) | ${fmt(s.parts)}${gcIn(s) ? `, gc ${gcIn(s).toFixed(1)}` : ''} | ${c}`);
+  }
+}

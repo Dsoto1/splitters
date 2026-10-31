@@ -1,5 +1,5 @@
 import type { BombsiteEntity } from '../../map/schema.ts';
-import { horizontalDistance, type Vec3 } from '../../math.ts';
+import { horizontalDistance, type Vec3, hypot } from '../../math.ts';
 import { BOMB_CARRIED, BOMB_DEFUSED, BOMB_DROPPED, BOMB_EXPLODED, BOMB_PLANTED, type ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
@@ -70,7 +70,7 @@ export class BombMode implements ModeLogic {
 
   private siteAt(p: Vec3): number {
     for (const [i, e] of this.sites()) {
-      if (Math.hypot(p.x - e.position[0], p.z - e.position[2]) <= e.radius && Math.abs(p.y - e.position[1]) < 3) return i;
+      if (hypot(p.x - e.position[0], p.z - e.position[2]) <= e.radius && Math.abs(p.y - e.position[1]) < 3) return i;
     }
     return -1;
   }

@@ -1,5 +1,5 @@
 import { PLAYER, TICK_DT } from './constants.ts';
-import { add, normalize, scale, viewDirection, type Vec3 } from '../math.ts';
+import { add, normalize, scale, viewDirection, type Vec3, hypot } from '../math.ts';
 import type { ProjectileSpec } from './weapons.ts';
 
 /** A static-world ray test: distance to the first surface and its normal, or null. */
@@ -34,7 +34,7 @@ export function predictThrow(spec: ProjectileSpec, feet: Vec3, yaw: number, pitc
     if (spec.drag) vel = scale(vel, Math.max(0, 1 - spec.drag * TICK_DT));
     vel = { x: vel.x, y: vel.y - spec.gravity * TICK_DT, z: vel.z };
     const delta = scale(vel, TICK_DT);
-    const len = Math.hypot(delta.x, delta.y, delta.z);
+    const len = hypot(delta.x, delta.y, delta.z);
     const dir = scale(delta, 1 / (len || 1));
     const wall = len > 0 ? raycast(pos, dir, len) : null;
     if (wall) {

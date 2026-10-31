@@ -1,4 +1,4 @@
-import { viewDirection, type Vec3 } from '../math.ts';
+import { viewDirection, type Vec3, hypot } from '../math.ts';
 import type { MapDocument } from '../map/schema.ts';
 import { PLAYER } from './constants.ts';
 import type { PhysicsWorld } from './physics.ts';
@@ -145,7 +145,7 @@ export function fortAimPlacement(physics: PhysicsWorld, eye: Vec3, yaw: number, 
   let p = { x: eye.x + dir.x * hit.dist, y: eye.y + dir.y * hit.dist, z: eye.z + dir.z * hit.dist };
   if (hit.normal.y < 0.6) {
     // A wall's face: stand the piece against it, on whatever is underneath.
-    const h = Math.hypot(hit.normal.x, hit.normal.z) || 1;
+    const h = hypot(hit.normal.x, hit.normal.z) || 1;
     const ux = hit.normal.x / h;
     const uz = hit.normal.z / h;
     const { w, d } = fortFootprint(kind, rot);
@@ -184,7 +184,7 @@ export function fortPlacementProblem(world: FortWorld, team: number, kind: FortP
   for (const k of world.keepClear) {
     const dx = Math.max(all.min.x - k.pos.x, 0, k.pos.x - all.max.x);
     const dz = Math.max(all.min.z - k.pos.z, 0, k.pos.z - all.max.z);
-    if (Math.hypot(dx, dz) < k.r && all.min.y < k.pos.y + 3 && all.max.y > k.pos.y - 1) return 'Too close to a flag or spawn';
+    if (hypot(dx, dz) < k.r && all.min.y < k.pos.y + 3 && all.max.y > k.pos.y - 1) return 'Too close to a flag or spawn';
   }
   const r = PLAYER.radius;
   for (const b of world.bodies) {
@@ -228,7 +228,7 @@ export function fortFlagBases(map: MapDocument, teams: readonly { id: string }[]
 export function fortMidfield(a: Vec3, b: Vec3): { mid: Vec3; dir: Vec3; yaw: number; side: (p: Vec3) => number } {
   const dx = b.x - a.x;
   const dz = b.z - a.z;
-  const len = Math.hypot(dx, dz) || 1;
+  const len = hypot(dx, dz) || 1;
   const dir = { x: dx / len, y: 0, z: dz / len };
   const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 };
   return { mid, dir, yaw: Math.atan2(dir.x, dir.z), side: (p) => (p.x - mid.x) * dir.x + (p.z - mid.z) * dir.z };

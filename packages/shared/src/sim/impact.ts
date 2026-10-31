@@ -1,6 +1,7 @@
 import type { Vec3 } from '../math.ts';
 import { TICK_RATE } from './constants.ts';
 import type { WeaponCategory, WeaponDefinition } from './weapons.ts';
+import { hypot } from '../math.ts';
 
 /**
  * Stopping power and blast throws (docs/GUNPLAY_SPEC.md, "Stopping power").
@@ -150,7 +151,7 @@ export const BLAST = {
 export function blastThrow(dir: Vec3, d: number, radius: number, knockback: number, self = false): Vec3 {
   if (knockback <= 0 || d > radius) return { x: 0, y: 0, z: 0 };
   const speed = knockback * (1 - (1 - BLAST.edge) * Math.max(0, d / radius));
-  const h = Math.hypot(dir.x, dir.z);
+  const h = hypot(dir.x, dir.z);
   const out = speed * (self ? BLAST.selfOut : BLAST.out);
   const lift = speed * Math.max(BLAST.minLift, BLAST.lift + BLAST.liftFromBelow * dir.y) * (self ? BLAST.selfLift : 1);
   return h > 0.05 ? { x: (dir.x / h) * out * Math.min(1, h * 1.5), y: lift, z: (dir.z / h) * out * Math.min(1, h * 1.5) } : { x: 0, y: lift, z: 0 };

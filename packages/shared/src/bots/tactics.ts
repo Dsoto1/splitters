@@ -1,4 +1,4 @@
-import { horizontalDistance, normalize, viewDirection, type Vec3 } from '../math.ts';
+import { horizontalDistance, normalize, viewDirection, type Vec3, hypot } from '../math.ts';
 import { TICK_DT } from '../sim/constants.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import type { ProjectileSpec } from '../sim/weapons.ts';
@@ -17,7 +17,7 @@ const PROBE_HEIGHT = 1.2;
  * close by on both sides. Two short raycasts.
  */
 export function isDoorway(physics: PhysicsWorld, at: Vec3, dx: number, dz: number, halfWidth = 1.7): boolean {
-  const len = Math.hypot(dx, dz) || 1;
+  const len = hypot(dx, dz) || 1;
   const px = -dz / len;
   const pz = dx / len;
   const o = { x: at.x, y: at.y + PROBE_HEIGHT, z: at.z };
@@ -30,8 +30,8 @@ export function turnAngle(a: Vec3, b: Vec3, c: Vec3): number {
   const uz = b.z - a.z;
   const vx = c.x - b.x;
   const vz = c.z - b.z;
-  const lu = Math.hypot(ux, uz);
-  const lv = Math.hypot(vx, vz);
+  const lu = hypot(ux, uz);
+  const lv = hypot(vx, vz);
   if (lu < 1e-3 || lv < 1e-3) return 0;
   return Math.acos(Math.max(-1, Math.min(1, (ux * vx + uz * vz) / (lu * lv))));
 }
@@ -66,7 +66,7 @@ export function throwImpact(physics: PhysicsWorld, eye: Vec3, yaw: number, pitch
   for (let t = 0; t < maxTicks; t += 2) {
     vel = { x: vel.x, y: vel.y - spec.gravity * step, z: vel.z };
     const delta = { x: vel.x * step, y: vel.y * step, z: vel.z * step };
-    const len = Math.hypot(delta.x, delta.y, delta.z);
+    const len = hypot(delta.x, delta.y, delta.z);
     const hit = physics.raycastWorld(pos, { x: delta.x / len, y: delta.y / len, z: delta.z / len }, len);
     if (hit !== null) return { x: pos.x + (delta.x / len) * hit, y: pos.y + (delta.y / len) * hit, z: pos.z + (delta.z / len) * hit };
     pos = { x: pos.x + delta.x, y: pos.y + delta.y, z: pos.z + delta.z };
@@ -99,7 +99,7 @@ export function solveThrow(physics: PhysicsWorld, eye: Vec3, target: Vec3, spec:
       let pitch = elev;
       for (let i = 0; i < 4; i++) {
         const d = viewDirection(yaw, pitch);
-        pitch += elev - Math.atan2(d.y + THROW_LIFT, Math.hypot(d.x, d.z));
+        pitch += elev - Math.atan2(d.y + THROW_LIFT, hypot(d.x, d.z));
       }
       pitch = Math.max(-1.4, Math.min(1.4, pitch));
       const impact = throwImpact(physics, eye, yaw, pitch, spec);

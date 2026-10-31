@@ -1,4 +1,4 @@
-import { horizontalDistance, type Vec3 } from '../math.ts';
+import { horizontalDistance, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { STANCES } from '../sim/constants.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
@@ -52,7 +52,7 @@ function blockedNear(physics: PhysicsWorld, eye: Vec3, threat: Vec3): number | n
   const dx = threat.x - eye.x;
   const dy = threat.y - eye.y;
   const dz = threat.z - eye.z;
-  const d = Math.hypot(dx, dy, dz);
+  const d = hypot(dx, dy, dz);
   if (d < 1) return null;
   const hit = physics.raycastWorld(eye, { x: dx / d, y: dy / d, z: dz / d }, Math.min(d - 0.3, HUG));
   return hit;
@@ -65,7 +65,7 @@ export function exposedTo(physics: PhysicsWorld, eye: Vec3, threat: Vec3): boole
 
 export function findCover(q: CoverQuery): CoverSpot | null {
   const { physics, nav, from, threat } = q;
-  const toThreat = Math.hypot(threat.x - from.x, threat.z - from.z) || 1;
+  const toThreat = hypot(threat.x - from.x, threat.z - from.z) || 1;
   let best: { spot: CoverSpot; score: number } | null = null;
   const tried: Vec3[] = [];
   const phase = q.rng() * Math.PI * 2;
@@ -78,7 +78,7 @@ export function findCover(q: CoverQuery): CoverSpot | null {
       if (!p || Math.abs(p.y - from.y) > 2.5) continue;
       if (tried.some((t) => horizontalDistance(t, p) < 0.8)) continue;
       tried.push(p);
-      const dThreat = Math.hypot(threat.x - p.x, threat.z - p.z);
+      const dThreat = hypot(threat.x - p.x, threat.z - p.z);
       if (dThreat < 3) continue;
       const crouchEye = { x: p.x, y: p.y + CROUCH_EYE, z: p.z };
       const blocker = blockedNear(physics, crouchEye, threat);

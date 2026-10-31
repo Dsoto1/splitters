@@ -1,5 +1,5 @@
 import type { AirplaneEntity, MapDocument } from '../map/schema.ts';
-import { horizontalDistance, type Vec3 } from '../math.ts';
+import { horizontalDistance, type Vec3, hypot } from '../math.ts';
 import { TICK_RATE } from './constants.ts';
 
 /**
@@ -31,7 +31,7 @@ export function airRoute(e: Pick<AirplaneEntity, 'position' | 'route' | 'altitud
   for (let i = 0; i < legs; i++) {
     const a = points[i]!;
     const b = points[(i + 1) % points.length]!;
-    length += Math.hypot(b.x - a.x, b.z - a.z);
+    length += hypot(b.x - a.x, b.z - a.z);
     at.push(length);
   }
   return { points, y: e.position[1] + e.altitude, loopSeconds: e.loopSeconds, closed: e.closed, at, length: Math.max(length, 1e-6) };
@@ -151,7 +151,7 @@ export function airplaneIssues(map: MapDocument, groundAt: (x: number, z: number
     for (let i = 0; i < r.points.length - (r.closed ? 0 : 1); i++) {
       const a = r.points[i]!;
       const b = r.points[(i + 1) % r.points.length]!;
-      const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 8));
+      const steps = Math.max(1, Math.ceil(hypot(b.x - a.x, b.z - a.z) / 8));
       for (let k = 0; k <= steps; k++) {
         const x = a.x + ((b.x - a.x) * k) / steps;
         const z = a.z + ((b.z - a.z) * k) / steps;

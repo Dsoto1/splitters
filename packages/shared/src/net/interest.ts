@@ -1,5 +1,6 @@
 import type { PlayerSnapshot, PrivateState, ServerMessage, Tuple3 } from '../protocol.ts';
 import { SNAPSHOT_INTERVAL_TICKS } from '../sim/constants.ts';
+import { hypot } from '../math.ts';
 
 /** The shared part of a snapshot (everything but the receiver's ack and private state). */
 export type SnapshotBody = Omit<Extract<ServerMessage, { t: 'snapshot' }>, 't' | 'ack' | 'me'>;
@@ -179,7 +180,7 @@ export function interestFor(body: SnapshotBody, viewer: number): { send: number[
   const send: number[] = [];
   const hold: number[] = [];
   players.forEach((p, i) => {
-    const d = Math.hypot(p.p[0] - me.p[0], p.p[2] - me.p[2]);
+    const d = hypot(p.p[0] - me.p[0], p.p[2] - me.p[2]);
     const every = p === me ? 1 : interestEvery(d);
     if ((n + p.s) % every === 0) send.push(i);
     else hold.push(p.s);

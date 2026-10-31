@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MODE_LABELS, isMapId, isRetiredMap, loadMap, mapContentHash, mapIdentity, parsePlaylist, sanitizeName, type BotSet, type LobbyAdvert, type MapDocument, type RotationState, type ServerStats } from '@tiletrigger/shared';
+import { MODE_LABELS, SERVER_RULES, serverRuleFor, isMapId, isRetiredMap, loadMap, mapContentHash, mapIdentity, parsePlaylist, sanitizeName, type BotSet, type LobbyAdvert, type MapDocument, type RotationState, type ServerStats } from '@tiletrigger/shared';
 import { suiteLookup } from '@tiletrigger/server/rotation';
-import { startServer, type RunningServer } from '@tiletrigger/server/server';
+import { startServer, type RulesState, type RunningServer } from '@tiletrigger/server/server';
 import { verifyTicket } from '@tiletrigger/server/tickets';
 import { LobbyAdvertiser, type Fetch } from './advertiser.ts';
 import type { BanList } from './bans.ts';
@@ -45,6 +45,19 @@ export interface HostStatus {
   rotation: RotationState & { items: string[] };
   /** The host's bot set now (null: random bots): the service saves it, so a restart keeps it. */
   botSet: BotSet | null;
+  /** The match rules (RULES) the server keeps, what plays now and what waits: the service saves `set`. */
+  rules: RulesState;
+  /** The rules this mode uses, one row each for the launcher: what plays, what the server sets (null: default) and where, waiting. */
+  ruleRows: { key: string; now: unknown; set: unknown; from: 'map' | 'mode' | 'all' | null; pending: boolean }[];
+  /** Players and bots to keep, team sizes (team modes), bot skill and style now (the service saves fill and skill). */
+  fill: number;
+  sizes: number[];
+  skill: 'easy' | 'normal' | 'hard';
+  style: 'mixed' | 'arena' | 'tactical';
+  /** The join message and the idle limits now. */
+  motd: string | null;
+  afkSeconds: number;
+  idleKickMinutes: number;
 }
 
 export interface RunningHost {
@@ -182,6 +195,9 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
     ...(config.rotation?.length ? { rotation: config.rotation } : {}),
     rotationShuffle: config.rotationShuffle,
     ...(config.botSet !== undefined ? { botSet: config.botSet } : {}),
+    // The Host Service keeps its own match rules (RULES): every match it plays takes them.
+    serverRules: config.rules ?? {},
+    ...(config.motd ? { motd: config.motd } : {}),
     name: config.name,
     adminToken: config.adminToken,
     lanDiscovery: false,
@@ -240,8 +256,8 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
               host: config.hostName,
               ...currentListing(),
               mode: server.match.rules.mode,
-              players: Math.min(server.info().players, config.maxPlayers),
-              max: config.maxPlayers,
+              players: Math.min(server.info().players, server.live().maxPlayers),
+              max: server.live().maxPlayers,
               relay: link.relay,
               hostType: 'dedicated',
               region: config.region,
@@ -294,6 +310,13 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
       void advertiser?.tick();
     },
     maps,
+    rules: () => server.rules(),
+    setRule: (key, value, by, where) => server.setRule(key, value, by, where),
+    setLive: (o) => {
+      server.setLive(o);
+      if (o.maxPlayers !== undefined) void advertiser?.tick();
+    },
+    live: () => server.live(),
   };
 
   return {
@@ -319,7 +342,7 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
         community: !!currentListing().community,
         players: info.players,
         bots: info.bots,
-        maxPlayers: config.maxPlayers,
+        maxPlayers: server.live().maxPlayers,
         uptimeS: Math.round((Date.now() - startedAt) / 1000),
         hubReconnects: link.reconnects,
         tickMs: lastStats?.tickMsAvg ?? 0,
@@ -327,6 +350,15 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
         people: server.players().map((p) => ({ slot: p.slot, name: p.name, account: !!p.sub, ping: p.ping, team: p.team, kills: p.kills, deaths: p.deaths })),
         rotation: server.rotation(),
         botSet: server.botSet(),
+        ...((r) => ({
+          rules: r,
+          ruleRows: SERVER_RULES.filter((s) => !s.modes || s.modes(r.now.mode)).map((s) => {
+            const got = serverRuleFor(r.set, s.key, r.map, r.now.mode);
+            return { key: s.key, now: s.read(r.now), set: got?.value ?? null, from: got?.from ?? null, pending: r.pending.includes(s.key) };
+          }),
+        }))(server.rules()),
+        ...((st) => ({ fill: st.fill, sizes: st.sizes ?? [], skill: st.skill, style: st.style }))(server.hostState()),
+        ...((l) => ({ motd: l.motd, afkSeconds: l.afkSeconds, idleKickMinutes: l.idleKickMinutes }))(server.live()),
       };
     },
     stop: async (reason = 'The server is shutting down') => {

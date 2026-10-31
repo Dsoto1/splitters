@@ -1,6 +1,7 @@
 import type { ValidationIssue } from './validate.ts';
 import { RaceSettings, type MapDocument, type MapEntity, type MapPath, type MountEntity, type PathUse, type Track } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
+import { hypot } from '../math.ts';
 
 /**
  * Path curves and race tracks. Every path (schema.ts MapPath: roads, the
@@ -72,7 +73,7 @@ export interface CurveShape {
 
 /** Centripetal Catmull-Rom (Barry and Goldman) between p1 and p2 at u in [0, 1]. */
 function centripetal(p0: readonly number[], p1: readonly number[], p2: readonly number[], p3: readonly number[], u: number): [number, number, number] {
-  const knot = (a: readonly number[], b: readonly number[]) => Math.max(1e-3, Math.sqrt(Math.hypot(b[0]! - a[0]!, b[1]! - a[1]!, b[2]! - a[2]!)));
+  const knot = (a: readonly number[], b: readonly number[]) => Math.max(1e-3, Math.sqrt(hypot(b[0]! - a[0]!, b[1]! - a[1]!, b[2]! - a[2]!)));
   const t0 = 0;
   const t1 = t0 + knot(p0, p1);
   const t2 = t1 + knot(p1, p2);
@@ -115,7 +116,7 @@ export class TrackGeometry {
     this.width = track.width;
     this.samples = centreLine(track, this.loop, shape);
     const last = this.samples[this.samples.length - 1]!;
-    this.length = this.loop ? last.s + Math.hypot(this.samples[0]!.x - last.x, this.samples[0]!.z - last.z) : last.s;
+    this.length = this.loop ? last.s + hypot(this.samples[0]!.x - last.x, this.samples[0]!.z - last.z) : last.s;
     const depth = GRID_FRONT + Math.ceil(track.grid / 2) * GRID_ROW + 4;
     this.start = this.loop ? 0 : Math.min(depth, this.length * 0.4);
     this.gates = this.buildGates();
@@ -152,7 +153,7 @@ export class TrackGeometry {
     const t = span > 1e-6 ? (s - a.s) / span : 0;
     const dx = a.dx + (b.dx - a.dx) * t;
     const dz = a.dz + (b.dz - a.dz) * t;
-    const l = Math.hypot(dx, dz) || 1;
+    const l = hypot(dx, dz) || 1;
     return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t, dx: dx / l, dz: dz / l, s };
   }
 
@@ -242,8 +243,8 @@ export class TrackGeometry {
 function centreLine(track: Track, loop: boolean, shape: CurveShape): TrackSample[] {
   const step = shape.step ?? STEP;
   // Repeated points would make zero-length spans.
-  const pts = track.points.filter((p, i, a) => i === 0 || Math.hypot(p[0] - a[i - 1]![0], p[2] - a[i - 1]![2]) > 0.05);
-  if (loop && pts.length > 2 && Math.hypot(pts[0]![0] - pts[pts.length - 1]![0], pts[0]![2] - pts[pts.length - 1]![2]) < 0.05) pts.pop();
+  const pts = track.points.filter((p, i, a) => i === 0 || hypot(p[0] - a[i - 1]![0], p[2] - a[i - 1]![2]) > 0.05);
+  if (loop && pts.length > 2 && hypot(pts[0]![0] - pts[pts.length - 1]![0], pts[0]![2] - pts[pts.length - 1]![2]) < 0.05) pts.pop();
   if (pts.length < 2) {
     const p = pts[0] ?? [0, 0, 0];
     pts.push([p[0], p[1], p[2] + 1]);
@@ -265,7 +266,7 @@ function centreLine(track: Track, loop: boolean, shape: CurveShape): TrackSample
     const p1 = get(i);
     const p2 = get(i + 1);
     const p3 = get(i + 2);
-    const steps = Math.max(1, Math.ceil(Math.hypot(p2[0]! - p1[0]!, p2[2]! - p1[2]!) / step));
+    const steps = Math.max(1, Math.ceil(hypot(p2[0]! - p1[0]!, p2[2]! - p1[2]!) / step));
     for (let k = 0; k < steps; k++) {
       const t = k / steps;
       if (shape.centripetal) {
@@ -298,12 +299,12 @@ function centreLine(track: Track, loop: boolean, shape: CurveShape): TrackSample
   let s = 0;
   for (let i = 0; i < m; i++) {
     const p = raw[i]!;
-    if (i > 0) s += Math.hypot(p.x - raw[i - 1]!.x, p.z - raw[i - 1]!.z);
+    if (i > 0) s += hypot(p.x - raw[i - 1]!.x, p.z - raw[i - 1]!.z);
     const prev = loop ? raw[(i - 1 + m) % m]! : raw[Math.max(0, i - 1)]!;
     const next = loop ? raw[(i + 1) % m]! : raw[Math.min(m - 1, i + 1)]!;
     const dx = next.x - prev.x;
     const dz = next.z - prev.z;
-    const l = Math.hypot(dx, dz) || 1;
+    const l = hypot(dx, dz) || 1;
     out.push({ x: p.x, y: ys[i]!, z: p.z, dx: dx / l, dz: dz / l, s });
   }
   return out;

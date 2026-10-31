@@ -4,13 +4,13 @@ import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { BanList } from './bans.ts';
 import { runChild } from './child.ts';
-import { COMMANDS, complete, helpText, parseCommand } from './commands.ts';
+import { COMMANDS, complete, helpText, parseCommand, parseRulesArgs } from './commands.ts';
 import { ConfigError, describeConfig, loadConfig, type HostConfig } from './config.ts';
 import { DEFAULT_CONTROL_PORT, startControl } from './control.ts';
 import { DEFAULT_MAPS_DIR, suiteIds } from './host.ts';
 import { readRotationPresets } from '@tiletrigger/server/rotation';
 import { readBotSetPresets, resolveBotSet } from '@tiletrigger/server/botSets';
-import { sameBotSet } from '@tiletrigger/shared';
+import { HOST_BOT_SKILLS, HOST_BOT_STYLES, MAX_PLAYER_SLOTS, MODE_LABELS, SERVER_RULES, isGameMode, ruleSpec, ruleText, sameBotSet, serverRuleFor, setServerRule, type GameMode, type ServerRules } from '@tiletrigger/shared';
 import { openLauncherWindow } from './appWindow.ts';
 import { LogBuffer, mapCatalog } from './launcher.ts';
 import { syncMaps } from './published.ts';
@@ -135,6 +135,36 @@ async function service(): Promise<void> {
         const { botSet: _b, ...rest } = sup.config;
         sup.config = { ...rest, ...(h.botSet ? { botSet: { ...h.botSet } as unknown as Record<string, unknown> } : {}) };
         state.save(sup.config, true);
+      }
+      // Whatever was changed in the match (console, launcher, an in-game admin) is kept for the next start too.
+      if (sup.state === 'running' && h && sup.config) {
+        const c = sup.config;
+        const next: HostConfig = { ...c };
+        const rules = h.rules?.set;
+        if (rules && JSON.stringify(rules) !== JSON.stringify(c.rules ?? {})) {
+          delete next.rules;
+          if (Object.keys(rules).length) next.rules = rules;
+        }
+        if (h.skill && h.skill !== (c.botDifficulty ?? 'normal')) next.botDifficulty = h.skill;
+        if (h.fill && h.fill !== c.botFill) next.botFill = h.fill;
+        if (h.maxPlayers && h.maxPlayers !== c.maxPlayers) next.maxPlayers = h.maxPlayers;
+        if ((h.motd ?? undefined) !== c.motd) {
+          delete next.motd;
+          if (h.motd) next.motd = h.motd;
+        }
+        if (h.afkSeconds !== undefined && h.afkSeconds !== c.afkSeconds) next.afkSeconds = h.afkSeconds;
+        if (h.idleKickMinutes !== undefined && h.idleKickMinutes !== c.idleKickMinutes) next.idleKickMinutes = h.idleKickMinutes;
+        if (h.visibility && h.visibility !== c.visibility) next.visibility = h.visibility;
+        if (h.name && h.name !== c.name) next.name = h.name;
+        // Map and mode: without a rotation, the next start plays what plays now (a rotation starts where it was set to).
+        if (!h.rotation?.items.length && h.mapId && suite.has(h.mapId) && (h.mapId !== c.map || h.mode !== (c.mode ?? h.mode))) {
+          next.map = h.mapId;
+          if (isGameMode(h.mode)) next.mode = h.mode;
+        }
+        if (JSON.stringify(next) !== JSON.stringify(c)) {
+          sup.config = next;
+          state.save(next, true);
+        }
       }
       const key = `${sup.state}|${h?.code}|${h?.online}|${h?.listed}`;
       if (key === lastHost) return;
@@ -267,11 +297,86 @@ async function service(): Promise<void> {
         return '';
       case 'launcher':
         return openLauncher();
+      case 'rules':
+      case 'skill':
+      case 'style':
+      case 'maxplayers':
+      case 'motd':
+      case 'afk':
+      case 'idlekick':
+        // Running: the match changes it (live, at the restart or at the next match) and the service keeps it.
+        // Stopped: it is a setting for the next start.
+        if (sup.state === 'running') return sup.command(name, a, rest);
+        return offlineSetting(name, a, rest);
       default: {
         const spec = COMMANDS.find((c) => c.name === name);
         return spec?.match ? sup.command(name, a, rest) : `unknown command ${name}`;
       }
     }
+  };
+
+  /** A match setting changed while the server is stopped: the next start's. */
+  const offlineSetting = (name: string, a: string[], rest: string): string => {
+    const c: HostConfig = { ...(sup.config ?? base) };
+    const save = (next: HostConfig, text: string) => {
+      sup.config = next;
+      state.save(next, false);
+      return `${text} (the server is stopped: from the next start)`;
+    };
+    const mapModes = launcherMaps.find((m) => m.id === c.map)?.modes.map((m) => m.id) ?? [];
+    const mode = (c.mode ?? mapModes[0] ?? 'core.deathmatch') as GameMode;
+    switch (name) {
+      case 'rules': {
+        const r = parseRulesArgs(a);
+        if ('error' in r) return r.error;
+        const set: ServerRules = c.rules ?? {};
+        if ('list' in r) {
+          const rows = SERVER_RULES.filter((s) => !s.modes || s.modes(mode)).map((s) => {
+            const got = serverRuleFor(set, s.key, c.map, mode);
+            return `  ${s.key.padEnd(11)} ${got ? `${ruleText(s, got.value)}${got.from === 'map' ? ' (this map)' : ''}` : 'default'}`;
+          });
+          return [`Match rules for the next start (${MODE_LABELS[mode]} on ${c.map}):`, ...rows].join('\n');
+        }
+        if ('reset' in r) {
+          const { rules: _r, ...restC } = c;
+          return save(restC, 'every rule back to the default');
+        }
+        const spec = ruleSpec(r.key)!;
+        const next = setServerRule(set, r.key, r.value, { mode, ...(r.map ? { map: c.map } : {}) });
+        const { rules: _r, ...restC } = c;
+        return save({ ...restC, ...(Object.keys(next).length ? { rules: next } : {}) }, `${spec.label} set to ${r.text}${r.map ? ` on ${c.map}` : spec.perMode ? ` in ${MODE_LABELS[mode]}` : ''}`);
+      }
+      case 'skill': {
+        const v = HOST_BOT_SKILLS.find((x) => x === a[0]);
+        if (!v) return `usage: skill ${HOST_BOT_SKILLS.join('|')}`;
+        return save({ ...c, botDifficulty: v }, `bot skill set to ${v}`);
+      }
+      case 'style': {
+        const v = HOST_BOT_STYLES.find((x) => x === a[0]);
+        if (!v) return `usage: style ${HOST_BOT_STYLES.join('|')}`;
+        const next = setServerRule(c.rules ?? {}, 'style', v === 'mixed' ? undefined : v, { mode });
+        const { rules: _r, ...restC } = c;
+        return save({ ...restC, ...(Object.keys(next).length ? { rules: next } : {}) }, `bot style set to ${v}`);
+      }
+      case 'maxplayers': {
+        const n = Number(a[0]);
+        if (!Number.isInteger(n) || n < 1 || n > MAX_PLAYER_SLOTS) return `usage: maxplayers <1-${MAX_PLAYER_SLOTS}>`;
+        return save({ ...c, maxPlayers: n }, `up to ${n} people at once`);
+      }
+      case 'motd': {
+        if (!rest) return c.motd ? `join message: ${c.motd}` : 'no join message (motd <text> sets one)';
+        const { motd: _m, ...restC } = c;
+        return rest === 'clear' ? save(restC, 'join message removed') : save({ ...restC, motd: rest.slice(0, 200) }, `join message set: ${rest.slice(0, 200)}`);
+      }
+      case 'afk':
+      case 'idlekick': {
+        const n = Number(a[0]);
+        const max = name === 'afk' ? 3600 : 1440;
+        if (!Number.isInteger(n) || n < 0 || n > max) return `usage: ${name} <0-${max}>`;
+        return save(name === 'afk' ? { ...c, afkSeconds: n } : { ...c, idleKickMinutes: n }, `${name} set to ${n}`);
+      }
+    }
+    return `unknown setting ${name}`;
   };
 
   // The window already shows what was typed there; a line from the launcher is echoed in the window too.

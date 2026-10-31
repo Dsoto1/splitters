@@ -77,7 +77,7 @@ const tokenMatches = (a: string, b: string) => {
 };
 
 /** What a start request may set (all checked; anything else in the body is refused). */
-const START_KEYS = new Set(['map', 'mode', 'botFill', 'maxPlayers', 'botDifficulty', 'name', 'hostName', 'visibility', 'adminToken', 'joinCode', 'leaders', 'botTakeBack', 'afkSeconds', 'rotation', 'rotationShuffle', 'botSet']);
+const START_KEYS = new Set(['map', 'mode', 'botFill', 'maxPlayers', 'botDifficulty', 'name', 'hostName', 'visibility', 'adminToken', 'joinCode', 'leaders', 'botTakeBack', 'afkSeconds', 'idleKickMinutes', 'rotation', 'rotationShuffle', 'botSet', 'rules', 'motd']);
 
 /** A start request's settings on top of the service's own (throws ConfigError with a message for the page). */
 export function startConfig(body: unknown, base: HostConfig, suite: ReadonlySet<string>): HostConfig {
@@ -91,13 +91,17 @@ export function startConfig(body: unknown, base: HostConfig, suite: ReadonlySet<
   if (o.map !== undefined && !(typeof o.map === 'string' && isMapId(o.map) && suite.has(o.map))) throw new ConfigError('map must be one of the game\'s maps');
   if (o.mode !== undefined && !(typeof o.mode === 'string' && (GAME_MODES as readonly string[]).includes(o.mode))) throw new ConfigError('unknown mode');
   for (const k of ['name', 'hostName', 'adminToken', 'joinCode']) if (o[k] !== undefined && (typeof o[k] !== 'string' || (o[k] as string).length > 64)) throw new ConfigError(`${k} must be text (at most 64 characters)`);
-  for (const k of ['botFill', 'maxPlayers', 'afkSeconds']) if (o[k] !== undefined && typeof o[k] !== 'number') throw new ConfigError(`${k} must be a number`);
+  for (const k of ['botFill', 'maxPlayers', 'afkSeconds', 'idleKickMinutes']) if (o[k] !== undefined && typeof o[k] !== 'number') throw new ConfigError(`${k} must be a number`);
   // The rotation: a list of "map:mode" / "preset:<name>" items (parseConfig checks their form; the match, the maps).
   if (o.rotation !== undefined && !(Array.isArray(o.rotation) && o.rotation.length <= 40 && o.rotation.every((x) => typeof x === 'string' && x.length <= 70))) throw new ConfigError('rotation must be a list of map:mode items');
   if (o.rotationShuffle !== undefined && typeof o.rotationShuffle !== 'boolean') throw new ConfigError('rotationShuffle must be true or false');
   // The bot set: a built-in set's name or the text form ("Name, look, skill; …"); never a file from a page.
   if (o.botSet !== undefined && !(typeof o.botSet === 'string' && o.botSet.length <= BOTSET_MAX_TEXT && !o.botSet.trim().endsWith('.json'))) throw new ConfigError('botSet must be a bot set\'s name or a list of bots');
   if (o.botSet === '') o.botSet = undefined;
+  // The match rules: an object of rules (parseConfig checks every one); the join message: text.
+  if (o.rules !== undefined && (typeof o.rules !== 'object' || o.rules === null || Array.isArray(o.rules) || JSON.stringify(o.rules).length > 4000)) throw new ConfigError('rules must be an object of match rules');
+  if (o.motd !== undefined && (typeof o.motd !== 'string' || o.motd.length > 200)) throw new ConfigError('motd must be text (at most 200 characters)');
+  if (o.motd === '') o.motd = undefined;
   const merged: Record<string, unknown> = { ...base, playlist: undefined, ...o };
   for (const k of clear) delete merged[k];
   if (merged.leaders === true) merged.leaders = 'on';

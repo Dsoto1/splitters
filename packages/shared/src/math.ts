@@ -11,8 +11,15 @@ export const sub = (a: Vec3, b: Vec3): Vec3 => ({ x: a.x - b.x, y: a.y - b.y, z:
 export const scale = (a: Vec3, s: number): Vec3 => ({ x: a.x * s, y: a.y * s, z: a.z * s });
 export const dot = (a: Vec3, b: Vec3): number => a.x * b.x + a.y * b.y + a.z * b.z;
 export const length = (a: Vec3): number => Math.sqrt(dot(a, a));
-export const distance = (a: Vec3, b: Vec3): number => length(sub(a, b));
-export const horizontalDistance = (a: Vec3, b: Vec3): number => Math.hypot(a.x - b.x, a.z - b.z);
+/**
+ * sqrt(a² + b² + c²). The sim's stand-in for Math.hypot, which V8 runs as a builtin call that boxes its
+ * result: in a 96-bot match that was ~20,000 heap numbers a tick (about a fifth of everything the server
+ * tick allocated, and the young-generation collections that come with it), and three times slower. No
+ * overflow guard: game distances are nowhere near 1e154.
+ */
+export const hypot = (a: number, b: number, c = 0): number => Math.sqrt(a * a + b * b + c * c);
+export const distance = (a: Vec3, b: Vec3): number => hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+export const horizontalDistance = (a: Vec3, b: Vec3): number => hypot(a.x - b.x, a.z - b.z);
 
 export function normalize(a: Vec3): Vec3 {
   const len = length(a);
@@ -32,7 +39,7 @@ export function viewDirection(yaw: number, pitch: number): Vec3 {
 /** Yaw/pitch that look from `from` toward `to`. Inverse of {@link viewDirection}. */
 export function lookAngles(from: Vec3, to: Vec3): { yaw: number; pitch: number } {
   const d = sub(to, from);
-  return { yaw: Math.atan2(d.x, d.z), pitch: Math.atan2(d.y, Math.hypot(d.x, d.z)) };
+  return { yaw: Math.atan2(d.x, d.z), pitch: Math.atan2(d.y, hypot(d.x, d.z)) };
 }
 
 /** Smallest signed difference `b - a` between two angles, in (-PI, PI]. */

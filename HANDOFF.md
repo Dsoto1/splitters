@@ -60,6 +60,20 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   need `pnpm e2e:baselines`.
 
 ### Owner notes, 2026-10-30 evening (not done yet; next session start here)
+- **Done on `wip/launcher-parity` (agent, 2026-10-31; not merged, needs a check/ run: it maps to the full suite):**
+  the owner's "dedicated launcher settings parity + Iron Maw hiccups". Every browser-host match setting is in the
+  Host Service: launcher Match rules card (tagged live / restart / next match, with Restart now), console `rules`
+  (`rules score 60`, `rules map time 20`, `rules reset`), `RULES` in host.json (shared/src/sim/serverRules.ts:
+  spec table, per mode for score/time/respawn, per map overrides; applied by the server at every new match;
+  in-game admins' rule changes kept too). Extras: `skill`, `style`, `maxplayers`, `afk`, `idlekick` live,
+  `motd` join message, uneven `teams 10 8`; whatever changes while running is saved for the next start.
+  New server message `{t:'rules'}` so players' HUDs follow a restart with new rules. Parity table: docs/HOSTING.md
+  "Match settings". Perf: ~40% less garbage per tick at 96 (Math.hypot → shared `hypot`, mover pose memo,
+  movement state, history ring) + `--max-semi-space-size=64` for the match process; Iron Maw TDM tick avg
+  4.5 → 3.6 ms, ticks >12 ms 40 → 19 per 2,400 (docs/HOSTING.md "Performance: Iron Maw at 96"); bench `--spikes`.
+  Local e2e: dedicatedhost, hostpage, hostcontrols, online, offline, vehicles passed. Not done: the site's /host page
+  has no rules controls (its start keeps the launcher's rules); remaining 30-90 ms single ticks were mostly CPU
+  starvation on this box, not measured on a quiet PC.
 - **Flaky e2e to fix properly:** `mobile` "a tap on the pad middle jumps" fails intermittently on CI (both attempts on
   e8f449a, passed on a715e60/b4d55de; passes locally). The crouch-on-next-frame change (bb06a47) didn't cure it. Look at
   how the CDP touch timestamps map to the page's `e.timeStamp` (touchControls.ts tap vs hold) and whether the player

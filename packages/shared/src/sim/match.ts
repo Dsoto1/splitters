@@ -10,7 +10,7 @@ import { regionLayout } from '../bots/regions.ts';
 import { VantageBoard, vantageFor } from '../bots/vantage.ts';
 import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole, type PickupEntity } from '../map/schema.ts';
-import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3 } from '../math.ts';
+import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3, hypot } from '../math.ts';
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
   AIRPLANE_DEF, BUILT_MOUNT_BASE, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
@@ -517,7 +517,12 @@ export class Match {
   private readonly jamUntil = new Map<string, number>();
   private nextCoverId = 1;
   /** Positions of everyone at recent ticks, for lag-compensated hitscan. */
-  private readonly history = new Map<number, Map<number, Vec3 & { h: number }>>();
+  /**
+   * Where everyone was over the last HISTORY_TICKS ticks (lag compensation), as a ring: each tick reuses the
+   * oldest entry's map and position objects instead of making new ones (they lived just long enough to be
+   * promoted out of the young generation, then died: work for the full collections behind the hiccups).
+   */
+  private readonly history: { tick: number; at: Map<number, Vec3 & { h: number }>; pool: Map<number, Vec3 & { h: number }> }[] = [];
   /** Bot AI time spent in the most recent tick, for instrumentation. */
   lastAiMs = 0;
   /**
@@ -1694,7 +1699,7 @@ export class Match {
     if (fired !== undefined && this.tick - fired < 2 * TICK_RATE) return false;
     const p = c.move.pos;
     const eye = p.y + eyeHeightOf(c.move);
-    return this.hides.some((h) => p.y >= h.y0 && eye <= h.y1 + 0.15 && Math.hypot(p.x - h.x, p.z - h.z) < h.r);
+    return this.hides.some((h) => p.y >= h.y0 && eye <= h.y1 + 0.15 && hypot(p.x - h.x, p.z - h.z) < h.r);
   }
 
   private runBots(): void {
@@ -1877,8 +1882,11 @@ export class Match {
         input = c.bot.think(view);
         thoughts++;
         if (simProfile.on) {
-          simProfile.add('botThink', performance.now() - tt);
+          const took = performance.now() - tt;
+          simProfile.add('botThink', took);
           simProfile.count('botThink');
+          // The slowest single think (bench --spikes: one bot's bad moment, or many ordinary ones).
+          if (took > (simProfile.ms.get('botThink slowest') ?? 0)) simProfile.ms.set('botThink slowest', took);
         }
       }
       // Melee creatures rush the target they can see instead of keeping their distance.
@@ -2378,7 +2386,7 @@ export class Match {
             c.bot?.turned(through.turn);
           }
           this.trackFall(c, before, c.move !== stepped);
-          c.moveSpeed = Math.hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / dt;
+          c.moveSpeed = hypot(c.move.pos.x - was.x, c.move.pos.z - was.z) / dt;
           if (c.jetFuel !== null) c.jetFuel = stepJetFuel(c.jetFuel, !!c.move.jet);
         }
       }
@@ -2682,7 +2690,7 @@ export class Match {
       }
       const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
       // Shots go through breakable glass, shattering it on the way (sim/glass.ts), and lose a little for each pane.
-      const broke = this.scenario.shootGlass(eye, dir, Math.hypot(shot.end.x - eye.x, shot.end.y - eye.y, shot.end.z - eye.z), shooter.slot);
+      const broke = this.scenario.shootGlass(eye, dir, hypot(shot.end.x - eye.x, shot.end.y - eye.y, shot.end.z - eye.z), shooter.slot);
       to.push(tuple(shot.end));
       hits.push(shot.hitSlot);
       const zone = shot.hitSlot !== null ? hitZone(feetOf(shot.hitSlot), shot.end.y, heightOf(shot.hitSlot)) : 0;
@@ -2723,7 +2731,7 @@ export class Match {
     // Just spawned: the disc glances off.
     if (this.tick - (victim.spawnedAt ?? -Infinity) < DISC_SPAWN_GUARD_SECONDS * TICK_RATE) return;
     if (p.spec.status) this.applyStatus(victim, p.spec.status, owner ?? null, p.weapon);
-    const h = Math.hypot(dir.x, dir.z) || 1;
+    const h = hypot(dir.x, dir.z) || 1;
     victim.move = { ...victim.move, vx: (victim.move.vx ?? 0) + (dir.x / h) * disc.push, vz: (victim.move.vz ?? 0) + (dir.z / h) * disc.push, velY: Math.max(victim.move.velY, disc.lift), grounded: false };
     if (owner && owner !== victim) victim.knockedBy = { slot: owner.slot, tick: this.tick, weapon: p.weapon };
     victim.hurtAt = this.tick;
@@ -2795,7 +2803,7 @@ export class Match {
     if (!victim.alive || victim.mount || victim.invulnerable) return;
     const shove = hitImpact(victim.impact, power, share);
     if (shove <= 0) return;
-    const h = Math.hypot(dir.x, dir.z);
+    const h = hypot(dir.x, dir.z);
     if (h < 0.05) return;
     victim.move = { ...victim.move, vx: (victim.move.vx ?? 0) + (dir.x / h) * shove, vz: (victim.move.vz ?? 0) + (dir.z / h) * shove };
   }
@@ -2849,7 +2857,7 @@ export class Match {
 
   /** Shove a player along `dir` (horizontal push plus a little lift). */
   private push(c: Combatant, dir: Vec3, speed: number): void {
-    const h = Math.hypot(dir.x, dir.z) || 1;
+    const h = hypot(dir.x, dir.z) || 1;
     c.move = { ...c.move, vx: (c.move.vx ?? 0) + (dir.x / h) * speed, vz: (c.move.vz ?? 0) + (dir.z / h) * speed, velY: Math.max(c.move.velY, speed * 0.45 + dir.y * speed * 0.5), grounded: false };
   }
 
@@ -2887,7 +2895,8 @@ export class Match {
     let past: Map<number, Vec3 & { h: number }> | undefined;
     if (shooter.kind === 'human' && viewTick > 0) {
       const t = Math.max(this.tick - MAX_REWIND_TICKS, Math.min(this.tick, viewTick));
-      past = this.history.get(t);
+      const e = this.history[t % HISTORY_TICKS];
+      past = e?.tick === t ? e.at : undefined;
     }
     // Allies are not targets: shots pass through them (no friendly fire).
     return this.actors()
@@ -2899,10 +2908,20 @@ export class Match {
   }
 
   private recordHistory(): void {
-    const snap = new Map<number, Vec3 & { h: number }>();
-    for (const c of this.actors()) if (c.alive) snap.set(c.slot, { ...c.move.pos, h: bodyHeightOf(c.move, c.size) });
-    this.history.set(this.tick, snap);
-    this.history.delete(this.tick - HISTORY_TICKS);
+    const i = this.tick % HISTORY_TICKS;
+    const e = this.history[i] ?? (this.history[i] = { tick: -1, at: new Map(), pool: new Map() });
+    e.tick = this.tick;
+    e.at.clear();
+    for (const c of this.actors()) {
+      if (!c.alive) continue;
+      let o = e.pool.get(c.slot);
+      if (!o) e.pool.set(c.slot, (o = { x: 0, y: 0, z: 0, h: 0 }));
+      o.x = c.move.pos.x;
+      o.y = c.move.pos.y;
+      o.z = c.move.pos.z;
+      o.h = bodyHeightOf(c.move, c.size);
+      e.at.set(c.slot, o);
+    }
   }
 
   private stepProjectiles(): void {
@@ -2951,7 +2970,7 @@ export class Match {
       if (spec.drag) p.vel = scale(p.vel, Math.max(0, 1 - spec.drag * TICK_DT));
       p.vel = { x: p.vel.x, y: p.vel.y - spec.gravity * TICK_DT, z: p.vel.z };
       const delta = scale(p.vel, TICK_DT);
-      const len = Math.hypot(delta.x, delta.y, delta.z);
+      const len = hypot(delta.x, delta.y, delta.z);
       const dir = scale(delta, 1 / (len || 1));
       this.physics.shotSkip = p.fromMount !== undefined ? (this.mounts[p.fromMount]?.body ?? null) : null;
       const wall = this.physics.raycastNormal(p.pos, dir, len);
@@ -3003,7 +3022,7 @@ export class Match {
         }
         if (!victim && wall && spec.walker && wall.normal.y > 0.6) {
           // Landed: off it goes, the way it was thrown.
-          const h = Math.hypot(p.vel.x, p.vel.z);
+          const h = hypot(p.vel.x, p.vel.z);
           p.heading = h > 0.1 ? { x: p.vel.x / h, y: 0, z: p.vel.z / h } : { x: Math.sin(owner?.yaw ?? 0), y: 0, z: Math.cos(owner?.yaw ?? 0) };
           p.pos = add(at, scale(wall.normal, 0.05));
           p.vel = { x: 0, y: 0, z: 0 };
@@ -3223,7 +3242,7 @@ export class Match {
     const dx = c.x - a.x;
     const dy = c.y - a.y;
     const dz = c.z - a.z;
-    const len = Math.hypot(dx, dy, dz);
+    const len = hypot(dx, dy, dz);
     if (len < 1e-6) return null;
     const u = { x: dx / len, y: dy / len, z: dz / len };
     const wall = this.physics.raycastNormal(a, u, len);
@@ -3435,9 +3454,9 @@ export class Match {
     if (!down) return;
     const pos = { x: from.x, y: from.y - down.dist, z: from.z };
     const half = { x: cover.half[0], y: cover.half[1], z: cover.half[2] };
-    const reach = Math.hypot(half.x, half.z) + PLAYER.radius;
+    const reach = hypot(half.x, half.z) + PLAYER.radius;
     for (const c of this.actors()) {
-      if (c.alive && Math.hypot(c.move.pos.x - pos.x, c.move.pos.z - pos.z) < reach && c.move.pos.y < pos.y + half.y * 2 && c.move.pos.y + PLAYER.height > pos.y) {
+      if (c.alive && hypot(c.move.pos.x - pos.x, c.move.pos.z - pos.z) < reach && c.move.pos.y < pos.y + half.y * 2 && c.move.pos.y + PLAYER.height > pos.y) {
         // Hand the bag back rather than wasting it.
         if (owner?.alive && (!owner.throwable || owner.throwable.kind === 'sandbag')) owner.throwable = { kind: 'sandbag', count: Math.min(THROWABLE_DEFS.sandbag.max, (owner.throwable?.count ?? 0) + 1) };
         return;
@@ -3475,8 +3494,8 @@ export class Match {
     const hook = add(eye, scale(aim, dist));
     const feet = shooter.move.pos;
     const to = { x: hook.x - feet.x, y: hook.y - feet.y - 0.6, z: hook.z - feet.z };
-    const flat = Math.hypot(to.x, to.z);
-    const t = Math.max(0.25, Math.hypot(flat, to.y) / speed);
+    const flat = hypot(to.x, to.z);
+    const t = Math.max(0.25, hypot(flat, to.y) / speed);
     const h = flat || 1;
     const along = Math.min(speed, flat / t);
     shooter.move = {
@@ -3519,9 +3538,9 @@ export class Match {
     const hit = this.physics.raycastWorld(eye, look, 300);
     const target = add(eye, scale(look, hit ?? 300));
     const to = sub(target, p.pos);
-    const d = Math.hypot(to.x, to.y, to.z);
+    const d = hypot(to.x, to.y, to.z);
     if (d < 0.5) return;
-    const speed = Math.hypot(p.vel.x, p.vel.y, p.vel.z) || 1;
+    const speed = hypot(p.vel.x, p.vel.y, p.vel.z) || 1;
     const k = Math.min(1, turnRate * TICK_DT);
     p.vel = scale(normalize(add(scale(p.vel, (1 - k) / speed), scale(to, k / d))), speed);
   }
@@ -3576,14 +3595,14 @@ export class Match {
 
   /** Swarm missiles turn toward the nearest enemy ahead of them that they can see. */
   private steer(p: Projectile, owner: Combatant, homing: NonNullable<ProjectileSpec['homing']>): void {
-    const speed = Math.hypot(p.vel.x, p.vel.y, p.vel.z) || 1;
+    const speed = hypot(p.vel.x, p.vel.y, p.vel.z) || 1;
     const fwd = scale(p.vel, 1 / speed);
     let best: Vec3 | null = null;
     let bestD = homing.range;
     for (const c of this.actors()) {
       if (!c.alive || c === owner || !this.hostile(owner, c)) continue;
       const to = sub(chest(c.move.pos), p.pos);
-      const d = Math.hypot(to.x, to.y, to.z);
+      const d = hypot(to.x, to.y, to.z);
       if (d > bestD || dot(to, fwd) < d * 0.3) continue;
       if (!this.physics.lineOfSight(p.pos, chest(c.move.pos))) continue;
       best = scale(to, 1 / d);
@@ -3839,7 +3858,19 @@ export class Match {
   }
 
   private stepMounts(): void {
+    const prof = simProfile.on;
     for (const m of this.mounts) {
+      const t0 = prof ? performance.now() : 0;
+      this.stepMount(m);
+      // Profiling (bench --spikes): which kind of mount a slow tick went on.
+      if (prof) simProfile.add(`mount ${m.def.kind}${m.seats.some((s) => s !== null) ? ' (manned)' : ''}`, performance.now() - t0);
+    }
+    // Moved bodies must be in place before this tick's shots and sight checks.
+    if (this.mounts.length) this.physics.commit();
+  }
+
+  private stepMount(m: MountRt): void {
+    {
       if (!m.alive) {
         // The wreck settles where it fell, then stops being solid while it fades; the mount respawns at home later.
         if (this.tick < m.wreckUntil) this.settleWreck(m);
@@ -3848,7 +3879,7 @@ export class Match {
           this.physics.setBoxEnabled(m.body, false);
         }
         if (this.phase === 'playing' && this.tick >= m.respawnAt) this.respawnMount(m);
-        continue;
+        return;
       }
       // Mounted guns cool whenever they are not firing.
       for (const g of m.guns) {
@@ -3867,7 +3898,7 @@ export class Match {
       }
       if (m.def.sentry && this.race?.combat !== false) this.runSentry(m);
       if (m.alive && m.def.vehicle) this.vehicleHazards(m);
-      if (!m.alive) continue;
+      if (!m.alive) return;
       // Riders move with it; shooting their own guns from a moving one spreads like shooting on the run.
       m.seats.forEach((slot, seat) => {
         const c = slot === null ? undefined : this.actor(slot);
@@ -3876,8 +3907,6 @@ export class Match {
         c.moveSpeed = Math.abs(m.speed);
       });
     }
-    // Moved bodies must be in place before this tick's shots and sight checks.
-    if (this.mounts.length) this.physics.commit();
   }
 
   /** The plane follows its route by the clock; at the end of an open route it starts over, throwing out anyone still aboard. */
@@ -3951,12 +3980,12 @@ export class Match {
    * one. Each side's driver gets the credit for the other's damage.
    */
   private ramMounts(m: MountRt, vx: number, vz: number, driver: Combatant | null): void {
-    if (Math.hypot(vx, vz) < RAM_MIN_SPEED) return;
-    const reach = Math.hypot(m.def.half[0], m.def.half[2]) + 0.5;
+    if (hypot(vx, vz) < RAM_MIN_SPEED) return;
+    const reach = hypot(m.def.half[0], m.def.half[2]) + 0.5;
     for (const o of this.mounts) {
       if (o === m || o.route || (!o.alive && this.tick >= o.wreckUntil) || (m.rammed.get(o.index) ?? 0) > this.tick) continue;
       // Too far apart to touch (the exact test below is dearer).
-      const r = reach + Math.hypot(o.def.half[0], o.def.half[2]);
+      const r = reach + hypot(o.def.half[0], o.def.half[2]);
       if (Math.abs(o.pos.x - m.pos.x) > r || Math.abs(o.pos.z - m.pos.z) > r) continue;
       const c = footprintGap({ pos: m.pos, yaw: m.yaw, half: m.def.half }, { pos: o.pos, yaw: o.yaw, half: o.def.half });
       if (!c || c.gap > 0.3) continue;
@@ -4203,7 +4232,7 @@ export class Match {
           case 'singularity': {
             // Dragged in, harder near the middle, and lifted off the ground.
             const to = sub(z.pos, chest(c.move.pos));
-            const d = Math.hypot(to.x, to.y, to.z) || 1;
+            const d = hypot(to.x, to.y, to.z) || 1;
             const pull = 0.9 * (1 - d / z.radius) + 0.15;
             const vx = Math.max(-14, Math.min(14, (c.move.vx ?? 0) + (to.x / d) * pull));
             const vz = Math.max(-14, Math.min(14, (c.move.vz ?? 0) + (to.z / d) * pull));

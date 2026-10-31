@@ -1,5 +1,5 @@
-import { BOT_SET_MAX, GAME_MODES, MODE_LABELS, ROTATION_MAX, botSetFromText, botSetLabel, botSetToText, emptyBotSet, isGameMode, presetBotSet, type BotSet, type BotSetPreset, type GameMode, type HostCommand, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
-import type { PlayerInfo } from '@tiletrigger/server/server';
+import { BOT_SET_MAX, GAME_MODES, HOST_BOT_SKILLS, HOST_BOT_STYLES, MAX_PLAYER_SLOTS, MODE_LABELS, ROTATION_MAX, SERVER_RULES, botSetFromText, botSetLabel, botSetToText, emptyBotSet, isGameMode, parseRuleValue, presetBotSet, ruleSpec, serverRulesText, type BotSet, type BotSetPreset, type GameMode, type HostCommand, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
+import type { PlayerInfo, RulesState } from '@tiletrigger/server/server';
 
 /**
  * The server console's commands (main.ts reads them from the console window;
@@ -26,7 +26,14 @@ export const COMMANDS: readonly CommandSpec[] = [
   { name: 'map', args: '<map>', help: 'change map (one of the game\'s maps, by ID or name)', match: true },
   { name: 'mode', args: '<mode>', help: `change mode on this map (${GAME_MODES.map((m) => m.replace('core.', '')).join(', ')})`, match: true },
   { name: 'bots', args: '<n>', help: 'players and bots to keep (people take bots\' places)', match: true },
-  { name: 'teams', args: '[size]', help: 'show the teams, or set every team to this size (8 = 8v8)', match: true },
+  { name: 'teams', args: '[size | size size…]', help: 'show the teams, or set every team to this size (8 = 8v8), or each team its own (10 8)', match: true },
+  { name: 'skill', args: 'easy|normal|hard', help: 'bot skill, live', match: false },
+  { name: 'style', args: 'mixed|arena|tactical', help: 'bot style, live', match: false },
+  { name: 'rules', args: '[<rule> <value>|<rule> default|map <rule> <value>|reset]', help: 'the match rules (score, time, ff, respawn, gravity, classes…): list them, or set one for every match (map: this map only)', match: false },
+  { name: 'maxplayers', args: '<n>', help: 'people (not bots) who may play at once, live', match: false },
+  { name: 'motd', args: '[<text>|clear]', help: 'the message each player gets when they join', match: false },
+  { name: 'afk', args: '<seconds>', help: 'idle this long and a bot plays for a player until they\'re back (0: never), live', match: false },
+  { name: 'idlekick', args: '<minutes>', help: 'idle this long (still connected) and a player is removed (0: never), live', match: false },
   { name: 'rotation', args: '[add <map> [mode]|remove <n>|move <n> up|down|preset <name>|shuffle on|off|clear]', help: 'the map rotation: the maps played in turn after each match (empty: the match replays)', match: true },
   { name: 'skip', args: '', help: "go on to the rotation's next map now", match: true },
   { name: 'botset', args: '[preset <name>|add <name> [look] [skill] [team]|remove <n>|list <bot; bot…>|only|random|clear]', help: 'your own bots: names, looks, skills, teams, squads (a bot: "Name, look, skill, style, team, squad")', match: true },
@@ -60,6 +67,15 @@ export function parseCommand(line: string): Parsed | null {
 
 export const ROTATION_ACTIONS = ['add', 'remove', 'move', 'preset', 'shuffle', 'clear'] as const;
 export const BOTSET_ACTIONS = ['preset', 'add', 'remove', 'list', 'only', 'random', 'clear'] as const;
+/** What `rules` completes: the rule names, then (for a rule) its values. */
+export const RULE_WORDS = SERVER_RULES.map((r) => r.key);
+const ruleValues = (key: string): readonly string[] => {
+  const t = ruleSpec(key)?.type;
+  if (!t) return [];
+  if (t.kind === 'choice') return [...t.values.map(([v]) => v), 'default'];
+  if (t.kind === 'bool') return ['on', 'off', 'default'];
+  return ['default'];
+};
 
 /** Tab completion for the console: command names, then map IDs and modes where they fit. */
 export function complete(line: string, maps: readonly string[], presets: readonly string[] = [], botSets: readonly string[] = []): [string[], string] {
@@ -79,7 +95,13 @@ export function complete(line: string, maps: readonly string[], presets: readonl
     return [];
   };
   const botset = (): readonly string[] => (parts.length === 2 ? BOTSET_ACTIONS : parts[1] === 'preset' && parts.length === 3 ? botSets : []);
-  const pool = parts[0] === 'map' ? maps : parts[0] === 'mode' ? modes : parts[0] === 'visibility' ? ['listed', 'code'] : parts[0] === 'admin' ? ['token'] : parts[0] === 'rotation' ? rotation() : parts[0] === 'botset' ? botset() : [];
+  const rules = (): readonly string[] => {
+    const at = parts[1] === 'map' ? 2 : 1;
+    if (parts.length === 2) return [...RULE_WORDS, 'map', 'reset'];
+    if (parts.length === at + 1) return RULE_WORDS;
+    return parts.length === at + 2 ? ruleValues(parts[at]!) : [];
+  };
+  const pool = parts[0] === 'map' ? maps : parts[0] === 'mode' ? modes : parts[0] === 'visibility' ? ['listed', 'code'] : parts[0] === 'admin' ? ['token'] : parts[0] === 'rotation' ? rotation() : parts[0] === 'botset' ? botset() : parts[0] === 'rules' ? rules() : parts[0] === 'skill' ? HOST_BOT_SKILLS : parts[0] === 'style' ? HOST_BOT_STYLES : parts[0] === 'motd' ? ['clear'] : [];
   return [pool.filter((p) => p.startsWith(last)), last];
 }
 
@@ -155,7 +177,35 @@ export interface MatchCommandTarget {
   setVisibility(v: 'listed' | 'code'): void;
   setName(name: string): void;
   maps: ReadonlyMap<string, string>;
+  /** The match rules (RULES): what the server keeps, what plays, what waits; and setting one. */
+  rules(): RulesState;
+  setRule(key: string, value: unknown, by: string, where?: { map?: boolean }): string | null;
+  /** People at most, the join message, the idle limits: live. */
+  setLive(o: { maxPlayers?: number; motd?: string | null; afkSeconds?: number; idleKickMinutes?: number }): void;
+  live(): { maxPlayers: number; motd: string | null; afkSeconds: number; idleKickMinutes: number };
 }
+
+/**
+ * `rules …` (the parts after the word): which rule, its value (undefined: default) and whether for this map
+ * only; `{ list: true }` to list them; `{ reset: true }` to clear them all; or an error.
+ */
+export function parseRulesArgs(args: string[]): { list: true } | { reset: true } | { key: string; value: unknown; map: boolean; text: string } | { error: string } {
+  if (!args.length) return { list: true };
+  if (args[0] === 'reset' && args.length === 1) return { reset: true };
+  const map = args[0] === 'map';
+  const rest = map ? args.slice(1) : args;
+  const spec = rest[0] ? ruleSpec(rest[0]) : undefined;
+  if (!spec) return { error: rest[0] ? `no rule "${rest[0]}" (rules lists them: ${RULE_WORDS.join(', ')})` : 'usage: rules map <rule> <value>' };
+  const raw = rest.slice(1).join(' ');
+  if (!raw) return { error: `usage: rules ${map ? 'map ' : ''}${spec.key} <${spec.type.kind === 'choice' ? spec.type.values.map(([v]) => v).join('|') : spec.type.kind === 'bool' ? 'on|off' : spec.type.kind === 'int' ? `${spec.type.min}-${spec.type.max}` : 'a, b, …'}|default>  (${spec.help})` };
+  if (raw === 'default') return { key: spec.key, value: undefined, map, text: 'default' };
+  const v = parseRuleValue(spec, raw);
+  if (!v.ok) return { error: v.error };
+  return { key: spec.key, value: v.value, map, text: raw };
+}
+
+/** When a rule's change reaches the match, for the console's answer. */
+export const RULE_WHEN = { live: 'now', restart: 'at the restart (restart) or the next map', next: 'at the next match (restart or the next map)' } as const;
 
 /** Run a match command from the console; returns what to print. */
 export function runMatchCommand(name: string, args: string[], rest: string, t: MatchCommandTarget): string {
@@ -199,9 +249,61 @@ export function runMatchCommand(name: string, args: string[], rest: string, t: M
     }
     case 'teams': {
       if (!args[0]) return t.teams();
+      const sizes = args.map(Number);
+      if (sizes.some((n) => !Number.isInteger(n) || n < 1 || n > MAX_PLAYER_SLOTS)) return 'usage: teams [size | size size…]';
+      if (sizes.length === 1) return done(t.command({ c: 'bots', teamSize: sizes[0]! }, by), `teams set to ${sizes[0]} each`);
+      return done(t.command({ c: 'bots', teamSizes: sizes }, by), `teams set to ${sizes.join('v')} (the number of teams is the rules' teams: it changes at the next match)`);
+    }
+    case 'skill': {
+      const v = HOST_BOT_SKILLS.find((x) => x === args[0]);
+      if (!v) return `usage: skill ${HOST_BOT_SKILLS.join('|')}`;
+      return done(t.command({ c: 'bots', skill: v }, by), `bot skill set to ${v}`);
+    }
+    case 'style': {
+      const v = HOST_BOT_STYLES.find((x) => x === args[0]);
+      if (!v) return `usage: style ${HOST_BOT_STYLES.join('|')}`;
+      return done(t.setRule('style', v, by), `bot style set to ${v}`);
+    }
+    case 'rules': {
+      const r = parseRulesArgs(args);
+      if ('error' in r) return r.error;
+      if ('list' in r) {
+        const s = t.rules();
+        return serverRulesText(s.set, s.now, s.map, new Set(s.pending));
+      }
+      if ('reset' in r) {
+        const s = t.rules();
+        for (const spec of SERVER_RULES) {
+          t.setRule(spec.key, undefined, by);
+          if (s.set.maps?.[s.map]) t.setRule(spec.key, undefined, by, { map: true });
+        }
+        return 'every rule back to the default (the mode\'s own) for every match; restart to play with them now';
+      }
+      const spec = ruleSpec(r.key)!;
+      const err = t.setRule(r.key, r.value, by, { map: r.map });
+      const scope = r.map ? ' on this map' : spec.perMode ? ` in ${MODE_LABELS[t.rules().now.mode as GameMode] ?? 'this mode'}` : '';
+      const off = spec.modes && !spec.modes(t.rules().now.mode) ? ` (not used in ${MODE_LABELS[t.rules().now.mode]}: kept for the modes that use it)` : '';
+      return done(err, `${spec.label} set to ${r.text}${scope}: applies ${RULE_WHEN[spec.apply]}${off}`);
+    }
+    case 'maxplayers': {
       const n = Number(args[0]);
-      if (!Number.isInteger(n) || n < 1) return 'usage: teams [size]';
-      return done(t.command({ c: 'bots', teamSize: n }, by), `teams set to ${n} each`);
+      if (!Number.isInteger(n) || n < 1 || n > MAX_PLAYER_SLOTS) return `usage: maxplayers <1-${MAX_PLAYER_SLOTS}>`;
+      t.setLive({ maxPlayers: n });
+      return `up to ${n} people at once (now; nobody playing is removed)`;
+    }
+    case 'motd': {
+      if (!rest) return t.live().motd ? `join message: ${t.live().motd}` : 'no join message (motd <text> sets one)';
+      const text = rest === 'clear' ? null : rest.slice(0, 200);
+      t.setLive({ motd: text });
+      return text ? `join message set: ${text}` : 'join message removed';
+    }
+    case 'afk':
+    case 'idlekick': {
+      const n = Number(args[0]);
+      const max = name === 'afk' ? 3600 : 1440;
+      if (!Number.isInteger(n) || n < 0 || n > max) return `usage: ${name} <0-${max}>`;
+      t.setLive(name === 'afk' ? { afkSeconds: n } : { idleKickMinutes: n });
+      return name === 'afk' ? (n ? `a bot plays for anyone idle ${n} s` : 'idle players keep their place') : n ? `idle players are removed after ${n} min` : 'idle players are never removed';
     }
     case 'rotation':
       return rotationCommand(args, t);

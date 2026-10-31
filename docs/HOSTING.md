@@ -366,9 +366,11 @@ the download is offered only on the /host page.
    bots, listed in the game browser. The **launcher** opens in your browser
    with it: the same console (every line the window shows, a command line
    with suggestions, Tab completion and ↑ ↓ history) and a right bar of
-   controls for the server, map and mode, players and bots, the game browser
-   listing, the people playing (kick, ban), a message to everyone, the admin
-   token and bans. Each control runs the console command it shows under it,
+   controls for the server, map and mode, players and bots (skill, style,
+   people at most, idle limits), the match rules (score and time limits and
+   every other Match setup rule: see Match settings below), the game browser
+   listing and join message, the people playing (kick, ban), a message to
+   everyone, the admin token and bans. Each control runs the console command it shows under it,
    so you can type the same thing in either place; while the server is
    stopped, the controls set what **Start** starts with. Type `help` in
    either to see every command (`players`, `kick`, `ban`, `map`, `bots`,
@@ -423,9 +425,94 @@ builds the downloads (CI does this for every green `main` and `vX.Y.Z`).
 | `STATUS_EVERY` | 60 | seconds between status lines (0: none) |
 | `AFK_SECONDS` | 90 | idle this long and a bot plays for a player until they're back (0: never) |
 | `IDLE_KICK_MINUTES` | 10 | away for being idle this long and still connected: removed, freeing the place (0: never) |
+| `RULES` | none (the modes' own) | the match rules, every one a browser host has (score, time, respawn per mode; friendly fire, gravity, classes, leaders…; per map): see Match settings below. Changed live with `rules`, the launcher's Match rules card or the admin's pause menu, and kept |
+| `MOTD` | none | a message each player gets when they join (200 characters); `motd` changes it live |
 | `REGION` | from the time zone | `na-west`, `na-east`, `sa`, `eu`, `africa`, `me`, `asia-south`, `asia-east`, `oceania`: the game browser shows games in a player's region first |
 
 No setting is a ToshiroPlay or AWS credential: the host needs none.
+
+### Match settings: the same as a browser host's, and more
+
+Every setting a browser host has (Play → Match setup before the match, the
+pause menu's Match panel during it, the Host tab's listing) is in the
+launcher, the console and the settings, and applies to the running match the
+way the browser host's does: **live** at once, at the **restart** (the pause
+menu's "Apply on restart" rules), or at the **next match** (the rules a
+browser host picks in Match setup before its match starts). For the last two,
+**Restart match** (launcher: **Restart now with them**, console `restart`)
+plays them now: with Match setup rules waiting it starts a fresh match on the
+same map (everyone comes along, as on a map change). The launcher tags each
+rule (live / restart / next match) and lists what is waiting.
+
+The rules live in `RULES` (`shared/src/sim/serverRules.ts`), kept for every
+match the server plays (each restart, map change and the rotation's next
+map), not just the first: score, time and respawn **per mode** (they mean
+different things in Team Deathmatch and CTF), everything else for every
+mode, and any rule **per map** on top (`rules map …`, or the launcher's
+"This map only"). In host.json:
+
+```json
+{ "RULES": { "ff": "half", "gravity": "low", "modes": { "tdm": { "score": 60, "time": 15 }, "ctf": { "score": 5 } }, "maps": { "iron_maw": { "time": 20 } } } }
+```
+
+(as an environment variable the same JSON: `RULES='{"modes":{"tdm":{"score":60}}}'`).
+Changes from the console, the launcher or an in-game admin are saved for the
+next start, as are players + bots, bot skill, people at most, the join
+message, idle limits, name, visibility, and (without a rotation) the map and
+mode playing.
+
+| Browser host setting (where) | Host Service: launcher | console | setting | applies |
+|---|---|---|---|---|
+| Mode (Match setup; pause menu → Change map) | Map & mode card | `mode <mode>` | `MODE` | live (the match travels) |
+| Map (Change map…) | Map & mode card | `map <map>` | `MAP` | live (travels) |
+| Map rotation, shuffle, skip (pause menu) | Rotation card | `rotation …`, `skip` | `ROTATION`, `ROTATION_SHUFFLE` | live |
+| Players / squad (FFA, co-op) | Players + bots | `bots <n>` | `BOT_FILL` | live |
+| Team sizes, uneven teams (team editor) | Team size | `teams <n>`, `teams 10 8` | `BOT_FILL` | live |
+| Number of teams (2–8) | Match rules → Teams | `rules teams 4` | `RULES.teams` | next match |
+| Team names, colours | Match rules → Team names / colours | `rules teamnames Reds, Blues`, `rules teamcolors #ff0000, #0000ff` | `RULES.teamnames`, `teamcolors` | next match |
+| Your team / balance (Balanced, Random; Fixed is the host's own seat: a dedicated host has none) | Match rules → Team balance | `rules assign random` | `RULES.assign` | next match |
+| Bot skill | Players → Bot skill | `skill hard` | `BOT_DIFFICULTY` | live |
+| Bot style | Players → Bot style | `style arena` | `RULES.style` | live |
+| Your bots (bot set) | Bot set card | `botset …` | `BOTSET` | live (swapped in one at a time) |
+| Score limit | Match rules → Score limit | `rules score 60` | `RULES.modes.<mode>.score` | restart |
+| Time limit | Match rules → Time limit | `rules time 15` | `RULES.modes.<mode>.time` | restart |
+| Respawn delay | Match rules → Respawn delay | `rules respawn 3` | `RULES.modes.<mode>.respawn` | restart |
+| Friendly fire | Match rules → Friendly fire | `rules ff half` | `RULES.ff` | restart |
+| Mix up weapon pickups | Match rules → Mix up weapon pickups | `rules mix on` | `RULES.mix` | live |
+| Drop weapon on death | Match rules → Drop weapon on death | `rules drops off` | `RULES.drops` | live |
+| Team leaders, Leader hunt | Match rules → Team leaders | `rules leaders vip` | `RULES.leaders` (or `LEADERS`) | next match |
+| Spawn on teammates | Match rules | `rules squadspawn off` | `RULES.squadspawn` | next match |
+| Kill streaks | Match rules | `rules streaks off` | `RULES.streaks` | next match |
+| Character sizes | Match rules | `rules sizes off` | `RULES.sizes` | next match |
+| Gravity | Match rules | `rules gravity low` | `RULES.gravity` | next match |
+| Fall damage | Match rules | `rules fall on` | `RULES.fall` | next match |
+| Lethality | Match rules | `rules lethality tactical` | `RULES.lethality` | next match |
+| Ballistics | Match rules | `rules ballistics advanced` | `RULES.ballistics` | next match |
+| Emotes & messages | Match rules | `rules emotes off` | `RULES.emotes` | next match |
+| Weapons & pickups (Normal, Spears only, Discs only) | Match rules | `rules weapons spears` | `RULES.weapons` | next match |
+| Classes (and Max 1 / Max 2) | Match rules | `rules classes 2` | `RULES.classes` | next match |
+| Vehicle damage | Match rules | `rules vehicles tough` | `RULES.vehicles` | next match |
+| Flag return (CTF, Fort Wars) | Match rules | `rules flagreturn 45` | `RULES.flagreturn` | next match |
+| Hill moves (King of the Hill) | Match rules | `rules hill 90` | `RULES.hill` | next match |
+| Fort Wars build phase, combat phase, cycles, build points | Match rules | `rules fortbuild 3`, `fortcombat 8`, `fortcycles 2`, `fortbudget 600` | `RULES.fort*` | next match |
+| Race laps, vehicle, combat | Match rules | `rules laps 5`, `racevehicle buggy`, `racecombat off` | `RULES.laps`, `racevehicle`, `racecombat` | next match |
+| Restart match, End match | Server card | `restart`, `end` | | live |
+| Kick, ban (pause menu → Players) | People playing | `kick`, `ban`, `unban` | `bans.json` | live |
+| Listed in the game browser / code only | Game browser → Who can join | `visibility listed\|code` | `VISIBILITY` | live |
+| Listing name | Game browser → Name | `name <text>` | `SERVER_NAME` | live |
+| Playlist (co-op chain; the browser plays them offline only) | | | `PLAYLIST` | next start |
+| Max players (a browser host: its device's cap) | Players → People at most | `maxplayers <n>` | `MAX_PLAYERS` | live (nobody playing is removed) |
+| Password | neither has one: `VISIBILITY=code` and a `JOIN_CODE` keep a game private | | | |
+| Graphics (Match setup's Performance fold) | the browser's own, not the match's | | | |
+
+Only on the Host Service (extras): **per-map rules** (`rules map <rule> <value>`,
+`RULES.maps`), a **join message** each player gets (`motd <text>`, launcher
+Game browser → Join message, `MOTD`), the **idle limits** live (`afk`,
+`idlekick`, launcher Players → Idle), **uneven teams** from the console
+(`teams 10 8`), `rules` listing what plays and what waits, `rules reset`, and
+everything saved for the next start. `rules <rule> default` (or the launcher's
+↺) puts one back to the mode's own.
+
 
 ### How it works
 
@@ -461,7 +548,7 @@ No setting is a ToshiroPlay or AWS credential: the host needs none.
   `https://trigger.toshiroplay.com` or a localhost page (`HOST_ALLOWED_ORIGINS`
   adds others), Host must be the loopback name (no DNS rebinding), and every
   command needs the pairing key (`Bearer`). Closed command set: status,
-  start (suite map by ID and checked numbers; never a path, URL or the hub),
+  start (suite map by ID, checked numbers and match rules; never a path, URL or the hub),
   stop, restart, kick, ban, unban, quit.
 - **Launcher** (`launcher.ts`): the same server serves the launcher page at
   `/` (no secrets in it: the key comes in the link's `#fragment`; a strict
@@ -490,6 +577,35 @@ from Node clients over WebRTC: simulation + snapshots + compression
 player getting **~19 KB/s** compressed at 30 snapshots a second (so 16
 players ≈ 300 KB/s ≈ 2.5 Mbit/s of upload). The download is ~50 MB
 (Linux .tar.gz), ~170 MB unpacked, most of it the Node runtime.
+
+### Performance: Iron Maw at 96 (October 2026)
+
+The owner saw hiccups with 96 bots on Iron Maw. `pnpm bench 96 60 maps/iron_maw.json --mode=core.tdm --warmup=10 --spikes`
+(new: `--spikes[=MS]` breaks every tick slower than MS, 12 by default, into bots, moves, mounts by kind,
+projectiles, snapshots, the slowest single bot think, CPU time and whether a garbage collection ran in it)
+found that about half the slow ticks had a garbage collection in them, and the rest were spread over bot
+thinks, vehicles and projectiles with no one cause; path queries were cheap (67 a second, 0.1 ms a tick,
+including the narrow benches) and snapshots small (10.5 KB). The server tick made **1.7 MB of garbage a tick**:
+`Math.hypot` (V8 boxes its result: ~20,000 heap numbers a tick from pickup and distance checks), the
+lifts' poses worked out again for every body, movement building its state with object spreads, and the
+lag-compensation history allocating per tick. Now ~1.0 MB (`hypot` in shared/src/math.ts, memoised mover
+poses, field-by-field move state, a reused history ring), and the match process runs with
+`--max-semi-space-size=64` (`CHILD_V8_FLAGS` in supervisor.ts).
+
+Before / after, the same 96-bot match run alternately (3 pairs, 40 s each, server tick time, this shared
+4-core container at load 7–9: compare the pairs, not the absolute numbers):
+
+| Iron Maw TDM 48 v 48 | before | after |
+|---|---|---|
+| tick avg | 4.5 ms | 3.6 ms |
+| p95 / p99 | 8.8 / 14.3 ms | 6.7 / 11.2 ms |
+| ticks over 12 ms (of 2,400) | 40 | 19 |
+| ticks with a garbage collection | 265 | 45 |
+| ... of them over 12 ms | 21 | 4 |
+
+CTF (one pair): avg 5.1 → 4.3 ms, collections 311 → 45, worst tick 141 → 36 ms. The worst single ticks
+(30–90 ms) still happen now and then: on this box most of them had well under their wall time on the
+CPU (waiting for a core), so a quiet host PC should see fewer.
 
 ### Run on boot (optional)
 

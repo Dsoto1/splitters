@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import type { ChildProcess } from 'node:child_process';
 import { describe, expect, it, vi } from 'vitest';
 import { Unzipper } from '@tiletrigger/shared/peerZip';
-import { claimsOfficial, parseAdvert, validateBotSet, type BotSet } from '@tiletrigger/shared';
+import { DEFAULT_RULES, applyServerRules, claimsOfficial, parseAdvert, rulesForMode, setServerRule, validateBotSet, type BotSet, type MapDocument, type ServerRules } from '@tiletrigger/shared';
 import { TicketSigner, verifyTicket } from '@tiletrigger/server/tickets';
 import { LobbyAdvertiser } from '../src/advertiser.ts';
 import { BanList } from '../src/bans.ts';
@@ -17,6 +17,14 @@ import { LogBuffer, launcherCsp, launcherPage, mapCatalog } from '../src/launche
 import { DEFAULT_MAPS_DIR, suiteIds } from '../src/host.ts';
 import { syncMaps } from '../src/published.ts';
 import { loadMap as loadMapDoc, serializeMap } from '@tiletrigger/shared';
+
+/** The rules side of a match target, for fakes that don't use it. */
+const noRules = () => ({
+  rules: () => ({ set: {}, now: { ...DEFAULT_RULES['core.tdm'] }, map: 'frost_basin', pending: [] }),
+  setRule: () => null,
+  setLive: () => undefined,
+  live: () => ({ maxPlayers: 16, motd: null, afkSeconds: 90, idleKickMinutes: 10 }),
+});
 import { admitWhenOpen, iceForLibdatachannel, makeJoinCode } from '../src/hubLink.ts';
 import { LINK_LIMITS, peerConn, type DataLike } from '../src/peerConn.ts';
 import { Supervisor } from '../src/supervisor.ts';
@@ -100,6 +108,7 @@ describe('server console commands', () => {
       presets: [],
       botSet: () => null,
       botSetPresets: [],
+      ...noRules(),
       modes: () => ['core.tdm'],
     };
     expect(runMatchCommand('kick', ['griefer', 'spawn', 'camping'], '', t)).toBe('kicked Griefer');
@@ -148,6 +157,7 @@ describe('server console commands', () => {
       modes: (id) => MAPS[id]?.modes ?? null,
       botSet: () => null,
       botSetPresets: [],
+      ...noRules(),
     };
     expect(runMatchCommand('rotation', [], '', t)).toMatch(/empty/);
     expect(runMatchCommand('rotation', ['add', 'sandgate'], '', t)).toMatch(/1\. Sandgate · Team Deathmatch/);
@@ -187,6 +197,7 @@ describe('server console commands', () => {
       modes: () => null,
       botSet: () => set,
       botSetPresets: [{ format: 'tiletrigger.botset', id: 'duo', name: 'Duo', description: '', fill: 'only', entries: [{ name: 'Ann', look: 'core.knight' }, { name: 'Bo' }] }],
+      ...noRules(),
     };
     expect(runMatchCommand('botset', [], '', t)).toMatch(/Random bots/);
     expect(runMatchCommand('botset', ['preset', 'duo'], 'preset duo', t)).toMatch(/Duo: 2 bots only:\n 1\. Ann, core\.knight\n 2\. Bo/);
@@ -590,5 +601,90 @@ describe('the launcher window', () => {
     expect(a).toContain('--app=http://127.0.0.1:7790/#key=k');
     expect(a).toContain('--user-data-dir=/state/launcher-window');
     expect(a).toContain('--no-first-run');
+  });
+});
+
+describe('Host Service match rules (parity with the browser host)', () => {
+  const field: MapDocument = { metadata: { id: 'frost_basin', name: 'Frost Basin', supportedModes: ['core.tdm'] }, teamSetup: null } as unknown as MapDocument;
+  /** A match target that keeps RULES like the server does (applied at the "restart"). */
+  const target = () => {
+    let set: ServerRules = {};
+    let now = rulesForMode(field, 'core.tdm');
+    const live = { maxPlayers: 16, motd: null as string | null, afkSeconds: 90, idleKickMinutes: 10 };
+    const sent: unknown[] = [];
+    const t: MatchCommandTarget = {
+      players: () => [],
+      command: (cmd) => {
+        sent.push(cmd);
+        if (cmd.c === 'restart') now = applyServerRules(now, set, field, 16).rules;
+        return null;
+      },
+      say: () => undefined,
+      currentMapId: () => 'frost_basin',
+      teams: () => '',
+      setVisibility: () => undefined,
+      setName: () => undefined,
+      maps: new Map([['frost_basin', 'Frost Basin']]),
+      rotation: () => ({ entries: [], shuffle: false, next: null, current: null }),
+      presets: [],
+      modes: () => ['core.tdm'],
+      botSet: () => null,
+      botSetPresets: [],
+      rules: () => ({ set, now, map: 'frost_basin', pending: [] }),
+      setRule: (key, value, _by, where) => ((set = setServerRule(set, key, value, { mode: now.mode, ...(where?.map ? { map: 'frost_basin' } : {}) })), null),
+      setLive: (o) => Object.assign(live, o),
+      live: () => live,
+    };
+    return { t, sent, set: () => set, now: () => now, live };
+  };
+
+  it('sets score and time limits (per mode) and they play from the restart', () => {
+    const m = target();
+    expect(runMatchCommand('rules', ['score', '75'], 'score 75', m.t)).toMatch(/Score limit set to 75 in Team Deathmatch: applies at the restart/);
+    expect(runMatchCommand('rules', ['time', '25'], 'time 25', m.t)).toMatch(/Time limit set to 25/);
+    expect(runMatchCommand('rules', [], '', m.t)).toMatch(/score\s+40\s+→ 75 at the restart/);
+    expect(m.set()).toEqual({ modes: { tdm: { score: 75, time: 25 } } });
+    runMatchCommand('restart', [], '', m.t);
+    expect([m.now().scoreLimit, m.now().timeLimitSeconds]).toEqual([75, 1500]);
+    expect(runMatchCommand('rules', ['map', 'gravity', 'low'], 'map gravity low', m.t)).toMatch(/Gravity set to low on this map: applies at the next match/);
+    expect(m.set().maps).toEqual({ frost_basin: { gravity: 'low' } });
+    expect(runMatchCommand('rules', ['score', 'default'], 'score default', m.t)).toMatch(/default/);
+    expect(runMatchCommand('rules', ['wobble', '1'], 'wobble 1', m.t)).toMatch(/no rule "wobble"/);
+    expect(runMatchCommand('rules', ['ff', 'sideways'], 'ff sideways', m.t)).toMatch(/one of off, half, on/);
+  });
+
+  it('runs skill, style, uneven teams, people at most, the join message and idle limits', () => {
+    const m = target();
+    expect(runMatchCommand('skill', ['hard'], 'hard', m.t)).toMatch(/hard/);
+    expect(runMatchCommand('style', ['arena'], 'arena', m.t)).toMatch(/arena/);
+    expect(runMatchCommand('teams', ['10', '8'], '10 8', m.t)).toMatch(/10v8/);
+    expect(runMatchCommand('maxplayers', ['24'], '24', m.t)).toMatch(/24 people/);
+    expect(runMatchCommand('motd', ['Welcome!'], 'Welcome!', m.t)).toMatch(/Welcome!/);
+    expect(runMatchCommand('afk', ['0'], '0', m.t)).toMatch(/keep their place/);
+    expect(runMatchCommand('idlekick', ['30'], '30', m.t)).toMatch(/30 min/);
+    expect(m.sent).toEqual([{ c: 'bots', skill: 'hard' }, { c: 'bots', teamSizes: [10, 8] }]);
+    expect(m.set()).toEqual({ style: 'arena' });
+    expect(m.live).toEqual({ maxPlayers: 24, motd: 'Welcome!', afkSeconds: 0, idleKickMinutes: 30 });
+    expect(complete('rules sc', [])[0]).toEqual(['score']);
+    expect(complete('rules ff ', [])[0]).toEqual(['off', 'half', 'on', 'default']);
+  });
+
+  it('reads RULES and MOTD from the environment or host.json, and from a start request', () => {
+    const c = loadConfig({ RULES: '{"ff":"half","modes":{"tdm":{"score":60}}}', MOTD: 'Hi all' }, '/tmp');
+    expect(c.rules).toEqual({ ff: 'half', modes: { tdm: { score: 60 } } });
+    expect(c.motd).toBe('Hi all');
+    expect(() => loadConfig({ RULES: '{"score":60}' }, '/tmp')).toThrow(/per mode/);
+    const base = parseConfig({});
+    const s = startConfig({ map: 'frost_basin', rules: { modes: { tdm: { time: 30 } } }, motd: 'Yo', idleKickMinutes: 5 }, base, new Set(['frost_basin']));
+    expect([s.rules, s.motd, s.idleKickMinutes]).toEqual([{ modes: { tdm: { time: 30 } } }, 'Yo', 5]);
+    expect(() => startConfig({ rules: 'x' }, base, new Set())).toThrow(ConfigError);
+  });
+
+  it('offers every rule in the launcher, with when it applies', () => {
+    const html = launcherPage({ version: '1', commands: COMMANDS, maps: [], site: 'https://x' }, 'n');
+    const data = JSON.parse(html.split('id="launcher-data">')[1]!.split('</script>')[0]!) as { rules: { key: string; apply: string }[] };
+    expect(data.rules.map((r) => r.key)).toContain('score');
+    expect(data.rules.find((r) => r.key === 'mix')?.apply).toBe('live');
+    expect(html).toContain('id="rules-card"');
   });
 });

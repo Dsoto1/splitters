@@ -4,7 +4,7 @@ import { Movers, legTicks, liftLinks } from './movers.ts';
 import { mapPortals, portalEntry, PORTAL_EXIT, type Portal } from './portals.ts';
 import { isMapId } from './playlist.ts';
 import { OBJECTIVE_STATES, type CompareOp, type EventType, type LogicAction, type LogicCondition, type ObjectiveState } from '../map/logic.ts';
-import { distance, viewDirection, type Vec3 } from '../math.ts';
+import { distance, viewDirection, type Vec3, hypot } from '../math.ts';
 import { TRAP_ACTIVE, TRAP_ENABLED, TRAP_SPENT, TRAP_WARNING, type GameEvent, type ScenarioSnapshot } from '../protocol.ts';
 import { PLAYER, TICK_RATE } from './constants.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
@@ -353,16 +353,19 @@ export class Scenario {
     this.bodies.commit();
   }
 
+  /** Whether a carried block (entity index) is there: dropped and hidden blocks carry and strike nobody (one function for every call). */
+  private readonly blockPresent = (i: number): boolean => this.destructibles.get(i)?.alive !== false;
+
   /** Where feet standing on a moving block are carried to this tick (null: not riding). */
   carry(feet: Vec3): Vec3 | null {
     if (!this.movers.defs.length) return null;
-    return this.movers.carry(feet, this.host.tick, (i) => this.destructibles.get(i)?.alive !== false);
+    return this.movers.carry(feet, this.host.tick, this.blockPresent);
   }
 
   /** Speed of a fast carried block (a train) running into a body standing at `feet` this tick (0: none). */
   strike(feet: Vec3, radius: number, height: number): number {
     if (!this.movers.defs.length) return 0;
-    return this.movers.strike(feet, radius, height, this.host.tick, (i) => this.destructibles.get(i)?.alive !== false);
+    return this.movers.strike(feet, radius, height, this.host.tick, this.blockPresent);
   }
 
   /** Whether a portal (entity index) is switched on. */
@@ -519,7 +522,7 @@ export class Scenario {
     for (const d of this.doors.values()) {
       const way = doorway(d.e);
       if (d.e.auto && !d.locked) {
-        const near = players.some((p) => teamAllows(d.e.team, p.team) && Math.hypot(p.pos.x - way.center.x, p.pos.z - way.center.z) <= DOOR.autoRadius && Math.abs(p.pos.y - d.e.position[1]) < 2.5);
+        const near = players.some((p) => teamAllows(d.e.team, p.team) && hypot(p.pos.x - way.center.x, p.pos.z - way.center.z) <= DOOR.autoRadius && Math.abs(p.pos.y - d.e.position[1]) < 2.5);
         if (near) {
           d.lastNear = tick;
           if (d.target === 0) {
@@ -683,7 +686,7 @@ export class Scenario {
     else {
       const vx = l.b[0] - l.a[0];
       const vz = l.b[1] - l.a[1];
-      const len = Math.hypot(vx, vz) || 1;
+      const len = hypot(vx, vz) || 1;
       // Left normal of the run, flipped to the side they are on.
       dir = [(-vz / len) * n.side, (vx / len) * n.side];
     }
