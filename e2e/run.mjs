@@ -2966,8 +2966,18 @@ async function gripsInPlay(browser) {
   check(misses.length === 0, `in a match, your own hands are drawn on the gun through switches, looking up and down, third person and a respawn (${misses.join('; ') || 'all'})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
-  // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns.
-  const bots = await page.evaluate(() => window.__cs.view.gripReport().remote.map((x) => ({ slot: x.slot, dist: Math.round(x.dist), r: x.r, aheadR: x.aheadR, sideR: x.sideR })));
+  // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
+  // in view are drawn (and so measured): turn round until several have been (a respawn can face a wall, and on a
+  // slow page the bots may still be loading their guns), each measured as last seen.
+  const seen = new Map();
+  const lookUntil = Date.now() + T(60000);
+  for (let turn = 0; seen.size < 4 && Date.now() < lookUntil; turn++) {
+    for (const x of await page.evaluate(() => window.__cs.view.gripReport().remote.map((x) => ({ slot: x.slot, dist: Math.round(x.dist), r: x.r, aheadR: x.aheadR, sideR: x.sideR })))) seen.set(x.slot, x);
+    if (seen.size >= 4) break;
+    await page.evaluate(() => (window.__cs.input.yaw += 0.8));
+    await sleep(1500);
+  }
+  const bots = [...seen.values()];
   const badBots = bots.filter((b) => b.r === null || b.r > 0.12);
   check(bots.length > 0 && badBots.length <= Math.floor(bots.length / 4), `bots' hands are drawn on their guns near and far (${bots.length - badBots.length} of ${bots.length}; off: ${badBots.map((b) => `${b.slot} at ${b.dist} m: ${b.r === null ? '-' : (b.r * 100).toFixed(0)} cm`).join(', ') || 'none'})`);
   // The grapple's rope leaves the launcher's muzzle (it used to start under the eye, out of your chest).
@@ -2997,6 +3007,13 @@ async function gripsInPlay(browser) {
   const held = [];
   for (const w of ['core.pistol', 'core.rifle']) {
     await imp.evaluate((id) => window.__give(id), w);
+    // Until the given gun is in the drawn creature's hands (a gun model loads first; slow on a software-rendered page).
+    await imp
+      .waitForFunction(() => {
+        const a = window.__cs.view.avatars.get(window.__cs.slot);
+        return a?.weaponSlot === window.__cs.local.held && !!window.__cs.view.gripReport().creatures.find((c) => c.slot === window.__cs.slot)?.report;
+      }, null, { timeout: T(30000), polling: 250 })
+      .catch(() => {});
     let r = null;
     for (let i = 0; i < 20; i++) {
       await sleep(300);
