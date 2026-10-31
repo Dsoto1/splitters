@@ -200,8 +200,9 @@ export const SERVER_RULES: readonly RuleSpec[] = [
   },
 ];
 
-const BY_KEY = new Map(SERVER_RULES.map((s) => [s.key, s]));
-export const ruleSpec = (key: string): RuleSpec | undefined => BY_KEY.get(key.toLowerCase());
+// Built on first use, so a bundle that never reads the rules can drop this module (the menu's first JS).
+let byKey: Map<string, RuleSpec> | undefined;
+export const ruleSpec = (key: string): RuleSpec | undefined => (byKey ??= new Map(SERVER_RULES.map((s) => [s.key, s]))).get(key.toLowerCase());
 
 function setList(r: MatchRules, k: 'teamNames' | 'teamColors', v: string[]): void {
   if (!v.length || !v.some(Boolean)) delete r[k];
