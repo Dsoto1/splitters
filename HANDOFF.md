@@ -137,6 +137,12 @@ Owner's screenshots, Character Select holding the AK (2026-10-31 evening), worst
 - Bonejack (pirate skeleton): gun held tight to the chest, hands on it; acceptable but cramped.
 - Close to right: Punkin (hands on the gun, fingers a little splayed) and the skeleton in the suit (Rattles): a good
   rifle hold, both hands wrapped (a second reference besides The Visitor).
+- **Plains Scout**: the model is broken (owner: "all messed up"): the left boot flattened into a shard at the ankle,
+  torn pieces round the feet, hands bunched at the chin. A broken import/rig: rebuild from the download, on the
+  broken-imports list. (Its respect review with the owner is still open too.)
+- **Ashwalker** (front view): open, flat support hand (no-curl group).
+The owner's screenshot pass is done (2026-10-31 evening); the audit's own render of every character (side and front,
+each weapon class) catches the rest.
 - **Uncle Bao**: close to right (gloved hands on the grip and handguard).
 - **Dale** (pre-rigged): grip passable, but his import is lumpy (owner) like Lancer Mei and Sir Galloway, and the
   forearm skin tears/stretches near the wrist.
