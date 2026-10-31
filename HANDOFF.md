@@ -74,7 +74,8 @@ props.json, stylePacks.ts, catalog.ts, materials.ts, CHANGELOG/HANDOFF). Whoever
     existing maps such as pharaohs_reach still load, but the pack entry and its palette become Desert City).
   - Jungle Ruins refresh from the TILESET 04 sheet (owner: "update"): carved, relief and window walls; beamed and arch
     ceilings; a zipline post; a watch tower.
-  - If time allows, Ancient Temple combined into 03 Imperial Arena (owner: "combine").
+  - Ancient Temple (TILESET 07) is combined into that same Jungle Ruins refresh (owner, 2026-10-31: the two
+    sounded alike), so it is one pack: Jungle Ruins. 03 Imperial Arena stays Roman and unchanged.
   - Sci-Fi Research (Orbital) and Industrial Factory (Military) refreshes are unassigned.
 - How a pack is built: see the Medieval pack (packTilesMedieval.ts, tools/content/prepare-medieval.mjs,
   stylePacksMedieval.test.ts). Its demo map is a maps/<id>.json made with MapMaker operations (no build script in
