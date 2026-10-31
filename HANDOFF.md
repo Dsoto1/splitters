@@ -210,6 +210,38 @@ lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster h
 square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
 Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
 
+### Jungle Ruins refresh (`wip/jungle-ruins-pack`, agent, 2026-10-31; stopped early, not merged)
+Owner sheets TILESET 04 Jungle Ruins + TILESET 07 Ancient Temple, combined into Style Pack 06 Jungle Ruins.
+- **Done (committed):** 20 new tiles in `packages/shared/src/map/packTilesJungle.ts` (Temple Terrace, Terrace
+  Stair (stack them a level up into ziggurats), Carved Temple 2 × 1 (gate on the west cell's south edge fits the
+  Portcullis, stair to a roof walk with parapet gaps E/W), Summit Shrine, Carved/Relief/Window/Arch/Column/Low
+  walls, Beamed Colonnade, Arched Vault, Jungle Watch Tower (Medieval watchtower frame), Chasm, Gorge Steps,
+  Chasm Rope Bridge, Rope Bridge Span, Stone Bridge Span, Waterfall Wall (pool, passage behind the falls),
+  Overgrown Ruins). The original 12 jungle tiles and 17 jg_* props are untouched, so Verdant Ziggurat, Erosion,
+  Sunken Kingdom, Fernwood Moon, After Hours, Jungle Steps load unchanged (tested). Materials (procedural,
+  patterns.ts): mossy_stone, carved_stone (step-fret), relief_stone, temple_inlay (teal/gold), root_cover,
+  mossy_planks, temple_sandstone, palm_thatch; theme `core.ancient_temple` (+ backdrop, dressing). 26 props in code
+  (`tools/content/prepare-jungle.mjs` → `assets-src/tiletrigger-jungle/`, Owned, jt_*), props.json/lock/provenance,
+  palette atlases, STYLE_PACKS entry (new tiles/props/materials/theme, portcullis/brazier/torch/ladder, Grapple).
+  Demo map `maps/vinefall_sanctum.json` built by driving MapMaker in the browser (placeAtHover + inspector edits
+  + Export; scratch script not in repo): validate-map 0 issues incl. navigation; map card shot; screenshots in
+  `docs/map-briefs/vinefall_sanctum/screenshots/`. Tests `packages/shared/test/stylePacksJungle.test.ts` (pack,
+  tiles, bot paths in 4 rotations, every jungle-using map validates, demo map nav) and stylePacks2 bound relaxed.
+- **Zipline:** no zipline mechanic exists (only the Grapple Hook). `jt_zipline_post` is scenery; the pack lists
+  the Grapple Hook to cross between posts. A real zipline ride is an owner decision (new movement mechanic).
+- **Stand-ins (stable ids, Meshy only with owner approval):** jt_statue_large, jt_crane, jt_zipline_post.
+- **Not done / next:** BUILDING_KIT "06 Jungle Ruins" section (note Ancient Temple folded in; list the above),
+  CHANGELOG Unreleased line, `docs/map-briefs/vinefall_sanctum/` manifest/QA/decisions docs (like market_town),
+  e2e (editor, editorux, maps E2E_MAPS=vinefall_sanctum,jungle_steps, visual) not run; full `pnpm test:changed`
+  not run (jungle, kit, stylePacks*, content:check, typecheck, build passed). Bot audit/perf not run. Map's
+  `metadata.release` came from MapMaker's Export (other repo maps have none; strip if preferred).
+- **Sheet notes (pictures are gone with the container):** TILESET 04: weathered mossy stone, tropical; vignettes
+  of overgrown temple courtyards, waterfalls, rope bridges over chasms, torch-lit stairs; red banners with a gold
+  emblem. TILESET 07: sandstone with teal-and-gold inlay tiles, teal/gold banners, wall torches, hanging braziers,
+  chain rails, spikes, portcullis, multi-level terraces with waterfalls. Not yet built from them: wooden door,
+  stone gate as a tile, shutter/carved windows as separate pieces, corner/T/cross wall connectors, spikes as a trap
+  look, decorative ceiling, chain fixture, a 'broken ceiling' variant.
+
 ### Style Pack 10 Medieval Village (`wip/medieval-pack`, agent, 2026-10-31; not merged)
 - **Built** (from the owner's tileset sheet 01): 16 tiles in `packages/shared/src/map/packTilesMedieval.ts` (2 × 1 Timber,
   Shop and Plaster houses with walkable 35° red tile roofs, eaves at 8.25 m on the cell edges; Outside Stair,
