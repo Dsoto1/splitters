@@ -278,6 +278,11 @@
             <div id="ed-tr-brushes" class="tiles"></div>
             <label class="stack">Brush size <span id="ed-tr-radius-v">8 m</span><input id="ed-tr-radius" type="range" min="2" max="40" step="1" value="8" /></label>
             <label class="stack">Strength <span id="ed-tr-strength-v">50%</span><input id="ed-tr-strength" type="range" min="5" max="100" step="5" value="50" /></label>
+            <div class="ed-tr-swap" title="Smooth the whole terrain in one undo step: small bumps and pits go, slopes, banks and hills keep their shape">
+              <label class="stack">Smooth all<select id="ed-tr-smooth-all-amount"><option value="1.5">Light</option><option value="2.5" selected>Medium</option><option value="4">Strong</option></select></label>
+              <button id="ed-tr-smooth-all">Smooth all</button>
+            </div>
+            <label class="check" title="Ground under blocks standing on it (and 1.5 m round them) stays as it is, so buildings, walls and pads don't float or sink"><input id="ed-tr-smooth-hold" type="checkbox" checked /> Keep the ground under blocks</label>
             <div class="sub-h">Ground paint</div>
             <div id="ed-tr-materials" class="mats"></div>
             <button id="ed-tr-cliffs">Paint steep slopes as stone</button>

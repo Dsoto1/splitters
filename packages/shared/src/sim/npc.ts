@@ -193,10 +193,10 @@ export const npcLookRole = (look: string | undefined): NpcRole | null => {
 export const NPC_LOOKS: readonly { id: string; name: string; role: NpcRole }[] = (Object.keys(NPC_ROLE_SPECS) as NpcRole[]).filter((role) => !NPC_ROLE_SPECS[role].look).map((role) => ({ id: `${NPC_LOOK_PREFIX}${role}`, name: NPC_ROLE_SPECS[role].label, role }));
 /**
  * The NPC skins offered in Character Select: one mannequin (the soldier roles all looked the same) and the real
- * creatures, not the cyclops and oculus blobs. The others stay NPCs, valid looks (a saved choice still loads) and
+ * creatures, not the cyclops and oculus blobs or the scolitex (owner, 2026-10-31). The others stay NPCs, valid looks (a saved choice still loads) and
  * bot looks.
  */
-export const PLAYER_NPC_LOOKS = NPC_LOOKS.filter((l) => !(['gunner', 'heavy', 'sniper', 'zombie', 'cyclops', 'oculus'] as NpcRole[]).includes(l.role));
+export const PLAYER_NPC_LOOKS = NPC_LOOKS.filter((l) => !(['gunner', 'heavy', 'sniper', 'zombie', 'cyclops', 'oculus', 'scolitex'] as NpcRole[]).includes(l.role));
 /** Soldier NPC skins: a uniform colour per role so they read apart. */
 export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56703c', gunner: '#9a7440', heavy: '#474d58', sniper: '#3f5a36', zombie: '#5f6f55' };
 /** A look ID kept as is when valid (presets, custom looks, NPC skins), else the default. */

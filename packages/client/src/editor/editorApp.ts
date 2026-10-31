@@ -192,6 +192,10 @@ import {
   type BoundaryStyle,
   newTerrain,
   paintSlopes,
+  blockBox,
+  boxFootprint,
+  smoothTerrain,
+  terrainHoldMask,
   terrainHeightAt,
   terrainRaycast,
   type TerrainBrush,
@@ -224,7 +228,7 @@ import { NATURE_PROP_CATEGORIES, PROP_GROUPS, propGroup, scenarioGroup } from '.
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { libraryThumb } from './libraryThumbs.ts';
 import { isOwner, openPublishDialog } from './ownerPublish.ts';
-import { MAX_HEIGHT_GRID_BYTES, parseAsciiGrid, terrainFromHeightGrid } from './heightGrid.ts';
+import { DEFAULT_HEIGHT_GRID_SMOOTHING, HEIGHT_GRID_SMOOTHING, MAX_HEIGHT_GRID_BYTES, parseAsciiGrid, terrainFromHeightGrid } from './heightGrid.ts';
 import { publishedMaps } from '../publishedMaps.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
@@ -2491,6 +2495,51 @@ export class EditorApp {
     this.setTerrainBrush(this.terrainBrush);
   }
 
+  /**
+   * Terrain → Smooth all: the whole ground smoothed in one undo step (a Gaussian of `sigma` metres: bumps and
+   * pits go, slopes and hills keep their shape). With `keepUnderBlocks`, the ground under every block that
+   * stands on it (bottom within 0.5 m of the ground, or below it) and 1.5 m round stays as it is, so halls on
+   * levelled pads, walls and kerbs neither float nor sink; the smoothed ground meets it without a step.
+   * Spawns, pickups, flags, hills, vehicles and props standing on the ground (within 30 cm over it or 1.5 m
+   * into it) move up or down with it, in the same undo step.
+   */
+  private smoothAllTerrain(sigma: number, keepUnderBlocks: boolean): void {
+    const t = this.doc.terrain;
+    if (!t || !(sigma > 0)) return;
+    let hold: Uint8Array | undefined;
+    if (keepUnderBlocks) {
+      const feet: [number, number][][] = [];
+      for (const e of this.doc.entities) {
+        if (e.kind !== 'block') continue;
+        const ground = terrainHeightAt(t, e.position[0], e.position[2]);
+        if (ground === null || e.position[1] > ground + 0.5) continue;
+        feet.push(boxFootprint(blockBox(e)));
+      }
+      hold = terrainHoldMask(t, feet, 1.5);
+    }
+    const after = smoothTerrain(t, sigma, hold);
+    let moved = 0;
+    for (let i = 0; i < t.heights.length; i++) if (after.heights[i] !== t.heights[i]) moved++;
+    if (!moved) return this.toast('The ground is already smooth');
+    const carried = new Set<MapEntity['kind']>(['spawn', 'pickup', 'prop', 'mount', 'flag', 'hill']);
+    const before: MapEntity[] = [];
+    const moves: MapEntity[] = [];
+    for (const e of this.doc.entities) {
+      if (!carried.has(e.kind)) continue;
+      const was = terrainHeightAt(t, e.position[0], e.position[2]);
+      const now = terrainHeightAt(after, e.position[0], e.position[2]);
+      if (was === null || now === null || Math.abs(now - was) < 0.005) continue;
+      const above = e.position[1] - was;
+      if (above > 0.3 || above < -1.5) continue;
+      before.push(e);
+      moves.push({ ...e, position: [e.position[0], Math.round((e.position[1] + now - was) * 1000) / 1000, e.position[2]] } as MapEntity);
+    }
+    const terrainCmd: EditCommand = { kind: 'setTerrain', before: t, after };
+    this.run('Smooth all terrain', moves.length ? { kind: 'batch', commands: [terrainCmd, { kind: 'updateEntities', before, after: moves }] } : terrainCmd);
+    this.setTerrainBrush(this.terrainBrush);
+    this.toast(`Smoothed the terrain${hold ? ' (ground under blocks kept)' : ''}${moves.length ? `; ${moves.length} things on the ground moved with it` : ''} · Ctrl+Z undoes it`);
+  }
+
   private syncTerrainUi(): void {
     const t = this.doc.terrain;
     $('ed-tr-create').hidden = !!t;
@@ -2557,6 +2606,13 @@ export class EditorApp {
     const note = small('Build a real place to scale: its ground from a height grid file (ESRI ASCII .asc in metres, x east, y north, in map metres), and a plan or map of it laid over the ground to trace. Neither file is kept in the map.');
     const datum = num('ed-tr-datum', 'Ground level: file height at y 0 (m)', 'Blank: the height at the centre point (0, 0)');
     datum.i.placeholder = 'auto';
+    const smoothing = document.createElement('select');
+    smoothing.id = 'ed-tr-heights-smooth';
+    for (const s of HEIGHT_GRID_SMOOTHING) smoothing.append(new Option(s.label, String(s.sigma), false, s.sigma === DEFAULT_HEIGHT_GRID_SMOOTHING));
+    const smoothLabel = document.createElement('label');
+    smoothLabel.className = 'stack';
+    smoothLabel.title = 'Survey grids (lidar) carry small bumps: kerbs, hedges, cars, building edges. Smoothing averages them away over about this distance; banks, bluffs and knolls keep their shape. Off: the file as it is';
+    smoothLabel.append('Smoothing', smoothing);
     const heightsFile = file('ed-tr-heights-file', '.asc,.txt');
     const heights = button('ed-tr-heights', 'Heights from a height grid file…', 'Replace the terrain with the heights in an ESRI ASCII grid (.asc); ground paint and plants are kept where the old terrain reached');
     heights.addEventListener('click', () => heightsFile.click());
@@ -2568,11 +2624,11 @@ export class EditorApp {
       const grid = parseAsciiGrid(await f.text());
       if ('error' in grid) return this.toast(`Height grid: ${grid.error}`, true);
       const typed = datum.i.value.trim() === '' ? null : Number(datum.i.value);
-      const r = terrainFromHeightGrid(grid, { current: this.doc.terrain, datum: typed !== null && Number.isFinite(typed) ? typed : null });
+      const r = terrainFromHeightGrid(grid, { current: this.doc.terrain, datum: typed !== null && Number.isFinite(typed) ? typed : null, smoothing: Number(smoothing.value) });
       this.setTerrain(`Heights from ${f.name}`, r.terrain);
       if (typed === null) datum.i.value = String(Math.round(r.datum * 100) / 100);
       const t = r.terrain;
-      this.toast(`Heights from ${f.name}: ${((t.cols - 1) * t.spacing).toFixed(0)} × ${((t.rows - 1) * t.spacing).toFixed(0)} m, ${t.spacing} m grid${r.resampled ? ' (thinned to fit)' : ''}; y 0 is ${r.datum.toFixed(2)} m`);
+      this.toast(`Heights from ${f.name}: ${((t.cols - 1) * t.spacing).toFixed(0)} × ${((t.rows - 1) * t.spacing).toFixed(0)} m, ${t.spacing} m grid${r.resampled ? ' (averaged to fit)' : ''}${Number(smoothing.value) ? `, smoothed over ${smoothing.value} m` : ''}; y 0 is ${r.datum.toFixed(2)} m`);
     });
     const traceHead = document.createElement('div');
     traceHead.className = 'sub-h';
@@ -2626,7 +2682,7 @@ export class EditorApp {
       this.toast(`Trace image ${f.name}: type its edges in (map metres) to line it up; it is never saved`);
     });
     place.append(west.l, east.l, south.l, north.l, opLabel, clear);
-    box.append(head, note, datum.l, heights, heightsFile, traceHead, trace, place);
+    box.append(head, note, datum.l, smoothLabel, heights, heightsFile, traceHead, trace, place);
     pane.append(box);
   }
 
@@ -2704,6 +2760,7 @@ export class EditorApp {
       // Undoable, one step: the main ground becomes the new one; cells painted another material keep it.
       this.setTerrain(`Main ground: ${TERRAIN_MATERIAL_LABELS[TERRAIN_MATERIALS[to]!]}`, { ...t, materials: t.materials.map((m) => (m === from ? to : m)) });
     });
+    $('ed-tr-smooth-all').addEventListener('click', () => this.smoothAllTerrain(Number($<HTMLSelectElement>('ed-tr-smooth-all-amount').value), $<HTMLInputElement>('ed-tr-smooth-hold').checked));
     $('ed-tr-cliffs').addEventListener('click', () => {
       if (this.doc.terrain) this.setTerrain('Paint cliffs as stone', paintSlopes(this.doc.terrain, 35, 'stone'));
     });

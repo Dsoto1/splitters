@@ -15,6 +15,12 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   e8f449a, passed on a715e60/b4d55de; passes locally). The crouch-on-next-frame change (bb06a47) didn't cure it. Look at
   how the CDP touch timestamps map to the page's `e.timeStamp` (touchControls.ts tap vs hold) and whether the player
   is grounded when the tap lands; log the pad state in the check before changing the game.
+- **Queued (owner, 2026-10-31): dedicated launcher settings parity + Iron Maw hiccups.** The owner ran the Host
+  Service launcher with 96 bots on Iron Maw: "some hiccups", ran relatively OK, and couldn't change some match
+  settings (score limit, time limit, etc.). Make every match-setup / host-panel setting available in the launcher
+  (controls, console, config), live where the browser host's are, plus extras; profile the server tick on Iron Maw at
+  96 (path queries on narrow benches, vehicles, snapshot size) and fix the spikes. Start when an agent slot frees
+  (running: wip/model-fidelity, wip/st-johns-smooth, wip/grips-live).
 - **main at 6c0f8a6 (2026-10-30 ~23:45 UTC):** everything from this session, Sunken Kingdom and Iron Maw included
   (both merged and green on CI). Nothing left on wip/* from this session. Open owner questions: Sunken Kingdom
   (Meshy dome, taller cliffs, CTF flags 190 m apart: bots don't capture), Iron Maw (raise the schema's player-count
@@ -60,6 +66,44 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - **T-pose:** frozen bodies' skins could keep an older pose; fixed in characterAnimator `freezePose` (every skin
   takes the final pose). Owner's console check showed the mismatch on the live site; verify after the update with the
   console line in this session's notes (skin vs joint hand span).
+
+### Owner tileset sheets (2026-10-31): eight concept sheets, awaiting the owner's answer
+01 Medieval Village, 02 Desert City, 03 Coastal Harbor, 04 Jungle Ruins, 05 Snow Outpost, 06 Sci-Fi Research,
+07 Ancient Temple, 08 Industrial Factory. These are pictures, not model files: references for MapMaker style packs.
+Overlap with existing packs: 04 = Jungle Ruins (06), 08 = Military Compound (01) plus the mining/cargo props,
+06 = Orbital Station (04), 02 = Sands of Egypt (09) / Frontier Dust, 07 = Jungle/Imperial/Egypt temple pieces.
+New: 01 Medieval Village, 03 Coastal Harbor, 05 Snow Outpost (snow nature props exist, no snow buildings).
+Proposed: refresh existing packs from the sheets in-house; new packs 10 Medieval, 11 Harbor, 12 Snow Outpost;
+Meshy only for hero pieces after the owner approves a list. Nothing started yet.
+Owner's answer (2026-10-31): style packs; Medieval first; "replace n update n combine respectively", read as:
+Desert City replaces 09 Sands of Egypt, the Jungle Ruins sheet updates 06 Jungle Ruins, Ancient Temple is combined
+into 03 Imperial Arena (confirm with the owner if unsure). Order: 10 Medieval Village, then Harbor, Snow, the rest.
+Medieval brief: follow the Egypt/Imperial pack build (41f8335: packTilesAncient.ts procedural pack tiles,
+tools/content/prepare-ancient.mjs in-house props, materials, stylePacks.ts entry, stylePacksAncient test), but the
+demo map is a maps/<id>.json made with MapMaker's tools (no server/tools/maps build script; CLAUDE.md "Maps").
+Reuse what exists: castle_* pieces, siege_tower, stall*, cart, hay_bale, anvil, barrels, crates, fountain,
+lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster houses with tile roofs, market
+square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
+Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
+
+### St. John's smooth ground (`wip/st-johns-smooth`, agent, 2026-10-31; merged to the session branch)
+- Owner: "the terrain is slightly jagged". Cause: the 3DEP 1 m grid was point-sampled to 2.5 m (aliasing lidar's small
+  bumps), and the ground round the levelled hall pads kept that grain.
+- MapMaker, for every map: the height-grid import now area-averages when it thins a grid (`gridAreaHeightAt`) and has a
+  **Smoothing** amount (Gaussian over the file; Medium 2 m by default). Terrain pane: **Smooth all** (Light/Medium/
+  Strong = 1.5/2.5/4 m) with "Keep the ground under blocks" (vertices under blocks standing on the ground + 1.5 m
+  stay put); spawns, pickups, flags, hills, vehicles and props on the ground ride with it, one undo step.
+  Shared code: `smoothGrid`, `smoothTerrain`, `terrainHoldMask` in `packages/shared/src/map/terrain.ts`.
+- St. John's: Smooth all (Medium, keeping the ground under blocks) and Settle all props, through MapMaker's own
+  buttons (Playwright driving the page; no script in the repo), then Export. Halls' pads and laid paths unchanged
+  (paths are laid at load time).
+- Result: 13,745 of 19,481 heights moved (median 2 cm, 99th pct ~0.5 m, max ~1.1 m); 3,085 vertices under 727 blocks
+  held; 313 things carried with the ground, 115 props re-settled. validate-map (incl. navigation: every spawn and
+  pickup reachable) 0 issues. Checks: typecheck, test:changed (all pass; one unrelated failure in an earlier run did not
+  recur), content:check, build, e2e editor + editorux + maps (E2E_MAPS=st_johns) pass.
+- Left as is: the rims where the halls' levelled pads meet the ground (held on purpose), a pit by the rectory on the
+  bluff (real 3DEP). Smooth all's Medium was chosen over Strong, which softens the bluff's crest.
+- Merge through a `check/` branch (the change touches shared code, so CI runs the full suite).
 
 ### Where things stand (2026-10-30 evening)
 - **Iron Maw on `wip/iron-maw`, not merged** (agent, 2026-10-30 night): `maps/iron_maw.json`, the open-pit
