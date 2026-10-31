@@ -222,12 +222,13 @@ Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, ta
   group `harbor`, STYLE_PACKS `harbor` (11). Test `stylePacksHarbor.test.ts` passes (incl. nav cases per rotation).
   Demo map `maps/saltmarsh_harbor.json`: validate-map 0 issues; built by a scratch helper (scratchpad
   `harbor/build_saltmarsh.mts`, not in the repo).
+- **Bundle:** the pack pushed the menu's first JS to 806.8 KB gzip; STYLE_PACKS was in the menu only because its
+  `props(...)` calls looked impure to Rollup. Marked `/* @__PURE__ */`: now 798.0 KB (below the 799.0 before).
 - **Navmesh lesson:** a switchback stair inside four walls drops off Recast's navmesh (watershed regions); open sides
   (watchtower / skeleton lighthouse) keep it. Ramps are 32 low steps under a drawn slope (tilted slabs lost the
   top joint in some rotations).
 - **Next:** check the Tide warehouse roof route (outside stair at (6,5)), `pnpm content:build` / palette atlas
-  (needs `vite preview` + build-palette-atlas, see Medieval notes), bundle budget (menu JS was 799.0/800 KB before
-  this pack: likely over; move something out of the menu path), e2e editor/maps, screenshots, docs
+  (needs `vite preview` + build-palette-atlas, see Medieval notes), e2e editor/maps, screenshots, docs
   (BUILDING_KIT "11 Coastal Harbor", `docs/map-briefs/saltmarsh_harbor/`, CHANGELOG), push `check/harbor`.
 
 ### Style Pack 10 Medieval Village (`wip/medieval-pack`, agent, 2026-10-31; not merged)

@@ -41,6 +41,7 @@ export interface StylePack {
   demo: string;
 }
 
+/** Prop IDs from their short names (pure: the menu, which imports the shared barrel, leaves STYLE_PACKS out of its bundle). */
 const props = (...ids: string[]) => ids.map((id) => `prop.${id}`);
 
 export const STYLE_PACKS: readonly StylePack[] = [
@@ -57,7 +58,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'military.trench', 'military.trench_corner', 'military.trench_t', 'military.trench_cross', 'military.trench_end', 'military.trench_steps', 'military.trench_dugout',
       'military.gantry', 'core.catwalk', 'core.platform_rail', 'military.helipad', 'core.yard',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'sandbag_wall', 'sandbag_wall_low', 'sandbag_corner', 'sandbag_nest', 'hesco_wall', 'hedgehog', 'dragon_tooth', 'razor_wire', 'camo_net',
       'jersey_barrier', 'jersey_barrier_striped', 'jersey_barrier_broken', 'road_barrier', 'concrete_block', 'brick_rubble',
       'ammo_crate', 'ammo_stack', 'fuel_drum', 'fuel_tank', 'storage_tank', 'steel_water_tower',
@@ -84,7 +85,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'frontier.water_tower', 'frontier.mine_entrance', 'frontier.mine_tunnel',
       'frontier.main_street', 'frontier.boardwalk_street', 'frontier.rail_line', 'frontier.rail_crossing', 'frontier.corral', 'core.yard',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'mine_cart', 'ore_cart', 'dynamite_crate', 'dynamite_bundle', 'powder_keg', 'mine_frame', 'mine_rails', 'rail_buffer',
       'locomotive', 'locomotive_red', 'passenger_car', 'ore_wagon', 'hopper_wagon', 'timber_wagon', 'flatbed_wagon', 'coal_car', 'lumber_car', 'railroad', 'railroad_broken',
       'hitching_post', 'water_trough', 'wagon_wheel', 'wanted_board', 'outhouse', 'tumbleweed', 'covered_wagon', 'wind_pump',
@@ -115,7 +116,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'imperial.tunnel', 'imperial.hypogeum', 'imperial.hypogeum_lift',
       'core.yard', 'core.corridor_clear', 'core.corner', 'core.junction_t', 'core.stairwell', 'core.plaza',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'im_column_ionic', 'im_brazier', 'im_statue_emperor', 'im_amphorae', 'im_weapon_rack', 'im_training_post', 'im_aquila', 'im_vexillum', 'im_chariot',
       'im_lift_cage', 'im_stakes', 'im_altar', 'im_bench', 'im_fountain', 'im_velarium', 'im_bust', 'im_throne',
       // Quaternius Ultimate Modular Ruins, already in the game.
@@ -153,7 +154,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'core.corridor_clear', 'core.corridor_windows', 'core.corner', 'core.junction_t', 'core.junction_x', 'core.corridor_curve',
       'core.room', 'core.room_long', 'core.room_large', 'core.atrium', 'core.stairwell', 'core.catwalk', 'core.bridge',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'os_airlock_frame', 'os_bulkhead', 'os_bulkhead_window', 'os_laser_gate', 'os_field_emitter', 'os_viewport', 'os_reactor_core', 'os_cryo_pod', 'os_holo_globe',
       'os_cargo_crate', 'os_generator', 'os_power_unit', 'os_transmitter', 'os_satellite_dish', 'os_comms_dish', 'os_truss', 'os_frame_module', 'os_coolant_pipe',
       'os_pipe_junction', 'os_console_corner', 'os_terminal', 'os_canister_rack', 'os_floor_cables', 'os_wall_column', 'os_wall_panel',
@@ -188,7 +189,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'gothic.library', 'gothic.crypt', 'gothic.mausoleum', 'gothic.cemetery', 'gothic.hedge_maze', 'gothic.hedge_garden', 'gothic.iron_fence', 'gothic.iron_gate',
       'core.room', 'core.room_long', 'core.room_large', 'core.hall', 'core.room_tall', 'core.stairwell', 'core.corridor_clear', 'core.corridor_windows', 'core.balcony', 'core.yard', 'core.terrace',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'ge_bookcase_tall', 'ge_chandelier', 'ge_candelabra', 'ge_grandfather_clock', 'ge_wingback_chair', 'ge_grand_piano', 'ge_portrait', 'ge_suit_of_armour', 'ge_four_poster_bed', 'ge_writing_desk',
       'ge_sarcophagus', 'ge_angel_statue', 'ge_headstone_tall', 'ge_iron_fence', 'ge_iron_gate', 'ge_hedge_wall', 'ge_hedge_arch', 'ge_topiary', 'ge_gas_lamp',
       // Already in the game: graveyard, house interior, ruins and dungeon pieces.
@@ -229,7 +230,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'jungle.ziggurat', 'jungle.temple_gate', 'jungle.temple_wall', 'jungle.cliff', 'jungle.cliff_corner', 'jungle.cliff_ramp', 'jungle.cave', 'jungle.cave_mouth', 'jungle.waterfall_basin', 'jungle.river', 'jungle.giant_tree', 'jungle.ruined_court',
       'core.yard', 'core.yard_ruins', 'core.room_columns', 'core.room_dais', 'core.bridge', 'core.platform', 'core.platform_rail', 'core.ramp',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'jg_stone_idol', 'jg_serpent_statue', 'jg_carved_pillar', 'jg_altar_stone', 'jg_stele', 'jg_vine_curtain', 'jg_liana', 'jg_bridge_post', 'jg_waterfall', 'jg_giant_root', 'jg_banana_plant',
       'jg_giant_fern', 'jg_monstera', 'jg_bamboo', 'jg_brazier', 'jg_rubble_blocks', 'jg_gold_idol',
       // Already in the game: ruins, rocks, jungle plants and an expedition camp.
@@ -270,7 +271,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'neon.tower_a', 'neon.tower_b', 'neon.tower_c', 'neon.tower_e', 'neon.shop_a', 'neon.block_n',
       'city.street', 'city.crossroads', 'core.yard', 'core.room', 'core.room_tall', 'core.stairwell', 'core.platform', 'core.platform_rail', 'core.bridge', 'core.terrace',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'nc_streetlight', 'nc_streetlight_double', 'nc_traffic_light', 'nc_traffic_light_hanging', 'nc_highway_sign', 'nc_street_sign', 'nc_dumpster', 'nc_road_barrier',
       'nc_cone', 'nc_neon_barrier', 'nc_elevated_pillar', 'nc_power_pole', 'nc_monorail_track', 'nc_monorail_pylon', 'nc_skytrain_car', 'nc_skytrain_front',
       'nc_skytrain_end', 'nc_vending', 'nc_holo_kiosk', 'nc_food_stall', 'nc_ac_unit', 'nc_water_tank', 'nc_antenna',
@@ -305,7 +306,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'suburban.house', 'suburban.garage', 'suburban.pool', 'suburban.playground', 'suburban.store', 'suburban.gas_station', 'suburban.street', 'suburban.backyard',
       'core.house', 'core.shop', 'core.gas_station', 'core.street', 'core.intersection', 'core.room', 'core.room_long', 'core.stairwell', 'core.yard',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'sb_microwave', 'sb_fridge', 'sb_bbq_grill', 'sb_propane_tank', 'sb_washing_machine', 'sb_tv_flat', 'sb_mailbox', 'sb_wheelie_bin', 'sb_lawnmower', 'sb_garden_gnome',
       'sb_picket_fence', 'sb_swing_set', 'sb_slide', 'sb_trampoline', 'sb_basketball_hoop', 'sb_gas_pump', 'sb_sedan', 'sb_patio_set', 'sb_sun_lounger', 'sb_fire_hydrant',
       // Already in the game: furniture, shop fittings, garden and street pieces.
@@ -346,7 +347,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'egypt.quay', 'egypt.river', 'egypt.avenue', 'egypt.house',
       'imperial.colonnade', 'imperial.tunnel', 'core.yard', 'core.corridor_clear', 'core.corner', 'core.junction_t', 'core.stairwell',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'eg_obelisk', 'eg_sphinx', 'eg_statue_pharaoh', 'eg_anubis', 'eg_sarcophagus', 'eg_canopic_jars', 'eg_column_papyrus', 'eg_felucca', 'eg_reed_boat',
       'eg_palm', 'eg_papyrus', 'eg_torch', 'eg_chest', 'eg_stele', 'eg_cat_statue',
       // Shared with 03 Imperial Arena and the game's ruins.
@@ -386,7 +387,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'medieval.bell_tower', 'medieval.watchtower', 'medieval.stream', 'medieval.bridge', 'medieval.road', 'medieval.forge',
       'core.yard', 'core.plaza', 'core.room', 'core.room_long', 'core.stairwell',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'mv_well', 'mv_awning', 'mv_pavilion', 'mv_shop_sign', 'mv_hay_cart', 'mv_forge', 'mv_workbench', 'mv_planter', 'mv_tarp_crates', 'mv_tarp_tent',
       'mv_chimney', 'mv_wattle_fence', 'mv_spiked_fence', 'mv_bell', 'mv_market_cross', 'mv_stocks', 'mv_timber_post', 'mv_sacks', 'mv_bay_window', 'mv_shutters',
       // Already in the game: castle and siege pieces, the market, carts and barrels, banners, lanterns, fences and trees.
@@ -432,7 +433,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'harbor.lighthouse', 'harbor.crane', 'harbor.arch', 'harbor.quayside',
       'medieval.outside_stair', 'medieval.walkway', 'core.yard', 'core.plaza', 'core.room', 'core.room_long', 'core.stairwell',
     ],
-    props: props(
+    props: /* @__PURE__ */ props(
       'hb_bollard', 'hb_capstan', 'hb_lobster_pots', 'hb_buoy', 'hb_marker_buoy', 'hb_net_rack', 'hb_fish_stall', 'hb_fish_crates', 'hb_fishing_boat',
       'hb_anchor', 'hb_rope_coil', 'hb_lamp_post', 'hb_life_ring', 'hb_net_pile', 'hb_gull', 'hb_tide_board', 'hb_dolphin', 'hb_fenders',
       // Already in the game: boats and masts, cargo and crates, barrels, the gantry crane, lamps and rocks.
