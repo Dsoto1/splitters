@@ -478,6 +478,8 @@ export const SCENARIO_PALETTE = [
   // Style Pack gameplay pieces (10 Medieval Village).
   { key: 'door:oak', label: 'Oak Door', search: 'door oak wooden plank ironbound iron bound hinged medieval village house castle' },
   { key: 'block:wattle', label: 'Wattle Hurdle', search: 'block wattle hurdle fence woven breakable wood medieval village farm' },
+  // Style Pack gameplay pieces (11 Coastal Harbor).
+  { key: 'water:harbour', label: 'Harbour Water', search: 'water harbour harbor sea deep swim boat quay pier coast' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
@@ -711,6 +713,9 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('ladder'), kind: 'ladder', ...base, height: 6, width: 1.2, style: 'vines' };
     case 'trap:rockfall':
       return { id: newId('rockfall'), kind: 'trap', trap: 'crusher', ...base, activation: 'proximity', onSeconds: 1.2, offSeconds: 8, offsetSeconds: 0, startEnabled: true, damage: null, style: 'rockfall' };
+    case 'water:harbour':
+      // Sea water for a harbour: place it on the bed (HARBOR_BED) and its surface sits at HARBOR_SEA, 1.5 m under the quay: deep enough to swim.
+      return { id: newId('harbour'), kind: 'water', position, size: [16, 2.5, 16], liquid: 'water', tint: '#2e5a66' };
     case 'water:pool':
       return { id: newId('pool'), kind: 'water', position, size: [5, 1.75, 12], liquid: 'water', tint: '#3fc8e8' };
     case 'block:rope_bridge':

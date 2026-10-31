@@ -12797,6 +12797,150 @@
       "triangles": 204,
       "bytes": 12968,
       "sha256": "c5219d866333d204"
+    },
+    {
+      "file": "props/hb_bollard.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_bollard.glb",
+      "triangles": 300,
+      "bytes": 12832,
+      "sha256": "66ada9b74a5b71c4"
+    },
+    {
+      "file": "props/hb_capstan.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_capstan.glb",
+      "triangles": 328,
+      "bytes": 15200,
+      "sha256": "37661aac41046292"
+    },
+    {
+      "file": "props/hb_lobster_pots.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_lobster_pots.glb",
+      "triangles": 1360,
+      "bytes": 58152,
+      "sha256": "9c4f90bbd337c286"
+    },
+    {
+      "file": "props/hb_buoy.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_buoy.glb",
+      "triangles": 320,
+      "bytes": 10784,
+      "sha256": "1e9735b4ac7d0fd5"
+    },
+    {
+      "file": "props/hb_marker_buoy.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_marker_buoy.glb",
+      "triangles": 212,
+      "bytes": 10324,
+      "sha256": "80e3ffa21362a47a"
+    },
+    {
+      "file": "props/hb_net_rack.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_net_rack.glb",
+      "triangles": 204,
+      "bytes": 13800,
+      "sha256": "3024632896f0fd13"
+    },
+    {
+      "file": "props/hb_fish_stall.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_fish_stall.glb",
+      "triangles": 444,
+      "bytes": 27768,
+      "sha256": "49f08f06d175ee71"
+    },
+    {
+      "file": "props/hb_fish_crates.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_fish_crates.glb",
+      "triangles": 336,
+      "bytes": 21692,
+      "sha256": "5d3f5e4100c7b57d"
+    },
+    {
+      "file": "props/hb_fishing_boat.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_fishing_boat.glb",
+      "triangles": 920,
+      "bytes": 42704,
+      "sha256": "a63df2e22f7a458d"
+    },
+    {
+      "file": "props/hb_anchor.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_anchor.glb",
+      "triangles": 152,
+      "bytes": 8336,
+      "sha256": "814049b2d660e6e2"
+    },
+    {
+      "file": "props/hb_rope_coil.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_rope_coil.glb",
+      "triangles": 784,
+      "bytes": 31032,
+      "sha256": "e568a94339c8a1b2"
+    },
+    {
+      "file": "props/hb_lamp_post.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_lamp_post.glb",
+      "triangles": 156,
+      "bytes": 7396,
+      "sha256": "e9aff23061f36709"
+    },
+    {
+      "file": "props/hb_life_ring.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_life_ring.glb",
+      "triangles": 120,
+      "bytes": 8460,
+      "sha256": "4559d258f42e11e6"
+    },
+    {
+      "file": "props/hb_net_pile.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_net_pile.glb",
+      "triangles": 668,
+      "bytes": 19892,
+      "sha256": "0288c8fa35946e15"
+    },
+    {
+      "file": "props/hb_gull.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_gull.glb",
+      "triangles": 192,
+      "bytes": 8536,
+      "sha256": "16d67a1a44865a56"
+    },
+    {
+      "file": "props/hb_tide_board.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_tide_board.glb",
+      "triangles": 216,
+      "bytes": 14400,
+      "sha256": "3ba49b05d9f24f2f"
+    },
+    {
+      "file": "props/hb_dolphin.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_dolphin.glb",
+      "triangles": 420,
+      "bytes": 17688,
+      "sha256": "41e121618a24777c"
+    },
+    {
+      "file": "props/hb_fenders.glb",
+      "source": "tiletrigger-harbor",
+      "src": "hb_fenders.glb",
+      "triangles": 336,
+      "bytes": 17064,
+      "sha256": "26c07a6e04ba3084"
     }
   ]
 }

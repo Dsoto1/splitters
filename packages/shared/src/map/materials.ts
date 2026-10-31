@@ -49,7 +49,19 @@ export type PatternId =
   /** Style Pack 10: rows of curved clay roof tiles (pantiles), each row lapping the one below. */
   | 'pantiles'
   /** Style Pack 10: half-timbering: dark oak posts, rails and braces with plaster panels between (repeats every storey). */
-  | 'timber';
+  | 'timber'
+  /** Style Pack 11: pier decking: weathered boards with gaps and nails over the joists. */
+  | 'decking'
+  /** Style Pack 11: big granite quay blocks in courses. */
+  | 'ashlar'
+  /** Style Pack 11: a shingle beach of small rounded pebbles. */
+  | 'pebbles'
+  /** Style Pack 11: corrugated iron sheet with rust weeping from the bolt lines. */
+  | 'corrugated'
+  /** Style Pack 11: tarred horizontal lap boards (net sheds). */
+  | 'lapboards'
+  /** Style Pack 11: two horizontal bands per repeat (lighthouse stripes). */
+  | 'bands';
 
 export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
@@ -140,6 +152,19 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('packed_dirt', 'Packed Dirt', 'Ground', 'noise', '#7a6448', '#635038', 3),
   m('whitewash', 'Whitewash', 'Stone', 'noise', '#ece6d6', '#d8d0bc', 2.5),
   m('oak_beam', 'Oak Beam', 'Wood', 'planks', '#4a3220', '#30200f', 1.5),
+  // Style Pack 11 Coastal Harbor: our own procedural paint.
+  m('pier_decking', 'Pier Decking', 'Wood', 'decking', '#a8977c', '#5e5040', 2.5),
+  m('quay_granite', 'Quay Granite', 'Stone', 'ashlar', '#8e9090', '#5c6060', 2.4),
+  m('harbour_setts', 'Harbour Setts', 'Stone', 'setts', '#7a7e80', '#3e4244', 2.5),
+  m('shingle', 'Shingle', 'Ground', 'pebbles', '#9a948a', '#5a5650', 2),
+  m('sea_bed', 'Sea Bed', 'Ground', 'noise', '#5e6a52', '#3e4a3a', 4),
+  m('rusty_corrugated', 'Rusty Corrugated', 'Metal', 'corrugated', '#8a3a2a', '#5a3018', 2, 0.25),
+  m('blue_corrugated', 'Harbour Blue Corrugated', 'Metal', 'corrugated', '#3e6a8a', '#6a4a30', 2, 0.25),
+  m('tarred_boards', 'Tarred Boards', 'Wood', 'lapboards', '#24221f', '#5a4a3a', 2.5),
+  m('harbour_render', 'Harbour Render', 'Stone', 'noise', '#e8e4da', '#d2ccc0', 3),
+  m('lighthouse_bands', 'Lighthouse Bands', 'Paint', 'bands', '#f2efe8', '#b8262a', 6),
+  m('harbour_paint', 'Harbour Blue Paint', 'Paint', 'plain', '#2e5a7a', '#2a5270', 4, 0.4),
+  m('lamp_glow', 'Lamp Glow', 'Tech', 'plain', '#ffe2a0', '#ffd27a', 1, 0.3, true),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -259,6 +284,7 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('adobe', 'Frontier Adobe', '#f4d2a0', ['pbr_floorboards', '#d8b890'], 'pbr_adobe', ['pbr_adobe', '#e8d0b0'], 'pbr_weathered_planks', 'pbr_walnut'),
   theme('gothic_estate', 'Gothic Estate', '#231d2c', 'pbr_floorboards', 'wallpaper_damask', 'pbr_walnut', 'dark_wood', 'brass'),
   theme('jungle_temple', 'Jungle Temple', '#a8c8a0', 'pbr_mossy_cobble', 'pbr_castle_stone', 'pbr_jungle_rock', 'pbr_rock', ['pbr_travertine', '#b8c0a0']),
+  theme('coastal', 'Coastal Harbor', '#a8c0d4', 'harbour_setts', 'quay_granite', ['pier_decking', '#c0b090'], 'pier_decking', 'harbour_paint'),
   theme('medieval', 'Medieval Village', '#a8c8e8', 'cobblestones', 'timber_frame', ['oak_beam', '#c8a888'], 'pbr_floorboards', 'oak_beam'),
   theme('suburban', 'Suburban', '#9cc8f0', 'oak_planks', 'pbr_plaster_white', 'pbr_clapboard', 'pbr_plaster_white', ['paint_matte', '#f4f2ec']),
 ];

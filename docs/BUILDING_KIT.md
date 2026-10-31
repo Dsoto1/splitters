@@ -148,7 +148,7 @@ of the repo).
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
-alongside the set), then 10 Medieval Village (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then 10 Medieval Village and 11 Coastal Harbor (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
 Pack is a themed selection of the kit: the **Style Pack** picker under the
 MapMaker palette's search box narrows the tiles, props, gameplay pieces
 (Entities → Scenario), vehicles and pickups to one pack (headings left empty
@@ -520,6 +520,48 @@ storey a repeat, so beams line up at 0, 4, 8 m), Wattle, Packed Dirt, Whitewash,
 you come close) and *Wattle Hurdle* (a breakable woven fence, back after 25 s), with the portcullis,
 portcullis gate, drawbridge, breakable and crumbling planks, boards, ladders, braziers, lanterns, candles,
 water and trigger zones.
+
+### 11 Coastal Harbor (working fishing harbour)
+
+From the owner's concept sheet "Tileset 03 – Coastal Harbor". Theme `core.coastal` (harbour setts floor, quay
+granite walls, decking solids and undersides, harbour-blue trim; also Harbour and Downtown); facades **Harbour
+render** (granite plinth, blue window frames and sills, a slate drip course) and **Tarred timber** (tarred lap
+boards with white frames). Demo map: Saltmarsh Harbor.
+
+**Levels.** Quay and decks at 0; the water's surface at −1.5 m (`HARBOR_SEA`: too high to climb out of without
+steps, the slipway, the beach or a Ladder); the harbour bed at −4 m (`HARBOR_BED`). Water tiles carry the bed
+as an extra floor; fill them with **Harbour Water** (gameplay piece `water:harbour`: put it on the bed and its
+surface lands at −1.5 m).
+
+**Tiles** (`map/packTilesHarbor.ts`, 20; the box helpers are shared with `packTilesMedieval.ts`):
+*Timber Pier* (5 m deck on piles, 1.25 m of air over the water: swim under it), *Pier Head* (full-cell deck,
+north rail with a gap; join Breakwaters east and west), *Boardwalk* and *Boardwalk Corner* (2.4 m, a rope rail
+that only looks like it holds you), *Quay Wall* (ground on the south half, a 4 m sheer face, bollards, coping,
+two fenders framing a bay for a Ladder), *Quay Corner* / *Quay Inside Corner*, *Sea Wall Steps* (2 × 1: steps cut
+along the face down to the bed), *Slipway* and *Shingle Beach* (27° down to the bed; you walk on 32 low steps
+under the drawn slope, which keeps them on the navmesh in every rotation), *Harbour Basin* (open water),
+*Breakwater* (a concrete walk level with the quay, a wave wall on its west side, rocks to climb out on),
+*Harbour Warehouse*, *Net Shed* and *Harbourmaster's Office* (2 × 1, two storeys, a straight stair along the
+north wall, upper doors east and west at 4 m; roofs with eaves at 8.25 m like the Medieval houses, so an Outside
+Stair north of one reaches its roof; the warehouse has a loading door and a loft door with a hoist, the net shed
+an open ground storey in two bays, the office a balcony over the quay), *Fish Market* (2 × 1, open hall,
+counters as cover), *Lighthouse* (a skeleton tower of four banded legs, a switchback stair inside to a gallery
+10.5 m up, the lantern house; a granite plinth to the bed so it also stands in water), *Harbour Crane* (portal
+legs, a platform 6 m up with a hatch for a Ladder, cab and raised jib), *Harbour Arch*, *Quayside* (setts and
+crane rails).
+
+**Props** (`tools/content/prepare-harbor.mjs`, licence Owned, category and palette group Coastal Harbor):
+bollard, capstan, lobster pots, mooring and channel-marker buoys, net rack, fish stall, fish boxes, fishing
+boat (a stand-in under a stable id), anchor, rope coils, harbour lamp post, life ring, heap of nets, herring
+gull, tide board, mooring dolphin, tyre fenders. The pack also lists the rowing boat, felucca, mast, cargo
+containers and crates, barrels, lamps and rocks already in the game.
+
+**Gameplay.** Harbour Water, Ladders (out of the water up a quay, up the crane), drawbridge/lift/slider movers,
+doors, breakable and rotten planks; boats are vehicles placed with *Rides on water* (hover bike, speeder).
+
+**Navmesh notes.** A switchback stair inside four walls falls off Recast's navmesh (its watershed regions lose
+the stacked laps); open sides keep it (the lighthouse is a skeleton tower for that reason, like the Medieval
+watchtower). The 2 × 1 buildings use the Medieval houses' straight stair.
 
 ### Portals (`sim/portals.ts`)
 

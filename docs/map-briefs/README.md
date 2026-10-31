@@ -9,6 +9,7 @@ build notes (manifest, QA report, decisions and deviations) go in `docs/map-brie
 | BUILD_01_Sunken_Kingdom.md | sunken_kingdom_reference.jpg | `maps/sunken_kingdom.json` | built and merged (2026-10-30); docs in `sunken_kingdom/`; three questions for the owner (dome, tier height, bot CTF) in its DECISIONS_AND_DEVIATIONS.md |
 | BUILD_06_Iron_Maw.md | iron_maw_reference.jpg | `maps/iron_maw.json` | built and merged (2026-10-30); notes in `iron_maw/`; uses the owner's Meshy excavator, haul truck and cargo props; questions: player-count cap (schema 16–32), an orange rock material |
 | (Style Pack 10 demo; owner's Medieval Village tileset sheet) | n/a | `maps/market_town.json` | built on `wip/medieval-pack` (2026-10-31); notes in `market_town/`; bots don't reach the belfry or the NW watchtower lookout |
+| (Style Pack 11 demo; owner's Coastal Harbor tileset sheet) | n/a | `maps/saltmarsh_harbor.json` | built on `wip/harbor-pack` (2026-10-31); notes in `saltmarsh_harbor/` |
 
 `AGENT_BUILD_CONTRACT.md` (the owner's, v1.0) applies to every map, with these repo adaptations:
 - The map file stays `maps/<id>.json` (the game loads maps from there; CLAUDE.md "Maps"). The contract's

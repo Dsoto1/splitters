@@ -48,6 +48,7 @@ export const PROP_GROUPS = [
   { id: 'dungeon', label: 'Dungeons & Caves', categories: ['Dungeon', 'Dark Dungeon', 'Mines & Caves'] },
   { id: 'western', label: 'Wild West', categories: ['Wild West', 'Frontier'] },
   { id: 'ancient', label: 'Ancient & Jungle', categories: ['Imperial Arena', 'Sands of Egypt', 'Jungle Ruins'] },
+  { id: 'harbor', label: 'Coastal Harbor', categories: ['Coastal Harbor'] },
 ] as const;
 /** Prop categories shown in the Nature tab. */
 export const NATURE_PROP_CATEGORIES: readonly string[] = ['Trees', 'Rocks & Wood', 'Plants & Flowers'];

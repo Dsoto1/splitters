@@ -99,6 +99,18 @@ map area)".
 - Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
   need `pnpm e2e:baselines`.
 
+### Queued for after 15:00 EST / 19:00 UTC (owner, 2026-10-31): new Drive downloads
+- **New models** the owner added to the Drive folder (`18MaKefMCWARf1Y3gAjhZuxTto86vGAYl`): sort them (characters,
+  props, weapons, vehicles), process through the existing pipelines, name and manifest new characters.
+- **FX: the owner bought a full licence** for the effects packs whose free versions we already use (Binbun:
+  `content/vfx.json`, binbun-muzzle-flash / hit-fx / explosion-fx, CC0 free editions). The full packs add many more
+  effects, textures and weapon/gameplay effects. Before shipping: read the purchased licence text (it is likely a
+  commercial licence, not CC0) and record it per pack in vfx.json / provenance (licence, "purchased by the owner");
+  CLAUDE.md's content rules list CC0, credit-only and Quaternius packs, so add "assets the owner bought a licence for"
+  there with the owner's OK. As now, only the processed output ships (prepare-vfx.mjs atlases); the pack files are
+  never committed. Then map effects to weapons (muzzle, tracer, impact per surface, explosions per weapon), gameplay
+  (pickups, spawns, portals, jump pads, hazards) and check performance at 96.
+
 ### After the style packs (owner, 2026-10-31): MapMaker overhaul and a pass over every map
 Once all the style packs are done (10 Medieval, 11 Harbor, 12 Snow, 09 Desert City, 06 Jungle Ruins refresh, and the
 unassigned Sci-Fi Research and Industrial Factory refreshes), the owner wants:
@@ -268,6 +280,34 @@ Reuse what exists: castle_* pieces, siege_tower, stall*, cart, hay_bale, anvil, 
 lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster houses with tile roofs, market
 square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
 Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
+
+### Style Pack 11 Coastal Harbor (`wip/harbor-pack`, agent, 2026-10-31; green on `check/harbor`, not merged)
+- **Done (pushed):** 20 tiles in `packages/shared/src/map/packTilesHarbor.ts` (pier, pier head, boardwalk + corner,
+  quay wall / outside / inside corner, 2 × 1 sea wall steps, slipway, shingle beach, basin, breakwater, 2 × 1
+  warehouse, net shed and harbourmaster's office (straight stair, eaves 8.25 m like Medieval: an Outside Stair north
+  of one reaches its roof), fish market, skeleton lighthouse (gallery 10.5 m), crane (platform 6 m, hatch for a
+  Ladder), harbour arch, quayside). Harbour levels: quay 0, water surface `HARBOR_SEA` −1.5, bed `HARBOR_BED` −4.
+  Box helpers are now exported from packTilesMedieval.ts (gableRoof got `pitch`/`ridgeMaterial`). 18 props
+  `hb_*` built by `tools/content/prepare-harbor.mjs` (Owned; `hb_fishing_boat` is the stand-in hero, Meshy
+  candidate). Patterns decking/ashlar/pebbles/corrugated/lapboards/bands, 12 materials, theme `core.coastal` +
+  backdrop, facades `harbour_render`/`tarred_timber`, palette piece **Harbour Water** (`water:harbour`), palette
+  group `harbor`, STYLE_PACKS `harbor` (11). Test `stylePacksHarbor.test.ts` passes (incl. nav cases per rotation).
+  Demo map `maps/saltmarsh_harbor.json`: validate-map 0 issues; built by a scratch helper (scratchpad
+  `harbor/build_saltmarsh.mts`, not in the repo).
+- **Bundle:** the pack pushed the menu's first JS to 806.8 KB gzip; STYLE_PACKS was in the menu only because its
+  `props(...)` calls looked impure to Rollup. Marked `/* @__PURE__ */`: now 798.0 KB (below the 799.0 before).
+- **Navmesh lesson:** a switchback stair inside four walls drops off Recast's navmesh (watershed regions); open sides
+  (watchtower / skeleton lighthouse) keep it. Ramps are 32 low steps under a drawn slope (tilted slabs lost the
+  top joint in some rotations).
+- **Also done:** palette atlas (`harbor` group) + `content:build` (content OK), map card, docs (BUILDING_KIT
+  "11 Coastal Harbor", CHANGELOG, `docs/map-briefs/saltmarsh_harbor/` with screenshots). The Tide warehouse roof
+  has no stair (one against the east boundary lost its flight on the navmesh).
+- **Checks:** typecheck, test:changed (1067 passed), content:check, build, bundle budget (798.0 KB gzip), validate-map 0
+  issues, e2e editor/editorux/maps (saltmarsh_harbor) locally; CI run 41200191169 on `check/harbor` (7d13a27): full
+  suite green. NOT TESTED: live bot match, bot swimming / jet-ski crossing, 24-player perf, real-GPU walk-through.
+- **Next:** merge to the session
+  branch (rebuild palette atlas/provenance if another pack landed first). Candidates: a real boat mount (motor
+  launch), Meshy hero for `hb_fishing_boat`.
 
 ### Style Pack 10 Medieval Village (`wip/medieval-pack`, agent, 2026-10-31; not merged)
 - **Built** (from the owner's tileset sheet 01): 16 tiles in `packages/shared/src/map/packTilesMedieval.ts` (2 × 1 Timber,

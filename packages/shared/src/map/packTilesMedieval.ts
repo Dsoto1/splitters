@@ -10,20 +10,21 @@
  * (`LocalBox.surface`).
  *
  * Only types come from catalog.ts (which lists these tiles), so there is no
- * runtime import cycle; the few box helpers are repeated here.
+ * runtime import cycle. The box helpers are exported for the other packs'
+ * tiles (packTilesHarbor.ts).
  */
 import type { LocalBox, Side, TileDefinition, TilePort } from './catalog.ts';
 
 // ---------------------------------------------------------------- helpers
 
 type Box = LocalBox;
-const b = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, kind?: LocalBox['kind']): Box => ({ min: [x0, y0, z0], max: [x1, y1, z1], ...(kind ? { kind } : {}) });
+export const b = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, kind?: LocalBox['kind']): Box => ({ min: [x0, y0, z0], max: [x1, y1, z1], ...(kind ? { kind } : {}) });
 /** A box in a library material (any theme). */
-const paint = (box: Box, material: string, tint?: string): Box => ({ ...box, surface: { material: `core.${material}`, ...(tint ? { tint } : {}) } });
+export const paint = (box: Box, material: string, tint?: string): Box => ({ ...box, surface: { material: `core.${material}`, ...(tint ? { tint } : {}) } });
 /** Visual only (never collides). */
-const trim = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, material: string, tint?: string): Box => paint(b(x0, y0, z0, x1, y1, z1, 'trim'), material, tint);
+export const trim = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, material: string, tint?: string): Box => paint(b(x0, y0, z0, x1, y1, z1, 'trim'), material, tint);
 /** A box `size` centred on (cx, cy, cz), turned and tilted (radians). */
-const tilted = (cx: number, cy: number, cz: number, size: readonly [number, number, number], o: { yaw?: number; pitch?: number; roll?: number; kind?: LocalBox['kind'] } = {}): Box => ({
+export const tilted = (cx: number, cy: number, cz: number, size: readonly [number, number, number], o: { yaw?: number; pitch?: number; roll?: number; kind?: LocalBox['kind'] } = {}): Box => ({
   min: [cx - size[0] / 2, cy - size[1] / 2, cz - size[2] / 2],
   max: [cx + size[0] / 2, cy + size[1] / 2, cz + size[2] / 2],
   ...(o.yaw ? { yaw: o.yaw } : {}),
@@ -32,16 +33,16 @@ const tilted = (cx: number, cy: number, cz: number, size: readonly [number, numb
   ...(o.kind ? { kind: o.kind } : {}),
 });
 const SIDES_ALL: Side[] = ['N', 'E', 'S', 'W'];
-const ALL: TilePort[] = SIDES_ALL.map((side) => ({ side, level: 0 }));
-const at = (level: number, ...sides: Side[]): TilePort[] => sides.map((side) => ({ side, level }));
+export const ALL: TilePort[] = SIDES_ALL.map((side) => ({ side, level: 0 }));
+export const at = (level: number, ...sides: Side[]): TilePort[] => sides.map((side) => ({ side, level }));
 
-function footprint(w: number, d: number, h = 1): [number, number, number][] {
+export function footprint(w: number, d: number, h = 1): [number, number, number][] {
   const cells: [number, number, number][] = [];
   for (let z = 0; z < h; z++) for (let y = 0; y < d; y++) for (let x = 0; x < w; x++) cells.push([x, y, z]);
   return cells;
 }
 
-function perimeter(w: number, d: number, level = 0): TilePort[] {
+export function perimeter(w: number, d: number, level = 0): TilePort[] {
   const ports: TilePort[] = [];
   for (let x = 0; x < w; x++) ports.push({ side: 'S', level, cell: [x, 0] }, { side: 'N', level, cell: [x, d - 1] });
   for (let y = 0; y < d; y++) ports.push({ side: 'W', level, cell: [0, y] }, { side: 'E', level, cell: [w - 1, y] });
@@ -49,7 +50,7 @@ function perimeter(w: number, d: number, level = 0): TilePort[] {
 }
 
 /** Steps of 0.25 m climbing along +x/-x or +z/-z from `from`, between a0 and a1 across, each a block down to `floor`. */
-function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: number, n: number, base = 0, run = 0.5, floor = 0): Box[] {
+export function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: number, n: number, base = 0, run = 0.5, floor = 0): Box[] {
   return Array.from({ length: n }, (_, i) => {
     const u0 = from + dir * i * run;
     const u1 = from + dir * (i + 1) * run;
@@ -60,19 +61,19 @@ function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: numb
 }
 
 /** A 1 m rail (solid: it stops you) along an axis-aligned line at height y. */
-function rail(x0: number, z0: number, x1: number, z1: number, y = 0, material = 'oak_beam', h = 1): Box {
+export function rail(x0: number, z0: number, x1: number, z1: number, y = 0, material = 'oak_beam', h = 1): Box {
   const t = 0.07;
   const r = x0 === x1 ? b(x0 - t, y, Math.min(z0, z1), x0 + t, y + h, Math.max(z0, z1)) : b(Math.min(x0, x1), y, z0 - t, Math.max(x0, x1), y + h, z0 + t);
   return paint(r, material);
 }
 
 /** An opening in a wall run: [from, to] along the wall, [bottom, top] above the wall's foot. */
-type Opening = readonly [number, number, number, number];
-const door = (c: number, w = 2.2, h = 2.8): Opening => [c - w / 2, c + w / 2, 0, h];
-const win = (c: number, w = 1.2, y0 = 1.0, y1 = 2.3): Opening => [c - w / 2, c + w / 2, y0, y1];
+export type Opening = readonly [number, number, number, number];
+export const door = (c: number, w = 2.2, h = 2.8): Opening => [c - w / 2, c + w / 2, 0, h];
+export const win = (c: number, w = 1.2, y0 = 1.0, y1 = 2.3): Opening => [c - w / 2, c + w / 2, y0, y1];
 
 /** A wall in `material` along x at z = `at` or along z at x = `at`, from a0 to a1 and y0 to y1, `t` thick, with openings cut out. */
-function wall(axis: 'x' | 'z', at: number, a0: number, a1: number, openings: readonly Opening[], y0: number, y1: number, material: string, t = 0.3, tint?: string): Box[] {
+export function wall(axis: 'x' | 'z', at: number, a0: number, a1: number, openings: readonly Opening[], y0: number, y1: number, material: string, t = 0.3, tint?: string): Box[] {
   const out: Box[] = [];
   const piece = (u0: number, u1: number, v0: number, v1: number) => {
     if (u1 - u0 < 0.01 || v1 - v0 < 0.01) return;
@@ -94,7 +95,7 @@ function wall(axis: 'x' | 'z', at: number, a0: number, a1: number, openings: rea
 }
 
 /** Outer walls round x0..x1, z0..z1 with openings per side (coordinates along each wall). */
-function shell(x0: number, z0: number, x1: number, z1: number, open: Partial<Record<Side, readonly Opening[]>>, y0: number, y1: number, material: string, t = 0.3, tint?: string): Box[] {
+export function shell(x0: number, z0: number, x1: number, z1: number, open: Partial<Record<Side, readonly Opening[]>>, y0: number, y1: number, material: string, t = 0.3, tint?: string): Box[] {
   return [
     ...wall('x', z0 + t / 2, x0, x1, open.S ?? [], y0, y1, material, t, tint),
     ...wall('x', z1 - t / 2, x0, x1, open.N ?? [], y0, y1, material, t, tint),
@@ -104,7 +105,7 @@ function shell(x0: number, z0: number, x1: number, z1: number, open: Partial<Rec
 }
 
 /** Rectangles [x0, z0, x1, z1] of `r` not covered by any of `holes`. */
-function subtract(r: readonly [number, number, number, number], holes: readonly (readonly [number, number, number, number])[]): [number, number, number, number][] {
+export function subtract(r: readonly [number, number, number, number], holes: readonly (readonly [number, number, number, number])[]): [number, number, number, number][] {
   let parts: [number, number, number, number][] = [[...r]];
   for (const h of holes) {
     const next: [number, number, number, number][] = [];
@@ -129,7 +130,7 @@ function subtract(r: readonly [number, number, number, number], holes: readonly 
 const grow = (r: readonly [number, number, number, number], m = 0.3): [number, number, number, number] => [r[0] - m, r[1] - m, r[2] + m, r[3] + m];
 
 /** The roof's pitch: walkable (players and bots climb to 50°). */
-const PITCH = (35 * Math.PI) / 180;
+const ROOF_PITCH = (35 * Math.PI) / 180;
 const SLAB = 0.22;
 
 /**
@@ -139,9 +140,10 @@ const SLAB = 0.22;
  * rising at PITCH; a ridge cap; the gable ends filled from `wallTop` in
  * stepped courses of `gableMaterial`.
  */
-function gableRoof(x0: number, z0: number, x1: number, z1: number, eave: number, wallTop: number, o: { ridge?: 'x' | 'z'; material?: string; gableMaterial?: string; gableInset?: number } = {}): Box[] {
+export function gableRoof(x0: number, z0: number, x1: number, z1: number, eave: number, wallTop: number, o: { ridge?: 'x' | 'z'; material?: string; gableMaterial?: string; gableInset?: number; pitch?: number; ridgeMaterial?: string } = {}): Box[] {
   const material = o.material ?? 'roof_tiles_red';
   const alongX = (o.ridge ?? 'x') === 'x';
+  const PITCH = o.pitch ?? ROOF_PITCH;
   const tan = Math.tan(PITCH);
   const [a0, a1] = alongX ? [z0, z1] : [x0, x1];
   const [l0, l1] = alongX ? [x0, x1] : [z0, z1];
@@ -161,7 +163,9 @@ function gableRoof(x0: number, z0: number, x1: number, z1: number, eave: number,
     out.push(paint(alongX ? tilted(lc, yc, ac, [len, SLAB, L], { pitch: s * PITCH }) : tilted(ac, yc, lc, [L, SLAB, len], { roll: s * PITCH }), material));
   }
   const ridgeY = eave + (mid - a0) * tan;
-  out.push(alongX ? trim(l0, ridgeY - 0.05, mid - 0.18, l1, ridgeY + 0.16, mid + 0.18, 'roof_tiles_red', '#8a6a60') : trim(mid - 0.18, ridgeY - 0.05, l0, mid + 0.18, ridgeY + 0.16, l1, 'roof_tiles_red', '#8a6a60'));
+  const rm = o.ridgeMaterial ?? 'roof_tiles_red';
+  const rt = o.ridgeMaterial ? undefined : '#8a6a60';
+  out.push(alongX ? trim(l0, ridgeY - 0.05, mid - 0.18, l1, ridgeY + 0.16, mid + 0.18, rm, rt) : trim(mid - 0.18, ridgeY - 0.05, l0, mid + 0.18, ridgeY + 0.16, l1, rm, rt));
   // Gable ends: courses stepping in under the slabs.
   const gm = o.gableMaterial ?? 'timber_frame';
   const inset = o.gableInset ?? 0.2;
@@ -190,7 +194,7 @@ function gableRoof(x0: number, z0: number, x1: number, z1: number, eave: number,
  * bots' navmesh. Steps are slabs 0.3 m thick (each lap leaves headroom for the
  * one below). Returns the steps and each step's footprint [x0, z0, x1, z1].
  */
-function switchback(h: number, w: number, n: number, flights: readonly number[], base = 0): { steps: Box[]; prints: [number, number, number, number][] } {
+export function switchback(h: number, w: number, n: number, flights: readonly number[], base = 0): { steps: Box[]; prints: [number, number, number, number][] } {
   const steps: Box[] = [];
   const prints: [number, number, number, number][] = [];
   const inner = h - w;
