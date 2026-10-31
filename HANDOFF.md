@@ -27,6 +27,12 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   can re-fetch them), goblin, otter, toad, salamander, hyena, elder, alien, cat, pilot, pirate, titan (FBX downloads).
 - **Cost:** Meshy props 4.9 → 11.1 MB, guns/vehicles 3.6 → 10.6 MB, characters 41.9 → 52.4 MB; site dist 169 → 192 MB.
   Next lever: EXT_meshopt_compression (geometry is most of each file; needs the decoder served with the site).
+  perf96 iron_maw medium (box at load 14–18, 1–7 frames a run, so frame times mean nothing): draws ~1,000–1,060
+  either way (normal maps and LODs add none), casters 120–200 (budget 600), triangles in matched spread views
+  1.86 M before vs 1.98–2.47 M after. GPU memory: +~1.4 MB per normal map at 512 px, first-person gun colour
+  maps 512 → 1024 px (+~2.8 MB each loaded). Re-measure on a GPU (`PERF_GPU=1`).
+- Checks: typecheck, test:changed (1005 pass), content:check OK; e2e vehicles, characters, visual PASS; arsenal
+  FAILS here on "R loads the barrel again" (and once the axe swing / hazards) with the old models too (load).
 - Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
   need `pnpm e2e:baselines`.
 
