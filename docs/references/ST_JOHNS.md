@@ -70,6 +70,13 @@ edit commands.
    ground), with trees along the streets.
 5. "Settle all props on ground", then the map was saved as MapMaker saves
    it. MapMaker, the navigation check and the validator report nothing.
+6. (2026-10-31) The ground was a little jagged: step 1 point-sampled the
+   1 m grid to 2.5 m, which aliases lidar's small bumps. Terrain → **Smooth
+   all**, Medium (2.5 m), with "Keep the ground under blocks" on (the halls'
+   levelled pads stay exactly as they were), then "Settle all props on
+   ground". The import itself now averages when it thins and has a
+   Smoothing amount, so a fresh import is smooth too (BUILDING_KIT.md,
+   Terrain).
 
 The throwaway scripts that fetched, converted and computed this lived
 outside the repository; the map is edited from here on in MapMaker like any
@@ -194,4 +201,4 @@ footprints (above).
   surrounds; gothic arches use the ruins kit's arch prop as a frame.
 - Stained glass: coloured glow panels set into the stone, not see-through glass.
 - Conical caps and gables are stepped blocks, not smooth slopes.
-- The ground is 3DEP's at 2.5 m: kerbs, steps and anything smaller are gone.
+- The ground is 3DEP's at 2.5 m, smoothed over about 2.5 m: kerbs, steps and anything smaller are gone.
