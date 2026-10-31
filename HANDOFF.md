@@ -114,6 +114,14 @@ Owner's screenshots, Character Select holding the AK (2026-10-31 evening), worst
   With Barnacle, Hyena and Ricochet that's 7 characters: the single biggest group, so fix the shared cause first
   (it shows up on both in-house fits and pre-rigged bodies; likely the hold solve when the arms are short relative to
   the shoulder width, or when the shoulder joints sit far forward/inside a bulky torso).
+- Batch 6 (front views): the creature, a zombie (likely Groaner/Lurcher), the modern soldier (Desert Ranger or
+  Vanguard) and Ser Brannock all show the gun "at the face" with hands bunched at the chin. CAUTION: these are
+  front-on shots with the gun pointing at the camera, which foreshortens any hold; judge the crossed-arms group
+  from the side (`?mode=grips` sheet, side camera) before counting a character in it. Hands are still flat/open on
+  most of them.
+- **Bandit** (raccoon, Meshy auto-rig): broken import, not a grip issue: the lower body is a fused sack (legs not
+  separated, tail-like mass to the floor), the head turned sideways off the body. Re-fit or re-rig from the download
+  (and the older note: its proportions make it much bulkier than other small characters).
 - **Dale** (pre-rigged): grip passable, but his import is lumpy (owner) like Lancer Mei and Sir Galloway, and the
   forearm skin tears/stretches near the wrist.
 - **Count Bonesworth** (in-house): hands round the gun but the gun is held out to the side, not along his facing.
