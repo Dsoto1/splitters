@@ -24,6 +24,12 @@ import { testMode } from '../testMode.ts';
 const STILL_AT = testMode() ? 0.5 : Infinity;
 /** The hero stands turned this far (radians) towards the camera's side, before any turning by the viewer. */
 const HERO_YAW = 0.45;
+/**
+ * Character Select (the 'side' shot) turns the hero further, three-quarter on: that camera stands almost where
+ * the rifle points, and a hold seen down the barrel reads as a gun at the face with the arms crossed under it
+ * (every character, the rig's own Farmhand too). Turned, the gun runs across the screen and the grip shows.
+ */
+const HERO_YAW_SELECT = 1.15;
 
 /**
  * The live backdrop behind the main menu: your own character, rifle in hand,
@@ -51,6 +57,9 @@ export class MenuScene {
   /** How far the viewer has turned the hero (radians) and how fast it is still turning after a flick (radians/s). */
   private yaw = 0;
   private yawSpeed = 0;
+  /** The shot's own turn (HERO_YAW or HERO_YAW_SELECT), eased toward `baseGoal` with the camera. */
+  private baseYaw = HERO_YAW;
+  private baseGoal = HERO_YAW;
 
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
@@ -157,7 +166,7 @@ export class MenuScene {
         if (token !== this.token) return ch.dispose();
         // As the game draws a player in this skin: about a player's height.
         fitPlayerSkin(ch, PLAYER.height);
-        ch.root.rotation.y = HERO_YAW + this.yaw;
+        ch.root.rotation.y = this.baseYaw + this.yaw;
         this.heroRoot = ch.root;
         this.hide(ch.meshes);
         this.anim?.dispose();
@@ -177,7 +186,7 @@ export class MenuScene {
       if (token !== this.token) return ch.dispose();
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);
       ch.root.scaling.scaleInPlace(PLAYER.height / Math.max(0.5, max.y - min.y));
-      ch.root.rotation.y = HERO_YAW + this.yaw;
+      ch.root.rotation.y = this.baseYaw + this.yaw;
       this.heroRoot = ch.root;
       this.hide(ch.meshes);
       this.anim?.dispose();
@@ -223,13 +232,14 @@ export class MenuScene {
   resetSpin(): void {
     this.yaw = 0;
     this.yawSpeed = 0;
-    if (this.heroRoot && !this.heroRoot.isDisposed()) this.heroRoot.rotation.y = HERO_YAW;
+    if (this.heroRoot && !this.heroRoot.isDisposed()) this.heroRoot.rotation.y = this.baseYaw;
   }
 
   /** Where the hero stands on screen: beside the home menu, or pushed right of a wide panel. */
   setShot(shot: 'home' | 'side'): void {
     // Looking down -Z, screen right is world -X: a positive target x puts the hero right of centre.
     this.goal = shot === 'home' ? { x: 0.2, tx: 0.55, y: 1.3, ty: 1.02, z: 3.3 } : { x: 1.5, tx: 1.85, y: 1.15, ty: 0.95, z: 4.4 };
+    this.baseGoal = shot === 'home' ? HERO_YAW : HERO_YAW_SELECT;
   }
 
   frame(dt: number): void {
@@ -237,6 +247,7 @@ export class MenuScene {
     const f = this.framing;
     const k = 1 - Math.exp(-dt * 4);
     for (const key of ['x', 'tx', 'y', 'ty', 'z'] as const) f[key] += (this.goal[key] - f[key]) * k;
+    this.baseYaw += (this.baseGoal - this.baseYaw) * k;
     // Slow drift around the current framing.
     const sway = Math.sin(this.t * 0.25);
     this.camera.position.set(f.x + sway * 0.15, f.y + Math.sin(this.t * 0.17) * 0.04, f.z);
@@ -247,7 +258,7 @@ export class MenuScene {
       this.yawSpeed *= Math.exp(-dt * 3);
       if (Math.abs(this.yawSpeed) < 0.05) this.yawSpeed = 0;
     }
-    if (this.heroRoot && !this.heroRoot.isDisposed()) this.heroRoot.rotation.y = HERO_YAW + this.yaw;
+    if (this.heroRoot && !this.heroRoot.isDisposed()) this.heroRoot.rotation.y = this.baseYaw + this.yaw;
     if (this.anim) {
       const step = Math.max(0, Math.min(dt, STILL_AT - this.heroT));
       this.heroT += step;
