@@ -2,6 +2,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { Observer } from '@babylonjs/core/Misc/observable';
 import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { WeaponHold } from '@tiletrigger/shared';
 import type { CreatureInstance } from '../content/creatures.ts';
@@ -73,7 +74,9 @@ export class CreatureAnimator {
     this.arms = armed && !this.alien ? armsFrom(ch.joints, ch.meshes) : null;
     this.skelRoot = ch.joints.get('root');
     this.play('idle', 1);
-    this.observer = scene.onBeforeRenderObservable.add(() => this.animateBody());
+    // After the clips, before anything draws: a shadow pass drawing the skin before the hands were put on the gun
+    // (onBeforeRender) showed them where the clip had them.
+    this.observer = scene.onAfterAnimationsObservable.add(() => this.animateBody());
   }
 
   /** NPC creatures hold no weapon (whatever they're handed is dropped); a player's creature carries its gun. */
@@ -156,7 +159,7 @@ export class CreatureAnimator {
    * Where the hands are drawn on the held gun (tests; handProbe.ts), and how the gun points: `facing` 1 when its
    * barrel runs the way the body faces (it was -1: carried backwards), `height` of its grip over the feet (m).
    */
-  drawnGrip(): (ReturnType<typeof gripReport> & { facing: number; height: number }) | null {
+  drawnGrip(meshes: readonly AbstractMesh[] = this.ch.meshes): (ReturnType<typeof gripReport> & { facing: number; height: number }) | null {
     const w = this.weapon;
     if (!w || !this.grip || !this.arms || this.dead || w.isDisposed()) return null;
     w.computeWorldMatrix(true);
@@ -164,7 +167,7 @@ export class CreatureAnimator {
     const barrel = Vector3.TransformNormal(new Vector3(0, 0, 1), w.getWorldMatrix()).normalize();
     const facing = Vector3.TransformNormal(new Vector3(0, 0, 1), this.ch.root.getWorldMatrix()).normalize();
     const grip = Vector3.TransformCoordinates(new Vector3(...this.grip.grip), w.getWorldMatrix());
-    return { ...gripReport(this.ch.meshes, this.arms, w, this.grip, 1), facing: Vector3.Dot(barrel, facing), height: grip.y - this.ch.root.getAbsolutePosition().y };
+    return { ...gripReport(meshes, this.arms, w, this.grip, 1), facing: Vector3.Dot(barrel, facing), height: grip.y - this.ch.root.getAbsolutePosition().y };
   }
 
   get isDead(): boolean {
@@ -315,7 +318,7 @@ export class CreatureAnimator {
   }
 
   dispose(): void {
-    this.scene.onBeforeRenderObservable.remove(this.observer);
+    this.scene.onAfterAnimationsObservable.remove(this.observer);
     this.weapon?.dispose();
     this.ch.dispose();
   }

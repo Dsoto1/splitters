@@ -1450,7 +1450,11 @@ export class GameView {
     remote.sort((x, y) => x.dist - y.dist);
     // Players in creature skins (third person, others): the same, and which way the gun points.
     const creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] = [];
-    for (const [slot, a] of this.avatars) if (!a.hiddenSelf && a.anim instanceof CreatureAnimator && a.root.isEnabled()) creatures.push({ slot, report: a.anim.drawnGrip() });
+    for (const [slot, a] of this.avatars) {
+      if (a.hiddenSelf || !(a.anim instanceof CreatureAnimator) || !a.root.isEnabled()) continue;
+      const drawn = a.anim.ch.meshes.filter((m) => active.has(m));
+      creatures.push({ slot, report: drawn.length ? a.anim.drawnGrip(drawn) : null });
+    }
     return { local, remote, creatures };
   }
 

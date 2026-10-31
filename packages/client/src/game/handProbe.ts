@@ -50,7 +50,7 @@ function thinnest(pts: readonly Vector3[], centre: Vector3): Vector3 {
   return Vector3.Cross(a, b).normalize();
 }
 
-const HAND = (side: 'l' | 'r') => new RegExp(`^(hand|index|middle|ring|pinky|thumb)(_0\\d)?_${side}$`);
+const HAND = (side: 'l' | 'r') => new RegExp(`(?:^|_)(hand|index|middle|ring|pinky|thumb)(_0\\d)?_${side}$`);
 
 export function drawnHand(meshes: readonly AbstractMesh[], hand: TransformNode, side: 'l' | 'r'): DrawnHand | null {
   const re = HAND(side);
