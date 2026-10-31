@@ -2328,6 +2328,46 @@ export class GameView {
     });
   }
 
+  /** Where the last rope (a grapple's) started, world, when it was first drawn (tests). */
+  lastRopeFrom: Vec3 | null = null;
+
+  /**
+   * A grapple's rope from a gun's muzzle to the hook, kept on the muzzle as it moves (you're pulled in along it).
+   * `from` gives the muzzle each frame (null while no gun is drawn: then `fallback`, where the shot left).
+   */
+  addRope(from: () => Vec3 | null, fallback: Vec3, to: Vec3, color: string, width: number, ttlMs: number): void {
+    const mesh = CreateCylinder('rope', { diameter: width, height: 1, tessellation: 6 }, this.scene);
+    const mat = new StandardMaterial('ropeMat', this.scene);
+    mat.emissiveColor = Color3.FromHexString(color);
+    mat.diffuseColor = Color3.Black();
+    mat.disableLighting = true;
+    mesh.material = mat;
+    mesh.isPickable = false;
+    mesh.rotationQuaternion = Quaternion.Identity();
+    const b = new Vector3(to.x, to.y, to.z);
+    let last = fallback;
+    const place = () => {
+      last = from() ?? last;
+      const a = new Vector3(last.x, last.y, last.z);
+      const d = b.subtract(a);
+      const len = Math.max(0.01, d.length());
+      mesh.position.copyFrom(a.add(b).scale(0.5));
+      mesh.scaling.y = len;
+      Quaternion.FromUnitVectorsToRef(Vector3.Up(), d.scale(1 / len), mesh.rotationQuaternion!);
+    };
+    place();
+    this.lastRopeFrom = { ...last };
+    this.effects.push({
+      mesh,
+      born: performance.now(),
+      ttl: ttlMs,
+      update: (f) => {
+        place();
+        mesh.scaling.x = mesh.scaling.z = 1 - f * 0.6;
+      },
+    });
+  }
+
   /** Chain lightning through the points it jumped. */
   addArc(pts: readonly Vec3[], color = '#9fd8ff'): void {
     this.effects.push({ mesh: createArc(this.scene, pts, color), born: performance.now(), ttl: 140 });

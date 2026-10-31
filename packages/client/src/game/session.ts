@@ -1490,9 +1490,13 @@ export class GameSession {
             const color = def?.view.tracer ?? '#ffd36b';
             const strength = Math.min(2.5, Math.max(0.6, ((ev.alt ? def?.alt?.damage : undefined) ?? def?.damage ?? 20) / 25));
             if (def?.grapple) {
-              // The rope, from the hand out to the hook.
+              // The rope, from the launcher's muzzle out to the hook: yours from the gun in your hands (first person's
+              // viewmodel, or your character's in third person), not from the eye (it seemed to leave your chest).
               const t = ev.to[0];
-              if (t) this.view.addBeam(muzzle ?? { x: eye.x, y: eye.y - 0.25, z: eye.z }, { x: t[0], y: t[1], z: t[2] }, color, 0.025, 450);
+              // It stays on the muzzle while the hook pulls you in.
+              const slot = ev.s;
+              const muzzleNow = () => (mine ? (this.view.localMuzzle() ?? this.view.muzzleOf(slot)) : this.view.muzzleOf(slot));
+              if (t) this.view.addRope(muzzleNow, { x: eye.x, y: eye.y - 0.25, z: eye.z }, { x: t[0], y: t[1], z: t[2] }, color, 0.025, 450);
               continue;
             }
             const flying = new Set(ev.fl ?? []);
