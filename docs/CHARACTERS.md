@@ -502,10 +502,38 @@ The steps on their own:
   thumb scaled from the rig's), keeping the rig's joint orientations;
 - the fingers weighted to the rig's finger chains: split into index, middle,
   ring and pinky where the gaps between the fingers show, blended at the
-  knuckles and along each finger; one bend at the knuckle line for a mitten
-  or claw; left rigid when the hand is already closed (a fist or gauntlet:
-  thickness over 0.42 of its length);
+  knuckles and along each finger; one bend at the knuckle line for a mitten,
+  claw or fused hand (a whole-hand curl); left rigid only when the hand is a
+  compact block already closed (a fist: thicker than half its length and less
+  than 1.5 times as long as wide, or thicker than 0.65 of its length). A
+  relaxed Meshy hand, its fingers a little bent, measures 0.3 to 0.45 thick for
+  its length and still bends (it was taken for a fist and left flat on the gun);
+- vertices far from the hand's core (straps, a cape's edge left on the hand:
+  past 1.6 times the 80th percentile of their distance from its centre) are
+  left out of the measure and keep their weights;
+- the palm side is the rig's (palm down in the T-pose) unless the hand's own
+  flat (its thinnest way) disagrees: a hand turned a quarter on its joint (the
+  dapper's, the Knight's) takes its flat, facing the body's front;
 - the measurements written on the hand joints (`extras.hand`) for the game.
+
+In the game a hand closes onto the point of the gun it holds (`closeHand`):
+the fingers curl whichever way brings their tips toward it, so a hand whose
+palm side came out reversed still wraps the gun instead of bending its fingers
+up off it.
+
+**Arm skin kept to the arms** (`tools/content/armweights.mjs`, at import and in
+`rehand-built.mjs`): a vertex an arm holds that hangs well below it (past 2.2
+to 3.4 limb radii from its bones, clear of the shoulder) takes the weights of
+the nearest vertex the body holds, blended over that band. Coat sides, hems
+and straps no longer stretch into sheets from the sleeves to the legs when the
+arms come up; a wide sleeve round the arm stays on it.
+
+**Head and hands keep their detail** (`cutKeeping` in `tools/content/meshy-mesh.mjs`):
+both cuts (an unrigged download's work cut to 40k triangles, and the final
+cut) keep at least 12% of the budget for the head and 4% for the hands, cut
+apart from the body (never sloppily) with the vertices on their edges locked.
+A realistic body cut by error alone from a million triangles had kept a face
+of 133 triangles and hands of a few dozen (Lancer Mei, Merrow the Wise).
 
 The log prints each hand's size and what it got (`split`, `mitten`, `none`).
 For an odd model, `fixes.hands` overrides: `palm` (`[x, y, z]` in the hand
@@ -516,11 +544,30 @@ joint's space, metres), `curl` (0–1.5, how far the fingers close), `scale`
 
 `node tools/content/rehand-built.mjs` (`ONLY=<ids>`) does the same to
 characters already built, from their shipped files, when the downloads
-aren't at hand: it re-skins the hand region in place, cuts first-person arms
-from the body for a character without them, and updates the lock (then run
-`pnpm content:build`). Running it again changes nothing.
+aren't at hand: it eases arm cloth to the body (armweights.mjs), re-skins the
+hand region in place, cuts first-person arms from the body for a character
+without them, and updates the lock (then run `pnpm content:build`). Running it
+again changes nothing. `OUT=<dir>` writes the files there instead (a trial;
+the lock is left alone).
 
-### 4. Check the grip sheet
+### 4. Check the grip sheet and the grip audit
+
+    pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4860
+    node tools/content/grip-audit.mjs http://localhost:4860 <out dir outside the repo>
+
+The **grip audit** renders every player character holding the rifle, the pistol
+and the Spin Gun in the Character Select pose, from the side and the front,
+measures each hold as drawn (`__grips.audit()`, `tools/gripAudit.ts`: finger
+weights per hand, fingertips against the grip with the hands open and closed
+(the curl test), elbow bend against the arm's own skin, the gun against the
+head and shoulders, arms across the midline, stretched skin edges) and writes
+`audit.json`, a ranked `summary.md` and contact sheets (`sheet-<n>.png`,
+`<id>.png`). Judge a gun "at the face" from the side: front views foreshorten
+a rifle pointed at the camera. `ONLY=<ids>`, `NO_SHOTS=1`, `NO_FP=1`,
+`RESUME=1` (it saves after every character) and `RESCORE=1` (flags again after
+changing a threshold).
+
+The per-character sheet:
 
     pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4860
     ONLY=<ids> node tools/content/grip-sheet.mjs http://localhost:4860 ~/grip-sheets
