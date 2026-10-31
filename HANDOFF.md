@@ -235,6 +235,28 @@ Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, ta
 - Merging: generated files collide with the Jungle pack (props.generated.ts, palette.json + atlases,
   provenance.json, props.json, materials.ts, patterns.ts, catalog.ts, stylePacks.ts, paletteCatalog.ts
   "ancient" group): whoever merges second reruns the "Work split" steps.
+- **Checks done**: typecheck; test:changed (whole suite: 1072 passed); content:build + content:check (OK);
+  pnpm build; validate-map on qasr_medina, pharaohs_reach, sunken_kingdom (0 issues) and after_hours (its own
+  pre-existing logic.cycle warning only); bot audit 8 bots 180 s on Qasr Medina (27 kills, 0 stuck, both tower
+  snipers picked up); e2e editor, editorux, maps (E2E_MAPS=qasr_medina,pharaohs_reach,sunken_kingdom,
+  after_hours), visual on ports 5591/5592 with CI=1: 124 PASS, 1 FAIL = "TEST starts within the 3 s budget"
+  (4.1 s; timing on the shared, loaded container, not this change). **Not run**: the other 34 e2e flows the CI
+  plan lists (shared code changed: full suite) and perf. Merge through a `check/` branch.
+- **Not done / next step: the modular DOME KIT** (owner's second Desert City sheet, "dome set", 2026-10-31; the
+  picture was in an agent scratchpad and is gone, so here it is in words). Today the pack's domes are fixed
+  stacks of octagonal courses (`dome()` in packTilesDesert.ts: Domed Hall, Bazaar, Well Court, gate towers).
+  The sheet asks for domes built from parts: a **drum** (base ring of straight, window and solid drum segments;
+  top, middle and bottom ring trims), **dome panels** (plain and with a window) in **4, 6, 8 and 12 segment**
+  options, and a **dome cap** (finial); **arch transitions** (2-, 3- and 4-way) that let a drum sit on arches,
+  so a dome can stand on an arcade (its example build: a drum on four arches over a crossing); plus walls,
+  corners, low wall / railing, pillar, archway, window frame, stairs, floor/ceiling tiles, support beam,
+  buttress, decorative trim and a balcony. **Finishes** (look only, same geometry): standard stone, sandstone,
+  white plaster, copper with green patina, blue ceramic tiles, green tiles, damaged/ruined (holes in the
+  panels). Suggested shape in MapMaker: a dome tile (or tile option) with segment count and finish choices,
+  drum height/window choice, and arch-transition tiles at 4 m that a drum + dome tile stacks on (e.g. over the
+  Courtyard's crossing or an Arcaded Terrace); new procedural materials for copper patina and green tiles
+  (patterns.ts `scales` with other colours works), a "damaged" variant leaving panels out. Keep the existing
+  dome tiles' ids working.
 
 ### Style Pack 10 Medieval Village (`wip/medieval-pack`, agent, 2026-10-31; not merged)
 - **Built** (from the owner's tileset sheet 01): 16 tiles in `packages/shared/src/map/packTilesMedieval.ts` (2 × 1 Timber,
