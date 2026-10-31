@@ -143,12 +143,16 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
-## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`)
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesDesert.ts`)
 
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
-alongside the set), then 10 Medieval Village (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then 10 Medieval Village and 11 Coastal Harbor (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then 10 Medieval Village and 12 Snow Outpost (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then 10 Medieval Village (the owner's tileset sheets); 09 is
+now **Desert City**, which replaced Sands of Egypt (owner, 2026-10-31) and still
+carries all its pieces. One registry (`STYLE_PACKS`, in pack-number order). A Style
 Pack is a themed selection of the kit: the **Style Pack** picker under the
 MapMaker palette's search box narrows the tiles, props, gameplay pieces
 (Entities → Scenario), vehicles and pickups to one pack (headings left empty
@@ -381,6 +385,11 @@ Content: `tools/content/build-style-props.mjs` models the 56 props in code
 
 ### 03 Imperial Arena (Roman) and 09 Sands of Egypt
 
+*Sands of Egypt is no longer a pack of its own: 09 Desert City replaced it (see "09 Desert City" below).
+Its 11 tiles, 15 props, theme (`core.egypt`), facade (`egyptian`) and materials are all still defined, so
+maps that use them (Pharaoh's Reach, Sunken Kingdom, After Hours) load unchanged, and they are listed at the
+end of the Desert City pack (and under All pieces, and the props' "Sands of Egypt" heading).*
+
 | Pack | Theme | Facade | Own tiles (`map/packTilesAncient.ts`) | Own props | Demo map |
 |---|---|---|---|---|---|
 | 03 Imperial Arena | `core.imperial`: sand floor, Dressed Limestone walls, travertine, Roman Rubblework, White Marble trim (ambientCG Tiles139, Marble012, Bricks075A); also Marble Temple and Desert Town | **Roman limestone** (plinth, marble pilasters, cornice) | 15 | 17 (category *Imperial Arena*) plus the Quaternius ruins already in the game (columns, arches, walls, urns, cart) | Sandfall Colosseum |
@@ -521,6 +530,99 @@ you come close) and *Wattle Hurdle* (a breakable woven fence, back after 25 s), 
 portcullis gate, drawbridge, breakable and crumbling planks, boards, ladders, braziers, lanterns, candles,
 water and trigger zones.
 
+### 11 Coastal Harbor (working fishing harbour)
+
+From the owner's concept sheet "Tileset 03 – Coastal Harbor". Theme `core.coastal` (harbour setts floor, quay
+granite walls, decking solids and undersides, harbour-blue trim; also Harbour and Downtown); facades **Harbour
+render** (granite plinth, blue window frames and sills, a slate drip course) and **Tarred timber** (tarred lap
+boards with white frames). Demo map: Saltmarsh Harbor.
+
+**Levels.** Quay and decks at 0; the water's surface at −1.5 m (`HARBOR_SEA`: too high to climb out of without
+steps, the slipway, the beach or a Ladder); the harbour bed at −4 m (`HARBOR_BED`). Water tiles carry the bed
+as an extra floor; fill them with **Harbour Water** (gameplay piece `water:harbour`: put it on the bed and its
+surface lands at −1.5 m).
+
+**Tiles** (`map/packTilesHarbor.ts`, 20; the box helpers are shared with `packTilesMedieval.ts`):
+*Timber Pier* (5 m deck on piles, 1.25 m of air over the water: swim under it), *Pier Head* (full-cell deck,
+north rail with a gap; join Breakwaters east and west), *Boardwalk* and *Boardwalk Corner* (2.4 m, a rope rail
+that only looks like it holds you), *Quay Wall* (ground on the south half, a 4 m sheer face, bollards, coping,
+two fenders framing a bay for a Ladder), *Quay Corner* / *Quay Inside Corner*, *Sea Wall Steps* (2 × 1: steps cut
+along the face down to the bed), *Slipway* and *Shingle Beach* (27° down to the bed; you walk on 32 low steps
+under the drawn slope, which keeps them on the navmesh in every rotation), *Harbour Basin* (open water),
+*Breakwater* (a concrete walk level with the quay, a wave wall on its west side, rocks to climb out on),
+*Harbour Warehouse*, *Net Shed* and *Harbourmaster's Office* (2 × 1, two storeys, a straight stair along the
+north wall, upper doors east and west at 4 m; roofs with eaves at 8.25 m like the Medieval houses, so an Outside
+Stair north of one reaches its roof; the warehouse has a loading door and a loft door with a hoist, the net shed
+an open ground storey in two bays, the office a balcony over the quay), *Fish Market* (2 × 1, open hall,
+counters as cover), *Lighthouse* (a skeleton tower of four banded legs, a switchback stair inside to a gallery
+10.5 m up, the lantern house; a granite plinth to the bed so it also stands in water), *Harbour Crane* (portal
+legs, a platform 6 m up with a hatch for a Ladder, cab and raised jib), *Harbour Arch*, *Quayside* (setts and
+crane rails).
+
+**Props** (`tools/content/prepare-harbor.mjs`, licence Owned, category and palette group Coastal Harbor):
+bollard, capstan, lobster pots, mooring and channel-marker buoys, net rack, fish stall, fish boxes, fishing
+boat (a stand-in under a stable id), anchor, rope coils, harbour lamp post, life ring, heap of nets, herring
+gull, tide board, mooring dolphin, tyre fenders. The pack also lists the rowing boat, felucca, mast, cargo
+containers and crates, barrels, lamps and rocks already in the game.
+
+**Gameplay.** Harbour Water, Ladders (out of the water up a quay, up the crane), drawbridge/lift/slider movers,
+doors, breakable and rotten planks; boats are vehicles placed with *Rides on water* (hover bike, speeder).
+
+**Navmesh notes.** A switchback stair inside four walls falls off Recast's navmesh (its watershed regions lose
+the stacked laps); open sides keep it (the lighthouse is a skeleton tower for that reason, like the Medieval
+watchtower). The 2 × 1 buildings use the Medieval houses' straight stair.
+### 09 Desert City (Middle Eastern city; replaces 09 Sands of Egypt)
+
+From the owner's concept sheet "Tileset 02 – Desert City" (Middle Eastern / arid / stone + plaster). Pack id
+`desert` (tiles `desert.*`), number 09 in Sands of Egypt's place (the sheet calls it 02; 02 stays Frontier
+Dust). Theme `core.desert_city` (worn paving floor, sandstone ashlar walls, weathered plaster solids, cedar
+undersides, sandstone tile trim; also Sands of Egypt, Desert Town and Desert Tomb); facades **Desert ashlar**
+(a sandstone plinth, a zellige band under the cornice, lattice screens and cedar lintels at the windows, a
+stepped parapet) and **Desert plaster** (stone quoins, cedar beam ends under the parapet). Demo map: Qasr Medina.
+
+**Tiles** (`map/packTilesDesert.ts`, 18). Every roof is flat and walkable at 8 m behind a 1 m parapet with
+2.4 m gaps on the cell centres of every side, so a row of houses is one rooftop and bridges, galleries and
+outside stairs join it there. Houses are 2 × 1 cells, two storeys: *Plaster House* (sun-faded plaster, cedar
+beam ends, lattice windows), *Ashlar House* (sandstone, a zellige band, an arched door), *Shop House* (the
+ground storey 2 m back behind a porch with a serving counter and a red canopy). Inside each: a stair along the
+north wall to the upper floor (doors east and west at 4 m, centred, for galleries and the next house) and a
+second along the south wall up to the roof, a rug and cushions, a shaded rooftop corner. *Outside Stair*
+(stone switchback round an open well: a landing at 4 m along the south side, a deck at 8 m on the south
+edge: put it north of a house and step through the roof's parapet gap), *Rope Bridge* (2.2 m wide at 8 m,
+east–west, between two roofs' gaps), *Cedar Gallery* (a covered walk with lattice sides at 4 m between upper
+doors), *Courtyard* (2 × 2: round arcades on columns round a zellige court and fountain, gateways on every
+cell centre, a terrace on the arcades' roofs at 4 m reached by a stair in the court), *Covered Bazaar* (1 × 2:
+a lane between shop alcoves with counters, cloths under the roof, a terrace on top round two little domes),
+*Market Street* (stalls under red canopies both sides of a 4.8 m lane), *Domed Hall* (an arch on every side, a
+fountain, a blue dome on an octagonal drum up to ~11 m), *Watch Tower* (switchback stair inside to a lookout
+at 8 m behind merlons, a blue cap on posts), *Minaret* (a 22 m landmark; not climbed), *City Wall*, *Wall
+Stair* (2 × 1), *City Gate* (3 × 1: a 4 m arched passage, two domed corner towers, stairs up both wall cells,
+the walk crossing over the gate), *Arcaded Terrace* (a terrace at 4 m on piers and columns, gaps on every
+side), *Well Court*, *Paved Street*.
+
+Every stair keeps the Medieval pack's navmesh rules (treads 0.45 m, flights 2.2 m wide, ~2 m of floor at
+both ends, full-width landings, roof holes off the steps). The tests walk bots onto every floor, roof,
+bridge, gallery, terrace, lookout and wall-walk in all four rotations (`test/stylePacksDesert.test.ts`) and
+keep every box inside its tile's cells. Not climbed: the Minaret and the Domed Hall's roof (landmarks).
+
+**Props** (20, category *Desert City*, `tools/content/prepare-desert.mjs`, built in code, licence Owned):
+Market Stall, Market Canopy, Desert Banner, Hanging Lantern, Palm Planter, Water Well, Tall Vase and Water
+Jars (both break), Market Rug, Timber Crane, Cloth Line, Scaffold, Awning Window, Lattice Window, Shuttered
+Window, Spice Baskets, Floor Cushions, Rug Rack, Sandstone Column, Ornate Arch (collides as a frame: walk
+through it). The Market Stall, Water Well and Timber Crane are simple in-house versions under stable ids
+(`dc_market_stall`, `dc_well`, `dc_crane`): a hero model can take the same id later in `content/props.json`
+without touching a map. The pack also lists the crates, barrels, sandbags, palms, lanterns, pots, carts,
+ladders and troughs already in the game, then every Sands of Egypt prop.
+
+**Materials** (procedural, `client/materials/patterns.ts`; ambientCG is not reachable from the build
+container): Sandstone Ashlar (coursed blocks, tooled faces), Weathered Plaster (flaked to the stone in
+patches), Blue Dome Tiles (glazed fish scales), Zellige Mosaic (eight-point stars and crosses), Worn Paving
+(uneven flagstones), Sandstone Tiles, Market Rug, Mashrabiya Lattice, Red Canopy, Cedar Beam.
+
+**Gameplay pieces**: *Lattice Screen* (`block:lattice`: a breakable cedar mashrabiya, 2.2 × 2.4 m, back after
+30 s), with the oak door, portcullis and portcullis gate, ladders, planks, boards, crates, barrels, wall
+lanterns, and the Sands of Egypt traps, portals and water.
+
 ### Portals (`sim/portals.ts`)
 
 A **portal** entity (`kind: 'portal'`) is one of a linked pair: `position`
@@ -552,6 +654,53 @@ grenades, discs, spears) go through too.
   with no rule to enable it, and ground in front of either end that nobody
   can stand on (navigation).
 
+
+### 12 Snow Outpost (arctic military outpost)
+
+From the owner's concept sheet "Tileset 05 – Snow Outpost". Theme `core.snow_outpost` (packed snow floors,
+red prefab walls, snowy concrete), backdrop: snowy sky, snowy peaks, snow, light mist. Demo map
+`maps/whiteout_station.json`. Tiles in `map/packTilesSnow.ts` (box helpers shared with packTilesMedieval.ts):
+
+| Tile | Cells | What it is |
+|---|---|---|
+| `snow.hut` Prefab Hut | 1 × 1 | red panel hut, doors S and N; flat snow roof 3.5 m up by an outside steel stair from the north edge up the east strip |
+| `snow.barracks` Barracks | 2 × 1 | bunk rows, doors on every side, 25° snow roof (walkable); stair from the NW to a deck at the eaves (3.5 m) along the north |
+| `snow.comms_hut` Comms Tower | 1 × 1 (7 levels) | white Prefab Hut under a 24 m lattice mast with a red beacon |
+| `snow.hangar` Vehicle Hangar | 2 × 2 | 7 m corrugated shed, 6 × 4.6 m doorway S (hang a Roll-up Door), doors W/E/N, grating mezzanine 4 m up along N |
+| `snow.bunker` Snow Bunker | 1 × 1 | concrete room, firing slits S and W, door N; snow drift up the east side onto the roof (3.2 m), sandbags |
+| `snow.watchtower` Steel Watchtower | 1 × 1 | switchback grating stair to a lookout 7 m up, snow roof, floodlight |
+| `snow.radar_dome` Radar Dome | 1 × 1 | eight-sided drum (door S, consoles) under a 7.5 m radome |
+| `snow.fuel_depot` Fuel Depot | 1 × 1 | two tanks on cradles, pipe, valve rack, bund wall |
+| `snow.catwalk` / `snow.metal_stair` | 1 × 1 | grating catwalk 4 m up N–S; a stair from the ground (S) up to it (N edge) |
+| `snow.ice_wall` Ice Wall | 1 × 1 | jagged ice 4–6 m high along the S edge (turn it to line a map edge) |
+| `snow.ice_cliff` / `snow.drift_ramp` | 1 × 1 | frozen rock with a snow top 4 m high; a 27° snow drift from the ground (S) to 4 m (N) |
+| `snow.frozen_lake` / `snow.ice_ridge` / `snow.ice_hole` | 1 × 1 | lake ice; with a pressure ridge (cover); broken open 3.6 m over water 2 m down, steps out on the N side |
+| `snow.road` Snow Road | 1 × 1 | ploughed road N–S with tyre tracks and snow banks |
+
+Navmesh note (on top of Medieval's): a landing must start exactly where a sloped slab's top surface ends; a
+landing lapping over the slope leaves a sliver the navmesh can't stand on and bots stop a metre short
+(`zTop` in `bunker()` / `rampUp()`). `test/stylePacksSnow.test.ts` walks bots onto every roof, deck, lookout,
+mezzanine, catwalk and cliff top in all four rotations.
+
+**Props** (16, category *Snow Outpost*, `tools/content/prepare-snow.mjs`, built in code, licence Owned):
+Satellite Dish, Antenna Mast, Diesel Heater, Diesel Generator, Snowmobile, Crates under a Tarp, Arctic Lamp
+Post, Flagpole, Chain-link Fence, Snow Fence, Insulated Pipe Run, Oil Drums, Radio Console, Ski Rack, Supply
+Sled, Snow Pile. Snowmobile, Satellite Dish and Generator are stand-ins under stable ids (`so_snowmobile`,
+`so_satellite_dish`, `so_generator`) for Meshy or community hero versions later. The pack also lists the
+snowy trees and rocks, sandbags, barriers, containers, crates, barrels, tanks and lights already in the game;
+the drivable snowmobile is the `snow_sled` mount.
+
+**Materials** (procedural, `client/materials/patterns.ts`): Packed Snow and Snow Drift (wind ripples,
+glints), Lake Ice and Glacier Ice (cracks, bubbles), Red and White Prefab Panels (seams, ribs, rivets; one
+storey a repeat), Snowy Concrete, Frozen Rock (strata rimed with frost), Steel Grating, Red Beacon (glows).
+
+**Facades**: *Prefab panels* (`prefab`: white corner posts, steel plinth, snow on the hoods and the top) and
+*Snowy concrete* (`snow_bunker`: a snow berm, snow-capped hoods and top).
+
+**Gameplay pieces**: *Roll-up Door* (`mover:rollup_door`: a 6 × 4.6 m shutter a rule rolls up 4.4 m and
+down), *Ice Block* (breakable cover, back after 30 s), *Thin Ice* (4 × 4 m, gives way 0.7 s after you step
+on it, back after 12 s), with blast doors, ladders, alarm lights, water, mines and the generator.
+Not in the game yet: falling snow (the `snowy` sky has no precipitation) and slippery ice.
 
 ## Materials and themes (`map/materials.ts`)
 
@@ -655,6 +804,27 @@ in the same themes and paint slots as straight walls.
   invisible barrier always reaches 60 m up, so nothing is thrown or jumped
   out. MapMaker shows it as an orange outline, and spawns outside it are an
   error.
+
+## Drop routes: transport plane and dropship (`sim/airplane.ts`)
+
+The **Paths, Roads & Routes** group (Terrain pane) has **Plane Drop Route** and
+**Dropship Drop Route**; both place an `airplane` entity (the Transport Plane is
+also in Game Modes & Objectives). Its inspector picks the **Aircraft** (`craft`:
+transport plane, 24 benches, or the Dropship's model, 12), altitude, lap time,
+loop or one way, and **Air drop** (off / round start / every spawn). **Draw route
+on the map** edits the points with the Paths tool's hands (click adds, drag
+moves, Shift-click inserts, right-click or Del removes). Draw it in and out of
+the map's boundary freely (a run-in from off the map): the route is drawn green
+over the play area and grey outside it.
+
+Riders (players and bots) can only jump out (Space or E) while the craft's tail
+ramp and the spot they'd land on are over the **play area** (the boundary, or
+without one what's built and the terrain, 3 m in from the edge) and over ground:
+not the void of a sky map, lava or acid. A jump elsewhere is refused with "Not
+over the drop zone". Anyone still aboard when the craft leaves that stretch (or
+an open route ends over it) is dropped at its last good point. Bots choose a
+jump point near their objective whose landing is on their navmesh. A route that
+never crosses the play area is flagged (`airplane.nodrop`).
 
 ## Jump pads
 

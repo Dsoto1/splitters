@@ -10,6 +10,46 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### `wip/medieval-fixes-dropship` (agent, 2026-10-31; in progress, not merged)
+Owner asks: Market Town "some roofs upside down, the fountain floating and too large, a few buildings look off",
+and "add the drop ship to the path tool (drawn in and out of bounds; players/bots only drop out and land in a valid
+map area)".
+- **Done (committed):**
+  - Market Hall roof was a V: `gableRoof` rolled ridge-north-south slabs the wrong way (`roll: -s*PITCH` → `s*PITCH`).
+    Houses/forge/watchtower (ridge east-west, pitch) were right at every rotation; a test now checks every medieval
+    tile's roof slabs face up and out at all 4 rotations.
+  - Odd pieces fixed in `packTilesMedieval.ts`: house ceilings and the balcony deck no longer share faces with the
+    walls (z-fighting along every facade top / balcony edge), hall's floor band is now a fascia (it fought the floor),
+    shop awning slopes on two wall brackets (were posts hanging in mid-air), shop shelves moved off the east door,
+    street plinth cut at doorways, watchtower "braces" were a 7 × 5 m board through the lookout (now X-beams),
+    bell tower's belfry floor duplicated the stair landing in another tint, forge chimney / stream lip / watchtower
+    posts nudged off coplanar faces. Test: no coplanar faces between different materials in medieval tiles.
+  - Props (`prepare-medieval.mjs`, rebuilt with `ONLY=mv_tarp_tent,mv_hay_cart,mv_shop_sign prepare-props`):
+    tarp tent canvas now meets its ridge pole (used the complement angle), hay cart shafts rest on the ground,
+    shop sign board hangs clear of its strut.
+  - Fountain: `prop.fountain_square` scale 1 → 0.4 in `maps/market_town.json` (9.2 m basin over a 3.8 m plinth step
+    → fits the upper step at 0.5 m). Portcullis: `startOpen: true`, sim and visuals start raised; what looked like a
+    lowered grille in the QA shot is the timber-framed border fence seen through the passage (unchanged).
+  - Drop routes: `AirplaneEntity.craft` ('plane' | 'dropship', optional, additive); `DROPSHIP_DROP_DEF` (dropship.glb,
+    12 benches); MapMaker Paths group has Plane/Dropship Drop Route cards + palette key `airplane:dropship`;
+    inspector Aircraft choice; route tool colours the route green over the play area, grey outside.
+    Sim (`sim/airplane.ts` dropPlan/dropArea/canDrop/dropStretchEnds/botDropIndex, `match.ts` dropPlanFor/mayJumpOut):
+    jumps only when exit and landing points are over ground in the play area (bounds, else tiles+terrain, 3 m in;
+    not void/lava/acid); refused jump → per-player `msg` (new optional `s` on the msg event); riders still aboard are
+    dropped at the last good point; bots pick a nav-reachable landing near their objective. Old 60 m bounds warning
+    replaced by `airplane.nodrop`. Unit tests in airplane.test.ts.
+- **Also:** drop routes now start their clock when play begins (`MountRt.routeT0`, set in beginPlay/startRound):
+  timed from tick 0, the loading wait and countdown could fly a dropship across the whole map before anyone could
+  jump. Market Town's tarp tents stood half through the south border fence: moved to z -72 (east one to x 27, clear
+  of a spawn). Palette atlas + provenance rebuilt.
+- **Local checks:** typecheck OK; test:changed 3 load flakes (npc/scenario bot matches) that pass alone; airplane
+  and medieval tests pass; content:check OK; validate-map market_town/eagle_spires/frost_basin/runway_nine 0 issues;
+  bundle budget 799.9 / 800 KB gzip (was 799.0: the drop plan is reached from validate.ts in the menu bundle, so
+  there's ~0.1 KB left); e2e editor (with the new dropRouteChecks), editorux, vehicles PASS. In the e2e, TEST's
+  bots must hold fire (one shot the player under the canopy).
+- **Next:** CI on `check/medieval-fixes`; if red, fix forward on the wip branch.
+- Screenshots (before/after, real match, prod build): session scratchpad `mt-fix/` (not in the repo).
+
 ### `wip/grips-live` (agent, 2026-10-31): "the grips are not working at all" (owner, live 6c0f8a6)
 - **Root cause:** the clips' hold is made for the rig's hand; a Meshy hand can sit on its joint a quarter turn
   round (core.dapper's), so its palm faced the camera and its edge the grip, in every view. Not specific to real
@@ -59,6 +99,36 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
   need `pnpm e2e:baselines`.
 
+### Queued for after 15:00 EST / 19:00 UTC (owner, 2026-10-31): new Drive downloads
+- **New models** the owner added to the Drive folder (`18MaKefMCWARf1Y3gAjhZuxTto86vGAYl`): sort them (characters,
+  props, weapons, vehicles), process through the existing pipelines, name and manifest new characters.
+- **FX: the owner bought a full licence** for the effects packs whose free versions we already use (Binbun:
+  `content/vfx.json`, binbun-muzzle-flash / hit-fx / explosion-fx, CC0 free editions). The full packs add many more
+  effects, textures and weapon/gameplay effects. Before shipping: read the purchased licence text (it is likely a
+  commercial licence, not CC0) and record it per pack in vfx.json / provenance (licence, "purchased by the owner");
+  CLAUDE.md's content rules list CC0, credit-only and Quaternius packs, so add "assets the owner bought a licence for"
+  there with the owner's OK. As now, only the processed output ships (prepare-vfx.mjs atlases); the pack files are
+  never committed. Then map effects to weapons (muzzle, tracer, impact per surface, explosions per weapon), gameplay
+  (pickups, spawns, portals, jump pads, hazards) and check performance at 96.
+
+### After the style packs (owner, 2026-10-31): MapMaker overhaul and a pass over every map
+Once all the style packs are done (10 Medieval, 11 Harbor, 12 Snow, 09 Desert City, 06 Jungle Ruins refresh, and the
+unassigned Sci-Fi Research and Industrial Factory refreshes), the owner wants:
+- **A major MapMaker update** for the packs: how they're browsed, placed and combined (palette, search, pack
+  filters, previews, tile/prop placement and editing). Scope it with the owner first.
+- **Every map updated** to the new styles, assets and models (the suite in maps/), improved where it helps
+  (layouts, looks, cover, spawns, weapons, performance); each map edited in MapMaker as data (CLAUDE.md "Maps"),
+  validate-map clean, its card shot redone. Overlaps the older queued "Map revisit pass".
+Not started; plan it with the owner when the packs are on main.
+
+### Menu bundle (2026-10-31): style packs push the menu's first JS over budget
+The menu's first JS grows ~6–12 kB gzipped per style pack (Harbor 798, Snow 805, Desert City 816 kB): each pack's
+tiles (catalog.ts imports packTiles*.ts statically), materials and the whole props table (props.generated.ts via
+getProp in geometry/match/validate) come in through the shared map and sim code the menu loads. The budget in
+tools/ci/bundle-budget.mjs was raised to 840 kB gzipped / 3000 kB raw for Snow, Desert City and Jungle Ruins.
+**To do:** load pack tiles and the props table on demand (a registry the editor and the match fill before they need
+it; the menu draws neither), then bring the budget back to ~800 kB.
+
 ### Work split between the owner's two accounts (2026-10-31 ~06:40 UTC)
 The owner is splitting the style packs across two accounts. Each pack goes on its own `wip/<pack>-pack` branch built
 on `main`. They collide in generated files (props.generated.ts, thumbs/palette.json + atlases, provenance.json,
@@ -77,6 +147,15 @@ props.json, stylePacks.ts, catalog.ts, materials.ts, CHANGELOG/HANDOFF). Whoever
   - Ancient Temple (TILESET 07) is combined into that same Jungle Ruins refresh (owner, 2026-10-31: the two
     sounded alike), so it is one pack: Jungle Ruins. 03 Imperial Arena stays Roman and unchanged.
   - Sci-Fi Research (Orbital) and Industrial Factory (Military) refreshes are unassigned.
+- **If this account runs out mid-task:** the three agents push WIP to `wip/medieval-fixes-dropship`,
+  `wip/harbor-pack` and `wip/snow-pack` after every step, each with its own HANDOFF section saying what's done
+  and what's next. The other account resumes from those branches: merge `main`, finish, go green on `check/<name>`,
+  then fast-forward `main`.
+- **State when this account ran out (2026-10-31 ~12:20 UTC):** all three branches nearly done, none run on CI yet:
+  `wip/medieval-fixes-dropship` dbe4685, `wip/harbor-pack` 7d13a27 (Saltmarsh Harbor; also moves STYLE_PACKS out of the
+  menu's first JS: 798.0 of 800 kB gzip), `wip/snow-pack` 827d581 (Whiteout Station). Next: for each branch, merge
+  `main` into it, push it to `check/<name>`, fix until green, then fast-forward `main`, one branch at a time. The
+  second of Harbor and Snow to land rebuilds the generated files (palette atlas, props.generated.ts, provenance).
 - How a pack is built: see the Medieval pack (packTilesMedieval.ts, tools/content/prepare-medieval.mjs,
   stylePacksMedieval.test.ts). Its demo map is a maps/<id>.json made with MapMaker operations (no build script in
   the repo), following docs/map-briefs/AGENT_BUILD_CONTRACT.md. No Meshy generation without the owner's approval.
@@ -242,6 +321,81 @@ Owner sheets TILESET 04 Jungle Ruins + TILESET 07 Ancient Temple, combined into 
   stone gate as a tile, shutter/carved windows as separate pieces, corner/T/cross wall connectors, spikes as a trap
   look, decorative ceiling, chain fixture, a 'broken ceiling' variant.
 
+### Style Pack 11 Coastal Harbor (`wip/harbor-pack`, agent, 2026-10-31; green on `check/harbor`, not merged)
+- **Done (pushed):** 20 tiles in `packages/shared/src/map/packTilesHarbor.ts` (pier, pier head, boardwalk + corner,
+  quay wall / outside / inside corner, 2 × 1 sea wall steps, slipway, shingle beach, basin, breakwater, 2 × 1
+  warehouse, net shed and harbourmaster's office (straight stair, eaves 8.25 m like Medieval: an Outside Stair north
+  of one reaches its roof), fish market, skeleton lighthouse (gallery 10.5 m), crane (platform 6 m, hatch for a
+  Ladder), harbour arch, quayside). Harbour levels: quay 0, water surface `HARBOR_SEA` −1.5, bed `HARBOR_BED` −4.
+  Box helpers are now exported from packTilesMedieval.ts (gableRoof got `pitch`/`ridgeMaterial`). 18 props
+  `hb_*` built by `tools/content/prepare-harbor.mjs` (Owned; `hb_fishing_boat` is the stand-in hero, Meshy
+  candidate). Patterns decking/ashlar/pebbles/corrugated/lapboards/bands, 12 materials, theme `core.coastal` +
+  backdrop, facades `harbour_render`/`tarred_timber`, palette piece **Harbour Water** (`water:harbour`), palette
+  group `harbor`, STYLE_PACKS `harbor` (11). Test `stylePacksHarbor.test.ts` passes (incl. nav cases per rotation).
+  Demo map `maps/saltmarsh_harbor.json`: validate-map 0 issues; built by a scratch helper (scratchpad
+  `harbor/build_saltmarsh.mts`, not in the repo).
+- **Bundle:** the pack pushed the menu's first JS to 806.8 KB gzip; STYLE_PACKS was in the menu only because its
+  `props(...)` calls looked impure to Rollup. Marked `/* @__PURE__ */`: now 798.0 KB (below the 799.0 before).
+- **Navmesh lesson:** a switchback stair inside four walls drops off Recast's navmesh (watershed regions); open sides
+  (watchtower / skeleton lighthouse) keep it. Ramps are 32 low steps under a drawn slope (tilted slabs lost the
+  top joint in some rotations).
+- **Also done:** palette atlas (`harbor` group) + `content:build` (content OK), map card, docs (BUILDING_KIT
+  "11 Coastal Harbor", CHANGELOG, `docs/map-briefs/saltmarsh_harbor/` with screenshots). The Tide warehouse roof
+  has no stair (one against the east boundary lost its flight on the navmesh).
+- **Checks:** typecheck, test:changed (1067 passed), content:check, build, bundle budget (798.0 KB gzip), validate-map 0
+  issues, e2e editor/editorux/maps (saltmarsh_harbor) locally; CI run 41200191169 on `check/harbor` (7d13a27): full
+  suite green. NOT TESTED: live bot match, bot swimming / jet-ski crossing, 24-player perf, real-GPU walk-through.
+- **Next:** merge to the session
+  branch (rebuild palette atlas/provenance if another pack landed first). Candidates: a real boat mount (motor
+  launch), Meshy hero for `hb_fishing_boat`.
+### Style Pack 09 Desert City replaces Sands of Egypt (`wip/desert-city-pack`, agent, 2026-10-31; not merged)
+- **Built** (owner's tileset sheet 02, "replace"): pack `desert`, number **09** in Sands of Egypt's place (the sheet
+  says 02, but 02 is Frontier Dust). 18 tiles in `packages/shared/src/map/packTilesDesert.ts` (Plaster, Ashlar and
+  Shop houses 2 × 1 with two inside stairs up to flat roof terraces at 8 m, parapet gaps on every cell centre;
+  Outside Stair, Rope Bridge (8 m), Cedar Gallery (4 m), Courtyard 2 × 2 with arcades and a terrace, Covered
+  Bazaar 1 × 2, Market Street, Domed Hall, Watch Tower (lookout 8 m), Minaret (landmark, not climbed), City Wall,
+  Wall Stair, City Gate 3 × 1, Arcaded Terrace, Well Court, Paved Street); 20 props built in code
+  (`tools/content/prepare-desert.mjs`, `assets-src/tiletrigger-desert/`, licence Owned, category *Desert City*);
+  theme `core.desert_city`; 10 procedural materials (ashlar, weathered plaster, blue dome tiles, zellige, worn
+  paving, sandstone tiles, rug, mashrabiya, red canopy, cedar); facades `desert_ashlar`, `desert_plaster`;
+  breakable **Lattice Screen** (`block:lattice`); demo map `maps/qasr_medina.json` (validate-map 0 issues),
+  docs BUILDING_KIT "09 Desert City", `docs/map-briefs/qasr_medina/`.
+- **Egypt kept working**: no Egypt tile, prop, material, theme or facade was removed or changed; only the
+  STYLE_PACKS entry `egypt` is gone. Its 11 tiles and 15 props are listed at the end of the Desert City pack's
+  lists (so picking 09 Desert City in the palette shows them after the desert pieces), and they stay under All
+  pieces and the props' "Sands of Egypt" heading (props group renamed "Desert, Ancient & Jungle"). Test
+  `stylePacksDesert.test.ts` loads every map in maps/ that uses an Egypt piece (pharaohs_reach,
+  sunken_kingdom, after_hours) and checks nothing is unknown or lost.
+- **Stand-in hero props with stable ids**: `dc_market_stall`, `dc_well`, `dc_crane` (no Meshy without approval).
+- **Owner's call wanted**: (1) keep the number 09 (Egypt's slot) or renumber to the sheet's 02 (would need
+  Frontier Dust moved); (2) whether the Egypt pieces should stay folded into Desert City or move to their own
+  "more" heading; (3) Meshy hero versions of the stall, well and crane.
+- Merging: generated files collide with the Jungle pack (props.generated.ts, palette.json + atlases,
+  provenance.json, props.json, materials.ts, patterns.ts, catalog.ts, stylePacks.ts, paletteCatalog.ts
+  "ancient" group): whoever merges second reruns the "Work split" steps.
+- **Checks done**: typecheck; test:changed (whole suite: 1072 passed); content:build + content:check (OK);
+  pnpm build; validate-map on qasr_medina, pharaohs_reach, sunken_kingdom (0 issues) and after_hours (its own
+  pre-existing logic.cycle warning only); bot audit 8 bots 180 s on Qasr Medina (27 kills, 0 stuck, both tower
+  snipers picked up); e2e editor, editorux, maps (E2E_MAPS=qasr_medina,pharaohs_reach,sunken_kingdom,
+  after_hours), visual on ports 5591/5592 with CI=1: 124 PASS, 1 FAIL = "TEST starts within the 3 s budget"
+  (4.1 s; timing on the shared, loaded container, not this change). **Not run**: the other 34 e2e flows the CI
+  plan lists (shared code changed: full suite) and perf. Merge through a `check/` branch.
+- **Not done / next step: the modular DOME KIT** (owner's second Desert City sheet, "dome set", 2026-10-31; the
+  picture was in an agent scratchpad and is gone, so here it is in words). Today the pack's domes are fixed
+  stacks of octagonal courses (`dome()` in packTilesDesert.ts: Domed Hall, Bazaar, Well Court, gate towers).
+  The sheet asks for domes built from parts: a **drum** (base ring of straight, window and solid drum segments;
+  top, middle and bottom ring trims), **dome panels** (plain and with a window) in **4, 6, 8 and 12 segment**
+  options, and a **dome cap** (finial); **arch transitions** (2-, 3- and 4-way) that let a drum sit on arches,
+  so a dome can stand on an arcade (its example build: a drum on four arches over a crossing); plus walls,
+  corners, low wall / railing, pillar, archway, window frame, stairs, floor/ceiling tiles, support beam,
+  buttress, decorative trim and a balcony. **Finishes** (look only, same geometry): standard stone, sandstone,
+  white plaster, copper with green patina, blue ceramic tiles, green tiles, damaged/ruined (holes in the
+  panels). Suggested shape in MapMaker: a dome tile (or tile option) with segment count and finish choices,
+  drum height/window choice, and arch-transition tiles at 4 m that a drum + dome tile stacks on (e.g. over the
+  Courtyard's crossing or an Arcaded Terrace); new procedural materials for copper patina and green tiles
+  (patterns.ts `scales` with other colours works), a "damaged" variant leaving panels out. Keep the existing
+  dome tiles' ids working.
+
 ### Style Pack 10 Medieval Village (`wip/medieval-pack`, agent, 2026-10-31; not merged)
 - **Built** (from the owner's tileset sheet 01): 16 tiles in `packages/shared/src/map/packTilesMedieval.ts` (2 × 1 Timber,
   Shop and Plaster houses with walkable 35° red tile roofs, eaves at 8.25 m on the cell edges; Outside Stair,
@@ -268,6 +422,35 @@ Owner sheets TILESET 04 Jungle Ruins + TILESET 07 Ancient Temple, combined into 
   build, validate-map, e2e editor / editorux / maps (E2E_MAPS=market_town) / visual pass; bot audit 8 bots 180 s;
   perf idle 836 draws (budget 900), 1.87 M triangles (mostly the forest border). Not run here: the other 34 e2e
   flows the CI plan lists (shared code changed: full suite) and 96-player perf. Merge through a `check/` branch.
+
+### Style Pack 12 Snow Outpost (`wip/snow-pack`, agent, 2026-10-31; built, on `check/snow`, not merged)
+- **Done (committed on `wip/snow-pack`):** 17 tiles in `packages/shared/src/map/packTilesSnow.ts` (hut, barracks, comms
+  tower, hangar, bunker, watchtower, radar dome, fuel depot, catwalk, metal stair, ice wall, frozen cliff, snow drift,
+  frozen lake, pressure ridge, ice hole, snow road; helpers imported from packTilesMedieval.ts, now exported); 16 props
+  built in code (`tools/content/prepare-snow.mjs`, `assets-src/tiletrigger-snow/`, licence Owned, ids `so_*`, category
+  "Snow Outpost" in the Industrial & Military palette group); procedural materials (patterns snow, ice, prefab,
+  snowcrete, frostrock in materials.ts + client patterns.ts); theme `core.snow_outpost` + snowy backdrop with mist;
+  facades `prefab`, `snow_bunker`; palette pieces `mover:rollup_door`, `block:ice`, `block:thin_ice`; STYLE_PACKS
+  entry `snow` (12); test `packages/shared/test/stylePacksSnow.test.ts` (nav per tile in all rotations, demo map);
+  demo map `maps/whiteout_station.json` (validate-map 0 issues incl. navigation); palette atlas + map card shot.
+- **Bundle:** STYLE_PACKS used to sit in the menu bundle (its `props()` calls kept it); `props` is now a
+  `/* @__NO_SIDE_EFFECTS__ */` function, so the packs drop out of the menu (797.6 of 800 KB gzip with this pack).
+- **Navmesh rule learned:** a landing that laps over a sloped slab breaks the navmesh there; start the landing exactly
+  where the slope's top surface ends (`zTop` in bunker()/rampUp()).
+- **Checks run locally:** typecheck; test:changed (121 files pass); content:check; build + bundle-budget
+  (797.6 / 800 KB gzip); validate-map 0 issues; e2e editor, editorux, maps (E2E_MAPS=whiteout_station), visual pass;
+  bot audit 8 bots 180 s (27 kills, 0 stuck, sleds used). Docs: BUILDING_KIT "12 Snow Outpost", CHANGELOG,
+  `docs/map-briefs/whiteout_station/` (manifest, QA, decisions, screenshots). Pushed to `check/snow` for the full
+  CI suite (shared code changed); merge to main only once that run is green.
+- **Known/related:** the gable helper's ridge-along-z roof (`roll`) was inverted in my copy (fixed in packTilesSnow);
+  packTilesMedieval.ts has the same `roll: -s * PITCH`, which may be the Market Town "upside-down roofs" item (the
+  Market Hall's roof); not changed here (that fix is on the other task).
+- **Resume:** the demo map came from a scratchpad helper (MapMaker operations, not in the repo); edit it in MapMaker.
+  After any tile change, re-render the palette atlas (temp copy of build-palette-atlas.mjs with executablePath
+  '/opt/pw-browsers/chromium') and run `pnpm content:build`.
+- **Stand-ins (Meshy/community candidates, stable ids):** `so_snowmobile`, `so_satellite_dish`, `so_generator`
+  (also worth a hero version: radar dome, comms mast). Not done: falling-snow particles (the sky system has a
+  `snowy` sky but no precipitation), slippery ice (no friction surfaces in movement).
 
 ### St. John's smooth ground (`wip/st-johns-smooth`, agent, 2026-10-31; merged to the session branch)
 - Owner: "the terrain is slightly jagged". Cause: the 3DEP 1 m grid was point-sampled to 2.5 m (aliasing lidar's small
