@@ -75,6 +75,16 @@ Overlap with existing packs: 04 = Jungle Ruins (06), 08 = Military Compound (01)
 New: 01 Medieval Village, 03 Coastal Harbor, 05 Snow Outpost (snow nature props exist, no snow buildings).
 Proposed: refresh existing packs from the sheets in-house; new packs 10 Medieval, 11 Harbor, 12 Snow Outpost;
 Meshy only for hero pieces after the owner approves a list. Nothing started yet.
+Owner's answer (2026-10-31): style packs; Medieval first; "replace n update n combine respectively", read as:
+Desert City replaces 09 Sands of Egypt, the Jungle Ruins sheet updates 06 Jungle Ruins, Ancient Temple is combined
+into 03 Imperial Arena (confirm with the owner if unsure). Order: 10 Medieval Village, then Harbor, Snow, the rest.
+Medieval brief: follow the Egypt/Imperial pack build (41f8335: packTilesAncient.ts procedural pack tiles,
+tools/content/prepare-ancient.mjs in-house props, materials, stylePacks.ts entry, stylePacksAncient test), but the
+demo map is a maps/<id>.json made with MapMaker's tools (no server/tools/maps build script; CLAUDE.md "Maps").
+Reuse what exists: castle_* pieces, siege_tower, stall*, cart, hay_bale, anvil, barrels, crates, fountain,
+lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster houses with tile roofs, market
+square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
+Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
 
 ### Where things stand (2026-10-30 evening)
 - **Iron Maw on `wip/iron-maw`, not merged** (agent, 2026-10-30 night): `maps/iron_maw.json`, the open-pit
