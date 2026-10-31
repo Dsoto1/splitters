@@ -5,6 +5,7 @@
   "order": 47,
   "name": "Gorgle",
   "look": "core.gorgle",
+  "group": "horror",
   "bio": "Crawled out of a lab vent. Nobody wants to know which lab.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: creature.",

@@ -5,6 +5,7 @@
   "order": 41,
   "name": "Brother Ansel",
   "look": "core.ansel",
+  "group": "legends",
   "bio": "Took a vow of silence. His shotgun did not.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: priest/monk.",

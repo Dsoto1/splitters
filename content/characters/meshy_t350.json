@@ -5,6 +5,7 @@
   "order": 16,
   "name": "T-350",
   "look": "core.t350",
+  "group": "creatures",
   "bio": "Built to sweep floors. Upgraded itself to sweep arenas.",
   "body": "male",
   "size": "large",

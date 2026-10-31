@@ -5,6 +5,7 @@
   "order": 5,
   "name": "Wealthy Otter",
   "look": "core.otter",
+  "group": "animals",
   "bio": "Old river money. Pays others to do his fighting, but can never resist joining in.",
   "body": "male",
   "size": "small",

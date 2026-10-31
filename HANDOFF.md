@@ -10,6 +10,22 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### `wip/character-groups` (agent, 2026-10-31; not merged)
+Owner: "organize the characters better (soldiers, zombies, animals, creatures, human, etc)", then "clicking a
+character should just be how I look around, not this hover business; select, then confirm".
+- Character Select tabs: All, Soldiers, Knights & Legends, Everyday Folk, Undead & Horror, Animals, Creatures &
+  Machines, Yours (empty groups hidden; group tabs sorted by name, All in roster order). One source per look:
+  `group` on each part-built preset in `CORE_LOOKS`, `"group"` in each manifest (one added line per file; the
+  checker requires it on player looks, `GROUPS` in character-manifests.mjs = `CHARACTER_GROUPS` in looks.ts),
+  `NPC_LOOK_GROUPS` for NPC skins; `lookGroup(id)`. Test: packages/shared/test/lookGroups.test.ts. Membership
+  table: docs/CHARACTERS.md, "Character Select's groups".
+- Picking: click / tap / Enter / A previews (`FrontEnd.previewed`, kept across tab switches); Choose button, Enter
+  / A again or double-click confirms; Back keeps the old look; hover does nothing but highlight; Chosen badge.
+  e2e `offline` checks all of it.
+- **Merging with `wip/grip-audit`:** both edit content/characters/*.json; this branch only adds a `"group"` line
+  after `"look"`, so re-run `node tools/content/character-manifests.mjs` after the merge to regenerate
+  characters.generated.ts.
+
 ### `wip/medieval-fixes-dropship` (agent, 2026-10-31; in progress, not merged)
 Owner asks: Market Town "some roofs upside down, the fountain floating and too large, a few buildings look off",
 and "add the drop ship to the path tool (drawn in and out of bounds; players/bots only drop out and land in a valid

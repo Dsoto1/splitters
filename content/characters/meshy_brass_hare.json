@@ -5,6 +5,7 @@
   "order": 21,
   "name": "Brass Hare",
   "look": "core.brasshare",
+  "group": "animals",
   "bio": "Wound up every morning and never quite runs down.",
   "body": "male",
   "size": "small",

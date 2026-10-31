@@ -5,6 +5,7 @@
   "order": 36,
   "name": "Shiba",
   "look": "core.shiba",
+  "group": "animals",
   "bio": "Very fast. Much aim. Wow.",
   "body": "male",
   "size": "small",

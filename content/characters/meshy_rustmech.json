@@ -5,6 +5,7 @@
   "order": 15,
   "name": "Ivory Rustwalker",
   "look": "core.rustwalker",
+  "group": "creatures",
   "bio": "Woke up in a scrapyard with no orders and a full magazine. Has been following both ever since.",
   "body": "male",
   "size": "large",

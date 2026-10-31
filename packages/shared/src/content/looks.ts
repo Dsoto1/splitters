@@ -47,7 +47,26 @@ export interface CharacterLook {
    * character (a model whose hat or cape fills the view from its own eyes).
    */
   whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false };
+  /** What the character is (Character Select's tabs): set on every built-in look; a design of yours has none. */
+  group?: CharacterGroup;
 }
+
+/**
+ * Character Select's groups, by what a character is (not how its look was built), in tab order. Every
+ * built-in look names one: the presets below, the whole-body manifests (`group` in content/characters/*.json,
+ * whose checker keeps the same list) and the NPC skins (NPC_ROLE_SPECS). Designs of yours go under Yours.
+ */
+export const CHARACTER_GROUPS = [
+  { id: 'soldiers', label: 'Soldiers' },
+  { id: 'legends', label: 'Knights & Legends' },
+  { id: 'folk', label: 'Everyday Folk' },
+  { id: 'horror', label: 'Undead & Horror' },
+  { id: 'animals', label: 'Animals' },
+  { id: 'creatures', label: 'Creatures & Machines' },
+] as const;
+export type CharacterGroup = (typeof CHARACTER_GROUPS)[number]['id'];
+export const CHARACTER_GROUP_LABELS = Object.fromEntries(CHARACTER_GROUPS.map((g) => [g.id, g.label])) as Record<CharacterGroup, string>;
+export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_GROUPS.some((g) => g.id === x);
 
 /** Where a piece of gear goes; one per slot. */
 export type GearSlot = 'hat' | 'face' | 'chest' | 'back';
@@ -92,14 +111,14 @@ const peasant = (s: 'm' | 'f'): string[] => [`peasant_torso_${s}`, `peasant_arms
 
 /** Presets that between them use every part, hairstyle and colourway, and show off dyes and gear. */
 export const CORE_LOOKS: readonly CharacterLook[] = [
-  { id: 'core.ranger', name: 'Linktifa', body: 'male', head: 'head_male', parts: ranger('m'), hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50', gear: ['pack'] },
-  { id: 'core.huntress', name: 'Huntress', body: 'female', head: 'head_female', parts: ranger('f'), hair: ['hair_long'], colorways: [], skin: null, hairColor: '#b08850', cloth: '#7a2a2a', trim: '#2a2622', gear: ['bandolier'] },
+  { id: 'core.ranger', name: 'Linktifa', body: 'male', head: 'head_male', parts: ranger('m'), hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50', gear: ['pack'], group: 'legends' },
+  { id: 'core.huntress', name: 'Huntress', body: 'female', head: 'head_female', parts: ranger('f'), hair: ['hair_long'], colorways: [], skin: null, hairColor: '#b08850', cloth: '#7a2a2a', trim: '#2a2622', gear: ['bandolier'], group: 'folk' },
   // Two sizes off the standard: Sprout is small and quick, Bulwark big and tough.
-  { id: 'core.sprout', name: 'Sprout', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c07a40', size: 'small', cloth: '#e0b84a', gear: ['headband'] },
-  { id: 'core.bulwark', name: 'Bulwark', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#4a4f58', trim: '#1e2126', gear: ['helmet', 'vest'] },
-  { id: 'core.warden', name: 'Warden', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#3a3030', cloth: '#2a3a5c', trim: '#3a2a22', gear: ['beret', 'radio'] },
-  { id: 'core.scout', name: 'Scout', body: 'female', head: 'head_female', parts: ranger('f', true, false), hair: ['hair_buns'], colorways: ['ranger_moss'], skin: SKIN_TONES[2], hairColor: '#4a3428', cloth: '#c8b88a', trim: '#6a4a30', gear: ['goggles', 'scarf'] },
-  { id: 'core.farmhand', name: 'Farmhand', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c09060', gear: ['brim'] },
+  { id: 'core.sprout', name: 'Sprout', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c07a40', size: 'small', cloth: '#e0b84a', gear: ['headband'], group: 'folk' },
+  { id: 'core.bulwark', name: 'Bulwark', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#4a4f58', trim: '#1e2126', gear: ['helmet', 'vest'], group: 'soldiers' },
+  { id: 'core.warden', name: 'Warden', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#3a3030', cloth: '#2a3a5c', trim: '#3a2a22', gear: ['beret', 'radio'], group: 'soldiers' },
+  { id: 'core.scout', name: 'Scout', body: 'female', head: 'head_female', parts: ranger('f', true, false), hair: ['hair_buns'], colorways: ['ranger_moss'], skin: SKIN_TONES[2], hairColor: '#4a3428', cloth: '#c8b88a', trim: '#6a4a30', gear: ['goggles', 'scarf'], group: 'soldiers' },
+  { id: 'core.farmhand', name: 'Farmhand', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c09060', gear: ['brim'], group: 'folk' },
   {
     id: 'core.tracker',
     name: 'Tracker',
@@ -112,6 +131,7 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
     hairColor: '#2a2422',
     cloth: '#5a6b3a',
     gear: ['cap', 'shades'],
+    group: 'folk',
   },
   {
     id: 'core.pathfinder',
@@ -125,6 +145,7 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
     hairColor: '#2a2422',
     cloth: '#2a7a6a',
     gear: ['goggles', 'pack'],
+    group: 'folk',
   },
   {
     id: 'core.drifter',
@@ -139,6 +160,7 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
     cloth: '#4a4f58',
     trim: '#1e2126',
     gear: ['mask'],
+    group: 'folk',
   },
   {
     id: 'core.wayfarer',
@@ -152,17 +174,18 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
     hairColor: '#3a2a22',
     cloth: '#6a3a7a',
     gear: ['pack'],
+    group: 'folk',
   },
-  { id: 'core.brawler', name: 'Brawler', body: 'male', head: 'head_male', parts: ['athlete_torso_m', 'peasant_legs_m', 'peasant_feet_m'], hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[2], hairColor: '#2a2422', cloth: '#c0392b', gear: ['headband'] },
+  { id: 'core.brawler', name: 'Brawler', body: 'male', head: 'head_male', parts: ['athlete_torso_m', 'peasant_legs_m', 'peasant_feet_m'], hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[2], hairColor: '#2a2422', cloth: '#c0392b', gear: ['headband'], group: 'folk' },
   // Uniforms and specialists: one outfit dyed and kitted out differently each time.
-  { id: 'core.commando', name: 'Commando', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[4], hairColor: '#1e1a18', cloth: '#262a30', trim: '#1a1c20', gear: ['helmet', 'goggles', 'vest'] },
-  { id: 'core.frost', name: 'Frost', body: 'female', head: 'head_female', parts: ranger('f', false, false), hair: ['hair_long'], colorways: [], skin: SKIN_TONES[1], hairColor: '#f0e0c0', cloth: '#e8e4dc', trim: '#7a8088', gear: ['beanie', 'goggles', 'pack'] },
-  { id: 'core.operative', name: 'Operative', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_simpleparted'], colorways: [], skin: SKIN_TONES[1], hairColor: '#2a2422', cloth: '#1e2126', trim: '#1e2126', gear: ['shades'] },
-  { id: 'core.medic', name: 'Medic', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[2], hairColor: '#3a2a22', cloth: '#e8e4dc', trim: '#a83030', gear: ['cap', 'pack'] },
-  { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['helmet', 'tank'] },
+  { id: 'core.commando', name: 'Commando', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[4], hairColor: '#1e1a18', cloth: '#262a30', trim: '#1a1c20', gear: ['helmet', 'goggles', 'vest'], group: 'soldiers' },
+  { id: 'core.frost', name: 'Frost', body: 'female', head: 'head_female', parts: ranger('f', false, false), hair: ['hair_long'], colorways: [], skin: SKIN_TONES[1], hairColor: '#f0e0c0', cloth: '#e8e4dc', trim: '#7a8088', gear: ['beanie', 'goggles', 'pack'], group: 'soldiers' },
+  { id: 'core.operative', name: 'Operative', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_simpleparted'], colorways: [], skin: SKIN_TONES[1], hairColor: '#2a2422', cloth: '#1e2126', trim: '#1e2126', gear: ['shades'], group: 'soldiers' },
+  { id: 'core.medic', name: 'Medic', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[2], hairColor: '#3a2a22', cloth: '#e8e4dc', trim: '#a83030', gear: ['cap', 'pack'], group: 'soldiers' },
+  { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['helmet', 'tank'], group: 'folk' },
   // Whole-body characters, one per manifest in content/characters (generated: characters.generated.ts).
   ...WHOLE_BODY_LOOKS,
-  { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'] },
+  { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'], group: 'soldiers' },
 ];
 
 export const DEFAULT_LOOK = CORE_LOOKS[0]!.id;

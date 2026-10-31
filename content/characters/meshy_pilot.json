@@ -5,6 +5,7 @@
   "order": 12,
   "name": "Flt. Lt. Ember",
   "look": "core.ember",
+  "group": "soldiers",
   "bio": "Ejected over the arena on a test flight and decided to stay. Still logs every kill as a sortie.",
   "body": "male",
   "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. The suit's blue sleeve patch (a red swoosh on a blue field) goes to the suit's orange (`scrubBlue`).",
