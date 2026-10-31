@@ -88,14 +88,14 @@ function waterfront(): TileDefinition[] {
       ...beams(-2.6, 2.6, [-2, 2]),
       ...[-1, 1].map((s) => trim(s > 0 ? 2.6 : -2.7, -0.45, -4, s > 0 ? 2.7 : -2.6, -0.05, 4, 'oak_beam', PILE_TINT)),
     ]),
-    tile('pier_head', 'Pier Head', 'Open', 'The end of a pier: a full-cell deck on nine piles, a railing across the north end (a gap in the middle to jump or moor), bollards either side', [
+    tile('pier_head', 'Pier Head', 'Open', 'The end of a pier: a full-cell deck on nine piles, a railing across the north end (a gap in the middle to jump or moor), bollards at the landward corners; join Breakwaters to its east and west sides', [
       deck(-4, -4, 4, 4),
       ...[-3.4, 0, 3.4].flatMap((x) => [-3.4, 0, 3.4].map((z) => pile(x, z))),
       ...beams(-4, 4, [-3.4, 0, 3.4]),
       rail(-3.9, 3.85, -1.2, 3.85, 0, 'oak_beam'),
       rail(1.2, 3.85, 3.9, 3.85, 0, 'oak_beam'),
-      ...bollard(-3.2, 0),
-      ...bollard(3.2, 0),
+      ...bollard(-3.2, -3.2),
+      ...bollard(3.2, -3.2),
     ]),
     tile('boardwalk', 'Boardwalk', 'Open', 'A narrow plank boardwalk (2.4 m) on piles over the water, north to south, a rope rail along its east side (it only looks like it holds you)', [
       deck(-1.2, -4, 1.2, 4),
@@ -318,7 +318,9 @@ function landmarks(): TileDefinition[] {
         trim(-1.0, 15.4, -1.0, 1.0, 16.0, 1.0, 'harbour_paint', '#b8262a'),
         trim(-0.08, 16.0, -0.08, 0.08, 16.8, 0.08, STEEL),
         ...[-1, 1].flatMap((s) => [trim(-3.9, 13.1, s * 3.85 - 0.05, 3.9, 14.1, s * 3.85 + 0.05, STEEL, '#20262a'), trim(s * 3.85 - 0.05, 13.1, -3.9, s * 3.85 + 0.05, 14.1, 3.9, STEEL, '#20262a')]),
-        trim(-3.95, 0, -3.95, 3.95, 0.6, -3.9, GRANITE),
+        // A granite plinth down to the harbour bed (it stands in the water as well as on land).
+        paint(b(-4, BED, -4, 4, -0.5, 4), GRANITE),
+        trim(-3.95, 0, -3.95, 3.95, 0.02, 3.95, SETTS),
       ], { cells: footprint(1, 1, 5), floors: [0], extraFloors: [] }),
     );
   }
@@ -328,17 +330,17 @@ function landmarks(): TileDefinition[] {
     const Y = '#d8a020';
     const boom = (x: number): Box => paint(tilted(x, 7.0 + 4.7, 0.4 + 1.71, [0.16, 0.16, 10], { pitch: 1.22, kind: 'trim' }), 'harbour_paint', Y);
     tiles.push(
-      tile('crane', 'Harbour Crane', 'Vertical', 'A dockside crane: four steel legs over the quay (walk under it), a railed platform 6 m up with a hatch in its north-east corner (hang a Ladder in it), the cab and a raised lattice jib with its hook', [
+      tile('crane', 'Harbour Crane', 'Vertical', 'A dockside crane: four steel legs over the quay (walk under it), a railed platform 6 m up with a hatch on its north side, east of the middle (hang a Ladder in it, against the hatch\'s south edge), the cab and a raised lattice jib with its hook', [
         ...[-3, 3].flatMap((x) => [-3, 3].map((z) => paint(b(x - 0.25, 0, z - 0.25, x + 0.25, 5.75, z + 0.25), 'harbour_paint', Y))),
-        ...subtract([-3.6, -3.6, 3.6, 3.6], [[2.2, 2.2, 3.4, 3.4]]).map(([x0, z0, x1, z1]) => paint(b(x0, 5.75, z0, x1, 6.0, z1), 'pbr_tread_plate')),
+        ...subtract([-3.6, -3.6, 3.6, 3.6], [[1.0, 2.2, 2.2, 3.4]]).map(([x0, z0, x1, z1]) => paint(b(x0, 5.75, z0, x1, 6.0, z1), 'pbr_tread_plate')),
         rail(-3.6, -3.6, 3.6, -3.6, 6.0, STEEL),
         rail(-3.6, -3.6, -3.6, 3.6, 6.0, STEEL),
-        rail(-3.6, 3.6, 2.0, 3.6, 6.0, STEEL),
-        rail(3.6, -3.6, 3.6, 2.0, 6.0, STEEL),
-        paint(b(-2.6, 6.0, -1.4, 1.0, 8.4, 1.4), 'harbour_paint', Y),
-        trim(-2.8, 8.4, -1.6, 1.2, 8.6, 1.6, STEEL),
-        trim(-2.62, 7.0, -1.42, 1.02, 7.9, 1.42, 'pbr_glass_facade'),
-        paint(b(-2.6, 6.0, -3.4, 1.0, 7.4, -2.0), 'pbr_concrete_dark'),
+        rail(-3.6, 3.6, 3.6, 3.6, 6.0, STEEL),
+        rail(3.6, -3.6, 3.6, 3.6, 6.0, STEEL),
+        paint(b(-3.0, 6.0, -1.4, 0.4, 8.4, 1.4), 'harbour_paint', Y),
+        trim(-3.2, 8.4, -1.6, 0.6, 8.6, 1.6, STEEL),
+        trim(-3.02, 7.0, -1.42, 0.42, 7.9, 1.42, 'pbr_glass_facade'),
+        paint(b(-3.0, 6.0, -3.4, 0.4, 7.4, -2.2), 'pbr_concrete_dark'),
         boom(-1.05),
         boom(-0.35),
         trim(-0.73, 3.0, 3.72, -0.67, 16.3, 3.78, STEEL, '#2a2c30'),

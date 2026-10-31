@@ -1,0 +1,3006 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 24,
+  "metadata": {
+    "id": "saltmarsh_harbor",
+    "name": "Saltmarsh Harbor",
+    "author": "Tile Trigger",
+    "description": "A working fishing harbour on a grey, gull-loud morning (Style Pack 11: Coastal Harbor). The Embers hold the net sheds and the warehouse in the south-west of the town; the Tide hold the end of the east mole, its warehouse and crane. Between them the harbour basin: along the quay and through the fish market and the harbour arch, out along the pier to the pier head in the breakwater, over the boardwalk to the lighthouse and along the breakwater to the mole, or straight across the water on a jet ski or swimming, out by the sea wall steps, the slipway, the beach or a ladder up the quay. Snipe from the lighthouse gallery or the crane, fight room to room through the warehouses and net lofts, run their roofs.",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 12,
+      "max": 24
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm",
+      "core.ctf",
+      "core.koth"
+    ]
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.coastal",
+    "tiles": [
+      {
+        "id": "tile_3ybjxubtri",
+        "tile": "harbor.slipway",
+        "x": -4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gowawn062s",
+        "tile": "harbor.quay",
+        "x": -2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6s79zj1fbp",
+        "tile": "harbor.quay",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_k1lolzupsj",
+        "tile": "harbor.quay",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ock128ihsj",
+        "tile": "harbor.quayside",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z31by07z8x",
+        "tile": "harbor.quay_steps",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dgc7681roy",
+        "tile": "harbor.quay_inner",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_ewzuo29muk",
+        "tile": "harbor.pier",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_k7v6t1eoq1",
+        "tile": "harbor.pier",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ijj5f1qiz1",
+        "tile": "harbor.pier",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nedkozrke4",
+        "tile": "harbor.pier",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wcxbzl12x6",
+        "tile": "harbor.pier_head",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0gz3wk1o98",
+        "tile": "harbor.boardwalk",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_w32t2x2t03",
+        "tile": "harbor.boardwalk",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ww6ia4x2ba",
+        "tile": "harbor.boardwalk",
+        "x": -3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_w93hqnjacd",
+        "tile": "harbor.boardwalk",
+        "x": -3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0okuf24pnz",
+        "tile": "harbor.lighthouse",
+        "x": -3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ncamunkudl",
+        "tile": "harbor.breakwater",
+        "x": -2,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_7tf5roimkb",
+        "tile": "harbor.breakwater",
+        "x": -1,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_68vya7ed1h",
+        "tile": "harbor.breakwater",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_cepo9uivd0",
+        "tile": "harbor.breakwater",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_expnwlntt8",
+        "tile": "harbor.breakwater",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_uim9j7m8od",
+        "tile": "harbor.breakwater",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_5cvsrlzja3",
+        "tile": "harbor.beach",
+        "x": -5,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_w940t28p56",
+        "tile": "harbor.beach",
+        "x": -5,
+        "y": 2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_1y7b1i3isp",
+        "tile": "harbor.beach",
+        "x": -5,
+        "y": 3,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_gxgdma5d83",
+        "tile": "harbor.quay",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_zvv91uyyil",
+        "tile": "harbor.quay",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_e8fp418lje",
+        "tile": "harbor.quay",
+        "x": 4,
+        "y": 3,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_xmad3hmwxz",
+        "tile": "harbor.quay",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_segyz1p8sb",
+        "tile": "harbor.quay",
+        "x": 4,
+        "y": 6,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_o0bv9vqk0u",
+        "tile": "harbor.crane",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_afxxhbsbhf",
+        "tile": "harbor.office",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_by2qcxq2r4",
+        "tile": "harbor.warehouse",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xr37dw6ehy",
+        "tile": "medieval.outside_stair",
+        "x": 6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gq0capq0de",
+        "tile": "harbor.fish_market",
+        "x": -3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_a52vme673y",
+        "tile": "harbor.net_shed",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ny83wemmrg",
+        "tile": "harbor.net_shed",
+        "x": -6,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5gr6d8xc03",
+        "tile": "harbor.net_shed",
+        "x": -6,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ksb21mou5k",
+        "tile": "harbor.warehouse",
+        "x": -4,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z5ihj3x9h4",
+        "tile": "medieval.outside_stair",
+        "x": -4,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0m9cm5aybi",
+        "tile": "harbor.warehouse",
+        "x": 2,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_h11ym4b1cg",
+        "tile": "medieval.outside_stair",
+        "x": 2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_g1k9id0yfb",
+        "tile": "harbor.arch",
+        "x": 0,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_09o6v2eraj",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gnhj5jks98",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4fudedcxri",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wqrmp9vras",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_yk5g5v1ajp",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_o59kmi6a5i",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1109ius0do",
+        "tile": "harbor.quayside",
+        "x": 0,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wpe1q3699o",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hy4g9v4fg8",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bsob39yspw",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_auf7uai1ds",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3ugcz93hzi",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4tjqnbolyq",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": -6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4oqsmxxkkp",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_io28g9b83f",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9i5i65bvxv",
+        "tile": "harbor.quayside",
+        "x": 0,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fk7eevg30d",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wrutyify09",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_apxhp94h64",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_yfpjgw2tgg",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bjiyhs9s7g",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0rjwg9qv6f",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": -5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_akdwwx5e57",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_n0qyxkuahb",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wb20d9bjh0",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7umdn5913a",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_m1saqk4gcs",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_teh1q0cya3",
+        "tile": "harbor.quayside",
+        "x": 0,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5r4wnw68tw",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6esz14lk65",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1sfjeuyqpk",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jaihkpxevy",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": -4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wwccksun6l",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_67ifqiix5f",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i6t4wtabg2",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_937nki1og3",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3re3sqs0wo",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ofxkxsn9yx",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hcd2sgpmlr",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_myorci2yyc",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_q0jso1eic0",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": -3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_oh7yodmfj3",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dhcraxeaep",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qwfpq1u76y",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_crkua10hmm",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hixng0r1bw",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nl37k0ifnk",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mdp7n16ob2",
+        "tile": "harbor.quayside",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8l6bh5mo27",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8v84tz8ow7",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2x6020v8df",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_u2yykvqghg",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lvv5zahe46",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1td4qgqrjm",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2kssb9m3x9",
+        "tile": "harbor.quayside",
+        "x": -6,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_27yf84ji34",
+        "tile": "harbor.quayside",
+        "x": -5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jikh5hx22i",
+        "tile": "harbor.quayside",
+        "x": -4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cnk0y92fbg",
+        "tile": "harbor.quayside",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z4nt6bfzg9",
+        "tile": "harbor.quayside",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bvi6cjbvxu",
+        "tile": "harbor.quayside",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ak2nczkk3o",
+        "tile": "harbor.quayside",
+        "x": 4,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6mslbdbvub",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vmqo031e9f",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bv8yu0dhr2",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_u3zmjrm736",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ygcjuosp49",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8dtepvnuue",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_60zdo4qr4a",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4w7ox19123",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z1p4jpucb0",
+        "tile": "harbor.basin",
+        "x": -4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2lp7sv1y08",
+        "tile": "harbor.basin",
+        "x": -2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ukdutebn99",
+        "tile": "harbor.basin",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_51mf2g9so9",
+        "tile": "harbor.basin",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_th371o2q28",
+        "tile": "harbor.basin",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2tg1v8u6w7",
+        "tile": "harbor.basin",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_meolxne3lc",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_h71ttz7qkz",
+        "tile": "harbor.basin",
+        "x": -4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_88ty7p6r4g",
+        "tile": "harbor.basin",
+        "x": -2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_55xujts7na",
+        "tile": "harbor.basin",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i480m36vbz",
+        "tile": "harbor.basin",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5r19fx27oc",
+        "tile": "harbor.basin",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lo4sza9l6v",
+        "tile": "harbor.basin",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8nefr1yf36",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3pz3jkh6ko",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zrjg95dfpj",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_a06iq50ksy",
+        "tile": "harbor.basin",
+        "x": -4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_a7qe7sbcwy",
+        "tile": "harbor.basin",
+        "x": -2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_80qytgmsan",
+        "tile": "harbor.basin",
+        "x": -1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_x8szhgrkxf",
+        "tile": "harbor.basin",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nnrasy4vi4",
+        "tile": "harbor.basin",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ra1t8kpz0f",
+        "tile": "harbor.basin",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_nqf89xxxls",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pbp9oay4gd",
+        "tile": "harbor.basin",
+        "x": -6,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i36ygh00r7",
+        "tile": "harbor.basin",
+        "x": -5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_e3cvd7qt0t",
+        "tile": "harbor.basin",
+        "x": -4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bh7aqlkrtg",
+        "tile": "harbor.basin",
+        "x": -2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_he70niy58s",
+        "tile": "harbor.basin",
+        "x": -1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mlbkw524o5",
+        "tile": "harbor.basin",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hcl546d7bn",
+        "tile": "harbor.basin",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jaee9spzc1",
+        "tile": "harbor.basin",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_kjiuv6sqfg",
+        "tile": "harbor.basin",
+        "x": -6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mzgl9i4dzq",
+        "tile": "harbor.basin",
+        "x": -5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2263fsrmlk",
+        "tile": "harbor.basin",
+        "x": -4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_d7nkoqps17",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3mog87bviu",
+        "tile": "harbor.basin",
+        "x": -6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_x2qtz2t4um",
+        "tile": "harbor.basin",
+        "x": -5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dz1xhqo5rh",
+        "tile": "harbor.basin",
+        "x": -4,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_wnduperbdc",
+        "tile": "harbor.basin",
+        "x": -3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dr19o7vm2l",
+        "tile": "harbor.basin",
+        "x": -2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i95thfc2f9",
+        "tile": "harbor.basin",
+        "x": -1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hva23hk5rc",
+        "tile": "harbor.basin",
+        "x": 0,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fgck4elz2a",
+        "tile": "harbor.basin",
+        "x": 1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qdz592j2un",
+        "tile": "harbor.basin",
+        "x": 2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0kgg9jwb1j",
+        "tile": "harbor.basin",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gbvr92g3w6",
+        "tile": "harbor.quayside",
+        "x": 5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_z6crgfp5tw",
+        "tile": "harbor.quayside",
+        "x": 6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "water_harbour",
+      "kind": "water",
+      "position": [
+        -10,
+        -4,
+        26
+      ],
+      "size": [
+        84,
+        2.5,
+        52
+      ],
+      "liquid": "water",
+      "tint": "#2e5a66"
+    },
+    {
+      "id": "water_steps",
+      "kind": "water",
+      "position": [
+        14,
+        -4,
+        -1.2
+      ],
+      "size": [
+        12,
+        2.5,
+        2.4
+      ],
+      "liquid": "water",
+      "tint": "#2e5a66"
+    },
+    {
+      "id": "spawn_001",
+      "kind": "spawn",
+      "position": [
+        -48,
+        0,
+        -49
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_002",
+      "kind": "spawn",
+      "position": [
+        -40,
+        0,
+        -49
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_003",
+      "kind": "spawn",
+      "position": [
+        -32,
+        0,
+        -49
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_004",
+      "kind": "spawn",
+      "position": [
+        -24,
+        0,
+        -49
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_005",
+      "kind": "spawn",
+      "position": [
+        -48,
+        0,
+        -32
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_006",
+      "kind": "spawn",
+      "position": [
+        -41,
+        0,
+        -31
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_007",
+      "kind": "spawn",
+      "position": [
+        -24,
+        0,
+        -30
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_008",
+      "kind": "spawn",
+      "position": [
+        -16,
+        0,
+        -40
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_009",
+      "kind": "spawn",
+      "position": [
+        -30,
+        0,
+        -16
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_010",
+      "kind": "spawn",
+      "position": [
+        -34,
+        0,
+        -13
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_011",
+      "kind": "spawn",
+      "position": [
+        -48,
+        0,
+        -14
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_012",
+      "kind": "spawn",
+      "position": [
+        -44,
+        0,
+        -8
+      ],
+      "yaw": 0.7853981633974483,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_013",
+      "kind": "spawn",
+      "position": [
+        38,
+        0,
+        -2
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_014",
+      "kind": "spawn",
+      "position": [
+        46,
+        0,
+        2
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_015",
+      "kind": "spawn",
+      "position": [
+        50,
+        0,
+        -4
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_016",
+      "kind": "spawn",
+      "position": [
+        38,
+        0,
+        16
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_017",
+      "kind": "spawn",
+      "position": [
+        46,
+        0,
+        14
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_018",
+      "kind": "spawn",
+      "position": [
+        50,
+        0,
+        18
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_019",
+      "kind": "spawn",
+      "position": [
+        46,
+        0,
+        24
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_020",
+      "kind": "spawn",
+      "position": [
+        50,
+        0,
+        28
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_021",
+      "kind": "spawn",
+      "position": [
+        38,
+        0,
+        47
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_022",
+      "kind": "spawn",
+      "position": [
+        46,
+        0,
+        47
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_023",
+      "kind": "spawn",
+      "position": [
+        50,
+        0,
+        50
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_024",
+      "kind": "spawn",
+      "position": [
+        38,
+        0,
+        41
+      ],
+      "yaw": -2.356194490192345,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_025",
+      "kind": "spawn",
+      "position": [
+        -8,
+        0,
+        -48
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_026",
+      "kind": "spawn",
+      "position": [
+        8,
+        0,
+        -50
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_027",
+      "kind": "spawn",
+      "position": [
+        24,
+        0,
+        -48
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_028",
+      "kind": "spawn",
+      "position": [
+        -12,
+        0,
+        -30
+      ],
+      "yaw": 0.5,
+      "faction": null
+    },
+    {
+      "id": "spawn_029",
+      "kind": "spawn",
+      "position": [
+        6,
+        0,
+        -22
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_030",
+      "kind": "spawn",
+      "position": [
+        26,
+        0,
+        -14
+      ],
+      "yaw": -1,
+      "faction": null
+    },
+    {
+      "id": "spawn_031",
+      "kind": "spawn",
+      "position": [
+        -44,
+        0,
+        10
+      ],
+      "yaw": 1.6,
+      "faction": null
+    },
+    {
+      "id": "spawn_032",
+      "kind": "spawn",
+      "position": [
+        -48,
+        0,
+        24
+      ],
+      "yaw": 1.6,
+      "faction": null
+    },
+    {
+      "id": "spawn_033",
+      "kind": "spawn",
+      "position": [
+        -1,
+        0,
+        -8
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_034",
+      "kind": "spawn",
+      "position": [
+        -40,
+        0,
+        -2
+      ],
+      "yaw": 1.2,
+      "faction": null
+    },
+    {
+      "id": "spawn_035",
+      "kind": "spawn",
+      "position": [
+        28,
+        0,
+        -42
+      ],
+      "yaw": -0.8,
+      "faction": null
+    },
+    {
+      "id": "spawn_036",
+      "kind": "spawn",
+      "position": [
+        -8,
+        0,
+        -20
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "flag_embers",
+      "kind": "flag",
+      "position": [
+        -36,
+        0,
+        -48
+      ],
+      "yaw": 0.7853981633974483,
+      "team": "embers"
+    },
+    {
+      "id": "flag_tide",
+      "kind": "flag",
+      "position": [
+        42,
+        0,
+        46
+      ],
+      "yaw": -2.356194490192345,
+      "team": "tide"
+    },
+    {
+      "id": "hill_pier",
+      "kind": "hill",
+      "position": [
+        0,
+        0,
+        40
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_market",
+      "kind": "hill",
+      "position": [
+        -20,
+        0,
+        -8
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_mole",
+      "kind": "hill",
+      "position": [
+        46,
+        0,
+        8
+      ],
+      "radius": 4
+    },
+    {
+      "id": "ladder_037",
+      "kind": "ladder",
+      "position": [
+        -16,
+        -4,
+        0.05
+      ],
+      "yaw": 0,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "ladder_038",
+      "kind": "ladder",
+      "position": [
+        -8,
+        -4,
+        0.05
+      ],
+      "yaw": 0,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "ladder_039",
+      "kind": "ladder",
+      "position": [
+        24,
+        -4,
+        0.05
+      ],
+      "yaw": 0,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "ladder_040",
+      "kind": "ladder",
+      "position": [
+        31.95,
+        -4,
+        8
+      ],
+      "yaw": -1.5707963267948966,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "ladder_041",
+      "kind": "ladder",
+      "position": [
+        31.95,
+        -4,
+        16
+      ],
+      "yaw": -1.5707963267948966,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "ladder_042",
+      "kind": "ladder",
+      "position": [
+        31.95,
+        -4,
+        24
+      ],
+      "yaw": -1.5707963267948966,
+      "height": 4,
+      "width": 0.9
+    },
+    {
+      "id": "ladder_043",
+      "kind": "ladder",
+      "position": [
+        41.6,
+        0,
+        26.25
+      ],
+      "yaw": 0,
+      "height": 6,
+      "width": 0.9
+    },
+    {
+      "id": "boat_embers_1",
+      "kind": "mount",
+      "model": "hover_bike",
+      "position": [
+        -32,
+        -1.8,
+        10
+      ],
+      "yaw": 0,
+      "faction": "embers",
+      "respawnSeconds": null,
+      "onWater": true
+    },
+    {
+      "id": "boat_embers_2",
+      "kind": "mount",
+      "model": "hover_bike",
+      "position": [
+        -30,
+        -1.8,
+        22
+      ],
+      "yaw": 0.6,
+      "faction": "embers",
+      "respawnSeconds": null,
+      "onWater": true
+    },
+    {
+      "id": "boat_tide_1",
+      "kind": "mount",
+      "model": "hover_bike",
+      "position": [
+        26,
+        -1.8,
+        12
+      ],
+      "yaw": -1.5707963267948966,
+      "faction": "tide",
+      "respawnSeconds": null,
+      "onWater": true
+    },
+    {
+      "id": "boat_tide_2",
+      "kind": "mount",
+      "model": "hover_bike",
+      "position": [
+        26,
+        -1.8,
+        26
+      ],
+      "yaw": -1.5707963267948966,
+      "faction": "tide",
+      "respawnSeconds": null,
+      "onWater": true
+    },
+    {
+      "id": "pickup_044",
+      "kind": "pickup",
+      "item": "core.weapon_sniper",
+      "position": [
+        42.5,
+        6,
+        21.5
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_045",
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "position": [
+        -24,
+        10.5,
+        37.7
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_046",
+      "kind": "pickup",
+      "item": "core.weapon_rockets",
+      "position": [
+        0,
+        0,
+        42
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_047",
+      "kind": "pickup",
+      "item": "core.weapon_lmg",
+      "position": [
+        24,
+        4,
+        -33.5
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_048",
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "position": [
+        -20,
+        0,
+        -8
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_049",
+      "kind": "pickup",
+      "item": "core.weapon_flare_gun",
+      "position": [
+        46,
+        4,
+        5.5
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_050",
+      "kind": "pickup",
+      "item": "core.weapon_hand_cannon",
+      "position": [
+        -40,
+        4,
+        -25.5
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_051",
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "position": [
+        -44,
+        0,
+        -47
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_052",
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "position": [
+        44,
+        0,
+        38
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_053",
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "position": [
+        -28,
+        0,
+        -26
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_054",
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "position": [
+        50,
+        0,
+        10
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_055",
+      "kind": "pickup",
+      "item": "core.grenades",
+      "position": [
+        0,
+        0,
+        -14
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_056",
+      "kind": "pickup",
+      "item": "core.grenades",
+      "position": [
+        -16,
+        0,
+        -2
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_057",
+      "kind": "pickup",
+      "item": "core.grenades",
+      "position": [
+        28,
+        0,
+        -2
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_058",
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "position": [
+        0,
+        0,
+        20
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_059",
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "position": [
+        -44,
+        0,
+        4
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_060",
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "position": [
+        37,
+        0,
+        46
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_061",
+      "kind": "pickup",
+      "item": "core.health_large",
+      "position": [
+        6,
+        0,
+        -30
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_062",
+      "kind": "pickup",
+      "item": "core.health_large",
+      "position": [
+        -42,
+        0,
+        -2
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_063",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        -8,
+        0,
+        -14
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_064",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        24,
+        0,
+        -16
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_065",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        -2,
+        0,
+        38
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_066",
+      "kind": "pickup",
+      "item": "core.health_small",
+      "position": [
+        18,
+        0,
+        39.5
+      ],
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_067",
+      "kind": "prop",
+      "model": "prop.hb_fishing_boat",
+      "position": [
+        -12,
+        -1.8,
+        14
+      ],
+      "yaw": 0.05,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_068",
+      "kind": "prop",
+      "model": "prop.hb_fishing_boat",
+      "position": [
+        12,
+        -1.8,
+        24
+      ],
+      "yaw": 3.241592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_069",
+      "kind": "prop",
+      "model": "prop.hb_fishing_boat",
+      "position": [
+        22,
+        -1.8,
+        34
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_070",
+      "kind": "prop",
+      "model": "prop.rowboat",
+      "position": [
+        -8,
+        -1.6,
+        6
+      ],
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_071",
+      "kind": "prop",
+      "model": "prop.rowboat",
+      "position": [
+        -48,
+        0,
+        10
+      ],
+      "yaw": 1.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_072",
+      "kind": "prop",
+      "model": "prop.rowboat",
+      "position": [
+        -48,
+        0,
+        20
+      ],
+      "yaw": 1.7,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_073",
+      "kind": "prop",
+      "model": "prop.hb_buoy",
+      "position": [
+        -16,
+        -2,
+        30
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_074",
+      "kind": "prop",
+      "model": "prop.hb_buoy",
+      "position": [
+        8,
+        -2,
+        12
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_075",
+      "kind": "prop",
+      "model": "prop.hb_buoy",
+      "position": [
+        16,
+        -2,
+        18
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_076",
+      "kind": "prop",
+      "model": "prop.hb_marker_buoy",
+      "position": [
+        -40,
+        -2.1,
+        46
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_077",
+      "kind": "prop",
+      "model": "prop.hb_marker_buoy",
+      "position": [
+        -48,
+        -2.1,
+        36
+      ],
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_078",
+      "kind": "prop",
+      "model": "prop.hb_dolphin",
+      "position": [
+        6,
+        -4,
+        30
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_079",
+      "kind": "prop",
+      "model": "prop.hb_dolphin",
+      "position": [
+        -16,
+        -4,
+        22
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_080",
+      "kind": "prop",
+      "model": "prop.hb_fenders",
+      "position": [
+        -12,
+        -1.4,
+        0.15
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_081",
+      "kind": "prop",
+      "model": "prop.hb_fenders",
+      "position": [
+        4,
+        -1.4,
+        0.15
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_082",
+      "kind": "prop",
+      "model": "prop.hb_fenders",
+      "position": [
+        31.85,
+        -1.4,
+        16
+      ],
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_083",
+      "kind": "prop",
+      "model": "prop.hb_lobster_pots",
+      "position": [
+        -28,
+        0,
+        -2.6
+      ],
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_084",
+      "kind": "prop",
+      "model": "prop.hb_lobster_pots",
+      "position": [
+        40,
+        0,
+        41
+      ],
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_085",
+      "kind": "prop",
+      "model": "prop.hb_net_rack",
+      "position": [
+        -44,
+        0,
+        -18
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_086",
+      "kind": "prop",
+      "model": "prop.hb_net_pile",
+      "position": [
+        -36,
+        0,
+        -18
+      ],
+      "yaw": 0.6,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_087",
+      "kind": "prop",
+      "model": "prop.hb_net_pile",
+      "position": [
+        30,
+        0,
+        -6
+      ],
+      "yaw": 2.2,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_088",
+      "kind": "prop",
+      "model": "prop.hb_rope_coil",
+      "position": [
+        -2,
+        0,
+        -1.5
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_089",
+      "kind": "prop",
+      "model": "prop.hb_rope_coil",
+      "position": [
+        34,
+        0,
+        20
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_090",
+      "kind": "prop",
+      "model": "prop.hb_anchor",
+      "position": [
+        -6,
+        0,
+        -3
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_091",
+      "kind": "prop",
+      "model": "prop.hb_capstan",
+      "position": [
+        -38,
+        0,
+        -2.4
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_092",
+      "kind": "prop",
+      "model": "prop.hb_tide_board",
+      "position": [
+        1.2,
+        0,
+        -2.2
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_093",
+      "kind": "prop",
+      "model": "prop.hb_life_ring",
+      "position": [
+        -17,
+        0,
+        -1.2
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_094",
+      "kind": "prop",
+      "model": "prop.hb_life_ring",
+      "position": [
+        34,
+        0,
+        8
+      ],
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_095",
+      "kind": "prop",
+      "model": "prop.hb_fish_stall",
+      "position": [
+        -26,
+        0,
+        -16
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_096",
+      "kind": "prop",
+      "model": "prop.hb_fish_stall",
+      "position": [
+        -14,
+        0,
+        -16
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_097",
+      "kind": "prop",
+      "model": "prop.hb_fish_crates",
+      "position": [
+        -26.5,
+        0,
+        -8
+      ],
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_098",
+      "kind": "prop",
+      "model": "prop.hb_fish_crates",
+      "position": [
+        -9.5,
+        0,
+        -10
+      ],
+      "yaw": 1.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_099",
+      "kind": "prop",
+      "model": "prop.hb_fish_crates",
+      "position": [
+        50,
+        0,
+        21.5
+      ],
+      "yaw": 0.5,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_100",
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
+      "position": [
+        -30,
+        0,
+        -4.5
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_101",
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
+      "position": [
+        -4,
+        0,
+        -4.5
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_102",
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
+      "position": [
+        22,
+        0,
+        -4.5
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_103",
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
+      "position": [
+        35,
+        0,
+        10
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_104",
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
+      "position": [
+        35,
+        0,
+        34
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_105",
+      "kind": "prop",
+      "model": "prop.hb_lamp_post",
+      "position": [
+        -46,
+        0,
+        -6
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_106",
+      "kind": "prop",
+      "model": "prop.cargo_container_rusty_blue",
+      "position": [
+        48,
+        0,
+        20
+      ],
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_107",
+      "kind": "prop",
+      "model": "prop.cargo_wooden_crate",
+      "position": [
+        50,
+        0,
+        14
+      ],
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_108",
+      "kind": "prop",
+      "model": "prop.pallet",
+      "position": [
+        30,
+        0,
+        -2.5
+      ],
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_109",
+      "kind": "prop",
+      "model": "prop.barrel",
+      "position": [
+        31,
+        0,
+        -1.5
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_110",
+      "kind": "prop",
+      "model": "prop.barrel_open",
+      "position": [
+        29.2,
+        0,
+        -1.2
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_111",
+      "kind": "prop",
+      "model": "prop.crate_large",
+      "position": [
+        18,
+        0,
+        -18
+      ],
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_112",
+      "kind": "prop",
+      "model": "prop.crate_small",
+      "position": [
+        19.5,
+        0,
+        -16
+      ],
+      "yaw": 0.4,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_113",
+      "kind": "prop",
+      "model": "prop.mv_sacks",
+      "position": [
+        6,
+        0,
+        -18
+      ],
+      "yaw": 0.2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_114",
+      "kind": "prop",
+      "model": "prop.hb_gull",
+      "position": [
+        -24,
+        13.1,
+        41.5
+      ],
+      "yaw": 0.7,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_115",
+      "kind": "prop",
+      "model": "prop.hb_gull",
+      "position": [
+        44,
+        11.2,
+        32
+      ],
+      "yaw": 2,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_116",
+      "kind": "prop",
+      "model": "prop.hb_gull",
+      "position": [
+        -3.2,
+        0.66,
+        40
+      ],
+      "yaw": 1,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_117",
+      "kind": "prop",
+      "model": "prop.hb_gull",
+      "position": [
+        -13.4,
+        0.66,
+        -1
+      ],
+      "yaw": 2.6,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_118",
+      "kind": "prop",
+      "model": "prop.hb_gull",
+      "position": [
+        20,
+        11.2,
+        -32
+      ],
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "light_lantern",
+      "kind": "light",
+      "position": [
+        -24,
+        14,
+        40
+      ],
+      "yaw": 0,
+      "color": "#ffd27a",
+      "intensity": 1.6,
+      "range": 30,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_qqyywkq7o7",
+      "kind": "light",
+      "position": [
+        -30,
+        4.2,
+        -4.5
+      ],
+      "yaw": 0,
+      "color": "#ffe2a0",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_chsge242qq",
+      "kind": "light",
+      "position": [
+        22,
+        4.2,
+        -4.5
+      ],
+      "yaw": 0,
+      "color": "#ffe2a0",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "bulb"
+    },
+    {
+      "id": "light_wnthj5yo5t",
+      "kind": "light",
+      "position": [
+        35,
+        4.2,
+        34
+      ],
+      "yaw": 0,
+      "color": "#ffe2a0",
+      "intensity": 1,
+      "range": 10,
+      "fixture": "bulb"
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -52,
+      -52
+    ],
+    "max": [
+      52,
+      52
+    ],
+    "style": "invisible",
+    "height": 22
+  },
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "backdrop": {
+    "sky": "overcast",
+    "scenery": "ocean",
+    "ground": "water",
+    "haze": 0.5,
+    "mist": 0.2,
+    "border": "water"
+  },
+  "blood": null,
+  "physics": null,
+  "dependencies": []
+}
