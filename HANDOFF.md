@@ -130,13 +130,28 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   takes the final pose). Owner's console check showed the mismatch on the live site; verify after the update with the
   console line in this session's notes (skin vs joint hand span).
 
-### e2e `arsenal` fails on CI and locally, already on main's code (2026-10-31, not fixed yet)
-check/candidate 4490207 (St. John's smoothing; the diff can't reach arsenal) went red twice on `arsenal`, different
-checks each attempt: the mix-up pickup isn't drawn by the client in 10 s (rifle → plasma), the fallen bot's dropped
-rifle "drawn false" and can't be taken, the Battle Axe blow, "R loads the barrel again". The same checks fail locally
-on 6c0f8a6 (main), so it's not this change. Common thread: the client drawing a gun model for a pickup/drop
-(`view.pickupItem`, `pickup_<id>_gun`) misses or comes late. Root-cause before more merges; main can't move until it's
-green. physicsfx (ragdoll) and mobile tap were flaky and passed on the re-run.
+### e2e `arsenal`: the test raced, not the game (`wip/arsenal-fix`, agent, 2026-10-31)
+Not a pickup/drop drawing bug and not the gun models: every failing check was the test racing a page that draws
+about one frame a second (software rendering; CI and this box alike), or the scene it built moving under it.
+- **Slow input, wall-clock waits.** A frame steps at most 0.25 s of input (session.ts `dt` cap), so at 1 fps your
+  player gets ~15 ticks a second: the 1.6 s barrel reload needs ~6 s, swings land seconds after the press. Waits are
+  now in the match's own time: `meWait(page, fn, arg, seconds)` counts your processed inputs (`me.lastSeq`) with a
+  wall-clock cap. The spree's `waitForTimeout(500)` per weapon (sometimes zero frames: no hazards) and the axe's
+  recovery wait became meWaits too.
+- **Bots.** `speedMul = 0` stops walking, not jumping (a held bot thinks it is stuck and hops 1 m), and the other
+  bots kept shooting the target, picked up its drop (taken false, gone true) and threw sandbag walls. `holdBots`
+  zeroes every bot's movement and buttons at its input queue for the melee and drop checks.
+- **Geometry.** Small bots (0.78 x 1.8 m): the fixed -0.12 glance passed 4 cm over the head at 1.3 m (a correct
+  miss); `aimAt` looks at the target's middle. The spree knocked you up to 7 m back behind a wall, and the spawn faces
+  a tower whose base stopped the pellets 3.5 m out: the melee part puts you back at your spawn (covers and zones
+  there cleared) and `face(dist)` turns to open ground first.
+- **Mix-up pickup.** A bot taking the pickup rolls it again (respawns as something new), so the client never showed
+  the first roll: the check now waits for the match's current roll. **Weapon bar** waits for the snapshot.
+- **Lag compensation.** `seenAt(..., tick)` also waits until `__cs.viewTick()` (new test hook: the tick the page
+  sends for rewind) has reached the move.
+- mobile "a tap on the pad middle jumps": not reproduced; its message now lists the pad's pointer events (times),
+  grounded and crouch state, so the next CI failure says whether it was read as a hold or the player was airborne.
+- physicsfx mass casualty ("one body alive with anim"): not looked into.
 
 ### Owner tileset sheets (2026-10-31): eight concept sheets, awaiting the owner's answer
 01 Medieval Village, 02 Desert City, 03 Coastal Harbor, 04 Jungle Ruins, 05 Snow Outpost, 06 Sci-Fi Research,
