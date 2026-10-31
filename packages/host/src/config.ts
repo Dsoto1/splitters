@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { MAX_PLAYER_SLOTS, ROTATION_MAX, isGameMode, isMapId, isRegion, regionForTimeZone, sanitizeName, type GameMode, type Region } from '@tiletrigger/shared';
+import { MAX_PLAYER_SLOTS, ROTATION_MAX, isGameMode, isMapId, isRegion, regionForTimeZone, sanitizeName, validateServerRules, type GameMode, type Region, type ServerRules } from '@tiletrigger/shared';
 
 /**
  * The Host Service's settings: environment variables, optionally on top of a
@@ -56,6 +56,14 @@ export interface HostConfig {
   idleKickMinutes: number;
   /** Where this computer is, for the game browser (players in the same region see it first). Default: from its time zone. */
   region: Region;
+  /**
+   * The match rules (RULES; shared sim/serverRules.ts): everything a browser host sets in Match setup and the
+   * pause menu, for every match this server plays. `{"ff": "half", "modes": {"tdm": {"score": 60, "time": 15}},
+   * "maps": {"iron_maw": {"time": 20}}}`. The console's `rules` and the launcher's Match rules card change them.
+   */
+  rules?: ServerRules;
+  /** A message each player gets when they join (MOTD, at most 200 characters). */
+  motd?: string;
 }
 
 export const DEFAULT_HUB = 'https://trigger.toshiroplay.com';
@@ -66,7 +74,7 @@ const CODE_RE = /^[A-HJKMNP-Z2-9]{6}$/;
 /** Keys a JSON config may use (the same names as the environment variables, or camelCase). */
 const KEYS: Record<string, string> = {
   HUB: 'hub', MAP: 'map', MODE: 'mode', BOT_FILL: 'botFill', MAX_PLAYERS: 'maxPlayers', BOT_DIFFICULTY: 'botDifficulty', BOT_TAKEBACK: 'botTakeBack',
-  LEADERS: 'leaders', PLAYLIST: 'playlist', ROTATION: 'rotation', ROTATION_SHUFFLE: 'rotationShuffle', BOTSET: 'botSet', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', IDLE_KICK_MINUTES: 'idleKickMinutes', REGION: 'region',
+  LEADERS: 'leaders', PLAYLIST: 'playlist', ROTATION: 'rotation', ROTATION_SHUFFLE: 'rotationShuffle', BOTSET: 'botSet', SERVER_NAME: 'name', HOST_NAME: 'hostName', VISIBILITY: 'visibility', ADMIN_TOKEN: 'adminToken', JOIN_CODE: 'joinCode', STATUS_EVERY: 'statusEvery', AFK_SECONDS: 'afkSeconds', IDLE_KICK_MINUTES: 'idleKickMinutes', REGION: 'region', RULES: 'rules', MOTD: 'motd',
 };
 
 export class ConfigError extends Error {}
@@ -140,6 +148,9 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
   const playlist = str(raw.playlist);
   const rotation = rotationSetting(raw.rotation);
   const botSet = botSetSetting(raw.botSet);
+  const rules = validateServerRules(raw.rules);
+  if (rules.error) throw new ConfigError(rules.error);
+  const motd = str(raw.motd)?.replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, 200);
   return {
     hub: url.origin + url.pathname.replace(/\/+$/, ''),
     map: isMapId(map) ? map : resolve(cwd, map),
@@ -162,6 +173,8 @@ export function parseConfig(raw: Record<string, unknown>, cwd = process.cwd()): 
     afkSeconds: num(raw.afkSeconds, 'AFK_SECONDS', 0, 3600, 90),
     idleKickMinutes: num(raw.idleKickMinutes, 'IDLE_KICK_MINUTES', 0, 1440, 10),
     region: regionSetting(str(raw.region)),
+    ...(Object.keys(rules.rules).length ? { rules: rules.rules } : {}),
+    ...(motd ? { motd } : {}),
   };
 }
 
@@ -212,5 +225,5 @@ function regionSetting(v: string | undefined): Region {
 
 /** The settings for the log, without the admin token. */
 export function describeConfig(c: HostConfig): string {
-  return `hub ${c.hub}, map ${c.map}${c.mode ? ` (${c.mode})` : ''}${c.rotation?.length ? `, rotation ${c.rotation.join(' ')}${c.rotationShuffle ? ' (shuffled)' : ''}` : ''}${c.botSet ? `, bot set ${typeof c.botSet === 'string' && !/[,;]/.test(c.botSet) ? c.botSet : 'of your own'}` : ''}, ${c.botFill} players and bots, up to ${c.maxPlayers} people, ${c.visibility === 'listed' ? `listed as "${c.name}"` : 'join code only'}${c.adminToken ? ', admin token set' : ''}`;
+  return `hub ${c.hub}, map ${c.map}${c.mode ? ` (${c.mode})` : ''}${c.rotation?.length ? `, rotation ${c.rotation.join(' ')}${c.rotationShuffle ? ' (shuffled)' : ''}` : ''}${c.botSet ? `, bot set ${typeof c.botSet === 'string' && !/[,;]/.test(c.botSet) ? c.botSet : 'of your own'}` : ''}, ${c.botFill} players and bots, up to ${c.maxPlayers} people, ${c.visibility === 'listed' ? `listed as "${c.name}"` : 'join code only'}${c.adminToken ? ', admin token set' : ''}${c.rules ? ', match rules set' : ''}`;
 }

@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { MODE_LABELS, isGameMode, isTeamMode } from '@tiletrigger/shared';
+import { GAME_MODES, MODE_LABELS, SERVER_RULES, isGameMode, isTeamMode } from '@tiletrigger/shared';
 import { botSetToText, presetBotSet, type BotSetPreset, type RotationPreset } from '@tiletrigger/shared';
 import type { CommandSpec } from './commands.ts';
 
@@ -114,7 +114,9 @@ export function launcherCsp(nonce: string, site: string): string {
 export function launcherPage(info: LauncherInfo, nonce: string): string {
   const presets = (info.presets ?? []).map((p) => ({ id: p.id, name: p.name, description: p.description, shuffle: p.shuffle, maps: p.maps }));
   const botSets = (info.botSets ?? []).map((p) => ({ id: p.id, name: p.name, description: p.description, count: p.entries.length, text: botSetToText(presetBotSet(p)) }));
-  const data = scriptJson({ version: info.version, commands: info.commands.map((c) => ({ name: c.name, args: c.args, help: c.help })), maps: info.maps, presets, botSets, site: info.site });
+  // The match rules (shared sim/serverRules.ts): what each is, its control, when it applies and the modes it means anything in.
+  const rules = SERVER_RULES.map((r) => ({ key: r.key, label: r.label, help: r.help, type: r.type.kind === 'list' ? { kind: 'list', max: r.type.max } : r.type, apply: r.apply, perMode: !!r.perMode, modes: GAME_MODES.filter((m) => !r.modes || r.modes(m)) }));
+  const data = scriptJson({ version: info.version, commands: info.commands.map((c) => ({ name: c.name, args: c.args, help: c.help })), maps: info.maps, presets, botSets, site: info.site, rules, modeLabels: MODE_LABELS });
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -206,13 +208,28 @@ export function launcherPage(info: LauncherInfo, nonce: string): string {
       <div class="field"><span title="Players and bots to keep: bots fill up to this, people take bots' places">Players + bots</span><div class="stepper" data-k="bots" data-min="1" data-max="96"><button type="button" data-d="-1" aria-label="Fewer">−</button><b id="v-bots">–</b><button type="button" data-d="1" aria-label="More">+</button></div></div>
       <div class="field" id="team-field"><span title="Every team to this size (8 = 8 v 8)">Team size</span><div class="stepper" data-k="teams" data-min="1" data-max="48"><button type="button" data-d="-1" aria-label="Smaller">−</button><b id="v-teams">–</b><button type="button" data-d="1" aria-label="Bigger">+</button></div></div>
       <div class="field"><span title="People (not bots) at once: your upload carries each one (about 20 KB/s each at 48 v 48)">People at most</span><div class="stepper" data-k="maxPlayers" data-min="1" data-max="64"><button type="button" data-d="-1" aria-label="Fewer">−</button><b id="v-max">–</b><button type="button" data-d="1" aria-label="More">+</button></div></div>
-      <p class="note" id="max-note">People at most applies at the next Start.</p>
+      <div class="field"><span title="Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots">Bot skill</span><div class="seg" id="f-skill" role="group" aria-label="Bot skill"><button type="button" data-v="easy">Easy</button><button type="button" data-v="normal">Normal</button><button type="button" data-v="hard">Hard</button></div></div>
+      <div class="field"><span title="Mixed: every character its own way. Arena: always moving. Tactical: cover and held angles">Bot style</span><div class="seg" id="f-style" role="group" aria-label="Bot style"><button type="button" data-v="mixed">Mixed</button><button type="button" data-v="arena">Arena</button><button type="button" data-v="tactical">Tactical</button></div></div>
+      <div class="field"><span title="Idle this many seconds and a bot plays for them until they're back (0: never)">Idle → bot</span><span class="inline"><input id="f-afk" type="number" min="0" max="3600" aria-label="Seconds idle before a bot plays"><small class="unit">s</small><button type="button" id="b-afk">Set</button></span></div>
+      <div class="field"><span title="Idle this many minutes, still connected, and they are removed (0: never)">Idle → out</span><span class="inline"><input id="f-idle" type="number" min="0" max="1440" aria-label="Minutes idle before removal"><small class="unit">min</small><button type="button" id="b-idle">Set</button></span></div>
+      <p class="note">Everything here applies at once<span id="max-note">; while stopped, from the next Start</span>.</p>
       <code class="hint" id="h-players"></code>
+    </section>
+    <section class="card" id="rules-card">
+      <h3>Match <em>rules</em> <span class="count" id="rules-mode"></span></h3>
+      <p class="note">The rules of Play → Match setup and the pause menu, kept for every match this server plays. <i class="tag live">live</i> applies now, <i class="tag restart">restart</i> at the restart or the next map, <i class="tag next">next match</i> at the next match.</p>
+      <div class="field"><span title="Every map: the rule for every map (score, time and respawn: for this mode). This map only: an override on this map.">Apply to</span><div class="seg" id="rules-scope" role="group" aria-label="Apply to"><button type="button" data-s="all" class="on">Every map</button><button type="button" data-s="map">This map only</button></div></div>
+      <div class="rules" id="rules-main"></div>
+      <details class="more" id="rules-more-box"><summary>More rules <span id="rules-more-count"></span></summary><div class="rules" id="rules-more"></div></details>
+      <div class="wait" id="rules-wait" hidden><p class="note" id="rules-wait-text"></p><button type="button" class="primary" id="rules-restart" title="Restart the match now to play with the waiting rules">Restart now with them</button></div>
+      <div class="row-btns"><button type="button" id="rules-reset" title="Every rule back to the mode's own">All rules to default</button></div>
+      <code class="hint" id="h-rules">rules · rules &lt;rule&gt; &lt;value&gt; · rules map &lt;rule&gt; &lt;value&gt;</code>
     </section>
     <section class="card">
       <h3>Game <em>browser</em></h3>
       <label class="field"><span>Name</span><span class="inline"><input id="f-name" maxlength="40" spellcheck="false"><button type="button" id="b-name">Set</button></span></label>
       <div class="field"><span>Who can join</span><div class="seg" id="f-vis" role="group" aria-label="Visibility"><button type="button" data-v="listed">Listed</button><button type="button" data-v="code">Join code only</button></div></div>
+      <label class="field"><span title="Each player gets this message when they join (at most 200 characters)">Join message</span><span class="inline"><input id="f-motd" maxlength="200" spellcheck="true" placeholder="Welcome! Be nice."><button type="button" id="b-motd">Set</button></span></label>
       <code class="hint" id="h-listing"></code>
     </section>
     <section class="card">
@@ -382,6 +399,27 @@ h2 em, h3 em { color: var(--cyan); }
 .ban span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
 .ban b { color: var(--text); }
 .ban button { padding: 3px 8px; font-size: 11px; }
+.unit { color: var(--muted); align-self: center; }
+.field input[type=number] { width: 80px; flex: 0 0 auto; }
+.rules { display: flex; flex-direction: column; gap: 6px; }
+.rule { display: grid; grid-template-columns: 124px minmax(0, 1fr); align-items: center; gap: 8px; }
+.rule > span { color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+.rule .ctl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; }
+.rule .seg button { padding: 5px 8px; }
+.rule .stepper b { min-width: 52px; font-size: 15px; }
+.rule .ctl input { flex: 1; min-width: 0; }
+.rule.pending > span { color: var(--orange); }
+.rule .was { flex-basis: 100%; color: var(--orange); font-size: 12px; }
+.rule .dflt { padding: 2px 7px; font-size: 11px; }
+.rule.set > span::after { content: ' \u25cf'; color: var(--cyan); }
+.tag { font: 700 9px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; font-style: normal; padding: 1px 4px; border-radius: 2px; border: 1px solid var(--line); margin-left: 4px; }
+.tag.live { color: var(--success); }
+.tag.restart { color: var(--warning); }
+.tag.next { color: var(--info); }
+.more summary { cursor: pointer; color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 0; }
+.more[open] summary { margin-bottom: 6px; }
+.wait { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px dashed rgba(255, 179, 71, 0.5); border-radius: 4px; }
+.wait .note { color: var(--orange); }
 .overlay { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(5, 8, 14, 0.82); backdrop-filter: blur(3px); }
 .overlay .panel { max-width: 520px; padding: 24px 26px; display: flex; flex-direction: column; gap: 10px; }
 .overlay p { margin: 0; color: var(--muted); }
@@ -601,7 +639,7 @@ const SCRIPT = `
     // What the controls show: the live match when it runs, else the draft for the next start.
     if (running()) {
       var h = S.host;
-      return { map: h.mapId, mode: h.mode, botFill: h.players + h.bots, maxPlayers: h.maxPlayers, name: h.name, visibility: h.visibility };
+      return { map: h.mapId, mode: h.mode, botFill: h.fill || h.players + h.bots, maxPlayers: h.maxPlayers, name: h.name, visibility: h.visibility, skill: h.skill || 'normal', style: h.style || 'mixed', motd: h.motd || '', afkSeconds: h.afkSeconds, idleKickMinutes: h.idleKickMinutes };
     }
     return draft;
   }
@@ -671,15 +709,14 @@ const SCRIPT = `
     delete pending[k];
     document.querySelector('.stepper[data-k=' + k + ']').classList.remove('pending');
     if (v == null) return;
-    if (k === 'maxPlayers' || !running()) {
+    if (!running()) {
       if (k === 'teams') { draft.botFill = Math.min(96, v * 2); }
       else if (k === 'bots') draft.botFill = v;
       else draft.maxPlayers = v;
-      if (k === 'maxPlayers' && running()) toast('People at most: ' + v + ' from the next Start');
       renderAll();
       return;
     }
-    run(k === 'bots' ? 'bots ' + v : 'teams ' + v);
+    run(k === 'bots' ? 'bots ' + v : k === 'maxPlayers' ? 'maxplayers ' + v : 'teams ' + v);
   }
   function renderPlayers() {
     var c = cur(); if (!c) return;
@@ -687,9 +724,31 @@ const SCRIPT = `
     var t = pending.teams != null ? pending.teams : value('teams');
     var mx = pending.maxPlayers != null ? pending.maxPlayers : c.maxPlayers;
     $('v-bots').textContent = b; $('v-teams').textContent = t; $('v-max').textContent = mx;
-    $('max-note').hidden = !running();
-    $('h-players').textContent = running() ? 'bots ' + b + ($('team-field').hidden ? '' : ' · teams ' + t) : 'start  (with these numbers)';
+    $('max-note').hidden = running();
+    $('h-players').textContent = running() ? 'bots ' + b + ($('team-field').hidden ? '' : ' · teams ' + t) + ' · maxplayers ' + mx + ' · skill ' + c.skill + ' · style ' + c.style : 'start  (with these numbers)';
+    $('f-skill').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x.dataset.v === (c.skill || 'normal')); });
+    var style = running() ? c.style : ((draftRule('style') || {}).v || 'mixed');
+    $('f-style').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x.dataset.v === style); });
+    if (document.activeElement !== $('f-afk')) $('f-afk').value = c.afkSeconds != null ? c.afkSeconds : 90;
+    if (document.activeElement !== $('f-idle')) $('f-idle').value = c.idleKickMinutes != null ? c.idleKickMinutes : 10;
   }
+  $('f-skill').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (running()) run('skill ' + b.dataset.v); else { draft.skill = b.dataset.v; renderAll(); }
+  });
+  $('f-style').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (running()) run('style ' + b.dataset.v);
+    else { setDraftRule('style', b.dataset.v === 'mixed' ? undefined : b.dataset.v, false); renderAll(); }
+  });
+  function setIdle(k, input) {
+    var v = Math.round(+$(input).value);
+    if (!(v >= 0)) return;
+    if (running()) run(k + ' ' + v);
+    else { if (k === 'afk') draft.afkSeconds = v; else draft.idleKickMinutes = v; renderAll(); toast('From the next Start'); }
+  }
+  $('b-afk').addEventListener('click', function () { setIdle('afk', 'f-afk'); });
+  $('b-idle').addEventListener('click', function () { setIdle('idlekick', 'f-idle'); });
 
   var fName = $('f-name');
   function setName() {
@@ -699,6 +758,13 @@ const SCRIPT = `
   }
   $('b-name').addEventListener('click', setName);
   fName.addEventListener('keydown', function (e) { if (e.key === 'Enter') setName(); });
+  function setMotd() {
+    var v = $('f-motd').value.trim();
+    if (running()) run(v ? 'motd ' + v : 'motd clear');
+    else { draft.motd = v; renderAll(); toast(v ? 'Join message set for the next Start' : 'No join message'); }
+  }
+  $('b-motd').addEventListener('click', setMotd);
+  $('f-motd').addEventListener('keydown', function (e) { if (e.key === 'Enter') setMotd(); });
   $('f-vis').addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     if (running()) run('visibility ' + b.dataset.v);
@@ -708,7 +774,8 @@ const SCRIPT = `
     var c = cur(); if (!c) return;
     if (document.activeElement !== fName) fName.value = c.name || '';
     $('f-vis').querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.v === c.visibility); });
-    $('h-listing').textContent = running() ? 'name "' + (c.name || '') + '" · visibility ' + c.visibility : '';
+    if (document.activeElement !== $('f-motd')) $('f-motd').value = c.motd || '';
+    $('h-listing').textContent = running() ? 'name "' + (c.name || '') + '" · visibility ' + c.visibility + ' · motd <text>' : '';
   }
 
   function renderPeople() {
@@ -941,10 +1008,167 @@ const SCRIPT = `
     draft.botSet = ''; renderAll();
   });
 
-  function renderAll() { renderTop(); renderMap(); renderPlayers(); renderListing(); renderPeople(); renderBans(); renderRotation(); renderBots(); }
+  // ---------------------------------------------------------------- match rules
+  // Running: each control runs its rules command (the match applies it live, at the restart or at the next match,
+  // as its tag says). Stopped: they edit the rules the next Start plays with.
+  var RULES = DATA.rules || [];
+  var ruleByKey = {};
+  RULES.forEach(function (r) { ruleByKey[r.key] = r; });
+  var MAIN_RULES = ['score', 'time', 'respawn', 'ff', 'mix', 'drops', 'teams', 'assign'];
+  var scope = 'all';
+  $('rules-scope').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    scope = b.dataset.s;
+    this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    rulesShown = ''; renderRules();
+  });
+  function modeNow() {
+    var c = cur(); if (!c) return '';
+    if (c.mode) return c.mode;
+    var mp = mapById[c.map];
+    return mp && mp.modes[0] ? mp.modes[0].id : 'core.deathmatch';
+  }
+  function draftRules() { if (!draft.rules || typeof draft.rules !== 'object') draft.rules = {}; return draft.rules; }
+  // What the draft (next Start) sets for a rule: this map's override, the mode's, everyone's.
+  function draftRule(key) {
+    var r = draftRules(); var spec = ruleByKey[key]; var mk = modeShort(modeNow());
+    if (r.maps && r.maps[draft.map] && r.maps[draft.map][key] != null) return { v: r.maps[draft.map][key], from: 'map' };
+    if (spec.perMode) return r.modes && r.modes[mk] && r.modes[mk][key] != null ? { v: r.modes[mk][key], from: 'mode' } : null;
+    return r[key] != null ? { v: r[key], from: 'all' } : null;
+  }
+  function setDraftRule(key, v, onMap) {
+    var r = draftRules(); var spec = ruleByKey[key]; var mk = modeShort(modeNow());
+    var box;
+    if (onMap) { r.maps = r.maps || {}; box = r.maps[draft.map] = r.maps[draft.map] || {}; }
+    else if (spec.perMode) { r.modes = r.modes || {}; box = r.modes[mk] = r.modes[mk] || {}; }
+    else box = r;
+    if (v === undefined) delete box[key]; else box[key] = v;
+    if (r.maps && r.maps[draft.map] && !Object.keys(r.maps[draft.map]).length) delete r.maps[draft.map];
+    if (r.maps && !Object.keys(r.maps).length) delete r.maps;
+    if (r.modes && r.modes[mk] && !Object.keys(r.modes[mk]).length) delete r.modes[mk];
+    if (r.modes && !Object.keys(r.modes).length) delete r.modes;
+  }
+  function ruleText(spec, v) {
+    var t = spec.type;
+    if (v === '' || v == null) return 'default';
+    if (t.kind === 'int') return v === 0 && t.zero ? t.zero : v + (t.unit ? ' ' + t.unit : '');
+    if (t.kind === 'bool') return v ? t.on : t.off;
+    if (t.kind === 'choice') { for (var i = 0; i < t.values.length; i++) if (t.values[i][0] === v) return t.values[i][1]; return String(v); }
+    return Array.isArray(v) ? v.join(', ') || 'default' : String(v);
+  }
+  // One rule's row: a control showing what it will be (the server's setting, else what plays now).
+  function ruleRows() {
+    var mode = modeNow();
+    if (running()) return (S.host.ruleRows || []).filter(function (x) { return ruleByKey[x.key]; });
+    return RULES.filter(function (r) { return r.modes.indexOf(mode) >= 0; }).map(function (r) {
+      var d = draftRule(r.key);
+      return { key: r.key, now: null, set: d ? d.v : null, from: d ? d.from : null, pending: false };
+    });
+  }
+  function setRule(key, v) {
+    var spec = ruleByKey[key];
+    if (running()) {
+      var val = v === undefined ? 'default' : spec.type.kind === 'bool' ? (v ? 'on' : 'off') : Array.isArray(v) ? v.join(', ') : String(v);
+      return run('rules ' + (scope === 'map' ? 'map ' : '') + key + ' ' + val);
+    }
+    setDraftRule(key, v, scope === 'map');
+    rulesShown = ''; renderAll();
+  }
+  var rulePending = {};
+  var ruleTimer = {};
+  var rulesShown = '';
+  function ruleRow(x) {
+    var spec = ruleByKey[x.key]; var t = spec.type;
+    var shown = rulePending[x.key] != null ? rulePending[x.key] : x.set != null ? x.set : x.now;
+    var row = document.createElement('div');
+    row.className = 'rule' + (x.pending ? ' pending' : '') + (x.set != null ? ' set' : '');
+    row.dataset.k = x.key;
+    var lab = document.createElement('span'); lab.title = spec.help + (spec.perMode ? ' (kept per mode)' : '') + (x.from === 'map' ? ' (set for this map)' : '');
+    lab.textContent = spec.label;
+    var tag = document.createElement('i'); tag.className = 'tag ' + spec.apply; tag.textContent = spec.apply === 'next' ? 'next match' : spec.apply;
+    lab.append(tag);
+    var ctl = document.createElement('div'); ctl.className = 'ctl';
+    if (t.kind === 'int') {
+      var st = document.createElement('div'); st.className = 'stepper' + (rulePending[x.key] != null ? ' pending' : '');
+      var minus = document.createElement('button'); minus.type = 'button'; minus.textContent = '\u2212'; minus.setAttribute('aria-label', 'Less');
+      var val = document.createElement('b'); val.id = 'r-' + x.key; val.textContent = shown == null ? 'default' : ruleText(spec, shown);
+      var plus = document.createElement('button'); plus.type = 'button'; plus.textContent = '+'; plus.setAttribute('aria-label', 'More');
+      [[minus, -1], [plus, 1]].forEach(function (pair) {
+        pair[0].addEventListener('click', function (e) {
+          var base = rulePending[x.key] != null ? rulePending[x.key] : shown != null ? +shown : t.min;
+          var step = (t.step || 1) * (e.shiftKey ? 5 : 1);
+          var nx = Math.max(t.min, Math.min(t.max, base + pair[1] * step));
+          rulePending[x.key] = nx;
+          val.textContent = ruleText(spec, nx); st.classList.add('pending');
+          clearTimeout(ruleTimer[x.key]);
+          ruleTimer[x.key] = setTimeout(function () { var v = rulePending[x.key]; delete rulePending[x.key]; rulesShown = ''; setRule(x.key, v); }, 700);
+        });
+      });
+      st.append(minus, val, plus); ctl.append(st);
+    } else if (t.kind === 'list') {
+      var inp = document.createElement('input'); inp.id = 'r-' + x.key; inp.value = Array.isArray(shown) ? shown.join(', ') : (shown || ''); inp.placeholder = "the map's";
+      var set = document.createElement('button'); set.type = 'button'; set.textContent = 'Set';
+      set.addEventListener('click', function () { var items = inp.value.split(',').map(function (q) { return q.trim(); }).filter(Boolean); setRule(x.key, items.length ? items : undefined); });
+      ctl.append(inp, set);
+    } else {
+      var seg = document.createElement('div'); seg.className = 'seg'; seg.id = 'r-' + x.key;
+      var opts = t.kind === 'bool' ? [[true, t.on], [false, t.off]] : t.values;
+      opts.forEach(function (o) {
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = o[1]; b.dataset.v = String(o[0]);
+        b.classList.toggle('on', shown === o[0]);
+        b.addEventListener('click', function () { if (shown !== o[0]) setRule(x.key, o[0]); });
+        seg.append(b);
+      });
+      ctl.append(seg);
+    }
+    if (x.set != null) {
+      var d = document.createElement('button'); d.type = 'button'; d.className = 'ghost dflt'; d.textContent = '\u21ba'; d.title = 'Back to the default (rules ' + (scope === 'map' ? 'map ' : '') + x.key + ' default)';
+      d.addEventListener('click', function () { setRule(x.key, undefined); });
+      ctl.append(d);
+    }
+    if (x.pending && running()) {
+      var w = document.createElement('small'); w.className = 'was';
+      w.textContent = 'Playing now: ' + ruleText(spec, x.now) + '; ' + (x.set == null ? 'default' : ruleText(spec, x.set)) + (spec.apply === 'restart' ? ' at the restart' : ' at the next match');
+      ctl.append(w);
+    }
+    row.append(lab, ctl);
+    return row;
+  }
+  function renderRules() {
+    var c = cur(); if (!c) return;
+    var mode = modeNow();
+    var rows = ruleRows();
+    var key = JSON.stringify([rows, mode, scope, running(), rulePending]);
+    var focused = document.activeElement && document.activeElement.closest && document.activeElement.closest('#rules-card input');
+    if (key !== rulesShown && !focused) {
+      rulesShown = key;
+      var main = $('rules-main'), more = $('rules-more');
+      main.replaceChildren(); more.replaceChildren();
+      var changed = 0;
+      rows.forEach(function (x) {
+        var isMain = MAIN_RULES.indexOf(x.key) >= 0;
+        (isMain ? main : more).append(ruleRow(x));
+        if (!isMain && x.set != null) changed++;
+      });
+      $('rules-more-count').textContent = '(' + (rows.length - main.childElementCount) + (changed ? ', ' + changed + ' set' : '') + ')';
+    }
+    $('rules-mode').textContent = (DATA.modeLabels[mode] || modeShort(mode)) + (scope === 'map' && mapById[c.map] ? ' \u00b7 ' + mapById[c.map].name : '');
+    var waiting = running() ? rows.filter(function (x) { return x.pending; }) : [];
+    $('rules-wait').hidden = !waiting.length;
+    $('rules-wait-text').textContent = waiting.length ? 'Waiting for the next match: ' + waiting.map(function (x) { return ruleByKey[x.key].label.toLowerCase() + ' ' + (x.set == null ? 'default' : ruleText(ruleByKey[x.key], x.set)); }).join(', ') + '.' : '';
+    $('h-rules').textContent = running() ? 'rules \u00b7 rules <rule> <value> \u00b7 rules map <rule> <value> \u00b7 restart' : 'start  (with these rules)';
+  }
+  $('rules-restart').addEventListener('click', function () { run('restart'); });
+  $('rules-reset').addEventListener('click', function () {
+    if (!confirm('Every rule back to the default (the mode\u2019s own) for every match?')) return;
+    if (running()) return run('rules reset');
+    draft.rules = {}; rulesShown = ''; renderAll();
+  });
+
+  function renderAll() { renderTop(); renderMap(); renderPlayers(); renderListing(); renderPeople(); renderBans(); renderRotation(); renderBots(); renderRules(); }
 
   $('b-start').addEventListener('click', function () {
-    var body = { map: draft.map, mode: draft.mode || '', botFill: draft.botFill, maxPlayers: draft.maxPlayers, name: draft.name, visibility: draft.visibility, rotation: draft.rotation || [], rotationShuffle: !!draft.rotationShuffle, botSet: typeof draft.botSet === 'string' ? draft.botSet : '' };
+    var body = { map: draft.map, mode: draft.mode || '', botFill: draft.botFill, maxPlayers: draft.maxPlayers, name: draft.name, visibility: draft.visibility, rotation: draft.rotation || [], rotationShuffle: !!draft.rotationShuffle, botSet: typeof draft.botSet === 'string' ? draft.botSet : '', botDifficulty: draft.skill || 'normal', rules: draftRules(), motd: draft.motd || '', afkSeconds: draft.afkSeconds != null ? draft.afkSeconds : 90, idleKickMinutes: draft.idleKickMinutes != null ? draft.idleKickMinutes : 10 };
     // A set saved from the match (an object) stays as it is: the service keeps it.
     if (draft.botSet && typeof draft.botSet === 'object') delete body.botSet;
     local('cmd', 'start  (' + (mapById[draft.map] ? mapById[draft.map].name : draft.map) + (draft.mode ? ', ' + modeShort(draft.mode) : '') + ', ' + draft.botFill + ' players and bots)');
@@ -993,7 +1217,7 @@ const SCRIPT = `
       S = s;
       if (wasOffline || !$('overlay').hidden) { overlay(''); wasOffline = false; }
       var c = s.config || {};
-      if (!draft || running()) draft = { map: c.map && mapById[c.map] ? c.map : (DATA.maps[0] ? DATA.maps[0].id : 'frost_basin'), mode: c.mode || '', botFill: c.botFill || 24, maxPlayers: c.maxPlayers || 16, name: c.name || 'Dedicated host', visibility: c.visibility || 'listed', rotation: (c.rotation || []).slice(), rotationShuffle: !!c.rotationShuffle, botSet: c.botSet || '' };
+      if (!draft || running()) draft = { map: c.map && mapById[c.map] ? c.map : (DATA.maps[0] ? DATA.maps[0].id : 'frost_basin'), mode: c.mode || '', botFill: c.botFill || 24, maxPlayers: c.maxPlayers || 16, name: c.name || 'Dedicated host', visibility: c.visibility || 'listed', rotation: (c.rotation || []).slice(), rotationShuffle: !!c.rotationShuffle, botSet: c.botSet || '', skill: c.botDifficulty || 'normal', rules: JSON.parse(JSON.stringify(c.rules || {})), motd: c.motd || '', afkSeconds: c.afkSeconds, idleKickMinutes: c.idleKickMinutes };
       renderAll();
     }, failed);
   }

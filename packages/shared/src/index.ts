@@ -38,6 +38,7 @@ export * from './sim/playlist.ts';
 export * from './sim/rotation.ts';
 export * from './sim/botSet.ts';
 export * from './sim/hostRules.ts';
+export * from './sim/serverRules.ts';
 export * from './sim/matchSetup.ts';
 export * from './sim/scenarioDefs.ts';
 export * from './sim/glass.ts';
