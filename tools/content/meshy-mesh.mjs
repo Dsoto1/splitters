@@ -947,11 +947,14 @@ export function cutKeeping(indices, positions, target, parts, { errors = [0.008]
     }
   });
   const none = new Float32Array(n);
+  // Errors are the whole mesh's (a part alone is small, and an error relative to its own size held it far above
+  // its target).
+  const size = MeshoptSimplifier.getScale(positions, 3);
   const cut = (part, wanted, allowSloppy) => {
     let idx = Uint32Array.from(part);
     for (const error of errors) {
       if (idx.length / 3 <= wanted * 1.05) break;
-      [idx] = MeshoptSimplifier.simplifyWithAttributes(idx, positions, 3, none, 1, [0], lock, wanted * 3, error, []);
+      [idx] = MeshoptSimplifier.simplifyWithAttributes(idx, positions, 3, none, 1, [0], lock, wanted * 3, error * size, ['ErrorAbsolute']);
     }
     if (allowSloppy && idx.length / 3 > wanted * 2) [idx] = MeshoptSimplifier.simplifySloppy(idx, positions, 3, null, wanted * 3, 0.05);
     return idx;
