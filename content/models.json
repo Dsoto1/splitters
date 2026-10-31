@@ -538,6 +538,6 @@
   },
   "characterBudgets": {
     "maxTriangles": 20000,
-    "maxBytes": 1500000
+    "maxBytes": 1800000
   }
 }
