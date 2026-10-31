@@ -87,6 +87,10 @@ props.json, stylePacks.ts, catalog.ts, materials.ts, CHANGELOG/HANDOFF). Whoever
   - Ancient Temple (TILESET 07) is combined into that same Jungle Ruins refresh (owner, 2026-10-31: the two
     sounded alike), so it is one pack: Jungle Ruins. 03 Imperial Arena stays Roman and unchanged.
   - Sci-Fi Research (Orbital) and Industrial Factory (Military) refreshes are unassigned.
+- **If this account runs out mid-task:** the three agents push WIP to `wip/medieval-fixes-dropship`,
+  `wip/harbor-pack` and `wip/snow-pack` after every step, each with its own HANDOFF section saying what's done
+  and what's next. The other account resumes from those branches: merge `main`, finish, go green on `check/<name>`,
+  then fast-forward `main`.
 - How a pack is built: see the Medieval pack (packTilesMedieval.ts, tools/content/prepare-medieval.mjs,
   stylePacksMedieval.test.ts). Its demo map is a maps/<id>.json made with MapMaker operations (no build script in
   the repo), following docs/map-briefs/AGENT_BUILD_CONTRACT.md. No Meshy generation without the owner's approval.
