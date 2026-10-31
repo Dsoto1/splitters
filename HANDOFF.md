@@ -122,6 +122,15 @@ Owner's screenshots, Character Select holding the AK (2026-10-31 evening), worst
 - **Bandit** (raccoon, Meshy auto-rig): broken import, not a grip issue: the lower body is a fused sack (legs not
   separated, tail-like mass to the floor), the head turned sideways off the body. Re-fit or re-rig from the download
   (and the older note: its proportions make it much bulkier than other small characters).
+- **New kind: stretched "spikes"** when the arms come up: **Giggles** (long dark streaks from the sleeves down to the
+  legs), the black hooded character (likely Vanguard: a streak from the arm to the hip), and the masked robed one
+  (Desert Ranger or Dust Trooper: big stretched sheets from the arm to the coat). Cause: coat/sleeve vertices weighted
+  to the arm bones (or to both arm and body), so raising the arm drags long triangles out of the clothing. Fix in
+  the skin weights (limit sleeve/coat weights by distance from the arm bone; robes follow the spine/legs), not the
+  grip. Check every coat/robe/cape character with arms raised.
+- **Brother Ansel** (robe): lumpy model (owner) and ballooned sleeves; on the lumpy list with Dale, Lancer Mei and
+  Sir Galloway.
+- **Uncle Bao**: close to right (gloved hands on the grip and handguard).
 - **Dale** (pre-rigged): grip passable, but his import is lumpy (owner) like Lancer Mei and Sir Galloway, and the
   forearm skin tears/stretches near the wrist.
 - **Count Bonesworth** (in-house): hands round the gun but the gun is held out to the side, not along his facing.
