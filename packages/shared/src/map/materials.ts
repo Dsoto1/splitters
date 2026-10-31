@@ -49,7 +49,19 @@ export type PatternId =
   /** Style Pack 10: rows of curved clay roof tiles (pantiles), each row lapping the one below. */
   | 'pantiles'
   /** Style Pack 10: half-timbering: dark oak posts, rails and braces with plaster panels between (repeats every storey). */
-  | 'timber';
+  | 'timber'
+  /** Style Pack 06: big square stone slabs, worn and chipped, moss growing in the joints. */
+  | 'slabs'
+  /** Style Pack 06: courses of temple blocks cut with a step-fret (stepped spiral) frieze. */
+  | 'fret'
+  /** Style Pack 06: carved relief panels (a masked face, a sun disc, a serpent) framed by a border, one per block. */
+  | 'relief'
+  /** Style Pack 06: square inlay tiles: a gold frame round a teal field with a gold lozenge and dots. */
+  | 'inlay'
+  /** Style Pack 06: forest floor knotted with roots over dark earth, leaf litter between. */
+  | 'roots'
+  /** Style Pack 06: palm thatch: overlapping rows of long straw strands. */
+  | 'thatch';
 
 export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
@@ -140,6 +152,15 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('packed_dirt', 'Packed Dirt', 'Ground', 'noise', '#7a6448', '#635038', 3),
   m('whitewash', 'Whitewash', 'Stone', 'noise', '#ece6d6', '#d8d0bc', 2.5),
   m('oak_beam', 'Oak Beam', 'Wood', 'planks', '#4a3220', '#30200f', 1.5),
+  // Style Pack 06 Jungle Ruins (with the Ancient Temple sheet folded in): our own procedural paint.
+  m('mossy_stone', 'Mossy Stone Slab', 'Stone', 'slabs', '#8e8c74', '#4c6a24', 3),
+  m('carved_stone', 'Carved Temple Stone', 'Stone', 'fret', '#a49c80', '#5e5846', 2.4),
+  m('relief_stone', 'Relief Carving', 'Stone', 'relief', '#b2a684', '#625a44', 2.4),
+  m('temple_inlay', 'Temple Inlay Tiles', 'Tile', 'inlay', '#2e7a74', '#d0a040', 2, 0.35),
+  m('root_cover', 'Root Cover', 'Ground', 'roots', '#4a3a28', '#6a4e30', 3),
+  m('mossy_planks', 'Mossy Planks', 'Wood', 'planks', '#857256', '#4e5a30', 2),
+  m('temple_sandstone', 'Temple Sandstone', 'Stone', 'blocks', '#c8a878', '#8a7050', 3),
+  m('palm_thatch', 'Palm Thatch', 'Fabric', 'thatch', '#b89a5a', '#6e5a30', 2),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -259,6 +280,7 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('adobe', 'Frontier Adobe', '#f4d2a0', ['pbr_floorboards', '#d8b890'], 'pbr_adobe', ['pbr_adobe', '#e8d0b0'], 'pbr_weathered_planks', 'pbr_walnut'),
   theme('gothic_estate', 'Gothic Estate', '#231d2c', 'pbr_floorboards', 'wallpaper_damask', 'pbr_walnut', 'dark_wood', 'brass'),
   theme('jungle_temple', 'Jungle Temple', '#a8c8a0', 'pbr_mossy_cobble', 'pbr_castle_stone', 'pbr_jungle_rock', 'pbr_rock', ['pbr_travertine', '#b8c0a0']),
+  theme('ancient_temple', 'Ancient Temple', '#b8d0a8', 'mossy_stone', 'carved_stone', 'temple_sandstone', 'pbr_jungle_rock', ['gold_leaf', '#e0b850']),
   theme('medieval', 'Medieval Village', '#a8c8e8', 'cobblestones', 'timber_frame', ['oak_beam', '#c8a888'], 'pbr_floorboards', 'oak_beam'),
   theme('suburban', 'Suburban', '#9cc8f0', 'oak_planks', 'pbr_plaster_white', 'pbr_clapboard', 'pbr_plaster_white', ['paint_matte', '#f4f2ec']),
 ];

@@ -1241,7 +1241,7 @@ const THEME_FAMILY: Record<string, keyof typeof GUESS> = {
   bunker: 'military', arctic: 'military', canyon: 'military', forest: 'military',
   castle: 'tavern', desert: 'tavern', tomb: 'tavern', ruins: 'tavern', temple: 'tavern',
   factory: 'industry', prototype: 'industry', volcano: 'industry',
-  gothic_estate: 'home', suburban: 'home', jungle_temple: 'tavern',
+  gothic_estate: 'home', suburban: 'home', jungle_temple: 'tavern', ancient_temple: 'tavern',
 };
 
 /** A plausible room type for a room of this size in this theme (`pick` 0..1 chooses among the candidates). */

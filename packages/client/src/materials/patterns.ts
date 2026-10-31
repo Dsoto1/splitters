@@ -199,6 +199,171 @@ function timberPaint(u: number, v: number, b: RGB, a: RGB): RGB {
   return edge < 0.03 ? shade(plaster, 0.9) : plaster;
 }
 
+/**
+ * Mossy stone slabs (Style Pack 06): a 3 × 3 grid of big slabs, each its own
+ * shade, worn at the rims and chipped at the corners; moss fills the joints
+ * and creeps onto the stone in patches (the accent is the moss).
+ */
+function slabPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const n = 3;
+  const cu = Math.floor(u * n);
+  const cv = Math.floor(v * n);
+  const fu = fract(u * n);
+  const fv = fract(v * n);
+  const e = edgeDist(fu, fv);
+  const growth = fbm(u, v, 121);
+  // Joints (wider where a corner is chipped off), moss in them.
+  const corner = Math.min(Math.hypot(fu, fv), Math.hypot(1 - fu, fv), Math.hypot(fu, 1 - fv), Math.hypot(1 - fu, 1 - fv));
+  const chipped = corner < 0.08 + hash(cu, cv, 123) * 0.08;
+  if (e < 0.025 || chipped) return shade(a, 0.7 + growth * 0.5);
+  let stone = shade(b, 0.82 + hash(cu, cv, 125) * 0.22 + fbm(u, v, 127) * 0.12);
+  // Worn rims, a crack across some slabs.
+  if (e < 0.06) stone = shade(stone, 0.88);
+  if (hash(cu, cv, 129) > 0.6 && Math.abs(fv - 0.3 - fu * 0.5 - Math.sin(fu * 9) * 0.03) < 0.012) stone = shade(stone, 0.6);
+  // Moss creeping in from the joints.
+  const creep = clamp01((growth - 0.55) * 4 - e * 3);
+  return mix(stone, shade(a, 0.85 + fbm(u, v, 131) * 0.3), creep);
+}
+
+/**
+ * Carved temple stone (Style Pack 06): courses of blocks, every other course a
+ * frieze of step-frets (the stepped hook spiral of the old temples) cut in
+ * shadow; the accent is the carving's depth.
+ */
+function fretPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const rows = 4;
+  const row = Math.floor(v * rows);
+  const fv = fract(v * rows);
+  const blocks = row % 2 === 0 ? 2 : 4;
+  const bu = fract(u * blocks + (row % 2) * 0.5);
+  const block = Math.floor(u * blocks + (row % 2) * 0.5);
+  if (bu < 0.02 || fv < 0.05) return shade(a, 0.75 + fbm(u, v, 141) * 0.2);
+  const stone = shade(b, 0.86 + hash(block, row, 143) * 0.16 + fbm(u, v, 145) * 0.1);
+  if (row % 2 === 0) return stone;
+  // The fret: in each block a hook stepping in from the left and a mirrored one from the right.
+  const x = (fract(u * 4 + 0.5) * 2 - 1) * 1.05;
+  const y = ((fv - 0.05) / 0.95) * 2 - 1;
+  const ax = Math.abs(x);
+  const s = x < 0 ? -1 : 1;
+  const yy = y * s;
+  const groove =
+    (Math.abs(yy + 0.62) < 0.13 && ax < 0.85) ||
+    (Math.abs(ax - 0.85) < 0.12 && yy > -0.75 && yy < 0.55) ||
+    (Math.abs(yy - 0.55) < 0.12 && ax > 0.2 && ax < 0.85) ||
+    (Math.abs(ax - 0.2) < 0.12 && yy > -0.1 && yy < 0.55) ||
+    (Math.abs(yy + 0.1) < 0.12 && ax > 0.2 && ax < 0.55);
+  if (!groove) return stone;
+  return mix(shade(a, 0.9), stone, 0.2 + fbm(u, v, 147) * 0.15);
+}
+
+/**
+ * Relief panels (Style Pack 06): a frame round each block and, raised in it, a
+ * masked face, a sun disc with rays or a coiled serpent (picked per block),
+ * lit from above: the upper rims bright, the lower ones in shadow.
+ */
+function reliefPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const cu = Math.floor(u * 2);
+  const cv = Math.floor(v * 2);
+  const fu = fract(u * 2);
+  const fv = fract(v * 2);
+  const stone = shade(b, 0.88 + hash(cu, cv, 151) * 0.12 + fbm(u, v, 153) * 0.1);
+  const e = edgeDist(fu, fv);
+  if (e < 0.02) return shade(a, 0.7);
+  if (e < 0.09) return e < 0.05 ? shade(stone, 1.08) : shade(stone, 0.86);
+  const x = (fu - 0.5) * 2.4;
+  const y = (fv - 0.5) * 2.4;
+  const r = Math.hypot(x, y);
+  const kind = Math.floor(hash(cu, cv, 155) * 3);
+  // Height of the raised carving at (x, y): 0 = the panel's ground.
+  const h = (px: number, py: number): number => {
+    const pr = Math.hypot(px, py);
+    if (kind === 0) {
+      // A masked face: brow band, eyes, nose, mouth, ear spools.
+      if (Math.abs(py - 0.45) < 0.12 && Math.abs(px) < 0.75) return 1;
+      if (Math.hypot(Math.abs(px) - 0.35, py - 0.15) < 0.15) return 0.5;
+      if (Math.abs(px) < 0.1 && py > -0.25 && py < 0.2) return 1;
+      if (Math.abs(py + 0.45) < 0.08 && Math.abs(px) < 0.4) return 1;
+      if (Math.hypot(Math.abs(px) - 0.85, py) < 0.18) return 1;
+      return Math.abs(px) < 0.7 && py > -0.7 && py < 0.65 ? 0.35 : 0;
+    }
+    if (kind === 1) {
+      // A sun: a disc, a ring, rays between.
+      if (pr < 0.3) return 1;
+      if (Math.abs(pr - 0.45) < 0.06) return 0.8;
+      const ang = Math.atan2(py, px);
+      return pr > 0.55 && pr < 0.95 && Math.abs(fract((ang / (Math.PI * 2)) * 12) - 0.5) < 0.18 ? 0.7 : 0;
+    }
+    // A coiled serpent: a spiral body and a head.
+    const ang = Math.atan2(py, px) / (Math.PI * 2) + 0.5;
+    const turn = pr / 0.3 - ang;
+    if (pr < 0.95 && Math.abs(fract(turn) - 0.5) < 0.22 && pr > 0.08) return 0.8;
+    return Math.hypot(px - 0.7, py + 0.65) < 0.2 ? 1 : 0;
+  };
+  const here = h(x, y);
+  if (here <= 0) return shade(stone, r > 1.1 ? 0.9 : 0.94);
+  // Light from above (v runs up the wall): the carving's upper edges catch it, the lower ones fall into shadow.
+  const above = h(x, y + 0.08);
+  const below = h(x, y - 0.08);
+  const lit = above < here ? 1.18 : below < here ? 0.72 : 1.0;
+  return shade(mix(stone, shade(b, 1.05), here * 0.3), lit);
+}
+
+/** Temple inlay (Style Pack 06): square tiles, a gold frame round a teal field, a gold lozenge with dots at its points. */
+function inlayPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const n = 2;
+  const fu = fract(u * n);
+  const fv = fract(v * n);
+  const e = edgeDist(fu, fv);
+  const wear = 0.9 + fbm(u, v, 161) * 0.18;
+  if (e < 0.03) return shade([40, 36, 30], 0.9 + fbm(u, v, 163) * 0.2);
+  const gold = shade(a, wear * (1 + Math.sin((u + v) * 40) * 0.05));
+  if (e < 0.1) return e > 0.085 ? shade(gold, 0.75) : gold;
+  const x = Math.abs(fu - 0.5);
+  const y = Math.abs(fv - 0.5);
+  const d = x + y;
+  if (Math.abs(d - 0.28) < 0.035) return gold;
+  if (d < 0.08) return gold;
+  if (Math.hypot(x - 0.28, y) < 0.035 || Math.hypot(x, y - 0.28) < 0.035) return gold;
+  if (Math.abs(d - 0.18) < 0.012) return shade(b, 0.7);
+  return shade(b, wear);
+}
+
+/** Root cover (Style Pack 06): dark earth and leaf litter crossed by knotted roots, each lit along its top. */
+function rootPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const earth = shade(b, 0.8 + fbm(u, v, 171) * 0.35);
+  // Leaf litter: scattered small leaves in greens and browns.
+  const lu = fract(u * 9);
+  const lv = fract(v * 9);
+  const [lx, ly] = [Math.floor(u * 9), Math.floor(v * 9)];
+  const leafHere = hash(lx, ly, 173) > 0.55 && Math.hypot((lu - 0.5) * 1.6, lv - 0.5) < 0.3;
+  let c: RGB = leafHere ? (hash(lx, ly, 175) > 0.5 ? [86, 98, 44] : [120, 84, 46]) : earth;
+  // Roots: wavy lines across at several angles (whole periods across the repeat, so it tiles).
+  for (let k = 0; k < 4; k++) {
+    const phase = hash(k, 1, 177) * 6.283;
+    const along = k % 2 === 0 ? u : v;
+    const across = k % 2 === 0 ? v : u;
+    const centre = fract(hash(k, 2, 179) + Math.sin(along * 6.283 * (k + 1) + phase) * 0.08 + noise(along, 0.37 * k, 4, 180 + k) * 0.06);
+    const width = 0.018 + hash(k, 3, 181) * 0.02;
+    const dd = Math.abs(fract(across - centre + 0.5) - 0.5);
+    if (dd < width) {
+      const top = fract(across - centre + 1) < 0.5 ? 1.15 : 0.8;
+      c = shade(a, (0.85 + fbm(u, v, 183 + k) * 0.25) * top * (1 - (dd / width) * 0.35));
+    }
+  }
+  return c;
+}
+
+/** Palm thatch (Style Pack 06): rows of long straw strands, each row overhanging the next, darker where they lap. */
+function thatchPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const rows = 5;
+  const fv = fract(v * rows);
+  const row = Math.floor(v * rows);
+  const strand = noise(u, 0.5 + row * 0.13, 64, 191 + row);
+  const c = mix(b, a, clamp01(strand * 0.9 + (1 - fv) * 0.35));
+  const lap = fv < 0.12 ? 0.6 + fv * 3 : 1;
+  return shade(c, lap * (0.88 + fbm(u, v, 193) * 0.2));
+}
+
 const PAINTERS: Record<PatternId, Painter> = {
   grid: (u, v, b, a) => {
     const e = edgeDist(u, v);
@@ -340,6 +505,12 @@ const PAINTERS: Record<PatternId, Painter> = {
   },
   pantiles: pantilePaint,
   timber: timberPaint,
+  slabs: slabPaint,
+  fret: fretPaint,
+  relief: reliefPaint,
+  inlay: inlayPaint,
+  roots: rootPaint,
+  thatch: thatchPaint,
   weave: (u, v, b, a) => {
     const n = 24;
     const cu = Math.floor(u * n);
@@ -353,7 +524,7 @@ const PAINTERS: Record<PatternId, Painter> = {
 const cache = new Map<string, Uint8Array>();
 
 /** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles) are painted at twice the usual size so their shapes read. */
-const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles']);
+const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles', 'fret', 'relief', 'inlay', 'roots', 'slabs']);
 export const patternSize = (def: MaterialDefinition): number => (FINE_PATTERNS.has(def.pattern) ? 256 : 128);
 
 /** RGBA pixels for a material's pattern (cached per material). */
