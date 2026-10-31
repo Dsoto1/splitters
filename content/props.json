@@ -520,6 +520,14 @@
       "meshy": true,
       "convert": true,
       "textureSize": 512
+    },
+    "tiletrigger-jungle": {
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "licenseFile": "assets-src/tiletrigger-jungle/License.txt",
+      "retrieved": "2026-10-31"
     }
   },
   "budgets": {
@@ -5183,6 +5191,240 @@
       "category": "Jungle Ruins",
       "height": 1.62,
       "collide": "box"
+    },
+    {
+      "id": "jt_zipline_post",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_zipline_post.glb",
+      "name": "Zipline Post",
+      "category": "Jungle Ruins",
+      "height": 6.02,
+      "collide": "trunk"
+    },
+    {
+      "id": "jt_crane",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_crane.glb",
+      "name": "Crane and Pulley",
+      "category": "Jungle Ruins",
+      "height": 4.6,
+      "collide": "trunk"
+    },
+    {
+      "id": "jt_wooden_platform",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_wooden_platform.glb",
+      "name": "Wooden Platform",
+      "category": "Jungle Ruins",
+      "height": 2.91,
+      "collide": "box"
+    },
+    {
+      "id": "jt_statue_large",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_statue_large.glb",
+      "name": "Temple Guardian (Large)",
+      "category": "Jungle Ruins",
+      "height": 6.35,
+      "collide": "box"
+    },
+    {
+      "id": "jt_statue_small",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_statue_small.glb",
+      "name": "Temple Guardian (Small)",
+      "category": "Jungle Ruins",
+      "height": 2.77,
+      "collide": "box"
+    },
+    {
+      "id": "jt_obelisk",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_obelisk.glb",
+      "name": "Stone Obelisk",
+      "category": "Jungle Ruins",
+      "height": 5.05,
+      "collide": "box"
+    },
+    {
+      "id": "jt_temple_spire",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_temple_spire.glb",
+      "name": "Temple Spire",
+      "category": "Jungle Ruins",
+      "height": 4.0,
+      "collide": "box"
+    },
+    {
+      "id": "jt_fire_bowl",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_fire_bowl.glb",
+      "name": "Fire Bowl",
+      "category": "Jungle Ruins",
+      "height": 1.89,
+      "collide": "trunk"
+    },
+    {
+      "id": "jt_hanging_brazier",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_hanging_brazier.glb",
+      "name": "Hanging Brazier",
+      "category": "Jungle Ruins",
+      "height": 2.94,
+      "collide": "none"
+    },
+    {
+      "id": "jt_wall_torch",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_wall_torch.glb",
+      "name": "Wall Torch",
+      "category": "Jungle Ruins",
+      "height": 0.95,
+      "collide": "none"
+    },
+    {
+      "id": "jt_banner_teal",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_banner_teal.glb",
+      "name": "Teal Temple Banner",
+      "category": "Jungle Ruins",
+      "height": 3.77,
+      "collide": "none"
+    },
+    {
+      "id": "jt_banner_red",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_banner_red.glb",
+      "name": "Red Temple Banner",
+      "category": "Jungle Ruins",
+      "height": 3.77,
+      "collide": "none"
+    },
+    {
+      "id": "jt_tree_root_arch",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_tree_root_arch.glb",
+      "name": "Tree Root Arch",
+      "category": "Jungle Ruins",
+      "height": 3.67,
+      "collide": "none"
+    },
+    {
+      "id": "jt_tree_trunk",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_tree_trunk.glb",
+      "name": "Mossy Tree Trunk",
+      "category": "Jungle Ruins",
+      "height": 6.35,
+      "collide": "trunk"
+    },
+    {
+      "id": "jt_plant_cluster",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_plant_cluster.glb",
+      "name": "Jungle Plant Cluster",
+      "category": "Jungle Ruins",
+      "height": 1.23,
+      "collide": "none"
+    },
+    {
+      "id": "jt_planter",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_planter.glb",
+      "name": "Stone Planter",
+      "category": "Jungle Ruins",
+      "height": 2.14,
+      "collide": "box"
+    },
+    {
+      "id": "jt_pottery",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_pottery.glb",
+      "name": "Temple Pottery",
+      "category": "Jungle Ruins",
+      "height": 1.04,
+      "collide": "box"
+    },
+    {
+      "id": "jt_rubble_pile",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_rubble_pile.glb",
+      "name": "Rubble Pile",
+      "category": "Jungle Ruins",
+      "height": 0.93,
+      "collide": "box"
+    },
+    {
+      "id": "jt_collapsed_column",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_collapsed_column.glb",
+      "name": "Collapsed Column",
+      "category": "Jungle Ruins",
+      "height": 0.94,
+      "collide": "box"
+    },
+    {
+      "id": "jt_broken_column",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_broken_column.glb",
+      "name": "Broken Column",
+      "category": "Jungle Ruins",
+      "height": 2.95,
+      "collide": "box"
+    },
+    {
+      "id": "jt_sarcophagus",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_sarcophagus.glb",
+      "name": "Stone Sarcophagus",
+      "category": "Jungle Ruins",
+      "height": 1.32,
+      "collide": "box"
+    },
+    {
+      "id": "jt_spikes",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_spikes.glb",
+      "name": "Spike Row",
+      "category": "Jungle Ruins",
+      "height": 1.2,
+      "collide": "box"
+    },
+    {
+      "id": "jt_chain_rail",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_chain_rail.glb",
+      "name": "Chain Rail",
+      "category": "Jungle Ruins",
+      "height": 1.08,
+      "collide": "box"
+    },
+    {
+      "id": "jt_rope_rail",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_rope_rail.glb",
+      "name": "Rope Rail",
+      "category": "Jungle Ruins",
+      "height": 1.15,
+      "collide": "box"
+    },
+    {
+      "id": "jt_altar_fire",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_altar_fire.glb",
+      "name": "Temple Altar",
+      "category": "Jungle Ruins",
+      "height": 1.83,
+      "collide": "box"
+    },
+    {
+      "id": "jt_overgrown_beam",
+      "pack": "tiletrigger-jungle",
+      "src": "jt_overgrown_beam.glb",
+      "name": "Overgrown Beam",
+      "category": "Jungle Ruins",
+      "height": 2.93,
+      "collide": "none"
     },
     {
       "id": "mp_dino_statue",

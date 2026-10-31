@@ -3717,6 +3717,214 @@
       "sha256": "f095d214cedd4619"
     },
     {
+      "file": "props/jt_zipline_post.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_zipline_post.glb",
+      "triangles": 304,
+      "bytes": 16100,
+      "sha256": "d72cb973a3f0182a"
+    },
+    {
+      "file": "props/jt_crane.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_crane.glb",
+      "triangles": 256,
+      "bytes": 14464,
+      "sha256": "c65d256af51b32d8"
+    },
+    {
+      "file": "props/jt_wooden_platform.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_wooden_platform.glb",
+      "triangles": 464,
+      "bytes": 25016,
+      "sha256": "232facd3c3b37e6c"
+    },
+    {
+      "file": "props/jt_statue_large.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_statue_large.glb",
+      "triangles": 784,
+      "bytes": 27956,
+      "sha256": "4b990bae4ccce4ea"
+    },
+    {
+      "file": "props/jt_statue_small.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_statue_small.glb",
+      "triangles": 376,
+      "bytes": 18588,
+      "sha256": "7907f8e7832b0c63"
+    },
+    {
+      "file": "props/jt_obelisk.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_obelisk.glb",
+      "triangles": 276,
+      "bytes": 14684,
+      "sha256": "c00db64515921771"
+    },
+    {
+      "file": "props/jt_temple_spire.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_temple_spire.glb",
+      "triangles": 300,
+      "bytes": 11332,
+      "sha256": "9c60ad1c45dc2ee8"
+    },
+    {
+      "file": "props/jt_fire_bowl.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_fire_bowl.glb",
+      "triangles": 351,
+      "bytes": 15704,
+      "sha256": "6dde756acc43235a"
+    },
+    {
+      "file": "props/jt_hanging_brazier.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_hanging_brazier.glb",
+      "triangles": 455,
+      "bytes": 19992,
+      "sha256": "920da6dfc96c91d5"
+    },
+    {
+      "file": "props/jt_wall_torch.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_wall_torch.glb",
+      "triangles": 263,
+      "bytes": 12820,
+      "sha256": "9c07e33da390c015"
+    },
+    {
+      "file": "props/jt_banner_teal.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_banner_teal.glb",
+      "triangles": 378,
+      "bytes": 17196,
+      "sha256": "c607aa3cc188da01"
+    },
+    {
+      "file": "props/jt_banner_red.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_banner_red.glb",
+      "triangles": 354,
+      "bytes": 16956,
+      "sha256": "9b7b4c515c2b75e5"
+    },
+    {
+      "file": "props/jt_tree_root_arch.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_tree_root_arch.glb",
+      "triangles": 1032,
+      "bytes": 50128,
+      "sha256": "ebc37b179ee8755e"
+    },
+    {
+      "file": "props/jt_tree_trunk.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_tree_trunk.glb",
+      "triangles": 760,
+      "bytes": 26040,
+      "sha256": "a0eec73d62e0dec7"
+    },
+    {
+      "file": "props/jt_plant_cluster.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_plant_cluster.glb",
+      "triangles": 492,
+      "bytes": 21696,
+      "sha256": "45050eb116e33733"
+    },
+    {
+      "file": "props/jt_planter.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_planter.glb",
+      "triangles": 228,
+      "bytes": 15824,
+      "sha256": "19651d3da4fb75b6"
+    },
+    {
+      "file": "props/jt_pottery.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_pottery.glb",
+      "triangles": 560,
+      "bytes": 19540,
+      "sha256": "27e2d36bff6e8724"
+    },
+    {
+      "file": "props/jt_rubble_pile.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_rubble_pile.glb",
+      "triangles": 300,
+      "bytes": 15080,
+      "sha256": "aeba7de5170d525d"
+    },
+    {
+      "file": "props/jt_collapsed_column.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_collapsed_column.glb",
+      "triangles": 204,
+      "bytes": 9232,
+      "sha256": "5c83f1273ce66ee7"
+    },
+    {
+      "file": "props/jt_broken_column.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_broken_column.glb",
+      "triangles": 252,
+      "bytes": 11452,
+      "sha256": "e138694be74ebd40"
+    },
+    {
+      "file": "props/jt_sarcophagus.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_sarcophagus.glb",
+      "triangles": 240,
+      "bytes": 11916,
+      "sha256": "60dbe7df648cbb0b"
+    },
+    {
+      "file": "props/jt_spikes.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_spikes.glb",
+      "triangles": 252,
+      "bytes": 11392,
+      "sha256": "4ff2933afd447add"
+    },
+    {
+      "file": "props/jt_chain_rail.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_chain_rail.glb",
+      "triangles": 336,
+      "bytes": 19564,
+      "sha256": "1dd31a797d289ddd"
+    },
+    {
+      "file": "props/jt_rope_rail.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_rope_rail.glb",
+      "triangles": 360,
+      "bytes": 17932,
+      "sha256": "1d4fb235a6fffbf7"
+    },
+    {
+      "file": "props/jt_altar_fire.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_altar_fire.glb",
+      "triangles": 375,
+      "bytes": 17812,
+      "sha256": "99d4668c969cc114"
+    },
+    {
+      "file": "props/jt_overgrown_beam.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_overgrown_beam.glb",
+      "triangles": 996,
+      "bytes": 45348,
+      "sha256": "429a0d1eae72f267"
+    },
+    {
       "file": "props/mp_dino_statue.glb",
       "source": "meshy-community-props",
       "title": "Spiky Dinosaur (download dated 2025-12-29)",
