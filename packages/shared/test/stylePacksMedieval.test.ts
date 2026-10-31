@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { MODEL_FACADES, SCENARIO_PALETTE, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getProp, getStylePack, initPhysics, newScenarioEntities, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
-import { NavWorld, initNavigation } from '../src/match.ts';
+import { MODEL_FACADES, PhysicsWorld, SCENARIO_PALETTE, blockBoxes, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, newScenarioEntities, propBoxes, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
+import { NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -119,4 +119,26 @@ describe('Medieval pack navigation', () => {
       }
     });
   }
+});
+
+describe('Market Town (the pack\'s demo map)', () => {
+  it('validates with no issues, navigation included, and has the town\'s landmarks', { timeout: 180_000 }, () => {
+    const r = loadMap(read('maps/market_town.json'));
+    if (!r.ok) throw new Error(JSON.stringify(r.issues));
+    expect(r.issues).toEqual([]);
+    const map = r.map;
+    expect(map.classicStructure.theme).toBe('core.medieval');
+    const tiles = new Set(map.classicStructure.tiles.map((x) => x.tile));
+    for (const id of ['medieval.house', 'medieval.house_shop', 'medieval.house_balcony', 'medieval.outside_stair', 'medieval.walkway', 'medieval.market_square', 'medieval.market_hall', 'medieval.town_wall', 'medieval.wall_stair', 'medieval.town_gate', 'medieval.bell_tower', 'medieval.watchtower', 'medieval.stream', 'medieval.bridge', 'medieval.road', 'medieval.forge']) expect(tiles.has(id), id).toBe(true);
+    const spawns = map.entities.filter((e) => e.kind === 'spawn');
+    for (const team of ['embers', 'tide']) expect(spawns.filter((e) => e.faction === team).length, team).toBeGreaterThanOrEqual(12);
+    expect(map.entities.filter((e) => e.kind === 'flag')).toHaveLength(2);
+    for (const e of map.entities) if (e.kind === 'pickup') expect(getItem(e.item), e.item).toBeDefined();
+    const geometry = buildMapGeometry(map);
+    const physics = new PhysicsWorld(geometry, mapTerrainMesh(map));
+    const nav = NavWorld.build([...geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), [...navLinks(map.entities, physics), ...liftLinks(map)]);
+    physics.free();
+    expect(validateNavigation(map, nav)).toEqual([]);
+    nav.destroy();
+  });
 });
