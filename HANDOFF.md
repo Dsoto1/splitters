@@ -95,6 +95,10 @@ Owner's screenshots, Character Select holding the AK (2026-10-31 evening), worst
   doesn't reach a sensible pose at all (shoulder/arm landmarks or arm length off).
 - **Capt. Nova** (Meshy auto-rig): fingers splayed open, support hand off the handguard.
 - Big Bogdan, Shade: open palms (above). The Visitor: the good reference.
+- **Saint Nick** (Meshy auto-rig) and **the Dapper** (Meshy auto-rig): flat, open hands under the gun, which rests on
+  the palms (no finger curl, palms facing up).
+- Close to right (owner's second batch): Wealthy Otter, Salamander Warlord (both in-house fits: paws/claws round the
+  gun), Goblin (in-house; fingers a little splayed but both hands on the gun).
 
 
 ### After the style packs (owner, 2026-10-31): MapMaker overhaul and a pass over every map
