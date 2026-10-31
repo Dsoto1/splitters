@@ -6,8 +6,10 @@ import { Animatable } from '@babylonjs/core/Animations/animatable';
 import type { Skeleton } from '@babylonjs/core/Bones/skeleton';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
+import { gripReport, skinHandFrame } from './handProbe.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { GAIT, GAIT_CLIPS, gaitCycleRate, gaitWeights, matchPhase, type GaitClip } from './gait.ts';
 
@@ -142,6 +144,8 @@ const FP_BEND = 0.9;
 const FP_BODY_PITCH = 0.25;
 /** Full-body first person: furthest (radians) a collarbone rolls to bring its shoulder toward the gun. */
 const FP_CLAVICLE_MAX = 0.8;
+/** Full-body first person: your own hands' size (the arms-only view's hands are made smaller the same way). */
+const FP_HAND_SCALE = 0.85;
 /** Full-body first person: the scale the neck (and with it the head, hair and hat) is shrunk to. */
 const FP_HIDDEN = 1e-4;
 /** Furthest (model m) a stock the arms can't hold clear of the chest tucks out past the shoulder. */
@@ -161,6 +165,12 @@ interface Arm {
   curl: number;
   /** Finger chains (index, middle, ring, pinky), knuckle first, for closing the hand. */
   fingers: TransformNode[][];
+  /**
+   * A measured hand's own frame in the hand joint's space (Meshy characters): which way its fingers run and
+   * which way its palm faces. A Meshy hand needn't sit on its joint as the rig's hand does (the dapper's palm
+   * faced away from the grip in the clips' hold), so it is turned onto the grip by this frame (gripHand).
+   */
+  frame?: { along: Vector3; palm: Vector3 };
   /** Knuckles used to build the hand's frame. */
   index: TransformNode;
   pinky: TransformNode;
@@ -244,7 +254,9 @@ export class CharacterAnimator {
       const measured = ch.hands[side];
       if (measured) {
         const gripOffset = Math.max(MIN_GRIP_OFFSET, GRIP_RADIUS_MEASURED + (measured.thickness - REF_HAND_THICKNESS) / 2);
-        return { upper, lower, hand, palm: new Vector3(...measured.palm), gripOffset, curl: measured.curl, fingers, index, pinky, knuckle, thumb };
+        // The hand's own frame, read off its skin (its measured palm side is the rig's, which a Meshy hand needn't match).
+        const frame = skinHandFrame(ch.meshes, hand, ch.joints.get(`thumb_01_${side}`) ?? thumb, side) ?? undefined;
+        return { upper, lower, hand, palm: new Vector3(...measured.palm), gripOffset, curl: measured.curl, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
       }
       // The rig's own hands: the palm sits a little over halfway from the wrist to the middle knuckle.
       return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, fingers, index, pinky, knuckle, thumb };
@@ -343,7 +355,10 @@ export class CharacterAnimator {
     if (!fp) {
       const neck = this.ch.joints.get('neck_01') ?? this.ch.joints.get('Head');
       neck?.scaling.setAll(1);
-      for (const arm of this.arms ? [this.arms.r, this.arms.l] : []) this.restoreShoulder(arm);
+      for (const arm of this.arms ? [this.arms.r, this.arms.l] : []) {
+        this.restoreShoulder(arm);
+        arm.hand.scaling.setAll(1);
+      }
     }
   }
 
@@ -858,6 +873,8 @@ export class CharacterAnimator {
       // Your own body seen from its eyes: the head shrunk away, then the body (bent for the aim) moved under the
       // camera, before the hands go to the gun.
       if (this.fp.shrinkHead) (this.ch.joints.get('neck_01') ?? this.ch.joints.get('Head'))?.scaling.setAll(FP_HIDDEN);
+      // Hands a little smaller than life from your own eyes (a life-size hand a forearm from the eye filled the lower right).
+      for (const arm of this.arms ? [this.arms.r, this.arms.l] : []) arm.hand.scaling.setAll(FP_HAND_SCALE);
       this.fp.place?.();
     }
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
@@ -880,6 +897,15 @@ export class CharacterAnimator {
       return n.getAbsolutePosition().clone();
     };
 
+    // A measured (Meshy) hand turned onto the gun first: where its palm then is places a pistol.
+    if (grip.style !== 'melee' && this.ik > 0) {
+      const aimM = Matrix.FromQuaternionToRef(aim, new Matrix());
+      gripHand(space, arms.r, aimM, 'grip', this.ik);
+      if (grip.support && arms.l.frame) {
+        if (grip.style === 'long') cupHand(space, arms.l, aimM, this.ik);
+        else gripHand(space, arms.l, aimM, 'support', this.ik);
+      }
+    }
     // Where the weapon goes when gripped (world space).
     let gripped: { pos: Vector3; rot: Quaternion } | null = null;
     let support = grip.support;
@@ -985,6 +1011,12 @@ export class CharacterAnimator {
     const w = this.ik;
     // A long gun's handguard rests in the support hand palm up, fingers round its far side (the clip's hand points at the sky).
     if (grip.style === 'long' && grip.support) cupHand(space, arms.l, world, w);
+    // In first person the shooting hand is turned onto the grip whatever its rig: the clips' hold is made for a
+    // body aiming level, and the view's gun points where you look (a rig's hand looking down lay across the grip).
+    gripHand(space, arms.r, world, 'grip', w, true);
+    if (grip.style === 'pistol' && grip.support) gripHand(space, arms.l, world, 'support', w);
+    // The hands' turn on the gun, kept while the shoulders move below (a collarbone's roll would carry it off).
+    const handsOn = { r: space.rot(arms.r.hand), l: space.rot(arms.l.hand) };
     const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
     let supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale) : null;
     const view = this.ch.root.parent as TransformNode | null;
@@ -1057,6 +1089,8 @@ export class CharacterAnimator {
       placeShoulder(arms.r, anchor(1), gripAt, shift);
       placeShoulder(arms.l, anchor(-1), supportAt, shift);
     }
+    space.setRot(arms.r.hand, handsOn.r, 1);
+    if (grip.support) space.setRot(arms.l.hand, handsOn.l, 1);
     const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
     const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
     solveArm(space, arms.r, gripAt, pos(arms.r.upper).add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), w);
@@ -1077,6 +1111,17 @@ export class CharacterAnimator {
 
   /** How far (model m) each palm ended up from where it was sent on the last external grip (tests and the grip tool). */
   gripMiss: { r: number; l: number } | null = null;
+
+  /**
+   * Where the hands are drawn on the held gun (tests and the grip tool): for each hand with a point on it, how far
+   * (model m) its skin's centre is from that point (handProbe.ts). `meshes`: what is drawn of this body (default its own).
+   */
+  drawnGrip(meshes: readonly AbstractMesh[] = this.ch.meshes): ReturnType<typeof gripReport> | null {
+    const node = this.weapon ?? this.external?.node;
+    const hold = this.weapon ? this.grip : this.external?.grip;
+    if (!node || !hold || !this.arms || node.isDisposed() || !node.isEnabled() || this.dead) return null;
+    return gripReport(meshes, this.arms, node, hold, this.ch.root.absoluteScaling.x);
+  }
 
   dispose(): void {
     this.scene.onAfterAnimationsObservable.remove(this.observer);
@@ -1152,6 +1197,7 @@ function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number): Vector3 {
 
 /** Unit vector out of the palm (the side the fingers close toward), in world space. */
 function palmSideWorld(arm: Arm): Vector3 {
+  if (arm.frame) return handAxes(arm).palm;
   for (const n of [arm.hand, arm.knuckle, arm.index, arm.pinky, arm.thumb]) n.computeWorldMatrix(true);
   const wrist = arm.hand.getAbsolutePosition();
   const forward = arm.knuckle.getAbsolutePosition().subtract(wrist).normalize();
@@ -1159,6 +1205,59 @@ function palmSideWorld(arm: Arm): Vector3 {
   const towardThumb = arm.thumb.getAbsolutePosition().subtract(wrist);
   const side = towardThumb.subtract(forward.scale(Vector3.Dot(towardThumb, forward))).subtract(across.scale(Vector3.Dot(towardThumb, across)));
   return side.lengthSquared() > 1e-10 ? side.normalize() : Vector3.Zero();
+}
+
+/** World directions of a hand's fingers (wrist to tips) and palm: the measured frame, or the rig's knuckles. */
+function handAxes(arm: Arm): { along: Vector3; palm: Vector3 } {
+  arm.hand.computeWorldMatrix(true);
+  if (arm.frame) {
+    const m = arm.hand.getWorldMatrix();
+    return { along: Vector3.TransformNormal(arm.frame.along, m).normalize(), palm: Vector3.TransformNormal(arm.frame.palm, m).normalize() };
+  }
+  arm.knuckle.computeWorldMatrix(true);
+  const along = arm.knuckle.getAbsolutePosition().subtract(arm.hand.getAbsolutePosition()).normalize();
+  for (const n of [arm.index, arm.pinky, arm.thumb]) n.computeWorldMatrix(true);
+  const wrist = arm.hand.getAbsolutePosition();
+  const across = arm.index.getAbsolutePosition().subtract(arm.pinky.getAbsolutePosition()).normalize();
+  const towardThumb = arm.thumb.getAbsolutePosition().subtract(wrist);
+  const side = towardThumb.subtract(along.scale(Vector3.Dot(towardThumb, along))).subtract(across.scale(Vector3.Dot(towardThumb, across)));
+  return { along, palm: side.lengthSquared() > 1e-10 ? side.normalize() : Vector3.Zero() };
+}
+
+/** A gun's axes in the world (left-handed): up, ahead along the barrel, and its right, whether or not its node is mirrored. */
+function gunAxes(weapon: Matrix): { up: Vector3; ahead: Vector3; right: Vector3 } {
+  const up = Vector3.TransformNormal(new Vector3(0, 1, 0), weapon).normalize();
+  const ahead = Vector3.TransformNormal(new Vector3(0, 0, 1), weapon).normalize();
+  return { up, ahead, right: Vector3.Cross(up, ahead).normalize() };
+}
+
+/** Turn a hand (in the skeleton's space, blended by `weight`) so its fingers run along `fingers` and its palm faces `palm` (world). */
+function turnHand(space: SkeletonSpace, arm: Arm, fingers: Vector3, palm: Vector3, weight: number): void {
+  const now = handAxes(arm);
+  if (now.palm.lengthSquared() < 1e-8) return;
+  arm.hand.computeWorldMatrix(true);
+  const wrist = arm.hand.getAbsolutePosition().clone();
+  const dir = (world: Vector3) => space.point(wrist.add(world)).subtract(space.point(wrist));
+  const frame = (f: Vector3, p: Vector3) => {
+    const z = f.normalizeToNew();
+    const y = p.subtract(z.scale(Vector3.Dot(p, z))).normalize();
+    return Quaternion.RotationQuaternionFromAxis(Vector3.Cross(y, z), y, z);
+  };
+  const turnBy = frame(dir(fingers), dir(palm)).multiply(Quaternion.Inverse(frame(dir(now.along), dir(now.palm))));
+  space.setRot(arm.hand, turnBy.multiply(space.rot(arm.hand)), weight);
+}
+
+/**
+ * A measured (Meshy) hand turned onto a gun as a hand holds one, whatever way the clips left it: the shooting
+ * hand's palm against the grip's right side, fingers forward along the frame (a measured hand often can't curl); a pistol's support hand
+ * under and to the left of it, palm up and in, fingers round the front of the shooting hand. A rig's own hand
+ * keeps the clip's hold, which was made for it, unless `rigHands` (first person). `weapon`: the gun's world matrix.
+ */
+function gripHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, role: 'grip' | 'support', weight: number, rigHands = false): void {
+  if ((!arm.frame && !rigHands) || weight <= 0) return;
+  const { up, ahead, right } = gunAxes(weapon);
+  if (role === 'grip') turnHand(space, arm, ahead.scale(0.9).subtract(up.scale(0.35)), right.scale(-1), weight);
+  else turnHand(space, arm, ahead.scale(0.7).add(right.scale(0.6)).subtract(up.scale(0.1)), right.scale(0.3).add(up.scale(0.95)), weight);
 }
 
 /** World position of a hand's palm centre. */
@@ -1199,9 +1298,9 @@ function cupHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, weight: number)
     const y = palm.subtract(z.scale(Vector3.Dot(palm, z))).normalize();
     return Quaternion.RotationQuaternionFromAxis(Vector3.Cross(y, z), y, z);
   };
-  const palm = palmSideWorld(arm);
-  if (palm.lengthSquared() < 1e-8) return;
-  const now = frame(dir(arm.knuckle.getAbsolutePosition().subtract(wrist)), dir(palm));
+  const axes = handAxes(arm);
+  if (axes.palm.lengthSquared() < 1e-8) return;
+  const now = frame(dir(axes.along), dir(axes.palm));
   const up = axis(0, 1, 0);
   const ahead = axis(0, 0, 1);
   // The gun's right in the world (left-handed), whether or not the model's node is mirrored.
@@ -1274,6 +1373,54 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number): void {
       const q = Quaternion.RotationAxis(across, sign * curl[i]! * weight);
       space.setRot(joint, q.multiply(space.rot(joint)), 1);
     });
+  }
+}
+
+/** Two arms the grip solver can move (a creature's, built by `armsFrom`). */
+export type HoldingArms = { r: Arm; l: Arm };
+
+/**
+ * Arms for the grip solver from any skeleton with our rig's arm and hand joints (a creature retargeted onto the
+ * rig: no pinky or third finger joints needed). Each hand's frame is read off its skin (handProbe.skinHandFrame).
+ */
+export function armsFrom(joints: Map<string, TransformNode>, meshes: readonly AbstractMesh[]): HoldingArms | null {
+  const arm = (side: 'l' | 'r'): Arm | null => {
+    const get = (n: string) => joints.get(`${n}_${side}`);
+    const [upper, lower, hand, knuckle, index, thumb] = [get('upperarm'), get('lowerarm'), get('hand'), get('middle_01') ?? get('index_01'), get('index_01'), get('thumb_02') ?? get('thumb_01')];
+    if (!upper || !lower || !hand || !knuckle || !index || !thumb) return null;
+    const pinky = get('pinky_01') ?? get('ring_01') ?? knuckle;
+    const fingers = ['index', 'middle', 'ring', 'pinky'].map((f) => [1, 2, 3].map((j) => joints.get(`${f}_0${j}_${side}`)).filter((n): n is TransformNode => !!n)).filter((c) => c.length > 0);
+    const frame = skinHandFrame(meshes, hand, get('thumb_01') ?? thumb, side) ?? undefined;
+    return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
+  };
+  const [r, l] = [arm('r'), arm('l')];
+  return r && l ? { r, l } : null;
+}
+
+/**
+ * Close the hands on a gun placed by the caller (a creature's held gun): the shooting hand turned onto the grip,
+ * the support hand cupping a long gun's handguard or under a pistol's, both palms brought there by the arm IK and
+ * the fingers closed. `scale`: the body's size against the model's (points on the gun are model metres).
+ */
+export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: TransformNode, grip: WeaponHold, scale: number, weight: number): void {
+  if (grip.style === 'melee' || weight <= 0) return;
+  weapon.computeWorldMatrix(true);
+  const world = weapon.getWorldMatrix();
+  const point = (p: ModelPoint) => Vector3.TransformCoordinates(new Vector3(p[0], p[1], p[2]), world);
+  gripHand(space, arms.r, world, 'grip', weight, true);
+  if (grip.support && grip.style === 'long') cupHand(space, arms.l, world, weight);
+  else if (grip.support) gripHand(space, arms.l, world, 'support', weight, true);
+  const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
+  const supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale) : null;
+  refreshArm(arms.r);
+  refreshArm(arms.l);
+  const outward = arms.r.upper.getAbsolutePosition().subtract(arms.l.upper.getAbsolutePosition()).normalize();
+  const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
+  solveArm(space, arms.r, gripAt, arms.r.upper.getAbsolutePosition().add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), weight);
+  closeHand(space, arms.r, weight);
+  if (supportAt) {
+    solveArm(space, arms.l, supportAt, arms.l.upper.getAbsolutePosition().subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), weight);
+    closeHand(space, arms.l, weight * 0.7);
   }
 }
 

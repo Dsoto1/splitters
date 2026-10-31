@@ -187,6 +187,10 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     pose,
     /** First person: how far (model m) each palm is from its point on the gun (0: on it). */
     miss: () => current?.anim.gripMiss ?? null,
+    /** The posed character's animator (tests: where its hands are drawn, gripCheck). */
+    anim: () => current?.anim ?? null,
+    /** Where the posed hands are drawn on the gun (model m from each hand's skin centre to its point; handProbe.ts). */
+    drawn: () => current?.anim.drawnGrip([...(rig?.drawnMeshes ?? []), ...(current?.anim.ch.meshes ?? [])]) ?? null,
     body,
     /**
      * Full-body first person (`pose(look, weapon, 'body')`): the view's pitch (radians, the game's: + looks up), and the

@@ -2883,8 +2883,131 @@ async function charactersFlow(browser) {
     }
   }
   check(bodyMisses.length === 0, `full-body first person: palms on the gun's grip and handguard (${bodyMisses.join('; ') || 'all within 2 cm'})`);
+  // The palm checks above measure the joints. Where the hands are DRAWN (each hand's skin through its skeleton,
+  // handProbe.ts): on the grip, the shooting hand's fingers along the barrel and its flat against the grip's side.
+  // A Meshy hand sits on its joint its own way: the dapper's palm faced the camera and its edge the grip in every
+  // view while the joint checks passed (owner, live 2026-10-31).
+  const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6;
+  const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, flat ${d.sideR.toFixed(2)}` : 'none');
+  const drawnMisses = [];
+  for (const look of ['core.dapper', 'core.biscuit', 'core.scout', 'core.galloway']) {
+    for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
+      for (const view of ['body', 'first', 'third']) {
+        await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);
+        const pitches = view === 'body' && weapon !== 'core.grapple' ? [0, 1.45, -1.45] : [0];
+        for (const pitch of pitches) {
+          if (view === 'body') await page.evaluate((p) => window.__grips.look(p), pitch);
+          const d = await page.evaluate(() => window.__grips.drawn());
+          if (badHand(d)) drawnMisses.push(`${look} ${weapon} ${view}${pitch ? ` pitch ${pitch}` : ''}: ${fmtHand(d)}`);
+        }
+      }
+    }
+  }
+  check(drawnMisses.length === 0, `hands are drawn on the grip, fingers along the gun, flat to its side (${drawnMisses.join('; ') || 'all'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await gripsInPlay(browser);
+}
+
+/**
+ * Grips in a real match, played as the owner plays (his report, live 2026-10-31: "the grips are not working at
+ * all"): full-body first person (the default) with the dapper on a normal map with a dozen bots, switching weapons
+ * by number keys and the wheel, a new gun handed over, death and respawn, third person and back, looking up and
+ * down; the bots' hands near and far; the grapple's rope from the launcher's muzzle; and a creature skin's gun.
+ */
+async function gripsInPlay(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const badHand = (d) => !d || d.r === null || d.r > 0.09 || d.aheadR < 0.6 || d.sideR < 0.6;
+  const fmt = (d) => (d ? `${d.mode ?? ''} ${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, flat ${d.sideR.toFixed(2)}` : 'no hands on a gun');
+  // Your own hands, measured once the switch has settled (a few tries: the gun comes up over a quarter second).
+  const own = async () => {
+    let d = null;
+    for (let i = 0; i < 12; i++) {
+      d = await page.evaluate(() => window.__cs.view.gripReport().local);
+      if (!badHand(d)) return d;
+      await sleep(250);
+    }
+    return d;
+  };
+  await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=12&look=core.dapper&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__cs.view.gripReport().local, null, { timeout: T(120000) });
+  await page.click('#resume').catch(() => {});
+  const misses = [];
+  const step = async (label, act) => {
+    await act();
+    await sleep(300);
+    const d = await own();
+    if (badHand(d)) misses.push(`${label} (${await page.evaluate(() => window.__cs.view.viewWeapon)}): ${fmt(d)}`);
+    return d;
+  };
+  await step('spawn', async () => {});
+  await page.evaluate(() => window.__give('core.rifle'));
+  await step('switch to the rifle (number key)', () => page.keyboard.press('Digit3'));
+  await step('back to the pistol (number key)', () => page.keyboard.press('Digit2'));
+  await step('mouse wheel', () => page.mouse.wheel(0, 120));
+  await step('wheel back', () => page.mouse.wheel(0, -120));
+  await step('rifle again', () => page.keyboard.press('Digit3'));
+  await step('looking up', () => page.evaluate(() => (window.__cs.input.pitch = 1.45)));
+  await step('looking down', () => page.evaluate(() => (window.__cs.input.pitch = -1.45)));
+  await page.evaluate(() => (window.__cs.input.pitch = 0));
+  await step('third person and back', async () => {
+    await page.keyboard.press('KeyH');
+    await sleep(800);
+    await page.keyboard.press('KeyH');
+  });
+  await step('respawn', async () => {
+    await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
+    await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
+    await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) });
+    await page.click('#resume').catch(() => {});
+  });
+  check(misses.length === 0, `in a match, your own hands are drawn on the gun through switches, looking up and down, third person and a respawn (${misses.join('; ') || 'all'})`);
+  const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
+  check(body === 'body', `the match draws your whole body in first person (${body})`);
+  // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns.
+  const bots = await page.evaluate(() => window.__cs.view.gripReport().remote.map((x) => ({ slot: x.slot, dist: Math.round(x.dist), r: x.r, aheadR: x.aheadR, sideR: x.sideR })));
+  const badBots = bots.filter((b) => b.r === null || b.r > 0.12);
+  check(bots.length > 0 && badBots.length <= Math.floor(bots.length / 4), `bots' hands are drawn on their guns near and far (${bots.length - badBots.length} of ${bots.length}; off: ${badBots.map((b) => `${b.slot} at ${b.dist} m: ${b.r === null ? '-' : (b.r * 100).toFixed(0)} cm`).join(', ') || 'none'})`);
+  // The grapple's rope leaves the launcher's muzzle (it used to start under the eye, out of your chest).
+  await page.evaluate(() => window.__give('core.grapple'));
+  for (let i = 0; i < 4 && (await page.evaluate(() => window.__cs.view.viewWeapon)) !== 'core.grapple'; i++) {
+    await page.keyboard.press('Digit1');
+    await sleep(600);
+  }
+  await sleep(500);
+  await sim(page, (m, me) => {
+    const p = me.move.pos;
+    const yaw = me.yaw ?? 0;
+    m.fireGrapple(me, { x: p.x, y: p.y + 1.6, z: p.z }, { x: Math.sin(yaw) * 0.5, y: -0.866, z: Math.cos(yaw) * 0.5 }, { id: 'core.grapple', range: 32 }, 17);
+  });
+  await page.waitForFunction(() => window.__cs.view.lastRope, null, { timeout: T(5000) }).catch(() => {});
+  const rope = await page.evaluate(() => window.__cs.view.lastRope);
+  check(!!rope?.muzzle, `the grapple's rope starts at the launcher's muzzle (${JSON.stringify(rope)})`);
+  check(errors.length === 0, `no page errors in play (${errors.join('; ')})`);
+  await page.context().close();
+
+  // A creature skin (the Imp) in third person: the gun forward along the aim at chest height, both hands on it.
+  const imp = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  await imp.goto(`${CLIENT}/?offline=training_range&test=1&god=1&look=npc:imp`);
+  await imp.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
+  await imp.click('#resume').catch(() => {});
+  await imp.keyboard.press('KeyH');
+  const held = [];
+  for (const w of ['core.pistol', 'core.rifle']) {
+    await imp.evaluate((id) => window.__give(id), w);
+    let r = null;
+    for (let i = 0; i < 20; i++) {
+      await sleep(300);
+      r = await imp.evaluate((s) => window.__cs.view.gripReport().creatures.find((c) => c.slot === s)?.report ?? null, await imp.evaluate(() => window.__cs.slot));
+      if (r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12) break;
+    }
+    held.push({ w, ok: !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) } });
+  }
+  check(held.every((h) => h.ok), `an Imp player holds the gun forward at the chest with a hand on its grip (${JSON.stringify(held)})`);
+  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` });
+  await imp.context().close();
 }
 
 async function onlineFlow(browser) {

@@ -2,9 +2,12 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { Observer } from '@babylonjs/core/Misc/observable';
 import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import type { WeaponHold } from '@tiletrigger/shared';
 import type { CreatureInstance } from '../content/creatures.ts';
-import type { MotionState, OneShot } from './characterAnimator.ts';
+import { gripReport } from './handProbe.ts';
+import { SkeletonSpace, armsFrom, holdWith, type HoldingArms, type MotionState, type OneShot } from './characterAnimator.ts';
 
 /** Natural ground speed (m/s) of the rig's walk and run for a body with hips 0.92 m up. */
 const RIG_WALK = 1.6;
@@ -51,6 +54,13 @@ export class CreatureAnimator {
 
   /** A player wearing this creature: its club is put away and it carries the player's gun. */
   private weapon: TransformNode | null = null;
+  private grip: WeaponHold | null = null;
+  /** Its arms for holding a gun (humanoids with our rig's arm joints), and their skeleton's root joint. */
+  private readonly arms: HoldingArms | null;
+  private readonly skelRoot: TransformNode | undefined;
+  /** Aim pitch (radians, + up) and how far the hands are on the gun (0 while an attack swings). */
+  private pitch = 0;
+  private ik = 1;
 
   constructor(
     private readonly scene: Scene,
@@ -61,39 +71,103 @@ export class CreatureAnimator {
     this.alien = ch.spec.body === 'alien' || !ch.clips.has('walk');
     this.baseY = ch.body.position.y;
     this.hipScale = ch.hipHeight / RIG_HIPS;
+    this.arms = armed && !this.alien ? armsFrom(ch.joints, ch.meshes) : null;
+    this.skelRoot = ch.joints.get('root');
     this.play('idle', 1);
-    this.observer = scene.onBeforeRenderObservable.add(() => this.animateBody());
+    // After the clips, before anything draws: a shadow pass drawing the skin before the hands were put on the gun
+    // (onBeforeRender) showed them where the clip had them.
+    this.observer = scene.onAfterAnimationsObservable.add(() => this.animateBody());
   }
 
   /** NPC creatures hold no weapon (whatever they're handed is dropped); a player's creature carries its gun. */
-  hold(weapon: TransformNode | null): void {
+  hold(weapon: TransformNode | null, grip: WeaponHold | null = null): void {
     this.weapon?.dispose();
     this.weapon = null;
+    this.grip = null;
     if (!weapon) return;
     if (!this.armed) return weapon.dispose();
     this.weapon = weapon;
-    weapon.parent = this.ch.root;
-    weapon.rotationQuaternion = null;
-    // Gun models point down -Z; creatures face +Z.
-    weapon.rotation.set(0, Math.PI, 0);
+    this.grip = grip;
+    // Held at its own size, beside the body (not under the creature's scaled model).
+    weapon.parent = this.ch.root.parent ?? null;
+    weapon.rotationQuaternion = Quaternion.Identity();
+    weapon.scaling.setAll(1);
     this.placeWeapon();
   }
 
-  /** In the right hand when there is one; aliens (no hands) carry it floating at the chest. */
+  /**
+   * A humanoid holds a gun as a player does: pointed along the aim from in front of the right shoulder (a long
+   * gun's butt in the shoulder pocket, a pistol out in front of the chest), and the hands closed on its grip and
+   * support by the arm IK. (It used to hang in the clip's right hand, barrel back and at the hip.) Aliens, with
+   * no hands, carry it floating at the chest.
+   */
   private placeWeapon(): void {
     const w = this.weapon;
     if (!w) return;
-    const hand = this.ch.joints.get('hand_r');
-    if (hand && !this.alien) {
-      this.ch.root.computeWorldMatrix(true);
-      const inv = Matrix.Invert(this.ch.root.getWorldMatrix());
-      w.position.copyFrom(Vector3.TransformCoordinates(hand.getAbsolutePosition(), inv));
-    } else w.position.set(-0.28, 1.05, 0.45);
+    const root = this.ch.root;
+    root.computeWorldMatrix(true);
+    const rm = root.getWorldMatrix();
+    const fwd = Vector3.TransformNormal(new Vector3(0, 0, 1), rm);
+    fwd.y = 0;
+    if (fwd.lengthSquared() < 1e-8) fwd.set(0, 0, 1);
+    fwd.normalize();
+    const right = new Vector3(fwd.z, 0, -fwd.x);
+    const aim = Quaternion.RotationYawPitchRoll(Math.atan2(fwd.x, fwd.z), -this.pitch, 0);
+    const ahead = new Vector3(0, 0, 1).applyRotationQuaternion(aim);
+    let pos: Vector3;
+    const arms = this.arms;
+    if (arms && this.grip && !this.dead) {
+      for (const n of [arms.r.upper, arms.r.lower, arms.r.hand]) n.computeWorldMatrix(true);
+      const s = arms.r.upper.getAbsolutePosition().clone();
+      const reach = Vector3.Distance(s, arms.r.lower.getAbsolutePosition()) + Vector3.Distance(arms.r.lower.getAbsolutePosition(), arms.r.hand.getAbsolutePosition());
+      const g = this.grip;
+      const at = (p: readonly number[]) => new Vector3(p[0], p[1], p[2]).applyRotationQuaternion(aim);
+      if (g.style === 'long' && g.shoulder) {
+        // The butt against the chest under the shoulder (a creature's big head sits over its shoulders: a cheek weld put the gun through it).
+        const pocket = s.add(right.scale(0.04)).add(ahead.scale(0.12)).add(new Vector3(0, -0.2, 0));
+        pos = pocket.subtract(at(g.shoulder));
+      } else {
+        // A pistol out in front of the chest, its grip about three quarters of the arm's reach along the aim.
+        const gripAt = s.subtract(right.scale(0.12)).add(ahead.scale(reach * 0.72)).add(new Vector3(0, -0.06, 0));
+        pos = gripAt.subtract(at(g.grip));
+      }
+    } else if (!this.alien) {
+      const hand = this.ch.joints.get('hand_r');
+      pos = hand ? hand.getAbsolutePosition().clone() : Vector3.TransformCoordinates(new Vector3(0.28, 1.05, 0.45), rm);
+    } else pos = Vector3.TransformCoordinates(new Vector3(-0.28, 1.05, 0.45), rm);
+    // Into its parent's space.
+    const parent = w.parent as TransformNode | null;
+    if (parent) {
+      parent.computeWorldMatrix(true);
+      const pm = parent.getWorldMatrix();
+      w.position.copyFrom(Vector3.TransformCoordinates(pos, Matrix.Invert(pm)));
+      w.rotationQuaternion = Quaternion.Inverse(Quaternion.FromRotationMatrix(pm.getRotationMatrix())).multiply(aim);
+    } else {
+      w.position.copyFrom(pos);
+      w.rotationQuaternion = aim;
+    }
+    w.computeWorldMatrix(true);
+    if (arms && this.grip && this.skelRoot && !this.dead) holdWith(new SkeletonSpace(this.skelRoot), arms, w, this.grip, 1, this.ik);
   }
 
   /** Creatures are never ragdolled (their skeletons aren't ours); they play their death instead. */
   get skeletonRoot(): undefined {
     return undefined;
+  }
+
+  /**
+   * Where the hands are drawn on the held gun (tests; handProbe.ts), and how the gun points: `facing` 1 when its
+   * barrel runs the way the body faces (it was -1: carried backwards), `height` of its grip over the feet (m).
+   */
+  drawnGrip(meshes: readonly AbstractMesh[] = this.ch.meshes): (ReturnType<typeof gripReport> & { facing: number; height: number }) | null {
+    const w = this.weapon;
+    if (!w || !this.grip || !this.arms || this.dead || w.isDisposed()) return null;
+    w.computeWorldMatrix(true);
+    this.ch.root.computeWorldMatrix(true);
+    const barrel = Vector3.TransformNormal(new Vector3(0, 0, 1), w.getWorldMatrix()).normalize();
+    const facing = Vector3.TransformNormal(new Vector3(0, 0, 1), this.ch.root.getWorldMatrix()).normalize();
+    const grip = Vector3.TransformCoordinates(new Vector3(...this.grip.grip), w.getWorldMatrix());
+    return { ...gripReport(meshes, this.arms, w, this.grip, 1), facing: Vector3.Dot(barrel, facing), height: grip.y - this.ch.root.getAbsolutePosition().y };
   }
 
   get isDead(): boolean {
@@ -106,6 +180,10 @@ export class CreatureAnimator {
       return;
     }
     if (this.dead) this.revive();
+    this.pitch = s.pitch;
+    // The hands come off the gun while an attack swings and go back after (a flinch keeps them on).
+    const ikTarget = this.overlay?.clip === this.ch.clips.get('attack') && this.overlay ? 0 : 1;
+    this.ik += Math.sign(ikTarget - this.ik) * Math.min(Math.abs(ikTarget - this.ik), dt * 6);
     const gait = this.ch.spec.gait;
     const runFrom = gait ? gait.runFrom : 3 * this.hipScale;
     const want: Loop = s.speed < (gait ? 0.15 : 0.5) ? 'idle' : this.alien || s.speed < runFrom ? (this.alien ? 'idle' : 'walk') : 'run';
@@ -146,6 +224,8 @@ export class CreatureAnimator {
       return;
     }
     if (action === 'reload' || action === 'interact') return;
+    // A player's creature fires its gun, not its claws (only a melee swing plays the attack).
+    if (this.arms && action === 'shoot') return;
     if (!this.playOverlay('attack', 1.3)) this.lunge = { start: performance.now(), length: LUNGE_TIME * 1000, reach: 0.5 };
   }
 
@@ -200,7 +280,6 @@ export class CreatureAnimator {
 
   /** Procedural body motion (every frame, also while lying dead). */
   private animateBody(): void {
-    this.placeWeapon();
     const body = this.ch.body;
     const now = performance.now();
     let tilt = this.lean;
@@ -234,10 +313,12 @@ export class CreatureAnimator {
     body.rotation.z = roll;
     body.position.z = push;
     body.position.y = y;
+    // The gun and the hands on it, with the body where it is this frame.
+    this.placeWeapon();
   }
 
   dispose(): void {
-    this.scene.onBeforeRenderObservable.remove(this.observer);
+    this.scene.onAfterAnimationsObservable.remove(this.observer);
     this.weapon?.dispose();
     this.ch.dispose();
   }

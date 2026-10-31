@@ -95,7 +95,7 @@ import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { loadFirstPersonMode, type FirstPersonMode } from './graphicsSettings.ts';
-import { CreatureLibrary, type AvatarSpec } from '../content/creatures.ts';
+import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
 
@@ -1422,6 +1422,42 @@ export class GameView {
     this.avatars.get(slot)?.anim?.trigger(action);
   }
 
+  /**
+   * Where hands are DRAWN on guns now (tests; handProbe.ts): your own in first person (full body or arms), and
+   * every character in view holding a gun, nearest first, with its distance. For each: model metres from each
+   * hand's skin to its point on the gun, and how its shooting hand lies on the grip (`aheadR`, `sideR`).
+   */
+  gripReport(): { local: ({ mode: 'body' | 'arms' } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>) | null; remote: ({ slot: number; dist: number } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>)[]; creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] } {
+    const am = this.scene.getActiveMeshes();
+    const active = new Set(am.data.slice(0, am.length));
+    let local: ReturnType<GameView['gripReport']>['local'] = null;
+    if (this.fpBody?.a.anim instanceof CharacterAnimator) {
+      const g = this.fpBody.a.anim.drawnGrip([...this.fpBody.rig.drawnMeshes, ...this.fpBody.a.anim.ch.meshes]);
+      if (g) local = { mode: 'body', ...g };
+    } else if (this.fpArms?.anim && this.fpArms.root.isEnabled()) {
+      const g = this.fpArms.anim.drawnGrip();
+      if (g) local = { mode: 'arms', ...g };
+    }
+    const cam = this.scene.activeCamera?.globalPosition ?? Vector3.Zero();
+    const remote: ReturnType<GameView['gripReport']>['remote'] = [];
+    for (const [slot, a] of this.avatars) {
+      if (a.hiddenSelf || a.culled || !a.root.isEnabled() || !(a.anim instanceof CharacterAnimator)) continue;
+      // The mesh drawn this frame (near detail, or the low-detail copy far off): the other's skin isn't updated.
+      const drawn = a.anim.ch.meshes.flatMap((m) => [m, ...((m as Mesh).getLODLevels?.() ?? []).map((l) => l.mesh)]).filter((m): m is AbstractMesh => !!m && active.has(m));
+      const g = drawn.length ? a.anim.drawnGrip(drawn) : null;
+      if (g) remote.push({ slot, dist: Math.hypot(a.root.position.x - cam.x, a.root.position.z - cam.z), ...g });
+    }
+    remote.sort((x, y) => x.dist - y.dist);
+    // Players in creature skins (third person, others): the same, and which way the gun points.
+    const creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] = [];
+    for (const [slot, a] of this.avatars) {
+      if (a.hiddenSelf || !(a.anim instanceof CreatureAnimator) || !a.root.isEnabled()) continue;
+      const drawn = a.anim.ch.meshes.filter((m) => active.has(m));
+      creatures.push({ slot, report: drawn.length ? a.anim.drawnGrip(drawn) : null });
+    }
+    return { local, remote, creatures };
+  }
+
   /** Whether your own first-person arms (or full body) have loaded and hold the gun (for tests). */
   hasFirstPersonArms(): boolean {
     return !!this.fpArms?.anim || !!this.fpBody;
@@ -1577,10 +1613,9 @@ export class GameView {
         ch.root.parent = root;
         if (spec.size && spec.size !== 1) ch.root.scaling.setAll(spec.size);
         if (spec.armed) {
-          // A player in a creature skin is drawn no bigger than the player's own hitbox (big aliens shrink to fit).
-          const { min, max } = ch.root.getHierarchyBoundingVectors(true);
-          const tall = max.y - min.y;
-          if (tall > PLAYER.height * 1.1) ch.root.scaling.scaleInPlace((PLAYER.height * 1.1) / tall);
+          // A player in a creature skin is drawn at about a player's height (looks only: the hitbox is the player's;
+          // an imp was half a player and held its gun at your knees).
+          fitPlayerSkin(ch, PLAYER.height);
         }
         a.anim = new CreatureAnimator(this.scene, ch, !!spec.armed);
         placeholder.setEnabled(false);
@@ -2324,6 +2359,47 @@ export class GameView {
       ttl: ttlMs,
       update: (f) => {
         mesh.scaling.x = mesh.scaling.z = 1 - f * 0.8;
+      },
+    });
+  }
+
+  /** Where the last rope (a grapple's) started when it was first drawn, world, and whether that was a gun's muzzle (tests). */
+  lastRope: { from: Vec3; muzzle: boolean } | null = null;
+
+  /**
+   * A grapple's rope from a gun's muzzle to the hook, kept on the muzzle as it moves (you're pulled in along it).
+   * `from` gives the muzzle each frame (null while no gun is drawn: then `fallback`, where the shot left).
+   */
+  addRope(from: () => Vec3 | null, fallback: Vec3, to: Vec3, color: string, width: number, ttlMs: number): void {
+    const mesh = CreateCylinder('rope', { diameter: width, height: 1, tessellation: 6 }, this.scene);
+    const mat = new StandardMaterial('ropeMat', this.scene);
+    mat.emissiveColor = Color3.FromHexString(color);
+    mat.diffuseColor = Color3.Black();
+    mat.disableLighting = true;
+    mesh.material = mat;
+    mesh.isPickable = false;
+    mesh.rotationQuaternion = Quaternion.Identity();
+    const b = new Vector3(to.x, to.y, to.z);
+    let last = fallback;
+    const place = () => {
+      last = from() ?? last;
+      const a = new Vector3(last.x, last.y, last.z);
+      const d = b.subtract(a);
+      const len = Math.max(0.01, d.length());
+      mesh.position.copyFrom(a.add(b).scale(0.5));
+      mesh.scaling.y = len;
+      Quaternion.FromUnitVectorsToRef(Vector3.Up(), d.scale(1 / len), mesh.rotationQuaternion!);
+    };
+    const muzzle = from();
+    place();
+    this.lastRope = { from: { ...last }, muzzle: !!muzzle };
+    this.effects.push({
+      mesh,
+      born: performance.now(),
+      ttl: ttlMs,
+      update: (f) => {
+        place();
+        mesh.scaling.x = mesh.scaling.z = 1 - f * 0.6;
       },
     });
   }
