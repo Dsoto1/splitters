@@ -289,12 +289,8 @@ function cliff(): Box[] {
   ];
 }
 
-/** The frozen lake's ice sheet over `rect`s, with snow dusting and cracks. */
-const iceSheet = (rects: readonly (readonly [number, number, number, number])[]): Box[] => [
-  ...rects.map(([x0, z0, x1, z1]) => paint(b(x0, -0.2, z0, x1, 0.02, z1), ICE)),
-  trim(-3.0, 0.02, 1.4, -0.4, 0.03, 2.4, DRIFT),
-  trim(1.2, 0.02, -3.2, 3.4, 0.03, -2.6, DRIFT),
-];
+/** The frozen lake's ice sheet over `rect`s (its cracks and bubbles are in the Lake Ice paint). */
+const iceSheet = (rects: readonly (readonly [number, number, number, number])[]): Box[] => rects.map(([x0, z0, x1, z1]) => paint(b(x0, -0.2, z0, x1, 0.02, z1), ICE));
 
 // ---------------------------------------------------------------- the tiles
 
@@ -343,7 +339,7 @@ export function snowPackTiles(): TileDefinition[] {
     T('ice_wall', 'Open', 'Ice Wall', 'Jagged blue ice blocks 4–6 m high along the south edge, a few chunks fallen in front (cover): a boundary or a wall to fight along', footprint(1, 1, 2), iceWall()),
     T('ice_cliff', 'Open', 'Frozen Cliff', 'Frozen rock filling the cell up to a snow top 4 m high, a craggy south face hung with icicles: ridges and plateaus (climb them by a Snow Drift)', footprint(1, 1, 2), cliff(), [...ALL, ...at(1, 'N', 'E', 'S', 'W')]),
     T('drift_ramp', 'Open', 'Snow Drift', 'A drift of snow rising from the ground on the south edge to 4 m on the north (27°, walkable, vehicles too): up onto a Frozen Cliff or a roof', footprint(1, 1, 2), [...rampUp(4), trim(-4, 0, -3.8, -3.6, 1.0, 3.6, DRIFT), trim(3.6, 0, -3.8, 4, 1.0, 3.6, DRIFT)], [...ALL, ...at(1, 'N')]),
-    T('frozen_lake', 'Open', 'Frozen Lake', 'Thick lake ice with snow dusting: lay a sheet of them for a wide open crossing (no cover)', [[0, 0, 0]], iceSheet([[-4, -4, 4, 4]])),
+    T('frozen_lake', 'Open', 'Frozen Lake', 'Thick lake ice, cracked and clouded: lay a sheet of them for a wide open crossing (no cover)', [[0, 0, 0]], iceSheet([[-4, -4, 4, 4]])),
     T('ice_ridge', 'Open', 'Pressure Ridge', 'Frozen lake with a pressure ridge across it: ice slabs heaved up 1–1.6 m (cover on the open ice)', [[0, 0, 0]], [
       ...iceSheet([[-4, -4, 4, 4]]),
       ...[[-2.7, 0.35, 1.2], [-0.9, -0.3, 1.6], [0.9, 0.4, 1.0], [2.7, -0.25, 1.4]].map(([x, roll, h]) => ({ ...paint(b(x! - 0.9, 0, -0.3, x! + 0.9, h!, 0.3), GLACIER), roll: roll!, yaw: roll! * 0.6 })),

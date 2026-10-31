@@ -153,7 +153,7 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   // Style Pack 12 Snow Outpost: our own procedural paint (prefab panels repeat every 4 m storey).
   m('packed_snow', 'Packed Snow', 'Ground', 'snow', '#e4eaf0', '#bccad8', 4, 0.15),
   m('drift_snow', 'Snow Drift', 'Ground', 'snow', '#f4f7fa', '#d0dce8', 3, 0.2),
-  m('lake_ice', 'Lake Ice', 'Ground', 'ice', '#4f8eaa', '#e6f4fc', 5, 0.85),
+  m('lake_ice', 'Lake Ice', 'Ground', 'ice', '#7aa4b6', '#eef6fa', 6, 0.85),
   m('glacier_ice', 'Glacier Ice', 'Stone', 'ice', '#9cd2e8', '#f2fbff', 3, 0.7),
   m('prefab_red', 'Red Prefab Panels', 'Metal', 'prefab', '#b4402e', '#e8e4dc', 4, 0.35),
   m('prefab_white', 'White Prefab Panels', 'Metal', 'prefab', '#e2e6e8', '#8e989e', 4, 0.35),
