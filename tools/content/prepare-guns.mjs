@@ -39,7 +39,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { clearNodeTransform, dedup, flatten, prune, quantize, weld } from '@gltf-transform/functions';
 import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
-import { meshyDocument, paintOut } from './meshy-mesh.mjs';
+import { meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const manifest = JSON.parse(readFileSync(join(ROOT, 'content/guns.json'), 'utf8'));
@@ -161,7 +161,10 @@ async function build(src, entry, pack) {
     const base = mat.getBaseColorTexture();
     if (base) await shrink(base, entry.textureSize ?? 512, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
     const normal = mat.getNormalTexture();
-    if (normal) await shrink(normal, 256, 'image/jpeg');
+    // A Meshy model's normal map is baked from the full download (meshy-mesh.mjs): `normalSize` px (default 512, a
+    // first-person gun is seen from a hand's length away); a pack's own is shrunk to 256 px.
+    if (normal && pack.meshy) normal.setImage(await normalJpeg(normal.getImage(), entry.normalSize ?? 512)).setMimeType('image/jpeg').setURI('');
+    else if (normal) await shrink(normal, 256, 'image/jpeg');
   }
   doc.getRoot().getAsset().generator = 'tiletrigger content build';
   await doc.transform(weld(), dedup(), prune(), ...(meshy ? [quantize()] : []));
