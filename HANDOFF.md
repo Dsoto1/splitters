@@ -227,9 +227,12 @@ Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, ta
 - **Navmesh lesson:** a switchback stair inside four walls drops off Recast's navmesh (watershed regions); open sides
   (watchtower / skeleton lighthouse) keep it. Ramps are 32 low steps under a drawn slope (tilted slabs lost the
   top joint in some rotations).
-- **Next:** check the Tide warehouse roof route (outside stair at (6,5)), `pnpm content:build` / palette atlas
-  (needs `vite preview` + build-palette-atlas, see Medieval notes), e2e editor/maps, screenshots, docs
-  (BUILDING_KIT "11 Coastal Harbor", `docs/map-briefs/saltmarsh_harbor/`, CHANGELOG), push `check/harbor`.
+- **Also done:** palette atlas (`harbor` group) + `content:build` (content OK), map card, docs (BUILDING_KIT
+  "11 Coastal Harbor", CHANGELOG, `docs/map-briefs/saltmarsh_harbor/` with screenshots). The Tide warehouse roof
+  has no stair (one against the east boundary lost its flight on the navmesh).
+- **Next:** e2e flows from `pnpm ci:plan`, push `check/harbor`, poll CI, fix forward. Then merge to the session
+  branch (rebuild palette atlas/provenance if another pack landed first). Candidates: a real boat mount (motor
+  launch), Meshy hero for `hb_fishing_boat`.
 
 ### Style Pack 10 Medieval Village (`wip/medieval-pack`, agent, 2026-10-31; not merged)
 - **Built** (from the owner's tileset sheet 01): 16 tiles in `packages/shared/src/map/packTilesMedieval.ts` (2 × 1 Timber,
