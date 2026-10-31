@@ -333,6 +333,8 @@ Owner sheets TILESET 04 Jungle Ruins + TILESET 07 Ancient Temple, combined into 
   as "Work split" says: props.json/lock = main's + jungle entries, prepare-props (prop GLBs byte-identical, only
   jt_* added), palette atlases (tiles 247, ancient 96), content:build → provenance, content:check OK. Map card
   recaptured with capture-map-shots.mjs (in-match render works). `metadata.release` stripped from the map.
+  Then main again at ac8269f (Character Select groups): no conflicts; typecheck and content:check OK (the
+  checks below were run before this second merge).
 - **Docs done:** BUILDING_KIT "06 Jungle Ruins refresh (Ancient Temple folded in)" + the 06 table row (and the
   Style Packs intro, which main's merges had left with three copies of one sentence); CHANGELOG Unreleased (pack
   under MapMaker, map under Maps); `docs/map-briefs/vinefall_sanctum/` manifest, decisions, QA; README row.
