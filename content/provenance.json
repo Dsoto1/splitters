@@ -25601,6 +25601,276 @@
       ]
     },
     {
+      "file": "props/hb_bollard.glb",
+      "sha256": "66ada9b74a5b71c4",
+      "triangles": 300,
+      "bytes": 12832,
+      "source": "tiletrigger-harbor/hb_bollard.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_capstan.glb",
+      "sha256": "37661aac41046292",
+      "triangles": 328,
+      "bytes": 15200,
+      "source": "tiletrigger-harbor/hb_capstan.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_lobster_pots.glb",
+      "sha256": "9c4f90bbd337c286",
+      "triangles": 1360,
+      "bytes": 58152,
+      "source": "tiletrigger-harbor/hb_lobster_pots.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_buoy.glb",
+      "sha256": "1e9735b4ac7d0fd5",
+      "triangles": 320,
+      "bytes": 10784,
+      "source": "tiletrigger-harbor/hb_buoy.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_marker_buoy.glb",
+      "sha256": "80e3ffa21362a47a",
+      "triangles": 212,
+      "bytes": 10324,
+      "source": "tiletrigger-harbor/hb_marker_buoy.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_net_rack.glb",
+      "sha256": "3024632896f0fd13",
+      "triangles": 204,
+      "bytes": 13800,
+      "source": "tiletrigger-harbor/hb_net_rack.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_fish_stall.glb",
+      "sha256": "49f08f06d175ee71",
+      "triangles": 444,
+      "bytes": 27768,
+      "source": "tiletrigger-harbor/hb_fish_stall.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_fish_crates.glb",
+      "sha256": "5d3f5e4100c7b57d",
+      "triangles": 336,
+      "bytes": 21692,
+      "source": "tiletrigger-harbor/hb_fish_crates.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_fishing_boat.glb",
+      "sha256": "a63df2e22f7a458d",
+      "triangles": 920,
+      "bytes": 42704,
+      "source": "tiletrigger-harbor/hb_fishing_boat.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_anchor.glb",
+      "sha256": "814049b2d660e6e2",
+      "triangles": 152,
+      "bytes": 8336,
+      "source": "tiletrigger-harbor/hb_anchor.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_rope_coil.glb",
+      "sha256": "e568a94339c8a1b2",
+      "triangles": 784,
+      "bytes": 31032,
+      "source": "tiletrigger-harbor/hb_rope_coil.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_lamp_post.glb",
+      "sha256": "e9aff23061f36709",
+      "triangles": 156,
+      "bytes": 7396,
+      "source": "tiletrigger-harbor/hb_lamp_post.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_life_ring.glb",
+      "sha256": "4559d258f42e11e6",
+      "triangles": 120,
+      "bytes": 8460,
+      "source": "tiletrigger-harbor/hb_life_ring.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_net_pile.glb",
+      "sha256": "0288c8fa35946e15",
+      "triangles": 668,
+      "bytes": 19892,
+      "source": "tiletrigger-harbor/hb_net_pile.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_gull.glb",
+      "sha256": "16d67a1a44865a56",
+      "triangles": 192,
+      "bytes": 8536,
+      "source": "tiletrigger-harbor/hb_gull.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_tide_board.glb",
+      "sha256": "3ba49b05d9f24f2f",
+      "triangles": 216,
+      "bytes": 14400,
+      "source": "tiletrigger-harbor/hb_tide_board.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_dolphin.glb",
+      "sha256": "41e121618a24777c",
+      "triangles": 420,
+      "bytes": 17688,
+      "source": "tiletrigger-harbor/hb_dolphin.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/hb_fenders.glb",
+      "sha256": "26c07a6e04ba3084",
+      "triangles": 336,
+      "bytes": 17064,
+      "source": "tiletrigger-harbor/hb_fenders.glb",
+      "title": "Style Pack pieces (Coastal Harbor)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-harbor.mjs)",
+      "url": "tools/content/prepare-harbor.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
       "file": "skies/clear.jpg",
       "sha256": "4ba9d3b02f1b3acf",
       "bytes": 37359,
