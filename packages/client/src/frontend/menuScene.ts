@@ -29,7 +29,7 @@ const HERO_YAW = 0.45;
  * the rifle points, and a hold seen down the barrel reads as a gun at the face with the arms crossed under it
  * (every character, the rig's own Farmhand too). Turned, the gun runs across the screen and the grip shows.
  */
-const HERO_YAW_SELECT = 1.15;
+const HERO_YAW_SELECT = 0.85;
 
 /**
  * The live backdrop behind the main menu: your own character, rifle in hand,
