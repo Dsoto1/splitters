@@ -86,6 +86,25 @@ lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster h
 square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
 Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
 
+### St. John's smooth ground (`wip/st-johns-smooth`, agent, 2026-10-31; merged to the session branch)
+- Owner: "the terrain is slightly jagged". Cause: the 3DEP 1 m grid was point-sampled to 2.5 m (aliasing lidar's small
+  bumps), and the ground round the levelled hall pads kept that grain.
+- MapMaker, for every map: the height-grid import now area-averages when it thins a grid (`gridAreaHeightAt`) and has a
+  **Smoothing** amount (Gaussian over the file; Medium 2 m by default). Terrain pane: **Smooth all** (Light/Medium/
+  Strong = 1.5/2.5/4 m) with "Keep the ground under blocks" (vertices under blocks standing on the ground + 1.5 m
+  stay put); spawns, pickups, flags, hills, vehicles and props on the ground ride with it, one undo step.
+  Shared code: `smoothGrid`, `smoothTerrain`, `terrainHoldMask` in `packages/shared/src/map/terrain.ts`.
+- St. John's: Smooth all (Medium, keeping the ground under blocks) and Settle all props, through MapMaker's own
+  buttons (Playwright driving the page; no script in the repo), then Export. Halls' pads and laid paths unchanged
+  (paths are laid at load time).
+- Result: 13,745 of 19,481 heights moved (median 2 cm, 99th pct ~0.5 m, max ~1.1 m); 3,085 vertices under 727 blocks
+  held; 313 things carried with the ground, 115 props re-settled. validate-map (incl. navigation: every spawn and
+  pickup reachable) 0 issues. Checks: typecheck, test:changed (all pass; one unrelated failure in an earlier run did not
+  recur), content:check, build, e2e editor + editorux + maps (E2E_MAPS=st_johns) pass.
+- Left as is: the rims where the halls' levelled pads meet the ground (held on purpose), a pit by the rectory on the
+  bluff (real 3DEP). Smooth all's Medium was chosen over Strong, which softens the bluff's crest.
+- Merge through a `check/` branch (the change touches shared code, so CI runs the full suite).
+
 ### Where things stand (2026-10-30 evening)
 - **Iron Maw on `wip/iron-maw`, not merged** (agent, 2026-10-30 night): `maps/iron_maw.json`, the open-pit
   mine of BUILD_06 (480 m terrain at 3 m spacing, 408 m play area, 48 v 48): six bench levels, a clockwise

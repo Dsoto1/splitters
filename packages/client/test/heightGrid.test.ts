@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_TERRAIN_VERTS, Terrain, newTerrain, terrainHeightAt, type TerrainData } from '@tiletrigger/shared';
-import { gridHeightAt, parseAsciiGrid, terrainFromHeightGrid, type HeightGrid } from '../src/editor/heightGrid.ts';
+import { gridAreaHeightAt, gridHeightAt, parseAsciiGrid, terrainFromHeightGrid, type HeightGrid } from '../src/editor/heightGrid.ts';
 
 const TerrainSchemaCheck = (t: TerrainData) => Terrain.safeParse(t).success;
 const asc = (rows: number[][], header = 'xllcorner -2\nyllcorner -1\ncellsize 2\nNODATA_value -9999') => `ncols ${rows[0]!.length}\nnrows ${rows.length}\n${header}\n${rows.map((r) => r.join(' ')).join('\n')}\n`;
@@ -73,5 +73,44 @@ describe('terrainFromHeightGrid', () => {
     const { terrain } = terrainFromHeightGrid(g, { datum: 5 });
     expect(terrain.heights.every((h) => Number.isFinite(h))).toBe(true);
     expect(terrain.heights.every((h) => h === 0)).toBe(true);
+  });
+
+  it('averages the file round each vertex when it thins a grid, instead of picking one height', () => {
+    // A level field at 100 m with a 1 m bump on every 5th height (lidar's kerbs and hedges): sampled every 2.5 m a
+    // point sample lands on bumps in a pattern; the average sees them as the 20 cm they are over the area.
+    const n = 401;
+    const rows = Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => (c % 5 === 0 && r % 5 === 0 ? 101 : 100)));
+    const g = parseAsciiGrid(asc(rows, 'xllcenter -200\nyllcenter -200\ncellsize 1')) as HeightGrid;
+    const { terrain } = terrainFromHeightGrid(g, { datum: 100 });
+    expect(terrain.spacing).toBe(2.5);
+    const inner = terrain.heights.filter((_, i) => i % terrain.cols > 2 && i % terrain.cols < terrain.cols - 3);
+    const spread = Math.max(...inner) - Math.min(...inner);
+    expect(spread).toBeLessThan(30); // cm: the point sample would be 100
+    expect(gridAreaHeightAt(g, 0, 0, 2.5)).toBeGreaterThan(100);
+    expect(gridAreaHeightAt(g, 0, 0, 2.5)).toBeLessThan(100.3);
+    // A slope is kept: the average of a ramp is the ramp.
+    const ramp = parseAsciiGrid(asc(Array.from({ length: n }, () => Array.from({ length: n }, (_, c) => c / 10)), 'xllcenter -200\nyllcenter -200\ncellsize 1')) as HeightGrid;
+    expect(gridAreaHeightAt(ramp, 10, 0, 2.5)).toBeCloseTo(21, 5);
+  });
+
+  it('smooths the file before thinning when asked, and keeps a bank', () => {
+    // A 6 m bank (from 100 to 106 m over 20 m) with noise of ±0.5 m on it.
+    const n = 121;
+    let k = 7;
+    const noise = () => ((k = (k * 1103515245 + 12345) % 2147483648) / 2147483648 - 0.5);
+    const rows = Array.from({ length: n }, () => Array.from({ length: n }, (_, c) => 100 + Math.max(0, Math.min(6, (c - 50) * 0.3)) + noise()));
+    const g = parseAsciiGrid(asc(rows, 'xllcenter -60\nyllcenter -60\ncellsize 1')) as HeightGrid;
+    const raw = terrainFromHeightGrid(g, { datum: 100 }).terrain;
+    const smooth = terrainFromHeightGrid(g, { datum: 100, smoothing: 2 }).terrain;
+    const bump = (t: TerrainData) => {
+      let worst = 0;
+      for (let r = 5; r < t.rows - 5; r++) for (let c = 5; c < 40; c++) worst = Math.max(worst, Math.abs(t.heights[r * t.cols + c]! - t.heights[r * t.cols + c + 1]!));
+      return worst;
+    };
+    expect(bump(smooth)).toBeLessThan(bump(raw) / 2);
+    // The bank keeps its height: low on the west, 6 m up on the east.
+    expect(terrainHeightAt(smooth, -40, 0)! + 0.15).toBeCloseTo(0, 0);
+    expect(terrainHeightAt(smooth, 40, 0)! + 0.15).toBeCloseTo(6, 0);
+    expect(TerrainSchemaCheck(smooth)).toBe(true);
   });
 });
