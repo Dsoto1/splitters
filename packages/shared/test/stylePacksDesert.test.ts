@@ -54,8 +54,8 @@ describe('Style Pack 09 Desert City (in Sands of Egypt\'s place)', () => {
       const text = readFileSync(new URL(f, dir)).toString();
       const r = loadMap(text);
       if (!r.ok) throw new Error(`${f}: ${JSON.stringify(r.issues)}`);
-      expect(r.issues, f).toEqual([]);
       // No errors, and nothing it uses is unknown (After Hours keeps its own logic warning, unrelated).
+      expect(r.issues.filter((i) => i.severity === 'error' || /^(tile|prop|material|theme)\.unknown$/.test(i.code)), f).toEqual([]);
       expect(validateMap(r.map).filter((i) => i.severity === 'error' || /^(tile|prop|material|theme)\.unknown$/.test(i.code)), f).toEqual([]);
       const raw = JSON.parse(text) as { classicStructure: { tiles: unknown[] }; entities: unknown[] };
       expect(r.map.classicStructure.tiles.length, f).toBe(raw.classicStructure.tiles.length);

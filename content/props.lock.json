@@ -12797,6 +12797,166 @@
       "triangles": 204,
       "bytes": 12964,
       "sha256": "97bafb08076ec9ee"
+    },
+    {
+      "file": "props/dc_market_stall.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_market_stall.glb",
+      "triangles": 1486,
+      "bytes": 59132,
+      "sha256": "1cbcecea1772f953"
+    },
+    {
+      "file": "props/dc_canopy.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_canopy.glb",
+      "triangles": 175,
+      "bytes": 12672,
+      "sha256": "5943a234dfd64979"
+    },
+    {
+      "file": "props/dc_banner.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_banner.glb",
+      "triangles": 162,
+      "bytes": 11300,
+      "sha256": "a099f5790fdba7c5"
+    },
+    {
+      "file": "props/dc_lantern.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_lantern.glb",
+      "triangles": 304,
+      "bytes": 14292,
+      "sha256": "3c8123c019acacac"
+    },
+    {
+      "file": "props/dc_palm_planter.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_palm_planter.glb",
+      "triangles": 604,
+      "bytes": 30472,
+      "sha256": "d637def2c82041ff"
+    },
+    {
+      "file": "props/dc_well.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_well.glb",
+      "triangles": 608,
+      "bytes": 27464,
+      "sha256": "ee1fa2a389ab6a86"
+    },
+    {
+      "file": "props/dc_vase.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_vase.glb",
+      "triangles": 376,
+      "bytes": 16692,
+      "sha256": "314aa5a66d5710b2"
+    },
+    {
+      "file": "props/dc_jars.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_jars.glb",
+      "triangles": 736,
+      "bytes": 25968,
+      "sha256": "96e9f84bbe114009"
+    },
+    {
+      "file": "props/dc_rug.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_rug.glb",
+      "triangles": 300,
+      "bytes": 19012,
+      "sha256": "dbd6f7628906df12"
+    },
+    {
+      "file": "props/dc_crane.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_crane.glb",
+      "triangles": 184,
+      "bytes": 11680,
+      "sha256": "09d422b778f1d407"
+    },
+    {
+      "file": "props/dc_cloth_line.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_cloth_line.glb",
+      "triangles": 84,
+      "bytes": 6704,
+      "sha256": "f46083aad03fcb2a"
+    },
+    {
+      "file": "props/dc_scaffold.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_scaffold.glb",
+      "triangles": 156,
+      "bytes": 10740,
+      "sha256": "e2b86d26f38102ab"
+    },
+    {
+      "file": "props/dc_awning_window.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_awning_window.glb",
+      "triangles": 168,
+      "bytes": 12128,
+      "sha256": "a7823a633a4ee161"
+    },
+    {
+      "file": "props/dc_lattice_window.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_lattice_window.glb",
+      "triangles": 1980,
+      "bytes": 109120,
+      "sha256": "6a6f6cf8ea93486d"
+    },
+    {
+      "file": "props/dc_shutter_window.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_shutter_window.glb",
+      "triangles": 300,
+      "bytes": 18724,
+      "sha256": "8e987811b90077f7"
+    },
+    {
+      "file": "props/dc_spice_baskets.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_spice_baskets.glb",
+      "triangles": 888,
+      "bytes": 31764,
+      "sha256": "b5750567e5ae80d0"
+    },
+    {
+      "file": "props/dc_cushions.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_cushions.glb",
+      "triangles": 284,
+      "bytes": 15032,
+      "sha256": "ec910a379f1025b7"
+    },
+    {
+      "file": "props/dc_rug_rack.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_rug_rack.glb",
+      "triangles": 216,
+      "bytes": 14452,
+      "sha256": "872273faf89d7721"
+    },
+    {
+      "file": "props/dc_column.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_column.glb",
+      "triangles": 312,
+      "bytes": 15760,
+      "sha256": "a8da18f2486e25b6"
+    },
+    {
+      "file": "props/dc_ornate_arch.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_ornate_arch.glb",
+      "triangles": 384,
+      "bytes": 24228,
+      "sha256": "52e6cc167951e330"
     }
   ]
 }
