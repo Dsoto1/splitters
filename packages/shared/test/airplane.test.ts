@@ -319,6 +319,22 @@ describe('drop routes in and out of bounds', () => {
     });
   }
 
+  it('the route starts from its first point when play begins (the loading wait and countdown hold it)', () => {
+    const match = new Match(runIn(), rules, 1, { startGate: true });
+    const a = match.addHuman('a')!;
+    const d = new Driver(match);
+    for (let i = 0; i < TICK_RATE * 60 && match.phase !== 'playing'; i++) {
+      d.input(a);
+      match.step();
+    }
+    expect(match.phase).toBe('playing');
+    d.input(a);
+    match.step();
+    // Off the yard's west edge (x -100), not wherever the clock had got to.
+    expect(craftOf(match).pos.x).toBeLessThan(-95);
+    expect(a.mount).toBeDefined();
+  });
+
   it('no jumping out over the void: only over a floor or the terrain', () => {
     // A boundary twice the yard's size: its east half is inside the boundary but has nothing to land on.
     // No ground slab round the built area (a sky map): past the yard is the void.

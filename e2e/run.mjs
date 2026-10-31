@@ -446,8 +446,8 @@ async function dropRouteChecks(browser) {
   await page.waitForFunction(() => window.__editor.doc.entities.some((e) => e.kind === 'airplane' && e.airdrop === 'start'), null, { timeout: T(10000) }).catch(() => {});
   // Draw route: a point far outside the map's edge is fine (riders only jump over the map).
   await page.click('#ed-draw-route');
-  await page.evaluate(() => window.__editor.view.focus({ x: 60, y: 0, z: 20 }));
-  await clickWorld(62, 22);
+  // (The route tool's own click, at a ground point past the boundary: a headless pointer can't reach that far.)
+  await page.evaluate(() => window.__editor.routes.pointerDown({ x: 62, y: 0, z: 22 }, false));
   await page.keyboard.press('Escape');
   plane = (await doc()).entities.find((e) => e.kind === 'airplane');
   check(plane?.airdrop === 'start' && plane.route.length === 4 && plane.route[3][0] > 55, `the route tool adds a point outside the boundary (${JSON.stringify(plane && { airdrop: plane.airdrop, route: plane.route })})`);
@@ -457,23 +457,31 @@ async function dropRouteChecks(browser) {
   await page.keyboard.press('F5');
   await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(20000) });
   const aboard = await simWait(page, (m, me) => !!me.mount && m.mounts[me.mount.index].def.id === 'dropship_drop', null, T(20000));
-  check(aboard, 'TEST starts you aboard the dropship');
+  const plan = await sim(page, (m) => {
+    const c = m.mounts.find((x) => x.route);
+    const p = m.dropPlanFor(c);
+    return { x: Math.round(c.pos.x), ok: p.ok.map((v) => (v ? '#' : '.')).join('') };
+  }).catch((e) => String(e));
+  check(aboard, `TEST starts you aboard the dropship (${JSON.stringify(plan)})`);
   // Still off the map's west edge: a jump is refused, with a hint.
   const offMap = await sim(page, (m, me) => m.mounts[me.mount.index].pos.x < -60).catch(() => false);
-  await page.keyboard.down('Space');
+  // Jump held (headless pages have no pointer lock: the automation hook sends the buttons; 1 = jump).
+  await page.evaluate(() => (window.__autoInput = { buttons: 1 }));
   const hinted = await page.waitForFunction(() => /drop zone/.test(document.getElementById('message')?.textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
-  await page.keyboard.up('Space');
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   const stillAboard = await sim(page, (m, me) => !!me.mount).catch(() => false);
   check(offMap && hinted && stillAboard, `a jump off the map is refused with a hint (off the map ${offMap}, hint ${hinted}, still aboard ${stillAboard})`);
   // Over the map: jump.
   const over = await simWait(page, (m, me) => !me.mount || m.mounts[me.mount.index].pos.x > -30, null, T(60000));
-  await page.keyboard.down('Space');
+  await page.evaluate(() => (window.__autoInput = { buttons: 1 }));
   const out = await simWait(page, (m, me) => !me.mount, null, T(15000));
-  await page.keyboard.up('Space');
-  check(over && out, `over the map the jump goes (over ${over}, out ${out})`);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const after = await sim(page, (m, me) => ({ mount: me.mount ?? null, y: Math.round(me.move.pos.y), craft: Math.round(m.mounts.find((x) => x.route).pos.x) })).catch((e) => String(e));
+  check(over && out, `over the map the jump goes (over ${over}, out ${out}, ${JSON.stringify(after)})`);
   const landed = await meWait(page, (m, me) => me.alive && me.move.grounded, null, 40, T(120000));
   const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z, alive: me.alive })).catch(() => null);
   check(landed && at && Math.abs(at.x) < 48 && Math.abs(at.z) < 48, `you parachute down and land in the map (${JSON.stringify(at)})`);
+  await page.evaluate(() => delete window.__autoInput);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();

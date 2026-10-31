@@ -183,6 +183,8 @@ interface MountRt {
   airdrop?: 'off' | 'start' | 'always';
   /** Where along the route riders may jump out (worked out on first use: dropPlanFor). */
   drops?: DropPlan;
+  /** The tick its route's clock started (play began). */
+  routeT0?: number;
 }
 
 /** A spectator by choice (Match.spectate): who they are and the score they had, kept for when they join again. */
@@ -3725,7 +3727,7 @@ export class Match {
     if (!step) return;
     if (m.route) {
       // Out of the plane's tail ramp, carried along by its speed; the automatic opener is armed.
-      const pose = routePose(m.route, this.tick);
+      const pose = routePose(m.route, this.routeTick(m));
       const at = mountToWorld(m.pos, m.yaw, [0, -1.5, -m.def.half[2] - 1]);
       c.move = { pos: at, velY: 0, grounded: false, vx: pose.vel.x * 0.5, vz: pose.vel.z * 0.5, drop: true };
       return;
@@ -3766,14 +3768,19 @@ export class Match {
     }
     // Stay aboard through the countdown.
     if (this.phase !== 'playing') return;
-    if (!canDrop(drops, m.route, this.tick)) return;
+    if (!canDrop(drops, m.route, this.routeTick(m))) return;
     if (plan.at !== undefined) {
-      if (dropIndex(drops, m.route, this.tick) === plan.at) input.buttons |= BUTTON_USE;
+      if (dropIndex(drops, m.route, this.routeTick(m)) === plan.at) input.buttons |= BUTTON_USE;
       return;
     }
-    const { jump, dist } = shouldJump(m.pos, plan.target, plan.prev, ticksToRouteEnd(m.route, this.tick));
+    const { jump, dist } = shouldJump(m.pos, plan.target, plan.prev, ticksToRouteEnd(m.route, this.routeTick(m)));
     plan.prev = dist;
     if (jump) input.buttons |= BUTTON_USE;
+  }
+
+  /** Ticks a drop route has flown: its clock starts with play (the wait and countdown hold it at its first point). */
+  private routeTick(m: MountRt): number {
+    return Math.max(0, this.tick - (m.routeT0 ?? 0));
   }
 
   /**
@@ -3807,7 +3814,7 @@ export class Match {
 
   /** Whether a rider of mount `m` may jump out now; if not, they're told why (once a second at most). */
   private mayJumpOut(c: Combatant, m: MountRt): boolean {
-    if (!m.route || canDrop(this.dropPlanFor(m), m.route, this.tick)) return true;
+    if (!m.route || canDrop(this.dropPlanFor(m), m.route, this.routeTick(m))) return true;
     if (!c.npc && this.tick - (this.dropHints.get(c.slot) ?? -Infinity) >= TICK_RATE) {
       this.dropHints.set(c.slot, this.tick);
       this.pendingEvents.push({ e: 'msg', text: `Not over the drop zone: you can jump when the ${m.def.displayName.toLowerCase()} is over the map`, secs: 2, s: c.slot });
@@ -3970,11 +3977,12 @@ export class Match {
   /** The plane follows its route by the clock; at the end of an open route it starts over, throwing out anyone still aboard. */
   private flyPlane(m: MountRt): void {
     const route = m.route!;
-    const pose = routePose(route, this.tick);
+    const t = this.routeTick(m);
+    const pose = routePose(route, t);
     const drops = this.dropPlanFor(m);
     // Leaving the stretch riders can land from (or the end of an open route over it): out they go, here.
     // A route with no good stretch at all throws them out where an open route ends, as it always did.
-    if (drops.any ? dropStretchEnds(drops, route, this.tick) : ticksToRouteEnd(route, this.tick) <= 1) {
+    if (drops.any ? dropStretchEnds(drops, route, t) : ticksToRouteEnd(route, t) <= 1) {
       for (const slot of m.seats) {
         const c = slot === null ? undefined : this.actor(slot);
         if (c) this.leaveMount(c, true);
@@ -4992,6 +5000,8 @@ export class Match {
 
   /** The countdown is over: the round (and its clock, objectives and waves) starts now. */
   private beginPlay(): void {
+    // Drop routes start from their first point as play begins (off the map's edge, for a run-in).
+    for (const m of this.mounts) if (m.route) m.routeT0 = this.tick;
     this.phase = 'playing';
     for (const c of this.combatants()) c.spawnedAt = this.tick;
     this.phaseEndTick = this.roundEndTick();
@@ -5003,6 +5013,7 @@ export class Match {
 
   private startRound(): void {
     this.phase = 'playing';
+    for (const m of this.mounts) if (m.route) m.routeT0 = this.tick;
     this.phaseEndTick = this.roundEndTick();
     for (const p of this.pickups) p.availableAt = 0;
     this.drops.length = 0;
