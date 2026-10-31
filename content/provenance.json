@@ -25601,6 +25601,306 @@
       ]
     },
     {
+      "file": "props/dc_market_stall.glb",
+      "sha256": "1cbcecea1772f953",
+      "triangles": 1486,
+      "bytes": 59132,
+      "source": "tiletrigger-desert/dc_market_stall.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_canopy.glb",
+      "sha256": "5943a234dfd64979",
+      "triangles": 175,
+      "bytes": 12672,
+      "source": "tiletrigger-desert/dc_canopy.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_banner.glb",
+      "sha256": "a099f5790fdba7c5",
+      "triangles": 162,
+      "bytes": 11300,
+      "source": "tiletrigger-desert/dc_banner.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_lantern.glb",
+      "sha256": "3c8123c019acacac",
+      "triangles": 304,
+      "bytes": 14292,
+      "source": "tiletrigger-desert/dc_lantern.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_palm_planter.glb",
+      "sha256": "d637def2c82041ff",
+      "triangles": 604,
+      "bytes": 30472,
+      "source": "tiletrigger-desert/dc_palm_planter.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_well.glb",
+      "sha256": "ee1fa2a389ab6a86",
+      "triangles": 608,
+      "bytes": 27464,
+      "source": "tiletrigger-desert/dc_well.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_vase.glb",
+      "sha256": "314aa5a66d5710b2",
+      "triangles": 376,
+      "bytes": 16692,
+      "source": "tiletrigger-desert/dc_vase.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_jars.glb",
+      "sha256": "96e9f84bbe114009",
+      "triangles": 736,
+      "bytes": 25968,
+      "source": "tiletrigger-desert/dc_jars.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_rug.glb",
+      "sha256": "dbd6f7628906df12",
+      "triangles": 300,
+      "bytes": 19012,
+      "source": "tiletrigger-desert/dc_rug.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_crane.glb",
+      "sha256": "09d422b778f1d407",
+      "triangles": 184,
+      "bytes": 11680,
+      "source": "tiletrigger-desert/dc_crane.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_cloth_line.glb",
+      "sha256": "f46083aad03fcb2a",
+      "triangles": 84,
+      "bytes": 6704,
+      "source": "tiletrigger-desert/dc_cloth_line.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_scaffold.glb",
+      "sha256": "e2b86d26f38102ab",
+      "triangles": 156,
+      "bytes": 10740,
+      "source": "tiletrigger-desert/dc_scaffold.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_awning_window.glb",
+      "sha256": "a7823a633a4ee161",
+      "triangles": 168,
+      "bytes": 12128,
+      "source": "tiletrigger-desert/dc_awning_window.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_lattice_window.glb",
+      "sha256": "6a6f6cf8ea93486d",
+      "triangles": 1980,
+      "bytes": 109120,
+      "source": "tiletrigger-desert/dc_lattice_window.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_shutter_window.glb",
+      "sha256": "8e987811b90077f7",
+      "triangles": 300,
+      "bytes": 18724,
+      "source": "tiletrigger-desert/dc_shutter_window.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_spice_baskets.glb",
+      "sha256": "b5750567e5ae80d0",
+      "triangles": 888,
+      "bytes": 31764,
+      "source": "tiletrigger-desert/dc_spice_baskets.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_cushions.glb",
+      "sha256": "ec910a379f1025b7",
+      "triangles": 284,
+      "bytes": 15032,
+      "source": "tiletrigger-desert/dc_cushions.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_rug_rack.glb",
+      "sha256": "872273faf89d7721",
+      "triangles": 216,
+      "bytes": 14452,
+      "source": "tiletrigger-desert/dc_rug_rack.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_column.glb",
+      "sha256": "a8da18f2486e25b6",
+      "triangles": 312,
+      "bytes": 15760,
+      "source": "tiletrigger-desert/dc_column.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_ornate_arch.glb",
+      "sha256": "52e6cc167951e330",
+      "triangles": 384,
+      "bytes": 24228,
+      "source": "tiletrigger-desert/dc_ornate_arch.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
       "file": "skies/clear.jpg",
       "sha256": "4ba9d3b02f1b3acf",
       "bytes": 37359,

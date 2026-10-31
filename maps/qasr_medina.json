@@ -6,8 +6,8 @@
     "name": "Qasr Medina",
     "author": "Tile Trigger",
     "description": "A walled desert medina (Style Pack 09: Desert City). The Embers camp outside the south wall; the Tide come in from the palms by the domed hall and the minaret. Through the gate (a portcullis) the high street runs north under rope bridges and cedar galleries, past market stalls, a well court and the bazaar to the domed hall; a courtyard of arcades to the west, flat roofs and terraces joined by bridges above, watch towers on the flanks.",
-    "createdAt": "2026-10-31T11:58:17.888Z",
-    "updatedAt": "2026-10-31T11:58:17.888Z",
+    "createdAt": "2026-10-31T12:08:44.518Z",
+    "updatedAt": "2026-10-31T12:08:44.518Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 8,
@@ -3643,10 +3643,9 @@
   },
   "backdrop": {
     "sky": "clear",
-    "scenery": "dunes",
+    "scenery": "mesas",
     "ground": "sand",
-    "haze": 0.5,
-    "border": "cliffs"
+    "haze": 0.6
   },
   "blood": null,
   "physics": null,
