@@ -403,7 +403,7 @@ repo; they live in a downloads dir outside it.
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -521,12 +521,15 @@ the fingers curl whichever way brings their tips toward it, so a hand whose
 palm side came out reversed still wraps the gun instead of bending its fingers
 up off it.
 
-**Arm skin kept to the arms** (`tools/content/armweights.mjs`, at import and in
-`rehand-built.mjs`): a vertex an arm holds that hangs well below it (past 2.2
-to 3.4 limb radii from its bones, clear of the shoulder) takes the weights of
-the nearest vertex the body holds, blended over that band. Coat sides, hems
-and straps no longer stretch into sheets from the sleeves to the legs when the
-arms come up; a wide sleeve round the arm stays on it.
+**Arm skin kept to the arms** (`tools/content/armweights.mjs`, opt-in with
+`fixes.armCloth: true`): a vertex an arm holds that hangs well below it (past
+2.2 to 3.4 limb radii from its bones, clear of the shoulder) takes the weights
+of the nearest vertex the body holds, blended over that band. Tried on every
+character (2026-10-31) it made the stretching worse: wide sleeves (Giggles,
+the Dust Trooper) grew wings from the arms instead of streaks, and the audit's
+stretch measure rose on Hector, the Dapper and others; so no character uses it.
+The sleeve and coat "spikes" need a better rule (weights blended by distance
+along the surface, or cloth joints), see HANDOFF.md.
 
 **Head and hands keep their detail** (`cutKeeping` in `tools/content/meshy-mesh.mjs`):
 both cuts (an unrigged download's work cut to 40k triangles, and the final
@@ -544,8 +547,8 @@ joint's space, metres), `curl` (0–1.5, how far the fingers close), `scale`
 
 `node tools/content/rehand-built.mjs` (`ONLY=<ids>`) does the same to
 characters already built, from their shipped files, when the downloads
-aren't at hand: it eases arm cloth to the body (armweights.mjs), re-skins the
-hand region in place, cuts first-person arms from the body for a character
+aren't at hand: it re-skins the hand region in place (and, with
+`fixes.armCloth`, eases arm cloth to the body: armweights.mjs), cuts first-person arms from the body for a character
 without them, and updates the lock (then run `pnpm content:build`). Running it
 again changes nothing. `OUT=<dir>` writes the files there instead (a trial;
 the lock is left alone).

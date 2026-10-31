@@ -1,5 +1,5 @@
 // Hands for characters already built (packages/client/public/characters/<id>.glb), without their raw
-// downloads: armweights.mjs hands cloth hanging off an arm to the body, hands.mjs measures each hand, fits the finger joints to it, re-skins the hand region with
+// downloads: (with fixes.armCloth) armweights.mjs hands cloth hanging off an arm to the body, hands.mjs measures each hand, fits the finger joints to it, re-skins the hand region with
 // finger weights and writes the measurements on the hand joints (`extras.hand`), in place, for the body
 // and its first-person arms. A character with no first-person arms yet gets them cut from its body, as
 // prepare-meshy-characters.mjs cuts them from a download (forearms and hands; the elbow half of each
@@ -212,7 +212,9 @@ async function cutArms(doc) {
 function rehand(doc, overrides, label) {
   const c = open(doc);
   // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
-  if (label === 'body') keepArmsToArms({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, log: (l) => console.log(`  ${label} ${l}`) });
+  // Opt-in (fixes.armCloth): tried on every character, it moved the stretch into wide sleeves (Giggles' and the
+  // Dust Trooper's grew wings from the arms) instead of curing it.
+  if (label === 'body' && overrides?.armCloth) keepArmsToArms({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, log: (l) => console.log(`  ${label} ${l}`) });
   const { moved, data } = fitHands({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, rig, overrides, log: (l) => console.log(`  ${label} ${l}`) });
   if (overrides?.scale || overrides?.l?.scale || overrides?.r?.scale) {
     const Qinv = affineInverse(c.Q);
@@ -265,7 +267,7 @@ for (const m of readManifests({ ready: true })) {
     console.log(`  ${`${id}.glb`.padEnd(26)} ${String(entry.triangles).padStart(6)} tris ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
   };
   const doc = await io.read(join(OUT, `${m.id}.glb`));
-  rehand(doc, spec.hands, 'body');
+  rehand(doc, { ...spec.hands, armCloth: !!spec.armCloth }, 'body');
   await write(doc, m.id, body);
   let arms = lock.files.find((f) => f.id === `${m.id}_fparms`);
   const armsDoc = arms && existsSync(join(OUT, `${m.id}_fparms.glb`)) ? await io.read(join(OUT, `${m.id}_fparms.glb`)) : await io.read(join(OUT, `${m.id}.glb`));

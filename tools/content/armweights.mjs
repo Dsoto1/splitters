@@ -1,5 +1,6 @@
 // Skin on the arms kept to the arms (prepare-meshy-characters.mjs at import, rehand-built.mjs on characters
-// already built).
+// already built), for a character whose manifest asks (`fixes.armCloth: true`). Tried on every character it made
+// the stretching worse (wide sleeves grew wings from the arms instead of streaks), so none uses it yet.
 //
 // Meshy's rigs and our own bone heat both leave some vertices weighted to an arm that hang well away from it:
 // a coat's side, a sleeve's hem down by the hip, a cape's edge, a strap. In the T-pose they sit still; when the
