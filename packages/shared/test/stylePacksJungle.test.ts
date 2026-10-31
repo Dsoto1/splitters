@@ -102,6 +102,12 @@ describe('Jungle Ruins refresh navigation', () => {
       from: [0, 0, -6],
       to: [0, 8, 17],
     },
+    {
+      name: 'stacked stair from the terrace beside its foot',
+      tiles: [t('m', 'jungle.terrace_stair', 0, 0), t('w', 'jungle.terrace', -1, 1), t('a', 'jungle.terrace', 0, 2), t('u', 'jungle.terrace_stair', 0, 1, 1), ...yards(-2, -1, 1, 3, [[0, 0], [0, 1], [0, 2], [-1, 1]])],
+      from: [-8, 4, 10],
+      to: [0, 8, 17],
+    },
     { name: 'carved temple roof', tiles: [t('m', 'jungle.temple', 0, 0), ...yards(-1, -1, 2, 1, [[0, 0], [1, 0]])], from: [0, 0, -8], to: [10, 4, 0] },
     { name: 'beamed colonnade roof from the temple roof', tiles: [t('m', 'jungle.temple', 0, 0), t('b', 'jungle.beamed_hall', 2, 0), ...yards(-1, -1, 3, 1, [[0, 0], [1, 0], [2, 0]])], from: [0, 0, -8], to: [16, 4, 0] },
     { name: 'carved temple back door', tiles: [t('m', 'jungle.temple', 0, 0), ...yards(-1, -1, 2, 1, [[0, 0], [1, 0]])], from: [0, 0, -8], to: [10, 0, 6] },

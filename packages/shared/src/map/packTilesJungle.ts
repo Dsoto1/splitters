@@ -234,12 +234,15 @@ function terraceBlock(): Box[] {
 
 /** Where the terrace stair's foot is: its flight ends at the cells' boundary, so the whole north cell is landing (a stair stacked on it starts there). */
 const TS_F0 = 4 - 16 * 0.45;
+/** Where the stair's cheeks begin (the ground before them is open on both sides). */
+const TS_CHEEK = TS_F0 + 1.8;
 
 /**
  * The terrace stair: a 3.2 m flight of 16 steps (0.45 m treads) up the middle
  * of two cells, north, from 0.8 m in from the south edge to the north cell,
- * all of it a landing 4 m up; stepped stone cheeks either side, each tier a
- * metre higher; bronze-capped newels at the foot.
+ * all of it a landing 4 m up; stepped stone cheeks either side, the last
+ * level with the landing. Nothing stands beside the foot, so a stair stacked
+ * on a landing is reached from the terraces either side as well as head-on.
  */
 function terraceStair(): Box[] {
   const out: Box[] = [];
@@ -249,20 +252,20 @@ function terraceStair(): Box[] {
   out.push(...flight('z', 1, F0, -W, W, 16, 0, 0.45).map((s) => slab(s)));
   // The landing: the north cell (and the last of the south one) up to 4 m.
   out.push(slab(b(-4, 3.5, F1, 4, 4, 12)), carved(b(-3.9, 0, F1, 3.9, 3.5, 11.9)), slab(b(-4, 0, 11.9, 4, 3.5, 12)));
-  // Cheeks: four tiers either side, each 1 m higher and 1.8 m further north.
+  // Cheeks: three tiers either side, 1.8 m apart, the last level with the landing (a stair stacked on top is reached across it from the terraces either side); none beside the first 1.8 m of the flight.
   for (const s of [-1, 1] as const) {
     const [x0, x1] = s < 0 ? [-4, -W] : [W, 4];
-    for (let k = 1; k <= 4; k++) {
-      const z0 = F0 + (k - 1) * 1.8;
-      out.push(carved(b(x0, 0, z0, x1, k, F1)));
-      out.push(trim(x0, k, z0, x1, k + 0.03, z0 + 0.5, MOSS));
+    for (let k = 1; k <= 3; k++) {
+      const z0 = TS_CHEEK + (k - 1) * 1.8;
+      const h = (k * 4) / 3;
+      out.push(carved(b(x0, 0, z0, x1, h, F1)));
+      out.push(trim(x0, h, z0, x1, h + 0.03, z0 + 0.5, MOSS));
     }
-    // Newels at the foot, capped in bronze for a brazier or torch.
-    const nx = s * (W + 0.4);
-    out.push(stone(b(nx - 0.4, 0, F0 - 0.8, nx + 0.4, 1.4, F0), '#b8b8a0'), trim(nx - 0.45, 1.4, F0 - 0.85, nx + 0.45, 1.5, F0 + 0.05, GOLD, '#c8a040'));
+    // A bronze-capped kerb along the foot of each cheek (visual: the way round onto the steps from either side stays open; stand a Fire Bowl here).
+    out.push(trim(x0, 0, TS_CHEEK - 0.25, x1, 0.25, TS_CHEEK, GOLD, '#a88a40'));
   }
-  out.push(...vines('x', F0, -3.8, -W - 0.5, 1.0, 21, 2, -0.04), ...vines('x', F0, W + 0.5, 3.8, 1.0, 23, 2, -0.04));
-  out.push(trim(-4, 0, -4, 4, 0.02, F0, SLAB));
+  out.push(...vines('x', TS_CHEEK, -3.8, -W - 0.5, 1.0, 21, 2, -0.04), ...vines('x', TS_CHEEK, W + 0.5, 3.8, 1.0, 23, 2, -0.04));
+  out.push(trim(-4, 0, -4, 4, 0.02, TS_CHEEK, SLAB));
   return out;
 }
 
@@ -420,11 +423,11 @@ function otherTiles(): TileDefinition[] {
     id: 'jungle.terrace_stair',
     category: 'Vertical',
     displayName: 'Terrace Stair',
-    blurb: '1 × 2 cells: a broad stone stair north up the middle of the south cell (16 steps, 3.2 m wide) to the north cell, all of it a landing 4 m up, between stepped cheeks; newels at the foot for braziers. Stack another on the landing (a level up) for the next terrace',
+    blurb: '1 × 2 cells: a broad stone stair north up the middle of the south cell (16 steps, 3.2 m wide) to the north cell, all of it a landing 4 m up, between stepped cheeks (stand Fire Bowls at their feet). Stack another on the landing (a level up) for the next terrace: it is reached head-on and from the terraces either side of its foot',
     cells: footprint(1, 2),
     floors: [],
     // Ground only before the foot: the rest is steps, cheeks and landing, so a stair stacked a level up on the landing has no slab over the steps below.
-    extraFloors: [slab(b(-4, -0.5, -4, 4, 0, TS_F0, 'floor'))],
+    extraFloors: [slab(b(-4, -0.5, -4, 4, 0, TS_CHEEK, 'floor'))],
     ports: perimeter(1, 2),
     open: true,
     edgeDefault: 'open',

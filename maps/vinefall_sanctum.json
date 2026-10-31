@@ -1,0 +1,4569 @@
+{
+  "format": "tiletrigger.map",
+  "formatVersion": 24,
+  "metadata": {
+    "id": "vinefall_sanctum",
+    "name": "Vinefall Sanctum",
+    "author": "Tile Trigger",
+    "description": "An overgrown temple city split by a river gorge (Style Pack 06: Jungle Ruins). The Embers hold the south sanctum, the Tide the north; each has a stepped ziggurat with a shrine on top (a sniper rifle at the altar), two carved temples with portcullis gates and roofs you can run, waterfalls with a way through behind the falls, and a timber watch tower at each end. Cross the gorge by three rope bridges, by the high rope and stone bridges between the terraces 4 m up, or wade the river below (dynamite and heavy armour down there; gorge steps and vines lead out).",
+    "createdAt": "2026-10-31T12:31:08.621Z",
+    "updatedAt": "2026-10-31T12:31:08.621Z",
+    "parentId": null,
+    "recommendedPlayers": {
+      "min": 8,
+      "max": 24
+    },
+    "supportedModes": [
+      "core.deathmatch",
+      "core.tdm",
+      "core.ctf",
+      "core.koth"
+    ],
+    "release": {
+      "mapId": "m_gkp3v3wp4n735nox",
+      "versionId": "v_weh4aokcgsaiy4vf",
+      "revision": 1,
+      "contentHash": "sha256:971b02f70388378600b4fdf7a0d6ac4fc753b27d2530a114eeb7578522ffd6ff",
+      "schemaVersion": 24,
+      "releasedAt": "2026-10-31T12:31:28.853Z"
+    }
+  },
+  "classicStructure": {
+    "cellSize": 8,
+    "levelHeight": 4,
+    "theme": "core.ancient_temple",
+    "tiles": [
+      {
+        "id": "tile_vtqwi2mq8u",
+        "tile": "jungle.cliff",
+        "x": -6,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5m9v34xd6t",
+        "tile": "jungle.cliff",
+        "x": -5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_o06oa6525s",
+        "tile": "jungle.cliff",
+        "x": -4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qna7jk87c5",
+        "tile": "jungle.cliff",
+        "x": -3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_70fzu17v62",
+        "tile": "jungle.cliff",
+        "x": -2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xk82oeo5ew",
+        "tile": "jungle.cliff",
+        "x": -1,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_m8xd5vzv6o",
+        "tile": "jungle.cliff",
+        "x": 0,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_s1axiudsas",
+        "tile": "jungle.cliff",
+        "x": 1,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_f6pb0wya3m",
+        "tile": "jungle.cliff",
+        "x": 2,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_a4l87pg0re",
+        "tile": "jungle.cliff",
+        "x": 3,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_40xxhdzrqh",
+        "tile": "jungle.cliff",
+        "x": 4,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hppm8ss05l",
+        "tile": "jungle.cliff",
+        "x": 5,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fhufltlc66",
+        "tile": "jungle.cliff",
+        "x": 6,
+        "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xxnnpldyuu",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7s4vf8hzx1",
+        "tile": "jungle.ruined_court",
+        "x": -5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zct5onvkqd",
+        "tile": "jungle.overgrown_ruin",
+        "x": -4,
+        "y": 6,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_m0wjmnp6cl",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_n2xhqigxdw",
+        "tile": "jungle.waterfall_wall",
+        "x": -2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_p287596ac7",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dmhxm6wkho",
+        "tile": "jungle.ruined_court",
+        "x": 0,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_98h8bqs1xx",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_q4whbdfz9l",
+        "tile": "jungle.waterfall_wall",
+        "x": 2,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lyif9i48dd",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0rs3aqyibt",
+        "tile": "jungle.overgrown_ruin",
+        "x": 4,
+        "y": 6,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_76wcmy70l4",
+        "tile": "jungle.ruined_court",
+        "x": 5,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_w08zlaq6x9",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 6,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_38p9wc0few",
+        "tile": "jungle.watch_tower",
+        "x": -6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5ppk6gdri2",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gckovlvlql",
+        "tile": "jungle.wall_column",
+        "x": -4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_c2qzapa19b",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3vzf7qr2tl",
+        "tile": "core.yard",
+        "x": -2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bgee1qm8on",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_utbu032235",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zf2xp0kuaq",
+        "tile": "core.yard",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cvgki1ox2x",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_r7a11ygmg4",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ioe1yrz6zl",
+        "tile": "jungle.wall_column",
+        "x": 4,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0gkmhizcm4",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xbc22lsgbr",
+        "tile": "jungle.watch_tower",
+        "x": 6,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jt74f6wgyg",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_qzkcz9e5tk",
+        "tile": "jungle.ruined_court",
+        "x": -5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ymtc3s3y4i",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_iwmdy0lmgf",
+        "tile": "core.yard",
+        "x": -3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_88saas0iej",
+        "tile": "jungle.overgrown_ruin",
+        "x": -2,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_odv5jyj0pt",
+        "tile": "jungle.terrace",
+        "x": -1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lv7bvjgpfc",
+        "tile": "jungle.terrace",
+        "x": 0,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_580uthjue0",
+        "tile": "jungle.terrace",
+        "x": 1,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5u7hwlodg2",
+        "tile": "jungle.overgrown_ruin",
+        "x": 2,
+        "y": 4,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_69x8sz9qqv",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7s0kzfc1gn",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_8z9unvzoyn",
+        "tile": "jungle.ruined_court",
+        "x": 5,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_cf7cob4sbz",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 4,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zk4viyhkmr",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_5k8la9zk6v",
+        "tile": "core.yard",
+        "x": -5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_t5l4onj1lm",
+        "tile": "jungle.temple",
+        "x": -4,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_moasgm6jfn",
+        "tile": "jungle.beamed_hall",
+        "x": -2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dju1t3sgq6",
+        "tile": "jungle.terrace",
+        "x": -1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_u2i6extopf",
+        "tile": "jungle.terrace",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xercrmw0m7",
+        "tile": "jungle.beamed_hall",
+        "x": 2,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_laidhztap1",
+        "tile": "jungle.temple",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_46f29s5c76",
+        "tile": "core.yard",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fka4mylpxm",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_s4shldioec",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xnqy6wa16i",
+        "tile": "jungle.wall_window",
+        "x": -5,
+        "y": 2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_r90uksi2s2",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3lnuetbsv9",
+        "tile": "jungle.ruined_court",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3j13ukkizf",
+        "tile": "jungle.terrace_stair",
+        "x": -2,
+        "y": 2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_5ls6ty2wrz",
+        "tile": "jungle.wall_relief",
+        "x": -1,
+        "y": 2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_4x28p54hw5",
+        "tile": "jungle.terrace_stair",
+        "x": 0,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_y0pskhxjf8",
+        "tile": "jungle.wall_relief",
+        "x": 1,
+        "y": 2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_g8qkrn7xux",
+        "tile": "jungle.terrace_stair",
+        "x": 2,
+        "y": 2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_c9whyz1q18",
+        "tile": "core.yard",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_l57s691btz",
+        "tile": "jungle.ruined_court",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3qs28ksoxd",
+        "tile": "jungle.wall_window",
+        "x": 5,
+        "y": 2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_5u4ztilxv2",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lgrdgnaq4t",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lana0nbrrs",
+        "tile": "jungle.overgrown_ruin",
+        "x": -5,
+        "y": 1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_a0duff9ony",
+        "tile": "core.yard",
+        "x": -4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3ymzqw2rn1",
+        "tile": "jungle.wall_low",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ng2nogfnwa",
+        "tile": "jungle.ruined_court",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gv3x8jmkvz",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_9sbuo6zfj3",
+        "tile": "jungle.ruined_court",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hsoid15tcs",
+        "tile": "jungle.wall_low",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_wg6q37hmq4",
+        "tile": "core.yard",
+        "x": 4,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xthx3i5h45",
+        "tile": "jungle.overgrown_ruin",
+        "x": 5,
+        "y": 1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_qfdr2xaftq",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4156k9eg8a",
+        "tile": "jungle.cliff",
+        "x": 6,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_48shg7ycu5",
+        "tile": "jungle.cliff",
+        "x": 5,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ubj4n7mk7g",
+        "tile": "jungle.cliff",
+        "x": 4,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ua44nxwabj",
+        "tile": "jungle.cliff",
+        "x": 3,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_jwqch1g8o0",
+        "tile": "jungle.cliff",
+        "x": 2,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_vada86fwcf",
+        "tile": "jungle.cliff",
+        "x": 1,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_88svr23ckb",
+        "tile": "jungle.cliff",
+        "x": 0,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ypfvubmd52",
+        "tile": "jungle.cliff",
+        "x": -1,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_175zjqorbd",
+        "tile": "jungle.cliff",
+        "x": -2,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_vm3orjy7nc",
+        "tile": "jungle.cliff",
+        "x": -3,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ncl3rkf5mu",
+        "tile": "jungle.cliff",
+        "x": -4,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_8ormtpjqnz",
+        "tile": "jungle.cliff",
+        "x": -5,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_kd86mhki0j",
+        "tile": "jungle.cliff",
+        "x": -6,
+        "y": -7,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_rg6p94z09b",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_rskwemqtq2",
+        "tile": "jungle.ruined_court",
+        "x": 5,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_4dkea8bet3",
+        "tile": "jungle.overgrown_ruin",
+        "x": 4,
+        "y": -6,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_5s9ic3eng6",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_fqfjih0sal",
+        "tile": "jungle.waterfall_wall",
+        "x": 2,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_zz6t9y850j",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_xp1i8roym4",
+        "tile": "jungle.ruined_court",
+        "x": 0,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_25g553rkot",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_omlaody1me",
+        "tile": "jungle.waterfall_wall",
+        "x": -2,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_yzt2xmhqan",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_c4k29wf0q9",
+        "tile": "jungle.overgrown_ruin",
+        "x": -4,
+        "y": -6,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_6bj19ev2gj",
+        "tile": "jungle.ruined_court",
+        "x": -5,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_9rs9pmtfg3",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -6,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_2ycve0lua1",
+        "tile": "jungle.watch_tower",
+        "x": 6,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_iqkcw24iwt",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_6qtycl8zaf",
+        "tile": "jungle.wall_column",
+        "x": 4,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_w8ka7yd4zb",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_5naua1u2kr",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_9dayc02li5",
+        "tile": "core.yard",
+        "x": 1,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_y3jj67ho7i",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_mjq0z32dmk",
+        "tile": "core.yard",
+        "x": -1,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_jq3iy87me6",
+        "tile": "core.yard",
+        "x": -2,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_hs4t05vjle",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_n9ikcbkiss",
+        "tile": "jungle.wall_column",
+        "x": -4,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_k1ze8garmq",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_q2rq777gei",
+        "tile": "jungle.watch_tower",
+        "x": -6,
+        "y": -5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_qcgdouffio",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_zs8wrfhgtn",
+        "tile": "jungle.ruined_court",
+        "x": 5,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_6l0smtkael",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_uxqt6txfin",
+        "tile": "core.yard",
+        "x": 3,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_hn7dvwlcie",
+        "tile": "jungle.overgrown_ruin",
+        "x": 2,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_4rs4xhxyrg",
+        "tile": "jungle.terrace",
+        "x": 1,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_a2zydov1da",
+        "tile": "jungle.terrace",
+        "x": 0,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_kopd5h35kl",
+        "tile": "jungle.terrace",
+        "x": -1,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_jv5x4l55x8",
+        "tile": "jungle.overgrown_ruin",
+        "x": -2,
+        "y": -4,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_iwb0r9c7jv",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_zvwewp1fsv",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_hcfr6eyhbw",
+        "tile": "jungle.ruined_court",
+        "x": -5,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_lro7c92ye9",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -4,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_v9a5asgox6",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_2neqvxojq3",
+        "tile": "core.yard",
+        "x": 5,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_vzaf7952yc",
+        "tile": "jungle.temple",
+        "x": 4,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_vv75j0wp7g",
+        "tile": "jungle.beamed_hall",
+        "x": 2,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_b8o01kuh14",
+        "tile": "jungle.terrace",
+        "x": 1,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_j2xhl203ad",
+        "tile": "jungle.terrace",
+        "x": -1,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_zvrtwfvod8",
+        "tile": "jungle.beamed_hall",
+        "x": -2,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_748lbk9dvj",
+        "tile": "jungle.temple",
+        "x": -3,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_vz7bqbsibk",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_95lv8xq5pr",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -3,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_w3e1v1ko2n",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_rn2z9oh2g6",
+        "tile": "jungle.wall_window",
+        "x": 5,
+        "y": -2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_1kdcgsjrlz",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_qsnyc13yx9",
+        "tile": "jungle.ruined_court",
+        "x": 3,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_48y3llak8i",
+        "tile": "jungle.terrace_stair",
+        "x": 2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_j85f6p0fn7",
+        "tile": "jungle.wall_relief",
+        "x": 1,
+        "y": -2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_l1ixurh38i",
+        "tile": "jungle.terrace_stair",
+        "x": 0,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ptroibg9pn",
+        "tile": "jungle.wall_relief",
+        "x": -1,
+        "y": -2,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_bkd64otjv4",
+        "tile": "jungle.terrace_stair",
+        "x": -2,
+        "y": -2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_m5uwyrqa6s",
+        "tile": "core.yard",
+        "x": -3,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_5je5b5jvbz",
+        "tile": "jungle.ruined_court",
+        "x": -4,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_5glc5ewj2n",
+        "tile": "jungle.wall_window",
+        "x": -5,
+        "y": -2,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_geih49pddl",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -2,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_chddfwfnp9",
+        "tile": "core.yard",
+        "x": 6,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_dmxokrxrmg",
+        "tile": "jungle.overgrown_ruin",
+        "x": 5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jo92buckom",
+        "tile": "core.yard",
+        "x": 4,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_1b7vb2ebxt",
+        "tile": "jungle.wall_low",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ddrdoryh7l",
+        "tile": "jungle.ruined_court",
+        "x": 1,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_w42hr4qujz",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_6ctcqgmocs",
+        "tile": "jungle.ruined_court",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_6ac1tuagd0",
+        "tile": "jungle.wall_low",
+        "x": -3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zpwk35dqcp",
+        "tile": "core.yard",
+        "x": -4,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_5ts8ky0uqr",
+        "tile": "jungle.overgrown_ruin",
+        "x": -5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_t7qf6k4zjn",
+        "tile": "core.yard",
+        "x": -6,
+        "y": -1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_2jqidvnp6y",
+        "tile": "core.yard",
+        "x": -6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_05ldagivf5",
+        "tile": "core.yard",
+        "x": 6,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_mfl0mwrrnn",
+        "tile": "jungle.chasm_steps",
+        "x": -5,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_x0rc1yotvd",
+        "tile": "jungle.chasm_steps",
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ypl82jhglz",
+        "tile": "jungle.chasm",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7nlyaxevjz",
+        "tile": "jungle.chasm",
+        "x": -2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_amleo2l0kj",
+        "tile": "jungle.chasm",
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_w9sdjfv9q9",
+        "tile": "jungle.chasm",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_odkmv3mx3b",
+        "tile": "jungle.chasm",
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_x9abza46ly",
+        "tile": "jungle.chasm",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_e2hxfyh75y",
+        "tile": "jungle.chasm_bridge",
+        "x": -4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_q1y59c4csi",
+        "tile": "jungle.chasm_bridge",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gp7msgjmhm",
+        "tile": "jungle.chasm_bridge",
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_26cjl0x171",
+        "tile": "jungle.terrace",
+        "x": -1,
+        "y": 4,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_epqtnvm8q3",
+        "tile": "jungle.terrace",
+        "x": 1,
+        "y": 4,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xo4odrco3m",
+        "tile": "jungle.terrace_stair",
+        "x": 0,
+        "y": 3,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_kkfpi0eazr",
+        "tile": "jungle.terrace",
+        "x": 1,
+        "y": -4,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_y07fpt0nwn",
+        "tile": "jungle.terrace",
+        "x": -1,
+        "y": -4,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_0af7pnzsw8",
+        "tile": "jungle.terrace_stair",
+        "x": 0,
+        "y": -3,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_xvlpf0046m",
+        "tile": "jungle.rope_bridge",
+        "x": -2,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_obwnq2ue59",
+        "tile": "jungle.stone_bridge",
+        "x": 2,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tjjq2xgvb7",
+        "tile": "jungle.shrine",
+        "x": 0,
+        "y": 4,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7e9xd33y98",
+        "tile": "jungle.shrine",
+        "x": 0,
+        "y": -4,
+        "z": 2,
+        "rotation": 2
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "spawn_u5uhixt8oj",
+      "kind": "spawn",
+      "position": [
+        -40,
+        0,
+        42
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_e1i8otvjc9",
+      "kind": "spawn",
+      "position": [
+        -24,
+        0,
+        40
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_9w07a2nv37",
+      "kind": "spawn",
+      "position": [
+        -22,
+        0,
+        47
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_1386hhpdg3",
+      "kind": "spawn",
+      "position": [
+        -8,
+        0,
+        42
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_mc5vpcweqh",
+      "kind": "spawn",
+      "position": [
+        8,
+        0,
+        42
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_g63cql0iu5",
+      "kind": "spawn",
+      "position": [
+        22,
+        0,
+        47
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_6lmfgc3cff",
+      "kind": "spawn",
+      "position": [
+        24,
+        0,
+        40
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_0w3jql50ed",
+      "kind": "spawn",
+      "position": [
+        40,
+        0,
+        42
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_7z14fgs7s3",
+      "kind": "spawn",
+      "position": [
+        -46,
+        0,
+        50
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_89yclntz5q",
+      "kind": "spawn",
+      "position": [
+        46,
+        0,
+        50
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_je74016k41",
+      "kind": "spawn",
+      "position": [
+        -8,
+        0,
+        50
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_nl8jy5oyw4",
+      "kind": "spawn",
+      "position": [
+        8,
+        0,
+        50
+      ],
+      "yaw": 3.141592653589793,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_ekrqxstr16",
+      "kind": "spawn",
+      "position": [
+        -48,
+        0,
+        16
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_3n235pv1oz",
+      "kind": "spawn",
+      "position": [
+        -24,
+        0,
+        8
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_83reavktfo",
+      "kind": "spawn",
+      "position": [
+        -40,
+        0,
+        24
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_6zlwkdt8y3",
+      "kind": "spawn",
+      "position": [
+        0,
+        0,
+        8
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_jrtyepj7rp",
+      "kind": "spawn",
+      "position": [
+        -48,
+        0,
+        32
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "spawn_inq9aipltk",
+      "kind": "spawn",
+      "position": [
+        -33,
+        0,
+        13
+      ],
+      "yaw": 1.5707963267948966,
+      "faction": null
+    },
+    {
+      "id": "flag_zlsiuwh1ug",
+      "kind": "flag",
+      "position": [
+        0,
+        0,
+        40
+      ],
+      "yaw": 3.141592653589793,
+      "team": "tide"
+    },
+    {
+      "id": "hill_7uar2m0i99",
+      "kind": "hill",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "radius": 4
+    },
+    {
+      "id": "hill_azewwg7z21",
+      "kind": "hill",
+      "position": [
+        -16,
+        4,
+        0
+      ],
+      "radius": 3.5
+    },
+    {
+      "id": "pickup_9ub9w6ja6r",
+      "kind": "pickup",
+      "position": [
+        0,
+        8,
+        31
+      ],
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_coehsj8kjp",
+      "kind": "pickup",
+      "position": [
+        -48,
+        7,
+        37.5
+      ],
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_thl0nkfedj",
+      "kind": "pickup",
+      "position": [
+        -16,
+        4,
+        0
+      ],
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_8np7bt897v",
+      "kind": "pickup",
+      "position": [
+        -40,
+        0,
+        48
+      ],
+      "item": "core.weapon_grapple",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_3fruyf5bpp",
+      "kind": "pickup",
+      "position": [
+        -27,
+        0,
+        22
+      ],
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_5pn91n9pz2",
+      "kind": "pickup",
+      "position": [
+        -40,
+        0,
+        8
+      ],
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_xe5g9lehu1",
+      "kind": "pickup",
+      "position": [
+        -24,
+        0,
+        32
+      ],
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_uzvhpr479j",
+      "kind": "pickup",
+      "position": [
+        -24,
+        -4,
+        0
+      ],
+      "item": "core.dynamite",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_soabhlvmd7",
+      "kind": "pickup",
+      "position": [
+        -8,
+        0,
+        8
+      ],
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_m8jm44lcxl",
+      "kind": "pickup",
+      "position": [
+        0,
+        -4,
+        0
+      ],
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_ok7o5ywlld",
+      "kind": "pickup",
+      "position": [
+        -8,
+        4,
+        21.5
+      ],
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_r0wmxg5lcl",
+      "kind": "pickup",
+      "position": [
+        -48,
+        0,
+        8
+      ],
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_xar0tlzf5u",
+      "kind": "pickup",
+      "position": [
+        -24,
+        0,
+        48
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_0k9l5mqjxn",
+      "kind": "pickup",
+      "position": [
+        -32,
+        -4,
+        0
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "water_qixhvyh38z",
+      "kind": "water",
+      "position": [
+        0,
+        -4,
+        0
+      ],
+      "size": [
+        88,
+        1.2,
+        5
+      ],
+      "liquid": "water",
+      "tint": "#3a7a6a"
+    },
+    {
+      "id": "water_kt84oj5at5",
+      "kind": "water",
+      "position": [
+        -16,
+        -1,
+        45.9
+      ],
+      "size": [
+        4.8,
+        0.9,
+        2.2
+      ],
+      "liquid": "water",
+      "tint": "#3a8a8a"
+    },
+    {
+      "id": "water_8qukscw57c",
+      "kind": "water",
+      "position": [
+        16,
+        -1,
+        45.9
+      ],
+      "size": [
+        4.8,
+        0.9,
+        2.2
+      ],
+      "liquid": "water",
+      "tint": "#3a8a8a"
+    },
+    {
+      "id": "door_rleokbu6da",
+      "kind": "door",
+      "position": [
+        -32,
+        0,
+        20
+      ],
+      "yaw": 0,
+      "startOpen": true,
+      "locked": false,
+      "auto": false,
+      "style": "portcullis"
+    },
+    {
+      "id": "door_s7iqmnh3mt",
+      "kind": "door",
+      "position": [
+        24,
+        0,
+        20
+      ],
+      "yaw": 0,
+      "startOpen": true,
+      "locked": false,
+      "auto": false,
+      "style": "portcullis"
+    },
+    {
+      "id": "light_ycv3x7inc2",
+      "kind": "light",
+      "position": [
+        -2.8,
+        2.6,
+        14
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_srwz78hp01",
+      "kind": "light",
+      "position": [
+        2.8,
+        2.6,
+        14
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_vilfj3cdq6",
+      "kind": "light",
+      "position": [
+        -18.8,
+        2.6,
+        18
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_ukisvx1rdn",
+      "kind": "light",
+      "position": [
+        -13.2,
+        2.6,
+        18
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_wpajxx4ytg",
+      "kind": "light",
+      "position": [
+        13.2,
+        2.6,
+        18
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_35eg7pya3j",
+      "kind": "light",
+      "position": [
+        18.8,
+        2.6,
+        18
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "ladder_sih5ot68yj",
+      "kind": "ladder",
+      "position": [
+        -24,
+        -4,
+        2.3
+      ],
+      "yaw": 3.141592653589793,
+      "height": 4,
+      "width": 1.2,
+      "style": "vines"
+    },
+    {
+      "id": "ladder_qhmxcda41f",
+      "kind": "ladder",
+      "position": [
+        24,
+        -4,
+        2.3
+      ],
+      "yaw": 3.141592653589793,
+      "height": 4,
+      "width": 1.2,
+      "style": "vines"
+    },
+    {
+      "id": "prop_oj2egz3sti",
+      "kind": "prop",
+      "position": [
+        -16,
+        0,
+        49
+      ],
+      "model": "prop.jg_waterfall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_s46ym6p3bn",
+      "kind": "prop",
+      "position": [
+        16,
+        0,
+        49
+      ],
+      "model": "prop.jg_waterfall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_4xhfu606ly",
+      "kind": "prop",
+      "position": [
+        -2.75,
+        0,
+        14
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_uyg6jmjefw",
+      "kind": "prop",
+      "position": [
+        2.75,
+        0,
+        14
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_r0bly556e3",
+      "kind": "prop",
+      "position": [
+        -18.75,
+        0,
+        18
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_q0d528so4u",
+      "kind": "prop",
+      "position": [
+        -13.25,
+        0,
+        18
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jmefi12vtn",
+      "kind": "prop",
+      "position": [
+        13.25,
+        0,
+        18
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_18pxa38wco",
+      "kind": "prop",
+      "position": [
+        18.75,
+        0,
+        18
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_zmk0bsjowm",
+      "kind": "prop",
+      "position": [
+        -35,
+        0,
+        19.5
+      ],
+      "model": "prop.jt_banner_teal",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ttbvgdzaxy",
+      "kind": "prop",
+      "position": [
+        -29,
+        0,
+        19.5
+      ],
+      "model": "prop.jt_banner_teal",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_033nrtsvjn",
+      "kind": "prop",
+      "position": [
+        21,
+        0,
+        19.5
+      ],
+      "model": "prop.jt_banner_teal",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_uo0gfu8430",
+      "kind": "prop",
+      "position": [
+        27,
+        0,
+        19.5
+      ],
+      "model": "prop.jt_banner_teal",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_9t2ybfsbs3",
+      "kind": "prop",
+      "position": [
+        0,
+        0,
+        51
+      ],
+      "model": "prop.jt_statue_large",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_t0kbeiohxg",
+      "kind": "prop",
+      "position": [
+        -5,
+        0,
+        10.5
+      ],
+      "model": "prop.jt_obelisk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_bflv0apm62",
+      "kind": "prop",
+      "position": [
+        5,
+        0,
+        10.5
+      ],
+      "model": "prop.jt_obelisk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4cb9c6sjtt",
+      "kind": "prop",
+      "position": [
+        -43,
+        0,
+        33
+      ],
+      "model": "prop.jt_zipline_post",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_e9zuoew6wy",
+      "kind": "prop",
+      "position": [
+        -46,
+        0,
+        7.5
+      ],
+      "model": "prop.jt_crane",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_fhzubd5s2b",
+      "kind": "prop",
+      "position": [
+        -48,
+        0,
+        24
+      ],
+      "model": "prop.jt_tree_root_arch",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jx4vrg2qa0",
+      "kind": "prop",
+      "position": [
+        -8,
+        8,
+        33
+      ],
+      "model": "prop.jt_altar_fire",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3bqb1949dl",
+      "kind": "prop",
+      "position": [
+        8,
+        8,
+        33
+      ],
+      "model": "prop.jt_altar_fire",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_589lc1xei7",
+      "kind": "prop",
+      "position": [
+        -26,
+        0.8,
+        21.5
+      ],
+      "model": "prop.jt_hanging_brazier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xk7nhy021j",
+      "kind": "prop",
+      "position": [
+        -12,
+        0,
+        28
+      ],
+      "model": "prop.jt_statue_small",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_nvzidnb3mz",
+      "kind": "prop",
+      "position": [
+        12,
+        0,
+        28
+      ],
+      "model": "prop.jt_statue_small",
+      "yaw": -1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_s1ttxhdcjl",
+      "kind": "prop",
+      "position": [
+        -40,
+        0,
+        30
+      ],
+      "model": "prop.jt_temple_spire",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_rhiywgs3b9",
+      "kind": "prop",
+      "position": [
+        40,
+        0,
+        30
+      ],
+      "model": "prop.jt_sarcophagus",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_29tl6mv6b6",
+      "kind": "prop",
+      "position": [
+        -20.5,
+        0,
+        26
+      ],
+      "model": "prop.jt_pottery",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_iorih3kirh",
+      "kind": "prop",
+      "position": [
+        37,
+        0,
+        22
+      ],
+      "model": "prop.jt_pottery",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ivcnj4spsr",
+      "kind": "prop",
+      "position": [
+        -45,
+        0,
+        12
+      ],
+      "model": "prop.jt_rubble_pile",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ru7sjb46g0",
+      "kind": "prop",
+      "position": [
+        30,
+        0,
+        12.5
+      ],
+      "model": "prop.jt_collapsed_column",
+      "yaw": 0.3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_i8b91fjzo9",
+      "kind": "prop",
+      "position": [
+        -30,
+        0,
+        34
+      ],
+      "model": "prop.jt_broken_column",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xfpntiquk3",
+      "kind": "prop",
+      "position": [
+        -12,
+        0,
+        14
+      ],
+      "model": "prop.jt_planter",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mf9yg53z9a",
+      "kind": "prop",
+      "position": [
+        12,
+        0,
+        14
+      ],
+      "model": "prop.jt_planter",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_thzi9unpjd",
+      "kind": "prop",
+      "position": [
+        -9,
+        0,
+        3.25
+      ],
+      "model": "prop.jt_rope_rail",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_pj8v4wswbn",
+      "kind": "prop",
+      "position": [
+        9,
+        0,
+        3.25
+      ],
+      "model": "prop.jt_rope_rail",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mvh0aa8axo",
+      "kind": "prop",
+      "position": [
+        -21,
+        0,
+        3.25
+      ],
+      "model": "prop.jt_chain_rail",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ljz6nk7dxy",
+      "kind": "prop",
+      "position": [
+        21,
+        0,
+        3.25
+      ],
+      "model": "prop.jt_spikes",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_f83a7wfgzq",
+      "kind": "prop",
+      "position": [
+        -51,
+        0,
+        50
+      ],
+      "model": "prop.jt_tree_trunk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0sacnu279y",
+      "kind": "prop",
+      "position": [
+        51,
+        0,
+        44
+      ],
+      "model": "prop.jt_tree_trunk",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_95h2qo8jbg",
+      "kind": "prop",
+      "position": [
+        44,
+        0,
+        34
+      ],
+      "model": "prop.jt_wooden_platform",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5y4n28dis6",
+      "kind": "prop",
+      "position": [
+        -16,
+        0,
+        28.5
+      ],
+      "model": "prop.jt_overgrown_beam",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_a84zzt522k",
+      "kind": "prop",
+      "position": [
+        -30,
+        0,
+        46
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": -3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_80pn9rk83a",
+      "kind": "prop",
+      "position": [
+        -14,
+        0,
+        41
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": -1.4000000000000001,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wax16wq3y1",
+      "kind": "prop",
+      "position": [
+        14,
+        0,
+        41
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 1.4000000000000001,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5hy6dvkne0",
+      "kind": "prop",
+      "position": [
+        30,
+        0,
+        46
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 3,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_psac53n92r",
+      "kind": "prop",
+      "position": [
+        -46,
+        0,
+        18
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": -4.6000000000000005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_oyml4jic9p",
+      "kind": "prop",
+      "position": [
+        46,
+        0,
+        26
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 4.6000000000000005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4vq6yu1oe6",
+      "kind": "prop",
+      "position": [
+        -20,
+        0,
+        14
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": -2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_z2xqr7q556",
+      "kind": "prop",
+      "position": [
+        20,
+        0,
+        14
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 2,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wyq23377ir",
+      "kind": "prop",
+      "position": [
+        -36,
+        0,
+        52
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": -3.6,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yri62o6xh4",
+      "kind": "prop",
+      "position": [
+        36,
+        0,
+        52
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 3.6,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wq83r4b4re",
+      "kind": "prop",
+      "position": [
+        -50,
+        0,
+        38
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 3.8000000000000003,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w8m4jpnvg1",
+      "kind": "prop",
+      "position": [
+        50,
+        0,
+        38
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 3.8000000000000003,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_b0umu8cauy",
+      "kind": "prop",
+      "position": [
+        -50,
+        0,
+        10
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3lsq7od2xg",
+      "kind": "prop",
+      "position": [
+        50,
+        0,
+        12
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 1.2000000000000002,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_n3nvi37mko",
+      "kind": "prop",
+      "position": [
+        -4,
+        0,
+        46
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 4.6000000000000005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mpclo2zh2q",
+      "kind": "prop",
+      "position": [
+        -34,
+        0,
+        50
+      ],
+      "model": "prop.nt_palm_tall",
+      "yaw": -2.3800000000000003,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_eav9exogr1",
+      "kind": "prop",
+      "position": [
+        34,
+        0,
+        50
+      ],
+      "model": "prop.nt_palm_tall",
+      "yaw": 2.3800000000000003,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_kzsdiyqodo",
+      "kind": "prop",
+      "position": [
+        -50.5,
+        0,
+        28
+      ],
+      "model": "prop.nt_palm_tall",
+      "yaw": -3.535,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5oyovlk5uy",
+      "kind": "prop",
+      "position": [
+        50.5,
+        0,
+        20
+      ],
+      "model": "prop.nt_palm_tall",
+      "yaw": 3.535,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_hymephh0he",
+      "kind": "prop",
+      "position": [
+        -26,
+        0,
+        11
+      ],
+      "model": "prop.jg_banana_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_f6epumzmbr",
+      "kind": "prop",
+      "position": [
+        26,
+        0,
+        11
+      ],
+      "model": "prop.jg_banana_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_r9a4recog9",
+      "kind": "prop",
+      "position": [
+        -28,
+        -4,
+        2.5
+      ],
+      "model": "prop.jg_vine_curtain",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_qts0c1br1c",
+      "kind": "prop",
+      "position": [
+        -8,
+        -4,
+        2.5
+      ],
+      "model": "prop.jg_vine_curtain",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_znk7r12n0o",
+      "kind": "prop",
+      "position": [
+        8,
+        -4,
+        2.5
+      ],
+      "model": "prop.jg_vine_curtain",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0sag0luw3t",
+      "kind": "prop",
+      "position": [
+        28,
+        -4,
+        2.5
+      ],
+      "model": "prop.jg_vine_curtain",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_4tw978dgz3",
+      "kind": "spawn",
+      "position": [
+        40,
+        0,
+        -42
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_58q7mf5eb8",
+      "kind": "spawn",
+      "position": [
+        24,
+        0,
+        -40
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_3459ewaolt",
+      "kind": "spawn",
+      "position": [
+        22,
+        0,
+        -47
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_zzt4gpx8uz",
+      "kind": "spawn",
+      "position": [
+        8,
+        0,
+        -42
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_7mfvzrvurk",
+      "kind": "spawn",
+      "position": [
+        -8,
+        0,
+        -42
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_qafubgr7py",
+      "kind": "spawn",
+      "position": [
+        -22,
+        0,
+        -47
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_cr7rogzi50",
+      "kind": "spawn",
+      "position": [
+        -24,
+        0,
+        -40
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_u2ewet59uc",
+      "kind": "spawn",
+      "position": [
+        -40,
+        0,
+        -42
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_jc0zvl1blx",
+      "kind": "spawn",
+      "position": [
+        46,
+        0,
+        -50
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_4z3im1onkr",
+      "kind": "spawn",
+      "position": [
+        -46,
+        0,
+        -50
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_r9njdxq9rt",
+      "kind": "spawn",
+      "position": [
+        8,
+        0,
+        -50
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_95teh77rdu",
+      "kind": "spawn",
+      "position": [
+        -8,
+        0,
+        -50
+      ],
+      "yaw": 6.283185307179586,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_8ko5gz8jen",
+      "kind": "spawn",
+      "position": [
+        48,
+        0,
+        -16
+      ],
+      "yaw": 4.71238898038469,
+      "faction": null
+    },
+    {
+      "id": "spawn_lmojxl69zk",
+      "kind": "spawn",
+      "position": [
+        24,
+        0,
+        -8
+      ],
+      "yaw": 4.71238898038469,
+      "faction": null
+    },
+    {
+      "id": "spawn_z50uwvld7g",
+      "kind": "spawn",
+      "position": [
+        40,
+        0,
+        -24
+      ],
+      "yaw": 4.71238898038469,
+      "faction": null
+    },
+    {
+      "id": "spawn_uh8juorp1c",
+      "kind": "spawn",
+      "position": [
+        0,
+        0,
+        -8
+      ],
+      "yaw": 4.71238898038469,
+      "faction": null
+    },
+    {
+      "id": "spawn_emzzmg1o44",
+      "kind": "spawn",
+      "position": [
+        48,
+        0,
+        -32
+      ],
+      "yaw": 4.71238898038469,
+      "faction": null
+    },
+    {
+      "id": "spawn_e43xh5zvfu",
+      "kind": "spawn",
+      "position": [
+        33,
+        0,
+        -13
+      ],
+      "yaw": 4.71238898038469,
+      "faction": null
+    },
+    {
+      "id": "flag_z55okutem0",
+      "kind": "flag",
+      "position": [
+        0,
+        0,
+        -40
+      ],
+      "yaw": 6.283185307179586,
+      "team": "embers"
+    },
+    {
+      "id": "hill_leofzfagmy",
+      "kind": "hill",
+      "position": [
+        16,
+        4,
+        0
+      ],
+      "radius": 3.5
+    },
+    {
+      "id": "pickup_y5gdj52vsu",
+      "kind": "pickup",
+      "position": [
+        0,
+        8,
+        -31
+      ],
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_nlr2m5tfwu",
+      "kind": "pickup",
+      "position": [
+        48,
+        7,
+        -37.5
+      ],
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_4ab24zlae8",
+      "kind": "pickup",
+      "position": [
+        16,
+        4,
+        0
+      ],
+      "item": "core.weapon_launcher",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_qlm5e2ho5t",
+      "kind": "pickup",
+      "position": [
+        40,
+        0,
+        -48
+      ],
+      "item": "core.weapon_grapple",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_uvfrm3401f",
+      "kind": "pickup",
+      "position": [
+        27,
+        0,
+        -22
+      ],
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_v7ddak1mdy",
+      "kind": "pickup",
+      "position": [
+        40,
+        0,
+        -8
+      ],
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_utvgthb0kg",
+      "kind": "pickup",
+      "position": [
+        24,
+        0,
+        -32
+      ],
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_lhi4clhbin",
+      "kind": "pickup",
+      "position": [
+        24,
+        -4,
+        0
+      ],
+      "item": "core.dynamite",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_jhnol7u2qk",
+      "kind": "pickup",
+      "position": [
+        8,
+        0,
+        -8
+      ],
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_h655ccdmws",
+      "kind": "pickup",
+      "position": [
+        8,
+        4,
+        -21.5
+      ],
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_oju90h69or",
+      "kind": "pickup",
+      "position": [
+        48,
+        0,
+        -8
+      ],
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_ru0bs5jn35",
+      "kind": "pickup",
+      "position": [
+        24,
+        0,
+        -48
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_2wevsts3s4",
+      "kind": "pickup",
+      "position": [
+        32,
+        -4,
+        0
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "water_jetkop37rj",
+      "kind": "water",
+      "position": [
+        16,
+        -1,
+        -45.9
+      ],
+      "size": [
+        4.8,
+        0.9,
+        2.2
+      ],
+      "liquid": "water",
+      "tint": "#3a8a8a"
+    },
+    {
+      "id": "water_9uzi0d41tb",
+      "kind": "water",
+      "position": [
+        -16,
+        -1,
+        -45.9
+      ],
+      "size": [
+        4.8,
+        0.9,
+        2.2
+      ],
+      "liquid": "water",
+      "tint": "#3a8a8a"
+    },
+    {
+      "id": "door_era1d8675f",
+      "kind": "door",
+      "position": [
+        32,
+        0,
+        -20
+      ],
+      "yaw": 0,
+      "startOpen": true,
+      "locked": false,
+      "auto": false,
+      "style": "portcullis"
+    },
+    {
+      "id": "door_1l9n4n5r5x",
+      "kind": "door",
+      "position": [
+        -24,
+        0,
+        -20
+      ],
+      "yaw": 0,
+      "startOpen": true,
+      "locked": false,
+      "auto": false,
+      "style": "portcullis"
+    },
+    {
+      "id": "light_0mb4s94sse",
+      "kind": "light",
+      "position": [
+        2.8,
+        2.6,
+        -14
+      ],
+      "yaw": 3.141592653589793,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_mc2qtb7uwt",
+      "kind": "light",
+      "position": [
+        -2.8,
+        2.6,
+        -14
+      ],
+      "yaw": 3.141592653589793,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_btkufav90c",
+      "kind": "light",
+      "position": [
+        18.8,
+        2.6,
+        -18
+      ],
+      "yaw": 3.141592653589793,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_7xhz7cmi07",
+      "kind": "light",
+      "position": [
+        13.2,
+        2.6,
+        -18
+      ],
+      "yaw": 3.141592653589793,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_193g0k0d3m",
+      "kind": "light",
+      "position": [
+        -13.2,
+        2.6,
+        -18
+      ],
+      "yaw": 3.141592653589793,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_vrpztjjbot",
+      "kind": "light",
+      "position": [
+        -18.8,
+        2.6,
+        -18
+      ],
+      "yaw": 3.141592653589793,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "ladder_cbe1v0qznh",
+      "kind": "ladder",
+      "position": [
+        24,
+        -4,
+        -2.3
+      ],
+      "yaw": 6.283185307179586,
+      "height": 4,
+      "width": 1.2,
+      "style": "vines"
+    },
+    {
+      "id": "ladder_p9b5kc20iv",
+      "kind": "ladder",
+      "position": [
+        -24,
+        -4,
+        -2.3
+      ],
+      "yaw": 6.283185307179586,
+      "height": 4,
+      "width": 1.2,
+      "style": "vines"
+    },
+    {
+      "id": "prop_f2pjkpw7ll",
+      "kind": "prop",
+      "position": [
+        16,
+        0,
+        -49
+      ],
+      "model": "prop.jg_waterfall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_vfpm4j1dia",
+      "kind": "prop",
+      "position": [
+        -16,
+        0,
+        -49
+      ],
+      "model": "prop.jg_waterfall",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_6ez2gmwqgy",
+      "kind": "prop",
+      "position": [
+        2.75,
+        0,
+        -14
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wlrq5k3flq",
+      "kind": "prop",
+      "position": [
+        -2.75,
+        0,
+        -14
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1sf4rzdbe7",
+      "kind": "prop",
+      "position": [
+        18.75,
+        0,
+        -18
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yddkouo903",
+      "kind": "prop",
+      "position": [
+        13.25,
+        0,
+        -18
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_gw0lxwzrez",
+      "kind": "prop",
+      "position": [
+        -13.25,
+        0,
+        -18
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5s7w6deofj",
+      "kind": "prop",
+      "position": [
+        -18.75,
+        0,
+        -18
+      ],
+      "model": "prop.jt_fire_bowl",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_zvm2r9m050",
+      "kind": "prop",
+      "position": [
+        35,
+        0,
+        -19.5
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_fcsl3t11cq",
+      "kind": "prop",
+      "position": [
+        29,
+        0,
+        -19.5
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w6x4hvmgdr",
+      "kind": "prop",
+      "position": [
+        -21,
+        0,
+        -19.5
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ya1wlguvv4",
+      "kind": "prop",
+      "position": [
+        -27,
+        0,
+        -19.5
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_o232ev9rid",
+      "kind": "prop",
+      "position": [
+        0,
+        0,
+        -51
+      ],
+      "model": "prop.jt_statue_large",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2xe8e03k8x",
+      "kind": "prop",
+      "position": [
+        5,
+        0,
+        -10.5
+      ],
+      "model": "prop.jt_obelisk",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yom3yxvbdg",
+      "kind": "prop",
+      "position": [
+        -5,
+        0,
+        -10.5
+      ],
+      "model": "prop.jt_obelisk",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_k3tr0n44os",
+      "kind": "prop",
+      "position": [
+        43,
+        0,
+        -33
+      ],
+      "model": "prop.jt_zipline_post",
+      "yaw": 4.71238898038469,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0odv1ugcrh",
+      "kind": "prop",
+      "position": [
+        46,
+        0,
+        -7.5
+      ],
+      "model": "prop.jt_crane",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5w52zpfd3m",
+      "kind": "prop",
+      "position": [
+        48,
+        0,
+        -24
+      ],
+      "model": "prop.jt_tree_root_arch",
+      "yaw": 4.71238898038469,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ejy7tdhkb8",
+      "kind": "prop",
+      "position": [
+        8,
+        8,
+        -33
+      ],
+      "model": "prop.jt_altar_fire",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_bhxgv90cq8",
+      "kind": "prop",
+      "position": [
+        -8,
+        8,
+        -33
+      ],
+      "model": "prop.jt_altar_fire",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_z51nihdvu2",
+      "kind": "prop",
+      "position": [
+        26,
+        0.8,
+        -21.5
+      ],
+      "model": "prop.jt_hanging_brazier",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ak7kam9j9g",
+      "kind": "prop",
+      "position": [
+        12,
+        0,
+        -28
+      ],
+      "model": "prop.jt_statue_small",
+      "yaw": 4.71238898038469,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_c8qu5hkhjn",
+      "kind": "prop",
+      "position": [
+        -12,
+        0,
+        -28
+      ],
+      "model": "prop.jt_statue_small",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2j9fnr4kd4",
+      "kind": "prop",
+      "position": [
+        40,
+        0,
+        -30
+      ],
+      "model": "prop.jt_temple_spire",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_27s9chzhh7",
+      "kind": "prop",
+      "position": [
+        -40,
+        0,
+        -30
+      ],
+      "model": "prop.jt_sarcophagus",
+      "yaw": 4.71238898038469,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_qm6wywjrgy",
+      "kind": "prop",
+      "position": [
+        20.5,
+        0,
+        -26
+      ],
+      "model": "prop.jt_pottery",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_y8mpk7g4np",
+      "kind": "prop",
+      "position": [
+        -37,
+        0,
+        -22
+      ],
+      "model": "prop.jt_pottery",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_i61lyyh4gj",
+      "kind": "prop",
+      "position": [
+        45,
+        0,
+        -12
+      ],
+      "model": "prop.jt_rubble_pile",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_swkg3agph2",
+      "kind": "prop",
+      "position": [
+        -30,
+        0,
+        -12.5
+      ],
+      "model": "prop.jt_collapsed_column",
+      "yaw": 3.441592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_24o1vve1ao",
+      "kind": "prop",
+      "position": [
+        30,
+        0,
+        -34
+      ],
+      "model": "prop.jt_broken_column",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ngmwm1eklv",
+      "kind": "prop",
+      "position": [
+        12,
+        0,
+        -14
+      ],
+      "model": "prop.jt_planter",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ebrtkv0xvy",
+      "kind": "prop",
+      "position": [
+        -12,
+        0,
+        -14
+      ],
+      "model": "prop.jt_planter",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_vtihakx4ow",
+      "kind": "prop",
+      "position": [
+        9,
+        0,
+        -3.25
+      ],
+      "model": "prop.jt_rope_rail",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xaabx0ra2n",
+      "kind": "prop",
+      "position": [
+        -9,
+        0,
+        -3.25
+      ],
+      "model": "prop.jt_rope_rail",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xksviyerzx",
+      "kind": "prop",
+      "position": [
+        21,
+        0,
+        -3.25
+      ],
+      "model": "prop.jt_chain_rail",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_rjf1ygdbb9",
+      "kind": "prop",
+      "position": [
+        -21,
+        0,
+        -3.25
+      ],
+      "model": "prop.jt_spikes",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_q0lnag9pse",
+      "kind": "prop",
+      "position": [
+        51,
+        0,
+        -50
+      ],
+      "model": "prop.jt_tree_trunk",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wrwi25r6yr",
+      "kind": "prop",
+      "position": [
+        -51,
+        0,
+        -44
+      ],
+      "model": "prop.jt_tree_trunk",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1wd2dydktu",
+      "kind": "prop",
+      "position": [
+        -44,
+        0,
+        -34
+      ],
+      "model": "prop.jt_wooden_platform",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_fy3ht90jzi",
+      "kind": "prop",
+      "position": [
+        16,
+        0,
+        -28.5
+      ],
+      "model": "prop.jt_overgrown_beam",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_h6rut54jx1",
+      "kind": "prop",
+      "position": [
+        30,
+        0,
+        -46
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 0.14159265358979312,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0xjpfsq335",
+      "kind": "prop",
+      "position": [
+        14,
+        0,
+        -41
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 1.741592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_uxspzedqi2",
+      "kind": "prop",
+      "position": [
+        -14,
+        0,
+        -41
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 4.5415926535897935,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_m9bimqh945",
+      "kind": "prop",
+      "position": [
+        -30,
+        0,
+        -46
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 6.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ov4a4hj4au",
+      "kind": "prop",
+      "position": [
+        46,
+        0,
+        -18
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": -1.4584073464102074,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_usds8kucly",
+      "kind": "prop",
+      "position": [
+        -46,
+        0,
+        -26
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 7.741592653589794,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_707impahsq",
+      "kind": "prop",
+      "position": [
+        20,
+        0,
+        -14
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 1.1415926535897931,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_8nt1w2zc3r",
+      "kind": "prop",
+      "position": [
+        -20,
+        0,
+        -14
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 5.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_om6uff8uvl",
+      "kind": "prop",
+      "position": [
+        36,
+        0,
+        -52
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": -0.458407346410207,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_g88mcpjjwa",
+      "kind": "prop",
+      "position": [
+        -36,
+        0,
+        -52
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 6.741592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4kquunkh5i",
+      "kind": "prop",
+      "position": [
+        50,
+        0,
+        -38
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 6.941592653589794,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_nsfc0agqip",
+      "kind": "prop",
+      "position": [
+        -50,
+        0,
+        -38
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 6.941592653589794,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mzlvllwuw7",
+      "kind": "prop",
+      "position": [
+        50,
+        0,
+        -10
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 4.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_cthis6pyqa",
+      "kind": "prop",
+      "position": [
+        -50,
+        0,
+        -12
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 4.341592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wdzwc6dbae",
+      "kind": "prop",
+      "position": [
+        4,
+        0,
+        -46
+      ],
+      "model": "prop.jg_giant_fern",
+      "yaw": 7.741592653589794,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_axkncezblv",
+      "kind": "prop",
+      "position": [
+        34,
+        0,
+        -50
+      ],
+      "model": "prop.nt_palm_tall",
+      "yaw": 0.7615926535897928,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_v3tg65m4bq",
+      "kind": "prop",
+      "position": [
+        -34,
+        0,
+        -50
+      ],
+      "model": "prop.nt_palm_tall",
+      "yaw": 5.521592653589794,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_lbz7b7lh3c",
+      "kind": "prop",
+      "position": [
+        50.5,
+        0,
+        -28
+      ],
+      "model": "prop.nt_palm_tall",
+      "yaw": -0.393407346410207,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0xxjwklvhp",
+      "kind": "prop",
+      "position": [
+        -50.5,
+        0,
+        -20
+      ],
+      "model": "prop.nt_palm_tall",
+      "yaw": 6.676592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_cw07ptmawd",
+      "kind": "prop",
+      "position": [
+        26,
+        0,
+        -11
+      ],
+      "model": "prop.jg_banana_plant",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_aw5xfbcm97",
+      "kind": "prop",
+      "position": [
+        -26,
+        0,
+        -11
+      ],
+      "model": "prop.jg_banana_plant",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5j3ght4vh5",
+      "kind": "prop",
+      "position": [
+        28,
+        -4,
+        -2.5
+      ],
+      "model": "prop.jg_vine_curtain",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ewc1lezhb7",
+      "kind": "prop",
+      "position": [
+        8,
+        -4,
+        -2.5
+      ],
+      "model": "prop.jg_vine_curtain",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_y5czz9rk7y",
+      "kind": "prop",
+      "position": [
+        -8,
+        -4,
+        -2.5
+      ],
+      "model": "prop.jg_vine_curtain",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_y8nbf34i1o",
+      "kind": "prop",
+      "position": [
+        -28,
+        -4,
+        -2.5
+      ],
+      "model": "prop.jg_vine_curtain",
+      "yaw": 6.283185307179586,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    }
+  ],
+  "factions": [],
+  "logic": {
+    "variables": [],
+    "timers": [],
+    "objectives": [],
+    "rules": []
+  },
+  "terrain": null,
+  "bounds": {
+    "min": [
+      -52,
+      -60
+    ],
+    "max": [
+      52,
+      60
+    ],
+    "style": "invisible",
+    "height": 16
+  },
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "backdrop": {
+    "sky": "misty",
+    "scenery": "forest",
+    "ground": "moss",
+    "haze": 0.55,
+    "border": "forest"
+  },
+  "blood": null,
+  "physics": null,
+  "dependencies": []
+}
