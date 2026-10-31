@@ -1376,6 +1376,54 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number): void {
   }
 }
 
+/** Two arms the grip solver can move (a creature's, built by `armsFrom`). */
+export type HoldingArms = { r: Arm; l: Arm };
+
+/**
+ * Arms for the grip solver from any skeleton with our rig's arm and hand joints (a creature retargeted onto the
+ * rig: no pinky or third finger joints needed). Each hand's frame is read off its skin (handProbe.skinHandFrame).
+ */
+export function armsFrom(joints: Map<string, TransformNode>, meshes: readonly AbstractMesh[]): HoldingArms | null {
+  const arm = (side: 'l' | 'r'): Arm | null => {
+    const get = (n: string) => joints.get(`${n}_${side}`);
+    const [upper, lower, hand, knuckle, index, thumb] = [get('upperarm'), get('lowerarm'), get('hand'), get('middle_01') ?? get('index_01'), get('index_01'), get('thumb_02') ?? get('thumb_01')];
+    if (!upper || !lower || !hand || !knuckle || !index || !thumb) return null;
+    const pinky = get('pinky_01') ?? get('ring_01') ?? knuckle;
+    const fingers = ['index', 'middle', 'ring', 'pinky'].map((f) => [1, 2, 3].map((j) => joints.get(`${f}_0${j}_${side}`)).filter((n): n is TransformNode => !!n)).filter((c) => c.length > 0);
+    const frame = skinHandFrame(meshes, hand, get('thumb_01') ?? thumb, side) ?? undefined;
+    return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
+  };
+  const [r, l] = [arm('r'), arm('l')];
+  return r && l ? { r, l } : null;
+}
+
+/**
+ * Close the hands on a gun placed by the caller (a creature's held gun): the shooting hand turned onto the grip,
+ * the support hand cupping a long gun's handguard or under a pistol's, both palms brought there by the arm IK and
+ * the fingers closed. `scale`: the body's size against the model's (points on the gun are model metres).
+ */
+export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: TransformNode, grip: WeaponHold, scale: number, weight: number): void {
+  if (grip.style === 'melee' || weight <= 0) return;
+  weapon.computeWorldMatrix(true);
+  const world = weapon.getWorldMatrix();
+  const point = (p: ModelPoint) => Vector3.TransformCoordinates(new Vector3(p[0], p[1], p[2]), world);
+  gripHand(space, arms.r, world, 'grip', weight, true);
+  if (grip.support && grip.style === 'long') cupHand(space, arms.l, world, weight);
+  else if (grip.support) gripHand(space, arms.l, world, 'support', weight, true);
+  const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
+  const supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale) : null;
+  refreshArm(arms.r);
+  refreshArm(arms.l);
+  const outward = arms.r.upper.getAbsolutePosition().subtract(arms.l.upper.getAbsolutePosition()).normalize();
+  const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
+  solveArm(space, arms.r, gripAt, arms.r.upper.getAbsolutePosition().add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), weight);
+  closeHand(space, arms.r, weight);
+  if (supportAt) {
+    solveArm(space, arms.l, supportAt, arms.l.upper.getAbsolutePosition().subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), weight);
+    closeHand(space, arms.l, weight * 0.7);
+  }
+}
+
 /** The rotation taking direction `from` to direction `to`. */
 function turn(from: Vector3, to: Vector3): Quaternion {
   const q = new Quaternion();

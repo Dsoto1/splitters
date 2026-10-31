@@ -95,7 +95,7 @@ import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { loadFirstPersonMode, type FirstPersonMode } from './graphicsSettings.ts';
-import { CreatureLibrary, type AvatarSpec } from '../content/creatures.ts';
+import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
 
@@ -1577,10 +1577,9 @@ export class GameView {
         ch.root.parent = root;
         if (spec.size && spec.size !== 1) ch.root.scaling.setAll(spec.size);
         if (spec.armed) {
-          // A player in a creature skin is drawn no bigger than the player's own hitbox (big aliens shrink to fit).
-          const { min, max } = ch.root.getHierarchyBoundingVectors(true);
-          const tall = max.y - min.y;
-          if (tall > PLAYER.height * 1.1) ch.root.scaling.scaleInPlace((PLAYER.height * 1.1) / tall);
+          // A player in a creature skin is drawn at about a player's height (looks only: the hitbox is the player's;
+          // an imp was half a player and held its gun at your knees).
+          fitPlayerSkin(ch, PLAYER.height);
         }
         a.anim = new CreatureAnimator(this.scene, ch, !!spec.armed);
         placeholder.setEnabled(false);

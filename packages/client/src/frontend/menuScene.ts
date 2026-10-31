@@ -12,7 +12,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { PLAYER, getWeapon, isCreature, npcLookRole } from '@tiletrigger/shared';
-import { CreatureLibrary } from '../content/creatures.ts';
+import { CreatureLibrary, fitPlayerSkin } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CharacterLibrary } from '../content/characters.ts';
 import { applyToneMapping } from '../game/graphicsSettings.ts';
@@ -155,9 +155,8 @@ export class MenuScene {
       this.creatures ??= new CreatureLibrary(this.scene);
       this.hero = this.creatures.create(role, `menuHero_${token}`).then((ch) => {
         if (token !== this.token) return ch.dispose();
-        const { min, max } = ch.root.getHierarchyBoundingVectors(true);
-        // Big ones shrink to fit the plinth; small ones stay their size.
-        ch.root.scaling.scaleInPlace(Math.min(1, (PLAYER.height * 1.15) / Math.max(0.5, max.y - min.y)));
+        // As the game draws a player in this skin: about a player's height.
+        fitPlayerSkin(ch, PLAYER.height);
         ch.root.rotation.y = HERO_YAW + this.yaw;
         this.heroRoot = ch.root;
         this.hide(ch.meshes);
@@ -168,7 +167,7 @@ export class MenuScene {
         // Players in creature skins carry guns, like everyone else.
         const w = getWeapon('core.rifle');
         return this.models.instantiate(w.view.model, `menuHeroRifle_${token}`).then(
-          (node) => (token === this.token ? (anim.hold(node), this.appear([...ch.meshes, ...node.getChildMeshes()])) : node.dispose()),
+          (node) => (token === this.token ? (anim.hold(node, w.view.hold), this.appear([...ch.meshes, ...node.getChildMeshes()])) : node.dispose()),
           () => this.appear(ch.meshes),
         );
       });

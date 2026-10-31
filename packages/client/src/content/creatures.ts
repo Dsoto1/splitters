@@ -105,3 +105,21 @@ export class CreatureLibrary {
     };
   }
 }
+
+/** Widest (m, ears and arms included) a player's creature skin is grown to. */
+const SKIN_MAX_WIDE = 1.3;
+
+/**
+ * Scale a player's creature skin to stand a player's height (looks only: the hitbox is the player's), big ones
+ * shrunk to it and small ones grown to it, but a small one with a big head (the puglin's ears) only as far as it
+ * stays no wider than SKIN_MAX_WIDE. The same in the match and on Character Select.
+ */
+export function fitPlayerSkin(ch: CreatureInstance, height: number): void {
+  const { min, max } = ch.root.getHierarchyBoundingVectors(true);
+  const tall = max.y - min.y;
+  if (tall < 0.3) return;
+  let s = height / tall;
+  const wide = Math.max(max.x - min.x, max.z - min.z);
+  if (s > 1 && wide * s > SKIN_MAX_WIDE) s = Math.max(1, SKIN_MAX_WIDE / wide);
+  ch.root.scaling.scaleInPlace(s);
+}
