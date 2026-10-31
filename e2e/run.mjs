@@ -49,17 +49,58 @@ async function simWait(page, fn, arg, ms) {
 }
 
 /**
+ * Wait until `fn(match, me, arg)` holds, giving your own player `seconds` of match time to get there: the
+ * match counts the inputs it has taken from this page (`me.lastSeq`, one per tick). A page drawing a frame a
+ * second (software rendering on a loaded runner) sends at most a quarter second of input per frame
+ * (session.ts caps a frame's step), so your swings, reloads and pickups run several times slower than the
+ * clock: a wall-clock wait ran out before a 1.6 s reload had had its 96 ticks. `ms`: a wall-clock cap.
+ * True if it held in time.
+ */
+async function meWait(page, fn, arg, seconds, ms = T(90000)) {
+  const seq = () => sim(page, (m, me) => me.lastSeq).catch(() => null);
+  let start = await seq();
+  const until = Date.now() + ms;
+  while (Date.now() < until) {
+    if (await sim(page, fn, arg).catch(() => false)) return true;
+    const now = await seq();
+    // (A map change or a respawn starts the count again.)
+    if (start === null || now === null || now < start) start = now;
+    else if (now - start > seconds * 60) return !!(await sim(page, fn, arg).catch(() => false));
+    await sleep(100);
+  }
+  return false;
+}
+
+/**
+ * Bots stand still and hold fire (their inputs keep their aim but lose movement and buttons), whatever path
+ * the bot's input came by (thinking, steering, coasting): flows that place a bot in front of you get it there
+ * and keep it there (a bot held by speedMul alone thinks it is stuck and jumps), nobody else shoots it, and a
+ * drop stays where it fell until you walk onto it.
+ */
+async function holdBots(page) {
+  await sim(page, (m) => {
+    for (const c of m.combatants()) {
+      if (!c.bot || c.queue.held) continue;
+      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      c.queue.held = true;
+    }
+  });
+}
+
+/**
  * After a flow moves an actor in the match: wait until this page draws it there. Shots and blows are lag
  * compensated (the match rewinds targets to the tick your screen showed when you fired, up to 300 ms), so a
  * swing sent before your screen caught up with the move is aimed at where the actor was: on a slow page it
- * misses (and a semi-automatic weapon swings only once per press).
+ * misses (and a semi-automatic weapon swings only once per press). `tick`: the match tick it was moved on;
+ * also wait until the tick this page sends for lag compensation (`__cs.viewTick()`) has reached it (a drawn position can run a
+ * few ticks ahead of it, past the newest snapshot).
  */
-async function seenAt(page, slot, at, ms) {
+async function seenAt(page, slot, at, ms, tick = 0) {
   return page
-    .waitForFunction(([s, p]) => {
+    .waitForFunction(([s, p, t]) => {
       const a = window.__cs.view.avatars.get(s);
-      return !!a && Math.hypot(a.root.position.x - p.x, a.root.position.z - p.z) < 0.25;
-    }, [slot, at], { timeout: ms })
+      return !!a && Math.hypot(a.root.position.x - p.x, a.root.position.z - p.z) < 0.25 && (!t || window.__cs.viewTick() >= t);
+    }, [slot, at, tick], { timeout: ms })
     .then(() => true, () => false);
 }
 
@@ -1995,7 +2036,8 @@ async function arsenalFlow(browser) {
       window.__cs.input.pitch = -0.25;
       window.__autoInput = { buttons: 2 };
     }, id);
-    await page.waitForTimeout(T(500)); // wait-ok: fires the weapon for half a second
+    // Half a second of the match's time with the trigger held (a slow page sends its input slowly).
+    await meWait(page, () => false, null, 0.5);
     // Fire, oil and goo leave hazards a while; note any that show up (slow machines draw them late).
     await page.evaluate(() => {
       window.__zonesSeen ??= new Set();
@@ -2006,8 +2048,11 @@ async function arsenalFlow(browser) {
   await page.waitForFunction(() => window.__zonesSeen.size > 0 || window.__cs.view.scene.transformNodes.some((n) => n.name.startsWith('zone_')), null, { timeout: T(4000) }).catch(() => {});
   const zones = await page.evaluate(() => [...window.__zonesSeen, ...window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('zone_')).map((n) => n.name.slice(5))]);
   check(zones.length > 0, `hazards are drawn on the ground (${[...new Set(zones)].join(', ')})`);
+  // The bar follows the snapshots: wait for the weapons given to come in.
+  await page.waitForFunction(() => /•/.test(document.getElementById('weapon-bar')?.textContent ?? ''), null, { timeout: T(10000) }).catch(() => {});
   const bar = await page.evaluate(() => document.getElementById('weapon-bar').textContent);
-  check(/•/.test(bar ?? ''), `the weapon bar shows several weapons in a slot (${bar})`);
+  const kit = /•/.test(bar ?? '') ? '' : await sim(page, (m, me) => `; the match: ${me.alive ? 'alive' : 'down'}, ${me.deaths} deaths, ${[...me.weapons.values()].map((w) => w.def.id).join(' ')}`);
+  check(/•/.test(bar ?? ''), `the weapon bar shows several weapons in a slot (${bar}${kit})`);
   // The host's "Mix up weapon pickups" (pause menu → Host): a fixed weapon pickup turns into another weapon of
   // its category (its roll pool is the category's pickups, holding both), at once, and the client draws it.
   const fixed = await sim(page, (m) => m.pickups.filter((p) => p.item.effect.kind === 'weapon' && !p.entity.keepFixed).map((p) => [p.id, p.item.id]));
@@ -2022,8 +2067,14 @@ async function arsenalFlow(browser) {
     return p.item.id !== was && p.pool?.includes(p.item) && p.pool.includes(p.placed);
   }), fixed, T(10000));
   const [firstId] = fixed[0] ?? [];
-  const now = firstId ? await sim(page, (m, _me, id) => m.pickups.find((p) => p.id === id).item.id, firstId) : null;
-  const drawn = firstId ? await page.waitForFunction(([id, item]) => window.__cs.view.pickupItem(id) === item, [firstId, now], { timeout: T(10000) }).then(() => true, () => false) : false;
+  // What it holds now, as the match has it each time asked: a bot taking it rolls it again (it comes back as
+  // something new), so the client is waited on for the match's current roll, not the first one.
+  const lies = () => sim(page, (m, _me, id) => m.pickups.find((p) => p.id === id).item.id, firstId);
+  let now = firstId ? await lies() : null;
+  const drawn = !!firstId && await until(async () => {
+    now = await lies();
+    return (await page.evaluate((id) => window.__cs.view.pickupItem(id), firstId)) === now;
+  }, T(10000));
   check(fixed.length > 0 && mixed && drawn, `the host's mix-up swaps every fixed weapon pickup for another of its category, drawn by the client (${fixed.length} pickups; ${firstId}: ${fixed[0]?.[1]} → ${now})`);
   // A pickup drawn again as another gun leaves the shared gun materials alone: your own first-person gun keeps its textures.
   const fpTex = await page.evaluate(() => {
@@ -2036,6 +2087,9 @@ async function arsenalFlow(browser) {
   });
   check(fpTex.meshes > 0 && fpTex.bare.length === 0, `after the mix-up no gun (your first-person one included) has lost its materials (${JSON.stringify(fpTex)})`);
   // Quick melee with a gun in hand (side mouse button or Y): a punch lands on a bot right in front of you.
+  // From here bots stand still and hold fire: the one placed in front stays there (no jumping), nobody else
+  // hurts it (its health is what's checked), and its drop lies where it fell.
+  await holdBots(page);
   await page.evaluate(() => {
     window.__give('core.pistol');
     window.__cs.input.pitch = -0.12;
@@ -2048,15 +2102,24 @@ async function arsenalFlow(browser) {
     bot.health = 100;
     bot.armor = 0;
     bot.speedMul = 0;
-    return { slot: bot.slot, hp: bot.health, at: bot.move.pos };
+    return { slot: bot.slot, hp: bot.health, at: bot.move.pos, tick: m.tick };
   });
   // Struck only once this screen shows the bot in front (lag compensation: see seenAt).
-  if (target) await seenAt(page, target.slot, target.at, T(5000));
+  if (target) await seenAt(page, target.slot, target.at, T(15000), target.tick + 1);
+  // Look at its middle: bots come in sizes, and a fixed glance down (-0.12) passed 4 cm over a small one's head
+  // (0.78 × 1.8 m tall) 1.3 m away: the swing rightly missed.
+  const aimAt = (slot) => sim(page, (m, me, s) => {
+    const b = m.actor(s);
+    const eye = me.move.pos.y + 1.6 * me.size;
+    const middle = b.move.pos.y + 1.8 * b.size * 0.55;
+    return Math.atan2(middle - eye, Math.hypot(b.move.pos.x - me.move.pos.x, b.move.pos.z - me.move.pos.z));
+  }, slot).then((pitch) => page.evaluate((p) => (window.__cs.input.pitch = p), pitch));
+  if (target) await aimAt(target.slot);
   await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2048 }));
   // Your fist comes in at once (first person); the server lands the punch (15 damage).
   await page.waitForFunction(() => window.__cs.view.strikes.punch > 0, null, { timeout: T(5000) }).catch(() => {});
   const swung = await page.evaluate(() => window.__cs.view.strikes.punch);
-  const punched = target ? await simWait(page, (m, _me, t) => m.actor(t.slot).health <= t.hp - 10, target, T(5000)) : false;
+  const punched = target ? await meWait(page, (m, _me, t) => m.actor(t.slot).health <= t.hp - 10, target, 2) : false;
   await sim(page, (m, _me, t) => {
     const b = m.actor(t.slot);
     if (b) b.speedMul = 1;
@@ -2071,38 +2134,43 @@ async function arsenalFlow(browser) {
       window.__cs.input.pitch = -0.12;
     });
     await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.battle_axe' && window.__cs.local.raiseTicks === 0, null, { timeout: T(8000) }).catch(() => {});
+    await meWait(page, (m, me) => me.weapons.get(me.current)?.def.id === 'core.battle_axe' && me.raiseTicks === 0 && me.fireCooldown === 0, null, 2);
     const stand = (dist) => sim(page, (m, me, a) => {
       const bot = m.actor(a.slot);
       bot.move = { ...bot.move, pos: { x: me.move.pos.x + Math.sin(me.yaw) * a.dist, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * a.dist }, velY: 0, grounded: true };
       bot.health = 100;
       bot.armor = 0;
       bot.speedMul = 0;
-      return bot.move.pos;
-    }, { slot: target.slot, dist }).then((at) => seenAt(page, target.slot, at, T(5000)));
+      return { at: bot.move.pos, tick: m.tick };
+    }, { slot: target.slot, dist }).then(({ at, tick }) => seenAt(page, target.slot, at, T(15000), tick + 1));
     await stand(1.6);
+    await aimAt(target.slot);
     // The trigger held (one swing: it's semi-automatic) until the blow lands.
     await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
-    const chopped = await simWait(page, (m, _me, t) => m.actor(t.slot).health <= 100 - 80, target, T(5000));
+    const chopped = await meWait(page, (m, _me, t) => m.actor(t.slot).health <= 100 - 80, target, 3);
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
     check(chopped, 'the Battle Axe swings: the bot in front takes the blow');
     await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] === 2, null, { timeout: T(5000) }).catch(() => {});
     await stand(5);
-    // After the swing's recovery: the barrel (bit 32, the alt trigger, as right mouse sends with a melee weapon in hand).
-    await page.waitForTimeout(T(900)); // wait-ok: the swing's recovery (48 ticks) before the barrel can fire
+    await aimAt(target.slot);
+    // After the swing's recovery (48 ticks): the barrel (bit 32, the alt trigger, as right mouse sends with a melee weapon in hand).
+    await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
     const clouds = await page.evaluate(() => window.__cs.view.smokeClouds.local);
     // Held until it goes off (a slow page samples its input seldom), then let go.
     await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
-    await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] < 2, null, { timeout: T(8000) }).catch(() => {});
+    await meWait(page, (m, me) => me.weapons.get(me.current)?.alt < 2, null, 2);
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-    const blasted = await simWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, T(5000));
+    const blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
     await page.waitForFunction((n) => window.__cs.view.smokeClouds.local > n, clouds, { timeout: T(5000) }).catch(() => {});
     const after = await page.evaluate(() => ({ smoke: window.__cs.view.smokeClouds.local, loads: window.__cs.local.inventory.get(window.__cs.local.held)?.[2], hud: `${document.getElementById('ammo-count')?.textContent} ${document.getElementById('ammo-reserve')?.textContent} · ${document.getElementById('ammo-alt')?.textContent}` }));
     const hp = await sim(page, (m, _me, t) => m.actor(t.slot).health, target);
     check(blasted && after.smoke > clouds && after.loads < 2 && /RMB Blunderbuss/.test(after.hud), `the Battle Axe's blunderbuss shoots the bot 5 m out from its barrel, in a cloud of smoke (bot at ${hp} HP, loads left ${after.loads}, HUD "${after.hud}", smoke clouds ${after.smoke})`);
     // R loads the barrel again from its shells (slowly: about a second and a half for one).
     await page.evaluate(() => (window.__autoInput = { buttons: 4 }));
-    await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] === 2, null, { timeout: T(8000) }).catch(() => {});
+    await meWait(page, (m, me) => me.weapons.get(me.current)?.alt === 2, null, 4);
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    // (The HUD's copy comes with the next snapshots.)
+    await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] === 2, null, { timeout: T(5000) }).catch(() => {});
     const ammo = await page.evaluate(() => window.__cs.local.inventory.get(window.__cs.local.held));
     check(ammo?.[0] === 0 && ammo[2] > after.loads && ammo[1] === 12 - (ammo[2] - after.loads), `R loads the barrel again from its shells (loads ${ammo?.[2]}, shells ${ammo?.[1]})`);
     await sim(page, (m, _me, t) => {
@@ -2116,6 +2184,8 @@ async function arsenalFlow(browser) {
     const gun = await sim(page, (m) => (m.rules.startingWeapons.includes('core.rifle') ? 'core.sniper' : 'core.rifle'));
     await page.evaluate((id) => window.__give(id), gun);
     const handed = await simWait(page, (m, me, id) => [...me.weapons.values()].some((w) => w.def.id === id), gun, T(8000));
+    // (Up again, if the blows above put it down.)
+    await meWait(page, (m, _me, t) => m.actor(t.slot)?.alive, target, 10);
     const fell = handed && await sim(page, (m, me, a) => {
       const bot = m.actor(a.slot);
       const [code, w] = [...me.weapons].find(([, x]) => x.def.id === a.gun);
@@ -2134,12 +2204,13 @@ async function arsenalFlow(browser) {
     }, { slot: target.slot, gun });
     const near = !!fell && Math.hypot(fell.pos.x - fell.at.x, fell.pos.z - fell.at.z) < 0.5 && Math.abs(fell.pos.y - fell.at.y) < 2;
     const shown = !!fell && await page.waitForFunction((id) => window.__cs.view.dropsDrawn().some(([d]) => d === id) && window.__cs.view.scene.meshes.some((x) => x.name.startsWith(`drop_${id}_gun`) && x.getTotalVertices() > 0), fell.id, { timeout: T(10000) }).then(() => true, () => false);
-    check(near && shown && fell.mag === 7 && fell.reserve === 23, `the fallen bot's ${gun} drops at its body with its ammo, drawn on the ground (${JSON.stringify(fell)}, drawn ${shown})`);
+    const seen = !fell || shown ? '' : await page.evaluate((id) => `; drawn drops ${JSON.stringify(window.__cs.view.dropsDrawn())}, meshes ${window.__cs.view.scene.meshes.filter((x) => x.name.startsWith(`drop_${id}`)).map((x) => `${x.name}:${x.getTotalVertices()}`).join(' ')}`, fell.id);
+    check(near && shown && fell.mag === 7 && fell.reserve === 23, `the fallen bot's ${gun} drops at its body with its ammo, drawn on the ground (${JSON.stringify(fell)}, drawn ${shown}${seen})`);
     if (fell) {
       await sim(page, (m, me, d) => {
         me.move = { ...me.move, pos: { ...d.pos }, velY: 0 };
       }, fell);
-      const took = await simWait(page, (m, me, a) => [...me.weapons.values()].some((w) => w.def.id === a.gun && w.mag === 7 && w.reserve === 23) && !m.drops.some((d) => d.id === a.id), { gun, id: fell.id }, T(8000));
+      const took = await meWait(page, (m, me, a) => [...me.weapons.values()].some((w) => w.def.id === a.gun && w.mag === 7 && w.reserve === 23) && !m.drops.some((d) => d.id === a.id), { gun, id: fell.id }, 2);
       const gone = await page.waitForFunction((id) => !window.__cs.view.dropsDrawn().some(([d]) => d === id), fell.id, { timeout: T(8000) }).then(() => true, () => false);
       check(took && gone, `walking onto the drop gives you the ${gun} with exactly its ammo (7 + 23), and the drop goes (taken ${took}, gone on the client ${gone})`);
     }
