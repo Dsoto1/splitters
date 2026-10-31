@@ -10,6 +10,46 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### `wip/medieval-fixes-dropship` (agent, 2026-10-31; in progress, not merged)
+Owner asks: Market Town "some roofs upside down, the fountain floating and too large, a few buildings look off",
+and "add the drop ship to the path tool (drawn in and out of bounds; players/bots only drop out and land in a valid
+map area)".
+- **Done (committed):**
+  - Market Hall roof was a V: `gableRoof` rolled ridge-north-south slabs the wrong way (`roll: -s*PITCH` → `s*PITCH`).
+    Houses/forge/watchtower (ridge east-west, pitch) were right at every rotation; a test now checks every medieval
+    tile's roof slabs face up and out at all 4 rotations.
+  - Odd pieces fixed in `packTilesMedieval.ts`: house ceilings and the balcony deck no longer share faces with the
+    walls (z-fighting along every facade top / balcony edge), hall's floor band is now a fascia (it fought the floor),
+    shop awning slopes on two wall brackets (were posts hanging in mid-air), shop shelves moved off the east door,
+    street plinth cut at doorways, watchtower "braces" were a 7 × 5 m board through the lookout (now X-beams),
+    bell tower's belfry floor duplicated the stair landing in another tint, forge chimney / stream lip / watchtower
+    posts nudged off coplanar faces. Test: no coplanar faces between different materials in medieval tiles.
+  - Props (`prepare-medieval.mjs`, rebuilt with `ONLY=mv_tarp_tent,mv_hay_cart,mv_shop_sign prepare-props`):
+    tarp tent canvas now meets its ridge pole (used the complement angle), hay cart shafts rest on the ground,
+    shop sign board hangs clear of its strut.
+  - Fountain: `prop.fountain_square` scale 1 → 0.4 in `maps/market_town.json` (9.2 m basin over a 3.8 m plinth step
+    → fits the upper step at 0.5 m). Portcullis: `startOpen: true`, sim and visuals start raised; what looked like a
+    lowered grille in the QA shot is the timber-framed border fence seen through the passage (unchanged).
+  - Drop routes: `AirplaneEntity.craft` ('plane' | 'dropship', optional, additive); `DROPSHIP_DROP_DEF` (dropship.glb,
+    12 benches); MapMaker Paths group has Plane/Dropship Drop Route cards + palette key `airplane:dropship`;
+    inspector Aircraft choice; route tool colours the route green over the play area, grey outside.
+    Sim (`sim/airplane.ts` dropPlan/dropArea/canDrop/dropStretchEnds/botDropIndex, `match.ts` dropPlanFor/mayJumpOut):
+    jumps only when exit and landing points are over ground in the play area (bounds, else tiles+terrain, 3 m in;
+    not void/lava/acid); refused jump → per-player `msg` (new optional `s` on the msg event); riders still aboard are
+    dropped at the last good point; bots pick a nav-reachable landing near their objective. Old 60 m bounds warning
+    replaced by `airplane.nodrop`. Unit tests in airplane.test.ts.
+- **Also:** drop routes now start their clock when play begins (`MountRt.routeT0`, set in beginPlay/startRound):
+  timed from tick 0, the loading wait and countdown could fly a dropship across the whole map before anyone could
+  jump. Market Town's tarp tents stood half through the south border fence: moved to z -72 (east one to x 27, clear
+  of a spawn). Palette atlas + provenance rebuilt.
+- **Local checks:** typecheck OK; test:changed 3 load flakes (npc/scenario bot matches) that pass alone; airplane
+  and medieval tests pass; content:check OK; validate-map market_town/eagle_spires/frost_basin/runway_nine 0 issues;
+  bundle budget 799.9 / 800 KB gzip (was 799.0: the drop plan is reached from validate.ts in the menu bundle, so
+  there's ~0.1 KB left); e2e editor (with the new dropRouteChecks), editorux, vehicles PASS. In the e2e, TEST's
+  bots must hold fire (one shot the player under the canopy).
+- **Next:** CI on `check/medieval-fixes`; if red, fix forward on the wip branch.
+- Screenshots (before/after, real match, prod build): session scratchpad `mt-fix/` (not in the repo).
+
 ### `wip/grips-live` (agent, 2026-10-31): "the grips are not working at all" (owner, live 6c0f8a6)
 - **Root cause:** the clips' hold is made for the rig's hand; a Meshy hand can sit on its joint a quarter turn
   round (core.dapper's), so its palm faced the camera and its edge the grip, in every view. Not specific to real
@@ -59,6 +99,28 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
   need `pnpm e2e:baselines`.
 
+### Queued for after 15:00 EST / 19:00 UTC (owner, 2026-10-31): new Drive downloads
+- **New models** the owner added to the Drive folder (`18MaKefMCWARf1Y3gAjhZuxTto86vGAYl`): sort them (characters,
+  props, weapons, vehicles), process through the existing pipelines, name and manifest new characters.
+- **FX: the owner bought a full licence** for the effects packs whose free versions we already use (Binbun:
+  `content/vfx.json`, binbun-muzzle-flash / hit-fx / explosion-fx, CC0 free editions). The full packs add many more
+  effects, textures and weapon/gameplay effects. Before shipping: read the purchased licence text (it is likely a
+  commercial licence, not CC0) and record it per pack in vfx.json / provenance (licence, "purchased by the owner");
+  CLAUDE.md's content rules list CC0, credit-only and Quaternius packs, so add "assets the owner bought a licence for"
+  there with the owner's OK. As now, only the processed output ships (prepare-vfx.mjs atlases); the pack files are
+  never committed. Then map effects to weapons (muzzle, tracer, impact per surface, explosions per weapon), gameplay
+  (pickups, spawns, portals, jump pads, hazards) and check performance at 96.
+
+### After the style packs (owner, 2026-10-31): MapMaker overhaul and a pass over every map
+Once all the style packs are done (10 Medieval, 11 Harbor, 12 Snow, 09 Desert City, 06 Jungle Ruins refresh, and the
+unassigned Sci-Fi Research and Industrial Factory refreshes), the owner wants:
+- **A major MapMaker update** for the packs: how they're browsed, placed and combined (palette, search, pack
+  filters, previews, tile/prop placement and editing). Scope it with the owner first.
+- **Every map updated** to the new styles, assets and models (the suite in maps/), improved where it helps
+  (layouts, looks, cover, spawns, weapons, performance); each map edited in MapMaker as data (CLAUDE.md "Maps"),
+  validate-map clean, its card shot redone. Overlaps the older queued "Map revisit pass".
+Not started; plan it with the owner when the packs are on main.
+
 ### Work split between the owner's two accounts (2026-10-31 ~06:40 UTC)
 The owner is splitting the style packs across two accounts. Each pack goes on its own `wip/<pack>-pack` branch built
 on `main`. They collide in generated files (props.generated.ts, thumbs/palette.json + atlases, provenance.json,
@@ -74,8 +136,18 @@ props.json, stylePacks.ts, catalog.ts, materials.ts, CHANGELOG/HANDOFF). Whoever
     existing maps such as pharaohs_reach still load, but the pack entry and its palette become Desert City).
   - Jungle Ruins refresh from the TILESET 04 sheet (owner: "update"): carved, relief and window walls; beamed and arch
     ceilings; a zipline post; a watch tower.
-  - If time allows, Ancient Temple combined into 03 Imperial Arena (owner: "combine").
+  - Ancient Temple (TILESET 07) is combined into that same Jungle Ruins refresh (owner, 2026-10-31: the two
+    sounded alike), so it is one pack: Jungle Ruins. 03 Imperial Arena stays Roman and unchanged.
   - Sci-Fi Research (Orbital) and Industrial Factory (Military) refreshes are unassigned.
+- **If this account runs out mid-task:** the three agents push WIP to `wip/medieval-fixes-dropship`,
+  `wip/harbor-pack` and `wip/snow-pack` after every step, each with its own HANDOFF section saying what's done
+  and what's next. The other account resumes from those branches: merge `main`, finish, go green on `check/<name>`,
+  then fast-forward `main`.
+- **State when this account ran out (2026-10-31 ~12:20 UTC):** all three branches nearly done, none run on CI yet:
+  `wip/medieval-fixes-dropship` dbe4685, `wip/harbor-pack` 7d13a27 (Saltmarsh Harbor; also moves STYLE_PACKS out of the
+  menu's first JS: 798.0 of 800 kB gzip), `wip/snow-pack` 827d581 (Whiteout Station). Next: for each branch, merge
+  `main` into it, push it to `check/<name>`, fix until green, then fast-forward `main`, one branch at a time. The
+  second of Harbor and Snow to land rebuilds the generated files (palette atlas, props.generated.ts, provenance).
 - How a pack is built: see the Medieval pack (packTilesMedieval.ts, tools/content/prepare-medieval.mjs,
   stylePacksMedieval.test.ts). Its demo map is a maps/<id>.json made with MapMaker operations (no build script in
   the repo), following docs/map-briefs/AGENT_BUILD_CONTRACT.md. No Meshy generation without the owner's approval.
@@ -208,6 +280,34 @@ Reuse what exists: castle_* pieces, siege_tower, stall*, cart, hay_bale, anvil, 
 lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster houses with tile roofs, market
 square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
 Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
+
+### Style Pack 11 Coastal Harbor (`wip/harbor-pack`, agent, 2026-10-31; green on `check/harbor`, not merged)
+- **Done (pushed):** 20 tiles in `packages/shared/src/map/packTilesHarbor.ts` (pier, pier head, boardwalk + corner,
+  quay wall / outside / inside corner, 2 × 1 sea wall steps, slipway, shingle beach, basin, breakwater, 2 × 1
+  warehouse, net shed and harbourmaster's office (straight stair, eaves 8.25 m like Medieval: an Outside Stair north
+  of one reaches its roof), fish market, skeleton lighthouse (gallery 10.5 m), crane (platform 6 m, hatch for a
+  Ladder), harbour arch, quayside). Harbour levels: quay 0, water surface `HARBOR_SEA` −1.5, bed `HARBOR_BED` −4.
+  Box helpers are now exported from packTilesMedieval.ts (gableRoof got `pitch`/`ridgeMaterial`). 18 props
+  `hb_*` built by `tools/content/prepare-harbor.mjs` (Owned; `hb_fishing_boat` is the stand-in hero, Meshy
+  candidate). Patterns decking/ashlar/pebbles/corrugated/lapboards/bands, 12 materials, theme `core.coastal` +
+  backdrop, facades `harbour_render`/`tarred_timber`, palette piece **Harbour Water** (`water:harbour`), palette
+  group `harbor`, STYLE_PACKS `harbor` (11). Test `stylePacksHarbor.test.ts` passes (incl. nav cases per rotation).
+  Demo map `maps/saltmarsh_harbor.json`: validate-map 0 issues; built by a scratch helper (scratchpad
+  `harbor/build_saltmarsh.mts`, not in the repo).
+- **Bundle:** the pack pushed the menu's first JS to 806.8 KB gzip; STYLE_PACKS was in the menu only because its
+  `props(...)` calls looked impure to Rollup. Marked `/* @__PURE__ */`: now 798.0 KB (below the 799.0 before).
+- **Navmesh lesson:** a switchback stair inside four walls drops off Recast's navmesh (watershed regions); open sides
+  (watchtower / skeleton lighthouse) keep it. Ramps are 32 low steps under a drawn slope (tilted slabs lost the
+  top joint in some rotations).
+- **Also done:** palette atlas (`harbor` group) + `content:build` (content OK), map card, docs (BUILDING_KIT
+  "11 Coastal Harbor", CHANGELOG, `docs/map-briefs/saltmarsh_harbor/` with screenshots). The Tide warehouse roof
+  has no stair (one against the east boundary lost its flight on the navmesh).
+- **Checks:** typecheck, test:changed (1067 passed), content:check, build, bundle budget (798.0 KB gzip), validate-map 0
+  issues, e2e editor/editorux/maps (saltmarsh_harbor) locally; CI run 41200191169 on `check/harbor` (7d13a27): full
+  suite green. NOT TESTED: live bot match, bot swimming / jet-ski crossing, 24-player perf, real-GPU walk-through.
+- **Next:** merge to the session
+  branch (rebuild palette atlas/provenance if another pack landed first). Candidates: a real boat mount (motor
+  launch), Meshy hero for `hb_fishing_boat`.
 
 ### Style Pack 10 Medieval Village (`wip/medieval-pack`, agent, 2026-10-31; not merged)
 - **Built** (from the owner's tileset sheet 01): 16 tiles in `packages/shared/src/map/packTilesMedieval.ts` (2 × 1 Timber,

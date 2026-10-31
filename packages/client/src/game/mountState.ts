@@ -1,4 +1,4 @@
-import { AIRPLANE_DEF, BUILT_MOUNT_BASE, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import { BUILT_MOUNT_BASE, airCraftDef, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -50,7 +50,7 @@ export class MountState {
       // Transport planes are mounts too (they fly their route); their box never blocks anything.
       const plane = e.kind === 'airplane';
       if (e.kind !== 'mount' && !plane) return;
-      const def = plane ? AIRPLANE_DEF : getMountDef(e.model);
+      const def = plane ? airCraftDef(e.craft) : getMountDef(e.model);
       if (!def) return;
       const start = plane ? routePose(airRoute(e), 0) : null;
       const pos = start ? start.pos : { x: e.position[0], y: e.position[1], z: e.position[2] };

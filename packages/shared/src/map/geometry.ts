@@ -1122,7 +1122,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'harbour_render' | 'tarred_timber';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1150,6 +1150,9 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   // 12 Snow Outpost.
   prefab: { skin: 'core.prefab_red', tint: null, depth: 0.08 },
   snow_bunker: { skin: 'core.snowy_concrete', tint: null, depth: 0.15 },
+  // 11 Coastal Harbor.
+  harbour_render: { skin: 'core.harbour_render', tint: null, depth: 0.1 },
+  tarred_timber: { skin: 'core.tarred_boards', tint: null, depth: 0.08 },
 };
 /** Openings in a dressed wall (from its segments): `top` is the lintel, `sill` the sill (0 for a doorway). */
 function facadeOpenings(segs: readonly [number, number, number, number, number][]): { u0: number; u1: number; sill: number; top: number }[] {
@@ -1358,6 +1361,20 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
             add(side, o.u0 - 0.15, o.u1 + 0.15, o.top + 0.12, o.top + 0.2, out0 - 0.25, out0, snow);
           }
           if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.2, out0 - 0.15, TILE_DIMENSIONS.wallThickness, snow);
+          break;
+        }
+        case 'harbour_render':
+        case 'tarred_timber': {
+          // Coastal Harbor: a granite plinth, frames and sills round the windows (harbour blue on the render,
+          // white on the tarred boards) and a slate drip course under the eaves.
+          const frame = facade === 'harbour_render' ? 'core.harbour_paint' : 'core.paint_matte';
+          if (ground) add(side, -half, half, 0, 0.5, out0 - 0.08, -base, 'core.quay_granite');
+          for (const o of facadeOpenings(segs)) {
+            if (o.sill > 0.3) add(side, o.u0 - 0.1, o.u1 + 0.1, o.sill - 0.1, o.sill, out0 - 0.12, out0, frame);
+            if (o.top < levelHeight - 0.3) add(side, o.u0 - 0.1, o.u1 + 0.1, o.top, o.top + 0.14, out0 - 0.08, out0, frame);
+            for (const u of [o.u0 - 0.1, o.u1]) add(side, u, u + 0.1, o.sill, o.top, out0 - 0.06, out0, frame);
+          }
+          if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.2, out0 - 0.25, TILE_DIMENSIONS.wallThickness, 'core.pbr_slate_roof');
           break;
         }
         case 'adobe':

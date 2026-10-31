@@ -48,6 +48,7 @@ export const PROP_GROUPS = [
   { id: 'dungeon', label: 'Dungeons & Caves', categories: ['Dungeon', 'Dark Dungeon', 'Mines & Caves'] },
   { id: 'western', label: 'Wild West', categories: ['Wild West', 'Frontier'] },
   { id: 'ancient', label: 'Ancient & Jungle', categories: ['Imperial Arena', 'Sands of Egypt', 'Jungle Ruins'] },
+  { id: 'harbor', label: 'Coastal Harbor', categories: ['Coastal Harbor'] },
 ] as const;
 /** Prop categories shown in the Nature tab. */
 export const NATURE_PROP_CATEGORIES: readonly string[] = ['Trees', 'Rocks & Wood', 'Plants & Flowers'];
@@ -84,7 +85,7 @@ export function pictureKeys(): { key: string; tile?: string; file?: string }[] {
 
 /** Scenario palette entries (Objects & Logic tab) by sub-group; game-mode objects, lights and NPC spawners have their own tabs. */
 export function scenarioGroup(key: string): { pane: 'entities' | 'scenario' | 'lights' | 'npcs'; group: string } {
-  if (['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'airplane'].includes(key)) return { pane: 'entities', group: 'Game Modes & Objectives' };
+  if (['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'airplane', 'airplane:dropship'].includes(key)) return { pane: 'entities', group: 'Game Modes & Objectives' };
   if (key.startsWith('light:')) return { pane: 'lights', group: 'Lights' };
   if (key.startsWith('encounter')) return { pane: 'npcs', group: 'Spawners' };
   if (key.startsWith('door') || key === 'mover:portcullis' || key === 'mover:garage_door' || key === 'mover:bookcase') return { pane: 'scenario', group: 'Doors & Gates' };

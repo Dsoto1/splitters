@@ -435,6 +435,7 @@ export const SCENARIO_PALETTE = [
   { key: 'water:acid', label: 'Acid', search: 'acid toxic liquid hazard pool' },
   { key: 'water:swamp', label: 'Swamp', search: 'swamp mud bog marsh liquid slow' },
   { key: 'airplane', label: 'Transport Plane', search: 'airplane plane transport air drop parachute route fly over battle royale jump' },
+  { key: 'airplane:dropship', label: 'Dropship Drop', search: 'dropship drop ship gunship air drop parachute route fly over battle royale jump transport' },
   { key: 'mover:lift', label: 'Lift', search: 'mover lift elevator platform moving up down ride' },
   { key: 'mover:slider', label: 'Sliding Wall', search: 'mover sliding wall door gate moving platform train car shuttle' },
   { key: 'mover:drawbridge', label: 'Drawbridge', search: 'mover drawbridge bridge hinge lower raise castle moat' },
@@ -481,6 +482,8 @@ export const SCENARIO_PALETTE = [
   { key: 'mover:rollup_door', label: 'Roll-up Door', search: 'mover roll up rolling shutter door hangar garage warehouse wide steel logic snow outpost' },
   { key: 'block:ice', label: 'Ice Block', search: 'block ice glacier breakable shatter cover frozen snow outpost' },
   { key: 'block:thin_ice', label: 'Thin Ice', search: 'block thin ice frozen lake crack give way fall water trap snow' },
+  // Style Pack gameplay pieces (11 Coastal Harbor).
+  { key: 'water:harbour', label: 'Harbour Water', search: 'water harbour harbor sea deep swim boat quay pier coast' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
@@ -723,6 +726,9 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('ladder'), kind: 'ladder', ...base, height: 6, width: 1.2, style: 'vines' };
     case 'trap:rockfall':
       return { id: newId('rockfall'), kind: 'trap', trap: 'crusher', ...base, activation: 'proximity', onSeconds: 1.2, offSeconds: 8, offsetSeconds: 0, startEnabled: true, damage: null, style: 'rockfall' };
+    case 'water:harbour':
+      // Sea water for a harbour: place it on the bed (HARBOR_BED) and its surface sits at HARBOR_SEA, 1.5 m under the quay: deep enough to swim.
+      return { id: newId('harbour'), kind: 'water', position, size: [16, 2.5, 16], liquid: 'water', tint: '#2e5a66' };
     case 'water:pool':
       return { id: newId('pool'), kind: 'water', position, size: [5, 1.75, 12], liquid: 'water', tint: '#3fc8e8' };
     case 'block:rope_bridge':
@@ -807,6 +813,10 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'airplane':
       // A square loop 160 m across, 70 m up, once a minute; no air drop until the creator picks one.
       return { id: newId('plane'), kind: 'airplane', position, route: [[-80, -80], [80, -80], [80, 80], [-80, 80]], altitude: 70, loopSeconds: 60, closed: true, airdrop: 'off' };
+    case 'airplane:dropship':
+      // A dropship's run-in: in from off the map's edge, across it and out the far side (draw it in and out of bounds;
+      // riders can only jump over the map), 45 m up, slower than the plane.
+      return { id: newId('dropship'), kind: 'airplane', craft: 'dropship', position, route: [[-140, 0], [0, 0], [140, 0]], altitude: 45, loopSeconds: 30, closed: false, airdrop: 'off' };
     case 'water:water':
     case 'water:lava':
     case 'water:acid':
