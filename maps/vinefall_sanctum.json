@@ -18,15 +18,7 @@
       "core.tdm",
       "core.ctf",
       "core.koth"
-    ],
-    "release": {
-      "mapId": "m_gkp3v3wp4n735nox",
-      "versionId": "v_weh4aokcgsaiy4vf",
-      "revision": 1,
-      "contentHash": "sha256:971b02f70388378600b4fdf7a0d6ac4fc753b27d2530a114eeb7578522ffd6ff",
-      "schemaVersion": 24,
-      "releasedAt": "2026-10-31T12:31:28.853Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

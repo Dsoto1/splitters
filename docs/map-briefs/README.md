@@ -12,6 +12,7 @@ build notes (manifest, QA report, decisions and deviations) go in `docs/map-brie
 | (Style Pack 09 Desert City demo; owner's Desert City tileset sheet) | n/a | `maps/qasr_medina.json` | built on `wip/desert-city-pack` (2026-10-31); notes in `qasr_medina/`; the minaret is a landmark (not climbed) |
 | (Style Pack 10 demo; owner's Medieval Village tileset sheet) | n/a | `maps/market_town.json` | built on `wip/medieval-pack` (2026-10-31); notes in `market_town/`; bots don't reach the belfry or the NW watchtower lookout |
 | (Style Pack 11 demo; owner's Coastal Harbor tileset sheet) | n/a | `maps/saltmarsh_harbor.json` | built on `wip/harbor-pack` (2026-10-31); notes in `saltmarsh_harbor/` |
+| (Style Pack 06 Jungle Ruins refresh demo; owner's Jungle Ruins and Ancient Temple tileset sheets, folded into one pack) | n/a | `maps/vinefall_sanctum.json` | built on `wip/jungle-ruins-pack` (2026-10-31); notes in `vinefall_sanctum/`; zipline is an owner question (scenery posts + Grapple Hook for now) |
 
 `AGENT_BUILD_CONTRACT.md` (the owner's, v1.0) applies to every map, with these repo adaptations:
 - The map file stays `maps/<id>.json` (the game loads maps from there; CLAUDE.md "Maps"). The contract's
