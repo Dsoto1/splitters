@@ -10,6 +10,26 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Model fidelity (`wip/model-fidelity`, agent, 2026-10-31; not merged)
+- **What was wrong:** the Meshy pipeline (tools/content/meshy-mesh.mjs) cut downloads of 10k–1.8M triangles to
+  2–6k and shipped only a rebaked colour map: the normal map was dropped, so the cut mesh shaded as flat lumps.
+- **Now:** `bakeNormals` bakes a tangent-space normal map from the full download (its normals plus Meshy's own
+  normal map) onto the cut mesh, with a TANGENT attribute (green sign checked by rendering in Babylon against the
+  download). Props, guns and Meshy characters all get one. Budget tiers: `budgets.tiers.hero` in props.json /
+  guns.json (20k tris, 1.6 MB, LOD required above 8k), `"budget": "hero"` on landmark props (excavator, haul truck,
+  historic building, gantry crane, 5 containers) and on first-person weapons, turrets and the buggy; hero entries
+  carry a LOD (`lod: [share, m]`) that models.ts gives to merged prop instances and to instanced copies (crowd guns).
+  Character byte budget 1.5 → 1.8 MB. `ONLY=` for prepare-props.
+- **Rebuilt:** all 30 owned Meshy props, 13 guns + medkit + buggy (incl. ornate pistol and sentry, whose GLBs were
+  in the session scratch `dl/`), 42 of 56 Meshy characters. **Not rebuilt (no download here):** community props
+  mp_control_cabinet, mp_dino_statue, mp_burnt_car; community guns ironclad_revolver, arc_cannon_turret;
+  offroad_tire (kept at 800 tris on purpose); characters knight, nova, dapper (rigged by task ID: `fetch-meshy.mjs`
+  can re-fetch them), goblin, otter, toad, salamander, hyena, elder, alien, cat, pilot, pirate, titan (FBX downloads).
+- **Cost:** Meshy props 4.9 → 11.1 MB, guns/vehicles 3.6 → 10.6 MB, characters 41.9 → 52.4 MB; site dist 169 → 192 MB.
+  Next lever: EXT_meshopt_compression (geometry is most of each file; needs the decoder served with the site).
+- Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
+  need `pnpm e2e:baselines`.
+
 ### Owner notes, 2026-10-30 evening (not done yet; next session start here)
 - **Flaky e2e to fix properly:** `mobile` "a tap on the pad middle jumps" fails intermittently on CI (both attempts on
   e8f449a, passed on a715e60/b4d55de; passes locally). The crouch-on-next-frame change (bb06a47) didn't cure it. Look at
