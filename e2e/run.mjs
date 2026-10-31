@@ -3002,8 +3002,19 @@ async function gripsInPlay(browser) {
   const imp = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   await imp.goto(`${CLIENT}/?offline=training_range&test=1&god=1&look=npc:imp`);
   await imp.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
-  await imp.click('#resume').catch(() => {});
-  await imp.keyboard.press('KeyH');
+  // Into play and third person, for sure: on a slow page the pause menu can come up after a first click on Resume
+  // (and then H does nothing), and a third-person camera pulled in against a wall doesn't draw your body: turn away.
+  for (let i = 0; i < 12; i++) {
+    if (await imp.isVisible('#resume')) await imp.click('#resume').catch(() => {});
+    const state = await imp.evaluate(() => {
+      const a = window.__cs.view.avatars.get(window.__cs.slot);
+      return { third: window.__cs.thirdPerson(), drawn: !!a && !a.hiddenSelf && a.root.isEnabled() };
+    });
+    if (state.third && state.drawn) break;
+    if (!state.third) await imp.keyboard.press('KeyH');
+    else await imp.evaluate(() => (window.__cs.input.yaw += 1.2));
+    await sleep(1000);
+  }
   const held = [];
   for (const w of ['core.pistol', 'core.rifle']) {
     await imp.evaluate((id) => window.__give(id), w);
