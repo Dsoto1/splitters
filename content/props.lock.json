@@ -12668,7 +12668,7 @@
       "src": "mv_shop_sign.glb",
       "triangles": 132,
       "bytes": 8124,
-      "sha256": "5801f87fae211caf"
+      "sha256": "b3ec65e79d06c47b"
     },
     {
       "file": "props/mv_hay_cart.glb",
@@ -12676,7 +12676,7 @@
       "src": "mv_hay_cart.glb",
       "triangles": 852,
       "bytes": 34532,
-      "sha256": "35bbe5983e6a7ab3"
+      "sha256": "3e6669d9de8c2f9d"
     },
     {
       "file": "props/mv_forge.glb",
@@ -12795,8 +12795,8 @@
       "source": "tiletrigger-medieval",
       "src": "mv_tarp_tent.glb",
       "triangles": 204,
-      "bytes": 12964,
-      "sha256": "97bafb08076ec9ee"
+      "bytes": 12968,
+      "sha256": "c5219d866333d204"
     }
   ]
 }

@@ -1247,5 +1247,5 @@ export const CORE_PROPS: readonly PropDefinition[] = [
   {id: 'prop.mv_sacks', file: 'props/mv_sacks.glb', displayName: 'Grain Sacks', category: 'Medieval Village', size: [1.535,0.65,1.286], collision: [1.535,0.65,1.286]},
   {id: 'prop.mv_bay_window', file: 'props/mv_bay_window.glb', displayName: 'Bay Window', category: 'Medieval Village', size: [1.904,2.63,0.689], collision: null},
   {id: 'prop.mv_shutters', file: 'props/mv_shutters.glb', displayName: 'Shuttered Window', category: 'Medieval Village', size: [2.4,1.4,0.12], collision: null},
-  {id: 'prop.mv_tarp_tent', file: 'props/mv_tarp_tent.glb', displayName: 'Tarp Tent', category: 'Medieval Village', size: [4.227,1.85,3.057], collision: [4.227,1.85,3.057]},
+  {id: 'prop.mv_tarp_tent', file: 'props/mv_tarp_tent.glb', displayName: 'Tarp Tent', category: 'Medieval Village', size: [4.227,1.85,2.547], collision: [4.227,1.85,2.547]},
 ];
