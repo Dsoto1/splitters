@@ -289,7 +289,7 @@ lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster h
 square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
 Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
 
-### Jungle Ruins refresh (`wip/jungle-ruins-pack`, agent, 2026-10-31; stopped early, not merged)
+### Jungle Ruins refresh (`wip/jungle-ruins-pack`, agent, 2026-10-31; main merged in, ready for a check branch, not merged)
 Owner sheets TILESET 04 Jungle Ruins + TILESET 07 Ancient Temple, combined into Style Pack 06 Jungle Ruins.
 - **Done (committed):** 20 new tiles in `packages/shared/src/map/packTilesJungle.ts` (Temple Terrace, Terrace
   Stair (stack them a level up into ziggurats), Carved Temple 2 × 1 (gate on the west cell's south edge fits the
@@ -309,11 +309,26 @@ Owner sheets TILESET 04 Jungle Ruins + TILESET 07 Ancient Temple, combined into 
 - **Zipline:** no zipline mechanic exists (only the Grapple Hook). `jt_zipline_post` is scenery; the pack lists
   the Grapple Hook to cross between posts. A real zipline ride is an owner decision (new movement mechanic).
 - **Stand-ins (stable ids, Meshy only with owner approval):** jt_statue_large, jt_crane, jt_zipline_post.
-- **Not done / next:** BUILDING_KIT "06 Jungle Ruins" section (note Ancient Temple folded in; list the above),
-  CHANGELOG Unreleased line, `docs/map-briefs/vinefall_sanctum/` manifest/QA/decisions docs (like market_town),
-  e2e (editor, editorux, maps E2E_MAPS=vinefall_sanctum,jungle_steps, visual) not run; full `pnpm test:changed`
-  not run (jungle, kit, stylePacks*, content:check, typecheck, build passed). Bot audit/perf not run. Map's
-  `metadata.release` came from MapMaker's Export (other repo maps have none; strip if preferred).
+- **Merged with main (2026-10-31 evening):** main (Medieval fixes, Harbor 11, Snow 12, Desert City 09) merged in;
+  the shared pack files took main's version with the jungle additions re-applied next to the other packs
+  (PatternId / PAINTERS / FINE_PATTERNS, materials, `core.ancient_temple` theme and backdrop, catalog import,
+  STYLE_PACKS entry keeps `/* @__PURE__ */`). No id collisions (patterns slabs/fret/relief/inlay/roots/thatch,
+  the 8 materials, theme, jt_* props, jungle.* tiles are all unique), so nothing renamed. Generated files rebuilt
+  as "Work split" says: props.json/lock = main's + jungle entries, prepare-props (prop GLBs byte-identical, only
+  jt_* added), palette atlases (tiles 247, ancient 96), content:build → provenance, content:check OK. Map card
+  recaptured with capture-map-shots.mjs (in-match render works). `metadata.release` stripped from the map.
+- **Docs done:** BUILDING_KIT "06 Jungle Ruins refresh (Ancient Temple folded in)" + the 06 table row (and the
+  Style Packs intro, which main's merges had left with three copies of one sentence); CHANGELOG Unreleased (pack
+  under MapMaker, map under Maps); `docs/map-briefs/vinefall_sanctum/` manifest, decisions, QA; README row.
+  The `_jdebug*.test.ts` scratch tests were never committed (none on the branch).
+- **Checks (local, after the merge):** typecheck OK; `pnpm test:changed` 1164 passed, 3 timed out under machine
+  load (host.test, match 32-bot, sandgate nav) and passed when rerun alone; bundle budget 824.1 kB gzip /
+  2922.9 kB raw (budget 840 / 3000); validate-map 0 issues on vinefall_sanctum, jungle_steps, verdant_ziggurat,
+  erosion; e2e (CI=1) editor, editorux, maps (E2E_MAPS=vinefall_sanctum,jungle_steps), visual all PASS.
+  `pnpm ci:plan` wants the full suite (assets-src/ counts as shared), so push to `check/jungle` and expect ~8 shards.
+- **Open:** CI on a check branch, then fast-forward main (the lead's call). Bot audit / perf on Vinefall Sanctum
+  not run. **Owner questions:** a real zipline ride (new movement mechanic) vs posts as scenery + Grapple Hook
+  (current); Meshy hero versions of jt_statue_large, jt_crane, jt_zipline_post.
 - **Sheet notes (pictures are gone with the container):** TILESET 04: weathered mossy stone, tropical; vignettes
   of overgrown temple courtyards, waterfalls, rope bridges over chasms, torch-lit stairs; red banners with a gold
   emblem. TILESET 07: sandstone with teal-and-gold inlay tiles, teal/gold banners, wall torches, hanging braziers,
