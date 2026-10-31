@@ -25347,7 +25347,7 @@
     },
     {
       "file": "props/mv_shop_sign.glb",
-      "sha256": "5801f87fae211caf",
+      "sha256": "b3ec65e79d06c47b",
       "triangles": 132,
       "bytes": 8124,
       "source": "tiletrigger-medieval/mv_shop_sign.glb",
@@ -25362,7 +25362,7 @@
     },
     {
       "file": "props/mv_hay_cart.glb",
-      "sha256": "35bbe5983e6a7ab3",
+      "sha256": "3e6669d9de8c2f9d",
       "triangles": 852,
       "bytes": 34532,
       "source": "tiletrigger-medieval/mv_hay_cart.glb",
@@ -25587,9 +25587,9 @@
     },
     {
       "file": "props/mv_tarp_tent.glb",
-      "sha256": "97bafb08076ec9ee",
+      "sha256": "c5219d866333d204",
       "triangles": 204,
-      "bytes": 12964,
+      "bytes": 12968,
       "source": "tiletrigger-medieval/mv_tarp_tent.glb",
       "title": "Style Pack pieces (Medieval Village)",
       "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
