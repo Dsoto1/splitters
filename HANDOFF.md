@@ -59,6 +59,16 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
   need `pnpm e2e:baselines`.
 
+### After the style packs (owner, 2026-10-31): MapMaker overhaul and a pass over every map
+Once all the style packs are done (10 Medieval, 11 Harbor, 12 Snow, 09 Desert City, 06 Jungle Ruins refresh, and the
+unassigned Sci-Fi Research and Industrial Factory refreshes), the owner wants:
+- **A major MapMaker update** for the packs: how they're browsed, placed and combined (palette, search, pack
+  filters, previews, tile/prop placement and editing). Scope it with the owner first.
+- **Every map updated** to the new styles, assets and models (the suite in maps/), improved where it helps
+  (layouts, looks, cover, spawns, weapons, performance); each map edited in MapMaker as data (CLAUDE.md "Maps"),
+  validate-map clean, its card shot redone. Overlaps the older queued "Map revisit pass".
+Not started; plan it with the owner when the packs are on main.
+
 ### Work split between the owner's two accounts (2026-10-31 ~06:40 UTC)
 The owner is splitting the style packs across two accounts. Each pack goes on its own `wip/<pack>-pack` branch built
 on `main`. They collide in generated files (props.generated.ts, thumbs/palette.json + atlases, provenance.json,
