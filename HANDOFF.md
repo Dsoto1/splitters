@@ -59,6 +59,14 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
   need `pnpm e2e:baselines`.
 
+### main at bed1556, released (2026-10-31 06:20 UTC)
+Shipped: St. John's smoothing + Smooth all, model fidelity (normal maps, hero tier, LODs), grips (Meshy hands,
+grapple rope at the muzzle, creature skins), launcher settings parity + less server garbage at 96, Style Pack 10
+Medieval Village + Market Town, Scolitex out of Character Select, arsenal e2e and the mobile tap-jump bug fixed.
+The first release attempt failed in actions/attest-build-provenance (sigstore tlog 404); a re-run published it.
+Next: Harbor and Snow packs, then Desert City (replaces Egypt), Jungle refresh, Ancient Temple into Imperial;
+owner's community downloads for mv_forge / mv_hay_cart / mv_well / mv_tarp_tent; open character notes below.
+
 ### Owner notes, 2026-10-30 evening (not done yet; next session start here)
 - **Done on `wip/launcher-parity` (agent, 2026-10-31; not merged, needs a check/ run: it maps to the full suite):**
   the owner's "dedicated launcher settings parity + Iron Maw hiccups". Every browser-host match setting is in the
