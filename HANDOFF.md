@@ -15,6 +15,12 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   e8f449a, passed on a715e60/b4d55de; passes locally). The crouch-on-next-frame change (bb06a47) didn't cure it. Look at
   how the CDP touch timestamps map to the page's `e.timeStamp` (touchControls.ts tap vs hold) and whether the player
   is grounded when the tap lands; log the pad state in the check before changing the game.
+- **Queued (owner, 2026-10-31): dedicated launcher settings parity + Iron Maw hiccups.** The owner ran the Host
+  Service launcher with 96 bots on Iron Maw: "some hiccups", ran relatively OK, and couldn't change some match
+  settings (score limit, time limit, etc.). Make every match-setup / host-panel setting available in the launcher
+  (controls, console, config), live where the browser host's are, plus extras; profile the server tick on Iron Maw at
+  96 (path queries on narrow benches, vehicles, snapshot size) and fix the spikes. Start when an agent slot frees
+  (running: wip/model-fidelity, wip/st-johns-smooth, wip/grips-live).
 - **main at 6c0f8a6 (2026-10-30 ~23:45 UTC):** everything from this session, Sunken Kingdom and Iron Maw included
   (both merged and green on CI). Nothing left on wip/* from this session. Open owner questions: Sunken Kingdom
   (Meshy dome, taller cliffs, CTF flags 190 m apart: bots don't capture), Iron Maw (raise the schema's player-count
