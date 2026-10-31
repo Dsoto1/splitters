@@ -121,6 +121,14 @@ unassigned Sci-Fi Research and Industrial Factory refreshes), the owner wants:
   validate-map clean, its card shot redone. Overlaps the older queued "Map revisit pass".
 Not started; plan it with the owner when the packs are on main.
 
+### Menu bundle (2026-10-31): style packs push the menu's first JS over budget
+The menu's first JS grows ~6–12 kB gzipped per style pack (Harbor 798, Snow 805, Desert City 816 kB): each pack's
+tiles (catalog.ts imports packTiles*.ts statically), materials and the whole props table (props.generated.ts via
+getProp in geometry/match/validate) come in through the shared map and sim code the menu loads. The budget in
+tools/ci/bundle-budget.mjs was raised to 840 kB gzipped / 3000 kB raw for Snow, Desert City and Jungle Ruins.
+**To do:** load pack tiles and the props table on demand (a registry the editor and the match fill before they need
+it; the menu draws neither), then bring the budget back to ~800 kB.
+
 ### Work split between the owner's two accounts (2026-10-31 ~06:40 UTC)
 The owner is splitting the style packs across two accounts. Each pack goes on its own `wip/<pack>-pack` branch built
 on `main`. They collide in generated files (props.generated.ts, thumbs/palette.json + atlases, provenance.json,
