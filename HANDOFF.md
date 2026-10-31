@@ -72,7 +72,13 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - St. John's: Smooth all (Medium, keeping the ground under blocks) and Settle all props, through MapMaker's own
   buttons (Playwright driving the page; no script in the repo), then Export. Halls' pads and laid paths unchanged
   (paths are laid at load time).
-- Merge through a `check/` branch (editor flows and the map tour part with st_johns).
+- Result: 13,745 of 19,481 heights moved (median 2 cm, 99th pct ~0.5 m, max ~1.1 m); 3,085 vertices under 727 blocks
+  held; 313 things carried with the ground, 115 props re-settled. validate-map (incl. navigation: every spawn and
+  pickup reachable) 0 issues. Checks: typecheck, test:changed (all pass; one unrelated failure in an earlier run did not
+  recur), content:check, build, e2e editor + editorux + maps (E2E_MAPS=st_johns) pass.
+- Left as is: the rims where the halls' levelled pads meet the ground (held on purpose), a pit by the rectory on the
+  bluff (real 3DEP). Smooth all's Medium was chosen over Strong, which softens the bluff's crest.
+- Merge through a `check/` branch (the change touches shared code, so CI runs the full suite).
 
 ### Where things stand (2026-10-30 evening)
 - **Iron Maw on `wip/iron-maw`, not merged** (agent, 2026-10-30 night): `maps/iron_maw.json`, the open-pit
