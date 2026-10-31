@@ -906,3 +906,51 @@ export function hiddenTriangles(P, idx, rays = 40) {
   }
   return hidden;
 }
+
+/**
+ * A character's share of its triangle budget kept for its head. A cut driven by error alone treats a face like
+ * any other surface, and a realistic body cut from a million triangles came out with a face of a hundred or two
+ * (Lancer Mei 133 triangles of 11,000, Sir Galloway 389: "lumpy" faces); the good ones carry 1,500 to 2,500.
+ */
+export const HEAD_SHARE = 0.12;
+
+/**
+ * Cut a triangle list to about `target` triangles, the head (`isHead(v)` for its vertices; a triangle is the
+ * head's when two of its corners are) cut apart from the rest with at least HEAD_SHARE of the budget (never more
+ * than it has), the vertices the two share locked so they still meet. `errors`: the careful passes tried in turn
+ * until a part is within half again of its target; `sloppy`: then a sloppy pass, for the body only (it would
+ * crush a face). Returns the new index list.
+ */
+export function cutKeepingHead(indices, positions, target, isHead, { errors = [0.008], sloppy = false } = {}) {
+  const n = positions.length / 3;
+  const head = [];
+  const body = [];
+  for (let i = 0; i < indices.length; i += 3) {
+    const h = Number(isHead(indices[i])) + Number(isHead(indices[i + 1])) + Number(isHead(indices[i + 2]));
+    (h >= 2 ? head : body).push(indices[i], indices[i + 1], indices[i + 2]);
+  }
+  const total = indices.length / 3;
+  const headTris = head.length / 3;
+  const headTarget = Math.min(headTris, Math.max(Math.round((target * headTris) / Math.max(1, total)), Math.round(target * HEAD_SHARE)));
+  const bodyTarget = Math.max(1, target - headTarget);
+  const lock = new Uint8Array(n);
+  const inHead = new Uint8Array(n);
+  for (const v of head) inHead[v] = 1;
+  for (const v of body) if (inHead[v]) lock[v] = 1;
+  const none = new Float32Array(n);
+  const cut = (part, want, allowSloppy) => {
+    let idx = Uint32Array.from(part);
+    for (const error of errors) {
+      if (idx.length / 3 <= want * 1.05) break;
+      [idx] = MeshoptSimplifier.simplifyWithAttributes(idx, positions, 3, none, 1, [0], lock, want * 3, error, []);
+    }
+    if (allowSloppy && idx.length / 3 > want * 2) [idx] = MeshoptSimplifier.simplifySloppy(idx, positions, 3, null, want * 3, 0.05);
+    return idx;
+  };
+  const a = cut(head, headTarget, false);
+  const b = cut(body, bodyTarget, sloppy);
+  const out = new Uint32Array(a.length + b.length);
+  out.set(a);
+  out.set(b, a.length);
+  return out;
+}
