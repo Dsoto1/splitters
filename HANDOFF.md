@@ -10,6 +10,28 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### `wip/menu-profile` (agent, 2026-10-31; not merged; on top of the character groups)
+Owner: Character Select's tabs "span too far and look cluttered", the bottom bar is cluttered, sign-in is
+hidden, and the top-right character tile should be the Profile with "Change character".
+- **Profile entry** (`profileEntry()`, `#profile-badge`, top right of Home): portrait, player name, character,
+  account chip (`accountState()`: Guest / ✓ Signed in / Pick a username); opens Profile (P, pad Y). Signed out
+  with sign-in offered: orange `#sign-in` (`button.cta`) under it. **Characters** left the Home nav.
+- **Profile** (`profile()`, `#profile-panel`): character (`#profile-change-character` → Character Select; C /
+  pad Y), player (guest name → "Change it in Options" / `#profile-sign-in`; signed in: username, `#sign-out`,
+  username form), region, privacy + Copy my account ID. Auth flow unchanged (account.ts untouched).
+- **Character Select**: `charSections()` → one `.char-grid` of `.char-sec` (sticky `.char-sec-head`, label +
+  count) with a `.char-jump` strip (`.char-chip`, lit by `sectionInView`/`markSection`); Q/E → `stepSection`;
+  chips/Q/E glide with our own rAF easing (`glideGrid`: a second smooth `scrollTo` while one was starting left
+  the grid in place); wheel/touch cancel it. Arrows / d-pad: `gridMove` (crosses sections). Opens on your
+  character's section. `charFrom`: Back and Choose return to the opener (Profile, Online). "All" is gone.
+- **Bottom bar** (`hints()`): `.hint-group`s moves | acts (main one `.main`, cyan) | util (Fullscreen); news +
+  Privacy only on Home (`footer[data-screen]`); the `, .` turn hint moved into the spin bar; touch: no bar off
+  Home. Footer account links (`footerLinks`) removed.
+- e2e: offline flow's Character Select block rewritten (Profile route, sections, strip, Q/E, wheel, arrows
+  across sections, Back/Choose → Profile, P/C keys); designer flow opens via Profile.
+- style.css changed, so CI runs the full suite on a check branch; locally run: offline, mobile, designer,
+  characters, visual. Screens: session scratchpad `profile/` (before/after at 1920, 1400, phone).
+
 ### `wip/character-groups` (agent, 2026-10-31; not merged)
 Owner: "organize the characters better (soldiers, zombies, animals, creatures, human, etc)", then "clicking a
 character should just be how I look around, not this hover business; select, then confirm".
