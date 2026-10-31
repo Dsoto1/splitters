@@ -21,6 +21,9 @@ import type { CharacterAnimator } from './characterAnimator.ts';
  */
 export const FP_NECK_BACK = 0.1;
 export const FP_NECK_DROP = 0.17;
+/** Looking up, the head tips back by this share of the pitch, up to the most (radians) a neck tips. */
+const FP_HEAD_TIP = 0.75;
+const FP_HEAD_TIP_MAX = 0.9;
 /** How far (m) the body may be moved to put the neck there: across (prone lies a body's length ahead), and down / up. */
 const PIN_ACROSS = 1.6;
 const PIN_DOWN = 0.25;
@@ -109,13 +112,17 @@ export class FirstPersonBodyRig {
     refreshDown(neck, h);
     const at = neck.getAbsolutePosition();
     const look = Math.max(0, Math.min(Math.PI / 2, -this.pitch));
-    const back = FP_NECK_BACK * Math.cos(look) + FP_NECK_DROP * Math.sin(look);
+    // Looking up, the head tips back over the neck: the eyes go back and the neck's base comes forward under them,
+    // so the coat's collar and back stay behind and below the view (from the old place they crossed it).
+    const tip = Math.min(FP_HEAD_TIP_MAX, Math.max(0, this.pitch) * FP_HEAD_TIP);
+    const back = look > 0 ? FP_NECK_BACK * Math.cos(look) + FP_NECK_DROP * Math.sin(look) : FP_NECK_BACK * Math.cos(tip) - FP_NECK_DROP * Math.sin(tip);
+    const drop = FP_NECK_DROP * Math.cos(tip) + FP_NECK_BACK * Math.sin(tip);
     const fx = Math.sin(this.yaw);
     const fz = Math.cos(this.yaw);
     const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
     const dx = clamp(this.eye.x - fx * back - at.x, -PIN_ACROSS, PIN_ACROSS);
     const dz = clamp(this.eye.z - fz * back - at.z, -PIN_ACROSS, PIN_ACROSS);
-    const dy = clamp(this.eye.y - FP_NECK_DROP - at.y, -PIN_DOWN, PIN_UP);
+    const dy = clamp(this.eye.y - drop - at.y, -PIN_DOWN, PIN_UP);
     this.headShadow.position.set(at.x + dx, at.y + dy + this.headSize * 0.7, at.z + dz);
     this.headShadow.rotation.y = this.yaw;
     h.position.set(h.position.x + dx, h.position.y + dy, h.position.z + dz);

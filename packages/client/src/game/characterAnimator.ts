@@ -1011,7 +1011,9 @@ export class CharacterAnimator {
     const w = this.ik;
     // A long gun's handguard rests in the support hand palm up, fingers round its far side (the clip's hand points at the sky).
     if (grip.style === 'long' && grip.support) cupHand(space, arms.l, world, w);
-    gripHand(space, arms.r, world, 'grip', w);
+    // In first person the shooting hand is turned onto the grip whatever its rig: the clips' hold is made for a
+    // body aiming level, and the view's gun points where you look (a rig's hand looking down lay across the grip).
+    gripHand(space, arms.r, world, 'grip', w, true);
     if (grip.style === 'pistol' && grip.support) gripHand(space, arms.l, world, 'support', w);
     // The hands' turn on the gun, kept while the shoulders move below (a collarbone's roll would carry it off).
     const handsOn = { r: space.rot(arms.r.hand), l: space.rot(arms.l.hand) };
@@ -1249,10 +1251,10 @@ function turnHand(space: SkeletonSpace, arm: Arm, fingers: Vector3, palm: Vector
  * A measured (Meshy) hand turned onto a gun as a hand holds one, whatever way the clips left it: the shooting
  * hand's palm against the grip's right side, fingers forward along the frame (a measured hand often can't curl); a pistol's support hand
  * under and to the left of it, palm up and in, fingers round the front of the shooting hand. A rig's own hand
- * keeps the clip's hold, which was made for it. `weapon`: the gun's world matrix.
+ * keeps the clip's hold, which was made for it, unless `rigHands` (first person). `weapon`: the gun's world matrix.
  */
-function gripHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, role: 'grip' | 'support', weight: number): void {
-  if (!arm.frame || weight <= 0) return;
+function gripHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, role: 'grip' | 'support', weight: number, rigHands = false): void {
+  if ((!arm.frame && !rigHands) || weight <= 0) return;
   const { up, ahead, right } = gunAxes(weapon);
   if (role === 'grip') turnHand(space, arm, ahead.scale(0.9).subtract(up.scale(0.35)), right.scale(-1), weight);
   else turnHand(space, arm, ahead.scale(0.7).add(right.scale(0.6)).subtract(up.scale(0.1)), right.scale(0.3).add(up.scale(0.95)), weight);
