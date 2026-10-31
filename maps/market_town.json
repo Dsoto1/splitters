@@ -2692,7 +2692,7 @@
       "position": [
         -22,
         0,
-        -76
+        -72
       ],
       "yaw": 0,
       "scale": 1,
@@ -2704,9 +2704,9 @@
       "kind": "prop",
       "model": "prop.mv_tarp_tent",
       "position": [
-        22,
+        27,
         0,
-        -76
+        -72
       ],
       "yaw": 0,
       "scale": 1,
