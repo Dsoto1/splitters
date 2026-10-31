@@ -59,6 +59,28 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
   need `pnpm e2e:baselines`.
 
+### Work split between the owner's two accounts (2026-10-31 ~06:40 UTC)
+The owner is splitting the style packs across two accounts. Each pack goes on its own `wip/<pack>-pack` branch built
+on `main`. They collide in generated files (props.generated.ts, thumbs/palette.json + atlases, provenance.json,
+props.json, stylePacks.ts, catalog.ts, materials.ts, CHANGELOG/HANDOFF). Whoever merges second rebuilds those:
+`pnpm build`, `vite preview`, `build-palette-atlas.mjs <url>`, `pnpm content:build`, then `pnpm content:check`.
+- **This account (claude/launcher-ui-map-cards session):**
+  - Style Pack 11 Coastal Harbor (`wip/harbor-pack`).
+  - Style Pack 12 Snow Outpost (`wip/snow-pack`).
+  - Market Town fixes: upside-down roofs, the floating, oversized fountain, odd building elements.
+  - Dropship on the path tool (`wip/medieval-fixes-dropship`).
+- **Other account:**
+  - Style Pack 02 Desert City, replacing 09 Sands of Egypt (owner: "replace"; keep Egypt's tiles and props valid so
+    existing maps such as pharaohs_reach still load, but the pack entry and its palette become Desert City).
+  - Jungle Ruins refresh from the TILESET 04 sheet (owner: "update"): carved, relief and window walls; beamed and arch
+    ceilings; a zipline post; a watch tower.
+  - If time allows, Ancient Temple combined into 03 Imperial Arena (owner: "combine").
+  - Sci-Fi Research (Orbital) and Industrial Factory (Military) refreshes are unassigned.
+- How a pack is built: see the Medieval pack (packTilesMedieval.ts, tools/content/prepare-medieval.mjs,
+  stylePacksMedieval.test.ts). Its demo map is a maps/<id>.json made with MapMaker operations (no build script in
+  the repo), following docs/map-briefs/AGENT_BUILD_CONTRACT.md. No Meshy generation without the owner's approval.
+  CC0 texture hosts (ambientCG) are blocked by this container's proxy, so materials are our own pattern code.
+
 ### main at bed1556, released (2026-10-31 06:20 UTC)
 Shipped: St. John's smoothing + Smooth all, model fidelity (normal maps, hero tier, LODs), grips (Meshy hands,
 grapple rope at the muzzle, creature skins), launcher settings parity + less server garbage at 96, Style Pack 10
