@@ -143,12 +143,14 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
-## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`)
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesDesert.ts`)
 
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
-alongside the set), then 10 Medieval Village (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then 10 Medieval Village (the owner's tileset sheets); 09 is
+now **Desert City**, which replaced Sands of Egypt (owner, 2026-10-31) and still
+carries all its pieces. One registry (`STYLE_PACKS`, in pack-number order). A Style
 Pack is a themed selection of the kit: the **Style Pack** picker under the
 MapMaker palette's search box narrows the tiles, props, gameplay pieces
 (Entities → Scenario), vehicles and pickups to one pack (headings left empty
@@ -381,6 +383,11 @@ Content: `tools/content/build-style-props.mjs` models the 56 props in code
 
 ### 03 Imperial Arena (Roman) and 09 Sands of Egypt
 
+*Sands of Egypt is no longer a pack of its own: 09 Desert City replaced it (see "09 Desert City" below).
+Its 11 tiles, 15 props, theme (`core.egypt`), facade (`egyptian`) and materials are all still defined, so
+maps that use them (Pharaoh's Reach, Sunken Kingdom, After Hours) load unchanged, and they are listed at the
+end of the Desert City pack (and under All pieces, and the props' "Sands of Egypt" heading).*
+
 | Pack | Theme | Facade | Own tiles (`map/packTilesAncient.ts`) | Own props | Demo map |
 |---|---|---|---|---|---|
 | 03 Imperial Arena | `core.imperial`: sand floor, Dressed Limestone walls, travertine, Roman Rubblework, White Marble trim (ambientCG Tiles139, Marble012, Bricks075A); also Marble Temple and Desert Town | **Roman limestone** (plinth, marble pilasters, cornice) | 15 | 17 (category *Imperial Arena*) plus the Quaternius ruins already in the game (columns, arches, walls, urns, cart) | Sandfall Colosseum |
@@ -520,6 +527,58 @@ storey a repeat, so beams line up at 0, 4, 8 m), Wattle, Packed Dirt, Whitewash,
 you come close) and *Wattle Hurdle* (a breakable woven fence, back after 25 s), with the portcullis,
 portcullis gate, drawbridge, breakable and crumbling planks, boards, ladders, braziers, lanterns, candles,
 water and trigger zones.
+
+### 09 Desert City (Middle Eastern city; replaces 09 Sands of Egypt)
+
+From the owner's concept sheet "Tileset 02 – Desert City" (Middle Eastern / arid / stone + plaster). Pack id
+`desert` (tiles `desert.*`), number 09 in Sands of Egypt's place (the sheet calls it 02; 02 stays Frontier
+Dust). Theme `core.desert_city` (worn paving floor, sandstone ashlar walls, weathered plaster solids, cedar
+undersides, sandstone tile trim; also Sands of Egypt, Desert Town and Desert Tomb); facades **Desert ashlar**
+(a sandstone plinth, a zellige band under the cornice, lattice screens and cedar lintels at the windows, a
+stepped parapet) and **Desert plaster** (stone quoins, cedar beam ends under the parapet). Demo map: Qasr Medina.
+
+**Tiles** (`map/packTilesDesert.ts`, 18). Every roof is flat and walkable at 8 m behind a 1 m parapet with
+2.4 m gaps on the cell centres of every side, so a row of houses is one rooftop and bridges, galleries and
+outside stairs join it there. Houses are 2 × 1 cells, two storeys: *Plaster House* (sun-faded plaster, cedar
+beam ends, lattice windows), *Ashlar House* (sandstone, a zellige band, an arched door), *Shop House* (the
+ground storey 2 m back behind a porch with a serving counter and a red canopy). Inside each: a stair along the
+north wall to the upper floor (doors east and west at 4 m, centred, for galleries and the next house) and a
+second along the south wall up to the roof, a rug and cushions, a shaded rooftop corner. *Outside Stair*
+(stone switchback round an open well: a landing at 4 m along the south side, a deck at 8 m on the south
+edge: put it north of a house and step through the roof's parapet gap), *Rope Bridge* (2.2 m wide at 8 m,
+east–west, between two roofs' gaps), *Cedar Gallery* (a covered walk with lattice sides at 4 m between upper
+doors), *Courtyard* (2 × 2: round arcades on columns round a zellige court and fountain, gateways on every
+cell centre, a terrace on the arcades' roofs at 4 m reached by a stair in the court), *Covered Bazaar* (1 × 2:
+a lane between shop alcoves with counters, cloths under the roof, a terrace on top round two little domes),
+*Market Street* (stalls under red canopies both sides of a 4.8 m lane), *Domed Hall* (an arch on every side, a
+fountain, a blue dome on an octagonal drum up to ~11 m), *Watch Tower* (switchback stair inside to a lookout
+at 8 m behind merlons, a blue cap on posts), *Minaret* (a 22 m landmark; not climbed), *City Wall*, *Wall
+Stair* (2 × 1), *City Gate* (3 × 1: a 4 m arched passage, two domed corner towers, stairs up both wall cells,
+the walk crossing over the gate), *Arcaded Terrace* (a terrace at 4 m on piers and columns, gaps on every
+side), *Well Court*, *Paved Street*.
+
+Every stair keeps the Medieval pack's navmesh rules (treads 0.45 m, flights 2.2 m wide, ~2 m of floor at
+both ends, full-width landings, roof holes off the steps). The tests walk bots onto every floor, roof,
+bridge, gallery, terrace, lookout and wall-walk in all four rotations (`test/stylePacksDesert.test.ts`) and
+keep every box inside its tile's cells. Not climbed: the Minaret and the Domed Hall's roof (landmarks).
+
+**Props** (20, category *Desert City*, `tools/content/prepare-desert.mjs`, built in code, licence Owned):
+Market Stall, Market Canopy, Desert Banner, Hanging Lantern, Palm Planter, Water Well, Tall Vase and Water
+Jars (both break), Market Rug, Timber Crane, Cloth Line, Scaffold, Awning Window, Lattice Window, Shuttered
+Window, Spice Baskets, Floor Cushions, Rug Rack, Sandstone Column, Ornate Arch (collides as a frame: walk
+through it). The Market Stall, Water Well and Timber Crane are simple in-house versions under stable ids
+(`dc_market_stall`, `dc_well`, `dc_crane`): a hero model can take the same id later in `content/props.json`
+without touching a map. The pack also lists the crates, barrels, sandbags, palms, lanterns, pots, carts,
+ladders and troughs already in the game, then every Sands of Egypt prop.
+
+**Materials** (procedural, `client/materials/patterns.ts`; ambientCG is not reachable from the build
+container): Sandstone Ashlar (coursed blocks, tooled faces), Weathered Plaster (flaked to the stone in
+patches), Blue Dome Tiles (glazed fish scales), Zellige Mosaic (eight-point stars and crosses), Worn Paving
+(uneven flagstones), Sandstone Tiles, Market Rug, Mashrabiya Lattice, Red Canopy, Cedar Beam.
+
+**Gameplay pieces**: *Lattice Screen* (`block:lattice`: a breakable cedar mashrabiya, 2.2 × 2.4 m, back after
+30 s), with the oak door, portcullis and portcullis gate, ladders, planks, boards, crates, barrels, wall
+lanterns, and the Sands of Egypt traps, portals and water.
 
 ### Portals (`sim/portals.ts`)
 

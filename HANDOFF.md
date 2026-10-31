@@ -210,6 +210,32 @@ lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster h
 square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
 Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
 
+### Style Pack 09 Desert City replaces Sands of Egypt (`wip/desert-city-pack`, agent, 2026-10-31; not merged)
+- **Built** (owner's tileset sheet 02, "replace"): pack `desert`, number **09** in Sands of Egypt's place (the sheet
+  says 02, but 02 is Frontier Dust). 18 tiles in `packages/shared/src/map/packTilesDesert.ts` (Plaster, Ashlar and
+  Shop houses 2 × 1 with two inside stairs up to flat roof terraces at 8 m, parapet gaps on every cell centre;
+  Outside Stair, Rope Bridge (8 m), Cedar Gallery (4 m), Courtyard 2 × 2 with arcades and a terrace, Covered
+  Bazaar 1 × 2, Market Street, Domed Hall, Watch Tower (lookout 8 m), Minaret (landmark, not climbed), City Wall,
+  Wall Stair, City Gate 3 × 1, Arcaded Terrace, Well Court, Paved Street); 20 props built in code
+  (`tools/content/prepare-desert.mjs`, `assets-src/tiletrigger-desert/`, licence Owned, category *Desert City*);
+  theme `core.desert_city`; 10 procedural materials (ashlar, weathered plaster, blue dome tiles, zellige, worn
+  paving, sandstone tiles, rug, mashrabiya, red canopy, cedar); facades `desert_ashlar`, `desert_plaster`;
+  breakable **Lattice Screen** (`block:lattice`); demo map `maps/qasr_medina.json` (validate-map 0 issues),
+  docs BUILDING_KIT "09 Desert City", `docs/map-briefs/qasr_medina/`.
+- **Egypt kept working**: no Egypt tile, prop, material, theme or facade was removed or changed; only the
+  STYLE_PACKS entry `egypt` is gone. Its 11 tiles and 15 props are listed at the end of the Desert City pack's
+  lists (so picking 09 Desert City in the palette shows them after the desert pieces), and they stay under All
+  pieces and the props' "Sands of Egypt" heading (props group renamed "Desert, Ancient & Jungle"). Test
+  `stylePacksDesert.test.ts` loads every map in maps/ that uses an Egypt piece (pharaohs_reach,
+  sunken_kingdom, after_hours) and checks nothing is unknown or lost.
+- **Stand-in hero props with stable ids**: `dc_market_stall`, `dc_well`, `dc_crane` (no Meshy without approval).
+- **Owner's call wanted**: (1) keep the number 09 (Egypt's slot) or renumber to the sheet's 02 (would need
+  Frontier Dust moved); (2) whether the Egypt pieces should stay folded into Desert City or move to their own
+  "more" heading; (3) Meshy hero versions of the stall, well and crane.
+- Merging: generated files collide with the Jungle pack (props.generated.ts, palette.json + atlases,
+  provenance.json, props.json, materials.ts, patterns.ts, catalog.ts, stylePacks.ts, paletteCatalog.ts
+  "ancient" group): whoever merges second reruns the "Work split" steps.
+
 ### Style Pack 10 Medieval Village (`wip/medieval-pack`, agent, 2026-10-31; not merged)
 - **Built** (from the owner's tileset sheet 01): 16 tiles in `packages/shared/src/map/packTilesMedieval.ts` (2 × 1 Timber,
   Shop and Plaster houses with walkable 35° red tile roofs, eaves at 8.25 m on the cell edges; Outside Stair,
