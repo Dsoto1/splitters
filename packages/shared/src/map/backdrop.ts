@@ -99,6 +99,7 @@ export const THEME_BACKDROPS: Record<string, Backdrop> = {
   'core.suburban': b('clear', 'hills', 'grass', 0.4),
   'core.imperial': b('clear', 'hills', 'dirt', 0.4),
   'core.egypt': b('clear', 'mesas', 'sand', 0.55),
+  'core.medieval': b('cloudy', 'hills', 'grass', 0.45),
 };
 
 /** The backdrop a map is drawn with: its own, or its theme's (the ground carrying on in the terrain's commonest edge material). */
