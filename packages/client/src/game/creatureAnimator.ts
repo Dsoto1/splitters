@@ -5,6 +5,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { WeaponHold } from '@tiletrigger/shared';
 import type { CreatureInstance } from '../content/creatures.ts';
+import { gripReport } from './handProbe.ts';
 import { SkeletonSpace, armsFrom, holdWith, type HoldingArms, type MotionState, type OneShot } from './characterAnimator.ts';
 
 /** Natural ground speed (m/s) of the rig's walk and run for a body with hips 0.92 m up. */
@@ -149,6 +150,21 @@ export class CreatureAnimator {
   /** Creatures are never ragdolled (their skeletons aren't ours); they play their death instead. */
   get skeletonRoot(): undefined {
     return undefined;
+  }
+
+  /**
+   * Where the hands are drawn on the held gun (tests; handProbe.ts), and how the gun points: `facing` 1 when its
+   * barrel runs the way the body faces (it was -1: carried backwards), `height` of its grip over the feet (m).
+   */
+  drawnGrip(): (ReturnType<typeof gripReport> & { facing: number; height: number }) | null {
+    const w = this.weapon;
+    if (!w || !this.grip || !this.arms || this.dead || w.isDisposed()) return null;
+    w.computeWorldMatrix(true);
+    this.ch.root.computeWorldMatrix(true);
+    const barrel = Vector3.TransformNormal(new Vector3(0, 0, 1), w.getWorldMatrix()).normalize();
+    const facing = Vector3.TransformNormal(new Vector3(0, 0, 1), this.ch.root.getWorldMatrix()).normalize();
+    const grip = Vector3.TransformCoordinates(new Vector3(...this.grip.grip), w.getWorldMatrix());
+    return { ...gripReport(this.ch.meshes, this.arms, w, this.grip, 1), facing: Vector3.Dot(barrel, facing), height: grip.y - this.ch.root.getAbsolutePosition().y };
   }
 
   get isDead(): boolean {

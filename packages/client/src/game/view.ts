@@ -1422,6 +1422,38 @@ export class GameView {
     this.avatars.get(slot)?.anim?.trigger(action);
   }
 
+  /**
+   * Where hands are DRAWN on guns now (tests; handProbe.ts): your own in first person (full body or arms), and
+   * every character in view holding a gun, nearest first, with its distance. For each: model metres from each
+   * hand's skin to its point on the gun, and how its shooting hand lies on the grip (`aheadR`, `sideR`).
+   */
+  gripReport(): { local: ({ mode: 'body' | 'arms' } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>) | null; remote: ({ slot: number; dist: number } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>)[]; creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] } {
+    const am = this.scene.getActiveMeshes();
+    const active = new Set(am.data.slice(0, am.length));
+    let local: ReturnType<GameView['gripReport']>['local'] = null;
+    if (this.fpBody?.a.anim instanceof CharacterAnimator) {
+      const g = this.fpBody.a.anim.drawnGrip([...this.fpBody.rig.drawnMeshes, ...this.fpBody.a.anim.ch.meshes]);
+      if (g) local = { mode: 'body', ...g };
+    } else if (this.fpArms?.anim && this.fpArms.root.isEnabled()) {
+      const g = this.fpArms.anim.drawnGrip();
+      if (g) local = { mode: 'arms', ...g };
+    }
+    const cam = this.scene.activeCamera?.globalPosition ?? Vector3.Zero();
+    const remote: ReturnType<GameView['gripReport']>['remote'] = [];
+    for (const [slot, a] of this.avatars) {
+      if (a.hiddenSelf || a.culled || !a.root.isEnabled() || !(a.anim instanceof CharacterAnimator)) continue;
+      // The mesh drawn this frame (near detail, or the low-detail copy far off): the other's skin isn't updated.
+      const drawn = a.anim.ch.meshes.flatMap((m) => [m, ...((m as Mesh).getLODLevels?.() ?? []).map((l) => l.mesh)]).filter((m): m is AbstractMesh => !!m && active.has(m));
+      const g = drawn.length ? a.anim.drawnGrip(drawn) : null;
+      if (g) remote.push({ slot, dist: Math.hypot(a.root.position.x - cam.x, a.root.position.z - cam.z), ...g });
+    }
+    remote.sort((x, y) => x.dist - y.dist);
+    // Players in creature skins (third person, others): the same, and which way the gun points.
+    const creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] = [];
+    for (const [slot, a] of this.avatars) if (!a.hiddenSelf && a.anim instanceof CreatureAnimator && a.root.isEnabled()) creatures.push({ slot, report: a.anim.drawnGrip() });
+    return { local, remote, creatures };
+  }
+
   /** Whether your own first-person arms (or full body) have loaded and hold the gun (for tests). */
   hasFirstPersonArms(): boolean {
     return !!this.fpArms?.anim || !!this.fpBody;
@@ -2327,8 +2359,8 @@ export class GameView {
     });
   }
 
-  /** Where the last rope (a grapple's) started, world, when it was first drawn (tests). */
-  lastRopeFrom: Vec3 | null = null;
+  /** Where the last rope (a grapple's) started when it was first drawn, world, and whether that was a gun's muzzle (tests). */
+  lastRope: { from: Vec3; muzzle: boolean } | null = null;
 
   /**
    * A grapple's rope from a gun's muzzle to the hook, kept on the muzzle as it moves (you're pulled in along it).
@@ -2354,8 +2386,9 @@ export class GameView {
       mesh.scaling.y = len;
       Quaternion.FromUnitVectorsToRef(Vector3.Up(), d.scale(1 / len), mesh.rotationQuaternion!);
     };
+    const muzzle = from();
     place();
-    this.lastRopeFrom = { ...last };
+    this.lastRope = { from: { ...last }, muzzle: !!muzzle };
     this.effects.push({
       mesh,
       born: performance.now(),

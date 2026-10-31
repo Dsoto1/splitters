@@ -90,6 +90,8 @@ const RULES = [
   [/^packages\/client\/src\/editor\//, ['editor', 'editorux', 'scenery', 'canyon', 'race', 'visual'], ['client']],
   [/^packages\/client\/src\/designer\//, ['designer', 'characters'], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, ['characters'], ['client']],
+  // Your own body and arms in first person, and where hands are drawn on guns (the grip checks).
+  [/^packages\/client\/src\/game\/(firstPersonBody|firstPersonArms|handProbe)\.ts$/, ['characters', 'offline', 'arsenal', 'visual'], ['client']],
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
   [/^packages\/client\/src\/frontend\//, ['offline', 'mobile', 'teams', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', 'characters', 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
@@ -105,7 +107,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx'], ['client']],
-  [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies'], ['client']],
+  [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies', 'characters'], ['client']],
   [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual'], ['client']],
 
   // The server (dedicated server, hub, lobby).

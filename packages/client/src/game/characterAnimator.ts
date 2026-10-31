@@ -1119,7 +1119,7 @@ export class CharacterAnimator {
   drawnGrip(meshes: readonly AbstractMesh[] = this.ch.meshes): ReturnType<typeof gripReport> | null {
     const node = this.weapon ?? this.external?.node;
     const hold = this.weapon ? this.grip : this.external?.grip;
-    if (!node || !hold || !this.arms || node.isDisposed()) return null;
+    if (!node || !hold || !this.arms || node.isDisposed() || !node.isEnabled() || this.dead) return null;
     return gripReport(meshes, this.arms, node, hold, this.ch.root.absoluteScaling.x);
   }
 
