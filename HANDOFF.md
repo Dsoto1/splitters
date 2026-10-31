@@ -91,6 +91,11 @@ props.json, stylePacks.ts, catalog.ts, materials.ts, CHANGELOG/HANDOFF). Whoever
   `wip/harbor-pack` and `wip/snow-pack` after every step, each with its own HANDOFF section saying what's done
   and what's next. The other account resumes from those branches: merge `main`, finish, go green on `check/<name>`,
   then fast-forward `main`.
+- **State when this account ran out (2026-10-31 ~12:20 UTC):** all three branches nearly done, none run on CI yet:
+  `wip/medieval-fixes-dropship` dbe4685, `wip/harbor-pack` 7d13a27 (Saltmarsh Harbor; also moves STYLE_PACKS out of the
+  menu's first JS: 798.0 of 800 kB gzip), `wip/snow-pack` 827d581 (Whiteout Station). Next: for each branch, merge
+  `main` into it, push it to `check/<name>`, fix until green, then fast-forward `main`, one branch at a time. The
+  second of Harbor and Snow to land rebuilds the generated files (palette atlas, props.generated.ts, provenance).
 - How a pack is built: see the Medieval pack (packTilesMedieval.ts, tools/content/prepare-medieval.mjs,
   stylePacksMedieval.test.ts). Its demo map is a maps/<id>.json made with MapMaker operations (no build script in
   the repo), following docs/map-briefs/AGENT_BUILD_CONTRACT.md. No Meshy generation without the owner's approval.
