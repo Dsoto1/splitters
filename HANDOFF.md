@@ -149,9 +149,16 @@ about one frame a second (software rendering; CI and this box alike), or the sce
   the first roll: the check now waits for the match's current roll. **Weapon bar** waits for the snapshot.
 - **Lag compensation.** `seenAt(..., tick)` also waits until `__cs.viewTick()` (new test hook: the tick the page
   sends for rewind) has reached the move.
-- mobile "a tap on the pad middle jumps": not reproduced; its message now lists the pad's pointer events (times),
-  grounded and crouch state, so the next CI failure says whether it was read as a hold or the player was airborne.
-- physicsfx mass casualty ("one body alive with anim"): not looked into.
+- mobile "a tap on the pad middle jumps": **a game bug** on slow pages. The 380 ms hold timer ran (and crouched you)
+  before the lift was handled (press at +0, lift event at +80 ms handled at +2.2 s); the lift corrected it as a tap
+  (uncrouch) and pressed jump in the same tick, but a jump pressed while crouched only stands you up (movement.ts),
+  so the tap never jumped. Now the correction stands you up and jumps on the next tick
+  (`InputState.jumpAfterStanding`, unit test in inputWheel.test.ts). Locally 2/3 failed before, 7/8 passed after
+  (the one failure had no detail); the check's message now lists the pad's pointer events, grounded and crouch.
+- physicsfx mass casualty ("one body alive with anim"): not looked into (`alive: true` in its message means the
+  match had respawned that bot before the view drew its death).
+- Results: arsenal 3/3 locally (CI=1 timings; the box was at load 5-22), check/arsenal run 41171485465 (244e17d)
+  green on the full suite, arsenal passing first try.
 
 ### Owner tileset sheets (2026-10-31): eight concept sheets, awaiting the owner's answer
 01 Medieval Village, 02 Desert City, 03 Coastal Harbor, 04 Jungle Ruins, 05 Snow Outpost, 06 Sci-Fi Research,
