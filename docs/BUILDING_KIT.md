@@ -148,7 +148,7 @@ of the repo).
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
-alongside the set), then 10 Medieval Village (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then 10 Medieval Village and 12 Snow Outpost (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
 Pack is a themed selection of the kit: the **Style Pack** picker under the
 MapMaker palette's search box narrows the tiles, props, gameplay pieces
 (Entities → Scenario), vehicles and pickups to one pack (headings left empty
@@ -552,6 +552,53 @@ grenades, discs, spears) go through too.
   with no rule to enable it, and ground in front of either end that nobody
   can stand on (navigation).
 
+
+### 12 Snow Outpost (arctic military outpost)
+
+From the owner's concept sheet "Tileset 05 – Snow Outpost". Theme `core.snow_outpost` (packed snow floors,
+red prefab walls, snowy concrete), backdrop: snowy sky, snowy peaks, snow, light mist. Demo map
+`maps/whiteout_station.json`. Tiles in `map/packTilesSnow.ts` (box helpers shared with packTilesMedieval.ts):
+
+| Tile | Cells | What it is |
+|---|---|---|
+| `snow.hut` Prefab Hut | 1 × 1 | red panel hut, doors S and N; flat snow roof 3.5 m up by an outside steel stair from the north edge up the east strip |
+| `snow.barracks` Barracks | 2 × 1 | bunk rows, doors on every side, 25° snow roof (walkable); stair from the NW to a deck at the eaves (3.5 m) along the north |
+| `snow.comms_hut` Comms Tower | 1 × 1 (7 levels) | white Prefab Hut under a 24 m lattice mast with a red beacon |
+| `snow.hangar` Vehicle Hangar | 2 × 2 | 7 m corrugated shed, 6 × 4.6 m doorway S (hang a Roll-up Door), doors W/E/N, grating mezzanine 4 m up along N |
+| `snow.bunker` Snow Bunker | 1 × 1 | concrete room, firing slits S and W, door N; snow drift up the east side onto the roof (3.2 m), sandbags |
+| `snow.watchtower` Steel Watchtower | 1 × 1 | switchback grating stair to a lookout 7 m up, snow roof, floodlight |
+| `snow.radar_dome` Radar Dome | 1 × 1 | eight-sided drum (door S, consoles) under a 7.5 m radome |
+| `snow.fuel_depot` Fuel Depot | 1 × 1 | two tanks on cradles, pipe, valve rack, bund wall |
+| `snow.catwalk` / `snow.metal_stair` | 1 × 1 | grating catwalk 4 m up N–S; a stair from the ground (S) up to it (N edge) |
+| `snow.ice_wall` Ice Wall | 1 × 1 | jagged ice 4–6 m high along the S edge (turn it to line a map edge) |
+| `snow.ice_cliff` / `snow.drift_ramp` | 1 × 1 | frozen rock with a snow top 4 m high; a 27° snow drift from the ground (S) to 4 m (N) |
+| `snow.frozen_lake` / `snow.ice_ridge` / `snow.ice_hole` | 1 × 1 | lake ice; with a pressure ridge (cover); broken open 3.6 m over water 2 m down, steps out on the N side |
+| `snow.road` Snow Road | 1 × 1 | ploughed road N–S with tyre tracks and snow banks |
+
+Navmesh note (on top of Medieval's): a landing must start exactly where a sloped slab's top surface ends; a
+landing lapping over the slope leaves a sliver the navmesh can't stand on and bots stop a metre short
+(`zTop` in `bunker()` / `rampUp()`). `test/stylePacksSnow.test.ts` walks bots onto every roof, deck, lookout,
+mezzanine, catwalk and cliff top in all four rotations.
+
+**Props** (16, category *Snow Outpost*, `tools/content/prepare-snow.mjs`, built in code, licence Owned):
+Satellite Dish, Antenna Mast, Diesel Heater, Diesel Generator, Snowmobile, Crates under a Tarp, Arctic Lamp
+Post, Flagpole, Chain-link Fence, Snow Fence, Insulated Pipe Run, Oil Drums, Radio Console, Ski Rack, Supply
+Sled, Snow Pile. Snowmobile, Satellite Dish and Generator are stand-ins under stable ids (`so_snowmobile`,
+`so_satellite_dish`, `so_generator`) for Meshy or community hero versions later. The pack also lists the
+snowy trees and rocks, sandbags, barriers, containers, crates, barrels, tanks and lights already in the game;
+the drivable snowmobile is the `snow_sled` mount.
+
+**Materials** (procedural, `client/materials/patterns.ts`): Packed Snow and Snow Drift (wind ripples,
+glints), Lake Ice and Glacier Ice (cracks, bubbles), Red and White Prefab Panels (seams, ribs, rivets; one
+storey a repeat), Snowy Concrete, Frozen Rock (strata rimed with frost), Steel Grating, Red Beacon (glows).
+
+**Facades**: *Prefab panels* (`prefab`: white corner posts, steel plinth, snow on the hoods and the top) and
+*Snowy concrete* (`snow_bunker`: a snow berm, snow-capped hoods and top).
+
+**Gameplay pieces**: *Roll-up Door* (`mover:rollup_door`: a 6 × 4.6 m shutter a rule rolls up 4.4 m and
+down), *Ice Block* (breakable cover, back after 30 s), *Thin Ice* (4 × 4 m, gives way 0.7 s after you step
+on it, back after 12 s), with blast doors, ladders, alarm lights, water, mines and the generator.
+Not in the game yet: falling snow (the `snowy` sky has no precipitation) and slippery ice.
 
 ## Materials and themes (`map/materials.ts`)
 
