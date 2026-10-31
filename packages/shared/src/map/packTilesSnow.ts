@@ -62,7 +62,7 @@ function gable(x0: number, z0: number, x1: number, z1: number, eave: number, wal
   for (const s of [1, -1] as const) {
     const ac = (s > 0 ? a0 : a1) + (s * d) / 2 + s * Math.sin(pitch) * (T / 2);
     const yc = eave + (d / 2) * tan - Math.cos(pitch) * (T / 2);
-    out.push(drift(alongX ? tilted(lc, yc, ac, [l1 - l0, T, L], { pitch: s * pitch }) : tilted(ac, yc, lc, [L, T, l1 - l0], { roll: -s * pitch })));
+    out.push(drift(alongX ? tilted(lc, yc, ac, [l1 - l0, T, L], { pitch: s * pitch }) : tilted(ac, yc, lc, [L, T, l1 - l0], { roll: s * pitch })));
   }
   const ridgeY = eave + (mid - a0) * tan;
   out.push(alongX ? trim(l0, ridgeY - 0.05, mid - 0.2, l1, ridgeY + 0.12, mid + 0.2, DRIFT) : trim(mid - 0.2, ridgeY - 0.05, l0, mid + 0.2, ridgeY + 0.12, l1, DRIFT));
