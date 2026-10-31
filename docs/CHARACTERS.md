@@ -80,7 +80,7 @@ unknown IDs fall back to the default.
 ### Character Select's groups
 
 Character Select sorts characters by what they are, not by how the look was
-built. The groups are `CHARACTER_GROUPS` in looks.ts (tab order and labels);
+built. The groups are `CHARACTER_GROUPS` in looks.ts (section order and labels);
 every built-in look names exactly one, and a unit test
 (`packages/shared/test/lookGroups.test.ts`) keeps it that way:
 
@@ -98,19 +98,24 @@ Where a group comes from: a part-built preset has `group` on its entry in
 copied into characters.generated.ts); an NPC skin gets it from
 `NPC_LOOK_GROUPS` in sim/npc.ts (creatures → Creatures & Machines, the zombie
 → Undead & Horror, the soldier roles → Soldiers). `lookGroup(id)` reads any of
-them; a design of yours has none and goes under **Yours**. Tabs: All (roster
-order), each group with anyone in it (by name), Yours. Q / E (LB / RB) step
-through them.
+them; a design of yours has none and goes under **Yours**. The screen is one
+grid that scrolls through the sections in that order (each group with anyone
+in it, its characters by name, then Yours with **Design new**), each under a
+compact header with its count. The jump strip above lights the section in
+view; a chip, or Q / E (LB / RB), scrolls to a section. Arrow keys and the
+d-pad cross from one section into the next.
 
 Picking: a click (tap, Enter, controller A) on a portrait **shows** that
 character (the big model, bio, loadout); hovering only highlights it, so the
 mouse is free to drag the model round. Only **Choose** (the button, Enter / A
 again, or a double-click on the portrait) makes them yours; Back (Esc / B)
 leaves your character as it was. Your current one wears a **Chosen** badge.
+Character Select opens from Profile (the main menu's Profile entry → **Change
+character**) or Online; Back and Choose return there.
 
 ## Character Designer
 
-Main menu → **Design…** next to the Character picker (or `?mode=designer`).
+Character Select → **Design new** (D / controller X), or **Customise** on a part-built look (or `?mode=designer`).
 Players choose:
 - a body;
 - one part per slot (top, arms, trousers, feet, hood, pauldrons);

@@ -138,7 +138,9 @@ button.cta:hover { background: #ffc46e; }
 .menu-footer .news { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .menu-footer .news b { color: var(--orange); font: 700 13px var(--font-display); letter-spacing: 0.1em; margin-right: 8px; }
 /* Off the main menu the bar is all hints: getting about on the left, the screen's actions and fullscreen on the right. */
-.menu-footer:not([data-screen='home']) .news { display: none; }
+.menu-footer:not([data-screen='home']) .news, .menu-footer:not([data-screen='home']) .footer-privacy { display: none; }
+.menu-footer .footer-privacy { flex: none; margin-right: auto; color: var(--muted); font-size: 13px; text-decoration: underline; }
+.menu-footer .footer-privacy:hover { color: var(--text); }
 .menu-footer:not([data-screen='home']) .hintbar { flex: 1; }
 .menu-footer:not([data-screen='home']) .hint-group.moves { margin-right: auto; padding-left: 0; }
 .menu-footer:not([data-screen='home']) .hint-group.moves + .hint-group { border-left: 0; }

@@ -21,19 +21,37 @@ Type: **Chakra Petch** (display: headings, buttons, numbers) and **Barlow**
 (body). Both are SIL OFL fonts bundled through `@fontsource`.
 
 Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
-`.hintbar` with `kbd.a/.b/.x/.y` (face-button colours), `.stat-bar`, `.stepper`.
+`.hintbar` with `kbd.a/.b/.x/.y` (face-button colours) and `.hint-group`s, `.stat-bar`, `.stepper`,
+`button.cta` (orange call to action: Sign in), `.acct` (account state chips).
 
 ## Screens
 
 - **Front end** (`src/frontend/frontEnd.ts`) has these screens:
-  - **Home:** logo, slanted nav, player badge with portrait, featured map, news strip.
+  - **Home:** logo, slanted nav (Play, MapMaker, Online, Options), the **Profile entry** top right
+    (your character's portrait and name, your player name, Guest / ✓ Signed in / Pick a username; it
+    opens Profile, P or controller Y does too; signed out, an orange **Sign in** under it), featured map.
+  - **Bottom bar** (`hints()`): on Home the news and a Privacy link on the left; then the screen's key
+    hints in three groups split by thin rules: getting about (Navigate or Back, Q / E), the screen's
+    actions (its main one last, in cyan: Select, Start, Choose), Fullscreen. Off Home the bar is all
+    hints, getting about on the left and the rest on the right. Every hint that stands for an action is a
+    button doing it; glyphs switch to the controller's once one is used. On a touch screen the hints are
+    hidden, so off Home there is no bar (Back is top left on every screen).
+  - **Profile:** one panel in sections: your character (portrait, name, group, **Change character** →
+    Character Select, C / Y), you as a player (guest: your name, edited in Options, and Sign in with what it
+    gets you; signed in: your username with Sign out, and the username form), region, and the privacy
+    line with the Privacy link (and Copy my account ID when signed in).
   - **Arcade:** map cards with the map's picture on top and its top-down plan beside the name (two
     separate boxes, `mapThumbs.ts`); the setup panel shows the picture and the plan side by side; mode,
     bots, skill, score and time. The featured map, the host's Change map picker and the game browser
     (listings on built-in maps) show them the same way. See CONTENT_PIPELINE.md, Official maps.
-  - **Characters:** a portrait grid with Q/E tabs by what a character is (Soldiers, Knights & Legends,
-    Everyday Folk, Undead & Horror, Animals, Creatures & Machines, Yours; CHARACTERS.md) and an info panel.
-    A click shows a character, **Choose** (Enter / A again, double-click) makes them yours; hover only highlights.
+  - **Character Select** (from Profile → Change character, or Online → Character → Change): one portrait
+    grid that scrolls through every section in turn (Soldiers, Knights & Legends, Everyday Folk, Undead &
+    Horror, Animals, Creatures & Machines, Yours; CHARACTERS.md), each under a compact sticky header (name
+    and count). Above it a jump strip, a chip per section with Q / E at its ends: the section in view is
+    lit as you scroll, and a chip or Q / E (LB / RB) glides the grid to a section. Arrow keys and the d-pad
+    move over the portraits and on across section ends. It opens on your character's section. An info panel
+    below; drag the hero (or , / .) to turn them. A click shows a character, **Choose** (Enter / A again,
+    double-click) makes them yours; hover only highlights. Back and Choose return to where you opened it.
   - **Online** and **Options.**
 
   Your character stands on a lit plinth behind every screen (`menuScene.ts`).

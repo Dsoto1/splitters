@@ -355,8 +355,13 @@ export class FrontEnd {
     const saved = savedMap ? normalizeSetup(raw, savedMap.modes) : null;
     const first = maps.find((m) => m.key === 'sandgate') ?? maps[0]!;
     this.setup = saved ?? { map: first.key, mode: first.modes[0]!, bots: first.bots, skill: 'normal', scoreLimit: BASE_RULES[first.modes[0]!].scoreLimit, minutes: 10 };
-    // The bottom bar: the news (main menu only), then the screen's key hints in groups (hints()).
-    this.footer.append(el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Sandgate, Team Deathmatch and the Character Designer.'), this.footerHints);
+    // The bottom bar: the news and the privacy page (main menu only; Profile links it too), then the
+    // screen's key hints in groups (hints()). Sign-in and your profile are the Profile entry, top right.
+    this.footer.append(
+      el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Sandgate, Team Deathmatch and the Character Designer.'),
+      el('a', { class: 'footer-privacy', href: '/privacy/', target: '_blank', rel: 'noopener', textContent: 'Privacy' }),
+      this.footerHints,
+    );
     root.replaceChildren(this.body, this.status, this.footer);
     window.addEventListener('keydown', this.keyHandler);
     onPadPress((b) => this.onPad(b));
