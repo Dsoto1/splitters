@@ -1090,11 +1090,19 @@ async function mobileFlow(browser) {
   // Jump: a tap on the pad's middle. Tap or hold is read from the events' own times (a slow software-rendered
   // page handles the lift late), so the tap says when it happened: 80 ms apart.
   before = await state();
+  // (Noted for the message if it doesn't jump: the pad's pointer events as the page saw them, and the body.)
+  await page.evaluate(() => {
+    window.__padSeen = [];
+    const pad = document.querySelector('#touch-ui .tc-pad');
+    for (const t of ['pointerdown', 'pointerup', 'pointercancel']) pad.addEventListener(t, (e) => window.__padSeen.push(`${t}@${Math.round(e.timeStamp)}`), { capture: true });
+    window.__padSeen.push(`grounded ${window.__cs.local.state.grounded} velY ${window.__cs.local.state.velY.toFixed(2)}`);
+  });
   const t0 = Date.now() / 1000;
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: pad.x, y: pad.y, id: 4 }], timestamp: t0 });
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [], timestamp: t0 + 0.08 });
   const jumped = await page.waitForFunction((y) => window.__cs.local.state.pos.y > y + 0.3, before.pos.y, { timeout: T(5000) }).then(() => true, () => false);
-  check(jumped, 'a tap on the pad middle jumps');
+  const padSeen = jumped ? '' : await page.evaluate(() => ` (${window.__padSeen.join(', ')}; now grounded ${window.__cs.local.state.grounded}, y ${window.__cs.local.state.pos.y.toFixed(2)}, crouch ${window.__cs.input.crouchOn})`);
+  check(jumped, `a tap on the pad middle jumps${padSeen}`);
   await page.waitForFunction((y) => Math.abs(window.__cs.local.state.pos.y - y) < 0.1, before.pos.y, { timeout: T(5000) }).catch(() => {});
   // Crouch: hold the middle (and again to stand).
   check(await holdUntil(pad.x, pad.y, 5, () => window.__cs.input.crouchOn, 5000), 'holding the pad middle crouches');
@@ -2019,6 +2027,8 @@ async function arsenalFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__give, null, { timeout: T(60000) });
+  // Where you spawned: open ground the melee checks below go back to.
+  const home = await sim(page, (m, me) => ({ ...me.move.pos }));
   // The performance overlay (F3) measures frames while it shows; Pause → Settings copies a report of them.
   await page.keyboard.press('F3');
   await page.waitForFunction(() => /frame split/.test(document.getElementById('perf')?.textContent ?? '') && /\d+ draws/.test(document.getElementById('perf').textContent), null, { timeout: T(15000) }).catch(() => {});
@@ -2090,10 +2100,43 @@ async function arsenalFlow(browser) {
   // From here bots stand still and hold fire: the one placed in front stays there (no jumping), nobody else
   // hurts it (its health is what's checked), and its drop lies where it fell.
   await holdBots(page);
+  // Back where you spawned, with nothing in the way: the spree above throws you about (a disc or a swarm at
+  // your feet put you 7 m back, behind a wall the bot was then placed through), and bots throw sandbag walls.
+  await sim(page, (m, me, at) => {
+    me.move = { ...me.move, pos: { ...at }, velY: 0, vx: 0, vz: 0, grounded: true };
+    for (const c of [...m.covers]) if (Math.hypot(c.pos.x - at.x, c.pos.z - at.z) < 8) m.removeCover(c);
+    const zones = m.zones.filter((z) => Math.hypot(z.pos.x - at.x, z.pos.z - at.z) > 10);
+    m.zones.splice(0, m.zones.length, ...zones);
+  }, home);
+  await page.waitForFunction((at) => { const p = window.__cs.local.state.pos; return Math.hypot(p.x - at.x, p.z - at.z) < 0.3; }, home, { timeout: T(10000) }).catch(() => {});
+  // Face a way with open ground `dist` m out and nothing in between at a body's heights: the spawn has a tower
+  // in front (the blunderbuss's pellets stopped on its base 3.5 m out, with the bot placed behind it).
+  const face = async (dist) => {
+    const yaw = await sim(page, (m, me, d) => {
+      const p = me.move.pos;
+      const eye = { x: p.x, y: p.y + 1.6 * me.size, z: p.z };
+      const ray = (from, to) => {
+        const v = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
+        const len = Math.hypot(v.x, v.y, v.z);
+        return m.physics.raycastHit(from, { x: v.x / len, y: v.y / len, z: v.z / len }, len) === null;
+      };
+      for (let i = 0; i < 16; i++) {
+        const yaw = me.yaw + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * (Math.PI / 8);
+        const at = { x: p.x + Math.sin(yaw) * d, z: p.z + Math.cos(yaw) * d };
+        const clear = [0.3, 0.8, 1.3].every((h) => ray(eye, { x: at.x, y: p.y + h, z: at.z }) && ray({ x: p.x, y: p.y + h, z: p.z }, { x: at.x, y: p.y + h, z: at.z }));
+        const ground = m.physics.raycastHit({ x: at.x, y: p.y + 1, z: at.z }, { x: 0, y: -1, z: 0 }, 2);
+        if (clear && ground && Math.abs(p.y + 1 - ground.dist - p.y) < 0.3) return yaw;
+      }
+      return me.yaw;
+    }, dist);
+    await page.evaluate((y) => (window.__cs.input.yaw = y), yaw);
+    await meWait(page, (m, me, y) => Math.abs(me.yaw - y) < 1e-3, yaw, 2);
+  };
   await page.evaluate(() => {
     window.__give('core.pistol');
     window.__cs.input.pitch = -0.12;
   });
+  await face(1.3);
   const target = await sim(page, (m, me) => {
     // An enemy (no friendly fire).
     const bot = m.combatants().find((c) => c !== me && c.alive && !c.mount && !c.npc && (!me.faction || c.faction !== me.faction));
@@ -2143,6 +2186,7 @@ async function arsenalFlow(browser) {
       bot.speedMul = 0;
       return { at: bot.move.pos, tick: m.tick };
     }, { slot: target.slot, dist }).then(({ at, tick }) => seenAt(page, target.slot, at, T(15000), tick + 1));
+    await face(1.6);
     await stand(1.6);
     await aimAt(target.slot);
     // The trigger held (one swing: it's semi-automatic) until the blow lands.
@@ -2151,6 +2195,7 @@ async function arsenalFlow(browser) {
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
     check(chopped, 'the Battle Axe swings: the bot in front takes the blow');
     await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[2] === 2, null, { timeout: T(5000) }).catch(() => {});
+    await face(5);
     await stand(5);
     await aimAt(target.slot);
     // After the swing's recovery (48 ticks): the barrel (bit 32, the alt trigger, as right mouse sends with a melee weapon in hand).
