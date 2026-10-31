@@ -74,7 +74,12 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .bumper-btn { display: inline-flex; padding: 0; background: none; border: 0; cursor: pointer; }
 .bumper-btn:hover kbd, .bumper-btn:focus-visible kbd { background: var(--cyan); }
 .hintbar { display: flex; align-items: center; gap: 4px 10px; white-space: nowrap; font: 600 13px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-.hintbar > span { display: inline-flex; align-items: center; gap: 7px; }
+.hintbar > span, .hint-group > span { display: inline-flex; align-items: center; gap: 7px; padding: 0 8px; }
+/* The main menu's bar groups its hints: getting about | the screen's actions (the main one cyan) | fullscreen. */
+.hint-group { display: flex; align-items: center; gap: 2px; padding: 0 10px; }
+.hint-group + .hint-group { border-left: 1px solid var(--line); }
+.hint-group:last-child { padding-right: 0; }
+.hintbar .hint-btn.main { color: var(--cyan); }
 /* A hint you can click does what its key does (Back, the tabs, Start, fullscreen…). */
 .hintbar .hint-btn { display: inline-flex; align-items: center; gap: 7px; padding: 4px 8px; margin: -4px 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: transparent; border: 1px solid transparent; border-radius: 4px; cursor: pointer; }
 .hintbar .hint-btn:hover, .hintbar .hint-btn:focus-visible { color: var(--text); background: rgba(255, 255, 255, 0.06); border-color: var(--line); }
@@ -101,10 +106,27 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .nav button::before { content: ''; width: 7px; height: 7px; background: var(--muted); transform: rotate(45deg); flex: none; }
 .nav button.on, .nav button:focus-visible { background: linear-gradient(90deg, var(--cyan), rgba(0, 209, 255, 0.55)); color: #04121a; border-color: transparent; outline: none; }
 .nav button.on::before, .nav button:focus-visible::before { background: #04121a; }
-.player-badge { position: absolute; top: 26px; right: 36px; display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; }
-.player-badge img, .portrait-fallback { width: 46px; height: 46px; border-radius: 4px; background: linear-gradient(160deg, var(--surface-3), var(--surface-1)); object-fit: cover; }
-.player-badge b { display: block; font: 700 16px var(--font-display); letter-spacing: 0.04em; }
-.player-badge small { color: var(--muted); font-size: 13px; }
+/* The Profile entry (top right): your character and name, the account's state; Sign in under it when signed out. */
+.profile-entry { position: absolute; top: 26px; right: 36px; display: flex; flex-direction: column; gap: 6px; width: min(300px, 40vw); }
+.player-badge { display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 8px; text-align: left; text-transform: none; letter-spacing: 0; background: var(--glass); }
+.player-badge:hover, .player-badge:focus-visible { background: var(--glass); border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan), 0 10px 30px rgba(0, 0, 0, 0.35); outline: none; }
+.player-badge img, .portrait-fallback { width: 52px; height: 52px; flex: none; border-radius: 4px; background: linear-gradient(160deg, var(--surface-3), var(--surface-1)); object-fit: cover; }
+.player-badge img { border: 2px solid var(--orange); }
+.player-badge .badge-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.player-badge .badge-kicker { display: flex; align-items: center; gap: 8px; color: var(--muted); font: 700 10px var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; }
+.player-badge b { display: block; font: 700 17px/1.1 var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-badge .badge-look { color: var(--muted); font: 500 13px var(--font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-badge .badge-go { flex: none; color: var(--muted); font: 700 24px/1 var(--font-display); }
+.player-badge:hover .badge-go, .player-badge:focus-visible .badge-go { color: var(--cyan); }
+/* Account state chips (Profile entry, Profile). */
+.acct { flex: none; padding: 1px 6px; border-radius: 2px; font: 700 9px/1.5 var(--font-display); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; }
+.acct.guest { background: rgba(142, 162, 192, 0.2); color: var(--text); }
+.acct.in { background: rgba(46, 204, 113, 0.18); color: var(--success); }
+.acct.pick { background: rgba(255, 179, 71, 0.16); color: var(--orange); }
+/* Call to action (orange): Sign in. */
+button.cta { border-color: transparent; background: var(--orange); color: #241400; }
+button.cta:hover { background: #ffc46e; }
+.profile-entry .cta { padding: 9px 14px; }
 .featured { position: absolute; right: 36px; bottom: 76px; width: min(360px, 40vw); padding: 0; overflow: hidden; }
 .featured-pic { height: 170px; }
 .featured .meta { display: flex; gap: 12px; align-items: center; padding: 10px 14px 12px; }
@@ -115,10 +137,11 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .menu-footer { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 44px; background: rgba(8, 11, 19, 0.92); border-top: 1px solid var(--line); }
 .menu-footer .news { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .menu-footer .news b { color: var(--orange); font: 700 13px var(--font-display); letter-spacing: 0.1em; margin-right: 8px; }
-.menu-footer .menu-links { display: flex; align-items: center; gap: 14px; font-size: 13px; white-space: nowrap; }
-.menu-footer .menu-links a, .menu-footer .menu-links button.link { color: var(--text); opacity: 0.75; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
-.menu-footer .menu-links a:hover, .menu-footer .menu-links button.link:hover { opacity: 1; }
-.menu-footer .menu-links .account { opacity: 0.8; }
+/* Off the main menu the bar is all hints: getting about on the left, the screen's actions and fullscreen on the right. */
+.menu-footer:not([data-screen='home']) .news { display: none; }
+.menu-footer:not([data-screen='home']) .hintbar { flex: 1; }
+.menu-footer:not([data-screen='home']) .hint-group.moves { margin-right: auto; padding-left: 0; }
+.menu-footer:not([data-screen='home']) .hint-group.moves + .hint-group { border-left: 0; }
 .screen-head { display: flex; align-items: center; gap: 18px; }
 .screen-head h2 { margin: 0; font: italic 700 34px var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
 .screen-head h2 em { color: var(--cyan); font-style: italic; }
@@ -349,13 +372,50 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .form .current-look { display: flex; align-items: center; gap: 12px; }
 .form .current-look img { width: 54px; height: 54px; border-radius: 4px; background: var(--surface-1); }
 
+/* Profile: one panel in sections (character, player and account, region), the privacy line at its foot. */
+.profile-panel { display: flex; flex-direction: column; width: min(480px, 100%); max-height: calc(100% - 64px); margin-top: 18px; overflow-y: auto; }
+.prof-sec { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; }
+.prof-sec + .prof-sec { border-top: 1px solid var(--line); }
+.prof-kicker { margin: 0; font: 700 11px var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.prof-char { flex-direction: row; align-items: center; gap: 16px; background: linear-gradient(90deg, rgba(0, 209, 255, 0.08), transparent 75%); }
+.prof-char > img { flex: none; width: 104px; height: 104px; border-radius: 4px; object-fit: cover; background: linear-gradient(160deg, #2a3a55, #121827); border: 2px solid var(--orange); }
+.prof-char-text { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+.prof-char h3 { margin: 0; font: 700 26px/1.05 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+.prof-tag { font: 700 10px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; background: rgba(135, 101, 255, 0.2); color: #c7b8ff; }
+.prof-char .primary { margin-top: 4px; }
+.prof-name { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.prof-name b { font: 700 20px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; overflow-wrap: anywhere; }
+.prof-name #sign-out { margin-left: auto; padding: 6px 12px; font-size: 12px; }
+.profile-panel p { margin: 0; }
+.profile-panel .hint { color: var(--muted); font-size: 13px; }
+.profile-panel label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+.profile-panel #profile-save { align-self: flex-start; }
+.prof-signin { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid rgba(255, 179, 71, 0.45); border-radius: 3px; background: rgba(255, 179, 71, 0.06); font-size: 14px; }
+.prof-signin .cta { padding: 10px 24px; font-size: 15px; }
+.profile-panel button.link, .prof-foot a { padding: 0; color: var(--text); opacity: 0.8; background: none; border: 0; font: inherit; text-transform: none; letter-spacing: 0; text-decoration: underline; cursor: pointer; }
+.profile-panel button.link:hover, .prof-foot a:hover { opacity: 1; }
+.prof-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 12px 18px 14px; border-top: 1px solid var(--line); font-size: 12px; }
+
 /* Character select */
-.characters .tabs { margin-left: 8px; }
 #menu .screen.characters { display: flex; flex-direction: column; }
-/* The grid takes the room between the tabs and the info panel and scrolls; a fade says there's more below. */
-.char-grid { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); grid-auto-rows: max-content; align-content: start; gap: 8px; width: min(900px, 64vw); margin-top: 18px; overflow-y: auto; overscroll-behavior: contain; scroll-snap-type: y proximity; padding: 10px; background: var(--glass); border: 1px solid var(--line); }
+/* The jump strip over the grid: a chip per section, the one in view lit; Q / E at its ends. */
+.char-jump { flex: none; display: flex; align-items: center; gap: 6px; width: min(900px, 64vw); margin-top: 16px; padding: 6px 8px; background: var(--glass); border: 1px solid var(--line); border-bottom: 0; border-radius: 4px 4px 0 0; }
+.char-jump-chips { flex: 1; min-width: 0; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.char-jump-chips::-webkit-scrollbar { display: none; }
+.char-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; font: 600 12px var(--font-display); letter-spacing: 0.05em; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 3px; }
+.char-chip:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); border-color: var(--line); }
+.char-chip.on { color: var(--text); background: rgba(0, 209, 255, 0.14); border-color: rgba(0, 209, 255, 0.6); }
+/* One grid through every section; it takes the room between the strip and the info panel and scrolls; a fade says there's more below. */
+.char-grid { flex: 1 1 auto; min-height: 0; position: relative; width: min(900px, 64vw); overflow-y: auto; overscroll-behavior: contain; padding: 0 10px 10px; background: var(--glass); border: 1px solid var(--line); border-radius: 0 0 4px 4px; }
 .char-grid.more { mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent); }
-.char-grid .char-tile { align-self: start; scroll-snap-align: start; scroll-margin-top: 10px; }
+.char-sec-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; }
+.char-grid .char-tile { scroll-margin-top: 40px; }
+/* A section's compact header stays at the top while its portraits scroll under it. */
+.char-sec-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; margin: 0 -10px; padding: 9px 10px 7px; font: 700 12px var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text); background: rgba(14, 20, 33, 0.97); }
+.char-sec-head::before { content: ''; width: 3px; height: 12px; background: var(--cyan); }
+.char-sec-head b { color: var(--muted); font-weight: 600; letter-spacing: 0.06em; }
+.char-sec-head::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.char-sec + .char-sec { margin-top: 4px; }
 .char-tile { position: relative; aspect-ratio: 1; padding: 0; overflow: hidden; border-radius: 3px; background: linear-gradient(160deg, #2a3a55, #121827 70%); border: 1px solid var(--line); text-transform: none; }
 /* The portraits are head and shoulders: closer in, so the face fills the tile above the name. */
 .char-tile img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.18); transform-origin: 50% 28%; }
@@ -380,6 +440,9 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .char-spin .spin-bar { display: flex; align-items: center; gap: 10px; padding: 4px 8px; background: var(--glass); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; opacity: 0.75; }
 .char-spin .spin-bar:hover { opacity: 1; }
 .char-spin .spin-btn { min-width: 34px; min-height: 34px; padding: 0; border-radius: 50%; font-size: 18px; line-height: 1; }
+.char-spin .spin-label { display: inline-flex; align-items: center; gap: 8px; }
+.char-spin .spin-label kbd { height: 18px; font-size: 10px; }
+html.touch .char-spin .spin-label kbd { display: none; }
 .char-info { flex: none; margin-top: 14px; width: min(900px, 64vw); display: grid; grid-template-columns: 110px 1fr auto auto; gap: 18px; align-items: center; padding: 14px; }
 .char-info > img { width: 110px; height: 110px; border-radius: 4px; background: linear-gradient(160deg, #2a3a55, #121827); }
 .char-info h3 { margin: 0 0 4px; font: 700 26px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
@@ -1110,12 +1173,32 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
   .featured .card-plan { display: none; }
   .featured h3 { font-size: 18px; }
   .featured p { display: none; }
-  .player-badge { top: 12px; right: 20px; }
+  .profile-entry { top: 12px; right: 20px; width: min(260px, 38vw); }
+  .player-badge { padding: 5px 8px 5px 5px; }
+  .player-badge img { width: 40px; height: 40px; }
+  .profile-entry .cta { padding: 6px 12px; font-size: 12px; }
   .menu-footer { padding: 0 20px; }
+  /* Character Select: a smaller head and info panel, so the grid keeps most of the height. */
+  #menu .screen.characters, #menu .screen.profile { padding: 10px 20px 52px; }
+  .screen.characters .screen-head h2, .screen.profile .screen-head h2 { font-size: 22px; }
+  .char-jump { margin-top: 8px; padding: 4px 6px; }
+  .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+  .char-info { margin-top: 8px; grid-template-columns: 56px 1fr auto; gap: 10px; padding: 8px; }
+  .char-info > img { width: 56px; height: 56px; }
+  .char-info h3 { font-size: 18px; }
+  .char-info .who p, .char-info .loadout { display: none; }
+  .char-info .char-actions { flex-direction: row; }
+  .char-info .char-actions button { padding: 6px 10px; font-size: 12px; }
+  .profile-panel { margin-top: 8px; max-height: calc(100% - 40px); }
+  .prof-sec { padding: 10px 14px; }
+  .prof-char > img { width: 64px; height: 64px; }
   .menu-footer .hintbar { display: none; }
 }
 /* No keyboard on a phone: the key hints in the pause menu and footer say nothing there. */
 html.touch .menu-footer .hintbar, html.touch .pause-foot .hint { display: none; }
+/* So off the main menu (no news there) a phone has no bottom bar at all: Back is at the top of every screen. */
+html.touch .menu-footer:not([data-screen='home']) { display: none; }
+html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-bottom: 14px; }
 
 /* Touch, while watching (dead or spectating): previous / next player, camera, Join. */
 #touch-ui .tc-watch { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: auto; }
