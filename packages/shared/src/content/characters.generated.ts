@@ -29,7 +29,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.galloway', name: 'Sir Galloway', body: 'male', head: '', parts: ['meshy_galloway'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_galloway_fparms' }, group: 'legends' },
   { id: 'core.hector', name: 'Hector', body: 'male', head: '', parts: ['meshy_hector'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hector_fparms' }, group: 'folk' },
   { id: 'core.bonesworth', name: 'Count Bonesworth', body: 'male', head: '', parts: ['meshy_bonesworth'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_bonesworth_fparms' }, group: 'horror' },
-  { id: 'core.ricochet', name: 'Ricochet', body: 'male', head: '', parts: ['meshy_ricochet'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_ricochet_fparms' }, group: 'folk' },
+  { id: 'core.ricochet', name: 'Ricochet', body: 'male', head: '', parts: ['meshy_ricochet'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_ricochet_fparms' }, group: 'creatures' },
   { id: 'core.shambler', name: 'Shambler', body: 'male', head: '', parts: ['meshy_zombie_shambler'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_zombie_shambler_fparms' }, group: 'horror' },
   { id: 'core.rotter', name: 'Rotter', body: 'male', head: '', parts: ['meshy_zombie_rotter'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_zombie_rotter_fparms' }, group: 'horror' },
   { id: 'core.dale', name: 'Dale', body: 'male', head: '', parts: ['meshy_dale'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_dale_fparms' }, group: 'folk' },

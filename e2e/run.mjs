@@ -942,6 +942,47 @@ async function offlineFlow(browser) {
   await page.keyboard.press('Escape');
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
+  // Tabs by what a character is; hovering only highlights, a click shows them, and only Choose (Enter / A
+  // again, a double-click) makes them yours. Leaving without it keeps your character.
+  await page.click('#nav-characters');
+  await page.waitForSelector('.char-grid .char-tile[data-look]');
+  const charTabs = await page.$$eval('.characters .tabs .tab', (bs) => bs.map((b) => b.dataset.group));
+  check(charTabs.join() === 'all,soldiers,legends,folk,horror,animals,creatures,mine', `Character Select's tabs are what a character is (${charTabs.join(', ')})`);
+  const front = () => page.evaluate(() => ({ look: window.__front.look, shown: window.__front.scene.look, screen: window.__front.screen }));
+  const mine = (await front()).look;
+  const others = (await page.$$eval('.char-tile[data-look]', (ts) => ts.map((t) => t.dataset.look))).filter((l) => l !== mine && l.startsWith('core.'));
+  const [pickA, pickB, pickC] = others;
+  const tileOf = (l) => `.char-tile[data-look="${l}"]`;
+  await page.hover(tileOf(pickA));
+  check((await front()).shown === mine, `hovering a portrait doesn't change who's shown (${(await front()).shown})`);
+  await page.click(tileOf(pickA));
+  await page.hover(tileOf(pickB));
+  await page.mouse.move(spin.x + spin.width / 2, spin.y + spin.height / 2);
+  const shownA = await front();
+  const chooseText = await page.textContent('#char-choose');
+  check(shownA.shown === pickA && shownA.look === mine && /^Choose /.test(chooseText ?? '') && (await page.$(`${tileOf(mine)} .chosen-badge`)) !== null, `a click shows the character, moving the mouse after doesn't change it, and it isn't chosen yet (${JSON.stringify(shownA)}, "${chooseText}")`);
+  await page.keyboard.press('e');
+  const stepped = await page.evaluate(() => ({ tab: document.querySelector('.characters .tabs .tab.on')?.dataset.group, shown: window.__front.scene.look }));
+  check(stepped.tab === 'soldiers' && stepped.shown === pickA, `E steps to the next group tab and keeps who's shown (${JSON.stringify(stepped)})`);
+  await page.keyboard.press('q');
+  await page.keyboard.press('Escape');
+  check((await front()).look === mine, 'leaving without choosing keeps your character');
+  await page.click('#nav-characters');
+  await page.click(tileOf(pickA));
+  await page.click('#char-choose');
+  const chose = await front();
+  check(chose.look === pickA && chose.screen === 'home', `Choose makes them yours (${JSON.stringify(chose)})`);
+  await page.click('#nav-characters');
+  check((await page.$(`${tileOf(pickA)} .chosen-badge`)) !== null, 'and their portrait wears the Chosen badge');
+  await page.focus(tileOf(pickC));
+  await page.keyboard.press('Enter');
+  const kbShown = await front();
+  await page.keyboard.press('Enter');
+  const kbChose = await front();
+  check(kbShown.shown === pickC && kbShown.look === pickA && kbChose.look === pickC, `keyboard: Enter on a portrait shows them, Enter again chooses (${kbShown.shown} / ${kbChose.look})`);
+  await page.click('#nav-characters');
+  await page.dblclick(tileOf(mine));
+  check((await front()).look === mine, 'a double-click on a portrait chooses them');
   await page.click('#nav-play');
   await page.waitForSelector('.map-card');
   const cards = () =>
