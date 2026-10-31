@@ -206,10 +206,10 @@ function vines(axis: 'x' | 'z', face: number, u0: number, u1: number, top: numbe
   for (let i = 0; i < count; i++) {
     const u = u0 + ((i + 0.3 + rnd() * 0.4) / count) * (u1 - u0);
     const len = 1.0 + rnd() * 2.2;
-    const w = 0.07 + rnd() * 0.07;
+    const w = 0.1 + rnd() * 0.1;
     const f0 = Math.min(face, face + out);
     const f1 = Math.max(face, face + out);
-    boxes.push(axis === 'x' ? trim(u - w / 2, top - len, f0, u + w / 2, top, f1, MOSS, '#3c5a20') : trim(f0, top - len, u - w / 2, f1, top, u + w / 2, MOSS, '#3c5a20'));
+    boxes.push(axis === 'x' ? trim(u - w / 2, top - len, f0, u + w / 2, top, f1, MOSS, '#b8e890') : trim(f0, top - len, u - w / 2, f1, top, u + w / 2, MOSS, '#b8e890'));
   }
   return boxes;
 }
@@ -286,7 +286,8 @@ function templeHall(): Box[] {
   /** The north wall is thinner, leaving the stair inside it 2.4 m wide; the south front stands 0.1 m in from the edge (vines hang in front of it). */
   const TN = 0.3;
   const Z0 = -3.9;
-  const GATE: Opening = [4 - 1.7, 4 + 1.7, 0, 3.4];
+  // The gate is centred on the west cell's south edge, where MapMaker hangs a door (the Portcullis fits it).
+  const GATE: Opening = [-1.6, 1.6, 0, 3.2];
   out.push(
     ...wall('x', Z0 + T / 2, X0, X1, [GATE], 0, 4, CARVED, T),
     ...wall('x', 4 - TN / 2, X0, X1, [door(10, 2.2, 2.8)], 0, 4, RELIEF, TN),
@@ -296,18 +297,18 @@ function templeHall(): Box[] {
   // Bars in the east windows (they stop you; you can shoot between them).
   for (const c of [-1.6, 1.6]) for (const dz of [-0.4, 0, 0.4]) out.push(paint(b(X1 - T / 2 - 0.04, 1.2, c + dz - 0.04, X1 - T / 2 + 0.04, 2.6, c + dz + 0.04), 'pbr_steel', '#5a5048'));
   // The gate: a carved lintel, jambs of bigger blocks, a gold inlay band, a stepped crest over it on the parapet.
-  out.push(trim(GATE[0] - 0.5, 3.4, -3.97, GATE[1] + 0.5, 4.0, Z0, RELIEF), trim(GATE[0] - 0.5, 3.35, -3.98, GATE[1] + 0.5, 3.45, Z0, GOLD, '#c8a040'));
-  for (const x of [GATE[0] - 0.5, GATE[1]]) out.push(stone(b(x, 0, -3.97, x + 0.5, 3.4, Z0 + T + 0.1), '#c0c0a0'));
+  out.push(trim(GATE[0] - 0.5, GATE[3], -3.97, GATE[1] + 0.5, 4.0, Z0, RELIEF), trim(GATE[0] - 0.5, GATE[3] - 0.05, -3.98, GATE[1] + 0.5, GATE[3] + 0.05, Z0, GOLD, '#c8a040'));
+  for (const x of [GATE[0] - 0.5, GATE[1]]) out.push(stone(b(x, 0, -3.97, x + 0.5, GATE[3], Z0 + T + 0.1), '#c0c0a0'));
   // The roof (a hole over the stair) and the parapet round it.
   out.push(...subtract([X0, Z0, X1, 4], [[T_S0, 1.3, T_S1, 4 - TN]]).map(([x0, z0, x1, z1]) => slab(b(x0, 3.75, z0, x1, 4.0, z1))));
-  out.push(slab(b(X0, 4.0, Z0, X1, 4.9, -3.5)), slab(b(X0, 4.0, 3.6, X1, 4.9, 4)), slab(b(X0, 4.0, -3.6, X0 + 0.4, 4.9, 3.6)), slab(b(X1 - 0.4, 4.0, -3.6, X1, 4.9, 3.6)));
-  // Crest over the gate (stepped, on the parapet).
-  out.push(carved(b(2.2, 4.9, Z0, 5.8, 5.6, -3.5)), carved(b(3.0, 5.6, Z0, 5.0, 6.3, -3.5)), trim(3.6, 6.3, Z0, 4.4, 6.8, -3.5, GOLD, '#c8a040'));
+  out.push(slab(b(X0, 4.0, Z0, X1, 4.9, -3.5)), slab(b(X0, 4.0, 3.6, X1, 4.9, 4)), ...[-3.6, 1.2].flatMap((z) => [slab(b(X0, 4.0, z, X0 + 0.4, 4.9, z + 2.4)), slab(b(X1 - 0.4, 4.0, z, X1, 4.9, z + 2.4))]));
+  // Crest over the gate (stepped, on the parapet); the parapet's gaps east and west meet walkways and the next roof.
+  out.push(carved(b(-1.8, 4.9, Z0, 1.8, 5.6, -3.5)), carved(b(-1.0, 5.6, Z0, 1.0, 6.3, -3.5)), trim(-0.4, 6.3, Z0, 0.4, 6.8, -3.5, GOLD, '#c8a040'));
   // The stair along the north wall, west to east; a rail along its open side at the top.
   out.push(...flight('x', 1, T_S0, 1.3, 4 - TN, 16, 0, T_RUN).map((s) => slab(s)));
   out.push(rail(T_S0, 1.3, T_S1 - 1.2, 1.3, 4.0, STONE, 1, '#a8a890'));
   // Columns flanking the gate's way in, carved, on plinths with gold capitals.
-  for (const x of [1.0, 7.0]) {
+  for (const x of [3.0, 7.0]) {
     out.push(stone(b(x - 0.45, 0, -1.65, x + 0.45, 0.4, -0.75), '#b0b098'), carved(b(x - 0.32, 0.4, -1.52, x + 0.32, 3.75, -0.88)), trim(x - 0.42, 3.3, -1.62, x + 0.42, 3.5, -0.78, GOLD, '#b89038'));
   }
   // The beamed ceiling (beams across, clear of the stair).
@@ -434,7 +435,7 @@ function otherTiles(): TileDefinition[] {
     id: 'jungle.temple',
     category: 'Buildings',
     displayName: 'Carved Temple',
-    blurb: '2 × 1 cells: carved walls and relief panels, a 3.4 m gate in the south front (hang the Portcullis in it), doors west and north, barred windows east, columns, a beamed ceiling, an altar; a stair inside the north wall up to a flat roof 4 m up behind a parapet',
+    blurb: '2 × 1 cells: carved walls and relief panels, a 3.2 m gate in the south front of the west cell (hang the Portcullis in it), doors west and north, barred windows east, columns, a beamed ceiling, an altar; a stair inside the north wall up to a flat roof 4 m up behind a parapet, open east and west to walkways and the next roof',
     cells: footprint(2, 1, 2),
     floors: [0],
     ports: [...perimeter(2, 1), ...perimeter(2, 1, 1)],
