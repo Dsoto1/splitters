@@ -80,6 +80,11 @@ export class FirstPersonBodyRig {
     anim.setFirstPerson({ place: () => this.place(), shrinkHead: this.headless.shrink });
   }
 
+  /** What is drawn of the body in place of its own meshes (the headless copies), for measuring where it is drawn. */
+  get drawnMeshes(): readonly Mesh[] {
+    return this.headless.cuts;
+  }
+
   /** The head's stand-in for shadows. */
   get shadowMesh(): Mesh {
     return this.headShadow;

@@ -82,6 +82,8 @@ export interface CharacterInstance {
 export interface HandData {
   palm: [number, number, number];
   dir: [number, number, number];
+  /** Out of the palm (the side the fingers close toward), square to `dir` (files measured since the hand frame was written). */
+  palmSide?: [number, number, number];
   length: number;
   width: number;
   thickness: number;
