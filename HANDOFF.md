@@ -67,6 +67,14 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   takes the final pose). Owner's console check showed the mismatch on the live site; verify after the update with the
   console line in this session's notes (skin vs joint hand span).
 
+### e2e `arsenal` fails on CI and locally, already on main's code (2026-10-31, not fixed yet)
+check/candidate 4490207 (St. John's smoothing; the diff can't reach arsenal) went red twice on `arsenal`, different
+checks each attempt: the mix-up pickup isn't drawn by the client in 10 s (rifle → plasma), the fallen bot's dropped
+rifle "drawn false" and can't be taken, the Battle Axe blow, "R loads the barrel again". The same checks fail locally
+on 6c0f8a6 (main), so it's not this change. Common thread: the client drawing a gun model for a pickup/drop
+(`view.pickupItem`, `pickup_<id>_gun`) misses or comes late. Root-cause before more merges; main can't move until it's
+green. physicsfx (ragdoll) and mobile tap were flaky and passed on the re-run.
+
 ### Owner tileset sheets (2026-10-31): eight concept sheets, awaiting the owner's answer
 01 Medieval Village, 02 Desert City, 03 Coastal Harbor, 04 Jungle Ruins, 05 Snow Outpost, 06 Sci-Fi Research,
 07 Ancient Temple, 08 Industrial Factory. These are pictures, not model files: references for MapMaker style packs.
