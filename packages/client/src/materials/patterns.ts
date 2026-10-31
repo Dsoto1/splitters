@@ -199,6 +199,88 @@ function timberPaint(u: number, v: number, b: RGB, a: RGB): RGB {
   return edge < 0.03 ? shade(plaster, 0.9) : plaster;
 }
 
+/**
+ * Coastal Harbor (Style Pack 11). Pier decking: salt-bleached boards with dark
+ * gaps between them, staggered butt joints, a nail pair at each joist.
+ */
+function deckingPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const n = 6;
+  const board = Math.floor(u * n);
+  const fu = fract(u * n);
+  if (fu < 0.07) return shade(a, 0.35);
+  const fv = fract(v * 2 + hash(board, 0, 121) * 0.5);
+  if (fv < 0.008) return shade(a, 0.45);
+  // Nails over the joists (every half repeat), a pair across the board.
+  const joist = fract(v * 4);
+  if ((joist < 0.02 || joist > 0.98) && (Math.abs(fu - 0.3) < 0.05 || Math.abs(fu - 0.75) < 0.05)) return shade(a, 0.4);
+  const grain = Math.sin((u * 60 + noise(u, v, 8, board + 3) * 5) * Math.PI) * 0.5 + 0.5;
+  const weather = mix(b, a, hash(board, Math.floor(v * 2), 123) * 0.35 + grain * 0.18);
+  return shade(weather, 0.86 + fbm(u, v, 125) * 0.22);
+}
+
+/** Harbour ashlar: big granite blocks in courses of two heights, each its own grey, with weathered faces. */
+function ashlarPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const tall = v < 0.6;
+  const row = tall ? 0 : 1;
+  const fv = tall ? v / 0.6 : (v - 0.6) / 0.4;
+  const cols = tall ? 2 : 3;
+  const cu = u * cols + row * 0.37;
+  const block = Math.floor(cu);
+  const fu = fract(cu);
+  if (fu < 0.02 || fu > 0.985 || fv < 0.035 || fv > 0.975) return shade(a, 0.8 + fbm(u, v, 127) * 0.2);
+  const stone = shade(mix(b, a, hash(block, row, 129) * 0.3), 0.84 + hash(block, row, 131) * 0.24);
+  // Rough chiselled faces: blotches, and a darker lip along each block's lower edge.
+  return shade(stone, (0.88 + fbm(u * 2, v * 2, 133) * 0.2) * (fv < 0.12 ? 0.86 : 1));
+}
+
+/** Shingle: a beach of small rounded pebbles of mixed sizes and greys (a wrapping jittered grid, as the cobbles). */
+function pebblePaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const n = 14;
+  const x = u * n;
+  const y = v * n;
+  let d1 = Infinity;
+  let d2 = Infinity;
+  let cell = 0;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const cx = Math.floor(x) + dx;
+      const cy = Math.floor(y) + dy;
+      const wx = ((cx % n) + n) % n;
+      const wy = ((cy % n) + n) % n;
+      const d = Math.hypot(x - (cx + 0.15 + hash(wx, wy, 135) * 0.7), (y - (cy + 0.15 + hash(wx, wy, 136) * 0.7)) * 1.3);
+      if (d < d1) {
+        d2 = d1;
+        d1 = d;
+        cell = wx * 37 + wy;
+      } else if (d < d2) d2 = d;
+    }
+  }
+  if (d2 - d1 < 0.12) return shade(a, 0.6 + fbm(u, v, 137) * 0.3);
+  const tone = hash(cell, 7, 138);
+  const stone = tone < 0.15 ? shade(b, 1.25) : tone > 0.85 ? shade(a, 1.1) : mix(b, a, tone * 0.4);
+  return shade(stone, 0.75 + Math.min(1, (d2 - d1) / 0.5) * 0.3);
+}
+
+/** Corrugated sheet: vertical ridges lit on one flank, a bolt line every half repeat, rust weeping down from the bolts. */
+function corrugatedPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const ridge = Math.sin(fract(u * 10) * Math.PI * 2);
+  const sheet = Math.floor(u * 2);
+  const rust = clamp01(noise(u * 2, v * 0.5, 8, 139 + sheet) * 1.6 - 0.75 + (fract(v * 2) < 0.06 ? 0.6 : 0));
+  const paint = shade(b, 0.82 + ridge * 0.16 + fbm(u, v, 141) * 0.06);
+  if (fract(u * 2) < 0.01) return shade(paint, 0.6);
+  return mix(paint, a, rust * 0.8);
+}
+
+/** Tarred lap boards: wide horizontal boards, each lapping the one below with a dark shadow line, the tar worn thin in places. */
+function lapboardPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const rows = 8;
+  const row = Math.floor(v * rows);
+  const fv = fract(v * rows);
+  const lap = fv > 0.88 ? 0.55 : 1 - (0.88 - fv) * 0.12;
+  const worn = clamp01(noise(u, v * 2, 8, 143 + row) * 1.8 - 1.05);
+  return shade(mix(b, a, worn * 0.6), lap * (0.9 + fbm(u * 3, v, 145) * 0.12));
+}
+
 const PAINTERS: Record<PatternId, Painter> = {
   grid: (u, v, b, a) => {
     const e = edgeDist(u, v);
@@ -340,6 +422,13 @@ const PAINTERS: Record<PatternId, Painter> = {
   },
   pantiles: pantilePaint,
   timber: timberPaint,
+  decking: deckingPaint,
+  ashlar: ashlarPaint,
+  pebbles: pebblePaint,
+  corrugated: corrugatedPaint,
+  lapboards: lapboardPaint,
+  // Two horizontal bands a repeat (a lighthouse's red and white).
+  bands: (u, v, b, a) => shade(fract(v) < 0.5 ? b : a, 0.92 + fbm(u, v, 147) * 0.1),
   weave: (u, v, b, a) => {
     const n = 24;
     const cu = Math.floor(u * n);
@@ -352,8 +441,8 @@ const PAINTERS: Record<PatternId, Painter> = {
 
 const cache = new Map<string, Uint8Array>();
 
-/** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles) are painted at twice the usual size so their shapes read. */
-const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles']);
+/** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles, decking, shingle) are painted at twice the usual size so their shapes read. */
+const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles', 'decking', 'pebbles']);
 export const patternSize = (def: MaterialDefinition): number => (FINE_PATTERNS.has(def.pattern) ? 256 : 128);
 
 /** RGBA pixels for a material's pattern (cached per material). */

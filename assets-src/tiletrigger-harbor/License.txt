@@ -1,0 +1,16 @@
+Style Pack pieces: 11 Coastal Harbor (built in code)
+
+These models are original to Tile Trigger. They are not taken from any pack
+and no generative AI service made them: each one is assembled from plain
+geometry (boxes, cylinders, cones, spheres, rings and flat sheets) by
+tools/content/prepare-harbor.mjs with tools/content/pieces.mjs, which write
+the GLB files in this folder. Re-run that script to rebuild them; the same
+code writes the same files.
+
+They belong to the Tile Trigger owner and ship as part of the game
+(licence "Owned" in content/props.json and the provenance ledger).
+
+Pieces: mooring bollard, capstan, lobster pots, mooring buoy, channel marker
+buoy, net drying rack, fish stall, fish boxes, fishing boat, anchor, rope
+coils, harbour lamp post, life ring, heap of nets, herring gull, tide board,
+mooring dolphin and tyre fenders (Style Pack 11 Coastal Harbor).

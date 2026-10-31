@@ -419,6 +419,45 @@ export const STYLE_PACKS: readonly StylePack[] = [
     pickups: ['core.weapon_battle_axe', 'core.weapon_spear', 'core.weapon_marksman', 'core.weapon_sniper', 'core.weapon_shotgun', 'core.weapon_sawed_off', 'core.weapon_hand_cannon', 'core.weapon_rifle', 'core.weapon_smg', 'core.incendiaries', 'core.grenades', 'core.sheep', 'core.armor_small', 'core.armor_large', 'core.health_small', 'core.health_large'],
     demo: 'market_town',
   },
+  {
+    id: 'harbor',
+    number: '11',
+    displayName: 'Coastal Harbor',
+    style: 'Working fishing harbour',
+    blurb: "Timber piers and boardwalks on piles (swim under them), granite quays with bollards, sea wall steps, a slipway and a shingle beach out of the water, a breakwater; a warehouse, a net shed, the harbourmaster's office and a fish market to fight through; a lighthouse gallery and a dockside crane to snipe from. Harbour water to swim, boats to cross it, ladders up the quay.",
+    themes: ['core.coastal', 'core.harbour', 'core.city'],
+    tiles: [
+      'harbor.pier', 'harbor.pier_head', 'harbor.boardwalk', 'harbor.boardwalk_turn', 'harbor.quay', 'harbor.quay_corner', 'harbor.quay_inner', 'harbor.quay_steps',
+      'harbor.slipway', 'harbor.beach', 'harbor.basin', 'harbor.breakwater', 'harbor.warehouse', 'harbor.office', 'harbor.net_shed', 'harbor.fish_market',
+      'harbor.lighthouse', 'harbor.crane', 'harbor.arch', 'harbor.quayside',
+      'medieval.outside_stair', 'medieval.walkway', 'core.yard', 'core.plaza', 'core.room', 'core.room_long', 'core.stairwell',
+    ],
+    props: props(
+      'hb_bollard', 'hb_capstan', 'hb_lobster_pots', 'hb_buoy', 'hb_marker_buoy', 'hb_net_rack', 'hb_fish_stall', 'hb_fish_crates', 'hb_fishing_boat',
+      'hb_anchor', 'hb_rope_coil', 'hb_lamp_post', 'hb_life_ring', 'hb_net_pile', 'hb_gull', 'hb_tide_board', 'hb_dolphin', 'hb_fenders',
+      // Already in the game: boats and masts, cargo and crates, barrels, the gantry crane, lamps and rocks.
+      'rowboat', 'eg_felucca', 'mast', 'flag', 'cargo_gantry_crane', 'cargo_container_rusty_blue', 'cargo_container_rusty_red', 'cargo_container_old_rusty', 'cargo_ibc_tank',
+      'cargo_wooden_crate', 'cargo_crate_stack', 'cargo_crate', 'crate_small', 'crate_large', 'pallet', 'barrel', 'barrel_open', 'street_barrel', 'street_rusty_barrel', 'fuel_drum',
+      'mv_sacks', 'mv_tarp_crates', 'planks_stack', 'woodpile', 'lantern', 'lantern_post', 'lightpost', 'yard_lamp', 'bench',
+      'rock_large', 'rock_medium', 'rock_pile', 'boulder_jagged', 'boulder_flat', 'cliff', 'cliff_steps',
+    ),
+    materials: ['core.pier_decking', 'core.quay_granite', 'core.harbour_setts', 'core.shingle', 'core.sea_bed', 'core.rusty_corrugated', 'core.blue_corrugated', 'core.tarred_boards', 'core.harbour_render', 'core.lighthouse_bands', 'core.harbour_paint', 'core.lamp_glow'],
+    facades: ['harbour_render', 'tarred_timber'],
+    gameplay: ['water:harbour', 'water:water', 'ladder', 'mover:drawbridge', 'mover:lift', 'mover:slider', 'door', 'door:saloon', 'crate', 'barrel', 'block:planks', 'block:old_planks', 'block:rotten', 'boards', 'button', 'light:wall', 'light:bulb', 'zone', 'glass'],
+    gameplayNotes: {
+      'water:harbour': 'Harbour water: put it on the harbour bed (4 m down) and its surface sits 1.5 m under the quay, deep enough to swim; boats float on it',
+      ladder: 'Ladder: out of the water up a Quay Wall (between its fenders), up the Harbour Crane through its hatch, onto a roof',
+      'mover:drawbridge': 'A lifting bridge over the harbour mouth or a channel',
+      'mover:lift': 'A goods hoist up the warehouse face',
+      'block:old_planks': 'Rotten pier boards that give way under you (into the water)',
+      'block:rotten': 'A rotten boardwalk plank',
+      'light:wall': 'A lamp on the warehouse wall or the quay',
+      zone: 'Trigger zone: sound the foghorn, raise the bridge',
+    },
+    mounts: ['hover_bike', 'speeder'],
+    pickups: ['core.weapon_rifle', 'core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_marksman', 'core.weapon_sniper', 'core.weapon_lmg', 'core.weapon_flare_gun', 'core.weapon_hand_cannon', 'core.weapon_rockets', 'core.grenades', 'core.armor_small', 'core.armor_large', 'core.health_small', 'core.health_large'],
+    demo: 'saltmarsh_harbor',
+  },
 ];
 
 export const getStylePack = (id: string): StylePack | undefined => STYLE_PACKS.find((p) => p.id === id);
