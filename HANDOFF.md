@@ -209,7 +209,7 @@ lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster h
 square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
 Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
 
-### Style Pack 11 Coastal Harbor (`wip/harbor-pack`, agent, 2026-10-31; IN PROGRESS, not merged)
+### Style Pack 11 Coastal Harbor (`wip/harbor-pack`, agent, 2026-10-31; green on `check/harbor`, not merged)
 - **Done (pushed):** 20 tiles in `packages/shared/src/map/packTilesHarbor.ts` (pier, pier head, boardwalk + corner,
   quay wall / outside / inside corner, 2 × 1 sea wall steps, slipway, shingle beach, basin, breakwater, 2 × 1
   warehouse, net shed and harbourmaster's office (straight stair, eaves 8.25 m like Medieval: an Outside Stair north
@@ -230,7 +230,10 @@ Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, ta
 - **Also done:** palette atlas (`harbor` group) + `content:build` (content OK), map card, docs (BUILDING_KIT
   "11 Coastal Harbor", CHANGELOG, `docs/map-briefs/saltmarsh_harbor/` with screenshots). The Tide warehouse roof
   has no stair (one against the east boundary lost its flight on the navmesh).
-- **Next:** e2e flows from `pnpm ci:plan`, push `check/harbor`, poll CI, fix forward. Then merge to the session
+- **Checks:** typecheck, test:changed (1067 passed), content:check, build, bundle budget (798.0 KB gzip), validate-map 0
+  issues, e2e editor/editorux/maps (saltmarsh_harbor) locally; CI run 41200191169 on `check/harbor` (7d13a27): full
+  suite green. NOT TESTED: live bot match, bot swimming / jet-ski crossing, 24-player perf, real-GPU walk-through.
+- **Next:** merge to the session
   branch (rebuild palette atlas/provenance if another pack landed first). Candidates: a real boat mount (motor
   launch), Meshy hero for `hb_fishing_boat`.
 
