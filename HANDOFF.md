@@ -92,6 +92,16 @@ map area)".
 - Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
   need `pnpm e2e:baselines`.
 
+### After the style packs (owner, 2026-10-31): MapMaker overhaul and a pass over every map
+Once all the style packs are done (10 Medieval, 11 Harbor, 12 Snow, 09 Desert City, 06 Jungle Ruins refresh, and the
+unassigned Sci-Fi Research and Industrial Factory refreshes), the owner wants:
+- **A major MapMaker update** for the packs: how they're browsed, placed and combined (palette, search, pack
+  filters, previews, tile/prop placement and editing). Scope it with the owner first.
+- **Every map updated** to the new styles, assets and models (the suite in maps/), improved where it helps
+  (layouts, looks, cover, spawns, weapons, performance); each map edited in MapMaker as data (CLAUDE.md "Maps"),
+  validate-map clean, its card shot redone. Overlaps the older queued "Map revisit pass".
+Not started; plan it with the owner when the packs are on main.
+
 ### Work split between the owner's two accounts (2026-10-31 ~06:40 UTC)
 The owner is splitting the style packs across two accounts. Each pack goes on its own `wip/<pack>-pack` branch built
 on `main`. They collide in generated files (props.generated.ts, thumbs/palette.json + atlases, provenance.json,
@@ -107,8 +117,18 @@ props.json, stylePacks.ts, catalog.ts, materials.ts, CHANGELOG/HANDOFF). Whoever
     existing maps such as pharaohs_reach still load, but the pack entry and its palette become Desert City).
   - Jungle Ruins refresh from the TILESET 04 sheet (owner: "update"): carved, relief and window walls; beamed and arch
     ceilings; a zipline post; a watch tower.
-  - If time allows, Ancient Temple combined into 03 Imperial Arena (owner: "combine").
+  - Ancient Temple (TILESET 07) is combined into that same Jungle Ruins refresh (owner, 2026-10-31: the two
+    sounded alike), so it is one pack: Jungle Ruins. 03 Imperial Arena stays Roman and unchanged.
   - Sci-Fi Research (Orbital) and Industrial Factory (Military) refreshes are unassigned.
+- **If this account runs out mid-task:** the three agents push WIP to `wip/medieval-fixes-dropship`,
+  `wip/harbor-pack` and `wip/snow-pack` after every step, each with its own HANDOFF section saying what's done
+  and what's next. The other account resumes from those branches: merge `main`, finish, go green on `check/<name>`,
+  then fast-forward `main`.
+- **State when this account ran out (2026-10-31 ~12:20 UTC):** all three branches nearly done, none run on CI yet:
+  `wip/medieval-fixes-dropship` dbe4685, `wip/harbor-pack` 7d13a27 (Saltmarsh Harbor; also moves STYLE_PACKS out of the
+  menu's first JS: 798.0 of 800 kB gzip), `wip/snow-pack` 827d581 (Whiteout Station). Next: for each branch, merge
+  `main` into it, push it to `check/<name>`, fix until green, then fast-forward `main`, one branch at a time. The
+  second of Harbor and Snow to land rebuilds the generated files (palette atlas, props.generated.ts, provenance).
 - How a pack is built: see the Medieval pack (packTilesMedieval.ts, tools/content/prepare-medieval.mjs,
   stylePacksMedieval.test.ts). Its demo map is a maps/<id>.json made with MapMaker operations (no build script in
   the repo), following docs/map-briefs/AGENT_BUILD_CONTRACT.md. No Meshy generation without the owner's approval.
