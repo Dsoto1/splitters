@@ -59,6 +59,18 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
 - Merge through a `check/` branch: content changes run the full suite; the `visual` baselines (menu hero rifle) may
   need `pnpm e2e:baselines`.
 
+### Queued for after 15:00 EST / 19:00 UTC (owner, 2026-10-31): new Drive downloads
+- **New models** the owner added to the Drive folder (`18MaKefMCWARf1Y3gAjhZuxTto86vGAYl`): sort them (characters,
+  props, weapons, vehicles), process through the existing pipelines, name and manifest new characters.
+- **FX: the owner bought a full licence** for the effects packs whose free versions we already use (Binbun:
+  `content/vfx.json`, binbun-muzzle-flash / hit-fx / explosion-fx, CC0 free editions). The full packs add many more
+  effects, textures and weapon/gameplay effects. Before shipping: read the purchased licence text (it is likely a
+  commercial licence, not CC0) and record it per pack in vfx.json / provenance (licence, "purchased by the owner");
+  CLAUDE.md's content rules list CC0, credit-only and Quaternius packs, so add "assets the owner bought a licence for"
+  there with the owner's OK. As now, only the processed output ships (prepare-vfx.mjs atlases); the pack files are
+  never committed. Then map effects to weapons (muzzle, tracer, impact per surface, explosions per weapon), gameplay
+  (pickups, spawns, portals, jump pads, hazards) and check performance at 96.
+
 ### After the style packs (owner, 2026-10-31): MapMaker overhaul and a pass over every map
 Once all the style packs are done (10 Medieval, 11 Harbor, 12 Snow, 09 Desert City, 06 Jungle Ruins refresh, and the
 unassigned Sci-Fi Research and Industrial Factory refreshes), the owner wants:
