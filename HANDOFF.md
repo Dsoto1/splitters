@@ -109,6 +109,13 @@ Owner's screenshots, Character Select holding the AK (2026-10-31 evening), worst
 - **Ricochet** (pre-rigged): arms crossed in front of the face, gun turned up toward the camera (the Barnacle/Hyena
   failure, on a pre-rigged body: so not only the in-house fit; look at the hold's shoulder/elbow solve for short or
   oddly proportioned arms).
+- More of the crossed-arms / gun-at-the-face failure: **Shambler, Grandpa Chains, Botboy** (pre-rigged) and **Rotter**
+  (in-house): the gun ends up beside or in front of the face, turned up or sideways, hands bunched at the chin.
+  With Barnacle, Hyena and Ricochet that's 7 characters: the single biggest group, so fix the shared cause first
+  (it shows up on both in-house fits and pre-rigged bodies; likely the hold solve when the arms are short relative to
+  the shoulder width, or when the shoulder joints sit far forward/inside a bulky torso).
+- **Dale** (pre-rigged): grip passable, but his import is lumpy (owner) like Lancer Mei and Sir Galloway, and the
+  forearm skin tears/stretches near the wrist.
 - **Count Bonesworth** (in-house): hands round the gun but the gun is held out to the side, not along his facing.
 - Fair: Flt. Lt. Ember (gloves near the grip, support hand open below), Brass Hare (paws on the gun).
 - Close to right (owner's second batch): Wealthy Otter, Salamander Warlord (both in-house fits: paws/claws round the
