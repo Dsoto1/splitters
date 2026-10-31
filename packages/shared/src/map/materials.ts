@@ -49,7 +49,21 @@ export type PatternId =
   /** Style Pack 10: rows of curved clay roof tiles (pantiles), each row lapping the one below. */
   | 'pantiles'
   /** Style Pack 10: half-timbering: dark oak posts, rails and braces with plaster panels between (repeats every storey). */
-  | 'timber';
+  | 'timber'
+  /** Style Pack 09 Desert City: coursed sandstone ashlar, long and short blocks, fine joints, tooled faces. */
+  | 'ashlar'
+  /** Style Pack 09 Desert City: lime plaster, sun-faded, flaked away in patches to the stone beneath (the accent). */
+  | 'stucco'
+  /** Style Pack 09 Desert City: glazed fish-scale tiles (a dome), each its own shade, a few in the accent. */
+  | 'scales'
+  /** Style Pack 09 Desert City: zellige: eight-point stars in the accent in a field of the base, crosses between, grouted. */
+  | 'zellige'
+  /** Style Pack 09 Desert City: worn flagstones: courses of uneven slabs, joints in the accent. */
+  | 'flags'
+  /** Style Pack 09 Desert City: a woven rug: borders, a lozenge medallion and small motifs in the accent and cream on the base. */
+  | 'rug'
+  /** Style Pack 09 Desert City: a mashrabiya lattice: diagonal turned-wood bars (base) with knots, the dark (accent) between. */
+  | 'lattice';
 
 export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
@@ -140,6 +154,17 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('packed_dirt', 'Packed Dirt', 'Ground', 'noise', '#7a6448', '#635038', 3),
   m('whitewash', 'Whitewash', 'Stone', 'noise', '#ece6d6', '#d8d0bc', 2.5),
   m('oak_beam', 'Oak Beam', 'Wood', 'planks', '#4a3220', '#30200f', 1.5),
+  // Style Pack 09 Desert City (the owner's "Tileset 02" sheet): our own procedural paint.
+  m('ashlar', 'Sandstone Ashlar', 'Stone', 'ashlar', '#d6b688', '#9a7c56', 2),
+  m('stucco', 'Weathered Plaster', 'Stone', 'stucco', '#eadcbe', '#c4a476', 3),
+  m('dome_tiles', 'Blue Dome Tiles', 'Tile', 'scales', '#2a5aa8', '#6ec0d8', 1.5, 0.55),
+  m('zellige', 'Zellige Mosaic', 'Tile', 'zellige', '#ece2cc', '#1e4a8a', 1.6, 0.4),
+  m('worn_paving', 'Worn Paving', 'Stone', 'flags', '#cfb68e', '#8a7258', 3),
+  m('sandstone_tiles', 'Sandstone Tiles', 'Tile', 'tiles', '#dcc49a', '#a88a62', 2, 0.1),
+  m('rug_red', 'Market Rug', 'Fabric', 'rug', '#9e2a24', '#22305a', 2.5),
+  m('mashrabiya', 'Mashrabiya Lattice', 'Wood', 'lattice', '#6e4628', '#1a120c', 1),
+  m('canopy_red', 'Red Canopy', 'Fabric', 'weave', '#b4322a', '#8a2420', 1.5),
+  m('cedar', 'Cedar Beam', 'Wood', 'planks', '#7a5434', '#54381f', 1.5),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -259,6 +284,7 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('adobe', 'Frontier Adobe', '#f4d2a0', ['pbr_floorboards', '#d8b890'], 'pbr_adobe', ['pbr_adobe', '#e8d0b0'], 'pbr_weathered_planks', 'pbr_walnut'),
   theme('gothic_estate', 'Gothic Estate', '#231d2c', 'pbr_floorboards', 'wallpaper_damask', 'pbr_walnut', 'dark_wood', 'brass'),
   theme('jungle_temple', 'Jungle Temple', '#a8c8a0', 'pbr_mossy_cobble', 'pbr_castle_stone', 'pbr_jungle_rock', 'pbr_rock', ['pbr_travertine', '#b8c0a0']),
+  theme('desert_city', 'Desert City', '#f4dcb0', 'worn_paving', 'ashlar', ['stucco', '#f2e6cc'], 'cedar', ['sandstone_tiles', '#e8d8b8']),
   theme('medieval', 'Medieval Village', '#a8c8e8', 'cobblestones', 'timber_frame', ['oak_beam', '#c8a888'], 'pbr_floorboards', 'oak_beam'),
   theme('suburban', 'Suburban', '#9cc8f0', 'oak_planks', 'pbr_plaster_white', 'pbr_clapboard', 'pbr_plaster_white', ['paint_matte', '#f4f2ec']),
 ];

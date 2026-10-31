@@ -11,6 +11,7 @@ import { boxPackTiles } from './packTiles.ts';
 import { boxPackTiles2 } from './packTiles2.ts';
 import { ancientPackTiles } from './packTilesAncient.ts';
 import { medievalPackTiles } from './packTilesMedieval.ts';
+import { desertPackTiles } from './packTilesDesert.ts';
 
 /** Sides in clockwise order; rotating a tile by k quarter turns maps side i to (i + k) % 4. */
 export const SIDES = ['N', 'E', 'S', 'W'] as const;
@@ -119,9 +120,11 @@ export type Corner = (typeof CORNERS)[number];
  * limestone with pilasters and a cornice (03 Imperial Arena), or sandstone
  * with a painted hieroglyph band under a gilded cavetto cornice (09 Sands
  * of Egypt); half-timbering over a stone ground storey, or whitewash with
- * oak quoins and shutters (10 Medieval Village).
+ * oak quoins and shutters (10 Medieval Village); sandstone ashlar with a
+ * carved band, lattice screens and a stepped parapet, or weathered plaster
+ * with stone quoins and cedar beam ends (09 Desert City).
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick', 'roman', 'egyptian', 'timber_frame', 'village_plaster'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick', 'roman', 'egyptian', 'timber_frame', 'village_plaster', 'desert_ashlar', 'desert_plaster'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
@@ -146,6 +149,8 @@ export const FACADE_LABELS: Record<Facade, string> = {
   egyptian: 'Egyptian temple',
   timber_frame: 'Half-timbered',
   village_plaster: 'Village whitewash',
+  desert_ashlar: 'Desert ashlar',
+  desert_plaster: 'Desert plaster',
 };
 /** Facades drawn from models: the city kit's, and the Orbital and Neon packs' own pieces (the rest are boxes drawn with the level). */
 export const MODEL_FACADES: ReadonlySet<Facade> = new Set(['brick', 'storefront', 'plaster', 'hull', 'glass', 'neon']);
@@ -1205,6 +1210,8 @@ export const CORE_TILES: readonly TileDefinition[] = [
   ...ancientPackTiles(),
   // Style Pack pieces (10 Medieval Village): see packTilesMedieval.ts.
   ...medievalPackTiles(),
+  // Style Pack pieces (09 Desert City, in Sands of Egypt's place; the Egypt tiles above stay): see packTilesDesert.ts.
+  ...desertPackTiles(),
 ];
 
 // ---------------------------------------------------------------- buildings

@@ -1122,7 +1122,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'desert_ashlar' | 'desert_plaster';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1147,6 +1147,9 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   // 10 Medieval Village.
   timber_frame: { skin: 'core.timber_frame', tint: null, depth: 0.1 },
   village_plaster: { skin: 'core.whitewash', tint: null, depth: 0.1 },
+  // 09 Desert City.
+  desert_ashlar: { skin: 'core.ashlar', tint: null, depth: 0.1 },
+  desert_plaster: { skin: 'core.stucco', tint: null, depth: 0.08 },
 };
 /** Openings in a dressed wall (from its segments): `top` is the lintel, `sill` the sill (0 for a doorway). */
 function facadeOpenings(segs: readonly [number, number, number, number, number][]): { u0: number; u1: number; sill: number; top: number }[] {
@@ -1339,6 +1342,29 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
             if (o.top < levelHeight - 0.3) add(side, o.u0 - 0.15, o.u1 + 0.15, o.top, o.top + 0.18, out0 - 0.08, out0, oakBeam);
           }
           if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.3, out0 - 0.3, TILE_DIMENSIONS.wallThickness, 'core.roof_tiles_red');
+          break;
+        }
+        case 'desert_ashlar':
+        case 'desert_plaster': {
+          // Desert City: a sandstone plinth, a carved band (or stone quoins on plaster), lattice screens
+          // and cedar lintels at the windows, a stepped parapet over a cornice (cedar beam ends on plaster).
+          const stone = 'core.ashlar';
+          if (ground) add(side, -half, half, 0, 0.5, out0 - 0.08, -base, stone, '#c8a878');
+          if (facade === 'desert_ashlar' && full) add(side, -half, half, levelHeight - 0.75, levelHeight - 0.45, out0 - 0.06, out0, 'core.zellige');
+          if (facade === 'desert_plaster' && full) for (const u of [-half, half - 0.5]) for (let y = 0; y < levelHeight - 0.2; y += 0.8) add(side, u + (y % 1.6 ? 0.1 : 0), u + 0.5, y, y + 0.4, out0 - 0.04, out0, stone);
+          for (const o of facadeOpenings(segs)) {
+            if (o.sill > 0.3) {
+              add(side, o.u0, o.u1, o.sill, o.top, out0 + 0.02, out0 + 0.06, 'core.mashrabiya');
+              add(side, o.u0 - 0.1, o.u1 + 0.1, o.sill - 0.1, o.sill, out0 - 0.12, out0, stone, '#b89868');
+            }
+            if (o.top < levelHeight - 0.3) add(side, o.u0 - 0.2, o.u1 + 0.2, o.top, o.top + 0.2, out0 - 0.1, out0, 'core.cedar');
+          }
+          if (!roofed && full) {
+            add(side, -half, half, top - 0.1, top + 0.15, out0 - 0.2, TILE_DIMENSIONS.wallThickness, stone, '#c0a070');
+            add(side, -half, half, top + 0.15, top + 0.6, out0 - 0.05, TILE_DIMENSIONS.wallThickness, look.skin, look.tint);
+            for (let u = -half + 0.7; u < half - 0.6; u += 1.4) add(side, u - 0.3, u + 0.3, top + 0.6, top + 0.95, out0 - 0.05, 0.1, look.skin, look.tint);
+            if (facade === 'desert_plaster') for (let u = -half + 0.9; u < half - 0.5; u += 1.8) add(side, u - 0.1, u + 0.1, top - 0.6, top - 0.4, out0 - 0.45, out0, 'core.cedar');
+          }
           break;
         }
         case 'adobe':

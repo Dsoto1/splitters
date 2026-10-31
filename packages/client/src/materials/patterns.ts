@@ -199,6 +199,156 @@ function timberPaint(u: number, v: number, b: RGB, a: RGB): RGB {
   return edge < 0.03 ? shade(plaster, 0.9) : plaster;
 }
 
+/**
+ * Sandstone ashlar (Style Pack 09 Desert City): four courses a repeat, each
+ * cut into two or three blocks of its own lengths (the joints wrap), fine
+ * mortar joints in the accent, each block its own shade with tooled
+ * (finely streaked) faces and slightly darker arrises.
+ */
+function ashlarPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const rows = 4;
+  const row = Math.floor(v * rows);
+  const fv = fract(v * rows);
+  // Joints along the course: two or three blocks, offset per course.
+  const n = hash(row, 0, 121) < 0.5 ? 2 : 3;
+  const su = fract(u + hash(row, 1, 122)) * n;
+  const block = Math.floor(su);
+  const fu = fract(su);
+  if (fv < 0.045 || fu < 0.02) return shade(a, 0.9 + fbm(u, v, 123) * 0.2);
+  const rim = Math.min(fu - 0.02, 1 - fu, (fv - 0.045) * 0.6, (1 - fv) * 0.6) * 10;
+  const tone = mix(b, [b[0] * 0.92 + 18, b[1] * 0.88 + 10, b[2] * 0.8], hash(block, row, 124));
+  const tooled = Math.sin((u * 90 + v * 14 + noise(u, v, 8, 125) * 4) * Math.PI) * 0.025;
+  return shade(tone, (0.86 + hash(block, row, 126) * 0.2) * (0.9 + Math.min(1, rim) * 0.1) + tooled + fbm(u, v, 127) * 0.08 - 0.04);
+}
+
+/** Weathered lime plaster (Style Pack 09): sun-faded and blotchy, flaked in patches to coursed stone (the accent) beneath. */
+function stuccoPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const flake = noise(u, v, 4, 131) * 0.6 + noise(u, v, 16, 132) * 0.4;
+  if (flake > 0.68) {
+    // The stone under the plaster: little courses of rubble.
+    const row = Math.floor(v * 16);
+    const su = u * 8 + (row % 2) * 0.5;
+    const joint = fract(su) < 0.08 || fract(v * 16) < 0.12;
+    return joint ? shade(a, 0.62) : shade(a, 0.85 + hash(Math.floor(su), row, 133) * 0.25);
+  }
+  // A darker rim round each flaked patch, then the plaster.
+  if (flake > 0.645) return shade(b, 0.8);
+  return shade(mix(b, a, clamp01(fbm(u, v, 134) - 0.45) * 0.5), 0.94 + fbm(u, v, 135) * 0.1);
+}
+
+/** Glazed fish-scale dome tiles (Style Pack 09): rows offset half a tile, each scale lit toward its crown, a few in the accent. */
+function scalesPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const cols = 8;
+  const rows = 8;
+  const row = Math.floor(v * rows);
+  const x = u * cols + (row % 2) * 0.5;
+  const col = Math.floor(x);
+  const fu = fract(x) - 0.5;
+  const fv = fract(v * rows);
+  // A scale is a disc whose lower part shows (the row above laps its top).
+  const d = Math.hypot(fu, (fv - 0.15) * 0.9);
+  if (d > 0.56) return shade(b, 0.62);
+  if (d > 0.48) return shade(mix(b, [230, 230, 220], 0.3), 0.55);
+  const glaze = hash(((col % cols) + cols) % cols, row, 141) < 0.12 ? a : b;
+  return shade(mix(glaze, [255, 255, 255], Math.max(0, 0.3 - d) * 0.6), 0.75 + (1 - Math.min(1, d * 2)) * 0.35 + hash(((col % cols) + cols) % cols, row, 142) * 0.1);
+}
+
+/**
+ * Zellige (Style Pack 09): eight-point stars (two squares, one turned 45°) in
+ * the accent with a cream heart, a small cross where four stars meet in a
+ * second colour picked by hash (turquoise, ochre or green), the field in the
+ * base, grout between.
+ */
+function zelligePaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const n = 4;
+  const x = fract(u * n) - 0.5;
+  const y = fract(v * n) - 0.5;
+  const sq = Math.max(Math.abs(x), Math.abs(y));
+  const dia = (Math.abs(x) + Math.abs(y)) / Math.SQRT2;
+  const star = Math.max(sq / 0.3, dia / 0.3);
+  // The cross where four cells meet.
+  const cx = 0.5 - Math.abs(x);
+  const cy = 0.5 - Math.abs(y);
+  const cross = (cx < 0.07 && cy < 0.2) || (cy < 0.07 && cx < 0.2);
+  const colours: RGB[] = [
+    [40, 150, 150],
+    [196, 140, 50],
+    [50, 120, 70],
+  ];
+  const second = colours[Math.floor(hash(Math.round(u * n) % n, Math.round(v * n) % n, 151) * 3)]!;
+  const glazed = (c: RGB, seed: number) => shade(c, 0.88 + hash(Math.floor(u * 24), Math.floor(v * 24), seed) * 0.18);
+  if (Math.abs(star - 1) < 0.07) return [118, 110, 98];
+  if (star < 1) return star < 0.4 ? glazed([236, 228, 210], 152) : glazed(a, 153);
+  if (cross) return glazed(second, 154);
+  if (fract(u * 24) < 0.08 || fract(v * 24) < 0.08) return shade(b, 0.84);
+  return glazed(b, 155);
+}
+
+/** Worn flagstones (Style Pack 09): three courses of uneven slabs (lengths by hash), dished and polished by feet. */
+function flagsPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const heights = [0.3, 0.4, 0.3];
+  let row = 0;
+  let v0 = 0;
+  while (row < 2 && v >= v0 + heights[row]!) v0 += heights[row++]!;
+  const h = heights[row]!;
+  const fv = (v - v0) / h;
+  const n = 2 + Math.floor(hash(row, 0, 161) * 2);
+  const su = fract(u + hash(row, 1, 162)) * n;
+  const slab = Math.floor(su);
+  const fu = fract(su);
+  const jv = 0.02 / h;
+  const ju = 0.02 * n;
+  if (fv < jv || fu < ju) return shade(a, 0.8 + fbm(u, v, 163) * 0.25);
+  const rim = Math.min((fu - ju) / ju, (1 - fu) / ju, (fv - jv) / jv, (1 - fv) / jv);
+  const tone = shade(b, 0.84 + hash(slab, row, 164) * 0.22);
+  return shade(mix(tone, a, clamp01(noise(u, v, 8, 165 + row) - 0.55) * 0.6), (rim < 1.5 ? 0.92 : 1) * (0.95 + fbm(u, v, 166) * 0.1));
+}
+
+/** A woven rug (Style Pack 09): an accent and cream border with a zigzag band, a field of the base with a stepped lozenge medallion and little diamonds. */
+function rugPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const cream: RGB = [226, 206, 160];
+  const ochre: RGB = [200, 140, 60];
+  const weave = 0.92 + (fract(u * 96) < 0.5 ? 0.04 : 0) + (fract(v * 96) < 0.5 ? 0.03 : 0) + fbm(u, v, 171) * 0.06;
+  const e = Math.min(u, 1 - u, v, 1 - v);
+  let c: RGB = b;
+  if (e < 0.03) c = a;
+  else if (e < 0.05) c = cream;
+  else if (e < 0.11) {
+    // The border band: a running zigzag.
+    const along = Math.min(u, 1 - u) < Math.min(v, 1 - v) ? v : u;
+    const z = Math.abs(fract(along * 12) - 0.5) * 0.08 + 0.06;
+    c = Math.abs(e - z) < 0.01 ? ochre : a;
+  } else if (e < 0.125) c = cream;
+  else {
+    const d = Math.abs(u - 0.5) + Math.abs(v - 0.5);
+    const step = Math.floor(d * 20);
+    if (d < 0.3) c = step % 3 === 0 ? cream : step % 3 === 1 ? a : ochre;
+    else if (d < 0.32) c = cream;
+    else {
+      // Little diamonds over the field.
+      const mu = fract(u * 6) - 0.5;
+      const mv = fract(v * 6) - 0.5;
+      if (Math.abs(mu) + Math.abs(mv) < 0.12) c = hash(Math.floor(u * 6), Math.floor(v * 6), 172) < 0.5 ? cream : a;
+    }
+  }
+  return shade(c, weave);
+}
+
+/** Mashrabiya (Style Pack 09): a diagonal lattice of turned bars in the base with a bead at every crossing, the dark accent between, a rail round the repeat. */
+function latticePaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const n = 8;
+  const s = fract((u + v) * n * 0.5);
+  const t = fract((u - v) * n * 0.5);
+  const ds = Math.abs(s - 0.5);
+  const dt = Math.abs(t - 0.5);
+  if (Math.min(u, 1 - u, v, 1 - v) < 0.035) return shade(b, 0.85);
+  const r = Math.hypot(ds, dt);
+  if (r < 0.17) return shade(b, 1.08 - r * 1.4);
+  const m = Math.min(ds, dt);
+  if (m < 0.075) return shade(b, 0.95 - m * 2.2 + fbm(u, v, 181) * 0.06);
+  return shade(a, 0.9 + fbm(u, v, 182) * 0.2);
+}
+
 const PAINTERS: Record<PatternId, Painter> = {
   grid: (u, v, b, a) => {
     const e = edgeDist(u, v);
@@ -340,6 +490,13 @@ const PAINTERS: Record<PatternId, Painter> = {
   },
   pantiles: pantilePaint,
   timber: timberPaint,
+  ashlar: ashlarPaint,
+  stucco: stuccoPaint,
+  scales: scalesPaint,
+  zellige: zelligePaint,
+  flags: flagsPaint,
+  rug: rugPaint,
+  lattice: latticePaint,
   weave: (u, v, b, a) => {
     const n = 24;
     const cu = Math.floor(u * n);
@@ -352,8 +509,8 @@ const PAINTERS: Record<PatternId, Painter> = {
 
 const cache = new Map<string, Uint8Array>();
 
-/** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles) are painted at twice the usual size so their shapes read. */
-const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles']);
+/** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles, ashlar, dome tiles, zellige, rugs, lattices) are painted at twice the usual size so their shapes read. */
+const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles', 'ashlar', 'scales', 'zellige', 'rug', 'lattice']);
 export const patternSize = (def: MaterialDefinition): number => (FINE_PATTERNS.has(def.pattern) ? 256 : 128);
 
 /** RGBA pixels for a material's pattern (cached per material). */

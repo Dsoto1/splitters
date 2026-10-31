@@ -477,6 +477,8 @@ export const SCENARIO_PALETTE = [
   // Style Pack gameplay pieces (10 Medieval Village).
   { key: 'door:oak', label: 'Oak Door', search: 'door oak wooden plank ironbound iron bound hinged medieval village house castle' },
   { key: 'block:wattle', label: 'Wattle Hurdle', search: 'block wattle hurdle fence woven breakable wood medieval village farm' },
+  // Style Pack gameplay pieces (09 Desert City).
+  { key: 'block:lattice', label: 'Lattice Screen', search: 'block lattice screen mashrabiya window wood breakable desert city arab middle eastern' },
 ] as const;
 
 export type ScenarioPaletteKey = (typeof SCENARIO_PALETTE)[number]['key'];
@@ -702,6 +704,9 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('block'), kind: 'block', position, yaw: 0, size: [3, 0.3, 3], material: 'core.pbr_floorboards', tint: '#9a8a7a', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.5, respawnSeconds: 15, health: 120 };
     case 'block:old_planks':
       return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 0.15, 1.5], material: 'core.pbr_weathered_planks', tint: '#8a7a68', behaviour: 'crumble', trigger: 'step', delaySeconds: 0.4, respawnSeconds: 12, health: 120 };
+    case 'block:lattice':
+      // A carved cedar lattice (mashrabiya) across a window or a gap: shoot it to pieces; back after 30 s.
+      return { id: newId('block'), kind: 'block', position, yaw, size: [2.2, 2.4, 0.12], material: 'core.mashrabiya', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 30, health: 45 };
     case 'block:wattle':
       return { id: newId('block'), kind: 'block', position, yaw, size: [2.4, 1.2, 0.15], material: 'core.wattle', tint: null, behaviour: 'breakable', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 25, health: 50 };
     case 'block:fence':
