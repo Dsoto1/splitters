@@ -25544,6 +25544,21 @@
       ]
     },
     {
+      "file": "props/mv_tarp_tent.glb",
+      "sha256": "97bafb08076ec9ee",
+      "triangles": 204,
+      "bytes": 12964,
+      "source": "tiletrigger-medieval/mv_tarp_tent.glb",
+      "title": "Style Pack pieces (Medieval Village)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
+      "url": "tools/content/prepare-medieval.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-medieval.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
       "file": "skies/clear.jpg",
       "sha256": "4ba9d3b02f1b3acf",
       "bytes": 37359,
