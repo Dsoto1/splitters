@@ -50,11 +50,25 @@ const FINGER_JOINTS = [0.38, 0.69, 1];
 /** The knuckle line and the palm centre, as shares of the hand's span from wrist end to fingertips (measured on the rig's mannequin). */
 const KNUCKLE_AT = 0.53;
 const PALM_AT = 0.22;
-/** Below this openness a hand is treated as closed (curling would only crumple it). */
-const MIN_OPEN = 0.15;
-/** Thickness against span: an open hand is thin (the mannequin's 0.12), a fist or gauntlet thick. */
-const OPEN = 0.24;
-const CLOSED = 0.42;
+/**
+ * Thickness against span: an open hand is thin (the mannequin's 0.12); a Meshy hand modelled relaxed, its
+ * fingers a little bent, measures 0.3 to 0.45 and still closes on a grip; a fist or gauntlet is thicker.
+ */
+const OPEN = 0.35;
+const CLOSED = 0.6;
+/**
+ * Only a compact block is already closed (curling would only crumple it): thick for its span AND about as long
+ * as it is wide (an open hand is twice as long as wide; Hector's relaxed hand, 0.38 thick for its span and 1.75
+ * times as long as wide, was taken for a fist and left flat on the gun).
+ */
+const FIST_THICK = 0.5;
+const FIST_LONG = 1.5;
+/** ...or a block this thick for its span, whatever its width. */
+const FIST_BLOCK = 0.65;
+/** A hand whose own flat agrees less than this with the rig's palm is turned on its joint (a quarter turn: palm forward). */
+const TURNED = 0.7;
+/** Vertices further than this from the hand's centre, in multiples of the 80th percentile, are strays (a strap, a cape's edge). */
+const STRAY = 1.6;
 /** A finger gap: a run of cells across the fingers holding at most this share of the fullest cell. */
 const GAP = 0.18;
 
@@ -91,11 +105,45 @@ function chainWeight(J, W, v, chain) {
   return w;
 }
 
+/** The thinnest direction of a cloud of points (the normal of its best-fit plane). */
+function thinnest(pts) {
+  const c = scale(pts.reduce((a, p) => add(a, p), [0, 0, 0]), 1 / pts.length);
+  const C = [0, 0, 0, 0, 0, 0];
+  for (const p of pts) {
+    const [x, y, z] = sub(p, c);
+    C[0] += x * x;
+    C[1] += y * y;
+    C[2] += z * z;
+    C[3] += x * y;
+    C[4] += x * z;
+    C[5] += y * z;
+  }
+  // The smallest eigenvector: power iteration on (trace - C).
+  const tr = C[0] + C[1] + C[2];
+  let v = norm([0.31, 0.53, 0.79]);
+  for (let i = 0; i < 100; i++) v = norm(sub(scale(v, tr), [C[0] * v[0] + C[3] * v[1] + C[4] * v[2], C[3] * v[0] + C[1] * v[1] + C[5] * v[2], C[4] * v[0] + C[5] * v[1] + C[2] * v[2]]));
+  return v;
+}
+
+/**
+ * The hand's core: its centre and how far from it a vertex may be (further: a stray, a strap, a cape's edge or
+ * a hem the skinning left on the hand).
+ */
+export function handCore(pts) {
+  const centre = scale(pts.reduce((a, p) => add(a, p), [0, 0, 0]), 1 / Math.max(1, pts.length));
+  const d = pts.map((p) => Math.hypot(...sub(p, centre)));
+  return { centre, reach: pts.length < 12 ? Infinity : pct(d, 80) * STRAY };
+}
+
 /**
  * Measure one hand. `pts` are its vertices in the hand joint's space; `ref`
- * is rigHand() for this side. Returns the hand's frame and size, in that space.
+ * is rigHand() for this side; `front` the body's front (+z of the model) in
+ * that space. Returns the hand's frame and size, in that space.
  */
-export function measureHand(pts, ref, override = {}) {
+export function measureHand(all, ref, override = {}, front = null) {
+  if (all.length < 12) return null;
+  const body = handCore(all);
+  const pts = all.filter((p) => Math.hypot(...sub(p, body.centre)) <= body.reach);
   if (pts.length < 12) return null;
   const ys = pts.map((p) => p[1]);
   // The finger direction: from the wrist end of the hand to its far end (kept within 45° of the forearm's line).
@@ -104,11 +152,17 @@ export function measureHand(pts, ref, override = {}) {
   const mean = (list) => scale(list.reduce((a, p) => add(a, p), [0, 0, 0]), 1 / Math.max(1, list.length));
   let along = norm(sub(mean(pts.filter((p) => p[1] >= hi)), mean(pts.filter((p) => p[1] <= lo))));
   if (dot(along, ref.along) < Math.SQRT1_2 || !Number.isFinite(along[0])) along = ref.along;
-  // Palm side and across from the rig's, square to the finger direction (Meshy hands sit as the rig's do, palm down in the T-pose).
-  const palmSide = norm(sub(ref.palmSide, scale(along, dot(ref.palmSide, along))));
-  const across = norm(cross(palmSide, along));
-  const flip = dot(across, ref.across) < 0 ? -1 : 1;
-  const c = scale(across, flip);
+  // Palm side from the rig's, square to the finger direction (most Meshy hands sit as the rig's do, palm down in
+  // the T-pose)... unless the hand's own flat says it is turned on its joint (the dapper's, the Knight's: a quarter
+  // turn): then its flat, the palm facing the body's front (a T-pose hand turned a quarter is thumb up, palm forward).
+  const rigPalm = norm(sub(ref.palmSide, scale(along, dot(ref.palmSide, along))));
+  const own = thinnest(pts);
+  const flat = norm(sub(own, scale(along, dot(own, along))));
+  const turned = !override.palm && front && Number.isFinite(flat[0]) && Math.abs(dot(flat, rigPalm)) < TURNED;
+  const palmSide = turned ? scale(flat, dot(flat, front) >= 0 ? 1 : -1) : rigPalm;
+  // Across (pinky to index) with the rig's handedness.
+  const hand = dot(cross(ref.palmSide, ref.along), ref.across) < 0 ? -1 : 1;
+  const c = scale(norm(cross(palmSide, along)), hand);
   const uvt = pts.map((p) => [dot(p, along), dot(p, c), dot(p, palmSide)]);
   const us = uvt.map((x) => x[0]);
   // From the wrist end (a cuff or sleeve the skinning left on the hand, far behind the wrist joint, doesn't count) to the fingertips.
@@ -130,9 +184,10 @@ export function measureHand(pts, ref, override = {}) {
   const tP = (pct(ts, 92) + pct(ts, 8)) / 2;
   const at = (u, v, t) => add(add(scale(along, u), scale(c, v)), scale(palmSide, t));
   const palm = override.palm ?? at(uP, vP, tP);
-  // Open or closed: thickness against span.
+  // Open or closed: thickness against span, and a fist is as long as it is wide.
   const open = 1 - smooth(OPEN, CLOSED, thickness / span);
-  return { along, across: c, palmSide, u0, u1, span, width, thickness, uP, vP, tP, palm, open, at, uvt };
+  const fist = thickness / span > FIST_BLOCK || (thickness / span > FIST_THICK && span / width < FIST_LONG);
+  return { along, across: c, palmSide, u0, u1, span, width, thickness, uP, vP, tP, palm, open, fist, turned, core: body, at, uvt };
 }
 
 /**
@@ -225,18 +280,19 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
       verts = pick(main, true);
     }
     const pts = verts.map((v) => toLocal([main.pos[v * 3], main.pos[v * 3 + 1], main.pos[v * 3 + 2]]));
-    const hand = measureHand(pts, ref, o);
+    const hand = measureHand(pts, ref, o, qrot(qinv(H.q), [0, 0, 1]));
     if (!hand) {
       log(`hand_${s}: too few vertices to measure (${pts.length}); left as it was`);
       continue;
     }
     const { along, across, palmSide, u0, u1, span, width, thickness, vP, tP, at } = hand;
     const uK = u0 + KNUCKLE_AT * span;
-    const closed = hand.open < MIN_OPEN && o.curl === undefined;
+    const closed = hand.fist && o.curl === undefined;
     const gaps = closed ? null : fingerGaps(hand.uvt, uK, u1);
     const mode = closed ? 'none' : gaps ? 'split' : 'mitten';
     // How far the fingers close in the game: open hands all the way; a mitten bends once, so further at that one bend.
-    const curl = o.curl ?? (closed ? 0 : round(hand.open * (mode === 'mitten' ? 1.6 : 1)));
+    // (Even a thick hand that isn't a fist closes some way: a block that can't curl lies flat on the gun.)
+    const curl = o.curl ?? (closed ? 0 : round(Math.max(0.5, hand.open) * (mode === 'mitten' ? 1.6 : 1)));
     // Joints: knuckles on the knuckle line, spread across the hand (each split finger at its own middle).
     const lanes = [0.375, 0.125, -0.125, -0.375].map((k) => vP + k * width);
     const groupOf = (v) => {
@@ -279,6 +335,8 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
       const mine = m === main ? verts : pick(m, loose);
       for (const v of mine) {
         const p = toLocal([m.pos[v * 3], m.pos[v * 3 + 1], m.pos[v * 3 + 2]]);
+        // A stray keeps its weights (armweights.mjs gives it to the body it hangs from).
+        if (Math.hypot(...sub(p, hand.core.centre)) > hand.core.reach) continue;
         const u = dot(p, along);
         const acc = new Map();
         let held = 0;
@@ -325,7 +383,7 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
       curl,
       fingers: mode,
     };
-    log(`hand_${s}: ${pts.length} vertices${loose ? ' (some taken from the forearm)' : ''}, ${(span * 100).toFixed(1)} cm long, ${(width * 100).toFixed(1)} wide, ${(thickness * 100).toFixed(1)} thick: ${mode}${mode === 'none' ? ' (already closed)' : `, curl ${curl}, ${weighted} vertices on the fingers`}`);
+    log(`hand_${s}: ${pts.length} vertices${loose ? ' (some taken from the forearm)' : ''}, ${(span * 100).toFixed(1)} cm long, ${(width * 100).toFixed(1)} wide, ${(thickness * 100).toFixed(1)} thick${hand.turned ? ', turned on its joint' : ''}: ${mode}${mode === 'none' ? ' (already closed)' : `, curl ${curl}, ${weighted} vertices on the fingers`}`);
   }
   return { moved, data };
 }

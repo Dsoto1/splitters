@@ -11,7 +11,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { CORE_LOOKS, PLAYER, armsLookFor, getWeapon } from '@tiletrigger/shared';
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
-import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
+import { CharacterAnimator, setCurlShare, type MotionState } from '../game/characterAnimator.ts';
 import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { FirstPersonBodyRig, fitFirstPersonBody } from '../game/firstPersonBody.ts';
@@ -218,6 +218,11 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     upper,
     /** Measurements of the third-person pose as drawn (tools/gripAudit.ts; tools/content/grip-audit.mjs ranks them). */
     audit: () => (posed ? auditGrip(posed.ch, posed.weapon, posed.hold) : null),
+    /** Curl test: close the hands by this share of their curl (1 as the game does; 0 open), and redraw. */
+    curl: async (share: number) => {
+      setCurlShare(share);
+      await settle(4);
+    },
     /**
      * Full-body first person (`pose(look, weapon, 'body')`): the view's pitch (radians, the game's: + looks up), and the
      * body's motion (speed m/s, stance 0 standing / 1 crouched, airborne); `drop` lowers the eye (m, a crouch).

@@ -1355,10 +1355,17 @@ function solveArm(space: SkeletonSpace, arm: Arm, palmTarget: Vector3, pole: Vec
   space.setRot(arm.hand, handRot, weight);
 }
 
+/** How far every hand closes, as a share of its own curl (1; the grip audit's curl test sets 0 to compare). */
+let curlShare = 1;
+/** The grip audit's curl test (tools/gripSheet.ts `__grips.curl`): close every hand by this share of its curl. */
+export function setCurlShare(share: number): void {
+  curlShare = share;
+}
+
 /** Curl the fingers toward the palm (the side the thumb is on), as if round a grip. */
 function closeHand(space: SkeletonSpace, arm: Arm, weight: number): void {
   // A measured hand closes as far as it was found able to (not at all if it is rigid or already a fist).
-  weight *= arm.curl;
+  weight *= arm.curl * curlShare;
   if (weight <= 0) return;
   const wrist = space.pos(arm.hand);
   const forward = space.pos(arm.knuckle).subtract(wrist).normalize();

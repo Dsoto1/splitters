@@ -55,6 +55,7 @@ import { buildSpec, jointsFromLandmarks, readManifests } from './character-manif
 import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
+import { keepArmsToArms } from './armweights.mjs';
 import { bakeNormals, normalJpeg, seamAwareSimplify } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -712,6 +713,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   // Hands: measured from the mesh, the finger joints fitted to them and the fingers weighted (hands.mjs).
   const pos = fp ? fp.pos : new Float32Array(src.pos);
   const fitted = new Map(rigNames.map((n) => [n, { q: ual.get(n).q, t: target.get(n) }]));
+  // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
+  if (!fp) keepArmsToArms({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, log: (l) => console.log(`  ${out} ${l}`) });
   const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, log: (l) => console.log(`  ${out} ${l}`) });
   for (const [n, t] of hands.moved) target.set(n, t);
   for (const j of joints) if (hands.data[j.getName().slice(-1)] && j.getName().startsWith('hand_')) j.setExtras({ hand: hands.data[j.getName().slice(-1)] });

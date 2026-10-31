@@ -10,13 +10,16 @@
 // table), <out>/<id>.png (one row per character: rifle side, front and hands, pistol side and front, Spin Gun
 // side and front), and <out>/sheet-<n>.png (ranked contact sheets, eight characters each).
 // ONLY=<manifest ids or look ids> for some; NO_SHOTS=1 measures without pictures; NO_FP=1 skips first person;
-// RESCORE=1 flags and ranks <out>/audit.json again (after changing a threshold) without rendering.
+// RESCORE=1 flags and ranks <out>/audit.json again (after changing a threshold) without rendering; RESUME=1 skips
+// characters already measured there (audit.json is written after every character).
 //
 // What the flags mean (thresholds below; side-view numbers, so a gun pointed at the camera doesn't fool them):
 //   face     the rifle's line runs within FACE_M of the head joint, or its grip sits above the shoulder joint
 //   crossed  the shooting elbow is at or across the body's midline (arms crossed over the chest)
 //   elbow    an elbow bends against its own skin (the forearm folds toward the upper arm's back: "bent backwards")
-//   flat     a hand's skin barely follows its finger joints (fingers can't curl: an open, flat hand on the gun)
+//   flat     a hand's skin barely follows its finger joints, or closing the hand doesn't bring its fingertips
+//            toward the grip (curl test: fingertips open against closed); an open, flat hand on the gun
+//   back     closing the hand moves its fingertips AWAY from the grip (the fingers curl backwards: splayed)
 //   open     the drawn fingertips end far from the hand's point on the gun (not closed round it)
 //            (a long gun's support hand slides back along the handguard on short arms, so its distance counts on pistols only)
 //   off      a drawn hand's centre is far from its point on the gun
@@ -44,6 +47,7 @@ export const FLAGS = {
   ELBOW_FLEX: -0.25,
   ELBOW_BEND: 25,
   FLAT_SHARE: 0.12,
+  CURL_GAIN: 0.008,
   OPEN_R: 0.12,
   OPEN_L: 0.16,
   OFF_R: 0.065,
@@ -54,7 +58,7 @@ export const FLAGS = {
   FP_AHEAD: 0.3,
 };
 /** How much each flag counts toward the rank (the owner's worst first: a gun at the face, then backwards elbows, then flat hands). */
-const WEIGHT = { face: 5, crossed: 4, elbow: 4, flat: 3, open: 2, off: 2, spikes: 3, fp: 2 };
+const WEIGHT = { face: 5, crossed: 4, elbow: 4, flat: 3, back: 3, open: 2, off: 2, spikes: 3, fp: 2 };
 
 const WEAPONS = [
   ['rifle', 'core.rifle'],
@@ -128,6 +132,12 @@ mkdirSync(out, { recursive: true });
 const rescore = !!process.env.RESCORE;
 let results = [];
 const errors = [];
+const saved = existsSync(join(out, 'audit.json')) ? JSON.parse(readFileSync(join(out, 'audit.json'), 'utf8')).results : [];
+/** Everything measured so far, kept on disk after each character (a long run can be stopped and RESUME=1 carries on). */
+const save = () => {
+  const ids = new Set(results.map((r) => r.id));
+  writeFileSync(join(out, 'audit.json'), JSON.stringify({ when: new Date().toISOString(), flags: FLAGS, results: [...saved.filter((r) => !ids.has(r.id)), ...results] }, null, 1));
+};
 if (rescore) {
   // Flags again from the last measurements (thresholds changed), no rendering.
   results = JSON.parse(readFileSync(join(out, 'audit.json'), 'utf8')).results.map((r) => ({ ...r, ...flagsOf(r) }));
@@ -143,7 +153,9 @@ if (rescore) {
   await page.waitForFunction(() => window.__grips, null, { timeout: 180_000 });
   const known = new Set((await page.evaluate(() => window.__grips.looks())).map((l) => l.id));
 
+  const done = new Set(process.env.RESUME ? saved.filter((r) => Object.values(r.weapons).every((m) => !m.error)).map((r) => r.id) : []);
   for (const c of wanted) {
+    if (done.has(c.id)) continue;
     if (!known.has(c.look)) {
       console.error(`${c.id}: no look ${c.look}`);
       continue;
@@ -174,6 +186,7 @@ if (rescore) {
     }
     Object.assign(r, flagsOf(r));
     results.push(r);
+    save();
     if (shots) {
       const composite = [];
       VIEWS.forEach(([w, v], i) => {
@@ -192,14 +205,13 @@ if (rescore) {
 
 }
 
-// Ranked, worst first.
-results.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
-const prev = existsSync(join(out, 'audit.json')) ? JSON.parse(readFileSync(join(out, 'audit.json'), 'utf8')) : null;
-writeFileSync(join(out, 'audit.json'), JSON.stringify({ when: new Date().toISOString(), flags: FLAGS, results: only && prev && !rescore ? mergeResults(prev.results, results) : results }, null, 1));
-function mergeResults(old, fresh) {
-  const ids = new Set(fresh.map((r) => r.id));
-  return [...old.filter((r) => !ids.has(r.id)), ...fresh].sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+// Ranked, worst first: everything on disk (a RESUME or ONLY run adds to what was measured before).
+if (!rescore) {
+  const ids = new Set(results.map((r) => r.id));
+  results = [...saved.filter((r) => !ids.has(r.id)), ...results];
 }
+results.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+writeFileSync(join(out, 'audit.json'), JSON.stringify({ when: new Date().toISOString(), flags: FLAGS, results }, null, 1));
 const n = (x, d = 2) => (x === null || x === undefined ? '-' : Number(x).toFixed(d));
 const rows = results.map((r) => {
   const a = r.weapons.rifle?.audit;

@@ -1,5 +1,5 @@
 // Hands for characters already built (packages/client/public/characters/<id>.glb), without their raw
-// downloads: hands.mjs measures each hand, fits the finger joints to it, re-skins the hand region with
+// downloads: armweights.mjs hands cloth hanging off an arm to the body, hands.mjs measures each hand, fits the finger joints to it, re-skins the hand region with
 // finger weights and writes the measurements on the hand joints (`extras.hand`), in place, for the body
 // and its first-person arms. A character with no first-person arms yet gets them cut from its body, as
 // prepare-meshy-characters.mjs cuts them from a download (forearms and hands; the elbow half of each
@@ -7,6 +7,7 @@
 //
 //   node tools/content/rehand-built.mjs            every character with a manifest
 //   ONLY=<ids> node tools/content/rehand-built.mjs just those
+//   OUT=<dir> ...                                 a trial: the files written to <dir>, the lock left alone
 //
 // Running it again gives the same files (the hand chain's weights are shared out afresh each time).
 // prepare-meshy-characters.mjs does the same at import, so a rebuild from the downloads keeps all this.
@@ -20,9 +21,12 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { compactPrimitive, prune } from '@gltf-transform/functions';
 import { buildSpec, readManifests } from './character-manifests.mjs';
 import { fitHands } from './hands.mjs';
+import { keepArmsToArms } from './armweights.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
+/** OUT=<dir>: a trial, the refitted files written there instead (outside the repo) and the lock left alone. */
+const TRIAL = process.env.OUT ? resolve(process.env.OUT) : null;
 const LOCK = join(ROOT, 'content/meshy.lock.json');
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 
@@ -207,6 +211,8 @@ async function cutArms(doc) {
 /** Fit a built character's hands in place; returns the measurements. */
 function rehand(doc, overrides, label) {
   const c = open(doc);
+  // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
+  if (label === 'body') keepArmsToArms({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, log: (l) => console.log(`  ${label} ${l}`) });
   const { moved, data } = fitHands({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, rig, overrides, log: (l) => console.log(`  ${label} ${l}`) });
   if (overrides?.scale || overrides?.l?.scale || overrides?.r?.scale) {
     const Qinv = affineInverse(c.Q);
@@ -254,7 +260,7 @@ for (const m of readManifests({ ready: true })) {
   const write = async (doc, id, entry) => {
     doc.getRoot().getAsset().generator = 'tiletrigger prepare-meshy-characters';
     const glb = await io.writeBinary(doc);
-    writeFileSync(join(OUT, `${id}.glb`), glb);
+    writeFileSync(join(TRIAL ?? OUT, `${id}.glb`), glb);
     Object.assign(entry, { sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: triangles(doc), ...(entry.lodTriangles !== undefined ? { lodTriangles: lodTriangles(doc) } : {}), bytes: glb.byteLength, hands: true });
     console.log(`  ${`${id}.glb`.padEnd(26)} ${String(entry.triangles).padStart(6)} tris ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
   };
@@ -273,5 +279,8 @@ for (const m of readManifests({ ready: true })) {
   await write(armsDoc, `${m.id}_fparms`, arms);
   files.push(m.id);
 }
-writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
-console.log(`hands fitted on ${files.length} characters; content/meshy.lock.json updated`);
+if (TRIAL) console.log(`hands fitted on ${files.length} characters, written to ${TRIAL} (trial: lock unchanged)`);
+else {
+  writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+  console.log(`hands fitted on ${files.length} characters; content/meshy.lock.json updated`);
+}
