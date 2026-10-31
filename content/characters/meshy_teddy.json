@@ -5,6 +5,7 @@
   "order": 38,
   "name": "Teddy",
   "look": "core.teddy",
+  "group": "animals",
   "bio": "Won at a fairground in 1987. Has been winning everything since.",
   "body": "male",
   "size": "small",

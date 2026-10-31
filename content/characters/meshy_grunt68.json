@@ -5,6 +5,7 @@
   "order": 22,
   "name": "Grunt '68",
   "look": "core.grunt68",
+  "group": "soldiers",
   "bio": "Has been in the field so long the field started calling him sir.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: Vietnam-era soldier.",

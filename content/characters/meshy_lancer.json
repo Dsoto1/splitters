@@ -5,6 +5,7 @@
   "order": 19,
   "name": "Lancer Mei",
   "look": "core.mei",
+  "group": "legends",
   "bio": "Trained with the lance for twenty years. Took about twenty seconds to learn the rifle.",
   "body": "female",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: female lancer.",

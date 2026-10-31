@@ -5,6 +5,7 @@
   "order": 3,
   "name": "The Dapper",
   "look": "core.dapper",
+  "group": "folk",
   "bio": "Chicago, 1927. Runs the numbers, the speakeasy and, lately, the leaderboard.",
   "body": "male",
   "source": {

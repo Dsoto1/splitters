@@ -5,6 +5,7 @@
   "order": 8,
   "name": "Hyena Warrior",
   "look": "core.hyena",
+  "group": "animals",
   "bio": "Laughs at everything, especially the last thing you tried.",
   "body": "male",
   "size": "large",

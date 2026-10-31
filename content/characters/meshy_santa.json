@@ -5,6 +5,7 @@
   "order": 17,
   "name": "Saint Nick",
   "look": "core.saintnick",
+  "group": "folk",
   "bio": "Has a list. You are on the other one.",
   "body": "male",
   "size": "large",

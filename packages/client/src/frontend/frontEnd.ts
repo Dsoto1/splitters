@@ -1,4 +1,6 @@
 import {
+  CHARACTER_GROUPS,
+  CHARACTER_GROUP_LABELS,
   CHARACTER_PROFILES,
   CORE_LOOKS,
   botSetLabel,
@@ -8,6 +10,7 @@ import {
   PLAYER_NPC_LOOKS,
   NPC_ROLE_SPECS,
   npcLookRole,
+  lookGroup,
   validLookId,
   DEFAULT_LOOK,
   DEFAULT_RULES,
@@ -479,8 +482,8 @@ export class FrontEnd {
       this.optionsTab = tabs[(tabs.indexOf(this.optionsTab) + (dir > 0 ? 1 : tabs.length - 1)) % tabs.length]!;
       this.go('options');
     } else if (this.screen === 'characters') {
-      const order = ['all', 'originals', 'ranger', 'peasant', 'athlete', 'npc', 'mine'];
-      this.charFilter = order[(order.indexOf(this.charFilter) + (dir > 0 ? 1 : order.length - 1)) % order.length]!;
+      const order = this.charFilters().map(([v]) => v);
+      this.charFilter = order[(Math.max(0, order.indexOf(this.charFilter)) + (dir > 0 ? 1 : order.length - 1)) % order.length]!;
       this.go('characters');
     }
   }
@@ -1280,17 +1283,28 @@ export class FrontEnd {
 
   // ---------------------------------------------------------------- character select
 
-  private characters(): HTMLElement {
-    const saved = listCustomLooks();
-    const family = (id: string) => partInfo(getLook(id).parts.find((p) => partInfo(p)?.slot === 'torso') ?? '')?.outfit ?? 'ranger';
-    const all = [
-      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
-      ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
-      ...saved.map((s) => ({ id: s.id, name: s.name, mine: true })),
+  /** Everyone on Character Select: the built-in looks (roster order), the NPC skins offered to players, then your designs. */
+  private roster(): { id: string; name: string; group: string }[] {
+    return [
+      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
+      ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
+      ...listCustomLooks().map((s) => ({ id: s.id, name: s.name, group: 'mine' })),
     ];
-    const filters: [string, string][] = [['all', 'All'], ['originals', 'Originals'], ['ranger', 'Ranger'], ['peasant', 'Peasant'], ['athlete', 'Sportswear'], ['npc', 'NPCs'], ['mine', 'Yours']];
-    const groupOf = (id: string) => (npcLookRole(id) ? 'npc' : getLook(id).whole ? 'originals' : family(id));
-    const shown = all.filter((c) => this.charFilter === 'all' || (this.charFilter === 'mine' ? c.mine : !c.mine && groupOf(c.id) === this.charFilter));
+  }
+
+  /** Character Select's tabs (Q / E step through them): All, the groups that have anyone in them (what a character is), Yours. */
+  private charFilters(roster = this.roster()): [string, string][] {
+    const used = new Set(roster.map((c) => c.group));
+    return [['all', 'All'], ...CHARACTER_GROUPS.filter((g) => used.has(g.id)).map((g): [string, string] => [g.id, g.label]), ['mine', 'Yours']];
+  }
+
+  private characters(): HTMLElement {
+    const all = this.roster();
+    const filters = this.charFilters(all);
+    // A group that's gone (or a tab name from before the groups) shows everyone.
+    if (!filters.some(([v]) => v === this.charFilter)) this.charFilter = 'all';
+    // All keeps the roster order; a group is listed by name.
+    const shown = this.charFilter === 'all' ? all : all.filter((c) => c.group === this.charFilter).sort((a, b) => (this.charFilter === 'mine' ? 0 : a.name.localeCompare(b.name)));
     const selected = this.hovered ?? this.look;
 
     // Q / E (LB / RB) at the ends of the filters: buttons too.
@@ -1302,6 +1316,7 @@ export class FrontEnd {
     const tabs = el('div', { class: 'tabs' }, bumper(-1));
     for (const [v, label] of filters) {
       const b = el('button', { class: `tab${v === this.charFilter ? ' on' : ''}`, textContent: label });
+      b.dataset.group = v;
       b.addEventListener('click', () => ((this.charFilter = v), this.go('characters')));
       tabs.append(b);
     }
@@ -1416,7 +1431,8 @@ export class FrontEnd {
     const role = npcLookRole(id);
     if (role) {
       // An NPC skin: their look only; you keep a player's body, health and loadout.
-      const kind = NPC_ROLE_SPECS[role].creature ? 'Creature' : 'Soldier';
+      const group = lookGroup(id);
+      const kind = group ? CHARACTER_GROUP_LABELS[group] : NPC_ROLE_SPECS[role].creature ? 'Creature' : 'Soldier';
       info.replaceChildren(img, el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: `Play as the ${name}. Looks only: same hitbox, health and loadout as everyone else.` }), el('div', { class: 'tags' }, el('span', { textContent: 'NPC' }), el('span', { textContent: kind }))), loadout);
       return;
     }
@@ -1424,7 +1440,7 @@ export class FrontEnd {
     const style = bot ? botStyleLine(bot) : '';
     info.replaceChildren(
       img,
-      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
+      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
       loadout,
       customise,
     );

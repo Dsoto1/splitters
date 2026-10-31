@@ -5,6 +5,7 @@
   "order": 42,
   "name": "Big Bab",
   "look": "core.bigbab",
+  "group": "animals",
   "bio": "Left the zoo for the city. Kept the attitude, lost the bananas.",
   "body": "male",
   "size": "large",

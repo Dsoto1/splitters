@@ -5,6 +5,7 @@
   "order": 18,
   "name": "King Aldric",
   "look": "core.aldric",
+  "group": "legends",
   "bio": "Rules three kingdoms and one leaderboard. Only one of them by election.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: king. Was held back: his arms are fused with the cape, so the landmarks found on the mesh put the hands on the cape.",
