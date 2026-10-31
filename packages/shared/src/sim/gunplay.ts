@@ -15,6 +15,7 @@ import { CORE_MATERIALS } from '../map/materials.ts';
 import type { MapEntity } from '../map/schema.ts';
 import type { MatchRules } from './rules.ts';
 import type { WeaponDefinition } from './weapons.ts';
+import { hypot } from '../math.ts';
 
 // ---------------------------------------------------------------- families
 
@@ -625,7 +626,7 @@ export function traceBullet(
     const seg = flyBullet(b, phys.gravity, phys.drag, dt);
     time += dt;
     const d = { x: seg.to.x - seg.from.x, y: seg.to.y - seg.from.y, z: seg.to.z - seg.from.z };
-    const len = Math.hypot(d.x, d.y, d.z);
+    const len = hypot(d.x, d.y, d.z);
     if (len < 1e-9) break;
     const u = { x: d.x / len, y: d.y / len, z: d.z / len };
     const hit = raycast(seg.from, u, len);

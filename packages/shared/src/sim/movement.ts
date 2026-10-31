@@ -5,6 +5,7 @@ import type { GroundHeight, PhysicsWorld } from './physics.ts';
 import { JET, LIQUID_SPECS, SWIM_DEPTH, liquidAt, type LiquidBox } from './liquids.ts';
 import { mapPortals, portalLinks } from './portals.ts';
 import { CHUTE_GLIDER, CHUTE_PARACHUTE, chuteVelY, chuteWish, wantsChute, type ChuteKind } from './parachute.ts';
+import { hypot } from '../math.ts';
 
 export const BUTTON_JUMP = 1;
 export const BUTTON_FIRE = 2;
@@ -302,7 +303,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   const cos = Math.cos(input.yaw);
   let wx = sin * input.forward + cos * input.right;
   let wz = cos * input.forward - sin * input.right;
-  const wl = Math.hypot(wx, wz);
+  const wl = hypot(wx, wz);
   if (wl > 1) {
     wx /= wl;
     wz /= wl;
@@ -403,24 +404,26 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   const decay = grounded ? (traction < 1 ? 0.975 : 0.86) : chute ? CHUTE_PUSH_DECAY : AIR_PUSH_DECAY;
   vx = Math.abs(vx * decay) < 0.02 ? 0 : quantize(vx * decay);
   vz = Math.abs(vz * decay) < 0.02 ? 0 : quantize(vz * decay);
-  return {
-    pos: { x: quantize(moved.feet.x), y: quantize(moved.feet.y), z: quantize(moved.feet.z) },
-    velY: quantize(velY),
-    grounded,
-    ...(vx || vz ? { vx, vz } : {}),
-    ...(jet ? { jet } : {}),
-    ...(chest ? { swim: true } : {}),
-    ...(stance ? { stance } : {}),
-    ...(stamina < 1 ? { stamina: quantize(stamina) } : {}),
-    ...(rest ? { rest } : {}),
-    ...(sprint ? { sprint } : {}),
-    ...(winded ? { winded } : {}),
-    ...(ladder && !jump ? { climb: true } : {}),
-    ...(env.airJumps && !grounded && (state.airJumps ?? 0) + airJumped ? { airJumps: (state.airJumps ?? 0) + airJumped } : {}),
-    ...(env.airJumps && jump ? { jumpHeld: true } : {}),
-    ...(chute && !grounded ? { chute } : {}),
-    ...(drop && !grounded ? { drop } : {}),
-  };
+  // Built field by field in the same order the optional ones always had (no temporary object per optional
+  // field: this runs for every body every tick, and the spread version was a hot spot for garbage).
+  const out: MoveState = { pos: { x: quantize(moved.feet.x), y: quantize(moved.feet.y), z: quantize(moved.feet.z) }, velY: quantize(velY), grounded };
+  if (vx || vz) {
+    out.vx = vx;
+    out.vz = vz;
+  }
+  if (jet) out.jet = jet;
+  if (chest) out.swim = true;
+  if (stance) out.stance = stance;
+  if (stamina < 1) out.stamina = quantize(stamina);
+  if (rest) out.rest = rest;
+  if (sprint) out.sprint = sprint;
+  if (winded) out.winded = winded;
+  if (ladder && !jump) out.climb = true;
+  if (env.airJumps && !grounded && (state.airJumps ?? 0) + airJumped) out.airJumps = (state.airJumps ?? 0) + airJumped;
+  if (env.airJumps && jump) out.jumpHeld = true;
+  if (chute && !grounded) out.chute = chute;
+  if (drop && !grounded) out.drop = drop;
+  return out;
 }
 
 /** Under a canopy, momentum (a jump out of a moving plane) bleeds off faster than in free fall. */
@@ -451,7 +454,7 @@ export function mapPads(entities: readonly { kind: string; position: [number, nu
 export function applyPads(pads: readonly JumpPad[], state: MoveState): MoveState {
   if (!pads.length || !state.grounded) return state;
   for (const p of pads) {
-    if (Math.hypot(state.pos.x - p.pos.x, state.pos.z - p.pos.z) > PAD_RADIUS || Math.abs(state.pos.y - p.pos.y) > 0.6) continue;
+    if (hypot(state.pos.x - p.pos.x, state.pos.z - p.pos.z) > PAD_RADIUS || Math.abs(state.pos.y - p.pos.y) > 0.6) continue;
     return { ...state, velY: p.vy, grounded: false, ...(p.vx || p.vz ? { vx: quantize(p.vx), vz: quantize(p.vz) } : {}) };
   }
   return state;

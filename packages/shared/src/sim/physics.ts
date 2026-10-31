@@ -3,6 +3,7 @@ import { boxQuat, type Rot, type WorldBox } from '../map/geometry.ts';
 import type { Vec3 } from '../math.ts';
 import { PLAYER } from './constants.ts';
 import { simProfile } from './profile.ts';
+import { hypot } from '../math.ts';
 
 let initPromise: Promise<void> | undefined;
 
@@ -190,7 +191,7 @@ export class PhysicsWorld {
    */
   shotLine(a: Vec3, b: Vec3): boolean {
     const d = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
-    const len = Math.hypot(d.x, d.y, d.z);
+    const len = hypot(d.x, d.y, d.z);
     if (len < 1e-6) return true;
     return this.raycastHit(a, { x: d.x / len, y: d.y / len, z: d.z / len }, len) === null;
   }
@@ -238,8 +239,8 @@ export class PhysicsWorld {
     const m = this.controller.computedMovement();
     const next = { x: feet.x + m.x, y: feet.y + lift + m.y, z: feet.z + m.z };
     probe.setTranslation({ x: next.x, y: next.y + centerY, z: next.z });
-    const want = Math.hypot(delta.x, delta.z);
-    const got = Math.hypot(m.x, m.z);
+    const want = hypot(delta.x, delta.z);
+    const got = hypot(m.x, m.z);
     return { feet: next, grounded: this.controller.computedGrounded(), blocked: want > 1e-6 ? 1 - got / want : 0 };
   }
 
@@ -316,7 +317,7 @@ export class PhysicsWorld {
     const g1 = ground?.(next.x, next.z) ?? null;
     if (ground && g1 !== null) {
       let at = g1;
-      const run = Math.hypot(next.x - feet.x, next.z - feet.z);
+      const run = hypot(next.x - feet.x, next.z - feet.z);
       const g0 = ground(feet.x, feet.z) ?? g1;
       if (g1 > feet.y + 0.02 && run > 1e-6 && (g1 - g0) / run > MAX_SLOPE_TAN) {
         // Too steep to walk up: stay where we were.

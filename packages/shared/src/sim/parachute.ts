@@ -1,5 +1,6 @@
 import type { Vec3 } from '../math.ts';
 import type { PhysicsWorld } from './physics.ts';
+import { hypot } from '../math.ts';
 
 /**
  * Parachutes and gliders. Anyone falling from height (off a flyer, a cliff
@@ -77,7 +78,7 @@ export function chuteWish(kind: ChuteKind, yaw: number, forward: number, right: 
   }
   let x = sin * forward + cos * right;
   let z = cos * forward - sin * right;
-  const l = Math.hypot(x, z);
+  const l = hypot(x, z);
   if (l > 1) {
     x /= l;
     z /= l;

@@ -9,7 +9,7 @@
  * snapshots, bots); everything a class does lives here.
  */
 import type { Faction } from '../map/schema.ts';
-import { horizontalDistance, lookAngles, type Vec3 } from '../math.ts';
+import { horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import { FX_CLOAK, FX_OVERCHARGE, type GameEvent, type PrivateState } from '../protocol.ts';
 import { PLAYER, TICK_RATE } from './constants.ts';
 import type { Combatant } from './match.ts';
@@ -267,7 +267,7 @@ export class ClassPlay {
       const fz = Math.cos(victim.yaw);
       const dx = victim.move.pos.x - attacker.move.pos.x;
       const dz = victim.move.pos.z - attacker.move.pos.z;
-      const d = Math.hypot(dx, dz) || 1;
+      const d = hypot(dx, dz) || 1;
       if ((fx * dx + fz * dz) / d > 0.5) return Math.max(amount, victim.health + victim.armor * 3 + 1);
     }
     return amount;

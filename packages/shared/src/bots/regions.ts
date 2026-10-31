@@ -1,4 +1,4 @@
-import { horizontalDistance, type Vec3 } from '../math.ts';
+import { horizontalDistance, type Vec3, hypot } from '../math.ts';
 import { TICK_RATE } from '../sim/constants.ts';
 import type { MapMemory } from './explore.ts';
 
@@ -26,7 +26,7 @@ export function regionLayout(places: readonly Vec3[]): RegionLayout {
     const k = regionKey(p);
     const cx = (Math.floor(p.x / REGION) + 0.5) * REGION;
     const cz = (Math.floor(p.z / REGION) + 0.5) * REGION;
-    const d = Math.hypot(p.x - cx, p.z - cz);
+    const d = hypot(p.x - cx, p.z - cz);
     const prev = best.get(k);
     if (!prev || d < prev.d) best.set(k, { p, d });
   }

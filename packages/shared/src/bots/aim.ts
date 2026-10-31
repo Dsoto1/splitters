@@ -1,4 +1,4 @@
-import { angleDelta, clamp, lookAngles, type Vec3 } from '../math.ts';
+import { angleDelta, clamp, lookAngles, type Vec3, hypot } from '../math.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import type { WeaponDefinition } from '../sim/weapons.ts';
 import { BULLET_GRAVITY, NEAR_INSTANT_M, gunplayOf } from '../sim/gunplay.ts';
@@ -180,7 +180,7 @@ export class AimModel {
     const skill = this.difficulty.aim;
     const dx = target.pos.x - ctx.eye.x;
     const dz = target.pos.z - ctx.eye.z;
-    const dist = Math.max(1, Math.hypot(dx, dz));
+    const dist = Math.max(1, hypot(dx, dz));
     // Angular speed of the target across the view.
     const v = this.velocity(0);
     const lateral = Math.abs(v.x * dz - v.z * dx) / dist;
@@ -206,7 +206,7 @@ export class AimModel {
     const height = STANCES[target.stance ?? 0].height;
     // Pick chest or head now and then (per burst), not every tick.
     if (ctx.tick >= this.nextPointPick) {
-      const dist0 = Math.hypot(target.pos.x - ctx.eye.x, target.pos.z - ctx.eye.z);
+      const dist0 = hypot(target.pos.x - ctx.eye.x, target.pos.z - ctx.eye.z);
       const settled = this.trackedTicks(ctx.tick) > skill.settleSeconds * TICK_RATE;
       this.head = settled && dist0 < 40 && this.rng() < skill.headChance * (this.profile.accuracy / 50);
       this.nextPointPick = ctx.tick + Math.round(TICK_RATE * (0.6 + this.rng() * 0.8));
@@ -214,7 +214,7 @@ export class AimModel {
     const up = this.head ? height - 0.15 : height * 0.6;
     let lead = skill.lagSeconds * skill.prediction;
     const proj = ctx.weapon?.projectile;
-    const dist = Math.hypot(seen.x - ctx.eye.x, seen.y + up - ctx.eye.y, seen.z - ctx.eye.z);
+    const dist = hypot(seen.x - ctx.eye.x, seen.y + up - ctx.eye.y, seen.z - ctx.eye.z);
     // Projectiles: lead a moving target a little (never the full flight time).
     if (proj && proj.speed > 0) lead += (dist / proj.speed) * (0.35 + 0.5 * skill.prediction);
     // Bullets travel too (GUNPLAY_SPEC §40): skilled bots lead by most of the flight time and hold over
@@ -250,7 +250,7 @@ export class AimModel {
       else {
         // Taps: semi-autos, burst rifles and slow single shots.
         const slow = def.fireIntervalTicks >= 30 || def.damage >= 50;
-        const settledEnough = !slow || Math.hypot(this.errYaw, this.errPitch) < sol.halfAngle * 1.3 || this.trackedTicks(ctx.tick) > skill.settleSeconds * TICK_RATE * 2.5;
+        const settledEnough = !slow || hypot(this.errYaw, this.errPitch) < sol.halfAngle * 1.3 || this.trackedTicks(ctx.tick) > skill.settleSeconds * TICK_RATE * 2.5;
         if (!this.held && ctx.tick >= this.nextTap && settledEnough) {
           pull = true;
           const gap = Math.max(def.fireIntervalTicks + 1, Math.round(skill.tapSeconds * TICK_RATE * (0.8 + this.rng() * 0.5)));

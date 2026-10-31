@@ -1,4 +1,4 @@
-import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3 } from '../math.ts';
+import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import type { ItemDefinition, ItemEffect } from '../sim/items.ts';
@@ -1387,7 +1387,7 @@ export class BotBrain {
     const k = 1 - Math.exp(-TICK_DT / tau);
     this.moveX += (wx - this.moveX) * k;
     this.moveZ += (wz - this.moveZ) * k;
-    if (wx === 0 && wz === 0 && Math.hypot(this.moveX, this.moveZ) < 0.08) this.moveX = this.moveZ = 0;
+    if (wx === 0 && wz === 0 && hypot(this.moveX, this.moveZ) < 0.08) this.moveX = this.moveZ = 0;
     return [sin * this.moveX + cos * this.moveZ, cos * this.moveX - sin * this.moveZ];
   }
 
@@ -1454,7 +1454,7 @@ export class BotBrain {
     if (c.peek !== 0) {
       const tx = c.threat.x - c.pos.x;
       const tz = c.threat.z - c.pos.z;
-      const l = Math.hypot(tx, tz) || 1;
+      const l = hypot(tx, tz) || 1;
       const lean = { x: c.pos.x + (tz / l) * c.peek * 1.1, y: c.pos.y, z: c.pos.z - (tx / l) * c.peek * 1.1 };
       const moveYaw = horizontalDistance(me.pos, lean) > 0.3 ? Math.atan2(lean.x - me.pos.x, lean.z - me.pos.z) : null;
       return { moveYaw, sprint: false, stance: 0, moveScale: 0.8, shoot: true };
@@ -2109,7 +2109,7 @@ export class BotBrain {
       if (a.slot === view.self.slot || Math.abs(a.pos.y - me.y) > 1.5) continue;
       const dx = a.pos.x - me.x;
       const dz = a.pos.z - me.z;
-      const d = Math.hypot(dx, dz);
+      const d = hypot(dx, dz);
       if (d < 2.6 && d > 1e-3 && (dx * fx + dz * fz) / d > 0.7) return true;
     }
     return false;
@@ -2139,7 +2139,7 @@ export class BotBrain {
       pz += uz * (2.2 - d);
     }
     if (!px && !pz) return moveYaw;
-    if (moveYaw === null) return Math.hypot(px, pz) > 1.4 ? Math.atan2(px, pz) : null;
+    if (moveYaw === null) return hypot(px, pz) > 1.4 ? Math.atan2(px, pz) : null;
     const mx = Math.sin(moveYaw) + px;
     const mz = Math.cos(moveYaw) + pz;
     return Math.atan2(mx, mz);
@@ -2346,7 +2346,7 @@ export class BotBrain {
     const log = this.stuckLog;
     log.push({ tick: view.tick, x: pos.x, z: pos.z });
     while (log.length && view.tick - log[0]!.tick > TICK_RATE * 10) log.shift();
-    if (log.length >= 3 && log.every((l) => Math.hypot(l.x - pos.x, l.z - pos.z) < 4)) {
+    if (log.length >= 3 && log.every((l) => hypot(l.x - pos.x, l.z - pos.z) < 4)) {
       log.length = 0;
       this.stuckLoops++;
       if (this.roamGoal) this.avoid = { pos: { ...this.roamGoal }, until: view.tick + TICK_RATE * 20 };

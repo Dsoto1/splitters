@@ -1,5 +1,5 @@
 import type { RescueEntity } from '../../map/schema.ts';
-import { horizontalDistance, type Vec3 } from '../../math.ts';
+import { horizontalDistance, type Vec3, hypot } from '../../math.ts';
 import { HOSTAGE_FOLLOWING, HOSTAGE_RESCUED, HOSTAGE_WAITING, type ModeSnapshot } from '../../protocol.ts';
 import { TICK_DT, TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
@@ -138,7 +138,7 @@ export class HostageMode implements ModeLogic {
     }
     // Rescued once inside a zone (the leader brought it there).
     for (const z of this.zones()) {
-      if (Math.hypot(h.pos.x - z.position[0], h.pos.z - z.position[2]) <= z.radius && Math.abs(h.pos.y - z.position[1]) < 3) {
+      if (hypot(h.pos.x - z.position[0], h.pos.z - z.position[2]) <= z.radius && Math.abs(h.pos.y - z.position[1]) < 3) {
         h.state = HOSTAGE_RESCUED;
         h.leader = null;
         host.emit({ e: 'hostage', a: 'rescue', i, s: leader.slot });

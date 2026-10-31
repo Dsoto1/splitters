@@ -1,4 +1,4 @@
-import { horizontalDistance, lookAngles, type Vec3 } from '../../math.ts';
+import { horizontalDistance, lookAngles, type Vec3, hypot } from '../../math.ts';
 import { PLAYER, TICK_RATE } from '../constants.ts';
 import { fortBounds, snapFortBase, type FortPieceKind } from '../forts.ts';
 import type { Combatant } from '../match.ts';
@@ -151,7 +151,7 @@ export class FortBots {
       // Stand a couple of metres from the spot, on the flag's side of it.
       const dx = home.x - at.x;
       const dz = home.z - at.z;
-      const d = Math.hypot(dx, dz) || 1;
+      const d = hypot(dx, dz) || 1;
       const stand = { x: at.x + (dx / d) * 2.4, y: home.y, z: at.z + (dz / d) * 2.4 };
       return { kind, rot, at, stand, state: 'todo' as const, tries: 0, claimedBy: null, claimedAt: 0 };
     });
@@ -245,7 +245,7 @@ export class FortBots {
       if (!goal) return;
       const dx = goal.pos.x - chest.x;
       const dz = goal.pos.z - chest.z;
-      const d = Math.hypot(dx, dz);
+      const d = hypot(dx, dz);
       if (d < 1) return;
       const k = Math.min(1, BLAST_LOOKAHEAD / d);
       const ahead = { x: chest.x + dx * k, y: chest.y, z: chest.z + dz * k };
@@ -275,7 +275,7 @@ export class FortBots {
       if (p.team === team) continue;
       if (!p.boxes.some((box) => segmentHitsAabb(from, to, box, PLAYER.radius))) continue;
       const b = fortBounds(p.boxes);
-      const d = Math.hypot((b.min.x + b.max.x) / 2 - from.x, (b.min.z + b.max.z) / 2 - from.z);
+      const d = hypot((b.min.x + b.max.x) / 2 - from.x, (b.min.z + b.max.z) / 2 - from.z);
       if (d < bestD) {
         bestD = d;
         best = p;
@@ -304,5 +304,5 @@ export class FortBots {
 
 /** Horizontal distance from a point to a box (0 inside). */
 function boxDistance(b: { min: Vec3; max: Vec3 }, p: Vec3): number {
-  return Math.hypot(Math.max(b.min.x - p.x, 0, p.x - b.max.x), Math.max(b.min.z - p.z, 0, p.z - b.max.z));
+  return hypot(Math.max(b.min.x - p.x, 0, p.x - b.max.x), Math.max(b.min.z - p.z, 0, p.z - b.max.z));
 }

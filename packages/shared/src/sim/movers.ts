@@ -2,6 +2,7 @@ import { boxQuat, quatMul, quatRotate, type Rot } from '../map/geometry.ts';
 import type { BlockEntity, MapDocument, MoverEntity, PropEntity } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
 import { TICK_RATE } from './constants.ts';
+import { hypot } from '../math.ts';
 
 /**
  * Movers (map format v20): groups of free blocks that travel between points
@@ -24,6 +25,8 @@ export interface MoverBlock {
   /** The block's own turn and tilt. */
   rot: Rot;
   half: Vec3;
+  /** Farthest feet can be from the block's centre and still ride it (Movers.carry's quick test). */
+  reach: number;
 }
 
 /** A prop riding a mover (drawn only: carried props never collide). */
@@ -55,12 +58,32 @@ export interface MoverLeg {
   start: number;
 }
 
+/** A memoised pose of one mover at one tick (Movers.entry), and its blocks' transforms once asked for. */
+interface MoverMemo {
+  tick: number;
+  leg: MoverLeg;
+  from: number;
+  to: number;
+  start: number;
+  pose: MoverPose;
+  blocks: BlockAt[] | null;
+}
+
+interface BlockAt {
+  center: Vec3;
+  rot: Rot;
+  inv: Rot;
+}
+
 export interface MoverPose {
   offset: Vec3;
   angle: number;
 }
 
 const v = (a: readonly [number, number, number]): Vec3 => ({ x: a[0], y: a[1], z: a[2] });
+
+/** Standing on top of a block: feet over its top face, within a hand's breadth of it. */
+const RIDE_MARGIN = 0.3;
 
 /** The movers of a map, with the blocks they carry (a block carried by two movers goes with the first). */
 export function moverDefs(map: MapDocument): MoverDef[] {
@@ -77,7 +100,7 @@ export function moverDefs(map: MapDocument): MoverDef[] {
       if (bi === undefined || b?.kind !== 'block' || taken.has(id)) continue;
       taken.add(id);
       const [w, h, d] = b.size;
-      blocks.push({ i: bi, e: b, local: { x: b.position[0] - pivot.x, y: b.position[1] + h / 2 - pivot.y, z: b.position[2] - pivot.z }, rot: boxQuat(b.yaw, b.pitch, b.roll), half: { x: w / 2, y: h / 2, z: d / 2 } });
+      blocks.push({ i: bi, e: b, local: { x: b.position[0] - pivot.x, y: b.position[1] + h / 2 - pivot.y, z: b.position[2] - pivot.z }, rot: boxQuat(b.yaw, b.pitch, b.roll), half: { x: w / 2, y: h / 2, z: d / 2 }, reach: hypot(w / 2 + RIDE_MARGIN, h / 2 + 0.45, d / 2 + RIDE_MARGIN) + 0.01 });
     }
     const props: MoverProp[] = [];
     for (const id of e.props ?? []) {
@@ -106,7 +129,7 @@ export function legTicks(def: MoverDef, from: number, to: number): number {
   if (from === to) return 0;
   const a = def.points[from]!;
   const b = def.points[to]!;
-  const dist = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+  const dist = hypot(b.x - a.x, b.y - a.y, b.z - a.z);
   const turn = (Math.abs(def.angles[to]! - def.angles[from]!) * 180) / Math.PI;
   return Math.max(1, Math.round(Math.max(dist / def.e.speed, turn / def.e.turnSpeed) * TICK_RATE));
 }
@@ -153,8 +176,6 @@ export const MOVER_STRIKE_SPEED = 4;
 
 const conj = (q: Rot): Rot => ({ x: -q.x, y: -q.y, z: -q.z, w: q.w });
 
-/** Standing on top of a block: feet over its top face, within a hand's breadth of it. */
-const RIDE_MARGIN = 0.3;
 
 /**
  * Runtime mover state shared by the server's scenario and the client
@@ -185,8 +206,36 @@ export class Movers {
     }
   }
 
+  /**
+   * Poses and carried-block transforms, kept for the last two ticks asked of each mover: every player and
+   * bot asks carry and strike about the same two ticks each tick (96 of them on a big map), so they are
+   * worked out once, not once per body. An entry holds only while the mover's leg is the same.
+   */
+  private readonly memo: MoverMemo[][] = [];
+
+  private entry(k: number, tick: number): MoverMemo {
+    const leg = this.legs[k]!;
+    const slots = this.memo[k] ?? (this.memo[k] = []);
+    for (const m of slots) if (m.tick === tick && m.leg === leg && m.from === leg.from && m.to === leg.to && m.start === leg.start) return m;
+    const m: MoverMemo = { tick, leg, from: leg.from, to: leg.to, start: leg.start, pose: moverPose(this.defs[k]!, leg, tick), blocks: null };
+    if (slots.length >= 2) slots.shift();
+    slots.push(m);
+    return m;
+  }
+
+  /** The carried blocks' centres, rotations and inverse rotations at a memoised pose. */
+  private blocksAt(k: number, m: MoverMemo): BlockAt[] {
+    if (m.blocks) return m.blocks;
+    const def = this.defs[k]!;
+    return (m.blocks = def.blocks.map((block) => {
+      const t = carriedTransform(def, block, m.pose);
+      return { center: t.center, rot: t.rot, inv: conj(t.rot) };
+    }));
+  }
+
+  /** Where mover `k` is at `tick` (shared: don't change it). */
   pose(k: number, tick: number): MoverPose {
-    return moverPose(this.defs[k]!, this.legs[k]!, tick);
+    return this.entry(k, tick).pose;
   }
 
   /** The point a mover is parked at (index), or null while it travels at `tick`. */
@@ -240,16 +289,26 @@ export class Movers {
   strike(feet: Vec3, radius: number, height: number, tick: number, present: (entity: number) => boolean = () => true): number {
     for (let k = 0; k < this.defs.length; k++) {
       const def = this.defs[k]!;
+      // Set to run fast (trains): lifts and carts never strike, so their poses aren't even needed.
+      if (def.e.speed < MOVER_STRIKE_SPEED) continue;
       const before = this.pose(k, tick - 1);
-      const after = this.pose(k, tick);
-      const speed = Math.hypot(after.offset.x - before.offset.x, after.offset.y - before.offset.y, after.offset.z - before.offset.z) * TICK_RATE;
-      // Set to run fast (trains), and under way (not easing out of or into a stop).
-      if (def.e.speed < MOVER_STRIKE_SPEED || speed < 1) continue;
-      for (const block of def.blocks) {
+      const now = this.entry(k, tick);
+      const after = now.pose;
+      const speed = hypot(after.offset.x - before.offset.x, after.offset.y - before.offset.y, after.offset.z - before.offset.z) * TICK_RATE;
+      // Under way (not easing out of or into a stop).
+      if (speed < 1) continue;
+      const at = this.blocksAt(k, now);
+      for (let b = 0; b < def.blocks.length; b++) {
+        const block = def.blocks[b]!;
         if (!present(block.i)) continue;
-        const t = carriedTransform(def, block, after);
-        const [lx, ly, lz] = quatRotate(conj(t.rot), feet.x - t.center.x, feet.y + height / 2 - t.center.y, feet.z - t.center.z);
+        const t = at[b]!;
         const h = block.half;
+        // Too far from the block's centre to be inside it, however it is turned (the usual case).
+        const dx = feet.x - t.center.x;
+        const dy = feet.y + height / 2 - t.center.y;
+        const dz = feet.z - t.center.z;
+        if (dx * dx + dy * dy + dz * dz > (h.x + radius) ** 2 + (h.y + height / 2) ** 2 + (h.z + radius) ** 2) continue;
+        const [lx, ly, lz] = quatRotate(t.inv, dx, dy, dz);
         // Riding on top is fine; anywhere else inside the swept block is a hit.
         if (feet.y >= t.center.y + h.y - 0.3) continue;
         if (Math.abs(lx) < h.x + radius && Math.abs(lz) < h.z + radius && Math.abs(ly) < h.y + height / 2) return speed;
@@ -267,17 +326,26 @@ export class Movers {
   carry(feet: Vec3, tick: number, present: (entity: number) => boolean = () => true): Vec3 | null {
     for (let k = 0; k < this.defs.length; k++) {
       const def = this.defs[k]!;
-      const before = this.pose(k, tick - 1);
-      const after = this.pose(k, tick);
+      const was = this.entry(k, tick - 1);
+      const now = this.entry(k, tick);
+      const before = was.pose;
+      const after = now.pose;
       if (before.angle === after.angle && before.offset.x === after.offset.x && before.offset.y === after.offset.y && before.offset.z === after.offset.z) continue;
-      for (const block of def.blocks) {
+      const from = this.blocksAt(k, was);
+      for (let i = 0; i < def.blocks.length; i++) {
+        const block = def.blocks[i]!;
         if (!present(block.i)) continue;
-        const a = carriedTransform(def, block, before);
-        const inv = conj(a.rot);
-        const [lx, ly, lz] = quatRotate(inv, feet.x - a.center.x, feet.y - a.center.y, feet.z - a.center.z);
+        const a = from[i]!;
+        // Nowhere near this block (the usual case): no rotation needed to know it.
+        const reach = block.reach;
+        const dx = feet.x - a.center.x;
+        const dy = feet.y - a.center.y;
+        const dz = feet.z - a.center.z;
+        if (dx * dx + dy * dy + dz * dz > reach * reach) continue;
+        const [lx, ly, lz] = quatRotate(a.inv, dx, dy, dz);
         const h = block.half;
         if (Math.abs(lx) > h.x + RIDE_MARGIN || Math.abs(lz) > h.z + RIDE_MARGIN || ly < h.y - 0.25 || ly > h.y + 0.45) continue;
-        const b = carriedTransform(def, block, after);
+        const b = this.blocksAt(k, now)[i]!;
         // Keep the rider's height above the top face, so a lift never swallows their feet.
         const [wx, wy, wz] = quatRotate(b.rot, lx, Math.max(ly, h.y), lz);
         return { x: b.center.x + wx, y: b.center.y + wy, z: b.center.z + wz };
@@ -308,7 +376,7 @@ export function liftLinks(map: MapDocument): { start: Vec3; end: Vec3; mover: st
     const a = def.points[lo]!;
     const b = def.points[hi]!;
     const rise = b.y - a.y;
-    if (rise < 1 || Math.hypot(b.x - a.x, b.z - a.z) > rise) continue;
+    if (rise < 1 || hypot(b.x - a.x, b.z - a.z) > rise) continue;
     const top = (p: Vec3): Vec3 => ({ x: def.pivot.x + p.x + block.local.x, y: def.pivot.y + p.y + block.local.y + block.half.y, z: def.pivot.z + p.z + block.local.z });
     out.push({ start: top(a), end: top(b), mover: def.e.id, reach }, { start: top(b), end: top(a), mover: def.e.id, reach });
   }

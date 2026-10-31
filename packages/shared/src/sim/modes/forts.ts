@@ -1,6 +1,6 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { WorldBox } from '../../map/geometry.ts';
-import { viewDirection, type Vec3 } from '../../math.ts';
+import { viewDirection, type Vec3, hypot } from '../../math.ts';
 import type { ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import {
@@ -326,7 +326,7 @@ export class FortsMode implements ModeLogic {
       const dx = Math.max(b.min.x - at.x, 0, at.x - b.max.x);
       const dy = Math.max(b.min.y - at.y, 0, at.y - b.max.y);
       const dz = Math.max(b.min.z - at.z, 0, at.z - b.max.z);
-      const d = Math.hypot(dx, dy, dz);
+      const d = hypot(dx, dy, dz);
       if (d > radius) continue;
       this.hurtPiece(p, (damage + (edge - damage) * (d / radius)) * FORT_BLAST_SCALE[FORT_PIECES[p.kind].tier], attacker);
     }

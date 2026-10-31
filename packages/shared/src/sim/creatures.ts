@@ -2,6 +2,7 @@ import { CREATURE_ROLES } from '../map/schema.ts';
 import type { PlayerInput } from './movement.ts';
 import { BUTTON_FIRE } from './movement.ts';
 import type { Vec3 } from '../math.ts';
+import { hypot } from '../math.ts';
 
 /**
  * Creature NPCs (CREATURE_ROLES): monsters and aliens with their own bodies
@@ -69,7 +70,7 @@ export function chargeIntoMelee(input: PlayerInput, self: Vec3, target: Vec3 | n
   const dx = target.x - self.x;
   const dz = target.z - self.z;
   const dy = target.y - self.y;
-  const dist = Math.hypot(dx, dz);
+  const dist = hypot(dx, dz);
   if (dist > CHARGE_DISTANCE || Math.abs(dy) > 2.5) return;
   input.yaw = Math.atan2(dx, dz);
   input.pitch = Math.atan2(dy, Math.max(0.5, dist));

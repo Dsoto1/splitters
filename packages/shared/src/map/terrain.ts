@@ -1,5 +1,6 @@
 import type { WorldBox } from './geometry.ts';
 import type { Vec3 } from '../math.ts';
+import { hypot } from '../math.ts';
 
 /**
  * Outdoor terrain: a heightmap grid with a ground material per cell (grass,
@@ -254,7 +255,7 @@ export function applyBrush(t: TerrainData, s: BrushStroke): TerrainData {
   const r0 = Math.max(0, Math.floor((s.z - s.radius - t.origin[1]) / t.spacing));
   const r1 = Math.min(t.rows - 1, Math.ceil((s.z + s.radius - t.origin[1]) / t.spacing));
   const weight = (x: number, z: number) => {
-    const d = Math.hypot(x - s.x, z - s.z) / s.radius;
+    const d = hypot(x - s.x, z - s.z) / s.radius;
     return d >= 1 ? 0 : 0.5 + 0.5 * Math.cos(Math.PI * d);
   };
   const clampCm = (v: number) => Math.round(Math.max(-5000, Math.min(20000, v)));
@@ -264,7 +265,7 @@ export function applyBrush(t: TerrainData, s: BrushStroke): TerrainData {
       for (let c = c0; c < Math.min(c1, t.cols - 1); c++) {
         const x = t.origin[0] + (c + 0.5) * t.spacing;
         const z = t.origin[1] + (r + 0.5) * t.spacing;
-        if (Math.hypot(x - s.x, z - s.z) <= s.radius) materials[r * (t.cols - 1) + c] = m;
+        if (hypot(x - s.x, z - s.z) <= s.radius) materials[r * (t.cols - 1) + c] = m;
       }
     }
     return { ...t, materials };
@@ -277,7 +278,7 @@ export function applyBrush(t: TerrainData, s: BrushStroke): TerrainData {
       for (let c = c0; c < Math.min(c1, t.cols - 1); c++) {
         const x = t.origin[0] + (c + 0.5) * t.spacing;
         const z = t.origin[1] + (r + 0.5) * t.spacing;
-        if (Math.hypot(x - s.x, z - s.z) <= s.radius) foliage[r * (t.cols - 1) + c] = level;
+        if (hypot(x - s.x, z - s.z) <= s.radius) foliage[r * (t.cols - 1) + c] = level;
       }
     }
     return { ...t, foliage };

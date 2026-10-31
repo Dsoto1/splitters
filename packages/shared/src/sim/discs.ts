@@ -11,6 +11,7 @@
 import type { Vec3 } from '../math.ts';
 import { BUTTON_JUMP, type PlayerInput } from './movement.ts';
 import type { ProjectileSpec } from './weapons.ts';
+import { hypot } from '../math.ts';
 
 export const DISC_POWERS = ['fast', 'triple', 'split', 'freeze'] as const;
 export type DiscPower = (typeof DISC_POWERS)[number];
@@ -75,7 +76,7 @@ export function discApproach(pos: Vec3, vel: Vec3, target: Vec3): { t: number; m
   const dx = pos.x + vel.x * t - target.x;
   const dy = pos.y + vel.y * t - target.y;
   const dz = pos.z + vel.z * t - target.z;
-  return { t, miss: Math.hypot(dx, dy, dz) };
+  return { t, miss: hypot(dx, dy, dz) };
 }
 
 /**
@@ -95,7 +96,7 @@ export function dodgeDisc(input: PlayerInput, self: { pos: Vec3; yaw: number; gr
   }
   if (!threat) return false;
   // Sideways across the disc's path: try the side away from where it is heading first.
-  const h = Math.hypot(threat.vel.x, threat.vel.z) || 1;
+  const h = hypot(threat.vel.x, threat.vel.z) || 1;
   const side = { x: -threat.vel.z / h, z: threat.vel.x / h };
   const toMe = { x: chest.x - threat.pos.x, z: chest.z - threat.pos.z };
   const pref = side.x * toMe.x + side.z * toMe.z >= 0 ? 1 : -1;
@@ -129,7 +130,7 @@ export function keepOnDeck(input: PlayerInput, self: { pos: Vec3; grounded: bool
   }
   const sin = Math.sin(input.yaw);
   const cos = Math.cos(input.yaw);
-  const push = Math.hypot(self.vx ?? 0, self.vz ?? 0);
+  const push = hypot(self.vx ?? 0, self.vz ?? 0);
   if (!self.grounded && push > 1 && !floorAt(self.pos)) {
     // Knocked out over the void: run back the way the shove came from.
     const bx = -(self.vx ?? 0) / push;
@@ -141,7 +142,7 @@ export function keepOnDeck(input: PlayerInput, self: { pos: Vec3; grounded: bool
   if (!input.forward && !input.right) return false;
   const wx = sin * input.forward + cos * input.right;
   const wz = cos * input.forward - sin * input.right;
-  const len = Math.hypot(wx, wz);
+  const len = hypot(wx, wz);
   if (len < 0.05) return false;
   for (const reach of [0.7, 1.4]) {
     if (!floorAt({ x: self.pos.x + (wx / len) * reach, y: self.pos.y, z: self.pos.z + (wz / len) * reach })) {

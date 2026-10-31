@@ -1,4 +1,4 @@
-import { angleDelta, type Vec3 } from '../math.ts';
+import { angleDelta, type Vec3, hypot } from '../math.ts';
 import type { TrackGeometry, TrackGate } from '../map/track.ts';
 import type { GameEvent, RaceSnapshot } from '../protocol.ts';
 import { BUTTON_FIRE } from './movement.ts';
@@ -182,7 +182,7 @@ export class RaceDirector {
     if (r.prev && near) {
       const mx = pos.x - r.prev.x;
       const mz = pos.z - r.prev.z;
-      const speed = Math.hypot(mx, mz) * TICK_RATE;
+      const speed = hypot(mx, mz) * TICK_RATE;
       const along = (mx * near.sample.dx + mz * near.sample.dz) * TICK_RATE;
       r.wrong = speed > 2 && along < -0.5 * speed ? r.wrong + 1 : Math.max(0, r.wrong - 3);
     }
@@ -289,7 +289,7 @@ export class RaceDirector {
     const left = (r: Racer) => {
       const v = views.get(r.slot);
       const gate = g.gates[r.next]!;
-      return v ? Math.hypot(v.pos.x - gate.x, v.pos.z - gate.z) : Infinity;
+      return v ? hypot(v.pos.x - gate.x, v.pos.z - gate.z) : Infinity;
     };
     return [...this.racers.values()]
       .sort((a, b) => {
@@ -345,7 +345,7 @@ export function raceShot(v: RaceVehicleView, arc: number, range: number, rivals:
   // Sight from above the bot's own vehicle (its box would block a line from inside it).
   const eye = { x: v.pos.x, y: v.pos.y + 2.2, z: v.pos.z };
   for (const p of rivals) {
-    const d = Math.hypot(p.x - v.pos.x, p.z - v.pos.z);
+    const d = hypot(p.x - v.pos.x, p.z - v.pos.z);
     if (d >= bestD || d < 2) continue;
     if (Math.abs(angleDelta(v.yaw, Math.atan2(p.x - v.pos.x, p.z - v.pos.z))) > arc) continue;
     if (!sees(eye, { x: p.x, y: p.y + 1, z: p.z })) continue;
