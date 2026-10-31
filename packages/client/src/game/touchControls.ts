@@ -258,7 +258,11 @@ export class TouchControls {
             this.input.virtualKey('KeyC', true);
             this.input.virtualKey('KeyC', false);
           }
-          if (tap) {
+          if (tap && centre.long && !this.input.crouchOn && !this.input.spectating) {
+            // Crouched by mistake and stood back up: jump on the tick after (pressed now, it would only stand
+            // you up from the crouch the mistake already put you in).
+            this.input.jumpAfterStanding();
+          } else if (tap) {
             // A tap: jump (Space, so it also stands you up, or picks whom to watch while you're down).
             this.input.virtualKey('Space', true);
             this.input.virtualKey('Space', false);

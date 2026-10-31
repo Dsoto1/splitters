@@ -103,6 +103,8 @@ export class InputState {
   private keyFire = false;
   private zoomDown = false;
   private jumpQueued = false;
+  /** A jump for the tick after the next one sampled (jumpAfterStanding). */
+  private jumpNext = false;
   private reloadQueued = false;
   private useQueued = false;
   private throwQueued = false;
@@ -325,6 +327,15 @@ export class InputState {
   }
 
   /** An on-screen control pressing or letting go of a key (touchControls.ts): exactly what that key does. */
+  /**
+   * Touch: jump one tick from now, once the tick sampled next has stood you up. A tap on the pad's middle that a
+   * slow page first took for a hold has already crouched you, and a jump pressed while crouched only stands
+   * you up (movement.ts): the tap stood you up and never jumped.
+   */
+  jumpAfterStanding(): void {
+    this.jumpNext = true;
+  }
+
   virtualKey(code: string, down: boolean): void {
     if (down) this.keyDown({ code, repeat: this.keys.has(code) });
     else if (this.keys.has(code)) this.keyUp(code);
@@ -611,7 +622,8 @@ export class InputState {
     if (this.useQueued) buttons |= BUTTON_USE;
     if (this.respawnQueued) buttons |= BUTTON_RESPAWN;
     this.respawnQueued = false;
-    this.jumpQueued = false;
+    this.jumpQueued = this.jumpNext;
+    this.jumpNext = false;
     this.reloadQueued = false;
     this.useQueued = false;
     this.throwQueued = false;

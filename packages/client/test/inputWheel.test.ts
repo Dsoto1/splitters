@@ -136,3 +136,21 @@ describe('wheelEntries', () => {
     ]);
   });
 });
+
+describe('touch pad tap read late as a hold', () => {
+  it('stands back up on the next tick and jumps on the one after (a jump pressed while crouched only stands you up)', async () => {
+    const input = await make();
+    // The hold timer ran before the lift was handled: crouched…
+    input.virtualKey('KeyC', true);
+    input.virtualKey('KeyC', false);
+    expect(input.sample().buttons & BUTTON_CROUCH).toBe(BUTTON_CROUCH);
+    // …then the lift: a tap after all. Uncrouch, and the jump waits a tick.
+    input.virtualKey('KeyC', true);
+    input.virtualKey('KeyC', false);
+    input.jumpAfterStanding();
+    expect(input.sample().buttons & (BUTTON_CROUCH | BUTTON_JUMP)).toBe(0);
+    expect(input.sample().buttons & BUTTON_JUMP).toBe(BUTTON_JUMP);
+    expect(input.sample().buttons & BUTTON_JUMP).toBe(0);
+    input.dispose();
+  });
+});
