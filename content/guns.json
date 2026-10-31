@@ -43,7 +43,14 @@
   },
   "budgets": {
     "maxTriangles": 8000,
-    "maxBytes": 524288
+    "maxBytes": 524288,
+    "tiers": {
+      "hero": {
+        "maxTriangles": 20000,
+        "maxBytes": 1600000,
+        "maxLodTriangles": 8000
+      }
+    }
   },
   "models": [
     {
@@ -129,9 +136,15 @@
       "label": "Tommy Gun (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 0.86,
-      "triangles": 5000,
+      "triangles": 14000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/gatling_gun.glb",
@@ -140,9 +153,15 @@
       "label": "Rotary Gatling Gun (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 0.9,
-      "triangles": 6000,
+      "triangles": 14000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/sniper_rifle.glb",
@@ -151,9 +170,15 @@
       "label": "Military Sniper Rifle (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 1.2,
-      "triangles": 5000,
+      "triangles": 14000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/battle_axe.glb",
@@ -162,9 +187,15 @@
       "label": "Steampunk Battle Axe (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 0.8,
-      "triangles": 5000,
+      "triangles": 12000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/freeze_gun.glb",
@@ -173,9 +204,15 @@
       "label": "Freeze Gun (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 0.38,
-      "triangles": 5000,
+      "triangles": 12000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/glue_gun.glb",
@@ -184,9 +221,15 @@
       "label": "Mystical Glue Gun (owner's Meshy generation, 2026-10-29)",
       "forward": "-z",
       "length": 0.34,
-      "triangles": 4000,
+      "triangles": 10000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/futuristic_blaster.glb",
@@ -195,9 +238,15 @@
       "label": "Futuristic Blaster (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 0.85,
-      "triangles": 6000,
+      "triangles": 14000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/neon_flux.glb",
@@ -206,9 +255,15 @@
       "label": "Neon Flux Assault Rifle (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 0.72,
-      "triangles": 6000,
+      "triangles": 14000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/frontier_rifle.glb",
@@ -217,9 +272,15 @@
       "label": "Frontier Rifle (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 0.95,
-      "triangles": 6000,
+      "triangles": 14000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/ornate_pistol.glb",
@@ -228,9 +289,15 @@
       "label": "Ornate Handgun (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 0.3,
-      "triangles": 4000,
+      "triangles": 10000,
       "maxError": 0.03,
-      "surface": "rebake"
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024
     },
     {
       "out": "guns/tripod_mg.glb",
@@ -239,10 +306,15 @@
       "label": "Plastic Toy Machine Gun on a tripod (owner's Meshy generation, 2026-10-29)",
       "forward": "+z",
       "length": 1.5,
-      "triangles": 6000,
+      "triangles": 12000,
       "maxError": 0.03,
       "surface": "rebake",
-      "centre": "base"
+      "centre": "base",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
     },
     {
       "out": "guns/sentry_turret.glb",
@@ -251,10 +323,15 @@
       "label": "Large Sentry Gun (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 1.3,
-      "triangles": 6000,
+      "triangles": 12000,
       "maxError": 0.03,
       "surface": "rebake",
-      "centre": "base"
+      "centre": "base",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
     },
     {
       "out": "guns/medkit.glb",
@@ -263,7 +340,7 @@
       "label": "Medkit (owner's Meshy generation, 2026-10-29)",
       "forward": "-z",
       "length": 0.16,
-      "triangles": 3000,
+      "triangles": 4500,
       "maxError": 0.05,
       "surface": "rebake"
     },
@@ -274,10 +351,15 @@
       "label": "Tactical Off-Road Beast, the buggy (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 4.4,
-      "triangles": 7000,
+      "triangles": 14000,
       "maxError": 0.05,
       "surface": "rebake",
-      "textureSize": 768
+      "textureSize": 1024,
+      "budget": "hero",
+      "lod": [
+        0.25,
+        40
+      ]
     },
     {
       "out": "vehicles/offroad_tire.glb",

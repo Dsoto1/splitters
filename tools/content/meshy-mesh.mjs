@@ -15,6 +15,12 @@ import { fbxToDocument } from './fbx.mjs';
 
 await MeshoptSimplifier.ready;
 
+/**
+ * KHR_mesh_quantization for the Meshy models' vertices: normals and tangents in 8 bits (4 bytes each, against 8 at the
+ * default 10 bits; the baked normal map carries the fine shading), positions and texture coordinates as usual.
+ */
+export const MESHY_QUANTIZE = { quantizeNormal: 8 };
+
 /** Texture seams whose two sides, or the texture between them, differ by more than this (0-255 RGB distance, averaged over a few texels) stay put. */
 const SEAM_COLOUR = 18;
 
@@ -118,7 +124,7 @@ const HIDDEN_WORK = 40000;
  * onto the cut mesh's texture coordinates (bakeNormals), with the TANGENT attribute it is drawn with. Without it the
  * cut mesh shades as flat, lumpy facets. Returns { doc, sourceTriangles, triangles }.
  */
-export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false } = {}) {
+export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null } = {}) {
   const glb = /\.glb$/i.test(fbxPath);
   const { doc, normalImage } = glb ? await glbDocument(fbxPath) : { ...(await fbxToDocument(fbxPath, { keepUv: true })), normalImage: existsSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) : null };
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
@@ -185,8 +191,33 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
     }
   }
   prim.setMaterial(material);
+  if (lod) addLod(doc, prim, lod);
   await doc.transform(prune());
   return { doc, sourceTriangles, triangles: prim.getIndices().getCount() / 3 };
+}
+
+/**
+ * `lod: [ratio, distance]`: a lower level of detail beside the mesh (a node whose extras say `lod: 1` and the
+ * `distance` in metres from which it is drawn; the game's ModelLibrary takes it out of the model and hands it to
+ * Babylon as the mesh's LOD level, see models.ts). Same material and texture coordinates (the colour and normal maps
+ * fit it), cut to `ratio` of the triangles, the charts' seams allowed to collapse where their sides sit together.
+ */
+function addLod(doc, prim, [ratio, distance]) {
+  const P = new Float32Array(prim.getAttribute('POSITION').getArray());
+  const UV = new Float32Array(prim.getAttribute('TEXCOORD_0')?.getArray() ?? new Float32Array((P.length / 3) * 2));
+  const idx = new Uint32Array(prim.getIndices().getArray());
+  const target = Math.floor((idx.length / 3) * ratio) * 3;
+  let [cut] = MeshoptSimplifier.simplifyWithAttributes(idx, P, 3, UV, 2, [0.5, 0.5], null, target, 0.05, ['Permissive']);
+  if (cut.length > target * 1.5) [cut] = MeshoptSimplifier.simplifySloppy(idx, P, 3, null, target, 0.05);
+  const low = doc.createPrimitive().setMaterial(prim.getMaterial()).setMode(prim.getMode());
+  for (const sem of prim.listSemantics()) low.setAttribute(sem, prim.getAttribute(sem).clone());
+  low.setIndices(prim.getIndices().clone().setArray(cut));
+  compactPrimitive(low);
+  const node = doc.getRoot().listNodes().find((n) => n.getMesh()?.listPrimitives().includes(prim));
+  const lodNode = doc.createNode(`${node.getName() || 'mesh'}_lod`).setMesh(doc.createMesh('lod').addPrimitive(low)).setExtras({ lod: 1, distance });
+  (node.getParentNode() ?? doc.getRoot().listScenes()[0]).addChild(lodNode);
+  lodNode.setMatrix(node.getMatrix());
+  console.log(`  level of detail: ${cut.length / 3} triangles from ${distance} m`);
 }
 
 /**
@@ -607,7 +638,7 @@ export function vertexTangents(P, N, UV, idx) {
  * A baked normal map (PNG, or any image sharp reads) as the JPEG that ships: `size` px, chroma kept at full
  * resolution (the red and green channels are the normal's direction).
  */
-export async function normalJpeg(image, size, quality = 90) {
+export async function normalJpeg(image, size, quality = 85) {
   return sharp(Buffer.from(image)).resize(size, size, { fit: 'inside', kernel: 'lanczos3' }).removeAlpha().jpeg({ quality, chromaSubsampling: '4:4:4', mozjpeg: true }).toBuffer();
 }
 

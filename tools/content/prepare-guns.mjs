@@ -39,7 +39,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { clearNodeTransform, dedup, flatten, prune, quantize, weld } from '@gltf-transform/functions';
 import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
-import { meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
+import { MESHY_QUANTIZE, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const manifest = JSON.parse(readFileSync(join(ROOT, 'content/guns.json'), 'utf8'));
@@ -124,7 +124,7 @@ async function build(src, entry, pack) {
   let meshy = null;
   if (pack.meshy) {
     const recolor = entry.paintOut ? async (img) => console.log(`  painted out ${await paintOut(img, markings(entry.paintOut), { grow: entry.grow ?? 2, holes: entry.holes ?? 0 })} px of markings`) : null;
-    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) }));
+    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, lod: entry.lod ?? null, ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) }));
   }
   // FBX sources (the Guns & Explosives pack) keep their UVs; their colour and normal maps sit beside them
   // unlinked, so `baseColor` / `normal` name them and they go on every material.
@@ -167,10 +167,17 @@ async function build(src, entry, pack) {
     else if (normal) await shrink(normal, 256, 'image/jpeg');
   }
   doc.getRoot().getAsset().generator = 'tiletrigger content build';
-  await doc.transform(weld(), dedup(), prune(), ...(meshy ? [quantize()] : []));
+  await doc.transform(weld(), dedup(), prune(), ...(meshy ? [quantize(MESHY_QUANTIZE)] : []));
+  // The budget is for the full-detail model; a lower level of detail (`lod`) is counted apart.
   let triangles = 0;
-  for (const mesh of doc.getRoot().listMeshes()) for (const p of mesh.listPrimitives()) triangles += (p.getIndices()?.getCount() ?? p.getAttribute('POSITION').getCount()) / 3;
-  return { glb: Buffer.from(await io.writeBinary(doc)), triangles };
+  let lodTriangles = 0;
+  for (const mesh of doc.getRoot().listMeshes()) {
+    let t = 0;
+    for (const p of mesh.listPrimitives()) t += (p.getIndices()?.getCount() ?? p.getAttribute('POSITION').getCount()) / 3;
+    if (mesh.listParents().some((n) => n.propertyType === 'Node' && n.getExtras()?.lod)) lodTriangles += t;
+    else triangles += t;
+  }
+  return { glb: Buffer.from(await io.writeBinary(doc)), triangles, lodTriangles, normalMap: !!pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()) };
 }
 
 mkdirSync(OUT, { recursive: true });
@@ -185,8 +192,10 @@ for (const entry of manifest.models) {
   const dir = skip ? null : entry.glb ? src && dirname(src) : downloadDir(entry.download ?? pack.download);
   let glb;
   let triangles;
+  let lodTriangles = 0;
+  let normalMap = false;
   if (dir) {
-    ({ glb, triangles } = await build(src ?? join(dir, pack.models ?? '.', entry.file), entry, pack));
+    ({ glb, triangles, lodTriangles, normalMap } = await build(src ?? join(dir, pack.models ?? '.', entry.file), entry, pack));
     writeFileSync(path, glb);
   } else {
     if (!existsSync(path)) throw new Error(`${file} is missing; rebuild it with --downloads <dir> (see docs/CONTENT_PIPELINE.md)`);
@@ -194,8 +203,10 @@ for (const entry of manifest.models) {
     const was = built.get(file);
     if (was?.sha256 !== sha(glb)) throw new Error(`${file} does not match content/guns.lock.json; rebuild it with --downloads <dir>`);
     triangles = was.triangles;
+    lodTriangles = was.lodTriangles ?? 0;
+    normalMap = !!was.normalMap;
   }
-  lock.files.push({ file, source: entry.pack, src: entry.label ?? entry.file ?? entry.glb, triangles, bytes: glb.byteLength, sha256: sha(glb) });
+  lock.files.push({ file, source: entry.pack, ...(entry.budget ? { budget: entry.budget } : {}), src: entry.label ?? entry.file ?? entry.glb, triangles, ...(lodTriangles ? { lodTriangles } : {}), ...(normalMap ? { normalMap } : {}), bytes: glb.byteLength, sha256: sha(glb) });
   console.log(`${dir ? 'built' : 'kept '} ${file.padEnd(32)} ${String(triangles).padStart(5)} tris ${String(glb.byteLength).padStart(7)} B`);
 }
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);

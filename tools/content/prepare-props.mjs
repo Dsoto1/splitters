@@ -41,7 +41,7 @@ import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
 import { flattenTextures } from './flatten.mjs';
 import { buildNatureDocument, cutBelow, normalise, readSoup } from './nature.mjs';
-import { meshyDocument, normalJpeg } from './meshy-mesh.mjs';
+import { MESHY_QUANTIZE, meshyDocument, normalJpeg } from './meshy-mesh.mjs';
 
 await MeshoptSimplifier.ready;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -443,12 +443,18 @@ function stone({ data }, hex) {
 }
 
 /**
+ * A hero piece's lower level of detail (`lod` on a prop: [share of the triangles, metres from which it is drawn]):
+ * big landmark pieces carry three to four times a small prop's triangles up close, and about a small prop's from here on.
+ */
+const HERO_LOD = [0.25, 40];
+
+/**
  * The size of a Meshy prop's baked normal map (px): `normalSize` on the prop or its pack, else half its colour map
- * (a hero piece, seen big, the colour map's own size). 0: none.
+ * (`textureSize` on the prop, else the pack's). 0: none.
  */
 function normalSizeOf(pack, p) {
   if (!pack.meshy) return 0;
-  const size = p.normalSize ?? pack.normalSize ?? (p.budget === 'hero' ? (p.textureSize ?? pack.textureSize) : (p.textureSize ?? pack.textureSize) / 2);
+  const size = p.normalSize ?? pack.normalSize ?? (p.textureSize ?? pack.textureSize) / 2;
   return Math.max(0, Math.min(1024, size ?? 256));
 }
 
@@ -458,7 +464,7 @@ async function convertPiece(dir, pack, p) {
   const path = join(dir, pack.models ?? '.', file);
   const pick = pickSrc ? new RegExp(pickSrc) : null;
   let doc;
-  if (pack.meshy) ({ doc } = await meshyDocument(path, { triangles: p.triangles, maxError: p.maxError, surface: p.surface ?? 'rebake', dropHidden: p.dropHidden, normalSize: normalSizeOf(pack, p) ? 1024 : 0, recolor: p.stone ? (map) => stone(map, p.stone) : null }));
+  if (pack.meshy) ({ doc } = await meshyDocument(path, { triangles: p.triangles, maxError: p.maxError, surface: p.surface ?? 'rebake', dropHidden: p.dropHidden, normalSize: normalSizeOf(pack, p) ? 1024 : 0, lod: p.lod ?? (p.budget === 'hero' ? HERO_LOD : null), recolor: p.stone ? (map) => stone(map, p.stone) : null }));
   else if (/\.fbx$/i.test(file)) ({ doc } = await fbxToDocument(path, { pick }));
   else {
     doc = await io.read(path);
@@ -513,7 +519,7 @@ async function convertPiece(dir, pack, p) {
     for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) prim.setAttribute('NORMAL', null);
     await doc.transform(weld(), simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.01 }), unweld(), normals({ overwrite: true }));
   }
-  await doc.transform(weld(), dedup(), prune(), quantize());
+  await doc.transform(weld(), dedup(), prune(), quantize(pack.meshy ? MESHY_QUANTIZE : undefined));
   // Embedded textures: palettes (the cars') as small PNGs, painted maps (`textureSize`) as JPEGs.
   const normalMaps = new Set(doc.getRoot().listMaterials().map((m) => m.getNormalTexture()).filter(Boolean));
   for (const t of doc.getRoot().listTextures()) {
@@ -650,7 +656,7 @@ for (const p of manifest.props) {
   // The game draws glTF models mirrored in x (Babylon's import into its left-handed space), so the boxes are too.
   const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene))?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
   defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}) });
-  lock.files.push({ file, source: p.pack, ...(p.source ? { title: `${p.source.model} (download dated ${p.source.date})` } : {}), src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, ...(lodTriangles.length ? { lodTriangles } : {}), bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
+  lock.files.push({ file, source: p.pack, ...(p.budget ? { budget: p.budget } : {}), ...(p.source ? { title: `${p.source.model} (download dated ${p.source.date})` } : {}), src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, ...(lodTriangles.length ? { lodTriangles } : {}), ...(pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()) ? { normalMap: true } : {}), bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
 }
 
 // Files left behind by renamed or removed props.

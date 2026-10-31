@@ -55,7 +55,7 @@ import { buildSpec, jointsFromLandmarks, readManifests } from './character-manif
 import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
-import { seamAwareSimplify } from './meshy-mesh.mjs';
+import { bakeNormals, normalJpeg, seamAwareSimplify } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -115,6 +115,8 @@ const REPOSE_FEET = ['l', 'r'].map((s) => {
 const ARM_JOINT = /^(lowerarm|hand|index|middle|pinky|ring|thumb)_/;
 
 const LOD_RATIO = 0.3;
+/** The baked normal map's size (px; half the colour map's). */
+const NORMAL_SIZE = 512;
 /** Standing height everyone is scaled to, feet on the ground (the rig's mannequin is this tall). */
 const HEIGHT = 1.83;
 /** Share of the Meshy triangles kept (their meshes are dense for a character this size). */
@@ -218,6 +220,7 @@ async function readMeshy(file, ual, c) {
     uv: prim.getAttribute('TEXCOORD_0').getArray(),
     indices: prim.getIndices().getArray(),
     baseColor,
+    normalMap: material.getNormalTexture()?.getImage() ?? null,
   };
   return pose(skel, verts, ual, c);
 }
@@ -360,6 +363,7 @@ function pose(skel, verts, ual, c) {
     weights: W,
     indices: verts.indices,
     baseColor: verts.baseColor,
+    normalMap: verts.normalMap ?? null,
   };
 }
 
@@ -509,14 +513,18 @@ async function readUnrigged(file, c, ual) {
   }
   // The base colour: the GLB's own, or the map beside the FBX (Meshy embeds it too, but not every download links it).
   let baseColor;
+  let normalMap = null;
   if (glb) {
     const image = prim.getMaterial()?.getBaseColorTexture()?.getImage();
     if (!image) throw new Error(`${file}: no base colour texture`);
     baseColor = Buffer.from(image);
+    normalMap = prim.getMaterial()?.getNormalTexture()?.getImage() ?? null;
   } else {
     const png = file.replace(/\.fbx$/i, '.png');
     if (!existsSync(png)) throw new Error(`${file}: no base colour map ${basename(png)} beside it`);
     baseColor = readFileSync(png);
+    const normal = file.replace(/\.fbx$/i, '_normal.png');
+    if (existsSync(normal)) normalMap = readFileSync(normal);
   }
   const src = pose(
     { names, parent: FBX_JOINTS.map(([, p]) => (p ? index.get(p) : -1)), rest: names.map(at) },
@@ -528,6 +536,7 @@ async function readUnrigged(file, c, ual) {
       uv: prim.getAttribute('TEXCOORD_0').getArray(),
       indices,
       baseColor,
+      normalMap,
     },
     ual,
     c,
@@ -744,6 +753,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   root.listScenes()[0].listChildren()[0].addChild(node);
 
   await doc.transform(dedup({ propertyTypes: [PropertyType.ACCESSOR, PropertyType.MESH, PropertyType.TEXTURE] }), prune({ keepAttributes: true }), weld());
+  // The surface before the cut, for the normal map (bakeNormals).
+  const high = { P: prim.getAttribute('POSITION').getArray().slice(), N: prim.getAttribute('NORMAL').getArray().slice(), UV: prim.getAttribute('TEXCOORD_0').getArray().slice(), I: prim.getIndices().getArray().slice() };
   // Meshy's texture seams are everywhere, so they can't all be locked or the mesh barely simplifies.
   if (ratio < 1 && c.seamWeld) await seamAwareSimplify(prim, jpeg, Math.floor((prim.getIndices().getCount() / 3) * ratio));
   else if (ratio < 1) {
@@ -756,6 +767,15 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     if (loose) for (const error of [0.02, 0.05]) if (triangles(doc) > want * 1.5) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio: want / triangles(doc), error, lockBorder: false }));
   }
   await doc.transform(prune({ keepAttributes: true }));
+  // The shape the cut took away (and the download's own normal map) as a normal map in the download's texture
+  // layout, drawn with the TANGENT attribute: without it the cut body shades as flat facets.
+  if (NORMAL_SIZE) {
+    const hiMap = src.normalMap ? await sharp(Buffer.from(src.normalMap)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
+    const low = { P: prim.getAttribute('POSITION').getArray(), N: prim.getAttribute('NORMAL').getArray(), UV: prim.getAttribute('TEXCOORD_0').getArray(), idx: prim.getIndices().getArray() };
+    const { tangents, png } = await bakeNormals(low, high, { size: NORMAL_SIZE * 2, reach: HEIGHT * 0.03, hiMap });
+    prim.setAttribute('TANGENT', acc('VEC4', tangents));
+    material.setNormalTexture(doc.createTexture(`${c.id}_normal`).setImage(new Uint8Array(await normalJpeg(png, NORMAL_SIZE))).setMimeType('image/jpeg'));
+  }
   const fullTris = triangles(doc);
   if (lod) addLowDetail(doc);
   // Smaller vertices (KHR_mesh_quantization, read natively by the game's loader).
