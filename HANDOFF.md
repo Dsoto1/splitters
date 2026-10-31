@@ -61,6 +61,19 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   takes the final pose). Owner's console check showed the mismatch on the live site; verify after the update with the
   console line in this session's notes (skin vs joint hand span).
 
+### St. John's smooth ground (`wip/st-johns-smooth`, agent, 2026-10-31; not merged)
+- Owner: "the terrain is slightly jagged". Cause: the 3DEP 1 m grid was point-sampled to 2.5 m (aliasing lidar's small
+  bumps), and the ground round the levelled hall pads kept that grain.
+- MapMaker, for every map: the height-grid import now area-averages when it thins a grid (`gridAreaHeightAt`) and has a
+  **Smoothing** amount (Gaussian over the file; Medium 2 m by default). Terrain pane: **Smooth all** (Light/Medium/
+  Strong = 1.5/2.5/4 m) with "Keep the ground under blocks" (vertices under blocks standing on the ground + 1.5 m
+  stay put); spawns, pickups, flags, hills, vehicles and props on the ground ride with it, one undo step.
+  Shared code: `smoothGrid`, `smoothTerrain`, `terrainHoldMask` in `packages/shared/src/map/terrain.ts`.
+- St. John's: Smooth all (Medium, keeping the ground under blocks) and Settle all props, through MapMaker's own
+  buttons (Playwright driving the page; no script in the repo), then Export. Halls' pads and laid paths unchanged
+  (paths are laid at load time).
+- Merge through a `check/` branch (editor flows and the map tour part with st_johns).
+
 ### Where things stand (2026-10-30 evening)
 - **Iron Maw on `wip/iron-maw`, not merged** (agent, 2026-10-30 night): `maps/iron_maw.json`, the open-pit
   mine of BUILD_06 (480 m terrain at 3 m spacing, 408 m play area, 48 v 48): six bench levels, a clockwise

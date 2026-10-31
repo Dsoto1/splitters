@@ -536,7 +536,13 @@ small and exact.
   the left button to sculpt: Raise (Shift lowers), Lower, Smooth, Flatten (to
   the height where the stroke started), Roughen, or Paint a ground. `[` and `]`
   change the brush size; `T` cycles brushes. Each stroke is one undo step.
-  "Paint steep slopes as stone" turns every face over 35° into rock. Spawns,
+  "Paint steep slopes as stone" turns every face over 35° into rock.
+  **Smooth all** (Light 1.5 m, Medium 2.5 m, Strong 4 m: the Gaussian's
+  reach) smooths the whole ground in one undo step (`smoothTerrain`);
+  with "Keep the ground under blocks" (on by default) the vertices under
+  every block standing on the ground, and 1.5 m round it, stay put
+  (`terrainHoldMask`), and spawns, pickups, flags, hills, vehicles and props
+  standing on the ground move with it. Spawns,
   pickups and props placed over terrain stand on it. New terrain sits 15 cm
   under level 0, so tiles placed on flat ground do not flicker against it.
 - **MapMaker, Terrain → Real places (owner only, like Publish).** For a map of
@@ -546,9 +552,14 @@ small and exact.
   map's x (east) and y the map's z (north), in metres. It becomes the terrain
   in one undo step: its cell size as the grid (coarser when the file has more
   than 161 heights along a side: 401 × 301 heights at 1 m become 161 × 121 at
-  2.5 m), the height typed into "Ground level" (or the file's height at the
-  centre point) at y 0, ground paint and plants kept where the old terrain
-  reached, missing data filled from its neighbours (`editor/heightGrid.ts`).
+  2.5 m, each height the average of the file round it, not a point sample,
+  which would alias lidar's small bumps into a jagged surface), the height
+  typed into "Ground level" (or the file's height at the centre point) at
+  y 0, ground paint and plants kept where the old terrain reached, missing
+  data filled from its neighbours (`editor/heightGrid.ts`). **Smoothing**
+  (Off, Light 1 m, Medium 2 m (default), Strong 3.5 m) runs a Gaussian over
+  the file first: bumps go, slopes keep their gradient and banks and knolls
+  wider than a few metres their shape.
   **Trace image** lays a picture (a plan, a map render; north up) over the
   ground at the edges typed in, see-through, drawn over everything, to build
   on. Neither file is kept in the map, and players never bring files in
