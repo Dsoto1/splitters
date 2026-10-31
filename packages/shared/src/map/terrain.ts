@@ -345,3 +345,112 @@ export function paintSlopes(t: TerrainData, degrees = 35, material: TerrainMater
   }
   return { ...t, materials };
 }
+
+/**
+ * Gaussian smoothing of a grid of heights (row-major, `cols` fast), `sigma` in
+ * cells. A low-pass: bumps and pits a few cells across go, while a slope keeps
+ * its gradient (a ramp averages to itself) and a hill or bluff wider than a
+ * few sigma keeps its shape; only its crest and foot round over about sigma.
+ * Missing values (NaN) are left out of the averages and stay missing; the
+ * edges average what is there (no padding). `hold` marks values that keep
+ * their height (they still pull their neighbours towards them, so the
+ * smoothed ground meets them without a step).
+ */
+export function smoothGrid(values: ArrayLike<number>, cols: number, rows: number, sigma: number, hold?: ArrayLike<number>): Float64Array {
+  const out = Float64Array.from(values);
+  if (!(sigma > 0)) return out;
+  const reach = Math.max(1, Math.ceil(sigma * 3));
+  const kernel = new Float64Array(reach * 2 + 1);
+  for (let k = -reach; k <= reach; k++) kernel[k + reach] = Math.exp(-0.5 * (k / sigma) ** 2);
+  // Separable: along each row, then along each column.
+  const pass = (src: Float64Array, alongRows: boolean): Float64Array => {
+    const dst = new Float64Array(src.length);
+    const n = alongRows ? rows : cols;
+    const m = alongRows ? cols : rows;
+    const stride = alongRows ? 1 : cols;
+    for (let a = 0; a < n; a++) {
+      for (let b = 0; b < m; b++) {
+        const i = alongRows ? a * cols + b : b * cols + a;
+        if (Number.isNaN(src[i]!)) {
+          dst[i] = NaN;
+          continue;
+        }
+        let sum = 0;
+        let w = 0;
+        for (let k = Math.max(-reach, -b); k <= Math.min(reach, m - 1 - b); k++) {
+          const v = src[i + k * stride]!;
+          if (Number.isNaN(v)) continue;
+          const kw = kernel[k + reach]!;
+          sum += v * kw;
+          w += kw;
+        }
+        dst[i] = sum / w;
+      }
+    }
+    return dst;
+  };
+  const smoothed = pass(pass(out, true), false);
+  for (let i = 0; i < smoothed.length; i++) if (!hold?.[i]) out[i] = smoothed[i]!;
+  return out;
+}
+
+/**
+ * The whole terrain smoothed (MapMaker → Terrain → Smooth all): a Gaussian of
+ * `sigma` metres over every height (see smoothGrid), except the vertices
+ * `hold` marks (say the ground levelled under buildings: terrainHoldMask).
+ */
+export function smoothTerrain(t: TerrainData, sigma: number, hold?: ArrayLike<number>): TerrainData {
+  const h = smoothGrid(t.heights, t.cols, t.rows, sigma / t.spacing, hold);
+  const heights = Array.from(h, (v, i) => (hold?.[i] ? t.heights[i]! : Math.round(Math.max(-5000, Math.min(20000, v)))));
+  return { ...t, heights };
+}
+
+/**
+ * Vertices of `t` inside any of the footprints (X/Z polygons, say those of the
+ * blocks standing on the ground) or within `margin` metres of one: 1 held,
+ * 0 free (for smoothTerrain).
+ */
+export function terrainHoldMask(t: TerrainData, footprints: readonly (readonly (readonly [number, number])[])[], margin = 0): Uint8Array {
+  const mask = new Uint8Array(t.cols * t.rows);
+  for (const poly of footprints) {
+    if (poly.length < 3) continue;
+    let x0 = Infinity;
+    let x1 = -Infinity;
+    let z0 = Infinity;
+    let z1 = -Infinity;
+    for (const [x, z] of poly) {
+      x0 = Math.min(x0, x);
+      x1 = Math.max(x1, x);
+      z0 = Math.min(z0, z);
+      z1 = Math.max(z1, z);
+    }
+    const c0 = Math.max(0, Math.floor((x0 - margin - t.origin[0]) / t.spacing));
+    const c1 = Math.min(t.cols - 1, Math.ceil((x1 + margin - t.origin[0]) / t.spacing));
+    const r0 = Math.max(0, Math.floor((z0 - margin - t.origin[1]) / t.spacing));
+    const r1 = Math.min(t.rows - 1, Math.ceil((z1 + margin - t.origin[1]) / t.spacing));
+    for (let r = r0; r <= r1; r++) {
+      for (let c = c0; c <= c1; c++) {
+        const i = r * t.cols + c;
+        if (!mask[i] && nearPolygon(poly, t.origin[0] + c * t.spacing, t.origin[1] + r * t.spacing, margin)) mask[i] = 1;
+      }
+    }
+  }
+  return mask;
+}
+
+/** Inside the polygon, or within `margin` of its outline. */
+function nearPolygon(poly: readonly (readonly [number, number])[], x: number, z: number, margin: number): boolean {
+  let inside = false;
+  let near = Infinity;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, zi] = poly[i]!;
+    const [xj, zj] = poly[j]!;
+    if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) inside = !inside;
+    const dx = xj - xi;
+    const dz = zj - zi;
+    const len2 = dx * dx + dz * dz;
+    const u = len2 > 0 ? Math.max(0, Math.min(1, ((x - xi) * dx + (z - zi) * dz) / len2)) : 0;
+    near = Math.min(near, Math.hypot(x - (xi + u * dx), z - (zi + u * dz)));
+  }
+  return inside || near <= margin + 1e-9;
+}

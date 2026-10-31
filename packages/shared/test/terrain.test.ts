@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NavWorld, initNavigation } from '../src/nav/index.ts';
-import { EditHistory, PhysicsWorld, applyBrush, buildMapGeometry, initPhysics, loadMap, mapTerrainMesh, newTerrain, paintSlopes, stepMovement, terrainHeightAt, terrainRaycast, validateMap, TERRAIN_MATERIALS, type MapDocument } from '../src/index.ts';
+import { EditHistory, PhysicsWorld, applyBrush, buildMapGeometry, initPhysics, loadMap, mapTerrainMesh, newTerrain, paintSlopes, smoothGrid, smoothTerrain, stepMovement, terrainHoldMask, terrainHeightAt, terrainRaycast, validateMap, TERRAIN_MATERIALS, type MapDocument } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -120,5 +120,51 @@ describe('terrain', () => {
     expect(h.doc.terrain).toBe(t);
     h.undo();
     expect(h.doc.terrain).toBeNull();
+  });
+});
+
+describe('smoothing the whole terrain', () => {
+  it('takes bumps away and keeps a ramp and a wide hill', () => {
+    const t = newTerrain(80, 2);
+    const n = t.cols;
+    // A ramp rising 20 cm per vertex eastward, a wide hill, and a 1 m spike on single vertices.
+    const hill = (c: number, r: number) => 400 * Math.exp(-((c - 20) ** 2 + (r - 20) ** 2) / (2 * 8 ** 2));
+    const heights = t.heights.map((_, i) => Math.round((i % n) * 20 + hill(i % n, Math.floor(i / n)) + ((i % 7 === 3 && i % 5 === 1) ? 100 : 0)));
+    const before = { ...t, heights };
+    const after = smoothTerrain(before, 3);
+    // Spikes are gone (within a few cm of their neighbourhood).
+    const spike = heights.findIndex((_, i) => i % 7 === 3 && i % 5 === 1 && i % n > 5 && i % n < n - 5 && Math.floor(i / n) > 5 && Math.floor(i / n) < n - 5);
+    const clean = Math.round((spike % n) * 20 + hill(spike % n, Math.floor(spike / n)));
+    expect(Math.abs(after.heights[spike]! - clean)).toBeLessThan(15);
+    // The hill keeps most of its 4 m, and the ramp its slope away from the edges.
+    const top = 20 * n + 20;
+    expect(after.heights[top]! - 20 * 20).toBeGreaterThan(330);
+    const mid = 35 * n;
+    expect(after.heights[mid + 31]! - after.heights[mid + 30]!).toBeCloseTo(20, -1);
+    expect(after.heights).toHaveLength(heights.length);
+  });
+
+  it('holds the ground under footprints and meets it without a step', () => {
+    const t = newTerrain(40, 2);
+    const heights = t.heights.map((_, i) => (i % 3 ? 0 : 60));
+    const rough = { ...t, heights };
+    // A 6 × 6 m pad round the centre, 1 m margin.
+    const hold = terrainHoldMask(rough, [[[-3, -3], [3, -3], [3, 3], [-3, 3]]], 1);
+    const held = Array.from(hold.keys()).filter((i) => hold[i]);
+    // Vertices at -4..4 m (every 2 m): 5 × 5, less the four corners (√2 m from the pad's corners, past the margin).
+    expect(held).toHaveLength(21);
+    const after = smoothTerrain(rough, 2, hold);
+    for (const i of held) expect(after.heights[i]).toBe(heights[i]);
+    expect(after.heights.some((h, i) => !hold[i] && h !== heights[i])).toBe(true);
+    // A turned footprint counts the vertices inside its turned outline.
+    const diamond = terrainHoldMask(rough, [[[0, -4.1], [4.1, 0], [0, 4.1], [-4.1, 0]]]);
+    expect(diamond.reduce((a, b) => a + b, 0)).toBe(13);
+  });
+
+  it('leaves missing values out of the averages', () => {
+    const v = smoothGrid([1, 1, NaN, 1, 1, 1, 1, 1, 1], 3, 3, 1);
+    expect(Number.isNaN(v[2]!)).toBe(true);
+    for (const i of [0, 1, 3, 4, 5, 6, 7, 8]) expect(v[i]).toBeCloseTo(1);
+    expect(Array.from(smoothGrid([1, 2, 3], 3, 1, 0))).toEqual([1, 2, 3]);
   });
 });
