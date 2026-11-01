@@ -217,6 +217,42 @@ went into cover (as before); GRUNT keeps tight squad spacing and doesn't mind
 crowded regions; EXPLORER weighs unseen regions double; SNIPER and CAMPER
 above.
 
+## Shooting along a clear line
+
+Every shot starts at the shooter's eye (`Match.fireNow`: hitscan, bullets and
+projectiles alike), so a bot asks of that line, not just of its aim, before a
+round goes (`BotBrain.clearShot`, asked by `AimModel.trigger` only when the
+trigger discipline would fire):
+
+- one ray from the eye along the bot's aim to 1.5 m short of the aim point
+  (3 m for suppression; 0.7 of the splash radius for rockets). Clear: fire.
+  A clear verdict is kept 3 ticks while the aim moves < 0.02 rad and the bot
+  < 0.25 m, so sustained fire costs a ray every few ticks;
+- blocked: hold fire 3 ticks (no rays meanwhile) and find out why, one or two
+  more rays: the chest in the open → the wandering aim was on the rock, it
+  halves its aim error (a person sees their crosshair on the rock); only the
+  upper body clear → it aims at head and shoulders for 1.5 s; nothing of them
+  clear → for about a second it stands up (from a crouch or prone), or,
+  already standing, steps aside (and gives up a cover spot it can't shoot
+  from);
+- not checked: lobbed projectiles (they arc), melee, and targets in vehicles,
+  on guns or that are gun emplacements (their bodies are what it shoots).
+
+Eyes, sight lines, cover search and the aim point scale with body size (small
+0.78, large 1.18; `CombatantView.size`), the same as the sim's. SUPPRESSOR
+bots fire at the spot an enemy went out of sight for 1.5 s, only while the
+rounds would reach it.
+
+Found from the owner's Shingle Point screenshot (a gully boulder covered in
+bullet holes): bots' aim error at range (normal: 0.05–0.15 rad at 40–55 m)
+put a quarter of their trigger pulls into the world short of the target, and
+a target behind waist-high cover drew fire at its hidden chest. Measured with
+24 bots, eight seeds × 120 s of Team Deathmatch: pulls aimed into the world
+short of the target 28.4 % → 8.5 %, rounds hitting a player 8.8 % → 10.3 %,
+kills 206 → 215. `test/botClearShot.test.ts`: a player behind a 1.3 m wall
+(head and shoulders show) drew 93 rounds, 92 into the wall, before; now most
+rounds hit.
+
 ## Measuring
 
 `pnpm bench` prints, per map, a behaviour line next to the CPU ones:

@@ -59,6 +59,31 @@ Sprout's headband. Started from 899537c's ideas
   no gear) which passed on the rerun. Full-body first person: no head gear, helmet or beard in view (up, ahead, down).
 - Sheets (agent scratchpad): `original-looks/before.png`, `after.png` and per-look closeups (kept looks only).
 
+### Bots: clear shot (`wip/bot-clear-shot`, agent, 2026-11-01; not merged)
+Owner (spectating Shingle Point TDM): "that rock is blocking a bunch of bullets" (a gully boulder, `prop_490`/`prop_492`
+`prop.rock_large` at x≈24-26, pocked with holes). docs/BOTS.md "Shooting along a clear line".
+- **Cause** (measured, probe in the agent's scratchpad, not committed): bots fired whenever the aim was lined up on
+  the target; nobody checked the line from the eye (where `Match.fireNow` starts every shot) along the aim. Normal
+  bots' aim error at 40-55 m is 0.05-0.15 rad, so a quarter of trigger pulls (24 bots, 8 seeds × 120 s: 28.4 %) were
+  aimed into something short of the target (slopes, the gully boulders, the seawall); a target behind waist-high cover
+  showing head and shoulders drew fire at its hidden chest (yard test: 92 of 93 rounds into the wall). Also small and
+  large bots saw and aimed from a standard eye (1.6 m) while their rounds left from 0.78×/1.18× that.
+- **Fix** (`BotBrain.clearShot`, via `AimModel.trigger`'s new `clear` callback): one ray per pull (a clear verdict kept
+  3 ticks while aim/position barely move); blocked: hold 3 ticks, then by one or two rays correct the aim error
+  (target in the open), aim at head/shoulders for 1.5 s (low cover), or stand up / step aside (no line).
+  `CombatantView.size` scales eyes, sight lines, cover search and the aim point. SUPPRESSOR fire 2.5 → 1.5 s, only while
+  rounds reach the spot. Not checked: lobbed projectiles, melee, targets in vehicles/on guns/sentries.
+- **Numbers** (24 bots, 8 seeds × 120 s Shingle Point TDM): pulls into the world short of the target 28.4 % → 8.5 %,
+  rounds hitting players 8.8 % → 10.3 %, kills 206 → 215, rounds fired 11,786 → 9,106. Bench (Shingle Point TDM 60 s,
+  load ~13 on 4 cores): 24 bots CPU/tick 4.99 → 5.09 ms, 96 bots 8.83 → 8.77 ms (noise); bot aim 0.10 → 0.14 ms at
+  96; bench accuracy at 96 7.8 % → 13.3 %, kills 36 → 47.
+- **Player shots (reported, not changed):** first person is consistent (camera = scaled eye = shot origin; tracers
+  are drawn from the muzzle, cosmetic). Third person: the camera sits 3 m back and 0.35 m up from the eye and rounds go
+  from the eye along the view direction, so crouched behind low cover the camera can see over what the rounds then
+  hit (parallax). A gunplay call for the owner (e.g. aim the eye ray at what the crosshair ray hits).
+- Residual 8.5 %: rounds the check passes inside its 1.5 m margin, recoil offset the bot doesn't see, grazing edges,
+  shots at mounted targets (unchecked by design).
+
 ### Grip pass 2 (`wip/grip-pass-2`, agent, 2026-11-01; merged to main 47acd97)
 Owner: "when do all the grips get fixed, I see some still not right". Audit before/after (main d8a4afa vs this branch),
 rifle, pistol, shotgun and Spear, every player character (63 incl. the rig's Ranger), Character Select pose, sheets and
