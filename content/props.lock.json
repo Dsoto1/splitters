@@ -13470,6 +13470,138 @@
       ]
     },
     {
+      "file": "props/ruin_stone_stair.glb",
+      "source": "meshy-owned-drive-1031",
+      "budget": "hero",
+      "title": "A low polygon ancient stair (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_A_low_polygon_ancient_1031011424_texture.glb",
+      "triangles": 8991,
+      "lodTriangles": [
+        2240
+      ],
+      "normalMap": true,
+      "bytes": 717992,
+      "sha256": "9b40d42a32743e06",
+      "size": [
+        2.058,
+        2,
+        3.157
+      ]
+    },
+    {
+      "file": "props/mv_smithy_bench.glb",
+      "source": "meshy-owned-drive-1031",
+      "title": "Blacksmith's Workbench (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Blacksmith_s_Workbenc_1030171853_texture.glb",
+      "triangles": 5499,
+      "normalMap": true,
+      "bytes": 291148,
+      "sha256": "c4294361eae86bf6",
+      "size": [
+        1.756,
+        1.3,
+        1.123
+      ]
+    },
+    {
+      "file": "props/jersey_barrier_hazard.glb",
+      "source": "meshy-owned-drive-1031",
+      "title": "Concrete Barrier with hazard stripes (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Concrete_Barrier_with_1031011429_texture.glb",
+      "triangles": 3000,
+      "normalMap": true,
+      "bytes": 141124,
+      "sha256": "69340e373c438352",
+      "size": [
+        1.939,
+        0.9,
+        0.808
+      ]
+    },
+    {
+      "file": "props/plastic_road_barrier.glb",
+      "source": "meshy-owned-drive-1031",
+      "title": "Construction Barrier (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Construction_Barrier_1030203752_texture.glb",
+      "triangles": 3000,
+      "normalMap": true,
+      "bytes": 165548,
+      "sha256": "1f2a36850a3a9877",
+      "size": [
+        2.551,
+        1,
+        0.454
+      ]
+    },
+    {
+      "file": "props/hazard_block_barrier.glb",
+      "source": "meshy-owned-drive-1031",
+      "title": "Hazard Barrier (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Hazard_Barrier_1030173959_texture.glb",
+      "triangles": 3000,
+      "normalMap": true,
+      "bytes": 148720,
+      "sha256": "31220ee8a1a327b7",
+      "size": [
+        1.324,
+        1,
+        0.699
+      ]
+    },
+    {
+      "file": "props/mv_tiled_well.glb",
+      "source": "meshy-owned-drive-1031",
+      "title": "Red Tile Roof Well (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Red_Tile_Roof_Well_1031011413_texture.glb",
+      "triangles": 5500,
+      "normalMap": true,
+      "bytes": 268508,
+      "sha256": "bc9fec21a409c4f3",
+      "size": [
+        2.116,
+        2.3,
+        1.795
+      ]
+    },
+    {
+      "file": "props/vehicle_raider_buggy.glb",
+      "source": "meshy-owned-drive-1031",
+      "budget": "hero",
+      "title": "Untitled sci-fi buggy (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI__1031011334_texture.glb",
+      "triangles": 15983,
+      "lodTriangles": [
+        3986
+      ],
+      "normalMap": true,
+      "bytes": 1118408,
+      "sha256": "37cf817236b226c8",
+      "size": [
+        4.443,
+        2,
+        2.88
+      ]
+    },
+    {
+      "file": "props/vehicle_armored_truck.glb",
+      "source": "meshy-owned-drive-1031",
+      "budget": "hero",
+      "title": "Untitled 8x8 armoured truck (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI__1031015233_texture.glb",
+      "triangles": 15996,
+      "lodTriangles": [
+        3986
+      ],
+      "normalMap": true,
+      "bytes": 1082412,
+      "sha256": "46e65ab1656b0c91",
+      "size": [
+        3.651,
+        4,
+        8.711
+      ]
+    },
+    {
       "file": "props/jt_statue_small.glb",
       "source": "tiletrigger-jungle",
       "src": "jt_statue_small.glb",

@@ -26877,6 +26877,153 @@
       ]
     },
     {
+      "file": "props/ruin_stone_stair.glb",
+      "sha256": "9b40d42a32743e06",
+      "triangles": 8991,
+      "bytes": 717992,
+      "source": "meshy-owned-drive-1031/Meshy_AI_A_low_polygon_ancient_1031011424_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles: A low polygon ancient stair (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/mv_smithy_bench.glb",
+      "sha256": "c4294361eae86bf6",
+      "triangles": 5499,
+      "bytes": 291148,
+      "source": "meshy-owned-drive-1031/Meshy_AI_Blacksmith_s_Workbenc_1030171853_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles: Blacksmith's Workbench (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (512 px colour)"
+      ]
+    },
+    {
+      "file": "props/jersey_barrier_hazard.glb",
+      "sha256": "69340e373c438352",
+      "triangles": 3000,
+      "bytes": 141124,
+      "source": "meshy-owned-drive-1031/Meshy_AI_Concrete_Barrier_with_1031011429_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles: Concrete Barrier with hazard stripes (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (512 px colour)"
+      ]
+    },
+    {
+      "file": "props/plastic_road_barrier.glb",
+      "sha256": "1f2a36850a3a9877",
+      "triangles": 3000,
+      "bytes": 165548,
+      "source": "meshy-owned-drive-1031/Meshy_AI_Construction_Barrier_1030203752_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles: Construction Barrier (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (512 px colour)"
+      ]
+    },
+    {
+      "file": "props/hazard_block_barrier.glb",
+      "sha256": "31220ee8a1a327b7",
+      "triangles": 3000,
+      "bytes": 148720,
+      "source": "meshy-owned-drive-1031/Meshy_AI_Hazard_Barrier_1030173959_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles: Hazard Barrier (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (512 px colour)"
+      ]
+    },
+    {
+      "file": "props/mv_tiled_well.glb",
+      "sha256": "bc9fec21a409c4f3",
+      "triangles": 5500,
+      "bytes": 268508,
+      "source": "meshy-owned-drive-1031/Meshy_AI_Red_Tile_Roof_Well_1031011413_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles: Red Tile Roof Well (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (512 px colour)"
+      ]
+    },
+    {
+      "file": "props/vehicle_raider_buggy.glb",
+      "sha256": "37cf817236b226c8",
+      "triangles": 15983,
+      "bytes": 1118408,
+      "source": "meshy-owned-drive-1031/Meshy_AI__1031011334_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles: Untitled sci-fi buggy (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/vehicle_armored_truck.glb",
+      "sha256": "46e65ab1656b0c91",
+      "triangles": 15996,
+      "bytes": 1082412,
+      "source": "meshy-owned-drive-1031/Meshy_AI__1031015233_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): barriers, a smithy bench, a tiled well, ruin stairs and two parked vehicles: Untitled 8x8 armoured truck (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
       "file": "props/jt_statue_small.glb",
       "sha256": "7907f8e7832b0c63",
       "triangles": 376,
