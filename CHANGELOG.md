@@ -8,6 +8,10 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Weapons**
+- The Spear is now a carved wooden spear with an iron head (the owner's pick, a Meshy community model), about as long as a person is tall: in your hands in first person, in other players' hands, lying as a pickup, in flight and stuck where it lands.
+- A thrown spear points the way it flies and stays at that slant where it sticks (it used to fly and land facing one fixed direction).
+
 **Vehicles**
 - Driving no longer shakes: the body's lean, squat and dive come from the vehicle's real speed and turn rate instead of from frame-to-frame movement of its drawn position, and that position no longer jumps with the few ms each update arrives early or late. Most noticeable in the buggy's cockpit view.
 - The buggy's cockpit is drawn in far more detail while you drive it in first person (seats, wheel, dash and roll cage at about twice the geometry, with a sharper surface map); everyone else still sees the lighter model.

@@ -146,6 +146,10 @@ its own grip, handguard and stock:
 | Large Sentry Gun | Sentry Gun (`sentry`, `core.sentry_gun`) | Kenney turret |
 | Medkit | health pickups, Medkit and Medi-Beam | boxes built in code |
 
+Also a Meshy community model (CC0 per the owner, pack `meshy-community-weapons`):
+the carved spear (download "T Pose Figure") is the Spear's (`core.spear`; held, pickup,
+thrown and stuck), replacing the spear built in code, which stays as its fallback.
+
 The Freeze Gun, Glue Gun, Futuristic Blaster and toy machine gun became the
 models of the Freeze Ray, Goo Gun, Plasma Rifle and Heavy MG Turret rather than
 new weapons: each already does what the model shows, and a second freeze or
