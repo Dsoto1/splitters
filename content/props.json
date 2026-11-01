@@ -13553,7 +13553,7 @@
       ]
     },
     {
-      "id": "ruin_stone_stair",
+      "id": "temple_ruin_stair",
       "pack": "meshy-owned-drive-1031",
       "src": "Meshy_AI_A_low_polygon_ancient_1031011424_texture.glb",
       "name": "Ruined Stone Stair",
@@ -13571,7 +13571,7 @@
       "textureSize": 1024
     },
     {
-      "id": "mv_smithy_bench",
+      "id": "smithy_workbench",
       "pack": "meshy-owned-drive-1031",
       "src": "Meshy_AI_Blacksmith_s_Workbenc_1030171853_texture.glb",
       "name": "Smithy Workbench",
@@ -13631,7 +13631,7 @@
       }
     },
     {
-      "id": "mv_tiled_well",
+      "id": "tiled_well",
       "pack": "meshy-owned-drive-1031",
       "src": "Meshy_AI_Red_Tile_Roof_Well_1031011413_texture.glb",
       "name": "Tiled Well",

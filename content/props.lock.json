@@ -13470,7 +13470,7 @@
       ]
     },
     {
-      "file": "props/ruin_stone_stair.glb",
+      "file": "props/temple_ruin_stair.glb",
       "source": "meshy-owned-drive-1031",
       "budget": "hero",
       "title": "A low polygon ancient stair (owner's Meshy) (download dated 2026-10-31)",
@@ -13489,7 +13489,7 @@
       ]
     },
     {
-      "file": "props/mv_smithy_bench.glb",
+      "file": "props/smithy_workbench.glb",
       "source": "meshy-owned-drive-1031",
       "title": "Blacksmith's Workbench (owner's Meshy) (download dated 2026-10-31)",
       "src": "Meshy_AI_Blacksmith_s_Workbenc_1030171853_texture.glb",
@@ -13549,7 +13549,7 @@
       ]
     },
     {
-      "file": "props/mv_tiled_well.glb",
+      "file": "props/tiled_well.glb",
       "source": "meshy-owned-drive-1031",
       "title": "Red Tile Roof Well (owner's Meshy) (download dated 2026-10-31)",
       "src": "Meshy_AI_Red_Tile_Roof_Well_1031011413_texture.glb",

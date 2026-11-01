@@ -26916,7 +26916,7 @@
       ]
     },
     {
-      "file": "props/ruin_stone_stair.glb",
+      "file": "props/temple_ruin_stair.glb",
       "sha256": "9b40d42a32743e06",
       "triangles": 8991,
       "bytes": 717992,
@@ -26935,7 +26935,7 @@
       ]
     },
     {
-      "file": "props/mv_smithy_bench.glb",
+      "file": "props/smithy_workbench.glb",
       "sha256": "c4294361eae86bf6",
       "triangles": 5499,
       "bytes": 291148,
@@ -27007,7 +27007,7 @@
       ]
     },
     {
-      "file": "props/mv_tiled_well.glb",
+      "file": "props/tiled_well.glb",
       "sha256": "bc9fec21a409c4f3",
       "triangles": 5500,
       "bytes": 268508,

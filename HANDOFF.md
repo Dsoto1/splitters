@@ -17,8 +17,8 @@ FX zips in `/home/user/fx-packs/drive-2026-11-01/fx/` (extracted: `/home/user/fx
 layout prepare-vfx reads: `/home/user/fx-packs/links-full/`). No Meshy credits spent.
 - **What was new on the Drive** (49 files + `fx/`; everything else was already in content/*.json or the locks): 10 models.
   - Props, new pack `meshy-owned-drive-1031` (owned; rebuild: `ONLY=<ids> node tools/content/prepare-props.mjs --downloads /home/user/meshy-drive/links-1101`):
-    `jersey_barrier_hazard`, `hazard_block_barrier` (Military), `plastic_road_barrier` (Industrial), `mv_smithy_bench`,
-    `mv_tiled_well` (Medieval Village), `ruin_stone_stair` (Jungle Ruins, hero, `collide: stairs`), and two parked
+    `jersey_barrier_hazard`, `hazard_block_barrier` (Military), `plastic_road_barrier` (Industrial), `smithy_workbench`,
+    `tiled_well` (Medieval Village), `temple_ruin_stair` (Jungle Ruins, hero, `collide: stairs`), and two parked
     vehicles as hero props: `vehicle_raider_buggy` (sci-fi buggy, 4.4 m) and `vehicle_armored_truck` (8x8, 8.7 m, `shell`).
     Added to the Military, Jungle and Medieval STYLE_PACKS; palette pictures rendered.
   - Characters: **Rourke** (`meshy_rourke`, Folk; "Realistic stylized man" T-pose): landmarks found, arms measured off
