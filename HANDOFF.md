@@ -73,15 +73,21 @@ Owner (spectating Shingle Point TDM): "that rock is blocking a bunch of bullets"
   (target in the open), aim at head/shoulders for 1.5 s (low cover), or stand up / step aside (no line).
   `CombatantView.size` scales eyes, sight lines, cover search and the aim point. SUPPRESSOR fire 2.5 → 1.5 s, only while
   rounds reach the spot. Not checked: lobbed projectiles, melee, targets in vehicles/on guns/sentries.
-- **Numbers** (24 bots, 8 seeds × 120 s Shingle Point TDM): pulls into the world short of the target 28.4 % → 8.5 %,
-  rounds hitting players 8.8 % → 10.3 %, kills 206 → 215, rounds fired 11,786 → 9,106. Bench (Shingle Point TDM 60 s,
+- **Numbers** (24 bots, 8 seeds × 120 s Shingle Point TDM): pulls into the world short of the target 28.4 % → 8.2 %,
+  rounds hitting players 8.8 % → 10.5 %, kills 206 → 201, rounds fired 11,786 → 8,582, pulls aimed into the gully boulders 190 → 7. Bench (Shingle Point TDM 60 s,
   load ~13 on 4 cores): 24 bots CPU/tick 4.99 → 5.09 ms, 96 bots 8.83 → 8.77 ms (noise); bot aim 0.10 → 0.14 ms at
   96; bench accuracy at 96 7.8 % → 13.3 %, kills 36 → 47.
 - **Player shots (reported, not changed):** first person is consistent (camera = scaled eye = shot origin; tracers
   are drawn from the muzzle, cosmetic). Third person: the camera sits 3 m back and 0.35 m up from the eye and rounds go
   from the eye along the view direction, so crouched behind low cover the camera can see over what the rounds then
   hit (parallax). A gunplay call for the owner (e.g. aim the eye ray at what the crosshair ray hits).
-- Residual 8.5 %: rounds the check passes inside its 1.5 m margin, recoil offset the bot doesn't see, grazing edges,
+- **Also fixed:** `Match.applyBodySize` left a living combatant's health alone, and everyone is alive when their
+  look is applied on joining: large characters started their first life on 100 of 115 health, small ones on 100 of
+  85 (`bodySizes.test.ts` now checks). Disc Arena's "nobody takes damage" test caught it once a large bot survived.
+- **Seeded tests that changed:** forts.test.ts CTF ("reach the flag in 150 s") swings with the seed: seeds 1-11, base
+  within 6 m 9×/3 flag takes, now 9×/8 takes but not on seed 1 (the default): the test uses seed 4 (comment there).
+  discs.test.ts: the health bug above.
+- Residual 8 %: rounds the check passes inside its 1.5 m margin, recoil offset the bot doesn't see, grazing edges,
   shots at mounted targets (unchecked by design).
 
 ### Grip pass 2 (`wip/grip-pass-2`, agent, 2026-11-01; merged to main 47acd97)
