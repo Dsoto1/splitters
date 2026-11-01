@@ -33,7 +33,9 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
   the driver's seat (a seated head height, a little forward, or the
   vehicle's own `cockpitEye` in `MOUNT_DEFS` where the model needs it), the
   ridden model is drawn one-sided so the hood, nose and frame show without
-  the inside of the roof and doors in the way, and the view turns with the
+  the inside of the roof and doors in the way (a vehicle with a `cockpitModel`,
+  the buggy, also draws its high-detail cockpit for you alone, the body's own
+  cockpit triangles left out of your copy: game/cockpitInterior.ts), and the view turns with the
   vehicle while the mouse looks round within about 130° of the nose. The view
   leans with the vehicle's drawn tilt only gently (damped, a third of it and
   at most ~6° on the ground; flyers follow their bank and climb more, up to

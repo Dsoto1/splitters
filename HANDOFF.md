@@ -10,6 +10,24 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Buggy cockpit interior (`wip/buggy-cockpit`, agent, 2026-11-01; not merged)
+Owner's screenshot: the buggy's cockpit view looked mushy up close (seats, wheel, dash). The body is the owner's
+Meshy download (3.98M triangles, one 2048 px colour map) cut to 40k with one 2048 map over 4.4 m.
+- **Pipeline:** a guns.json entry's `interior` (docs/CONTENT_PIPELINE.md, "Cockpit interiors"): prepare-guns.mjs
+  builds a second GLB cropped to a box in the model's frame (meshyDocument `crop`), placed with the body's exact
+  placement. The buggy's box: x ±0.95, y -0.63..0.8 (mount 0.35..1.78), z -1.05..1.45 (both seat rows, wheel, dash,
+  roll cage): 1.98M of the 3.98M source triangles → **31,898 triangles, 2048 px colour + 2048 px normal, 3.6 MB**
+  (`vehicles/offroad_buggy_cockpit.glb`, tier `cockpit`, lock + provenance as Meshy, owned). The body rebuilt
+  byte-identical. Rebuild: `ONLY=vehicles/offroad_buggy_cockpit.glb node tools/content/prepare-guns.mjs --downloads <dir>`.
+- **Client:** `MountDef.cockpitModel` (buggy only); `game/cockpitInterior.ts`, driven from `View.updateMounts`: in the
+  cockpit view it loads the interior once, parents it under the ridden body's model node (zOffset -1), and draws your
+  copy of the body through a submesh that leaves out its triangles wholly inside the box (the shared index buffer
+  reordered once, outside triangles first: the other copies draw the same). Chase view, other vehicles and other
+  players: the body alone, no extra load. `View.cockpitInteriorShown()` for tests; e2e vehicles checks both views.
+- **Limit:** the download's own colour map is 2048 px for the whole buggy, so colour detail is near what the source
+  has; the gain is geometry (about 2x in the cockpit plus a sharper normal map) and the round steering wheel.
+  Before/after shots were in the agent's scratchpad.
+
 ### Grip audit and fix for every character (`wip/grip-audit`, agent, 2026-10-31/11-01; not merged)
 The owner's screenshot brief (Character Select holding the AK, character by character; references: The Visitor and
 Rattles) is in the session branch's HANDOFF ("Queued (owner, 2026-10-31 evening): grip audit and fix"). What was done:

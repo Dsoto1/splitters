@@ -158,6 +158,19 @@ LOD level for placed props (merged instances) and for instanced copies (a
 crowd's held guns, pickups); the first-person gun, a plain copy, always draws
 full detail.
 
+**Cockpit interiors.** A Meshy entry in `content/guns.json` may carry
+`interior: { out, label, box, triangles, maxError, textureSize, normalSize,
+budget }`: `prepare-guns.mjs` builds the body, then a second GLB from the same
+download cropped to `box` (`[[x, y, z], [x, y, z]]` in the built model's frame,
+metres, +Z forward, Y centred on the model's bounds; the source triangles whose
+centre is inside), cut to its own `triangles` with its own colour and normal
+maps, and placed with exactly the body's yaw, scale and centring, so the two
+line up. The GLB's root node carries `extras.cockpit.box`. Both are rebuilt
+together (`ONLY=` naming either). Budget tier `cockpit` (36,000 triangles,
+5 MB). The game loads it only for the driver in the cockpit view
+(`MountDef.cockpitModel`, see docs/VEHICLES.md). The buggy's: 31.9k triangles,
+2048 px colour and normal maps, 3.6 MB (the body: 39.9k over the whole 4.4 m).
+
 Pieces we make ourselves in code are licence `Owned`, which `content:check`
 accepts for our own work:
 
