@@ -28,7 +28,8 @@ normals (512 px), one LOD.
 - Market Town: prop_062 is `town_fountain` at scale 1 on the plinth top (y 0.5), replacing `fountain_square` at 0.4
   (that Kenney prop is shared with serene_city, so it stays).
 - Asset viewer: with one prop (`?mode=assets&set=props&filter=/<id>.glb`) the camera frames it from the front.
-- Menu bundle after this: see the commit message / report (budget 840 kB gzip).
+- Menu bundle after this: 824.7 kB gzip / 2927 kB raw (budget 840 / 3000). Checks: typecheck, test:changed (the
+  pads timeouts under load pass alone), content OK, validate-map clean, e2e editor + maps (market_town, qasr_medina).
 
 ### `wip/character-groups` (agent, 2026-10-31; not merged)
 Owner: "organize the characters better (soldiers, zombies, animals, creatures, human, etc)", then "clicking a
