@@ -10,6 +10,26 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Owner's Meshy props (`wip/owner-props`, agent, 2026-11-01; not merged)
+The owner's 12 uploads of 2026-10-31 (Meshy, owned; raw files in `/home/user/meshy-drive/owner-uploads-2026-10-31/`,
+not in the repo) are props of the new pack `meshy-owned-landmarks` (content/props.json, `download: owned_landmarks`:
+to rebuild, link the GLBs and the monk's `_stylize.glb` into `<dir>/owned_landmarks/` and run
+`ONLY=<ids> node tools/content/prepare-props.mjs --downloads <dir>`). All hero tier, 1024 px colour map, baked
+normals (512 px), one LOD.
+- Same ids as the stand-ins (maps unchanged): `dc_market_stall` (2.8 m), `dc_well` and `mv_well` (both the wishing
+  well, 2.2 m), `dc_crane` (crawler crane, 10 m, turned so the boom points +Z; `collide: shell` with the new
+  `shellTop: 3.2`, so only tracks and cab collide), `jt_statue_large` (Mayan statue, 4 m; the stand-in was 6.35 m).
+  Their code-built stand-ins are gone from prepare-desert/medieval/jungle.mjs and assets-src; the style-pack tests
+  expect the Meshy pack for those ids.
+- New: `mv_market_stall` (2.9 m), `rustic_market_stall` (Town & Market, 2.7 m), `temple_fire_statue` (3 m),
+  `temple_spear_statue` (3.5 m), `temple_monk_statue` (3 m; all three Jungle Ruins), `town_fountain` (2 m tall,
+  3.3 m across), `lion_head_fountain` (2 m), `eagle_fountain` (2.6 m; fountains in Town & Market). Added to the
+  Jungle, Desert, Medieval, Harbor and (rustic stall) Frontier STYLE_PACKS lists.
+- Market Town: prop_062 is `town_fountain` at scale 1 on the plinth top (y 0.5), replacing `fountain_square` at 0.4
+  (that Kenney prop is shared with serene_city, so it stays).
+- Asset viewer: with one prop (`?mode=assets&set=props&filter=/<id>.glb`) the camera frames it from the front.
+- Menu bundle after this: see the commit message / report (budget 840 kB gzip).
+
 ### `wip/character-groups` (agent, 2026-10-31; not merged)
 Owner: "organize the characters better (soldiers, zombies, animals, creatures, human, etc)", then "clicking a
 character should just be how I look around, not this hover business; select, then confirm".

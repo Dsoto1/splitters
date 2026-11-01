@@ -26411,9 +26411,9 @@
     },
     {
       "file": "props/dc_crane.glb",
-      "sha256": "647495d00a4a0b22",
+      "sha256": "99d3643c75608ee9",
       "triangles": 17978,
-      "bytes": 1259592,
+      "bytes": 1259648,
       "source": "meshy-owned-landmarks/d2c8ef10-Meshy_AI_Crawler_Crane_1031230740_texture.glb",
       "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Crawler Crane (owner's Meshy) (download dated 2026-10-31)",
       "creator": "Meshy, owned (generated on the owner's Meshy subscription)",

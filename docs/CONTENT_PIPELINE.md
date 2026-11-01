@@ -92,6 +92,7 @@ folder can sit directly in it or one level down), and run:
 | Meshy community weapons and props (CC0 per owner; the unzipped `Meshy_AI_ANACONDA_44_…`, `Meshy_AI_Plasma_Annihilator_X_…`, `Meshy_AI_Nebula_Arc_Cannon_…`, `Meshy_AI_Industrial_Control_Panel_…`, `Meshy_AI_Wreckage_…` and `Meshy_AI_Spiky_Dinosaur_…_texture_fbx` folders, each named in its entry's `download`) | `node tools/content/prepare-guns.mjs --downloads <dir>` and `node tools/content/prepare-props.mjs --downloads <dir>` | `public/models/guns/{ironclad_revolver,plasma_spin_gun,arc_cannon_turret}.glb`, `content/guns.lock.json`; the `mp_*` props, `content/props.lock.json` (both through `tools/content/meshy-mesh.mjs`, below) |
 | Meshy community nature models (Meshy community, CC0 per owner; each `Meshy_AI_<name>_…_texture_fbx` zip unzipped into a folder named `meshy-community-nature`) | `node tools/content/prepare-props.mjs --downloads <dir>` | the `mn_*` Nature props, built by `tools/content/nature.mjs` (below) |
 | The owner's Meshy weapon, turret and medkit downloads (textured GLBs `Meshy_AI_<name>_<id>_texture.glb`, named in each entry's `glb`; the download folders may sit side by side, or be linked, one level down) | `node tools/content/prepare-guns.mjs --downloads <dir>` (`ONLY=guns/<file>.glb` for one) | `public/models/guns/*.glb` of pack `meshy-owned-guns`, `content/guns.lock.json` (then `capture-weapon-icons.mjs` and, for turrets, `build-palette-atlas.mjs`) |
+| The owner's Meshy landmark props of 2026-10-31 (textured GLBs, named in each entry's `src`; the monk statue is the `_stylize.glb` from its zip), all in one folder named `owned_landmarks` | `node tools/content/prepare-props.mjs --downloads <dir>` (`ONLY=<id>,…` for some) | pack `meshy-owned-landmarks`: market stalls (`dc_market_stall`, `mv_market_stall`, `rustic_market_stall`), the wishing well (`dc_well` and `mv_well`, one download), the crawler crane `dc_crane`, statues (`jt_statue_large`, `temple_fire_statue`, `temple_spear_statue`, `temple_monk_statue`) and fountains (`town_fountain`, `lion_head_fountain`, `eagle_fountain`); all hero tier |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 
 Locomotion clips (walk, run, sprint) come from Library 1: the Standard edition
@@ -184,8 +185,9 @@ and its top), `yaw` turns the piece so it faces +Z, `scale` replaces `height`
 (the kit is already metric), `lift` raises flat pieces off the floor,
 `simplify` decimates heavy pieces, and `collide` adds `stairs` (walkable
 steps toward +Z, at most 0.25 m each), `frame` (a doorway open in the middle)
-and `shell` (boxes following the footprint, for corners and curved railings),
-written as `boxes` in the prop definition.
+and `shell` (boxes following the footprint, for corners and curved railings;
+`shellTop` leaves out what is higher than that many metres, so a crane's boom
+passes overhead), written as `boxes` in the prop definition.
 
 Packs with `convert: true` (FBX-only packs and one-scene sets) are read with
 `tools/content/fbx.mjs` (three.js' FBXLoader, world transforms baked in) or as

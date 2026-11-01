@@ -66,13 +66,13 @@ export async function openAssetViewer(engine: AbstractEngine, canvas: HTMLCanvas
       return root;
     }),
   );
-  // One prop or creature (?filter=<its file>): a three-quarter view that frames it, however tall (a 10 m crane).
+  // One prop or creature (?filter=<its file>): a three-quarter view of its front (+Z) that frames it, however tall.
   if (big && roots.length === 1) {
     const { min, max } = roots[0]!.getHierarchyBoundingVectors(true);
     camera.target = min.add(max).scale(0.5);
-    camera.alpha = -Math.PI / 2 + 0.6;
+    camera.alpha = Math.PI / 2 - 0.6;
     camera.beta = 1.2;
-    camera.radius = Math.max(1, max.subtract(min).length() * 1.15);
+    camera.radius = Math.max(1, max.subtract(min).length() * 1.4);
   }
   (window as unknown as { __assetsReady: boolean }).__assetsReady = true;
 

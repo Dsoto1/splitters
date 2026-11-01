@@ -179,7 +179,7 @@ describe('Market Town (the pack\'s demo map)', () => {
     const r = loadMap(read('maps/market_town.json'));
     if (!r.ok) throw new Error(JSON.stringify(r.issues));
     const map = r.map;
-    const fountain = map.entities.find((e) => e.kind === 'prop' && e.model.startsWith('prop.fountain'));
+    const fountain = map.entities.find((e) => e.kind === 'prop' && e.model.includes('fountain'));
     if (fountain?.kind !== 'prop') throw new Error('no fountain');
     const size = getProp(fountain.model)!.size;
     // The upper step of the plinth: 3.8 m across, its top 0.5 m up, centred on the square's middle.

@@ -13386,7 +13386,9 @@
       "name": "Crawler Crane",
       "category": "Desert City",
       "height": 10.0,
+      "yaw": 90,
       "collide": "shell",
+      "shellTop": 3.2,
       "triangles": 18000,
       "maxError": 0.03,
       "source": {
