@@ -1553,6 +1553,23 @@ export class GameView {
     return this.mainDrawn;
   }
 
+  /**
+   * Of a body's meshes, the ones the main camera drew (`active`), each at the level of detail it was drawn at: the
+   * near mesh, or its low-detail copy far off. The active list names the near mesh either way, and a whole-body
+   * character's low-detail copy has its own skeleton: only the one drawn is posed each frame (the other's matrices
+   * are left as they were, or never set), so measuring the near mesh of a far character read a stale pose.
+   */
+  private drawnLevels(meshes: readonly AbstractMesh[], active: ReadonlySet<AbstractMesh>): AbstractMesh[] {
+    const out: AbstractMesh[] = [];
+    for (const m of meshes) {
+      if (active.has(m)) {
+        const level = m.getLOD(this.camera);
+        if (level) out.push(level);
+      } else for (const l of (m as Mesh).getLODLevels?.() ?? []) if (l.mesh && active.has(l.mesh)) out.push(l.mesh);
+    }
+    return out;
+  }
+
   gripReport(): { local: ({ mode: 'body' | 'arms' } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>) | null; remote: ({ slot: number; dist: number } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>)[]; creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] } {
     const active = this.drawnByCamera();
     let local: ReturnType<GameView['gripReport']>['local'] = null;
@@ -1567,8 +1584,7 @@ export class GameView {
     const remote: ReturnType<GameView['gripReport']>['remote'] = [];
     for (const [slot, a] of this.avatars) {
       if (a.hiddenSelf || a.culled || !a.root.isEnabled() || !(a.anim instanceof CharacterAnimator)) continue;
-      // The mesh drawn this frame (near detail, or the low-detail copy far off): the other's skin isn't updated.
-      const drawn = a.anim.ch.meshes.flatMap((m) => [m, ...((m as Mesh).getLODLevels?.() ?? []).map((l) => l.mesh)]).filter((m): m is AbstractMesh => !!m && active.has(m));
+      const drawn = this.drawnLevels(a.anim.ch.meshes, active);
       const g = drawn.length ? a.anim.drawnGrip(drawn) : null;
       if (g) remote.push({ slot, dist: Math.hypot(a.root.position.x - cam.x, a.root.position.z - cam.z), ...g });
     }
@@ -1577,7 +1593,7 @@ export class GameView {
     const creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] = [];
     for (const [slot, a] of this.avatars) {
       if (a.hiddenSelf || !(a.anim instanceof CreatureAnimator) || !a.root.isEnabled()) continue;
-      const drawn = a.anim.ch.meshes.filter((m) => active.has(m));
+      const drawn = this.drawnLevels(a.anim.ch.meshes, active);
       creatures.push({ slot, report: drawn.length ? a.anim.drawnGrip(drawn) : null });
     }
     return { local, remote, creatures };
