@@ -165,7 +165,7 @@ frame at 1.47 m on rails 0.46 m either side from the rear hoop (z -1.0) to the
 front bar with its lamps (z 0.6), a hoop behind the front seats (z 0.05),
 A-pillars and a centre brace falling to the hood, three rows of seats, the
 wheel on the left at z 0.78 and a sand cowl over the dash so the road shows
-past the hood. About 18k triangles in 9 draws (4 surfaces static, 2 for the
+past the hood. About 17k triangles in 9 draws (4 surfaces static, 2 for the
 wheel, one per needle), built once on first use. The gun jeep and kart can get
 one by adding an entry.
 

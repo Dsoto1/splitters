@@ -186,13 +186,13 @@ const BUGGY: CockpitDef = {
     { at: [0, 0.94, 0.94], size: [0.2, 0.09, 0.03], rot: [0.35, 0, 0], round: 0.01, color: 'shell', surface: 'plastic' },
     { at: [-0.4, 0.7, 0.88], size: [0.06, 0.1, 0.02], rot: [-0.5, 0, 0], round: 0.008, color: 'steel', surface: 'metal' },
     { at: [-0.25, 0.7, 0.88], size: [0.07, 0.08, 0.02], rot: [-0.5, 0, 0], round: 0.008, color: 'steel', surface: 'metal' },
-    // Lamps on the front bar.
-    { at: [-0.4, 1.48, 0.63], size: [0.08, 0.06, 0.06], round: 0.02, color: 'rubber', surface: 'plastic', mirror: true },
-    { at: [-0.16, 1.48, 0.63], size: [0.08, 0.06, 0.06], round: 0.02, color: 'rubber', surface: 'plastic', mirror: true },
   ],
   discs: [
-    { at: [-0.4, 1.48, 0.662], face: [0, 0, 1], r: 0.022, depth: 0.01, color: 'lamp', surface: 'metal', mirror: true },
-    { at: [-0.16, 1.48, 0.662], face: [0, 0, 1], r: 0.022, depth: 0.01, color: 'lamp', surface: 'metal', mirror: true },
+    // Lamps on the front bar: round housings, their lenses ahead.
+    { at: [-0.4, 1.47, 0.66], face: [0, 0, 1], r: 0.032, depth: 0.06, color: 'cage', surface: 'paint', mirror: true },
+    { at: [-0.16, 1.47, 0.66], face: [0, 0, 1], r: 0.032, depth: 0.06, color: 'cage', surface: 'paint', mirror: true },
+    { at: [-0.4, 1.47, 0.665], face: [0, 0, 1], r: 0.026, depth: 0.006, color: 'lamp', surface: 'metal', mirror: true },
+    { at: [-0.16, 1.47, 0.665], face: [0, 0, 1], r: 0.026, depth: 0.006, color: 'lamp', surface: 'metal', mirror: true },
   ],
   seats: [
     { at: [-0.32, 0.79, 0.28], recline: 0.26, harness: true, mirror: true },

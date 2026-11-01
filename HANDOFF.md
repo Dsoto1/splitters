@@ -21,8 +21,8 @@ interior; build the cockpit parts in-house, only for the local driver's cockpit 
   three rows), wheel at (-0.32, 1.0, 0.78). Doc: docs/VEHICLES.md, "In-house cockpits".
 - **Geometry:** `game/cockpitGeometry.ts`, engine-free (tube sweep with parallel-transport frames and rounded corners,
   rounded boxes, caps, straps), so it is unit tested and can be dumped in Node (type stripping) for offline renders.
-  ~18.2k triangles: 17.1k static in 4 surfaces (paint 3.0k, metal 2.4k, plastic 4.4k, fabric 7.3k), wheel 1.0k,
-  needles 60 each; 9 draws. Built once, kept disabled between rides.
+  ~17.3k triangles: 16.2k static in 4 surfaces (paint 3.4k, metal 2.4k, plastic 3.2k, fabric 7.3k), wheel 1.0k,
+  needles 60 each; 9 draws (the old cropped interior was 31.9k triangles plus a 3.6 MB download). Built once, kept disabled between rides.
 - **Client:** `game/cockpitInterior.ts` builds Babylon meshes (vertex colours, 4 PBR materials sharing a 64 px
   generated roughness grain), parents them under `<mount>_gun` (rides the springs), cuts your copy of the body with
   `partitionByBox` (now several boxes), turns the wheel from the eased `ms` steer (View.sprung) × lock and the needles
