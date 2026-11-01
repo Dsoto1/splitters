@@ -72,6 +72,13 @@ describe('hands', () => {
     for (let i = 0; i < mesh.pts.length; i++) expect(mesh.W[i * 4] + mesh.W[i * 4 + 1] + mesh.W[i * 4 + 2] + mesh.W[i * 4 + 3]).toBeCloseTo(1, 5);
   });
 
+  it('bends a split hand as a mitten when the manifest says so', () => {
+    const mesh = handMesh([palm, ...fingers]);
+    const { data } = fit(mesh, { r: { mitten: true, curl: 1.2 } });
+    expect(data.r.fingers).toBe('mitten');
+    expect(data.r.curl).toBe(1.2);
+  });
+
   it('bends a mitten once at the knuckle line', () => {
     const mesh = handMesh([palm, [0.11, 0.2, -0.03, 0.03, -0.008, 0.008]]);
     const { data } = fit(mesh);
