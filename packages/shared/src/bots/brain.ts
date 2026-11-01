@@ -224,6 +224,8 @@ const SIGHT_TRACK = 6;
  */
 const CLEAR_MARGIN = 1.5;
 const SUPPRESS_MARGIN = 3;
+/** The check's ray runs this far (rad) under the aim, for the rounds' spread (a rifle's settled cone is about this). */
+const CLEAR_UNDER = 0.012;
 /** A clear verdict holds this many ticks while the aim and the bot barely move (sustained fire: a ray every few ticks). */
 const CLEAR_TTL = 3;
 /** After a blocked verdict the bot holds fire this many ticks before asking again (no ray meanwhile). */
@@ -1430,10 +1432,12 @@ export class BotBrain {
     const eye = ctx.eye;
     const c = this.clearAt;
     if (tick - c.tick < CLEAR_TTL && Math.abs(angleDelta(c.yaw, this.yaw)) < 0.02 && Math.abs(c.pitch - this.pitch) < 0.02 && Math.abs(c.x - eye.x) + Math.abs(c.y - eye.y) + Math.abs(c.z - eye.z) < 0.25) return true;
-    const cp = Math.cos(this.pitch);
+    // A little under the aim: rounds spread, and a line that only just grazes the top of a wall puts some into it.
+    const pitch = this.pitch - CLEAR_UNDER;
+    const cp = Math.cos(pitch);
     const dir = this.shotDir;
     dir.x = Math.sin(this.yaw) * cp;
-    dir.y = Math.sin(this.pitch);
+    dir.y = Math.sin(pitch);
     dir.z = Math.cos(this.yaw) * cp;
     if (simProfile.on) simProfile.count('botClearShot');
     if (view.physics.raycastHit(eye, dir, reach) === null) {
@@ -1464,9 +1468,11 @@ export class BotBrain {
     }
     p.y = target.pos.y + height - 0.3 * size;
     if (view.physics.shotLine(eye, p)) {
-      // Only head and shoulders over the cover: aim there for a while.
+      // Only head and shoulders over the cover: aim there for a while (and, crouched or prone, stand up
+      // for a clearer line over it).
       this.aim.raise(tick + TICK_RATE * 1.5);
       this.aim.correct();
+      if ((view.self.stance ?? 0) !== 0) this.shotBlocked = { until: tick + Math.round(TICK_RATE * (0.8 + (this.slot % 5) * 0.1)), side: false };
       return false;
     }
     // Nothing of them to hit from here: up from a crouch first; already standing, step aside.

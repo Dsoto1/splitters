@@ -117,7 +117,10 @@ const fmt = (j: Jitter) => `flips ${j.flips.toFixed(2)}/s jerks ${j.jerks.toFixe
 describe('bot movement smoothness', () => {
   it('strafes in committed runs, without stutter-stepping, while fighting', () => {
     for (const id of ['easy', 'normal', 'hard'] as const) {
-      const j = jitter(BOT_DIFFICULTIES[id]);
+      // Ten seeds: one run either strafes the whole fight (~3 m/s) or drifts past the strafing band (15.5 m) and holds
+      // crouched (~0.3 m/s), so a three-seed mean flipped with any change to what the bot does (bots holding fire on
+      // a blocked line, 2026-11-01: easy 1.4 → 1.15 m/s on seeds 1-3). Over 1-10: easy 1.9 / 1.4, normal 2.2 / 2.3.
+      const j = jitter(BOT_DIFFICULTIES[id], { seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] });
       console.log(`fight ${id}: ${fmt(j)}`);
       // Before smoothing: up to 5 reversals and 7 jolts a second (normal bots dithering at the edge of a range band).
       expect(j.flips, id).toBeLessThan(1.5);
@@ -125,7 +128,7 @@ describe('bot movement smoothness', () => {
       expect(j.stops, id).toBeLessThan(0.25);
       expect(j.speed, id).toBeGreaterThan(1.2);
     }
-  });
+  }, 120_000);
 
   it('retreats steadily: keeps running instead of stopping and turning back every moment', () => {
     for (const id of ['easy', 'normal', 'hard'] as const) {
