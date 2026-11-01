@@ -33,7 +33,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'handsShare']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'handsShare']);
 const LEAN_JOINTS = new Set(['Spine02', 'Spine01', 'Spine', 'neck', 'Head']);
 const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
@@ -106,6 +106,8 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(x.tail === undefined || (Array.isArray(x.tail) && x.tail.length >= 2 && x.tail.every(isPoint)), 'fixes.tail: two or more points');
   need(x.scrubBlue === undefined || HEX.test(x.scrubBlue), 'fixes.scrubBlue: #rrggbb');
   need(x.handsShare === undefined || (typeof x.handsShare === 'number' && x.handsShare > 0 && x.handsShare <= 0.2), 'fixes.handsShare: 0–0.2 (the share of the triangle budget the hands keep)');
+  need(x.surface === undefined || x.surface === 'rebake', 'fixes.surface: rebake (the cut mesh laid out afresh and its colour painted from the download) or left out');
+  need(!(x.surface && x.seamWeld), 'fixes: surface rebake closes every seam itself; leave seamWeld out');
   for (const k of ['seamWeld', 'cloth', 'feet', 'armCloth']) need(x[k] === undefined || typeof x[k] === 'boolean', `fixes.${k}: true or false`);
   if (x.hands !== undefined) {
     const h = x.hands;
@@ -184,6 +186,7 @@ export function buildSpec(m) {
     metallic: m.finish.metallic,
     roughness: m.finish.roughness,
     triangles: x.triangles,
+    surface: x.surface,
     seamWeld: x.seamWeld,
     lean: x.lean,
     cloth: x.cloth,

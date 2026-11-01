@@ -368,6 +368,24 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   turns the thigh and shin only a little. The goblin's rags are hundreds of
   small texture islands: its simplification collapses across seams only where
   the texture matches on both sides (and between them), 19.7k to 11.7k triangles.
+- **Rebaked characters (`surface: rebake`):** some downloads cut their texture
+  into thousands of small islands (Barnaby Bruin's coat, Slugger-9's plating, the
+  Rusty Mech's baked map): every cut that keeps the texture coordinates stops over
+  the 20k budget, and even the careful cut scrambles them in places. These are
+  cut on the download itself, before rigging and posing (rebakeDownload in
+  prepare-meshy-characters.mjs): the copies of a vertex on either side of a seam
+  become one, the full mesh is cut to `triangles` (head 12%, hands 8%, never past
+  0.8% of the model's size), laid out afresh in charts grown across shared edges
+  while each triangle faces within 60 degrees of the chart's first and never
+  overlaps it (meshy-mesh.mjs rebake `grow`; the props' six-axis charts broke a body
+  into thousands of slivers), and its 1024 px colour and normal maps are painted
+  from the full download (rays along the cut surface's normal, 1.2% of the
+  model's size each way). Both maps are in the new layout, so they hold through
+  the posing (the normal map is in tangent space). The cut only removes
+  vertices, so a rigged download's vertices keep Meshy's skin weights; an
+  unrigged one is rigged from the cut mesh as usual. Known limit: where cloth sits
+  close over the body (Barnaby's coat tails) the two are cut separately and the
+  body shows through in a few small patches.
 - **Long guns on deep or short-armed bodies:** the stock's clearance also counts
   the chest straight ahead of the shoulder (a deep chest turned across the
   aim), the support hand slides back along the handguard when the arms can't
@@ -441,7 +459,7 @@ repo; they live in a downloads dir outside it.
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set: more where cuffs the skinning left on the hands took it, as on King Aldric). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -456,7 +474,10 @@ The downloads dir is anywhere outside the repo (say `~/meshy-downloads`). The
 importer finds a character's download there by its manifest id or its
 `source.file` pattern:
 - `<id>.glb`: a rigged GLB (Meshy's auto-rig output: its joints are mapped
-  onto ours, no landmarks needed);
+  onto ours, no landmarks needed), or one matched by `source.file`. Meshy's
+  "All Animations" export names the joints the Mixamo way (`mixamorig:Hips`,
+  `Spine`, `Spine1`, `Spine2`, `Neck`, `HeadTop_End`, ...): they are read as
+  Meshy's own (its clips are not used; the rig's are);
 - an unrigged textured GLB (Meshy's "texture" download, no skin), matched by
   `source.file`: rigged here (below);
 - a textured FBX folder (the `.fbx` with its `.png` beside it), anywhere under

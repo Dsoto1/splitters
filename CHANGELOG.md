@@ -11,6 +11,10 @@ made only on a commit that passed CI on a check branch.
 **Vehicles**
 - The buggy's cockpit is built in-house and stays crisp up close: a roll cage of clean round tubes in dark powder coat, bucket seats with red five-point harnesses in all three rows, a floor pan and footwell, a dash with a sand cowl, toggle switches and dials, and a steering wheel that turns as you steer. The speedometer's needle reads your speed and the rev counter climbs through the gears. Only you see it, in first person; everyone else sees the buggy as before. The cropped Meshy interior it replaces is gone (3.6 MB less to download).
 
+**Characters**
+- **Five new characters** in Character Select, all the owner's own Meshy models: **Barnaby Bruin** (Animals), a bear in a striped red coat and top hat; **Slugger-9** (Creatures & Machines, large), a robot ballplayer; **Rusty Mech** (Creatures & Machines, large), a white war machine gone to rust; **Freaky Frida** and **Scary Larry** (Undead & Horror), wide-eyed and grinning. Each holds every weapon with its own hands, in third and first person.
+- Characters whose textures are cut into thousands of small pieces (Barnaby's coat, Slugger's plating, the Mech's armour) now get a fresh texture layout painted from the full model, so they fit the character budget with their colours where they belong.
+
 ## 0.6.0 (2026-11-01)
 
 **Main menu**
