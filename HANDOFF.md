@@ -10,6 +10,46 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### New characters + rebake for characters (`wip/new-characters`, agent, 2026-11-01; not merged; from main dc1d1fc)
+Five characters shipped (status built, portraits captured), all the owner's own Meshy models; names, groups and bios
+from the Roster Board cards (no requests on the board for these five), look ids as the board has them.
+- **`fixes.surface: "rebake"`** (opt-in per manifest; every other character and every prop rebuilds byte-identical:
+  checked on The Visitor, Rourke, jersey_barrier_hazard, plastic_road_barrier). `rebakeDownload` in
+  prepare-meshy-characters.mjs works on the download as it stands, before rigging and posing: seam copies welded, the
+  full mesh cut to `fixes.triangles` by cutKeeping (head 12%, hands 8%, errors 0.4%/0.8% only: looser passes turned a
+  paw into a cone), laid out afresh and its 1024 px colour + normal maps painted from the FULL download (meshy-mesh.mjs
+  `rebake`, new options: `grow` = charts grown across shared edges within 60 degrees of the seed, refusing triangles
+  that would overlap the chart (the six-axis charts gave ~4,000 slivers and 33k vertices for 17k triangles: 1.96 MB,
+  over budget), slivers folded into a neighbour; `crease: -1` smooth normals; `reach` 1.2%; it also returns `from`, the
+  source vertex of each output vertex). The maps hold through the posing (tangent-space normal map). Rigged downloads
+  keep Meshy's weights on the kept vertices; unrigged ones are autoskinned from the cut mesh. Why not after posing: the
+  40k work mesh the old path cut first was already scrambled in places (even meshopt's careful cut breaks Meshy's UVs).
+  Lock entries carry `surface: "rebake"`; provenance says so. Tests: tools/content/test/rebake.test.mjs.
+- **Mixamo rigs**: Meshy's "All Animations" GLBs name joints `mixamorig:*` (Spine, Spine1, Spine2 count up from the
+  hips): read as Meshy's names (`meshyName`). Their two clips are ignored.
+- Per character (body triangles, grip audit rifle score; The Visitor 0 as reference):
+  - **Barnaby Bruin** (Animals; CC0 community per his manifest and HANDOFF, though the brief called all five owned:
+    left as recorded, owner to confirm): rebake from the 1.5M download, 17,021 tris, 1.17 MB; paws `hands.scale` 0.7,
+    `curl` 1.2 (audit 9 open/off/spikes/fp at full size → **3 flat**: a mitten paw bends once, curl test +0.001).
+  - **Slugger-9** (Creatures, large): rebake from 3.1M, target 16k → 18,082 tris, 1.42 MB; audit **0**.
+  - **Rusty Mech** (`meshy_rustymech`, Creatures, large): owner's Meshy rig; its baked texture held the careful cut at
+    28.4k (3 MB), so rebaked: 15,923 tris, 1.39 MB, Meshy's weights; audit **0**.
+  - **Freaky Frida** (`meshy_frida`, Horror): the download has no skin, rigged in-house from found landmarks
+    (autoskin reports 2,597 vertices with no bone in sight: hair/pigtails, weighted by nearest; looks fine in the
+    holds); 10,760 tris, no rebake needed; audit **0**.
+  - **Scary Larry** (`meshy_larry`, Horror): owner's Meshy rig; 11,350 tris; audit **0**.
+- Known limits: Barnaby's coat tails show a few small cream patches where the cut body pokes through the cut coat
+  (a "push covered body vertices in" pass was tried and made it worse: removed). Rebaked maps cover ~33% of the
+  1024 px square (bounding-box shelf packing), so they are a little softer than the download up close.
+- Rebuild: `ONLY=meshy_barnaby,meshy_slugger,meshy_rustymech,meshy_frida,meshy_larry node
+  tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/build-newchars` (symlinks to the downloads in
+  tposes-2026-11-01, drive-2026-11-01 and drive-2026-11-01b). Note: a rebuild of Rourke rewrites his lock title
+  (his lock entry still has the community model name from before he was marked owned): restored here, untouched.
+- Checks: typecheck; content OK; bundle 833.8 kB gzip (budget 840); `test:changed` 1225 pass, 2 fail (npc.test.ts co-op
+  missions, 25 s timeouts at load 10+; the file passes alone, 15/15); rebake tests 3/3; e2e characters PASS (964 s: viewer 90/90,
+  low detail 90/90, every grip check, bots 8/8) and designer PASS. Grip sheets and portraits: agent scratchpad (re-run
+  `ONLY=<ids> node tools/content/grip-audit.mjs` for fresh ones).
+
 ### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; not merged)
 Owner's queue of 2026-10-31 ("new models on the Drive", "FX: I bought the full licence"). Downloads outside the repo:
 models in `/home/user/meshy-drive/drive-2026-11-01/` (links for the pipelines in `/home/user/meshy-drive/links-1101/`),
