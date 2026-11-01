@@ -305,6 +305,55 @@ lantern(_post), banners, signpost, wooden fences. New in-house: timber/plaster h
 square, town gate, bell tower, bridge, well, shop fronts, awnings, balconies, cobble/market/road materials.
 Meshy candidates awaiting approval: blacksmith forge, hay cart, covered well, tarp tent.
 
+### Jungle Ruins refresh (`wip/jungle-ruins-pack`, agent, 2026-10-31; main merged in, ready for a check branch, not merged)
+Owner sheets TILESET 04 Jungle Ruins + TILESET 07 Ancient Temple, combined into Style Pack 06 Jungle Ruins.
+- **Done (committed):** 20 new tiles in `packages/shared/src/map/packTilesJungle.ts` (Temple Terrace, Terrace
+  Stair (stack them a level up into ziggurats), Carved Temple 2 × 1 (gate on the west cell's south edge fits the
+  Portcullis, stair to a roof walk with parapet gaps E/W), Summit Shrine, Carved/Relief/Window/Arch/Column/Low
+  walls, Beamed Colonnade, Arched Vault, Jungle Watch Tower (Medieval watchtower frame), Chasm, Gorge Steps,
+  Chasm Rope Bridge, Rope Bridge Span, Stone Bridge Span, Waterfall Wall (pool, passage behind the falls),
+  Overgrown Ruins). The original 12 jungle tiles and 17 jg_* props are untouched, so Verdant Ziggurat, Erosion,
+  Sunken Kingdom, Fernwood Moon, After Hours, Jungle Steps load unchanged (tested). Materials (procedural,
+  patterns.ts): mossy_stone, carved_stone (step-fret), relief_stone, temple_inlay (teal/gold), root_cover,
+  mossy_planks, temple_sandstone, palm_thatch; theme `core.ancient_temple` (+ backdrop, dressing). 26 props in code
+  (`tools/content/prepare-jungle.mjs` → `assets-src/tiletrigger-jungle/`, Owned, jt_*), props.json/lock/provenance,
+  palette atlases, STYLE_PACKS entry (new tiles/props/materials/theme, portcullis/brazier/torch/ladder, Grapple).
+  Demo map `maps/vinefall_sanctum.json` built by driving MapMaker in the browser (placeAtHover + inspector edits
+  + Export; scratch script not in repo): validate-map 0 issues incl. navigation; map card shot; screenshots in
+  `docs/map-briefs/vinefall_sanctum/screenshots/`. Tests `packages/shared/test/stylePacksJungle.test.ts` (pack,
+  tiles, bot paths in 4 rotations, every jungle-using map validates, demo map nav) and stylePacks2 bound relaxed.
+- **Zipline:** no zipline mechanic exists (only the Grapple Hook). `jt_zipline_post` is scenery; the pack lists
+  the Grapple Hook to cross between posts. A real zipline ride is an owner decision (new movement mechanic).
+- **Stand-ins (stable ids, Meshy only with owner approval):** jt_statue_large, jt_crane, jt_zipline_post.
+- **Merged with main (2026-10-31 evening):** main (Medieval fixes, Harbor 11, Snow 12, Desert City 09) merged in;
+  the shared pack files took main's version with the jungle additions re-applied next to the other packs
+  (PatternId / PAINTERS / FINE_PATTERNS, materials, `core.ancient_temple` theme and backdrop, catalog import,
+  STYLE_PACKS entry keeps `/* @__PURE__ */`). No id collisions (patterns slabs/fret/relief/inlay/roots/thatch,
+  the 8 materials, theme, jt_* props, jungle.* tiles are all unique), so nothing renamed. Generated files rebuilt
+  as "Work split" says: props.json/lock = main's + jungle entries, prepare-props (prop GLBs byte-identical, only
+  jt_* added), palette atlases (tiles 247, ancient 96), content:build → provenance, content:check OK. Map card
+  recaptured with capture-map-shots.mjs (in-match render works). `metadata.release` stripped from the map.
+  Then main again at ac8269f (Character Select groups): no conflicts; typecheck and content:check OK (the
+  checks below were run before this second merge).
+- **Docs done:** BUILDING_KIT "06 Jungle Ruins refresh (Ancient Temple folded in)" + the 06 table row (and the
+  Style Packs intro, which main's merges had left with three copies of one sentence); CHANGELOG Unreleased (pack
+  under MapMaker, map under Maps); `docs/map-briefs/vinefall_sanctum/` manifest, decisions, QA; README row.
+  The `_jdebug*.test.ts` scratch tests were never committed (none on the branch).
+- **Checks (local, after the merge):** typecheck OK; `pnpm test:changed` 1164 passed, 3 timed out under machine
+  load (host.test, match 32-bot, sandgate nav) and passed when rerun alone; bundle budget 824.1 kB gzip /
+  2922.9 kB raw (budget 840 / 3000); validate-map 0 issues on vinefall_sanctum, jungle_steps, verdant_ziggurat,
+  erosion; e2e (CI=1) editor, editorux, maps (E2E_MAPS=vinefall_sanctum,jungle_steps), visual all PASS.
+  `pnpm ci:plan` wants the full suite (assets-src/ counts as shared), so push to `check/jungle` and expect ~8 shards.
+- **Open:** CI on a check branch, then fast-forward main (the lead's call). Bot audit / perf on Vinefall Sanctum
+  not run. **Owner questions:** a real zipline ride (new movement mechanic) vs posts as scenery + Grapple Hook
+  (current); Meshy hero versions of jt_statue_large, jt_crane, jt_zipline_post.
+- **Sheet notes (pictures are gone with the container):** TILESET 04: weathered mossy stone, tropical; vignettes
+  of overgrown temple courtyards, waterfalls, rope bridges over chasms, torch-lit stairs; red banners with a gold
+  emblem. TILESET 07: sandstone with teal-and-gold inlay tiles, teal/gold banners, wall torches, hanging braziers,
+  chain rails, spikes, portcullis, multi-level terraces with waterfalls. Not yet built from them: wooden door,
+  stone gate as a tile, shutter/carved windows as separate pieces, corner/T/cross wall connectors, spikes as a trap
+  look, decorative ceiling, chain fixture, a 'broken ceiling' variant.
+
 ### Style Pack 11 Coastal Harbor (`wip/harbor-pack`, agent, 2026-10-31; green on `check/harbor`, not merged)
 - **Done (pushed):** 20 tiles in `packages/shared/src/map/packTilesHarbor.ts` (pier, pier head, boardwalk + corner,
   quay wall / outside / inside corner, 2 × 1 sea wall steps, slipway, shingle beach, basin, breakwater, 2 × 1

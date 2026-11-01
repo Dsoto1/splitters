@@ -14,6 +14,7 @@ import { medievalPackTiles } from './packTilesMedieval.ts';
 import { harborPackTiles } from './packTilesHarbor.ts';
 import { snowPackTiles } from './packTilesSnow.ts';
 import { desertPackTiles } from './packTilesDesert.ts';
+import { junglePackTiles } from './packTilesJungle.ts';
 
 /** Sides in clockwise order; rotating a tile by k quarter turns maps side i to (i + k) % 4. */
 export const SIDES = ['N', 'E', 'S', 'W'] as const;
@@ -1224,6 +1225,8 @@ export const CORE_TILES: readonly TileDefinition[] = [
   ...snowPackTiles(),
   // Style Pack pieces (09 Desert City, in Sands of Egypt's place; the Egypt tiles above stay): see packTilesDesert.ts.
   ...desertPackTiles(),
+  // Style Pack pieces (the 06 Jungle Ruins refresh, Ancient Temple folded in): see packTilesJungle.ts.
+  ...junglePackTiles(),
 ];
 
 // ---------------------------------------------------------------- buildings
