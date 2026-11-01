@@ -1548,7 +1548,8 @@ export class GameSession {
                 }
                 return;
               }
-              this.view.scenario.liquids.fx.shot(eye, to);
+              const wet = this.view.scenario.liquids.fx.shot(eye, to);
+              if (wet) this.view.surfaceAccent('water', wet);
               // Weapons whose rounds land with an impact of their own (the railgun's: content/vfx.json map.weaponImpacts).
               if (def) this.view.hitFx(to, def);
               const victim = ev.hit[i] ?? null;

@@ -743,6 +743,11 @@ export class GameView {
     }
   }
 
+  /** The accent of a surface hit somewhere other than the level (a round going into water). */
+  surfaceAccent(surface: Surface, at: Vec3): void {
+    this.accent(impactStyle(surface).accent, at);
+  }
+
   /** A minor effect near the camera (an impact's accent): skipped far away and when many effects are playing. */
   private accent(fx: FxRef | null, at: Vec3, up?: Vec3): void {
     if (!fx) return;

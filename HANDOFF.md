@@ -10,6 +10,49 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; not merged)
+Owner's queue of 2026-10-31 ("new models on the Drive", "FX: I bought the full licence"). Downloads outside the repo:
+models in `/home/user/meshy-drive/drive-2026-11-01/` (links for the pipelines in `/home/user/meshy-drive/links-1101/`),
+FX zips in `/home/user/fx-packs/drive-2026-11-01/fx/` (extracted: `/home/user/fx-packs/extracted-2026-11-01/`; the
+layout prepare-vfx reads: `/home/user/fx-packs/links-full/`). No Meshy credits spent.
+- **What was new on the Drive** (49 files + `fx/`; everything else was already in content/*.json or the locks): 10 models.
+  - Props, new pack `meshy-owned-drive-1031` (owned; rebuild: `ONLY=<ids> node tools/content/prepare-props.mjs --downloads /home/user/meshy-drive/links-1101`):
+    `jersey_barrier_hazard`, `hazard_block_barrier` (Military), `plastic_road_barrier` (Industrial), `mv_smithy_bench`,
+    `mv_tiled_well` (Medieval Village), `ruin_stone_stair` (Jungle Ruins, hero, `collide: stairs`), and two parked
+    vehicles as hero props: `vehicle_raider_buggy` (sci-fi buggy, 4.4 m) and `vehicle_armored_truck` (8x8, 8.7 m, `shell`).
+    Added to the Military, Jungle and Medieval STYLE_PACKS; palette pictures rendered.
+  - Characters: **Rourke** (`meshy_rourke`, Folk; "Realistic stylized man" T-pose): landmarks found, arms measured off
+    the mesh (the found left wrist was 4 cm short); grip audit 0; portrait captured. **Slugger-9** (`meshy_slugger`,
+    Creatures, large; robotic baseball player, 3.1M-triangle image-to-3D): manifest, landmarks and fixes ready but
+    **queued** like Barnaby: its texture seams hold every careful cut over the 20k budget (21.3k; 20.8k with seamWeld).
+  - Licences are best guesses, to confirm with the owner: the props and vehicles as owned (prompt names like the owner's
+    other prop batches), the two characters as Meshy community CC0 (like nearly every character download).
+- **FX licence**: the Vol. 2 packs on the Drive (Battle, Dark Magic, Electric, Elemental Magic, Explosion, Flame,
+  Frosted Glass, Hit, Status FX "Full") each carry a `license.txt` that is CC0 word for word ("licensed under Creative
+  Commons Zero (CC0) ... free to use the assets in this pack for personal, educational and commercial projects with no
+  attribution required"). The Vol. 1 packs (Impact, Smoke, Portal, Poison, Fire, Beam, Ice, Loot, Magic Orbs/Area/
+  Projectiles, Card, Glass UI, Skies, Green Extra, Supporter textures) carry no licence file, and itch.io is not reachable
+  from these sessions. The owner's standing rule ("If I buy it it's always allowed") is on CLAUDE.md via the lead.
+  Also in `fx/`, not effects: FoodMegaPack_Pro, RPGWeapons_Pro, Treasure_Pro, RetroUrban, Full.zip (Retro textures): untouched.
+- **Shipped**: Hit FX and Explosion FX full editions (the effects our runtime already draws: no new shaders needed).
+  The Drive's MuzzleFlashVFX builds byte-identical output to what we ship. Recorded in content/vfx.json per pack
+  (`edition`: purchased by the owner, CC0 text) and provenance titles.
+- **Mapping as data**: content/vfx.json `map` → `tools/content/vfx-map.mjs` → `packages/client/src/game/fxMap.generated.ts`,
+  read by `game/fxMap.ts`. Muzzle by weapon family (moved out of muzzleFlash.ts), surfaces (keywords on prop model /
+  tile+theme / free-block material; terrain = dirt) → impact style (sparks, dust colour/size, accent), weapon impacts
+  (railgun; melee), water (the splash plus a cyan glint where a round goes in), explosions by weapon id → projectile visual → kind (barrel, trap, bomb, vehicle, air burst when
+  nothing is under the blast), gameplay (pickup.<kind>, spawn, portal, pad, trap.<type>, zipline). prepare-vfx ships only
+  the effects the map names (hit 13 of 28, explosion 9 of 16; ~9 kB gzip each); content:check fails on a stale map or a
+  missing effect. Sim: `explode` events carry `w` (what blew; optional, older clients ignore it). EffectsWorld.raycast
+  returns the level box hit. Spawns, portals, pads and ziplines are read off movement (`game/gameplayFxWatch.ts`: no
+  new events). GodotVfx: `minor` effects (accents, gameplay) stop at 6 playing (MAX_PLAYING 10), and accents are skipped
+  past 45 m.
+- **Next (not done)**: Electric FX (zaps for energy weapons, shock traps), Flame FX (fire hazards, burning barrels,
+  flare zones), Status FX (pickups, heal, spawn protection) and Portal VFX need their shaders ported in godotVfx.ts
+  (Electric: electric_particle, ground_impact, ground_streaks, zap; Flame: fire_core, fire_overlay, fire_particle; Status:
+  11). Tracers are unchanged (impactVisuals streaks).
+- Checks: PERF_PLACEHOLDER
+
 ### `wip/warthog-step1` (agent, 2026-11-01; not merged): Warthog feel, step 1 (raycast suspension)
 Owner: "make the buggy feel like Halo's Warthog (independent suspension)", step 1, "if performance remains intact".
 - **Sim** `shared/src/sim/suspension.ts`: one ray down per wheel (`PhysicsWorld.groundBelow`, own box excluded), a
