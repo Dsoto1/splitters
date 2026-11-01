@@ -9,8 +9,9 @@ made only on a commit that passed CI on a check branch.
 ## Unreleased
 
 **Bots**
-- **Bots stop shooting rocks.** A bot fired whenever its aim was on the target, even when the line from its eye (where every shot starts) ran into a boulder, a wall or a slope in between: on Shingle Point a quarter of bots' trigger pulls went into the world short of the target, the gully boulders worst of all. Now a bot holds fire when that line is blocked and fixes it: it brings a wandering aim back onto a target in the open, aims at the head and shoulders that show over low cover, or stands up from a crouch / steps aside. Over eight seeded two-minute Shingle Point matches (24 bots) shots into the world short of the target went from 28 % to 9 % of trigger pulls, rounds that hit someone from 8.8 % to 10.3 %, with as many kills as before.
+- **Bots stop shooting rocks.** A bot fired whenever its aim was on the target, even when the line from its eye (where every shot starts) ran into a boulder, a wall or a slope in between: on Shingle Point a quarter of bots' trigger pulls went into the world short of the target, the gully boulders worst of all. Now a bot holds fire when that line is blocked and fixes it: it brings a wandering aim back onto a target in the open, aims at the head and shoulders that show over low cover, or stands up from a crouch / steps aside. Over eight seeded two-minute Shingle Point matches (24 bots) shots into the world short of the target went from 28 % to 8 % of trigger pulls, rounds that hit someone from 8.8 % to 10.5 %, with about as many kills (206 → 201) from a quarter fewer rounds; trigger pulls aimed into the gully boulders: 190 → 7.
 - Small and large characters' bots now see, aim and shoot from their own eye height (a small bot used to look over a wall its rounds then hit), and aim at the middle of a small or large body.
+- Small and large characters join a match at their full health (85 / 115); their first life used to start on 100.
 - Suppression fire (SUPPRESSOR bots) at the spot an enemy ducked out of sight is shorter (1.5 s) and only while the rounds reach that spot.
 
 **Vehicles**

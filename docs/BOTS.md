@@ -248,8 +248,9 @@ bullet holes): bots' aim error at range (normal: 0.05–0.15 rad at 40–55 m)
 put a quarter of their trigger pulls into the world short of the target, and
 a target behind waist-high cover drew fire at its hidden chest. Measured with
 24 bots, eight seeds × 120 s of Team Deathmatch: pulls aimed into the world
-short of the target 28.4 % → 8.5 %, rounds hitting a player 8.8 % → 10.3 %,
-kills 206 → 215. `test/botClearShot.test.ts`: a player behind a 1.3 m wall
+short of the target 28.4 % → 8.2 %, rounds hitting a player 8.8 % → 10.5 %,
+kills 206 → 201 (rounds fired 11,786 → 8,582); pulls aimed into the gully
+boulders (`prop_490`–`prop_493`) 190 → 7. `test/botClearShot.test.ts`: a player behind a 1.3 m wall
 (head and shoulders show) drew 93 rounds, 92 into the wall, before; now most
 rounds hit.
 
