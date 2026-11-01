@@ -85,7 +85,19 @@ export type PatternId =
   /** Style Pack 09 Desert City: a woven rug: borders, a lozenge medallion and small motifs in the accent and cream on the base. */
   | 'rug'
   /** Style Pack 09 Desert City: a mashrabiya lattice: diagonal turned-wood bars (base) with knots, the dark (accent) between. */
-  | 'lattice';
+  | 'lattice'
+  /** Style Pack 06: big square stone slabs, worn and chipped, moss growing in the joints. */
+  | 'slabs'
+  /** Style Pack 06: courses of temple blocks cut with a step-fret (stepped spiral) frieze. */
+  | 'fret'
+  /** Style Pack 06: carved relief panels (a masked face, a sun disc, a serpent) framed by a border, one per block. */
+  | 'relief'
+  /** Style Pack 06: square inlay tiles: a gold frame round a teal field with a gold lozenge and dots. */
+  | 'inlay'
+  /** Style Pack 06: forest floor knotted with roots over dark earth, leaf litter between. */
+  | 'roots'
+  /** Style Pack 06: palm thatch: overlapping rows of long straw strands. */
+  | 'thatch';
 
 export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
@@ -211,6 +223,15 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('mashrabiya', 'Mashrabiya Lattice', 'Wood', 'lattice', '#6e4628', '#1a120c', 1),
   m('canopy_red', 'Red Canopy', 'Fabric', 'weave', '#b4322a', '#8a2420', 1.5),
   m('cedar', 'Cedar Beam', 'Wood', 'planks', '#7a5434', '#54381f', 1.5),
+  // Style Pack 06 Jungle Ruins (with the Ancient Temple sheet folded in): our own procedural paint.
+  m('mossy_stone', 'Mossy Stone Slab', 'Stone', 'slabs', '#8e8c74', '#4c6a24', 3),
+  m('carved_stone', 'Carved Temple Stone', 'Stone', 'fret', '#a49c80', '#5e5846', 2.4),
+  m('relief_stone', 'Relief Carving', 'Stone', 'relief', '#b2a684', '#625a44', 2.4),
+  m('temple_inlay', 'Temple Inlay Tiles', 'Tile', 'inlay', '#2e7a74', '#d0a040', 2, 0.35),
+  m('root_cover', 'Root Cover', 'Ground', 'roots', '#4a3a28', '#6a4e30', 3),
+  m('mossy_planks', 'Mossy Planks', 'Wood', 'planks', '#857256', '#4e5a30', 2),
+  m('temple_sandstone', 'Temple Sandstone', 'Stone', 'blocks', '#c8a878', '#8a7050', 3),
+  m('palm_thatch', 'Palm Thatch', 'Fabric', 'thatch', '#b89a5a', '#6e5a30', 2),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -330,6 +351,7 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('adobe', 'Frontier Adobe', '#f4d2a0', ['pbr_floorboards', '#d8b890'], 'pbr_adobe', ['pbr_adobe', '#e8d0b0'], 'pbr_weathered_planks', 'pbr_walnut'),
   theme('gothic_estate', 'Gothic Estate', '#231d2c', 'pbr_floorboards', 'wallpaper_damask', 'pbr_walnut', 'dark_wood', 'brass'),
   theme('jungle_temple', 'Jungle Temple', '#a8c8a0', 'pbr_mossy_cobble', 'pbr_castle_stone', 'pbr_jungle_rock', 'pbr_rock', ['pbr_travertine', '#b8c0a0']),
+  theme('ancient_temple', 'Ancient Temple', '#b8d0a8', 'mossy_stone', 'carved_stone', 'temple_sandstone', 'pbr_jungle_rock', ['gold_leaf', '#e0b850']),
   theme('coastal', 'Coastal Harbor', '#a8c0d4', 'harbour_setts', 'quay_granite', ['pier_decking', '#c0b090'], 'pier_decking', 'harbour_paint'),
   theme('desert_city', 'Desert City', '#f4dcb0', 'worn_paving', 'ashlar', ['stucco', '#f2e6cc'], 'cedar', ['sandstone_tiles', '#e8d8b8']),
   theme('medieval', 'Medieval Village', '#a8c8e8', 'cobblestones', 'timber_frame', ['oak_beam', '#c8a888'], 'pbr_floorboards', 'oak_beam'),

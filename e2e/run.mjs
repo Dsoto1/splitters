@@ -1777,6 +1777,8 @@ async function physicsfxFlow(browser) {
     m.pendingEvents.push({ e: 'explode', s: -1, p: [at.x, at.y + 0.5, at.z], r: 6 });
     m.splash({ x: at.x, y: at.y + 0.5, z: at.z }, 6, 500, 400, null, 'core.rockets', 1, 12);
     for (const c of victims) if (c.alive) m.kill(c, null, 'core.rockets');
+    // Held dead while the bodies are counted (a slow runner can take longer than the respawn time).
+    for (const c of victims) c.respawnTick = m.tick + 60 * 120;
     return victims.length;
   });
   const t0 = Date.now();
@@ -1791,6 +1793,7 @@ async function physicsfxFlow(browser) {
   }, null, { timeout: T(10000), polling: 50 }).then(() => true, () => false);
   await frames(page, 10);
   const massStats = await page.evaluate(() => window.__cs.view.ragdollStats());
+  await page.evaluate(() => { const m = window.__match; for (const s of window.__massSlots) if (m.slots[s]) m.slots[s].respawnTick = m.tick; });
   const notDown = down ? [] : await page.evaluate(() => window.__massSlots.filter((s) => !window.__massDown.has(s)).map((s) => { const a = window.__cs.view.avatars.get(s); const b = window.__match.slots[s]; return { s, avatar: !!a, anim: !!a?.anim, fall: a?.fall ?? null, alive: b?.alive }; }));
   check(mass > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}${notDown.length ? ` not down: ${JSON.stringify(notDown)}` : ''}`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
@@ -2386,6 +2389,9 @@ async function arsenalFlow(browser) {
     await face(5);
     await stand(5);
     await aimAt(target.slot);
+    // The host rewinds targets to where the shooter saw them (lag compensation): let its history hold the bot at
+    // 5 m for a while first, or on a slow runner the pellets go where the bot stood a moment ago (1.6 m away).
+    await sim(page, (m) => m.tick).then((t0) => meWait(page, (m, _me, t) => m.tick >= t + 45, t0, 3));
     // After the swing's recovery (48 ticks): the barrel (bit 32, the alt trigger, as right mouse sends with a melee weapon in hand).
     await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
     const clouds = await page.evaluate(() => window.__cs.view.smokeClouds.local);
@@ -2393,7 +2399,15 @@ async function arsenalFlow(browser) {
     await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
     await meWait(page, (m, me) => me.weapons.get(me.current)?.alt < 2, null, 2);
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-    const blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
+    let blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
+    if (!blasted) {
+      // A spread can miss once at 5 m: the barrel holds two loads, so the second gets its chance.
+      await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
+      await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
+      await meWait(page, (m, me) => me.weapons.get(me.current)?.alt < 1, null, 2);
+      await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+      blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
+    }
     await page.waitForFunction((n) => window.__cs.view.smokeClouds.local > n, clouds, { timeout: T(5000) }).catch(() => {});
     const after = await page.evaluate(() => ({ smoke: window.__cs.view.smokeClouds.local, loads: window.__cs.local.inventory.get(window.__cs.local.held)?.[2], hud: `${document.getElementById('ammo-count')?.textContent} ${document.getElementById('ammo-reserve')?.textContent} · ${document.getElementById('ammo-alt')?.textContent}` }));
     const hp = await sim(page, (m, _me, t) => m.actor(t.slot).health, target);

@@ -143,16 +143,16 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
-## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesDesert.ts`)
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesHarbor.ts`, `map/packTilesSnow.ts`, `map/packTilesDesert.ts`, `map/packTilesJungle.ts`)
 
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
-alongside the set), then 10 Medieval Village and 11 Coastal Harbor (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
-alongside the set), then 10 Medieval Village and 12 Snow Outpost (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
-alongside the set), then 10 Medieval Village (the owner's tileset sheets); 09 is
-now **Desert City**, which replaced Sands of Egypt (owner, 2026-10-31) and still
-carries all its pieces. One registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then from the owner's tileset sheets 10 Medieval Village,
+11 Coastal Harbor and 12 Snow Outpost; 09 is now **Desert City**, which
+replaced Sands of Egypt (owner, 2026-10-31) and still carries all its pieces,
+and 06 Jungle Ruins was refreshed from the Jungle Ruins sheet with the Ancient
+Temple sheet folded in. One registry (`STYLE_PACKS`, in pack-number order). A Style
 Pack is a themed selection of the kit: the **Style Pack** picker under the
 MapMaker palette's search box narrows the tiles, props, gameplay pieces
 (Entities → Scenario), vehicles and pickups to one pack (headings left empty
@@ -287,7 +287,7 @@ CONTENT_PIPELINE.md and ASSET_SOURCES.md).
 | Pack | Themes | Facades (box-built) | Own tiles | Own props | Demo map |
 |---|---|---|---|---|---|
 | 05 Gothic Estate (Victorian horror) | **Gothic Estate** (`core.gothic_estate`: old floorboards, Damask Wallpaper, walnut, dark panels, brass); Gothic Manor, Castle Keep | **Gothic stone** (buttresses, string course, hood moulds, battlements and pinnacles), **Victorian brick** (stone plinth, quoins, sills and lintels, bracketed cornice) | 8 | 19 (category *Gothic Estate*) | Ravenscroft Hall |
-| 06 Jungle Ruins (lost civilisation) | **Jungle Temple** (`core.jungle_temple`: mossy cobbles, mossy castle stone, layered rock); Jungle Ruins, Forest Camp | **Temple stone** (stepped base, glyph frieze, stepped merlons), **Overgrown rock** (moss at foot and top, vines hanging down, never across openings) | 12 | 17 (category *Jungle Ruins*) | Verdant Ziggurat |
+| 06 Jungle Ruins (lost civilisation) | **Jungle Temple** (`core.jungle_temple`: mossy cobbles, mossy castle stone, layered rock), **Ancient Temple** (`core.ancient_temple`, from the refresh); Jungle Ruins, Forest Camp | **Temple stone** (stepped base, glyph frieze, stepped merlons), **Overgrown rock** (moss at foot and top, vines hanging down, never across openings) | 12 + 20 (refresh) | 17 + 26 (refresh; category *Jungle Ruins*) | Vinefall Sanctum (was Verdant Ziggurat; see *06 Jungle Ruins refresh* below) |
 | 08 Suburban Chaos (everyday modern) | **Suburban** (`core.suburban`: oak boards, white plaster, painted clapboard, white trim); Walled Garden, Downtown | **Clapboard siding** (corner boards, brick plinth, shutters, sills and lintels, fascia), **Suburban brick** (the same trim on brick) | 8 | 20 (category *Suburban Chaos*) | Cedar Lane |
 
 New materials: Damask Wallpaper (procedural stripes), Slate Shingles,
@@ -701,6 +701,64 @@ storey a repeat), Snowy Concrete, Frozen Rock (strata rimed with frost), Steel G
 down), *Ice Block* (breakable cover, back after 30 s), *Thin Ice* (4 × 4 m, gives way 0.7 s after you step
 on it, back after 12 s), with blast doors, ladders, alarm lights, water, mines and the generator.
 Not in the game yet: falling snow (the `snowy` sky has no precipitation) and slippery ice.
+
+### 06 Jungle Ruins refresh (Ancient Temple folded in)
+
+From the owner's concept sheets "Tileset 04 – Jungle Ruins" (weathered mossy stone, overgrown temple
+courtyards, waterfalls, rope bridges over chasms, torch-lit stairs, red banners) and "Tileset 07 – Ancient
+Temple" (sandstone with teal-and-gold inlay, teal/gold banners, wall torches, hanging braziers, chain rails,
+spikes, a portcullis, multi-level terraces with waterfalls). The owner folded Ancient Temple into the Jungle
+Ruins refresh (2026-10-31: the two sounded alike), so it is one pack, 06 Jungle Ruins; 03 Imperial Arena stays
+Roman. The pack's first twelve tiles (`packTiles2.ts`) and 17 `jg_*` props are unchanged, so Verdant Ziggurat,
+Erosion, Sunken Kingdom, Fernwood Moon, After Hours and Jungle Steps load as before. New theme
+`core.ancient_temple` (mossy stone slab floors, carved temple stone walls, temple sandstone solids, jungle rock
+undersides, gold trim; backdrop clear sky, forest, moss). Demo map: `maps/vinefall_sanctum.json` (Vinefall
+Sanctum; Verdant Ziggurat was the demo before).
+
+**Tiles** (`map/packTilesJungle.ts`, 20; one level is 4 m):
+
+| Tile | Cells | What it is |
+|---|---|---|
+| `jungle.terrace` Temple Terrace | 1 × 1 | carved stone one level high under a mossy cornice; its top is the next level's ground |
+| `jungle.terrace_stair` Terrace Stair | 1 × 2 | a 3.2 m wide stair (16 steps) north to a landing 4 m up; stack another on the landing a level up for a ziggurat (reached head-on and from the terraces either side) |
+| `jungle.temple` Carved Temple | 2 × 1 | carved and relief walls, a 3.2 m gate in the west cell's south edge (the Portcullis hangs in it), doors W and N, barred windows E, columns, beamed ceiling, altar; a stair inside the north wall to a flat roof walk 4 m up, parapet gaps E and W |
+| `jungle.shrine` Summit Shrine | 1 × 1 | small sanctuary on an inlaid apron, door S, stepped roof and gilded finial: a ziggurat's crown |
+| `jungle.wall_carved` / `wall_relief` / `wall_window` / `wall_arch` / `wall_column` / `wall_low` | 1 × 1 | 4 m temple walls along the north edge: step-fret frieze; relief panels; two windows (one barred: shoot through); a 3.2 m arch; four columns over a knee wall (see and vault through); waist-high cover |
+| `jungle.beamed_hall` Beamed Colonnade | 1 × 1 | four columns under a beamed timber ceiling 4 m up, open on every side; its roof is the next level's ground |
+| `jungle.arch_hall` Arched Vault | 1 × 1 | a 5.2 m passage N–S under a carved vault (3.5 m crown), roots breaking through; its top is the next level's ground |
+| `jungle.watch_tower` Jungle Watch Tower | 1 × 1 | the Medieval Watchtower's frame in lashed timber: switchback stair to a lookout 7 m up, palm thatch, a crossbar for a Zipline Post |
+| `jungle.chasm` / `chasm_steps` / `chasm_bridge` | 1 × 1 | a 5 m gorge 4 m deep E–W (add Water for a river); Gorge Steps out of its west end; a Chasm with a 3 m rope bridge across N–S at ground level |
+| `jungle.rope_bridge` / `stone_bridge` | 1 × 1 | bridge decks N–S with nothing underneath (rope with netting sides, 3 m; carved stone with balustrades, 3.4 m): lay them a level up between terraces, roofs and towers |
+| `jungle.waterfall_wall` Waterfall Wall | 1 × 1 | an 8 m carved wall on the north edge with a serpent spout (stand the Waterfall prop under it), a pool sunk 1 m (add Water), a passage through behind the falls; its top is a walk two levels up |
+| `jungle.overgrown_ruin` Overgrown Ruins | 1 × 1 | broken carved walls N and W, a broken column, a fallen drum, an overgrown beam, roots: scattered cover |
+
+Every stair keeps the Medieval pack's navmesh rules (treads 0.42 m or longer, flights 2 m wide or wider, about
+2 m of floor at both ends, turns on full-width landings, floor holes 0.3 m past the steps).
+`test/stylePacksJungle.test.ts` walks bots up the terrace stairs (stacked too), onto the temple roof and the
+colonnade roof beside it, the shrine, the tower lookout, across both bridge spans and the chasm rope bridge, out
+by the gorge steps and through the arch wall, the vaults and the passage behind the falls, in all four
+rotations; it validates every tile on its own and loads every map that uses jungle pieces.
+
+**Props** (26, category *Jungle Ruins*, `jt_*`, `tools/content/prepare-jungle.mjs`, built in code, licence
+Owned): Zipline Post, Crane and Pulley, Wooden Platform, Temple Guardian (Large and Small), Stone Obelisk,
+Temple Spire, Fire Bowl, Hanging Brazier, Wall Torch, Teal and Red Temple Banners, Tree Root Arch, Mossy Tree
+Trunk, Jungle Plant Cluster, Stone Planter, Temple Pottery, Rubble Pile, Collapsed Column, Broken Column, Stone
+Sarcophagus, Spike Row, Chain Rail, Rope Rail, Temple Altar, Overgrown Beam. Temple Guardian (Large), Crane and
+Pulley and Zipline Post are simple stand-ins under stable ids (`jt_statue_large`, `jt_crane`,
+`jt_zipline_post`): a hero model (Meshy, with the owner's approval) can take the same id later. The pack also
+lists the 17 earlier `jg_*` props, the ruins, rocks, jungle plants, expedition camp, crates and barrels already
+in the game.
+
+**Materials** (procedural, `client/materials/patterns.ts`; ambientCG is not reachable from the build
+container): Mossy Stone Slab (`slabs`), Carved Temple Stone (`fret`: step-fret courses), Relief Carving
+(`relief`: faces, sun discs, serpents), Temple Inlay Tiles (`inlay`: teal and gold), Root Cover (`roots`),
+Mossy Planks, Temple Sandstone, Palm Thatch (`thatch`).
+
+**Gameplay pieces**: the Portcullis door and Portcullis gate mover (in the Carved Temple's gate), braziers and
+wall torches (lights), ladders (rope ladders and vines), with the pack's rope bridges, crumbling planks,
+falling rocks, spikes, flames, water and swamp. **Zipline:** there is no zipline ride in the game; the Zipline
+Post is scenery and the pack lists the Grapple Hook to cross between posts. A real zipline (a new movement
+mechanic) is the owner's call.
 
 ## Materials and themes (`map/materials.ts`)
 

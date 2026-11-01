@@ -49,6 +49,11 @@
         "maxTriangles": 20000,
         "maxBytes": 1600000,
         "maxLodTriangles": 8000
+      },
+      "vehicle": {
+        "maxTriangles": 45000,
+        "maxBytes": 4500000,
+        "maxLodTriangles": 12000
       }
     }
   },
@@ -351,15 +356,16 @@
       "label": "Tactical Off-Road Beast, the buggy (owner's Meshy generation, 2026-10-29)",
       "forward": "-x",
       "length": 4.4,
-      "triangles": 14000,
+      "triangles": 40000,
       "maxError": 0.05,
       "surface": "rebake",
-      "textureSize": 1024,
-      "budget": "hero",
+      "textureSize": 2048,
+      "budget": "vehicle",
       "lod": [
         0.25,
         40
-      ]
+      ],
+      "normalSize": 1024
     },
     {
       "out": "vehicles/offroad_tire.glb",
@@ -368,11 +374,17 @@
       "label": "Rugged Off-Road Tire, the buggy's wheels (owner's Meshy generation, 2026-10-29)",
       "forward": "+z",
       "length": 0.32,
-      "triangles": 800,
+      "triangles": 4000,
       "maxError": 0.05,
       "sloppy": true,
       "surface": "rebake",
-      "textureSize": 256
+      "textureSize": 1024,
+      "normalSize": 512,
+      "budget": "vehicle",
+      "lod": [
+        0.3,
+        25
+      ]
     }
   ]
 }
