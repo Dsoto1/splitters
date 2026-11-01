@@ -2,7 +2,6 @@
   "id": "meshy_barnaby",
   "kind": "character",
   "use": "player",
-  "status": "queued",
   "order": 63,
   "name": "Barnaby Bruin",
   "look": "core.barnaby",
@@ -10,7 +9,7 @@
   "nameTheme": "bear",
   "bio": "Top hat, red coat, impeccable manners. Apologises before every headshot, and means it.",
   "body": "male",
-  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not Teddy (a plush toy): a bear in a striped red coat, waistcoat, ruff and top hat. Paws measure as closed blocks: `hands.curl` 1 makes them mittens that close on the grip. Held back (queued, not built): his coat's texture is cut into thousands of small islands whose two sides differ (about 10,800 seam vertices kept apart), and every cut that keeps the texture right stops at 20.7-23k triangles, over the 20k character budget (careful cut with the head and hand shares 23.0k; seam-aware cut 20.6k; a sloppy cut reaches 12.9k but scrambles the coat). Needs a fresh texture layout for characters (the props' `rebake` surface, with the skin kept) or a lighter download. Landmarks and fixes are ready.",
+  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB (1.5M triangles), rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not Teddy (a plush toy): a bear in a striped red coat, waistcoat, ruff and top hat. Paws measure as closed blocks: `hands.curl` makes them mittens that close on the grip; at full size (22 cm) they sat 8 cm off the grip and stretched at the knuckle, so they are scaled to 0.7 with curl 1.2 (grip audit 9 to 3, flat: a mitten bends once). His coat's texture is cut into thousands of small islands (every cut that kept it stopped at 20.6-23k triangles, and even the careful cut scrambled it in places), so he is built with `surface: rebake` (2026-11-01): the full download cut to 17k with its seams closed, laid out afresh and its colour and normal maps painted from the download (docs/CHARACTERS.md).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -29,11 +28,13 @@
     "arms": "own"
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 17000,
+    "surface": "rebake",
     "cloth": true,
     "feet": true,
     "hands": {
-      "curl": 1
+      "curl": 1.2,
+      "scale": 0.7
     }
   },
   "landmarks": {

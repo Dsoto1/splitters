@@ -2,7 +2,6 @@
   "id": "meshy_slugger",
   "kind": "character",
   "use": "player+npc",
-  "status": "queued",
   "order": 66,
   "name": "Slugger-9",
   "look": "core.slugger",
@@ -10,7 +9,7 @@
   "nameTheme": "robot",
   "bio": "Built for the batting cage. Found out bullets come in faster than fastballs, and liked it.",
   "body": "male",
-  "notes": "From the owner's Drive folder (uploaded 2026-11-01): an unrigged image-to-3D GLB in a T-pose (3.1M triangles, 4096 px maps), rigged here from landmarks. Named here; the owner reviews it on the grip and portrait sheets. A white and navy robot in a batting helmet. Licence recorded like the other community T-poses; to confirm with the owner (owned if it is their own generation). Landmarks as found on the mesh, mirrored, with the shoulder joint moved out under the shoulder pad (found at the chest). Held back (queued, not built), like Barnaby: its plating is thousands of small texture islands (12,559 seam vertices kept apart) and every cut that keeps the texture right stops over the 20k character budget (careful cut 21.3k; `seamWeld` 20.8k). Needs the fresh texture layout for characters Barnaby waits on, or a lighter download. Landmarks and fixes are ready; hands measured 19.5-20 cm.",
+  "notes": "From the owner's Drive folder (uploaded 2026-11-01): an unrigged image-to-3D GLB in a T-pose (3.1M triangles, 4096 px maps), rigged here from landmarks. Named here; the owner reviews it on the grip and portrait sheets. A white and navy robot in a batting helmet. The owner's own Meshy model. Landmarks as found on the mesh, mirrored, with the shoulder joint moved out under the shoulder pad (found at the chest); hands measured 19.5-20 cm. Its plating is thousands of small texture islands (12,559 seam vertices kept apart; every texture-safe cut stopped over the budget: 21.3k, 20.8k with seamWeld), so it is built with `surface: rebake` (2026-11-01): the full download cut with its seams closed, laid out afresh and its colour and normal maps painted from the download (docs/CHARACTERS.md).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -26,151 +25,43 @@
     "arms": "own"
   },
   "fixes": {
-    "triangles": 11000,
-    "feet": true,
-    "seamWeld": true
+    "triangles": 16000,
+    "surface": "rebake",
+    "feet": true
   },
   "landmarks": {
     "spine": [
-      [
-        0,
-        0.547,
-        -0.002
-      ],
-      [
-        0,
-        0.606,
-        -0.01
-      ],
-      [
-        0,
-        0.667,
-        -0.004
-      ],
-      [
-        0,
-        0.734,
-        -0.001
-      ],
-      [
-        0,
-        0.869,
-        -0.005
-      ],
-      [
-        0,
-        0.909,
-        0.009
-      ],
-      [
-        0,
-        1,
-        0.003
-      ]
+      [0, 0.547, -0.002],
+      [0, 0.606, -0.01],
+      [0, 0.667, -0.004],
+      [0, 0.734, -0.001],
+      [0, 0.869, -0.005],
+      [0, 0.909, 0.009],
+      [0, 1, 0.003]
     ],
     "L": [
-      [
-        0.026,
-        0.824,
-        -0.028
-      ],
-      [
-        0.12,
-        0.81,
-        -0.02
-      ],
-      [
-        0.239,
-        0.795,
-        -0.034
-      ],
-      [
-        0.385,
-        0.779,
-        -0.029
-      ],
-      [
-        0.495,
-        0.777,
-        -0.017
-      ],
-      [
-        0.068,
-        0.517,
-        -0.015
-      ],
-      [
-        0.101,
-        0.298,
-        0.005
-      ],
-      [
-        0.127,
-        0.065,
-        -0.031
-      ],
-      [
-        0.13,
-        0.02,
-        0.053
-      ],
-      [
-        0.13,
-        0.015,
-        0.102
-      ]
+      [0.026, 0.824, -0.028],
+      [0.12, 0.81, -0.02],
+      [0.239, 0.795, -0.034],
+      [0.385, 0.779, -0.029],
+      [0.495, 0.777, -0.017],
+      [0.068, 0.517, -0.015],
+      [0.101, 0.298, 0.005],
+      [0.127, 0.065, -0.031],
+      [0.13, 0.02, 0.053],
+      [0.13, 0.015, 0.102]
     ],
     "R": [
-      [
-        -0.026,
-        0.824,
-        -0.028
-      ],
-      [
-        -0.12,
-        0.81,
-        -0.02
-      ],
-      [
-        -0.239,
-        0.795,
-        -0.034
-      ],
-      [
-        -0.385,
-        0.779,
-        -0.029
-      ],
-      [
-        -0.495,
-        0.777,
-        -0.017
-      ],
-      [
-        -0.068,
-        0.517,
-        -0.015
-      ],
-      [
-        -0.101,
-        0.298,
-        0.005
-      ],
-      [
-        -0.127,
-        0.065,
-        -0.031
-      ],
-      [
-        -0.13,
-        0.02,
-        0.053
-      ],
-      [
-        -0.13,
-        0.015,
-        0.102
-      ]
+      [-0.026, 0.824, -0.028],
+      [-0.12, 0.81, -0.02],
+      [-0.239, 0.795, -0.034],
+      [-0.385, 0.779, -0.029],
+      [-0.495, 0.777, -0.017],
+      [-0.068, 0.517, -0.015],
+      [-0.101, 0.298, 0.005],
+      [-0.127, 0.065, -0.031],
+      [-0.13, 0.02, 0.053],
+      [-0.13, 0.015, 0.102]
     ]
   },
   "size": "large"

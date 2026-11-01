@@ -40,7 +40,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.basile', name: 'Chef Basile', body: 'male', head: '', parts: ['meshy_chef'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_chef_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
   { id: 'core.dustycolt', name: 'Dusty Ranger', body: 'male', head: '', parts: ['meshy_cowboy'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_cowboy_fparms' }, group: 'folk', nameTheme: 'cowboy' },
   { id: 'core.shiba', name: 'Shiba', body: 'male', head: '', parts: ['meshy_shiba'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_shiba_fparms' }, group: 'animals', nameTheme: 'dog' },
-  { id: 'core.bandit', name: 'Bandit', body: 'male', head: '', parts: ['meshy_bandit'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_bandit_fparms' }, group: 'animals', nameTheme: 'raccoon' },
+  { id: 'core.bandit', name: 'Bandit', body: 'male', head: '', parts: ['meshy_bandit'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_bandit_fparms', hold: { forward: 0.06, down: 0.12, out: 0.12 } }, group: 'animals', nameTheme: 'raccoon' },
   { id: 'core.teddy', name: 'Teddy', body: 'male', head: '', parts: ['meshy_teddy'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'peasant_arms_m', skin: '#c98a3a', cloth: '#c98a3a', trim: '#a86e2a' }, group: 'animals', nameTheme: 'bear' },
   { id: 'core.anubis', name: 'Anoobys', body: 'male', head: '', parts: ['meshy_anubis'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_anubis_fparms' }, group: 'legends', nameTheme: 'myth' },
   { id: 'core.brannock', name: 'Ser Brannock', body: 'male', head: '', parts: ['meshy_brannock'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_brannock_fparms' }, group: 'legends', nameTheme: 'knight' },
@@ -65,8 +65,13 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.scamp', name: 'Scamp', body: 'male', head: '', parts: ['meshy_scamp'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_scamp_fparms' }, group: 'animals', nameTheme: 'monkey' },
   { id: 'core.halvard', name: 'Old King Halvard', body: 'male', head: '', parts: ['meshy_halvard'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_halvard_fparms' }, group: 'legends', nameTheme: 'knight' },
   { id: 'core.pruitt', name: 'Sgt. Mackie', body: 'male', head: '', parts: ['meshy_pruitt'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_pruitt_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.barnaby', name: 'Barnaby Bruin', body: 'male', head: '', parts: ['meshy_barnaby'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_barnaby_fparms' }, group: 'animals', nameTheme: 'bear' },
   { id: 'core.greyfang', name: 'Greyfang', body: 'male', head: '', parts: ['meshy_greyfang'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_greyfang_fparms' }, group: 'animals', nameTheme: 'wolf' },
   { id: 'core.rourke', name: 'Rourke', body: 'male', head: '', parts: ['meshy_rourke'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_rourke_fparms' }, group: 'folk', nameTheme: 'townsfolk' },
+  { id: 'core.slugger', name: 'Slugger-9', body: 'male', head: '', parts: ['meshy_slugger'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_slugger_fparms' }, group: 'creatures', nameTheme: 'robot' },
+  { id: 'core.rustymech', name: 'Rusty Mech', body: 'male', head: '', parts: ['meshy_rustymech'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_rustymech_fparms' }, group: 'creatures', nameTheme: 'robot' },
+  { id: 'core.frida', name: 'Freaky Frida', body: 'female', head: '', parts: ['meshy_frida'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_frida_fparms' }, group: 'horror', nameTheme: 'spooky' },
+  { id: 'core.larry', name: 'Scary Larry', body: 'male', head: '', parts: ['meshy_larry'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_larry_fparms' }, group: 'horror', nameTheme: 'spooky' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -135,6 +140,11 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.scamp': 'Swings in, steals the high ground and throws things at you from it.',
   'core.halvard': 'Reigned for fifty years and outlived every rival. Not planning to stop now.',
   'core.pruitt': 'Thirty years on the beat. Has heard every excuse, and believes none of them.',
+  'core.barnaby': 'Top hat, red coat, impeccable manners. Apologises before every headshot, and means it.',
   'core.greyfang': 'Hunts in packs. Today the pack is you lot, and he is keeping score.',
   'core.rourke': 'Hitched a ride into the war zone by mistake. Stayed because the pay beats his last job.',
+  'core.slugger': 'Built for the batting cage. Found out bullets come in faster than fastballs, and liked it.',
+  'core.rustymech': 'A white war machine gone to rust. Still runs. Still angry about it.',
+  'core.frida': 'Smiles at everyone. Nobody has seen her blink.',
+  'core.larry': 'Lives under the stairs of every map. Comes out for the scoreboard.',
 };

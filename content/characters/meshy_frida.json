@@ -1,0 +1,31 @@
+{
+  "id": "meshy_frida",
+  "kind": "character",
+  "use": "player",
+  "order": 68,
+  "name": "Freaky Frida",
+  "look": "core.frida",
+  "group": "horror",
+  "nameTheme": "spooky",
+  "bio": "Smiles at everyone. Nobody has seen her blink.",
+  "body": "female",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01: \"freaky frida lowpoly\"). The download is textured but not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A wide-eyed girl in pigtails, a tactical vest and camouflage shorts.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_freaky_frida_lowpoly_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  }
+}

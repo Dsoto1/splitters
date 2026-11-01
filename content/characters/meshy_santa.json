@@ -36,7 +36,7 @@
     "trim": "#f2f2ee"
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 16000,
     "feet": true,
     "cloth": true,
     "hands": {
@@ -47,6 +47,9 @@
       "r": {
         "scale": 0.85
       }
-    }
+    },
+    "headShare": 0.16,
+    "handsShare": 0.08,
+    "normalSize": 1024
   }
 }

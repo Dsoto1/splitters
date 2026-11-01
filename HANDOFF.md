@@ -43,6 +43,48 @@ kind of creature; the bot characters setting is a map default the host can chang
   override/recast, set keeps its own, setup/server rules/wire, MapMaker command + validation). e2e: editor flow ticks
   Soldiers in map properties; teams flow → `botCastFlow` (soldiers-only offline match from match setup).
 
+### Model quality, distance, thumbnails, Bandit's hold (`wip/model-quality`, agent, 2026-11-01; not merged; has `wip/new-characters` merged in)
+Owner's Roster Board flags (model, thumb, Bandit; Santa "awful from a distance"; later Giggles). Sheets in the agent's
+scratchpad `model-quality/` (distance-before-after-1..6.png, closeups-before-after.png, thumbnails-before-after.png,
+portraits-rebuilt-before-after.png; scripts distance.mjs, closeups.mjs, crowd.mjs, ptune.mjs, holdtune.mjs there).
+- **Far copies were the real "distance" bug** (every whole-body character): the LOD was meshopt's sloppy cut, which joins
+  triangles across the texture's charts, so far characters wore scrambled colours (Santa: white streaks; Croakley grey;
+  Big Bab noise). New `tools/content/character-lod.mjs`: the careful cut with UV weights and the "Permissive" flag (seams
+  collapse only where the layout agrees; Santa 1,621 → 5 of the far triangles across a seam), welded-shape fallback.
+  `fixes.lod` (share, 0.3 default). `relod-built.mjs` remade every built character's far copy from its shipped file
+  (no downloads needed). No middle LOD step: the sheets show the 3.3k copy holding at 18.5/30/60 m. Cost: far-copy
+  VERTICES 1,400 → 4,100 average (the seams the colours need); triangles 3,371 → 3,495 average.
+- **Scope**: `setCharacterLodZoom` (characters.ts, called from view.setCamera) moves the 18 m switch out by the zoom
+  (tan ratio of FOVs; sniper 0.4 rad → ~71 m). e2e characters checks it (`__charLodZoom`).
+- **Rebuilt** (downloads in meshy-drive/meshystuff, rig tasks re-fetched: no credits), `triangles` 15-17k, `headShare`
+  0.16 (new fix), `handsShare` 0.08-0.1, `normalSize` 1024 (new fix), `lod` 0.22-0.3: King Aldric 15,074 → 16,998
+  (LOD 4,471 → 4,742), Bandit 10,989 → 14,993 (3,115 → 3,284), Desert Ranger 10,999 → 15,000 (3,273 → 3,300), Dust
+  Trooper 13,420 → 15,018 (3,777 → 3,286), Grizzelda 14,558 → 15,963 rebaked (4,209 → 4,142), Thornweaver 16,100 →
+  15,851 rebaked (4,715 → 4,742), Lancer Mei 11,062 → 14,986 (3,265 → 3,258), Sgt. Pruitt 10,998 → 14,996 (3,154 →
+  3,293), Rotter 11,000 → 15,000 (3,201 → 3,288), Saint Nick 10,998 → 15,998 (3,088 → 4,796), Giggles 11,000 → 14,999
+  (3,161 → 3,297). Grizzelda and Thornweaver stalled over budget (21k/20.8k, 1.9/2.3 MB) with their fragmented
+  layouts: `surface: rebake` at 16k. All under 20k triangles and 1.8 MB (biggest Brother Ansel 1.70 MB, untouched).
+- **Not improved here (far copy only):** Boglurker and Goblin (in-house FBX builds; the FBX folders aren't on this
+  machine), Capt. Nova and the Dapper (every Meshy task in their manifests 404s on this key: rig, refine, remesh,
+  preview). Still visible after the rebuild and not a budget matter: Grizzelda's hands are flaps of sleeve skin, Dust
+  Trooper's and Giggles' sleeve spikes (skin weights: see Grip pass 2 "spikes").
+- **Bandit**: `fixes.hold: { forward 0.06, down 0.12, out 0.12 }` (new: look `whole.hold`, applied to the long-gun
+  stock pocket in characterAnimator.placeWeapon: third person and Character Select). First person isn't touched (the
+  gun is the view's; it can't be in the face there); portraits hold no gun. No per-look scale: his size is gameplay
+  (`small`, 0.78, same height as the other small ones); a visual-only scale would shrink him inside his hitbox.
+- **Portraits**: `PORTRAIT_VIEWS` (portraits.ts) now takes `from`/`aim`/`zoom` arrays; entries for Bandit, Boglurker,
+  Croakley, Galloway, Grizzelda, Mei, Rattles, Rotter, Shade and Saint Nick (his rebuilt hat put his face low).
+  `renderLive(look, view)` tries a framing without a rebuild. Recaptured those plus the rebuilt bodies.
+- **Perf** (SwiftShader, load 8-12): crowd of every look in `?mode=characters` (133 characters, crowd.mjs): draws 134 →
+  134 at every distance; triangles past 18 m 418.8k → 427.3k (+2%); through a sniper scope at 60 m 418.8k → 1.24M
+  (full detail inside 71 m; the game's narrow scope frustum shows far fewer than this test row). perf96 frost_basin
+  medium (1-2 frames, views differ, so only draws/casters mean anything): spread draws 356 → 213, clump 247 → 277,
+  casters 82-90 either way. Character files 61.3 → 70.2 MB on the site.
+- Note for the lead: the five new characters were built before grip pass 2's hand rules; their GLBs are as
+  `wip/new-characters` shipped them (LODs remade here). Roster renames (Goblina, Sgt. Mackie) land on
+  `wip/roster-apply-2`: this branch changed meshy_grizzelda.json and meshy_pruitt.json `fixes` only; keep their new names on merge.
+
+### Grip pass 2 (`wip/grip-pass-2`, agent, 2026-11-01; not merged)
 ### Roster Board applied: CI fallout (`wip/roster-apply`, agent, 2026-11-01; not merged)
 Retiring 15 looks moved every bot's look (and body size) in the rotation (`lookForBot` walks CORE_LOOKS), so four
 seeded scenarios landed on real bugs, fixed: Small bodies couldn't use a portal set against a wall (the catch margin
@@ -187,6 +229,47 @@ interior; build the cockpit parts in-house, only for the local driver's cockpit 
 - Next: the gun jeep and kart can get entries; harness colour (red) and the dash layout are easy to retune in data.
 
 ### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; merged to main dc1d1fc)
+### New characters + rebake for characters (`wip/new-characters`, agent, 2026-11-01; not merged; from main dc1d1fc)
+Five characters shipped (status built, portraits captured), all the owner's own Meshy models; names, groups and bios
+from the Roster Board cards (no requests on the board for these five), look ids as the board has them.
+- **`fixes.surface: "rebake"`** (opt-in per manifest; every other character and every prop rebuilds byte-identical:
+  checked on The Visitor, Rourke, jersey_barrier_hazard, plastic_road_barrier). `rebakeDownload` in
+  prepare-meshy-characters.mjs works on the download as it stands, before rigging and posing: seam copies welded, the
+  full mesh cut to `fixes.triangles` by cutKeeping (head 12%, hands 8%, errors 0.4%/0.8% only: looser passes turned a
+  paw into a cone), laid out afresh and its 1024 px colour + normal maps painted from the FULL download (meshy-mesh.mjs
+  `rebake`, new options: `grow` = charts grown across shared edges within 60 degrees of the seed, refusing triangles
+  that would overlap the chart (the six-axis charts gave ~4,000 slivers and 33k vertices for 17k triangles: 1.96 MB,
+  over budget), slivers folded into a neighbour; `crease: -1` smooth normals; `reach` 1.2%; it also returns `from`, the
+  source vertex of each output vertex). The maps hold through the posing (tangent-space normal map). Rigged downloads
+  keep Meshy's weights on the kept vertices; unrigged ones are autoskinned from the cut mesh. Why not after posing: the
+  40k work mesh the old path cut first was already scrambled in places (even meshopt's careful cut breaks Meshy's UVs).
+  Lock entries carry `surface: "rebake"`; provenance says so. Tests: tools/content/test/rebake.test.mjs.
+- **Mixamo rigs**: Meshy's "All Animations" GLBs name joints `mixamorig:*` (Spine, Spine1, Spine2 count up from the
+  hips): read as Meshy's names (`meshyName`). Their two clips are ignored.
+- Per character (body triangles, grip audit rifle score; The Visitor 0 as reference):
+  - **Barnaby Bruin** (Animals; CC0 community per his manifest and HANDOFF, though the brief called all five owned:
+    left as recorded, owner to confirm): rebake from the 1.5M download, 17,021 tris, 1.17 MB; paws `hands.scale` 0.7,
+    `curl` 1.2 (audit 9 open/off/spikes/fp at full size → **3 flat**: a mitten paw bends once, curl test +0.001).
+  - **Slugger-9** (Creatures, large): rebake from 3.1M, target 16k → 18,082 tris, 1.42 MB; audit **0**.
+  - **Rusty Mech** (`meshy_rustymech`, Creatures, large): owner's Meshy rig; its baked texture held the careful cut at
+    28.4k (3 MB), so rebaked: 15,923 tris, 1.39 MB, Meshy's weights; audit **0**.
+  - **Freaky Frida** (`meshy_frida`, Horror): the download has no skin, rigged in-house from found landmarks
+    (autoskin reports 2,597 vertices with no bone in sight: hair/pigtails, weighted by nearest; looks fine in the
+    holds); 10,760 tris, no rebake needed; audit **0**.
+  - **Scary Larry** (`meshy_larry`, Horror): owner's Meshy rig; 11,350 tris; audit **0**.
+- Known limits: Barnaby's coat tails show a few small cream patches where the cut body pokes through the cut coat
+  (a "push covered body vertices in" pass was tried and made it worse: removed). Rebaked maps cover ~33% of the
+  1024 px square (bounding-box shelf packing), so they are a little softer than the download up close.
+- Rebuild: `ONLY=meshy_barnaby,meshy_slugger,meshy_rustymech,meshy_frida,meshy_larry node
+  tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/build-newchars` (symlinks to the downloads in
+  tposes-2026-11-01, drive-2026-11-01 and drive-2026-11-01b). Note: a rebuild of Rourke rewrites his lock title
+  (his lock entry still has the community model name from before he was marked owned): restored here, untouched.
+- Checks: typecheck; content OK; bundle 833.8 kB gzip (budget 840); `test:changed` 1225 pass, 2 fail (npc.test.ts co-op
+  missions, 25 s timeouts at load 10+; the file passes alone, 15/15); rebake tests 3/3; e2e characters PASS (964 s: viewer 90/90,
+  low detail 90/90, every grip check, bots 8/8) and designer PASS. Grip sheets and portraits: agent scratchpad (re-run
+  `ONLY=<ids> node tools/content/grip-audit.mjs` for fresh ones).
+
+### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; not merged)
 Owner's queue of 2026-10-31 ("new models on the Drive", "FX: I bought the full licence"). Downloads outside the repo:
 models in `/home/user/meshy-drive/drive-2026-11-01/` (links for the pipelines in `/home/user/meshy-drive/links-1101/`),
 FX zips in `/home/user/fx-packs/drive-2026-11-01/fx/` (extracted: `/home/user/fx-packs/extracted-2026-11-01/`; the

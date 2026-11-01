@@ -97,7 +97,7 @@ import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
 import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
-import { CharacterLibrary, type CharacterInstance } from '../content/characters.ts';
+import { CharacterLibrary, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
@@ -1008,6 +1008,8 @@ export class GameView {
       this.camera.position.y += Math.sin(t * 71) * 0.06 * k;
     } else poseCamera(this.camera, yaw, pitch, roll);
     this.camera.fov = fov;
+    // Through a scope characters keep their full detail as far as they look as big as at the switch distance unzoomed.
+    setCharacterLodZoom(Math.tan(DEFAULT_FOV / 2) / Math.tan(fov / 2));
     this.foliage.update(this.camera.position);
     this.updateUnderwater();
     this.updateEffects();

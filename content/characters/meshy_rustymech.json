@@ -1,0 +1,33 @@
+{
+  "id": "meshy_rustymech",
+  "kind": "character",
+  "use": "player",
+  "order": 67,
+  "name": "Rusty Mech",
+  "look": "core.rustymech",
+  "group": "creatures",
+  "nameTheme": "robot",
+  "bio": "A white war machine gone to rust. Still runs. Still angry about it.",
+  "body": "male",
+  "notes": "The owner's own Meshy model, made and rigged in Meshy (Drive folder, 2026-11-01: \"white rusty mech\", the All Animations GLB; its two clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. A white armoured mech, chipped to rust at the edges. Its texture is baked in thousands of small islands (the careful cut stopped at 28.4k triangles, over the 20k budget), so it is built with `surface: rebake`: cut in its own bind pose with the seams closed, laid out afresh and painted from the full download, each kept vertex keeping Meshy's skin weights.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_white_rusty_mech_rigg_All_Animations\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.5,
+    "roughness": 0.5
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 16000,
+    "surface": "rebake",
+    "feet": true
+  },
+  "size": "large"
+}
