@@ -474,6 +474,7 @@ mode playing.
 | Bot skill | Players → Bot skill | `skill hard` | `BOT_DIFFICULTY` | live |
 | Bot style | Players → Bot style | `style arena` | `RULES.style` | live |
 | Your bots (bot set) | Bot set card | `botset …` | `BOTSET` | live (swapped in one at a time) |
+| Bot characters (which looks random bots wear, and their names) | Match rules → Bot characters | `rules cast soldiers` (`map`, `all`, a group or a name theme) | `RULES.cast` | live (bots out of it change) |
 | Score limit | Match rules → Score limit | `rules score 60` | `RULES.modes.<mode>.score` | restart |
 | Time limit | Match rules → Time limit | `rules time 15` | `RULES.modes.<mode>.time` | restart |
 | Respawn delay | Match rules → Respawn delay | `rules respawn 3` | `RULES.modes.<mode>.respawn` | restart |
@@ -899,6 +900,30 @@ section:
     are cleaned and capped, at most 96 bots); HostState carries `botSet` (and
     `mapBots` when the set in play is the map's). Older hosts ignore the field
     and send no `botSet`, so the pause menu shows no Bots… button.
+- **Bot names and characters** (`shared/content/botNames.ts`). Every built-in
+  look names the kind of creature it is (`nameTheme`: soldier, monkey, bear,
+  wolf, dog, cat, raccoon, critter, frog, pirate, knight, ninja, wizard,
+  barbarian, undead, spooky, robot, alien, goblin, cowboy, gangster,
+  townsfolk, myth). A random bot takes its look's own name first (the first
+  bot in Scamp is "Scamp"), then the next free name of its theme's list (each
+  at least 96 names; soldiers are a rank and a surname, "Sgt. Haskett"), never a
+  name in use in the match (players, bots, spectators, the host's set); the
+  general list (`BOT_NAMES`) is the fallback (designs of yours, a list run
+  out). Lists are append-only.
+  - **Bot characters** keep random bots to some character groups and/or name
+    themes ("soldiers" for a D-Day map; a new soldier skin joins by its group
+    and theme). The map's maker sets the default (`MapDocument.botCast`,
+    MapMaker → map properties → Bots → Bot characters; none ticked: everyone);
+    the host overrides it: Play → Match setup → Bots → Bot characters (Map
+    default / All / a group / a theme), pause menu → Match → Bot characters
+    (live: random bots out of it change look and name where they stand), a
+    dedicated host's `RULES.cast`, console `rules cast …`. A host's choice
+    carries over a map change; "Map default" follows each map. Bot sets keep
+    their own names and looks.
+  - **Protocol:** `{ c: 'bots', cast }` (a list of group / theme ids, kept to
+    known ones; `[]` all; `null` the map's own); HostState carries `cast` (null:
+    the map's) and `mapCast`. Older hosts ignore it and send no `cast`, so the
+    pause menu shows no Bot characters row.
 
 ## 3. LAN games
 

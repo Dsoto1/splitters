@@ -416,6 +416,7 @@ repo; they live in a downloads dir outside it.
   "name": "Sir Galloway",
   "look": "core.galloway",
   "group": "legends",
+  "nameTheme": "knight",
   "bio": "One line for character select.",
   "body": "male",
   "size": "large",
@@ -442,6 +443,7 @@ repo; they live in a downloads dir outside it.
 | `status` | `queued` for a stub that isn't ready: it is checked only for the queue's fields and not built. Drop it once the rest is filled in. |
 | `order` | Roster position among the whole-body characters (unique). |
 | `group` | What the character is, for Character Select's tabs: `soldiers`, `legends`, `folk`, `horror`, `animals` or `creatures` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
+| `nameTheme` | What kind of creature it is, for its bots' names (`shared/content/botNames.ts`): `soldier`, `monkey`, `bear`, `wolf`, `dog`, `cat`, `raccoon`, `critter`, `frog`, `pirate`, `knight`, `ninja`, `wizard`, `barbarian`, `undead`, `spooky`, `robot`, `alien`, `goblin`, `cowboy`, `gangster`, `townsfolk` or `myth`. The first bot wearing the character takes its `name`, the rest the theme's names ("Sgt. Haskett"). Left out: its group's (soldiers → soldier, legends → knight, folk → townsfolk, horror → spooky; animals and creatures → the general names). Every character on the roster has one (a test checks); the checker's list (`NAME_THEMES`) matches botNames.ts. |
 | `name`, `look`, `bio` | The look's display name, its ID (`core.<name>`, never changed once shipped: saved looks and bots use it) and its one-line bio. |
 | `body`, `size` | `male` or `female` proportions (clips and hip height); `small` / `large` body size, or left out. |
 | `source.license` | `owned` (made on the owner's Meshy account; provenance pack `meshy-owned`) or `CC0` (a community model; pack `meshy-community-characters`, with `community.model` as named on its page). |

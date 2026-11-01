@@ -543,3 +543,20 @@ input bit, so `PROTOCOL_VERSION` stays 4:
   driver has look-to-steer on: the host turns the vehicle toward the
   driver's look (`yaw`) on top of `right`. Ignored on foot, in flyers and by
   older hosts (they mask unknown bits off, so the driver steers with A/D only).
+
+## 18. Bot characters (November 2026)
+
+Which looks random bots wear, and so their names (`shared/content/botNames.ts`):
+
+- **Host command** `{ c: "bots", cast }`: `cast` is a list of character group
+  ids (`soldiers`, `legends`, …) and/or name theme ids (`pirate`, `monkey`, …),
+  `[]` for all characters, or `null` for the map's own (`MapDocument.botCast`,
+  map data). The host keeps it to known ids, at most 8 (a list longer than 32
+  or anything not a list is refused), like any other administrative action
+  from an untrusted client. Random bots outside it change look and name at
+  once, where they stand; the host's bot set keeps its own.
+- **HostState** gains `cast` (the host's choice; `null`: the map's) and
+  `mapCast` (the map's, `[]` for all). Older clients ignore both; older hosts
+  send neither, so the pause menu shows no Bot characters row.
+- Bot names and looks travel as before (the roster's `name` and `look`); the
+  names themselves are chosen by the host and nothing else crosses the wire.

@@ -304,7 +304,7 @@ export const NAME_THEMES: readonly NameTheme[] = [
     `),
   },
   {
-    id: 'horror',
+    id: 'spooky',
     label: 'Horrors & Haunts',
     names: list(`
       Jack O Grin, Candlewick, Hollowgourd, Cackles, Mister Grins, Funhouse, Big Top,       Honk Honk, Squeaky Shoes, Greasepaint, Ringmaster Rot, Count Fangsley, Lady Nocturne, Baron Batsworth, Duke Dusk,
@@ -442,7 +442,7 @@ export const nameTheme = (id: string | undefined): NameTheme | undefined => (id 
 export const isNameTheme = (x: unknown): x is string => typeof x === 'string' && THEMES_BY_ID.has(x);
 
 /** The theme of a built-in look without one of its own: by what it is (a new soldier skin is a soldier). */
-const GROUP_THEMES: Partial<Record<CharacterGroup, string>> = { soldiers: 'soldier', legends: 'knight', folk: 'townsfolk', horror: 'horror' };
+const GROUP_THEMES: Partial<Record<CharacterGroup, string>> = { soldiers: 'soldier', legends: 'knight', folk: 'townsfolk', horror: 'spooky' };
 
 /** The NPC skins' themes (`npc:<role>` looks; sim/npc.ts). */
 export const NPC_SKIN_THEMES: Readonly<Record<string, string>> = {

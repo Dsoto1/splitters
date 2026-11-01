@@ -39,7 +39,7 @@ const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
 export const GROUPS = ['soldiers', 'legends', 'folk', 'horror', 'animals', 'creatures'];
 /** Bot name themes (what kind of creature: its bots' names); the same list as NAME_THEMES in packages/shared/src/content/botNames.ts (a test keeps them equal). */
-export const NAME_THEMES = ['soldier', 'monkey', 'bear', 'wolf', 'dog', 'cat', 'raccoon', 'critter', 'frog', 'pirate', 'knight', 'ninja', 'wizard', 'barbarian', 'undead', 'horror', 'robot', 'alien', 'goblin', 'cowboy', 'gangster', 'townsfolk', 'myth'];
+export const NAME_THEMES = ['soldier', 'monkey', 'bear', 'wolf', 'dog', 'cat', 'raccoon', 'critter', 'frog', 'pirate', 'knight', 'ninja', 'wizard', 'barbarian', 'undead', 'spooky', 'robot', 'alien', 'goblin', 'cowboy', 'gangster', 'townsfolk', 'myth'];
 const isPoint = (p) => Array.isArray(p) && p.length === 3 && p.every((x) => typeof x === 'number' && Number.isFinite(x));
 
 /** Whether a manifest is waiting for its download and landmarks (a stub from the queue): not built, no look. */
