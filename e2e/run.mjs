@@ -2728,15 +2728,17 @@ async function vehiclesFlow(browser) {
   const cockpit = await rideCam();
   const off = cockpit.eye ? Math.hypot(...cockpit.local.map((v, i) => v - cockpit.eye[i])) : Infinity;
   check(cockpit.view === 'cockpit' && off < 0.5 && Math.abs(cockpit.local[0]) < cockpit.half[0] && Math.abs(cockpit.local[2]) < cockpit.half[2], `in the cockpit the eye is in the buggy at the driver's seat (${cockpit.view}, ${off.toFixed(2)} m from the seat eye, at ${cockpit.local?.map((v) => v.toFixed(2)).join(', ')})`);
-  // The cockpit view draws the buggy's high-detail interior (MountDef.cockpitModel, loaded on first use) over your copy
-  // of the body, the body's own triangles inside its box left out; the chase view (below) draws the body alone.
-  const interiorOn = await page.waitForFunction(() => window.__cs.view.cockpitInteriorShown(), null, { timeout: T(20000) }).then(() => true, () => false);
+  // The cockpit view draws the buggy's in-house cockpit (content/cockpits.ts: cage tubes, seats, dash, wheel) over
+  // your copy of the body, the body's own triangles inside its hide boxes left out; the chase view (below) draws the
+  // body alone.
+  const interiorOn = await page.waitForFunction(() => window.__cs.view.cockpitInteriorShown() && window.__cs.view.cockpitInteriorState()?.cut, null, { timeout: T(20000) }).then(() => true, () => false);
   const bodyCut = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${window.__match.mounts[me.mount.index].index}`);
-    return root?.getChildMeshes().filter((m) => m.subMeshes?.length && !/_cockpit/.test(m.name)).map((m) => m.subMeshes[0].indexCount / m.getTotalIndices()) ?? [];
+    return root?.getChildMeshes().filter((m) => m.subMeshes?.length && !/^cockpit_/.test(m.name)).map((m) => m.subMeshes[0].indexCount / m.getTotalIndices()) ?? [];
   });
-  check(interiorOn && bodyCut.some((share) => share < 0.9), `in the cockpit the buggy's interior is drawn and its body's cockpit triangles are left out (${interiorOn}, body drawn ${bodyCut.map((v) => v.toFixed(2)).join(', ')})`);
+  const parts = await page.evaluate(() => window.__cs.view.cockpitInteriorState());
+  check(interiorOn && bodyCut.some((share) => share < 0.9) && parts?.triangles > 5000, `in the cockpit the buggy's cockpit parts are drawn and its body's cockpit triangles are left out (${interiorOn}, ${parts?.triangles} triangles, body drawn ${bodyCut.map((v) => v.toFixed(2)).join(', ')})`);
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   // Headless frame rates vary: wait for the drive rather than a fixed time.
@@ -2749,6 +2751,11 @@ async function vehiclesFlow(browser) {
   });
   check(after.seat === 0, `you are in the driver's seat (${after.seat}${after.alive ? '' : ', dead'})`);
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
+  // Steering turns the cockpit's wheel and the speedometer's needle reads the speed.
+  await page.evaluate(() => (window.__autoInput = { forward: 1, right: 1, buttons: 0 }));
+  const turned = await page.waitForFunction(() => { const s = window.__cs.view.cockpitInteriorState(); return s && s.wheel > 0.3 && s.needles[0] > 0.1 ? s : null; }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => page.evaluate(() => window.__cs.view.cockpitInteriorState()));
+  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
+  check(turned?.wheel > 0.3 && turned?.needles[0] > 0.1, `steering turns the cockpit's wheel and the speedometer reads the speed (${JSON.stringify(turned && { wheel: +turned.wheel.toFixed(2), needles: turned.needles.map((v) => +v.toFixed(2)) })})`);
   // Raycast suspension (sim/suspension.ts): the host sends the sprung body (ms) and the client draws it, the four
   // tires on pivots at the hubs, rolling with the speed.
   const sprung = await page.evaluate(() => {

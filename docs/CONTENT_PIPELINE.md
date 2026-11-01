@@ -168,9 +168,9 @@ centre is inside), cut to its own `triangles` with its own colour and normal
 maps, and placed with exactly the body's yaw, scale and centring, so the two
 line up. The GLB's root node carries `extras.cockpit.box`. Both are rebuilt
 together (`ONLY=` naming either). Budget tier `cockpit` (36,000 triangles,
-5 MB). The game loads it only for the driver in the cockpit view
-(`MountDef.cockpitModel`, see docs/VEHICLES.md). The buggy's: 31.9k triangles,
-2048 px colour and normal maps, 3.6 MB (the body: 39.9k over the whole 4.4 m).
+5 MB). No model uses it now: the buggy's cropped interior (31.9k triangles,
+3.6 MB) was replaced by a cockpit built in-house from data (docs/VEHICLES.md,
+"In-house cockpits"), and the game no longer reads the box.
 
 Pieces we make ourselves in code are licence `Owned`, which `content:check`
 accepts for our own work:

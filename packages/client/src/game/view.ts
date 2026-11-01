@@ -2250,6 +2250,11 @@ export class GameView {
     return this.cockpitInteriorRef?.isShown() ?? false;
   }
 
+  /** The cockpit drawn now (tests): triangles, the steering wheel's turn (radians), needle readings, body cut. */
+  cockpitInteriorState(): ReturnType<CockpitInterior['state']> {
+    return this.cockpitInteriorRef?.state() ?? null;
+  }
+
   /** The vehicle you are looking out of in the cockpit view (its inner faces are culled), or null. */
   private cockpit: number | null = null;
   private readonly culled = new Map<number, { mesh: AbstractMesh; mat: Material | null }[]>();

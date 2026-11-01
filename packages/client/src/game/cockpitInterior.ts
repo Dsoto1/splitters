@@ -99,9 +99,12 @@ export class CockpitInterior {
     return !!this.shown?.built.root.isEnabled();
   }
 
-  /** Triangles in the cockpit drawn now (for tests and the performance notes). */
-  triangles(): number {
-    return this.shown?.built.triangles ?? 0;
+  /** The cockpit drawn now, for tests: its triangles, the wheel's turn and the needles' readings (0..1). */
+  state(): { triangles: number; wheel: number; needles: number[]; cut: boolean } | null {
+    const s = this.shown;
+    if (!s) return null;
+    const q = s.built.wheel?.node.rotationQuaternion;
+    return { triangles: s.built.triangles, wheel: q ? 2 * Math.acos(Math.min(1, Math.abs(q.w))) : 0, needles: s.built.needles.map((n) => n.value), cut: s.cut.length > 0 };
   }
 
   /**
@@ -210,7 +213,7 @@ export class CockpitInterior {
         return m;
       };
       // Powder-coated tubes and painted panels, black seat fabric, dash plastic and rubber, bare steel.
-      this.materials = { paint: make('paint', 0.62, 0.25), fabric: make('fabric', 1, 0), plastic: make('plastic', 0.78, 0), metal: make('metal', 0.45, 0.85) };
+      this.materials = { paint: make('paint', 0.62, 0.1), fabric: make('fabric', 1, 0), plastic: make('plastic', 0.78, 0), metal: make('metal', 0.45, 0.85) };
     }
     return this.materials[surface]!;
   }
