@@ -1824,6 +1824,35 @@
       "triangles": 2238,
       "bytes": 282252,
       "hands": true
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_rourke",
+      "source": "meshy-community-characters",
+      "model": "Realistic stylized man (T-pose)",
+      "date": "2026-11-01",
+      "src": "Meshy_AI_Realistic_stylized_ma_1031121851_texture.glb",
+      "sourceTriangles": 99787,
+      "file": "characters/meshy_rourke.glb",
+      "sha256": "dfc5150fab71b520",
+      "triangles": 10996,
+      "lodTriangles": 3261,
+      "bytes": 874092,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_rourke_fparms",
+      "source": "meshy-community-characters",
+      "model": "Realistic stylized man (T-pose)",
+      "date": "2026-11-01",
+      "src": "Meshy_AI_Realistic_stylized_ma_1031121851_texture.glb",
+      "sourceTriangles": 99787,
+      "file": "characters/meshy_rourke_fparms.glb",
+      "sha256": "a7ddb2cf9f1b8c2a",
+      "triangles": 2617,
+      "bytes": 366768,
+      "hands": true
     }
   ]
 }
