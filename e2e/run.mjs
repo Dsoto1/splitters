@@ -1403,6 +1403,28 @@ async function mobileFlow(browser) {
     const kept = await page.waitForFunction((c) => document.getElementById('weapon-wheel').hidden && window.__cs.local.held === c, other.code, { timeout: T(5000) }).then(() => true, () => false);
     check(kept, 'a tap outside the wheel closes it and keeps your weapon');
   }
+  // A big arsenal: the wheel shrinks its items to fit the ring (names, then ammo, move to the middle); none overlap.
+  const many = ['core.rifle', 'core.shotgun', 'core.smg', 'core.sniper', 'core.lmg', 'core.rockets', 'core.launcher', 'core.marksman', 'core.burst_rifle', 'core.hand_cannon', 'core.flamethrower', 'core.railgun', 'core.plasma', 'core.knife', 'core.sawed_off', 'core.auto_shotgun', 'core.disc_launcher', 'core.laser_rifle'];
+  await page.evaluate((ids) => { for (const id of ids) window.__give?.(id); }, many);
+  await page.waitForFunction(() => window.__cs.local.inventory.size >= 14, null, { timeout: T(5000) }).catch(() => {});
+  await touch('touchStart', [{ x: wb.x, y: wb.y, id: 12 }]);
+  await touch('touchEnd', []);
+  await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden && document.querySelectorAll('#weapon-wheel .ww-item').length >= 14, null, { timeout: T(5000) }).catch(() => {});
+  const crowd = await page.$$eval('#weapon-wheel .ww-item', (is) => {
+    const r = is.map((i) => i.getBoundingClientRect());
+    let overlaps = 0;
+    for (let a = 0; a < r.length; a++) for (let b = a + 1; b < r.length; b++) {
+      const w = Math.min(r[a].right, r[b].right) - Math.max(r[a].left, r[b].left);
+      const h = Math.min(r[a].bottom, r[b].bottom) - Math.max(r[a].top, r[b].top);
+      if (w > 2 && h > 2) overlaps++;
+    }
+    return { n: r.length, overlaps };
+  });
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-wheel-many.png` });
+  check(crowd.n >= 14 && crowd.overlaps === 0, `with a big arsenal the wheel's weapons all fit without overlapping (${crowd.n} weapons, ${crowd.overlaps} overlaps)`);
+  await touch('touchStart', [{ x: wb.x, y: wb.y, id: 13 }]);
+  await touch('touchEnd', []);
+  await page.waitForFunction(() => document.getElementById('weapon-wheel').hidden, null, { timeout: T(5000) }).catch(() => {});
   // Held upright: the turn-sideways prompt.
   await page.setViewportSize({ width: phone.viewport.width, height: phone.viewport.height });
   check(await page.waitForFunction(() => getComputedStyle(document.getElementById('touch-rotate')).display !== 'none', null, { timeout: T(3000) }).then(() => true, () => false), 'portrait shows the turn-sideways prompt');
@@ -2728,15 +2750,17 @@ async function vehiclesFlow(browser) {
   const cockpit = await rideCam();
   const off = cockpit.eye ? Math.hypot(...cockpit.local.map((v, i) => v - cockpit.eye[i])) : Infinity;
   check(cockpit.view === 'cockpit' && off < 0.5 && Math.abs(cockpit.local[0]) < cockpit.half[0] && Math.abs(cockpit.local[2]) < cockpit.half[2], `in the cockpit the eye is in the buggy at the driver's seat (${cockpit.view}, ${off.toFixed(2)} m from the seat eye, at ${cockpit.local?.map((v) => v.toFixed(2)).join(', ')})`);
-  // The cockpit view draws the buggy's high-detail interior (MountDef.cockpitModel, loaded on first use) over your copy
-  // of the body, the body's own triangles inside its box left out; the chase view (below) draws the body alone.
-  const interiorOn = await page.waitForFunction(() => window.__cs.view.cockpitInteriorShown(), null, { timeout: T(20000) }).then(() => true, () => false);
+  // The cockpit view draws the buggy's in-house cockpit (content/cockpits.ts: cage tubes, seats, dash, wheel) over
+  // your copy of the body, the body's own triangles inside its hide boxes left out; the chase view (below) draws the
+  // body alone.
+  const interiorOn = await page.waitForFunction(() => window.__cs.view.cockpitInteriorShown() && window.__cs.view.cockpitInteriorState()?.cut, null, { timeout: T(20000) }).then(() => true, () => false);
   const bodyCut = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${window.__match.mounts[me.mount.index].index}`);
-    return root?.getChildMeshes().filter((m) => m.subMeshes?.length && !/_cockpit/.test(m.name)).map((m) => m.subMeshes[0].indexCount / m.getTotalIndices()) ?? [];
+    return root?.getChildMeshes().filter((m) => m.subMeshes?.length && !/^cockpit_/.test(m.name)).map((m) => m.subMeshes[0].indexCount / m.getTotalIndices()) ?? [];
   });
-  check(interiorOn && bodyCut.some((share) => share < 0.9), `in the cockpit the buggy's interior is drawn and its body's cockpit triangles are left out (${interiorOn}, body drawn ${bodyCut.map((v) => v.toFixed(2)).join(', ')})`);
+  const parts = await page.evaluate(() => window.__cs.view.cockpitInteriorState());
+  check(interiorOn && bodyCut.some((share) => share < 0.9) && parts?.triangles > 5000, `in the cockpit the buggy's cockpit parts are drawn and its body's cockpit triangles are left out (${interiorOn}, ${parts?.triangles} triangles, body drawn ${bodyCut.map((v) => v.toFixed(2)).join(', ')})`);
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   // Headless frame rates vary: wait for the drive rather than a fixed time.
@@ -2749,6 +2773,11 @@ async function vehiclesFlow(browser) {
   });
   check(after.seat === 0, `you are in the driver's seat (${after.seat}${after.alive ? '' : ', dead'})`);
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
+  // Steering turns the cockpit's wheel and the speedometer's needle reads the speed.
+  await page.evaluate(() => (window.__autoInput = { forward: 1, right: 1, buttons: 0 }));
+  const turned = await page.waitForFunction(() => { const s = window.__cs.view.cockpitInteriorState(); return s && s.wheel > 0.3 && s.needles[0] > 0.1 ? s : null; }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => page.evaluate(() => window.__cs.view.cockpitInteriorState()));
+  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
+  check(turned?.wheel > 0.3 && turned?.needles[0] > 0.1, `steering turns the cockpit's wheel and the speedometer reads the speed (${JSON.stringify(turned && { wheel: +turned.wheel.toFixed(2), needles: turned.needles.map((v) => +v.toFixed(2)) })})`);
   // Raycast suspension (sim/suspension.ts): the host sends the sprung body (ms) and the client draws it, the four
   // tires on pivots at the hubs, rolling with the speed.
   const sprung = await page.evaluate(() => {
@@ -2759,6 +2788,19 @@ async function vehiclesFlow(browser) {
     return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
   });
   check(sprung.susp && sprung.wheels === 4 && sprung.pivots === 4 && sprung.tires === 4 && sprung.rolled, `the buggy rides the sim's suspension, its tires on hub pivots rolling (${JSON.stringify(sprung)})`);
+  // The drive and the turn leave the buggy anywhere (against a rock, on a slope): back to its spawn on open ground,
+  // stopped, before the camera and seat checks below.
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.evaluate(() => {
+    const match = window.__match;
+    const me = match.slots[window.__cs.slot];
+    const m = me.mount ? match.mounts[me.mount.index] : null;
+    if (!m) return;
+    m.pos = { ...m.home.pos };
+    m.yaw = m.home.yaw;
+    if ('speed' in m) m.speed = 0;
+  });
+  await frames(page, 3);
   // H switches to the chase camera (remembered for ground vehicles): behind the buggy, outside it and clear of walls.
   await page.keyboard.press('KeyH');
   // The first chase frame can take a while in software rendering (the wider view brings new things to draw).
@@ -2772,6 +2814,8 @@ async function vehiclesFlow(browser) {
   }
   const saved = await page.evaluate(() => localStorage.getItem('tiletrigger.vehicleCamera'));
   check(worst.view === 'chase' && !worst.inBox && worst.clear && worst.sight && worst.dist > 1, `H gives a chase camera outside the buggy and not in a wall (${JSON.stringify({ view: worst.view, inBox: worst.inBox, clear: worst.clear, sight: worst.sight, dist: worst.dist?.toFixed(1) })})`);
+  // The interior goes on the frame after the view switches (a slow page draws a frame or two a second).
+  await page.waitForFunction(() => !window.__cs.view.cockpitInteriorShown(), null, { timeout: T(10000) }).catch(() => {});
   const chaseBody = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${me.mount ? window.__match.mounts[me.mount.index].index : -1}`);
@@ -2779,6 +2823,9 @@ async function vehiclesFlow(browser) {
   });
   check(!chaseBody.interior && chaseBody.cut === false, `the chase view draws the whole body and no interior (${JSON.stringify(chaseBody)})`);
   check(/"ground":"chase"/.test(saved ?? ''), `the choice is remembered for ground vehicles (${saved})`);
+  // The buggy we drove (the passenger checks below use the other one, still parked on flat ground at its spawn:
+  // this one ends up wherever the drive and the steering check took it).
+  await page.evaluate(() => (window.__drivenMount = window.__match.slots[window.__cs.slot].mount?.index ?? -1));
   // Press E (again, if a slow frame swallowed the press) until we're out.
   for (let i = 0; i < 4; i++) {
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
@@ -2788,7 +2835,9 @@ async function vehiclesFlow(browser) {
   check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
   // Out of the chase camera: back at your own eye, level.
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-  await page.waitForTimeout(T(500)); // wait-ok: the camera eases back to your eye
+  await page
+    .waitForFunction(() => { const c = window.__cs.view.camera.position; const e = window.__cs.local.eye; return window.__cs.rideView() === null && Math.hypot(c.x - e.x, c.y - e.y, c.z - e.z) < 0.4; }, null, { timeout: T(5000) })
+    .catch(() => {});
   const foot = await page.evaluate(() => {
     const cs = window.__cs;
     const c = cs.view.camera.position;
@@ -2828,7 +2877,12 @@ async function vehiclesFlow(browser) {
     if (me.mount) match.leaveMount(me, true);
     // Everyone holds still and holds fire (the buggy's health is checked below).
     for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
-    const m = match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null)).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
+    // The buggy we drove, back at its spawn on flat ground and stopped (the drive and the steering check leave it
+    // anywhere, on a slope or against a rock, where getting in from beside it can fail).
+    const m = match.mounts[window.__drivenMount] ?? match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null))[0];
+    m.pos = { ...m.home.pos };
+    m.yaw = m.home.yaw;
+    if ('speed' in m) m.speed = 0;
     // Bots drawn as characters (a creature has no seated pose).
     const bots = match.slots.filter((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {})).slice(0, 4);
     const seats = [];
@@ -3293,6 +3347,16 @@ async function charactersFlow(browser) {
   check(n === want && n >= 20, `character viewer builds every look and NPC (${n} of ${want})`);
   const lod = await page.evaluate(() => window.__charAnimators.filter((a) => a.ch.meshes.some((m) => m.getLODLevels?.().length)).length);
   check(lod === n, `every character has low-detail levels (${lod} of ${n})`);
+  // Through a scope (the view's zoom) the low-detail copy waits further out, as far as it looks as big as unzoomed.
+  const switchAt = await page.evaluate(() => {
+    const at = () => window.__charAnimators.flatMap((a) => a.ch.meshes.flatMap((m) => (m.getLODLevels?.() ?? []).map((l) => l.distanceOrScreenCoverage)));
+    const plain = at();
+    window.__charLodZoom(4);
+    const scoped = at();
+    window.__charLodZoom(1);
+    return { plain: [...new Set(plain)], scoped: [...new Set(scoped)], back: [...new Set(at())] };
+  });
+  check(switchAt.plain.join() === '18' && switchAt.scoped.join() === '72' && switchAt.back.join() === '18', `a scope moves the characters' low-detail switch out with its zoom (${JSON.stringify(switchAt)})`);
   // Parts sharing a material are merged, and skin, hair, eyes and gear share the character atlas: a character is
   // its outfit and its atlas draw (2 on average, 3 where a look mixes outfit families), not one per part.
   const draws = await page.evaluate(() => window.__charAnimators.map((a) => a.ch.meshes.filter((m) => !m.isDisposed() && !m.isBlocked && m.getTotalVertices() > 0).length));
@@ -3308,7 +3372,7 @@ async function charactersFlow(browser) {
   await page.goto(`${CLIENT}/?mode=grips&test=1`);
   await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
   const misses = [];
-  for (const look of ['core.scout', 'core.biscuit', 'core.grizzelda']) {
+  for (const look of ['core.ranger', 'core.biscuit', 'core.grizzelda']) {
     for (const weapon of ['core.rifle', 'core.singularity', 'core.lmg', 'core.flamethrower']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'first'), [look, weapon]);
       const m = await page.evaluate(() => window.__grips.miss());
@@ -3319,7 +3383,7 @@ async function charactersFlow(browser) {
   // Full-body first person (your own whole character from its eyes): the same palms on the same guns, looking ahead
   // and down at your feet.
   const bodyMisses = [];
-  for (const look of ['core.scout', 'core.galloway']) {
+  for (const look of ['core.ranger', 'core.galloway']) {
     for (const weapon of ['core.rifle', 'core.lmg', 'core.pistol']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'body'), [look, weapon]);
       for (const pitch of [0, -1.3]) {
@@ -3337,7 +3401,7 @@ async function charactersFlow(browser) {
   const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6;
   const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, flat ${d.sideR.toFixed(2)}` : 'none');
   const drawnMisses = [];
-  for (const look of ['core.dapper', 'core.biscuit', 'core.scout', 'core.galloway']) {
+  for (const look of ['core.dapper', 'core.biscuit', 'core.ranger', 'core.galloway']) {
     for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
       for (const view of ['body', 'first', 'third']) {
         await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);
@@ -3355,7 +3419,7 @@ async function charactersFlow(browser) {
   // in every view.
   const spearMisses = [];
   for (const view of ['first', 'body', 'third']) {
-    await page.evaluate(([v]) => window.__grips.pose('core.scout', 'core.spear', v), [view]);
+    await page.evaluate(([v]) => window.__grips.pose('core.ranger', 'core.spear', v), [view]);
     const d = await page.evaluate(() => window.__grips.drawn());
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }

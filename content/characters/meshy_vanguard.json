@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player+npc",
   "order": 49,
-  "name": "Vanguard",
+  "name": "Luther Vanguard",
   "look": "core.vanguard",
   "group": "soldiers",
   "bio": "First in, last out, never seen in between.",

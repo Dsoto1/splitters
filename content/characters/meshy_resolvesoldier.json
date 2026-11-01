@@ -26,7 +26,6 @@
   "fixes": {
     "triangles": 11000,
     "feet": true,
-    "lod": 0.45,
     "armCloth": true
   },
   "landmarks": {

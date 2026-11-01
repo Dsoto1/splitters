@@ -45,8 +45,11 @@ export interface CharacterLook {
    * match (`cloth`/`trim` for the sleeves, `skin` for the hands). `body:
    * false`: full-body first person shows these arms instead of the whole
    * character (a model whose hat or cape fills the view from its own eyes).
+   * `hold`: where this body holds a long gun against everyone's hold, in metres at a 1.8 m body (`forward` along the
+   * barrel, `down` square to it, `out` level toward the gun shoulder's side), for a build the shared hold puts the stock at the face of (Bandit: broad, with
+   * his head low between high shoulders); `fixes.hold` in its manifest.
    */
-  whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false };
+  whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false; hold?: { forward?: number; down?: number; out?: number } };
   /** What the character is (Character Select's tabs): set on every built-in look; a design of yours has none. */
   group?: CharacterGroup;
 }
@@ -71,11 +74,16 @@ export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_G
 /** Where a piece of gear goes; one per slot. */
 export type GearSlot = 'hat' | 'face' | 'chest' | 'back';
 
-/** Gear built in-game from simple shapes (no model files), coloured by the look's dyes. */
-export const GEAR: readonly { id: string; slot: GearSlot; label: string }[] = [
+/**
+ * Gear worn over the outfit. Most is built in-game from shapes fitted to the wearer's head and body (no model files),
+ * coloured by the look's dyes; a piece with `model` is a textured model (public/gear/<model>.glb, built by
+ * tools/content/prepare-gear.mjs from content/gear.json), fitted to the wearer's head. Custom look IDs encode gear by
+ * its place here: only append.
+ */
+export const GEAR: readonly { id: string; slot: GearSlot; label: string; model?: string }[] = [
   { id: 'cap', slot: 'hat', label: 'Cap' },
   { id: 'beanie', slot: 'hat', label: 'Beanie' },
-  { id: 'helmet', slot: 'hat', label: 'Combat helmet' },
+  { id: 'helmet', slot: 'hat', label: 'Combat helmet', model: 'military_helmet' },
   { id: 'beret', slot: 'hat', label: 'Beret' },
   { id: 'brim', slot: 'hat', label: 'Wide-brim hat' },
   { id: 'headband', slot: 'hat', label: 'Headband' },
@@ -88,6 +96,10 @@ export const GEAR: readonly { id: string; slot: GearSlot; label: string }[] = [
   { id: 'pack', slot: 'back', label: 'Backpack' },
   { id: 'radio', slot: 'back', label: 'Radio pack' },
   { id: 'tank', slot: 'back', label: 'Tank' },
+  { id: 'steel_helmet', slot: 'hat', label: 'Steel helmet', model: 'steel_helmet' },
+  { id: 'aviator_helmet', slot: 'hat', label: 'Aviator helmet', model: 'aviator_helmet' },
+  { id: 'mk2_helmet', slot: 'hat', label: 'Brimmed helmet', model: 'mk2_helmet' },
+  { id: 'viking_helmet', slot: 'hat', label: 'Horned helmet', model: 'viking_helmet' },
 ];
 export const GEAR_SLOTS: readonly GearSlot[] = ['hat', 'face', 'chest', 'back'];
 export const GEAR_SLOT_LABELS: Record<GearSlot, string> = { hat: 'Headwear', face: 'Face', chest: 'Chest', back: 'Back' };
@@ -109,8 +121,40 @@ const ranger = (s: 'm' | 'f', hood = true, pauldron = true): string[] => [
 ];
 const peasant = (s: 'm' | 'f'): string[] => [`peasant_torso_${s}`, `peasant_arms_${s}`, `peasant_legs_${s}`, `peasant_feet_${s}`];
 
-/** Presets that between them use every part, hairstyle and colourway, and show off dyes and gear. */
-export const CORE_LOOKS: readonly CharacterLook[] = [
+/**
+ * Looks that were retired, and the kept look each one now resolves to, so a saved profile, setup, bot set or map
+ * that still names one keeps working. A retired look stays defined (below) but leaves CORE_LOOKS: Character
+ * Select, the bot rotation and the Designer's presets no longer offer it. 2026-11-01: the owner's Roster Board
+ * retired 14 original modular looks and Ivory Rustwalker, then Engineer and Warden (Linktifa and Sprout stay).
+ */
+export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
+  'core.champion': 'core.dale',
+  'core.desperado': 'core.dale',
+  'core.miller': 'core.sprout',
+  'core.raider': 'core.ranger',
+  'core.sprinter': 'core.sprout',
+  'core.striker': 'core.ranger',
+  'core.huntress': 'core.ranger',
+  'core.tracker': 'core.ranger',
+  'core.bulwark': 'core.grunt68',
+  'core.commando': 'core.grunt68',
+  'core.operative': 'core.grunt68',
+  'core.scout': 'core.sprout',
+  'core.pathfinder': 'core.sprout',
+  'core.wayfarer': 'core.sprout',
+  'core.frost': 'core.sprout',
+  'core.medic': 'core.sprout',
+  'core.sentinel': 'core.sprout',
+  'core.farmhand': 'core.dale',
+  'core.drifter': 'core.dale',
+  'core.brawler': 'core.dale',
+  'core.engineer': 'core.dale',
+  'core.warden': 'core.grunt68',
+  'core.rustwalker': 'core.t350',
+};
+
+/** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
+const ALL_LOOKS: readonly CharacterLook[] = [
   { id: 'core.ranger', name: 'Linktifa', body: 'male', head: 'head_male', parts: ranger('m'), hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50', gear: ['pack'], group: 'legends' },
   { id: 'core.huntress', name: 'Huntress', body: 'female', head: 'head_female', parts: ranger('f'), hair: ['hair_long'], colorways: [], skin: null, hairColor: '#b08850', cloth: '#7a2a2a', trim: '#2a2622', gear: ['bandolier'], group: 'folk' },
   // Two sizes off the standard: Sprout is small and quick, Bulwark big and tough.
@@ -182,17 +226,20 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   { id: 'core.frost', name: 'Frost', body: 'female', head: 'head_female', parts: ranger('f', false, false), hair: ['hair_long'], colorways: [], skin: SKIN_TONES[1], hairColor: '#f0e0c0', cloth: '#e8e4dc', trim: '#7a8088', gear: ['beanie', 'goggles', 'pack'], group: 'soldiers' },
   { id: 'core.operative', name: 'Operative', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_simpleparted'], colorways: [], skin: SKIN_TONES[1], hairColor: '#2a2422', cloth: '#1e2126', trim: '#1e2126', gear: ['shades'], group: 'soldiers' },
   { id: 'core.medic', name: 'Medic', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[2], hairColor: '#3a2a22', cloth: '#e8e4dc', trim: '#a83030', gear: ['cap', 'pack'], group: 'soldiers' },
-  { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['helmet', 'tank'], group: 'folk' },
+  { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['mk2_helmet', 'tank'], group: 'folk' },
   // Whole-body characters, one per manifest in content/characters (generated: characters.generated.ts).
   ...WHOLE_BODY_LOOKS,
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'], group: 'soldiers' },
 ];
 
+/** The looks on offer (Character Select, bots, presets): every preset not retired. */
+export const CORE_LOOKS: readonly CharacterLook[] = ALL_LOOKS.filter((l) => !(l.id in RETIRED_LOOKS));
+
 export const DEFAULT_LOOK = CORE_LOOKS[0]!.id;
 
 /** One-line bios for the presets (character select). */
 export const LOOK_BIOS: Readonly<Record<string, string>> = {
-  'core.ranger': 'A woodland scout who prefers long sightlines and longer silences.',
+  'core.ranger': 'A general larper.',
   'core.huntress': 'Tracks anything that moves. Has opinions about rifles.',
   'core.warden': 'Keeps the forest roads safe, and keeps score while doing it.',
   'core.scout': 'First in, first out, usually carrying the flag of someone else.',
@@ -334,7 +381,7 @@ export function encodeLook(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'c
   ].join('');
 }
 
-const CUSTOM_RE = /^c1-([mf])([0-9a-f]{4})([0-9a-f])([0-9a-f])([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6})(-[sl])?(?:-d([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6}))?(?:-g([0-9a-f]{4}))?$/;
+const CUSTOM_RE = /^c1-([mf])([0-9a-f]{4})([0-9a-f])([0-9a-f])([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6})(-[sl])?(?:-d([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6}))?(?:-g([0-9a-f]{4,8}))?$/;
 
 /** A custom look from its ID, or null if the ID is malformed or the look can't be worn. */
 export function decodeLook(id: string): CharacterLook | null {
@@ -358,18 +405,6 @@ export function decodeLook(id: string): CharacterLook | null {
   return lookProblems(look).length ? null : look;
 }
 
-/**
- * Presets that were retired, and the kept look each one now resolves to, so a
- * saved profile, setup or map that still names one keeps working.
- */
-export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
-  'core.champion': 'core.brawler',
-  'core.desperado': 'core.drifter',
-  'core.miller': 'core.wayfarer',
-  'core.raider': 'core.huntress',
-  'core.sprinter': 'core.scout',
-  'core.striker': 'core.huntress',
-};
 
 /** A preset or custom look by ID (a retired preset gives its replacement); anything unknown or invalid falls back to the default. */
 export const getLook = (id: string | undefined): CharacterLook => {

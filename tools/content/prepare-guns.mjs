@@ -205,8 +205,7 @@ async function build(src, entry, pack, place = null) {
     holder.addChild(node);
   }
   scene.addChild(holder);
-  // An interior says which part of the body it stands in for: the game hides the body's triangles inside `box`
-  // while it draws the interior (packages/client/src/game/cockpitInterior.ts).
+  // An interior says which part of the body it stands in for (`box`, in its glTF extras).
   if (place && entry.box) holder.setExtras({ cockpit: { box: entry.box } });
   for (const mat of doc.getRoot().listMaterials()) {
     mat.setMetallicFactor(0).setRoughnessFactor(0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
@@ -266,8 +265,8 @@ for (const entry of manifest.models) {
   const pack = manifest.packs[entry.pack];
   // `interior` (Meshy entries): a second model of the part of this one inside `interior.box` (in the built model's
   // frame), cropped from the same download and cut far less, with colour and normal maps of its own; written to
-  // `interior.out` in the body's exact frame. The game draws it only for the player looking out of a vehicle's
-  // cockpit (MountDef.cockpitModel), and hides the body's triangles inside the box meanwhile. Built with its body.
+  // `interior.out` in the body's exact frame. Built with its body. (No entry uses it now: the buggy's cockpit is
+  // built in-house, packages/client/src/content/cockpits.ts.)
   const interior = entry.interior ? { ...entry, lod: null, centre: undefined, paintOut: entry.paintOut, budget: undefined, ...entry.interior } : null;
   // ONLY=guns/a.glb,guns/b.glb rebuilds just those (the rest are kept and checked); naming an interior builds its body too.
   const skip = only && !only.includes(entry.out) && !(interior && only.includes(interior.out));

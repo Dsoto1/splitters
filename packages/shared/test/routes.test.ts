@@ -76,6 +76,7 @@ function patrol(path: MapPath, n = 1) {
       return id;
     },
     npc: (id) => npcs.get(id),
+    inShutDoor: () => false,
     entityPos: () => undefined,
     fire: () => {},
     random: () => 0,

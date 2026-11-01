@@ -3,9 +3,9 @@
   "kind": "character",
   "use": "player",
   "order": 17,
-  "name": "Saint Nick",
+  "name": "Santa",
   "look": "core.saintnick",
-  "group": "folk",
+  "group": "legends",
   "bio": "Has a list. You are on the other one.",
   "body": "male",
   "size": "large",
@@ -35,7 +35,7 @@
     "trim": "#f2f2ee"
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 16000,
     "feet": true,
     "cloth": true,
     "hands": {
@@ -46,6 +46,9 @@
       "r": {
         "scale": 0.85
       }
-    }
+    },
+    "headShare": 0.16,
+    "handsShare": 0.08,
+    "normalSize": 1024
   }
 }

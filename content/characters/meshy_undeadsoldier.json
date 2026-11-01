@@ -26,8 +26,7 @@
   "fixes": {
     "triangles": 14000,
     "surface": "rebake",
-    "feet": true,
-    "lod": 0.45
+    "feet": true
   },
   "landmarks": {
     "spine": [

@@ -65,7 +65,7 @@ describe('character looks', () => {
       }
     }
     expect(textureFor('MI_Eyes', CORE_LOOKS[0]!)).toBeNull();
-    expect(textureFor('MI_Ranger', getLook('core.warden'))).toBe('ranger_moss');
+    expect(textureFor('MI_Ranger', { ...getLook('core.ranger'), colorways: ['ranger_moss'] })).toBe('ranger_moss');
     expect(textureFor('MI_Athlete_Female', { ...getLook('core.huntress'), colorways: ['athlete_light_f'] })).toBe('athlete_light_f');
     expect(materialTint('MI_Superhero_Male')).toBe('skin');
     expect(materialTint('MI_Hair_2')).toBe('hair');
@@ -87,11 +87,11 @@ describe('character looks', () => {
 
   it('gives players their chosen look and bots a spread of looks in the roster', () => {
     const match = new Match(loadArena());
-    match.addHuman('Ann', 'core.medic');
+    match.addHuman('Ann', 'core.ranger');
     match.addHuman('Bo', 'not-a-look');
     for (let i = 0; i < 3; i++) match.addBot(`Bot${i}`, CORE_BOT_PROFILES[0]!);
     const roster = match.roster();
-    expect(roster.find((r) => r.name === 'Ann')!.look).toBe('core.medic');
+    expect(roster.find((r) => r.name === 'Ann')!.look).toBe('core.ranger');
     expect(roster.find((r) => r.name === 'Bo')!.look).toBe(DEFAULT_LOOK);
     const bots = roster.filter((r) => r.bot);
     expect(bots.length).toBeGreaterThan(1);

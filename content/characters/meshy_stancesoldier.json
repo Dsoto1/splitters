@@ -25,7 +25,6 @@
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true,
-    "lod": 0.45
+    "feet": true
   }
 }

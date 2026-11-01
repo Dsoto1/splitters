@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 20,
-  "name": "Grizzelda",
+  "name": "Goblina",
   "look": "core.grizzelda",
   "group": "legends",
   "bio": "Brews potions, curses rivals and keeps exact count of both.",
@@ -36,7 +36,7 @@
     "body": false
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 16000,
     "feet": true,
     "cloth": true,
     "lean": {
@@ -44,6 +44,11 @@
       "Spine01": 6,
       "Spine": 6,
       "neck": 10
-    }
+    },
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "surface": "rebake",
+    "lod": 0.26
   }
 }

@@ -56,6 +56,7 @@ import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
 import { keepArmsToArms } from './armweights.mjs';
+import { addLowDetail } from './character-lod.mjs';
 import { HANDS_SHARE, HEAD_SHARE, bakeNormals, cutKeeping, normalJpeg, rebake, seamAwareSimplify } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -130,8 +131,7 @@ const REPOSE_FEET = ['l', 'r'].map((s) => {
 /** Rig joints that make up the first-person arms (forearms and hands: bulky upper sleeves would fill the view). */
 const ARM_JOINT = /^(lowerarm|hand|index|middle|pinky|ring|thumb)_/;
 
-const LOD_RATIO = 0.3;
-/** The baked normal map's size (px; half the colour map's). */
+/** The baked normal map's size (px; half the colour map's; `fixes.normalSize` 1024 for a character whose face and hands want it). */
 const NORMAL_SIZE = 512;
 /** Standing height everyone is scaled to, feet on the ground (the rig's mannequin is this tall). */
 const HEIGHT = 1.83;
@@ -239,8 +239,8 @@ async function readMeshy(file, ual, c) {
       return names[J[v * 4 + b]];
     };
     const out = await rebakeDownload({ P, N, UV, I: indices }, baseColor, normalMap, c.triangles ?? 11000, [
-      { inside: (v) => /^(Head|head_end|headfront)$/.test(major(v)), share: HEAD_SHARE },
-      { inside: (v) => /Hand/.test(major(v)), share: REBAKE_HANDS_SHARE },
+      { inside: (v) => /^(Head|head_end|headfront)$/.test(major(v)), share: c.headShare ?? HEAD_SHARE },
+      { inside: (v) => /Hand/.test(major(v)), share: c.handsShare ?? REBAKE_HANDS_SHARE },
     ]);
     const J2 = new J.constructor(out.from.length * 4);
     const W2 = new W.constructor(out.from.length * 4);
@@ -511,7 +511,7 @@ async function readUnrigged(file, c, ual) {
       if (!image) throw new Error(`${file}: no base colour texture`);
       const normalImage = glb ? (mat?.getNormalTexture()?.getImage() ?? null) : existsSync(file.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(file.replace(/\.fbx$/i, '_normal.png')) : null;
       const full = { P: pos, N: new Float32Array(p.getAttribute('NORMAL').getArray()), UV: new Float32Array(p.getAttribute('TEXCOORD_0').getArray()), I: new Uint32Array(p.getIndices().getArray()) };
-      rebaked = await rebakeDownload(full, image, normalImage, c.triangles ?? 11000, [parts[0], { ...parts[1], share: REBAKE_HANDS_SHARE }]);
+      rebaked = await rebakeDownload(full, image, normalImage, c.triangles ?? 11000, [{ ...parts[0], share: c.headShare ?? HEAD_SHARE }, { ...parts[1], share: c.handsShare ?? REBAKE_HANDS_SHARE }]);
       const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(doc.getRoot().listBuffers()[0]);
       p.setAttribute('POSITION', acc('VEC3', rebaked.P)).setAttribute('NORMAL', acc('VEC3', rebaked.N)).setAttribute('TEXCOORD_0', acc('VEC2', rebaked.UV)).setIndices(acc('SCALAR', rebaked.I));
       for (const sem of p.listSemantics()) if (!['POSITION', 'NORMAL', 'TEXCOORD_0'].includes(sem)) p.setAttribute(sem, null);
@@ -748,41 +748,6 @@ function triangles(doc) {
 }
 
 /**
- * A low-detail copy of every mesh, as `<node>_lod` on the same skin (see prepare-characters.mjs). With the manifest's
- * `fixes.lod` (`share`), the copy keeps that share of the triangles and is cut keeping its texture seams (as the props'
- * levels of detail, meshy-mesh.mjs addLod): the sloppy cut welds vertices across the seams, so their texture
- * coordinates land in the wrong chart and the far copy is drawn in patches of the wrong colours.
- */
-function addLowDetail(doc, share = null) {
-  const ratio = share ?? LOD_RATIO;
-  const scene = doc.getRoot().listScenes()[0];
-  for (const node of doc.getRoot().listNodes()) {
-    const mesh = node.getMesh();
-    if (!mesh) continue;
-    const low = doc.createMesh(`${mesh.getName()}_lod`);
-    for (const prim of mesh.listPrimitives()) {
-      const p = doc.createPrimitive().setMode(prim.getMode()).setMaterial(prim.getMaterial());
-      for (const sem of prim.listSemantics()) p.setAttribute(sem, prim.getAttribute(sem).clone());
-      // Sloppy: it ignores the texture seams that stop the careful simplifier (fine at the distances this is drawn).
-      const idx = new Uint32Array(prim.getIndices().getArray());
-      const target = Math.floor((idx.length * ratio) / 3) * 3;
-      const P = new Float32Array(prim.getAttribute('POSITION').getArray());
-      let low3 = null;
-      if (share !== null) {
-        const UV = new Float32Array(prim.getAttribute('TEXCOORD_0').getArray());
-        [low3] = MeshoptSimplifier.simplifyWithAttributes(idx, P, 3, UV, 2, [0.5, 0.5], null, target, 0.05, ['Permissive']);
-        if (low3.length > target * 1.5) low3 = null;
-      }
-      if (!low3) [low3] = MeshoptSimplifier.simplifySloppy(idx, P, 3, null, target, 0.05);
-      p.setIndices(prim.getIndices().clone().setArray(low3));
-      compactPrimitive(p);
-      low.addPrimitive(p);
-    }
-    (node.getParentNode() ?? scene).addChild(doc.createNode(`${node.getName()}_lod`).setMesh(low).setSkin(node.getSkin()));
-  }
-}
-
-/**
  * The rig's skeleton fitted to this character, with its mesh bound to it.
  * `keep` filters triangles by the rig joint most of their vertices follow
  * (the first-person arms keep only arm triangles).
@@ -849,8 +814,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   const pos = fp ? fp.pos : new Float32Array(src.pos);
   const fitted = new Map(rigNames.map((n) => [n, { q: ual.get(n).q, t: target.get(n) }]));
   // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
-  // Opt-in (fixes.armCloth): on every character it moved the stretch into wide sleeves instead of curing it.
-  if (!fp && c.armCloth) keepArmsToArms({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, log: (l) => console.log(`  ${out} ${l}`) });
+  // Opt-in (fixes.armCloth), by distance along the surface.
+  if (!fp && c.armCloth) keepArmsToArms({ meshes: [{ pos, J, W, idx: src.indices }], jointNames: rigNames, world: fitted, log: (l) => console.log(`  ${out} ${l}`) });
   const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, log: (l) => console.log(`  ${out} ${l}`) });
   for (const [n, t] of hands.moved) target.set(n, t);
   for (const j of joints) if (hands.data[j.getName().slice(-1)] && j.getName().startsWith('hand_')) j.setExtras({ hand: hands.data[j.getName().slice(-1)] });
@@ -914,8 +879,9 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
       return PJ[v * 4 + b];
     };
     const parts = [
-      { inside: (v) => majorOf(v) === headJoint, share: HEAD_SHARE },
-      { inside: (v) => handJoints.has(majorOf(v)), share: HANDS_SHARE },
+      { inside: (v) => majorOf(v) === headJoint, share: c.headShare ?? HEAD_SHARE },
+      // (`fixes.handsShare`: more, where cuffs the skinning left on the hands took their share: King Aldric's.)
+      { inside: (v) => handJoints.has(majorOf(v)), share: c.handsShare ?? HANDS_SHARE },
     ];
     const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008] });
     prim.getIndices().setArray(cut);
@@ -924,15 +890,16 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   await doc.transform(prune({ keepAttributes: true }));
   // The shape the cut took away (and the download's own normal map) as a normal map in the download's texture
   // layout, drawn with the TANGENT attribute: without it the cut body shades as flat facets.
-  if (NORMAL_SIZE) {
+  const normalSize = c.normalSize ?? NORMAL_SIZE;
+  if (normalSize) {
     const hiMap = src.normalMap ? await sharp(Buffer.from(src.normalMap)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
     const low = { P: prim.getAttribute('POSITION').getArray(), N: prim.getAttribute('NORMAL').getArray(), UV: prim.getAttribute('TEXCOORD_0').getArray(), idx: prim.getIndices().getArray() };
-    const { tangents, png } = await bakeNormals(low, high, { size: NORMAL_SIZE * 2, reach: HEIGHT * 0.03, hiMap });
+    const { tangents, png } = await bakeNormals(low, high, { size: normalSize * 2, reach: HEIGHT * 0.03, hiMap });
     prim.setAttribute('TANGENT', acc('VEC4', tangents));
-    material.setNormalTexture(doc.createTexture(`${c.id}_normal`).setImage(new Uint8Array(await normalJpeg(png, NORMAL_SIZE))).setMimeType('image/jpeg'));
+    material.setNormalTexture(doc.createTexture(`${c.id}_normal`).setImage(new Uint8Array(await normalJpeg(png, normalSize))).setMimeType('image/jpeg'));
   }
   const fullTris = triangles(doc);
-  if (lod) addLowDetail(doc, c.lod ?? null);
+  if (lod) addLowDetail(doc, c.lod, (l) => console.log(`  ${out} ${l}`));
   // Smaller vertices (KHR_mesh_quantization, read natively by the game's loader).
   await doc.transform(quantize({ quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12, quantizeWeight: 8 }));
   for (const a of root.listAccessors()) if (a.listParents().every((p) => p.propertyType === 'Root')) a.dispose();

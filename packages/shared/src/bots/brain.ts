@@ -293,6 +293,8 @@ export class BotBrain {
   /** Closest we have come to the current chase/investigate goal, and when. */
   private headway: { goal: Vec3; best: number; tick: number } | null = null;
   private pathIndex = 0;
+  /** Came out of a portal since the path was last followed: the portal leg is done. */
+  private portalled = false;
   private roamGoal: Vec3 | null = null;
   private via: Vec3 | null = null;
   private lastPathTick = -Infinity;
@@ -435,6 +437,7 @@ export class BotBrain {
     this.yaw = yaw;
     this.pitch = 0;
     this.targetSlot = null;
+    this.portalled = false;
     this.visibleSince.clear();
     this.confirmed.clear();
     this.unchecked.clear();
@@ -2207,6 +2210,13 @@ export class BotBrain {
       this.pathIndex = this.path.length > 1 ? 1 : 0;
       this.lastPathTick = view.tick;
     }
+    // Just came out of a portal: that leg is done. Its end (a little way out of the far portal) can still be more than
+    // a corner's reach away, and the leg would send us back into the near portal's face, which is now behind the far one.
+    if (this.portalled) {
+      this.portalled = false;
+      const corner = this.path[this.pathIndex];
+      if (corner && view.portals?.length && this.portalFace(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null)) this.pathIndex++;
+    }
     while (this.pathIndex < this.path.length) {
       const c = this.path[this.pathIndex]!;
       const d = horizontalDistance(me.pos, c);
@@ -2254,6 +2264,7 @@ export class BotBrain {
   /** Went through a portal: the view turned with you (the server turned the body). */
   turned(turn: number): void {
     this.yaw += turn;
+    this.portalled = true;
   }
 
   /**

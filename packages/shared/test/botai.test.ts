@@ -83,7 +83,7 @@ function hitRate(difficulty: BotDifficulty, opts: { weapon?: string; range?: num
   for (const seed of opts.seeds ?? [1, 2, 3, 4]) {
     const match = new Match(yard(), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, seed);
     const target = match.addHuman('target')!;
-    const bot = match.addBot('shooter', { ...CORE_BOT_PROFILES[3]!, accuracy: 50, rangePreference: ((range - 4) / 22) * 100, tags: [] }, difficulty)!;
+    const bot = match.addBot('shooter', { ...CORE_BOT_PROFILES[3]!, accuracy: 50, rangePreference: ((range - 4) / 22) * 100, tags: [] }, difficulty, false, { look: 'core.ranger' })!; // a standard build: the rates don't follow the roster's order
     bot.move = { pos: { x: 0, y: 0, z: 8 }, velY: 0, grounded: true };
     target.move = { pos: { x: range, y: 0, z: 8 }, velY: 0, grounded: true };
     give(bot, weapon);
@@ -351,8 +351,9 @@ describe('bot tactics', () => {
           if (e.e === 'melee' && e.s === bot.slot) swings++;
         }
       }
-      // Nobody about: it loads the barrel again from its shells.
-      me.alive = false;
+      // Nobody about: it loads the barrel again from its shells. The player leaves rather than just dying: a
+      // dead player respawns at once, at the far spawn, and a bot that walked that way would fight them there.
+      match.remove(me.slot);
       axe.alt = 0;
       const reserve = axe.reserve;
       let loaded = 0;

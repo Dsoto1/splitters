@@ -18,6 +18,8 @@ export interface EncounterHost {
   /** Create an NPC; returns its actor ID, or null if it couldn't be placed. */
   spawnNpc(e: EncounterEntity, role: NpcRole, pos: Vec3, yaw: number): number | null;
   npc(id: number): { alive: boolean; pos: Vec3; brain: BotBrain } | undefined;
+  /** Whether a body standing here would be inside a door that isn't open (a spawn there is stuck in it, out of reach). */
+  inShutDoor(pos: Vec3): boolean;
   entityPos(id: string): Vec3 | undefined;
   fire(event: EventType, target: string, instigator: number | null): void;
   random(): number;
@@ -157,7 +159,8 @@ export class Encounters {
       const a = this.host.random() * Math.PI * 2;
       const d = Math.sqrt(this.host.random()) * r.e.radius;
       const p = this.host.nav.closestPoint({ x: origin.x + Math.cos(a) * d, y: origin.y + 0.5, z: origin.z + Math.sin(a) * d }, { x: 1.5, y: 2, z: 1.5 });
-      if (!p) continue;
+      // The navmesh runs through doorways; a closed door's leaf stands in them.
+      if (!p || this.host.inShutDoor(p)) continue;
       const nearestHostile = hostiles.reduce((m, h) => Math.min(m, horizontalDistance(h.pos, p)), Infinity);
       const crowd = r.members.some((m) => {
         const n = this.host.npc(m);

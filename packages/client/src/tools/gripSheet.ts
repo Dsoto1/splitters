@@ -205,9 +205,27 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     await settle(4);
   }
 
+  /**
+   * After a third-person pose, the head (and its gear) from `alpha` round it (0: its right side, π/2: the front), at
+   * `radius` m (`beta`: from above or below; held weapons tip the head down): about 0.95 frames the head as a portrait; at in-game distances (5-15 m) the camera keeps the game's
+   * field of view and aims at the head, so a crop of the middle of the shot shows the head at the size players see it.
+   */
+  async function head(alpha: number, radius: number, beta = Math.PI / 2 - 0.08): Promise<void> {
+    const j = joints?.get('Head');
+    j?.computeWorldMatrix(true);
+    const p = j ? j.getAbsolutePosition() : new Vector3(0, PLAYER.eyeHeight, 0);
+    orbit.target.set(p.x, p.y + 0.06, p.z);
+    orbit.alpha = alpha;
+    orbit.beta = beta;
+    orbit.radius = radius;
+    orbit.fov = radius > 2 ? DEFAULT_FOV : 0.8;
+    await settle(4);
+  }
+
   const api = {
     looks: () => CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, parts: l.parts })),
     pose,
+    head,
     /** First person: how far (model m) each palm is from its point on the gun (0: on it). */
     miss: () => current?.anim.gripMiss ?? null,
     /** The posed character's animator (tests: where its hands are drawn, gripCheck). */
@@ -216,6 +234,19 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     drawn: () => current?.anim.drawnGrip([...(rig?.drawnMeshes ?? []), ...(current?.anim.ch.meshes ?? [])]) ?? null,
     body,
     upper,
+    /**
+     * After a third-person pose, a close look at one joint (a support hand on the handguard): the orbit camera on
+     * that joint's position, `alpha`/`beta` round it (radians, Babylon's), `radius` away (m).
+     */
+    closeUp: async (joint: string, alpha: number, beta: number, radius = 0.35) => {
+      const j = joints?.get(joint);
+      j?.computeWorldMatrix(true);
+      if (j) orbit.target.copyFrom(j.getAbsolutePosition());
+      orbit.alpha = alpha;
+      orbit.beta = beta;
+      orbit.radius = radius;
+      await settle(4);
+    },
     /** Measurements of the third-person pose as drawn (tools/gripAudit.ts; tools/content/grip-audit.mjs ranks them). */
     audit: () => (posed ? auditGrip(posed.ch, posed.weapon, posed.hold) : null),
     /** Curl test: close the hands by this share of their curl (1 as the game does; 0 open), and redraw. */

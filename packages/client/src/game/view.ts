@@ -17,7 +17,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun, wheelsOf } from './mountVisuals.ts';
-import { CockpitInterior } from './cockpitInterior.ts';
+import { CockpitInterior, type CockpitDrive } from './cockpitInterior.ts';
 import { createViewCamera, poseCamera } from './cameraPose.ts';
 import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
@@ -97,7 +97,7 @@ import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
 import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
-import { CharacterLibrary, type CharacterInstance } from '../content/characters.ts';
+import { CharacterLibrary, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
@@ -1008,6 +1008,8 @@ export class GameView {
       this.camera.position.y += Math.sin(t * 71) * 0.06 * k;
     } else poseCamera(this.camera, yaw, pitch, roll);
     this.camera.fov = fov;
+    // Through a scope characters keep their full detail as far as they look as big as at the switch distance unzoomed.
+    setCharacterLodZoom(Math.tan(DEFAULT_FOV / 2) / Math.tan(fov / 2));
     this.foliage.update(this.camera.position);
     this.updateUnderwater();
     this.updateEffects();
@@ -1553,6 +1555,23 @@ export class GameView {
     return this.mainDrawn;
   }
 
+  /**
+   * Of a body's meshes, the ones the main camera drew (`active`), each at the level of detail it was drawn at: the
+   * near mesh, or its low-detail copy far off. The active list names the near mesh either way, and a whole-body
+   * character's low-detail copy has its own skeleton: only the one drawn is posed each frame (the other's matrices
+   * are left as they were, or never set), so measuring the near mesh of a far character read a stale pose.
+   */
+  private drawnLevels(meshes: readonly AbstractMesh[], active: ReadonlySet<AbstractMesh>): AbstractMesh[] {
+    const out: AbstractMesh[] = [];
+    for (const m of meshes) {
+      if (active.has(m)) {
+        const level = m.getLOD(this.camera);
+        if (level) out.push(level);
+      } else for (const l of (m as Mesh).getLODLevels?.() ?? []) if (l.mesh && active.has(l.mesh)) out.push(l.mesh);
+    }
+    return out;
+  }
+
   gripReport(): { local: ({ mode: 'body' | 'arms' } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>) | null; remote: ({ slot: number; dist: number } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>)[]; creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] } {
     const active = this.drawnByCamera();
     let local: ReturnType<GameView['gripReport']>['local'] = null;
@@ -1567,8 +1586,7 @@ export class GameView {
     const remote: ReturnType<GameView['gripReport']>['remote'] = [];
     for (const [slot, a] of this.avatars) {
       if (a.hiddenSelf || a.culled || !a.root.isEnabled() || !(a.anim instanceof CharacterAnimator)) continue;
-      // The mesh drawn this frame (near detail, or the low-detail copy far off): the other's skin isn't updated.
-      const drawn = a.anim.ch.meshes.flatMap((m) => [m, ...((m as Mesh).getLODLevels?.() ?? []).map((l) => l.mesh)]).filter((m): m is AbstractMesh => !!m && active.has(m));
+      const drawn = this.drawnLevels(a.anim.ch.meshes, active);
       const g = drawn.length ? a.anim.drawnGrip(drawn) : null;
       if (g) remote.push({ slot, dist: Math.hypot(a.root.position.x - cam.x, a.root.position.z - cam.z), ...g });
     }
@@ -1577,7 +1595,7 @@ export class GameView {
     const creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] = [];
     for (const [slot, a] of this.avatars) {
       if (a.hiddenSelf || !(a.anim instanceof CreatureAnimator) || !a.root.isEnabled()) continue;
-      const drawn = a.anim.ch.meshes.filter((m) => active.has(m));
+      const drawn = this.drawnLevels(a.anim.ch.meshes, active);
       creatures.push({ slot, report: drawn.length ? a.anim.drawnGrip(drawn) : null });
     }
     return { local, remote, creatures };
@@ -2277,18 +2295,28 @@ export class GameView {
         if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
       }
     }
-    this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null);
+    let drive: CockpitDrive | null = null;
+    if (cockpit) {
+      const { m } = cockpit;
+      drive = { steer: this.sprung.get(m.index)?.steer ?? 0, speed: m.vel.x * Math.sin(m.shown.yaw) + m.vel.z * Math.cos(m.shown.yaw) };
+    }
+    this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null, drive);
   }
 
-  /** The ridden vehicle's high-detail cockpit (MountDef.cockpitModel), drawn only in your cockpit view. */
+  /** The ridden vehicle's in-house cockpit (content/cockpits.ts), drawn only in your cockpit view. */
   private cockpitInteriorRef: CockpitInterior | null = null;
   private get cockpitInterior(): CockpitInterior {
-    return (this.cockpitInteriorRef ??= new CockpitInterior(this.models));
+    return (this.cockpitInteriorRef ??= new CockpitInterior(this.scene));
   }
 
   /** Whether a vehicle's cockpit interior is drawn now (tests: shown in the cockpit view, never in the chase view). */
   cockpitInteriorShown(): boolean {
     return this.cockpitInteriorRef?.isShown() ?? false;
+  }
+
+  /** The cockpit drawn now (tests): triangles, the steering wheel's turn (radians), needle readings, body cut. */
+  cockpitInteriorState(): ReturnType<CockpitInterior['state']> {
+    return this.cockpitInteriorRef?.state() ?? null;
   }
 
   /** The vehicle you are looking out of in the cockpit view (its inner faces are culled), or null. */

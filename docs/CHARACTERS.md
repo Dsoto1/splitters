@@ -29,9 +29,19 @@ every outfit part, every hairstyle, every colourway and both mannequins.
 | `athlete_torso/legs/feet_m/f` | torso, legs, feet | The base bodies below the neck (sportswear), cut along the same regions so they mix with outfit parts. The torso includes the arms and hips |
 | `ranger_arms/torso/legs/feet/hood/pauldron_m/f` | arms … pauldron | Ranger outfit parts |
 | `peasant_arms/torso/legs/feet_m/f` | arms … feet | Peasant outfit parts |
-| `hair_simpleparted`, `hair_buzzed`, `hair_beard` | hair | Male; a look can wear hair and a beard |
+| `hair_simpleparted`, `hair_buzzed`, `hair_beard` | hair | Male; a look can wear hair and a beard. The beard's file is no longer loaded: `gear.ts` (`BEARD`) builds a full beard on the face instead |
 | `hair_long`, `hair_buns`, `hair_buzzedfemale` | hair | Female |
 | `textures/*.jpg` | — | Shared base colour maps: `ranger`, `peasant`, `skin_m/f`, `athlete_m/f`, `hair_1/2`, and the colourways `ranger_moss`, `peasant_dusk`, `athlete_light_m/f` |
+
+Gear (`GEAR` in `looks.ts`, built by `packages/client/src/content/gear.ts`) is fitted to the wearer: the head and
+hair are measured in the bind pose into a map of how far the surface is from the skull's middle in every direction
+(`headFit.ts`, `HeadMap`); caps, berets, beanies, the wide-brim hat, headband, mask and goggle strap are surfaces laid
+over that map (with thickness), shades sit on the nose bridge and reach back to the ears, and hair a hat covers is cut
+away. Helmets are textured models (`public/gear/`, `tools/content/prepare-gear.mjs`, `content/gear.json`) seated by
+`fitModel`: the smallest size and lowest seat that keep the skull clear of the shell's inside, its rim over the eyes
+at the brows (a deep shell is made a little shallower). Head gear and helmets hang on the Head joint, so full-body
+first person's head cut hides them. Check a change by eye: `?mode=grips`, `__grips.pose(look, weapon, 'third')`
+then `__grips.head(alpha, radius, beta?)`.
 
 Parts carry no textures of their own: the game assigns the shared maps by
 material name (`textureFor` in `looks.ts`), so a texture downloads once however
@@ -274,17 +284,22 @@ it beyond 18 m (`LOD_DISTANCE`). In the viewer from 30 m, 253k triangles drop to
 90k. The copies live in the same file because separate low-detail files loaded
 in the background were seen to stall in the browser.
 
-A Meshy character's copy is cut sloppily (positions only), which welds vertices
-across texture seams: their texture coordinates then land in other charts and the
-far copy is drawn in patches of the wrong colours (Santa from a distance). A
-manifest's `fixes.lod` (a share, e.g. 0.45) cuts that character's copy to the share
-keeping its seams instead (as the props' levels of detail; sloppy only if that
-stops above 1.5 times the target). The characters of 2026-11-01's second batch
-use it; the rest keep the sloppy 30% until rebuilt with it.
+**Whole-body (Meshy) characters' far copy** (`tools/content/character-lod.mjs`): 30% of
+the body's triangles (`fixes.lod` sets another share, 0.15-0.6), cut with the texture
+coordinates weighed in, so a seam collapses only where the colour layout agrees on both
+sides. The old sloppy cut joined triangles across the texture's charts: Saint Nick's far
+copy wore white streaks over his red coat (half its triangles spanned a seam; now 5 of
+4,800). A mesh that cut can't bring near its share is cut on its shape alone with its
+seams welded, each corner taking back the copy in the chart its triangle shares.
+`prepare-meshy-characters.mjs` adds it; `node tools/content/relod-built.mjs`
+(`ONLY=<ids>`, `OUT=<dir>` for a trial) remakes it in the built files without the
+downloads and updates the lock. **Through a scope** the switch moves out with the zoom
+(`setCharacterLodZoom`, from the view's FOV against the game's: a sniper scope's 0.4 rad
+keeps full detail to about 71 m), so a scope never shows the far copy filling the view.
 
 **Meshy characters' normal maps.** A Meshy body is cut from hundreds of
 thousands of triangles to about 11,000, which alone shades as lumpy facets.
-`prepare-meshy-characters.mjs` bakes a 512 px tangent-space normal map from the
+`prepare-meshy-characters.mjs` bakes a 512 px (`fixes.normalSize`: 1024) tangent-space normal map from the
 surface before the cut (and Meshy's own normal map) into the download's texture
 layout (`bakeNormals` in `tools/content/meshy-mesh.mjs`, with a TANGENT
 attribute), for the body, its low-detail copy (same material) and the
@@ -467,7 +482,7 @@ repo; they live in a downloads dir outside it.
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `lod` (0.1–0.8: the share of the body's triangles its low-detail copy keeps, cut keeping the texture seams; see "Level of detail"). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel and square to it, in third person and Character Select; Bandit's broad build put the stock at his snout). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -581,12 +596,19 @@ The steps on their own:
   thumb scaled from the rig's), keeping the rig's joint orientations;
 - the fingers weighted to the rig's finger chains: split into index, middle,
   ring and pinky where the gaps between the fingers show, blended at the
-  knuckles and along each finger; one bend at the knuckle line for a mitten,
-  claw or fused hand (a whole-hand curl); left rigid only when the hand is a
+  knuckles and along each finger; a mitten, claw or fused hand curls as one
+  wide finger along the middle finger's three joints (it was bent once at the
+  knuckle line, which stood the fingers out flat under a handguard); long
+  fingers (a frog's, a monkey's) curl further, by their length against the
+  rig's, up to 1.5 times; left rigid only when the hand is a
   compact block already closed (a fist: thicker than half its length and less
   than 1.5 times as long as wide, or thicker than 0.65 of its length). A
   relaxed Meshy hand, its fingers a little bent, measures 0.3 to 0.45 thick for
   its length and still bends (it was taken for a fist and left flat on the gun);
+- a cuff the skinning left on the hand (a ring at the wrist end, round in
+  section and three times as dense as the hand past it: King Aldric's fur
+  cuffs, Brass Hare's) is measured out and stays on the hand joint: it had
+  held the knuckle line inside itself and curled into flaps;
 - vertices far from the hand's core (straps, a cape's edge left on the hand:
   past 1.6 times the 80th percentile of their distance from its centre) are
   left out of the measure and keep their weights;
@@ -595,6 +617,13 @@ The steps on their own:
   dapper's, the Knight's) takes its flat, facing the body's front;
 - the measurements written on the hand joints (`extras.hand`) for the game.
 
+In the game a long gun's support hand cups the handguard over the base of its
+fingers (its palm centre sits back from the handguard by 0.22 of the hand's
+length, `CUP_BACK`) and closes all the way round it; a pistol's support hand
+closes part way round the shooting hand. A long gun's barrel line keeps
+`HEAD_CLEAR` (0.15 m) from the head's joint: the stock drops (up to 5 cm) where
+a big helmet or a short neck put the head by the gun (Capt. Nova).
+
 In the game a hand closes onto the point of the gun it holds (`closeHand`):
 the fingers curl whichever way brings their tips toward it, so a hand whose
 palm side came out reversed still wraps the gun instead of bending its fingers
@@ -602,13 +631,18 @@ up off it.
 
 **Arm skin kept to the arms** (`tools/content/armweights.mjs`, opt-in with
 `fixes.armCloth: true`): a vertex an arm holds that hangs well below it (past
-2.2 to 3.4 limb radii from its bones, clear of the shoulder) takes the weights
-of the nearest vertex the body holds, blended over that band. Tried on every
-character (2026-10-31) it made the stretching worse: wide sleeves (Giggles,
-the Dust Trooper) grew wings from the arms instead of streaks, and the audit's
-stretch measure rose on Hector, the Dapper and others; so no character uses it.
-The sleeve and coat "spikes" need a better rule (weights blended by distance
-along the surface, or cloth joints), see HANDOFF.md.
+2.2 limb radii from its bones, clear of the shoulder) is cloth, eased from the
+arm's weights to the body's by its share of the way from the arm to the body
+ALONG THE SURFACE (eased between 0.3 and 0.8 of the way), taking the weights of
+the body vertex nearest along the surface. A coat's side joined to the body
+under the arm goes with the body; a wide sleeve, joined to the body only round
+the shoulder, stays on the arm. (The first rule, 2026-10-31, took the nearest
+body vertex in a straight line: wide sleeves by the hips went to the hips and
+grew wings from the arms, Giggles' and the Dust Trooper's.) As of 2026-11-01 no
+character needs it: the audit's spikes are in the legs (a tabard or coat
+between them: the Iron Knight, Ser Brannock), the armpits (Big Bogdan, the
+Dapper) and low-detail fingers, which it does not touch. The audit reports
+spikes by joint (`stretch.by`).
 
 **Head and hands keep their detail** (`cutKeeping` in `tools/content/meshy-mesh.mjs`):
 both cuts (an unrigged download's work cut to 40k triangles, and the final
@@ -619,9 +653,13 @@ of 133 triangles and hands of a few dozen (Lancer Mei, Merrow the Wise).
 
 The log prints each hand's size and what it got (`split`, `mitten`, `none`).
 For an odd model, `fixes.hands` overrides: `palm` (`[x, y, z]` in the hand
-joint's space, metres), `curl` (0–1.5, how far the fingers close), `scale`
-(shrink or grow the hand about the wrist), `mitten` (true: the fingers bend together even where
-gaps were found; a thumb or fold read as a gap crumples a split hand into shards), for both hands or one (`l`, `r`). A rigid gauntlet
+joint's space, metres), `curl` (0–1.5, how far the fingers close; 0 for paws
+that can't close, as Teddy's balls), `scale` (shrink or grow the hand about the
+wrist), `wrist` (true: the skin past the wrist joint rides the hand alone, none
+of it eased into the forearm; Biscuit's stubby paws folded at the wrist when the
+hand turned hard onto a gun pointed at the ground), `mitten` (true: the fingers bend
+together even where gaps were found; a thumb or fold read as a gap crumpled a split
+hand into shards: Honest Abe's and Virtua Soldier's right hands), for both hands or one (`l`, `r`). A rigid gauntlet
 (`fingers: none`, curl 0) given a `curl` is skinned as a mitten that closes on the grip: the Knight has
 `fixes.hands.curl: 1` (rehanded with rehand-built.mjs).
 
@@ -638,8 +676,8 @@ the lock is left alone).
     pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4860
     node tools/content/grip-audit.mjs http://localhost:4860 <out dir outside the repo>
 
-The **grip audit** renders every player character holding the rifle, the pistol
-and the Spin Gun in the Character Select pose, from the side and the front,
+The **grip audit** renders every player character holding the rifle, the pistol,
+the Spin Gun, the shotgun and the Spear in the Character Select pose, from the side and the front,
 measures each hold as drawn (`__grips.audit()`, `tools/gripAudit.ts`: finger
 weights per hand, fingertips against the grip with the hands open and closed
 (the curl test), elbow bend against the arm's own skin, the gun against the
@@ -648,7 +686,11 @@ head and shoulders, arms across the midline, stretched skin edges) and writes
 `<id>.png`). Judge a gun "at the face" from the side: front views foreshorten
 a rifle pointed at the camera. `ONLY=<ids>`, `NO_SHOTS=1`, `NO_FP=1`,
 `RESUME=1` (it saves after every character) and `RESCORE=1` (flags again after
-changing a threshold).
+changing a threshold); `WEAPONS_ONLY=rifle,pistol,shotgun,spear` measures only
+those (a run of every weapon takes about 75 s a character on a busy machine) and
+`AUDIT_PX=400` renders a smaller page (software GL is pixel-bound). `summary.md`
+ends with each character's flags per weapon. `window.__grips.closeUp(joint,
+alpha, beta, radius)` frames one joint (a support hand) after a third-person pose.
 
 The per-character sheet:
 
@@ -718,7 +760,11 @@ and shoulders, framed from the neck joint up to the top of the model and
 centred on the head joint (any body shape), three-quarter from the front;
 creatures whole. The built-in looks' portraits ship with the site
 (`client/public/portraits/*.webp`, listed in `frontend/portraitIndex.ts`) so
-the menu shows them at once. They're made by the **Capture portraits**
+the menu shows them at once. A look whose face the default framing hides or
+leaves off centre gets its own view in `PORTRAIT_VIEWS` (portraits.ts): `from`
+(where the camera sits from the face), `aim` (a nudge of the aim point) and
+`zoom` (the frame's size against the default); `__front.portraits.renderLive(look,
+view)` tries one without a rebuild. They're made by the **Capture portraits**
 workflow (`tools/content/capture-portraits.mjs`, the same renderer), which
 commits them to `check/portraits`; run it after adding characters or changing
 the framing. A look without a shipped portrait (new since the last capture,

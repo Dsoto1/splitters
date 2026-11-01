@@ -31,11 +31,15 @@
     "arms": "own"
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 17000,
     "feet": true,
     "cloth": true,
     "hands": {
       "curl": 1
-    }
+    },
+    "handsShare": 0.1,
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.28
   }
 }
