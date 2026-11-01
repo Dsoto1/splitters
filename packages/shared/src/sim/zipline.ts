@@ -264,18 +264,16 @@ export function ziplineClearanceIssues(entities: readonly ZiplineLike[], physics
     const s0 = ZIP.margin;
     const s1 = z.len - ZIP.margin;
     const hang = hangDepth();
-    // The cable (just under it, so a post's own platform edge doesn't count), and the rider's head, middle and feet.
-    const lines = [0.1, ZIP.handGap + 0.1, hang / 2, hang - 0.15];
-    // Along the drooping cable in short straight pieces.
+    // The cable itself (just under it, so a post's own platform edge doesn't count), along the droop in short
+    // straight pieces; and the hanging rider's body every half metre, by the very check a ride makes each tick.
     const pieces = Math.max(2, Math.ceil((s1 - s0) / 4));
-    const blocked = lines.some((drop) => {
-      for (let k = 0; k < pieces; k++) {
-        const p = cablePoint(z, s0 + ((s1 - s0) * k) / pieces);
-        const q = cablePoint(z, s0 + ((s1 - s0) * (k + 1)) / pieces);
-        if (!physics.lineOfSight({ x: p.x, y: p.y - drop, z: p.z }, { x: q.x, y: q.y - drop, z: q.z })) return true;
-      }
-      return false;
-    });
+    let blocked = false;
+    for (let k = 0; k < pieces && !blocked; k++) {
+      const p = cablePoint(z, s0 + ((s1 - s0) * k) / pieces);
+      const q = cablePoint(z, s0 + ((s1 - s0) * (k + 1)) / pieces);
+      blocked = !physics.lineOfSight({ x: p.x, y: p.y - 0.1, z: p.z }, { x: q.x, y: q.y - 0.1, z: q.z });
+    }
+    for (let s = s0; s <= s1 + 1e-6 && !blocked; s += 0.5) blocked = !physics.headroom(hangFeet(z, Math.min(s, s1)), STANCES[0].height, PLAYER.radius);
     if (blocked) out.push({ severity: 'error', code: 'zipline.blocked', message: `zipline ${z.id}: something solid is in the way of the cable or of riders hanging under it (raise the posts or move them)`, targetId: z.id });
     const below = (s: number, max: number) => {
       const c = cablePoint(z, s);

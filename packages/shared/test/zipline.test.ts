@@ -27,7 +27,8 @@ import {
 } from '../src/index.ts';
 import { Match, NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
-import { block, codes, loaded, start, type Driver } from './kit20.ts';
+import { Driver, block, codes, loaded, start } from './kit20.ts';
+import { readFileSync } from 'node:fs';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
@@ -234,6 +235,32 @@ describe('ziplines', () => {
     expect(clear(zipline({ height: 8, position: [-14, 0, 8], end: [28, 0, 0] }))).toContain('zipline.out_of_reach');
     // Dropping riders off over nothing (the far end beyond the slab).
     expect(clear(zipline({ end: [60, -2, 0] }))).toContain('zipline.no_landing');
+  });
+
+  it('Vinefall Sanctum: each gorge zipline takes a player from its terrace across the gorge to the far bank', () => {
+    const r = loadMap(readFileSync(new URL('../../../maps/vinefall_sanctum.json', import.meta.url), 'utf8'));
+    if (!r.ok) throw new Error(JSON.stringify(r.issues));
+    const lines = r.map.entities.filter((e): e is ZiplineEntity => e.kind === 'zipline');
+    expect(lines.length).toBeGreaterThanOrEqual(1);
+    expect(lines.length).toBeLessThanOrEqual(3);
+    for (const z of lines) {
+      const match = new Match(r.map, undefined, 3);
+      const me = match.addHuman('me')!;
+      const d = new Driver(match, me);
+      d.run(2);
+      const [x, y, zz] = z.position;
+      const along = Math.atan2(z.end[0], z.end[2]);
+      d.place(x + Math.sin(along) * 1.6, y, zz + Math.cos(along) * 1.6, along);
+      d.input({ buttons: USE });
+      expect(d.me.move.zip, z.id).toBeDefined();
+      rideOut(d, TICK_RATE * 8);
+      d.run(TICK_RATE);
+      const far = { x: x + z.end[0], y: y + z.end[1], z: zz + z.end[2] };
+      expect(Math.hypot(d.me.move.pos.x - far.x, d.me.move.pos.z - far.z), z.id).toBeLessThan(3);
+      expect(d.me.move.grounded).toBe(true);
+      expect(Math.abs(d.me.move.pos.y - far.y)).toBeLessThan(0.6);
+      expect(d.me.health).toBe(100);
+    }
   });
 
   it('bots: a one-way navmesh link from start to end; they take it when it is the shorter way', () => {

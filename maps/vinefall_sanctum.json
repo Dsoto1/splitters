@@ -1,11 +1,11 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 24,
+  "formatVersion": 25,
   "metadata": {
     "id": "vinefall_sanctum",
     "name": "Vinefall Sanctum",
     "author": "Tile Trigger",
-    "description": "An overgrown temple city split by a river gorge (Style Pack 06: Jungle Ruins). The Embers hold the south sanctum, the Tide the north; each has a stepped ziggurat with a shrine on top (a sniper rifle at the altar), two carved temples with portcullis gates and roofs you can run, waterfalls with a way through behind the falls, and a timber watch tower at each end. Cross the gorge by three rope bridges, by the high rope and stone bridges between the terraces 4 m up, or wade the river below (dynamite and heavy armour down there; gorge steps and vines lead out).",
+    "description": "An overgrown temple city split by a river gorge (Style Pack 06: Jungle Ruins). The Embers hold the south sanctum, the Tide the north; each has a stepped ziggurat with a shrine on top (a sniper rifle at the altar), two carved temples with portcullis gates and roofs you can run, waterfalls with a way through behind the falls, and a timber watch tower at each end. Cross the gorge by three rope bridges, by the high rope and stone bridges between the terraces 4 m up, by zipline from your own terrace down across it to the far bank (the Tide's in the west, the Embers' in the east), or wade the river below (dynamite and heavy armour down there; gorge steps and vines lead out).",
     "createdAt": "2026-10-31T12:31:08.621Z",
     "updatedAt": "2026-10-31T12:31:08.621Z",
     "parentId": null,
@@ -4520,6 +4520,44 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "zipline_4l3fwy2h12",
+      "kind": "zipline",
+      "position": [
+        -24,
+        4,
+        27
+      ],
+      "end": [
+        -2,
+        -4,
+        -41
+      ],
+      "height": 4.2,
+      "speed": 14,
+      "twoWay": false,
+      "sag": 0.015,
+      "name": "West gorge zipline"
+    },
+    {
+      "id": "zipline_xj12luoz40",
+      "kind": "zipline",
+      "position": [
+        24,
+        4,
+        -27
+      ],
+      "end": [
+        2,
+        -4,
+        41
+      ],
+      "height": 4.2,
+      "speed": 14,
+      "twoWay": false,
+      "sag": 0.015,
+      "name": "East gorge zipline"
     }
   ],
   "factions": [],
