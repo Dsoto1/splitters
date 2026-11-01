@@ -1,0 +1,35 @@
+{
+  "id": "meshy_seetah",
+  "kind": "character",
+  "use": "player",
+  "order": 96,
+  "name": "Seetah J. Chloth",
+  "look": "core.seetah",
+  "group": "animals",
+  "nameTheme": "cat",
+  "bio": "Fastest cat alive, for about four seconds a day. The rest is a very long nap with excellent aim.",
+  "body": "male",
+  "notes": "Drive, 2026-11-01 (\"rigged cheetah sloth\", All Animations; via the lead). The owner's cheetah/sloth hybrid. A rigged Meshy download (10.4k triangles, 4096 px maps; Mixamo joint names read as Meshy's; its two clips are not used: the hands are fitted by hands.mjs). The owner's own model (owned).",
+  "source": {
+    "license": "owned",
+    "author": "the owner, on their Meshy subscription",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_rigged_cheetah_sloth_All_Animations\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}
