@@ -1425,8 +1425,9 @@ export class Match {
     // Classes set health and speed themselves.
     if (c.cls) return;
     c.speedMul = spec.speed;
+    // At full health (as everyone is, joining: they spawn before their look is set), full health of the new size.
+    if (!c.alive || c.health >= c.maxHealth) c.health = spec.health;
     c.maxHealth = spec.health;
-    if (!c.alive) c.health = spec.health;
   }
 
   /** `at`: this slot (a spectator joining again takes back the slot kept for them); else the first free one. */

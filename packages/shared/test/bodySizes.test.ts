@@ -52,6 +52,9 @@ describe('character sizes', () => {
     expect(big.speedMul).toBeLessThan(1);
     expect(small.size).toBe(BODY_SIZES.small.scale);
     expect(small.maxHealth).toBe(BODY_SIZES.small.health);
+    // They join at full health of their size (they used to start their first life on 100 of 115 or 85).
+    expect(big.health).toBe(BODY_SIZES.large.health);
+    expect(small.health).toBe(BODY_SIZES.small.health);
     const off = new Match(room(), { ...DEFAULT_DEATHMATCH_RULES, bodySizes: false });
     const same = off.addHuman('big', 'core.knight')!;
     expect(same.size).toBe(1);
