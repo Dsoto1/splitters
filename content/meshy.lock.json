@@ -205,10 +205,10 @@
       "src": "Meshy_AI_Hyena_Warrior_20250425_texture.fbx",
       "sourceTriangles": 31876,
       "file": "characters/meshy_hyena.glb",
-      "sha256": "189a51669dd6a4bd",
+      "sha256": "68f0972c04f3037b",
       "triangles": 9988,
       "lodTriangles": 2950,
-      "bytes": 620044,
+      "bytes": 620036,
       "hands": true
     },
     {
@@ -218,9 +218,9 @@
       "src": "Meshy_AI_Hyena_Warrior_20250425_texture.fbx",
       "sourceTriangles": 31876,
       "file": "characters/meshy_hyena_fparms.glb",
-      "sha256": "850665b1bb5a632a",
+      "sha256": "fca82a6d9f875cbd",
       "triangles": 1164,
-      "bytes": 271092,
+      "bytes": 271088,
       "hands": true
     },
     {
@@ -469,10 +469,10 @@
       "sourceTriangles": 577100,
       "landmarks": "found",
       "file": "characters/meshy_santa.glb",
-      "sha256": "f579903e3126ad6d",
+      "sha256": "422b064b5fa69919",
       "triangles": 10998,
       "lodTriangles": 3088,
-      "bytes": 677960,
+      "bytes": 677952,
       "hands": true
     },
     {
@@ -485,9 +485,9 @@
       "sourceTriangles": 577100,
       "landmarks": "found",
       "file": "characters/meshy_santa_fparms.glb",
-      "sha256": "4e106589abbe00cb",
+      "sha256": "535df351bd24fe18",
       "triangles": 5759,
-      "bytes": 366700,
+      "bytes": 366668,
       "hands": true
     },
     {
@@ -1145,10 +1145,10 @@
       "model": "An ancient Egyptian Anubis",
       "date": "2026-10-29",
       "file": "characters/meshy_anubis.glb",
-      "sha256": "c2bae38c80db7917",
+      "sha256": "6dc2f52b6b60dbfd",
       "triangles": 11000,
       "lodTriangles": 3179,
-      "bytes": 790072,
+      "bytes": 790064,
       "hands": true
     },
     {
@@ -1161,9 +1161,9 @@
       "model": "An ancient Egyptian Anubis",
       "date": "2026-10-29",
       "file": "characters/meshy_anubis_fparms.glb",
-      "sha256": "0a3d1f431148f92d",
+      "sha256": "cd111124c5844aaa",
       "triangles": 3620,
-      "bytes": 349528,
+      "bytes": 349512,
       "hands": true
     },
     {
@@ -1269,10 +1269,10 @@
       "model": "Uniformed Worker in a Jacket",
       "date": "2026-10-29",
       "file": "characters/meshy_zhao.glb",
-      "sha256": "dc072674d50afe7a",
+      "sha256": "86ede8a6a20c7ca3",
       "triangles": 10999,
       "lodTriangles": 3158,
-      "bytes": 862060,
+      "bytes": 862044,
       "hands": true
     },
     {
@@ -1285,9 +1285,9 @@
       "model": "Uniformed Worker in a Jacket",
       "date": "2026-10-29",
       "file": "characters/meshy_zhao_fparms.glb",
-      "sha256": "a41a8c4afb990ae4",
+      "sha256": "f6a90c0da1927001",
       "triangles": 4623,
-      "bytes": 469520,
+      "bytes": 469516,
       "hands": true
     },
     {
@@ -1546,10 +1546,10 @@
       "model": "Halloween 2025 ghoul",
       "date": "2026-10-29",
       "file": "characters/meshy_skeleton.glb",
-      "sha256": "d567be1a1ec2ffd4",
+      "sha256": "7768362cfc5a9225",
       "triangles": 15211,
       "lodTriangles": 4444,
-      "bytes": 1276744,
+      "bytes": 1276720,
       "hands": true
     },
     {
@@ -1562,9 +1562,9 @@
       "model": "Halloween 2025 ghoul",
       "date": "2026-10-29",
       "file": "characters/meshy_skeleton_fparms.glb",
-      "sha256": "15cf3e4f3e7daf3b",
+      "sha256": "756619b7808a8c8a",
       "triangles": 7565,
-      "bytes": 734260,
+      "bytes": 734228,
       "hands": true
     },
     {
@@ -1629,7 +1629,7 @@
         "rig": "01a18a0b-1e9b-7362-a818-d0779745bb32"
       },
       "file": "characters/meshy_ashwalker.glb",
-      "sha256": "857589905e4c7bb8",
+      "sha256": "1eed34a825e450ee",
       "triangles": 9904,
       "lodTriangles": 2863,
       "bytes": 789832,
@@ -1643,9 +1643,9 @@
         "rig": "01a18a0b-1e9b-7362-a818-d0779745bb32"
       },
       "file": "characters/meshy_ashwalker_fparms.glb",
-      "sha256": "e363986717fa9271",
+      "sha256": "8670b2b0078a2698",
       "triangles": 749,
-      "bytes": 316696,
+      "bytes": 316680,
       "hands": true
     },
     {

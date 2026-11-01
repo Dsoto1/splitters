@@ -246,6 +246,21 @@ function rehand(doc, overrides, label) {
 const triangles = (doc) => doc.getRoot().listMeshes().filter((m) => !/_lod$/.test(m.getName())).reduce((n, m) => n + m.listPrimitives().reduce((k, p) => k + p.getIndices().getCount() / 3, 0), 0);
 const lodTriangles = (doc) => doc.getRoot().listMeshes().filter((m) => /_lod$/.test(m.getName())).reduce((n, m) => n + m.listPrimitives().reduce((k, p) => k + p.getIndices().getCount() / 3, 0), 0);
 
+/**
+ * A built hand was scaled at import (`fixes.hands.scale`, prepare-meshy-characters.mjs): scaled again here, every
+ * run shrank it further (Saint Nick's, Rattles', Anubis', Ashwalker's and Agent Zhao's hands, 2026-11-01).
+ */
+function withoutScale(hands) {
+  if (!hands) return hands;
+  const { scale: _s, l, r, ...rest } = hands;
+  const side = (h) => {
+    if (!h) return h;
+    const { scale: _x, ...k } = h;
+    return k;
+  };
+  return { ...rest, ...(l ? { l: side(l) } : {}), ...(r ? { r: side(r) } : {}) };
+}
+
 const lock = JSON.parse(readFileSync(LOCK, 'utf8'));
 const only = process.env.ONLY?.split(',').filter(Boolean);
 const files = [];
@@ -266,7 +281,7 @@ for (const m of readManifests({ ready: true })) {
     console.log(`  ${`${id}.glb`.padEnd(26)} ${String(entry.triangles).padStart(6)} tris ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
   };
   const doc = await io.read(join(OUT, `${m.id}.glb`));
-  rehand(doc, { ...spec.hands, armCloth: !!spec.armCloth }, 'body');
+  rehand(doc, { ...withoutScale(spec.hands), armCloth: !!spec.armCloth }, 'body');
   await write(doc, m.id, body);
   let arms = lock.files.find((f) => f.id === `${m.id}_fparms`);
   const armsDoc = arms && existsSync(join(OUT, `${m.id}_fparms.glb`)) ? await io.read(join(OUT, `${m.id}_fparms.glb`)) : await io.read(join(OUT, `${m.id}.glb`));
@@ -276,7 +291,8 @@ for (const m of readManifests({ ready: true })) {
     arms = { role: 'meshy-fparms', id: `${m.id}_fparms`, ...from, file: `characters/${m.id}_fparms.glb` };
     lock.files.splice(lock.files.indexOf(body) + 1, 0, arms);
   }
-  rehand(armsDoc, spec.hands, 'arms');
+  // (Arms cut here from the body just now are already scaled as the body is; arms built at import were scaled then.)
+  rehand(armsDoc, withoutScale(spec.hands), 'arms');
   await write(armsDoc, `${m.id}_fparms`, arms);
   files.push(m.id);
 }
