@@ -109,8 +109,38 @@ const ranger = (s: 'm' | 'f', hood = true, pauldron = true): string[] => [
 ];
 const peasant = (s: 'm' | 'f'): string[] => [`peasant_torso_${s}`, `peasant_arms_${s}`, `peasant_legs_${s}`, `peasant_feet_${s}`];
 
-/** Presets that between them use every part, hairstyle and colourway, and show off dyes and gear. */
-export const CORE_LOOKS: readonly CharacterLook[] = [
+/**
+ * Looks that were retired, and the kept look each one now resolves to, so a saved profile, setup, bot set or map
+ * that still names one keeps working. A retired look stays defined (below) but leaves CORE_LOOKS: Character
+ * Select, the bot rotation and the Designer's presets no longer offer it. 2026-11-01: the owner's Roster Board
+ * retired 14 original modular looks and Ivory Rustwalker.
+ */
+export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
+  'core.champion': 'core.engineer',
+  'core.desperado': 'core.engineer',
+  'core.miller': 'core.sprout',
+  'core.raider': 'core.ranger',
+  'core.sprinter': 'core.sprout',
+  'core.striker': 'core.ranger',
+  'core.huntress': 'core.ranger',
+  'core.tracker': 'core.ranger',
+  'core.bulwark': 'core.warden',
+  'core.commando': 'core.warden',
+  'core.operative': 'core.warden',
+  'core.scout': 'core.sprout',
+  'core.pathfinder': 'core.sprout',
+  'core.wayfarer': 'core.sprout',
+  'core.frost': 'core.sprout',
+  'core.medic': 'core.sprout',
+  'core.sentinel': 'core.sprout',
+  'core.farmhand': 'core.engineer',
+  'core.drifter': 'core.engineer',
+  'core.brawler': 'core.engineer',
+  'core.rustwalker': 'core.t350',
+};
+
+/** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
+const ALL_LOOKS: readonly CharacterLook[] = [
   { id: 'core.ranger', name: 'Linktifa', body: 'male', head: 'head_male', parts: ranger('m'), hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50', gear: ['pack'], group: 'legends' },
   { id: 'core.huntress', name: 'Huntress', body: 'female', head: 'head_female', parts: ranger('f'), hair: ['hair_long'], colorways: [], skin: null, hairColor: '#b08850', cloth: '#7a2a2a', trim: '#2a2622', gear: ['bandolier'], group: 'folk' },
   // Two sizes off the standard: Sprout is small and quick, Bulwark big and tough.
@@ -187,6 +217,9 @@ export const CORE_LOOKS: readonly CharacterLook[] = [
   ...WHOLE_BODY_LOOKS,
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'], group: 'soldiers' },
 ];
+
+/** The looks on offer (Character Select, bots, presets): every preset not retired. */
+export const CORE_LOOKS: readonly CharacterLook[] = ALL_LOOKS.filter((l) => !(l.id in RETIRED_LOOKS));
 
 export const DEFAULT_LOOK = CORE_LOOKS[0]!.id;
 
@@ -358,18 +391,6 @@ export function decodeLook(id: string): CharacterLook | null {
   return lookProblems(look).length ? null : look;
 }
 
-/**
- * Presets that were retired, and the kept look each one now resolves to, so a
- * saved profile, setup or map that still names one keeps working.
- */
-export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
-  'core.champion': 'core.brawler',
-  'core.desperado': 'core.drifter',
-  'core.miller': 'core.wayfarer',
-  'core.raider': 'core.huntress',
-  'core.sprinter': 'core.scout',
-  'core.striker': 'core.huntress',
-};
 
 /** A preset or custom look by ID (a retired preset gives its replacement); anything unknown or invalid falls back to the default. */
 export const getLook = (id: string | undefined): CharacterLook => {
