@@ -71,11 +71,16 @@ export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_G
 /** Where a piece of gear goes; one per slot. */
 export type GearSlot = 'hat' | 'face' | 'chest' | 'back';
 
-/** Gear built in-game from simple shapes (no model files), coloured by the look's dyes. */
-export const GEAR: readonly { id: string; slot: GearSlot; label: string }[] = [
+/**
+ * Gear worn over the outfit. Most is built in-game from shapes fitted to the wearer's head and body (no model files),
+ * coloured by the look's dyes; a piece with `model` is a textured model (public/gear/<model>.glb, built by
+ * tools/content/prepare-gear.mjs from content/gear.json), fitted to the wearer's head. Custom look IDs encode gear by
+ * its place here: only append.
+ */
+export const GEAR: readonly { id: string; slot: GearSlot; label: string; model?: string }[] = [
   { id: 'cap', slot: 'hat', label: 'Cap' },
   { id: 'beanie', slot: 'hat', label: 'Beanie' },
-  { id: 'helmet', slot: 'hat', label: 'Combat helmet' },
+  { id: 'helmet', slot: 'hat', label: 'Combat helmet', model: 'military_helmet' },
   { id: 'beret', slot: 'hat', label: 'Beret' },
   { id: 'brim', slot: 'hat', label: 'Wide-brim hat' },
   { id: 'headband', slot: 'hat', label: 'Headband' },
@@ -88,6 +93,10 @@ export const GEAR: readonly { id: string; slot: GearSlot; label: string }[] = [
   { id: 'pack', slot: 'back', label: 'Backpack' },
   { id: 'radio', slot: 'back', label: 'Radio pack' },
   { id: 'tank', slot: 'back', label: 'Tank' },
+  { id: 'steel_helmet', slot: 'hat', label: 'Steel helmet', model: 'steel_helmet' },
+  { id: 'aviator_helmet', slot: 'hat', label: 'Aviator helmet', model: 'aviator_helmet' },
+  { id: 'mk2_helmet', slot: 'hat', label: 'Brimmed helmet', model: 'mk2_helmet' },
+  { id: 'viking_helmet', slot: 'hat', label: 'Horned helmet', model: 'viking_helmet' },
 ];
 export const GEAR_SLOTS: readonly GearSlot[] = ['hat', 'face', 'chest', 'back'];
 export const GEAR_SLOT_LABELS: Record<GearSlot, string> = { hat: 'Headwear', face: 'Face', chest: 'Chest', back: 'Back' };
@@ -334,7 +343,7 @@ export function encodeLook(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 'c
   ].join('');
 }
 
-const CUSTOM_RE = /^c1-([mf])([0-9a-f]{4})([0-9a-f])([0-9a-f])([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6})(-[sl])?(?:-d([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6}))?(?:-g([0-9a-f]{4}))?$/;
+const CUSTOM_RE = /^c1-([mf])([0-9a-f]{4})([0-9a-f])([0-9a-f])([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6})(-[sl])?(?:-d([0-9a-f]{6}|-{6})([0-9a-f]{6}|-{6}))?(?:-g([0-9a-f]{4,8}))?$/;
 
 /** A custom look from its ID, or null if the ID is malformed or the look can't be worn. */
 export function decodeLook(id: string): CharacterLook | null {
