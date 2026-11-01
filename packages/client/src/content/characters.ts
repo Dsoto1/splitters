@@ -94,6 +94,8 @@ export interface CharacterInstance {
   hands: { l?: HandData; r?: HandData };
   /** This body's own long-gun hold against everyone's (model metres at a 1.8 m body; the look's `whole.hold`). */
   hold?: { forward?: number; down?: number; out?: number };
+  /** How the body gets about (the look's `locomotion`): `roll` glides with no walk cycle. */
+  locomotion?: 'roll';
   dispose(): void;
 }
 
@@ -218,6 +220,7 @@ export class CharacterLibrary {
     let body: CharacterInstance['body'];
     let hands: CharacterInstance['hands'] = {};
     let hold: CharacterInstance['hold'];
+    let locomotion: CharacterInstance['locomotion'];
 
     if (spec.npc) {
       // The rig's own mannequin: skeleton and clips come along with the instance.
@@ -266,7 +269,10 @@ export class CharacterLibrary {
       body = 'mannequin';
     } else {
       const look = getLook(spec.look);
-      if (!spec.armsOnly) hold = look.whole?.hold;
+      if (!spec.armsOnly) {
+        hold = look.whole?.hold;
+        locomotion = look.locomotion;
+      }
       // The beard isn't a file: buildGear makes it on the face (gear.ts, BEARD).
       const files = spec.armsOnly ? [firstPersonArms(look)] : look.whole ? look.parts : [...look.parts, look.head, ...look.hair.filter((h) => h !== BEARD)];
       const [carrierC, ...rest] = await Promise.all(files.map((p) => this.load(`${p}.glb`)));
@@ -368,6 +374,7 @@ export class CharacterLibrary {
       body,
       hands,
       ...(hold ? { hold } : {}),
+      ...(locomotion ? { locomotion } : {}),
       dispose: () => {
         for (const g of new Set(clips.values())) g.dispose();
         for (const o of owned) o.dispose();

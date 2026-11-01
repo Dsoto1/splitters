@@ -705,7 +705,8 @@ function grownCharts(pos, idx, fn, area, minDot) {
       chart[t] = best;
     }
   }
-  return list.filter((c) => c.tris.length).map(({ tris, basis }) => {
+  return list.filter((c) => c.tris.length).map(({ tris, basis: seedBasis }) => {
+    const basis = tightBasis(pos, idx, tris, seedBasis);
     let [u0, v0, u1, v1] = [Infinity, Infinity, -Infinity, -Infinity];
     for (const t of tris) {
       for (let c = 0; c < 3; c++) {
@@ -715,6 +716,33 @@ function grownCharts(pos, idx, fn, area, minDot) {
     }
     return { tris, basis, u0, v0, w: u1 - u0, h: v1 - v0, x: 0, y: 0 };
   });
+}
+
+/**
+ * A grown chart's axes turned within its plane to the smallest box round it (tried every TIGHT_STEP degrees), then
+ * laid wider than tall: charts are packed by their boxes, and a long diagonal chart (a sleeve, a leg) in an upright
+ * box left most of its box, and so of the colour map, empty (the rebaked maps covered a third of the square).
+ */
+const TIGHT_STEP = 5;
+function tightBasis(pos, idx, tris, [a, b]) {
+  const verts = [...new Set(tris.flatMap((t) => [idx[t * 3], idx[t * 3 + 1], idx[t * 3 + 2]]))].map((v) => planar(pos, v, [a, b]));
+  let best = { area: Infinity, c: 1, s: 0, w: 0, h: 0 };
+  for (let deg = 0; deg < 90; deg += TIGHT_STEP) {
+    const [c, s] = [Math.cos((deg * Math.PI) / 180), Math.sin((deg * Math.PI) / 180)];
+    let [u0, v0, u1, v1] = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const [x, y] of verts) {
+      const [u, v] = [c * x + s * y, -s * x + c * y];
+      [u0, u1, v0, v1] = [Math.min(u0, u), Math.max(u1, u), Math.min(v0, v), Math.max(v1, v)];
+    }
+    const area = (u1 - u0) * (v1 - v0);
+    if (area < best.area - 1e-12) best = { area, c, s, w: u1 - u0, h: v1 - v0 };
+  }
+  const { c, s } = best;
+  let u = [0, 1, 2].map((k) => c * a[k] + s * b[k]);
+  let w = [0, 1, 2].map((k) => -s * a[k] + c * b[k]);
+  // Wider than tall (a quarter turn keeps the projection the same way round: u, w → w, -u).
+  if (best.h > best.w) [u, w] = [w, u.map((x) => -x)];
+  return [u, w];
 }
 
 /** A 2D triangle pulled 2% toward its centre (so triangles that only share an edge or a corner don't count as overlapping). */

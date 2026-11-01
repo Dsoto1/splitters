@@ -1,0 +1,36 @@
+{
+  "id": "meshy_crtrobot",
+  "kind": "character",
+  "use": "player",
+  "order": 82,
+  "name": "CRT Robot",
+  "look": "core.crtrobot",
+  "group": "creatures",
+  "bio": "Runs on vacuum tubes and spite. The screen shows what it thinks of you.",
+  "body": "male",
+  "notes": "Drive batch of 2026-11-01 evening (\"crt robot remeshed\", textured, unrigged, 10k triangles): rigged here from T-pose landmarks found on the mesh. Name a placeholder from the Roster Board.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "crt robot remeshed"
+    },
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_crt_robot_remeshed_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.4,
+    "roughness": 0.55
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "lod": 0.25,
+    "feet": true
+  }
+}

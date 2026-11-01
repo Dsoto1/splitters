@@ -92,6 +92,22 @@ const SIT_KNEE_MIN = 0.3;
 const SIT_KNEE_MAX = 1.5;
 const SIT_SHIN = 0.45;
 const FADE_PER_SEC = 8;
+/**
+ * Rolling (a look with `locomotion: 'roll'`: no legs, a ball or a wheel under it). No walk cycle: the body glides,
+ * tipped about its ground contact toward where it is going (ROLL_LEAN_SPEED radians per m/s) and into its turns and
+ * speed changes (ROLL_LEAN_ACCEL per m/s², the centripetal pull of a turn included), at most ROLL_LEAN_MAX; the spine
+ * takes the forward tip back so the gun stays on the aim. Crouched it hunches over its ball (ROLL_HUNCH, prone
+ * ROLL_HUNCH_PRONE) instead of folding legs it hasn't got.
+ */
+const ROLL_LEAN_SPEED = 0.035;
+const ROLL_LEAN_ACCEL = 0.025;
+const ROLL_LEAN_MAX = 0.32;
+const ROLL_HUNCH = 0.18;
+const ROLL_HUNCH_PRONE = 0.32;
+/** How fast the measured velocity and the lean settle (per second), and a jump further than this in a frame is a teleport. */
+const ROLL_SMOOTH = 10;
+const ROLL_LEAN_EASE = 6;
+const ROLL_TELEPORT = 3;
 /** Overlays outweigh locomotion on the upper body. */
 const OVERLAY_WEIGHT = 4;
 
@@ -405,6 +421,13 @@ export class CharacterAnimator {
   update(dt: number, s: MotionState): void {
     if (!s.alive) {
       if (!this.dead) this.die();
+      if (this.rolls && (this.rollLean.fwd || this.rollLean.side)) {
+        // Down: upright again for the death pose, measured afresh after.
+        this.rollLean.fwd = this.rollLean.side = this.rollLean.hunch = 0;
+        this.rollState.at = null;
+        this.ch.root.rotation.z = 0;
+        this.ch.root.rotation.x = this.prone;
+      }
       return;
     }
     if (this.dead) this.revive();
@@ -427,10 +450,11 @@ export class CharacterAnimator {
     let want: Clip;
     const low = (s.stance ?? 0) > 0;
     // Real prone clips when the rig has them; otherwise the body is tipped over (below).
-    const proneClips = s.stance === 2 && this.ch.clips.has('prone_idle');
+    const proneClips = s.stance === 2 && !this.rolls && this.ch.clips.has('prone_idle');
     if (s.seated) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
     else if (s.celebrate) want = 'dance';
     else if (s.airborne) want = 'jump_air';
+    else if (this.rolls) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
     else if (proneClips) want = s.speed < 0.3 ? 'prone_idle' : 'prone_crawl';
     else if (low) want = s.speed < 0.4 ? 'crouch_idle' : 'crouch_walk';
     else if (s.speed < (this.current === 'run' ? MOVE_STOP : MOVE_START)) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
@@ -439,7 +463,7 @@ export class CharacterAnimator {
     const sprintTarget = s.sprinting || s.speed >= SPRINT_SPEED ? 1 : 0;
     this.sprintMix += Math.sign(sprintTarget - this.sprintMix) * Math.min(Math.abs(sprintTarget - this.sprintMix), dt * FADE_PER_SEC);
     // Prone: tip the whole body forward onto its front, pivoting at the hips over the feet.
-    const tilt = s.stance === 2 && !s.celebrate && !proneClips && !s.seated ? PRONE_TILT : 0;
+    const tilt = s.stance === 2 && !s.celebrate && !proneClips && !s.seated && !this.rolls ? PRONE_TILT : 0;
     // Lying down, the standing aim pose would pull the arms upright: leave the arms to the clip and the grip.
     this.lying = proneClips;
     this.prone += (tilt - this.prone) * Math.min(1, dt * 8);
@@ -449,6 +473,7 @@ export class CharacterAnimator {
     if (s.seated && s.legDrop !== undefined) this.legDrop = s.legDrop;
     this.sit += Math.sign(sitTarget - this.sit) * Math.min(Math.abs(sitTarget - this.sit), dt * 6);
     this.applyProne();
+    if (this.rolls) this.roll(dt, s);
     if (want !== this.current) {
       this.current = want;
       if (want !== 'run') this.play(want, this.weights.get(want) ?? 0);
@@ -751,6 +776,58 @@ export class CharacterAnimator {
     for (const j of this.ch.joints.values()) j.unfreezeWorldMatrix();
   }
 
+  /** A rolling body (the look's `locomotion`): glides, no walk cycle (see ROLL_LEAN_SPEED). */
+  private get rolls(): boolean {
+    return this.ch.locomotion === 'roll';
+  }
+
+  /** Rolling: where the body was (world), its eased velocity and acceleration (m/s, m/s²), and the lean now (radians). */
+  private readonly rollState = { at: null as Vector3 | null, vel: Vector3.Zero(), acc: Vector3.Zero() };
+  private readonly rollLean = { fwd: 0, side: 0, hunch: 0 };
+
+  /**
+   * Rolling: the body's own motion measured from where it is drawn (players, bots and the menu alike), eased, then
+   * the root tipped about the ground contact (its origin, under the ball) toward the velocity and the acceleration
+   * (a turn pulls it inward), in the body's own frame. Crouching hunches the spine over the ball.
+   */
+  private roll(dt: number, s: MotionState): void {
+    const root = this.ch.root;
+    const mover = (root.parent as TransformNode | null) ?? root;
+    mover.computeWorldMatrix(true);
+    const at = mover.getAbsolutePosition().clone();
+    const st = this.rollState;
+    if (dt > 0 && st.at && Vector3.Distance(at, st.at) < ROLL_TELEPORT) {
+      const raw = at.subtract(st.at).scaleInPlace(1 / dt);
+      raw.y = 0;
+      const k = Math.min(1, dt * ROLL_SMOOTH);
+      const vel = st.vel.add(raw.subtract(st.vel).scaleInPlace(k));
+      st.acc.addInPlace(vel.subtract(st.vel).scaleInPlace(1 / dt).subtractInPlace(st.acc).scaleInPlace(k));
+      st.vel.copyFrom(vel);
+    } else {
+      st.vel.setAll(0);
+      st.acc.setAll(0);
+    }
+    st.at = at;
+    const still = !s.alive || s.seated || s.celebrate;
+    const world = still ? Vector3.Zero() : st.vel.scale(ROLL_LEAN_SPEED).addInPlace(st.acc.scale(ROLL_LEAN_ACCEL));
+    world.y = 0;
+    const size = world.length();
+    if (size > ROLL_LEAN_MAX) world.scaleInPlace(ROLL_LEAN_MAX / size);
+    // Into the body's frame (the model faces +Z): +x on the root tips the top forward, +z tips it toward -x.
+    const inv = mover.getWorldMatrix().clone().invert();
+    const local = Vector3.TransformNormal(world, inv);
+    const scale = Math.hypot(local.x, local.z) || 1;
+    local.scaleInPlace(Math.min(size, ROLL_LEAN_MAX) / scale);
+    const e = Math.min(1, dt * ROLL_LEAN_EASE);
+    const L = this.rollLean;
+    L.fwd += (local.z - L.fwd) * e;
+    L.side += (-local.x - L.side) * e;
+    const hunch = !s.alive || s.seated ? 0 : s.stance === 2 ? ROLL_HUNCH_PRONE : (s.stance ?? 0) > 0 ? ROLL_HUNCH : 0;
+    L.hunch += (hunch - L.hunch) * e;
+    root.rotation.x = this.prone + L.fwd;
+    root.rotation.z = L.side;
+  }
+
   /** Current forward tip of the body (0 standing, PRONE_TILT lying down). */
   private prone = 0;
   private lying = false;
@@ -867,7 +944,7 @@ export class CharacterAnimator {
       const axis = Vector3.TransformNormal(up, Matrix.FromQuaternionToRef(inv, new Matrix())).normalize();
       hips.rotationQuaternion = Quaternion.RotationAxis(axis, hipTurn).multiply(hips.rotationQuaternion);
     }
-    for (const bone of this.spine) {
+    for (const [i, bone] of this.spine.entries()) {
       const parent = bone.parent as TransformNode | null;
       if (!parent || !bone.rotationQuaternion) continue;
       parent.computeWorldMatrix(true);
@@ -876,7 +953,11 @@ export class CharacterAnimator {
       const pitchAxis = Vector3.TransformNormal(right, toLocal).normalize();
       const twistAxis = Vector3.TransformNormal(up, toLocal).normalize();
       const share = 1 / this.spine.length;
-      const q = Quaternion.RotationAxis(pitchAxis, this.pitch * share * (this.fp ? FP_BODY_PITCH : 1)).multiply(Quaternion.RotationAxis(twistAxis, -twist * share));
+      // A rolling body tipped forward (roll): the spine takes the tip back, so the shoulders and the gun keep the aim;
+      // hunched (crouching on its ball), the low spine bends forward and the chest takes it back (the aim is kept).
+      const hunch = i === 0 ? -this.rollLean.hunch : i === this.spine.length - 1 ? this.rollLean.hunch : 0;
+      const pitch = (this.pitch * (this.fp ? FP_BODY_PITCH : 1) + this.rollLean.fwd) * share + hunch;
+      const q = Quaternion.RotationAxis(pitchAxis, pitch).multiply(Quaternion.RotationAxis(twistAxis, -twist * share));
       bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
     }
     this.applySit(right);

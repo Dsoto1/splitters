@@ -106,6 +106,19 @@ const meshyName = (name) => {
   return m ? (MIXAMO[m[1]] ?? m[1]) : name;
 };
 
+/**
+ * The rig joint each source joint's skin goes to: its own (JOINT_MAP), else its nearest ancestor's. Finger chains
+ * (LeftHandIndex1 ...: hands.mjs fits the rig's fingers to the mesh itself), end markers and extra bones (a mummy's
+ * wrappings, a heel bone) ride the joint they hang from.
+ */
+function rigJoints(names, parent, file) {
+  return names.map((n, i) => {
+    for (let k = i; k >= 0; k = parent[k]) if (JOINT_MAP[names[k]]) return JOINT_MAP[names[k]];
+    if (names.every((m) => m !== 'Hips')) throw new Error(`${file}: no Hips joint (name the rig's joints with source.joints)`);
+    return 'pelvis';
+  });
+}
+
 /** Bones turned to point the way the rig's do (Meshy joint, its child, rig joint, rig child). */
 const REPOSE = ['l', 'r'].flatMap((s) => {
   const S = s === 'l' ? 'Left' : 'Right';
@@ -206,8 +219,10 @@ async function readMeshy(file, ual, c) {
   const skin = doc.getRoot().listSkins()[0];
   const joints = skin.listJoints();
   const ibm = skin.getInverseBindMatrices().getArray();
-  const names = joints.map((j) => meshyName(j.getName()));
-  for (const n of names) if (!JOINT_MAP[n]) throw new Error(`${file}: unknown Meshy joint ${n}`);
+  // A rig whose joints carry no names we know (Bone_000, ...) is named by its manifest (`source.joints`).
+  const nameOf = (j) => c.rigJoints?.[j.getName()] ?? meshyName(j.getName());
+  const names = joints.map(nameOf);
+  if (new Set(names).size !== names.length) throw new Error(`${file}: two joints share a name (${names.join(', ')})`);
   const world = joints.map((j) => j.getWorldMatrix());
   const skinMat = joints.map((_, i) => mat4Mul(world[i], Array.from(ibm.slice(i * 16, i * 16 + 16))));
   const rest = world.map((m) => [m[12], m[13], m[14]]);
@@ -246,7 +261,8 @@ async function readMeshy(file, ual, c) {
     [P, N, UV, indices, J, W, baseColor, normalMap] = [out.P, out.N, out.UV, out.I, J2, W2, Buffer.from(out.colour), out.normal];
   }
   const index = new Map(names.map((n, i) => [n, i]));
-  const skel = { names, parent: joints.map((j) => index.get(meshyName(j.getParentNode()?.getName() ?? '')) ?? -1), rest };
+  const parent = joints.map((j) => (j.getParentNode() ? (index.get(nameOf(j.getParentNode())) ?? -1) : -1));
+  const skel = { names, parent, rest, rig: rigJoints(names, parent, file) };
   const verts = {
     count: P.length / 3,
     joints: J,
@@ -391,6 +407,7 @@ function pose(skel, verts, ual, c) {
   for (let i = 0; i < posed.length; i++) posed[i] = fit(posed[i]);
   return {
     names,
+    rig: skel.rig ?? names.map((n) => JOINT_MAP[n]),
     posed: new Map(names.map((n, i) => [n, posed[i]])),
     pos,
     nrm,
@@ -793,7 +810,10 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     for (let k = 0; k < 4; k++) {
       const w = src.weights[v * 4 + k];
       if (!w) continue;
-      const u = rigIndex.get(JOINT_MAP[src.names[src.joints[v * 4 + k]]]);
+      let joint = src.rig[src.joints[v * 4 + k]];
+      // Rolling (no legs to walk on): what the legs held rides the pelvis, whole.
+      if (c.locomotion === 'roll' && /^(thigh|calf|foot|ball)_/.test(joint)) joint = 'pelvis';
+      const u = rigIndex.get(joint);
       acc.set(u, (acc.get(u) ?? 0) + w);
     }
     const top = [...acc].sort((a, b) => b[1] - a[1]).slice(0, 4);

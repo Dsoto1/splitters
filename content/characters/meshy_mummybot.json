@@ -1,0 +1,37 @@
+{
+  "id": "meshy_mummybot",
+  "kind": "character",
+  "use": "player",
+  "order": 84,
+  "name": "Mummy Bot",
+  "look": "core.mummybot",
+  "group": "horror",
+  "bio": "Wrapped for eternity, rebooted for Tuesday. Bandages are load-bearing.",
+  "body": "male",
+  "notes": "Drive batch of 2026-11-01 evening, second drop (\"Mummy Bot\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Its extra head joints (wrappings) ride the head. Name a placeholder from the Roster Board.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Mummy Bot"
+    },
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Mummy_Bot_All_Animations\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.2,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

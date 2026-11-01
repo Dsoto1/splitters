@@ -72,6 +72,17 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.rustymech', name: 'Rusty Mech', body: 'male', head: '', parts: ['meshy_rustymech'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_rustymech_fparms' }, group: 'creatures' },
   { id: 'core.frida', name: 'Freaky Frida', body: 'female', head: '', parts: ['meshy_frida'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_frida_fparms' }, group: 'horror' },
   { id: 'core.larry', name: 'Scary Larry', body: 'male', head: '', parts: ['meshy_larry'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_larry_fparms' }, group: 'horror' },
+  { id: 'core.orangeengineer', name: 'Orange Suit Engineer', body: 'male', head: '', parts: ['meshy_orangeengineer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_orangeengineer_fparms' }, group: 'folk' },
+  { id: 'core.gasmaskengineer', name: 'Gas Mask Engineer', body: 'male', head: '', parts: ['meshy_gasmaskengineer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_gasmaskengineer_fparms' }, group: 'soldiers' },
+  { id: 'core.crtrobot', name: 'CRT Robot', body: 'male', head: '', parts: ['meshy_crtrobot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_crtrobot_fparms' }, group: 'creatures' },
+  { id: 'core.rollerbot', name: 'Baseball Robot', body: 'male', head: '', parts: ['meshy_rollerbot'], hair: [], colorways: [], skin: null, hairColor: null, locomotion: 'roll', whole: { arms: 'meshy_rollerbot_fparms' }, group: 'creatures' },
+  { id: 'core.mummybot', name: 'Mummy Bot', body: 'male', head: '', parts: ['meshy_mummybot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_mummybot_fparms' }, group: 'horror' },
+  { id: 'core.pharaoh', name: 'Pharaoh Mummy Warrior', body: 'male', head: '', parts: ['meshy_pharaoh'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_pharaoh_fparms' }, group: 'horror' },
+  { id: 'core.stealthop', name: 'Stealth Operative', body: 'female', head: '', parts: ['meshy_stealthop'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_stealthop_fparms' }, group: 'soldiers' },
+  { id: 'core.crimsonop', name: 'Crimson Operative', body: 'female', head: '', parts: ['meshy_crimsonop'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_crimsonop_fparms' }, group: 'soldiers' },
+  { id: 'core.vintagepro', name: 'Coffee Brown', body: 'female', head: '', parts: ['meshy_vintagepro'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_vintagepro_fparms' }, group: 'folk' },
+  { id: 'core.medicautomaton', name: 'Field Medic Automaton', body: 'male', head: '', parts: ['meshy_medicautomaton'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_medicautomaton_fparms' }, group: 'creatures' },
+  { id: 'core.alienbiker', name: 'Alien Biker', body: 'male', head: '', parts: ['meshy_alienbiker'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_alienbiker_fparms' }, group: 'creatures' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -147,4 +158,15 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.rustymech': 'A white war machine gone to rust. Still runs. Still angry about it.',
   'core.frida': 'Smiles at everyone. Nobody has seen her blink.',
   'core.larry': 'Lives under the stairs of every map. Comes out for the scoreboard.',
+  'core.orangeengineer': 'Fixes the generator mid-firefight. Bills you for the overtime.',
+  'core.gasmaskengineer': 'Breathes through a filter, works through a war. Never says what\'s in the tanks.',
+  'core.crtrobot': 'Runs on vacuum tubes and spite. The screen shows what it thinks of you.',
+  'core.rollerbot': 'Built to field grounders. Now he IS the grounder, and he brought a gun.',
+  'core.mummybot': 'Wrapped for eternity, rebooted for Tuesday. Bandages are load-bearing.',
+  'core.pharaoh': 'Ruled the Nile for forty years. Rules this lobby for the next five minutes.',
+  'core.stealthop': 'You won\'t hear her coming. You\'ll hear the respawn timer.',
+  'core.crimsonop': 'Red dress, black boots, no questions. The mission is whatever she says it is.',
+  'core.vintagepro': 'Funk on the stereo, flares on the floor, and a sidearm that never misses a beat.',
+  'core.medicautomaton': 'Patches you up, then patches you out. Bedside manner not installed.',
+  'core.alienbiker': 'Crossed four galaxies for the open road. Still can\'t find parking.',
 };

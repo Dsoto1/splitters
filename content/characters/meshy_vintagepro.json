@@ -1,0 +1,34 @@
+{
+  "id": "meshy_vintagepro",
+  "kind": "character",
+  "use": "player",
+  "order": 88,
+  "name": "Coffee Brown",
+  "look": "core.vintagepro",
+  "group": "folk",
+  "bio": "Funk on the stereo, flares on the floor, and a sidearm that never misses a beat.",
+  "body": "female",
+  "notes": "Drive batch of 2026-11-01 evening, second drop (\"stylized vintage pro\", rigged): the owner's own model (owned). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Its extra shin joints ride the calves. Name from the owner.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_stylized_vintage_pro__All_Animations\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

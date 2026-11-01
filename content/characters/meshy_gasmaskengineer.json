@@ -1,0 +1,38 @@
+{
+  "id": "meshy_gasmaskengineer",
+  "kind": "character",
+  "use": "player",
+  "order": 81,
+  "name": "Gas Mask Engineer",
+  "look": "core.gasmaskengineer",
+  "group": "soldiers",
+  "bio": "Breathes through a filter, works through a war. Never says what's in the tanks.",
+  "body": "male",
+  "notes": "Drive batch of 2026-11-01 evening (\"Gas Mask Engineer\", textured, unrigged, 561k triangles): rigged here from T-pose landmarks found on the mesh. Name a placeholder from the Roster Board.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Gas Mask Engineer"
+    },
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Gas_Mask_Engineer_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.15,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 16000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true,
+    "cloth": true
+  }
+}

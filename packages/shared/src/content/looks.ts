@@ -30,6 +30,11 @@ export interface CharacterLook {
   hairColor: string | null;
   /** Body size (BODY_SIZES); absent = standard. */
   size?: 'small' | 'large';
+  /**
+   * How the body gets about: absent, it walks (the rig's gait clips); `roll`, it has no legs to walk on (a robot on a
+   * ball) and glides, leaning into its motion and its turns (CharacterAnimator). `locomotion` in its manifest.
+   */
+  locomotion?: 'roll';
   /** Outfit dye: the cloth (greens, olives, sportswear) recoloured to this, or the original. */
   cloth?: string | null;
   /** Second dye: leather, belts and trim (the browns). */

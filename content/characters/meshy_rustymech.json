@@ -24,9 +24,12 @@
     "arms": "own"
   },
   "fixes": {
-    "triangles": 16000,
+    "triangles": 18000,
     "surface": "rebake",
-    "feet": true
+    "feet": true,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "lod": 0.25
   },
   "size": "large"
 }

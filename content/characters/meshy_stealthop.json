@@ -1,0 +1,37 @@
+{
+  "id": "meshy_stealthop",
+  "kind": "character",
+  "use": "player",
+  "order": 86,
+  "name": "Stealth Operative",
+  "look": "core.stealthop",
+  "group": "soldiers",
+  "bio": "You won't hear her coming. You'll hear the respawn timer.",
+  "body": "female",
+  "notes": "Drive batch of 2026-11-01 evening, second drop (\"Stealth Operative\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Name a placeholder from the Roster Board.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Stealth Operative"
+    },
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Stealth_Operative_All_Animations\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

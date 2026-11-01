@@ -1,0 +1,61 @@
+{
+  "id": "meshy_rollerbot",
+  "kind": "character",
+  "use": "player",
+  "order": 83,
+  "name": "Baseball Robot",
+  "look": "core.rollerbot",
+  "group": "creatures",
+  "bio": "Built to field grounders. Now he IS the grounder, and he brought a gun.",
+  "body": "male",
+  "locomotion": "roll",
+  "notes": "Drive batch of 2026-11-01 evening (\"Character output\": a baseball robot player on a ball, NO FEET: he rolls, owner). A rigged Meshy download whose joints are unnamed (Bone_000 ...): named onto Meshy's in source.joints (read off the joint tree: legs inside the ball). `locomotion: roll`: what the legs held (the ball) rides the pelvis, and the game glides him with no walk cycle, leaning into his motion and turns (CharacterAnimator). Name a placeholder from the Roster Board.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Character output"
+    },
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Character_output\\.glb$",
+    "joints": {
+      "Bone_001": "Hips",
+      "Bone_005": "Spine02",
+      "Bone_004": "Spine01",
+      "Bone_002": "Spine",
+      "Bone_016": "neck",
+      "Bone_015": "Head",
+      "Bone_014": "head_end",
+      "Bone_026": "LeftShoulder",
+      "Bone_025": "LeftArm",
+      "Bone_024": "LeftForeArm",
+      "Bone_023": "LeftHand",
+      "Bone_021": "RightShoulder",
+      "Bone_020": "RightArm",
+      "Bone_019": "RightForeArm",
+      "Bone_018": "RightHand",
+      "Bone_013": "LeftUpLeg",
+      "Bone_012": "LeftLeg",
+      "Bone_011": "LeftFoot",
+      "Bone_010": "LeftToeBase",
+      "Bone_009": "RightUpLeg",
+      "Bone_008": "RightLeg",
+      "Bone_007": "RightFoot",
+      "Bone_006": "RightToeBase"
+    }
+  },
+  "finish": {
+    "metallic": 0.3,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "lod": 0.25
+  }
+}

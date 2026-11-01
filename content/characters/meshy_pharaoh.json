@@ -1,0 +1,37 @@
+{
+  "id": "meshy_pharaoh",
+  "kind": "character",
+  "use": "player",
+  "order": 85,
+  "name": "Pharaoh Mummy Warrior",
+  "look": "core.pharaoh",
+  "group": "horror",
+  "bio": "Ruled the Nile for forty years. Rules this lobby for the next five minutes.",
+  "body": "male",
+  "notes": "Drive batch of 2026-11-01 evening, second drop (\"Pharaoh Mummy Warrior\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Name a placeholder from the Roster Board.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Pharaoh Mummy Warrior"
+    },
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Pharaoh_Mummy_Warrior_All_Animations\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.15,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

@@ -34,6 +34,8 @@ const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
 const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold']);
+/** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
+const LOCOMOTION = new Set(['roll']);
 const LEAN_JOINTS = new Set(['Spine02', 'Spine01', 'Spine', 'neck', 'Head']);
 const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
@@ -69,6 +71,13 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     need(s.license === 'owned' || Object.keys(s.meshy).every((k) => k === 'rig'), 'source.meshy: task IDs only fetch the owner\'s own models (a community model is downloaded by hand; only a "rig" task of the owner\'s may be named)');
   }
   need(s.modelUrl === undefined || s.modelUrl === 'upload' || (typeof s.modelUrl === 'string' && /^https:\/\//.test(s.modelUrl)), 'source.modelUrl: a public https download link of the unrigged model, or "upload" (the download itself, for Meshy\'s rigging API)');
+  if (s.joints !== undefined) {
+    // A rigged download whose joints carry no names we know (Bone_000, Bone_001, ...): each named onto Meshy's.
+    const known = new Set([...SPINE_JOINTS, ...SIDE_JOINTS.flatMap((n) => [`Left${n}`, `Right${n}`])]);
+    const to = Object.values(s.joints ?? {});
+    need(s.joints && typeof s.joints === 'object' && to.every((n) => known.has(n)), `source.joints: { "<download's joint>": "<Meshy joint>" } (${[...known].join(', ')})`);
+    need(new Set(to).size === to.length, 'source.joints: each Meshy joint once');
+  }
   if (s.file !== undefined) {
     let ok = typeof s.file === 'string';
     try {
@@ -86,6 +95,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(GROUPS.includes(m.group) || (m.group === undefined && !isPlayable(m)), `group: what the character is, for Character Select's tabs (${GROUPS.join(', ')}); a player look needs one`);
   need(m.body === 'male' || m.body === 'female', 'body: male or female');
   need(m.size === undefined || m.size === 'small' || m.size === 'large', 'size: small, large or left out');
+  need(m.locomotion === undefined || LOCOMOTION.has(m.locomotion), `locomotion: ${[...LOCOMOTION].join(' or ')} (no legs to walk on: it rolls or glides on what it has), or left out (walks)`);
   need((m.kind ?? 'character') === 'character', 'kind creature: creatures have their own rigs (prepare-creatures.mjs) and are not built here; keep it queued');
   need(typeof s.author === 'string' && s.author.length > 0, 'source.author');
   need(typeof s.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.date), 'source.date: YYYY-MM-DD');
@@ -191,6 +201,8 @@ export function buildSpec(m) {
     pack: packOf(m),
     community: m.source.license === 'CC0' ? { model: m.source.community.model, date: m.source.date } : undefined,
     file: m.source.file ? new RegExp(m.source.file) : null,
+    rigJoints: m.source.joints,
+    locomotion: m.locomotion,
     metallic: m.finish.metallic,
     roughness: m.finish.roughness,
     triangles: x.triangles,
@@ -220,7 +232,7 @@ function lookLine(m) {
   const hold = m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '';
   const body = (fp.body === false ? ', body: false' : '') + hold;
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
-  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : [])];
+  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : [])];
   return `  { ${parts.join(', ')} },`;
 }
 
