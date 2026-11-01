@@ -6,7 +6,7 @@
  * since the last capture, or a player's own design) is rendered live.
  */
 export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
-  'core.aldric': 'core.aldric.webp?v=b1e75ca66a',
+  'core.aldric': 'core.aldric.webp?v=874ce6a8b1',
   'core.ansel': 'core.ansel.webp?v=07d31667c1',
   'core.anubis': 'core.anubis.webp?v=eeb8ed4e7f',
   'core.ashwalker': 'core.ashwalker.webp?v=238bb96d3d',
@@ -14,7 +14,7 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.barnacle': 'core.barnacle.webp?v=f9541571ca',
   'core.basile': 'core.basile.webp?v=da4db6f833',
   'core.bigbab': 'core.bigbab.webp?v=58022c2150',
-  'core.biscuit': 'core.biscuit.webp?v=f09847f014',
+  'core.biscuit': 'core.biscuit.webp?v=ba5731f5de',
   'core.bogdan': 'core.bogdan.webp?v=88ea18a54b',
   'core.boglurker': 'core.boglurker.webp?v=449170ede7',
   'core.bonejack': 'core.bonejack.webp?v=ad96123939',
