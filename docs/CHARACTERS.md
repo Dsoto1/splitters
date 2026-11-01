@@ -274,9 +274,22 @@ it beyond 18 m (`LOD_DISTANCE`). In the viewer from 30 m, 253k triangles drop to
 90k. The copies live in the same file because separate low-detail files loaded
 in the background were seen to stall in the browser.
 
+**Whole-body (Meshy) characters' far copy** (`tools/content/character-lod.mjs`): 30% of
+the body's triangles (`fixes.lod` sets another share, 0.15-0.6), cut with the texture
+coordinates weighed in, so a seam collapses only where the colour layout agrees on both
+sides. The old sloppy cut joined triangles across the texture's charts: Saint Nick's far
+copy wore white streaks over his red coat (half its triangles spanned a seam; now 5 of
+4,800). A mesh that cut can't bring near its share is cut on its shape alone with its
+seams welded, each corner taking back the copy in the chart its triangle shares.
+`prepare-meshy-characters.mjs` adds it; `node tools/content/relod-built.mjs`
+(`ONLY=<ids>`, `OUT=<dir>` for a trial) remakes it in the built files without the
+downloads and updates the lock. **Through a scope** the switch moves out with the zoom
+(`setCharacterLodZoom`, from the view's FOV against the game's: a sniper scope's 0.4 rad
+keeps full detail to about 71 m), so a scope never shows the far copy filling the view.
+
 **Meshy characters' normal maps.** A Meshy body is cut from hundreds of
 thousands of triangles to about 11,000, which alone shades as lumpy facets.
-`prepare-meshy-characters.mjs` bakes a 512 px tangent-space normal map from the
+`prepare-meshy-characters.mjs` bakes a 512 px (`fixes.normalSize`: 1024) tangent-space normal map from the
 surface before the cut (and Meshy's own normal map) into the download's texture
 layout (`bakeNormals` in `tools/content/meshy-mesh.mjs`, with a TANGENT
 attribute), for the body, its low-detail copy (same material) and the
@@ -459,7 +472,7 @@ repo; they live in a downloads dir outside it.
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel and square to it, in third person and Character Select; Bandit's broad build put the stock at his snout). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -735,7 +748,11 @@ and shoulders, framed from the neck joint up to the top of the model and
 centred on the head joint (any body shape), three-quarter from the front;
 creatures whole. The built-in looks' portraits ship with the site
 (`client/public/portraits/*.webp`, listed in `frontend/portraitIndex.ts`) so
-the menu shows them at once. They're made by the **Capture portraits**
+the menu shows them at once. A look whose face the default framing hides or
+leaves off centre gets its own view in `PORTRAIT_VIEWS` (portraits.ts): `from`
+(where the camera sits from the face), `aim` (a nudge of the aim point) and
+`zoom` (the frame's size against the default); `__front.portraits.renderLive(look,
+view)` tries one without a rebuild. They're made by the **Capture portraits**
 workflow (`tools/content/capture-portraits.mjs`, the same renderer), which
 commits them to `check/portraits`; run it after adding characters or changing
 the framing. A look without a shipped portrait (new since the last capture,
