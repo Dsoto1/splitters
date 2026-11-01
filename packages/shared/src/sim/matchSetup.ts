@@ -4,6 +4,7 @@ import { MAX_TEAMS, mapTeams } from './npc.ts';
 import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
 import { IMPROMPTU_MIN_PLAYERS } from './spawns.ts';
 import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
+import { validBotCast } from '../content/botNames.ts';
 
 /**
  * Match setup (Play → match setup, saved setups): everything the player
@@ -34,6 +35,8 @@ export interface MatchSetup {
   sizes?: boolean;
   emotes?: boolean;
   botStyle?: 'arena' | 'tactical';
+  /** Which looks random bots wear (content/botNames.ts): absent, the map's own; empty, every look; else groups and/or name themes. */
+  botCast?: string[];
   killstreaks?: boolean;
   /** Mix up weapon pickups (absent: off). */
   mixPickups?: boolean;
@@ -229,6 +232,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument): { rules: Ma
   if (s.sizes === false) rules.bodySizes = false;
   if (s.emotes === false) rules.emotes = false;
   if (s.botStyle) rules.botStyle = s.botStyle;
+  if (Array.isArray(s.botCast)) rules.botCast = validBotCast(s.botCast);
   if (s.killstreaks === false) rules.killstreaks = false;
   if (s.mixPickups) rules.mixPickups = true;
   if (s.dropWeapons === false) rules.dropWeapons = false;

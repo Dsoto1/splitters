@@ -3,6 +3,7 @@ import {
   CHARACTER_GROUP_LABELS,
   CHARACTER_PROFILES,
   CORE_LOOKS,
+  botCastLabel,
   botSetLabel,
   type BotProfile,
   type BotSet,
@@ -63,7 +64,7 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
 import type { MapMeta } from '../mapIndex.ts';
-import { choice, fold as foldEl, infoTip, noteList, settingRow, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
+import { botCastSelect, choice, fold as foldEl, infoTip, noteList, settingRow, stepper, teamEditor, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
@@ -1017,6 +1018,7 @@ export class FrontEnd {
       { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || race ? null : 'This map has no vehicles.' },
     ];
     const bots: typeof extras = [
+      { id: 'cast', label: 'Bot characters', tip: "Which characters random bots play, and so their names: a soldier is \"Sgt. Haskett\", a monkey \"Coco Bean\" (the first bot in a character is named after it: Scamp). Map default: what the map's maker chose (most maps: all). Your own bots (Edit bots…) keep their names and looks.", changed: s.botCast !== undefined, value: `${botCastLabel(s.botCast)} bots`, control: botCastSelect(s.botCast, map.botCast, (v) => this.change((x) => (x.botCast = v)), 'arcade-cast') },
       { id: 'style', label: 'Bot style', tip: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', changed: !!s.botStyle, value: `${s.botStyle === 'arena' ? 'Arena' : 'Tactical'} bots`, control: choice([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => this.change((x) => (x.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical'))), 'arcade-style') },
     ];
     const rowOf = (x: (typeof extras)[number]) => settingRow(x.label, x.tip, x.control, { disabled: x.disabled });
@@ -1027,7 +1029,7 @@ export class FrontEnd {
     reset.addEventListener('click', (e) => {
       e.preventDefault();
       this.change((x) => {
-        for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'classes', 'classLimit', 'botStyle', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+        for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
       });
     });
     const count = (xs: typeof extras) => {
@@ -1124,7 +1126,7 @@ export class FrontEnd {
     const assignLabel = { balanced: 'Balanced', random: 'Random team', fixed: 'Fixed team' }[s.assign ?? 'balanced'];
     const playersSummary = team ? `${sizes.join('v')} · ${assignLabel}` : coop ? `You + ${s.bots} squadmate${s.bots === 1 ? '' : 's'}` : `You + ${s.bots} bot${s.bots === 1 ? '' : 's'}`;
     const skillLabel = { easy: 'Easy', normal: 'Normal', hard: 'Hard' }[s.skill] ?? s.skill;
-    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}${s.botSet ? ` · ${s.botSet.name} (${s.botSet.entries.length})` : ''}`;
+    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}${s.botCast !== undefined ? ` · ${botCastLabel(s.botCast)}` : map.botCast?.length ? ` · ${botCastLabel(map.botCast)}` : ''}${s.botSet ? ` · ${s.botSet.name} (${s.botSet.entries.length})` : ''}`;
     const modeSet = modeRows.length ? [fold('setup-mode', `${MODE_LABEL[s.mode]} settings`, 'mode settings', ...modeRows)] : [];
     const body = el(
       'div',

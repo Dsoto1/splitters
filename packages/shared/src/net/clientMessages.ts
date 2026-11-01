@@ -2,6 +2,7 @@ import { HOST_BOT_SKILLS, HOST_BOT_STYLES, type ClientMessage, type HostCommand,
 import { isMapId } from '../sim/playlist.ts';
 import { ROTATION_MAX } from '../sim/rotation.ts';
 import { validateBotSet } from '../sim/botSet.ts';
+import { validBotCast } from '../content/botNames.ts';
 import { isGameMode, type GameMode } from '../sim/rules.ts';
 import type { PlayerInput } from '../sim/movement.ts';
 
@@ -93,8 +94,11 @@ function parseHostCommand(raw: unknown): HostCommand | null {
         if (!v) return null;
         botSet = v.set;
       }
-      const cmd = { c: 'bots', fill: o.fill, teamSize: o.teamSize, teamSizes: Array.isArray(o.teamSizes) ? [...(o.teamSizes as number[])] : undefined, skill: o.skill, style: o.style, botSet } as Extract<HostCommand, { c: 'bots' }>;
-      for (const k of ['fill', 'teamSize', 'teamSizes', 'skill', 'style', 'botSet'] as const) if (cmd[k] === undefined) delete cmd[k];
+      // Bot characters: null (the map's own) or a list, kept to known groups and themes; anything else refused.
+      if (o.cast !== undefined && o.cast !== null && !(Array.isArray(o.cast) && o.cast.length <= 32)) return null;
+      const cast = o.cast === undefined ? undefined : o.cast === null ? null : validBotCast(o.cast);
+      const cmd = { c: 'bots', fill: o.fill, teamSize: o.teamSize, teamSizes: Array.isArray(o.teamSizes) ? [...(o.teamSizes as number[])] : undefined, skill: o.skill, style: o.style, botSet, cast } as Extract<HostCommand, { c: 'bots' }>;
+      for (const k of ['fill', 'teamSize', 'teamSizes', 'skill', 'style', 'botSet', 'cast'] as const) if (cmd[k] === undefined) delete cmd[k];
       return cmd;
     }
     case 'rules': {

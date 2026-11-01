@@ -1,6 +1,12 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   EditHistory,
+  BOT_CAST_CHOICES,
+  BOT_CAST_MAX,
+  CHARACTER_GROUPS,
+  botCastLabel,
+  castLooks,
+  validBotCast,
   withTerrainUnderFloors,
   addSpawnCommand,
   buildMapGeometry,
@@ -2218,6 +2224,9 @@ export class EditorApp {
    * or, in co-op, the players' side. They play unless the host picks a set of their own. The Bots window
    * (the one match setup and the pause menu use) edits them; one undo step per Apply.
    */
+  /** Whether the Bot characters list is open (kept across re-renders). */
+  private castOpen = false;
+
   private renderMapBots(el: HTMLElement): void {
     const doc = this.doc;
     const head = document.createElement('h3');
@@ -2244,6 +2253,53 @@ export class EditorApp {
     });
     open.id = 'ed-bots-edit';
     el.append(head, row('Bots', sum), row('', open), small('Name your bots, pick their looks, skill, style, team and squad: a scenario\'s cast, or the players\' squad in co-op.'));
+    this.renderBotCast(el);
+  }
+
+  /**
+   * Bot characters (MapDocument.botCast): which looks the map's random bots wear, and so their names (a D-Day map:
+   * soldiers only, named "Sgt. Haskett"). Groups and/or name themes; none ticked: every look. Hosts can change it.
+   */
+  private renderBotCast(el: HTMLElement): void {
+    const cast = validBotCast(this.doc.botCast);
+    const set = (next: string[]) => this.run('Bot characters', { kind: 'setBotCast', before: this.doc.botCast ?? null, after: next.length ? next : null });
+    const sum = text(botCastLabel(cast));
+    sum.id = 'ed-cast-sum';
+    const box = document.createElement('details');
+    box.id = 'ed-cast';
+    box.open = this.castOpen;
+    box.addEventListener('toggle', () => (this.castOpen = box.open));
+    const title = document.createElement('summary');
+    title.textContent = 'Choose characters…';
+    box.append(title);
+    const group = (label: string, ids: readonly { id: string; label: string }[]) => {
+      const h = document.createElement('small');
+      h.textContent = label;
+      h.style.display = 'block';
+      h.style.marginTop = '4px';
+      box.append(h);
+      for (const c of ids) {
+        const lab = document.createElement('label');
+        lab.className = 'ed-cast-pick';
+        lab.style.display = 'inline-flex';
+        lab.style.gap = '4px';
+        lab.style.marginRight = '10px';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.dataset.cast = c.id;
+        cb.checked = cast.includes(c.id);
+        cb.disabled = !cb.checked && cast.length >= BOT_CAST_MAX;
+        cb.addEventListener('change', () => set(cb.checked ? [...cast, c.id] : cast.filter((x) => x !== c.id)));
+        lab.append(cb, text(c.label));
+        box.append(lab);
+      }
+    };
+    group('Characters', BOT_CAST_CHOICES.filter((c) => CHARACTER_GROUPS.some((g) => g.id === c.id)));
+    group('Named as', BOT_CAST_CHOICES.filter((c) => !CHARACTER_GROUPS.some((g) => g.id === c.id)));
+    const all = button('All characters', () => set([]));
+    all.id = 'ed-cast-all';
+    all.disabled = !cast.length;
+    el.append(row('Bot characters', sum), box, row('', all), small(`Random bots wear only these characters and take their names (${castLooks(cast).length} looks). None ticked: everyone. Hosts can change it (Match setup, pause menu, server rules).`));
   }
 
   // ---------------------------------------------------------------- teams

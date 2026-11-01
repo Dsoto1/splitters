@@ -1,5 +1,5 @@
 import { DEFAULT_TEAMS, botSetLabel, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, TICK_RATE, isTeamMode, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
-import { choice, el, settingRow, stepper, teamEditor } from '../frontend/setupControls.ts';
+import { botCastSelect, choice, el, settingRow, stepper, teamEditor } from '../frontend/setupControls.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
 
@@ -253,6 +253,10 @@ export class HostPanel {
       const open = el('button', { id: 'hc-bots', textContent: 'Bots…', title: 'Your own bots: names, looks, skill, style, team and squad (applies live: bots swap in one at a time)' });
       open.addEventListener('click', () => this.openBots(s));
       rows.push(settingRow('Bot set', 'Your own bots by name, look, skill, style, team and squad; random bots fill the rest unless the set says only these.', el('div', { class: 'bot-set-line' }, el('span', { class: 'bot-set-sum', id: 'hc-bots-sum', textContent: `${s.mapBots ? "The map's: " : ''}${botSetLabel(s.botSet)}`, title: `${s.mapBots ? "The map's own bots: " : ''}${botSetLabel(s.botSet)}` }), open)));
+    }
+    // Bot characters: applies at once (random bots out of it change look and name); hosts that know it send HostState.cast.
+    if (s.cast !== undefined) {
+      rows.push(settingRow('Bot characters', "Which characters random bots play, and so their names (a soldier is \"Sgt. Haskett\"; the first bot in a character takes its name). Map default: the map maker's choice. Applies at once: bots out of it change. Your bot set keeps its own.", botCastSelect(s.cast ?? undefined, s.mapCast, (v) => this.hooks.command({ c: 'bots', cast: v ?? null }), 'hc-cast')));
     }
     // Mix up weapon pickups: applies at once (hosts that know it send it in HostState.rules).
     if (s.rules?.mixPickups !== undefined) {
