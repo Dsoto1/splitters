@@ -8,8 +8,14 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Main menu: Profile**
+- The character card top right is now your **Profile**: your character's portrait and name, your player name and whether you're signed in (Guest, ✓ Signed in, Pick a username). It opens the Profile panel (also P, or Y on a controller): your character with **Change character**, your name, **Sign in** / **Sign out** and your username, your region and the privacy link. The separate Characters item is gone from the menu.
+- **Sign in** is no longer a small link in the bottom bar: signed out, an orange Sign in button sits under the Profile card and in the Profile panel. (Same Google sign-in as before.)
+- The bottom bar is tidier: key hints in three groups (getting about, the screen's actions with the main one in cyan, Fullscreen), the same size everywhere; the news shows on the main menu only, and the turn keys moved next to the turn buttons. Phones show no bottom bar off the main menu.
+
 **Character Select**
-- Characters are grouped by what they are: **Soldiers**, **Knights & Legends**, **Everyday Folk**, **Undead & Horror**, **Animals** and **Creatures & Machines** (plus All and Yours), instead of by how the look was built (Originals, Ranger, Peasant, Sportswear, NPCs). Q / E still step through the tabs.
+- Characters are grouped by what they are: **Soldiers**, **Knights & Legends**, **Everyday Folk**, **Undead & Horror**, **Animals** and **Creatures & Machines** (plus Yours), instead of by how the look was built (Originals, Ranger, Peasant, Sportswear, NPCs).
+- One scrolling grid instead of a long row of tabs: each group under a compact header with its count, and a strip of section chips above that lights the section you're looking at. Click a chip, or press Q / E (LB / RB), to glide to a section; the wheel, trackpad and touch scroll straight through, and arrow keys and the d-pad move across section ends. It opens on your character. Back and Choose return to where you opened it (Profile or Online).
 - Clicking a character shows them; **Choose** (or Enter / A again, or a double-click) makes them yours, and Back keeps the one you had. Hovering no longer swaps the preview, so you can drag the model round with the mouse. Your current character wears a **Chosen** badge.
 
 **Props: the owner's Meshy models**
@@ -45,6 +51,9 @@ made only on a commit that passed CI on a check branch.
 - Imp and Puglin players hold their guns forward at the chest with both hands (the gun hung backwards at the hip), and stand about a player's height (the Imp was half one). Looks only: the hitbox is unchanged.
 - Scolitex is no longer a playable character (owner's call); it stays an enemy and a saved choice of it still loads.
 - Body sizes (owner's call): Giggles and The Visitor are small, Boglurker and Rattles large, and Punkin back to normal.
+- Every character's hands close round the gun: many Meshy characters held it on flat, open palms or with their fingers bent back off the grip (Big Bogdan, Shade, Hector, Grunt '68, the Dapper, Saint Nick, Sir Galloway and others). Relaxed hands that were taken for fists now bend, hands turned on their wrists are read the right way round, and fingers always close onto the gun.
+- Sharper faces and hands on the most cut-down characters (Lancer Mei, Sir Galloway, Dale, Brother Ansel, Merrow the Wise, King Aldric): the head and the hands now keep their share of the model's detail.
+- Character Select shows your character three-quarter on, so you see how it holds its gun (the rifle used to point straight at you).
 
 **Maps**
 - New map: **Vinefall Sanctum**, an overgrown temple city split by a river gorge for 8–24 players (Deathmatch, Team Deathmatch, Capture the Flag, King of the Hill), the demo of the refreshed Style Pack 06 Jungle Ruins. The Embers hold the south sanctum, the Tide the north; each side has a stepped ziggurat crowned by a shrine (a sniper rifle at its altar), two carved temples with portcullis gates and roofs you can run along, waterfalls with a way through behind the falls and a timber watch tower at each end. Cross the gorge by three rope bridges, by the high rope and stone bridges between the terraces, or wade the river below for the dynamite and heavy armour, then climb out by the gorge steps or the vines. Made in MapMaker.

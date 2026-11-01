@@ -293,6 +293,7 @@ export class FrontEnd {
   private readonly body = el('div', { class: 'screens' });
   private readonly status = el('p', { id: 'menu-status' });
   private readonly footerHints = el('div', { class: 'hintbar' });
+  private readonly footer = el('footer', { class: 'menu-footer' });
   private setup: ArcadeSetup;
   name: string;
   /** Clan tag shown in front of your name ("[TAG] Name"), up to 5 letters or digits. */
@@ -307,22 +308,24 @@ export class FrontEnd {
     return this.clan ? `[${this.clan}] ${this.name}` : this.name;
   }
 
-  /** The footer's account links (redrawn when the profile loads). */
-  private footerBox?: HTMLElement;
-
   /** Your profile arrived (or you have none): your username becomes your name. */
   private applyProfile(username: string | null): void {
     const was = `${this.verified}|${this.name}`;
     this.verified = !!username;
     if (username) this.name = username;
-    const box = this.footerLinks();
-    this.footerBox?.replaceWith(box);
-    this.footerBox = box;
+    // The Profile entry (top right of the main menu) shows the account's state.
+    this.body.querySelector('.profile-entry')?.replaceWith(this.profileEntry());
     if (`${this.verified}|${this.name}` !== was && !this.root.hidden && ['home', 'online', 'options', 'profile'].includes(this.screen)) this.go(this.screen);
   }
   server: string;
   look: string;
-  private charFilter = 'all';
+  /** Character Select's section in view (its jump strip lights it; Q / E step on from it). */
+  private charSection: string | null = null;
+  /** While a jump scrolls the grid, the strip keeps the section asked for (not each one passed on the way). */
+  private charJumping = false;
+  private charGlide = 0;
+  /** Where Character Select was opened from: Back and Choose return there. */
+  private charFrom: ScreenId = 'home';
   /** The character shown on Character Select (clicked, not yet chosen): `look` changes only when it's confirmed. */
   private previewed: string | null = null;
   private keyHandler = (e: KeyboardEvent) => this.onKey(e);
@@ -352,17 +355,14 @@ export class FrontEnd {
     const saved = savedMap ? normalizeSetup(raw, savedMap.modes) : null;
     const first = maps.find((m) => m.key === 'sandgate') ?? maps[0]!;
     this.setup = saved ?? { map: first.key, mode: first.modes[0]!, bots: first.bots, skill: 'normal', scoreLimit: BASE_RULES[first.modes[0]!].scoreLimit, minutes: 10 };
-    root.replaceChildren(
-      this.body,
-      this.status,
-      el(
-        'footer',
-        { class: 'menu-footer' },
-        el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Sandgate, Team Deathmatch and the Character Designer.'),
-        (this.footerBox = this.footerLinks()),
-        this.footerHints,
-      ),
+    // The bottom bar: the news and the privacy page (main menu only; Profile links it too), then the
+    // screen's key hints in groups (hints()). Sign-in and your profile are the Profile entry, top right.
+    this.footer.append(
+      el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Sandgate, Team Deathmatch and the Character Designer.'),
+      el('a', { class: 'footer-privacy', href: '/privacy/', target: '_blank', rel: 'noopener', textContent: 'Privacy' }),
+      this.footerHints,
     );
+    root.replaceChildren(this.body, this.status, this.footer);
     window.addEventListener('keydown', this.keyHandler);
     onPadPress((b) => this.onPad(b));
     this.go('home');
@@ -412,7 +412,10 @@ export class FrontEnd {
     if (this.screen === 'characters' && screen !== 'characters') this.scene.resetSpin();
     // The character shown stays while you switch Character Select's tabs; leaving (or coming back) shows your own.
     if (this.screen !== 'characters' || screen !== 'characters') this.previewed = null;
+    // Back (and Choose) on Character Select return to the screen that opened it.
+    if (screen === 'characters' && this.screen !== 'characters') this.charFrom = this.screen;
     this.screen = screen;
+    this.footer.dataset.screen = screen;
     this.scene.setLook(this.previewed ?? this.look);
     this.scene.setShot(screen === 'home' ? 'home' : 'side');
     this.body.replaceChildren(this.build(screen));
@@ -421,60 +424,81 @@ export class FrontEnd {
   }
 
   /**
-   * The footer's key hints: keyboard glyphs, or the controller's once one is used (inputMode.ts). Each
-   * hint that stands for an action is a button doing it (Back, the tabs, Start…); Fullscreen is always there.
+   * The bottom bar's key hints, in three groups: getting about (Back, Q / E), the screen's actions (its
+   * main one last, in cyan), then Fullscreen. Keyboard glyphs, or the controller's once one is used
+   * (inputMode.ts); each hint that stands for an action is a button doing it.
    */
   private hints(screen: ScreenId): HTMLElement[] {
-    const back = () => hintButton('hint-back', glyphs('Esc', 'B', 'b'), 'Back', 'Back to the main menu (Esc, controller B)', () => this.back());
-    const cycle = (label: string) => hintButton('hint-cycle', [...glyphs('Q', 'LB'), ...glyphs('E', 'RB')], label, `Next ${label.toLowerCase()} (Q / E, controller LB / RB)`, () => this.cycle(1));
-    const list: HTMLElement[] = [];
+    const back = () => hintButton('hint-back', glyphs('Esc', 'B', 'b'), 'Back', `Back to ${this.backTarget()} (Esc, controller B)`, () => this.back());
+    const cycle = (label: string) => hintButton('hint-cycle', [...glyphs('Q', 'LB'), ...glyphs('E', 'RB')], label, `Previous / next ${label.toLowerCase()} (Q / E, controller LB / RB)`, () => this.cycle(1));
+    const main = (label: string, title: string, act: () => void) => {
+      const b = hintButton('hint-ok', glyphs('↵', 'A', 'a'), label, title, act);
+      b.classList.add('main');
+      return b;
+    };
+    let moves: HTMLElement[] = [back()];
+    let acts: HTMLElement[] = [];
     switch (screen) {
       case 'home':
-        list.push(hint(glyphs('↑↓', '✛'), 'Navigate'), hintButton('hint-ok', glyphs('↵', 'A', 'a'), 'Select', 'Open the highlighted item (Enter, controller A)', () => this.navItems[this.navIndex]!.act()));
+        moves = [hint(glyphs('↑↓', '✛'), 'Navigate')];
+        acts = [
+          hintButton('hint-profile', glyphs('P', 'Y', 'y'), 'Profile', 'Your profile: character, name and sign-in (P, controller Y)', () => this.go('profile')),
+          main('Select', 'Open the highlighted item (Enter, controller A)', () => this.navItems[this.navIndex]!.act()),
+        ];
         break;
       case 'play':
-        list.push(back(), cycle('Mode'), hintButton('hint-ok', glyphs('↵', 'A', 'a'), 'Start', 'Start the match (Enter, controller A)', () => this.start()));
+        moves.push(cycle('Mode'));
+        acts = [main('Start', 'Start the match (Enter, controller A)', () => this.start())];
         break;
       case 'characters':
-        list.push(
-          back(),
-          cycle('Filter'),
+        moves.push(cycle('Section'));
+        acts = [
           hintButton('hint-design', glyphs('D', 'X', 'x'), 'Design new', 'Design a new character (D, controller X)', () => this.hooks.openDesigner(this.look)),
           hintButton('hint-customise', glyphs('C', 'Y', 'y'), 'Customise', 'Customise this character (C, controller Y)', () => this.hooks.openDesigner(this.previewed ?? this.look)),
-          hint(glyphs(', .'), 'Turn'),
-          hintButton('hint-ok', glyphs('↵', 'A', 'a'), 'Choose', 'Choose the character shown (Enter, controller A)', () => this.select(this.previewed ?? this.look)),
-        );
+          main('Choose', 'Choose the character shown (Enter, controller A)', () => this.select(this.previewed ?? this.look)),
+        ];
+        break;
+      case 'profile':
+        acts = [hintButton('hint-change', glyphs('C', 'Y', 'y'), 'Change character', 'Open Character Select (C, controller Y)', () => this.go('characters'))];
         break;
       case 'options':
-        list.push(back(), cycle('Section'));
+        moves.push(cycle('Section'));
         break;
-      default:
-        list.push(back());
     }
+    const group = (cls: string, items: HTMLElement[]) => el('div', { class: `hint-group ${cls}` }, ...items);
+    const groups = [group('moves', moves), ...(acts.length ? [group('acts', acts)] : [])];
     if (fullscreenSupported()) {
       const fs = hintButton('hint-fullscreen', glyphs('F11'), isFullscreen() ? 'Exit fullscreen' : 'Fullscreen', 'Fullscreen on or off (F11)', () => void toggleFullscreen());
       const label = fs.lastElementChild as HTMLElement;
       const update = () => (fs.isConnected ? (label.textContent = isFullscreen() ? 'Exit fullscreen' : 'Fullscreen') : document.removeEventListener('fullscreenchange', update));
       document.addEventListener('fullscreenchange', update);
-      list.push(fs);
+      groups.push(group('util', [fs]));
     }
-    return list;
+    return groups;
   }
 
-  /** The screen's title with Back before it (top left: back to the main menu, as Esc does). */
+  /** Where Back goes from this screen (for its tooltip): the main menu, or the screen that opened Character Select. */
+  private backTarget(): string {
+    const to = this.screen === 'characters' ? this.charFrom : 'home';
+    const names: Record<ScreenId, string> = { home: 'the main menu', profile: 'your profile', online: 'Online', options: 'Options', play: 'match setup', characters: 'the main menu' };
+    return names[to];
+  }
+
+  /** The screen's title with Back before it (top left: back where you came from, as Esc does). */
   private head(title: string, ...extra: HTMLElement[]): HTMLElement {
-    const back = el('button', { type: 'button', class: 'back-btn', id: 'screen-back', title: 'Back to the main menu (Esc)' }, el('span', { textContent: '◀' }), 'Back');
+    const back = el('button', { type: 'button', class: 'back-btn', id: 'screen-back', title: `Back to ${this.backTarget()} (Esc)` }, el('span', { textContent: '◀' }), 'Back');
     back.firstElementChild!.setAttribute('aria-hidden', 'true');
     back.addEventListener('click', () => this.back());
     return el('div', { class: 'screen-head' }, back, el('h2', { innerHTML: title }), ...extra);
   }
 
-  /** Back one level: every screen is one step from the main menu. */
+  /** Back one level: every screen is one step from the main menu, and Character Select from where it was opened. */
   private back(): void {
-    if (this.screen !== 'home') this.go('home');
+    if (this.screen === 'characters') this.go(this.charFrom === 'characters' ? 'home' : this.charFrom);
+    else if (this.screen !== 'home') this.go('home');
   }
 
-  /** Q / E (LB / RB): the next or previous mode, character filter or Options section. */
+  /** Q / E (LB / RB): the next or previous mode, Character Select section or Options section. */
   private cycle(dir: 1 | -1): void {
     if (this.screen === 'play') {
       const m = this.currentMap();
@@ -485,9 +509,7 @@ export class FrontEnd {
       this.optionsTab = tabs[(tabs.indexOf(this.optionsTab) + (dir > 0 ? 1 : tabs.length - 1)) % tabs.length]!;
       this.go('options');
     } else if (this.screen === 'characters') {
-      const order = this.charFilters().map(([v]) => v);
-      this.charFilter = order[(Math.max(0, order.indexOf(this.charFilter)) + (dir > 0 ? 1 : order.length - 1)) % order.length]!;
-      this.go('characters');
+      this.stepSection(dir);
     }
   }
 
@@ -518,11 +540,18 @@ export class FrontEnd {
     if (button === PAD.up || button === PAD.down) {
       const dir = button === PAD.down ? 1 : -1;
       if (!top && this.screen === 'home') return this.setNav(this.navIndex + dir);
+      if (!top && this.gridMove(0, dir)) return;
       return move(dir);
     }
-    if (button === PAD.left || button === PAD.right) return move(button === PAD.right ? 1 : -1);
+    if (button === PAD.left || button === PAD.right) {
+      const dir = button === PAD.right ? 1 : -1;
+      if (!top && this.gridMove(dir, 0)) return;
+      return move(dir);
+    }
     if (top) return;
     if (button === PAD.lb || button === PAD.rb) return this.cycle(button === PAD.rb ? 1 : -1);
+    if (this.screen === 'home' && button === PAD.y) return this.go('profile');
+    if (this.screen === 'profile' && button === PAD.y) return this.go('characters');
     if (this.screen === 'characters' && button === PAD.x) return this.hooks.openDesigner(this.look);
     if (this.screen === 'characters' && button === PAD.y) return this.hooks.openDesigner(this.previewed ?? this.look);
     if (this.screen === 'play' && button === PAD.start) return this.start();
@@ -550,7 +579,6 @@ export class FrontEnd {
   private readonly navItems: { id: string; label: string; act: () => void }[] = [
     { id: 'nav-play', label: 'Play', act: () => this.go('play') },
     { id: 'nav-mapmaker', label: 'MapMaker', act: () => this.hooks.openEditor() },
-    { id: 'nav-characters', label: 'Characters', act: () => this.go('characters') },
     { id: 'nav-online', label: 'Online', act: () => this.go('online') },
     { id: 'nav-options', label: 'Options', act: () => this.go('options') },
   ];
@@ -586,7 +614,7 @@ export class FrontEnd {
       el('p', { class: 'logo-sub', textContent: 'Make. Play. Die. Repeat.' }),
       el('p', { class: 'logo-version', textContent: `v${__APP_VERSION__}` }),
       nav,
-      this.badge(),
+      this.profileEntry(),
       card,
     );
   }
@@ -597,12 +625,37 @@ export class FrontEnd {
     (this.body.querySelectorAll('.nav button')[this.navIndex] as HTMLButtonElement | undefined)?.focus({ preventScroll: true });
   }
 
-  private badge(): HTMLElement {
+  /** Your account's state in a word or two, for the Profile entry: Guest, ✓ Signed in, or Pick a username. */
+  private accountState(): { text: string; cls: 'guest' | 'in' | 'pick' } {
+    if (!currentAccount()) return { text: 'Guest', cls: 'guest' };
+    return cachedProfile()?.username ? { text: '✓ Signed in', cls: 'in' } : { text: 'Pick a username', cls: 'pick' };
+  }
+
+  /**
+   * The main menu's Profile entry (top right): your character's portrait and name, your player name and
+   * whether you're signed in. It opens Profile; signed out (where sign-in is offered), Sign in sits under it.
+   */
+  private profileEntry(): HTMLElement {
     const img = el('img', { alt: '' });
     void this.portraits.get(this.look).then((src) => (img.src = src), () => undefined);
-    const b = el('button', { class: 'player-badge panel', title: 'Change character' }, img, el('div', {}, el('b', { textContent: this.name }), el('small', { textContent: this.lookName(this.look) })));
-    b.addEventListener('click', () => this.go('characters'));
-    return b;
+    const state = this.accountState();
+    const badge = el(
+      'button',
+      { type: 'button', class: 'player-badge panel', id: 'profile-badge', title: 'Your profile: character, name and sign-in (P, controller Y)' },
+      img,
+      el('div', { class: 'badge-text' }, el('small', { class: 'badge-kicker' }, 'Profile', el('i', { class: `acct ${state.cls}`, textContent: state.text })), el('b', { textContent: this.displayName }), el('small', { class: 'badge-look', textContent: this.lookName(this.look) })),
+      el('span', { class: 'badge-go', textContent: '›' }),
+    );
+    badge.lastElementChild!.setAttribute('aria-hidden', 'true');
+    badge.addEventListener('click', () => this.go('profile'));
+    const box = el('div', { class: 'profile-entry' }, badge);
+    if (!currentAccount() && signInAvailable()) {
+      const signin = el('button', { type: 'button', class: 'cta', id: 'sign-in', textContent: 'Sign in' });
+      signin.dataset.tip = 'Optional: a ToshiroPlay account (Google) gets you a username. Playing never needs one.';
+      signin.addEventListener('click', () => void signIn());
+      box.append(signin);
+    }
+    return box;
   }
 
   private lookName(id: string): string {
@@ -1295,35 +1348,37 @@ export class FrontEnd {
     ];
   }
 
-  /** Character Select's tabs (Q / E step through them): All, the groups that have anyone in them (what a character is), Yours. */
-  private charFilters(roster = this.roster()): [string, string][] {
-    const used = new Set(roster.map((c) => c.group));
-    return [['all', 'All'], ...CHARACTER_GROUPS.filter((g) => used.has(g.id)).map((g): [string, string] => [g.id, g.label]), ['mine', 'Yours']];
+  /** Character Select's sections, in CHARACTER_GROUPS order: each group anyone is in (listed by name), then Yours (your designs). */
+  private charSections(roster = this.roster()): { id: string; label: string; looks: { id: string; name: string }[] }[] {
+    const groups = CHARACTER_GROUPS.map((g) => ({ id: g.id as string, label: g.label as string, looks: roster.filter((c) => c.group === g.id).sort((a, b) => a.name.localeCompare(b.name)) })).filter((s) => s.looks.length);
+    return [...groups, { id: 'mine', label: 'Yours', looks: roster.filter((c) => c.group === 'mine') }];
   }
 
+  /**
+   * Character Select: one grid that scrolls through every section (a compact header each: name and count),
+   * with a jump strip above it that lights the section in view; a chip, or Q / E (LB / RB), scrolls to one.
+   */
   private characters(): HTMLElement {
-    const all = this.roster();
-    const filters = this.charFilters(all);
-    // A group that's gone (or a tab name from before the groups) shows everyone.
-    if (!filters.some(([v]) => v === this.charFilter)) this.charFilter = 'all';
-    // All keeps the roster order; a group is listed by name.
-    const shown = this.charFilter === 'all' ? all : all.filter((c) => c.group === this.charFilter).sort((a, b) => (this.charFilter === 'mine' ? 0 : a.name.localeCompare(b.name)));
+    const sections = this.charSections();
     const selected = this.previewed ?? this.look;
 
-    // Q / E (LB / RB) at the ends of the filters: buttons too.
+    // Q / E (LB / RB) at the ends of the strip: buttons too.
     const bumper = (dir: 1 | -1) => {
-      const b = el('button', { type: 'button', class: 'bumper-btn', title: `${dir > 0 ? 'Next' : 'Previous'} filter (${dir > 0 ? 'E' : 'Q'})` }, ...glyphs(dir > 0 ? 'E' : 'Q', dir > 0 ? 'RB' : 'LB'));
+      const b = el('button', { type: 'button', class: 'bumper-btn', title: `${dir > 0 ? 'Next' : 'Previous'} section (${dir > 0 ? 'E' : 'Q'})` }, ...glyphs(dir > 0 ? 'E' : 'Q', dir > 0 ? 'RB' : 'LB'));
       b.addEventListener('click', () => this.cycle(dir));
       return b;
     };
-    const tabs = el('div', { class: 'tabs' }, bumper(-1));
-    for (const [v, label] of filters) {
-      const b = el('button', { class: `tab${v === this.charFilter ? ' on' : ''}`, textContent: label });
-      b.dataset.group = v;
-      b.addEventListener('click', () => ((this.charFilter = v), this.go('characters')));
-      tabs.append(b);
+    const chips = el('div', { class: 'char-jump-chips' });
+    for (const s of sections) {
+      const n = s.looks.length;
+      // The count is in the section's header (and the chip's tooltip), so the strip fits on one line.
+      const chip = el('button', { type: 'button', class: 'char-chip', title: `${s.label}: ${n} character${n === 1 ? '' : 's'}`, textContent: s.label });
+      chip.dataset.section = s.id;
+      chip.addEventListener('click', () => this.jumpToSection(s.id));
+      chips.append(chip);
     }
-    tabs.append(bumper(1));
+    const jump = el('nav', { class: 'char-jump' }, bumper(-1), chips, bumper(1));
+    jump.setAttribute('aria-label', 'Character sections');
 
     const grid = el('div', { class: 'char-grid loading' });
     // The shipped pictures appear together once they're all decoded (not face by face); a portrait drawn live
@@ -1333,7 +1388,7 @@ export class FrontEnd {
     // GPU), which held the whole grid back for seconds.
     const pending: Promise<void>[] = [];
     const live: (() => void)[] = [];
-    for (const c of shown) {
+    const makeTile = (c: { id: string; name: string }): HTMLElement => {
       const img = el('img', { alt: c.name });
       const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}${c.id === selected ? ' previewing' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
       // Your current character wears a badge; the one shown (previewed) is outlined.
@@ -1356,23 +1411,149 @@ export class FrontEnd {
       // them round. Enter / A again on the one shown, a double-click or the Choose button picks them.
       tile.addEventListener('click', (e) => (e.detail === 0 && this.previewed === c.id ? this.select(c.id) : this.preview(c.id)));
       tile.addEventListener('dblclick', () => this.select(c.id));
-      grid.append(tile);
+      return tile;
+    };
+    for (const s of sections) {
+      const tiles = el('div', { class: 'char-sec-tiles' }, ...s.looks.map(makeTile));
+      if (s.id === 'mine') {
+        const design = el('button', { class: 'char-tile new', title: 'Design a new character' }, el('b', { textContent: '+' }), el('span', { textContent: 'Design new' }));
+        design.addEventListener('click', () => this.hooks.openDesigner(this.look));
+        tiles.append(design);
+      }
+      const sec = el('section', { class: 'char-sec' }, el('h4', { class: 'char-sec-head' }, el('span', { textContent: s.label }), el('b', { textContent: String(s.looks.length) })), tiles);
+      sec.dataset.section = s.id;
+      sec.setAttribute('aria-label', s.label);
+      grid.append(sec);
     }
     void Promise.all(pending).then(() => {
       grid.classList.remove('loading');
       for (const start of live) start();
     });
-    const design = el('button', { class: 'char-tile new', title: 'Design a new character' }, el('b', { textContent: '+' }), el('span', { textContent: 'Design new' }));
-    design.addEventListener('click', () => this.hooks.openDesigner(this.look));
-    grid.append(design);
-    // Fade the bottom edge while there's more below.
-    const more = () => grid.classList.toggle('more', grid.scrollTop + grid.clientHeight < grid.scrollHeight - 4);
-    grid.addEventListener('scroll', more, { passive: true });
-    new ResizeObserver(more).observe(grid);
+    // Fade the bottom edge while there's more below; light the section in view.
+    const onScroll = () => {
+      grid.classList.toggle('more', grid.scrollTop + grid.clientHeight < grid.scrollHeight - 4);
+      if (!this.charJumping) this.markSection(this.sectionInView(grid));
+    };
+    grid.addEventListener('scroll', onScroll, { passive: true });
+    // Your own scrolling (wheel, trackpad, touch, the scroll bar) takes over from a jump under way.
+    const takeOver = () => {
+      cancelAnimationFrame(this.charGlide);
+      this.charJumping = false;
+    };
+    for (const ev of ['wheel', 'touchstart', 'pointerdown'] as const) grid.addEventListener(ev, takeOver, { passive: true });
+    new ResizeObserver(onScroll).observe(grid);
+    // Open on your character (or the one shown): their section scrolled to, unless they're in the first view.
+    this.charSection = null;
+    requestAnimationFrame(() => {
+      const t = grid.querySelector<HTMLElement>(`.char-tile[data-look="${CSS.escape(selected)}"]`);
+      if (t && t.offsetTop + t.offsetHeight > grid.clientHeight) grid.scrollTop = (t.closest<HTMLElement>('.char-sec')?.offsetTop ?? 0);
+      this.markSection(this.sectionInView(grid));
+    });
 
     const info = el('div', { class: 'char-info panel' });
     this.fillInfo(info, selected);
-    return el('div', { class: 'screen characters' }, this.head('Character <em>Select</em>', tabs), grid, info, this.spinZone());
+    return el('div', { class: 'screen characters' }, this.head('Character <em>Select</em>'), jump, grid, info, this.spinZone());
+  }
+
+  /** The section at the top of the grid's view (the last one once the grid is scrolled to its end). */
+  private sectionInView(grid: HTMLElement): string | null {
+    const secs = [...grid.querySelectorAll<HTMLElement>('.char-sec')];
+    if (!secs.length) return null;
+    if (grid.scrollTop > 0 && grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 2) return secs[secs.length - 1]!.dataset.section!;
+    let at = secs[0]!;
+    for (const s of secs) if (s.offsetTop <= grid.scrollTop + 24) at = s;
+    return at.dataset.section!;
+  }
+
+  /** Light a section's chip in the jump strip (and keep the chip in view on a narrow strip). */
+  private markSection(id: string | null): void {
+    if (!id || id === this.charSection) return;
+    this.charSection = id;
+    const strip = this.body.querySelector<HTMLElement>('.char-jump-chips');
+    for (const c of strip?.querySelectorAll<HTMLElement>('.char-chip') ?? []) {
+      const on = c.dataset.section === id;
+      c.classList.toggle('on', on);
+      c.setAttribute('aria-current', on ? 'true' : 'false');
+      if (on && strip && strip.scrollWidth > strip.clientWidth) strip.scrollLeft = c.offsetLeft - (strip.clientWidth - c.offsetWidth) / 2;
+    }
+  }
+
+  /** Scroll Character Select's grid to a section; `focus` (Q / E, LB / RB) also moves the focus to its first portrait. */
+  private jumpToSection(id: string, focus = false): void {
+    const grid = this.body.querySelector<HTMLElement>('.char-grid');
+    const sec = grid?.querySelector<HTMLElement>(`.char-sec[data-section="${CSS.escape(id)}"]`);
+    if (!grid || !sec) return;
+    this.markSection(id);
+    this.glideGrid(grid, Math.min(sec.offsetTop, grid.scrollHeight - grid.clientHeight));
+    if (focus) sec.querySelector<HTMLElement>('.char-tile')?.focus({ preventScroll: true });
+  }
+
+  /**
+   * Scroll the grid to `top` over a quarter of a second (at once with reduced motion). Our own easing,
+   * not scrollTo's smooth: a second smooth scrollTo while one is starting (Q, Q) left the grid where it was.
+   */
+  private glideGrid(grid: HTMLElement, top: number): void {
+    cancelAnimationFrame(this.charGlide);
+    const from = grid.scrollTop;
+    const d = top - from;
+    if (Math.abs(d) < 1 || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      grid.scrollTop = top;
+      this.charJumping = false;
+      return;
+    }
+    this.charJumping = true;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const k = Math.min(1, (now - t0) / 260);
+      grid.scrollTop = from + d * (1 - (1 - k) ** 3);
+      if (k < 1) this.charGlide = requestAnimationFrame(step);
+      else this.charJumping = false;
+    };
+    this.charGlide = requestAnimationFrame(step);
+  }
+
+  /** Q / E (LB / RB) on Character Select: the previous or next section (round from the last to the first). */
+  private stepSection(dir: 1 | -1): void {
+    const ids = [...this.body.querySelectorAll<HTMLElement>('.char-sec')].map((s) => s.dataset.section!);
+    if (!ids.length) return;
+    const i = Math.max(0, ids.indexOf(this.charSection ?? ids[0]!));
+    this.jumpToSection(ids[(i + dir + ids.length) % ids.length]!, true);
+  }
+
+  /**
+   * Arrow keys / d-pad over Character Select's portraits: left and right go to the previous or next one
+   * (on across the end of a row or section), up and down to the nearest one in the row above or below,
+   * in this section or the next. False when the focus isn't on the grid (the caller moves it as usual).
+   */
+  private gridMove(dx: number, dy: number): boolean {
+    if (this.screen !== 'characters') return false;
+    const grid = this.body.querySelector<HTMLElement>('.char-grid');
+    const f = document.activeElement as HTMLElement | null;
+    if (!grid || (f && f !== document.body && !grid.contains(f))) return false;
+    const tiles = [...grid.querySelectorAll<HTMLElement>('.char-tile')];
+    const from = f && grid.contains(f) ? f : (grid.querySelector<HTMLElement>('.char-tile.previewing') ?? tiles[0]);
+    if (!from) return false;
+    let to: HTMLElement | undefined;
+    if (!f || !grid.contains(f)) to = from;
+    else if (dx) to = tiles[tiles.indexOf(from) + dx];
+    else {
+      const r = from.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const rows = tiles.map((t) => ({ t, r: t.getBoundingClientRect() })).filter(({ r: o }) => (dy > 0 ? o.top >= r.bottom - 2 : o.bottom <= r.top + 2));
+      if (rows.length) {
+        const rowTop = dy > 0 ? Math.min(...rows.map((o) => o.r.top)) : Math.max(...rows.map((o) => o.r.top));
+        to = rows.filter((o) => Math.abs(o.r.top - rowTop) < 2).sort((a, b) => Math.abs(a.r.left + a.r.width / 2 - cx) - Math.abs(b.r.left + b.r.width / 2 - cx))[0]?.t;
+      }
+    }
+    if (!to) return true;
+    to.focus({ preventScroll: true });
+    // Into view below the section's sticky header.
+    const g = grid.getBoundingClientRect();
+    const t = to.getBoundingClientRect();
+    const head = (to.closest('.char-sec')?.querySelector<HTMLElement>('.char-sec-head')?.offsetHeight ?? 0) + 6;
+    if (t.top < g.top + head) grid.scrollTop -= g.top + head - t.top;
+    else if (t.bottom > g.bottom - 6) grid.scrollTop += t.bottom - g.bottom + 6;
+    return true;
   }
 
   /** Over the hero, beside the grid: drag (mouse or touch) to turn them round and see the whole look; or the turn buttons. */
@@ -1410,7 +1591,8 @@ export class FrontEnd {
       b.addEventListener('click', () => this.scene.spin(0, dir * 5.2));
       return b;
     };
-    zone.append(el('div', { class: 'spin-bar' }, turn(-1, 'Turn left', '⟲'), el('span', { textContent: 'Drag to turn' }), turn(1, 'Turn right', '⟳')));
+    // The turn keys (, and .) are shown here, by the buttons that do the same, rather than in the bottom bar.
+    zone.append(el('div', { class: 'spin-bar' }, turn(-1, 'Turn left (,)', '⟲'), el('span', { class: 'spin-label' }, 'Drag to turn', el('kbd', { class: 'g-kbm', textContent: ', .' })), turn(1, 'Turn right (.)', '⟳')));
     return zone;
   }
 
@@ -1463,9 +1645,10 @@ export class FrontEnd {
     if (info) this.fillInfo(info as HTMLElement, id);
   }
 
+  /** Choose: they're yours, and you're back where Character Select was opened from (Profile shows them). */
   private select(id: string): void {
     this.useLook(id);
-    this.go('home');
+    this.go(this.charFrom === 'characters' ? 'home' : this.charFrom);
   }
 
   // ---------------------------------------------------------------- online & options
@@ -1557,30 +1740,6 @@ export class FrontEnd {
     return el('div', { class: 'form panel lan-panel' }, el('div', { class: 'gb-top' }, el('h4', { textContent: 'On your network (LAN)' }), status, scan), list, el('div', { class: 'gb-hub' }, add, addBtn));
   }
 
-  /** Sign in / out (optional: playing never needs an account) and the privacy page. */
-  private footerLinks(): HTMLElement {
-    const box = el('div', { class: 'menu-links' });
-    // Your profile: the username you play under (never your Google name), or a prompt to pick one.
-    const username = cachedProfile()?.username;
-    const prof = el('button', { class: 'link', id: 'profile-link', textContent: currentAccount() ? (username ? `@${username}` : 'Pick a username') : 'Profile' });
-    prof.addEventListener('click', () => this.go('profile'));
-    if (signInAvailable()) {
-      const who = currentAccount();
-      if (who) {
-        const out = el('button', { class: 'link', id: 'sign-out', textContent: 'Sign out' });
-        out.addEventListener('click', () => signOut());
-        box.append(prof, out);
-      } else {
-        const inBtn = el('button', { class: 'link', id: 'sign-in', textContent: 'Sign in' });
-        inBtn.dataset.tip = 'Optional: a ToshiroPlay account (Google). Playing never needs one.';
-        inBtn.addEventListener('click', () => void signIn());
-        box.append(inBtn, prof);
-      }
-    } else box.append(prof);
-    box.append(el('a', { href: '/privacy/', target: '_blank', rel: 'noopener', id: 'privacy-link', textContent: 'Privacy' }));
-    return box;
-  }
-
   /** A listing's map: its picture and plan when it is one of the built-in maps, and its name. */
   private listingMap(g: LobbyListing): HTMLElement {
     const name = el('span', { class: 'gb-map-name', textContent: g.map });
@@ -1668,14 +1827,26 @@ export class FrontEnd {
   // ---------------------------------------------------------------- profile
 
   /**
-   * Your profile: signed in, your username (your name in every match, a
-   * verified account) and region, kept on the game server; signed out, your
-   * region, and how signing in gets you a username. Your Google name and
-   * email are never shown.
+   * Your profile, one panel: your character (Change character opens Character Select and comes back
+   * here), you as a player (signed in: your username, your name in every match as a verified account,
+   * kept on the game server, and Sign out; signed out: your guest name and Sign in), your region and
+   * the privacy page. Your Google name and email are never shown.
    */
   private profile(): HTMLElement {
     const who = currentAccount();
     const p = cachedProfile();
+    const kicker = (text: string) => el('h4', { class: 'prof-kicker', textContent: text });
+
+    // Your character.
+    const img = el('img', { alt: '' });
+    void this.portraits.get(this.look).then((src) => (img.src = src), () => undefined);
+    const change = el('button', { type: 'button', class: 'primary', id: 'profile-change-character', title: 'Open Character Select (C, controller Y)', textContent: 'Change character' });
+    change.addEventListener('click', () => this.go('characters'));
+    const group = lookGroup(this.look);
+    const kind = group ? CHARACTER_GROUP_LABELS[group] : listCustomLooks().some((l) => l.id === this.look) ? 'Your design' : '';
+    const character = el('section', { class: 'prof-sec prof-char' }, img, el('div', { class: 'prof-char-text' }, kicker('Character'), el('h3', { textContent: this.lookName(this.look) }), ...(kind ? [el('span', { class: 'prof-tag', textContent: kind })] : []), change));
+
+    // Region (the game browser lists games near you first).
     const regions = el('select', { id: 'profile-region' }, ...REGIONS.map((r) => el('option', { value: r.id, textContent: r.label, selected: r.id === myRegion() })));
     const regionNote = el('small', { class: 'hint', textContent: 'The game browser shows games in your region first.' });
     regions.addEventListener('change', () => {
@@ -1684,21 +1855,23 @@ export class FrontEnd {
         (e: Error) => (regionNote.textContent = `Not saved: ${e.message}`),
       );
     });
-    const img = el('img', { alt: '' });
-    void this.portraits.get(this.look).then((src) => (img.src = src), () => undefined);
-    const change = el('button', { type: 'button', textContent: 'Change' });
-    change.addEventListener('click', () => this.go('characters'));
-    const look = el('label', {}, 'Character', el('div', { class: 'current-look' }, img, el('b', { textContent: this.lookName(this.look) }), change));
-    const privacy = el('p', { class: 'hint', textContent: 'Your Google name and email are never shown to anyone: players see your username.' });
+    const region = el('section', { class: 'prof-sec' }, el('label', {}, 'Region', regions), regionNote);
+    const privacyLink = el('a', { href: '/privacy/', target: '_blank', rel: 'noopener', id: 'privacy-link', textContent: 'Privacy' });
+    const foot = el('div', { class: 'prof-foot hint' }, el('span', { textContent: 'Your Google name and email are never shown to anyone: players see your username.' }), privacyLink);
     const head = this.head('Your <em>Profile</em>');
+    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, region, foot));
+
     if (!who) {
-      const signin = el('button', { type: 'button', class: 'primary', id: 'profile-sign-in', textContent: 'Sign in' });
-      signin.addEventListener('click', () => void signIn());
-      const parts: HTMLElement[] = [
-        el('p', { textContent: `You're playing as a guest: "${this.name}", marked GUEST in online matches.` }),
-        ...(signInAvailable() ? [el('p', { class: 'hint', textContent: 'Sign in (a ToshiroPlay account, with Google) to pick a username: your name in every match, shown with a ✓ so nobody can pass for you. Playing never needs an account.' }), signin] : []),
-      ];
-      return el('div', { class: 'screen profile' }, head, el('div', { class: 'form panel', id: 'profile-form' }, ...parts, el('label', {}, 'Region', regions), regionNote, look, privacy));
+      // A guest: the name you play under (set in Options), and Sign in where it's offered.
+      const editName = el('button', { type: 'button', class: 'link', id: 'profile-edit-name', textContent: 'Change it in Options' });
+      editName.addEventListener('click', () => ((this.optionsTab = 'general'), this.go('options')));
+      const player = el('section', { class: 'prof-sec prof-player', id: 'profile-form' }, kicker('Player'), el('div', { class: 'prof-name' }, el('b', { textContent: this.displayName }), el('span', { class: 'acct guest', textContent: 'Guest' })), el('p', { class: 'hint' }, 'Your name in matches, marked GUEST online. ', editName));
+      if (signInAvailable()) {
+        const signin = el('button', { type: 'button', class: 'cta', id: 'profile-sign-in', textContent: 'Sign in' });
+        signin.addEventListener('click', () => void signIn());
+        player.append(el('div', { class: 'prof-signin' }, el('p', { textContent: 'Sign in (a ToshiroPlay account, with Google) to pick a username: your name in every match, shown with a ✓ so nobody can pass for you. Playing never needs an account.' }), signin));
+      }
+      return panel(player);
     }
     const name = el('input', { id: 'profile-username', value: p?.username ?? '', maxLength: 16, placeholder: 'pick a username', autocomplete: 'off', spellcheck: false });
     const status = el('small', { class: 'hint', id: 'profile-name-status', textContent: p?.username ? '' : '3–16 letters, numbers, _ - or . — unique in Tile Trigger' });
@@ -1724,7 +1897,12 @@ export class FrontEnd {
       }, 400);
     };
     name.addEventListener('input', check);
-    const form = el('form', { class: 'form panel', id: 'profile-form' }, el('label', {}, 'Username', name), status, save, el('label', {}, 'Region', regions), regionNote, look, privacy);
+    // Signed in: who you are (your username, never your Google name) with Sign out, then the username form.
+    const out = el('button', { type: 'button', id: 'sign-out', textContent: 'Sign out' });
+    out.addEventListener('click', () => signOut());
+    const state = this.accountState();
+    const account = el('div', { class: 'prof-name' }, el('b', { textContent: p?.username ?? 'Signed in' }), el('span', { class: `acct ${state.cls}`, textContent: state.text }), out);
+    const form = el('form', { class: 'prof-sec prof-player', id: 'profile-form' }, kicker('Player'), account, el('label', {}, 'Username', name), status, save);
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       save.disabled = true;
@@ -1743,7 +1921,8 @@ export class FrontEnd {
     // The account ID (Cognito `sub`) is what names the game's owner on the server (deploy --owner).
     const id = el('button', { type: 'button', class: 'link', id: 'account-id', textContent: 'Copy my account ID' });
     id.addEventListener('click', () => void navigator.clipboard?.writeText(who.sub).then(() => (id.textContent = 'Account ID copied'), () => (id.textContent = who.sub)));
-    return el('div', { class: 'screen profile' }, head, form, el('p', { class: 'hint profile-id' }, id));
+    foot.append(id);
+    return panel(form);
   }
 
   private options(): HTMLElement {
@@ -1989,9 +2168,16 @@ export class FrontEnd {
     } else if (this.screen === 'home' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       e.preventDefault();
       this.setNav(this.navIndex + (e.key === 'ArrowDown' ? 1 : -1));
-    } else if (this.screen === 'home' && e.key === 'Enter') {
+    } else if (this.screen === 'home' && e.key === 'Enter' && !(e.target instanceof HTMLButtonElement && !e.target.closest('.nav'))) {
+      // (Enter on another button, the Profile entry or the featured map, presses that one.)
       e.preventDefault();
       this.navItems[this.navIndex]!.act();
+    } else if (this.screen === 'home' && e.key === 'p') {
+      this.go('profile');
+    } else if (this.screen === 'profile' && e.key === 'c' && !(e.target instanceof HTMLSelectElement)) {
+      this.go('characters');
+    } else if (this.screen === 'characters' && e.key.startsWith('Arrow') && this.gridMove(e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0, e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0)) {
+      e.preventDefault();
     } else if (this.screen === 'play' && e.key === 'Enter' && !(e.target instanceof HTMLButtonElement || e.target instanceof HTMLSelectElement || (e.target as HTMLElement | null)?.tagName === 'SUMMARY')) {
       e.preventDefault();
       this.start();

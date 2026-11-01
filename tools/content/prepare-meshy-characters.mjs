@@ -47,7 +47,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NodeIO, PropertyType } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { compactPrimitive, dedup, dequantize, prune, quantize, simplify, transformMesh, weld } from '@gltf-transform/functions';
+import { compactPrimitive, dedup, dequantize, prune, quantize, transformMesh, weld } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { autoSkin } from './autoskin.mjs';
@@ -55,7 +55,8 @@ import { buildSpec, jointsFromLandmarks, readManifests } from './character-manif
 import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
-import { bakeNormals, normalJpeg, seamAwareSimplify } from './meshy-mesh.mjs';
+import { keepArmsToArms } from './armweights.mjs';
+import { HANDS_SHARE, HEAD_SHARE, bakeNormals, cutKeeping, normalJpeg, seamAwareSimplify } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -410,6 +411,10 @@ const FBX_BONES = [
 ];
 /** Triangles an unrigged mesh is cut to before rigging (the rig is fitted at this detail, then build() simplifies further). */
 const WORK_TRIANGLES = 40000;
+/** Before its joints are found, a download's head is what lies above this share of its height... */
+const HEAD_FROM = 0.84;
+/** ...and its hands what lies out past this share of its half-width (the arms are held out). */
+const HANDS_FROM = 0.8;
 /**
  * An unrigged Meshy download (a textured FBX, or a textured GLB with no skin), rigged from its
  * landmarks (the manifest's, or found from the mesh by landmarks.mjs) and re-posed to the rig's stance.
@@ -446,12 +451,20 @@ async function readUnrigged(file, c, ual) {
   {
     // Cut to the working detail (texture seams are kept, so the base colour still fits); a mesh the
     // seams hold above twice that gets a looser cut, then a sloppy one.
+    // The head (the top of the model, before its joints are found) and the hands (the far ends of the arms held
+    // out in the T- or A-pose) keep their share of the cut, never sloppy: a million-triangle download cut by error
+    // alone, then sloppily, kept a face of a hundred triangles (lumpy) and hands of a few dozen (shards).
     const p = mesh.listPrimitives()[0];
-    const target = Math.min(p.getIndices().getCount(), WORK_TRIANGLES * 3);
+    const target = Math.min(p.getIndices().getCount() / 3, WORK_TRIANGLES);
     const pos = new Float32Array(p.getAttribute('POSITION').getArray());
+    let [y0, y1, x0, x1] = [Infinity, -Infinity, Infinity, -Infinity];
+    for (let v = 0; v < pos.length; v += 3) [x0, x1, y0, y1] = [Math.min(x0, pos[v]), Math.max(x1, pos[v]), Math.min(y0, pos[v + 1]), Math.max(y1, pos[v + 1])];
+    const neck = y0 + HEAD_FROM * (y1 - y0);
+    const xm = (x0 + x1) / 2;
+    const reach = HANDS_FROM * ((x1 - x0) / 2);
     let cut = new Uint32Array(p.getIndices().getArray());
-    for (const error of [0.01, 0.03]) if (cut.length > target * 1.5) [cut] = MeshoptSimplifier.simplify(cut, pos, 3, target, error, []);
-    if (cut.length > target * 2) [cut] = MeshoptSimplifier.simplifySloppy(cut, pos, 3, null, target, 0.05);
+    if (cut.length / 3 > target * 1.5)
+      cut = cutKeeping(cut, pos, target, [{ inside: (v) => pos[v * 3 + 1] > neck, share: HEAD_SHARE }, { inside: (v) => Math.abs(pos[v * 3] - xm) > reach, share: HANDS_SHARE }], { errors: [0.01, 0.03], sloppy: true });
     p.getIndices().setArray(cut);
     compactPrimitive(p);
   }
@@ -712,6 +725,9 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   // Hands: measured from the mesh, the finger joints fitted to them and the fingers weighted (hands.mjs).
   const pos = fp ? fp.pos : new Float32Array(src.pos);
   const fitted = new Map(rigNames.map((n) => [n, { q: ual.get(n).q, t: target.get(n) }]));
+  // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
+  // Opt-in (fixes.armCloth): on every character it moved the stretch into wide sleeves instead of curing it.
+  if (!fp && c.armCloth) keepArmsToArms({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, log: (l) => console.log(`  ${out} ${l}`) });
   const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, log: (l) => console.log(`  ${out} ${l}`) });
   for (const [n, t] of hands.moved) target.set(n, t);
   for (const j of joints) if (hands.data[j.getName().slice(-1)] && j.getName().startsWith('hand_')) j.setExtras({ hand: hands.data[j.getName().slice(-1)] });
@@ -759,12 +775,28 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   if (ratio < 1 && c.seamWeld) await seamAwareSimplify(prim, jpeg, Math.floor((prim.getIndices().getCount() / 3) * ratio));
   else if (ratio < 1) {
     const want = Math.floor(triangles(doc) * ratio);
-    await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.008, lockBorder: false }));
+    // The head and the hands (skin mostly on the Head joint, on a hand or finger joint) keep their share of the
+    // budget (meshy-mesh.mjs cutKeeping).
     // A dense rigged download (Meshy's rigging keeps every triangle sent to it) can hold the careful cut far above
     // its target: cut looser then, as an unrigged download is cut to its working detail.
     // An unrigged download is already cut to its working detail: it keeps the careful cut (looser passes there cost
     // the hands and feet their shape, and changed the shipped builds).
-    if (loose) for (const error of [0.02, 0.05]) if (triangles(doc) > want * 1.5) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio: want / triangles(doc), error, lockBorder: false }));
+    const headJoint = rigIndex.get('Head');
+    const handJoints = new Set(rigNames.map((n, i) => (/^(hand|index|middle|ring|pinky|thumb)_/.test(n) ? i : -1)).filter((i) => i >= 0));
+    const PJ = prim.getAttribute('JOINTS_0').getArray();
+    const PW = prim.getAttribute('WEIGHTS_0').getArray();
+    const majorOf = (v) => {
+      let b = 0;
+      for (let k = 1; k < 4; k++) if (PW[v * 4 + k] > PW[v * 4 + b]) b = k;
+      return PJ[v * 4 + b];
+    };
+    const parts = [
+      { inside: (v) => majorOf(v) === headJoint, share: HEAD_SHARE },
+      { inside: (v) => handJoints.has(majorOf(v)), share: HANDS_SHARE },
+    ];
+    const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008] });
+    prim.getIndices().setArray(cut);
+    compactPrimitive(prim);
   }
   await doc.transform(prune({ keepAttributes: true }));
   // The shape the cut took away (and the download's own normal map) as a normal map in the download's texture

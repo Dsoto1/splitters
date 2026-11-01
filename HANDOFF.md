@@ -31,6 +31,85 @@ normals (512 px), one LOD.
 - Menu bundle after this: 824.7 kB gzip / 2927 kB raw (budget 840 / 3000). Checks: typecheck, test:changed (the
   pads timeouts under load pass alone), content OK, validate-map clean, e2e editor + maps (market_town, qasr_medina).
 
+### `wip/menu-profile` (agent, 2026-10-31; merged to main 2026-11-01)
+Owner: Character Select's tabs "span too far and look cluttered", the bottom bar is cluttered, sign-in is
+hidden, and the top-right character tile should be the Profile with "Change character".
+- **Profile entry** (`profileEntry()`, `#profile-badge`, top right of Home): portrait, player name, character,
+  account chip (`accountState()`: Guest / ✓ Signed in / Pick a username); opens Profile (P, pad Y). Signed out
+  with sign-in offered: orange `#sign-in` (`button.cta`) under it. **Characters** left the Home nav.
+- **Profile** (`profile()`, `#profile-panel`): character (`#profile-change-character` → Character Select; C /
+  pad Y), player (guest name → "Change it in Options" / `#profile-sign-in`; signed in: username, `#sign-out`,
+  username form), region, privacy + Copy my account ID. Auth flow unchanged (account.ts untouched).
+- **Character Select**: `charSections()` → one `.char-grid` of `.char-sec` (sticky `.char-sec-head`, label +
+  count) with a `.char-jump` strip (`.char-chip`, lit by `sectionInView`/`markSection`); Q/E → `stepSection`;
+  chips/Q/E glide with our own rAF easing (`glideGrid`: a second smooth `scrollTo` while one was starting left
+  the grid in place); wheel/touch cancel it. Arrows / d-pad: `gridMove` (crosses sections). Opens on your
+  character's section. `charFrom`: Back and Choose return to the opener (Profile, Online). "All" is gone.
+- **Bottom bar** (`hints()`): `.hint-group`s moves | acts (main one `.main`, cyan) | util (Fullscreen); news +
+  Privacy only on Home (`footer[data-screen]`); the `, .` turn hint moved into the spin bar; touch: no bar off
+  Home. Footer account links (`footerLinks`) removed.
+- e2e: offline flow's Character Select block rewritten (Profile route, sections, strip, Q/E, wheel, arrows
+  across sections, Back/Choose → Profile, P/C keys); designer flow opens via Profile.
+- style.css changed, so CI runs the full suite on a check branch; locally run: offline, mobile, designer,
+  characters, visual. Screens: session scratchpad `profile/` (before/after at 1920, 1400, phone).
+
+### Grip audit and fix for every character (`wip/grip-audit`, agent, 2026-10-31/11-01; merged to main 8c5e491)
+The owner's screenshot brief (Character Select holding the AK, character by character; references: The Visitor and
+Rattles) is in the session branch's HANDOFF ("Queued (owner, 2026-10-31 evening): grip audit and fix"). What was done:
+- **Audit tool:** `tools/content/grip-audit.mjs` (+ `__grips.audit()` / `tools/gripAudit.ts`, `__grips.upper()`,
+  `__grips.curl()`): every player character with the rifle, pistol and Spin Gun, side and front, measured as drawn:
+  finger weights per hand, fingertips against the grip with the hands open vs closed (the curl test), elbow bend vs
+  the arm's own skin, gun against head and shoulders, arms across the midline, stretched skin edges, first person.
+  Writes `audit.json`, a ranked `summary.md` and contact sheets; `RESUME=1`, `RESCORE=1`, `ONLY=`. See CHARACTERS.md.
+- **Results** (57 characters incl. the rig's Ranger; rifle numbers, 1.8 m body): flagged 42 → 30; flags: flat 24 →
+  10, off (hand centre off its point) 35 → 16, open (fingertips far from the grip) 25 → 10, first person 29 → 16,
+  face 1 → 1 (Capt. Nova, side view), crossed 0 → 0, elbow 0 → 0, spikes 14 → 17 (see left), back (fingers curl away)
+  0 → 3 (support hands; before had no curl test). Shooting hand median: fingertips to grip 11.0 → 6.3 cm, hand centre
+  to grip 6.8 → 4.2 cm. Curl test, shooting hand (+ closes onto the grip): Big Bogdan −5.3 → +5.4 cm, Shade −5.0 →
+  +3.5, Cap'n Barnacle −3.6 → +3.6, Sir Galloway −3.0 → +3.2, Agent Zhao −1.4 → +2.9, Iron Knight −1.4 → +2.8, Hector,
+  Grunt '68, Saint Nick, Capt. Nova, the Dapper 0 (no finger skin) → +1.0 to +6.5. References unchanged (The Visitor
+  +1.9, Rattles +2.3 → +2.6). Per-character table: the audit's `summary.md`; the session's sheets were in the
+  agent's scratchpad (re-run the audit for fresh ones: about 45 min on this machine).
+- **(a) Gun at the face / arms crossed** (Barnacle, Hyena, Ricochet, Shambler, Grandpa Chains, Botboy, Rotter): from
+  the side NONE is crossed and none has the gun at the face (head-to-gun 0.14-0.30 m, as The Visitor's 0.14 and
+  Rattles' 0.17; grips 5-7 cm below the shoulder joint; elbows outward). The cause is Character Select's camera: it
+  stood ~7 degrees off the rifle's line, so every hold (the rig's own Farmhand too) read as a gun at the face with
+  the arms crossed under it. Fix: Character Select turns the hero three-quarter on (`HERO_YAW_SELECT` 0.85 rad in
+  menuScene.ts, eased with the camera; home unchanged; visual e2e passes). Barnacle's arms really are short for his
+  shoulders (arm 0.94 of shoulder width, The Visitor's 1.72): his left arm is straight, the support hand slid back.
+- **(b) Elbow bending backwards** (Ivory Rustwalker, Iron Knight): not found in the hold: the elbow test (forearm
+  toward the upper arm's bind-pose front) is positive on every character. What reads as a broken arm is the hand:
+  the Knight's hand was read a quarter turn round (its flat agreed 0.08 with the rig's palm) and lay flat under the
+  gun; Rustwalker's hands were rigid "fists". Both re-fitted (below).
+- **(c) Flat open palms**, two causes, both fixed: (1) hands.mjs took relaxed Meshy hands (0.3-0.45 thick for their
+  length) for fists and left them unweighted (Hector, Grunt '68, Shambler, Grandpa Chains R, Nova, Otter, Pilot, ...):
+  now only a compact block is a fist (thick AND about as long as wide); hands turned on their joint take their palm
+  from their own flat; strays (straps, cape edges) are left out. `rehand-built.mjs` re-fitted all 56 from the shipped
+  files (no downloads needed). (2) Where a palm side came out reversed the fingers curled UP off the grip (Bogdan,
+  Shade, Galloway, Barnacle, Zhao, Knight): `closeHand` now takes the gun point and curls toward it.
+  Still flat/splayed: some SUPPORT hands under the handguard (King Aldric's left, Dusty Colt's, the Dapper's,
+  Grunt '68's look spread) and the rigid paws (Hyena, Biscuit, Boglurker, Goblin L, Teddy L: fists by shape).
+- **(d) Stretched spikes** (Giggles, Vanguard, the robed rangers): `tools/content/armweights.mjs` (cloth an arm holds
+  that hangs well below it takes the nearest body vertex's weights) was tried on all and made it WORSE (Giggles' and
+  the Dust Trooper's wide sleeves grew wings from the arms; stretch rose on Hector, the Dapper, ...). Kept opt-in
+  (`fixes.armCloth`), used by none. Needs a better rule (weights blended by geodesic distance from the arm, or cloth
+  joints) and is still open. The stretch flag also counts some finger stretch now that more fingers bend (King
+  Aldric 28 long edges at middle_01_l, Count Bonesworth, the Dapper, Dusty Colt, Rotter).
+- **(4) Lumpy faces / lost hands:** the Meshy cut (`cutKeeping`, meshy-mesh.mjs) now keeps 12% of the budget for the
+  head and 4% for the hands, never sloppily (both the 40k work cut and the final cut). Rebuilt from downloads on this
+  machine (no new credits; Brother Ansel, Merrow the Wise and King Aldric re-fetched from their recorded rig tasks):
+  head triangles Lancer Mei 133 → 1381, Sir Galloway 389 → 1321, Dale 773 → 1296, Brother Ansel 551 → 1282; hand
+  triangles Merrow the Wise 110 → 437, Lancer 80 → 430, Brother Ansel 140 → 432. King Aldric 14.6k triangles and
+  Brother Ansel 18.1k (budget 11k; the careful cut stops there on these dense rigs, as Ansel's 13.7k did before;
+  within the byte budget, content:check OK).
+- **Needs the owner:** FBX downloads for the in-house originals aren't on this machine (goblin, otter, toad,
+  salamander, hyena, elder, alien, cat, pilot, pirate, titan): their hands were re-fitted from the shipped files, but
+  a re-cut (head/hands share) needs the FBX folders. Bandit (fused lower body, head turned): a broken in-house fit,
+  needs new landmarks in its manifest or a Meshy rig (5 credits: ask). Plains Scout is still a queued stub on main
+  (not built; its respect review is open). Desert Ranger / Dust Trooper / Giggles / Vanguard spikes: open (above).
+- Checks: typecheck; full vitest (1194 pass); content:check OK; e2e characters (all grip checks, in play, bots 9/9),
+  designer, arsenal, visual PASS (characters' first run failed on a model load and a bot count under machine load;
+  passed on rerun).
 ### `wip/character-groups` (agent, 2026-10-31; not merged)
 Owner: "organize the characters better (soldiers, zombies, animals, creatures, human, etc)", then "clicking a
 character should just be how I look around, not this hover business; select, then confirm".

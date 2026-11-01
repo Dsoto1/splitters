@@ -960,11 +960,11 @@ export class CharacterAnimator {
       const down = new Vector3(0, -1, 0);
       if (grip.style === 'long') {
         solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, grip.grip), scale), pos(arms.r.upper).add(outward.scale(0.35)).add(down.scale(0.3)), w);
-        closeHand(space, arms.r, w);
-      } else closeHand(space, arms.r, w);
+      }
+      closeHand(space, arms.r, w, point(gripped.pos, gripped.rot, grip.grip));
       if (support) {
         solveArm(space, arms.l, palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
-        closeHand(space, arms.l, w * 0.7);
+        closeHand(space, arms.l, w * 0.7, point(gripped.pos, gripped.rot, support));
       }
     }
 
@@ -1094,10 +1094,10 @@ export class CharacterAnimator {
     const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
     const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
     solveArm(space, arms.r, gripAt, pos(arms.r.upper).add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), w);
-    closeHand(space, arms.r, w);
+    closeHand(space, arms.r, w, point(grip.grip));
     if (supportAt) {
       solveArm(space, arms.l, supportAt, pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
-      closeHand(space, arms.l, w * 0.7);
+      closeHand(space, arms.l, w * 0.7, supportAt.add(palmSideWorld(arms.l).scale(arms.l.gripOffset * scale)));
     } else if (this.fp) {
       // Full body, one-handed (a knife, an axe): the free arm hangs at your side instead of holding the aim pose up in view.
       const s = pos(arms.l.upper);
@@ -1355,18 +1355,40 @@ function solveArm(space: SkeletonSpace, arm: Arm, palmTarget: Vector3, pole: Vec
   space.setRot(arm.hand, handRot, weight);
 }
 
-/** Curl the fingers toward the palm (the side the thumb is on), as if round a grip. */
-function closeHand(space: SkeletonSpace, arm: Arm, weight: number): void {
+/** How far every hand closes, as a share of its own curl (1; the grip audit's curl test sets 0 to compare). */
+let curlShare = 1;
+/** The grip audit's curl test (tools/gripSheet.ts `__grips.curl`): close every hand by this share of its curl. */
+export function setCurlShare(share: number): void {
+  curlShare = share;
+}
+
+/**
+ * Curl the fingers toward the palm (the side the thumb is on), as if round a grip. `onto` (world): the point on
+ * the gun the hand holds; the fingers then close whichever way brings their tips toward it. A Meshy hand's palm
+ * side is read off its model and can come out the wrong way round (Big Bogdan's, Shade's, Sir Galloway's
+ * shooting hands curled their fingers up off the grip: an open palm on the gun); closing onto the gun is right
+ * either way.
+ */
+function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector3): void {
   // A measured hand closes as far as it was found able to (not at all if it is rigid or already a fist).
-  weight *= arm.curl;
+  weight *= arm.curl * curlShare;
   if (weight <= 0) return;
   const wrist = space.pos(arm.hand);
   const forward = space.pos(arm.knuckle).subtract(wrist).normalize();
   const across = space.pos(arm.index).subtract(space.pos(arm.pinky)).normalize();
   const towardThumb = space.pos(arm.thumb).subtract(wrist);
   const palmSide = towardThumb.subtract(forward.scale(Vector3.Dot(towardThumb, forward))).subtract(across.scale(Vector3.Dot(towardThumb, across)));
-  // Rotating about `across` by +angle must move the fingers toward the palm side.
-  const sign = Vector3.Dot(forward.applyRotationQuaternion(Quaternion.RotationAxis(across, 0.5)), palmSide) > 0 ? 1 : -1;
+  // Rotating about `across` by +angle must move the fingers toward the palm side...
+  let sign = Vector3.Dot(forward.applyRotationQuaternion(Quaternion.RotationAxis(across, 0.5)), palmSide) > 0 ? 1 : -1;
+  // ...or toward the gun: the middle finger's tip swung both ways about its knuckle, the nearer to the point wins.
+  const middle = arm.fingers[1] ?? arm.fingers[0];
+  if (onto && middle && middle.length) {
+    const target = space.point(onto);
+    const knuckle = space.pos(middle[0]!);
+    const tip = space.pos(middle[middle.length - 1]!).subtract(knuckle).add(forward.scale(0.02));
+    const swung = (s: number) => Vector3.Distance(knuckle.add(tip.applyRotationQuaternion(Quaternion.RotationAxis(across, s * 1.2))), target);
+    sign = swung(1) <= swung(-1) ? 1 : -1;
+  }
   const curl = [0.9, 1.1, 0.7];
   for (const chain of arm.fingers) {
     chain.forEach((joint, i) => {
@@ -1417,10 +1439,10 @@ export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: Transf
   const outward = arms.r.upper.getAbsolutePosition().subtract(arms.l.upper.getAbsolutePosition()).normalize();
   const down = Vector3.TransformNormal(new Vector3(0, -1, 0), world).normalize();
   solveArm(space, arms.r, gripAt, arms.r.upper.getAbsolutePosition().add(outward.scale(0.35 * scale)).add(down.scale(0.3 * scale)), weight);
-  closeHand(space, arms.r, weight);
-  if (supportAt) {
+  closeHand(space, arms.r, weight, point(grip.grip));
+  if (supportAt && grip.support) {
     solveArm(space, arms.l, supportAt, arms.l.upper.getAbsolutePosition().subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), weight);
-    closeHand(space, arms.l, weight * 0.7);
+    closeHand(space, arms.l, weight * 0.7, point(grip.support));
   }
 }
 

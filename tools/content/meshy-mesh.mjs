@@ -906,3 +906,65 @@ export function hiddenTriangles(P, idx, rays = 40) {
   }
   return hidden;
 }
+
+/**
+ * Shares of a character's triangle budget kept for its head and its hands. A cut driven by error alone treats a
+ * face or a hand like any other surface, and a realistic body cut from a million triangles came out with a face
+ * of a hundred or two (Lancer Mei 133 of 11,000, Sir Galloway 389: "lumpy" faces; the good ones carry 1,500 to
+ * 2,500) and hands of a few dozen each (Merrow the Wise 110 for both: thin shards in his sleeves).
+ */
+export const HEAD_SHARE = 0.12;
+export const HANDS_SHARE = 0.04;
+
+/**
+ * Cut a triangle list to about `target` triangles, each of `parts` ({ inside(v), share }: a triangle is a part's
+ * when two of its corners are inside it) cut apart from the rest with at least its share of the budget (never
+ * more than it has) and never sloppily, the vertices on the parts' edges locked so they still meet. `errors`: the
+ * careful passes tried in turn until a part is within 5% of its target; `sloppy`: then a sloppy pass for the
+ * rest of the body only (it would crush a face). Returns the new index list.
+ */
+export function cutKeeping(indices, positions, target, parts, { errors = [0.008], sloppy = false } = {}) {
+  const n = positions.length / 3;
+  const lists = [...parts.map(() => []), []];
+  for (let i = 0; i < indices.length; i += 3) {
+    let k = parts.findIndex((p) => Number(p.inside(indices[i])) + Number(p.inside(indices[i + 1])) + Number(p.inside(indices[i + 2])) >= 2);
+    if (k < 0) k = parts.length;
+    lists[k].push(indices[i], indices[i + 1], indices[i + 2]);
+  }
+  const total = indices.length / 3;
+  const want = parts.map((p, k) => {
+    const tris = lists[k].length / 3;
+    return Math.min(tris, Math.max(Math.round((target * tris) / Math.max(1, total)), Math.round(target * p.share)));
+  });
+  want.push(Math.max(1, target - want.reduce((a, b) => a + b, 0)));
+  // Vertices used by two lists: locked, so the cut parts still meet.
+  const owner = new Int16Array(n).fill(-1);
+  const lock = new Uint8Array(n);
+  lists.forEach((list, k) => {
+    for (const v of list) {
+      if (owner[v] === -1) owner[v] = k;
+      else if (owner[v] !== k) lock[v] = 1;
+    }
+  });
+  const none = new Float32Array(n);
+  // Errors are the whole mesh's (a part alone is small, and an error relative to its own size held it far above
+  // its target).
+  const size = MeshoptSimplifier.getScale(positions, 3);
+  const cut = (part, wanted, allowSloppy) => {
+    let idx = Uint32Array.from(part);
+    for (const error of errors) {
+      if (idx.length / 3 <= wanted * 1.05) break;
+      [idx] = MeshoptSimplifier.simplifyWithAttributes(idx, positions, 3, none, 1, [0], lock, wanted * 3, error * size, ['ErrorAbsolute']);
+    }
+    if (allowSloppy && idx.length / 3 > wanted * 2) [idx] = MeshoptSimplifier.simplifySloppy(idx, positions, 3, null, wanted * 3, 0.05);
+    return idx;
+  };
+  const out = lists.map((list, k) => cut(list, want[k], sloppy && k === parts.length));
+  const all = new Uint32Array(out.reduce((a, b) => a + b.length, 0));
+  let at = 0;
+  for (const o of out) {
+    all.set(o, at);
+    at += o.length;
+  }
+  return all;
+}

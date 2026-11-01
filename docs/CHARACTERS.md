@@ -80,7 +80,7 @@ unknown IDs fall back to the default.
 ### Character Select's groups
 
 Character Select sorts characters by what they are, not by how the look was
-built. The groups are `CHARACTER_GROUPS` in looks.ts (tab order and labels);
+built. The groups are `CHARACTER_GROUPS` in looks.ts (section order and labels);
 every built-in look names exactly one, and a unit test
 (`packages/shared/test/lookGroups.test.ts`) keeps it that way:
 
@@ -98,19 +98,24 @@ Where a group comes from: a part-built preset has `group` on its entry in
 copied into characters.generated.ts); an NPC skin gets it from
 `NPC_LOOK_GROUPS` in sim/npc.ts (creatures → Creatures & Machines, the zombie
 → Undead & Horror, the soldier roles → Soldiers). `lookGroup(id)` reads any of
-them; a design of yours has none and goes under **Yours**. Tabs: All (roster
-order), each group with anyone in it (by name), Yours. Q / E (LB / RB) step
-through them.
+them; a design of yours has none and goes under **Yours**. The screen is one
+grid that scrolls through the sections in that order (each group with anyone
+in it, its characters by name, then Yours with **Design new**), each under a
+compact header with its count. The jump strip above lights the section in
+view; a chip, or Q / E (LB / RB), scrolls to a section. Arrow keys and the
+d-pad cross from one section into the next.
 
 Picking: a click (tap, Enter, controller A) on a portrait **shows** that
 character (the big model, bio, loadout); hovering only highlights it, so the
 mouse is free to drag the model round. Only **Choose** (the button, Enter / A
 again, or a double-click on the portrait) makes them yours; Back (Esc / B)
 leaves your character as it was. Your current one wears a **Chosen** badge.
+Character Select opens from Profile (the main menu's Profile entry → **Change
+character**) or Online; Back and Choose return there.
 
 ## Character Designer
 
-Main menu → **Design…** next to the Character picker (or `?mode=designer`).
+Character Select → **Design new** (D / controller X), or **Customise** on a part-built look (or `?mode=designer`).
 Players choose:
 - a body;
 - one part per slot (top, arms, trousers, feet, hood, pauldrons);
@@ -436,7 +441,7 @@ repo; they live in a downloads dir outside it.
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -535,10 +540,41 @@ The steps on their own:
   thumb scaled from the rig's), keeping the rig's joint orientations;
 - the fingers weighted to the rig's finger chains: split into index, middle,
   ring and pinky where the gaps between the fingers show, blended at the
-  knuckles and along each finger; one bend at the knuckle line for a mitten
-  or claw; left rigid when the hand is already closed (a fist or gauntlet:
-  thickness over 0.42 of its length);
+  knuckles and along each finger; one bend at the knuckle line for a mitten,
+  claw or fused hand (a whole-hand curl); left rigid only when the hand is a
+  compact block already closed (a fist: thicker than half its length and less
+  than 1.5 times as long as wide, or thicker than 0.65 of its length). A
+  relaxed Meshy hand, its fingers a little bent, measures 0.3 to 0.45 thick for
+  its length and still bends (it was taken for a fist and left flat on the gun);
+- vertices far from the hand's core (straps, a cape's edge left on the hand:
+  past 1.6 times the 80th percentile of their distance from its centre) are
+  left out of the measure and keep their weights;
+- the palm side is the rig's (palm down in the T-pose) unless the hand's own
+  flat (its thinnest way) disagrees: a hand turned a quarter on its joint (the
+  dapper's, the Knight's) takes its flat, facing the body's front;
 - the measurements written on the hand joints (`extras.hand`) for the game.
+
+In the game a hand closes onto the point of the gun it holds (`closeHand`):
+the fingers curl whichever way brings their tips toward it, so a hand whose
+palm side came out reversed still wraps the gun instead of bending its fingers
+up off it.
+
+**Arm skin kept to the arms** (`tools/content/armweights.mjs`, opt-in with
+`fixes.armCloth: true`): a vertex an arm holds that hangs well below it (past
+2.2 to 3.4 limb radii from its bones, clear of the shoulder) takes the weights
+of the nearest vertex the body holds, blended over that band. Tried on every
+character (2026-10-31) it made the stretching worse: wide sleeves (Giggles,
+the Dust Trooper) grew wings from the arms instead of streaks, and the audit's
+stretch measure rose on Hector, the Dapper and others; so no character uses it.
+The sleeve and coat "spikes" need a better rule (weights blended by distance
+along the surface, or cloth joints), see HANDOFF.md.
+
+**Head and hands keep their detail** (`cutKeeping` in `tools/content/meshy-mesh.mjs`):
+both cuts (an unrigged download's work cut to 40k triangles, and the final
+cut) keep at least 12% of the budget for the head and 4% for the hands, cut
+apart from the body (never sloppily) with the vertices on their edges locked.
+A realistic body cut by error alone from a million triangles had kept a face
+of 133 triangles and hands of a few dozen (Lancer Mei, Merrow the Wise).
 
 The log prints each hand's size and what it got (`split`, `mitten`, `none`).
 For an odd model, `fixes.hands` overrides: `palm` (`[x, y, z]` in the hand
@@ -549,11 +585,30 @@ joint's space, metres), `curl` (0–1.5, how far the fingers close), `scale`
 
 `node tools/content/rehand-built.mjs` (`ONLY=<ids>`) does the same to
 characters already built, from their shipped files, when the downloads
-aren't at hand: it re-skins the hand region in place, cuts first-person arms
-from the body for a character without them, and updates the lock (then run
-`pnpm content:build`). Running it again changes nothing.
+aren't at hand: it re-skins the hand region in place (and, with
+`fixes.armCloth`, eases arm cloth to the body: armweights.mjs), cuts first-person arms from the body for a character
+without them, and updates the lock (then run `pnpm content:build`). Running it
+again changes nothing. `OUT=<dir>` writes the files there instead (a trial;
+the lock is left alone).
 
-### 4. Check the grip sheet
+### 4. Check the grip sheet and the grip audit
+
+    pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4860
+    node tools/content/grip-audit.mjs http://localhost:4860 <out dir outside the repo>
+
+The **grip audit** renders every player character holding the rifle, the pistol
+and the Spin Gun in the Character Select pose, from the side and the front,
+measures each hold as drawn (`__grips.audit()`, `tools/gripAudit.ts`: finger
+weights per hand, fingertips against the grip with the hands open and closed
+(the curl test), elbow bend against the arm's own skin, the gun against the
+head and shoulders, arms across the midline, stretched skin edges) and writes
+`audit.json`, a ranked `summary.md` and contact sheets (`sheet-<n>.png`,
+`<id>.png`). Judge a gun "at the face" from the side: front views foreshorten
+a rifle pointed at the camera. `ONLY=<ids>`, `NO_SHOTS=1`, `NO_FP=1`,
+`RESUME=1` (it saves after every character) and `RESCORE=1` (flags again after
+changing a threshold).
+
+The per-character sheet:
 
     pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4860
     ONLY=<ids> node tools/content/grip-sheet.mjs http://localhost:4860 ~/grip-sheets

@@ -88,6 +88,33 @@ describe('hands', () => {
     for (let i = 0; i < mesh.pts.length; i++) expect(heldBy(mesh, i)).toEqual(['hand_r']);
   });
 
+  it('bends a relaxed, thick hand that is not a fist (no longer left flat)', () => {
+    // 19 cm long, 9 wide, 7 thick (a Meshy hand modelled with its fingers a little bent): Hector's, Grunt's.
+    const mesh = handMesh([[0.0, 0.19, -0.045, 0.045, -0.035, 0.035]]);
+    const { data } = fit(mesh);
+    expect(data.r.fingers).toBe('mitten');
+    expect(data.r.curl).toBeGreaterThan(0.75);
+  });
+
+  it('reads the palm of a hand turned a quarter on its joint from its own flat, facing the body front', () => {
+    // A hand lying edge-on to the rig's: its flat is the rig's across.
+    const flatAcross = handMesh([[0.0, 0.19, -0.012, 0.012, -0.045, 0.045]]);
+    const { data } = fit(flatAcross);
+    const front = qrot([-H.q[0], -H.q[1], -H.q[2], H.q[3]], [0, 0, 1]);
+    const d = data.r.palmSide;
+    expect(Math.abs(d[0] * ref.across[0] + d[1] * ref.across[1] + d[2] * ref.across[2])).toBeGreaterThan(0.95);
+    expect(d[0] * front[0] + d[1] * front[1] + d[2] * front[2]).toBeGreaterThanOrEqual(0);
+    expect(data.r.thickness).toBeLessThan(0.03);
+  });
+
+  it('leaves a stray strip on the hand out of the measure and off the fingers', () => {
+    const mesh = handMesh([palm, ...fingers, [0.3, 0.42, -0.003, 0.003, -0.003, 0.003]]);
+    const { data } = fit(mesh);
+    expect(data.r.length).toBeCloseTo(0.2, 1);
+    const stray = mesh.pts.findIndex(([u]) => u > 0.35);
+    expect(heldBy(mesh, stray)).toEqual(['hand_r']);
+  });
+
   it('gives the same weights when run again, and takes overrides', () => {
     const mesh = handMesh([palm, ...fingers]);
     fit(mesh);
