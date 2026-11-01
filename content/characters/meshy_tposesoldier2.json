@@ -8,10 +8,13 @@
   "group": "soldiers",
   "bio": "Has shouted himself hoarse at every drill since basic. His whisper still rattles windows.",
   "body": "male",
-  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A stocky, moustached soldier in an olive parka with a black utility belt.",
+  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A stocky, moustached soldier in an olive parka with a black utility belt.",
   "source": {
-    "license": "owned",
-    "author": "The owner (Meshy, owner's account)",
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "T Pose Soldier"
+    },
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_T_Pose_Soldier_1101160744_texture\\.glb$"

@@ -8,10 +8,13 @@
   "group": "horror",
   "bio": "Buried with full honours in three different wars. Keeps marching back for a fourth.",
   "body": "male",
-  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks: found on the mesh (landmarks.mjs), then the knees set by hand (the straps hanging between the legs pulled a found knee inward and back, crossing the legs). The download is 1.1M triangles whose careful cut stopped at 22k, so it is built with `surface: rebake`. A grinning skeleton in a helmet and camouflage fatigues, webbing and bone hands.",
+  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks: found on the mesh (landmarks.mjs), then the knees set by hand (the straps hanging between the legs pulled a found knee inward and back, crossing the legs). The download is 1.1M triangles whose careful cut stopped at 22k, so it is built with `surface: rebake`. A grinning skeleton in a helmet and camouflage fatigues, webbing and bone hands.",
   "source": {
-    "license": "owned",
-    "author": "The owner (Meshy, owner's account)",
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Undead Soldier"
+    },
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_Undead_Soldier_\\d+_texture\\.glb$"
