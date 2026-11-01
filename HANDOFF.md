@@ -10,6 +10,45 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### `wip/warthog-step1` (agent, 2026-11-01; not merged): Warthog feel, step 1 (raycast suspension)
+Owner: "make the buggy feel like Halo's Warthog (independent suspension)", step 1, "if performance remains intact".
+- **Sim** `shared/src/sim/suspension.ts`: one ray down per wheel (`PhysicsWorld.groundBelow`, own box excluded), a
+  spring + damper per wheel on a sprung body (unit mass over the wheels, so heave/pitch/roll ring at the tuning's
+  `freq`); inertial squat/dive and lean-out from the chassis' acceleration; in the air the body keeps its spin with a
+  small nose-down `tumble`; landing feeds `land` × fall speed into the springs (bump stops at `bump`). The chassis
+  (probe, level collision box, seats, hit boxes) is unchanged: the sprung body is presentation carried by the sim.
+  Wheels off the ground cut grip; `vehicle.drift` loosens grip at speed (× (1 - drift·frac²)). Tuning per vehicle in
+  `MOUNT_DEFS` (`vehicle.suspension`, `vehicle.drift`): buggy and gun jeep only (table in docs/VEHICLES.md, "Suspension").
+- **Cost caps**: skipped while settled and still (a parked vehicle stops casting once its springs settle; the parked
+  early return now also waits for that); far empty vehicles (2-tick moves) sit level with no rays; past 96 rays a
+  tick, vehicles reuse last tick's ground on two ticks of three.
+- **Net**: snapshot `ms` (REPEATABLE; ints: height cm, pitch/roll mrad, steer %, wheel offsets cm) and input bit
+  `BUTTON_STEER_LOOK` 4096; MULTIPLAYER_PROTOCOL.md §17. Old clients/hosts ignore both.
+- **Client**: `View.suspendSprung` draws the body from `ms` (eased k = dt·18, like the pose; nothing reads frame
+  deltas), falls back to the old drawn-only `suspend` when no `ms`. Wheels on hub pivots (`mountVisuals.wheelsOf`):
+  the buggy's tires and the gun jeep's own Car Kit wheel meshes (re-parented onto pivots at load); roll from the
+  tick-based velocity, front steer, spring offset. Cockpit eye: `RideFrame.levelEye` + `COCKPIT_EYE_FOLLOW` (5/s)
+  eases the eye's offset from the level pose (a 1.5 Hz ±0.15 m bounce reaches the eye at under half; steady lean in
+  full); tilt damping in VehicleCamera is unchanged.
+- **Look to steer**: Options → Controls → Vehicle steering (`tiletrigger.vehicleSteer`, default **classic**: the
+  cockpit is the default view and mouse free-look there is worth keeping; look-steer pins the view to the world).
+  Server turns toward the look (`LOOK_STEER_GAIN` 2.2/rad, + A/D), ground vehicles only; the camera stops adding the
+  vehicle's turn and the chase camera doesn't recentre.
+- **Bots**: steering unchanged; new test (botVehicles.test.ts) drives buggy and jeep round a hairpin course flat out
+  with the bot `steer()`: max slip 0.16 / 0.11 rad (spin-out ≈ 0.6).
+- **Perf** (A/B against 89cc319 in a second worktree, loaded 4-core box, Iron Maw TDM 60 s, 13 sprung vehicles):
+  24 bots tick avg 3.72/3.46 → 3.69/3.31 ms (two rounds), mounts 0.72/0.67 → 0.76/0.69; 96 bots 4.86/4.78 →
+  5.05/4.21 ms, mounts 0.70/0.68 → 0.78/0.66 (noise). Worst case, 24 buggies all driven over bumps: 0.84/0.87 →
+  1.10/1.04 ms a tick (+~8 µs per vehicle); 48 driven jeeps (ray budget kicking in) 1.22 → 1.37 ms. Client, Iron Maw
+  with every wheeled vehicle driven: `View.updateMounts` 1.78/1.50 → 1.31/1.40 ms a frame (the snapshot replaces
+  the 5 drawn-only rays per vehicle per frame for the sprung ones). Bundle 831.2 → 833.1 kB gzip.
+- Checks: typecheck, test:changed (1201 passed), e2e vehicles (new check: sprung buggy, 4 tires on pivots rolling),
+  race, canyon, offline, mobile PASS. CI plan says full suite (shared code): merge through a `check/` branch.
+- **Local setup trap** (fixed here, may bite other agents): worktree `node_modules` symlinked into another checkout
+  resolve `@tiletrigger/shared` to that checkout's code; use a real `pnpm install --offline --frozen-lockfile`.
+- Step 2 (rollovers, rigid body) not started. Ideas: the sprung pitch could feed the probe's launch angle off ramps;
+  bots could ease throttle when `slide` grows (MountView has no slide yet).
+
 ### `wip/ziplines` (agent, 2026-11-01; not merged): real ziplines, a MapMaker element
 Owner: "build real ziplines if it's easy enough; should also be a MapMaker element". Built:
 - **Format v25** `zipline` entity (schema.ts `ZiplineEntity`: start post foot `position`, far post `end` as an offset,
