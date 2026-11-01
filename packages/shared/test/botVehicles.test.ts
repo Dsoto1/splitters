@@ -326,7 +326,7 @@ describe('bot drivers on loose, sprung vehicles', () => {
       send({});
       match.step();
       const m = (match as unknown as { mounts: { pos: { x: number; y: number; z: number }; yaw: number; speed: number; slide: number }[] }).mounts[0]!;
-      const course = [[20, 90], [90, 90], [90, 20], [30, 30], [80, 80], [20, 90], [20, 20], [90, 20], [55, 60], [20, 20]];
+      const course: [number, number][] = [[20, 90], [90, 90], [90, 20], [30, 30], [80, 80], [20, 90], [20, 20], [90, 20], [55, 60], [20, 20]];
       const st = freshDrive();
       let wp = 0;
       let slip = 0;
