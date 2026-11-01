@@ -11,7 +11,7 @@ made only on a commit that passed CI on a check branch.
 **The original characters' hats, glasses and beards**
 - Head gear is now made to fit each character's own head (men's and women's heads differ) instead of sitting on it as bowls and rings. **Caps** have six seams up to a button and a curved peak; the **beret** has a leather band and badge and drapes down over the right ear; the **wide-brim hat** has a pinched crown, a band and a brim turned up at the sides; the **beanie** a ribbed, turned-up cuff; the **headband** lies over the hair and is knotted at the back; the **bandana mask** hangs in a point below the chin. Hair under a hat no longer pokes through it.
 - **Sunglasses** sit on the nose with their arms back over the ears; **goggles** have cups against the face and a strap round the head.
-- **Helmets are real models** (the owner's Meshy helmets), each seated on the head it's worn on: Bulwark wears the steel helmet, Commando the combat helmet, Engineer the brimmed helmet and Frost the aviator helmet with its goggles. The steel, aviator, brimmed and horned helmets are also in the Character Designer.
+- **Helmets are real models** (the owner's Meshy helmets), each seated on the head it's worn on: Engineer wears the brimmed helmet, and the combat helmet is the military model. The steel, aviator, brimmed and horned helmets are also in the Character Designer.
 - **Beards** are full beards now, from the sideburns down the jaw with a moustache, in the hair colour (the old one read as a stuck-on moustache).
 
 **Weapons**

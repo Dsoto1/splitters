@@ -11,7 +11,8 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
 ### `wip/original-looks` (agent, 2026-11-01; not merged): the original characters' hats, eyewear and beards
-Owner: the part-built looks have "bowls on heads, eyewear and mustaches all strange". Started from 899537c's ideas
+Owner: the part-built looks have "bowls on heads, eyewear and mustaches all strange"; Engineer's "accessories need work",
+Sprout's headband. Started from 899537c's ideas
 (model gear, refits; ported by hand onto current main, nothing it replaced brought back).
 - **Fitting** (`packages/client/src/content/headFit.ts`, pure, unit-tested): `HeadMap` measures the head (skin;
   skin + hair kept within 1.2 cm, draped) as distances from the skull's middle in 48 × 32 directions, from the bind
@@ -23,11 +24,14 @@ Owner: the part-built looks have "bowls on heads, eyewear and mustaches all stra
   left eye, cloth pulled down over the right ear), beanie (ribbed cuff), wide-brim hat (pinched crown, band, brim up
   at the sides), headband (tails knotted at the back), shades (lenses clear of brow and cheeks, bridge on the nose,
   arms to and behind the ears), goggles (cups to the face, strap), mask (hanging point). Hair a hat covers is cut
-  (`trimHair`: small pieces such as buns go whole). Chest/back gear unchanged. Helmet meshes hang straight on the
-  Head joint (full-body first person's `cutHead` hides children of head joints only, not grandchildren).
+  (`trimHair`: small pieces such as buns go whole). Chest/back gear unchanged. Gear code is its own chunk
+  (`gear.ts` + `headFit.ts`, imported when a character with gear is built; `gearModels.ts` holds what preload needs).
+  Helmet meshes hang straight on the Head joint (full-body first person's `cutHead` hides children of head joints only, not grandchildren).
 - **Helmets** (models on main since roster-cleanup; `GEAR` `model`, 4 helmets appended so custom IDs' gear mask is
-  4-8 hex): Bulwark `steel_helmet`, Commando `helmet` (military model), Engineer `mk2_helmet`, Frost `aviator_helmet`
-  (has its own goggles; beanie and goggles dropped). Viking only in the Designer.
+  4-8 hex): Engineer `mk2_helmet`; `helmet` is now the military model. Steel, aviator and viking only in the Designer.
+  The owner is retiring 14 of the modular looks (the lead removes them on another branch); this branch left their
+  presets as they were and only the kept ones (Linktifa, Sprout, Warden, Engineer) are on the sheets. Tried by eye on
+  the retired ones too: steel helmet on Bulwark and aviator on Frost fit well, if anyone wants them.
 - **Beard**: `hair_beard`'s file is no longer loaded; `BEARD` in gear.ts builds a full beard (sideburns, jaw, chin,
   moustache, mouth clear, ragged edges) in the hair colour. Designer's Beard option uses it too.
 - Tools: `__grips.head(alpha, radius, beta?)` frames the head after `__grips.pose(look, weapon, 'third')`.
