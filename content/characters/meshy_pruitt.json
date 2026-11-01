@@ -10,8 +10,11 @@
   "body": "male",
   "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. A uniformed police officer.",
   "source": {
-    "license": "owned",
-    "author": "The owner (Meshy, owner's account)",
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Officer T Pose"
+    },
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_Officer_T_Pose_\\d+_texture\\.glb$"

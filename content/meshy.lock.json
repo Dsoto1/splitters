@@ -1678,7 +1678,7 @@
     {
       "role": "meshy-autorig",
       "id": "meshy_croakley",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_T_Pose_Frog_in_Suspen_1101003513_texture.glb",
       "sourceTriangles": 393764,
       "file": "characters/meshy_croakley.glb",
@@ -1691,7 +1691,7 @@
     {
       "role": "meshy-fparms",
       "id": "meshy_croakley_fparms",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_T_Pose_Frog_in_Suspen_1101003513_texture.glb",
       "sourceTriangles": 393764,
       "file": "characters/meshy_croakley_fparms.glb",
@@ -1703,7 +1703,7 @@
     {
       "role": "meshy-autorig",
       "id": "meshy_snikkit",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_T_Pose_Goblin_1101002319_texture.glb",
       "sourceTriangles": 366743,
       "file": "characters/meshy_snikkit.glb",
@@ -1716,7 +1716,7 @@
     {
       "role": "meshy-fparms",
       "id": "meshy_snikkit_fparms",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_T_Pose_Goblin_1101002319_texture.glb",
       "sourceTriangles": 366743,
       "file": "characters/meshy_snikkit_fparms.glb",
@@ -1728,7 +1728,7 @@
     {
       "role": "meshy-autorig",
       "id": "meshy_scamp",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_T_Pose_Monkey_1101002835_texture.glb",
       "sourceTriangles": 16084,
       "file": "characters/meshy_scamp.glb",
@@ -1741,7 +1741,7 @@
     {
       "role": "meshy-fparms",
       "id": "meshy_scamp_fparms",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_T_Pose_Monkey_1101002835_texture.glb",
       "sourceTriangles": 16084,
       "file": "characters/meshy_scamp_fparms.glb",
@@ -1753,7 +1753,7 @@
     {
       "role": "meshy-autorig",
       "id": "meshy_halvard",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_T_Pose_Old_medieval__1101003858_texture.glb",
       "sourceTriangles": 207714,
       "file": "characters/meshy_halvard.glb",
@@ -1766,7 +1766,7 @@
     {
       "role": "meshy-fparms",
       "id": "meshy_halvard_fparms",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_T_Pose_Old_medieval__1101003858_texture.glb",
       "sourceTriangles": 207714,
       "file": "characters/meshy_halvard_fparms.glb",
@@ -1778,7 +1778,7 @@
     {
       "role": "meshy-autorig",
       "id": "meshy_pruitt",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_Officer_T_Pose_1101003111_texture.glb",
       "sourceTriangles": 412597,
       "file": "characters/meshy_pruitt.glb",
@@ -1791,7 +1791,7 @@
     {
       "role": "meshy-fparms",
       "id": "meshy_pruitt_fparms",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_Officer_T_Pose_1101003111_texture.glb",
       "sourceTriangles": 412597,
       "file": "characters/meshy_pruitt_fparms.glb",
@@ -1803,7 +1803,7 @@
     {
       "role": "meshy-autorig",
       "id": "meshy_greyfang",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_Wolf_T_Pose_1101002725_texture.glb",
       "sourceTriangles": 126088,
       "file": "characters/meshy_greyfang.glb",
@@ -1816,7 +1816,7 @@
     {
       "role": "meshy-fparms",
       "id": "meshy_greyfang_fparms",
-      "source": "meshy-owned",
+      "source": "meshy-community-characters",
       "src": "Meshy_AI_Wolf_T_Pose_1101002725_texture.glb",
       "sourceTriangles": 126088,
       "file": "characters/meshy_greyfang_fparms.glb",

@@ -38,8 +38,9 @@ by looking, not by name:
 - Grip audit (rifle, before → after): The Visitor 0 → 0, Elder Tomo 0 → 0, Ember 0 → 0, Merrow 3 → 3,
   Bandit 9 → 6; new: Snikkit 0, Greyfang 0, Sgt. Pruitt 3 (flat), Old King Halvard 3 (spikes), Scamp 6 (open, off, fp),
   Croakley 9 (open, off, spikes, fp: the frog's long fingers hang open). Portraits captured locally for the eleven built.
-- Open: Barnaby and Biscuit (above); Croakley's and Scamp's open hands; owned vs CC0 for the new models (recorded as owned, per the
-  owner; their file names follow Meshy's community "T Pose …" naming, so confirm none is a community download).
+- Open: Barnaby and Biscuit (above); Croakley's and Scamp's open hands. Licences settled (owner, 2026-11-01): the new T-pose
+  models are Meshy community models under CC0 (pack `meshy-community-characters`). The "Figure" download (a carved spear) is
+  to become the model of our Spear weapon (queued).
 
 ### Grip audit and fix for every character (`wip/grip-audit`, agent, 2026-10-31/11-01; not merged)
 The owner's screenshot brief (Character Select holding the AK, character by character; references: The Visitor and
