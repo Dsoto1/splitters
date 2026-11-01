@@ -13,7 +13,10 @@ import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { gearInfo, type CharacterLook } from '@tiletrigger/shared';
-import { Geo, HeadMap, outline, ringHeight, v3, type P3 } from './headFit.ts';
+import { Geo, HeadMap, fitModel, outline, ringHeight, v3, type ModelFit, type P3 } from './headFit.ts';
+
+/** Where each helmet model sits on each head and hair (the same for every wearer of them: fitting takes a while). */
+const seats = new Map<string, ModelFit>();
 
 /**
  * Gear (hats, glasses, vests, packs) hung on the skeleton, so it moves with the character. Head gear is made to fit
@@ -297,7 +300,7 @@ function buildBeard(scene: Scene, f: HeadFit, hairColor: string, shape: (name: s
   }
   // Below the chin the beard hangs straight down a little rather than following the throat back.
   const g = new Geo();
-  g.slab(rows, false, 0.004, { from: c });
+  g.slab(rows, false, 0.0025, { from: c });
   // The moustache: from the nose down over the upper lip, out to the mouth's corners and joining the beard.
   const mr = 0.62;
   const mn = 15;
@@ -310,7 +313,7 @@ function buildBeard(scene: Scene, f: HeadFit, hairColor: string, shape: (name: s
       return hug(th, top + (bottom - top) * u, 0.003 + 0.004 * Math.sin(u * Math.PI) + 0.002 * u);
     }),
   );
-  g.slab(moustache, false, 0.003, { from: c });
+  g.slab(moustache, false, 0.002, { from: c });
   shape('beard', g, material(scene, shade(hairColor, 1.06)));
 }
 
@@ -367,23 +370,30 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
     if (model) {
       const container = t.models?.get(model);
       if (!container || !fit) continue;
-      // Made in skull radii with its origin on the crown line (see content/gear.json): scaled by this skull, each
-      // mesh hung straight on the Head joint (so first person's head cut hides it with the head).
-      const r = fit.half * 1.12;
+      // Seated on this head (headFit.ts, fitModel: as small and as low as it goes without the head showing through,
+      // its front rim down to the brows), each mesh then hung straight on the Head joint (so first person's head
+      // cut hides it with the head).
       const pivot = new TransformNode(`gear_${id}`, scene);
-      pivot.position.set(fit.cx, fit.crown - r * 0.82, fit.hat.c[2]);
-      pivot.scaling.setAll(r);
+      pivot.parent = t.root;
       const inst = container.instantiateModelsToScene((n) => `${id}_${n}`, false, { doNotInstantiate: true });
       for (const n of inst.rootNodes) n.parent = pivot;
-      pivot.parent = t.root;
+      const meshes = (pivot.getChildMeshes() as Mesh[]).filter((m) => m.getTotalVertices() > 0);
+      const key = `${model}|${look.head}|${look.hair.join(',')}`;
+      let seat = seats.get(key);
+      if (!seat) {
+        seat = fitModel(surfacePoints(meshes, pivot), fit.hat, fit.browTop + 0.012, fit.eyeY + 0.012);
+        seats.set(key, seat);
+      }
+      pivot.position.set(...seat.at);
+      pivot.scaling.set(seat.k, seat.k * seat.sy, seat.k);
       pivot.computeWorldMatrix(true);
-      for (const m of pivot.getChildMeshes() as Mesh[]) {
-        if (!m.getTotalVertices()) continue;
+      for (const m of meshes) {
         m.computeWorldMatrix(true);
         m.setParent(headJoint);
         m.isPickable = false;
         made.push(m);
       }
+      cover(ringHeight(fit.browTop + 0.012, fit.browTop + 0.012, fit.eyeY), 0.02);
       pivot.dispose();
       continue;
     }

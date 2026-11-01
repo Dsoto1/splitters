@@ -30,11 +30,9 @@ const STEP_P = (PMAX - PMIN) / (NP - 1);
  */
 export class HeadMap {
   readonly r: Float32Array;
-  constructor(
-    readonly c: P3,
-    points?: ArrayLike<number>,
-    r?: Float32Array,
-  ) {
+  readonly c: P3;
+  constructor(c: P3, points?: ArrayLike<number>, r?: Float32Array) {
+    this.c = c;
     this.r = r ?? new Float32Array(NT * NP);
     if (points) {
       for (let i = 0; i + 2 < points.length; i += 3) {
@@ -308,4 +306,115 @@ export function outline(centre: P3, ax: P3, ay: P3, half: [number, number], n: n
     if (shapeY) y = shapeY(x / half[0], y / half[1]) * half[1];
     return add(centre, add(scale(ax, x), scale(ay, y)));
   });
+}
+
+/** Where a helmet model goes on a head: its points (in its own units) are scaled by `k` (and by `k * sy` upright) and moved by `at`. */
+export interface ModelFit {
+  k: number;
+  sy: number;
+  at: P3;
+}
+
+/**
+ * Seat a hard hat (a helmet model's points, x y z triples in its own units, front +Z, top +Y) on a head: the
+ * smallest size and lowest seat at which no part of the skull above `floorY` (`head`: skin with the hair kept close)
+ * comes within `pad` of the inside of its shell, while its rim over the eyes comes down to `rimY` (just above the
+ * brows). A deep shell may be made a little shallower (`sy` down to 0.76) to get there. Below `floorY` (ear flaps,
+ * nose guards, straps) nothing is checked. Directions are compared through radial maps round the head's centre, as
+ * HeadMap measures the head.
+ */
+export function fitModel(all: ArrayLike<number>, head: HeadMap, rimY: number, floorY: number, pad = 0.005): ModelFit {
+  const c = head.c;
+  // At most ~1200 points: plenty for the shell's inside at the map's resolution, and quick.
+  const stride = Math.max(1, Math.ceil(all.length / 3 / 1200));
+  const points: number[] = [];
+  for (let i = 0; i + 2 < all.length; i += 3 * stride) points.push(all[i]!, all[i + 1]!, all[i + 2]!);
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  for (let i = 0; i < points.length; i += 3) {
+    minX = Math.min(minX, points[i]!);
+    maxX = Math.max(maxX, points[i]!);
+    maxY = Math.max(maxY, points[i + 1]!);
+    minZ = Math.min(minZ, points[i + 2]!);
+    maxZ = Math.max(maxZ, points[i + 2]!);
+  }
+  const midX = (minX + maxX) / 2;
+  const midZ = (minZ + maxZ) / 2;
+  const halfW = (maxX - minX) / 2;
+  const headHalf = Math.max(head.at(Math.PI / 2, 0.2), head.at(-Math.PI / 2, 0.2)) * Math.cos(0.2);
+  const headTop = head.point(0, Math.PI / 2)[1];
+  // The skull's directions that are checked: those whose surface is above floorY.
+  const checked = new Uint8Array(NT * NP);
+  for (let b = 0; b < NP; b++) for (let a = 0; a < NT; a++) checked[b * NT + a] = c[1] + Math.sin(PMIN + b * STEP_P) * head.r[b * NT + a]! >= floorY ? 1 : 0;
+  const n = points.length / 3;
+  const world = new Float32Array(points.length);
+  const place = (k: number, sy: number, y: number, dz: number) => {
+    for (let i = 0; i < n; i++) {
+      world[i * 3] = c[0] + (points[i * 3]! - midX) * k;
+      world[i * 3 + 1] = y + points[i * 3 + 1]! * k * sy;
+      world[i * 3 + 2] = c[2] + dz + (points[i * 3 + 2]! - midZ) * k;
+    }
+  };
+  const r = new Float32Array(NT * NP);
+  /** Clear of the skull: every checked direction the shell covers is farther out than the head. */
+  const clear = (k: number, sy: number, y: number, dz: number): boolean => {
+    place(k, sy, y, dz);
+    r.fill(Infinity);
+    for (let i = 0; i < n; i++) {
+      const dx = world[i * 3]! - c[0];
+      const dy = world[i * 3 + 1]! - c[1];
+      const dzz = world[i * 3 + 2]! - c[2];
+      const l = Math.hypot(dx, dy, dzz);
+      if (l < 1e-6) continue;
+      const b = Math.round((Math.asin(Math.max(-1, Math.min(1, dy / l))) - PMIN) / STEP_P);
+      if (b < 0) continue;
+      const a = Math.round((((Math.atan2(dx, dzz) / TAU + 1) % 1) * NT)) % NT;
+      const kk = b * NT + a;
+      if (l < r[kk]!) r[kk] = l;
+    }
+    for (let kk = 0; kk < r.length; kk++) if (checked[kk] && r[kk]! < head.r[kk]! + pad) return false;
+    return true;
+  };
+  /** The shell's lowest edge over the eyes (left and right of the middle, so a nose guard isn't taken for it). */
+  const rimOverEyes = (): number => {
+    let y = Infinity;
+    for (let i = 0; i < n; i++) {
+      const ax = Math.abs(world[i * 3]! - c[0]);
+      if (world[i * 3 + 2]! - c[2] > 0.03 && ax > 0.02 && ax < 0.045) y = Math.min(y, world[i * 3 + 1]!);
+    }
+    return y;
+  };
+  let best: (ModelFit & { score: number }) | null = null;
+  const k0 = headHalf / halfW;
+  for (const sy of [1, 0.88, 0.76]) {
+    // A shallower shell only when the full one can't come down to the brows.
+    if (best && best.score < 0.006) break;
+    for (const dz of [-0.008, 0, 0.008]) {
+      for (let s = 1.05; s <= 1.8; s += 0.075) {
+        const k = k0 * s;
+        // The lowest clear seat (its top at most 7 cm over the head).
+        let lo = headTop - maxY * k * sy - 0.08;
+        let hi = headTop - maxY * k * sy + 0.07;
+        if (!clear(k, sy, hi, dz)) continue;
+        for (let i = 0; i < 12; i++) {
+          const mid = (lo + hi) / 2;
+          if (clear(k, sy, mid, dz)) hi = mid;
+          else lo = mid;
+        }
+        place(k, sy, hi, dz);
+        const rim = rimOverEyes();
+        // Down to the brows is right; perched higher is worse the higher it is; a bigger or flattened shell a little worse.
+        const score = Math.max(0, rim - rimY) * 4 + Math.max(0, rimY - rim) * 2 + (s - 1) * 0.01 + (1 - sy) * 0.04;
+        if (!best || score < best.score) best = { k, sy, at: [c[0] - midX * k, hi, c[2] + dz - midZ * k], score };
+        // Bigger shells only sit lower from here.
+        if (rim < rimY) break;
+      }
+    }
+  }
+  if (best) return { k: best.k, sy: best.sy, at: best.at };
+  const k = k0 * 1.4;
+  return { k, sy: 1, at: [c[0] - midX * k, headTop - maxY * k + 0.03, c[2] - midZ * k] };
 }
