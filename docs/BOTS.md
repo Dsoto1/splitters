@@ -115,6 +115,16 @@ was after, or the vantage spot (avoided for 2 minutes) (`checkStuck`,
 `stuckLoops`). A bot only being nudged aside by a teammate (no move of its
 own) doesn't count as stuck.
 
+**Shortcut links.** Besides walkable ground the navmesh has one-way links
+(`navLinks`): jump pad flights, ladders up and down, portal pairs, lifts and
+ziplines. A zipline is a link from the ground where its cable is grabbed to
+where it drops riders (and back on a two-way line); Recast costs a link by its
+length, so a bot rides when that's the shorter way. Coming to that leg it walks
+to the grab spot and presses E once (`zipGrab`); riding, it doesn't plan or
+steer (the line carries it), and the match drops any E or jump from a riding
+bot, so a stray press can't let go. A team line is shut to other teams' bots
+(`pathBlocked`, as a switched-off portal).
+
 ## Squads (clusters)
 
 In team matches of 16+ players (Team Deathmatch and other modes without an

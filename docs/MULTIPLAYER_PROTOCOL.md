@@ -501,3 +501,25 @@ this design; see MULTIPLAYER_DIRECTION.md).
 Not carried: a map change (`travel`) or a host handoff brings spectators back
 as players (they reconnect with `hello`); they choose Spectate again.
 
+
+## 16. Zipline riders (November 2026)
+
+Ziplines (map format v25, `shared/src/sim/zipline.ts`) are movement like any
+other: the host steps riders in the shared sim and clients predict their own
+ride. One optional field, so `PROTOCOL_VERSION` stays 4:
+
+- **`PlayerSnapshot.zl: [line, along, speed]`** while a player rides a
+  zipline: the line (index into `mapZiplines(map.entities)`, the map's
+  ziplines in entity order), metres along it from its start, and the signed
+  speed along it (m/s, + toward its end), all quantised like the rest of the
+  movement state (`MoveState.zip` / `zs` / `zv`). Absent when not riding.
+  The receiver's own entry carries it exactly, so prediction rewinds to the
+  host's ride and replays its inputs (E grabs within reach, jump or E lets
+  go); others' entries use it for the trolley over the rider and the whirr.
+  In deltas it is one of the optional keys (`null` when the ride ends).
+  Older clients ignore it (they draw the rider where `p` says, without the
+  trolley); older hosts never send it.
+
+Grabbing, letting go and being knocked off (a hit of `ZIP.knockDamage` or
+more) are decided by the host; nothing new goes from client to host (E and
+jump are the existing `BUTTON_USE` / `BUTTON_JUMP` input bits).

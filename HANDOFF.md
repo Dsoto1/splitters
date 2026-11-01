@@ -10,6 +10,26 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### `wip/ziplines` (agent, 2026-11-01; not merged): real ziplines, a MapMaker element
+Owner: "build real ziplines if it's easy enough; should also be a MapMaker element". Built:
+- **Format v25** `zipline` entity (schema.ts `ZiplineEntity`: start post foot `position`, far post `end` as an offset,
+  `height`, `speed`, `twoWay`, `team`, `sag`); migration 24 → 25 is additive. Maps keep their old formatVersion.
+- **Sim** `shared/src/sim/zipline.ts`, run inside `stepMovement` (so prediction and replays match): E within
+  reach grabs, ride along `MoveState.zip/zs/zv`, jump or E lets go with momentum, the far end drops you 1 m
+  before the post, a hit ≥ 30 knocks you off (`Match.damage`), one-handed weapons only (`oneHanded`, server
+  `unarmed` and client `trigger`). Riders hang from the drooping cable as drawn (sag is not only cosmetic).
+  Snapshot `zl` (MULTIPLAYER_PROTOCOL.md §16; added to interest.ts OPTIONAL_KEYS for deltas).
+- **Bots:** `ziplineLinks` in `navLinks`; brain `zipGrab` walks to the grab spot and presses E; the match strips
+  E/jump from riding bots; team lines are shut to others (`pathBlocked`).
+- **Client:** cable/posts in ScenarioVisuals (game and MapMaker), trolley on riders (view.ts `createTrolley`,
+  local one in first person), `zip.whirr` (synth `hum`), first-person bank (`Session.zipLean`), prompts.
+  The hanging pose is the existing air pose (no arm-up IK: the grip IK would fight it).
+- **MapMaker:** palette Zipline (Platforms & Climbing, Jungle Ruins pack), inspector, "Place ends on the map"
+  (RouteTool with two fixed points). Validation: shape in `validateMap`, clearance/reach/landing in
+  `validateNavigation(map, nav, physics)` (new optional `physics` argument; server, validate-map and MapMaker pass it).
+- **Vinefall Sanctum:** two one-way gorge lines (DECISIONS_AND_DEVIATIONS.md), validate-map 0 issues.
+- Tests: packages/shared/test/zipline.test.ts; e2e `editor` → `ziplineChecks` (place, place end, TEST ride).
+
 ### `wip/character-groups` (agent, 2026-10-31; not merged)
 Owner: "organize the characters better (soldiers, zombies, animals, creatures, human, etc)", then "clicking a
 character should just be how I look around, not this hover business; select, then confirm".

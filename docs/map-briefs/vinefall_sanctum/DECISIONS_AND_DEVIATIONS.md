@@ -35,9 +35,11 @@
 - `recommendedPlayers` 8–24, `teamSetup` 12 v 12, like Qasr Medina and Market Town.
 
 ## Deviations from the sheets
-- **Zipline (owner question)**: the game has no zipline ride, only the Grapple Hook. The Zipline Posts stand as
-  scenery (one on each side, by the watch towers) and the pack lists the Grapple Hook (one on each side, at
-  (±40, 0, ±48)) to cross between high points. A real zipline is a new movement mechanic: the owner's call.
+- **Zipline (owner, 2026-10-31: "build real ziplines")**: two real ziplines (MapMaker's Zipline, format v25)
+  cross the gorge: the Tide's from its west terrace (−24, 4, 27) down to the Embers' bank at (−26, 0, −14),
+  the Embers' from its east terrace (24, 4, −27) down to (26, 0, 14), one-way, 14 m/s, posts 4.2 m. The
+  older Zipline Post props by the watch towers stay as scenery, and the Grapple Hooks (±40, 0, ±48) still
+  cross between high points.
 - **Not built from the sheets yet**: a wooden door, a stone gate as its own tile, shutter or carved windows as
   separate pieces, corner/T/cross wall connectors, spikes as a trap look, a decorative ceiling, a chain fixture,
   a "broken ceiling" variant.
