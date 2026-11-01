@@ -169,7 +169,11 @@ export interface GearTargets {
   hairAll?: AbstractMesh[];
 }
 
-/** Cut away the hair triangles wholly inside `covered` (character space), in the meshes' own copies of their geometry. */
+/**
+ * Cut away the hair a hat covers (`covered`: character space), in the meshes' own copies of their geometry: a small
+ * piece of hair (a bun, a tuft) mostly under the hat goes whole, so no shreds of it poke out; elsewhere the triangles
+ * wholly under it go.
+ */
 function trimHair(meshes: AbstractMesh[], space: TransformNode, covered: (p: P3) => boolean): void {
   const inv = Matrix.Invert(space.computeWorldMatrix(true));
   const p = new Vector3();
@@ -179,13 +183,47 @@ function trimHair(meshes: AbstractMesh[], space: TransformNode, covered: (p: P3)
     const idx = m.getIndices();
     if (!pos || !idx) continue;
     const toSpace = m.computeWorldMatrix(true).multiply(inv);
-    const inside = new Uint8Array(pos.length / 3);
-    for (let i = 0; i < inside.length; i++) {
+    const nv = pos.length / 3;
+    const inside = new Uint8Array(nv);
+    // Pieces: vertices joined by triangles, with vertices at the same place (texture seams) welded.
+    const parent = Int32Array.from({ length: nv }, (_, i) => i);
+    const find = (i: number): number => {
+      while (parent[i] !== i) i = parent[i] = parent[parent[i]!]!;
+      return i;
+    };
+    const join = (a: number, b: number) => {
+      const ra = find(a);
+      const rb = find(b);
+      if (ra !== rb) parent[ra] = rb;
+    };
+    const at = new Map<string, number>();
+    for (let i = 0; i < nv; i++) {
       Vector3.TransformCoordinatesFromFloatsToRef(pos[i * 3]!, pos[i * 3 + 1]!, pos[i * 3 + 2]!, toSpace, p);
       inside[i] = covered([p.x, p.y, p.z]) ? 1 : 0;
+      const key = `${Math.round(pos[i * 3]! * 1e4)},${Math.round(pos[i * 3 + 1]! * 1e4)},${Math.round(pos[i * 3 + 2]! * 1e4)}`;
+      const same = at.get(key);
+      if (same === undefined) at.set(key, i);
+      else join(i, same);
     }
+    for (let t = 0; t + 2 < idx.length; t += 3) {
+      join(idx[t]!, idx[t + 1]!);
+      join(idx[t]!, idx[t + 2]!);
+    }
+    const size = new Map<number, number>();
+    const under = new Map<number, number>();
+    for (let i = 0; i < nv; i++) {
+      const r = find(i);
+      size.set(r, (size.get(r) ?? 0) + 1);
+      if (inside[i]) under.set(r, (under.get(r) ?? 0) + 1);
+    }
+    const gone = new Set<number>();
+    for (const [r, n] of size) if (n < nv * 0.3 && (under.get(r) ?? 0) > n * 0.4) gone.add(r);
     const kept: number[] = [];
-    for (let t = 0; t + 2 < idx.length; t += 3) if (!(inside[idx[t]!] && inside[idx[t + 1]!] && inside[idx[t + 2]!])) kept.push(idx[t]!, idx[t + 1]!, idx[t + 2]!);
+    for (let t = 0; t + 2 < idx.length; t += 3) {
+      const [a, b, c] = [idx[t]!, idx[t + 1]!, idx[t + 2]!];
+      if (gone.has(find(a)) || (inside[a] && inside[b] && inside[c])) continue;
+      kept.push(a, b, c);
+    }
     if (kept.length === idx.length) continue;
     m.makeGeometryUnique();
     m.setIndices(kept);
@@ -431,13 +469,14 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
       case 'cap': {
         // A six-panel cap: crown laid over the head (taller in front), seams up to a button, and a curved peak.
         const edge = ringHeight(f.browTop + 0.012, f.browTop + 0.014, f.eyeY + 0.006);
-        const pad = (th: number, u: number) => 0.003 + 0.007 * Math.max(0, Math.cos(th)) ** 2 * Math.sin(Math.min(1, u * 1.25) * Math.PI) ** 0.7;
+        const pad = (th: number, u: number) => 0.002 + 0.006 * Math.max(0, Math.cos(th)) ** 2 * Math.sin(Math.min(1, u * 1.25) * Math.PI) ** 0.7;
         const thetas = full(TH);
         const rows = crownRows(thetas, edge, pad);
         const crown = new Geo();
         crown.slab(rows, true, 0.003, { from: c });
         shape('capCrown', crown, material(scene, cloth));
-        cover(edge);
+        // Buns and tufts go under a cap.
+        cover(edge, 0.07);
         const seams = new Geo();
         for (let k = 0; k < 6; k++) {
           const th = (k / 6) * Math.PI * 2;
@@ -458,15 +497,15 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
         head(button, material(scene, shade(cloth, 0.7)));
         shape('capSeams', seams, material(scene, shade(cloth, 0.72)));
         // The peak: from the crown's front edge, out and a little down, its sides curving down.
-        const span = 1.2;
+        const span = 0.95;
         const peakThetas = around(25, -span, span);
         const base = peakThetas.map((th) => f.hat.point(th, f.hat.phiAt(th, edge(th), 0.004), 0.004));
         const peak = [0, 0.5, 1].map((s) =>
           base.map((b, i) => {
             const u = peakThetas[i]! / span;
             const outward = v3.norm([b[0] - c[0], 0, b[2] - c[2]]);
-            const length = 0.074 * Math.sqrt(Math.max(0, 1 - u * u)) + 0.003;
-            return v3.add(b, [outward[0] * length * s, -(length * s * 0.22 + 0.011 * u * u * s * s), outward[2] * length * s]);
+            const length = 0.07 * Math.sqrt(Math.max(0, 1 - u * u)) + 0.003;
+            return v3.add(b, [outward[0] * length * s, -(length * s * 0.22 + 0.016 * u * u * s * s), outward[2] * length * s]);
           }),
         );
         const visor = new Geo();
@@ -500,12 +539,12 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
         band.slab(bandRows(thetas, bandLo, bandHi, 0.003, 2), true, 0.003, { from: c });
         shape('beretBand', band, material(scene, shade(trim, 0.7)));
         // The flat top lies on the crown on the left and runs out over the right, dropping towards that ear.
-        const D: P3 = [f.cx + s * 0.03, f.crown - 0.01, c[2] - 0.004];
-        const rxDrape = f.half * 1.62;
+        const D: P3 = [f.cx + s * 0.03, f.crown - 0.008, c[2] - 0.004];
+        const rxDrape = f.half * 1.5;
         const rxHigh = f.half * 0.98;
         const rz = (f.hat.at(0, 0.3) + f.hat.at(Math.PI, 0.3)) * 0.5 * Math.cos(0.3) * 1.18;
         const N: P3 = v3.norm([-s * 0.25, 1, 0.08]);
-        const T = v3.add(D, [s * 0.015, 0.012, 0]);
+        const T = v3.add(D, [s * 0.012, 0.02, 0]);
         const quad = (a: P3, q: P3, b: P3, u: number) => v3.lerp(v3.lerp(a, q, u), v3.lerp(q, b, u), u);
         const rows: P3[][] = [];
         const lower = 7;
@@ -517,7 +556,7 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
           const rim: P3 = [D[0] + Math.sin(th) * (across > 0 ? rxDrape : rxHigh), D[1] - 0.06 * drape ** 1.6 - 0.008 * Math.cos(th) ** 2 + 0.006 * Math.max(0, -across), D[2] + Math.cos(th) * rz];
           const out = v3.norm([rim[0] - c[0], 0, rim[2] - c[2]]);
           const q1: P3 = v3.add([rim[0], p0[1] + (rim[1] - p0[1]) * 0.35, rim[2]], v3.scale(out, 0.008));
-          const q2 = v3.add(v3.lerp(rim, T, 0.45), v3.scale(N, 0.006));
+          const q2 = v3.add(v3.lerp(rim, T, 0.4), v3.scale(N, 0.014));
           return { p0, rim, q1, q2 };
         });
         for (let j = 0; j <= lower; j++) rows.push(prof.map((p) => quad(p.p0, p.q1, p.rim, j / lower)));
@@ -526,7 +565,7 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
         const body = new Geo();
         body.slab(cleared, true, 0.004, { from: c });
         shape('beret', body, material(scene, cloth));
-        cover(bandLo, 0.02);
+        cover(bandLo, 0.06);
         // Badge on the band over the left eye.
         const bth = -s * 0.42;
         const bp = f.hat.point(bth, f.hat.phiAt(bth, bandLo(bth) + 0.009, 0.007), 0.007);

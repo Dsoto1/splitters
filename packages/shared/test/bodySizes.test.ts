@@ -19,6 +19,12 @@ describe('character sizes', () => {
     expect(kitted.length).toBeLessThanOrEqual(64);
     const back = decodeLook(kitted)!;
     expect([back.size, back.cloth, back.trim, back.gear]).toEqual(['large', '#2a3a5c', null, ['goggles', 'vest', 'pack']]);
+    // The helmets appended to GEAR widen the gear mask past four hex digits; older IDs keep four.
+    const bare = { ...getLook('core.commando'), gear: [] };
+    const helmeted = encodeLook({ ...bare, gear: ['mk2_helmet', 'shades'] });
+    expect(helmeted).toMatch(/-g[0-9a-f]{5}$/);
+    expect(decodeLook(helmeted)?.gear).toEqual(['shades', 'mk2_helmet']);
+    expect(encodeLook({ ...bare, gear: ['helmet'] })).toMatch(/-g0004$/);
     expect(bodySizeOf('core.bulwark')).toBe('large');
     expect(bodySizeOf('core.sprout')).toBe('small');
     expect(bodySizeOf('core.ranger')).toBe('standard');
