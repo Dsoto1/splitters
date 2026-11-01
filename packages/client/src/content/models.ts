@@ -284,14 +284,15 @@ function proceduralModel(scene: Scene, path: string): AssetContainer {
     c.meshes.push(b);
   };
   if (path === 'procedural/spear') {
-    // A wooden shaft with a bound grip and an iron head, pointing along +z (held like a pistol, the head well forward).
+    // A wooden shaft with a bound grip and an iron head, pointing along +z: the Spear's fallback, laid out like its
+    // model (guns/spear.glb: 2 m, centred, the grip at z -0.35).
     const wood = material('wood', '#8a6238');
     const iron = material('iron', '#a7adb4', 0.1);
     const wrap = material('wrap', '#4a3624');
-    box('shaft', [0.03, 0.03, 1.5], [0, 0, 0.35], wood);
-    box('grip', [0.04, 0.04, 0.18], [0, 0, 0], wrap);
-    box('head', [0.06, 0.012, 0.2], [0, 0, 1.18], iron);
-    box('tip', [0.03, 0.012, 0.08], [0, 0, 1.31], iron);
+    box('shaft', [0.03, 0.03, 1.72], [0, 0, -0.14], wood);
+    box('grip', [0.04, 0.04, 0.18], [0, 0, -0.35], wrap);
+    box('head', [0.06, 0.012, 0.2], [0, 0, 0.8], iron);
+    box('tip', [0.03, 0.012, 0.08], [0, 0, 0.94], iron);
   }
   if (path === 'procedural/builder') {
     // Fort Wars Builder: a claw hammer with a steel head and a taped wooden handle, held like a pistol.

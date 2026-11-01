@@ -106,6 +106,8 @@ const MAX_REMOTE_RIGS = 8;
 /** Your own pack flash: this much bigger than the weapon's scale, starting this far (m) past the muzzle so the gun doesn't hide it. */
 const OWN_FLASH_SCALE = 1.6;
 const OWN_FLASH_AHEAD = 0.05;
+/** How far ahead of a thrown spear's sim point its tip is drawn (m): the head goes a little way into what it hits. */
+const SPEAR_TIP_AHEAD = 0.52;
 const SLOT_COLORS = ['#e6544a', '#4aa3e6', '#f2c14e', '#5cc77a', '#b276e0', '#f28f3b', '#46c9c0', '#e872b0'];
 export const slotColor = (slot: number): string => SLOT_COLORS[slot % SLOT_COLORS.length]!;
 
@@ -1847,6 +1849,7 @@ export class GameView {
   }
 
   private createProjectile(id: number, look: (typeof PROJECTILE_VISUALS)[number]): TransformNode {
+    if (look === 'spear') return this.spearProjectile(id);
     if (ARSENAL_LOOKS.has(look)) return createArsenalProjectile(this.scene, id, look);
     const node = new TransformNode(`proj_${id}`, this.scene);
     const model = look === 'grenade' ? 'projectiles/grenade.glb' : look === 'frag' ? 'guns/frag.glb' : null;
@@ -1892,6 +1895,30 @@ export class GameView {
     }
     for (const m of node.getChildMeshes()) m.isPickable = false;
     return node;
+  }
+
+  /**
+   * A thrown spear, in flight and stuck where it lands: the Spear's own model (instanced: spears-only matches throw
+   * dozens), its tip where the plain shapes' tip is (a little ahead of the point the sim moves); the shapes until it loads.
+   */
+  private spearProjectile(id: number): TransformNode {
+    const node = createArsenalProjectile(this.scene, id, 'spear');
+    const shapes = node.getChildMeshes();
+    void this.models.instantiate(getWeapon('core.spear').view.model, `spearModel_${id}`, true).then((model) => {
+      if (node.isDisposed()) return model.dispose();
+      const tip = model.getHierarchyBoundingVectors(true).max.z;
+      model.parent = node;
+      model.position.z = SPEAR_TIP_AHEAD - tip;
+      for (const m of shapes) m.setEnabled(false);
+    }, () => undefined);
+    return node;
+  }
+
+  /** How many thrown spears are drawn with their model (tests). */
+  spearModelsDrawn(): number {
+    let n = 0;
+    for (const p of this.projectiles.values()) if (p.node.getChildren((c) => c.name.startsWith('spearModel_'), true).length) n++;
+    return n;
   }
 
   explosion(at: Vec3, radius: number): void {
