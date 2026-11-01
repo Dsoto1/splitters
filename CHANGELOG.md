@@ -14,9 +14,30 @@ made only on a commit that passed CI on a check branch.
 - **Helmets are real models** (the owner's Meshy helmets), each seated on the head it's worn on: Engineer wears the brimmed helmet, and the combat helmet is the military model. The steel, aviator, brimmed and horned helmets are also in the Character Designer.
 - **Beards** are full beards now, from the sideburns down the jaw with a moustache, in the hair colour (the old one read as a stuck-on moustache).
 
+**Vehicles**
+- The buggy's cockpit is built in-house and stays crisp up close: a roll cage of clean round tubes in dark powder coat, bucket seats with red five-point harnesses in all three rows, a floor pan and footwell, a dash with a sand cowl, toggle switches and dials, and a steering wheel that turns as you steer. The speedometer's needle reads your speed and the rev counter climbs through the gears. Only you see it, in first person; everyone else sees the buggy as before. The cropped Meshy interior it replaces is gone (3.6 MB less to download).
+
+## 0.6.0 (2026-11-01)
+
+**Main menu**
+- **Characters** is back on the main menu (Character Select), beside the Profile entry top right.
+
 **Weapons**
 - The Spear is now a carved wooden spear with an iron head (the owner's pick, a Meshy community model), about as long as a person is tall: in your hands in first person, in other players' hands, lying as a pickup, in flight and stuck where it lands.
 - A thrown spear points the way it flies and stays at that slant where it sticks (it used to fly and land facing one fixed direction).
+
+**Effects**
+- **Fuller hit and explosion effects** (Binbun's Stylized Hit FX and Explosion FX, the full editions the owner bought, CC0): rockets, grenades, barrels, traps, the bomb, plasma and orb launchers, flares, discs and vehicles each blow up their own way, and a blast with nothing under it is an air burst.
+- **Rounds land differently on each surface**: metal throws sparks with a hot glint, wood and earth puff their own dust and no sparks, stone a grey puff; hits on bodies get a small flash with the blood. Muzzle flashes stay matched to each weapon class.
+- **Moments of play have effects**: picking something up (by kind: health, weapon, power-up, the rest), spawning, stepping through a portal (both ends), being thrown by a jump pad, a trap going off (shock traps crackle) and grabbing a zipline.
+- Which effect plays where is data (content/vfx.json `map`), and a match fetches only the effects it uses (about 9 kB each, gzipped); quick effects give way when a big fight has many playing, so explosions always show.
+
+**New props (the owner's Meshy models)**
+- **Military**: Concrete Barrier (hazard stripes), Hazard Block Barrier, Plastic Road Barrier, and two parked vehicles: **Raider Buggy** and **Armoured 8x8 Truck** (also under Vehicles).
+- **Medieval Village**: Smithy Workbench (anvil and tools) and a Tiled Well. **Jungle Ruins**: a Ruined Stone Stair you can climb.
+
+**New character**
+- **Rourke** (Folk): a rugged drifter in a leather coat. A robot batter, Slugger-9, is ready but waits for a lighter build, like Barnaby.
 
 **Ziplines (map format v25)**
 - Real **ziplines**: press **E** under either post (or anywhere under the cable) to grab one, hang below it and ride to the far end. The trolley holds the line's speed (uphill too) and runs faster downhill; **Space or E** lets go and keeps your momentum; the far end drops you off onto the ground or platform there; a hard hit knocks you off. One hand holds the trolley: **sidearms and blades** fire while you ride, two-handed guns wait until you let go. Predicted like any movement; the view banks with the ride; a trolley over every rider and its whirr.
@@ -29,6 +50,14 @@ made only on a commit that passed CI on a check branch.
 - **Look to steer** (Options → Controls → Vehicle steering): the vehicle turns toward where you look, Warthog style, and the view stays where you point it; A and D still steer. Classic A/D steering stays the default.
 - Driving no longer shakes: the body's lean, squat and dive come from the vehicle's real speed and turn rate instead of from frame-to-frame movement of its drawn position, and that position no longer jumps with the few ms each update arrives early or late. Most noticeable in the buggy's cockpit view.
 - The buggy's cockpit is drawn in far more detail while you drive it in first person (seats, wheel, dash and roll cage at about twice the geometry, with a sharper surface map); everyone else still sees the lighter model.
+
+**Hands on guns (grip pass 2)**
+- Support hands hold a long gun's handguard: the hand cups it over the base of its fingers and closes all the way round it (it used to sit under the gun, palm up with its fingers standing open: King Aldric, Dusty Colt, the Dapper, Shade, Ricochet and others).
+- Mitten-like hands (most Meshy hands, whose fingers can't be told apart) curl along the whole finger instead of folding once at the knuckles like a paddle; long fingers (Croakley, Scamp, Old King Halvard) curl further.
+- King Aldric has real hands: his fur cuffs had been taken for his hands (their fingers curled into flaps) and his model's hands were cut to a few dozen triangles; he is re-cut from his Meshy rig with more detail kept for the hands.
+- Capt. Nova no longer holds her rifle against her helmet: a long gun's barrel keeps clear of every character's head.
+- Biscuit is rebuilt from his T-pose model (a cleaner body and paws); his paws stay firm on the grip in every view.
+- Teddy's round paws no longer tear when they close on a gun, and the Hyena Warrior's claw sits round the grip.
 
 **New characters and sharper ones**
 - Six new characters from the owner's Meshy T-pose models: **Croakley** (a frog in suspenders), **Scamp** (a small monkey) and **Greyfang** (a wolf) in Animals, **Snikkit** (a goblin) in Creatures & Machines, **Old King Halvard** in Knights & Legends and **Sgt. Pruitt** (a police officer) in Soldiers. A seventh, Barnaby Bruin (a gentleman bear), waits for a lighter build.

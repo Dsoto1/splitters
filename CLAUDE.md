@@ -27,5 +27,6 @@ Session memory: at the end of a session, write `.control-center/session-summary.
 ## Content rules
 - No in-game AI generation: players can't make content through an AI service or connector, and can't upload assets.
 - Models we generate ourselves on the owner's Meshy subscription are fine to ship (record them in content provenance as Meshy, owned).
+- Assets the owner buys a full licence for are always allowed (owner, 2026-11-01): record each in content provenance (licence name, "purchased by the owner"), ship only processed output.
 - Otherwise only CC0, credit-only human-made, or approved Quaternius packs; never commit raw pack files.
 - Official and featured servers carry only our own maps: the suite in maps/ and what the owner publishes from MapMaker. Community-hosted servers may run community maps (declarative data, in-house assets only), shown with a clear "Community map" label.

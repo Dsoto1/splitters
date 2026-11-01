@@ -14,7 +14,7 @@ import { versioned } from '../assetUrl.ts';
 import { sampleCurve } from './muzzleFlash.ts';
 
 /**
- * Plays Binbun's hit and explosion effects (CC0 Godot 4 packs). The packs
+ * Plays Binbun's hit and explosion effects (CC0 Godot 4 packs; the full editions, content/vfx.json). The packs
  * draw everything in shaders and GPU particles, no pictures, so
  * tools/content/prepare-vfx.mjs writes each effect out whole as data
  * (public/vfx/hit_fx.json, explosion_fx.json): its particle emitters with
@@ -1290,12 +1290,16 @@ export class GodotVfx {
     return loaded.has(pack);
   }
 
-  /** Play `effect` of `pack` at `at`, `scale` times its size; `up` turns it to stand on a surface. False when the pack isn't in yet. */
-  play(pack: string, effect: string, at: Vector3, opts: { scale?: number; up?: Vector3; speed?: number } = {}): boolean {
+  /**
+   * Play `effect` of `pack` at `at`, `scale` times its size; `up` turns it to stand on a surface. False when the pack
+   * isn't in yet or too many are playing. `minor` effects (an impact's accent, a pickup's sparkle) stop at
+   * MAX_MINOR, so they never crowd out an explosion.
+   */
+  play(pack: string, effect: string, at: Vector3, opts: { scale?: number; up?: Vector3; speed?: number; minor?: boolean } = {}): boolean {
     const fx = loaded.get(pack)?.effects[effect];
     if (!fx) return false;
     // A big fight can ask for dozens at once: past the cap the caller's plain effect stands in.
-    if (this.playing.length >= GodotVfx.MAX_PLAYING) return false;
+    if (this.playing.length >= (opts.minor ? GodotVfx.MAX_MINOR : GodotVfx.MAX_PLAYING)) return false;
     const scale = opts.scale ?? 1;
     const q = opts.up && Math.abs(opts.up.y) < 0.999 ? Quaternion.FromUnitVectorsToRef(Vector3.Up(), opts.up.clone().normalize(), new Quaternion()) : Quaternion.Identity();
     const root = Matrix.Compose(new Vector3(scale, scale, scale), q, at);
@@ -1435,6 +1439,8 @@ export class GodotVfx {
 
   /** At most this many effects play at once (each is a handful of meshes and particles). */
   static MAX_PLAYING = 10;
+  /** Minor effects play only while fewer than this many effects are playing. */
+  static MAX_MINOR = 6;
 
   /** How many effects are playing (tests). */
   get count(): number {

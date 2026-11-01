@@ -6,7 +6,7 @@
  * since the last capture, or a player's own design) is rendered live.
  */
 export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
-  'core.aldric': 'core.aldric.webp?v=b1e75ca66a',
+  'core.aldric': 'core.aldric.webp?v=874ce6a8b1',
   'core.ansel': 'core.ansel.webp?v=07d31667c1',
   'core.anubis': 'core.anubis.webp?v=eeb8ed4e7f',
   'core.ashwalker': 'core.ashwalker.webp?v=238bb96d3d',
@@ -14,7 +14,7 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.barnacle': 'core.barnacle.webp?v=f9541571ca',
   'core.basile': 'core.basile.webp?v=da4db6f833',
   'core.bigbab': 'core.bigbab.webp?v=58022c2150',
-  'core.biscuit': 'core.biscuit.webp?v=f09847f014',
+  'core.biscuit': 'core.biscuit.webp?v=f3a9bb0a6e',
   'core.bogdan': 'core.bogdan.webp?v=88ea18a54b',
   'core.boglurker': 'core.boglurker.webp?v=449170ede7',
   'core.bonejack': 'core.bonejack.webp?v=ad96123939',
@@ -65,6 +65,7 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.rattles': 'core.rattles.webp?v=6b45982ea1',
   'core.ricochet': 'core.ricochet.webp?v=2aa2eded45',
   'core.rotter': 'core.rotter.webp?v=03c77306a8',
+  'core.rourke': 'core.rourke.webp?v=a91c46191e',
   'core.rustwalker': 'core.rustwalker.webp?v=94772e3ad4',
   'core.saintnick': 'core.saintnick.webp?v=35b821a9a0',
   'core.scamp': 'core.scamp.webp?v=a42db47895',

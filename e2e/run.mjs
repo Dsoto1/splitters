@@ -992,11 +992,18 @@ async function offlineFlow(browser) {
   check(await page.evaluate(() => Object.values(localStorage).some((v) => /"invertY":true/.test(v))), 'the Invert look switch saves');
   await page.click('.opt-row:has-text("Invert look") .switch');
   await page.keyboard.press('Escape');
-  // The main menu: no Characters item; the Profile entry (top right) shows your character, name and account
-  // state and opens Profile, whose Change character opens Character Select. Sign-in lives there, not in the bottom bar.
+  // The main menu: a Characters item (Character Select, and Back returns here: the owner wanted it kept) beside the
+  // Profile entry (top right), which shows your character, name and account state and opens Profile (Change character
+  // opens Character Select too). Sign-in lives there, not in the bottom bar.
   const navIds = await page.$$eval('#menu .nav button', (bs) => bs.map((b) => b.id));
   const badge = await page.evaluate(() => ({ text: document.querySelector('#profile-badge')?.textContent ?? '', footer: !!document.querySelector('.menu-footer #sign-in, .menu-footer #profile-link, .menu-footer .menu-links') }));
-  check(navIds.join() === 'nav-play,nav-mapmaker,nav-online,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu's Profile entry replaces the Characters item and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
+  check(navIds.join() === 'nav-play,nav-mapmaker,nav-characters,nav-online,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu has Characters beside the Profile entry, and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
+  await page.click('#nav-characters');
+  await page.waitForSelector('.char-grid', { timeout: T(10000) }).catch(() => {});
+  const charsOpen = await page.isVisible('.char-grid');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#nav-characters', { timeout: T(10000) }).catch(() => {});
+  check(charsOpen && (await page.isVisible('#nav-characters')), `Characters opens Character Select and Back returns to the main menu (open ${charsOpen})`);
   const groups = await page.$$eval('.menu-footer .hint-group', (gs) => gs.map((g) => g.className.replace('hint-group ', '')));
   check(groups.join() === 'moves,acts,util', `the bottom bar's hints come in groups: getting about, actions, fullscreen (${groups.join(', ')})`);
   /** Main menu or Profile → Profile → Change character. */
@@ -2721,15 +2728,17 @@ async function vehiclesFlow(browser) {
   const cockpit = await rideCam();
   const off = cockpit.eye ? Math.hypot(...cockpit.local.map((v, i) => v - cockpit.eye[i])) : Infinity;
   check(cockpit.view === 'cockpit' && off < 0.5 && Math.abs(cockpit.local[0]) < cockpit.half[0] && Math.abs(cockpit.local[2]) < cockpit.half[2], `in the cockpit the eye is in the buggy at the driver's seat (${cockpit.view}, ${off.toFixed(2)} m from the seat eye, at ${cockpit.local?.map((v) => v.toFixed(2)).join(', ')})`);
-  // The cockpit view draws the buggy's high-detail interior (MountDef.cockpitModel, loaded on first use) over your copy
-  // of the body, the body's own triangles inside its box left out; the chase view (below) draws the body alone.
-  const interiorOn = await page.waitForFunction(() => window.__cs.view.cockpitInteriorShown(), null, { timeout: T(20000) }).then(() => true, () => false);
+  // The cockpit view draws the buggy's in-house cockpit (content/cockpits.ts: cage tubes, seats, dash, wheel) over
+  // your copy of the body, the body's own triangles inside its hide boxes left out; the chase view (below) draws the
+  // body alone.
+  const interiorOn = await page.waitForFunction(() => window.__cs.view.cockpitInteriorShown() && window.__cs.view.cockpitInteriorState()?.cut, null, { timeout: T(20000) }).then(() => true, () => false);
   const bodyCut = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${window.__match.mounts[me.mount.index].index}`);
-    return root?.getChildMeshes().filter((m) => m.subMeshes?.length && !/_cockpit/.test(m.name)).map((m) => m.subMeshes[0].indexCount / m.getTotalIndices()) ?? [];
+    return root?.getChildMeshes().filter((m) => m.subMeshes?.length && !/^cockpit_/.test(m.name)).map((m) => m.subMeshes[0].indexCount / m.getTotalIndices()) ?? [];
   });
-  check(interiorOn && bodyCut.some((share) => share < 0.9), `in the cockpit the buggy's interior is drawn and its body's cockpit triangles are left out (${interiorOn}, body drawn ${bodyCut.map((v) => v.toFixed(2)).join(', ')})`);
+  const parts = await page.evaluate(() => window.__cs.view.cockpitInteriorState());
+  check(interiorOn && bodyCut.some((share) => share < 0.9) && parts?.triangles > 5000, `in the cockpit the buggy's cockpit parts are drawn and its body's cockpit triangles are left out (${interiorOn}, ${parts?.triangles} triangles, body drawn ${bodyCut.map((v) => v.toFixed(2)).join(', ')})`);
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   // Headless frame rates vary: wait for the drive rather than a fixed time.
@@ -2742,6 +2751,11 @@ async function vehiclesFlow(browser) {
   });
   check(after.seat === 0, `you are in the driver's seat (${after.seat}${after.alive ? '' : ', dead'})`);
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
+  // Steering turns the cockpit's wheel and the speedometer's needle reads the speed.
+  await page.evaluate(() => (window.__autoInput = { forward: 1, right: 1, buttons: 0 }));
+  const turned = await page.waitForFunction(() => { const s = window.__cs.view.cockpitInteriorState(); return s && s.wheel > 0.3 && s.needles[0] > 0.1 ? s : null; }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => page.evaluate(() => window.__cs.view.cockpitInteriorState()));
+  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
+  check(turned?.wheel > 0.3 && turned?.needles[0] > 0.1, `steering turns the cockpit's wheel and the speedometer reads the speed (${JSON.stringify(turned && { wheel: +turned.wheel.toFixed(2), needles: turned.needles.map((v) => +v.toFixed(2)) })})`);
   // Raycast suspension (sim/suspension.ts): the host sends the sprung body (ms) and the client draws it, the four
   // tires on pivots at the hubs, rolling with the speed.
   const sprung = await page.evaluate(() => {
@@ -2765,6 +2779,8 @@ async function vehiclesFlow(browser) {
   }
   const saved = await page.evaluate(() => localStorage.getItem('tiletrigger.vehicleCamera'));
   check(worst.view === 'chase' && !worst.inBox && worst.clear && worst.sight && worst.dist > 1, `H gives a chase camera outside the buggy and not in a wall (${JSON.stringify({ view: worst.view, inBox: worst.inBox, clear: worst.clear, sight: worst.sight, dist: worst.dist?.toFixed(1) })})`);
+  // The interior goes on the frame after the view switches (a slow page draws a frame or two a second).
+  await page.waitForFunction(() => !window.__cs.view.cockpitInteriorShown(), null, { timeout: T(10000) }).catch(() => {});
   const chaseBody = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${me.mount ? window.__match.mounts[me.mount.index].index : -1}`);
@@ -2772,6 +2788,9 @@ async function vehiclesFlow(browser) {
   });
   check(!chaseBody.interior && chaseBody.cut === false, `the chase view draws the whole body and no interior (${JSON.stringify(chaseBody)})`);
   check(/"ground":"chase"/.test(saved ?? ''), `the choice is remembered for ground vehicles (${saved})`);
+  // The buggy we drove (the passenger checks below use the other one, still parked on flat ground at its spawn:
+  // this one ends up wherever the drive and the steering check took it).
+  await page.evaluate(() => (window.__drivenMount = window.__match.slots[window.__cs.slot].mount?.index ?? -1));
   // Press E (again, if a slow frame swallowed the press) until we're out.
   for (let i = 0; i < 4; i++) {
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
@@ -2781,7 +2800,9 @@ async function vehiclesFlow(browser) {
   check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
   // Out of the chase camera: back at your own eye, level.
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-  await page.waitForTimeout(T(500)); // wait-ok: the camera eases back to your eye
+  await page
+    .waitForFunction(() => { const c = window.__cs.view.camera.position; const e = window.__cs.local.eye; return window.__cs.rideView() === null && Math.hypot(c.x - e.x, c.y - e.y, c.z - e.z) < 0.4; }, null, { timeout: T(5000) })
+    .catch(() => {});
   const foot = await page.evaluate(() => {
     const cs = window.__cs;
     const c = cs.view.camera.position;
@@ -2821,7 +2842,12 @@ async function vehiclesFlow(browser) {
     if (me.mount) match.leaveMount(me, true);
     // Everyone holds still and holds fire (the buggy's health is checked below).
     for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
-    const m = match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null)).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
+    // The buggy we drove, back at its spawn on flat ground and stopped (the drive and the steering check leave it
+    // anywhere, on a slope or against a rock, where getting in from beside it can fail).
+    const m = match.mounts[window.__drivenMount] ?? match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null))[0];
+    m.pos = { ...m.home.pos };
+    m.yaw = m.home.yaw;
+    if ('speed' in m) m.speed = 0;
     // Bots drawn as characters (a creature has no seated pose).
     const bots = match.slots.filter((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {})).slice(0, 4);
     const seats = [];

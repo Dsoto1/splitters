@@ -35,6 +35,8 @@ function sameShape(a: EffectShape, b: EffectShape): boolean {
 export class EffectsWorld {
   readonly world: RAPIER.World;
   private acc = 0;
+  /** The level box behind each static collider (the terrain has none): what a shot hit, for its impact (stone, metal, wood …). */
+  private readonly boxes = new Map<number, WorldBox>();
 
   constructor(boxes: readonly WorldBox[], terrain: { positions: Float32Array; indices: Uint32Array } | null = null) {
     this.world = new RAPIER.World({ x: 0, y: -20, z: 0 });
@@ -49,7 +51,7 @@ export class EffectsWorld {
       const desc = RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(b.min[0] + hx, b.min[1] + hy, b.min[2] + hz).setCollisionGroups(statics).setFriction(0.9);
       if (b.pitch || b.roll) desc.setRotation(boxQuat(b.yaw, b.pitch, b.roll));
       else if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
-      this.world.createCollider(desc);
+      this.boxes.set(this.world.createCollider(desc).handle, b);
     }
   }
 
@@ -66,10 +68,12 @@ export class EffectsWorld {
     }
   }
 
-  /** First static surface along a ray: distance and the surface normal. */
-  raycast(from: Vec3, dir: Vec3, maxDist: number): { dist: number; normal: Vec3 } | null {
+  /** First static surface along a ray: distance, the surface normal and the level box it belongs to (none: the terrain). */
+  raycast(from: Vec3, dir: Vec3, maxDist: number): { dist: number; normal: Vec3; box?: WorldBox } | null {
     const hit = this.world.castRayAndGetNormal(new RAPIER.Ray(from, dir), maxDist, true, undefined, groups(0xffff, GROUP_STATIC));
-    return hit ? { dist: hit.timeOfImpact, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z } } : null;
+    if (!hit) return null;
+    const box = this.boxes.get(hit.collider.handle);
+    return { dist: hit.timeOfImpact, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z }, ...(box ? { box } : {}) };
   }
 
   /** First ragdoll body along a ray (a corpse in the way of a shot): the body, distance and surface normal. */

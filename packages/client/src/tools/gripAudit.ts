@@ -24,6 +24,8 @@ import type { CharacterInstance } from '../content/characters.ts';
 const FINGER = /(?:^|_)(index|middle|ring|pinky)_0\d_([lr])$/;
 const HANDISH = (side: 'l' | 'r') => new RegExp(`(?:^|_)(hand|index|middle|ring|pinky|thumb)(_0\\d)?_${side}$`);
 const BODY_HEIGHT = 1.8;
+/** How far ahead of the grip (m) a support hand's place on a long gun's handguard starts (characterAnimator's SUPPORT_MIN_AHEAD). */
+const SUPPORT_AHEAD = 0.12;
 
 interface Skin {
   mesh: AbstractMesh;
@@ -85,7 +87,8 @@ const r3 = (n: number) => Math.round(n * 1000) / 1000;
 export interface GripAudit {
   /** Body mesh vertices measured. */
   verts: number;
-  hands: Record<'l' | 'r', { fingerShare: number; fingerJoints: number; tips: number | null; centre: number | null; measured: { curl: number; fingers: string } | null } | null>;
+  /** `tipsGuard`/`centreGuard`: a long gun's support hand against the handguard's line (it slides back along it). */
+  hands: Record<'l' | 'r', { fingerShare: number; fingerJoints: number; tips: number | null; centre: number | null; tipsGuard?: number; centreGuard?: number; measured: { curl: number; fingers: string } | null } | null>;
   elbows: Record<'l' | 'r', { bend: number; flex: number } | null>;
   gun: {
     /** Smallest distance (m) from the head joint to the gun's line (butt to handguard; a pistol's barrel). */
@@ -102,7 +105,8 @@ export interface GripAudit {
     /** Shooting shoulder joint height above the neck joint (m; bulky or hunched builds have it near or above). */
     shoulderBelowNeck: number;
   } | null;
-  stretch: { max: number; spikes: number; worst: string | null };
+  /** `by`: spikes counted by the joint that holds each one's first end most. */
+  stretch: { max: number; spikes: number; worst: string | null; by: Record<string, number> };
 }
 
 /** Measure the posed character (call after the pose has settled and been drawn). */
@@ -177,11 +181,22 @@ export function auditGrip(ch: CharacterInstance, weapon: TransformNode | null, h
     const tip = far.reduce((a, x) => a.addInPlace(x.p), Vector3.Zero()).scale(1 / far.length);
     const target = handPoint(side);
     const measured = ch.hands[side];
+    // A long gun's support hand slides back along the handguard on short arms (by design): measured against the
+    // handguard's line too, from just ahead of the grip to the support point.
+    const guard = side === 'l' && hold?.style === 'long' && hold.support ? [handPoint('r'), target] : null;
+    const toGuard = (p: Vector3) => {
+      const [g, s2] = guard as [Vector3, Vector3];
+      const d = s2.subtract(g);
+      const len = d.length();
+      const t = Math.max(Math.min(SUPPORT_AHEAD / Math.max(1e-6, len * k), 1), Math.min(1, Vector3.Dot(p.subtract(g), d) / Math.max(1e-12, len * len)));
+      return r3(Vector3.Distance(p, g.add(d.scale(t))) * k);
+    };
     hands[side] = {
       fingerShare: r3(fingered / pts.length),
       fingerJoints: used.size,
       tips: target ? r3(Vector3.Distance(tip, target) * k) : null,
       centre: target ? r3(Vector3.Distance(centre, target) * k) : null,
+      ...(guard?.[0] && guard[1] ? { tipsGuard: toGuard(tip), centreGuard: toGuard(centre) } : {}),
       measured: measured ? { curl: measured.curl, fingers: measured.fingers } : null,
     };
   }
@@ -247,6 +262,7 @@ export function auditGrip(ch: CharacterInstance, weapon: TransformNode | null, h
   let max = 1;
   let spikes = 0;
   let worst: string | null = null;
+  const at_: Record<string, number> = {};
   if (idx) {
     const seen = new Set<number>();
     for (let i = 0; i + 2 < idx.length; i += 3) {
@@ -265,9 +281,17 @@ export function auditGrip(ch: CharacterInstance, weapon: TransformNode | null, h
           for (let j = 0; j < 4; j++) if (bw[p * 4 + j]! > ww) [ww, wb] = [bw[p * 4 + j]!, bi[p * 4 + j]!];
           worst = wb >= 0 ? names[wb] ?? null : null;
         }
-        if (ratio > 3 && p0 > 0.1) spikes++;
+        if (ratio > 3 && p0 > 0.1) {
+          spikes++;
+          // Where the spikes are: the joint that holds the edge's first end most.
+          let wb = -1;
+          let ww = 0;
+          for (let j = 0; j < 4; j++) if (bw[p * 4 + j]! > ww) [ww, wb] = [bw[p * 4 + j]!, bi[p * 4 + j]!];
+          const n = wb >= 0 ? names[wb] ?? '?' : '?';
+          at_[n] = (at_[n] ?? 0) + 1;
+        }
       }
     }
   }
-  return { verts: count, hands, elbows, gun, stretch: { max: Math.round(max * 10) / 10, spikes, worst } };
+  return { verts: count, hands, elbows, gun, stretch: { max: Math.round(max * 10) / 10, spikes, worst, by: at_ } };
 }

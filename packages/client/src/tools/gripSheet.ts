@@ -234,6 +234,19 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     drawn: () => current?.anim.drawnGrip([...(rig?.drawnMeshes ?? []), ...(current?.anim.ch.meshes ?? [])]) ?? null,
     body,
     upper,
+    /**
+     * After a third-person pose, a close look at one joint (a support hand on the handguard): the orbit camera on
+     * that joint's position, `alpha`/`beta` round it (radians, Babylon's), `radius` away (m).
+     */
+    closeUp: async (joint: string, alpha: number, beta: number, radius = 0.35) => {
+      const j = joints?.get(joint);
+      j?.computeWorldMatrix(true);
+      if (j) orbit.target.copyFrom(j.getAbsolutePosition());
+      orbit.alpha = alpha;
+      orbit.beta = beta;
+      orbit.radius = radius;
+      await settle(4);
+    },
     /** Measurements of the third-person pose as drawn (tools/gripAudit.ts; tools/content/grip-audit.mjs ranks them). */
     audit: () => (posed ? auditGrip(posed.ch, posed.weapon, posed.hold) : null),
     /** Curl test: close the hands by this share of their curl (1 as the game does; 0 open), and redraw. */

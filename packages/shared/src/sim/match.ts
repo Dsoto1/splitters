@@ -688,7 +688,7 @@ export class Match {
         if (c?.alive) this.push(c, dir, speed);
       },
       blast: (at, radius, damage, edge, owner, weapon) => {
-        this.pendingEvents.push({ e: 'explode', s: owner ?? -1, p: tuple(at), r: radius });
+        this.pendingEvents.push({ e: 'explode', s: owner ?? -1, p: tuple(at), r: radius, ...(weapon ? { w: weapon } : {}) });
         this.splash(at, radius, damage, edge, owner === null ? null : (this.actor(owner) ?? null), weapon, 1, blastKnockback({ splashDamage: damage }));
       },
       endRound: (winner, outcome, next) => this.endRound(winner, outcome, next),
@@ -748,7 +748,7 @@ export class Match {
           },
           path: (a, b) => this.nav.findPath(a, b),
           explode: (at, radius, damage, by) => {
-            this.pendingEvents.push({ e: 'explode', s: by?.slot ?? -1, p: tuple(at), r: radius });
+            this.pendingEvents.push({ e: 'explode', s: by?.slot ?? -1, p: tuple(at), r: radius, w: 'core.bomb' });
             this.splash(at, radius, damage, damage * 0.15, by, 'core.bomb', 1, 12);
           },
           physics: this.physics,
@@ -3458,7 +3458,7 @@ export class Match {
       this.projectiles.push({ ...p, id: this.nextProjectileId++, spec: { ...spec, retrievable: true }, pos: { x: at.x, y: at.y + 0.2 - down.dist + 0.1, z: at.z }, vel: { x: 0, y: 0, z: 0 }, stuck: true, ticksLeft: Math.round(DISC_LIE_SECONDS * TICK_RATE), armAt: this.tick + Math.round(DISC_PICKUP_DELAY * TICK_RATE) });
       return;
     }
-    if (spec.splashRadius > 0) this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius });
+    if (spec.splashRadius > 0) this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius, w: p.weapon });
     if (spec.splashRadius > 0) this.splash(at, spec.splashRadius, spec.splashDamage, spec.splashEdgeDamage, owner, p.weapon, spec.selfDamageScale, blastKnockback(spec), spec.status);
     // Flames, flares and real explosions set oil alight.
     if (spec.ignites || spec.splashDamage >= 30) this.ignite(at, Math.max(1, spec.splashRadius));
@@ -4371,7 +4371,7 @@ export class Match {
       }
       if (z.kind === 'singularity') {
         // The field collapses with a bang.
-        this.pendingEvents.push({ e: 'explode', s: z.owner, p: tuple(z.pos), r: 5 });
+        this.pendingEvents.push({ e: 'explode', s: z.owner, p: tuple(z.pos), r: 5, w: z.weapon });
         this.splash(z.pos, 5, 90, 20, this.actor(z.owner) ?? null, z.weapon, 0.6, blastKnockback({ splashDamage: 90 }));
         this.ignite(z.pos, 5);
       }

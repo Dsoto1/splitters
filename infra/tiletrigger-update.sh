@@ -193,8 +193,10 @@ verify_provenance() { # dir sha: the attestation was made by this repository's C
     --certificate-identity-regexp "^https://github\\.com/$slug_re/\\.github/workflows/ci\\.yml@refs/($refs)\$"
     --certificate-github-workflow-repository "$SLUG" --certificate-github-workflow-sha "$sha")
   [ -n "$SIGSTORE_TRUSTED_ROOT" ] && args+=(--trusted-root "$SIGSTORE_TRUSTED_ROOT")
-  # cosign keeps Sigstore's trust root (TUF) here, not in a home folder.
-  if ! TUF_ROOT="$STATE/sigstore" HOME="$STATE" "$COSIGN" "${args[@]}" "$dir/$name.tar.gz" >"$dir/cosign.log" 2>&1; then
+  # cosign keeps Sigstore's trust root (TUF) here, not in a home folder. It also refuses to read an artifact over
+  # 128 MiB unless told otherwise (COSIGN_MAX_ATTACHMENT_SIZE), and the site passed that on 2026-11-01 (138 MB): allow
+  # 1 GiB. The digest is still checked against the signed statement, so a larger cap doesn't weaken the check.
+  if ! TUF_ROOT="$STATE/sigstore" HOME="$STATE" COSIGN_MAX_ATTACHMENT_SIZE="${COSIGN_MAX_ATTACHMENT_SIZE:-1GiB}" "$COSIGN" "${args[@]}" "$dir/$name.tar.gz" >"$dir/cosign.log" 2>&1; then
     sed 's/^/   cosign: /' "$dir/cosign.log" >&2
     die "build-provenance check failed for $sha: refusing it"
   fi

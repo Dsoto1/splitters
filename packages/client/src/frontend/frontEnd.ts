@@ -580,6 +580,7 @@ export class FrontEnd {
   private readonly navItems: { id: string; label: string; act: () => void }[] = [
     { id: 'nav-play', label: 'Play', act: () => this.go('play') },
     { id: 'nav-mapmaker', label: 'MapMaker', act: () => this.hooks.openEditor() },
+    { id: 'nav-characters', label: 'Characters', act: () => this.go('characters') },
     { id: 'nav-online', label: 'Online', act: () => this.go('online') },
     { id: 'nav-options', label: 'Options', act: () => this.go('options') },
   ];

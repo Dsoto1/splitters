@@ -1,27 +1,102 @@
 {
-  "$comment": "Effect packs (CC0, by Binbun). tools/content/prepare-vfx.mjs reads each Godot 4 pack (its scenes, materials and textures) and writes what the game draws: an atlas of the pack's textures and the effects' settings, in packages/client/public/vfx (recorded in content/vfx.lock.json). The packs themselves are never committed.",
+  "$comment": "Effect packs (CC0, by Binbun). tools/content/prepare-vfx.mjs reads each Godot 4 pack (its scenes, materials and textures) and writes what the game draws: an atlas of the pack's textures and the effects' settings, in packages/client/public/vfx (recorded in content/vfx.lock.json); only the effects `map` below names (and a pack's `keep`) are written. The packs themselves are never committed. `map` says which effect plays where; tools/content/vfx-map.mjs turns it into packages/client/src/game/fxMap.generated.ts (content:check fails when that is stale or names an effect that isn't shipped).",
   "packs": {
     "binbun-muzzle-flash": {
       "title": "Muzzle Flash VFX",
       "creator": "Binbun (bun3d.com)",
       "url": "https://binbun3d.itch.io/muzzle-flash-vfx",
       "license": "CC0-1.0",
-      "licenseFile": "assets-src/binbun-muzzle-flash/License.txt"
+      "licenseFile": "assets-src/binbun-muzzle-flash/License.txt",
+      "edition": "The owner's Drive copy (fx/MuzzleFlashVFX.zip, 2026-10-31) builds byte-identical output to the free edition."
     },
     "binbun-hit-fx": {
-      "title": "Stylized Hit FX (free)",
+      "title": "Stylized Hit FX (full edition, purchased by the owner)",
       "creator": "Binbun (bun3d.com)",
       "url": "https://binbun3d.itch.io/",
       "license": "CC0-1.0",
-      "licenseFile": "assets-src/binbun-hit-fx/License.txt"
+      "licenseFile": "assets-src/binbun-hit-fx/License.txt",
+      "edition": "Full edition, purchased by the owner (Drive fx/HitFXFull.zip, 2026-10-31); its license.txt is CC0, word for word the free edition's. 28 effects (the free edition had 6)."
     },
     "binbun-explosion-fx": {
-      "title": "Stylized Explosion FX (free)",
+      "title": "Stylized Explosion FX (full edition, purchased by the owner)",
       "creator": "Binbun (bun3d.com)",
       "url": "https://binbun3d.itch.io/",
       "license": "CC0-1.0",
-      "licenseFile": "assets-src/binbun-explosion-fx/License.txt"
+      "licenseFile": "assets-src/binbun-explosion-fx/License.txt",
+      "edition": "Full edition, purchased by the owner (Drive fx/ExplosionFXFull.zip, 2026-10-31); its license.txt is CC0, word for word the free edition's. 16 effects (the free edition had 3).",
+      "keep": ["vfx_ground_explosion_01"]
     }
   },
-  "budgets": { "maxBytes": 400000 }
+  "budgets": { "maxBytes": 400000 },
+  "map": {
+    "$comment": "Effects by use. An effect is { pack, effect, scale } (pack: hit_fx or explosion_fx, public/vfx/<pack>.json). Lookups fall back from the most specific key to `default`.",
+    "muzzle": {
+      "$comment": "Muzzle flash by weapon family (WeaponDefinition.family; a weapon's own view.muzzle wins): effects of public/vfx/muzzle_flash.json. `projectile`: launchers with no family; `pellets`: other multi-pellet guns; `heavy`: other guns of 60+ damage.",
+      "pistol": { "effect": "short_flash_01", "scale": 0.15 },
+      "revolver": { "effect": "short_flash_03", "scale": 0.18 },
+      "machine_pistol": { "effect": "short_flash_04", "scale": 0.15 },
+      "smg": { "effect": "muzzle_flash_02", "scale": 0.17 },
+      "rifle": { "effect": "muzzle_flash_01", "scale": 0.2 },
+      "marksman": { "effect": "muzzle_flash_05", "scale": 0.2 },
+      "precision": { "effect": "big_flash_06", "scale": 0.13 },
+      "lmg": { "effect": "big_flash_01", "scale": 0.13 },
+      "shotgun": { "effect": "wide_flash_01", "scale": 0.24 },
+      "projectile": { "effect": "big_flash_04", "scale": 0.14 },
+      "pellets": { "effect": "wide_flash_01", "scale": 0.22 },
+      "heavy": { "effect": "big_flash_01", "scale": 0.13 },
+      "default": { "effect": "muzzle_flash_01", "scale": 0.18 }
+    },
+    "surfaces": {
+      "$comment": "What a round hit, read from the level: words matched (in order) against the prop model, the tile and theme, or a free block's material. Terrain is dirt; anything unmatched is stone.",
+      "metal": ["metal", "steel", "iron", "container", "barrel", "drum", "tank", "pipe", "vehicle", "truck", "car_", "_car", "bus", "train", "rail", "crane", "excavator", "machine", "sci", "orbital", "station", "space", "hangar", "gantry", "catwalk", "grate", "locker", "generator", "turret", "fence_metal", "sign", "lamp", "neon", "industrial", "factory"],
+      "wood": ["wood", "timber", "plank", "crate", "pallet", "log", "cabin", "barn", "shack", "stall", "cart", "wagon", "fence", "table", "bench", "chair", "shelf", "door", "dock", "pier", "boat", "ship", "frontier", "wild_west", "ww_", "saloon", "medieval", "mv_"],
+      "dirt": ["dirt", "sand", "mud", "grass", "soil", "hay", "sandbag", "earth", "ground", "desert", "dune", "snow", "jungle_floor"],
+      "stone": []
+    },
+    "impacts": {
+      "$comment": "A round hitting a surface: the hole, sparks and dust drawn in house (impactVisuals.ts) as set here, and an optional Binbun accent played on top (minor: dropped when many effects are playing, and past `accentRange` metres from the camera).",
+      "accentRange": 45,
+      "stone": { "sparks": 2, "dust": "#a39d92", "dustSize": 1, "accent": null },
+      "metal": { "sparks": 8, "dust": "#8e8a84", "dustSize": 0.5, "accent": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.1 } },
+      "wood": { "sparks": 0, "dust": "#8a6a45", "dustSize": 0.9, "accent": null },
+      "dirt": { "sparks": 0, "dust": "#7d6a52", "dustSize": 1.4, "accent": null },
+      "flesh": { "accent": { "pack": "hit_fx", "effect": "vfx_strike_03", "scale": 0.08 } },
+      "water": { "accent": { "pack": "hit_fx", "effect": "vfx_strike_02", "scale": 0.14 } }
+    },
+    "weaponImpacts": {
+      "$comment": "Where a weapon's rounds land with their own effect, by weapon id or projectile visual (in place of the surface accent).",
+      "core.railgun": { "pack": "hit_fx", "effect": "vfx_big_impact_01", "scale": 0.4 },
+      "melee": { "pack": "hit_fx", "effect": "vfx_hit_01", "scale": 0.22 },
+      "melee.alt": { "pack": "hit_fx", "effect": "vfx_hit_02", "scale": 0.22 }
+    },
+    "explosions": {
+      "$comment": "By weapon id first (the explode event's `w`), then its projectile visual, then the kind (barrel, trap, bomb, vehicle, air: a blast with no ground under it). Scale is per metre of blast radius.",
+      "grenade": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_01", "scale": 0.38 },
+      "rocket": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_03", "scale": 0.36 },
+      "core.tank_cannon": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_04", "scale": 0.36 },
+      "orb": { "pack": "explosion_fx", "effect": "vfx_burst_explosion_02", "scale": 0.34 },
+      "disc": { "pack": "explosion_fx", "effect": "vfx_burst_explosion_01", "scale": 0.3 },
+      "plasma": { "pack": "hit_fx", "effect": "vfx_impact_04", "scale": 0.35 },
+      "flare": { "pack": "hit_fx", "effect": "vfx_impact_05", "scale": 0.4 },
+      "barrel": { "pack": "explosion_fx", "effect": "vfx_burst_explosion_03", "scale": 0.4 },
+      "trap": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_02", "scale": 0.38 },
+      "bomb": { "pack": "explosion_fx", "effect": "vfx_nuke_explosion_01", "scale": 0.3 },
+      "vehicle": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_04", "scale": 0.5 },
+      "air": { "pack": "explosion_fx", "effect": "vfx_air_explosion_01", "scale": 0.38 },
+      "default": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_01", "scale": 0.38 }
+    },
+    "gameplay": {
+      "$comment": "Moments of play: pickups (by item kind: pickup.<kind>), spawns, portals, jump pads, traps (trap.<type>) and ziplines. Minor effects: dropped when many effects are playing.",
+      "pickup": { "pack": "hit_fx", "effect": "vfx_strike_02", "scale": 0.3 },
+      "pickup.health": { "pack": "hit_fx", "effect": "vfx_strike_03", "scale": 0.3 },
+      "pickup.weapon": { "pack": "hit_fx", "effect": "vfx_hit_01", "scale": 0.25 },
+      "pickup.powerup": { "pack": "hit_fx", "effect": "vfx_hit_07", "scale": 0.35 },
+      "spawn": { "pack": "hit_fx", "effect": "vfx_impact_03", "scale": 0.45 },
+      "portal": { "pack": "hit_fx", "effect": "vfx_impact_07", "scale": 0.45 },
+      "pad": { "pack": "hit_fx", "effect": "vfx_impact_04", "scale": 0.35 },
+      "trap": { "pack": "hit_fx", "effect": "vfx_impact_06", "scale": 0.4 },
+      "trap.shock": { "pack": "hit_fx", "effect": "vfx_hit_04", "scale": 0.45 },
+      "zipline": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.14 }
+    }
+  }
 }
