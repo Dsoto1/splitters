@@ -159,6 +159,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.warden': 'core.grunt68',
   'core.rustwalker': 'core.t350',
   'core.slugger': 'core.t350',
+  'core.crimsonop': 'core.stealthop', // held back: a close likeness of a famous game character; owner to decide (files kept)
 };
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
