@@ -992,11 +992,18 @@ async function offlineFlow(browser) {
   check(await page.evaluate(() => Object.values(localStorage).some((v) => /"invertY":true/.test(v))), 'the Invert look switch saves');
   await page.click('.opt-row:has-text("Invert look") .switch');
   await page.keyboard.press('Escape');
-  // The main menu: no Characters item; the Profile entry (top right) shows your character, name and account
-  // state and opens Profile, whose Change character opens Character Select. Sign-in lives there, not in the bottom bar.
+  // The main menu: a Characters item (Character Select, and Back returns here: the owner wanted it kept) beside the
+  // Profile entry (top right), which shows your character, name and account state and opens Profile (Change character
+  // opens Character Select too). Sign-in lives there, not in the bottom bar.
   const navIds = await page.$$eval('#menu .nav button', (bs) => bs.map((b) => b.id));
   const badge = await page.evaluate(() => ({ text: document.querySelector('#profile-badge')?.textContent ?? '', footer: !!document.querySelector('.menu-footer #sign-in, .menu-footer #profile-link, .menu-footer .menu-links') }));
-  check(navIds.join() === 'nav-play,nav-mapmaker,nav-online,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu's Profile entry replaces the Characters item and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
+  check(navIds.join() === 'nav-play,nav-mapmaker,nav-characters,nav-online,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu has Characters beside the Profile entry, and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
+  await page.click('#nav-characters');
+  await page.waitForSelector('.char-grid', { timeout: T(10000) }).catch(() => {});
+  const charsOpen = await page.isVisible('.char-grid');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#nav-characters', { timeout: T(10000) }).catch(() => {});
+  check(charsOpen && (await page.isVisible('#nav-characters')), `Characters opens Character Select and Back returns to the main menu (open ${charsOpen})`);
   const groups = await page.$$eval('.menu-footer .hint-group', (gs) => gs.map((g) => g.className.replace('hint-group ', '')));
   check(groups.join() === 'moves,acts,util', `the bottom bar's hints come in groups: getting about, actions, fullscreen (${groups.join(', ')})`);
   /** Main menu or Profile → Profile → Change character. */

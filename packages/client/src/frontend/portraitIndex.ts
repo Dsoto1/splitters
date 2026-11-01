@@ -65,6 +65,7 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.rattles': 'core.rattles.webp?v=6b45982ea1',
   'core.ricochet': 'core.ricochet.webp?v=2aa2eded45',
   'core.rotter': 'core.rotter.webp?v=03c77306a8',
+  'core.rourke': 'core.rourke.webp?v=a91c46191e',
   'core.rustwalker': 'core.rustwalker.webp?v=94772e3ad4',
   'core.saintnick': 'core.saintnick.webp?v=35b821a9a0',
   'core.scamp': 'core.scamp.webp?v=a42db47895',

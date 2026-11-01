@@ -41,6 +41,7 @@ import {
   WEAPONS_BY_SLOT,
   weaponByCode,
   getWeapon,
+  CORE_WEAPONS,
   gunplayOf,
   type MapDocument,
   type PickupEntity,
@@ -82,6 +83,7 @@ import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 import { GodotVfx } from './godotVfx.ts';
+import { ACCENT_RANGE, explosionFor, gameplayFx, impactStyle, mappedEffects, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
 import { buildPathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
@@ -272,6 +274,8 @@ export class GameView {
   private effects: Fx[] = [];
   /** Binbun's hit and explosion effects (godotVfx.ts), once their packs are in. */
   private readonly vfx: GodotVfx;
+  /** Each placement's surface (stone, metal, wood …) for where rounds land (fxMap.ts), made with the map. */
+  private surfaces: Map<string, Surface> | null = null;
   private sunLight?: DirectionalLight;
   private zoneVisuals!: ZoneVisuals;
   private readonly viewRoot: TransformNode;
@@ -408,6 +412,7 @@ export class GameView {
     this.border.update(doc, boxes);
     this.city.setMap(doc);
     this.liquids = mapLiquids(doc.entities);
+    this.surfaces = surfaceIndex(doc);
     this.physics?.free();
     try {
       this.physics = new EffectsWorld(boxes, mapTerrainMesh(doc));
@@ -443,7 +448,8 @@ export class GameView {
     this.impacts.warm();
     void GodotVfx.preload('hit_fx', 'explosion_fx').then(() => {
       if (this.scene.isDisposed) return;
-      for (const [pack, effect] of [['hit_fx', 'vfx_hit_01'], ['hit_fx', 'vfx_hit_02'], ['hit_fx', 'vfx_big_impact_01'], ['explosion_fx', 'vfx_ground_explosion_01']] as const) this.vfx.warm(pack, effect);
+      // Every effect content/vfx.json's map can play (impacts, explosions, moments of play).
+      for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
     });
   }
 
@@ -719,6 +725,7 @@ export class GameView {
     }
     if (o.victim !== null) {
       this.blood.hit(o.to, dir, o.zone === 1 ? o.strength * 1.8 : o.strength);
+      this.accent(impactStyle('flesh').accent, o.to);
       return;
     }
     // A round stopped by a pane (bulletproof glass, a pane about to break): a star crack and a few glints, no dust.
@@ -728,13 +735,43 @@ export class GameView {
       return;
     }
     const wall = this.impacts.surfaceHit(o.eye, o.to);
-    if (wall) this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4));
+    if (wall) {
+      // The surface it hit (content/vfx.json map.impacts): metal sparks, wood and earth puff their own dust.
+      const style = impactStyle(surfaceOfBox(wall.box, this.surfaces));
+      this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4), style);
+      this.accent(style.accent, wall.point, wall.normal);
+    }
   }
 
-  /** A stylised hit from Binbun's Hit FX (godotVfx.ts): `melee` on a body, `heavy` where a railgun round lands. False before the pack is in. */
-  hitFx(at: Vec3, kind: 'melee' | 'heavy'): boolean {
-    const p = new Vector3(at.x, at.y, at.z);
-    return kind === 'melee' ? this.vfx.play('hit_fx', Math.random() < 0.5 ? 'vfx_hit_01' : 'vfx_hit_02', p, { scale: 0.22 }) : this.vfx.play('hit_fx', 'vfx_big_impact_01', p, { scale: 0.4 });
+  /** The accent of a surface hit somewhere other than the level (a round going into water). */
+  surfaceAccent(surface: Surface, at: Vec3): void {
+    this.accent(impactStyle(surface).accent, at);
+  }
+
+  /** A minor effect near the camera (an impact's accent): skipped far away and when many effects are playing. */
+  private accent(fx: FxRef | null, at: Vec3, up?: Vec3): void {
+    if (!fx) return;
+    const cam = this.scene.activeCamera?.globalPosition;
+    if (cam && Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) > ACCENT_RANGE) return;
+    this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, at.y, at.z), { scale: fx.scale, minor: true, ...(up ? { up: new Vector3(up.x, up.y, up.z) } : {}) });
+  }
+
+  /** A moment of play's effect (content/vfx.json map.gameplay: `pickup.health`, `spawn`, `portal`, `pad`, `trap.shock`, `zipline` …). */
+  playGameplayFx(key: string, at: Vec3): boolean {
+    const fx = gameplayFx(key);
+    if (!fx) return false;
+    const cam = this.scene.activeCamera?.globalPosition;
+    if (cam && Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) > ACCENT_RANGE * 2) return false;
+    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, at.y, at.z), { scale: fx.scale, minor: true });
+  }
+
+  /**
+   * A stylised hit from Binbun's Hit FX (godotVfx.ts; content/vfx.json map.weaponImpacts): `melee` on a body, else
+   * where a round of `def` lands when that weapon has an impact of its own (the railgun). False when it has none or the pack isn't in.
+   */
+  hitFx(at: Vec3, kind: 'melee' | WeaponDefinition): boolean {
+    const fx = kind === 'melee' ? meleeImpact(Math.random() < 0.5) : weaponImpact(kind);
+    return !!fx && this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, at.y, at.z), { scale: fx.scale });
   }
 
   /** A brief muzzle flash on a remote player's gun: the pack's flash for that weapon (muzzleFlash.ts), else the plain star. */
@@ -1494,9 +1531,30 @@ export class GameView {
    * every character in view holding a gun, nearest first, with its distance. For each: model metres from each
    * hand's skin to its point on the gun, and how its shooting hand lies on the grip (`aheadR`, `sideR`).
    */
+  /** The meshes the main camera drew in its last pass (tests; recorded from the first call on). */
+  private mainDrawn: Set<AbstractMesh> | null = null;
+
+  /**
+   * What the main camera drew last frame. The scene's active-mesh list, read between frames, is whatever the last
+   * evaluation left in it, and it was often empty there (the grip checks then saw nobody drawn: "0 of 0" bots, an Imp
+   * with no report). So it is copied right after the main camera's own evaluation, once something asks for it.
+   */
+  private drawnByCamera(): Set<AbstractMesh> {
+    if (!this.mainDrawn) {
+      this.mainDrawn = new Set();
+      this.scene.onAfterActiveMeshesEvaluationObservable.add(() => {
+        if (this.scene.activeCamera !== this.camera) return;
+        const am = this.scene.getActiveMeshes();
+        this.mainDrawn = new Set(am.data.slice(0, am.length));
+      });
+      const am = this.scene.getActiveMeshes();
+      return new Set(am.data.slice(0, am.length));
+    }
+    return this.mainDrawn;
+  }
+
   gripReport(): { local: ({ mode: 'body' | 'arms' } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>) | null; remote: ({ slot: number; dist: number } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>)[]; creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] } {
-    const am = this.scene.getActiveMeshes();
-    const active = new Set(am.data.slice(0, am.length));
+    const active = this.drawnByCamera();
     let local: ReturnType<GameView['gripReport']>['local'] = null;
     if (this.fpBody?.a.anim instanceof CharacterAnimator) {
       const g = this.fpBody.a.anim.drawnGrip([...this.fpBody.rig.drawnMeshes, ...this.fpBody.a.anim.ch.meshes]);
@@ -1985,9 +2043,18 @@ export class GameView {
     return n;
   }
 
-  explosion(at: Vec3, radius: number): void {
-    // Binbun's ground explosion (godotVfx.ts), sized to the blast; the plain fireball until its pack is in.
-    if (this.vfx.play('explosion_fx', 'vfx_ground_explosion_01', new Vector3(at.x, at.y - 0.3, at.z), { scale: Math.max(0.5, radius / 2.6) })) return;
+  /** The Binbun explosion for a blast (content/vfx.json map.explosions: by weapon, its projectile, the kind), sized to its radius. */
+  private blastFx(at: Vec3, radius: number, weapon: string | undefined, kind: string | null, minScale: number): boolean {
+    // Nothing under it within a couple of metres: an air burst.
+    const airborne = kind !== 'vehicle' && !this.physics?.raycast({ x: at.x, y: at.y + 0.2, z: at.z }, { x: 0, y: -1, z: 0 }, 2.2);
+    const fx = explosionFor(weapon, airborne ? 'air' : kind, (id) => CORE_WEAPONS[id]);
+    const y = airborne ? at.y : at.y - 0.3;
+    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, y, at.z), { scale: Math.max(minScale, radius * fx.scale) });
+  }
+
+  explosion(at: Vec3, radius: number, weapon?: string): void {
+    // Binbun's explosion for this blast (godotVfx.ts), sized to it; the plain fireball until its pack is in.
+    if (this.blastFx(at, radius, weapon, null, 0.5)) return;
     const ball = CreateSphere('boom', { diameter: 1, segments: 12 }, this.scene);
     const mat = glow(this.scene, 'boomMat', '#ffb347', 1);
     ball.material = mat;
@@ -2013,7 +2080,7 @@ export class GameView {
    */
   vehicleExplosion(at: Vec3, radius: number): void {
     const now = performance.now();
-    this.vfx.play('explosion_fx', 'vfx_ground_explosion_01', new Vector3(at.x, at.y - 0.3, at.z), { scale: Math.max(0.8, radius / 2) });
+    this.blastFx(at, radius, undefined, 'vehicle', 0.8);
     const ball = (name: string, hex: string, centre: Vec3, size: number, delay: number, ttl: number, alpha: number) => {
       const mesh = CreateSphere(name, { diameter: 1, segments: 10 }, this.scene);
       const mat = glow(this.scene, `${name}Mat`, hex, 1);

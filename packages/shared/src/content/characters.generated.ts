@@ -66,6 +66,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.halvard', name: 'Old King Halvard', body: 'male', head: '', parts: ['meshy_halvard'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_halvard_fparms' }, group: 'legends' },
   { id: 'core.pruitt', name: 'Sgt. Pruitt', body: 'male', head: '', parts: ['meshy_pruitt'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_pruitt_fparms' }, group: 'soldiers' },
   { id: 'core.greyfang', name: 'Greyfang', body: 'male', head: '', parts: ['meshy_greyfang'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_greyfang_fparms' }, group: 'animals' },
+  { id: 'core.rourke', name: 'Rourke', body: 'male', head: '', parts: ['meshy_rourke'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_rourke_fparms' }, group: 'folk' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -135,4 +136,5 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.halvard': 'Reigned for fifty years and outlived every rival. Not planning to stop now.',
   'core.pruitt': 'Thirty years on the beat. Has heard every excuse, and believes none of them.',
   'core.greyfang': 'Hunts in packs. Today the pack is you lot, and he is keeping score.',
+  'core.rourke': 'Hitched a ride into the war zone by mistake. Stayed because the pay beats his last job.',
 };
