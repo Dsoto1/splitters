@@ -33,7 +33,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'handsShare']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold']);
 const LEAN_JOINTS = new Set(['Spine02', 'Spine01', 'Spine', 'neck', 'Head']);
 const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
@@ -105,9 +105,17 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   if (x.lean) for (const [k, v] of Object.entries(x.lean)) need(LEAN_JOINTS.has(k) && typeof v === 'number' && Math.abs(v) <= 45, `fixes.lean.${k}: degrees (−45–45) on ${[...LEAN_JOINTS].join(', ')}`);
   need(x.tail === undefined || (Array.isArray(x.tail) && x.tail.length >= 2 && x.tail.every(isPoint)), 'fixes.tail: two or more points');
   need(x.scrubBlue === undefined || HEX.test(x.scrubBlue), 'fixes.scrubBlue: #rrggbb');
+  need(x.headShare === undefined || (typeof x.headShare === 'number' && x.headShare > 0 && x.headShare <= 0.3), 'fixes.headShare: 0–0.3 (the share of the triangle budget the head keeps; 0.12 unless set)');
   need(x.handsShare === undefined || (typeof x.handsShare === 'number' && x.handsShare > 0 && x.handsShare <= 0.2), 'fixes.handsShare: 0–0.2 (the share of the triangle budget the hands keep)');
   need(x.surface === undefined || x.surface === 'rebake', 'fixes.surface: rebake (the cut mesh laid out afresh and its colour painted from the download) or left out');
   need(!(x.surface && x.seamWeld), 'fixes: surface rebake closes every seam itself; leave seamWeld out');
+  need(x.lod === undefined || (typeof x.lod === 'number' && x.lod >= 0.15 && x.lod <= 0.6), 'fixes.lod: 0.15–0.6 (the share of the body\'s triangles its low-detail copy keeps; 0.3 unless set)');
+  need(x.normalSize === undefined || x.normalSize === 512 || x.normalSize === 1024, 'fixes.normalSize: 512 or 1024 (the baked normal map, px)');
+  if (x.hold !== undefined) {
+    const h = x.hold;
+    need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down'), 'fixes.hold: { forward, down } (metres at a 1.8 m body)');
+    for (const k of ['forward', 'down']) need(h?.[k] === undefined || (typeof h[k] === 'number' && Math.abs(h[k]) <= 0.15), `fixes.hold.${k}: metres (−0.15–0.15)`);
+  }
   for (const k of ['seamWeld', 'cloth', 'feet', 'armCloth']) need(x[k] === undefined || typeof x[k] === 'boolean', `fixes.${k}: true or false`);
   if (x.hands !== undefined) {
     const h = x.hands;
@@ -196,6 +204,9 @@ export function buildSpec(m) {
     scrubBlue: x.scrubBlue,
     hands: x.hands,
     handsShare: x.handsShare,
+    headShare: x.headShare,
+    lod: x.lod,
+    normalSize: x.normalSize,
     joints,
   };
 }
@@ -206,7 +217,8 @@ const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 function lookLine(m) {
   const fp = m.firstPerson ?? {};
   const own = !fp.arms || fp.arms === 'own';
-  const body = fp.body === false ? ', body: false' : '';
+  const hold = m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '';
+  const body = (fp.body === false ? ', body: false' : '') + hold;
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
   const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : [])];
   return `  { ${parts.join(', ')} },`;

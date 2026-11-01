@@ -966,6 +966,10 @@ export class CharacterAnimator {
         const short = HEAD_CLEAR * scale - off.length();
         if (short > 0 && off.lengthSquared() > 1e-10) pocket.subtractInPlace(off.normalize().scale(Math.min(short, HEAD_CLEAR_MOST * scale)));
       }
+      // This body's own hold (the look's `whole.hold`): further along the barrel and lower, for a build whose head
+      // sits where everyone's stock goes (Bandit's, low between broad shoulders).
+      const own = this.ch.hold;
+      if (own) pocket.addInPlace(barrel.scale((own.forward ?? 0) * scale)).addInPlace(new Vector3(0, -1, 0).applyRotationQuaternion(aim).scale((own.down ?? 0) * scale));
       gripped = { rot: aim, pos: pocket.subtract(new Vector3(...grip.shoulder).scale(scale).applyRotationQuaternion(aim)) };
     }
 

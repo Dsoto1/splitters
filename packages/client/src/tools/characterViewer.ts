@@ -10,7 +10,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { CORE_LOOKS, CREATURE_ROLES, NPC_ROLE_SPECS, PLAYER, SPRINT, getWeapon } from '@tiletrigger/shared';
 import { CreatureLibrary } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
-import { CharacterLibrary, type CharacterSpec } from '../content/characters.ts';
+import { CharacterLibrary, setCharacterLodZoom, type CharacterSpec } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState, type OneShot } from '../game/characterAnimator.ts';
 
@@ -114,7 +114,7 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   panel.append(' Aim pitch ', pitch, ` ${specs.map((s) => s.label).join(' · ')} · front: ${bodies.join(', ')}`);
   document.body.append(panel);
   (window as unknown as { __charsReady: boolean; __charState: MotionState; __charAnimators: CharacterAnimator[] }).__charsReady = true;
-  Object.assign(window, { __charCamera: camera, __charState: state, __charAnimators: animators, __creatureAnimators: creatures, __charSpecs: specs.length });
+  Object.assign(window, { __charCamera: camera, __charState: state, __charAnimators: animators, __creatureAnimators: creatures, __charSpecs: specs.length, __charLodZoom: setCharacterLodZoom });
 
   let last = performance.now();
   engine.runRenderLoop(() => {
