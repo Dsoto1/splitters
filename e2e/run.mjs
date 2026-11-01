@@ -2842,10 +2842,12 @@ async function vehiclesFlow(browser) {
     if (me.mount) match.leaveMount(me, true);
     // Everyone holds still and holds fire (the buggy's health is checked below).
     for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
-    // The undriven buggy, emptied (a bot may have taken it); the driven one only if there's no other.
-    const other = match.mounts.find((x, i) => x.def.id === 'buggy' && x.alive && i !== window.__drivenMount && x.index !== window.__drivenMount);
-    if (other) for (const c of match.slots) if (c && c.mount && match.mounts[c.mount.index] === other) match.leaveMount(c, true);
-    const m = other ?? match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null)).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
+    // The buggy we drove, back at its spawn on flat ground and stopped (the drive and the steering check leave it
+    // anywhere, on a slope or against a rock, where getting in from beside it can fail).
+    const m = match.mounts[window.__drivenMount] ?? match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null))[0];
+    m.pos = { ...m.home.pos };
+    m.yaw = m.home.yaw;
+    if ('speed' in m) m.speed = 0;
     // Bots drawn as characters (a creature has no seated pose).
     const bots = match.slots.filter((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {})).slice(0, 4);
     const seats = [];
