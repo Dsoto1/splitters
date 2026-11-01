@@ -39,6 +39,9 @@ const MOVE_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_TERRAIN | GR
 const MOVE_NO_TERRAIN_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_GLASS | GROUP_ARMOR_GLASS);
 /** Shots and thrown things: static geometry and bulletproof glass. */
 const SHOT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_ARMOR_GLASS);
+/** What wheels stand on (PhysicsWorld.groundBelow): everything solid but players and force fields. */
+const GROUND_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS);
+const DOWN = { x: 0, y: -1, z: 0 };
 const MAX_SLOPE_TAN = Math.tan((PLAYER.maxSlopeDegrees * Math.PI) / 180);
 
 /**
@@ -363,6 +366,15 @@ export class PhysicsWorld {
   /** Distance along a normalised ray to the first static surface, or null within maxDist. */
   raycastWorld(origin: Vec3, dir: Vec3, maxDist: number): number | null {
     const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, WORLD_ONLY_QUERY);
+    return hit ? hit.timeOfImpact : null;
+  }
+
+  /**
+   * Straight down from `origin` to the first thing a vehicle stands on (map geometry, terrain, glass, other
+   * mounts), leaving out `skip` (the vehicle's own box): the distance, or null within maxDist. Suspension rays.
+   */
+  groundBelow(origin: Vec3, maxDist: number, skip: RAPIER.Collider): number | null {
+    const hit = this.world.castRay(this.rayFrom(origin, DOWN), maxDist, true, undefined, GROUND_QUERY, skip);
     return hit ? hit.timeOfImpact : null;
   }
 

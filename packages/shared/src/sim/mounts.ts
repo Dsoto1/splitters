@@ -8,6 +8,8 @@
  * metres from the mount's origin (its footprint centre on the ground).
  */
 
+import type { SuspensionTuning } from './suspension.ts';
+
 export const MOUNT_MODELS = [
   'turret_mg', 'turret_rocket', 'sentry', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank',
   // Sprint 5 lineup (see VEHICLES.md): each one is an existing handling class with its own tuning.
@@ -108,6 +110,13 @@ export interface MountDef {
     fly?: { climb: number; ceiling: number };
     /** Placed to ride on water (the mount entity's `onWater`): how deep its feet sit under the surface (m). Default FLOAT.draft. */
     draft?: number;
+    /**
+     * Raycast suspension (sim/suspension.ts): a sprung body on a ray per wheel, so it bounces, leans out of turns,
+     * dives under braking and lands bouncing. Absent: the body is drawn settling to the ground (View.suspend).
+     */
+    suspension?: SuspensionTuning;
+    /** Share of tyre grip lost at top speed (rising with the square of speed): loose at speed, so it powerslides. Default 0. */
+    drift?: number;
   };
   sentry?: { weapon: string; range: number; turnRate: number };
   /** The transport plane: flies its map entity's route on its own, can't be hurt, and riders jump out (E or jump) to parachute down. */
@@ -250,7 +259,17 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     enterRadius: 3.2,
     respawnSeconds: 45,
     blast: { radius: 4.5, damage: 90 },
-    vehicle: { maxSpeed: 18, reverseSpeed: 7, accel: 10, turnRate: 1.8, grip: 0.22, mass: 1.4 },
+    // The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides.
+    vehicle: {
+      maxSpeed: 18,
+      reverseSpeed: 7,
+      accel: 10,
+      turnRate: 1.8,
+      grip: 0.22,
+      mass: 1.4,
+      drift: 0.55,
+      suspension: { travel: 0.2, bump: 0.16, freq: 1.5, damping: 0.32, squat: 0.004, lean: 0.0045, tumble: 1.4, land: 0.5, maxTilt: 0.45, steer: 0.5 },
+    },
     blurb: 'Four seats: a driver and three passengers who shoot their own weapons',
   },
   hauler: {
@@ -354,7 +373,30 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     enterRadius: 3.2,
     respawnSeconds: 40,
     blast: { radius: 4.5, damage: 85 },
-    vehicle: { maxSpeed: 21, reverseSpeed: 8, accel: 12, turnRate: 2.0, grip: 0.26, mass: 1.1 },
+    // Its own wheels (the model's wheel meshes, measured on it) on stiffer springs than the buggy's: a pickup.
+    vehicle: {
+      maxSpeed: 21,
+      reverseSpeed: 8,
+      accel: 12,
+      turnRate: 2.0,
+      grip: 0.26,
+      mass: 1.1,
+      drift: 0.4,
+      suspension: {
+        wheels: [[-0.63, 1.32], [0.63, 1.32], [-0.63, -1.1], [0.63, -1.1]],
+        hub: 0.45,
+        travel: 0.16,
+        bump: 0.13,
+        freq: 1.8,
+        damping: 0.38,
+        squat: 0.0028,
+        lean: 0.0038,
+        tumble: 1.2,
+        land: 0.45,
+        maxTilt: 0.4,
+        steer: 0.45,
+      },
+    },
     blurb: 'A light pickup with a machine gun on the back: a driver, a gunner who fires all round and three passengers with their own weapons',
   },
   armored_rover: {

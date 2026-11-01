@@ -29,7 +29,12 @@ export const ADS_SPEED = 0.75;
 export const BUTTON_RESPAWN = 1024;
 /** Quick melee (side mouse button or Y): swing the held melee weapon, or punch / kick when none is held (UNARMED). */
 export const BUTTON_MELEE = 2048;
-const ALL_BUTTONS = BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
+/**
+ * Look-to-steer (held while the option is on): a driver's vehicle steers toward where they look (their yaw), the
+ * Warthog way, on top of any A/D steering. Ignored on foot and in flyers.
+ */
+export const BUTTON_STEER_LOOK = 4096;
+const ALL_BUTTONS = BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {

@@ -500,6 +500,12 @@ export type ServerMessage =
       zn?: ZoneSnapshot[];
       /** Turrets, sentries and vehicles, when the map has any. */
       mt?: MountSnapshot[];
+      /**
+       * Vehicles with raycast suspension (alive): [mount index, body height (cm), pitch (mrad, + nose up), roll
+       * (mrad, + leaning right), steering (-100..100), ...each wheel's hub offset (cm, + compressed)]
+       * (sim/suspension.ts suspensionSnapshot). Absent: none. Older clients ignore it.
+       */
+      ms?: number[][];
       /** Deployed cover walls, when any stand (absent means none). */
       cv?: CoverSnapshot[];
       /** Receiving player's private state (absent while not in the match). */

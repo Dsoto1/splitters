@@ -60,7 +60,7 @@ export class SnapshotStream {
  * a stream is sent them only when they changed, and the snapshot lists the
  * ones it repeats in `same` (the receiver fills them in from its last copy).
  */
-export const REPEATABLE = ['score', 'mt', 'pk', 'pw', 'dw', 'cv', 'ld'] as const;
+export const REPEATABLE = ['score', 'mt', 'ms', 'pk', 'pw', 'dw', 'cv', 'ld'] as const;
 
 type WireSnapshot = Omit<Extract<ServerMessage, { t: 'snapshot' }>, 'players'> & { players: (PlayerSnapshot | PlayerDelta)[]; same?: string[] };
 

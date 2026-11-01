@@ -28,6 +28,7 @@ export * from './sim/gunplay.ts';
 export * from './sim/impact.ts';
 export * from './sim/trajectory.ts';
 export * from './sim/mounts.ts';
+export * from './sim/suspension.ts';
 export * from './sim/parachute.ts';
 export * from './sim/airplane.ts';
 export * from './sim/items.ts';

@@ -49,9 +49,10 @@ import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpen
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
-import { BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
+import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, type MatchRules } from './rules.ts';
@@ -166,6 +167,9 @@ interface MountRt {
   moveOwed?: boolean;
   /** Parked and settled since this tick (driveVehicle skips the physics until something moves it). */
   restSince?: number;
+  /** Raycast suspension (wheeled light vehicles, sim/suspension.ts): its tuning and the sprung body. */
+  suspSetup?: SuspensionSetup;
+  susp?: SuspensionState;
   cooldown: number;
   /** Who damaged it last (credit for the explosion). */
   lastHitBy: number | null;
@@ -450,6 +454,12 @@ interface PickupState {
 }
 
 const r3 = (v: number): number => Math.round(v * 1000) / 1000;
+/** Look-to-steer: steering (-1..1) per radian the driver looks off the nose. */
+const LOOK_STEER_GAIN = 2.2;
+/** The vehicle probe's feet ride this far over the ground (the character controller's skin): the wheels' rest. */
+const VEHICLE_SKIN = 0.02;
+/** Suspension rays a tick before vehicles start reusing last tick's ground (24 four-wheelers). */
+const SUSPENSION_RAY_BUDGET = 96;
 const tuple = (v: Vec3): Tuple3 => [r3(v.x), r3(v.y), r3(v.z)];
 /** Chest height above the feet (m). */
 const CHEST = PLAYER.height * 0.55;
@@ -2351,7 +2361,14 @@ export class Match {
         if (seat.role === 'driver') {
           const up = !!(input.buttons & BUTTON_JUMP);
           const down = !!(input.buttons & BUTTON_CROUCH);
-          m.drive = m.def.vehicle?.fly ? { forward: input.forward, right: input.right, lift: (up ? 1 : 0) - (down ? 1 : 0) } : { forward: input.forward, right: input.right, brake: up };
+          // Look-to-steer (the Warthog way): the wheel turns toward where the driver looks, on top of A/D; backing up
+          // it steers the other way round, so the nose still swings toward the look.
+          let right = input.right;
+          if (input.buttons & BUTTON_STEER_LOOK && m.def.vehicle && !m.def.vehicle.fly) {
+            const off = Math.atan2(Math.sin(c.yaw - m.yaw), Math.cos(c.yaw - m.yaw));
+            right = Math.max(-1, Math.min(1, right + off * LOOK_STEER_GAIN * (m.speed < -0.5 ? -1 : 1)));
+          }
+          m.drive = m.def.vehicle?.fly ? { forward: input.forward, right, lift: (up ? 1 : 0) - (down ? 1 : 0) } : { forward: input.forward, right, brake: up };
         }
         if (seat.arc !== undefined) {
           const centre = m.yaw + (seat.facing ?? 0);
@@ -3678,6 +3695,11 @@ export class Match {
       vel: { x: 0, z: 0 },
       rammed: new Map(),
     };
+    const setup = suspensionOf(def);
+    if (setup) {
+      m.suspSetup = setup;
+      m.susp = newSuspension(setup);
+    }
     this.mounts.push(m);
     this.mountBodies.set(body.handle, m);
   }
@@ -3933,6 +3955,7 @@ export class Match {
     m.airborne = m.afloat = false;
     m.push = { x: 0, z: 0 };
     m.lastHitBy = null;
+    if (m.suspSetup) m.susp = newSuspension(m.suspSetup);
     for (const g of m.guns) if (g) g.heat = 0;
     this.physics.setBoxEnabled(m.body, true);
     this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
@@ -3940,6 +3963,7 @@ export class Match {
 
   private stepMounts(): void {
     const prof = simProfile.on;
+    this.suspensionRays = 0;
     for (const m of this.mounts) {
       const t0 = prof ? performance.now() : 0;
       this.stepMount(m);
@@ -4108,6 +4132,7 @@ export class Match {
     const dt = TICK_DT * ticks;
     const v = m.def.vehicle!;
     const { forward, right, brake } = m.drive;
+    const speedBefore = m.speed;
     const mass = v.mass ?? 1;
     const grounded = !m.airborne || !!v.hover || !!v.fly;
     // On a track's road tyres grip better; off it wheeled vehicles are a little slower.
@@ -4127,7 +4152,11 @@ export class Match {
     m.yaw += turn;
     // Turning swings the heading out from under the momentum: that becomes slide, which grip then eats.
     m.slide += -m.speed * Math.sin(turn);
-    const grip = grounded ? Math.min(0.6, (v.grip ?? (v.hover ? 0.06 : 0.25)) * road.grip) * (brake ? 0.25 : 1) * (m.afloat ? FLOAT.grip : 1) : 0;
+    // Loose at speed (drift): the grip falls off with the square of speed, so a hard turn flat out powerslides.
+    // With suspension, wheels off the ground (over a crest, two on a kerb) grip less.
+    const loose = v.drift ? 1 - v.drift * frac * frac : 1;
+    const wheels = m.susp && m.suspSetup ? 0.35 + (0.65 * m.susp.contact) / m.suspSetup.points.length : 1;
+    const grip = grounded ? Math.min(0.6, (v.grip ?? (v.hover ? 0.06 : 0.25)) * road.grip * loose * wheels) * (brake ? 0.25 : 1) * (m.afloat ? FLOAT.grip : 1) : 0;
     m.slide *= (1 - grip) ** ticks;
     if (Math.abs(m.slide) < 0.02) m.slide = 0;
     if (v.fly) {
@@ -4143,7 +4172,7 @@ export class Match {
     const vz = dir.z * m.speed + side.z * m.slide + m.push.z;
     // Parked and settled (nobody aboard, nothing pushing): no physics, but a look every half second
     // in case the ground went from under it.
-    const parked = !vx && !vz && m.seats.every((s) => s === null);
+    const parked = !vx && !vz && m.seats.every((s) => s === null) && (!m.susp || m.susp.settled);
     if (!parked) m.restSince = undefined;
     else if (m.restSince !== undefined && (this.tick - m.restSince) % 30 !== 0) {
       m.vel = { x: 0, z: 0 };
@@ -4162,6 +4191,8 @@ export class Match {
     const climbed = (moved.feet.y - startY) / dt;
     const afloat = line !== null && moved.feet.y <= line + 0.02;
     const wasAfloat = m.afloat;
+    const wasAirborne = m.airborne;
+    const fallSpeed = m.velY;
     m.afloat = afloat;
     if (afloat && !moved.grounded) {
       // On the water, not the bed or the shore: it rides the surface (a splash, never a hard landing).
@@ -4179,6 +4210,7 @@ export class Match {
       m.slide *= 0.5;
     }
     m.pos = moved.feet;
+    if (m.susp) this.suspend(m, ticks, speedBefore, turn, right, wasAirborne && !m.airborne ? Math.max(0, -fallSpeed) : 0);
     const decay = (moved.grounded || afloat ? 0.9 : 0.99) ** ticks;
     m.push = { x: m.push.x * decay, z: m.push.z * decay };
     this.physics.setBoxPose(m.body, { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z }, m.yaw);
@@ -4205,6 +4237,48 @@ export class Match {
       this.damage(c, Math.abs(m.speed) * 5, driver, 'core.roadkill');
       this.pendingEvents.push({ e: 'crash', p: tuple(chest(c.move.pos)), n: Math.min(1, Math.abs(m.speed) / 40) });
     }
+  }
+
+  /** Suspension rays cast this tick (stepMounts resets it): past SUSPENSION_RAY_BUDGET, vehicles sample less often. */
+  private suspensionRays = 0;
+
+  /**
+   * The sprung body (sim/suspension.ts) after the chassis moved: one ray down per wheel, then the springs. Far,
+   * parked and settled vehicles skip it (driveVehicle's parked early return, Match.farVehicle); past the tick's
+   * ray budget a vehicle reuses the ground it found last tick on two ticks of three.
+   */
+  private suspend(m: MountRt, ticks: number, speedBefore: number, turn: number, steer: number, landing: number): void {
+    const s = m.susp!;
+    const t = m.suspSetup!;
+    // Moving two ticks at a time (empty and far from every player: nobody sees it): the body just sits level.
+    if (ticks > 1) {
+      s.h = s.hv = s.p = s.pv = s.r = s.rv = s.steer = 0;
+      s.wheel.fill(0);
+      s.contact = t.points.length;
+      s.settled = true;
+      return;
+    }
+    const dt = TICK_DT;
+    // A crash stops it in a tick: the springs see a hard stop, not a thousand m/s².
+    const aLong = Math.max(-40, Math.min(40, (m.speed - speedBefore) / dt));
+    const aLat = Math.max(-40, Math.min(40, (m.speed * turn) / dt));
+    const grounded = !m.airborne;
+    // Nothing to do: settled, standing still, nothing landing. The body stays as it is.
+    if (s.settled && grounded && !landing && m.vel.x === 0 && m.vel.z === 0 && m.speed === 0 && steer === 0) return;
+    // Ground under each wheel (in the air the wheels just hang: no rays).
+    if (grounded && (this.suspensionRays < SUSPENSION_RAY_BUDGET || (this.tick + m.index) % 3 === 0)) {
+      const sin = Math.sin(m.yaw);
+      const cos = Math.cos(m.yaw);
+      const top = t.hubY + 0.6;
+      const reach = top + t.travel + 0.5;
+      for (let i = 0; i < t.points.length; i++) {
+        const [x, z] = t.points[i]!;
+        const d = this.physics.groundBelow({ x: m.pos.x + x * cos + z * sin, y: m.pos.y + top, z: m.pos.z - x * sin + z * cos }, reach, m.body);
+        s.ground[i] = d === null ? null : top - d + VEHICLE_SKIN;
+      }
+      this.suspensionRays += t.points.length;
+    }
+    stepSuspension(s, t, dt, { grounded, aLong, aLat, landing, steer });
   }
 
   /** Sentries turn toward the nearest enemy they can see and fire while lined up. */
@@ -4242,6 +4316,13 @@ export class Match {
     this.pendingEvents.push({ e: 'shot', s: -1, w: def.id, from: tuple(muzzle), to: [tuple(shot.end)], hit: [shot.hitSlot] });
     // A built sentry's kills are its builder's.
     if (shot.hitSlot !== null) this.damage(this.actor(shot.hitSlot)!, def.damage, m.builtBy === undefined ? null : (this.slots[m.builtBy] ?? null), def.id);
+  }
+
+  /** Vehicles with raycast suspension, alive, for snapshots (`ms`, see suspensionSnapshot). */
+  suspensionSnapshots(): number[][] {
+    const out: number[][] = [];
+    for (const m of this.mounts) if (m.susp && m.alive) out.push(suspensionSnapshot(m.index, m.susp));
+    return out;
   }
 
   /** Mounts for snapshots (see MountSnapshot). */
@@ -5268,6 +5349,7 @@ export class Match {
       ...(this.pickups.some((p) => p.item !== p.placed) ? { pw: this.pickupItems() } : {}),
       ...(this.drops.length ? { dw: this.dropSnapshots() } : {}),
       ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
+      ...(this.mounts.some((m) => m.susp && m.alive) ? { ms: this.suspensionSnapshots() } : {}),
       ...(this.covers.length ? { cv: this.covers.map((c): CoverSnapshot => [c.id, r3(c.pos.x), r3(c.pos.y), r3(c.pos.z), r3(c.yaw), Math.ceil((Math.max(0, c.health) / c.max) * 100)]) } : {}),
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
       sc: this.scenario.delta(),
