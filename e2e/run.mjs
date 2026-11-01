@@ -1713,6 +1713,8 @@ async function physicsfxFlow(browser) {
     m.pendingEvents.push({ e: 'explode', s: -1, p: [at.x, at.y + 0.5, at.z], r: 6 });
     m.splash({ x: at.x, y: at.y + 0.5, z: at.z }, 6, 500, 400, null, 'core.rockets', 1, 12);
     for (const c of victims) if (c.alive) m.kill(c, null, 'core.rockets');
+    // Held dead while the bodies are counted (a slow runner can take longer than the respawn time).
+    for (const c of victims) c.respawnTick = m.tick + 60 * 120;
     return victims.length;
   });
   const t0 = Date.now();
@@ -1727,6 +1729,7 @@ async function physicsfxFlow(browser) {
   }, null, { timeout: T(10000), polling: 50 }).then(() => true, () => false);
   await frames(page, 10);
   const massStats = await page.evaluate(() => window.__cs.view.ragdollStats());
+  await page.evaluate(() => { const m = window.__match; for (const s of window.__massSlots) if (m.slots[s]) m.slots[s].respawnTick = m.tick; });
   const notDown = down ? [] : await page.evaluate(() => window.__massSlots.filter((s) => !window.__massDown.has(s)).map((s) => { const a = window.__cs.view.avatars.get(s); const b = window.__match.slots[s]; return { s, avatar: !!a, anim: !!a?.anim, fall: a?.fall ?? null, alive: b?.alive }; }));
   check(mass > 0 && down && massStats.awakeBodies <= 300, `a mass casualty (${mass} killed by one blast) goes down without stalling: ${(Date.now() - t0) / 1000} s, ${JSON.stringify(massStats)}${notDown.length ? ` not down: ${JSON.stringify(notDown)}` : ''}`);
   // Debris chunks are real bodies: they land and rest on the ground (once the effects world is up).
