@@ -20,7 +20,8 @@ describe('character sizes', () => {
     const back = decodeLook(kitted)!;
     expect([back.size, back.cloth, back.trim, back.gear]).toEqual(['large', '#2a3a5c', null, ['goggles', 'vest', 'pack']]);
     // The helmets appended to GEAR widen the gear mask past four hex digits; older IDs keep four.
-    const bare = { ...getLook('core.warden'), gear: [] };
+    // Linktifa without her hood (a hat doesn't fit over one).
+    const bare = { ...getLook('core.ranger'), parts: getLook('core.ranger').parts.filter((p) => !p.includes('hood')), hair: ['hair_buzzed', 'hair_beard'], cloth: '#2a3a5c', trim: '#3a2a22', gear: [] };
     const helmeted = encodeLook({ ...bare, gear: ['mk2_helmet', 'shades'] });
     expect(helmeted).toMatch(/-g[0-9a-f]{5}$/);
     expect(decodeLook(helmeted)?.gear).toEqual(['shades', 'mk2_helmet']);

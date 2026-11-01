@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player+npc",
   "order": 13,
-  "name": "Cap'n Barnacle",
+  "name": "Cap'n Rusty Barnacle",
   "look": "core.barnacle",
   "group": "legends",
   "bio": "Lost a leg to a cannonball and his ship to a card game. Wants both back, in that order.",
