@@ -6,6 +6,7 @@
   "name": "Brass Hare",
   "look": "core.brasshare",
   "group": "animals",
+  "nameTheme": "critter",
   "bio": "Wound up every morning and never quite runs down.",
   "body": "male",
   "size": "small",

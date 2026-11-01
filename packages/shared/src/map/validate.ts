@@ -1,4 +1,5 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
+import { isCastId } from '../content/botNames.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { itemCategory } from '../sim/pickupRoll.ts';
@@ -127,6 +128,7 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   }
 
   issues.push(...budgetIssues(map));
+  for (const x of map.botCast ?? []) if (!isCastId(x)) issues.push({ severity: 'warning', code: 'bots.cast_unknown', message: `bot characters: unknown group or theme "${x}" (left out)` });
   const floating = floatingProps(map);
   if (floating.length) {
     const worst = floating.reduce((a, b) => (b.gap > a.gap ? b : a));

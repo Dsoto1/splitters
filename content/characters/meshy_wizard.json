@@ -6,6 +6,7 @@
   "name": "Merrow the Wise",
   "look": "core.merrow",
   "group": "legends",
+  "nameTheme": "wizard",
   "bio": "Studied magic for four hundred years. Found the rifle quicker.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB and first rigged by Meshy's rigging API (task 01a18a08-93d8-71f6-a9cc-d5754da6fbee), whose hands were lost in the sleeves; re-uploaded by the owner (2026-11-01, same model) and rigged here from T-pose landmarks (the manifest's) instead, the head and hands keeping their share of the cut. Queue note: wizard.",

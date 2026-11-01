@@ -6,6 +6,7 @@
   "name": "Sir Galloway",
   "look": "core.galloway",
   "group": "legends",
+  "nameTheme": "knight",
   "bio": "Swore an oath to protect the realm. The realm has since moved on; he has not.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: T-pose knight.",

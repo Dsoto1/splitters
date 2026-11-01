@@ -6,6 +6,7 @@
   "name": "Anoobys",
   "look": "core.anubis",
   "group": "legends",
+  "nameTheme": "myth",
   "bio": "Weighs every heart in the arena. Most come up light.",
   "body": "male",
   "size": "large",

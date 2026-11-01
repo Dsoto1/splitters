@@ -6,6 +6,7 @@
   "name": "Dust Trooper",
   "look": "core.dusttrooper",
   "group": "soldiers",
+  "nameTheme": "soldier",
   "bio": "Crossed the wastes on foot. Kept the mask on for the smell of the arena.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: dust trooper.",

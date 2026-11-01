@@ -6,6 +6,7 @@
   "name": "Croakley",
   "look": "core.croakley",
   "group": "animals",
+  "nameTheme": "frog",
   "bio": "Ran the bait shop by the pond until somebody shot it up. Now he returns the favour, suspenders and all.",
   "body": "male",
   "size": "small",

@@ -6,6 +6,7 @@
   "name": "Goblin",
   "look": "core.goblin",
   "group": "creatures",
+  "nameTheme": "goblin",
   "bio": "Gutter-born, bandage-wrapped and grinning. Steals the kill, then the loot, then your seat.",
   "body": "male",
   "size": "small",

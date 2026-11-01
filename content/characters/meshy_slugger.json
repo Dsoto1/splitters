@@ -7,6 +7,7 @@
   "name": "Slugger-9",
   "look": "core.slugger",
   "group": "creatures",
+  "nameTheme": "robot",
   "bio": "Built for the batting cage. Found out bullets come in faster than fastballs, and liked it.",
   "body": "male",
   "notes": "From the owner's Drive folder (uploaded 2026-11-01): an unrigged image-to-3D GLB in a T-pose (3.1M triangles, 4096 px maps), rigged here from landmarks. Named here; the owner reviews it on the grip and portrait sheets. A white and navy robot in a batting helmet. Licence recorded like the other community T-poses; to confirm with the owner (owned if it is their own generation). Landmarks as found on the mesh, mirrored, with the shoulder joint moved out under the shoulder pad (found at the chest). Held back (queued, not built), like Barnaby: its plating is thousands of small texture islands (12,559 seam vertices kept apart) and every cut that keeps the texture right stops over the 20k character budget (careful cut 21.3k; `seamWeld` 20.8k). Needs the fresh texture layout for characters Barnaby waits on, or a lighter download. Landmarks and fixes are ready; hands measured 19.5-20 cm.",

@@ -6,6 +6,7 @@
   "name": "Rattles",
   "look": "core.rattles",
   "group": "horror",
+  "nameTheme": "undead",
   "bio": "You hear him before you see him. Then it is too late.",
   "size": "large",
   "body": "male",

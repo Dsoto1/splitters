@@ -73,6 +73,7 @@ import { vehicleGuides, type Guide } from '../bots/guides.ts';
 import { ambientCarEntities, raceGridEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
+import { BOT_NAMES, botNameFor, castLooks, validBotCast } from '../content/botNames.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
@@ -1259,11 +1260,13 @@ export class Match {
    * `asCharacter`: play the look's own profile (under the match's bot style) instead of `profile` when it has one.
    * `o`: a bot of the host's bot set: its team (a faction ID), look, and own skill, style and squad.
    */
-  addBot(name: string, profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal, asCharacter = false, o?: { team?: string; look?: string; botSet?: NonNullable<Combatant['botSet']> }): Combatant | null {
+  addBot(name: string | ((look: string) => string), profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal, asCharacter = false, o?: { team?: string; look?: string; botSet?: NonNullable<Combatant['botSet']> }): Combatant | null {
     const team = o?.team !== undefined && this.teams?.some((t) => t.id === o.team) ? o.team : undefined;
-    const c = this.addCombatant('bot', name, team);
+    const c = this.addCombatant('bot', typeof name === 'string' ? name : '', team);
     if (c) {
-      c.look = o?.look ? validLookId(o.look) : lookForBot(c.slot);
+      c.look = o?.look ? validLookId(o.look) : this.botLook(c.slot);
+      // A random bot is named after what it wears (BotFiller: the look's own name, else its theme's).
+      if (typeof name === 'function') c.name = name(c.look);
       this.applyBodySize(c);
       if (o?.botSet) c.botSet = { ...o.botSet };
       const skill = c.botSet?.skill ? BOT_DIFFICULTIES[c.botSet.skill] : difficulty;
@@ -1274,6 +1277,47 @@ export class Match {
       this.refreshRoles();
     }
     return c;
+  }
+
+  /** Every name in the match now: players, bots and spectators (bot naming skips them). */
+  namesInUse(): string[] {
+    return [...this.combatants().map((c) => c.name), ...[...this.spectators.values()].map((s) => s.name)];
+  }
+
+  /**
+   * Which looks random bots wear (content/botNames.ts): the host's choice (rules.botCast), else the map's
+   * (MapDocument.botCast); empty: every look.
+   */
+  get botCast(): readonly string[] {
+    return this.rules.botCast ?? validBotCast(this.map.botCast);
+  }
+
+  /** A random bot's look for its slot: spread across the looks the bot-characters setting allows (all: the whole roster, as ever). */
+  botLook(slot: number): string {
+    const cast = this.botCast;
+    if (!cast.length) return lookForBot(slot);
+    const pool = castLooks(cast);
+    return pool[(slot + 1) % pool.length]!.id;
+  }
+
+  /**
+   * The bot-characters setting changed mid-match: a random bot (not the host's set's, not playing for an away
+   * player) wearing a look it no longer allows wears an allowed one and takes a name for it. Returns how many changed.
+   */
+  recastBots(name: (look: string, self: Combatant) => string): number {
+    let n = 0;
+    const cast = this.botCast;
+    const pool = castLooks(cast);
+    for (const c of this.combatants()) {
+      if (c.kind !== 'bot' || c.away || c.botSet || pool.some((l) => l.id === c.look)) continue;
+      c.look = this.botLook(c.slot);
+      this.applyBodySize(c);
+      c.name = name(c.look, c);
+      this.rebrain(c, c.bot!.difficulty);
+      n++;
+    }
+    if (n) this.rolesFor = -1;
+    return n;
   }
 
   /**
@@ -5449,21 +5493,8 @@ const isPerson = (c: Combatant) => c.kind === 'human' || !!c.away;
 /** Which bot gives way first (lowest first): random bots, then the host's set from its last entry back (the first ones stay longest). */
 const setRank = (c: Combatant): number => (c.botSet ? 1_000_000 - c.botSet.index : 0);
 
-/** Random bots' names, in the order bots take them: at least 96, so a full match never repeats one (the owner). */
-export const BOT_NAMES: readonly string[] = [
-  'Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash',
-  'Nub', 'Quill', 'Rustbucket', 'Old Saltpeter', 'Pigeon', 'Hollis Crane', 'Madame Thistle', 'Biscotti',
-  'Sergeant Gravy', 'Lumen', 'Ratchet', 'Nana Voss', 'Dregs', 'Crumpet', 'Sister Vex', 'Lanternjaw', 'Fennimore',
-  'Dazzle', 'Moss', 'Brigadier Fudge', 'Kettle', 'Ivy Strand', 'Gristle', 'Professor Snoot', 'Tumble', 'Ozzie Pike',
-  'Cinderbell', 'Wally Hex', 'Pickles', 'Dame Rook', 'Scuttle', 'Barnaby Wren', 'Flint', 'Auntie Sprocket', 'Grub',
-  'Major Mulch', 'Velvet', 'Dot', 'Corporal Puddle', 'Splinter', 'Hob', 'Miss Fortescue', 'Sprat', 'Gideon Lark',
-  'Mudlark', 'Bellows', 'Countess Cog', 'Zip', 'Tinder', 'Old Hob', 'Wren Kettering', 'Bolt', 'Lady Pincushion',
-  'Rumble', 'Juniper', 'Scrap', 'Colonel Custard', 'Fizz', 'Smudge', 'Bramble', 'Inspector Gloat', 'Patch',
-  'Marigold', 'Clank', 'Uncle Dredge', 'Pip', 'Tallow', 'Sir Wobble', 'Gravel', 'Mabel Stone', 'Stitch', 'Quirk',
-  'Admiral Dunk', 'Sootfoot', 'Hazel Grim', 'Plunk', 'Brisket', 'Captain Mops', 'Ember Wick', 'Dingo', 'Prudence',
-  'Rook', 'Nettle', 'Duchess Rust', 'Boomer', 'Sable', 'Ogden', 'Cricket', 'Glimmer', 'Barnacle Bill', 'Pudding',
-  'Vesper', 'Hatchet', 'Tuppence', 'Grimsby', 'Slate', 'Mister Mottle', 'Fable',
-];
+/** The general bot names (content/botNames.ts), still exported here for older imports. */
+export { BOT_NAMES };
 
 /** Keeps a match at a target player count by adding or removing Player Bots around the humans. */
 export class BotFiller {
@@ -5503,17 +5534,31 @@ export class BotFiller {
     return this.staging;
   }
 
-  private nextBot(): { name: string; profile: BotProfile } {
-    // Random bots never take a name the host's set uses.
-    const taken = this.set ? new Set(this.set.entries.map((e) => e.name.toLowerCase())) : null;
-    for (let tries = 0; ; tries++) {
-      const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
-      const round = Math.floor(this.counter / BOT_NAMES.length);
-      // Big matches run out of names: Mildred, then Mildred 2.
-      const name = `${BOT_NAMES[this.counter % BOT_NAMES.length]!}${round ? ` ${round + 1}` : ''}`;
-      this.counter++;
-      if (!taken?.has(name.toLowerCase()) || tries > BOT_NAMES.length * 2) return { name, profile };
-    }
+  /** The next random bot's base profile (it plays its look's own when it has one). */
+  private nextProfile(): BotProfile {
+    return CORE_BOT_PROFILES[this.counter++ % CORE_BOT_PROFILES.length]!;
+  }
+
+  /**
+   * A random bot's name for what it wears (content/botNames.ts): the look's own name, else its theme's next free
+   * name, else a general one. Never a name in use in the match (players, bots, spectators) or the host's set's;
+   * `self`: the bot being renamed (its own name is free to keep).
+   */
+  nameFor(look: string, self?: Combatant): string {
+    const used = new Set<string>();
+    for (const n of this.match.namesInUse()) used.add(n.toLowerCase());
+    if (self) used.delete(self.name.toLowerCase());
+    if (this.set) for (const e of this.set.entries) used.add(e.name.toLowerCase());
+    // Matches differ in which names come up (the seed); seed 1 (tests, default) takes each list in order.
+    return botNameFor(look, (n) => used.has(n.toLowerCase()), (this.match.seed - 1) * 37);
+  }
+
+  /**
+   * The bot-characters setting changed (Match.setRules({ botCast }) first): random bots wearing a look it no
+   * longer allows change into one it does, named for it. Returns how many changed.
+   */
+  recast(): number {
+    return this.match.recastBots((look, self) => this.nameFor(look, self));
   }
 
   /** A team of the match by order (a set's `team`), or undefined (auto, or no such team). */
@@ -5562,8 +5607,7 @@ export class BotFiller {
     const p = this.pick();
     if (!p) return false;
     if (p === 'random') {
-      const { name, profile } = this.nextBot();
-      return !!this.match.addBot(name, profile, this.difficulty, true);
+      return !!this.match.addBot((look) => this.nameFor(look), this.nextProfile(), this.difficulty, true);
     }
     const e = p.entry;
     const profile = CORE_BOT_PROFILES[p.index % CORE_BOT_PROFILES.length]!;
@@ -5601,7 +5645,7 @@ export class BotFiller {
     }
     for (const c of bots) {
       const i = claimed.get(c);
-      if (i === undefined) this.match.dropSetBot(c, this.nextBot().name, this.difficulty);
+      if (i === undefined) this.match.dropSetBot(c, this.nameFor(c.look, c), this.difficulty);
       else this.match.updateSetBot(c, i, set!.entries[i]!, this.difficulty);
     }
     this.staging = true;
@@ -5669,8 +5713,7 @@ export class BotFiller {
     const bots = all.filter((x) => x.kind === 'bot' && !x.away).length;
     const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans - this.match.spectatorCount));
     if (this.opts.takeBack === true && c.kind === 'human' && bots < want) {
-      const { name, profile } = this.nextBot();
-      this.match.handToBot(slot, name, profile, this.difficulty, true);
+      this.match.handToBot(slot, this.nameFor(c.look), this.nextProfile(), this.difficulty, true);
     } else this.match.remove(slot);
     this.rebalance(fill);
   }
@@ -5716,7 +5759,7 @@ export class BotFiller {
       c.away = { ...c.away, why, key: key ?? c.away.key, until };
       return true;
     }
-    const { profile } = this.nextBot();
+    const profile = this.nextProfile();
     return !!this.match.setAway(slot, { name: c.name, key, why, until, since: this.match.tick }, profile, this.difficulty);
   }
 
@@ -5829,7 +5872,7 @@ export class BotFiller {
     const c = this.match.slots[slot];
     if (!c?.away) return;
     delete c.away;
-    c.name = this.nextBot().name;
+    c.name = this.nameFor(c.look, c);
     this.warned.delete(slot);
   }
 

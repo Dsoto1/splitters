@@ -54,6 +54,7 @@ export * from './sim/race.ts';
 export * from './sim/trackDriver.ts';
 export * from './sim/creatures.ts';
 export * from './content/looks.ts';
+export * from './content/botNames.ts';
 export * from './content/props.ts';
 export * from './protocol.ts';
 export * from './net/clientMessages.ts';

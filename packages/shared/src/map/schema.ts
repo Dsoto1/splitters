@@ -967,6 +967,13 @@ export const MapDocument = z.object({
   teamSetup: TeamSetup.nullable().default(null),
   /** The map's own bots (MapBotSet), or none (random bots). Absent from older maps: they load unchanged. */
   bots: MapBotSet.optional(),
+  /**
+   * Which looks the map's random bots wear, and so their names (content/botNames.ts): character groups and/or
+   * name themes, e.g. ["soldiers"] for a D-Day map. Absent or empty: every look. The host can change it (Match
+   * setup, the pause menu, server rules). Absent from older maps: they load unchanged (no migration needed).
+   * Unknown ids are left out when a match starts (validBotCast) and flagged by validateMap.
+   */
+  botCast: z.array(z.string().min(1).max(24)).max(8).optional(),
   /** Content packs this map needs, beyond the always-present core pack. */
   dependencies: z.array(z.object({ pack: ContentId, version: z.string().max(32) })).max(MAX_MAP_DEPENDENCIES).default([]),
 });

@@ -6,6 +6,7 @@
   "name": "Count Bonesworth",
   "look": "core.bonesworth",
   "group": "horror",
+  "nameTheme": "horror",
   "bio": "Two hundred years dead and still dressed for dinner.",
   "body": "male",
   "size": "large",

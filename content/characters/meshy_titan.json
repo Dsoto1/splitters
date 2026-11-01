@@ -6,6 +6,7 @@
   "name": "Big Bogdan",
   "look": "core.bogdan",
   "group": "folk",
+  "nameTheme": "barbarian",
   "bio": "Bent iron bars at the travelling circus until the circus ran out of bars.",
   "body": "male",
   "size": "large",

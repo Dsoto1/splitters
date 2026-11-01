@@ -6,6 +6,7 @@
   "name": "The Visitor",
   "look": "core.visitor",
   "group": "creatures",
+  "nameTheme": "alien",
   "bio": "Came a very long way to study human culture. Stayed for the deathmatches.",
   "size": "small",
   "body": "male",

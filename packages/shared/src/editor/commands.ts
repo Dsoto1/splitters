@@ -25,6 +25,8 @@ export type EditCommand =
   | { kind: 'setBounds'; before: MapBounds | null; after: MapBounds | null }
   | { kind: 'setTeamSetup'; before: TeamSetup | null; after: TeamSetup | null }
   | { kind: 'setMapBots'; before: MapBotSet | null; after: MapBotSet | null }
+  /** Which looks random bots wear (MapDocument.botCast); null or empty: every look (the document then has no `botCast` key). */
+  | { kind: 'setBotCast'; before: string[] | null; after: string[] | null }
   | { kind: 'setBackdrop'; before: Backdrop | null; after: Backdrop | null }
   | { kind: 'setBlood'; before: BloodSettings | null; after: BloodSettings | null }
   | { kind: 'setPhysics'; before: MapPhysics | null; after: MapPhysics | null }
@@ -105,6 +107,10 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       const { bots: _old, ...rest } = doc;
       return cmd.after ? { ...rest, bots: cmd.after } : rest;
     }
+    case 'setBotCast': {
+      const { botCast: _old, ...rest } = doc;
+      return cmd.after?.length ? { ...rest, botCast: [...cmd.after] } : rest;
+    }
     case 'setPaths': {
       const { paths: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, paths: cmd.after } : rest;
@@ -154,6 +160,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setMapBots', before: cmd.after, after: cmd.before };
     case 'setPaths':
       return { kind: 'setPaths', before: cmd.after, after: cmd.before };
+    case 'setBotCast':
+      return { kind: 'setBotCast', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -184,6 +192,7 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setPhysics':
     case 'setGlass':
     case 'setMapBots':
+    case 'setBotCast':
     case 'setPaths':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':
