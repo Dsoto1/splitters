@@ -10,6 +10,13 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Flaky grip checks fixed (lead, 2026-11-01; `wip/flaky-characters`)
+"An Imp player holds the gun… (pistol r null)" and "bots' hands … 0 of 0" (characters flow) failed on slow boxes and
+once on CI. Cause: `View.gripReport()` read `scene.getActiveMeshes()` between frames, and that list is often empty
+there (a probe showed the Imp steadily drawn by the main camera while the between-frames list flickered 5 → 0). It now
+uses a copy taken right after the main camera's own evaluation (`drawnByCamera()`, hooked on first use, so play pays
+nothing). Anything else reading the active-mesh list from a test should do the same.
+
 ### `wip/warthog-step1` (agent, 2026-11-01; not merged): Warthog feel, step 1 (raycast suspension)
 Owner: "make the buggy feel like Halo's Warthog (independent suspension)", step 1, "if performance remains intact".
 - **Sim** `shared/src/sim/suspension.ts`: one ray down per wheel (`PhysicsWorld.groundBelow`, own box excluded), a
