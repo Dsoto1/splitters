@@ -93,6 +93,11 @@ const JOINT_MAP = {
   RightLeg: 'calf_r',
   RightFoot: 'foot_r',
   RightToeBase: 'ball_r',
+  // End markers some Mixamo-named rigs carry (the hand's tip, the toes' tip): folded into their joint.
+  LeftHandMiddle4: 'hand_l',
+  RightHandMiddle4: 'hand_r',
+  LeftToe_End: 'ball_l',
+  RightToe_End: 'ball_r',
 };
 
 /**
@@ -742,8 +747,14 @@ function triangles(doc) {
   return tris;
 }
 
-/** A low-detail copy of every mesh, as `<node>_lod` on the same skin (see prepare-characters.mjs). */
-function addLowDetail(doc) {
+/**
+ * A low-detail copy of every mesh, as `<node>_lod` on the same skin (see prepare-characters.mjs). With the manifest's
+ * `fixes.lod` (`share`), the copy keeps that share of the triangles and is cut keeping its texture seams (as the props'
+ * levels of detail, meshy-mesh.mjs addLod): the sloppy cut welds vertices across the seams, so their texture
+ * coordinates land in the wrong chart and the far copy is drawn in patches of the wrong colours.
+ */
+function addLowDetail(doc, share = null) {
+  const ratio = share ?? LOD_RATIO;
   const scene = doc.getRoot().listScenes()[0];
   for (const node of doc.getRoot().listNodes()) {
     const mesh = node.getMesh();
@@ -754,8 +765,15 @@ function addLowDetail(doc) {
       for (const sem of prim.listSemantics()) p.setAttribute(sem, prim.getAttribute(sem).clone());
       // Sloppy: it ignores the texture seams that stop the careful simplifier (fine at the distances this is drawn).
       const idx = new Uint32Array(prim.getIndices().getArray());
-      const target = Math.floor((idx.length * LOD_RATIO) / 3) * 3;
-      const [low3] = MeshoptSimplifier.simplifySloppy(idx, new Float32Array(prim.getAttribute('POSITION').getArray()), 3, null, target, 0.05);
+      const target = Math.floor((idx.length * ratio) / 3) * 3;
+      const P = new Float32Array(prim.getAttribute('POSITION').getArray());
+      let low3 = null;
+      if (share !== null) {
+        const UV = new Float32Array(prim.getAttribute('TEXCOORD_0').getArray());
+        [low3] = MeshoptSimplifier.simplifyWithAttributes(idx, P, 3, UV, 2, [0.5, 0.5], null, target, 0.05, ['Permissive']);
+        if (low3.length > target * 1.5) low3 = null;
+      }
+      if (!low3) [low3] = MeshoptSimplifier.simplifySloppy(idx, P, 3, null, target, 0.05);
       p.setIndices(prim.getIndices().clone().setArray(low3));
       compactPrimitive(p);
       low.addPrimitive(p);
@@ -780,7 +798,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
 
   // Each rig joint onto its Meshy counterpart; the rest (fingers, leaf ends) keep their offsets from their parents.
   const target = new Map();
-  const reverse = new Map(Object.entries(JOINT_MAP).filter(([m]) => !/head_end|headfront/.test(m)).map(([m, u]) => [u, m]));
+  const reverse = new Map(Object.entries(JOINT_MAP).filter(([m]) => !/head_end|headfront|Middle4|Toe_End/.test(m)).map(([m, u]) => [u, m]));
   const place = (j) => {
     const name = j.getName();
     if (target.has(name)) return target.get(name);
@@ -914,7 +932,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     material.setNormalTexture(doc.createTexture(`${c.id}_normal`).setImage(new Uint8Array(await normalJpeg(png, NORMAL_SIZE))).setMimeType('image/jpeg'));
   }
   const fullTris = triangles(doc);
-  if (lod) addLowDetail(doc);
+  if (lod) addLowDetail(doc, c.lod ?? null);
   // Smaller vertices (KHR_mesh_quantization, read natively by the game's loader).
   await doc.transform(quantize({ quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12, quantizeWeight: 8 }));
   for (const a of root.listAccessors()) if (a.listParents().every((p) => p.propertyType === 'Root')) a.dispose();

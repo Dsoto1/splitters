@@ -1,0 +1,31 @@
+{
+  "id": "meshy_resolvesoldier",
+  "kind": "character",
+  "use": "player",
+  "order": 75,
+  "name": "Kenji",
+  "look": "core.resolvesoldier",
+  "group": "soldiers",
+  "bio": "Fresh out of basic with hair no regulation can tame. Swears this is his serious face.",
+  "body": "male",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): a textured GLB standing with its arms down (not a T-pose), not rigged (no skin), so it is rigged here from landmarks. A young soldier with spiky black hair in khaki fatigues, a plate carrier and knee pads.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Soldier_s_Resolve_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "lod": 0.45
+  }
+}

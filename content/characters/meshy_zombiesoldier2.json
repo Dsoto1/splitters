@@ -1,0 +1,31 @@
+{
+  "id": "meshy_zombiesoldier2",
+  "kind": "character",
+  "use": "player",
+  "order": 77,
+  "name": "Grinning Gus",
+  "look": "core.zombiesoldier2",
+  "group": "horror",
+  "bio": "Lost his face somewhere in the trenches and kept the grin. Still salutes anyone with a higher rank, or a pulse.",
+  "body": "male",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A zombie soldier with a bare skull (dark metal in the download; only its colour is kept here) and red eyes, a plate carrier and torn trousers.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Zombie_Soldier_1101160817_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "lod": 0.45
+  }
+}

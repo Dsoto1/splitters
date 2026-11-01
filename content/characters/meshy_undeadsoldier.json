@@ -1,0 +1,175 @@
+{
+  "id": "meshy_undeadsoldier",
+  "kind": "character",
+  "use": "player",
+  "order": 78,
+  "name": "Dog Tag Doyle",
+  "look": "core.undeadsoldier",
+  "group": "horror",
+  "bio": "Buried with full honours in three different wars. Keeps marching back for a fourth.",
+  "body": "male",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks: found on the mesh (landmarks.mjs), then the knees set by hand (the straps hanging between the legs pulled a found knee inward and back, crossing the legs). The download is 1.1M triangles whose careful cut stopped at 22k, so it is built with `surface: rebake`. A grinning skeleton in a helmet and camouflage fatigues, webbing and bone hands.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Undead_Soldier_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 14000,
+    "surface": "rebake",
+    "feet": true,
+    "lod": 0.45
+  },
+  "landmarks": {
+    "spine": [
+      [
+        0,
+        0.487,
+        -0.002
+      ],
+      [
+        0,
+        0.559,
+        -0.012
+      ],
+      [
+        0,
+        0.633,
+        -0.005
+      ],
+      [
+        0,
+        0.714,
+        0.008
+      ],
+      [
+        0,
+        0.866,
+        0.004
+      ],
+      [
+        0,
+        0.906,
+        -0.004
+      ],
+      [
+        0,
+        1,
+        -0.004
+      ]
+    ],
+    "L": [
+      [
+        0.025,
+        0.821,
+        -0.025
+      ],
+      [
+        0.081,
+        0.811,
+        -0.024
+      ],
+      [
+        0.248,
+        0.8,
+        -0.035
+      ],
+      [
+        0.385,
+        0.806,
+        -0.033
+      ],
+      [
+        0.485,
+        0.801,
+        -0.035
+      ],
+      [
+        0.063,
+        0.457,
+        -0.003
+      ],
+      [
+        0.098,
+        0.262,
+        -0.015
+      ],
+      [
+        0.117,
+        0.065,
+        -0.018
+      ],
+      [
+        0.133,
+        0.02,
+        0.061
+      ],
+      [
+        0.133,
+        0.015,
+        0.103
+      ]
+    ],
+    "R": [
+      [
+        -0.025,
+        0.821,
+        -0.025
+      ],
+      [
+        -0.082,
+        0.811,
+        -0.018
+      ],
+      [
+        -0.248,
+        0.801,
+        -0.027
+      ],
+      [
+        -0.389,
+        0.808,
+        -0.032
+      ],
+      [
+        -0.489,
+        0.801,
+        -0.033
+      ],
+      [
+        -0.063,
+        0.457,
+        -0.003
+      ],
+      [
+        -0.098,
+        0.262,
+        -0.015
+      ],
+      [
+        -0.107,
+        0.065,
+        -0.021
+      ],
+      [
+        -0.118,
+        0.02,
+        0.061
+      ],
+      [
+        -0.118,
+        0.015,
+        0.102
+      ]
+    ]
+  }
+}

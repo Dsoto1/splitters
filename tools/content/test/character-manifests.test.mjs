@@ -41,6 +41,10 @@ describe('character manifests', () => {
     expect(manifestProblems({ ...good, group: undefined }, 'meshy_cat.json').join('\n')).toMatch(/group: what the character is/);
     expect(manifestProblems({ ...good, group: 'pets' }, 'meshy_cat.json').join('\n')).toMatch(/group: what the character is/);
     expect(manifestProblems({ ...good, group: undefined, use: 'npc' }, 'meshy_cat.json')).toEqual([]);
+    // The low-detail copy's share.
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 0.45 } }, 'meshy_cat.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 1 } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.lod: 0.1–0.8/);
+    expect(buildSpec({ ...good, fixes: { ...good.fixes, lod: 0.45 } }).lod).toBe(0.45);
   });
 
   it('take the intake queue\'s characters and creatures as queued stubs', () => {

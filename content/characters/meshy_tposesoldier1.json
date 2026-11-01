@@ -1,0 +1,31 @@
+{
+  "id": "meshy_tposesoldier1",
+  "kind": "character",
+  "use": "player",
+  "order": 72,
+  "name": "Hollis",
+  "look": "core.tposesoldier1",
+  "group": "soldiers",
+  "bio": "Carries three days of rations and eats them all on the flight in. Still first off the ramp.",
+  "body": "male",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A bearded soldier in an olive field jacket with webbing and a holster.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_T_Pose_Soldier_1101160730_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "lod": 0.45
+  }
+}

@@ -11,6 +11,8 @@ made only on a commit that passed CI on a check branch.
 **Characters**
 - **Five new characters** in Character Select, all the owner's own Meshy models: **Barnaby Bruin** (Animals), a bear in a striped red coat and top hat; **Slugger-9** (Creatures & Machines, large), a robot ballplayer; **Rusty Mech** (Creatures & Machines, large), a white war machine gone to rust; **Freaky Frida** and **Scary Larry** (Undead & Horror), wide-eyed and grinning. Each holds every weapon with its own hands, in third and first person.
 - Characters whose textures are cut into thousands of small pieces (Barnaby's coat, Slugger's plating, the Mech's armour) now get a fresh texture layout painted from the full model, so they fit the character budget with their colours where they belong.
+- **Nine more new characters**, all the owner's own Meshy models: **Honest Abe** (Knights & Legends), stovepipe hat and frock coat; five soldiers, **Pixley** (low-poly, in blue camouflage), **Hollis**, **Briggs**, **Pemberton** and **Kenji**; and three undead ones (Undead & Horror): **Corporal Calcium**, a skeleton paratrooper, **Grinning Gus** and **Dog Tag Doyle**.
+- These nine keep their colours from a distance: their far, low-detail copy (past 18 m) is cut keeping its texture seams, so it no longer breaks up into patches of the wrong colour.
 
 ## 0.6.0 (2026-11-01)
 

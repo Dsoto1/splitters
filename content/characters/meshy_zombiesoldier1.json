@@ -1,0 +1,31 @@
+{
+  "id": "meshy_zombiesoldier1",
+  "kind": "character",
+  "use": "player",
+  "order": 76,
+  "name": "Corporal Calcium",
+  "look": "core.zombiesoldier1",
+  "group": "horror",
+  "bio": "Reported for duty. Never stopped.",
+  "body": "male",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A skeleton paratrooper in an olive jacket and helmet, with a field pack and bone hands.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Zombie_Soldier_1101160840_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "lod": 0.45
+  }
+}

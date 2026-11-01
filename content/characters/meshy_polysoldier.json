@@ -1,0 +1,31 @@
+{
+  "id": "meshy_polysoldier",
+  "kind": "character",
+  "use": "player",
+  "order": 71,
+  "name": "Pixley",
+  "look": "core.polysoldier",
+  "group": "soldiers",
+  "bio": "Low-poly, high morale. Counts his edges before every drop and has never come up one short.",
+  "body": "male",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A low-poly soldier in blue faceted camouflage, a plate carrier and a helmet with goggles.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Polygon_Soldier_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "lod": 0.45
+  }
+}

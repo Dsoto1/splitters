@@ -1,0 +1,31 @@
+{
+  "id": "meshy_abe",
+  "kind": "character",
+  "use": "player",
+  "order": 70,
+  "name": "Honest Abe",
+  "look": "core.abe",
+  "group": "legends",
+  "bio": "Four score and seven rounds ago. Has never told a lie about a headshot.",
+  "body": "male",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): made and rigged in Meshy (the All Animations GLB; its clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. Abraham Lincoln in a stovepipe hat, frock coat and waistcoat.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Abraham_Lincoln_with__All_Animations\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "lod": 0.45
+  }
+}

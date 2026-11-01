@@ -1,0 +1,31 @@
+{
+  "id": "meshy_tposesoldier2",
+  "kind": "character",
+  "use": "player",
+  "order": 73,
+  "name": "Briggs",
+  "look": "core.tposesoldier2",
+  "group": "soldiers",
+  "bio": "Has shouted himself hoarse at every drill since basic. His whisper still rattles windows.",
+  "body": "male",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01, second batch): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A stocky, moustached soldier in an olive parka with a black utility belt.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_T_Pose_Soldier_1101160744_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "lod": 0.45
+  }
+}
