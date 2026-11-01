@@ -1,4 +1,4 @@
-// Grip audit: every player character holding a rifle, a pistol and the Spin Gun in the Character Select pose
+// Grip audit: every player character holding a rifle, a pistol, the Spin Gun, the shotgun and the Spear in the Character Select pose
 // (third person, the game's own renderer: `?mode=grips`, tools/gripSheet.ts), drawn from the side and the
 // front, measured as drawn (`__grips.audit()`, tools/gripAudit.ts; `__grips.drawn()`, handProbe.ts) and in
 // full-body first person, then flagged and ranked worst first.
@@ -11,7 +11,9 @@
 // side and front), and <out>/sheet-<n>.png (ranked contact sheets, eight characters each).
 // ONLY=<manifest ids or look ids> for some; NO_SHOTS=1 measures without pictures; NO_FP=1 skips first person;
 // RESCORE=1 flags and ranks <out>/audit.json again (after changing a threshold) without rendering; RESUME=1 skips
-// characters already measured there (audit.json is written after every character).
+// characters already measured there (audit.json is written after every character). WEAPONS_ONLY=rifle,pistol,...
+// measures only those weapons; AUDIT_PX=<px> renders a smaller page (quicker in software GL). summary.md ends with
+// every character's flags per weapon (`byWeapon` in audit.json).
 //
 // What the flags mean (thresholds below; side-view numbers, so a gun pointed at the camera doesn't fool them):
 //   face     the rifle's line runs within FACE_M of the head joint, or its grip sits above the shoulder joint
@@ -106,7 +108,9 @@ export function flagsOf(r) {
       }
       const h = a.hands[s];
       if (h && h.fingerShare < FLAGS.FLAT_SHARE) f.add('flat');
-      if (h && h.tips !== null && h.tips > (s === 'r' ? FLAGS.OPEN_R : FLAGS.OPEN_L)) f.add('open');
+      // (A long gun's support hand by its handguard's line, where measured: it slides back along it on short arms.)
+      const tips = h?.tipsGuard ?? h?.tips ?? null;
+      if (tips !== null && tips > (s === 'r' ? FLAGS.OPEN_R : FLAGS.OPEN_L)) f.add('open');
     }
     for (const [side, gain] of Object.entries(m.curl ?? {})) {
       if (gain === null) continue;

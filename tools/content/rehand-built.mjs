@@ -122,7 +122,7 @@ function open(doc) {
         J.set(prim.getAttribute('JOINTS_0').getElement(v, el), v * 4);
         W.set(prim.getAttribute('WEIGHTS_0').getElement(v, el), v * 4);
       }
-      meshes.push({ node, prim, pos, J, W, lod: /_lod$/.test(node.getName()) });
+      meshes.push({ node, prim, pos, J, W, idx: prim.getIndices()?.getArray() ?? null, lod: /_lod$/.test(node.getName()) });
     }
   }
   meshes.sort((a, b) => Number(a.lod) - Number(b.lod));
@@ -212,8 +212,7 @@ async function cutArms(doc) {
 function rehand(doc, overrides, label) {
   const c = open(doc);
   // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
-  // Opt-in (fixes.armCloth): tried on every character, it moved the stretch into wide sleeves (Giggles' and the
-  // Dust Trooper's grew wings from the arms) instead of curing it.
+  // Opt-in (fixes.armCloth), by distance along the surface (armweights.mjs).
   if (label === 'body' && overrides?.armCloth) keepArmsToArms({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, log: (l) => console.log(`  ${label} ${l}`) });
   const { moved, data } = fitHands({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, rig, overrides, log: (l) => console.log(`  ${label} ${l}`) });
   if (overrides?.scale || overrides?.l?.scale || overrides?.r?.scale) {

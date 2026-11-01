@@ -17,7 +17,7 @@
 //   the grip, and sets the grip's offset from the hand's thickness), written as `extras.hand` on the
 //   hand joints.
 // The thumb stays on the hand joint (the game never curls it; its joints move to fit the hand).
-// Manifest overrides (`fixes.hands`: palm, curl, scale, or per side under l / r) cover the odd model.
+// Manifest overrides (`fixes.hands`: palm, curl, scale, wrist, or per side under l / r) cover the odd model.
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -65,6 +65,8 @@ const FIST_THICK = 0.5;
 const FIST_LONG = 1.5;
 /** ...or a block this thick for its span, whatever its width. */
 const FIST_BLOCK = 0.65;
+/** The most a hand's curl grows for fingers longer than the rig's. */
+const LONG_CURL = 1.5;
 /** A hand whose own flat agrees less than this with the rig's palm is turned on its joint (a quarter turn: palm forward). */
 const TURNED = 0.7;
 /** Vertices further than this from the hand's centre, in multiples of the 80th percentile, are strays (a strap, a cape's edge). */
@@ -143,19 +145,19 @@ export function handCore(pts) {
 export function measureHand(all, ref, override = {}, front = null, cuffChecked = false) {
   if (all.length < 12) return null;
   const body = handCore(all);
-  const pts = all.filter((p) => Math.hypot(...sub(p, body.centre)) <= body.reach);
-  if (pts.length < 12) return null;
   if (!cuffChecked) {
-    // A cuff the skinning left on the hand (King Aldric's fur cuffs, a gauntlet's flare) is measured out: the hand
-    // starts past it. Dense and as wide as the hand, it held the knuckle line inside itself, so the cuff took the
-    // finger weights and curled into flaps.
-    const from = cuffEnd(pts, ref);
+    // A cuff the skinning left on the hand (King Aldric's fur cuffs) is measured out: the hand starts past it.
+    // Dense and as wide as the hand, it held the knuckle line inside itself, so the cuff took the finger weights
+    // and curled into flaps. (Before the strays are left out: a dense cuff pulls the hand's centre to itself.)
+    const from = cuffEnd(all, ref);
     if (from !== null) {
-      const rest = pts.filter((p) => dot(p, ref.along) >= from);
-      const m = measureHand(rest, ref, override, front, true);
-      if (m) return { ...m, cuff: from, core: body };
+      const m = measureHand(all.filter((p) => dot(p, ref.along) >= from), ref, override, front, true);
+      // The cuff stays in the hand's core (it goes back on the hand joint, rigid).
+      if (m) return { ...m, cuff: from, core: { centre: m.core.centre, reach: Math.max(m.core.reach, ...all.map((p) => Math.hypot(...sub(p, m.core.centre)))) } };
     }
   }
+  const pts = all.filter((p) => Math.hypot(...sub(p, body.centre)) <= body.reach);
+  if (pts.length < 12) return null;
   const ys = pts.map((p) => p[1]);
   // The finger direction: from the wrist end of the hand to its far end (kept within 45° of the forearm's line).
   const lo = pct(ys, 30);
@@ -346,7 +348,12 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
     // knuckle line and at the two joints along it (bent once at the knuckles, as it was, it stood out from the gun
     // as a flat paddle: the support hands under a handguard, King Aldric's, Dusty Colt's).
     // (Even a thick hand that isn't a fist closes some way: a block that can't curl lies flat on the gun.)
-    const curl = o.curl ?? (closed ? 0 : round(Math.max(0.5, hand.open)));
+    // Long fingers (a frog's, a monkey's) curl further, so their tips come round to the grip rather than stand
+    // open past it: by their length against the rig's, up to LONG_CURL.
+    const fingerLen = u1 - uK;
+    const rigFinger = Math.hypot(...ref.fingers[1][3]) - Math.hypot(...ref.fingers[1][0]);
+    const long = Math.min(LONG_CURL, Math.max(1, fingerLen / Math.max(1e-6, rigFinger)));
+    const curl = o.curl ?? (closed ? 0 : round(Math.max(0.5, hand.open) * long));
     // Joints: knuckles on the knuckle line, spread across the hand (each split finger at its own middle).
     const lanes = [0.375, 0.125, -0.125, -0.375].map((k) => vP + k * width);
     const groupOf = (v) => {
@@ -398,7 +405,9 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
           const j = m.J[v * 4 + q];
           const w = m.W[v * 4 + q];
           if (!w) continue;
-          if (chain.has(j) || (loose && j === lower && u > 0)) held += w;
+          // (`wrist`: the skin past the wrist joint rides the hand alone, none of it eased into the forearm: a stubby
+          // paw blended into its forearm folds at the wrist when the hand turns hard onto a gun pointed at the ground.)
+          if (chain.has(j) || ((loose || o.wrist) && j === lower && u > 0)) held += w;
           else acc.set(j, (acc.get(j) ?? 0) + w);
         }
         const put = (j, w) => w > 1e-4 && acc.set(j, (acc.get(j) ?? 0) + w);

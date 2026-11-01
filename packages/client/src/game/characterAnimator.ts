@@ -148,6 +148,9 @@ const FP_CLAVICLE_MAX = 0.8;
 const FP_HAND_SCALE = 0.85;
 /** Full-body first person: the scale the neck (and with it the head, hair and hat) is shrunk to. */
 const FP_HIDDEN = 1e-4;
+/** Least distance (model m) from the head's joint to a long gun's barrel line, and the furthest the stock drops to keep it. */
+const HEAD_CLEAR = 0.15;
+const HEAD_CLEAR_MOST = 0.05;
 /** Furthest (model m) a stock the arms can't hold clear of the chest tucks out past the shoulder. */
 const TUCK_MAX = 0.12;
 const TUCK_FROM = 0.04;
@@ -952,6 +955,16 @@ export class CharacterAnimator {
         let shift = 0;
         while (shift < room && Vector3.Distance(shoulderL, on(slid(shift))) > reachL) shift = Math.min(room, shift + 0.01);
         support = slid(shift);
+      }
+      // The barrel's line clears the head: a big helmet or a short neck (Capt. Nova's) put the head's joint within a
+      // few centimetres of it, the gun at the face from the side. The stock drops (away from the head, square to the
+      // barrel) until it clears; a centimetre or two at the shoulder doesn't show.
+      const head = this.ch.joints.get('Head');
+      if (head) {
+        const rel = pos(head).subtract(pocket);
+        const off = rel.subtract(barrel.scale(Vector3.Dot(rel, barrel)));
+        const short = HEAD_CLEAR * scale - off.length();
+        if (short > 0 && off.lengthSquared() > 1e-10) pocket.subtractInPlace(off.normalize().scale(Math.min(short, HEAD_CLEAR_MOST * scale)));
       }
       gripped = { rot: aim, pos: pocket.subtract(new Vector3(...grip.shoulder).scale(scale).applyRotationQuaternion(aim)) };
     }

@@ -72,12 +72,51 @@ describe('hands', () => {
     for (let i = 0; i < mesh.pts.length; i++) expect(mesh.W[i * 4] + mesh.W[i * 4 + 1] + mesh.W[i * 4 + 2] + mesh.W[i * 4 + 3]).toBeCloseTo(1, 5);
   });
 
-  it('bends a mitten once at the knuckle line', () => {
+  it('curls a mitten as one wide finger, along the middle finger\'s three joints', () => {
     const mesh = handMesh([palm, [0.11, 0.2, -0.03, 0.03, -0.008, 0.008]]);
     const { data } = fit(mesh);
     expect(data.r.fingers).toBe('mitten');
+    expect(data.r.curl).toBeLessThanOrEqual(1);
     const tip = mesh.pts.findIndex(([u]) => u > 0.195);
-    expect(heldBy(mesh, tip)).toEqual(['middle_01_r']);
+    expect(heldBy(mesh, tip)).toEqual(['middle_03_r']);
+    // Across the whole width: the mitten's outer edge too.
+    const edge = mesh.pts.findIndex(([u, v]) => u > 0.195 && v > 0.028);
+    expect(heldBy(mesh, edge)).toEqual(['middle_03_r']);
+  });
+
+  it('leaves a dense cuff at the wrist out of the measure: the knuckle line falls on the hand past it', () => {
+    // A ring 10 cm across, densely sampled, round the wrist (u 0-4 cm), and a sparse hand past it to 20 cm.
+    const cuff = [];
+    for (let u = 0; u <= 0.04; u += 0.002) for (let a = 0; a < 48; a++) cuff.push([u, 0.05 * Math.cos((a / 48) * 2 * Math.PI), 0.05 * Math.sin((a / 48) * 2 * Math.PI)]);
+    const sparse = [];
+    for (let u = 0.05; u <= 0.2; u += 0.012) for (let v = -0.04; v <= 0.04; v += 0.02) for (const t of [-0.01, 0.01]) sparse.push([u, v, t]);
+    const pts = [...cuff, ...sparse];
+    const pos = new Float32Array(pts.length * 3);
+    pts.forEach(([u, v, t], i) => pos.set(add(H.t, qrot(H.q, add(add(scale(ref.along, u), scale(ref.across, v)), scale(ref.palmSide, t)))), i * 3));
+    const mesh = { pos, J: new Uint16Array(pts.length * 4).fill(0), W: new Float32Array(pts.length * 4), pts };
+    for (let i = 0; i < pts.length; i++) {
+      mesh.J[i * 4] = J('hand_r');
+      mesh.W[i * 4] = 1;
+    }
+    const { data } = fit(mesh);
+    expect(data.r.length).toBeGreaterThan(0.18);
+    // The cuff stays on the hand joint (it doesn't curl with the fingers).
+    expect(heldBy(mesh, 0)).toEqual(['hand_r']);
+    expect(heldBy(mesh, cuff.length - 1)).toEqual(['hand_r']);
+  });
+
+  it('keeps the skin past the wrist on the hand alone with `wrist`', () => {
+    const mesh = handMesh([palm, ...fingers]);
+    // Half the palm eased into the forearm, as a blended paw.
+    for (let i = 0; i < mesh.pts.length; i++) {
+      if (mesh.pts[i][0] > 0.05) continue;
+      mesh.J[i * 4 + 1] = J('lowerarm_r');
+      mesh.W[i * 4] = 0.5;
+      mesh.W[i * 4 + 1] = 0.5;
+    }
+    fit(mesh, { wrist: true });
+    const heel = mesh.pts.findIndex(([u, v]) => Math.abs(u - 0.024) < 0.004 && Math.abs(v) < 0.003);
+    expect(heldBy(mesh, heel)).toEqual(['hand_r']);
   });
 
   it('leaves a fist rigid', () => {
