@@ -25535,18 +25535,174 @@
       ]
     },
     {
-      "file": "props/mv_well.glb",
-      "sha256": "8cf768332d7e8fcf",
-      "triangles": 480,
-      "bytes": 21636,
-      "source": "tiletrigger-medieval/mv_well.glb",
-      "title": "Style Pack pieces (Medieval Village)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
-      "url": "tools/content/prepare-medieval.mjs",
+      "file": "props/mv_market_stall.glb",
+      "sha256": "8c0953626422be51",
+      "triangles": 13846,
+      "bytes": 954020,
+      "source": "meshy-owned-landmarks/Meshy_AI_Medieval_Market_Stall_1031210611_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Medieval Market Stall (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-medieval.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/rustic_market_stall.glb",
+      "sha256": "fd33d6fb702d719a",
+      "triangles": 11999,
+      "bytes": 736920,
+      "source": "meshy-owned-landmarks/654eb614-Meshy_AI_Rustic_Market_Stall_1031225038_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Rustic Market Stall (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/temple_fire_statue.glb",
+      "sha256": "e75fe0bfb2929f2e",
+      "triangles": 8999,
+      "bytes": 635312,
+      "source": "meshy-owned-landmarks/93717971-Meshy_AI_Fire_Statue_1031225423_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Fire Statue (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/temple_spear_statue.glb",
+      "sha256": "d125de5eb2db3f66",
+      "triangles": 16000,
+      "bytes": 1001600,
+      "source": "meshy-owned-landmarks/Meshy_AI_Spear_Statue_1031225310_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Spear Statue (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/temple_monk_statue.glb",
+      "sha256": "bb9554014bfc0bba",
+      "triangles": 16000,
+      "bytes": 995564,
+      "source": "meshy-owned-landmarks/Meshy_AI_Monk_Statue_1031225417_stylize.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Monk Statue (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/town_fountain.glb",
+      "sha256": "cd3baaca28faa8e7",
+      "triangles": 18000,
+      "bytes": 984792,
+      "source": "meshy-owned-landmarks/Meshy_AI_Fountain_1031231024_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Fountain (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/lion_head_fountain.glb",
+      "sha256": "414c28c98faebe75",
+      "triangles": 16000,
+      "bytes": 987440,
+      "source": "meshy-owned-landmarks/4701f0b8-Meshy_AI_Lion_Head_Fountain_1031231407_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Lion Head Fountain (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/eagle_fountain.glb",
+      "sha256": "be3592e5e4fc13c9",
+      "triangles": 18000,
+      "bytes": 1106276,
+      "source": "meshy-owned-landmarks/Meshy_AI_Eagle_Stone_Fountain_1031231423_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Eagle Stone Fountain (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/mv_well.glb",
+      "sha256": "f05f05e7d818b1f0",
+      "triangles": 11886,
+      "bytes": 810776,
+      "source": "meshy-owned-landmarks/34953cf5-Meshy_AI_Wishing_Well_1031230639_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Wishing Well (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
@@ -26346,17 +26502,21 @@
     },
     {
       "file": "props/dc_market_stall.glb",
-      "sha256": "1cbcecea1772f953",
-      "triangles": 1486,
-      "bytes": 59132,
-      "source": "tiletrigger-desert/dc_market_stall.glb",
-      "title": "Style Pack pieces (Desert City)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
-      "url": "tools/content/prepare-desert.mjs",
+      "sha256": "328d07f15452ea9a",
+      "triangles": 12000,
+      "bytes": 621644,
+      "source": "meshy-owned-landmarks/df47cbd8-Meshy_AI_Market_Stall_Render_1031225044_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Market Stall (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-desert.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
@@ -26421,17 +26581,21 @@
     },
     {
       "file": "props/dc_well.glb",
-      "sha256": "ee1fa2a389ab6a86",
-      "triangles": 608,
-      "bytes": 27464,
-      "source": "tiletrigger-desert/dc_well.glb",
-      "title": "Style Pack pieces (Desert City)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
-      "url": "tools/content/prepare-desert.mjs",
+      "sha256": "f05f05e7d818b1f0",
+      "triangles": 11886,
+      "bytes": 810776,
+      "source": "meshy-owned-landmarks/34953cf5-Meshy_AI_Wishing_Well_1031230639_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Wishing Well (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-desert.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
@@ -26481,17 +26645,21 @@
     },
     {
       "file": "props/dc_crane.glb",
-      "sha256": "09d422b778f1d407",
-      "triangles": 184,
-      "bytes": 11680,
-      "source": "tiletrigger-desert/dc_crane.glb",
-      "title": "Style Pack pieces (Desert City)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
-      "url": "tools/content/prepare-desert.mjs",
+      "sha256": "99d3643c75608ee9",
+      "triangles": 17978,
+      "bytes": 1259648,
+      "source": "meshy-owned-landmarks/d2c8ef10-Meshy_AI_Crawler_Crane_1031230740_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Crawler Crane (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-desert.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
@@ -26691,17 +26859,21 @@
     },
     {
       "file": "props/jt_statue_large.glb",
-      "sha256": "4b990bae4ccce4ea",
-      "triangles": 784,
-      "bytes": 27956,
-      "source": "tiletrigger-jungle/jt_statue_large.glb",
-      "title": "Style Pack pieces (Jungle Ruins refresh)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
-      "url": "tools/content/prepare-jungle.mjs",
+      "sha256": "b34c37c5b2a497be",
+      "triangles": 16000,
+      "bytes": 1028676,
+      "source": "meshy-owned-landmarks/176cdb9a-Meshy_AI_mayan_statue_1031225330_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Mayan Statue (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-jungle.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {

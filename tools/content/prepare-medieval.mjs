@@ -1,12 +1,13 @@
 // MapMaker Style Pack 10 Medieval Village (the owner's "Tileset 01" sheet):
 // the props we model ourselves, in code, from plain geometry
-// (tools/content/pieces.mjs): a stone well, market awning and pavilion, shop
+// (tools/content/pieces.mjs): a market awning and pavilion, shop
 // sign, hay cart, a blacksmith's hearth and workbench, planters, tarpaulined
 // crates, chimney stack, wattle and spiked fences, the church bell, a market
 // cross, the stocks, an oak post with knee braces, grain sacks, a bay window
 // and shuttered windows. No pack and no generative AI service is involved:
-// the code is the source. (The forge, hay cart, covered well and tarp tent
-// are simple in-house versions; Meshy hero versions wait for the owner.)
+// the code is the source. (The forge, hay cart and tarp tent are simple
+// in-house versions; Meshy hero versions wait for the owner. The well, mv_well,
+// is the owner's Meshy wishing well now: pack meshy-owned-landmarks.)
 //
 //   node tools/content/prepare-medieval.mjs
 //
@@ -97,13 +98,6 @@ function wheel(p, x, y, z, r) {
   }
 }
 
-/** A pitched roof of two slopes over x0..x1 (ridge along x at z = 0), eaves at `y` and `w` out, rising `rise`. */
-function roof(p, mat, x0, x1, y, w, rise, t = 0.06) {
-  const len = Math.hypot(w, rise);
-  const a = Math.atan2(rise, w);
-  for (const s of [1, -1]) obox(p, mat, [(x0 + x1) / 2, y + rise / 2, (s * w) / 2], [x1 - x0, t, len], { rx: s * a });
-}
-
 /** A crate of side `s` at (x, z), standing on `y`: planks and an oak frame. */
 function crate(p, x, y, z, s) {
   p.box('plank', [x - s / 2, y, z - s / 2], [x + s / 2, y + s, z + s / 2]);
@@ -120,21 +114,6 @@ function sack(p, x, y, z, yaw = 0) {
 
 /** Each is built in metres, standing on y = 0, facing +Z; prepare-props measures and centres it. */
 const PROPS = {
-  mv_well() {
-    // A round stone well with a little tiled roof on two posts, a windlass, rope and bucket.
-    const p = piece('mv_well');
-    p.ring('stone', [0, 0, 0], 0.62, 0.95, 0, 0.85, { seg: 16 });
-    p.ring('stoneDark', [0, 0, 0], 0.6, 1.0, 0.85, 0.1, { seg: 16 });
-    p.cylinder('water', [0, 0, 0], 0.62, 0.0, 0.35, { seg: 16 });
-    for (const x of [-0.85, 0.85]) p.box('oak', [x - 0.08, 0.6, -0.08], [x + 0.08, 2.3, 0.08]);
-    p.cylinder('oak', [-0.85, 1.35, 0], 0.08, 0, 1.7, { seg: 8, axis: 'x' });
-    obox(p, 'oak', [1.0, 1.35, 0.12], [0.05, 0.05, 0.3]);
-    p.cylinder('rope', [0, 0.75, 0], 0.012, 0, 0.6, { seg: 4 });
-    p.cylinder('plank', [0, 0.55, 0], 0.13, 0, 0.22, { seg: 10, r1: 0.16 });
-    p.box('oak', [-1.05, 2.25, -0.06], [1.05, 2.35, 0.06]);
-    roof(p, 'tile', -1.15, 1.15, 2.05, 0.75, 0.55);
-    return p;
-  },
   mv_awning() {
     // A market awning: striped cloth sloping down from a back rail to two front poles.
     const p = piece('mv_awning');

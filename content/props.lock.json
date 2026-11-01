@@ -12639,12 +12639,175 @@
       ]
     },
     {
+      "file": "props/mv_market_stall.glb",
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Medieval Market Stall (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Medieval_Market_Stall_1031210611_texture.glb",
+      "triangles": 13846,
+      "lodTriangles": [
+        3425
+      ],
+      "normalMap": true,
+      "bytes": 954020,
+      "sha256": "8c0953626422be51",
+      "size": [
+        2.89,
+        2.9,
+        2.582
+      ]
+    },
+    {
+      "file": "props/rustic_market_stall.glb",
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Rustic Market Stall (owner's Meshy) (download dated 2026-10-31)",
+      "src": "654eb614-Meshy_AI_Rustic_Market_Stall_1031225038_texture.glb",
+      "triangles": 11999,
+      "lodTriangles": [
+        2992
+      ],
+      "normalMap": true,
+      "bytes": 736920,
+      "sha256": "fd33d6fb702d719a",
+      "size": [
+        2.738,
+        2.7,
+        1.689
+      ]
+    },
+    {
+      "file": "props/temple_fire_statue.glb",
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Fire Statue (owner's Meshy) (download dated 2026-10-31)",
+      "src": "93717971-Meshy_AI_Fire_Statue_1031225423_texture.glb",
+      "triangles": 8999,
+      "lodTriangles": [
+        3148
+      ],
+      "normalMap": true,
+      "bytes": 635312,
+      "sha256": "e75fe0bfb2929f2e",
+      "size": [
+        1.989,
+        3,
+        2.153
+      ]
+    },
+    {
+      "file": "props/temple_spear_statue.glb",
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Spear Statue (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Spear_Statue_1031225310_texture.glb",
+      "triangles": 16000,
+      "lodTriangles": [
+        5600
+      ],
+      "normalMap": true,
+      "bytes": 1001600,
+      "sha256": "d125de5eb2db3f66",
+      "size": [
+        2.264,
+        3.5,
+        2.2
+      ]
+    },
+    {
+      "file": "props/temple_monk_statue.glb",
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Monk Statue (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Monk_Statue_1031225417_stylize.glb",
+      "triangles": 16000,
+      "lodTriangles": [
+        5598
+      ],
+      "normalMap": true,
+      "bytes": 995564,
+      "sha256": "bb9554014bfc0bba",
+      "size": [
+        1.893,
+        3,
+        2.085
+      ]
+    },
+    {
+      "file": "props/town_fountain.glb",
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Fountain (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Fountain_1031231024_texture.glb",
+      "triangles": 18000,
+      "lodTriangles": [
+        6300
+      ],
+      "normalMap": true,
+      "bytes": 984792,
+      "sha256": "cd3baaca28faa8e7",
+      "size": [
+        3.303,
+        2,
+        3.306
+      ]
+    },
+    {
+      "file": "props/lion_head_fountain.glb",
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Lion Head Fountain (owner's Meshy) (download dated 2026-10-31)",
+      "src": "4701f0b8-Meshy_AI_Lion_Head_Fountain_1031231407_texture.glb",
+      "triangles": 16000,
+      "lodTriangles": [
+        5600
+      ],
+      "normalMap": true,
+      "bytes": 987440,
+      "sha256": "414c28c98faebe75",
+      "size": [
+        2.538,
+        2,
+        2.567
+      ]
+    },
+    {
+      "file": "props/eagle_fountain.glb",
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Eagle Stone Fountain (owner's Meshy) (download dated 2026-10-31)",
+      "src": "Meshy_AI_Eagle_Stone_Fountain_1031231423_texture.glb",
+      "triangles": 18000,
+      "lodTriangles": [
+        6300
+      ],
+      "normalMap": true,
+      "bytes": 1106276,
+      "sha256": "be3592e5e4fc13c9",
+      "size": [
+        4.239,
+        2.6,
+        3.888
+      ]
+    },
+    {
       "file": "props/mv_well.glb",
-      "source": "tiletrigger-medieval",
-      "src": "mv_well.glb",
-      "triangles": 480,
-      "bytes": 21636,
-      "sha256": "8cf768332d7e8fcf"
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Wishing Well (owner's Meshy) (download dated 2026-10-31)",
+      "src": "34953cf5-Meshy_AI_Wishing_Well_1031230639_texture.glb",
+      "triangles": 11886,
+      "lodTriangles": [
+        2935
+      ],
+      "normalMap": true,
+      "bytes": 810776,
+      "sha256": "f05f05e7d818b1f0",
+      "size": [
+        1.859,
+        2.2,
+        1.63
+      ]
     },
     {
       "file": "props/mv_awning.glb",
@@ -13072,11 +13235,22 @@
     },
     {
       "file": "props/dc_market_stall.glb",
-      "source": "tiletrigger-desert",
-      "src": "dc_market_stall.glb",
-      "triangles": 1486,
-      "bytes": 59132,
-      "sha256": "1cbcecea1772f953"
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Market Stall (owner's Meshy) (download dated 2026-10-31)",
+      "src": "df47cbd8-Meshy_AI_Market_Stall_Render_1031225044_texture.glb",
+      "triangles": 12000,
+      "lodTriangles": [
+        3000
+      ],
+      "normalMap": true,
+      "bytes": 621644,
+      "sha256": "328d07f15452ea9a",
+      "size": [
+        3.501,
+        2.8,
+        2.328
+      ]
     },
     {
       "file": "props/dc_canopy.glb",
@@ -13112,11 +13286,22 @@
     },
     {
       "file": "props/dc_well.glb",
-      "source": "tiletrigger-desert",
-      "src": "dc_well.glb",
-      "triangles": 608,
-      "bytes": 27464,
-      "sha256": "ee1fa2a389ab6a86"
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Wishing Well (owner's Meshy) (download dated 2026-10-31)",
+      "src": "34953cf5-Meshy_AI_Wishing_Well_1031230639_texture.glb",
+      "triangles": 11886,
+      "lodTriangles": [
+        2935
+      ],
+      "normalMap": true,
+      "bytes": 810776,
+      "sha256": "f05f05e7d818b1f0",
+      "size": [
+        1.859,
+        2.2,
+        1.63
+      ]
     },
     {
       "file": "props/dc_vase.glb",
@@ -13144,11 +13329,22 @@
     },
     {
       "file": "props/dc_crane.glb",
-      "source": "tiletrigger-desert",
-      "src": "dc_crane.glb",
-      "triangles": 184,
-      "bytes": 11680,
-      "sha256": "09d422b778f1d407"
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Crawler Crane (owner's Meshy) (download dated 2026-10-31)",
+      "src": "d2c8ef10-Meshy_AI_Crawler_Crane_1031230740_texture.glb",
+      "triangles": 17978,
+      "lodTriangles": [
+        6290
+      ],
+      "normalMap": true,
+      "bytes": 1259648,
+      "sha256": "99d3643c75608ee9",
+      "size": [
+        3.409,
+        10,
+        8.567
+      ]
     },
     {
       "file": "props/dc_cloth_line.glb",
@@ -13256,11 +13452,22 @@
     },
     {
       "file": "props/jt_statue_large.glb",
-      "source": "tiletrigger-jungle",
-      "src": "jt_statue_large.glb",
-      "triangles": 784,
-      "bytes": 27956,
-      "sha256": "4b990bae4ccce4ea"
+      "source": "meshy-owned-landmarks",
+      "budget": "hero",
+      "title": "Mayan Statue (owner's Meshy) (download dated 2026-10-31)",
+      "src": "176cdb9a-Meshy_AI_mayan_statue_1031225330_texture.glb",
+      "triangles": 16000,
+      "lodTriangles": [
+        5600
+      ],
+      "normalMap": true,
+      "bytes": 1028676,
+      "sha256": "b34c37c5b2a497be",
+      "size": [
+        1.66,
+        4,
+        1.179
+      ]
     },
     {
       "file": "props/jt_statue_small.glb",

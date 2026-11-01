@@ -26,6 +26,13 @@ The crates and cargo props (cargo_*: army, wooden, stacked and sci-fi crates, si
 gantry crane and an IBC tank) were generated on 2026-10-29/30 on the owner's subscription and built by
 tools/content/prepare-props.mjs (pack meshy-owned-cargo) from the textured GLB downloads.
 
+The market stalls, wells, statues, fountains and crane (pack meshy-owned-landmarks: dc_market_stall,
+mv_market_stall, rustic_market_stall, dc_well and mv_well, dc_crane, jt_statue_large, temple_fire_statue,
+temple_spear_statue, temple_monk_statue, town_fountain, lion_head_fountain, eagle_fountain) were generated on
+2026-10-31 on the owner's subscription and uploaded by the owner; they are built by
+tools/content/prepare-props.mjs from the textured GLB downloads (named in content/props.json and
+content/props.lock.json). The raw downloads are not kept in the repo.
+
 The barrels, bins and street props (street_*: wooden, blue, yellow hazard and rusty barrels, trash cans, a
 wheelie bin, trash piles, a dumpster, a fuel can, a hanging shop sign and a historic city building) were
 generated on 2026-10-29/30 on the owner's subscription and built by tools/content/prepare-props.mjs

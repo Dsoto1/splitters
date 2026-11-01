@@ -2408,14 +2408,14 @@
     {
       "id": "prop_062",
       "kind": "prop",
-      "model": "prop.fountain_square",
+      "model": "prop.town_fountain",
       "position": [
         -4,
         0.5,
         4
       ],
       "yaw": 0,
-      "scale": 0.4,
+      "scale": 1,
       "solid": true,
       "tint": null
     },

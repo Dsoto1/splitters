@@ -88,7 +88,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
     props: /* @__PURE__ */ props(
       'mine_cart', 'ore_cart', 'dynamite_crate', 'dynamite_bundle', 'powder_keg', 'mine_frame', 'mine_rails', 'rail_buffer',
       'locomotive', 'locomotive_red', 'passenger_car', 'ore_wagon', 'hopper_wagon', 'timber_wagon', 'flatbed_wagon', 'coal_car', 'lumber_car', 'railroad', 'railroad_broken',
-      'hitching_post', 'water_trough', 'wagon_wheel', 'wanted_board', 'outhouse', 'tumbleweed', 'covered_wagon', 'wind_pump',
+      'hitching_post', 'water_trough', 'wagon_wheel', 'wanted_board', 'outhouse', 'tumbleweed', 'covered_wagon', 'wind_pump', 'rustic_market_stall',
       'barrel', 'barrel_open', 'crate_small', 'crate_large', 'hay_bale', 'cart', 'woodpile', 'planks_stack', 'signpost', 'bucket',
       'cactus', 'cactus_tall', 'nt_saguaro', 'nt_cactus_round', 'coffin', 'gravestone_cross', 'bar_stool', 'table', 'chair', 'dg_coin_pile', 'dg_coin_bag',
       // loafbrr's Mines and Caves set (CC0).
@@ -237,6 +237,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'jt_zipline_post', 'jt_crane', 'jt_wooden_platform', 'jt_statue_large', 'jt_statue_small', 'jt_obelisk', 'jt_temple_spire', 'jt_fire_bowl', 'jt_hanging_brazier', 'jt_wall_torch',
       'jt_banner_teal', 'jt_banner_red', 'jt_tree_root_arch', 'jt_tree_trunk', 'jt_plant_cluster', 'jt_planter', 'jt_pottery', 'jt_rubble_pile', 'jt_collapsed_column', 'jt_broken_column',
       'jt_sarcophagus', 'jt_spikes', 'jt_chain_rail', 'jt_rope_rail', 'jt_altar_fire', 'jt_overgrown_beam',
+      // The owner's Meshy temple statues (jt_statue_large above is the owner's Mayan statue).
+      'temple_fire_statue', 'temple_spear_statue', 'temple_monk_statue',
       'jg_stone_idol', 'jg_serpent_statue', 'jg_carved_pillar', 'jg_altar_stone', 'jg_stele', 'jg_vine_curtain', 'jg_liana', 'jg_bridge_post', 'jg_waterfall', 'jg_giant_root', 'jg_banana_plant',
       'jg_giant_fern', 'jg_monstera', 'jg_bamboo', 'jg_brazier', 'jg_rubble_blocks', 'jg_gold_idol',
       // Already in the game: ruins, rocks, jungle plants and an expedition camp.
@@ -371,6 +373,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
     props: /* @__PURE__ */ props(
       'dc_market_stall', 'dc_canopy', 'dc_banner', 'dc_lantern', 'dc_palm_planter', 'dc_well', 'dc_vase', 'dc_jars', 'dc_rug', 'dc_crane',
       'dc_cloth_line', 'dc_scaffold', 'dc_awning_window', 'dc_lattice_window', 'dc_shutter_window', 'dc_spice_baskets', 'dc_cushions', 'dc_rug_rack', 'dc_column', 'dc_ornate_arch',
+      // The owner's Meshy pieces (the market stall, well and crane above are the owner's too): a stall, temple statues, fountains.
+      'rustic_market_stall', 'temple_spear_statue', 'temple_monk_statue', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',
       // Already in the game: crates, barrels, sandbags, palms, lanterns, pots, carts, ladders and water troughs.
       'crate_small', 'crate_large', 'barrel', 'barrel_open', 'sandbag_wall', 'sandbag_wall_low', 'palm', 'palm_tall', 'nt_palm_curved', 'lantern', 'ww_lantern', 'pot', 'urn',
       'cart', 'rn_cart', 'ww_ladder', 'water_trough', 'im_velarium', 'stall', 'awning', 'rug', 'hm_potted_palm',
@@ -429,6 +433,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
     props: /* @__PURE__ */ props(
       'mv_well', 'mv_awning', 'mv_pavilion', 'mv_shop_sign', 'mv_hay_cart', 'mv_forge', 'mv_workbench', 'mv_planter', 'mv_tarp_crates', 'mv_tarp_tent',
       'mv_chimney', 'mv_wattle_fence', 'mv_spiked_fence', 'mv_bell', 'mv_market_cross', 'mv_stocks', 'mv_timber_post', 'mv_sacks', 'mv_bay_window', 'mv_shutters',
+      // The owner's Meshy pieces (mv_well above is the owner's wishing well): market stalls and fountains.
+      'mv_market_stall', 'rustic_market_stall', 'town_fountain', 'lion_head_fountain', 'eagle_fountain',
       // Already in the game: castle and siege pieces, the market, carts and barrels, banners, lanterns, fences and trees.
       'castle_gate', 'castle_tower', 'castle_tower_round', 'castle_wall', 'castle_wall_door', 'castle_wall_corner', 'castle_stairs', 'siege_tower', 'portcullis',
       'stall', 'stall_green', 'stall_bench', 'cart', 'cart_high', 'hay_bale', 'anvil', 'barrel', 'barrel_open', 'crate_small', 'crate_large', 'woodpile', 'log_stack', 'bucket',
@@ -475,6 +481,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
     props: /* @__PURE__ */ props(
       'hb_bollard', 'hb_capstan', 'hb_lobster_pots', 'hb_buoy', 'hb_marker_buoy', 'hb_net_rack', 'hb_fish_stall', 'hb_fish_crates', 'hb_fishing_boat',
       'hb_anchor', 'hb_rope_coil', 'hb_lamp_post', 'hb_life_ring', 'hb_net_pile', 'hb_gull', 'hb_tide_board', 'hb_dolphin', 'hb_fenders',
+      // The owner's Meshy pieces: a market stall and fountains for the harbour square.
+      'rustic_market_stall', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',
       // Already in the game: boats and masts, cargo and crates, barrels, the gantry crane, lamps and rocks.
       'rowboat', 'eg_felucca', 'mast', 'flag', 'cargo_gantry_crane', 'cargo_container_rusty_blue', 'cargo_container_rusty_red', 'cargo_container_old_rusty', 'cargo_ibc_tank',
       'cargo_wooden_crate', 'cargo_crate_stack', 'cargo_crate', 'crate_small', 'crate_large', 'pallet', 'barrel', 'barrel_open', 'street_barrel', 'street_rusty_barrel', 'fuel_drum',
