@@ -39,8 +39,9 @@
     "normalSize": 1024,
     "lod": 0.22,
     "hold": {
-      "forward": 0.04,
-      "down": 0.08
+      "forward": 0.06,
+      "down": 0.12,
+      "out": 0.12
     }
   }
 }

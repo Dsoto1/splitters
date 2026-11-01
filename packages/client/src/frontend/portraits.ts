@@ -36,6 +36,24 @@ export interface PortraitView {
 const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   // Capt. Nova's suit has a collar piece in front of her chin: look past it from her right.
   'core.nova': { from: [-0.55, 0.12, 0.65], aim: [-0.08, 0.04, 0.05] },
+  // The Roster Board's thumbnail flags (owner, 2026-11-01): faces cut off, low in the frame or hidden.
+  // Bandit's ears and snout ran off the frame: wider, from a little below, so the snout shows past his paws.
+  'core.bandit': { from: [0.1, -0.1, 1], aim: [0, -0.03, 0], zoom: 1.5 },
+  // Wide heads (a toad, a frog) filled the frame edge to edge.
+  'core.boglurker': { aim: [0, 0.02, 0], zoom: 1.45 },
+  'core.croakley': { zoom: 1.4 },
+  // Sir Galloway's visor: from a little below, into the helmet.
+  'core.galloway': { from: [0.26, -0.2, 1], zoom: 0.9 },
+  // Grizzelda's hat brim hid her face from above: from below, the aim down onto her face.
+  'core.grizzelda': { from: [0.2, -0.35, 1], aim: [0, -0.08, 0.03], zoom: 1.1 },
+  // Lancer Mei's and Shade's tall helmet and hood put the face at the bottom: aim down onto it, a little closer.
+  'core.mei': { aim: [0, -0.1, 0], zoom: 0.85 },
+  'core.shade': { aim: [0, -0.08, 0], zoom: 0.9 },
+  // Rattles and Rotter hold their heads tilted to one side: wider, the aim onto the face.
+  'core.rattles': { aim: [-0.05, 0, 0], zoom: 1.25 },
+  'core.rotter': { from: [0.8, 0, 1], aim: [0.12, -0.04, 0], zoom: 1.3 },
+  // Saint Nick's tall hat (rebuilt finer, 2026-11-01) put his face at the bottom.
+  'core.saintnick': { aim: [0, -0.12, 0], zoom: 1.1 },
 };
 
 /**

@@ -113,8 +113,8 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(x.normalSize === undefined || x.normalSize === 512 || x.normalSize === 1024, 'fixes.normalSize: 512 or 1024 (the baked normal map, px)');
   if (x.hold !== undefined) {
     const h = x.hold;
-    need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down'), 'fixes.hold: { forward, down } (metres at a 1.8 m body)');
-    for (const k of ['forward', 'down']) need(h?.[k] === undefined || (typeof h[k] === 'number' && Math.abs(h[k]) <= 0.15), `fixes.hold.${k}: metres (−0.15–0.15)`);
+    need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.hold: { forward, down, out } (metres at a 1.8 m body)');
+    for (const k of ['forward', 'down', 'out']) need(h?.[k] === undefined || (typeof h[k] === 'number' && Math.abs(h[k]) <= 0.15), `fixes.hold.${k}: metres (−0.15–0.15)`);
   }
   for (const k of ['seamWeld', 'cloth', 'feet', 'armCloth']) need(x[k] === undefined || typeof x[k] === 'boolean', `fixes.${k}: true or false`);
   if (x.hands !== undefined) {

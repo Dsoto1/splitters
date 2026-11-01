@@ -46,10 +46,10 @@ export interface CharacterLook {
    * false`: full-body first person shows these arms instead of the whole
    * character (a model whose hat or cape fills the view from its own eyes).
    * `hold`: where this body holds a long gun against everyone's hold, in metres at a 1.8 m body (`forward` along the
-   * barrel, `down` square to it), for a build the shared hold puts the stock at the face of (Bandit: broad, with
+   * barrel, `down` square to it, `out` level toward the gun shoulder's side), for a build the shared hold puts the stock at the face of (Bandit: broad, with
    * his head low between high shoulders); `fixes.hold` in its manifest.
    */
-  whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false; hold?: { forward?: number; down?: number } };
+  whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false; hold?: { forward?: number; down?: number; out?: number } };
   /** What the character is (Character Select's tabs): set on every built-in look; a design of yours has none. */
   group?: CharacterGroup;
 }

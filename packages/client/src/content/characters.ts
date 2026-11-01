@@ -93,7 +93,7 @@ export interface CharacterInstance {
   /** Each hand as measured from its model at import (Meshy characters; tools/content/hands.mjs), when the file has it. */
   hands: { l?: HandData; r?: HandData };
   /** This body's own long-gun hold against everyone's (model metres at a 1.8 m body; the look's `whole.hold`). */
-  hold?: { forward?: number; down?: number };
+  hold?: { forward?: number; down?: number; out?: number };
   dispose(): void;
 }
 
