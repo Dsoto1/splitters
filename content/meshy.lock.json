@@ -1394,10 +1394,10 @@
       "model": "A humanoid harlequin clown",
       "date": "2026-10-29",
       "file": "characters/meshy_giggles.glb",
-      "sha256": "84fdb8df20b69573",
-      "triangles": 11000,
-      "lodTriangles": 3299,
-      "bytes": 837496,
+      "sha256": "9cb450210d29e3c0",
+      "triangles": 14999,
+      "lodTriangles": 3297,
+      "bytes": 1002840,
       "hands": true
     },
     {
@@ -1410,9 +1410,9 @@
       "model": "A humanoid harlequin clown",
       "date": "2026-10-29",
       "file": "characters/meshy_giggles_fparms.glb",
-      "sha256": "e8d8f40944a542ce",
+      "sha256": "59127290b93b67d3",
       "triangles": 2442,
-      "bytes": 327372,
+      "bytes": 364048,
       "hands": true
     },
     {
