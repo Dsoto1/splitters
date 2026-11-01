@@ -29,6 +29,12 @@ Owner: "build real ziplines if it's easy enough; should also be a MapMaker eleme
   `validateNavigation(map, nav, physics)` (new optional `physics` argument; server, validate-map and MapMaker pass it).
 - **Vinefall Sanctum:** two one-way gorge lines (DECISIONS_AND_DEVIATIONS.md), validate-map 0 issues.
 - Tests: packages/shared/test/zipline.test.ts; e2e `editor` → `ziplineChecks` (place, place end, TEST ride).
+- Checks run locally: typecheck, test:changed (all: 1184 passed), build, bundle 828.3 kB gzip (budget 840),
+  e2e editor, editorux, maps (E2E_MAPS=vinefall_sanctum) PASS; offline PASS on a rerun (one flake in
+  "Join game puts you back in play", unrelated). Bench 24 bots 30 s Vinefall with / without the lines:
+  tick avg 3.37 / 3.68 ms (noise; loaded machine). Not yet on a check branch.
+- Left: a hand-over-head hanging pose (needs the grip IK to let go of the support hand); minimap/plan don't
+  draw ziplines; R in MapMaker doesn't rotate a zipline (no yaw: drag its ends).
 
 ### `wip/character-groups` (agent, 2026-10-31; not merged)
 Owner: "organize the characters better (soldiers, zombies, animals, creatures, human, etc)", then "clicking a
