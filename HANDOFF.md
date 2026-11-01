@@ -10,6 +10,49 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Characters batch 3 (`wip/char-batch-3`, agent, 2026-11-01; not merged; from main c5be6c4)
+Owner's Drive drops of 1 Nov evening (brief: lead scratchpad `drive-batch-1101-evening.md`). Downloads outside the repo in
+`/home/user/meshy-drive/drive-2026-11-01-batch3/` and `...-batch3b/` (gdown: the Drive tool caps downloads at 10 MB); the
+build dir of links is `/home/user/meshy-drive/build-batch3/` (also links Rusty Mech's rigged download). No Meshy credits.
+Sheets in the lead's scratchpad `char-batch-3/` (portraits.png, grips-contact-sheet.png, distance-sheet-new.png,
+dapper-rustymech-closeups/distance-before-after.png, roll-sheet.png; scripts in `tools/`, `scripts/`).
+- **New looks** (orders 80-95; all rigged Meshy "All Animations" downloads unless said): Orange Suit Engineer (folk,
+  167k → 16k), Gas Mask Engineer (soldiers; unrigged 561k, landmarks found, `cloth`), CRT Robot (creatures; unrigged,
+  landmarks found; `lod` 0.35 so the far copy keeps the green screen), **Baseball Robot** `core.rollerbot` (creatures,
+  rolls, below), Mummy Bot, Pharaoh Mummy Warrior, Vampire (horror), Stealth Operative, Crimson Operative, WWII Infantry
+  (soldiers), Coffee Brown `core.vintagepro` (folk, owned), Field Medic Automaton (creatures, large), Alien Biker (owned,
+  confirmed), Pink Mantis `core.pinkalien` (owner's name), Alien Encounter and Beanie Alien (both small). CC0 ones are
+  recorded like main's T-pose community models (c3bce36: manifest `community.model`, pack meshy-community-characters).
+  **Not built:** Cyber Medic (`Futuristic_Cyberpunk` is a medical backpack, not a body), Low_poly_3D_game_char (dropped).
+- **Pipeline** (prepare-meshy-characters.mjs): a source joint not in JOINT_MAP rides its nearest mapped ancestor
+  (Mixamo finger chains, end markers, a mummy's head wrappings, Coffee Brown's shin bones) instead of failing;
+  `source.joints` names an unnamed rig's joints onto Meshy's (the Baseball Robot's Bone_000...); `locomotion: roll`
+  (manifest top level) puts what the legs held on the pelvis (a rigid ball). Rebake (meshy-mesh.mjs): grown charts are
+  turned to their tightest box before packing (only rebuilt rebaked characters change; Rusty Mech here).
+- **Rolling locomotion** (look `locomotion: 'roll'` → CharacterInstance → CharacterAnimator): no gait clips (idle/aim
+  only, jumps keep jump_air), no crouch/prone clips or prone tilt; the root tips about the ground contact toward the
+  measured velocity (0.035 rad per m/s) and acceleration (0.025 per m/s²: turns lean inward), max 0.32 rad, eased; the
+  spine takes the forward tip back so the gun stays on the aim; crouching hunches (low spine forward, chest back).
+  Velocity is measured from the drawn position (teleports > 3 m skipped), so bots, players and remote players all
+  lean. Not done: the ball doesn't spin (the download's ball is one surface with the torso: spinning it tears the
+  waist), no rolling sound (footsteps still play).
+- **The Dapper**: rebuilt from the owner's new rigged download (a different, realistic model: bowler hat, real hands;
+  10.3k triangles, all kept, 1024 normal map); his old Meshy task ids moved into the notes (they 404 on this key).
+- **Rusty Mech**: 15.9k → 17.8k triangles (of the download's 30.9k), headShare/handsShare up, far copy 0.25. Only a
+  small visible gain: the roughness is in the download (a 30.9k remesh whose texture is thousands of tiny islands;
+  rebaked into 2,800 charts it fills ~35% of the 1024 map). Better needs a cleaner source; the 1M-triangle
+  "White Rusty Mech" texture download in meshy-drive is the community model Ivory Rustwalker came from (CC0, not the
+  owner's rig): owner's call whether to rebuild Rusty Mech from it (in-house rig).
+- Grip audit (rifle/pistol/shotgun/spear score; The Visitor 0): Orange 0, Baseball Robot 0, Pharaoh 0 (`hands`
+  scale 0.7), Pink Mantis 0, Stealth 2, Vampire 2 (scale 0.7), Dapper 3, Rusty Mech 3, Gas Mask 3, Mummy Bot 3
+  (scale 0.65), Crimson 3, Coffee Brown 3, Medic 3, Alien Biker 3, Alien Encounter 3 (left curl 1, right 0.5), WWII 3,
+  Beanie Alien 3 (scale 0.7); **CRT Robot 6** (back + flat: the curl test only, which reads ±1 cm on mitten hands;
+  the sheet's holds look right; curl 0.8 changed nothing).
+- Budgets: all under 20k triangles / 1.8 MB (largest CRT Robot 1.75 MB, Mummy Bot 1.72 MB; normalSize 1024 dropped on
+  the Baseball Robot, Medic, CRT and Rusty Mech to fit). Menu bundle 830.5 kB gzip.
+- Checks: typecheck; test:changed 1246 pass; content OK; e2e designer, characters (517 s), visual, offline PASS
+  (offline failed once on a dist built before the last portraits: rebuild before e2e after capturing portraits).
+
 ### Model quality, distance, thumbnails, Bandit's hold (`wip/model-quality`, agent, 2026-11-01; not merged; has `wip/new-characters` merged in)
 Owner's Roster Board flags (model, thumb, Bandit; Santa "awful from a distance"; later Giggles). Sheets in the agent's
 scratchpad `model-quality/` (distance-before-after-1..6.png, closeups-before-after.png, thumbnails-before-after.png,

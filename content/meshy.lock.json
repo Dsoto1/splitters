@@ -2277,9 +2277,7 @@
     {
       "role": "meshy",
       "id": "meshy_alienbiker",
-      "source": "meshy-community-characters",
-      "model": "stylized alien biker",
-      "date": "2026-11-01",
+      "source": "meshy-owned",
       "src": "Meshy_AI_stylized_alien_biker__All_Animations.glb",
       "file": "characters/meshy_alienbiker.glb",
       "sha256": "6cd74bfa86f8fc30",
@@ -2291,9 +2289,7 @@
     {
       "role": "meshy-fparms",
       "id": "meshy_alienbiker_fparms",
-      "source": "meshy-community-characters",
-      "model": "stylized alien biker",
-      "date": "2026-11-01",
+      "source": "meshy-owned",
       "src": "Meshy_AI_stylized_alien_biker__All_Animations.glb",
       "file": "characters/meshy_alienbiker_fparms.glb",
       "sha256": "3ba4e9d4f9a9a222",
