@@ -14,6 +14,10 @@ made only on a commit that passed CI on a check branch.
 **Characters**
 - **Five new characters** in Character Select, all the owner's own Meshy models: **Barnaby Bruin** (Animals), a bear in a striped red coat and top hat; **Slugger-9** (Creatures & Machines, large), a robot ballplayer; **Rusty Mech** (Creatures & Machines, large), a white war machine gone to rust; **Freaky Frida** and **Scary Larry** (Undead & Horror), wide-eyed and grinning. Each holds every weapon with its own hands, in third and first person.
 - Characters whose textures are cut into thousands of small pieces (Barnaby's coat, Slugger's plating, the Mech's armour) now get a fresh texture layout painted from the full model, so they fit the character budget with their colours where they belong.
+- **Characters look right from a distance.** Past 18 m every character switches to a lighter copy of itself, and that copy used to scramble its colours (Saint Nick wore white streaks over his red coat, Croakley went grey, Big Bab's shirt turned to noise). The far copies are now cut so each piece of the texture stays where it belongs, and Saint Nick's has half again the detail. Through a scope, characters keep their full detail as far out as the scope magnifies (a sniper scope: about 70 m).
+- **Sharper faces and hands** on King Aldric, Bandit, Desert Ranger, Dust Trooper, Grizzelda, Thornweaver, Lancer Mei, Sgt. Pruitt, Rotter and Saint Nick: rebuilt with more detail where it shows (head and hands) and finer surface detail.
+- **Bandit** holds his rifle lower and out beside his snout instead of across his face.
+- **Character portraits** reframed for Bandit, Boglurker, Croakley, Sir Galloway, Grizzelda, Lancer Mei, Rattles, Rotter, Shade and Saint Nick: the face in the middle of the picture, nothing cut off.
 
 ## 0.6.0 (2026-11-01)
 
