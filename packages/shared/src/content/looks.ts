@@ -122,29 +122,31 @@ const peasant = (s: 'm' | 'f'): string[] => [`peasant_torso_${s}`, `peasant_arms
  * Looks that were retired, and the kept look each one now resolves to, so a saved profile, setup, bot set or map
  * that still names one keeps working. A retired look stays defined (below) but leaves CORE_LOOKS: Character
  * Select, the bot rotation and the Designer's presets no longer offer it. 2026-11-01: the owner's Roster Board
- * retired 14 original modular looks and Ivory Rustwalker.
+ * retired 14 original modular looks and Ivory Rustwalker, then Engineer and Warden (Linktifa and Sprout stay).
  */
 export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
-  'core.champion': 'core.engineer',
-  'core.desperado': 'core.engineer',
+  'core.champion': 'core.dale',
+  'core.desperado': 'core.dale',
   'core.miller': 'core.sprout',
   'core.raider': 'core.ranger',
   'core.sprinter': 'core.sprout',
   'core.striker': 'core.ranger',
   'core.huntress': 'core.ranger',
   'core.tracker': 'core.ranger',
-  'core.bulwark': 'core.warden',
-  'core.commando': 'core.warden',
-  'core.operative': 'core.warden',
+  'core.bulwark': 'core.grunt68',
+  'core.commando': 'core.grunt68',
+  'core.operative': 'core.grunt68',
   'core.scout': 'core.sprout',
   'core.pathfinder': 'core.sprout',
   'core.wayfarer': 'core.sprout',
   'core.frost': 'core.sprout',
   'core.medic': 'core.sprout',
   'core.sentinel': 'core.sprout',
-  'core.farmhand': 'core.engineer',
-  'core.drifter': 'core.engineer',
-  'core.brawler': 'core.engineer',
+  'core.farmhand': 'core.dale',
+  'core.drifter': 'core.dale',
+  'core.brawler': 'core.dale',
+  'core.engineer': 'core.dale',
+  'core.warden': 'core.grunt68',
   'core.rustwalker': 'core.t350',
 };
 
@@ -234,7 +236,7 @@ export const DEFAULT_LOOK = CORE_LOOKS[0]!.id;
 
 /** One-line bios for the presets (character select). */
 export const LOOK_BIOS: Readonly<Record<string, string>> = {
-  'core.ranger': 'A woodland scout who prefers long sightlines and longer silences.',
+  'core.ranger': 'A general larper.',
   'core.huntress': 'Tracks anything that moves. Has opinions about rifles.',
   'core.warden': 'Keeps the forest roads safe, and keeps score while doing it.',
   'core.scout': 'First in, first out, usually carrying the flag of someone else.',

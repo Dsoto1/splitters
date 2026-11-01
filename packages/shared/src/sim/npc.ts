@@ -190,7 +190,9 @@ export const npcLookRole = (look: string | undefined): NpcRole | null => {
   // Roles drawn as a character look have no skin of their own (the look is the skin).
   return role in NPC_ROLE_SPECS && !NPC_ROLE_SPECS[role as NpcRole].look ? (role as NpcRole) : null;
 };
-export const NPC_LOOKS: readonly { id: string; name: string; role: NpcRole }[] = (Object.keys(NPC_ROLE_SPECS) as NpcRole[]).filter((role) => !NPC_ROLE_SPECS[role].look).map((role) => ({ id: `${NPC_LOOK_PREFIX}${role}`, name: NPC_ROLE_SPECS[role].label, role }));
+/** Character Select names for NPC skins that differ from the NPC role's label (the trooper mannequin is "Dummy", owner 2026-11-01). */
+const NPC_SKIN_NAMES: Partial<Record<NpcRole, string>> = { trooper: 'Dummy' };
+export const NPC_LOOKS: readonly { id: string; name: string; role: NpcRole }[] = (Object.keys(NPC_ROLE_SPECS) as NpcRole[]).filter((role) => !NPC_ROLE_SPECS[role].look).map((role) => ({ id: `${NPC_LOOK_PREFIX}${role}`, name: NPC_SKIN_NAMES[role] ?? NPC_ROLE_SPECS[role].label, role }));
 /**
  * The NPC skins offered in Character Select: one mannequin (the soldier roles all looked the same) and the real
  * creatures, not the cyclops and oculus blobs or the scolitex (owner, 2026-10-31). The others stay NPCs, valid looks (a saved choice still loads) and
