@@ -1403,6 +1403,28 @@ async function mobileFlow(browser) {
     const kept = await page.waitForFunction((c) => document.getElementById('weapon-wheel').hidden && window.__cs.local.held === c, other.code, { timeout: T(5000) }).then(() => true, () => false);
     check(kept, 'a tap outside the wheel closes it and keeps your weapon');
   }
+  // A big arsenal: the wheel shrinks its items to fit the ring (names, then ammo, move to the middle); none overlap.
+  const many = ['core.rifle', 'core.shotgun', 'core.smg', 'core.sniper', 'core.lmg', 'core.rockets', 'core.launcher', 'core.marksman', 'core.burst_rifle', 'core.hand_cannon', 'core.flamethrower', 'core.railgun', 'core.plasma', 'core.knife', 'core.sawed_off', 'core.auto_shotgun', 'core.disc_launcher', 'core.laser_rifle'];
+  await page.evaluate((ids) => { for (const id of ids) window.__give?.(id); }, many);
+  await page.waitForFunction(() => window.__cs.local.inventory.size >= 14, null, { timeout: T(5000) }).catch(() => {});
+  await touch('touchStart', [{ x: wb.x, y: wb.y, id: 12 }]);
+  await touch('touchEnd', []);
+  await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden && document.querySelectorAll('#weapon-wheel .ww-item').length >= 14, null, { timeout: T(5000) }).catch(() => {});
+  const crowd = await page.$$eval('#weapon-wheel .ww-item', (is) => {
+    const r = is.map((i) => i.getBoundingClientRect());
+    let overlaps = 0;
+    for (let a = 0; a < r.length; a++) for (let b = a + 1; b < r.length; b++) {
+      const w = Math.min(r[a].right, r[b].right) - Math.max(r[a].left, r[b].left);
+      const h = Math.min(r[a].bottom, r[b].bottom) - Math.max(r[a].top, r[b].top);
+      if (w > 2 && h > 2) overlaps++;
+    }
+    return { n: r.length, overlaps };
+  });
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-wheel-many.png` });
+  check(crowd.n >= 14 && crowd.overlaps === 0, `with a big arsenal the wheel's weapons all fit without overlapping (${crowd.n} weapons, ${crowd.overlaps} overlaps)`);
+  await touch('touchStart', [{ x: wb.x, y: wb.y, id: 13 }]);
+  await touch('touchEnd', []);
+  await page.waitForFunction(() => document.getElementById('weapon-wheel').hidden, null, { timeout: T(5000) }).catch(() => {});
   // Held upright: the turn-sideways prompt.
   await page.setViewportSize({ width: phone.viewport.width, height: phone.viewport.height });
   check(await page.waitForFunction(() => getComputedStyle(document.getElementById('touch-rotate')).display !== 'none', null, { timeout: T(3000) }).then(() => true, () => false), 'portrait shows the turn-sideways prompt');
