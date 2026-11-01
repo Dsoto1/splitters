@@ -17,6 +17,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun } from './mountVisuals.ts';
+import { CockpitInterior } from './cockpitInterior.ts';
 import { createViewCamera, poseCamera } from './cameraPose.ts';
 import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
@@ -2088,6 +2089,7 @@ export class GameView {
 
   /** Turrets, sentries and vehicles at their smoothed poses; turret guns follow the aim. `manned` (the turret you are gunning) is hidden, as your own body is. */
   updateMounts(mounts: Iterable<ClientMount>, manned: number | null = null): void {
+    let cockpit: { m: ClientMount; node: TransformNode } | null = null;
     for (const m of mounts) {
       let node = this.mountNodes.get(m.index);
       if (!node) {
@@ -2111,11 +2113,24 @@ export class GameView {
         node.position.y -= 0.15 + (m.wreck ? 0 : Math.min(1, fade) * 0.9);
       }
       this.cullCockpit(m.index, node, m.index === this.cockpit && m.alive);
+      if (m.index === this.cockpit && m.alive && shown && m.index !== manned) cockpit = { m, node };
       if (m.def.kind !== 'vehicle') {
         const gun = mountGun(node);
         if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
       }
     }
+    this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null);
+  }
+
+  /** The ridden vehicle's high-detail cockpit (MountDef.cockpitModel), drawn only in your cockpit view. */
+  private cockpitInteriorRef: CockpitInterior | null = null;
+  private get cockpitInterior(): CockpitInterior {
+    return (this.cockpitInteriorRef ??= new CockpitInterior(this.models));
+  }
+
+  /** Whether a vehicle's cockpit interior is drawn now (tests: shown in the cockpit view, never in the chase view). */
+  cockpitInteriorShown(): boolean {
+    return this.cockpitInteriorRef?.isShown() ?? false;
   }
 
   /** The vehicle you are looking out of in the cockpit view (its inner faces are culled), or null. */
