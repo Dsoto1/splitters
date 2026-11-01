@@ -145,19 +145,19 @@ export function handCore(pts) {
 export function measureHand(all, ref, override = {}, front = null, cuffChecked = false) {
   if (all.length < 12) return null;
   const body = handCore(all);
+  const pts = all.filter((p) => Math.hypot(...sub(p, body.centre)) <= body.reach);
+  if (pts.length < 12) return null;
   if (!cuffChecked) {
     // A cuff the skinning left on the hand (King Aldric's fur cuffs) is measured out: the hand starts past it.
     // Dense and as wide as the hand, it held the knuckle line inside itself, so the cuff took the finger weights
-    // and curled into flaps. (Before the strays are left out: a dense cuff pulls the hand's centre to itself.)
-    const from = cuffEnd(all, ref);
+    // and curled into flaps.
+    const from = cuffEnd(pts, ref);
     if (from !== null) {
-      const m = measureHand(all.filter((p) => dot(p, ref.along) >= from), ref, override, front, true);
+      const m = measureHand(pts.filter((p) => dot(p, ref.along) >= from), ref, override, front, true);
       // The cuff stays in the hand's core (it goes back on the hand joint, rigid).
-      if (m) return { ...m, cuff: from, core: { centre: m.core.centre, reach: Math.max(m.core.reach, ...all.map((p) => Math.hypot(...sub(p, m.core.centre)))) } };
+      if (m) return { ...m, cuff: from, core: body };
     }
   }
-  const pts = all.filter((p) => Math.hypot(...sub(p, body.centre)) <= body.reach);
-  if (pts.length < 12) return null;
   const ys = pts.map((p) => p[1]);
   // The finger direction: from the wrist end of the hand to its far end (kept within 45° of the forearm's line).
   const lo = pct(ys, 30);

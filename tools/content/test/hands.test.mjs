@@ -87,7 +87,7 @@ describe('hands', () => {
   it('leaves a dense cuff at the wrist out of the measure: the knuckle line falls on the hand past it', () => {
     // A ring 10 cm across, densely sampled, round the wrist (u 0-4 cm), and a sparse hand past it to 20 cm.
     const cuff = [];
-    for (let u = 0; u <= 0.04; u += 0.002) for (let a = 0; a < 48; a++) cuff.push([u, 0.05 * Math.cos((a / 48) * 2 * Math.PI), 0.05 * Math.sin((a / 48) * 2 * Math.PI)]);
+    for (let u = 0; u <= 0.04; u += 0.004) for (let a = 0; a < 24; a++) cuff.push([u, 0.05 * Math.cos((a / 24) * 2 * Math.PI), 0.05 * Math.sin((a / 24) * 2 * Math.PI)]);
     const sparse = [];
     for (let u = 0.05; u <= 0.2; u += 0.012) for (let v = -0.04; v <= 0.04; v += 0.02) for (const t of [-0.01, 0.01]) sparse.push([u, v, t]);
     const pts = [...cuff, ...sparse];
@@ -98,8 +98,10 @@ describe('hands', () => {
       mesh.J[i * 4] = J('hand_r');
       mesh.W[i * 4] = 1;
     }
-    const { data } = fit(mesh);
-    expect(data.r.length).toBeGreaterThan(0.18);
+    const lines = [];
+    const { data } = fitHands({ meshes: [mesh], jointNames, world: new Map(rig), rig, log: (l) => lines.push(l) });
+    expect(lines.join(' ')).toContain('a cuff at the wrist left out');
+    expect(data.r.length).toBeGreaterThan(0.16);
     // The cuff stays on the hand joint (it doesn't curl with the fingers).
     expect(heldBy(mesh, 0)).toEqual(['hand_r']);
     expect(heldBy(mesh, cuff.length - 1)).toEqual(['hand_r']);

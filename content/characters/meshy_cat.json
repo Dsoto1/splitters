@@ -36,7 +36,9 @@
     ],
     "feet": true,
     "hands": {
-      "wrist": true
+      "r": {
+        "wrist": true
+      }
     }
   },
   "landmarks": {

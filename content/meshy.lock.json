@@ -290,7 +290,7 @@
       "src": "Meshy_AI_T_Pose_Cat_1101002251_texture.glb",
       "sourceTriangles": 151127,
       "file": "characters/meshy_cat.glb",
-      "sha256": "6b92830ff8be6293",
+      "sha256": "3c2dce79e3ea292d",
       "triangles": 10000,
       "lodTriangles": 2838,
       "bytes": 742348,
@@ -305,7 +305,7 @@
       "src": "Meshy_AI_T_Pose_Cat_1101002251_texture.glb",
       "sourceTriangles": 151127,
       "file": "characters/meshy_cat_fparms.glb",
-      "sha256": "b58509af49802118",
+      "sha256": "b79940d3ad2f7fc1",
       "triangles": 2803,
       "bytes": 327204,
       "hands": true
@@ -500,10 +500,10 @@
       "model": "Regal Monarch in Velvet",
       "date": "2026-10-29",
       "file": "characters/meshy_king.glb",
-      "sha256": "53592f3705877991",
+      "sha256": "57598bcd0ed4001f",
       "triangles": 15074,
       "lodTriangles": 4471,
-      "bytes": 1217068,
+      "bytes": 1217064,
       "hands": true
     },
     {
@@ -516,9 +516,9 @@
       "model": "Regal Monarch in Velvet",
       "date": "2026-10-29",
       "file": "characters/meshy_king_fparms.glb",
-      "sha256": "12f069e704aaaaff",
+      "sha256": "8b35023d429e4a7f",
       "triangles": 1882,
-      "bytes": 393008,
+      "bytes": 393012,
       "hands": true
     },
     {
@@ -591,10 +591,10 @@
       "model": "Energetic anthro rabbit",
       "date": "2026-10-29",
       "file": "characters/meshy_brass_hare.glb",
-      "sha256": "b7baf671b9573001",
+      "sha256": "79dffe07749c5384",
       "triangles": 12653,
       "lodTriangles": 3683,
-      "bytes": 1294412,
+      "bytes": 1294424,
       "hands": true
     },
     {
