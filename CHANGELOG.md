@@ -30,7 +30,7 @@ made only on a commit that passed CI on a check branch.
 - King Aldric has real hands: his fur cuffs had been taken for his hands (their fingers curled into flaps) and his model's hands were cut to a few dozen triangles; he is re-cut from his Meshy rig with more detail kept for the hands.
 - Capt. Nova no longer holds her rifle against her helmet: a long gun's barrel keeps clear of every character's head.
 - Biscuit is rebuilt from his T-pose model (a cleaner body and paws); his paws stay firm on the grip in every view.
-- Teddy's round paws no longer tear when they close on a gun.
+- Teddy's round paws no longer tear when they close on a gun, and the Hyena Warrior's claw sits round the grip.
 
 **New characters and sharper ones**
 - Six new characters from the owner's Meshy T-pose models: **Croakley** (a frog in suspenders), **Scamp** (a small monkey) and **Greyfang** (a wolf) in Animals, **Snikkit** (a goblin) in Creatures & Machines, **Old King Halvard** in Knights & Legends and **Sgt. Pruitt** (a police officer) in Soldiers. A seventh, Barnaby Bruin (a gentleman bear), waits for a lighter build.
