@@ -64,6 +64,8 @@ export interface CombatantView {
   concealed?: boolean;
   /** Riding a zipline (the line carries them; they can't steer). */
   riding?: boolean;
+  /** Body size (BODY_SIZES scale: small 0.78, large 1.18; absent = 1): eye, aim point and hit body scale with it. */
+  size?: number;
 }
 
 export interface PickupView {
@@ -214,6 +216,20 @@ const STANCE_SIGHT = [1, 0.8, 0.55] as const;
  */
 const SIGHT_SEARCH = 16;
 const SIGHT_TRACK = 6;
+/**
+ * Clear shot (BotBrain.clearShot): a round that would strike the world this
+ * close to the aim point (m) is a miss at the target (the ground at their
+ * feet, the cover they're crouched against), not a shot into something in
+ * between; suppression fire may land this close to the spot.
+ */
+const CLEAR_MARGIN = 1.5;
+const SUPPRESS_MARGIN = 3;
+/** A clear verdict holds this many ticks while the aim and the bot barely move (sustained fire: a ray every few ticks). */
+const CLEAR_TTL = 3;
+/** After a blocked verdict the bot holds fire this many ticks before asking again (no ray meanwhile). */
+const BLOCKED_HOLD = 3;
+/** Suppression: fire at the spot an enemy went out of sight for this long (s), only while the rounds reach it. */
+const SUPPRESS_SECONDS = 1.5;
 /** A tracked enemy perception had no ray to spare for stays tracked this long after it was last confirmed. */
 const TRACK_UNCHECKED_TICKS = TICK_RATE / 2;
 
@@ -408,6 +424,7 @@ export class BotBrain {
     this.rng = createRng(seed * 7919 + slot);
     this.routeRng = createRng((seed * 104729 + slot * 7919 + 17) >>> 0);
     this.aim = new AimModel(this.rng, difficulty, profile);
+    this.clearCheck = () => this.clearShot();
   }
 
   /** Enemy currently targeted (actor ID), if any. */
@@ -544,7 +561,8 @@ export class BotBrain {
     const def = this.heldDef(view);
     return {
       tick: view.tick,
-      eye: { x: me.pos.x, y: me.pos.y + STANCES[stance].eye, z: me.pos.z },
+      // Where its rounds start: the sim fires from the eye, which scales with body size.
+      eye: { x: me.pos.x, y: me.pos.y + STANCES[stance].eye * (me.size ?? 1), z: me.pos.z },
       speed: this.speed,
       airborne: false,
       stance,
@@ -775,7 +793,7 @@ export class BotBrain {
       const lowAmmo = !!held && held.def.magazine > 0 && held.mag <= Math.ceil(held.def.magazine * 0.25);
       const wantCover = underFire || hurt || lowAmmo || !!view.reloading || dist > 11 || this.state === 'retreat' || outgunned;
       const threatEye = { x: threat.x, y: threat.y + PLAYER.eyeHeight, z: threat.z };
-      if (this.cover && (horizontalDistance(this.cover.threat, threatEye) > 4 || (tick % 30 < DECIDE_TICKS && !stillCovered(view.physics, this.cover.pos, threatEye)))) {
+      if (this.cover && (horizontalDistance(this.cover.threat, threatEye) > 4 || (tick % 30 < DECIDE_TICKS && !stillCovered(view.physics, this.cover.pos, threatEye, me.size ?? 1)))) {
         // Threat moved round our cover: find another.
         this.cover = null;
       }
@@ -791,6 +809,7 @@ export class BotBrain {
           preferred: advance ? Math.max(6, dist - 8) : this.preferredRange(view),
           avoid: view.allies?.filter((a) => a.slot !== me.slot).map((a) => a.pos),
           away: this.state === 'retreat',
+          eyeScale: me.size ?? 1,
           rng: this.rng,
         });
         if (this.cover) {
@@ -840,7 +859,7 @@ export class BotBrain {
     const aimAtTarget = (t: CombatantView) => {
       aimedTarget = true;
       const ta = simProfile.on ? performance.now() : 0;
-      sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: this.aimStance(def, t) });
+      sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: this.aimStance(def, t), size: t.size ?? 1 });
       if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
       this.turnToward(sol.yaw, sol.pitch);
       lookDone = true;
@@ -974,7 +993,8 @@ export class BotBrain {
         if (far && !this.careful()) sprint = true;
         else moveScale = this.careful() ? 0.7 : 1;
         // Suppressors keep firing at where the enemy went into cover.
-        if (hasTag(this.profile, 'SUPPRESSOR') && tick - lk.tick < TICK_RATE * 2.5 && horizontalDistance(me.pos, lk.pos) > 6) {
+        // Brief and deliberate: only while the rounds would reach the spot (clearShot), not into a wall on the way.
+        if (hasTag(this.profile, 'SUPPRESSOR') && tick - lk.tick < TICK_RATE * SUPPRESS_SECONDS && horizontalDistance(me.pos, lk.pos) > 6) {
           moveYaw = null;
           const sup = this.suppress(view, lk.pos, ctx);
           if (sup) {
@@ -1100,6 +1120,17 @@ export class BotBrain {
       }
     }
 
+    // No line on the target from here (clearShot): up from a crouch or prone; already standing, step aside
+    // (and give up a cover spot it can't shoot from).
+    const noLine = target && this.shotBlocked && tick < this.shotBlocked.until ? this.shotBlocked : null;
+    if (noLine && (this.state === 'engage' || this.state === 'cover')) {
+      stance = 0;
+      if (noLine.side) {
+        if (this.cover && this.peekPhase === 'peek') this.cover = null;
+        if (moveYaw === null && !sprint && !backOff) strafe = true;
+      }
+    }
+
     // Corner checks and room clearing while moving through the map (not in a fight).
     const travelling = this.state === 'advance' || this.state === 'chase' || this.state === 'investigate' || this.state === 'hold';
     if (travelling && !target && moveYaw !== null && !sprint) {
@@ -1211,7 +1242,7 @@ export class BotBrain {
     const reacted = target ? this.reacted(view, target) : true;
     let pull = false;
     const ta = simProfile.on ? performance.now() : 0;
-    if (wantFire && sol && !sprint) pull = this.aim.trigger(ctx, sol, this.yaw, this.pitch, reacted);
+    if (wantFire && sol && !sprint) pull = this.aim.trigger(ctx, sol, this.yaw, this.pitch, reacted, this.shotCheck(view, ctx, sol, target));
     else this.aim.trigger(ctx, { yaw: this.yaw + 9, pitch: 0, dist: 1, halfAngle: 0 }, this.yaw, this.pitch, false);
     if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
     if (pull) buttons |= BUTTON_FIRE;
@@ -1321,10 +1352,11 @@ export class BotBrain {
     aimed.slot = target.slot;
     aimed.pos = target.pos;
     aimed.stance = this.aimStance(ctx.weapon, target) ?? 0;
+    aimed.size = target.size ?? 1;
     this.aim.track(ctx, aimed);
     const sol = this.aim.solve(ctx, aimed);
     this.turnToward(sol.yaw, sol.pitch);
-    const fire = this.aim.trigger(ctx, sol, this.yaw, this.pitch, this.reacted(view, target));
+    const fire = this.aim.trigger(ctx, sol, this.yaw, this.pitch, this.reacted(view, target), this.shotCheck(view, ctx, sol, target));
     if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
     this.lastTargetTick = tick;
     // The same smoothed movement over the ground, seen from the new facing.
@@ -1335,7 +1367,7 @@ export class BotBrain {
   }
 
   /** Scratch for steer()'s aim target. */
-  private readonly aimed: AimTarget = { slot: -1, pos: { x: 0, y: 0, z: 0 }, stance: 0 };
+  private readonly aimed: AimTarget = { slot: -1, pos: { x: 0, y: 0, z: 0 }, stance: 0, size: 1 };
 
   private sightCache = { tick: -Infinity, ok: false };
 
@@ -1343,6 +1375,103 @@ export class BotBrain {
   private canSee(view: BotWorldView, eye: Vec3, p: Vec3): boolean {
     if (view.tick - this.sightCache.tick >= DECIDE_TICKS) this.sightCache = { tick: view.tick, ok: view.physics.lineOfSight(eye, { x: p.x, y: p.y + 1.2, z: p.z }) };
     return this.sightCache.ok;
+  }
+
+  // ------------------------------------------------------------------ clear shot
+
+  /** Trigger pulls held because the line was blocked (tests and the probe). */
+  blockedShots = 0;
+  /** No shooting from here: stand up / step aside to get a line on the target, until `until`. */
+  private shotBlocked: { until: number; side: boolean } | null = null;
+  private holdFireUntil = -Infinity;
+  /** Last clear verdict: when, and the aim and position it was for. */
+  private clearAt = { tick: -Infinity, yaw: 0, pitch: 0, x: 0, y: 0, z: 0 };
+  private readonly clearCheck: () => boolean;
+  private shotView: BotWorldView | null = null;
+  private shotCtx: AimContext | null = null;
+  private shotSol: AimSolution | null = null;
+  private shotTarget: CombatantView | undefined = undefined;
+  private readonly shotDir = { x: 0, y: 0, z: 0 };
+  private readonly shotPoint = { x: 0, y: 0, z: 0 };
+
+  /** The clear-shot check for this tick's trigger pull (asked by the aim model only when a round would go). */
+  private shotCheck(view: BotWorldView, ctx: AimContext, sol: AimSolution, target: CombatantView | undefined): () => boolean {
+    this.shotView = view;
+    this.shotCtx = ctx;
+    this.shotSol = sol;
+    this.shotTarget = target;
+    return this.clearCheck;
+  }
+
+  /**
+   * Would a round fired now reach the target? One ray from the eye (where the
+   * sim starts every shot) along the bot's aim, to just short of the aim
+   * point. Blocked, the bot holds fire, and works out why with one or two more
+   * rays: its wandering aim was on something beside or in front of a target in
+   * the open (it corrects, as a person seeing their crosshair on a rock
+   * would); only their upper body shows over low cover (it aims higher); or
+   * nothing of them can be hit from here (it stands up, or steps aside, for a
+   * moment). Lobbed rounds, melee, and shots at vehicles and gun emplacements
+   * (their bodies are what it shoots) aren't checked.
+   */
+  private clearShot(): boolean {
+    const view = this.shotView!;
+    const ctx = this.shotCtx!;
+    const sol = this.shotSol!;
+    const target = this.shotTarget;
+    const def = ctx.weapon;
+    const proj = def?.projectile;
+    if (!def || def.kind === 'melee' || (proj && proj.gravity > 0) || target?.mounted || target?.object) return true;
+    const tick = view.tick;
+    if (tick < this.holdFireUntil) return false;
+    const margin = target ? Math.max(CLEAR_MARGIN, (proj?.splashRadius ?? 0) * 0.7) : SUPPRESS_MARGIN;
+    const reach = sol.dist - margin;
+    if (reach < 1) return true;
+    const eye = ctx.eye;
+    const c = this.clearAt;
+    if (tick - c.tick < CLEAR_TTL && Math.abs(angleDelta(c.yaw, this.yaw)) < 0.02 && Math.abs(c.pitch - this.pitch) < 0.02 && Math.abs(c.x - eye.x) + Math.abs(c.y - eye.y) + Math.abs(c.z - eye.z) < 0.25) return true;
+    const cp = Math.cos(this.pitch);
+    const dir = this.shotDir;
+    dir.x = Math.sin(this.yaw) * cp;
+    dir.y = Math.sin(this.pitch);
+    dir.z = Math.cos(this.yaw) * cp;
+    if (simProfile.on) simProfile.count('botClearShot');
+    if (view.physics.raycastHit(eye, dir, reach) === null) {
+      c.tick = tick;
+      c.yaw = this.yaw;
+      c.pitch = this.pitch;
+      c.x = eye.x;
+      c.y = eye.y;
+      c.z = eye.z;
+      return true;
+    }
+    this.blockedShots++;
+    this.holdFireUntil = tick + BLOCKED_HOLD;
+    c.tick = -Infinity;
+    // Think it over in full next tick (big matches steer between thinks).
+    this.steerable = false;
+    if (!target) return false;
+    // Why: is their body itself behind something, or only the aim?
+    const size = target.size ?? 1;
+    const height = STANCES[target.stance ?? 0].height * size;
+    const p = this.shotPoint;
+    p.x = target.pos.x;
+    p.z = target.pos.z;
+    p.y = target.pos.y + height * 0.6;
+    if (view.physics.shotLine(eye, p)) {
+      this.aim.correct();
+      return false;
+    }
+    p.y = target.pos.y + height - 0.3 * size;
+    if (view.physics.shotLine(eye, p)) {
+      // Only head and shoulders over the cover: aim there for a while.
+      this.aim.raise(tick + TICK_RATE * 1.5);
+      this.aim.correct();
+      return false;
+    }
+    // Nothing of them to hit from here: up from a crouch first; already standing, step aside.
+    this.shotBlocked = { until: tick + Math.round(TICK_RATE * (0.8 + (this.slot % 5) * 0.1)), side: (view.self.stance ?? 0) === 0 };
+    return false;
   }
 
   /** Searching and clearing at a walk, not a run (berserkers don't bother). */
@@ -1987,7 +2116,7 @@ export class BotBrain {
     const tick = view.tick;
     const myEye = this.eyeAt;
     myEye.x = me.pos.x;
-    myEye.y = me.pos.y + STANCES[me.stance ?? 0].eye;
+    myEye.y = me.pos.y + STANCES[me.stance ?? 0].eye * (me.size ?? 1);
     myEye.z = me.pos.z;
     const fx = Math.sin(this.yaw);
     const fz = Math.cos(this.yaw);
@@ -2031,7 +2160,7 @@ export class BotBrain {
       if (view.crowded && rays >= (best ? SIGHT_TRACK : SIGHT_SEARCH)) break;
       const o = c.o;
       theirEye.x = o.pos.x;
-      theirEye.y = o.pos.y + STANCES[o.stance ?? 0].eye;
+      theirEye.y = o.pos.y + STANCES[o.stance ?? 0].eye * (o.size ?? 1);
       theirEye.z = o.pos.z;
       rays++;
       c.checked = true;

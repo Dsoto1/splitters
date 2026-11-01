@@ -2127,7 +2127,7 @@ export class Match {
       if (!spec || !m.alive || m.builtBy === c.slot) continue;
       if (m.faction !== null && relation(this.factions, m.faction, c.faction) !== 'enemy') continue;
       if (horizontalDistance(m.pos, c.move.pos) > spec.range + 10) continue;
-      out.push({ slot: SENTRY_VIEW_BASE + m.index, pos: m.pos, yaw: m.aimYaw, pitch: 0, health: Math.max(0, m.health), armor: 0, alive: true, stance: 2, human: false, mounted: false, grounded: true, object: true, concealed: false });
+      out.push({ slot: SENTRY_VIEW_BASE + m.index, pos: m.pos, yaw: m.aimYaw, pitch: 0, health: Math.max(0, m.health), armor: 0, alive: true, stance: 2, human: false, mounted: false, grounded: true, object: true, concealed: false, size: 1 });
     }
     return out;
   }
@@ -5379,7 +5379,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, size: c.size };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -5397,6 +5397,7 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean): void {
   v.grounded = c.move.grounded;
   v.concealed = concealed;
   v.riding = c.move.zip !== undefined;
+  v.size = c.size;
 }
 
 /** Distance from point p to the segment a-b. */
