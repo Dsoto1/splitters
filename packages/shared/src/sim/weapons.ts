@@ -630,7 +630,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [3, 30],
     // Model: the owner's carved spear (Meshy community, CC0; content/guns.json), 2 m long and centred, held a third of
     // the way back on the plain shaft; the boxes-in-code spear (same length and grip) as the fallback.
-    view: { model: 'guns/spear.glb', fallback: 'procedural/spear', viewOffset: [0.24, -0.16, 0.65], tracer: '#c8a46a', sound: 'throw', hold: { style: 'pistol', grip: [0, 0, -0.35] } },
+    view: { model: 'guns/spear.glb', fallback: 'procedural/spear', viewOffset: [0.28, -0.24, 0.65], tracer: '#c8a46a', sound: 'throw', hold: { style: 'pistol', grip: [0, 0, -0.35] } },
   },
   // Fort Wars: held through the build phase; the mode turns its clicks into placing and picking up pieces.
   'core.builder': {

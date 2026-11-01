@@ -2462,6 +2462,25 @@ async function arsenalFlow(browser) {
       check(took && gone, `walking onto the drop gives you the ${gun} with exactly its ammo (7 + 23), and the drop goes (taken ${took}, gone on the client ${gone})`);
     }
   }
+  // The Spear: held in first person as its model (the carved spear, guns/spear.glb; not the boxes it falls back
+  // to), thrown at the ground a few metres out, drawn as that model in flight and stuck where it lands.
+  await sim(page, (m, me, at) => {
+    me.move = { ...me.move, pos: { ...at }, velY: 0, vx: 0, vz: 0, grounded: true };
+  }, home);
+  await page.evaluate(() => {
+    window.__autoInput = { buttons: 0 };
+    window.__give('core.spear');
+    window.__cs.input.pitch = -0.35;
+  });
+  await face(6);
+  await meWait(page, (m, me) => me.weapons.get(me.current)?.def.id === 'core.spear' && me.raiseTicks === 0 && me.fireCooldown === 0, null, 3);
+  const spearHeld = await page.waitForFunction(() => window.__cs.view.scene.meshes.some((x) => x.name.startsWith('view_core.spear') && x.isEnabled() && x.getTotalVertices() > 1000), null, { timeout: T(20000) }).then(() => true, () => false);
+  await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+  const spearOut = await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear'), null, T(10000));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const spearStuck = spearOut && await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear' && p.stuck), null, T(10000));
+  const spearDrawn = await page.waitForFunction(() => window.__cs.view.spearModelsDrawn() > 0, null, { timeout: T(20000) }).then(() => true, () => false);
+  check(spearHeld && spearOut && spearStuck && spearDrawn, `the Spear is held as its model, and thrown it flies and sticks as that model (held ${spearHeld}, thrown ${spearOut}, stuck ${spearStuck}, drawn ${spearDrawn})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -3238,6 +3257,15 @@ async function charactersFlow(browser) {
     }
   }
   check(drawnMisses.length === 0, `hands are drawn on the grip, fingers along the gun, flat to its side (${drawnMisses.join('; ') || 'all'})`);
+  // The Spear (a 2 m model held a third of the way back): the shooting hand drawn on the shaft, fingers along it,
+  // in every view.
+  const spearMisses = [];
+  for (const view of ['first', 'body', 'third']) {
+    await page.evaluate(([v]) => window.__grips.pose('core.scout', 'core.spear', v), [view]);
+    const d = await page.evaluate(() => window.__grips.drawn());
+    if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
+  }
+  check(spearMisses.length === 0, `the Spear's hand is drawn on its shaft, fingers along it (${spearMisses.join('; ') || 'all within 5 cm'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await gripsInPlay(browser);
