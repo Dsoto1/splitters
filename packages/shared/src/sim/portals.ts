@@ -32,8 +32,16 @@ export interface Portal {
   link: number;
 }
 
-/** How far in front of its surface a body is caught by a portal (the capsule's radius plus a hand's breadth). */
-export const PORTAL_REACH = PLAYER.radius + 0.12;
+/**
+ * How far beyond a body's capsule a portal catches it: the character controller's 2 cm skin (physics.ts,
+ * CONTROLLER_OFFSET) plus a hand's breadth, so a portal set a little into the wall behind it still catches a body
+ * stopped against that wall. The same for every body size: the gap to the wall doesn't shrink with the body (a
+ * margin scaled with size stopped Small characters against the wall just short of the catch, so they could not
+ * use a portal set against a wall at all).
+ */
+export const PORTAL_CATCH = 0.14;
+/** How far in front of its surface a standard body is caught by a portal (the capsule's radius plus PORTAL_CATCH). */
+export const PORTAL_REACH = PLAYER.radius + PORTAL_CATCH;
 /** How far in front of the exit portal you come out (clear of its catch, so you never bounce straight back). */
 export const PORTAL_EXIT = PLAYER.radius + 0.3;
 
@@ -102,7 +110,7 @@ export function applyPortals(portals: readonly Portal[], before: MoveState, afte
     const l0 = local(a, before.pos);
     const l1 = local(a, after.pos);
     // From in front (or on the surface), coming closer, now within reach of it.
-    if (l0.out < -0.05 || l1.out > PORTAL_REACH * scale || l1.out >= l0.out - 1e-4) continue;
+    if (l0.out < -0.05 || l1.out > radius + PORTAL_CATCH || l1.out >= l0.out - 1e-4) continue;
     if (!inOpening(a, after.pos, radius, height * scale)) continue;
     const b = portals[a.link]!;
     if (!enabled(a.i) || !enabled(b.i)) continue;

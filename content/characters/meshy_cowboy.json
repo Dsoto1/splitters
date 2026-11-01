@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 35,
-  "name": "Dusty Colt",
+  "name": "Dusty Ranger",
   "look": "core.dustycolt",
   "group": "folk",
   "bio": "Rode into the arena on a horse that has since left without him.",

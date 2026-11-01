@@ -5,7 +5,7 @@
   "order": 9,
   "name": "Elder Tomo",
   "look": "core.elder",
-  "group": "legends",
+  "group": "folk",
   "bio": "Has meditated on this map for forty years. Knows where you will peek before you do.",
   "body": "male",
   "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. Its robe hangs below the hips. Re-uploaded by the owner as an unrigged textured GLB (2026-11-01, same model) and rebuilt from it with the T-pose landmarks below, the head and hands keeping their share of the cut.",

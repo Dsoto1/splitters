@@ -52,6 +52,56 @@ portraits-rebuilt-before-after.png; scripts distance.mjs, closeups.mjs, crowd.mj
   `wip/roster-apply-2`: this branch changed meshy_grizzelda.json and meshy_pruitt.json `fixes` only; keep their new names on merge.
 
 ### Grip pass 2 (`wip/grip-pass-2`, agent, 2026-11-01; not merged)
+### Roster Board applied: CI fallout (`wip/roster-apply`, agent, 2026-11-01; not merged)
+Retiring 15 looks moved every bot's look (and body size) in the rotation (`lookForBot` walks CORE_LOOKS), so four
+seeded scenarios landed on real bugs, fixed: Small bodies couldn't use a portal set against a wall (the catch margin
+scaled with size; now `PORTAL_CATCH`, the same for all); bots came out of a portal and walked straight back in (the
+leg now counts as done on teleport; `BotBrain.portalled`); an encounter fill-in could spawn inside a closed door
+(Outpost Siege: a guard in the locked gate, courtyard never cleared; `Scenario.inShutDoor`); the Battle Axe test's
+"nobody about" player respawned at once (now leaves). botMovement names the look its thresholds were measured on
+(Sprout). e2e `characters`: grip checks use Linktifa; `View.gripReport` measures each mesh at the LOD it was drawn at
+(a whole-body LOD has its own skeleton, posed only while drawn: the near mesh of a far bot held a stale or rest pose,
+0.3-1.6 m "off"); a gun just put in hand is hidden until placed (it sat at the feet until the next placement: a frame,
+or 66-100 ms on stepped far bots). Still open: **Boglurker**'s shooting hand is drawn ~20 cm off the grip (fingers
+along 0.36) at full detail, and its LOD has no right-hand skin (measures null); one bot of the check's allowance.
+Also seen, not touched: Pantry Raid's mouse holes are behind the 0.9 m skirting board (block_015/block_014), so nobody
+walks into them without jumping.
+
+### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; not merged)
+
+### `wip/original-looks` (agent, 2026-11-01; not merged): the original characters' hats, eyewear and beards
+Owner: the part-built looks have "bowls on heads, eyewear and mustaches all strange"; Engineer's "accessories need work",
+Sprout's headband. Started from 899537c's ideas
+(model gear, refits; ported by hand onto current main, nothing it replaced brought back).
+- **Fitting** (`packages/client/src/content/headFit.ts`, pure, unit-tested): `HeadMap` measures the head (skin;
+  skin + hair kept within 1.2 cm, draped) as distances from the skull's middle in 48 × 32 directions, from the bind
+  pose. `Geo` builds surfaces with thickness (`slab`), tubes and fans, faces turned outwards. `fitModel` seats a
+  helmet model: smallest size and lowest seat with the skull above the eyes clear of the shell's inside, the rim over
+  the eyes at the brows, a deep shell squashed to 0.88/0.76 if needed; cached per model + head + hair (30-300 ms
+  once on this loaded box).
+- **gear.ts** rebuilt for head gear: cap (crown, 6 seams, button, curved peak), beret (leather band, badge over the
+  left eye, cloth pulled down over the right ear), beanie (ribbed cuff), wide-brim hat (pinched crown, band, brim up
+  at the sides), headband (tails knotted at the back), shades (lenses clear of brow and cheeks, bridge on the nose,
+  arms to and behind the ears), goggles (cups to the face, strap), mask (hanging point). Hair a hat covers is cut
+  (`trimHair`: small pieces such as buns go whole). Chest/back gear unchanged. Gear code is its own chunk
+  (`gear.ts` + `headFit.ts`, imported when a character with gear is built; `gearModels.ts` holds what preload needs).
+  Helmet meshes hang straight on the Head joint (full-body first person's `cutHead` hides children of head joints only, not grandchildren).
+- **Helmets** (models on main since roster-cleanup; `GEAR` `model`, 4 helmets appended so custom IDs' gear mask is
+  4-8 hex): Engineer `mk2_helmet`; `helmet` is now the military model. Steel, aviator and viking only in the Designer.
+  The owner is retiring 14 of the modular looks (the lead removes them on another branch); this branch left their
+  presets as they were and only the kept ones (Linktifa, Sprout, Warden, Engineer) are on the sheets. Tried by eye on
+  the retired ones too: steel helmet on Bulwark and aviator on Frost fit well, if anyone wants them.
+- **Beard**: `hair_beard`'s file is no longer loaded; `BEARD` in gear.ts builds a full beard (sideburns, jaw, chin,
+  moustache, mouth clear, ragged edges) in the hair colour. Designer's Beard option uses it too.
+- Tools: `__grips.head(alpha, radius, beta?)` frames the head after `__grips.pose(look, weapon, 'third')`.
+- Portraits re-captured: Sprout, Warden, Engineer (Linktifa's has no head gear). Menu bundle 827.4 kB gzip.
+- Checks: typecheck; headFit/bodySizes/mergeParts and the shared files test:changed picks (the bot-match ones timed
+  out under a load of ~30 and pass alone); content OK; e2e designer, visual PASS; characters: all checks passed
+  across two runs except the known flaky Imp hold; once "third person and back (core.pistol): no hands" (the Dapper,
+  no gear) which passed on the rerun. Full-body first person: no head gear, helmet or beard in view (up, ahead, down).
+- Sheets (agent scratchpad): `original-looks/before.png`, `after.png` and per-look closeups (kept looks only).
+
+### Grip pass 2 (`wip/grip-pass-2`, agent, 2026-11-01; merged to main 47acd97)
 Owner: "when do all the grips get fixed, I see some still not right". Audit before/after (main d8a4afa vs this branch),
 rifle, pistol, shotgun and Spear, every player character (63 incl. the rig's Ranger), Character Select pose, sheets and
 `compare.md` in the agent's scratchpad (`grips2/before/`, `grips2/after/`; re-run the audit for fresh ones, ~80 min on a

@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 20,
-  "name": "Grizzelda",
+  "name": "Goblina",
   "look": "core.grizzelda",
   "group": "legends",
   "bio": "Brews potions, curses rivals and keeps exact count of both.",

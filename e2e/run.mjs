@@ -1403,6 +1403,28 @@ async function mobileFlow(browser) {
     const kept = await page.waitForFunction((c) => document.getElementById('weapon-wheel').hidden && window.__cs.local.held === c, other.code, { timeout: T(5000) }).then(() => true, () => false);
     check(kept, 'a tap outside the wheel closes it and keeps your weapon');
   }
+  // A big arsenal: the wheel shrinks its items to fit the ring (names, then ammo, move to the middle); none overlap.
+  const many = ['core.rifle', 'core.shotgun', 'core.smg', 'core.sniper', 'core.lmg', 'core.rockets', 'core.launcher', 'core.marksman', 'core.burst_rifle', 'core.hand_cannon', 'core.flamethrower', 'core.railgun', 'core.plasma', 'core.knife', 'core.sawed_off', 'core.auto_shotgun', 'core.disc_launcher', 'core.laser_rifle'];
+  await page.evaluate((ids) => { for (const id of ids) window.__give?.(id); }, many);
+  await page.waitForFunction(() => window.__cs.local.inventory.size >= 14, null, { timeout: T(5000) }).catch(() => {});
+  await touch('touchStart', [{ x: wb.x, y: wb.y, id: 12 }]);
+  await touch('touchEnd', []);
+  await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden && document.querySelectorAll('#weapon-wheel .ww-item').length >= 14, null, { timeout: T(5000) }).catch(() => {});
+  const crowd = await page.$$eval('#weapon-wheel .ww-item', (is) => {
+    const r = is.map((i) => i.getBoundingClientRect());
+    let overlaps = 0;
+    for (let a = 0; a < r.length; a++) for (let b = a + 1; b < r.length; b++) {
+      const w = Math.min(r[a].right, r[b].right) - Math.max(r[a].left, r[b].left);
+      const h = Math.min(r[a].bottom, r[b].bottom) - Math.max(r[a].top, r[b].top);
+      if (w > 2 && h > 2) overlaps++;
+    }
+    return { n: r.length, overlaps };
+  });
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-wheel-many.png` });
+  check(crowd.n >= 14 && crowd.overlaps === 0, `with a big arsenal the wheel's weapons all fit without overlapping (${crowd.n} weapons, ${crowd.overlaps} overlaps)`);
+  await touch('touchStart', [{ x: wb.x, y: wb.y, id: 13 }]);
+  await touch('touchEnd', []);
+  await page.waitForFunction(() => document.getElementById('weapon-wheel').hidden, null, { timeout: T(5000) }).catch(() => {});
   // Held upright: the turn-sideways prompt.
   await page.setViewportSize({ width: phone.viewport.width, height: phone.viewport.height });
   check(await page.waitForFunction(() => getComputedStyle(document.getElementById('touch-rotate')).display !== 'none', null, { timeout: T(3000) }).then(() => true, () => false), 'portrait shows the turn-sideways prompt');
@@ -2766,6 +2788,19 @@ async function vehiclesFlow(browser) {
     return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
   });
   check(sprung.susp && sprung.wheels === 4 && sprung.pivots === 4 && sprung.tires === 4 && sprung.rolled, `the buggy rides the sim's suspension, its tires on hub pivots rolling (${JSON.stringify(sprung)})`);
+  // The drive and the turn leave the buggy anywhere (against a rock, on a slope): back to its spawn on open ground,
+  // stopped, before the camera and seat checks below.
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.evaluate(() => {
+    const match = window.__match;
+    const me = match.slots[window.__cs.slot];
+    const m = me.mount ? match.mounts[me.mount.index] : null;
+    if (!m) return;
+    m.pos = { ...m.home.pos };
+    m.yaw = m.home.yaw;
+    if ('speed' in m) m.speed = 0;
+  });
+  await frames(page, 3);
   // H switches to the chase camera (remembered for ground vehicles): behind the buggy, outside it and clear of walls.
   await page.keyboard.press('KeyH');
   // The first chase frame can take a while in software rendering (the wider view brings new things to draw).
@@ -3337,7 +3372,7 @@ async function charactersFlow(browser) {
   await page.goto(`${CLIENT}/?mode=grips&test=1`);
   await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
   const misses = [];
-  for (const look of ['core.scout', 'core.biscuit', 'core.grizzelda']) {
+  for (const look of ['core.ranger', 'core.biscuit', 'core.grizzelda']) {
     for (const weapon of ['core.rifle', 'core.singularity', 'core.lmg', 'core.flamethrower']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'first'), [look, weapon]);
       const m = await page.evaluate(() => window.__grips.miss());
@@ -3348,7 +3383,7 @@ async function charactersFlow(browser) {
   // Full-body first person (your own whole character from its eyes): the same palms on the same guns, looking ahead
   // and down at your feet.
   const bodyMisses = [];
-  for (const look of ['core.scout', 'core.galloway']) {
+  for (const look of ['core.ranger', 'core.galloway']) {
     for (const weapon of ['core.rifle', 'core.lmg', 'core.pistol']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'body'), [look, weapon]);
       for (const pitch of [0, -1.3]) {
@@ -3366,7 +3401,7 @@ async function charactersFlow(browser) {
   const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6;
   const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, flat ${d.sideR.toFixed(2)}` : 'none');
   const drawnMisses = [];
-  for (const look of ['core.dapper', 'core.biscuit', 'core.scout', 'core.galloway']) {
+  for (const look of ['core.dapper', 'core.biscuit', 'core.ranger', 'core.galloway']) {
     for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
       for (const view of ['body', 'first', 'third']) {
         await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);
@@ -3384,7 +3419,7 @@ async function charactersFlow(browser) {
   // in every view.
   const spearMisses = [];
   for (const view of ['first', 'body', 'third']) {
-    await page.evaluate(([v]) => window.__grips.pose('core.scout', 'core.spear', v), [view]);
+    await page.evaluate(([v]) => window.__grips.pose('core.ranger', 'core.spear', v), [view]);
     const d = await page.evaluate(() => window.__grips.drawn());
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }

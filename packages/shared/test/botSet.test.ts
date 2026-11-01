@@ -200,8 +200,8 @@ describe('bot sets in a match (BotFiller)', () => {
   });
 
   it("a scenario map's own bots play unless the host picks a set; a map change carries only the host's choice", () => {
-    const map = { ...yard(), bots: { name: 'Cast', fill: 'only' as const, entries: [{ name: 'Guard Gus', look: 'core.warden', skill: 'hard' as const }, { name: 'Odd', look: 'not.a.look' }] } };
-    expect(mapBotSet(map)).toEqual({ name: 'Cast', fill: 'only', entries: [{ name: 'Guard Gus', look: 'core.warden', skill: 'hard' }, { name: 'Odd' }] });
+    const map = { ...yard(), bots: { name: 'Cast', fill: 'only' as const, entries: [{ name: 'Guard Gus', look: 'core.ranger', skill: 'hard' as const }, { name: 'Odd', look: 'not.a.look' }] } };
+    expect(mapBotSet(map)).toEqual({ name: 'Cast', fill: 'only', entries: [{ name: 'Guard Gus', look: 'core.ranger', skill: 'hard' }, { name: 'Odd' }] });
     const match = new Match(map, DEFAULT_RULES['core.deathmatch'], 3);
     const bots = new BotFiller(match);
     bots.join('Host', undefined, 6);
@@ -222,7 +222,7 @@ describe('bot sets in a match (BotFiller)', () => {
 
   it("MapMaker edits a map's bots as one undoable step, and the map saves and loads with them; maps without load unchanged", () => {
     const doc = yard();
-    const after = { name: 'Cast', fill: 'random' as const, entries: [{ name: 'Gus', look: 'core.warden', team: 1, squad: 'Red' }] };
+    const after = { name: 'Cast', fill: 'random' as const, entries: [{ name: 'Gus', look: 'core.ranger', team: 1, squad: 'Red' }] };
     const cmd = { kind: 'setMapBots' as const, before: null, after };
     const changed = applyCommand(doc, cmd);
     expect(changed.bots).toEqual(after);

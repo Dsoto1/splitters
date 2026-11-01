@@ -19,7 +19,14 @@ describe('character sizes', () => {
     expect(kitted.length).toBeLessThanOrEqual(64);
     const back = decodeLook(kitted)!;
     expect([back.size, back.cloth, back.trim, back.gear]).toEqual(['large', '#2a3a5c', null, ['goggles', 'vest', 'pack']]);
-    expect(bodySizeOf('core.bulwark')).toBe('large');
+    // The helmets appended to GEAR widen the gear mask past four hex digits; older IDs keep four.
+    // Linktifa without her hood (a hat doesn't fit over one).
+    const bare = { ...getLook('core.ranger'), parts: getLook('core.ranger').parts.filter((p) => !p.includes('hood')), hair: ['hair_buzzed', 'hair_beard'], cloth: '#2a3a5c', trim: '#3a2a22', gear: [] };
+    const helmeted = encodeLook({ ...bare, gear: ['mk2_helmet', 'shades'] });
+    expect(helmeted).toMatch(/-g[0-9a-f]{5}$/);
+    expect(decodeLook(helmeted)?.gear).toEqual(['shades', 'mk2_helmet']);
+    expect(encodeLook({ ...bare, gear: ['helmet'] })).toMatch(/-g0004$/);
+    expect(bodySizeOf('core.knight')).toBe('large');
     expect(bodySizeOf('core.sprout')).toBe('small');
     expect(bodySizeOf('core.ranger')).toBe('standard');
   });
@@ -40,14 +47,14 @@ describe('character sizes', () => {
 
   it('large characters have more health and move slower; the match setting can make everyone standard', () => {
     const on = new Match(room(), DEFAULT_DEATHMATCH_RULES);
-    const big = on.addHuman('big', 'core.bulwark')!;
+    const big = on.addHuman('big', 'core.knight')!;
     const small = on.addHuman('small', 'core.sprout')!;
     expect(big.maxHealth).toBe(BODY_SIZES.large.health);
     expect(big.speedMul).toBeLessThan(1);
     expect(small.size).toBe(BODY_SIZES.small.scale);
     expect(small.maxHealth).toBe(BODY_SIZES.small.health);
     const off = new Match(room(), { ...DEFAULT_DEATHMATCH_RULES, bodySizes: false });
-    const same = off.addHuman('big', 'core.bulwark')!;
+    const same = off.addHuman('big', 'core.knight')!;
     expect(same.size).toBe(1);
     expect(same.maxHealth).toBe(100);
   });

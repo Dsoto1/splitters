@@ -8,6 +8,27 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Characters (the owner's Roster Board)**
+- Fourteen of the original modular characters leave Character Select and the bot rotation (Huntress, Bulwark, Scout, Farmhand, Tracker, Pathfinder, Drifter, Wayfarer, Brawler, Commando, Frost, Operative, Medic, Sentinel), and Ivory Rustwalker with them. A saved profile, bot set or map that still names one plays its closest kept character.
+- Renamed: Ashwalker is now **Shaka Mpande**, Dale is **Cal**, Hector is **Bill the Barbarian**, Saint Nick is **Santa**, T-350 is **T-TreeFitty** ("built to sweep floors for $3.50/hr") and Agent Zhao is **Customs Agent Zhao**.
+- Moved: Bill the Barbarian, Santa and Cap'n Barnacle to Knights & Legends; Elder Tomo and Customs Agent Zhao to Everyday Folk.
+- Second pass: Engineer and Warden leave too (a saved Engineer plays Cal, a Warden Grunt '68). Renamed: Brother Ansel is **Brother Silencio**, Cap'n Barnacle **Cap'n Rusty Barnacle**, Grizzelda **Goblina**, Sgt. Pruitt **Sgt. Mackie**, Anubis **Anoobys**, Dusty Colt **Dusty Ranger**, Hazmat **Hazmat Joe**, Vanguard **Luther Vanguard**, and the mannequin skin is **Dummy** (enemy troopers keep their name). Linktifa is "a general larper".
+
+**MapMaker**
+- Painting the ground with a style pack's swatch now paints the terrain that matches it: Packed Snow, Snow Drift and the ices paint snow, Shingle gravel, Root Cover dirt, and so on (it used to paint whatever ground the Terrain tab had, often dirt or grass). The status bar says what it paints, e.g. "paint Snow (Packed Snow)".
+
+**The original characters' hats, glasses and beards**
+- Head gear is now made to fit each character's own head (men's and women's heads differ) instead of sitting on it as bowls and rings. **Caps** have six seams up to a button and a curved peak; the **beret** has a leather band and badge and drapes down over the right ear; the **wide-brim hat** has a pinched crown, a band and a brim turned up at the sides; the **beanie** a ribbed, turned-up cuff; the **headband** lies over the hair and is knotted at the back; the **bandana mask** hangs in a point below the chin. Hair under a hat no longer pokes through it.
+- **Sunglasses** sit on the nose with their arms back over the ears; **goggles** have cups against the face and a strap round the head.
+- **Helmets are real models** (the owner's Meshy helmets), each seated on the head it's worn on: Engineer wears the brimmed helmet, and the combat helmet is the military model. The steel, aviator, brimmed and horned helmets are also in the Character Designer.
+- **Beards** are full beards now, from the sideburns down the jaw with a moustache, in the hair colour (the old one read as a stuck-on moustache).
+
+**Bots**
+- 108 bot names (from 12): even a full 96-bot match gives every bot its own name instead of "Mildred 2", "Mildred 3"…
+
+**Weapon wheel**
+- Carrying a lot no longer crowds the wheel: up to nine weapons look as before; with more, the items shrink to fit the ring, the names move to the middle (which shows the one you point at), and past sixteen only the icons stay round the ring.
+
 **Vehicles**
 - The buggy's cockpit is built in-house and stays crisp up close: a roll cage of clean round tubes in dark powder coat, bucket seats with red five-point harnesses in all three rows, a floor pan and footwell, a dash with a sand cowl, toggle switches and dials, and a steering wheel that turns as you steer. The speedometer's needle reads your speed and the rev counter climbs through the gears. Only you see it, in first person; everyone else sees the buggy as before. The cropped Meshy interior it replaces is gone (3.6 MB less to download).
 

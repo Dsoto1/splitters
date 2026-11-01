@@ -29,9 +29,19 @@ every outfit part, every hairstyle, every colourway and both mannequins.
 | `athlete_torso/legs/feet_m/f` | torso, legs, feet | The base bodies below the neck (sportswear), cut along the same regions so they mix with outfit parts. The torso includes the arms and hips |
 | `ranger_arms/torso/legs/feet/hood/pauldron_m/f` | arms … pauldron | Ranger outfit parts |
 | `peasant_arms/torso/legs/feet_m/f` | arms … feet | Peasant outfit parts |
-| `hair_simpleparted`, `hair_buzzed`, `hair_beard` | hair | Male; a look can wear hair and a beard |
+| `hair_simpleparted`, `hair_buzzed`, `hair_beard` | hair | Male; a look can wear hair and a beard. The beard's file is no longer loaded: `gear.ts` (`BEARD`) builds a full beard on the face instead |
 | `hair_long`, `hair_buns`, `hair_buzzedfemale` | hair | Female |
 | `textures/*.jpg` | — | Shared base colour maps: `ranger`, `peasant`, `skin_m/f`, `athlete_m/f`, `hair_1/2`, and the colourways `ranger_moss`, `peasant_dusk`, `athlete_light_m/f` |
+
+Gear (`GEAR` in `looks.ts`, built by `packages/client/src/content/gear.ts`) is fitted to the wearer: the head and
+hair are measured in the bind pose into a map of how far the surface is from the skull's middle in every direction
+(`headFit.ts`, `HeadMap`); caps, berets, beanies, the wide-brim hat, headband, mask and goggle strap are surfaces laid
+over that map (with thickness), shades sit on the nose bridge and reach back to the ears, and hair a hat covers is cut
+away. Helmets are textured models (`public/gear/`, `tools/content/prepare-gear.mjs`, `content/gear.json`) seated by
+`fitModel`: the smallest size and lowest seat that keep the skull clear of the shell's inside, its rim over the eyes
+at the brows (a deep shell is made a little shallower). Head gear and helmets hang on the Head joint, so full-body
+first person's head cut hides them. Check a change by eye: `?mode=grips`, `__grips.pose(look, weapon, 'third')`
+then `__grips.head(alpha, radius, beta?)`.
 
 Parts carry no textures of their own: the game assigns the shared maps by
 material name (`textureFor` in `looks.ts`), so a texture downloads once however

@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player+npc",
   "order": 31,
-  "name": "Hazmat",
+  "name": "Hazmat Joe",
   "look": "core.hazmat",
   "group": "soldiers",
   "bio": "Rated for every spill on the map. Mostly the ones he causes.",

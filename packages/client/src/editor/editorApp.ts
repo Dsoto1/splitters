@@ -166,6 +166,7 @@ import {
   TERRAIN_MATERIALS,
   TERRAIN_MATERIAL_LABELS,
   TERRAIN_SURFACES,
+  terrainMaterialFor,
   applyBrush,
   PhysicsWorld,
   initPhysics,
@@ -1212,9 +1213,13 @@ export class EditorApp {
     return tile ? { tile, slot: faceSlot(hit.box, hit.normal) } : null;
   }
 
-  /** The ground Paint lays on the terrain: the brush's material when it is one of the grounds, else the Terrain tab's ground. */
+  /**
+   * The ground Paint lays on the terrain: the terrain layer closest to the brush's material (a style pack's Packed
+   * Snow paints snow, Shingle gravel: terrainMaterialFor), else the Terrain tab's ground. It used to fall back to
+   * the Terrain tab's ground for every pack ground, so painting Packed Snow laid dirt or grass.
+   */
   private get groundPaint(): TerrainMaterial {
-    return TERRAIN_MATERIALS.find((m) => TERRAIN_SURFACES[m] === this.paintStyle.material) ?? this.terrainMaterial;
+    return terrainMaterialFor(this.paintStyle.material) ?? this.terrainMaterial;
   }
 
   /** Paint the terrain under the pointer (a brush of the Terrain tab's radius). */
@@ -1609,7 +1614,7 @@ export class EditorApp {
       $('ed-target').textContent = target
         ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}`
         : g
-          ? `Ground · paint ${TERRAIN_MATERIAL_LABELS[this.groundPaint]} · radius ${this.brushRadius} m`
+          ? `Ground · paint ${TERRAIN_MATERIAL_LABELS[this.groundPaint]}${TERRAIN_SURFACES[this.groundPaint] === this.paintStyle.material || !terrainMaterialFor(this.paintStyle.material) ? '' : ` (${coreMaterials.get(this.paintStyle.material)?.displayName ?? 'swatch'})`} · radius ${this.brushRadius} m`
           : '';
     } else if (this.tool.kind === 'path') {
       const over = this.paths.hovering;
