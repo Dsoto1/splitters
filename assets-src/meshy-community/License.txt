@@ -26,6 +26,13 @@ tools/content/prepare-guns.mjs):
 - "Nebula Arc Cannon" (2026-07-03)  -> guns/arc_cannon_turret.glb, the Rocket
   Turret's model (a cannon on a pedestal, so not a hand-held weapon).
 
+Weapons from textured GLB downloads (pack meshy-community-weapons in
+content/guns.json, same licence; author not recorded):
+
+- "T Pose Figure" (2026-11-01; a carved spear, not a figure, despite the
+  name)  -> guns/spear.glb, the Spear's model (held, thrown, stuck and lying
+  as a pickup).
+
 Props (pack meshy-community-props in content/props.json, built by
 tools/content/prepare-props.mjs):
 

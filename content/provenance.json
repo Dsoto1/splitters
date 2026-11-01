@@ -27747,6 +27747,25 @@
       ]
     },
     {
+      "file": "models/guns/spear.glb",
+      "sha256": "676c2a554120429f",
+      "triangles": 14000,
+      "bytes": 690176,
+      "source": "meshy-community-weapons/Carved Spear (Meshy community model, downloaded as \"T Pose Figure\", 2026-11-01)",
+      "title": "Meshy community models (weapons, textured GLB downloads)",
+      "creator": "Meshy community (author not recorded; CC0 per the owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "read from Meshy's textured GLB download (base colour map only)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned so the barrel runs along +Z, centred and scaled",
+        "colour map shrunk to 512 px, matte material"
+      ]
+    },
+    {
       "file": "models/guns/freeze_gun.glb",
       "sha256": "1f8d30ccd5241c09",
       "triangles": 12000,

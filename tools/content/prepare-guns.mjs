@@ -1,8 +1,9 @@
 // Builds the weapon models listed in content/guns.json from pack downloads
 // that stay out of the repo (Styloo's Guns Asset Pack, the CC0 Guns &
 // Explosives pack): each GLB or FBX (tools/content/fbx.mjs) is turned so
-// its barrel runs along +Z, centred on its bounds, scaled to `length` metres,
-// its node transforms baked into the vertices, its colour map shrunk to a
+// its barrel runs along +Z (`forward`: the source's barrel axis, ±x or ±z;
+// ±y lays an upright model down, the spear), centred on its bounds, scaled to
+// `length` metres, its node transforms baked into the vertices, its colour map shrunk to a
 // 512 px JPEG and its normal map to 256 px, metal/roughness made matte (the
 // pack is painted for a diffuse look). Writes packages/client/public/models/guns
 // and content/guns.lock.json (checked by `pnpm content:check`).
@@ -76,6 +77,12 @@ function downloadFile(name) {
 /** Quaternion turning the given source axis to +Z (about +Y). */
 const FORWARD = { '+z': 0, '-z': 180, '+x': -90, '-x': 90 };
 const yaw = (deg) => [0, Math.sin((deg * Math.PI) / 360), 0, Math.cos((deg * Math.PI) / 360)];
+/**
+ * A model standing upright in its download (`forward: "+y"` / `"-y"`, the spear: its head up) is laid down instead,
+ * about +X, so that end runs along +Z (the download's +Z ends up pointing down for "+y").
+ */
+const PITCH = { '+y': 90, '-y': -90 };
+const turn = (forward) => (forward in PITCH ? [Math.sin((PITCH[forward] * Math.PI) / 360), 0, 0, Math.cos((PITCH[forward] * Math.PI) / 360)] : yaw(FORWARD[forward]));
 
 async function shrink(tex, size, mime) {
   const img = sharp(Buffer.from(tex.getImage())).resize(size, size, { fit: 'inside', kernel: 'lanczos3' });
@@ -133,6 +140,7 @@ function centreOnBase(doc, given = null) {
  * into the download's own frame through the body's placement (yaw, scale, centring, `centre: base` shift).
  */
 function boxToSource([min, max], place) {
+  if (place.forward in PITCH) throw new Error(`an interior needs its body's forward along x or z, not ${place.forward}`);
   const th = (-FORWARD[place.forward] * Math.PI) / 180;
   const [c, s] = [Math.cos(th), Math.sin(th)];
   const lo = [Infinity, Infinity, Infinity];
@@ -172,7 +180,7 @@ async function build(src, entry, pack, place = null) {
   }
   const scene = doc.getRoot().listScenes()[0];
   const forward = place?.forward ?? entry.forward;
-  const root = doc.createNode('model').setRotation(yaw(FORWARD[forward]));
+  const root = doc.createNode('model').setRotation(turn(forward));
   for (const child of scene.listChildren()) {
     scene.removeChild(child);
     root.addChild(child);
