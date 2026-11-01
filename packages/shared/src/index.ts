@@ -6,6 +6,7 @@ export * from './map/materials.ts';
 export * from './map/surfaces.ts';
 export * from './map/geometry.ts';
 export * from './map/terrain.ts';
+export * from './map/terrainPaint.ts';
 export * from './map/track.ts';
 export * from './map/settle.ts';
 export * from './map/paths.ts';

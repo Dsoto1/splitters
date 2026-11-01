@@ -5449,7 +5449,21 @@ const isPerson = (c: Combatant) => c.kind === 'human' || !!c.away;
 /** Which bot gives way first (lowest first): random bots, then the host's set from its last entry back (the first ones stay longest). */
 const setRank = (c: Combatant): number => (c.botSet ? 1_000_000 - c.botSet.index : 0);
 
-const BOT_NAMES = ['Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash', 'Nub', 'Quill'];
+/** Random bots' names, in the order bots take them: at least 96, so a full match never repeats one (the owner). */
+export const BOT_NAMES: readonly string[] = [
+  'Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash',
+  'Nub', 'Quill', 'Rustbucket', 'Old Saltpeter', 'Pigeon', 'Hollis Crane', 'Madame Thistle', 'Biscotti',
+  'Sergeant Gravy', 'Lumen', 'Ratchet', 'Nana Voss', 'Dregs', 'Crumpet', 'Sister Vex', 'Lanternjaw', 'Fennimore',
+  'Dazzle', 'Moss', 'Brigadier Fudge', 'Kettle', 'Ivy Strand', 'Gristle', 'Professor Snoot', 'Tumble', 'Ozzie Pike',
+  'Cinderbell', 'Wally Hex', 'Pickles', 'Dame Rook', 'Scuttle', 'Barnaby Wren', 'Flint', 'Auntie Sprocket', 'Grub',
+  'Major Mulch', 'Velvet', 'Dot', 'Corporal Puddle', 'Splinter', 'Hob', 'Miss Fortescue', 'Sprat', 'Gideon Lark',
+  'Mudlark', 'Bellows', 'Countess Cog', 'Zip', 'Tinder', 'Old Hob', 'Wren Kettering', 'Bolt', 'Lady Pincushion',
+  'Rumble', 'Juniper', 'Scrap', 'Colonel Custard', 'Fizz', 'Smudge', 'Bramble', 'Inspector Gloat', 'Patch',
+  'Marigold', 'Clank', 'Uncle Dredge', 'Pip', 'Tallow', 'Sir Wobble', 'Gravel', 'Mabel Stone', 'Stitch', 'Quirk',
+  'Admiral Dunk', 'Sootfoot', 'Hazel Grim', 'Plunk', 'Brisket', 'Captain Mops', 'Ember Wick', 'Dingo', 'Prudence',
+  'Rook', 'Nettle', 'Duchess Rust', 'Boomer', 'Sable', 'Ogden', 'Cricket', 'Glimmer', 'Barnacle Bill', 'Pudding',
+  'Vesper', 'Hatchet', 'Tuppence', 'Grimsby', 'Slate', 'Mister Mottle', 'Fable',
+];
 
 /** Keeps a match at a target player count by adding or removing Player Bots around the humans. */
 export class BotFiller {

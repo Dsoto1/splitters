@@ -112,6 +112,12 @@ export class WeaponWheel {
     if (layout) {
       for (const it of this.items) it.remove();
       const n = entries.length;
+      // Many weapons on you: smaller items so they fit round the ring (it holds about nine at full size), then the
+      // names, then the ammo, go to the middle (which shows the one pointed at), leaving icons.
+      const fit = Math.min(25, ((2 * Math.PI * 37) / Math.max(n, 1)) * 0.92);
+      this.ring.style.setProperty('--ww-item', `${fit.toFixed(2)}%`);
+      this.ring.classList.toggle('compact', n > 9);
+      this.ring.classList.toggle('dense', n > 16);
       this.items = entries.map((e, i) => {
         const it = document.createElement('div');
         it.className = 'ww-item';

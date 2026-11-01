@@ -1095,11 +1095,17 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #weapon-wheel { position: fixed; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; pointer-events: auto; touch-action: none; background: radial-gradient(circle at 50% 50%, rgba(11, 15, 26, 0.35), rgba(11, 15, 26, 0.7)); }
 #weapon-wheel[hidden] { display: none; }
 #weapon-wheel .ww-ring { position: relative; width: min(84vmin, 480px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.35) 0 22%, rgba(18, 24, 39, 0.85) 23% 68%, rgba(18, 24, 39, 0.35) 69%); box-shadow: 0 0 0 1px rgba(0, 209, 255, 0.25); }
-#weapon-wheel .ww-item { position: absolute; transform: translate(-50%, -50%); width: 25%; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px; border: 1px solid transparent; border-radius: 6px; font-family: var(--font-display); text-align: center; color: var(--text); transition: transform 0.08s, background 0.08s; }
+#weapon-wheel .ww-item { position: absolute; transform: translate(-50%, -50%); width: var(--ww-item, 25%); display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px; border: 1px solid transparent; border-radius: 6px; font-family: var(--font-display); text-align: center; color: var(--text); transition: transform 0.08s, background 0.08s; }
 #weapon-wheel .ww-item .ww-icon { width: 100%; height: clamp(26px, 8vmin, 52px); object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6)); }
 #weapon-wheel .ww-item b { font: 600 clamp(10px, 2.4vmin, 14px)/1.1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
 #weapon-wheel .ww-item small { font: 600 clamp(10px, 2.2vmin, 13px) var(--font-display); color: var(--muted); font-variant-numeric: tabular-nums; }
 #weapon-wheel .ww-item.held { border-color: rgba(0, 209, 255, 0.45); }
+/* Many weapons: icons shrink with the item; names (then ammo) move to the middle, which names the one pointed at. */
+#weapon-wheel .ww-ring.compact .ww-item b { display: none; }
+#weapon-wheel .ww-ring.compact .ww-item .ww-icon { height: clamp(18px, 6vmin, 40px); }
+#weapon-wheel .ww-ring.dense .ww-item small { display: none; }
+#weapon-wheel .ww-ring.dense .ww-item .ww-icon { height: clamp(14px, 4.5vmin, 30px); }
+#weapon-wheel .ww-ring.dense .ww-item { padding: 2px 1px; }
 #weapon-wheel .ww-item.empty { opacity: 0.4; }
 #weapon-wheel .ww-item.empty small { color: var(--error); }
 #weapon-wheel .ww-item.on { transform: translate(-50%, -50%) scale(1.12); background: rgba(0, 209, 255, 0.18); border-color: var(--cyan); }
