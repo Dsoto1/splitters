@@ -3464,6 +3464,16 @@ async function charactersFlow(browser) {
   check(n === want && n >= 20, `character viewer builds every look and NPC (${n} of ${want})`);
   const lod = await page.evaluate(() => window.__charAnimators.filter((a) => a.ch.meshes.some((m) => m.getLODLevels?.().length)).length);
   check(lod === n, `every character has low-detail levels (${lod} of ${n})`);
+  // Through a scope (the view's zoom) the low-detail copy waits further out, as far as it looks as big as unzoomed.
+  const switchAt = await page.evaluate(() => {
+    const at = () => window.__charAnimators.flatMap((a) => a.ch.meshes.flatMap((m) => (m.getLODLevels?.() ?? []).map((l) => l.distanceOrScreenCoverage)));
+    const plain = at();
+    window.__charLodZoom(4);
+    const scoped = at();
+    window.__charLodZoom(1);
+    return { plain: [...new Set(plain)], scoped: [...new Set(scoped)], back: [...new Set(at())] };
+  });
+  check(switchAt.plain.join() === '18' && switchAt.scoped.join() === '72' && switchAt.back.join() === '18', `a scope moves the characters' low-detail switch out with its zoom (${JSON.stringify(switchAt)})`);
   // Parts sharing a material are merged, and skin, hair, eyes and gear share the character atlas: a character is
   // its outfit and its atlas draw (2 on average, 3 where a look mixes outfit families), not one per part.
   const draws = await page.evaluate(() => window.__charAnimators.map((a) => a.ch.meshes.filter((m) => !m.isDisposed() && !m.isBlocked && m.getTotalVertices() > 0).length));

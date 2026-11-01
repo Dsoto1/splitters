@@ -20,10 +20,40 @@ import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
 
 const SIZE = 256;
 
-/** Looks whose face the default three-quarter view hides: where the camera sits from the face, and a nudge of the aim point onto it. */
-const PORTRAIT_VIEWS: Record<string, { from: Vector3; aim: Vector3 }> = {
+/**
+ * A look's own portrait framing, where the default (head and shoulders, three-quarter from its left, framed from the
+ * neck to the top of the model) leaves its face off centre or hidden: `from`, where the camera sits from the face
+ * (x the character's left, z its front; the default is (0.26, 0.05, 1)); `aim`, a nudge of the aim point (m; every
+ * portrait body is built at its full 1.8 m); `zoom`, the frame's size against the default (more than 1 shows more round the head).
+ */
+export interface PortraitView {
+  from?: [number, number, number];
+  aim?: [number, number, number];
+  zoom?: number;
+}
+
+/** Looks whose face the default view hides or leaves off centre (tools/content/capture-portraits.mjs ships them). */
+const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   // Capt. Nova's suit has a collar piece in front of her chin: look past it from her right.
-  'core.nova': { from: new Vector3(-0.55, 0.12, 0.65), aim: new Vector3(-0.08, 0.04, 0.05) },
+  'core.nova': { from: [-0.55, 0.12, 0.65], aim: [-0.08, 0.04, 0.05] },
+  // The Roster Board's thumbnail flags (owner, 2026-11-01): faces cut off, low in the frame or hidden.
+  // Bandit's ears and snout ran off the frame: wider, from a little below, so the snout shows past his paws.
+  'core.bandit': { from: [0.1, -0.1, 1], aim: [0, -0.03, 0], zoom: 1.5 },
+  // Wide heads (a toad, a frog) filled the frame edge to edge.
+  'core.boglurker': { aim: [0, 0.02, 0], zoom: 1.45 },
+  'core.croakley': { zoom: 1.4 },
+  // Sir Galloway's visor: from a little below, into the helmet.
+  'core.galloway': { from: [0.26, -0.2, 1], zoom: 0.9 },
+  // Grizzelda's hat brim hid her face from above: from below, the aim down onto her face.
+  'core.grizzelda': { from: [0.2, -0.35, 1], aim: [0, -0.08, 0.03], zoom: 1.1 },
+  // Lancer Mei's and Shade's tall helmet and hood put the face at the bottom: aim down onto it, a little closer.
+  'core.mei': { aim: [0, -0.1, 0], zoom: 0.85 },
+  'core.shade': { aim: [0, -0.08, 0], zoom: 0.9 },
+  // Rattles and Rotter hold their heads tilted to one side: wider, the aim onto the face.
+  'core.rattles': { aim: [-0.05, 0, 0], zoom: 1.25 },
+  'core.rotter': { from: [0.8, 0, 1], aim: [0.12, -0.04, 0], zoom: 1.3 },
+  // Saint Nick's tall hat (rebuilt finer, 2026-11-01) put his face at the bottom.
+  'core.saintnick': { aim: [0, -0.12, 0], zoom: 1.1 },
 };
 
 /**
@@ -81,8 +111,12 @@ export class PortraitRenderer {
     return this.renderLive(look);
   }
 
-  /** Render a portrait here even when one is shipped (tools/content/capture-portraits.mjs makes the shipped ones with it). */
-  renderLive(look: string): Promise<string> {
+  /**
+   * Render a portrait here even when one is shipped (tools/content/capture-portraits.mjs makes the shipped ones with
+   * it). `view`: try another framing than the look's own (PORTRAIT_VIEWS), not kept.
+   */
+  renderLive(look: string, view?: PortraitView): Promise<string> {
+    if (view) return (this.queue = this.queue.then(() => this.render(look, view))) as Promise<string>;
     let p = this.cache.get(look);
     if (!p) {
       p = (this.queue = this.queue.then(() => this.render(look))) as Promise<string>;
@@ -92,7 +126,7 @@ export class PortraitRenderer {
     return p;
   }
 
-  private async render(look: string): Promise<string> {
+  private async render(look: string, view: PortraitView | undefined = PORTRAIT_VIEWS[look]): Promise<string> {
     const role = npcLookRole(look);
     if (role && isCreature(role)) return this.renderCreature(role);
     if (role) return this.renderSoldier(look);
@@ -108,7 +142,7 @@ export class PortraitRenderer {
       }
       ch.root.computeWorldMatrix(true);
       for (const n of ch.root.getDescendants(false)) (n as TransformNode).computeWorldMatrix?.(true);
-      this.frameHead(ch.meshes, ch.joints, PORTRAIT_VIEWS[look]);
+      this.frameHead(ch.meshes, ch.joints, view);
       return await this.snap(ch.meshes);
     } finally {
       anim.dispose(); // also disposes the character
@@ -156,7 +190,7 @@ export class PortraitRenderer {
    * (the otter, the cat, big helmets) frame as well as people do, because
    * nothing assumes a head 1.8 m up.
    */
-  private frameHead(meshes: AbstractMesh[], joints: ReadonlyMap<string, TransformNode>, view?: { from: Vector3; aim: Vector3 }): void {
+  private frameHead(meshes: AbstractMesh[], joints: ReadonlyMap<string, TransformNode>, view?: PortraitView): void {
     const head = joints.get('Head');
     if (!head) return this.frameBody(meshes);
     const { max } = bounds(meshes);
@@ -165,10 +199,10 @@ export class PortraitRenderer {
     // Neck to the top of the model: about a head; never a sliver, never the whole body (a tall hat, raised ears).
     const span = Math.min(0.75, Math.max(0.2, max.y - neck.y));
     const at = new Vector3(h.x, neck.y + span * 0.45, h.z);
-    if (view) at.addInPlace(view.aim);
+    if (view?.aim) at.addInPlace(Vector3.FromArray(view.aim));
     // The frame shows about 1.7 heads: the head, the neck, the top of the shoulders.
-    const dist = (span * 1.7) / (2 * Math.tan(this.camera.fov / 2));
-    const from = (view?.from ?? new Vector3(0.26, 0.05, 1)).normalizeToNew();
+    const dist = (span * 1.7 * (view?.zoom ?? 1)) / (2 * Math.tan(this.camera.fov / 2));
+    const from = (view?.from ? Vector3.FromArray(view.from) : new Vector3(0.26, 0.05, 1)).normalizeToNew();
     this.camera.position.copyFrom(at.add(from.scale(dist)));
     this.camera.setTarget(at.add(new Vector3(0, -span * 0.06, 0)));
   }

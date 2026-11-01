@@ -34,7 +34,11 @@
     "trim": "#3a3028"
   },
   "fixes": {
-    "triangles": 11000,
-    "feet": true
+    "triangles": 15000,
+    "feet": true,
+    "headShare": 0.16,
+    "handsShare": 0.08,
+    "normalSize": 1024,
+    "lod": 0.22
   }
 }

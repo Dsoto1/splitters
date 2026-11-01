@@ -21,8 +21,31 @@ import { BEARD, GEAR_MODEL_BASE, gearModels } from './gearModels.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
 import { asNode } from './models.ts';
 
-/** Beyond this camera distance (metres) characters draw their low-detail meshes. */
+/** Beyond this camera distance (metres) characters draw their low-detail meshes (further through a scope: setCharacterLodZoom). */
 export const LOD_DISTANCE = 18;
+
+/** Character meshes with a low-detail level, whose switch distance follows the view's zoom. */
+const zoomed = new Set<Mesh>();
+let lodZoom = 1;
+
+/**
+ * How much the view magnifies against the game's own field of view (1 unzoomed; a sniper scope about 4): characters
+ * keep their full detail that much further, so a scope never shows the far copy filling the view.
+ */
+export function setCharacterLodZoom(k: number): void {
+  const z = Math.max(1, k);
+  if (Math.abs(z - lodZoom) < 0.01) return;
+  lodZoom = z;
+  for (const m of zoomed) for (const level of m.getLODLevels()) level.distanceOrScreenCoverage = LOD_DISTANCE * z;
+}
+
+/** Follow the view's zoom from now on (until the mesh goes). */
+function followZoom(m: Mesh): void {
+  if (zoomed.has(m)) return;
+  zoomed.add(m);
+  for (const level of m.getLODLevels()) level.distanceOrScreenCoverage = LOD_DISTANCE * lodZoom;
+  m.onDisposeObservable.addOnce(() => zoomed.delete(m));
+}
 
 /** Base URL of built character content (packages/client/public/characters). */
 export const CHARACTER_BASE = `${import.meta.env.BASE_URL}characters/`;
@@ -69,6 +92,8 @@ export interface CharacterInstance {
   body: BodyType | 'mannequin';
   /** Each hand as measured from its model at import (Meshy characters; tools/content/hands.mjs), when the file has it. */
   hands: { l?: HandData; r?: HandData };
+  /** This body's own long-gun hold against everyone's (model metres at a 1.8 m body; the look's `whole.hold`). */
+  hold?: { forward?: number; down?: number; out?: number };
   dispose(): void;
 }
 
@@ -192,6 +217,7 @@ export class CharacterLibrary {
     let clips: Map<Clip, AnimationGroup>;
     let body: CharacterInstance['body'];
     let hands: CharacterInstance['hands'] = {};
+    let hold: CharacterInstance['hold'];
 
     if (spec.npc) {
       // The rig's own mannequin: skeleton and clips come along with the instance.
@@ -240,6 +266,7 @@ export class CharacterLibrary {
       body = 'mannequin';
     } else {
       const look = getLook(spec.look);
+      if (!spec.armsOnly) hold = look.whole?.hold;
       // The beard isn't a file: buildGear makes it on the face (gear.ts, BEARD).
       const files = spec.armsOnly ? [firstPersonArms(look)] : look.whole ? look.parts : [...look.parts, look.head, ...look.hair.filter((h) => h !== BEARD)];
       const [carrierC, ...rest] = await Promise.all(files.map((p) => this.load(`${p}.glb`)));
@@ -323,6 +350,7 @@ export class CharacterLibrary {
     }
     // One draw per material instead of one per part (a look is 8–12 skinned parts, most sharing the outfit's or the skin's material).
     if (!spec.armsOnly) meshes.splice(0, meshes.length, ...mergeSkinnedParts(meshes, `${name}_body`));
+    for (const m of meshes) if (m instanceof Mesh && m.getLODLevels().length) followZoom(m);
     // The import's empty __root__ mesh (holding the skeleton's nodes and the parts): a plain node, one mesh fewer for the scene to check every frame.
     for (const n of holder.getChildren()) if (n instanceof Mesh && !n.isAnInstance && !n.getTotalVertices() && !n.skeleton) asNode(n);
     meshes.splice(0, meshes.length, ...meshes.filter((m) => !m.isDisposed()));
@@ -339,6 +367,7 @@ export class CharacterLibrary {
       meshes,
       body,
       hands,
+      ...(hold ? { hold } : {}),
       dispose: () => {
         for (const g of new Set(clips.values())) g.dispose();
         for (const o of owned) o.dispose();
