@@ -56,8 +56,8 @@ describe('Style Packs 05, 06 and 08', () => {
     expect(own).toBeGreaterThanOrEqual(25);
     // Jungle Ruins grew in its refresh from the owner's sheets (stylePacksJungle.test.ts).
     expect(own).toBeLessThanOrEqual(id === 'jungle' ? 80 : 40);
-    // Its own props come first and are all ours (modelled in code).
-    for (const p of pack.props.filter((x) => getProp(x)!.category === name)) expect(CORE_PROPS.find((d) => d.id === p)?.file, p).toMatch(/^props\/(ge|jg|jt|sb)_/);
+    // Its own props come first and are all ours (modelled in code, or the owner's Meshy temple statues).
+    for (const p of pack.props.filter((x) => getProp(x)!.category === name)) expect(CORE_PROPS.find((d) => d.id === p)?.file, p).toMatch(/^props\/(ge|jg|jt|sb|temple)_/);
     for (const f of pack.facades) expect(MODEL_FACADES.has(f)).toBe(false);
   });
 
