@@ -214,24 +214,49 @@ async function readMeshy(file, ual, c) {
   const mesh = doc.getRoot().listMeshes()[0];
   if (doc.getRoot().listMeshes().length !== 1 || mesh.listPrimitives().length !== 1) throw new Error(`${file}: expected one mesh with one primitive`);
   const prim = mesh.listPrimitives()[0];
-  const P = prim.getAttribute('POSITION').getArray();
-  const N = prim.getAttribute('NORMAL').getArray();
-  const J = prim.getAttribute('JOINTS_0').getArray();
+  let P = prim.getAttribute('POSITION').getArray();
+  let N = prim.getAttribute('NORMAL').getArray();
+  let J = prim.getAttribute('JOINTS_0').getArray();
+  let W = prim.getAttribute('WEIGHTS_0').getArray();
+  let UV = prim.getAttribute('TEXCOORD_0').getArray();
+  let indices = prim.getIndices().getArray();
   const material = prim.getMaterial();
-  const baseColor = material.getBaseColorTexture()?.getImage();
+  let baseColor = material.getBaseColorTexture()?.getImage();
   if (!baseColor) throw new Error(`${file}: no base colour texture`);
+  let normalMap = material.getNormalTexture()?.getImage() ?? null;
+  if (c.surface === 'rebake') {
+    // Cut to the budget with the seams closed and painted afresh (rebakeDownload), in the mesh's own bind pose; each
+    // vertex kept is one of the download's, so it keeps its skin weights. The head and hands are the vertices mostly
+    // on the head or a hand joint.
+    const major = (v) => {
+      let b = 0;
+      for (let k = 1; k < 4; k++) if (W[v * 4 + k] > W[v * 4 + b]) b = k;
+      return names[J[v * 4 + b]];
+    };
+    const out = await rebakeDownload({ P, N, UV, I: indices }, baseColor, normalMap, c.triangles ?? 11000, [
+      { inside: (v) => /^(Head|head_end|headfront)$/.test(major(v)), share: HEAD_SHARE },
+      { inside: (v) => /Hand/.test(major(v)), share: REBAKE_HANDS_SHARE },
+    ]);
+    const J2 = new J.constructor(out.from.length * 4);
+    const W2 = new W.constructor(out.from.length * 4);
+    out.from.forEach((v, i) => {
+      J2.set(J.subarray(v * 4, v * 4 + 4), i * 4);
+      W2.set(W.subarray(v * 4, v * 4 + 4), i * 4);
+    });
+    [P, N, UV, indices, J, W, baseColor, normalMap] = [out.P, out.N, out.UV, out.I, J2, W2, Buffer.from(out.colour), out.normal];
+  }
   const index = new Map(names.map((n, i) => [n, i]));
   const skel = { names, parent: joints.map((j) => index.get(meshyName(j.getParentNode()?.getName() ?? '')) ?? -1), rest };
   const verts = {
     count: P.length / 3,
     joints: J,
-    weights: prim.getAttribute('WEIGHTS_0').getArray(),
+    weights: W,
     // Rest pose in world space as joint j holds the vertex.
     at: (v, j) => [mulPoint(skinMat[j], [P[v * 3], P[v * 3 + 1], P[v * 3 + 2]]), mulDir(skinMat[j], [N[v * 3], N[v * 3 + 1], N[v * 3 + 2]])],
-    uv: prim.getAttribute('TEXCOORD_0').getArray(),
-    indices: prim.getIndices().getArray(),
+    uv: UV,
+    indices,
     baseColor,
-    normalMap: material.getNormalTexture()?.getImage() ?? null,
+    normalMap,
   };
   return pose(skel, verts, ual, c);
 }
@@ -962,7 +987,9 @@ for (const c of SPECS) {
   if (found.rigged) {
     const src = await readMeshy(found.file, ual, c);
     const from = { ...(c.meshy ? { meshy: c.meshy } : {}), ...(c.community ?? {}), ...(c.meshy ? {} : { src: basename(found.file) }) };
-    lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...from, ...(await build(c, src, `${c.id}.glb`, { loose: true, ...(c.triangles ? { ratio: c.triangles / (src.indices.length / 3) } : {}) })) });
+    // A rebaked download is cut to its budget already (rebakeDownload).
+    const ratio = c.surface === 'rebake' ? { ratio: 1 } : c.triangles ? { ratio: c.triangles / (src.indices.length / 3) } : {};
+    lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...from, ...(await build(c, src, `${c.id}.glb`, { loose: true, ...ratio })), ...(c.surface === 'rebake' ? { surface: 'rebake' } : {}) });
     // The arms as finely as an unrigged download's (cut to its working detail first) when the rigged download is denser.
     lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src, Math.min(0.8, (0.8 * WORK_TRIANGLES) / (src.indices.length / 3)), true)) });
     continue;

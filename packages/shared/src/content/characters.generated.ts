@@ -69,6 +69,9 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.greyfang', name: 'Greyfang', body: 'male', head: '', parts: ['meshy_greyfang'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_greyfang_fparms' }, group: 'animals' },
   { id: 'core.rourke', name: 'Rourke', body: 'male', head: '', parts: ['meshy_rourke'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_rourke_fparms' }, group: 'folk' },
   { id: 'core.slugger', name: 'Slugger-9', body: 'male', head: '', parts: ['meshy_slugger'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_slugger_fparms' }, group: 'creatures' },
+  { id: 'core.rustymech', name: 'Rusty Mech', body: 'male', head: '', parts: ['meshy_rustymech'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_rustymech_fparms' }, group: 'creatures' },
+  { id: 'core.frida', name: 'Freaky Frida', body: 'female', head: '', parts: ['meshy_frida'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_frida_fparms' }, group: 'horror' },
+  { id: 'core.larry', name: 'Scary Larry', body: 'male', head: '', parts: ['meshy_larry'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_larry_fparms' }, group: 'horror' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -141,4 +144,7 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.greyfang': 'Hunts in packs. Today the pack is you lot, and he is keeping score.',
   'core.rourke': 'Hitched a ride into the war zone by mistake. Stayed because the pay beats his last job.',
   'core.slugger': 'Built for the batting cage. Found out bullets come in faster than fastballs, and liked it.',
+  'core.rustymech': 'A white war machine gone to rust. Still runs. Still angry about it.',
+  'core.frida': 'Smiles at everyone. Nobody has seen her blink.',
+  'core.larry': 'Lives under the stairs of every map. Comes out for the scoreboard.',
 };
