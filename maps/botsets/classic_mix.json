@@ -5,17 +5,17 @@
   "description": "The usual crowd by name, each in their own character, normal and hard mixed in. Random bots fill the rest.",
   "fill": "random",
   "entries": [
-    { "name": "Brassneck", "look": "core.bulwark", "skill": "hard" },
-    { "name": "Mildred", "look": "core.wayfarer" },
+    { "name": "Brassneck", "look": "core.warden", "skill": "hard" },
+    { "name": "Mildred", "look": "core.sprout" },
     { "name": "Captain Pell", "look": "core.barnacle" },
-    { "name": "Wick", "look": "core.scout", "skill": "hard" },
-    { "name": "Doctor Umber", "look": "core.medic" },
+    { "name": "Wick", "look": "core.sprout", "skill": "hard" },
+    { "name": "Doctor Umber", "look": "core.sprout" },
     { "name": "Spoke", "look": "core.engineer" },
-    { "name": "Gloam", "look": "core.drifter", "skill": "hard" },
+    { "name": "Gloam", "look": "core.engineer", "skill": "hard" },
     { "name": "Tibbs", "look": "core.biscuit" },
-    { "name": "Ferro", "look": "core.commando" },
-    { "name": "Lady Ash", "look": "core.frost", "skill": "hard" },
+    { "name": "Ferro", "look": "core.warden" },
+    { "name": "Lady Ash", "look": "core.sprout", "skill": "hard" },
     { "name": "Nub", "look": "core.goblin", "skill": "easy" },
-    { "name": "Quill", "look": "core.huntress" }
+    { "name": "Quill", "look": "core.ranger" }
   ]
 }

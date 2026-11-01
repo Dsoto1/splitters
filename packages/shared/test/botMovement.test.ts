@@ -46,7 +46,9 @@ function jitter(difficulty: BotDifficulty, opts: { retreat?: boolean; seeds?: nu
     const match = new Match(yard(), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, seed);
     const human = match.addHuman('human')!;
     const profile = { ...CORE_BOT_PROFILES[3]!, tags: [], selfPreservation: opts.retreat ? 90 : 50, itemGreed: 0, exploration: 0 };
-    const bot = match.addBot('bot', profile, difficulty)!;
+    // The bot these thresholds were measured with: Sprout (Small: 6% quicker), which the bot rotation used to hand
+    // this slot. Named here so a change to the roster doesn't change the subject.
+    const bot = match.addBot('bot', profile, difficulty, false, { look: 'core.sprout' })!;
     bot.move = { pos: { x: 14, y: 0, z: 12 }, velY: 0, grounded: true };
     human.move = { pos: { x: 26, y: 0, z: 12 }, velY: 0, grounded: true };
     give(bot, 'core.rifle');

@@ -5,7 +5,7 @@
   "order": 13,
   "name": "Cap'n Barnacle",
   "look": "core.barnacle",
-  "group": "folk",
+  "group": "legends",
   "bio": "Lost a leg to a cannonball and his ship to a card game. Wants both back, in that order.",
   "body": "male",
   "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. Long coat tails below the hips. No foot turn: the left leg is a wooden peg (its \"foot\" bones run down the peg).",
