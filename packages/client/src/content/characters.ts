@@ -17,7 +17,7 @@ import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, firstPersonArms, getLook, npcL
 import { GLB, versioned } from '../assetUrl.ts';
 import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
-import { buildGear } from './gear.ts';
+import { BEARD, GEAR_MODEL_BASE, gearModels } from './gearModels.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
 import { asNode } from './models.ts';
 
@@ -136,6 +136,17 @@ export class CharacterLibrary {
     if (this.atlas) scene.onDisposeObservable.addOnce(() => this.atlas?.dispose());
   }
 
+  /** A gear model (public/gear/<name>.glb); null when it can't be had (that piece is left off). */
+  private loadGear(name: string): Promise<AssetContainer | null> {
+    const key = `gear:${name}`;
+    let p = this.files.get(key) as Promise<AssetContainer | null> | undefined;
+    if (!p) {
+      p = LoadAssetContainerAsync(versioned(`${GEAR_MODEL_BASE}${name}.glb`), this.scene, GLB).catch(() => null);
+      this.files.set(key, p as Promise<AssetContainer>);
+    }
+    return p;
+  }
+
   private load(file: string): Promise<AssetContainer> {
     let p = this.files.get(file);
     if (!p) {
@@ -152,8 +163,9 @@ export class CharacterLibrary {
     if (spec.npc?.female) files.push('mannequin_f.glb');
     if (spec.look && !npcLookRole(spec.look)) {
       const l = getLook(spec.look);
-      files.push(...(l.whole ? l.parts : [...l.parts, l.head, ...l.hair]).map((p) => `${p}.glb`));
+      files.push(...(l.whole ? l.parts : [...l.parts, l.head, ...l.hair.filter((h) => h !== BEARD)]).map((p) => `${p}.glb`));
       files.push(`${firstPersonArms(l)}.glb`);
+      return Promise.allSettled([...files.map((f) => this.load(f)), ...gearModels(l).map((g) => this.loadGear(g))]);
     }
     return Promise.allSettled(files.map((f) => this.load(f)));
   }
@@ -228,7 +240,8 @@ export class CharacterLibrary {
       body = 'mannequin';
     } else {
       const look = getLook(spec.look);
-      const files = spec.armsOnly ? [firstPersonArms(look)] : look.whole ? look.parts : [...look.parts, look.head, ...look.hair];
+      // The beard isn't a file: buildGear makes it on the face (gear.ts, BEARD).
+      const files = spec.armsOnly ? [firstPersonArms(look)] : look.whole ? look.parts : [...look.parts, look.head, ...look.hair.filter((h) => h !== BEARD)];
       const [carrierC, ...rest] = await Promise.all(files.map((p) => this.load(`${p}.glb`)));
       if (this.scene.isDisposed) {
         holder.dispose();
@@ -249,17 +262,32 @@ export class CharacterLibrary {
       });
       // A whole-body character's first-person arms are its own (nothing to dye) or the universal ones, dyed to match it.
       this.dress(meshes, spec.armsOnly && look.whole ? { ...look, skin: look.whole.skin ?? null, cloth: look.whole.cloth ?? null, trim: look.whole.trim ?? null } : look);
-      if (!spec.armsOnly && !look.whole && look.gear?.length) {
+      if (!spec.armsOnly && !look.whole && (look.gear?.length || look.hair.includes(BEARD))) {
         const of = (i: number) => meshes.filter((m) => (partOf.get(m) ?? 0) === i);
+        const names = gearModels(look);
+        const loaded = await Promise.all(names.map((g) => this.loadGear(g)));
+        if (this.scene.isDisposed) {
+          holder.dispose();
+          return gone();
+        }
+        const models = new Map(names.flatMap((g, i) => (loaded[i] ? [[g, loaded[i]] as const] : [])));
         const headIndex = look.parts.length;
         const head = of(headIndex).filter((m) => !/_lod/.test(m.name));
+        // Gear is built by its own module, loaded with the first character that wears any (the menu's first load doesn't carry it).
+        const { buildGear } = await import('./gear.ts');
+        if (this.scene.isDisposed) {
+          holder.dispose();
+          return gone();
+        }
         const gear = buildGear(this.scene, look, {
           root: holder,
           joints,
           head: head.filter((m) => !/Eye/.test(m.material?.name ?? '')),
           eyes: head.filter((m) => (m.material?.name ?? '') === 'MI_Eyes'),
           hair: meshes.filter((m) => (partOf.get(m) ?? 0) > headIndex && !/_lod/.test(m.name)),
+          hairAll: meshes.filter((m) => (partOf.get(m) ?? 0) > headIndex),
           torso: of(0).filter((m) => !/_lod/.test(m.name)),
+          models,
         });
         // Skinned onto the body's skeleton and merged per finish: one or two draws however many pieces.
         // Bound in the head's place (it is skinned on the same skeleton): with the character atlas, gear then merges with the head and hair.

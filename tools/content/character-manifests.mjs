@@ -33,7 +33,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth']);
+const FIXES = new Set(['triangles', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'handsShare']);
 const LEAN_JOINTS = new Set(['Spine02', 'Spine01', 'Spine', 'neck', 'Head']);
 const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
@@ -105,15 +105,17 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   if (x.lean) for (const [k, v] of Object.entries(x.lean)) need(LEAN_JOINTS.has(k) && typeof v === 'number' && Math.abs(v) <= 45, `fixes.lean.${k}: degrees (−45–45) on ${[...LEAN_JOINTS].join(', ')}`);
   need(x.tail === undefined || (Array.isArray(x.tail) && x.tail.length >= 2 && x.tail.every(isPoint)), 'fixes.tail: two or more points');
   need(x.scrubBlue === undefined || HEX.test(x.scrubBlue), 'fixes.scrubBlue: #rrggbb');
+  need(x.handsShare === undefined || (typeof x.handsShare === 'number' && x.handsShare > 0 && x.handsShare <= 0.2), 'fixes.handsShare: 0–0.2 (the share of the triangle budget the hands keep)');
   for (const k of ['seamWeld', 'cloth', 'feet', 'armCloth']) need(x[k] === undefined || typeof x[k] === 'boolean', `fixes.${k}: true or false`);
   if (x.hands !== undefined) {
     const h = x.hands;
     need(typeof h === 'object' && h !== null, 'fixes.hands: { palm, curl, scale }');
-    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale; or l / r for one side)`);
+    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'wrist', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, wrist; or l / r for one side)`);
     for (const side of [h, h?.l, h?.r].filter(Boolean)) {
       need(side.palm === undefined || isPoint(side.palm), 'fixes.hands.palm: [x, y, z] in the hand joint\'s space (m)');
       need(side.curl === undefined || (typeof side.curl === 'number' && side.curl >= 0 && side.curl <= 1.5), 'fixes.hands.curl: 0–1.5 (how far the fingers close)');
       need(side.scale === undefined || (typeof side.scale === 'number' && side.scale > 0.3 && side.scale < 3), 'fixes.hands.scale: 0.3–3');
+      need(side.wrist === undefined || typeof side.wrist === 'boolean', 'fixes.hands.wrist: true (the skin past the wrist rides the hand alone)');
     }
   }
   // Landmarks are needed only to rig an unrigged (FBX) download; a rigged GLB brings its own joints.
@@ -190,6 +192,7 @@ export function buildSpec(m) {
     feet: x.feet,
     scrubBlue: x.scrubBlue,
     hands: x.hands,
+    handsShare: x.handsShare,
     joints,
   };
 }

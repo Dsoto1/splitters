@@ -396,20 +396,7 @@
         0.25,
         40
       ],
-      "normalSize": 1024,
-      "interior": {
-        "out": "vehicles/offroad_buggy_cockpit.glb",
-        "label": "Tactical Off-Road Beast, the buggy's cockpit (owner's Meshy generation, 2026-10-29)",
-        "box": [
-          [-0.95, -0.63, -1.05],
-          [0.95, 0.8, 1.45]
-        ],
-        "triangles": 32000,
-        "maxError": 0.02,
-        "textureSize": 2048,
-        "normalSize": 2048,
-        "budget": "cockpit"
-      }
+      "normalSize": 1024
     },
     {
       "out": "vehicles/offroad_tire.glb",

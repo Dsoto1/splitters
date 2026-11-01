@@ -26,6 +26,134 @@ Also seen, not touched: Pantry Raid's mouse holes are behind the 0.9 m skirting 
 walks into them without jumping.
 
 ### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; not merged)
+
+### `wip/original-looks` (agent, 2026-11-01; not merged): the original characters' hats, eyewear and beards
+Owner: the part-built looks have "bowls on heads, eyewear and mustaches all strange"; Engineer's "accessories need work",
+Sprout's headband. Started from 899537c's ideas
+(model gear, refits; ported by hand onto current main, nothing it replaced brought back).
+- **Fitting** (`packages/client/src/content/headFit.ts`, pure, unit-tested): `HeadMap` measures the head (skin;
+  skin + hair kept within 1.2 cm, draped) as distances from the skull's middle in 48 × 32 directions, from the bind
+  pose. `Geo` builds surfaces with thickness (`slab`), tubes and fans, faces turned outwards. `fitModel` seats a
+  helmet model: smallest size and lowest seat with the skull above the eyes clear of the shell's inside, the rim over
+  the eyes at the brows, a deep shell squashed to 0.88/0.76 if needed; cached per model + head + hair (30-300 ms
+  once on this loaded box).
+- **gear.ts** rebuilt for head gear: cap (crown, 6 seams, button, curved peak), beret (leather band, badge over the
+  left eye, cloth pulled down over the right ear), beanie (ribbed cuff), wide-brim hat (pinched crown, band, brim up
+  at the sides), headband (tails knotted at the back), shades (lenses clear of brow and cheeks, bridge on the nose,
+  arms to and behind the ears), goggles (cups to the face, strap), mask (hanging point). Hair a hat covers is cut
+  (`trimHair`: small pieces such as buns go whole). Chest/back gear unchanged. Gear code is its own chunk
+  (`gear.ts` + `headFit.ts`, imported when a character with gear is built; `gearModels.ts` holds what preload needs).
+  Helmet meshes hang straight on the Head joint (full-body first person's `cutHead` hides children of head joints only, not grandchildren).
+- **Helmets** (models on main since roster-cleanup; `GEAR` `model`, 4 helmets appended so custom IDs' gear mask is
+  4-8 hex): Engineer `mk2_helmet`; `helmet` is now the military model. Steel, aviator and viking only in the Designer.
+  The owner is retiring 14 of the modular looks (the lead removes them on another branch); this branch left their
+  presets as they were and only the kept ones (Linktifa, Sprout, Warden, Engineer) are on the sheets. Tried by eye on
+  the retired ones too: steel helmet on Bulwark and aviator on Frost fit well, if anyone wants them.
+- **Beard**: `hair_beard`'s file is no longer loaded; `BEARD` in gear.ts builds a full beard (sideburns, jaw, chin,
+  moustache, mouth clear, ragged edges) in the hair colour. Designer's Beard option uses it too.
+- Tools: `__grips.head(alpha, radius, beta?)` frames the head after `__grips.pose(look, weapon, 'third')`.
+- Portraits re-captured: Sprout, Warden, Engineer (Linktifa's has no head gear). Menu bundle 827.4 kB gzip.
+- Checks: typecheck; headFit/bodySizes/mergeParts and the shared files test:changed picks (the bot-match ones timed
+  out under a load of ~30 and pass alone); content OK; e2e designer, visual PASS; characters: all checks passed
+  across two runs except the known flaky Imp hold; once "third person and back (core.pistol): no hands" (the Dapper,
+  no gear) which passed on the rerun. Full-body first person: no head gear, helmet or beard in view (up, ahead, down).
+- Sheets (agent scratchpad): `original-looks/before.png`, `after.png` and per-look closeups (kept looks only).
+
+### Grip pass 2 (`wip/grip-pass-2`, agent, 2026-11-01; merged to main 47acd97)
+Owner: "when do all the grips get fixed, I see some still not right". Audit before/after (main d8a4afa vs this branch),
+rifle, pistol, shotgun and Spear, every player character (63 incl. the rig's Ranger), Character Select pose, sheets and
+`compare.md` in the agent's scratchpad (`grips2/before/`, `grips2/after/`; re-run the audit for fresh ones, ~80 min on a
+loaded machine: `WEAPONS_ONLY=rifle,pistol,shotgun,spear AUDIT_PX=400`).
+- **Root causes fixed in the shared rules** (tools/content/hands.mjs, characterAnimator.ts; all characters re-fitted):
+  - mitten hands (most Meshy hands) curled once at the knuckles like a paddle: now they curl along the middle finger's
+    three joints (one wide finger), curl ≤ 1; long fingers (Croakley, Scamp, Halvard, Salamander) curl up to 1.5×;
+  - long-gun support hands sat under the handguard palm up with the fingers standing open: they now cup it over the base
+    of the fingers (`CUP_BACK` 0.22 of the hand's length) and close all the way (`supportCurl`: 1 long, 0.7 pistol), in
+    third person, first person and on creatures. Visibly better on King Aldric, Dusty Colt, the Dapper, Shade, Ricochet,
+    Sir Galloway, Ashwalker, Ser Brannock; support fingertips median 9.0 → 6.4 cm (rifle);
+  - a dense cuff at the wrist (King Aldric's fur cuffs) held the knuckle line and curled into flaps: measured out (only
+    King matches the rule); his model was also re-cut from his Meshy rig task (re-fetched, no credits) with
+    `fixes.handsShare: 0.1` (the cuffs had taken the hands' 4% of the budget: his hands were a few dozen triangles);
+  - a long gun's barrel line keeps `HEAD_CLEAR` 0.15 from the head joint (the stock drops up to 5 cm): Capt. Nova's face
+    flag is gone (head-gun 0.10 → 0.13 m);
+  - rehand-built.mjs applied `fixes.hands.scale` again on every run (hands shrank each time): it no longer does (the
+    scale is applied at import); Saint Nick, Rattles, Anubis, Ashwalker and Agent Zhao were restored from main and
+    re-fitted once.
+- **Arm cloth by surface distance** (armweights.mjs, `fixes.armCloth`): cloth an arm holds is eased to the body by its
+  share of the way arm → body ALONG THE SURFACE (a coat side joined under the arm goes to the body, a wide sleeve stays):
+  the rule asked for. But the audit's spikes are not arm cloth any more: it now reports spikes by joint, and they are in
+  the legs (Iron Knight 14 on the thighs, Ser Brannock: a tabard between the legs), the armpits (Big Bogdan, the Dapper)
+  and low-detail fingers (Bonesworth's skeletal fingers, King's). Tried on Bogdan and the Dapper: no change, so no
+  character uses it. Next: the same surface rule for legs (cloth between the thighs to the pelvis) for the Knight (no
+  download: his rig task 404s on this key) and Brannock (his rig task is fetchable).
+- **Biscuit** ships rebuilt from his T-pose (`source.file` takes the GLB): rigid paws (fists) plus `fixes.hands.r.wrist`
+  (the shooting paw's skin past the wrist rides the hand alone; blended into the forearm it folded looking down): the
+  e2e drawn-hand check passes on every pose (pitch −1.45 flat was 0.52-0.59). His paws stay closed fists (curling them
+  made the skin a ball: e2e flat 0.02-0.10).
+- **Teddy**: his "paws" are round shells: `hands.curl: 0` (closing them tore the skin; spikes gone on the shotgun/spear).
+- **T-pose characters** (Visitor, Elder, Ember, Merrow, Croakley, Snikkit, Scamp, Halvard, Pruitt, Greyfang, Bandit,
+  Biscuit) are rebuilt from their downloads with prepare-meshy-characters.mjs, not rehand-built: a re-fit from the cut
+  file turned the Visitor's split fingers into a mitten. Use `ONLY=…` with the downloads dir for these.
+- **Roster Board flags (owner via lead):** Bandit "holds gun in face, scale seems bigger": he is fitted to the same
+  height as every small character (1.40 m), but he is the broadest of them (shoulders 0.34 of his height; Biscuit 0.27,
+  Otter 0.25, Scamp 0.18) with a long tail, and his head sits low between high shoulders, so the stock at his shoulder
+  is at his snout from every angle (head joint 0.27 m from the gun's line). Tried: a lean back (`fixes.lean`, neck 16°)
+  and keeping the gun out of the face's skin (a head-skin surface like TorsoSurface): no visible change, both dropped.
+  Needs a per-look hold (the gun held lower, or a smaller body scale per look): not built. Hyena: a pre-curled claw
+  (rigid by shape, in-house FBX build): `fixes.hands.r.palm` moved 3.5 cm into the claw, shooting hand 10.4 → 9.1 cm
+  off the grip, rifle `open` gone; still off/fp (a claw can't close further without its FBX). Otter: big mitten hands
+  (24 cm long, 10 thick); a palm override either way was no better (off 7.3 → 6.8 / 8.4 cm, first person worse): left.
+  Ivory Rustwalker: skipped (retired by the owner).
+- **Results** (flags per character over the four weapons, before → after): open 26 → 10, face 1 → 0, off 18 → 18,
+  fp 18 → 18, spikes 17 → 18, flat (finger skin) 8 → 7; flagged without the curl test 38 → 29 (with it 39 → 49). The
+  references stay clean (The Visitor 2 → 0, Rattles 0 → 0). The audit's curl test
+  (fingertips open vs closed, rifle) now reads ±1 cm on most hands (flat 12 → 32, back 3 → 13): a finger wrapped all the
+  way round the grip puts its knuckles, not its tips, furthest from the wrist, and the reference Visitor reads −0.4 cm
+  even by the finger skin's mean distance; judge those by the sheets (the support hands are visibly better). Shooting
+  hand medians: drawn centre 4.2 → 4.7 cm, tips 6.0 → 6.6 cm (the fuller curl), first person 4.0 → 4.5 cm.
+- **Open, and why:**
+  - fists and claws that can't close (rigid by shape): Hyena, Goblin L, Gorgle R, Rustwalker L, Giggles, Boglurker;
+    Boglurker's right hand is 2 cm of 31 vertices and Goblin/Hyena/Boglurker are in-house FBX builds: need the FBX
+    folders (with otter, toad, salamander, elder, alien, cat, pilot, pirate, titan: the owner's downloads);
+  - hands hidden in sleeves or cut to a few long triangles (Giggles: a ruffled sleeve tube; Grizzelda: 191 vertices, a
+    "width" of 33 cm): a re-cut from their rig tasks (fetchable, no credits) with `handsShare`, or a hand modelled out;
+  - first person (fp) and off flags on the stubby/clawed ones above plus Croakley, Saint Nick, Salamander, Punkin,
+    Desert Ranger, Otter, Vanguard: the drawn hand centre sits 6.5-10 cm from the grip (big hands, short arms);
+  - spikes in legs/armpits (above); the Dapper's fingers (middle_03_r 23×): his rig task 404s on this key (owner);
+  - Barnaby Bruin: not shipped (a rebake path for characters, keeping the skin weights through rebake's vertex map, is
+    the way; not done);
+  - creature skins (Imp, Puglin) aren't in the audit (CreatureAnimator, not looks); the Spear is audited as it is held
+    (one hand on the shaft: there is no two-handed thrust hold to audit).
+- Checks: typecheck, test:changed (31 pass; content tests 26), content check OK, bundle budget 2953/3000 kB; e2e designer
+  PASS, visual PASS, characters: every grip check PASS (Biscuit included) but the known Imp check (`wip/flaky-characters`)
+  and the Imp page's screenshot timing out under load (twice); arsenal: only "R loads the barrel again" (the known load
+  race, see `wip/arsenal-fix`). Portraits recaptured for King Aldric and Biscuit (the only bodies whose shape changed).
+
+### In-house buggy cockpit (`wip/cockpit-parts`, agent, 2026-11-01; merged to main 6b6a40e)
+Owner: the driver's view still looked bad up close (lumpy black cage blobs, smeared dash) even with the cropped Meshy
+interior; build the cockpit parts in-house, only for the local driver's cockpit view.
+- **Data:** `packages/client/src/content/cockpits.ts` (`COCKPITS` by mount id; buggy only): tubes (paths, radius,
+  bend), rounded boxes, discs, seats (crease point, recline, harness), the wheel (centre, column direction, radius,
+  spokes, lock), gauges (`speed` / `revs` needles), switch rows, a palette, and `hide` boxes (mount frame). Measured on
+  the body's triangles (slices): roof frame 1.47 m on rails x ±0.46 from the rear hoop z -1.0 to the front bar z 0.6,
+  hoop at z 0.05, A-pillars and a centre brace to the hood, seats at creases z 0.28 / -0.53 / -0.94 (the model has
+  three rows), wheel at (-0.32, 1.0, 0.78). Doc: docs/VEHICLES.md, "In-house cockpits".
+- **Geometry:** `game/cockpitGeometry.ts`, engine-free (tube sweep with parallel-transport frames and rounded corners,
+  rounded boxes, caps, straps), so it is unit tested and can be dumped in Node (type stripping) for offline renders.
+  ~17.3k triangles: 16.2k static in 4 surfaces (paint 3.4k, metal 2.4k, plastic 3.2k, fabric 7.3k), wheel 1.0k,
+  needles 60 each; 9 draws (the old cropped interior was 31.9k triangles plus a 3.6 MB download). Built once, kept disabled between rides.
+- **Client:** `game/cockpitInterior.ts` builds Babylon meshes (vertex colours, 4 PBR materials sharing a 64 px
+  generated roughness grain), parents them under `<mount>_gun` (rides the springs), cuts your copy of the body with
+  `partitionByBox` (now several boxes), turns the wheel from the eased `ms` steer (View.sprung) × lock and the needles
+  from the tick velocity. `View.cockpitInteriorState()` for tests; e2e vehicles checks the parts and body cut, that
+  steering turns the wheel and the speedometer moves, and that the chase view draws the body alone.
+- **Dropped:** `MountDef.cockpitModel`, `vehicles/offroad_buggy_cockpit.glb` (3.6 MB) and its guns.json `interior`,
+  lock and provenance entries. prepare-guns' `interior` support stays (unused).
+- **Offline preview trick:** the scratchpad scripts dumped the body GLB's triangles with sampled colours and rendered
+  slices / a perspective from the eye in Python, with the parts overlaid; far faster than headless Babylon at 1 fps.
+- Next: the gun jeep and kart can get entries; harness colour (red) and the dash layout are easy to retune in data.
+
+### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; merged to main dc1d1fc)
 Owner's queue of 2026-10-31 ("new models on the Drive", "FX: I bought the full licence"). Downloads outside the repo:
 models in `/home/user/meshy-drive/drive-2026-11-01/` (links for the pipelines in `/home/user/meshy-drive/links-1101/`),
 FX zips in `/home/user/fx-packs/drive-2026-11-01/fx/` (extracted: `/home/user/fx-packs/extracted-2026-11-01/`; the
