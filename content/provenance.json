@@ -5455,6 +5455,196 @@
       ]
     },
     {
+      "file": "characters/meshy_pinkalien.glb",
+      "sha256": "256dd10cf6ccb142",
+      "triangles": 15998,
+      "bytes": 1175556,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Pink Suited Alien Gen (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_pinkalien_fparms.glb",
+      "sha256": "2dceaab5a1aefbb0",
+      "triangles": 5309,
+      "bytes": 444236,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Pink Suited Alien Gen (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_alienencounter.glb",
+      "sha256": "65174ea964c978c3",
+      "triangles": 10461,
+      "bytes": 1358272,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Alien Encounter (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_alienencounter_fparms.glb",
+      "sha256": "d9f7e2d8bb923f78",
+      "triangles": 1318,
+      "bytes": 560008,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Alien Encounter (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_vampire.glb",
+      "sha256": "57f91d1edce1d59d",
+      "triangles": 10489,
+      "bytes": 874680,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Vampire Male (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_vampire_fparms.glb",
+      "sha256": "6b948fff89121fe8",
+      "triangles": 1618,
+      "bytes": 379236,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Vampire Male (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_wwiisoldier.glb",
+      "sha256": "d59a77f655ac1abb",
+      "triangles": 10373,
+      "bytes": 1428508,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): WWII Infantry Soldier (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_wwiisoldier_fparms.glb",
+      "sha256": "0cb07c7845da311a",
+      "triangles": 939,
+      "bytes": 481320,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): WWII Infantry Soldier (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_beaniealien.glb",
+      "sha256": "0d95f21dbb81eedc",
+      "triangles": 10387,
+      "bytes": 1392412,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Beanie Alien T Pose (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_beaniealien_fparms.glb",
+      "sha256": "ee3bf8a7580f6f0d",
+      "triangles": 1015,
+      "bytes": 484668,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Beanie Alien T Pose (download dated 2026-11-01)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
       "file": "creatures/imp.glb",
       "sha256": "70ad9e3a0ca7db81",
       "triangles": 8640,

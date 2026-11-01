@@ -9,7 +9,7 @@ made only on a commit that passed CI on a check branch.
 ## Unreleased
 
 **New characters (batch 3)**
-- Eleven new characters: **Orange Suit Engineer** and **Coffee Brown** (Everyday Folk), **Gas Mask Engineer**, **Stealth Operative** and **Crimson Operative** (Soldiers), **Mummy Bot** and **Pharaoh Mummy Warrior** (Undead & Horror), **CRT Robot**, **Field Medic Automaton** (a large one), **Alien Biker** and the **Baseball Robot** (Creatures & Machines).
+- Sixteen new characters: **Orange Suit Engineer** and **Coffee Brown** (Everyday Folk), **Gas Mask Engineer**, **Stealth Operative**, **Crimson Operative** and **WWII Infantry** (Soldiers), **Mummy Bot**, **Pharaoh Mummy Warrior** and **Vampire** (Undead & Horror), **CRT Robot**, **Field Medic Automaton** (a large one), **Alien Biker**, **Pink Mantis**, **Alien Encounter** and **Beanie Alien** (both small) and the **Baseball Robot** (Creatures & Machines).
 - The Baseball Robot has no feet: he **rolls** on his ball. No walk cycle: he glides, leaning into his speed and into his turns, and still holds and fires every gun. (Any character can be made to roll: `locomotion: roll` in its manifest.)
 - **The Dapper** is rebuilt from the owner's new model: a sharper face, a bowler hat, real hands on the gun. **Rusty Mech** keeps more of its shape (16k → 18k triangles).
 

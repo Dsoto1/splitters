@@ -1,0 +1,37 @@
+{
+  "id": "meshy_pinkalien",
+  "kind": "character",
+  "use": "player",
+  "order": 91,
+  "name": "Pink Mantis",
+  "look": "core.pinkalien",
+  "group": "creatures",
+  "bio": "Folds his hands, bows politely, then eats the whole squad. Impeccable suit.",
+  "body": "male",
+  "notes": "Drive, 2026-11-01 evening, fourth drop (\"Pink Suited Alien Gen\", rigged, 233k triangles). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). LICENCE PENDING: recorded as CC0 until the owner confirms (that Drive folder has been CC0). Named by the owner (he reads as a mantis in a suit).",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Pink Suited Alien Gen"
+    },
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Pink_Suited_Alien_Gen_All_Animations\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 16000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

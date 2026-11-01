@@ -83,6 +83,11 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.vintagepro', name: 'Coffee Brown', body: 'female', head: '', parts: ['meshy_vintagepro'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_vintagepro_fparms' }, group: 'folk' },
   { id: 'core.medicautomaton', name: 'Field Medic Automaton', body: 'male', head: '', parts: ['meshy_medicautomaton'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_medicautomaton_fparms' }, group: 'creatures' },
   { id: 'core.alienbiker', name: 'Alien Biker', body: 'male', head: '', parts: ['meshy_alienbiker'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_alienbiker_fparms' }, group: 'creatures' },
+  { id: 'core.pinkalien', name: 'Pink Mantis', body: 'male', head: '', parts: ['meshy_pinkalien'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_pinkalien_fparms' }, group: 'creatures' },
+  { id: 'core.alienencounter', name: 'Alien Encounter', body: 'male', head: '', parts: ['meshy_alienencounter'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_alienencounter_fparms' }, group: 'creatures' },
+  { id: 'core.vampire', name: 'Vampire', body: 'male', head: '', parts: ['meshy_vampire'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_vampire_fparms' }, group: 'horror' },
+  { id: 'core.wwiisoldier', name: 'WWII Infantry', body: 'male', head: '', parts: ['meshy_wwiisoldier'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_wwiisoldier_fparms' }, group: 'soldiers' },
+  { id: 'core.beaniealien', name: 'Beanie Alien', body: 'male', head: '', parts: ['meshy_beaniealien'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_beaniealien_fparms' }, group: 'creatures' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -169,4 +174,9 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.vintagepro': 'Funk on the stereo, flares on the floor, and a sidearm that never misses a beat.',
   'core.medicautomaton': 'Patches you up, then patches you out. Bedside manner not installed.',
   'core.alienbiker': 'Crossed four galaxies for the open road. Still can\'t find parking.',
+  'core.pinkalien': 'Folds his hands, bows politely, then eats the whole squad. Impeccable suit.',
+  'core.alienencounter': 'Small, green and absolutely sure you started it.',
+  'core.vampire': 'Five hundred years old, never once sunburnt. Bring your own garlic.',
+  'core.wwiisoldier': 'Dug in since \'44. Nobody told him the war ended, and he is not taking chances.',
+  'core.beaniealien': 'Varsity jacket, knit beanie, three-fingered trigger discipline.',
 };
