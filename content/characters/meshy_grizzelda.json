@@ -5,6 +5,7 @@
   "order": 20,
   "name": "Grizzelda",
   "look": "core.grizzelda",
+  "group": "legends",
   "bio": "Brews potions, curses rivals and keeps exact count of both.",
   "body": "female",
   "size": "small",

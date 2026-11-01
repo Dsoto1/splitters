@@ -25347,7 +25347,7 @@
     },
     {
       "file": "props/mv_shop_sign.glb",
-      "sha256": "5801f87fae211caf",
+      "sha256": "b3ec65e79d06c47b",
       "triangles": 132,
       "bytes": 8124,
       "source": "tiletrigger-medieval/mv_shop_sign.glb",
@@ -25362,7 +25362,7 @@
     },
     {
       "file": "props/mv_hay_cart.glb",
-      "sha256": "35bbe5983e6a7ab3",
+      "sha256": "3e6669d9de8c2f9d",
       "triangles": 852,
       "bytes": 34532,
       "source": "tiletrigger-medieval/mv_hay_cart.glb",
@@ -25587,9 +25587,9 @@
     },
     {
       "file": "props/mv_tarp_tent.glb",
-      "sha256": "97bafb08076ec9ee",
+      "sha256": "c5219d866333d204",
       "triangles": 204,
-      "bytes": 12964,
+      "bytes": 12968,
       "source": "tiletrigger-medieval/mv_tarp_tent.glb",
       "title": "Style Pack pieces (Medieval Village)",
       "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
@@ -25867,6 +25867,936 @@
       "license": "Owned",
       "modifications": [
         "built in code by tools/content/prepare-harbor.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_satellite_dish.glb",
+      "sha256": "bb413820e1449393",
+      "triangles": 440,
+      "bytes": 15344,
+      "source": "tiletrigger-snow/so_satellite_dish.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_antenna_mast.glb",
+      "sha256": "38024b1307411298",
+      "triangles": 572,
+      "bytes": 30616,
+      "source": "tiletrigger-snow/so_antenna_mast.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_heater.glb",
+      "sha256": "7177dd76c3877121",
+      "triangles": 340,
+      "bytes": 17024,
+      "source": "tiletrigger-snow/so_heater.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_generator.glb",
+      "sha256": "c89793b87159013e",
+      "triangles": 232,
+      "bytes": 14660,
+      "source": "tiletrigger-snow/so_generator.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_snowmobile.glb",
+      "sha256": "76fa17cff6286238",
+      "triangles": 216,
+      "bytes": 14272,
+      "source": "tiletrigger-snow/so_snowmobile.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_tarp_crates.glb",
+      "sha256": "c1cb5ca47b6e1686",
+      "triangles": 328,
+      "bytes": 19064,
+      "source": "tiletrigger-snow/so_tarp_crates.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_lamp_post.glb",
+      "sha256": "e940cc1619e34722",
+      "triangles": 124,
+      "bytes": 8536,
+      "source": "tiletrigger-snow/so_lamp_post.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_flagpole.glb",
+      "sha256": "e5f5adb54e42d800",
+      "triangles": 152,
+      "bytes": 8124,
+      "source": "tiletrigger-snow/so_flagpole.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_chainlink_fence.glb",
+      "sha256": "0cce6911841079b7",
+      "triangles": 436,
+      "bytes": 24676,
+      "source": "tiletrigger-snow/so_chainlink_fence.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_snow_fence.glb",
+      "sha256": "28cc827189d4fef1",
+      "triangles": 264,
+      "bytes": 15124,
+      "source": "tiletrigger-snow/so_snow_fence.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_pipe_run.glb",
+      "sha256": "c9d45ff2b00117b4",
+      "triangles": 508,
+      "bytes": 24928,
+      "source": "tiletrigger-snow/so_pipe_run.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_drums.glb",
+      "sha256": "d594ee684fed416c",
+      "triangles": 1212,
+      "bytes": 49940,
+      "source": "tiletrigger-snow/so_drums.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_radio_console.glb",
+      "sha256": "2ca37270248a7f98",
+      "triangles": 386,
+      "bytes": 18260,
+      "source": "tiletrigger-snow/so_radio_console.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_ski_rack.glb",
+      "sha256": "2dfcbbdcb1ce5a27",
+      "triangles": 228,
+      "bytes": 15000,
+      "source": "tiletrigger-snow/so_ski_rack.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_supply_sled.glb",
+      "sha256": "52d4083109663ae7",
+      "triangles": 348,
+      "bytes": 21424,
+      "source": "tiletrigger-snow/so_supply_sled.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/so_snow_pile.glb",
+      "sha256": "7117b27be96d6ced",
+      "triangles": 176,
+      "bytes": 7468,
+      "source": "tiletrigger-snow/so_snow_pile.glb",
+      "title": "Style Pack pieces (Snow Outpost)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-snow.mjs)",
+      "url": "tools/content/prepare-snow.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-snow.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_market_stall.glb",
+      "sha256": "1cbcecea1772f953",
+      "triangles": 1486,
+      "bytes": 59132,
+      "source": "tiletrigger-desert/dc_market_stall.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_canopy.glb",
+      "sha256": "5943a234dfd64979",
+      "triangles": 175,
+      "bytes": 12672,
+      "source": "tiletrigger-desert/dc_canopy.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_banner.glb",
+      "sha256": "a099f5790fdba7c5",
+      "triangles": 162,
+      "bytes": 11300,
+      "source": "tiletrigger-desert/dc_banner.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_lantern.glb",
+      "sha256": "3c8123c019acacac",
+      "triangles": 304,
+      "bytes": 14292,
+      "source": "tiletrigger-desert/dc_lantern.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_palm_planter.glb",
+      "sha256": "d637def2c82041ff",
+      "triangles": 604,
+      "bytes": 30472,
+      "source": "tiletrigger-desert/dc_palm_planter.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_well.glb",
+      "sha256": "ee1fa2a389ab6a86",
+      "triangles": 608,
+      "bytes": 27464,
+      "source": "tiletrigger-desert/dc_well.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_vase.glb",
+      "sha256": "314aa5a66d5710b2",
+      "triangles": 376,
+      "bytes": 16692,
+      "source": "tiletrigger-desert/dc_vase.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_jars.glb",
+      "sha256": "96e9f84bbe114009",
+      "triangles": 736,
+      "bytes": 25968,
+      "source": "tiletrigger-desert/dc_jars.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_rug.glb",
+      "sha256": "dbd6f7628906df12",
+      "triangles": 300,
+      "bytes": 19012,
+      "source": "tiletrigger-desert/dc_rug.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_crane.glb",
+      "sha256": "09d422b778f1d407",
+      "triangles": 184,
+      "bytes": 11680,
+      "source": "tiletrigger-desert/dc_crane.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_cloth_line.glb",
+      "sha256": "f46083aad03fcb2a",
+      "triangles": 84,
+      "bytes": 6704,
+      "source": "tiletrigger-desert/dc_cloth_line.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_scaffold.glb",
+      "sha256": "e2b86d26f38102ab",
+      "triangles": 156,
+      "bytes": 10740,
+      "source": "tiletrigger-desert/dc_scaffold.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_awning_window.glb",
+      "sha256": "a7823a633a4ee161",
+      "triangles": 168,
+      "bytes": 12128,
+      "source": "tiletrigger-desert/dc_awning_window.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_lattice_window.glb",
+      "sha256": "6a6f6cf8ea93486d",
+      "triangles": 1980,
+      "bytes": 109120,
+      "source": "tiletrigger-desert/dc_lattice_window.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_shutter_window.glb",
+      "sha256": "8e987811b90077f7",
+      "triangles": 300,
+      "bytes": 18724,
+      "source": "tiletrigger-desert/dc_shutter_window.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_spice_baskets.glb",
+      "sha256": "b5750567e5ae80d0",
+      "triangles": 888,
+      "bytes": 31764,
+      "source": "tiletrigger-desert/dc_spice_baskets.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_cushions.glb",
+      "sha256": "ec910a379f1025b7",
+      "triangles": 284,
+      "bytes": 15032,
+      "source": "tiletrigger-desert/dc_cushions.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_rug_rack.glb",
+      "sha256": "872273faf89d7721",
+      "triangles": 216,
+      "bytes": 14452,
+      "source": "tiletrigger-desert/dc_rug_rack.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_column.glb",
+      "sha256": "a8da18f2486e25b6",
+      "triangles": 312,
+      "bytes": 15760,
+      "source": "tiletrigger-desert/dc_column.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/dc_ornate_arch.glb",
+      "sha256": "52e6cc167951e330",
+      "triangles": 384,
+      "bytes": 24228,
+      "source": "tiletrigger-desert/dc_ornate_arch.glb",
+      "title": "Style Pack pieces (Desert City)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
+      "url": "tools/content/prepare-desert.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-desert.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_zipline_post.glb",
+      "sha256": "d72cb973a3f0182a",
+      "triangles": 304,
+      "bytes": 16100,
+      "source": "tiletrigger-jungle/jt_zipline_post.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_crane.glb",
+      "sha256": "c65d256af51b32d8",
+      "triangles": 256,
+      "bytes": 14464,
+      "source": "tiletrigger-jungle/jt_crane.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_wooden_platform.glb",
+      "sha256": "232facd3c3b37e6c",
+      "triangles": 464,
+      "bytes": 25016,
+      "source": "tiletrigger-jungle/jt_wooden_platform.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_statue_large.glb",
+      "sha256": "4b990bae4ccce4ea",
+      "triangles": 784,
+      "bytes": 27956,
+      "source": "tiletrigger-jungle/jt_statue_large.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_statue_small.glb",
+      "sha256": "7907f8e7832b0c63",
+      "triangles": 376,
+      "bytes": 18588,
+      "source": "tiletrigger-jungle/jt_statue_small.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_obelisk.glb",
+      "sha256": "c00db64515921771",
+      "triangles": 276,
+      "bytes": 14684,
+      "source": "tiletrigger-jungle/jt_obelisk.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_temple_spire.glb",
+      "sha256": "9c60ad1c45dc2ee8",
+      "triangles": 300,
+      "bytes": 11332,
+      "source": "tiletrigger-jungle/jt_temple_spire.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_fire_bowl.glb",
+      "sha256": "6dde756acc43235a",
+      "triangles": 351,
+      "bytes": 15704,
+      "source": "tiletrigger-jungle/jt_fire_bowl.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_hanging_brazier.glb",
+      "sha256": "920da6dfc96c91d5",
+      "triangles": 455,
+      "bytes": 19992,
+      "source": "tiletrigger-jungle/jt_hanging_brazier.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_wall_torch.glb",
+      "sha256": "9c07e33da390c015",
+      "triangles": 263,
+      "bytes": 12820,
+      "source": "tiletrigger-jungle/jt_wall_torch.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_banner_teal.glb",
+      "sha256": "c607aa3cc188da01",
+      "triangles": 378,
+      "bytes": 17196,
+      "source": "tiletrigger-jungle/jt_banner_teal.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_banner_red.glb",
+      "sha256": "9b7b4c515c2b75e5",
+      "triangles": 354,
+      "bytes": 16956,
+      "source": "tiletrigger-jungle/jt_banner_red.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_tree_root_arch.glb",
+      "sha256": "ebc37b179ee8755e",
+      "triangles": 1032,
+      "bytes": 50128,
+      "source": "tiletrigger-jungle/jt_tree_root_arch.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_tree_trunk.glb",
+      "sha256": "a0eec73d62e0dec7",
+      "triangles": 760,
+      "bytes": 26040,
+      "source": "tiletrigger-jungle/jt_tree_trunk.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_plant_cluster.glb",
+      "sha256": "45050eb116e33733",
+      "triangles": 492,
+      "bytes": 21696,
+      "source": "tiletrigger-jungle/jt_plant_cluster.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_planter.glb",
+      "sha256": "19651d3da4fb75b6",
+      "triangles": 228,
+      "bytes": 15824,
+      "source": "tiletrigger-jungle/jt_planter.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_pottery.glb",
+      "sha256": "27e2d36bff6e8724",
+      "triangles": 560,
+      "bytes": 19540,
+      "source": "tiletrigger-jungle/jt_pottery.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_rubble_pile.glb",
+      "sha256": "aeba7de5170d525d",
+      "triangles": 300,
+      "bytes": 15080,
+      "source": "tiletrigger-jungle/jt_rubble_pile.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_collapsed_column.glb",
+      "sha256": "5c83f1273ce66ee7",
+      "triangles": 204,
+      "bytes": 9232,
+      "source": "tiletrigger-jungle/jt_collapsed_column.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_broken_column.glb",
+      "sha256": "e138694be74ebd40",
+      "triangles": 252,
+      "bytes": 11452,
+      "source": "tiletrigger-jungle/jt_broken_column.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_sarcophagus.glb",
+      "sha256": "60dbe7df648cbb0b",
+      "triangles": 240,
+      "bytes": 11916,
+      "source": "tiletrigger-jungle/jt_sarcophagus.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_spikes.glb",
+      "sha256": "4ff2933afd447add",
+      "triangles": 252,
+      "bytes": 11392,
+      "source": "tiletrigger-jungle/jt_spikes.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_chain_rail.glb",
+      "sha256": "1dd31a797d289ddd",
+      "triangles": 336,
+      "bytes": 19564,
+      "source": "tiletrigger-jungle/jt_chain_rail.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_rope_rail.glb",
+      "sha256": "1d4fb235a6fffbf7",
+      "triangles": 360,
+      "bytes": 17932,
+      "source": "tiletrigger-jungle/jt_rope_rail.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_altar_fire.glb",
+      "sha256": "99d4668c969cc114",
+      "triangles": 375,
+      "bytes": 17812,
+      "source": "tiletrigger-jungle/jt_altar_fire.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
+        "centred, stood on the ground and scaled to metres"
+      ]
+    },
+    {
+      "file": "props/jt_overgrown_beam.glb",
+      "sha256": "429a0d1eae72f267",
+      "triangles": 996,
+      "bytes": 45348,
+      "source": "tiletrigger-jungle/jt_overgrown_beam.glb",
+      "title": "Style Pack pieces (Jungle Ruins refresh)",
+      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
+      "url": "tools/content/prepare-jungle.mjs",
+      "license": "Owned",
+      "modifications": [
+        "built in code by tools/content/prepare-jungle.mjs",
         "centred, stood on the ground and scaled to metres"
       ]
     },
@@ -26582,9 +27512,9 @@
     },
     {
       "file": "models/vehicles/offroad_buggy.glb",
-      "sha256": "ed61ba067f52403e",
-      "triangles": 13894,
-      "bytes": 1202964,
+      "sha256": "48e73671ddf57ac8",
+      "triangles": 39900,
+      "bytes": 3769444,
       "source": "meshy-owned-guns/Tactical Off-Road Beast, the buggy (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -26601,9 +27531,9 @@
     },
     {
       "file": "models/vehicles/offroad_tire.glb",
-      "sha256": "a22699aba379759c",
-      "triangles": 676,
-      "bytes": 48840,
+      "sha256": "1da950ab8f2e87ad",
+      "triangles": 3757,
+      "bytes": 549632,
       "source": "meshy-owned-guns/Rugged Off-Road Tire, the buggy's wheels (owner's Meshy generation, 2026-10-29)",
       "title": "Tile Trigger originals (made with Meshy): weapons, turrets, the medkit, and the buggy and its tire",
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
@@ -26612,6 +27542,8 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"
       ]

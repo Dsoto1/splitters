@@ -1,4 +1,6 @@
 import {
+  CHARACTER_GROUPS,
+  CHARACTER_GROUP_LABELS,
   CHARACTER_PROFILES,
   CORE_LOOKS,
   botSetLabel,
@@ -8,6 +10,7 @@ import {
   PLAYER_NPC_LOOKS,
   NPC_ROLE_SPECS,
   npcLookRole,
+  lookGroup,
   validLookId,
   DEFAULT_LOOK,
   DEFAULT_RULES,
@@ -320,7 +323,8 @@ export class FrontEnd {
   server: string;
   look: string;
   private charFilter = 'all';
-  private hovered: string | null = null;
+  /** The character shown on Character Select (clicked, not yet chosen): `look` changes only when it's confirmed. */
+  private previewed: string | null = null;
   private keyHandler = (e: KeyboardEvent) => this.onKey(e);
 
   constructor(
@@ -389,6 +393,7 @@ export class FrontEnd {
   show(status = ''): void {
     this.root.hidden = false;
     this.setStatus(status);
+    this.previewed = null;
     this.scene.setLook(this.look);
     this.go(this.screen === 'characters' ? 'characters' : 'home');
   }
@@ -405,9 +410,10 @@ export class FrontEnd {
   private go(screen: ScreenId): void {
     clearInterval(this.browserTimer);
     if (this.screen === 'characters' && screen !== 'characters') this.scene.resetSpin();
+    // The character shown stays while you switch Character Select's tabs; leaving (or coming back) shows your own.
+    if (this.screen !== 'characters' || screen !== 'characters') this.previewed = null;
     this.screen = screen;
-    this.hovered = null;
-    this.scene.setLook(this.look);
+    this.scene.setLook(this.previewed ?? this.look);
     this.scene.setShot(screen === 'home' ? 'home' : 'side');
     this.body.replaceChildren(this.build(screen));
     this.footerHints.replaceChildren(...this.hints(screen));
@@ -434,9 +440,9 @@ export class FrontEnd {
           back(),
           cycle('Filter'),
           hintButton('hint-design', glyphs('D', 'X', 'x'), 'Design new', 'Design a new character (D, controller X)', () => this.hooks.openDesigner(this.look)),
-          hintButton('hint-customise', glyphs('C', 'Y', 'y'), 'Customise', 'Customise this character (C, controller Y)', () => this.hooks.openDesigner(this.hovered ?? this.look)),
+          hintButton('hint-customise', glyphs('C', 'Y', 'y'), 'Customise', 'Customise this character (C, controller Y)', () => this.hooks.openDesigner(this.previewed ?? this.look)),
           hint(glyphs(', .'), 'Turn'),
-          hint(glyphs('↵', 'A', 'a'), 'Select'),
+          hintButton('hint-ok', glyphs('↵', 'A', 'a'), 'Choose', 'Choose the character shown (Enter, controller A)', () => this.select(this.previewed ?? this.look)),
         );
         break;
       case 'options':
@@ -479,8 +485,8 @@ export class FrontEnd {
       this.optionsTab = tabs[(tabs.indexOf(this.optionsTab) + (dir > 0 ? 1 : tabs.length - 1)) % tabs.length]!;
       this.go('options');
     } else if (this.screen === 'characters') {
-      const order = ['all', 'originals', 'ranger', 'peasant', 'athlete', 'npc', 'mine'];
-      this.charFilter = order[(order.indexOf(this.charFilter) + (dir > 0 ? 1 : order.length - 1)) % order.length]!;
+      const order = this.charFilters().map(([v]) => v);
+      this.charFilter = order[(Math.max(0, order.indexOf(this.charFilter)) + (dir > 0 ? 1 : order.length - 1)) % order.length]!;
       this.go('characters');
     }
   }
@@ -518,7 +524,7 @@ export class FrontEnd {
     if (top) return;
     if (button === PAD.lb || button === PAD.rb) return this.cycle(button === PAD.rb ? 1 : -1);
     if (this.screen === 'characters' && button === PAD.x) return this.hooks.openDesigner(this.look);
-    if (this.screen === 'characters' && button === PAD.y) return this.hooks.openDesigner(this.hovered ?? this.look);
+    if (this.screen === 'characters' && button === PAD.y) return this.hooks.openDesigner(this.previewed ?? this.look);
     if (this.screen === 'play' && button === PAD.start) return this.start();
   }
 
@@ -1280,18 +1286,29 @@ export class FrontEnd {
 
   // ---------------------------------------------------------------- character select
 
-  private characters(): HTMLElement {
-    const saved = listCustomLooks();
-    const family = (id: string) => partInfo(getLook(id).parts.find((p) => partInfo(p)?.slot === 'torso') ?? '')?.outfit ?? 'ranger';
-    const all = [
-      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
-      ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, mine: false })),
-      ...saved.map((s) => ({ id: s.id, name: s.name, mine: true })),
+  /** Everyone on Character Select: the built-in looks (roster order), the NPC skins offered to players, then your designs. */
+  private roster(): { id: string; name: string; group: string }[] {
+    return [
+      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
+      ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
+      ...listCustomLooks().map((s) => ({ id: s.id, name: s.name, group: 'mine' })),
     ];
-    const filters: [string, string][] = [['all', 'All'], ['originals', 'Originals'], ['ranger', 'Ranger'], ['peasant', 'Peasant'], ['athlete', 'Sportswear'], ['npc', 'NPCs'], ['mine', 'Yours']];
-    const groupOf = (id: string) => (npcLookRole(id) ? 'npc' : getLook(id).whole ? 'originals' : family(id));
-    const shown = all.filter((c) => this.charFilter === 'all' || (this.charFilter === 'mine' ? c.mine : !c.mine && groupOf(c.id) === this.charFilter));
-    const selected = this.hovered ?? this.look;
+  }
+
+  /** Character Select's tabs (Q / E step through them): All, the groups that have anyone in them (what a character is), Yours. */
+  private charFilters(roster = this.roster()): [string, string][] {
+    const used = new Set(roster.map((c) => c.group));
+    return [['all', 'All'], ...CHARACTER_GROUPS.filter((g) => used.has(g.id)).map((g): [string, string] => [g.id, g.label]), ['mine', 'Yours']];
+  }
+
+  private characters(): HTMLElement {
+    const all = this.roster();
+    const filters = this.charFilters(all);
+    // A group that's gone (or a tab name from before the groups) shows everyone.
+    if (!filters.some(([v]) => v === this.charFilter)) this.charFilter = 'all';
+    // All keeps the roster order; a group is listed by name.
+    const shown = this.charFilter === 'all' ? all : all.filter((c) => c.group === this.charFilter).sort((a, b) => (this.charFilter === 'mine' ? 0 : a.name.localeCompare(b.name)));
+    const selected = this.previewed ?? this.look;
 
     // Q / E (LB / RB) at the ends of the filters: buttons too.
     const bumper = (dir: 1 | -1) => {
@@ -1302,6 +1319,7 @@ export class FrontEnd {
     const tabs = el('div', { class: 'tabs' }, bumper(-1));
     for (const [v, label] of filters) {
       const b = el('button', { class: `tab${v === this.charFilter ? ' on' : ''}`, textContent: label });
+      b.dataset.group = v;
       b.addEventListener('click', () => ((this.charFilter = v), this.go('characters')));
       tabs.append(b);
     }
@@ -1317,7 +1335,9 @@ export class FrontEnd {
     const live: (() => void)[] = [];
     for (const c of shown) {
       const img = el('img', { alt: c.name });
-      const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
+      const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}${c.id === selected ? ' previewing' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
+      // Your current character wears a badge; the one shown (previewed) is outlined.
+      if (c.id === this.look) tile.append(el('em', { class: 'chosen-badge', textContent: 'Chosen' }));
       const load = () =>
         this.portraits.get(c.id).then(
           async (src) => {
@@ -1332,9 +1352,10 @@ export class FrontEnd {
         live.push(() => void load().then(() => tile.classList.remove('loading')));
       }
       tile.dataset.look = c.id;
-      tile.addEventListener('mouseenter', () => this.preview(c.id));
-      tile.addEventListener('focus', () => this.preview(c.id));
-      tile.addEventListener('click', () => this.select(c.id));
+      // A click (tap, Enter, controller A) shows them; nothing happens on hover, so the mouse is free to turn
+      // them round. Enter / A again on the one shown, a double-click or the Choose button picks them.
+      tile.addEventListener('click', (e) => (e.detail === 0 && this.previewed === c.id ? this.select(c.id) : this.preview(c.id)));
+      tile.addEventListener('dblclick', () => this.select(c.id));
       grid.append(tile);
     }
     void Promise.all(pending).then(() => {
@@ -1409,6 +1430,9 @@ export class FrontEnd {
       }),
       el('span', { title: 'Frag grenade (G)' }, '● Frag grenade'),
     );
+    const chosen = id === this.look;
+    const choose = el('button', { id: 'char-choose', class: 'primary', disabled: chosen, textContent: chosen ? 'Chosen' : `Choose ${name}`, title: chosen ? 'Your character now' : `Play as ${name} (Enter, controller A)` });
+    choose.addEventListener('click', () => this.select(id));
     const customise = el('button', { textContent: 'Customise' });
     customise.addEventListener('click', () => this.hooks.openDesigner(id));
     // Whole-body originals are one model: nothing to swap, so no Customise.
@@ -1416,23 +1440,25 @@ export class FrontEnd {
     const role = npcLookRole(id);
     if (role) {
       // An NPC skin: their look only; you keep a player's body, health and loadout.
-      const kind = NPC_ROLE_SPECS[role].creature ? 'Creature' : 'Soldier';
-      info.replaceChildren(img, el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: `Play as the ${name}. Looks only: same hitbox, health and loadout as everyone else.` }), el('div', { class: 'tags' }, el('span', { textContent: 'NPC' }), el('span', { textContent: kind }))), loadout);
+      const group = lookGroup(id);
+      const kind = group ? CHARACTER_GROUP_LABELS[group] : NPC_ROLE_SPECS[role].creature ? 'Creature' : 'Soldier';
+      info.replaceChildren(img, el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: `Play as the ${name}. Looks only: same hitbox, health and loadout as everyone else.` }), el('div', { class: 'tags' }, el('span', { textContent: 'NPC' }), el('span', { textContent: kind }))), loadout, el('div', { class: 'char-actions' }, choose));
       return;
     }
     const bot = CHARACTER_PROFILES[id];
     const style = bot ? botStyleLine(bot) : '';
     info.replaceChildren(
       img,
-      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
+      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
       loadout,
-      customise,
+      el('div', { class: 'char-actions' }, choose, customise),
     );
   }
 
   private preview(id: string): void {
-    this.hovered = id;
+    this.previewed = id;
     this.scene.setLook(id);
+    for (const t of this.body.querySelectorAll<HTMLElement>('.char-tile[data-look]')) t.classList.toggle('previewing', t.dataset.look === id);
     const info = this.body.querySelector('.char-info');
     if (info) this.fillInfo(info as HTMLElement, id);
   }
@@ -1976,11 +2002,12 @@ export class FrontEnd {
     } else if (this.screen === 'characters' && e.key === 'd') {
       this.hooks.openDesigner(this.look);
     } else if (this.screen === 'characters' && e.key === 'c') {
-      this.hooks.openDesigner(this.hovered ?? this.look);
+      this.hooks.openDesigner(this.previewed ?? this.look);
     } else if (this.screen === 'characters' && (e.key === ',' || e.key === '.')) {
       this.scene.spin(0, e.key === '.' ? 5.2 : -5.2);
-    } else if (this.screen === 'characters' && e.key === 'Enter' && this.hovered) {
-      this.select(this.hovered);
+    } else if (this.screen === 'characters' && e.key === 'Enter' && this.previewed && !(e.target instanceof HTMLButtonElement)) {
+      e.preventDefault();
+      this.select(this.previewed);
     }
   }
 }

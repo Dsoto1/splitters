@@ -5,6 +5,7 @@
   "order": 7,
   "name": "Salamander Warlord",
   "look": "core.warlord",
+  "group": "creatures",
   "bio": "Lord of a sunken fortress, armoured in rust and spite. Expects the arena to kneel.",
   "body": "male",
   "size": "large",

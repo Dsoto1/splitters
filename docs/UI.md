@@ -31,7 +31,9 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
     separate boxes, `mapThumbs.ts`); the setup panel shows the picture and the plan side by side; mode,
     bots, skill, score and time. The featured map, the host's Change map picker and the game browser
     (listings on built-in maps) show them the same way. See CONTENT_PIPELINE.md, Official maps.
-  - **Characters:** a portrait grid with Q/E filters and an info panel.
+  - **Characters:** a portrait grid with Q/E tabs by what a character is (Soldiers, Knights & Legends,
+    Everyday Folk, Undead & Horror, Animals, Creatures & Machines, Yours; CHARACTERS.md) and an info panel.
+    A click shows a character, **Choose** (Enter / A again, double-click) makes them yours; hover only highlights.
   - **Online** and **Options.**
 
   Your character stands on a lit plinth behind every screen (`menuScene.ts`).

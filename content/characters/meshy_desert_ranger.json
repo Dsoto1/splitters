@@ -5,6 +5,7 @@
   "order": 44,
   "name": "Desert Ranger",
   "look": "core.desertranger",
+  "group": "soldiers",
   "bio": "Two tours in the sand. Thinks the arena is a nice change of scenery.",
   "body": "female",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: US soldier, desert.",

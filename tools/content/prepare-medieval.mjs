@@ -181,7 +181,8 @@ const PROPS = {
     for (const x of [-1.4, 1.4]) p.cylinder('oak', [x, 0, 0], 0.045, 0, 1.75, { seg: 6 });
     p.cylinder('oak', [-1.55, 1.75, 0], 0.04, 0, 3.1, { seg: 6, axis: 'x' });
     const a = Math.atan2(1.7, 1.2);
-    for (const s of [1, -1]) obox(p, 'canvas', [0, 0.92, s * 0.62], [3.0, 0.03, Math.hypot(1.2, 1.7)], { rx: s * (Math.PI / 2 - a) });
+    // Each sheet slopes at the tent's own angle from the ridge pole down to the ground (a, not its complement).
+    for (const s of [1, -1]) obox(p, 'canvas', [0, 0.92, s * 0.62], [3.0, 0.03, Math.hypot(1.2, 1.7)], { rx: s * a });
     for (const x of [-1.55, 1.55]) {
       for (const s of [1, -1]) {
         obox(p, 'rope', [x * 1.1, 0.9, s * 0.4], [0.02, 1.95, 0.02], { rx: s * 0.45, rz: -Math.sign(x) * 0.35 });
@@ -197,10 +198,11 @@ const PROPS = {
     p.box('iron', [-0.04, 2.4, -0.05], [0.04, 2.48, 1.0]);
     obox(p, 'iron', [0, 2.15, 0.25], [0.03, 0.55, 0.03], { rx: 0.6 });
     p.box('iron', [-0.04, 0, -0.05], [0.04, 2.5, 0.05]);
-    for (const z of [0.35, 0.9]) p.cylinder('iron', [0, 2.15, z], 0.01, 0, 0.26, { seg: 4 });
-    p.box('oak', [-0.03, 1.45, 0.25], [0.03, 2.15, 1.0]);
-    p.box('red', [-0.04, 1.55, 0.35], [0.04, 2.05, 0.9]);
-    p.cylinder('bronze', [0, 1.8, 0.62], 0.13, -0.05, 0.05, { seg: 10, axis: 'x' });
+    // The board hangs clear of the strut (it used to cut through the board's inner corner).
+    for (const z of [0.5, 0.92]) p.cylinder('iron', [0, 2.15, z], 0.01, 0, 0.26, { seg: 4 });
+    p.box('oak', [-0.03, 1.45, 0.42], [0.03, 2.15, 1.0]);
+    p.box('red', [-0.04, 1.55, 0.5], [0.04, 2.05, 0.92]);
+    p.cylinder('bronze', [0, 1.8, 0.71], 0.13, -0.05, 0.05, { seg: 10, axis: 'x' });
     return p;
   },
   mv_hay_cart() {
@@ -212,7 +214,8 @@ const PROPS = {
     p.cylinder('oakDark', [-1.0, 0.55, 0], 0.05, 0, 2.0, { seg: 6, axis: 'x' });
     wheel(p, -0.95, 0.55, 0, 0.55);
     wheel(p, 0.85, 0.55, 0, 0.55);
-    for (const x of [-0.45, 0.45]) obox(p, 'oak', [x, 0.42, 2.0], [0.07, 0.07, 1.8], { rx: -0.3 });
+    // The shafts run from the bed down to the ground in front (+Z end low).
+    for (const x of [-0.45, 0.45]) obox(p, 'oak', [x, 0.4, 2.0], [0.07, 0.07, 1.8], { rx: 0.3 });
     p.sphere('hay', [0, 1.25, 0], 0.95, { rings: 6, seg: 10, squash: 0.65 });
     p.sphere('hayDark', [0.25, 1.55, -0.4], 0.55, { rings: 5, seg: 8, squash: 0.6 });
     p.sphere('hay', [-0.3, 1.5, 0.5], 0.5, { rings: 5, seg: 8, squash: 0.6 });

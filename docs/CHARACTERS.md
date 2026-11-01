@@ -77,6 +77,37 @@ Players pick one on the main menu (remembered locally). It's sent in `hello`
 and carried in the roster, so every client sees it. Bots get a spread of looks;
 unknown IDs fall back to the default.
 
+### Character Select's groups
+
+Character Select sorts characters by what they are, not by how the look was
+built. The groups are `CHARACTER_GROUPS` in looks.ts (tab order and labels);
+every built-in look names exactly one, and a unit test
+(`packages/shared/test/lookGroups.test.ts`) keeps it that way:
+
+| Group (`id`) | Who |
+|---|---|
+| Soldiers (`soldiers`) | Modern and sci-fi military, agents, pilots, hazmat, astronauts: Agent Zhao, Bulwark, Capt. Nova, Commando, Desert Ranger, Dust Trooper, Flt. Lt. Ember, Frost, Grunt '68, Hazmat, Medic, Operative, Scout, Sentinel, Trooper (NPC skin), Vanguard, Warden |
+| Knights & Legends (`legends`) | Medieval, royalty, monks, wizards, mythic and historical warriors: Anubis, Ashwalker, Brother Ansel, Elder Tomo, Grizzelda, Iron Knight, King Aldric, Lancer Mei, Linktifa, Merrow the Wise, Ser Brannock, Shade, Sir Galloway, Thornweaver |
+| Everyday Folk (`folk`) | Ordinary people: Big Bogdan, Brawler, Cap'n Barnacle, Chef Basile, Dale, Drifter, Dusty Colt, Engineer, Farmhand, Grandpa Chains, Hector, Huntress, Pathfinder, Saint Nick, Sprout, The Dapper, Tracker, Uncle Bao, Wayfarer |
+| Undead & Horror (`horror`) | Bonejack, Count Bonesworth, Giggles, Gorgle, Groaner, Lurcher (queued), Punkin, Rattles, Rotter, Shambler |
+| Animals (`animals`) | Bandit, Big Bab, Biscuit, Brass Hare, Hyena Warrior, Shiba, Teddy, Wealthy Otter |
+| Creatures & Machines (`creatures`) | Aliens, goblins, reptiles, robots, monsters: Boglurker, Botboy, Goblin, Imp and Puglin (NPC skins), Ivory Rustwalker, Ricochet, Salamander Warlord, T-350, The Visitor |
+
+Where a group comes from: a part-built preset has `group` on its entry in
+`CORE_LOOKS`; a whole-body character has `group` in its manifest (below,
+copied into characters.generated.ts); an NPC skin gets it from
+`NPC_LOOK_GROUPS` in sim/npc.ts (creatures → Creatures & Machines, the zombie
+→ Undead & Horror, the soldier roles → Soldiers). `lookGroup(id)` reads any of
+them; a design of yours has none and goes under **Yours**. Tabs: All (roster
+order), each group with anyone in it (by name), Yours. Q / E (LB / RB) step
+through them.
+
+Picking: a click (tap, Enter, controller A) on a portrait **shows** that
+character (the big model, bio, loadout); hovering only highlights it, so the
+mouse is free to drag the model round. Only **Choose** (the button, Enter / A
+again, or a double-click on the portrait) makes them yours; Back (Esc / B)
+leaves your character as it was. Your current one wears a **Chosen** badge.
+
 ## Character Designer
 
 Main menu → **Design…** next to the Character picker (or `?mode=designer`).
@@ -369,6 +400,7 @@ repo; they live in a downloads dir outside it.
   "order": 15,
   "name": "Sir Galloway",
   "look": "core.galloway",
+  "group": "legends",
   "bio": "One line for character select.",
   "body": "male",
   "size": "large",
@@ -394,6 +426,7 @@ repo; they live in a downloads dir outside it.
 | `kind`, `use` | `character` (rides our rig) or `creature` (not built here: creatures keep their own rigs); `player`, `npc` or `player+npc`. An NPC-only character gets a look (`WHOLE_BODY_NPC_LOOKS`) but isn't on the roster; NPC roles name looks in `NPC_ROLE_SPECS` by hand. |
 | `status` | `queued` for a stub that isn't ready: it is checked only for the queue's fields and not built. Drop it once the rest is filled in. |
 | `order` | Roster position among the whole-body characters (unique). |
+| `group` | What the character is, for Character Select's tabs: `soldiers`, `legends`, `folk`, `horror`, `animals` or `creatures` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
 | `name`, `look`, `bio` | The look's display name, its ID (`core.<name>`, never changed once shipped: saved looks and bots use it) and its one-line bio. |
 | `body`, `size` | `male` or `female` proportions (clips and hip height); `small` / `large` body size, or left out. |
 | `source.license` | `owned` (made on the owner's Meshy account; provenance pack `meshy-owned`) or `CC0` (a community model; pack `meshy-community-characters`, with `community.model` as named on its page). |

@@ -12668,7 +12668,7 @@
       "src": "mv_shop_sign.glb",
       "triangles": 132,
       "bytes": 8124,
-      "sha256": "5801f87fae211caf"
+      "sha256": "b3ec65e79d06c47b"
     },
     {
       "file": "props/mv_hay_cart.glb",
@@ -12676,7 +12676,7 @@
       "src": "mv_hay_cart.glb",
       "triangles": 852,
       "bytes": 34532,
-      "sha256": "35bbe5983e6a7ab3"
+      "sha256": "3e6669d9de8c2f9d"
     },
     {
       "file": "props/mv_forge.glb",
@@ -12795,8 +12795,8 @@
       "source": "tiletrigger-medieval",
       "src": "mv_tarp_tent.glb",
       "triangles": 204,
-      "bytes": 12964,
-      "sha256": "97bafb08076ec9ee"
+      "bytes": 12968,
+      "sha256": "c5219d866333d204"
     },
     {
       "file": "props/hb_bollard.glb",
@@ -12941,6 +12941,502 @@
       "triangles": 336,
       "bytes": 17064,
       "sha256": "26c07a6e04ba3084"
+    },
+    {
+      "file": "props/so_satellite_dish.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_satellite_dish.glb",
+      "triangles": 440,
+      "bytes": 15344,
+      "sha256": "bb413820e1449393"
+    },
+    {
+      "file": "props/so_antenna_mast.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_antenna_mast.glb",
+      "triangles": 572,
+      "bytes": 30616,
+      "sha256": "38024b1307411298"
+    },
+    {
+      "file": "props/so_heater.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_heater.glb",
+      "triangles": 340,
+      "bytes": 17024,
+      "sha256": "7177dd76c3877121"
+    },
+    {
+      "file": "props/so_generator.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_generator.glb",
+      "triangles": 232,
+      "bytes": 14660,
+      "sha256": "c89793b87159013e"
+    },
+    {
+      "file": "props/so_snowmobile.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_snowmobile.glb",
+      "triangles": 216,
+      "bytes": 14272,
+      "sha256": "76fa17cff6286238"
+    },
+    {
+      "file": "props/so_tarp_crates.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_tarp_crates.glb",
+      "triangles": 328,
+      "bytes": 19064,
+      "sha256": "c1cb5ca47b6e1686"
+    },
+    {
+      "file": "props/so_lamp_post.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_lamp_post.glb",
+      "triangles": 124,
+      "bytes": 8536,
+      "sha256": "e940cc1619e34722"
+    },
+    {
+      "file": "props/so_flagpole.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_flagpole.glb",
+      "triangles": 152,
+      "bytes": 8124,
+      "sha256": "e5f5adb54e42d800"
+    },
+    {
+      "file": "props/so_chainlink_fence.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_chainlink_fence.glb",
+      "triangles": 436,
+      "bytes": 24676,
+      "sha256": "0cce6911841079b7"
+    },
+    {
+      "file": "props/so_snow_fence.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_snow_fence.glb",
+      "triangles": 264,
+      "bytes": 15124,
+      "sha256": "28cc827189d4fef1"
+    },
+    {
+      "file": "props/so_pipe_run.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_pipe_run.glb",
+      "triangles": 508,
+      "bytes": 24928,
+      "sha256": "c9d45ff2b00117b4"
+    },
+    {
+      "file": "props/so_drums.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_drums.glb",
+      "triangles": 1212,
+      "bytes": 49940,
+      "sha256": "d594ee684fed416c"
+    },
+    {
+      "file": "props/so_radio_console.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_radio_console.glb",
+      "triangles": 386,
+      "bytes": 18260,
+      "sha256": "2ca37270248a7f98"
+    },
+    {
+      "file": "props/so_ski_rack.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_ski_rack.glb",
+      "triangles": 228,
+      "bytes": 15000,
+      "sha256": "2dfcbbdcb1ce5a27"
+    },
+    {
+      "file": "props/so_supply_sled.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_supply_sled.glb",
+      "triangles": 348,
+      "bytes": 21424,
+      "sha256": "52d4083109663ae7"
+    },
+    {
+      "file": "props/so_snow_pile.glb",
+      "source": "tiletrigger-snow",
+      "src": "so_snow_pile.glb",
+      "triangles": 176,
+      "bytes": 7468,
+      "sha256": "7117b27be96d6ced"
+    },
+    {
+      "file": "props/dc_market_stall.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_market_stall.glb",
+      "triangles": 1486,
+      "bytes": 59132,
+      "sha256": "1cbcecea1772f953"
+    },
+    {
+      "file": "props/dc_canopy.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_canopy.glb",
+      "triangles": 175,
+      "bytes": 12672,
+      "sha256": "5943a234dfd64979"
+    },
+    {
+      "file": "props/dc_banner.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_banner.glb",
+      "triangles": 162,
+      "bytes": 11300,
+      "sha256": "a099f5790fdba7c5"
+    },
+    {
+      "file": "props/dc_lantern.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_lantern.glb",
+      "triangles": 304,
+      "bytes": 14292,
+      "sha256": "3c8123c019acacac"
+    },
+    {
+      "file": "props/dc_palm_planter.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_palm_planter.glb",
+      "triangles": 604,
+      "bytes": 30472,
+      "sha256": "d637def2c82041ff"
+    },
+    {
+      "file": "props/dc_well.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_well.glb",
+      "triangles": 608,
+      "bytes": 27464,
+      "sha256": "ee1fa2a389ab6a86"
+    },
+    {
+      "file": "props/dc_vase.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_vase.glb",
+      "triangles": 376,
+      "bytes": 16692,
+      "sha256": "314aa5a66d5710b2"
+    },
+    {
+      "file": "props/dc_jars.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_jars.glb",
+      "triangles": 736,
+      "bytes": 25968,
+      "sha256": "96e9f84bbe114009"
+    },
+    {
+      "file": "props/dc_rug.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_rug.glb",
+      "triangles": 300,
+      "bytes": 19012,
+      "sha256": "dbd6f7628906df12"
+    },
+    {
+      "file": "props/dc_crane.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_crane.glb",
+      "triangles": 184,
+      "bytes": 11680,
+      "sha256": "09d422b778f1d407"
+    },
+    {
+      "file": "props/dc_cloth_line.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_cloth_line.glb",
+      "triangles": 84,
+      "bytes": 6704,
+      "sha256": "f46083aad03fcb2a"
+    },
+    {
+      "file": "props/dc_scaffold.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_scaffold.glb",
+      "triangles": 156,
+      "bytes": 10740,
+      "sha256": "e2b86d26f38102ab"
+    },
+    {
+      "file": "props/dc_awning_window.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_awning_window.glb",
+      "triangles": 168,
+      "bytes": 12128,
+      "sha256": "a7823a633a4ee161"
+    },
+    {
+      "file": "props/dc_lattice_window.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_lattice_window.glb",
+      "triangles": 1980,
+      "bytes": 109120,
+      "sha256": "6a6f6cf8ea93486d"
+    },
+    {
+      "file": "props/dc_shutter_window.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_shutter_window.glb",
+      "triangles": 300,
+      "bytes": 18724,
+      "sha256": "8e987811b90077f7"
+    },
+    {
+      "file": "props/dc_spice_baskets.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_spice_baskets.glb",
+      "triangles": 888,
+      "bytes": 31764,
+      "sha256": "b5750567e5ae80d0"
+    },
+    {
+      "file": "props/dc_cushions.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_cushions.glb",
+      "triangles": 284,
+      "bytes": 15032,
+      "sha256": "ec910a379f1025b7"
+    },
+    {
+      "file": "props/dc_rug_rack.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_rug_rack.glb",
+      "triangles": 216,
+      "bytes": 14452,
+      "sha256": "872273faf89d7721"
+    },
+    {
+      "file": "props/dc_column.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_column.glb",
+      "triangles": 312,
+      "bytes": 15760,
+      "sha256": "a8da18f2486e25b6"
+    },
+    {
+      "file": "props/dc_ornate_arch.glb",
+      "source": "tiletrigger-desert",
+      "src": "dc_ornate_arch.glb",
+      "triangles": 384,
+      "bytes": 24228,
+      "sha256": "52e6cc167951e330"
+    },
+    {
+      "file": "props/jt_zipline_post.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_zipline_post.glb",
+      "triangles": 304,
+      "bytes": 16100,
+      "sha256": "d72cb973a3f0182a"
+    },
+    {
+      "file": "props/jt_crane.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_crane.glb",
+      "triangles": 256,
+      "bytes": 14464,
+      "sha256": "c65d256af51b32d8"
+    },
+    {
+      "file": "props/jt_wooden_platform.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_wooden_platform.glb",
+      "triangles": 464,
+      "bytes": 25016,
+      "sha256": "232facd3c3b37e6c"
+    },
+    {
+      "file": "props/jt_statue_large.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_statue_large.glb",
+      "triangles": 784,
+      "bytes": 27956,
+      "sha256": "4b990bae4ccce4ea"
+    },
+    {
+      "file": "props/jt_statue_small.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_statue_small.glb",
+      "triangles": 376,
+      "bytes": 18588,
+      "sha256": "7907f8e7832b0c63"
+    },
+    {
+      "file": "props/jt_obelisk.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_obelisk.glb",
+      "triangles": 276,
+      "bytes": 14684,
+      "sha256": "c00db64515921771"
+    },
+    {
+      "file": "props/jt_temple_spire.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_temple_spire.glb",
+      "triangles": 300,
+      "bytes": 11332,
+      "sha256": "9c60ad1c45dc2ee8"
+    },
+    {
+      "file": "props/jt_fire_bowl.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_fire_bowl.glb",
+      "triangles": 351,
+      "bytes": 15704,
+      "sha256": "6dde756acc43235a"
+    },
+    {
+      "file": "props/jt_hanging_brazier.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_hanging_brazier.glb",
+      "triangles": 455,
+      "bytes": 19992,
+      "sha256": "920da6dfc96c91d5"
+    },
+    {
+      "file": "props/jt_wall_torch.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_wall_torch.glb",
+      "triangles": 263,
+      "bytes": 12820,
+      "sha256": "9c07e33da390c015"
+    },
+    {
+      "file": "props/jt_banner_teal.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_banner_teal.glb",
+      "triangles": 378,
+      "bytes": 17196,
+      "sha256": "c607aa3cc188da01"
+    },
+    {
+      "file": "props/jt_banner_red.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_banner_red.glb",
+      "triangles": 354,
+      "bytes": 16956,
+      "sha256": "9b7b4c515c2b75e5"
+    },
+    {
+      "file": "props/jt_tree_root_arch.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_tree_root_arch.glb",
+      "triangles": 1032,
+      "bytes": 50128,
+      "sha256": "ebc37b179ee8755e"
+    },
+    {
+      "file": "props/jt_tree_trunk.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_tree_trunk.glb",
+      "triangles": 760,
+      "bytes": 26040,
+      "sha256": "a0eec73d62e0dec7"
+    },
+    {
+      "file": "props/jt_plant_cluster.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_plant_cluster.glb",
+      "triangles": 492,
+      "bytes": 21696,
+      "sha256": "45050eb116e33733"
+    },
+    {
+      "file": "props/jt_planter.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_planter.glb",
+      "triangles": 228,
+      "bytes": 15824,
+      "sha256": "19651d3da4fb75b6"
+    },
+    {
+      "file": "props/jt_pottery.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_pottery.glb",
+      "triangles": 560,
+      "bytes": 19540,
+      "sha256": "27e2d36bff6e8724"
+    },
+    {
+      "file": "props/jt_rubble_pile.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_rubble_pile.glb",
+      "triangles": 300,
+      "bytes": 15080,
+      "sha256": "aeba7de5170d525d"
+    },
+    {
+      "file": "props/jt_collapsed_column.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_collapsed_column.glb",
+      "triangles": 204,
+      "bytes": 9232,
+      "sha256": "5c83f1273ce66ee7"
+    },
+    {
+      "file": "props/jt_broken_column.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_broken_column.glb",
+      "triangles": 252,
+      "bytes": 11452,
+      "sha256": "e138694be74ebd40"
+    },
+    {
+      "file": "props/jt_sarcophagus.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_sarcophagus.glb",
+      "triangles": 240,
+      "bytes": 11916,
+      "sha256": "60dbe7df648cbb0b"
+    },
+    {
+      "file": "props/jt_spikes.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_spikes.glb",
+      "triangles": 252,
+      "bytes": 11392,
+      "sha256": "4ff2933afd447add"
+    },
+    {
+      "file": "props/jt_chain_rail.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_chain_rail.glb",
+      "triangles": 336,
+      "bytes": 19564,
+      "sha256": "1dd31a797d289ddd"
+    },
+    {
+      "file": "props/jt_rope_rail.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_rope_rail.glb",
+      "triangles": 360,
+      "bytes": 17932,
+      "sha256": "1d4fb235a6fffbf7"
+    },
+    {
+      "file": "props/jt_altar_fire.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_altar_fire.glb",
+      "triangles": 375,
+      "bytes": 17812,
+      "sha256": "99d4668c969cc114"
+    },
+    {
+      "file": "props/jt_overgrown_beam.glb",
+      "source": "tiletrigger-jungle",
+      "src": "jt_overgrown_beam.glb",
+      "triangles": 996,
+      "bytes": 45348,
+      "sha256": "429a0d1eae72f267"
     }
   ]
 }

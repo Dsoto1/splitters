@@ -5,6 +5,7 @@
   "order": 27,
   "name": "Shambler",
   "look": "core.shambler",
+  "group": "horror",
   "bio": "Still wearing the shirt from his last day at the office. Still looking for the exit.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: zombie.",

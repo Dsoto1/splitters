@@ -1,12 +1,12 @@
 import type { Scene } from '@babylonjs/core/scene';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import type { EditCommand, MapDocument, MapEntity, Vec3 } from '@tiletrigger/shared';
+import { dropArea, type EditCommand, type MapDocument, type MapEntity, type Vec3 } from '@tiletrigger/shared';
 
 /** What the route tool needs from MapMaker. */
 export interface RouteToolHost {
@@ -63,7 +63,8 @@ export class RouteTool {
   }
 
   get label(): string {
-    return this.entity?.kind === 'airplane' ? 'plane route' : 'mover route';
+    const e = this.entity;
+    return e?.kind === 'airplane' ? (e.craft === 'dropship' ? 'dropship route' : 'plane route') : 'mover route';
   }
 
   /** Edit this entity's route (a mover or a plane), or nothing. */
@@ -124,7 +125,7 @@ export class RouteTool {
   pointerDown(p: Vec3 | null, shift: boolean): void {
     const e = this.entity;
     if (!p) return;
-    if (!e) return this.host.toast('Select a mover or a transport plane, then "Draw route"', true);
+    if (!e) return this.host.toast('Select a mover, transport plane or dropship, then "Draw route"', true);
     const hit = this.pointAt(p);
     if (hit >= 0) {
       this.selected = hit;
@@ -221,6 +222,24 @@ export class RouteTool {
     });
     const line = pts.map((q) => new Vector3(q.x, q.y + 0.4, q.z));
     if ((e.kind === 'airplane' ? e.closed : e.mode === 'loop') && line.length >= 3) line.push(line[0]!.clone());
+    if (e.kind === 'airplane') {
+      // A drop route: green where it flies over the play area (riders may jump), grey outside it.
+      const area = dropArea(this.host.doc());
+      const inside = (v: Vector3) => !area || (v.x >= area.x0 && v.x <= area.x1 && v.z >= area.z0 && v.z <= area.z1);
+      const dense: Vector3[] = [];
+      for (let i = 0; i + 1 < line.length; i++) {
+        const [a, b] = [line[i]!, line[i + 1]!];
+        const n = Math.max(1, Math.ceil(Vector3.Distance(a, b) / 4));
+        for (let k = 0; k < n; k++) dense.push(Vector3.Lerp(a, b, k / n));
+      }
+      if (line.length) dense.push(line[line.length - 1]!.clone());
+      const green = new Color4(0.49, 1, 0.69, 1);
+      const grey = new Color4(0.55, 0.58, 0.62, 1);
+      const l = CreateLines('routePoly', { points: dense, colors: dense.map((v) => (inside(v) ? green : grey)) }, this.host.scene);
+      l.isPickable = false;
+      this.lines.push(l);
+      return;
+    }
     const l = CreateLines('routePoly', { points: line }, this.host.scene);
     l.color = Color3.FromHexString('#7dffb0');
     l.isPickable = false;

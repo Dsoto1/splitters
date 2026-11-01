@@ -548,10 +548,17 @@ export class ScenarioVisuals {
     const root = new TransformNode(name, this.scene);
     const orange = this.mat('planeMark', '#e2703a', { emissive: 0.5 });
     this.box(`${name}_base`, root, [1.6, 0.2, 1.6], [0, 0.1, 0], this.mat('planeBase', '#2a2f3a'));
-    // A little plane on the marker: fuselage and wings.
-    this.box(`${name}_body`, root, [0.35, 0.3, 1.6], [0, 0.55, 0], orange);
-    this.box(`${name}_wing`, root, [1.8, 0.08, 0.45], [0, 0.6, 0.1], orange);
-    this.box(`${name}_tail`, root, [0.7, 0.08, 0.25], [0, 0.65, -0.65], orange);
+    if (e.craft === 'dropship') {
+      // A little dropship on the marker: a broad hull and its two engine pods.
+      const hull = this.mat('dropshipMark', '#9fb3c4', { emissive: 0.4 });
+      this.box(`${name}_body`, root, [0.8, 0.3, 1.5], [0, 0.55, 0], hull);
+      for (const s of [-1, 1]) this.box(`${name}_pod${s}`, root, [0.25, 0.25, 0.7], [s * 0.6, 0.6, -0.2], orange);
+    } else {
+      // A little plane on the marker: fuselage and wings.
+      this.box(`${name}_body`, root, [0.35, 0.3, 1.6], [0, 0.55, 0], orange);
+      this.box(`${name}_wing`, root, [1.8, 0.08, 0.45], [0, 0.6, 0.1], orange);
+      this.box(`${name}_tail`, root, [0.7, 0.08, 0.25], [0, 0.65, -0.65], orange);
+    }
     const y = e.altitude;
     const pts = e.route.map(([x, z]) => new Vector3(x, y, z));
     if (e.closed && pts.length > 2) pts.push(pts[0]!.clone());

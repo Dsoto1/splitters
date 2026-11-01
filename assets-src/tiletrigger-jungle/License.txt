@@ -1,0 +1,19 @@
+Style Pack pieces: 06 Jungle Ruins refresh (built in code)
+
+These models are original to Tile Trigger. They are not taken from any pack
+and no generative AI service made them: each one is assembled from plain
+geometry (boxes, cylinders, cones, spheres, rings and flat sheets) by
+tools/content/prepare-jungle.mjs with tools/content/pieces.mjs, which write
+the GLB files in this folder. Re-run that script to rebuild them; the same
+code writes the same files.
+
+They belong to the Tile Trigger owner and ship as part of the game
+(licence "Owned" in content/props.json and the provenance ledger).
+
+Pieces: zipline post, crane and pulley, wooden platform, temple guardians
+(large and small), stone obelisk, temple spire, fire bowl, hanging brazier,
+wall torch, teal and red temple banners, tree root arch, mossy tree trunk,
+jungle plant cluster, stone planter, temple pottery, rubble pile, collapsed
+column, broken column, stone sarcophagus, spike row, chain rail, rope rail,
+temple altar and overgrown beam (Style Pack 06 Jungle Ruins, refreshed from
+the owner's Tileset 04 Jungle Ruins and Tileset 07 Ancient Temple sheets).

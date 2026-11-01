@@ -277,7 +277,7 @@ export type GameEvent =
   | { e: 'race'; a: 'gate' | 'lap' | 'finish' | 'best' | 'go'; s: number; n: number; t?: number }
   // Scenario events. `i` is the entity's index in map.entities (or the objective's index in map.logic.objectives).
   /** Creator message from a logic rule. */
-  | { e: 'msg'; text: string; secs: number }
+  | { e: 'msg'; text: string; secs: number; /** Only for this player (others ignore it). */ s?: number }
   /** A medkit use: `s` healed `t` (maybe themselves) by `n`. */
   | { e: 'heal'; s: number; t: number; n: number }
   /** A quick message (QUICK_MESSAGES index + 1) from player `s`; team modes send it to their team only (`team`). */

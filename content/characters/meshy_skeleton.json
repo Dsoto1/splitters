@@ -5,6 +5,7 @@
   "order": 53,
   "name": "Rattles",
   "look": "core.rattles",
+  "group": "horror",
   "bio": "You hear him before you see him. Then it is too late.",
   "size": "large",
   "body": "male",

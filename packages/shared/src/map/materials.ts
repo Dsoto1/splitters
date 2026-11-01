@@ -50,6 +50,16 @@ export type PatternId =
   | 'pantiles'
   /** Style Pack 10: half-timbering: dark oak posts, rails and braces with plaster panels between (repeats every storey). */
   | 'timber'
+  /** Style Pack 12: wind-packed snow, soft ripples of drift and a glint of frost. */
+  | 'snow'
+  /** Style Pack 12: clear ice over dark water, white cracks running through it and trapped bubbles. */
+  | 'ice'
+  /** Style Pack 12: insulated sandwich panels: vertical seams, a rib down each panel, rivets top and bottom (one storey a repeat). */
+  | 'prefab'
+  /** Style Pack 12: concrete with snow lodged in its pores and drifted in patches. */
+  | 'snowcrete'
+  /** Style Pack 12: dark layered rock rimed with frost on its ledges. */
+  | 'frostrock'
   /** Style Pack 11: pier decking: weathered boards with gaps and nails over the joists. */
   | 'decking'
   /** Style Pack 11: big granite quay blocks in courses. */
@@ -61,7 +71,33 @@ export type PatternId =
   /** Style Pack 11: tarred horizontal lap boards (net sheds). */
   | 'lapboards'
   /** Style Pack 11: two horizontal bands per repeat (lighthouse stripes). */
-  | 'bands';
+  | 'bands'
+  /** Style Pack 09 Desert City: coursed sandstone ashlar, long and short blocks, fine joints, tooled faces. */
+  | 'sandstone_ashlar'
+  /** Style Pack 09 Desert City: lime plaster, sun-faded, flaked away in patches to the stone beneath (the accent). */
+  | 'stucco'
+  /** Style Pack 09 Desert City: glazed fish-scale tiles (a dome), each its own shade, a few in the accent. */
+  | 'scales'
+  /** Style Pack 09 Desert City: zellige: eight-point stars in the accent in a field of the base, crosses between, grouted. */
+  | 'zellige'
+  /** Style Pack 09 Desert City: worn flagstones: courses of uneven slabs, joints in the accent. */
+  | 'flags'
+  /** Style Pack 09 Desert City: a woven rug: borders, a lozenge medallion and small motifs in the accent and cream on the base. */
+  | 'rug'
+  /** Style Pack 09 Desert City: a mashrabiya lattice: diagonal turned-wood bars (base) with knots, the dark (accent) between. */
+  | 'lattice'
+  /** Style Pack 06: big square stone slabs, worn and chipped, moss growing in the joints. */
+  | 'slabs'
+  /** Style Pack 06: courses of temple blocks cut with a step-fret (stepped spiral) frieze. */
+  | 'fret'
+  /** Style Pack 06: carved relief panels (a masked face, a sun disc, a serpent) framed by a border, one per block. */
+  | 'relief'
+  /** Style Pack 06: square inlay tiles: a gold frame round a teal field with a gold lozenge and dots. */
+  | 'inlay'
+  /** Style Pack 06: forest floor knotted with roots over dark earth, leaf litter between. */
+  | 'roots'
+  /** Style Pack 06: palm thatch: overlapping rows of long straw strands. */
+  | 'thatch';
 
 export type MaterialCategory = 'Prototype' | 'Stone' | 'Brick' | 'Wood' | 'Metal' | 'Tile' | 'Fabric' | 'Ground' | 'Tech' | 'Paint';
 
@@ -152,6 +188,17 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('packed_dirt', 'Packed Dirt', 'Ground', 'noise', '#7a6448', '#635038', 3),
   m('whitewash', 'Whitewash', 'Stone', 'noise', '#ece6d6', '#d8d0bc', 2.5),
   m('oak_beam', 'Oak Beam', 'Wood', 'planks', '#4a3220', '#30200f', 1.5),
+  // Style Pack 12 Snow Outpost: our own procedural paint (prefab panels repeat every 4 m storey).
+  m('packed_snow', 'Packed Snow', 'Ground', 'snow', '#e4eaf0', '#bccad8', 4, 0.15),
+  m('drift_snow', 'Snow Drift', 'Ground', 'snow', '#f4f7fa', '#d0dce8', 3, 0.2),
+  m('lake_ice', 'Lake Ice', 'Ground', 'ice', '#7aa4b6', '#eef6fa', 6, 0.85),
+  m('glacier_ice', 'Glacier Ice', 'Stone', 'ice', '#9cd2e8', '#f2fbff', 3, 0.7),
+  m('prefab_red', 'Red Prefab Panels', 'Metal', 'prefab', '#b4402e', '#e8e4dc', 4, 0.35),
+  m('prefab_white', 'White Prefab Panels', 'Metal', 'prefab', '#e2e6e8', '#8e989e', 4, 0.35),
+  m('snowy_concrete', 'Snowy Concrete', 'Stone', 'snowcrete', '#8c9094', '#eef2f6', 4),
+  m('frozen_rock', 'Frozen Rock', 'Stone', 'frostrock', '#565c64', '#dce6ee', 5),
+  m('steel_grating', 'Steel Grating', 'Metal', 'grate', '#6e767c', '#202428', 1, 0.5),
+  m('beacon_red', 'Red Beacon', 'Tech', 'plain', '#ff3a2a', '#ff3a2a', 1, 0.3, true),
   // Style Pack 11 Coastal Harbor: our own procedural paint.
   m('pier_decking', 'Pier Decking', 'Wood', 'decking', '#a8977c', '#5e5040', 2.5),
   m('quay_granite', 'Quay Granite', 'Stone', 'ashlar', '#8e9090', '#5c6060', 2.4),
@@ -165,6 +212,26 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   m('lighthouse_bands', 'Lighthouse Bands', 'Paint', 'bands', '#f2efe8', '#b8262a', 6),
   m('harbour_paint', 'Harbour Blue Paint', 'Paint', 'plain', '#2e5a7a', '#2a5270', 4, 0.4),
   m('lamp_glow', 'Lamp Glow', 'Tech', 'plain', '#ffe2a0', '#ffd27a', 1, 0.3, true),
+  // Style Pack 09 Desert City (the owner's "Tileset 02" sheet): our own procedural paint.
+  m('ashlar', 'Sandstone Ashlar', 'Stone', 'sandstone_ashlar', '#d6b688', '#9a7c56', 2),
+  m('stucco', 'Weathered Plaster', 'Stone', 'stucco', '#eadcbe', '#c4a476', 3),
+  m('dome_tiles', 'Blue Dome Tiles', 'Tile', 'scales', '#2a5aa8', '#6ec0d8', 1.5, 0.55),
+  m('zellige', 'Zellige Mosaic', 'Tile', 'zellige', '#ece2cc', '#1e4a8a', 1.6, 0.4),
+  m('worn_paving', 'Worn Paving', 'Stone', 'flags', '#cfb68e', '#8a7258', 3),
+  m('sandstone_tiles', 'Sandstone Tiles', 'Tile', 'tiles', '#dcc49a', '#a88a62', 2, 0.1),
+  m('rug_red', 'Market Rug', 'Fabric', 'rug', '#9e2a24', '#22305a', 2.5),
+  m('mashrabiya', 'Mashrabiya Lattice', 'Wood', 'lattice', '#6e4628', '#1a120c', 1),
+  m('canopy_red', 'Red Canopy', 'Fabric', 'weave', '#b4322a', '#8a2420', 1.5),
+  m('cedar', 'Cedar Beam', 'Wood', 'planks', '#7a5434', '#54381f', 1.5),
+  // Style Pack 06 Jungle Ruins (with the Ancient Temple sheet folded in): our own procedural paint.
+  m('mossy_stone', 'Mossy Stone Slab', 'Stone', 'slabs', '#8e8c74', '#4c6a24', 3),
+  m('carved_stone', 'Carved Temple Stone', 'Stone', 'fret', '#a49c80', '#5e5846', 2.4),
+  m('relief_stone', 'Relief Carving', 'Stone', 'relief', '#b2a684', '#625a44', 2.4),
+  m('temple_inlay', 'Temple Inlay Tiles', 'Tile', 'inlay', '#2e7a74', '#d0a040', 2, 0.35),
+  m('root_cover', 'Root Cover', 'Ground', 'roots', '#4a3a28', '#6a4e30', 3),
+  m('mossy_planks', 'Mossy Planks', 'Wood', 'planks', '#857256', '#4e5a30', 2),
+  m('temple_sandstone', 'Temple Sandstone', 'Stone', 'blocks', '#c8a878', '#8a7050', 3),
+  m('palm_thatch', 'Palm Thatch', 'Fabric', 'thatch', '#b89a5a', '#6e5a30', 2),
   // Photographed and scanned sets from ambientCG (CC0, see content/textures.json).
   t('pbr_concrete', 'Smooth Concrete', 'Stone', 'Concrete034', '#a8a6a2', 4),
   t('pbr_concrete_dark', 'Dark Concrete', 'Stone', 'Concrete042A', '#6c6964', 4),
@@ -284,8 +351,11 @@ export const CORE_THEMES: readonly ThemeDefinition[] = [
   theme('adobe', 'Frontier Adobe', '#f4d2a0', ['pbr_floorboards', '#d8b890'], 'pbr_adobe', ['pbr_adobe', '#e8d0b0'], 'pbr_weathered_planks', 'pbr_walnut'),
   theme('gothic_estate', 'Gothic Estate', '#231d2c', 'pbr_floorboards', 'wallpaper_damask', 'pbr_walnut', 'dark_wood', 'brass'),
   theme('jungle_temple', 'Jungle Temple', '#a8c8a0', 'pbr_mossy_cobble', 'pbr_castle_stone', 'pbr_jungle_rock', 'pbr_rock', ['pbr_travertine', '#b8c0a0']),
+  theme('ancient_temple', 'Ancient Temple', '#b8d0a8', 'mossy_stone', 'carved_stone', 'temple_sandstone', 'pbr_jungle_rock', ['gold_leaf', '#e0b850']),
   theme('coastal', 'Coastal Harbor', '#a8c0d4', 'harbour_setts', 'quay_granite', ['pier_decking', '#c0b090'], 'pier_decking', 'harbour_paint'),
+  theme('desert_city', 'Desert City', '#f4dcb0', 'worn_paving', 'ashlar', ['stucco', '#f2e6cc'], 'cedar', ['sandstone_tiles', '#e8d8b8']),
   theme('medieval', 'Medieval Village', '#a8c8e8', 'cobblestones', 'timber_frame', ['oak_beam', '#c8a888'], 'pbr_floorboards', 'oak_beam'),
+  theme('snow_outpost', 'Snow Outpost', '#c4d8ea', 'packed_snow', 'prefab_red', 'snowy_concrete', ['pbr_steel', '#b8c0c8'], 'prefab_white'),
   theme('suburban', 'Suburban', '#9cc8f0', 'oak_planks', 'pbr_plaster_white', 'pbr_clapboard', 'pbr_plaster_white', ['paint_matte', '#f4f2ec']),
 ];
 
