@@ -686,8 +686,9 @@ export class WaterFx {
   }
 
   /** A hitscan shot from `from` to `to`: where it crosses a liquid's surface, a little splash. */
-  shot(from: Vec3, to: Vec3): void {
-    if (!this.liquids.length || from.y === to.y) return;
+  /** A round crossing a liquid's surface: a splash where it went in (returned: null when it crossed none). */
+  shot(from: Vec3, to: Vec3): Vec3 | null {
+    if (!this.liquids.length || from.y === to.y) return null;
     for (const l of this.liquids) {
       const top = l.max.y;
       if ((from.y - top) * (to.y - top) >= 0) continue;
@@ -696,8 +697,9 @@ export class WaterFx {
       const z = from.z + (to.z - from.z) * t;
       if (x < l.min.x || x > l.max.x || z < l.min.z || z > l.max.z) continue;
       this.splash({ x, y: top + 0.02, z }, 0.15, l.liquid);
-      return;
+      return { x, y: top + 0.02, z };
     }
+    return null;
   }
 
   private step(): void {

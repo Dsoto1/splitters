@@ -34,6 +34,58 @@ interior; build the cockpit parts in-house, only for the local driver's cockpit 
   slices / a perspective from the eye in Python, with the parts overlaid; far faster than headless Babylon at 1 fps.
 - Next: the gun jeep and kart can get entries; harness colour (red) and the dash layout are easy to retune in data.
 
+### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; merged to main dc1d1fc)
+Owner's queue of 2026-10-31 ("new models on the Drive", "FX: I bought the full licence"). Downloads outside the repo:
+models in `/home/user/meshy-drive/drive-2026-11-01/` (links for the pipelines in `/home/user/meshy-drive/links-1101/`),
+FX zips in `/home/user/fx-packs/drive-2026-11-01/fx/` (extracted: `/home/user/fx-packs/extracted-2026-11-01/`; the
+layout prepare-vfx reads: `/home/user/fx-packs/links-full/`). No Meshy credits spent.
+- **What was new on the Drive** (49 files + `fx/`; everything else was already in content/*.json or the locks): 10 models.
+  - Props, new pack `meshy-owned-drive-1031` (owned; rebuild: `ONLY=<ids> node tools/content/prepare-props.mjs --downloads /home/user/meshy-drive/links-1101`):
+    `jersey_barrier_hazard`, `hazard_block_barrier` (Military), `plastic_road_barrier` (Industrial), `smithy_workbench`,
+    `tiled_well` (Medieval Village), `temple_ruin_stair` (Jungle Ruins, hero, `collide: stairs`), and two parked
+    vehicles as hero props: `vehicle_raider_buggy` (sci-fi buggy, 4.4 m) and `vehicle_armored_truck` (8x8, 8.7 m, `shell`).
+    Added to the Military, Jungle and Medieval STYLE_PACKS; palette pictures rendered.
+  - Characters: **Rourke** (`meshy_rourke`, Folk; "Realistic stylized man" T-pose): landmarks found, arms measured off
+    the mesh (the found left wrist was 4 cm short); grip audit 0; portrait captured. **Slugger-9** (`meshy_slugger`,
+    Creatures, large; robotic baseball player, 3.1M-triangle image-to-3D): manifest, landmarks and fixes ready but
+    **queued** like Barnaby: its texture seams hold every careful cut over the 20k budget (21.3k; 20.8k with seamWeld).
+  - Licences are best guesses, to confirm with the owner: the props and vehicles as owned (prompt names like the owner's
+    other prop batches), the two characters as Meshy community CC0 (like nearly every character download).
+- **FX licence**: the Vol. 2 packs on the Drive (Battle, Dark Magic, Electric, Elemental Magic, Explosion, Flame,
+  Frosted Glass, Hit, Status FX "Full") each carry a `license.txt` that is CC0 word for word ("licensed under Creative
+  Commons Zero (CC0) ... free to use the assets in this pack for personal, educational and commercial projects with no
+  attribution required"). The Vol. 1 packs (Impact, Smoke, Portal, Poison, Fire, Beam, Ice, Loot, Magic Orbs/Area/
+  Projectiles, Card, Glass UI, Skies, Green Extra, Supporter textures) carry no licence file, and itch.io is not reachable
+  from these sessions. The owner's standing rule ("If I buy it it's always allowed") is on CLAUDE.md via the lead.
+  Also in `fx/`, not effects: FoodMegaPack_Pro, RPGWeapons_Pro, Treasure_Pro, RetroUrban, Full.zip (Retro textures): untouched.
+- **Shipped**: Hit FX and Explosion FX full editions (the effects our runtime already draws: no new shaders needed).
+  The Drive's MuzzleFlashVFX builds byte-identical output to what we ship. Recorded in content/vfx.json per pack
+  (`edition`: purchased by the owner, CC0 text) and provenance titles.
+- **Mapping as data**: content/vfx.json `map` → `tools/content/vfx-map.mjs` → `packages/client/src/game/fxMap.generated.ts`,
+  read by `game/fxMap.ts`. Muzzle by weapon family (moved out of muzzleFlash.ts), surfaces (keywords on prop model /
+  tile+theme / free-block material; terrain = dirt) → impact style (sparks, dust colour/size, accent), weapon impacts
+  (railgun; melee), water (the splash plus a cyan glint where a round goes in), explosions by weapon id → projectile visual → kind (barrel, trap, bomb, vehicle, air burst when
+  nothing is under the blast), gameplay (pickup.<kind>, spawn, portal, pad, trap.<type>, zipline). prepare-vfx ships only
+  the effects the map names (hit 13 of 28, explosion 9 of 16; ~9 kB gzip each); content:check fails on a stale map or a
+  missing effect. Sim: `explode` events carry `w` (what blew; optional, older clients ignore it). EffectsWorld.raycast
+  returns the level box hit. Spawns, portals, pads and ziplines are read off movement (`game/gameplayFxWatch.ts`: no
+  new events). GodotVfx: `minor` effects (accents, gameplay) stop at 6 playing (MAX_PLAYING 10), and accents are skipped
+  past 45 m.
+- **Next (not done)**: Electric FX (zaps for energy weapons, shock traps), Flame FX (fire hazards, burning barrels,
+  flare zones), Status FX (pickups, heal, spawn protection) and Portal VFX need their shaders ported in godotVfx.ts
+  (Electric: electric_particle, ground_impact, ground_streaks, zap; Flame: fire_core, fire_overlay, fire_particle; Status:
+  11). Tracers are unchanged (impactVisuals streaks).
+- Checks: typecheck; content OK; new `packages/client/test/fxMap.test.ts` (6); style-pack tests (after renaming three
+  props: `temple_ruin_stair`, `smithy_workbench`, `tiled_well`); e2e `physicsfx`, `arsenal`, `editor` PASS;
+  `characters` FAIL only on the known flaky "Imp ... pistol r null" (main's HANDOFF) and a 90 s screenshot timeout at load 25. `test:changed` on a
+  machine at load 21-27: 14 failures, all timeouts or bench thresholds except `host.test.ts` (Bob's account `sub`),
+  which fails the same on main's checkout (f0da0e4): not this branch. Menu bundle 833.4 kB gzip (budget 840); the map
+  is in the lazily loaded view chunk. Perf at 96 (load 23+, SwiftShader, so absolute numbers are noisy): server
+  `bench:96` Frost Basin tick avg 16.4 ms wall / 8.8 ms CPU; client perf96 Frost Basin medium: tick 8-9 ms, draws 457
+  spread / 308 clumped / 278 after a 20-kill blast, effect shadow casters 0, slowest effect start 1.5 ms (explosion;
+  every mapped effect warmed at load). Branch not rebased on main (f0da0e4): generated files (props.generated.ts,
+  provenance, palette atlases, characters.generated.ts, portraitIndex) need regenerating on merge.
+
 ### Updater: cosign's 128 MiB cap (lead, 2026-11-01; `wip/flaky-characters`)
 `sudo tiletrigger-update` refused d8a4afa: "cosign: size of layer (138391411) exceeded the limit (134217728)"
 (the site tarball passed 128 MiB). cosign v3 caps what it reads unless `COSIGN_MAX_ATTACHMENT_SIZE` is set; the

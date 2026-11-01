@@ -9,7 +9,6 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector2, Vector4 } from '@babylonjs/core/Maths/math.vector';
-import type { WeaponDefinition } from '@tiletrigger/shared';
 import { versioned } from '../assetUrl.ts';
 
 /**
@@ -83,40 +82,8 @@ export function loadMuzzleFlashes(): Promise<FlashPack | null> {
   return loading;
 }
 
-/**
- * Which flash a weapon makes and how big (metres per pack unit): its own
- * `view.muzzle` when it names one, else by family. Null: no flash of this
- * kind (melee, beams; the railgun keeps its own).
- */
-export function muzzleEffectFor(def: WeaponDefinition): { id: string; scale: number } | null {
-  if (def.kind === 'melee' || def.view.beam || def.id === 'core.railgun') return null;
-  const own = def.view.muzzle;
-  if (own) return { id: own.effect, scale: own.scale ?? 0.2 };
-  switch (def.family) {
-    case 'pistol':
-      return { id: 'short_flash_01', scale: 0.15 };
-    case 'revolver':
-      return { id: 'short_flash_03', scale: 0.18 };
-    case 'machine_pistol':
-      return { id: 'short_flash_04', scale: 0.15 };
-    case 'smg':
-      return { id: 'muzzle_flash_02', scale: 0.17 };
-    case 'rifle':
-      return { id: 'muzzle_flash_01', scale: 0.2 };
-    case 'marksman':
-      return { id: 'muzzle_flash_05', scale: 0.2 };
-    case 'precision':
-      return { id: 'big_flash_06', scale: 0.13 };
-    case 'lmg':
-      return { id: 'big_flash_01', scale: 0.13 };
-    case 'shotgun':
-      return { id: 'wide_flash_01', scale: 0.24 };
-    default:
-      if (def.projectile) return { id: 'big_flash_04', scale: 0.14 };
-      if (!def.ammo) return null;
-      return def.pellets > 1 ? { id: 'wide_flash_01', scale: 0.22 } : def.damage >= 60 ? { id: 'big_flash_01', scale: 0.13 } : { id: 'muzzle_flash_01', scale: 0.18 };
-  }
-}
+/** Muzzle flash by weapon: content/vfx.json's map (game/fxMap.ts). */
+export { muzzleEffectFor } from './fxMap.ts';
 
 Effect.ShadersStore.ttFlashVertexShader = `
 precision highp float;

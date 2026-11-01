@@ -1,0 +1,173 @@
+{
+  "id": "meshy_rourke",
+  "kind": "character",
+  "use": "player",
+  "order": 65,
+  "name": "Rourke",
+  "look": "core.rourke",
+  "group": "folk",
+  "bio": "Hitched a ride into the war zone by mistake. Stayed because the pay beats his last job.",
+  "body": "male",
+  "notes": "From the owner's Drive folder (uploaded 2026-10-31, processed 2026-11-01): an unrigged textured GLB in a T-pose, rigged here from landmarks. Named here; the owner reviews it on the grip and portrait sheets. A rugged man in a leather coat over a hoodie, cargo trousers and boots. Licence recorded like the other community T-poses; to confirm with the owner (owned if it is their own generation). Landmarks: spine and legs as found on the mesh, arms measured off its profile (the found ones put the left wrist 4 cm short).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Realistic_stylized_ma_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true
+  },
+  "landmarks": {
+    "spine": [
+      [
+        0,
+        0.49,
+        -0.002
+      ],
+      [
+        0,
+        0.564,
+        0.002
+      ],
+      [
+        0,
+        0.641,
+        0.004
+      ],
+      [
+        0,
+        0.724,
+        0.001
+      ],
+      [
+        0,
+        0.88,
+        0.003
+      ],
+      [
+        0,
+        0.92,
+        0.003
+      ],
+      [
+        0,
+        1,
+        0.009
+      ]
+    ],
+    "L": [
+      [
+        0.03,
+        0.83,
+        -0.02
+      ],
+      [
+        0.13,
+        0.79,
+        -0.015
+      ],
+      [
+        0.245,
+        0.77,
+        -0.015
+      ],
+      [
+        0.36,
+        0.768,
+        -0.008
+      ],
+      [
+        0.47,
+        0.778,
+        -0.008
+      ],
+      [
+        0.047,
+        0.46,
+        -0.008
+      ],
+      [
+        0.055,
+        0.264,
+        0.002
+      ],
+      [
+        0.055,
+        0.065,
+        -0.008
+      ],
+      [
+        0.075,
+        0.02,
+        0.063
+      ],
+      [
+        0.08,
+        0.015,
+        0.098
+      ]
+    ],
+    "R": [
+      [
+        -0.03,
+        0.83,
+        -0.02
+      ],
+      [
+        -0.13,
+        0.79,
+        -0.015
+      ],
+      [
+        -0.245,
+        0.77,
+        -0.015
+      ],
+      [
+        -0.36,
+        0.768,
+        -0.008
+      ],
+      [
+        -0.47,
+        0.778,
+        -0.008
+      ],
+      [
+        -0.047,
+        0.46,
+        -0.008
+      ],
+      [
+        -0.055,
+        0.264,
+        0.002
+      ],
+      [
+        -0.055,
+        0.065,
+        -0.008
+      ],
+      [
+        -0.075,
+        0.02,
+        0.063
+      ],
+      [
+        -0.08,
+        0.015,
+        0.098
+      ]
+    ]
+  }
+}
