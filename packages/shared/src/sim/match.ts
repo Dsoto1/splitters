@@ -74,7 +74,8 @@ import { vehicleGuides, type Guide } from '../bots/guides.ts';
 import { ambientCarEntities, raceGridEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
-import { BOT_NAMES, botNameFor, castLooks, validBotCast } from '../content/botNames.ts';
+import { BOT_NAMES, botNameFor } from '../content/botNames.ts';
+import { castLooks, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,

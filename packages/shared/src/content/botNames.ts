@@ -1,5 +1,6 @@
 /**
- * Bot names by theme (owner, 2026-11-01: "name and associate the bots after each character"). Every built-in look
+ * Bot names by theme (the lists; the theme ids, labels and the bot-characters setting are botThemes.ts, which the
+ * menu reads without these lists: docs/LOADING.md). Bot names by theme (owner, 2026-11-01: "name and associate the bots after each character"). Every built-in look
  * names the kind of creature it is (`nameTheme`: on the presets in looks.ts, in content/characters/*.json for the
  * whole-body characters, NPC_SKIN_THEMES below for the NPC skins); a Player Bot wearing it takes the look's own
  * name first ("Scamp"), then the next free name of its theme's list ("Coco Bean"), unique within the match. The
@@ -13,7 +14,7 @@
  * characters (BOT_NAME_MAX), no digits, original (no real people, no famous fictional characters). Append only:
  * players get to know the first names.
  */
-import { CHARACTER_GROUPS, CORE_LOOKS, RETIRED_LOOKS, type CharacterGroup, type CharacterLook } from './looks.ts';
+import { NAME_THEME_INFO, nameThemeInfo, lookTheme, builtInLook } from './botThemes.ts';
 
 /** Fewest names in a theme's list: a full match (MAX_PLAYER_SLOTS) of one look never repeats one. */
 export const BOT_THEME_MIN = 96;
@@ -75,15 +76,11 @@ export interface NameTheme {
   names: readonly string[];
 }
 
-/**
- * Every name theme, by kind of creature. IDs never change (maps and server rules name them); never the same as a
- * CHARACTER_GROUPS id (a bot-characters setting names either).
- */
-export const NAME_THEMES: readonly NameTheme[] = [
-  { id: 'soldier', label: 'Soldiers (ranks)', names: soldierNames() },
+/** Each theme's names (NAME_THEME_INFO has the ids and labels, in the same order). */
+const LISTS: readonly { id: string; names: readonly string[] }[] = [
+  { id: 'soldier', names: soldierNames() },
   {
     id: 'monkey',
-    label: 'Monkeys & Apes',
     names: list(`
       Coco Bean, Chitter, Mango, Banjo, Nutmeg, Tamarind, Kumquat, Buttons, Fig, Cheeky, Rascal, Squeaks, Bongo,
       Jibber, Jabber, Twiggs, Mischief, Pockets, Noodle, Ruckus, Hootie, Dangle, Lychee, Papaya, Gumdrop, Tumbles,
@@ -96,7 +93,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'bear',
-    label: 'Bears',
     names: list(`
       Bumble, Honeypot, Bruno Bramble, Grizwald, Fuzzbert, Cubby, Huckle, Barley, Maple, Clover, Snuffles, Bramblebear,
       Big Bertie, Mossback, Dozer, Ursula Plum, Hibernia, Pawsworth, Nugget, Marmalade, Cinnamon, Butterscotch,
@@ -112,7 +108,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'wolf',
-    label: 'Wolves & Hyenas',
     names: list(`
       Howler, Moonfang, Ashpelt, Snarl, Duskrunner, Frostjaw, Grimtooth, Shadowpaw, Ragged Ear, Nightmuzzle, Cackle,
       Smirk, Giggletooth, Bonecrunch, Ironhide, Scraggle, Sable Fang, Tundra, Hackles, Rimefur, Ember Eye, Thornpelt,
@@ -128,7 +123,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'dog',
-    label: 'Dogs',
     names: list(`
       Biscuit Bark, Waffles Woof, Pup Pup, Fetch, Sir Barksalot, Rover Grove, Patches, Noodle Nose,       Buster Bean, Sparky, Wiggles Wag, Kibble, Chomper, Barkley, Sniffy, Bandit Pup, Tater Tot, Meatball, Pickle Pup,
       Corndog, Bingo Bongo, Scamper, Rascal Rex, Duke Drool, Lady Floof, Floofington, Toasty, Mochi, Daikon, Soba,
@@ -142,7 +136,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'cat',
-    label: 'Cats',
     names: list(`
       Whiskers, Mittens Mcgee, Purrcy, Sir Pounce, Tabby Tam, Marmalade Max, Smokey Joe, Paws, Furball, Clawdia,
       Purrsephone, Meowington, Kit Kitson, Shadow Puss, Ginger Nut, Tuxedo, Bootsie, Pumpkin Spice,
@@ -159,7 +152,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'raccoon',
-    label: 'Raccoons',
     names: list(`
       Trashcan Tess, Ringtail, Masked Max, Rummage, Scavenger, Bin Diver, Lidlifter, Nightscrounge, Pilfer, Swipe,
       Snatch, Pocketpaws, Grabbit, Scrounger, Moonlighter, Dumpster Dan, Garbage Gus, Rinse, Washbear, Dunk Dunk,
@@ -176,7 +168,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'critter',
-    label: 'Otters, Hares & Critters',
     names: list(`
       Sir Splashington, Lady Paddles, Pebble, Riverbank, Driftwood, Slipstream, Whiskerworth, Monocle, Tophat Ted,
       Moneybags, Old Money, Lord Puddle, Baroness Burrow, Count Clover, Hopscotch Hal, Clockwork Cloe,
@@ -192,7 +183,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'frog',
-    label: 'Frogs & Swamp Things',
     names: list(`
       Ribbit, Croaker, Hoppity, Lilypad Lou, Swampy, Bogwart, Mudpuddle, Bullfrog Bo, Toadstool, Warty, Gloop,
       Slurp, Splosh, Pondscum, Marshmallow Toad, Fen, Mire, Sludge, Muckle, Gumbo, Bayou Bill, Cypress, Spanish Moss,
@@ -207,7 +197,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'pirate',
-    label: 'Pirates',
     names: list(`
       Barnaby Bilge, Saltbeard, One Eyed Wren, Peg Leg Pip, Scurvy Sam, Bosun Brine, Cutlass Kate, Mad Mollie,
       Gunwale Gus, Hook Hand Hal, Rumbelly, Plank Walker, Davy Drench, Squid Ink, Kraken Kev, Bilgewater, Driftwood Dan,
@@ -223,7 +212,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'knight',
-    label: 'Knights & Kings',
     names: list(`
       Sir Brambleton, Sir Oakheart, Dame Ironwood, Sir Tinsley, Lady Gauntlet, Sir Cuthbert Plume, Squire Pip, Sir Wendel,
       Dame Hollin, Sir Fernwick, Lord Ashby, Sir Bertrand, Sir Roderick, Sir Godfrey Hale,
@@ -241,7 +229,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'ninja',
-    label: 'Ninjas & Samurai',
     names: list(`
       Kage, Hayate, Kaze, Kumori, Yoru, Tsuki, Hoshi, Kasumi, Shizuka, Kiri, Hibana, Tora,       Kitsune, Tanuki, Fukuro, Karasu, Suzume, Tsubame, Hebi, Kumo, Kamome, Kamakiri, Inazuma, Arashi, Fubuki,
       Yuki Kage, Hanabi, Sakura Blade, Momiji, Kaede, Matsu, Take, Ume, Sumi, Ishi, Iwa, Kawa, Umi Kaze, Nami,
@@ -256,7 +243,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'wizard',
-    label: 'Wizards & Witches',
     names: list(`
       Wizzlewick, Old Mumblebeard, Mother Cauldron, Granny Toadwort, Professor Pocus, Hocus, Brewster, Sparkleby,
       Fizzlewit, Mystic Mabel, Grimoire, Thaddeus Quill, Morwenna, Eldritch Ed, Spellbinder, Runecaster, Hexley,
@@ -274,7 +260,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'barbarian',
-    label: 'Barbarians & Warriors',
     names: list(`
       Grumak, Bonebreaker, Axel Hewn, Skullsplit, Ragnhild, Borga, Hruff, Ironjaw, Stonefist, Bloodmane,
       Wartusk, Gorehowl, Bearhug, Hammerhand, Battlecry, Warpaint, Shieldbiter, Mountainback, Rockjaw, Thunderthighs,
@@ -289,7 +274,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'undead',
-    label: 'Zombies & Skeletons',
     names: list(`
       Moaner, Gnawbone, Rotgut, Sir Rattlebones, Mister Marrow, Calcium, Femur, Tibia, Fibula, Ulna, Radius, Patella,
       Clavicle, Sternum, Vertebra, Skully, Jawbone, Knucklebones, Ribcage, Bonita, Boneyard, Grave Dan,
@@ -305,7 +289,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'spooky',
-    label: 'Horrors & Haunts',
     names: list(`
       Jack O Grin, Candlewick, Hollowgourd, Cackles, Mister Grins, Funhouse, Big Top,       Honk Honk, Squeaky Shoes, Greasepaint, Ringmaster Rot, Count Fangsley, Lady Nocturne, Baron Batsworth, Duke Dusk,
       Madame Midnight, Crimson Cape, Coffin Nails, Sanguine, Velvet Fang, Mister Nightly,
@@ -321,7 +304,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'robot',
-    label: 'Robots & Mechs',
     names: list(`
       Clanker, Beep Boop, Gearbox, Servo, Piston, Widget, Gadget, Doohickey, Thingamabob, Gizmotron,
       Rivet, Bolt Bot, Nuts N Bolts, Ratchet Bot, Spanner, Wrench, Torque, Sprocket Bot, Flywheel, Crankshaft,
@@ -337,7 +319,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'alien',
-    label: 'Aliens & Visitors',
     names: list(`
       Zorbo, Glixx, Xyloth, Quorp, Blinx, Zarnak, Vrell, Ooblek, Krix, Pleeb, Zeeble, Nebbo, Gloonix, Tharx, Zibzab,
       Wubbo, Yorrik, Qwex, Skreel, Vexxo, Bloopus, Gorbix, Ploonk, Zentar, Xibbit, Quazz,       Zip Zop, Meep, Morp, Glorbo, Snarfle, Floob, Gleep, Zorp, Blip Blip, Probe, Abductor, Saucer Sid, Mothership,
@@ -352,7 +333,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'goblin',
-    label: 'Goblins & Imps',
     names: list(`
       Snaggletooth, Grubnik, Nixit, Skrag, Ratbag, Grizz, Mugwort Gob, Fungus, Mushroom Mo, Toadstool Tim,
       Wartnik, Bogey, Snizzle, Gnarl, Krunk, Zogg, Snik, Nikk, Pikk, Skab, Scab, Scrabble, Gribble, Grizzle,
@@ -367,7 +347,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'cowboy',
-    label: 'Cowboys & Outlaws',
     names: list(`
       Dusty Boots, Tumbleweed Tex, Sagebrush Sam, Rattlesnake Ray, Lasso Lou, Spurs, Saddlebag, Buckaroo Bill,
       Bronco Bess, Mustang Mae, Stallion, Pinto Pete, Palomino, Appaloosa, Rawhide, Chaps, Stetson Steve, Ten Gallon,
@@ -384,7 +363,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'gangster',
-    label: 'Gangsters & Grifters',
     names: list(`
       Fingers Mulgrew, Two Bits, Knuckles Nolan, Slick Vinnie, Pinstripe Pete, Fedora Fran, Tommy Gunn, Big Sal,
       Little Sal, Lucky Lenny, Sly Sully, Smiles Moretti, Bootleg Bill, Speakeasy Sue, Moonshine Mo,
@@ -401,7 +379,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'townsfolk',
-    label: 'Townsfolk',
     names: list(`
       Uncle Moe, Auntie Pearl, Grandma Fig, Grandpa Gus, Milkman Mel, Baker Bea, Butcher Bob,
       Candlestick Carl, Plumber Pete, Janitor Jan, Mechanic Mo, Barista Bo, Cashier Cass, Waiter Walt, Busboy Benny,
@@ -420,7 +397,6 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
   {
     id: 'myth',
-    label: 'Gods & Legends',
     names: list(`
       Anubiscuit, Ra Ra, Sobekky, Horace Horus, Thothy, Bastet Belle, Setto, Khonsu Koo, Ptahbert,
       Hathorsome, Sekhmetty, Nephthys Nell, Scarabeus, Sphinxley, Pharaoh Phil, Mummy Mo, Wrappings,
@@ -437,84 +413,12 @@ export const NAME_THEMES: readonly NameTheme[] = [
   },
 ];
 
+const NAMES_BY_ID = new Map(LISTS.map((t) => [t.id, t.names]));
+
+/** Every name theme with its names, in NAME_THEME_INFO's order. */
+export const NAME_THEMES: readonly NameTheme[] = NAME_THEME_INFO.map((t) => ({ ...t, names: NAMES_BY_ID.get(t.id) ?? [] }));
 const THEMES_BY_ID = new Map(NAME_THEMES.map((t) => [t.id, t]));
-export const nameTheme = (id: string | undefined): NameTheme | undefined => (id ? THEMES_BY_ID.get(id) : undefined);
-export const isNameTheme = (x: unknown): x is string => typeof x === 'string' && THEMES_BY_ID.has(x);
-
-/** The theme of a built-in look without one of its own: by what it is (a new soldier skin is a soldier). */
-const GROUP_THEMES: Partial<Record<CharacterGroup, string>> = { soldiers: 'soldier', legends: 'knight', folk: 'townsfolk', horror: 'spooky' };
-
-/** The NPC skins' themes (`npc:<role>` looks; sim/npc.ts). */
-export const NPC_SKIN_THEMES: Readonly<Record<string, string>> = {
-  trooper: 'soldier',
-  gunner: 'soldier',
-  heavy: 'soldier',
-  sniper: 'soldier',
-  zombie: 'undead',
-  imp: 'goblin',
-  puglin: 'goblin',
-  cyclops: 'alien',
-  oculus: 'alien',
-  scolitex: 'alien',
-};
-
-const lookById = new Map(CORE_LOOKS.map((l) => [l.id, l]));
-/** A built-in look (a retired one gives its replacement), or undefined (a design of yours, an NPC skin, unknown). */
-const builtIn = (id: string | undefined): CharacterLook | undefined => (id ? lookById.get(RETIRED_LOOKS[id] ?? id) : undefined);
-
-/** A look's name theme: its own, else its group's; an NPC skin's; null for a design of yours or anything unknown. */
-export function lookTheme(id: string | undefined): string | null {
-  if (id?.startsWith('npc:')) return NPC_SKIN_THEMES[id.slice(4)] ?? null;
-  const l = builtIn(id);
-  if (!l) return null;
-  return (l.nameTheme && THEMES_BY_ID.has(l.nameTheme) ? l.nameTheme : undefined) ?? (l.group ? GROUP_THEMES[l.group] : undefined) ?? null;
-}
-
-// ---------------------------------------------------------------- bot characters (which looks random bots wear)
-
-/**
- * Which looks random bots wear: character groups (CHARACTER_GROUPS ids) and/or name themes (NAME_THEMES ids). A
- * look is in when its group or its theme is listed. Empty: every look (all).
- */
-export type BotCast = readonly string[];
-/** Most entries in a bot-characters setting. */
-export const BOT_CAST_MAX = 8;
-
-const isGroupId = (x: string) => CHARACTER_GROUPS.some((g) => g.id === x);
-export const isCastId = (x: unknown): x is string => typeof x === 'string' && (isGroupId(x) || THEMES_BY_ID.has(x));
-
-/** A bot-characters setting made valid: known ids only, each once, at most BOT_CAST_MAX. Not a list: empty (all). */
-export function validBotCast(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  const out: string[] = [];
-  for (const x of raw) if (isCastId(x) && !out.includes(x) && out.length < BOT_CAST_MAX) out.push(x);
-  return out;
-}
-
-/** Whether a look is in a bot-characters setting (empty: every look is). */
-export function castAllows(cast: BotCast | undefined, look: string): boolean {
-  if (!cast?.length) return true;
-  const l = builtIn(look);
-  const group = l?.group ?? null;
-  const theme = lookTheme(look);
-  return cast.some((x) => x === group || x === theme);
-}
-
-/** The looks random bots wear under a bot-characters setting, in roster order; every look when none fits. */
-export function castLooks(cast: BotCast | undefined): readonly CharacterLook[] {
-  if (!cast?.length) return CORE_LOOKS;
-  const out = CORE_LOOKS.filter((l) => castAllows(cast, l.id));
-  return out.length ? out : CORE_LOOKS;
-}
-
-/** The choices a menu offers, groups first: { id, label }. */
-export const BOT_CAST_CHOICES: readonly { id: string; label: string }[] = [...CHARACTER_GROUPS.map((g) => ({ id: g.id, label: g.label })), ...NAME_THEMES.map((t) => ({ id: t.id, label: t.label }))];
-
-/** "Soldiers", "Pirates + Knights & Kings", or "All characters". */
-export function botCastLabel(cast: BotCast | undefined): string {
-  if (!cast?.length) return 'All characters';
-  return cast.map((x) => BOT_CAST_CHOICES.find((c) => c.id === x)?.label ?? x).join(' + ');
-}
+export const nameTheme = (id: string | undefined): NameTheme | undefined => (id && nameThemeInfo(id) ? THEMES_BY_ID.get(id) : undefined);
 
 // ---------------------------------------------------------------- naming a bot
 
@@ -524,7 +428,7 @@ export function botCastLabel(cast: BotCast | undefined): string {
  * in use in the match (any case): players', bots', the host's bot set's.
  */
 export function botNameFor(look: string | undefined, taken: (name: string) => boolean, offset = 0): string {
-  const own = builtIn(look)?.name;
+  const own = builtInLook(look)?.name;
   if (own && !taken(own)) return own;
   const theme = nameTheme(lookTheme(look) ?? undefined);
   if (theme) {

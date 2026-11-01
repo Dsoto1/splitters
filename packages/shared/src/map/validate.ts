@@ -1,5 +1,5 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
-import { isCastId } from '../content/botNames.ts';
+import { isCastId } from '../content/botThemes.ts';
 import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { itemCategory } from '../sim/pickupRoll.ts';

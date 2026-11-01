@@ -38,6 +38,11 @@ kind of creature; the bot characters setting is a map default the host can chang
   renames random bots out of it), server rules (`cast`, live; admin changes persist). HostState `cast`/`mapCast`.
   Kept over a map change (hostRules KEPT). docs: HOSTING.md (bot names), CHARACTERS.md (`nameTheme`),
   MULTIPLAYER_PROTOCOL.md §19.
+- **Loading** (docs/LOADING.md): the name lists (`content/botNames.ts`, ~17 kB gzip) load only with the match code
+  (sim/match.ts; the `@tiletrigger/shared/match` entry re-exports them). The menu, MapMaker and the rules read
+  `content/botThemes.ts` (theme ids and labels, `lookTheme`, the bot-characters setting), which the shared index
+  exports. Keep it that way: importing botNames.ts from anything the menu reaches put the menu's first JS at
+  846.6 kB gzip (budget 840); split, it is 831.1 kB.
 - No map in maps/ sets botCast yet (the owner picks: e.g. a D-Day map → soldiers, in MapMaker).
 - Tests: botThemes.test.ts (lists, manifest themes, 96-bot soldiers-only roster, Scamp first, fallback, host
   override/recast, set keeps its own, setup/server rules/wire, MapMaker command + validation). e2e: editor flow ticks

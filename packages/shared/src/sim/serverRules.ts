@@ -3,7 +3,7 @@ import { MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { teamCount } from './hostRules.ts';
 import { isCoopMode, isTwoTeamMode } from './matchSetup.ts';
 import { MAX_TEAMS } from './npc.ts';
-import { BOT_CAST_CHOICES } from '../content/botNames.ts';
+import { BOT_CAST_CHOICES } from '../content/botThemes.ts';
 import { GAME_MODES, MODE_LABELS, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /**

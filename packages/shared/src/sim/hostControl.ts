@@ -1,7 +1,7 @@
 import { BOT_DIFFICULTIES } from '../bots/profile.ts';
 import type { HostRulesPatch, HostState, MatchCommand } from '../protocol.ts';
 import { botSetLabel, sameBotSet, validateBotSet } from './botSet.ts';
-import { botCastLabel, validBotCast } from '../content/botNames.ts';
+import { botCastLabel, validBotCast } from '../content/botThemes.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { teamCount, teamsLabel } from './hostRules.ts';
 import { validateTeamSizes } from './matchSetup.ts';

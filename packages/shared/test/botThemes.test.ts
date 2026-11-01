@@ -1,18 +1,14 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   BOT_CAST_CHOICES,
-  BOT_NAMES,
   BOT_NAME_MAX,
-  BOT_THEME_MIN,
   CHARACTER_GROUPS,
   CORE_LOOKS,
   DEFAULT_RULES,
-  NAME_THEMES,
   NPC_LOOKS,
   SERVER_RULES,
   applyCommand,
   botCastLabel,
-  botNameFor,
   castAllows,
   castLooks,
   encodeLook,
@@ -27,6 +23,8 @@ import {
   validateMap,
   type MapDocument,
 } from '../src/index.ts';
+import { BOT_NAMES, BOT_THEME_MIN, NAME_THEMES, botNameFor } from '../src/content/botNames.ts';
+import { NAME_THEME_INFO } from '../src/content/botThemes.ts';
 import { MAX_PLAYER_SLOTS } from '../src/sim/constants.ts';
 import { BotFiller, HostControl, Match, initNavigation, type Combatant } from '../src/match.ts';
 // @ts-expect-error: a plain .mjs tool without types
@@ -72,6 +70,8 @@ describe('bot name themes: the lists', () => {
     for (const t of NAME_THEMES) expect(CHARACTER_GROUPS.some((g) => g.id === t.id), t.id).toBe(false);
     expect(MANIFEST_THEMES).toEqual(NAME_THEMES.map((t) => t.id));
     expect(BOT_CAST_CHOICES).toHaveLength(CHARACTER_GROUPS.length + NAME_THEMES.length);
+    // The menu's ids and labels (botThemes.ts) and the lists (botNames.ts) name the same themes, each with its names.
+    expect(NAME_THEMES.map((t) => t.id)).toEqual(NAME_THEME_INFO.map((t) => t.id));
   });
 
   it('every look on the roster and every NPC skin has a theme; every theme has someone', () => {

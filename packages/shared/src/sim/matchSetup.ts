@@ -4,7 +4,7 @@ import { MAX_TEAMS, mapTeams } from './npc.ts';
 import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, isGameMode, isTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
 import { IMPROMPTU_MIN_PLAYERS } from './spawns.ts';
 import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
-import { validBotCast } from '../content/botNames.ts';
+import { validBotCast } from '../content/botThemes.ts';
 
 /**
  * Match setup (Play → match setup, saved setups): everything the player
