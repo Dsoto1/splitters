@@ -726,8 +726,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   const pos = fp ? fp.pos : new Float32Array(src.pos);
   const fitted = new Map(rigNames.map((n) => [n, { q: ual.get(n).q, t: target.get(n) }]));
   // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
-  // Opt-in (fixes.armCloth): on every character it moved the stretch into wide sleeves instead of curing it.
-  if (!fp && c.armCloth) keepArmsToArms({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, log: (l) => console.log(`  ${out} ${l}`) });
+  // Opt-in (fixes.armCloth), by distance along the surface.
+  if (!fp && c.armCloth) keepArmsToArms({ meshes: [{ pos, J, W, idx: src.indices }], jointNames: rigNames, world: fitted, log: (l) => console.log(`  ${out} ${l}`) });
   const hands = fitHands({ meshes: [{ pos, J, W }], jointNames: rigNames, world: fitted, rig: ual, overrides: c.hands, log: (l) => console.log(`  ${out} ${l}`) });
   for (const [n, t] of hands.moved) target.set(n, t);
   for (const j of joints) if (hands.data[j.getName().slice(-1)] && j.getName().startsWith('hand_')) j.setExtras({ hand: hands.data[j.getName().slice(-1)] });
@@ -792,7 +792,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     };
     const parts = [
       { inside: (v) => majorOf(v) === headJoint, share: HEAD_SHARE },
-      { inside: (v) => handJoints.has(majorOf(v)), share: HANDS_SHARE },
+      // (`fixes.handsShare`: more, where cuffs the skinning left on the hands took their share: King Aldric's.)
+      { inside: (v) => handJoints.has(majorOf(v)), share: c.handsShare ?? HANDS_SHARE },
     ];
     const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008] });
     prim.getIndices().setArray(cut);

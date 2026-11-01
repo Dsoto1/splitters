@@ -18,7 +18,7 @@
     "community": {
       "model": "T Pose Cat"
     },
-    "file": "^Meshy_AI_T_Pose_Cat_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_T_Pose_Cat_\\d+_texture\\.(glb|fbx)$"
   },
   "finish": {
     "metallic": 0,
@@ -34,7 +34,12 @@
       [0, 0.17, -0.1],
       [0, 0.07, -0.27]
     ],
-    "feet": true
+    "feet": true,
+    "hands": {
+      "r": {
+        "wrist": true
+      }
+    }
   },
   "landmarks": {
     "spine": [

@@ -35,6 +35,9 @@
     "trim": "#a86e2a"
   },
   "fixes": {
+    "hands": {
+      "curl": 0
+    },
     "triangles": 11000,
     "feet": true
   }

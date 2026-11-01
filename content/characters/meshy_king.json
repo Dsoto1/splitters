@@ -36,6 +36,7 @@
     "cloth": true,
     "hands": {
       "curl": 1
-    }
+    },
+    "handsShare": 0.1
   }
 }
