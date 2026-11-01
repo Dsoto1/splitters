@@ -35,9 +35,8 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
   the driver's seat (a seated head height, a little forward, or the
   vehicle's own `cockpitEye` in `MOUNT_DEFS` where the model needs it), the
   ridden model is drawn one-sided so the hood, nose and frame show without
-  the inside of the roof and doors in the way (a vehicle with a `cockpitModel`,
-  the buggy, also draws its high-detail cockpit for you alone, the body's own
-  cockpit triangles left out of your copy: game/cockpitInterior.ts), and the view turns with the
+  the inside of the roof and doors in the way (a vehicle with an in-house
+  cockpit, the buggy, draws it for you alone: see "In-house cockpits" below), and the view turns with the
   vehicle while the mouse looks round within about 130° of the nose. The view
   leans with the vehicle's drawn tilt only gently (damped, a third of it and
   at most ~6° on the ground; flyers follow their bank and climb more, up to
@@ -131,6 +130,44 @@ turret on each roof, a hauler on the west ledge, a dropship on the east and
 two sentries mid-field. Coldwater Gulch adds a gun jeep to each base's apron;
 Frost Basin a pair of snow sleds on each plateau, a glider on each roof and
 the air drop (below).
+
+## In-house cockpits
+
+Up close the buggy's Meshy body (one 2048 px colour map over all 4.4 m) smears
+and its roll cage turns to lumpy blobs, so the driver's own cockpit view draws
+parts we build ourselves instead, crisp at any distance. They are data, one
+entry per mount id in `packages/client/src/content/cockpits.ts`, built into
+geometry by `game/cockpitGeometry.ts` (no model files, nothing to download):
+
+- **tubes**: round bars along a path of points, corners rounded at a bend
+  radius (the roll cage, grab handles);
+- **boxes** with rounded edges and **discs** (panels, floor, lamps, pedals);
+- **seats**: bucket seats (cushion, backrest, side bolsters, headrest, shell)
+  from a crease point, a recline and a width, with a five-point **harness**
+  if asked;
+- **wheel**: rim, spokes, hub and column at a point, along a column direction;
+  it turns with the front wheels' steering (`ms` in the snapshot) times `lock`;
+- **gauges**: dials with ticks; a `speed` needle reads the speed against `max`,
+  a `revs` needle runs a made-up gearbox; **switches**: toggle rows;
+- **hide**: boxes in the mount's frame; the body's triangles wholly inside one
+  are left out of your copy of the body while the parts show.
+
+Everything is in the mount's frame (the same as `MOUNT_DEFS` seats and
+`cockpitEye`), and `mirror` repeats a part on the other side. Colours are a
+named palette; four surfaces (powder-coat paint, seat fabric, plastic and
+rubber, bare steel) are PBR materials over the parts' vertex colours, with a
+small generated roughness grain. Everyone else, and your chase camera, see the
+body alone (`game/cockpitInterior.ts` adds the parts under your vehicle's body
+node, so they ride its springs and tilt).
+
+The buggy's was measured on its model (slices of the triangles): the roof
+frame at 1.47 m on rails 0.46 m either side from the rear hoop (z -1.0) to the
+front bar with its lamps (z 0.6), a hoop behind the front seats (z 0.05),
+A-pillars and a centre brace falling to the hood, three rows of seats, the
+wheel on the left at z 0.78 and a sand cowl over the dash so the road shows
+past the hood. About 17k triangles in 9 draws (4 surfaces static, 2 for the
+wheel, one per needle), built once on first use. The gun jeep and kart can get
+one by adding an entry.
 
 ## Suspension (the Warthog feel)
 

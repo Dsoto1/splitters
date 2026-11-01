@@ -80,6 +80,30 @@ loaded machine: `WEAPONS_ONLY=rifle,pistol,shotgun,spear AUDIT_PX=400`).
   and the Imp page's screenshot timing out under load (twice); arsenal: only "R loads the barrel again" (the known load
   race, see `wip/arsenal-fix`). Portraits recaptured for King Aldric and Biscuit (the only bodies whose shape changed).
 
+### In-house buggy cockpit (`wip/cockpit-parts`, agent, 2026-11-01; merged to main 6b6a40e)
+Owner: the driver's view still looked bad up close (lumpy black cage blobs, smeared dash) even with the cropped Meshy
+interior; build the cockpit parts in-house, only for the local driver's cockpit view.
+- **Data:** `packages/client/src/content/cockpits.ts` (`COCKPITS` by mount id; buggy only): tubes (paths, radius,
+  bend), rounded boxes, discs, seats (crease point, recline, harness), the wheel (centre, column direction, radius,
+  spokes, lock), gauges (`speed` / `revs` needles), switch rows, a palette, and `hide` boxes (mount frame). Measured on
+  the body's triangles (slices): roof frame 1.47 m on rails x ±0.46 from the rear hoop z -1.0 to the front bar z 0.6,
+  hoop at z 0.05, A-pillars and a centre brace to the hood, seats at creases z 0.28 / -0.53 / -0.94 (the model has
+  three rows), wheel at (-0.32, 1.0, 0.78). Doc: docs/VEHICLES.md, "In-house cockpits".
+- **Geometry:** `game/cockpitGeometry.ts`, engine-free (tube sweep with parallel-transport frames and rounded corners,
+  rounded boxes, caps, straps), so it is unit tested and can be dumped in Node (type stripping) for offline renders.
+  ~17.3k triangles: 16.2k static in 4 surfaces (paint 3.4k, metal 2.4k, plastic 3.2k, fabric 7.3k), wheel 1.0k,
+  needles 60 each; 9 draws (the old cropped interior was 31.9k triangles plus a 3.6 MB download). Built once, kept disabled between rides.
+- **Client:** `game/cockpitInterior.ts` builds Babylon meshes (vertex colours, 4 PBR materials sharing a 64 px
+  generated roughness grain), parents them under `<mount>_gun` (rides the springs), cuts your copy of the body with
+  `partitionByBox` (now several boxes), turns the wheel from the eased `ms` steer (View.sprung) × lock and the needles
+  from the tick velocity. `View.cockpitInteriorState()` for tests; e2e vehicles checks the parts and body cut, that
+  steering turns the wheel and the speedometer moves, and that the chase view draws the body alone.
+- **Dropped:** `MountDef.cockpitModel`, `vehicles/offroad_buggy_cockpit.glb` (3.6 MB) and its guns.json `interior`,
+  lock and provenance entries. prepare-guns' `interior` support stays (unused).
+- **Offline preview trick:** the scratchpad scripts dumped the body GLB's triangles with sampled colours and rendered
+  slices / a perspective from the eye in Python, with the parts overlaid; far faster than headless Babylon at 1 fps.
+- Next: the gun jeep and kart can get entries; harness colour (red) and the dash layout are easy to retune in data.
+
 ### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; merged to main dc1d1fc)
 Owner's queue of 2026-10-31 ("new models on the Drive", "FX: I bought the full licence"). Downloads outside the repo:
 models in `/home/user/meshy-drive/drive-2026-11-01/` (links for the pipelines in `/home/user/meshy-drive/links-1101/`),
