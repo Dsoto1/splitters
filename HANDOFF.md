@@ -52,7 +52,8 @@ layout prepare-vfx reads: `/home/user/fx-packs/links-full/`). No Meshy credits s
   (Electric: electric_particle, ground_impact, ground_streaks, zap; Flame: fire_core, fire_overlay, fire_particle; Status:
   11). Tracers are unchanged (impactVisuals streaks).
 - Checks: typecheck; content OK; new `packages/client/test/fxMap.test.ts` (6); style-pack tests (after renaming three
-  props: `temple_ruin_stair`, `smithy_workbench`, `tiled_well`); e2e `physicsfx` + `arsenal` PASS. `test:changed` on a
+  props: `temple_ruin_stair`, `smithy_workbench`, `tiled_well`); e2e `physicsfx`, `arsenal`, `editor` PASS;
+  `characters` FAIL only on the known flaky "Imp ... pistol r null" (main's HANDOFF) and a 90 s screenshot timeout at load 25. `test:changed` on a
   machine at load 21-27: 14 failures, all timeouts or bench thresholds except `host.test.ts` (Bob's account `sub`),
   which fails the same on main's checkout (f0da0e4): not this branch. Menu bundle 833.4 kB gzip (budget 840); the map
   is in the lazily loaded view chunk. Perf at 96 (load 23+, SwiftShader, so absolute numbers are noisy): server
