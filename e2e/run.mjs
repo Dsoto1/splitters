@@ -2779,6 +2779,8 @@ async function vehiclesFlow(browser) {
   }
   const saved = await page.evaluate(() => localStorage.getItem('tiletrigger.vehicleCamera'));
   check(worst.view === 'chase' && !worst.inBox && worst.clear && worst.sight && worst.dist > 1, `H gives a chase camera outside the buggy and not in a wall (${JSON.stringify({ view: worst.view, inBox: worst.inBox, clear: worst.clear, sight: worst.sight, dist: worst.dist?.toFixed(1) })})`);
+  // The interior goes on the frame after the view switches (a slow page draws a frame or two a second).
+  await page.waitForFunction(() => !window.__cs.view.cockpitInteriorShown(), null, { timeout: T(10000) }).catch(() => {});
   const chaseBody = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
     const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${me.mount ? window.__match.mounts[me.mount.index].index : -1}`);
@@ -2786,6 +2788,9 @@ async function vehiclesFlow(browser) {
   });
   check(!chaseBody.interior && chaseBody.cut === false, `the chase view draws the whole body and no interior (${JSON.stringify(chaseBody)})`);
   check(/"ground":"chase"/.test(saved ?? ''), `the choice is remembered for ground vehicles (${saved})`);
+  // The buggy we drove (the passenger checks below use the other one, still parked on flat ground at its spawn:
+  // this one ends up wherever the drive and the steering check took it).
+  await page.evaluate(() => (window.__drivenMount = window.__match.slots[window.__cs.slot].mount?.index ?? -1));
   // Press E (again, if a slow frame swallowed the press) until we're out.
   for (let i = 0; i < 4; i++) {
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
@@ -2795,7 +2800,9 @@ async function vehiclesFlow(browser) {
   check(await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount), 'E again gets you out');
   // Out of the chase camera: back at your own eye, level.
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-  await page.waitForTimeout(T(500)); // wait-ok: the camera eases back to your eye
+  await page
+    .waitForFunction(() => { const c = window.__cs.view.camera.position; const e = window.__cs.local.eye; return window.__cs.rideView() === null && Math.hypot(c.x - e.x, c.y - e.y, c.z - e.z) < 0.4; }, null, { timeout: T(5000) })
+    .catch(() => {});
   const foot = await page.evaluate(() => {
     const cs = window.__cs;
     const c = cs.view.camera.position;
@@ -2835,7 +2842,7 @@ async function vehiclesFlow(browser) {
     if (me.mount) match.leaveMount(me, true);
     // Everyone holds still and holds fire (the buggy's health is checked below).
     for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
-    const m = match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null)).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
+    const m = match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.index !== window.__drivenMount && x.seats.every((s) => s === null)).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
     // Bots drawn as characters (a creature has no seated pose).
     const bots = match.slots.filter((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {})).slice(0, 4);
     const seats = [];
