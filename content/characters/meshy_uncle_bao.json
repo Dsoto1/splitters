@@ -6,6 +6,7 @@
   "name": "Uncle Bao",
   "look": "core.unclebao",
   "group": "folk",
+  "nameTheme": "townsfolk",
   "bio": "Retired, apparently. Nobody told his trigger finger.",
   "body": "male",
   "notes": "Not in the intake queue: found among the owner's downloads (2026-10-29) and brought in as a new character (named here; the owner reviews it on the grip and portrait sheets). Rigged by Meshy's rigging API from the unrigged textured GLB (source.modelUrl \"upload\").",

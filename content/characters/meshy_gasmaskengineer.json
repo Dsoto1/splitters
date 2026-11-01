@@ -6,6 +6,7 @@
   "name": "Gas Mask Engineer",
   "look": "core.gasmaskengineer",
   "group": "soldiers",
+  "nameTheme": "soldier",
   "bio": "Breathes through a filter, works through a war. Never says what's in the tanks.",
   "body": "male",
   "notes": "Drive batch of 2026-11-01 evening (\"Gas Mask Engineer\", textured, unrigged, 561k triangles): rigged here from T-pose landmarks found on the mesh. Name a placeholder from the Roster Board.",

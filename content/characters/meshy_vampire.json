@@ -6,6 +6,7 @@
   "name": "Vampire",
   "look": "core.vampire",
   "group": "horror",
+  "nameTheme": "spooky",
   "bio": "Five hundred years old, never once sunburnt. Bring your own garlic.",
   "body": "male",
   "notes": "Drive, 2026-11-01 evening, fourth drop (\"Vampire Male\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). CC0 (Meshy community; confirmed by the owner 2026-11-01). Name a placeholder.",

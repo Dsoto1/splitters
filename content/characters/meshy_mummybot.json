@@ -6,6 +6,7 @@
   "name": "Mummy Bot",
   "look": "core.mummybot",
   "group": "horror",
+  "nameTheme": "undead",
   "bio": "Wrapped for eternity, rebooted for Tuesday. Bandages are load-bearing.",
   "body": "male",
   "notes": "Drive batch of 2026-11-01 evening, second drop (\"Mummy Bot\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Its extra head joints (wrappings) ride the head. Name a placeholder from the Roster Board.",

@@ -47,9 +47,10 @@ import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STRE
 import { pickupPool, rollPickup } from './pickupRoll.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
+import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
 import { getProp } from '../content/props.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
-import { BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
@@ -73,6 +74,8 @@ import { vehicleGuides, type Guide } from '../bots/guides.ts';
 import { ambientCarEntities, raceGridEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, bodySizeOf, getLook, lookForBot } from '../content/looks.ts';
+import { BOT_NAMES, botNameFor } from '../content/botNames.ts';
+import { castLooks, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
@@ -287,6 +290,8 @@ export interface Combatant {
   /** Tick this player last pressed Use (E): objective modes read it (Bomb: plant / defuse). */
   useTick?: number;
   windup: number;
+  /** A person on foot in the third-person view (their input's BUTTON_THIRD_PERSON): rounds go toward the crosshair. */
+  thirdPerson?: boolean;
   semiLatch: boolean;
   burstLeft: number;
   burstTimer: number;
@@ -1259,11 +1264,13 @@ export class Match {
    * `asCharacter`: play the look's own profile (under the match's bot style) instead of `profile` when it has one.
    * `o`: a bot of the host's bot set: its team (a faction ID), look, and own skill, style and squad.
    */
-  addBot(name: string, profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal, asCharacter = false, o?: { team?: string; look?: string; botSet?: NonNullable<Combatant['botSet']> }): Combatant | null {
+  addBot(name: string | ((look: string) => string), profile: BotProfile, difficulty: BotDifficulty = BOT_DIFFICULTIES.normal, asCharacter = false, o?: { team?: string; look?: string; botSet?: NonNullable<Combatant['botSet']> }): Combatant | null {
     const team = o?.team !== undefined && this.teams?.some((t) => t.id === o.team) ? o.team : undefined;
-    const c = this.addCombatant('bot', name, team);
+    const c = this.addCombatant('bot', typeof name === 'string' ? name : '', team);
     if (c) {
-      c.look = o?.look ? validLookId(o.look) : lookForBot(c.slot);
+      c.look = o?.look ? validLookId(o.look) : this.botLook(c.slot);
+      // A random bot is named after what it wears (BotFiller: the look's own name, else its theme's).
+      if (typeof name === 'function') c.name = name(c.look);
       this.applyBodySize(c);
       if (o?.botSet) c.botSet = { ...o.botSet };
       const skill = c.botSet?.skill ? BOT_DIFFICULTIES[c.botSet.skill] : difficulty;
@@ -1274,6 +1281,47 @@ export class Match {
       this.refreshRoles();
     }
     return c;
+  }
+
+  /** Every name in the match now: players, bots and spectators (bot naming skips them). */
+  namesInUse(): string[] {
+    return [...this.combatants().map((c) => c.name), ...[...this.spectators.values()].map((s) => s.name)];
+  }
+
+  /**
+   * Which looks random bots wear (content/botNames.ts): the host's choice (rules.botCast), else the map's
+   * (MapDocument.botCast); empty: every look.
+   */
+  get botCast(): readonly string[] {
+    return this.rules.botCast ?? validBotCast(this.map.botCast);
+  }
+
+  /** A random bot's look for its slot: spread across the looks the bot-characters setting allows (all: the whole roster, as ever). */
+  botLook(slot: number): string {
+    const cast = this.botCast;
+    if (!cast.length) return lookForBot(slot);
+    const pool = castLooks(cast);
+    return pool[(slot + 1) % pool.length]!.id;
+  }
+
+  /**
+   * The bot-characters setting changed mid-match: a random bot (not the host's set's, not playing for an away
+   * player) wearing a look it no longer allows wears an allowed one and takes a name for it. Returns how many changed.
+   */
+  recastBots(name: (look: string, self: Combatant) => string): number {
+    let n = 0;
+    const cast = this.botCast;
+    const pool = castLooks(cast);
+    for (const c of this.combatants()) {
+      if (c.kind !== 'bot' || c.away || c.botSet || pool.some((l) => l.id === c.look)) continue;
+      c.look = this.botLook(c.slot);
+      this.applyBodySize(c);
+      c.name = name(c.look, c);
+      this.rebrain(c, c.bot!.difficulty);
+      n++;
+    }
+    if (n) this.rolesFor = -1;
+    return n;
   }
 
   /**
@@ -1425,8 +1473,9 @@ export class Match {
     // Classes set health and speed themselves.
     if (c.cls) return;
     c.speedMul = spec.speed;
+    // At full health (as everyone is, joining: they spawn before their look is set), full health of the new size.
+    if (!c.alive || c.health >= c.maxHealth) c.health = spec.health;
     c.maxHealth = spec.health;
-    if (!c.alive) c.health = spec.health;
   }
 
   /** `at`: this slot (a spectator joining again takes back the slot kept for them); else the first free one. */
@@ -2127,7 +2176,7 @@ export class Match {
       if (!spec || !m.alive || m.builtBy === c.slot) continue;
       if (m.faction !== null && relation(this.factions, m.faction, c.faction) !== 'enemy') continue;
       if (horizontalDistance(m.pos, c.move.pos) > spec.range + 10) continue;
-      out.push({ slot: SENTRY_VIEW_BASE + m.index, pos: m.pos, yaw: m.aimYaw, pitch: 0, health: Math.max(0, m.health), armor: 0, alive: true, stance: 2, human: false, mounted: false, grounded: true, object: true, concealed: false });
+      out.push({ slot: SENTRY_VIEW_BASE + m.index, pos: m.pos, yaw: m.aimYaw, pitch: 0, health: Math.max(0, m.health), armor: 0, alive: true, stance: 2, human: false, mounted: false, grounded: true, object: true, concealed: false, size: 1 });
     }
     return out;
   }
@@ -2458,6 +2507,7 @@ export class Match {
       // On a zipline one hand holds the trolley: sidearms and blades only.
       const unarmed = (seatNow?.role === 'driver' && !gun) || (!!c.mount && !!this.mounts[c.mount.index]!.def.airplane) || (c.move.zip !== undefined && !gun && !oneHanded(held.def));
       const def = held.def;
+      c.thirdPerson = c.kind === 'human' && !c.mount && (input.buttons & BUTTON_THIRD_PERSON) !== 0;
       const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
       const pressed = input.buttons & ~c.prevButtons;
       c.prevButtons = input.buttons;
@@ -2607,14 +2657,38 @@ export class Match {
   }
 
   /** Where a shooter's rounds go: the view plus the mechanical recoil offset. */
-  private aimOf(c: Combatant): Vec3 {
-    return viewDirection(c.yaw + c.gun.ry, Math.max(-1.55, Math.min(1.55, c.pitch + c.gun.rp)));
+  /**
+   * Where a shot goes: the view plus the gun's recoil offset. In third person the view is first turned, from
+   * the eye, onto what the crosshair is on (sim/thirdPerson.ts), worked out here from the host's own world and
+   * `targets` (as the shooter saw them): the client only says the view is third person.
+   */
+  private aimOf(c: Combatant, targets?: ShotTargets): Vec3 {
+    let yaw = c.yaw;
+    let pitch = c.pitch;
+    if (c.thirdPerson && !c.mount) {
+      const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
+      const bodies: RayQuery | undefined = targets
+        ? (o, d, max) => {
+            let best: number | null = null;
+            for (const t of targets) {
+              const h = rayCapsule(o, d, t.feet, t.radius ?? PLAYER.radius, t.height);
+              if (h !== null && h < max && (best === null || h < best)) best = h;
+            }
+            return best;
+          }
+        : undefined;
+      ({ yaw, pitch } = thirdPersonAim(this.worldRay, eye, yaw, pitch, bodies));
+    }
+    return viewDirection(yaw + c.gun.ry, Math.max(-1.55, Math.min(1.55, pitch + c.gun.rp)));
   }
+
+  /** Level geometry along a ray (third-person aim). */
+  private readonly worldRay: RayQuery = (o, d, max) => this.physics.raycastWorld(o, d, max);
 
   /** Launch a projectile from the eye along the aim (lifted a little for throws, so they arc). */
   private launch(shooter: Combatant, spec: ProjectileSpec, weapon: string, lift = 0, spread = 0): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
-    const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : this.aimOf(shooter), spread);
+    const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, 0) : undefined), spread);
     this.projectiles.push({
       id: this.nextProjectileId++,
       owner: shooter.slot,
@@ -2644,7 +2718,7 @@ export class Match {
 
   private fireNow(shooter: Combatant, def: Trigger, viewTick: number): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
-    const aim = this.aimOf(shooter);
+    const aim = this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, viewTick) : undefined);
     const gp = gunplayOf(getWeapon(def.id));
     let spread: number;
     if (gp.accuracy && !def.alt) {
@@ -5379,7 +5453,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, size: c.size };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -5397,6 +5471,7 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean): void {
   v.grounded = c.move.grounded;
   v.concealed = concealed;
   v.riding = c.move.zip !== undefined;
+  v.size = c.size;
 }
 
 /** Distance from point p to the segment a-b. */
@@ -5449,21 +5524,8 @@ const isPerson = (c: Combatant) => c.kind === 'human' || !!c.away;
 /** Which bot gives way first (lowest first): random bots, then the host's set from its last entry back (the first ones stay longest). */
 const setRank = (c: Combatant): number => (c.botSet ? 1_000_000 - c.botSet.index : 0);
 
-/** Random bots' names, in the order bots take them: at least 96, so a full match never repeats one (the owner). */
-export const BOT_NAMES: readonly string[] = [
-  'Brassneck', 'Mildred', 'Captain Pell', 'Wick', 'Doctor Umber', 'Spoke', 'Gloam', 'Tibbs', 'Ferro', 'Lady Ash',
-  'Nub', 'Quill', 'Rustbucket', 'Old Saltpeter', 'Pigeon', 'Hollis Crane', 'Madame Thistle', 'Biscotti',
-  'Sergeant Gravy', 'Lumen', 'Ratchet', 'Nana Voss', 'Dregs', 'Crumpet', 'Sister Vex', 'Lanternjaw', 'Fennimore',
-  'Dazzle', 'Moss', 'Brigadier Fudge', 'Kettle', 'Ivy Strand', 'Gristle', 'Professor Snoot', 'Tumble', 'Ozzie Pike',
-  'Cinderbell', 'Wally Hex', 'Pickles', 'Dame Rook', 'Scuttle', 'Barnaby Wren', 'Flint', 'Auntie Sprocket', 'Grub',
-  'Major Mulch', 'Velvet', 'Dot', 'Corporal Puddle', 'Splinter', 'Hob', 'Miss Fortescue', 'Sprat', 'Gideon Lark',
-  'Mudlark', 'Bellows', 'Countess Cog', 'Zip', 'Tinder', 'Old Hob', 'Wren Kettering', 'Bolt', 'Lady Pincushion',
-  'Rumble', 'Juniper', 'Scrap', 'Colonel Custard', 'Fizz', 'Smudge', 'Bramble', 'Inspector Gloat', 'Patch',
-  'Marigold', 'Clank', 'Uncle Dredge', 'Pip', 'Tallow', 'Sir Wobble', 'Gravel', 'Mabel Stone', 'Stitch', 'Quirk',
-  'Admiral Dunk', 'Sootfoot', 'Hazel Grim', 'Plunk', 'Brisket', 'Captain Mops', 'Ember Wick', 'Dingo', 'Prudence',
-  'Rook', 'Nettle', 'Duchess Rust', 'Boomer', 'Sable', 'Ogden', 'Cricket', 'Glimmer', 'Barnacle Bill', 'Pudding',
-  'Vesper', 'Hatchet', 'Tuppence', 'Grimsby', 'Slate', 'Mister Mottle', 'Fable',
-];
+/** The general bot names (content/botNames.ts), still exported here for older imports. */
+export { BOT_NAMES };
 
 /** Keeps a match at a target player count by adding or removing Player Bots around the humans. */
 export class BotFiller {
@@ -5503,17 +5565,31 @@ export class BotFiller {
     return this.staging;
   }
 
-  private nextBot(): { name: string; profile: BotProfile } {
-    // Random bots never take a name the host's set uses.
-    const taken = this.set ? new Set(this.set.entries.map((e) => e.name.toLowerCase())) : null;
-    for (let tries = 0; ; tries++) {
-      const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
-      const round = Math.floor(this.counter / BOT_NAMES.length);
-      // Big matches run out of names: Mildred, then Mildred 2.
-      const name = `${BOT_NAMES[this.counter % BOT_NAMES.length]!}${round ? ` ${round + 1}` : ''}`;
-      this.counter++;
-      if (!taken?.has(name.toLowerCase()) || tries > BOT_NAMES.length * 2) return { name, profile };
-    }
+  /** The next random bot's base profile (it plays its look's own when it has one). */
+  private nextProfile(): BotProfile {
+    return CORE_BOT_PROFILES[this.counter++ % CORE_BOT_PROFILES.length]!;
+  }
+
+  /**
+   * A random bot's name for what it wears (content/botNames.ts): the look's own name, else its theme's next free
+   * name, else a general one. Never a name in use in the match (players, bots, spectators) or the host's set's;
+   * `self`: the bot being renamed (its own name is free to keep).
+   */
+  nameFor(look: string, self?: Combatant): string {
+    const used = new Set<string>();
+    for (const n of this.match.namesInUse()) used.add(n.toLowerCase());
+    if (self) used.delete(self.name.toLowerCase());
+    if (this.set) for (const e of this.set.entries) used.add(e.name.toLowerCase());
+    // Matches differ in which names come up (the seed); seed 1 (tests, default) takes each list in order.
+    return botNameFor(look, (n) => used.has(n.toLowerCase()), (this.match.seed - 1) * 37);
+  }
+
+  /**
+   * The bot-characters setting changed (Match.setRules({ botCast }) first): random bots wearing a look it no
+   * longer allows change into one it does, named for it. Returns how many changed.
+   */
+  recast(): number {
+    return this.match.recastBots((look, self) => this.nameFor(look, self));
   }
 
   /** A team of the match by order (a set's `team`), or undefined (auto, or no such team). */
@@ -5562,8 +5638,7 @@ export class BotFiller {
     const p = this.pick();
     if (!p) return false;
     if (p === 'random') {
-      const { name, profile } = this.nextBot();
-      return !!this.match.addBot(name, profile, this.difficulty, true);
+      return !!this.match.addBot((look) => this.nameFor(look), this.nextProfile(), this.difficulty, true);
     }
     const e = p.entry;
     const profile = CORE_BOT_PROFILES[p.index % CORE_BOT_PROFILES.length]!;
@@ -5601,7 +5676,7 @@ export class BotFiller {
     }
     for (const c of bots) {
       const i = claimed.get(c);
-      if (i === undefined) this.match.dropSetBot(c, this.nextBot().name, this.difficulty);
+      if (i === undefined) this.match.dropSetBot(c, this.nameFor(c.look, c), this.difficulty);
       else this.match.updateSetBot(c, i, set!.entries[i]!, this.difficulty);
     }
     this.staging = true;
@@ -5669,8 +5744,7 @@ export class BotFiller {
     const bots = all.filter((x) => x.kind === 'bot' && !x.away).length;
     const want = Math.max(0, Math.min(fill - humans, MAX_PLAYER_SLOTS - humans - this.match.spectatorCount));
     if (this.opts.takeBack === true && c.kind === 'human' && bots < want) {
-      const { name, profile } = this.nextBot();
-      this.match.handToBot(slot, name, profile, this.difficulty, true);
+      this.match.handToBot(slot, this.nameFor(c.look), this.nextProfile(), this.difficulty, true);
     } else this.match.remove(slot);
     this.rebalance(fill);
   }
@@ -5716,7 +5790,7 @@ export class BotFiller {
       c.away = { ...c.away, why, key: key ?? c.away.key, until };
       return true;
     }
-    const { profile } = this.nextBot();
+    const profile = this.nextProfile();
     return !!this.match.setAway(slot, { name: c.name, key, why, until, since: this.match.tick }, profile, this.difficulty);
   }
 
@@ -5829,7 +5903,7 @@ export class BotFiller {
     const c = this.match.slots[slot];
     if (!c?.away) return;
     delete c.away;
-    c.name = this.nextBot().name;
+    c.name = this.nameFor(c.look, c);
     this.warned.delete(slot);
   }
 

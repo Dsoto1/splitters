@@ -6,6 +6,7 @@
   "name": "Goblina",
   "look": "core.grizzelda",
   "group": "legends",
+  "nameTheme": "wizard",
   "bio": "Brews potions, curses rivals and keeps exact count of both.",
   "body": "female",
   "size": "small",

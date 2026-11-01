@@ -6,6 +6,7 @@
   "name": "Bandit",
   "look": "core.bandit",
   "group": "animals",
+  "nameTheme": "raccoon",
   "bio": "Steals your ammo, your cover and, if you blink, your lunch.",
   "body": "male",
   "size": "small",

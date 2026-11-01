@@ -75,6 +75,11 @@ export interface MatchRules {
   /** How bots play: each character's own way (mixed, default), all arena-style or all tactical. */
   botStyle?: 'mixed' | 'arena' | 'tactical';
   /**
+   * Which looks random bots wear, and so their names (content/botNames.ts): character groups and/or name themes
+   * ("soldiers"). Absent: the map's own (MapDocument.botCast); empty: every look (All).
+   */
+  botCast?: string[];
+  /**
    * Mix up weapon pickups: every weapon pickup not marked "keep fixed" rolls a weapon of the same category
    * as the one placed there each time it comes back (sim/pickupRoll.ts). Default off.
    */

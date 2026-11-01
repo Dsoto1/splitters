@@ -70,7 +70,9 @@ describe('spectating by choice', () => {
   });
 
   it("counts a spectator's camera input as activity: never marked away; removed only after the idle-kick time with no input at all", () => {
-    const match = new Match(yard(), DEFAULT_DEATHMATCH_RULES, 5);
+    // No score limit: the bot shooting the idle host for eleven minutes reached 15 kills and ended the match (idle
+    // time only counts in play) once bots stopped wasting rounds on cover (BotBrain.clearShot).
+    const match = new Match(yard(), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, 5);
     const filler = new BotFiller(match);
     filler.join('Host', undefined, 2);
     const dan = filler.join('Dan', undefined, 2)!;

@@ -447,6 +447,7 @@ repo; they live in a downloads dir outside it.
   "name": "Sir Galloway",
   "look": "core.galloway",
   "group": "legends",
+  "nameTheme": "knight",
   "bio": "One line for character select.",
   "body": "male",
   "size": "large",
@@ -473,6 +474,7 @@ repo; they live in a downloads dir outside it.
 | `status` | `queued` for a stub that isn't ready: it is checked only for the queue's fields and not built. Drop it once the rest is filled in. |
 | `order` | Roster position among the whole-body characters (unique). |
 | `group` | What the character is, for Character Select's tabs: `soldiers`, `legends`, `folk`, `horror`, `animals` or `creatures` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
+| `nameTheme` | What kind of creature it is, for its bots' names (`shared/content/botNames.ts`): `soldier`, `monkey`, `bear`, `wolf`, `dog`, `cat`, `raccoon`, `critter`, `frog`, `pirate`, `knight`, `ninja`, `wizard`, `barbarian`, `undead`, `spooky`, `robot`, `alien`, `goblin`, `cowboy`, `gangster`, `townsfolk` or `myth`. The first bot wearing the character takes its `name`, the rest the theme's names ("Sgt. Dunmore"). Left out: its group's (soldiers → soldier, legends → knight, folk → townsfolk, horror → spooky; animals and creatures → the general names). Every character on the roster has one (a test checks); the checker's list (`NAME_THEMES`) matches botNames.ts. |
 | `name`, `look`, `bio` | The look's display name, its ID (`core.<name>`, never changed once shipped: saved looks and bots use it) and its one-line bio. |
 | `body`, `size` | `male` or `female` proportions (clips and hip height); `small` / `large` body size, or left out. |
 | `source.license` | `owned` (made on the owner's Meshy account; provenance pack `meshy-owned`) or `CC0` (a community model; pack `meshy-community-characters`, with `community.model` as named on its page). |
@@ -657,7 +659,9 @@ joint's space, metres), `curl` (0–1.5, how far the fingers close; 0 for paws
 that can't close, as Teddy's balls), `scale` (shrink or grow the hand about the
 wrist), `wrist` (true: the skin past the wrist joint rides the hand alone, none
 of it eased into the forearm; Biscuit's stubby paws folded at the wrist when the
-hand turned hard onto a gun pointed at the ground), for both hands or one (`l`, `r`). A rigid gauntlet
+hand turned hard onto a gun pointed at the ground), `mitten` (true: the fingers bend
+together even where gaps were found; a thumb or fold read as a gap crumpled a split
+hand into shards: Honest Abe's and Virtua Soldier's right hands), for both hands or one (`l`, `r`). A rigid gauntlet
 (`fingers: none`, curl 0) given a `curl` is skinned as a mitten that closes on the grip: the Knight has
 `fixes.hands.curl: 1` (rehanded with rehand-built.mjs).
 

@@ -6,6 +6,7 @@
   "name": "Crimson Operative",
   "look": "core.crimsonop",
   "group": "soldiers",
+  "nameTheme": "soldier",
   "bio": "Red dress, black boots, no questions. The mission is whatever she says it is.",
   "body": "female",
   "notes": "Drive batch of 2026-11-01 evening, second drop (\"Crimson Operative\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Name a placeholder from the Roster Board.",

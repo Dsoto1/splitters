@@ -2,6 +2,7 @@ import {
   CLASS_DEFS,
   CLASS_IDS,
   BUTTON_ALT,
+  BUTTON_THIRD_PERSON,
   BUTTON_FIRE,
   BUTTON_MELEE,
   BUTTON_RELOAD,
@@ -62,6 +63,7 @@ import {
   type ZoneSnapshot,
   type Zipline,
   oneHanded,
+  thirdPersonAim,
 } from '@tiletrigger/shared';
 
 const MAX_PENDING = 120;
@@ -215,6 +217,17 @@ export class LocalPlayer {
   /** Where the camera and the rounds point: the view plus the mechanical recoil offset. */
   aimAngles(yaw: number, pitch: number): { yaw: number; pitch: number } {
     return { yaw: yaw + this.gun.ry, pitch: Math.max(-1.55, Math.min(1.55, pitch + this.gun.rp)) };
+  }
+
+  /**
+   * Where a round fired with this input goes (Match.aimOf): the view plus the recoil; in third person, first
+   * turned from the eye onto what the crosshair is on. (The host works that out against the players as you saw
+   * them too; this cosmetic copy only against the level.)
+   */
+  private shotAim(input: PlayerInput): { yaw: number; pitch: number } {
+    if (!(input.buttons & BUTTON_THIRD_PERSON) || this.seatGun) return this.aimAngles(input.yaw, input.pitch);
+    const a = thirdPersonAim((o, d, max) => this.physics.raycastWorld(o, d, max), this.eye, input.yaw, input.pitch);
+    return this.aimAngles(a.yaw, a.pitch);
   }
 
   /**
@@ -419,7 +432,7 @@ export class LocalPlayer {
       else ammo[0] -= a.cost;
       this.fireCooldown = a.fireIntervalTicks;
       // Its own kick after the aim it fired along (Match.fireNow).
-      const aim = this.aimAngles(input.yaw, input.pitch);
+      const aim = this.shotAim(input);
       if (a.kick) recoilShot(this.gun, a.kick);
       if (a.kind !== 'hitscan') return { shot: { def, ends: [], alt: true }, fired: false };
       return { shot: this.hitscanShot(def, aim, a.pellets ?? def.pellets, a.spread ?? def.spread, true, a.range), fired: false };
@@ -430,7 +443,7 @@ export class LocalPlayer {
   /** A primary round: spread from the gunplay model, then the recoil kick (as the server does in Match.fire). */
   private primaryShot(def: WeaponDefinition, input: PlayerInput, ammo: [number, number, number, number]): PredictedShot {
     const gp = gunplayOf(def);
-    const aim = this.aimAngles(input.yaw, input.pitch);
+    const aim = this.shotAim(input);
     const run = this.prevPos ? Math.hypot(this.state.pos.x - this.prevPos.x, this.state.pos.z - this.prevPos.z) / TICK_DT / PLAYER.runSpeed : 0;
     const spread = gp.accuracy ? shotCone(def, gp.accuracy, this.gun, { run, airborne: !this.state.grounded, stance: STANCE_SPREAD[this.state.stance ?? 0] ?? 1 }) : def.spread;
     if (def.kind !== 'melee') recoilShot(this.gun, gp.kick);

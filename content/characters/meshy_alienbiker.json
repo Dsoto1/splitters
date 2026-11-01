@@ -6,6 +6,7 @@
   "name": "Alien Biker",
   "look": "core.alienbiker",
   "group": "creatures",
+  "nameTheme": "alien",
   "bio": "Crossed four galaxies for the open road. Still can't find parking.",
   "body": "male",
   "notes": "Drive, 2026-11-01 evening (\"stylized alien biker\", rigged; via the lead). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). The owner's own model (owned; confirmed by the owner 2026-11-01). Name a placeholder.",

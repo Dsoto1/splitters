@@ -33,6 +33,8 @@ import {
   applyServerRules,
   ruleSpec,
   setServerRule,
+  castFromRuleValue,
+  castRuleValue,
   serverRuleFor,
   SERVER_RULES,
   type ServerRules,
@@ -446,6 +448,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       if (r.dropWeapons !== undefined) put('drops', r.dropWeapons);
     }
     if (managed && cmd.c === 'bots' && cmd.style) serverRules = setServerRule(serverRules, 'style', cmd.style, { mode: match.rules.mode });
+    if (managed && cmd.c === 'bots' && cmd.cast !== undefined) serverRules = setServerRule(serverRules, 'cast', cmd.cast === null ? undefined : castRuleValue(cmd.cast), { mode: match.rules.mode });
     if (cmd.c === 'kick' || cmd.c === 'ban') {
       const target = clientAt(cmd.slot);
       if (!target?.who) return 'No such player (bots come and go by themselves: change the players instead)';
@@ -863,6 +866,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       if (!applies) return null;
       // Live rules (and the restart ones, which then wait as the pause menu's do) go to the match now.
       if (spec.key === 'style') return runCommand({ c: 'bots', style: (v ?? 'mixed') as 'mixed' | 'arena' | 'tactical' }, by);
+      if (spec.key === 'cast') return runCommand({ c: 'bots', cast: castFromRuleValue(v as string | undefined) ?? null }, by);
       if (spec.apply === 'live' || spec.apply === 'restart') {
         const base = rulesForMode(map, mode);
         const read = v === undefined ? spec.read(base) : v;

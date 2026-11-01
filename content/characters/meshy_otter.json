@@ -6,6 +6,7 @@
   "name": "Wealthy Otter",
   "look": "core.otter",
   "group": "animals",
+  "nameTheme": "critter",
   "bio": "Old river money. Pays others to do his fighting, but can never resist joining in.",
   "body": "male",
   "size": "small",

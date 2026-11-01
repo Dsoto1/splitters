@@ -6,6 +6,7 @@
   "name": "Hazmat Joe",
   "look": "core.hazmat",
   "group": "soldiers",
+  "nameTheme": "soldier",
   "bio": "Rated for every spill on the map. Mostly the ones he causes.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: hazmat suit.",

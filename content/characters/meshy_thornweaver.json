@@ -6,6 +6,7 @@
   "name": "Thornweaver",
   "look": "core.thornweaver",
   "group": "legends",
+  "nameTheme": "knight",
   "bio": "Tracks anything across any ground, then waits for it.",
   "body": "female",
   "notes": "Not in the intake queue: found among the owner's downloads (2026-10-29) and brought in as a new character (named here; the owner reviews it on the grip and portrait sheets). Rigged by Meshy's rigging API from the unrigged textured GLB (source.modelUrl \"upload\").",

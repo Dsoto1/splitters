@@ -6,6 +6,7 @@
   "name": "Pink Mantis",
   "look": "core.pinkalien",
   "group": "creatures",
+  "nameTheme": "critter",
   "bio": "Folds his hands, bows politely, then eats the whole squad. Impeccable suit.",
   "body": "male",
   "notes": "Drive, 2026-11-01 evening, fourth drop (\"Pink Suited Alien Gen\", rigged, 233k triangles). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). CC0 (Meshy community; confirmed by the owner 2026-11-01). Named by the owner (he reads as a mantis in a suit).",

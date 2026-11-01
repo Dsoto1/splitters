@@ -52,6 +52,80 @@ dapper-rustymech-closeups/distance-before-after.png, roll-sheet.png; scripts in 
   the Baseball Robot, Medic, CRT and Rusty Mech to fit). Menu bundle 830.5 kB gzip.
 - Checks: typecheck; test:changed 1246 pass; content OK; e2e designer, characters (517 s), visual, offline PASS
   (offline failed once on a dist built before the last portraits: rebuild before e2e after capturing portraits).
+### Bot themes: bots named after their characters (`wip/bot-themes`, agent, 2026-11-01; not merged)
+Owner: "name and associate the bots after each character… 96 unique monkey names, same for pirates, medieval sets,
+soldiers (Sgt/Pvt/Lt…)… an entire server for the D-Day map that only uses soldier skins". Owner's picks: lists per
+kind of creature; the bot characters setting is a map default the host can change.
+- **Names** (`shared/content/botNames.ts`): 23 themes (`NAME_THEMES`: soldier, monkey, bear, wolf, dog, cat, raccoon,
+  critter, frog, pirate, knight, ninja, wizard, barbarian, undead, spooky, robot, alien, goblin, cowboy, gangster,
+  townsfolk, myth), each ≥ 96 names (≤ 20 chars, no digits, original; append-only). Soldiers are generated: 9 ranks ×
+  126 surnames, every surname once before any repeats. `BOT_NAMES` (the general list) moved here; match.ts re-exports it.
+- **Each look's theme**: whole-body characters declare `nameTheme` in content/characters/*.json (checked by
+  character-manifests.mjs, whose `NAME_THEMES` list a test keeps equal to botNames.ts; generated into
+  characters.generated.ts); the presets carry it in looks.ts (Linktifa knight, Sprout townsfolk); NPC skins in
+  `NPC_SKIN_THEMES`. A look without one takes its group's (soldiers → soldier, legends → knight, folk → townsfolk,
+  horror → spooky). **New soldier looks (wip/new-characters-2: core.polysoldier, core.tposesoldier1/2,
+  core.stancesoldier, core.resolvesoldier, core.zombiesoldier1/2, core.undeadsoldier) should declare
+  `"nameTheme": "soldier"`** (zombie/undead soldiers: `soldier` if they belong on a D-Day server, else `undead`) and
+  `core.abe` whatever he is; botThemes.test.ts fails for a built manifest without one, by design.
+- **Naming** (`BotFiller.nameFor` → `botNameFor`): the look's own name first (the first bot in Scamp is "Scamp"), then
+  its theme's next free name (from an offset by match seed; seed 1 = list order), then the general list, then
+  "Mildred 2". Never a name in use (players, bots, spectators, the host's set). `Match.addBot` takes a name function
+  so the name follows the look it picks.
+- **Bot characters** (`MapDocument.botCast`, optional, no migration: absent = all; `MatchRules.botCast`: absent = the
+  map's, `[]` = all): groups and/or themes. `Match.botLook` spreads random bots over `castLooks(cast)` (unrestricted:
+  `lookForBot` as before, so bot behaviour tests keep their looks). Editable in MapMaker (map properties → Bots → Bot
+  characters, checkboxes, `setBotCast` command, `validateMap` flags unknown ids), Match setup → Bots (select:
+  Map default / All / group / theme), pause menu (live: `{ c: 'bots', cast }`, `BotFiller.recast` re-dresses and
+  renames random bots out of it), server rules (`cast`, live; admin changes persist). HostState `cast`/`mapCast`.
+  Kept over a map change (hostRules KEPT). docs: HOSTING.md (bot names), CHARACTERS.md (`nameTheme`),
+  MULTIPLAYER_PROTOCOL.md §19.
+- **Loading** (docs/LOADING.md): the name lists (`content/botNames.ts`, ~17 kB gzip) load only with the match code
+  (sim/match.ts; the `@tiletrigger/shared/match` entry re-exports them). The menu, MapMaker and the rules read
+  `content/botThemes.ts` (theme ids and labels, `lookTheme`, the bot-characters setting), which the shared index
+  exports. Keep it that way: importing botNames.ts from anything the menu reaches put the menu's first JS at
+  846.6 kB gzip (budget 840); split, it is 831.1 kB.
+- No map in maps/ sets botCast yet (the owner picks: e.g. a D-Day map → soldiers, in MapMaker).
+- Tests: botThemes.test.ts (lists, manifest themes, 96-bot soldiers-only roster, Scamp first, fallback, host
+  override/recast, set keeps its own, setup/server rules/wire, MapMaker command + validation). e2e: editor flow ticks
+  Soldiers in map properties; teams flow → `botCastFlow` (soldiers-only offline match from match setup).
+### Nine more characters (`wip/new-characters-2`, agent, 2026-11-01; not merged; main c5be6c4 merged in)
+The owner's second Drive batch (nine Meshy GLBs; downloads outside the repo in `/home/user/meshy-drive/drive-2026-11-01c/`,
+symlinked in `/home/user/meshy-drive/build-newchars2/`). **CC0 Meshy community models** (owner): pack
+`meshy-community-characters`, `source.community.model` as the download names it (Abe's "Abraham Lincoln with All
+Animations": Meshy cut the title; correct it if the page says otherwise). Look ids as on the Roster Board; the owner's names
+`core.polysoldier` **Virtua Soldier**, `core.zombiesoldier1` **Zombie Soldier A**; the rest named here. No credits spent.
+- After main's merge: far copies are main's (character-lod.mjs, default share 0.3; this branch's own `fixes.lod` path was
+  dropped and the nine carry no `fixes.lod`); all nine rebuilt from the downloads with main's pipeline, hands retuned for
+  main's three-joint mitten curl. Per character (body tris; far copy; rifle grip audit, The Visitor 0):
+  - **Honest Abe** (`meshy_abe`, Legends): the owner's rig (Mixamo names; `*HandMiddle4`/`*Toe_End` end markers fold into
+    their joints); 11,000; 3,297; **0** (right `mitten` curl 1.2: split-read fingers crumpled into shards; left curl 0.4).
+  - **Virtua Soldier** (`meshy_polysoldier`): found T-pose landmarks; 11,000; 3,300; **0** (right `mitten`, curl 0.9).
+  - **Hollis** (`meshy_tposesoldier1`): 10,998; 3,298; **3** (spikes: one edge at spine_01; right curl 0.9).
+  - **Briggs** (`meshy_tposesoldier2`): a 10k download, uncut; 9,988; 2,996; **0**.
+  - **Pemberton** (`meshy_stancesoldier`, a T-pose after all): 10,995; 3,298; **3** (flat: right curl gain 0.007; curl 1.5).
+  - **Kenji** (`meshy_resolvesoldier`, arms hanging, not a T-pose): shoulders/elbows set by hand down the middle of each
+    arm (found ones sat on the torso's edge: webs, a flap off the support arm), `armCloth`, hands 0.85; 10,000; 2,996; **0**.
+  - **Zombie Soldier A** (`meshy_zombiesoldier1`): 10,999; 3,292; **3** (spikes, one edge at hand_r).
+  - **Grinning Gus** (`meshy_zombiesoldier2`): careful cut stopped at 14,631 (kept); 4,342; **0**. Dark-metal skull in the
+    download; colour only kept, reads as bone.
+  - **Dog Tag Doyle** (`meshy_undeadsoldier`): `surface: rebake` at 14,000 (1.1M download stopped at 22k); knees set by
+    hand (straps between the legs crossed them); 14,065; 4,216; **0** (right curl 0.9).
+- **`fixes.hands.mitten`** (true): fingers bend together even where gaps are found (hands.mjs; tests in hands.test.mjs).
+- **Freaky Frida** (owner's screenshot: her support shoulder tore in the hold): found shoulders sat at the base of the neck
+  (6% of her height out), so the upper arms ran through the chest and took the vest along. Shoulders moved out to the arms'
+  roots, elbows a little out, `armCloth`; audit 0. Before/after: `frida-before.png`, `frida-after.png`,
+  `frida-shoulder-before-after.png` (a jagged vest armhole rim still shows from her back-left side). The other four of that
+  batch (Slugger-9, Barnaby, Rusty Mech, Scary Larry) checked in the hold from three sides (`batch1-shoulders.png`): no
+  such tear; audit Barnaby 3 (flat), the rest 0.
+- **Slugger-9 retired** (owner): `core.slugger` → `core.t350` in RETIRED_LOOKS; his files and manifest kept (he may come
+  back as a better model); no map or bot set used him.
+- Rebuild the nine: `ONLY=meshy_abe,meshy_polysoldier,meshy_tposesoldier1,meshy_tposesoldier2,meshy_stancesoldier,meshy_resolvesoldier,meshy_zombiesoldier1,meshy_zombiesoldier2,meshy_undeadsoldier node tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/build-newchars2`
+  (Frida: `ONLY=meshy_frida ... /home/user/meshy-drive/build-newchars`). Note: rehand-built.mjs on a built file and a fresh
+  build from the download give slightly different hands; tune on fresh builds.
+- Sheets (agent scratchpad `/tmp/claude-0/-home-user/99559628-4a1b-594f-bb6f-7638c8757e80/scratchpad/new-characters-2/`):
+  `grip-contact-sheet.png` (pre-merge), `grips-merged/`, `grips-final/`, `lod-distance-sheet.png` (pre-merge), `portraits-sheet.png`,
+  the Frida pictures above.
 
 ### Model quality, distance, thumbnails, Bandit's hold (`wip/model-quality`, agent, 2026-11-01; not merged; has `wip/new-characters` merged in)
 Owner's Roster Board flags (model, thumb, Bandit; Santa "awful from a distance"; later Giggles). Sheets in the agent's
@@ -143,6 +217,45 @@ Sprout's headband. Started from 899537c's ideas
   across two runs except the known flaky Imp hold; once "third person and back (core.pistol): no hands" (the Dapper,
   no gear) which passed on the rerun. Full-body first person: no head gear, helmet or beard in view (up, ahead, down).
 - Sheets (agent scratchpad): `original-looks/before.png`, `after.png` and per-look closeups (kept looks only).
+
+### Bots: clear shot (`wip/bot-clear-shot`, agent, 2026-11-01; not merged)
+Owner (spectating Shingle Point TDM): "that rock is blocking a bunch of bullets" (a gully boulder, `prop_490`/`prop_492`
+`prop.rock_large` at x≈24-26, pocked with holes). docs/BOTS.md "Shooting along a clear line".
+- **Cause** (measured, probe in the agent's scratchpad, not committed): bots fired whenever the aim was lined up on
+  the target; nobody checked the line from the eye (where `Match.fireNow` starts every shot) along the aim. Normal
+  bots' aim error at 40-55 m is 0.05-0.15 rad, so a quarter of trigger pulls (24 bots, 8 seeds × 120 s: 28.4 %) were
+  aimed into something short of the target (slopes, the gully boulders, the seawall); a target behind waist-high cover
+  showing head and shoulders drew fire at its hidden chest (yard test: 92 of 93 rounds into the wall). Also small and
+  large bots saw and aimed from a standard eye (1.6 m) while their rounds left from 0.78×/1.18× that.
+- **Fix** (`BotBrain.clearShot`, via `AimModel.trigger`'s new `clear` callback): one ray per pull (a clear verdict kept
+  3 ticks while aim/position barely move); blocked: hold 3 ticks, then by one or two rays correct the aim error
+  (target in the open), aim at head/shoulders for 1.5 s (low cover), or stand up / step aside (no line).
+  `CombatantView.size` scales eyes, sight lines, cover search and the aim point. SUPPRESSOR fire 2.5 → 1.5 s, only while
+  rounds reach the spot. Not checked: lobbed projectiles, melee, targets in vehicles/on guns/sentries.
+- **Numbers** (24 bots, 8 seeds × 120 s Shingle Point TDM): pulls into the world short of the target 28.4 % → 8.2 %,
+  rounds hitting players 8.8 % → 10.5 %, kills 206 → 201, rounds fired 11,786 → 8,582, pulls aimed into the gully boulders 190 → 7. Bench (Shingle Point TDM 60 s,
+  load ~13 on 4 cores): 24 bots CPU/tick 4.99 → 5.09 ms, 96 bots 8.83 → 8.77 ms (noise); bot aim 0.10 → 0.14 ms at
+  96; bench accuracy at 96 7.8 % → 13.3 %, kills 36 → 47.
+- **Player shots:** first person is consistent (camera = scaled eye = shot origin; tracers are drawn from the
+  muzzle, cosmetic) and unchanged. Third person was not (camera 3 m back, 0.6 m right, 0.35 m up; rounds along the view
+  from the eye: crouched behind low cover you saw over what your rounds hit). **Fixed with the owner's OK** ("yes for
+  third person"): `BUTTON_THIRD_PERSON` (8192) in the input; the host computes the crosshair's point itself
+  (`sim/thirdPerson.ts` `thirdPersonAim`: the camera's centre ray against the level and the lag-compensated bodies)
+  and fires from the eye toward it (`Match.aimOf`); nothing about the aim comes from the client
+  (MULTIPLAYER_PROTOCOL.md §18). The client camera uses the same `thirdPersonCamera`. Trade-offs: the client's
+  predicted tracer converges against the level only (cosmetic); the client's camera follows the eased eye and drawn
+  position, the host the true eye (they differ only mid-crouch and between ticks); a crosshair point less than 0.5 m
+  in front of the eye falls back to the view; throws (lifted) and melee are unchanged. Tests: `thirdPerson.test.ts`
+  (maths, the input bit, a sim shot over a 1.3 m wall: hits in third person, the wall without the bit); e2e arsenal
+  `thirdPersonShot` (the same in the browser, canyon offline).
+- **Also fixed:** `Match.applyBodySize` left a living combatant's health alone, and everyone is alive when their
+  look is applied on joining: large characters started their first life on 100 of 115 health, small ones on 100 of
+  85 (`bodySizes.test.ts` now checks). Disc Arena's "nobody takes damage" test caught it once a large bot survived.
+- **Seeded tests that changed:** forts.test.ts CTF ("reach the flag in 150 s") swings with the seed: seeds 1-11, base
+  within 6 m 9×/3 flag takes, now 9×/8 takes but not on seed 1 (the default): the test uses seed 4 (comment there).
+  discs.test.ts: the health bug above.
+- Residual 8 %: rounds the check passes inside its 1.5 m margin, recoil offset the bot doesn't see, grazing edges,
+  shots at mounted targets (unchecked by design).
 
 ### Grip pass 2 (`wip/grip-pass-2`, agent, 2026-11-01; merged to main 47acd97)
 Owner: "when do all the grips get fixed, I see some still not right". Audit before/after (main d8a4afa vs this branch),

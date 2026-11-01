@@ -1,6 +1,7 @@
 import { BOT_DIFFICULTIES } from '../bots/profile.ts';
 import type { HostRulesPatch, HostState, MatchCommand } from '../protocol.ts';
 import { botSetLabel, sameBotSet, validateBotSet } from './botSet.ts';
+import { botCastLabel, validBotCast } from '../content/botThemes.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { teamCount, teamsLabel } from './hostRules.ts';
 import { validateTeamSizes } from './matchSetup.ts';
@@ -50,6 +51,8 @@ export class HostControl {
       pending: { ...this.pending },
       botSet: this.bots.botSet,
       ...(this.bots.botSet && !this.bots.hostSet ? { mapBots: true } : {}),
+      cast: r.botCast ? [...r.botCast] : null,
+      mapCast: validBotCast(this.match.map.botCast),
     };
   }
 
@@ -120,6 +123,14 @@ export class HostControl {
       if (!sameBotSet(next, this.bots.botSet)) {
         this.bots.setBotSet(next);
         lines.push(`the bots to ${botSetLabel(this.bots.botSet)}`);
+      }
+    }
+    if (cmd.cast !== undefined) {
+      const next = cmd.cast === null ? undefined : validBotCast(cmd.cast);
+      if (JSON.stringify(next) !== JSON.stringify(this.match.rules.botCast)) {
+        this.match.setRules({ botCast: next });
+        this.bots.recast();
+        lines.push(`the bots to ${next === undefined ? `the map's characters (${botCastLabel(this.match.botCast)})` : botCastLabel(next).toLowerCase()}`);
       }
     }
     const skill = cmd.skill && cmd.skill !== this.bots.skill.id ? cmd.skill : undefined;

@@ -1,0 +1,39 @@
+{
+  "id": "meshy_stancesoldier",
+  "kind": "character",
+  "use": "player",
+  "order": 74,
+  "name": "Pemberton",
+  "look": "core.stancesoldier",
+  "group": "soldiers",
+  "nameTheme": "soldier",
+  "bio": "Puts the kettle on between rounds. Has never once missed tea, or a flank.",
+  "body": "male",
+  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose despite its name, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A soldier in multi-terrain camouflage, body armour and a helmet.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Soldier Stance"
+    },
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Soldier_Stance_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.8
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "feet": true,
+    "hands": {
+      "r": {
+        "curl": 1.5
+      }
+    }
+  }
+}

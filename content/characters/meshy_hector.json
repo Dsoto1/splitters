@@ -6,6 +6,7 @@
   "name": "Bill the Barbarian",
   "look": "core.hector",
   "group": "legends",
+  "nameTheme": "barbarian",
   "bio": "Says little, carries a lot, and is always the last one standing at the bar.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: the owner's name for him.",

@@ -6,6 +6,7 @@
   "name": "The Dapper",
   "look": "core.dapper",
   "group": "folk",
+  "nameTheme": "gangster",
   "bio": "Chicago, 1927. Runs the numbers, the speakeasy and, lately, the leaderboard.",
   "body": "male",
   "notes": "The owner's own Meshy model. Rebuilt 2026-11-01 from the owner's new rigged download (\"dapper man rigged\", All Animations, 10.3k triangles, 4096 px maps; Mixamo joint names read as Meshy's): the first build's Meshy tasks (preview 01a17408-78ca-7473-b379-648d7e9aa349, rig 01a1740d-0845-7780-8c84-b7f26c5ea616) no longer fetch on this key. Model-quality settings: the whole download kept, 1024 px normal map, head and hands their larger shares.",

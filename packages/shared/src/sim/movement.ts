@@ -34,7 +34,13 @@ export const BUTTON_MELEE = 2048;
  * Warthog way, on top of any A/D steering. Ignored on foot and in flyers.
  */
 export const BUTTON_STEER_LOOK = 4096;
-const ALL_BUTTONS = BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
+/**
+ * Third-person view on foot (held while it's on): the host sends this player's rounds from the eye toward what
+ * the third-person crosshair is on (sim/thirdPerson.ts thirdPersonAim, worked out by the host), not along the
+ * view from the eye. Older hosts mask it off (rounds go along the view, as before).
+ */
+export const BUTTON_THIRD_PERSON = 8192;
+const ALL_BUTTONS = BUTTON_THIRD_PERSON | BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {

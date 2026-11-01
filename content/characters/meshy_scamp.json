@@ -6,6 +6,7 @@
   "name": "Scamp",
   "look": "core.scamp",
   "group": "animals",
+  "nameTheme": "monkey",
   "bio": "Swings in, steals the high ground and throws things at you from it.",
   "body": "male",
   "size": "small",

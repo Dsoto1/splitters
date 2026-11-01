@@ -40,6 +40,8 @@ const LEAN_JOINTS = new Set(['Spine02', 'Spine01', 'Spine', 'neck', 'Head']);
 const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
 export const GROUPS = ['soldiers', 'legends', 'folk', 'horror', 'animals', 'creatures'];
+/** Bot name themes (what kind of creature: its bots' names); the same list as NAME_THEMES in packages/shared/src/content/botNames.ts (a test keeps them equal). */
+export const NAME_THEMES = ['soldier', 'monkey', 'bear', 'wolf', 'dog', 'cat', 'raccoon', 'critter', 'frog', 'pirate', 'knight', 'ninja', 'wizard', 'barbarian', 'undead', 'spooky', 'robot', 'alien', 'goblin', 'cowboy', 'gangster', 'townsfolk', 'myth'];
 const isPoint = (p) => Array.isArray(p) && p.length === 3 && p.every((x) => typeof x === 'number' && Number.isFinite(x));
 
 /** Whether a manifest is waiting for its download and landmarks (a stub from the queue): not built, no look. */
@@ -93,6 +95,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(typeof m.look === 'string' && /^core\.[a-z0-9_]+$/.test(m.look), 'look must be core.<name>');
   need(typeof m.bio === 'string' && m.bio.length > 0, 'bio: one line for character select');
   need(GROUPS.includes(m.group) || (m.group === undefined && !isPlayable(m)), `group: what the character is, for Character Select's tabs (${GROUPS.join(', ')}); a player look needs one`);
+  need(m.nameTheme === undefined || NAME_THEMES.includes(m.nameTheme), `nameTheme: the kind of creature, for its bots' names (${NAME_THEMES.join(', ')}); left out: its group's (soldiers: soldier)`);
   need(m.body === 'male' || m.body === 'female', 'body: male or female');
   need(m.size === undefined || m.size === 'small' || m.size === 'large', 'size: small, large or left out');
   need(m.locomotion === undefined || LOCOMOTION.has(m.locomotion), `locomotion: ${[...LOCOMOTION].join(' or ')} (no legs to walk on: it rolls or glides on what it has), or left out (walks)`);
@@ -130,10 +133,11 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   if (x.hands !== undefined) {
     const h = x.hands;
     need(typeof h === 'object' && h !== null, 'fixes.hands: { palm, curl, scale }');
-    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'wrist', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, wrist; or l / r for one side)`);
+    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'wrist', 'mitten', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, wrist, mitten; or l / r for one side)`);
     for (const side of [h, h?.l, h?.r].filter(Boolean)) {
       need(side.palm === undefined || isPoint(side.palm), 'fixes.hands.palm: [x, y, z] in the hand joint\'s space (m)');
       need(side.curl === undefined || (typeof side.curl === 'number' && side.curl >= 0 && side.curl <= 1.5), 'fixes.hands.curl: 0–1.5 (how far the fingers close)');
+      need(side.mitten === undefined || typeof side.mitten === 'boolean', 'fixes.hands.mitten: true (the fingers bend together, as one) or left out');
       need(side.scale === undefined || (typeof side.scale === 'number' && side.scale > 0.3 && side.scale < 3), 'fixes.hands.scale: 0.3–3');
       need(side.wrist === undefined || typeof side.wrist === 'boolean', 'fixes.hands.wrist: true (the skin past the wrist rides the hand alone)');
     }
@@ -232,7 +236,7 @@ function lookLine(m) {
   const hold = m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '';
   const body = (fp.body === false ? ', body: false' : '') + hold;
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
-  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : [])];
+  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : [])];
   return `  { ${parts.join(', ')} },`;
 }
 

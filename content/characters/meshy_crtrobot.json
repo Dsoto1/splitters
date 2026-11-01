@@ -6,6 +6,7 @@
   "name": "CRT Robot",
   "look": "core.crtrobot",
   "group": "creatures",
+  "nameTheme": "robot",
   "bio": "Runs on vacuum tubes and spite. The screen shows what it thinks of you.",
   "body": "male",
   "notes": "Drive batch of 2026-11-01 evening (\"crt robot remeshed\", textured, unrigged, 10k triangles): rigged here from T-pose landmarks found on the mesh. Name a placeholder from the Roster Board.",

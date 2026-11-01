@@ -1,4 +1,4 @@
-import { DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, type SetupNote } from '@tiletrigger/shared';
+import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, type SetupNote } from '@tiletrigger/shared';
 
 /**
  * Match setup controls shared by Play → match setup and the host's pause
@@ -280,4 +280,32 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
     cards.append(card);
   });
   return el('div', { class: 'team-editor' }, head, cards);
+}
+
+/**
+ * Bot characters (which looks random bots wear, and so their names): the map's own, all, one character group
+ * or one name theme. `value`: undefined the map's own, empty all, else the ids (several only when a map set them:
+ * shown as they are). `mapCast`: the map's own, for the "Map" option's label.
+ */
+export function botCastSelect(value: readonly string[] | undefined, mapCast: readonly string[] | undefined, onChange: (v: string[] | undefined) => void, id?: string, disabled?: boolean): HTMLSelectElement {
+  const sel = el('select', { ...(id ? { id } : {}), disabled: !!disabled });
+  const opt = (v: string, label: string) => {
+    const o = el('option', { value: v, textContent: label });
+    sel.append(o);
+    return o;
+  };
+  opt('map', `Map default (${botCastLabel(mapCast)})`);
+  opt('all', 'All characters');
+  const groups = el('optgroup', { label: 'Characters' });
+  const themes = el('optgroup', { label: 'Named as' });
+  for (const c of BOT_CAST_CHOICES) (CHARACTER_GROUPS.some((g) => g.id === c.id) ? groups : themes).append(el('option', { value: c.id, textContent: c.label }));
+  sel.append(groups, themes);
+  const key = value === undefined ? 'map' : !value.length ? 'all' : value.length === 1 ? value[0]! : value.join('+');
+  if (value && value.length > 1) opt(key, botCastLabel(value));
+  sel.value = key;
+  sel.addEventListener('change', () => {
+    const v = sel.value;
+    onChange(v === 'map' ? undefined : v === 'all' ? [] : v.split('+'));
+  });
+  return sel;
 }

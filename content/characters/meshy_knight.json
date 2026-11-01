@@ -6,6 +6,7 @@
   "name": "Iron Knight",
   "look": "core.knight",
   "group": "legends",
+  "nameTheme": "knight",
   "bio": "Rode out to a tournament in 1342 and took a very wrong turn. Still undefeated.",
   "body": "male",
   "size": "large",

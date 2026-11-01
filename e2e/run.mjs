@@ -393,6 +393,16 @@ async function editorFlow(browser) {
   // It is kept with the map (the draft store saves the whole document, as Save and Export do).
   const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
   check(kept, 'the picture is saved with the map');
+  // Map properties → Bots → Bot characters: tick Soldiers, the map keeps it (one undo step).
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
+  await page.evaluate(() => (document.getElementById('ed-cast').open = true));
+  await page.click('#ed-cast input[data-cast="soldiers"]');
+  await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers', null, { timeout: T(5000) }).catch(() => {});
+  const cast = { doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => document.querySelector('#ed-cast input[data-cast="soldiers"]')?.checked) };
+  check(JSON.stringify(cast.doc) === '["soldiers"]' && cast.sum === 'Soldiers' && cast.ticked, `map properties set the bot characters (${JSON.stringify(cast)})`);
+  await page.keyboard.press('Control+KeyZ');
+  check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
   await page.click('#ed-home');
   await page.click('#ed-quit-discard');
@@ -2099,6 +2109,43 @@ async function teamsFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await customSetupFlow(browser);
+  await botCastFlow(browser);
+}
+
+/**
+ * Bot characters: match setup's Bots step offers them; a soldiers-only offline match fills with soldiers named
+ * after their looks (the first in each look takes its name) or a rank and a surname, every name its own.
+ */
+async function botCastFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [8, 8] })));
+  await page.goto(`${CLIENT}/?test=1`);
+  await page.click('#nav-play');
+  await page.click('#step-bots .step-head');
+  await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
+  const offered = await page.evaluate(() => [...document.querySelectorAll('#arcade-cast option')].map((o) => o.value));
+  check(offered[0] === 'map' && offered.includes('all') && offered.includes('soldiers') && offered.includes('pirate'), `the Bots step offers bot characters (${offered.length}: ${offered.slice(0, 4).join(', ')}…)`);
+  await page.selectOption('#arcade-cast', 'soldiers');
+  await page.click('#arcade-start');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(60000) });
+  await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot').length >= 15, null, T(30000));
+  const bots = await sim(page, (m, me, a, mod) => ({
+    cast: m.botCast,
+    bots: m.combatants().filter((c) => c.kind === 'bot').map((c) => ({ name: c.name, look: c.look, ok: mod.castAllows(['soldiers'], c.look), theme: mod.lookTheme(c.look) })),
+    names: m.combatants().map((c) => c.name),
+  }));
+  const wrong = bots.bots.filter((b) => !b.ok || b.theme !== 'soldier');
+  const ranked = bots.bots.filter((b) => /^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. [A-Z]/.test(b.name));
+  check(bots.bots.length === 15 && !wrong.length, `a soldiers-only match: every bot a soldier (${bots.bots.length} bots; ${wrong.map((b) => `${b.name}/${b.look}`).join(', ') || 'none wrong'})`);
+  check(new Set(bots.names).size === bots.names.length && ranked.length >= 1, `soldier bots have names of their own, ranks among them (${bots.bots.map((b) => b.name).join(', ')})`);
+  await page.keyboard.down('Tab');
+  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard.png` }).catch(() => {});
+  await page.keyboard.up('Tab');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -2587,6 +2634,123 @@ async function arsenalFlow(browser) {
   const spearStuck = spearOut && await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear' && p.stuck), null, T(10000));
   const spearDrawn = await page.waitForFunction(() => window.__cs.view.spearModelsDrawn() > 0, null, { timeout: T(20000) }).then(() => true, () => false);
   check(spearHeld && spearOut && spearStuck && spearDrawn, `the Spear is held as its model, and thrown it flies and sticks as that model (held ${spearHeld}, thrown ${spearOut}, stuck ${spearStuck}, drawn ${spearDrawn})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+  await thirdPersonShot(browser);
+}
+
+/**
+ * Third-person shots go where the crosshair points (shared/sim/thirdPerson.ts): crouched behind a low wall in
+ * third person with the crosshair on a head over it, the round reaches them; the same view in first person
+ * (rounds along the view from the eye) hits the wall. The wall and the target are put in the match by hand on
+ * open ground (the wall only in the match's world: it is the host's shot that's checked).
+ */
+async function thirdPersonShot(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=2&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__give, null, { timeout: T(120000) });
+  // The one bot is the target: it stands where it's put and holds fire.
+  await simWait(page, (m) => m.combatants().some((c) => c.kind === 'bot' && c.alive), null, T(30000));
+  await holdBots(page);
+  await page.evaluate(() => window.__give('core.pistol'));
+  await meWait(page, (m, me) => me.weapons.get(me.current)?.def.id === 'core.pistol' && me.raiseTicks === 0, null, 3);
+  // Open, level ground: from where you are, the first direction with 22 m of it in front (eye-high sight line
+  // clear, ground within 0.3 m of yours all along).
+  const setup = await sim(page, (m, me) => {
+    const p = me.move.pos;
+    const ground = (x, z) => {
+      const d = m.physics.raycastWorld({ x, y: p.y + 3, z }, { x: 0, y: -1, z: 0 }, 6);
+      return d === null ? null : p.y + 3 - d;
+    };
+    for (let k = 0; k < 16; k++) {
+      const yaw = (k / 16) * Math.PI * 2;
+      const at = (r) => ({ x: p.x + Math.sin(yaw) * r, z: p.z + Math.cos(yaw) * r });
+      let ok = m.physics.lineOfSight({ x: p.x, y: p.y + 1, z: p.z }, { x: at(22).x, y: p.y + 1, z: at(22).z }) && m.physics.lineOfSight({ x: p.x, y: p.y + 2.2, z: p.z }, { x: at(22).x, y: p.y + 2.2, z: at(22).z });
+      for (let r = 1; ok && r <= 22; r += 1) {
+        const g = ground(at(r).x, at(r).z);
+        ok = g !== null && Math.abs(g - p.y) < 0.3;
+      }
+      // Room behind for the camera (3 m back and up).
+      const back = { x: p.x - Math.sin(yaw) * 3.5, z: p.z - Math.cos(yaw) * 3.5 };
+      ok = ok && m.physics.lineOfSight({ x: p.x, y: p.y + 1.5, z: p.z }, { x: back.x, y: p.y + 1.9, z: back.z });
+      if (!ok) continue;
+      // The wall: 1.3 m tall, 15 m out, 6 m wide, across the line; the target 20 m out.
+      const w = at(15);
+      // (Box axes turned by the yaw: its x runs across the line, its z along it.)
+      m.physics.createBox({ x: w.x, y: p.y + 0.65, z: w.z }, { x: 3, y: 0.65, z: 0.2 }, yaw);
+      const t = m.combatants().find((c) => c.kind === 'bot');
+      return { yaw, slot: t.slot, target: { x: at(20).x, y: p.y, z: at(20).z } };
+    }
+    return null;
+  });
+  if (!setup) {
+    check(false, 'third person: found open, level ground for the wall check');
+    await page.context().close();
+    return;
+  }
+  // Crouch (held), then into third person.
+  await page.evaluate((yaw) => {
+    window.__cs.input.yaw = yaw;
+    window.__cs.input.pitch = 0;
+    window.__autoInput = { buttons: 256 };
+  }, setup.yaw);
+  await meWait(page, (m, me) => me.move.stance === 1, null, 2);
+  // The target, once it has spawned, stood 20 m out (and seen there: shots are lag compensated).
+  await meWait(page, (m, _me, a) => m.combatants().find((c) => c.slot === a.slot)?.alive, setup, 5);
+  const placedAt = await sim(page, (m, _me, a) => {
+    const t = m.combatants().find((c) => c.slot === a.slot);
+    t.move = { pos: { ...a.target }, velY: 0, grounded: true };
+    return m.tick;
+  }, setup);
+  await seenAt(page, setup.slot, setup.target, T(10000), placedAt + 20);
+  const shoot = async (third) => {
+    for (let i = 0; i < 12 && (await page.evaluate(() => window.__cs.thirdPerson())) !== third; i++) {
+      if (await page.isVisible('#resume')) await page.click('#resume').catch(() => {});
+      await page.keyboard.press('KeyH');
+      await sleep(500);
+    }
+    // The view that puts the third-person crosshair on their head (the camera moves with the view: settle it).
+    const view = await sim(page, (m, me, a) => {
+      const t = m.combatants().find((c) => c.slot === a.slot);
+      t.health = t.maxHealth;
+      const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.02 * me.size, z: me.move.pos.z };
+      const head = { x: t.move.pos.x, y: t.move.pos.y + 1.6 * t.size, z: t.move.pos.z };
+      const look = (f, p) => ({ yaw: Math.atan2(p.x - f.x, p.z - f.z), pitch: Math.atan2(p.y - f.y, Math.hypot(p.x - f.x, p.z - f.z)) });
+      const cam = (v) => {
+        const cp = Math.cos(v.pitch);
+        const fwd = { x: Math.sin(v.yaw) * cp, y: Math.sin(v.pitch), z: Math.cos(v.yaw) * cp };
+        const o = { x: -fwd.x * 3 + Math.cos(v.yaw) * 0.6, y: -fwd.y * 3 + 0.35, z: -fwd.z * 3 - Math.sin(v.yaw) * 0.6 };
+        const len = Math.hypot(o.x, o.y, o.z);
+        const d = { x: o.x / len, y: o.y / len, z: o.z / len };
+        const hit = m.physics.raycastWorld(eye, d, len);
+        const k = hit === null ? len : Math.max(0.3, hit - 0.25);
+        return { x: eye.x + d.x * k, y: eye.y + d.y * k, z: eye.z + d.z * k };
+      };
+      let v = look(eye, head);
+      for (let i = 0; i < 20; i++) v = look(cam(v), head);
+      return { ...v, overWall: m.physics.lineOfSight(cam(v), head) };
+    }, setup);
+    await page.evaluate((v) => {
+      window.__cs.input.yaw = v.yaw;
+      window.__cs.input.pitch = v.pitch;
+    }, view);
+    await meWait(page, (m, me, v) => Math.abs(me.yaw - v.yaw) < 1e-3 && Math.abs(me.pitch - v.pitch) < 1e-3 && me.fireCooldown === 0, view, 2);
+    const mag0 = await sim(page, (m, me) => me.weapons.get(me.current).mag);
+    await page.evaluate(() => (window.__autoInput = { buttons: 256, once: 2 }));
+    await meWait(page, () => false, null, 0.6);
+    const after = await sim(page, (m, me, slot) => {
+      const t = m.combatants().find((c) => c.slot === slot);
+      return { hurt: t.maxHealth - t.health, mag: me.weapons.get(me.current).mag, tp: !!me.thirdPerson, stance: me.move.stance ?? 0, tpos: t.move.pos };
+    }, setup.slot);
+    return { ...view, third, ...after, fired: mag0 - after.mag };
+  };
+  const tp = await shoot(true);
+  const fp = await shoot(false);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  check(tp.overWall && tp.hurt > 0, `third person, crouched behind a low wall with the crosshair on a head over it: the round reaches them (seen over the wall ${tp.overWall}, damage ${tp.hurt}; ${JSON.stringify(tp)})`);
+  check(fp.hurt === 0, `the same view in first person (rounds along the view from the eye) hits the wall (damage ${fp.hurt}; ${JSON.stringify(fp)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

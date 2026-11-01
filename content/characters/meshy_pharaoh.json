@@ -6,6 +6,7 @@
   "name": "Pharaoh Mummy Warrior",
   "look": "core.pharaoh",
   "group": "horror",
+  "nameTheme": "undead",
   "bio": "Ruled the Nile for forty years. Rules this lobby for the next five minutes.",
   "body": "male",
   "notes": "Drive batch of 2026-11-01 evening, second drop (\"Pharaoh Mummy Warrior\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Name a placeholder from the Roster Board.",

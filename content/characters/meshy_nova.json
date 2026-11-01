@@ -6,6 +6,7 @@
   "name": "Capt. Nova",
   "look": "core.nova",
   "group": "soldiers",
+  "nameTheme": "soldier",
   "bio": "First person on the Moon in 1969, by her own account. Mission control lost the paperwork.",
   "body": "female",
   "source": {

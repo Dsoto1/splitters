@@ -59,9 +59,11 @@ export type HostCommand =
   /**
    * `teamSizes`: every team's own size (uneven teams); `teamSize`: every team the same size. `botSet`: the
    * host's own bots (sim/botSet.ts: names, looks, skills, styles, teams, squads; null: random bots again),
-   * swapped in a bot at a time. Hosts that don't know `botSet` ignore it (their HostState has none).
+   * swapped in a bot at a time. Hosts that don't know `botSet` ignore it (their HostState has none). `cast`: which
+   * looks random bots wear, and so their names (content/botNames.ts: groups and/or name themes; empty: all; null:
+   * the map's own); random bots out of it change at once. Hosts that don't know it ignore it (no HostState.cast).
    */
-  | { c: 'bots'; fill?: number; teamSize?: number; teamSizes?: number[]; skill?: (typeof HOST_BOT_SKILLS)[number]; style?: (typeof HOST_BOT_STYLES)[number]; botSet?: BotSet | null }
+  | { c: 'bots'; fill?: number; teamSize?: number; teamSizes?: number[]; skill?: (typeof HOST_BOT_SKILLS)[number]; style?: (typeof HOST_BOT_STYLES)[number]; botSet?: BotSet | null; cast?: string[] | null }
   /** Rules that take effect when the match restarts (Restart match applies them). */
   | { c: 'rules'; rules: HostRulesPatch }
   | { c: 'map'; map: string; mode?: GameMode }
@@ -122,6 +124,10 @@ export interface HostState {
   botSet?: BotSet | null;
   /** The set in play is the map's own (MapDocument.bots), not one the host chose: a map change doesn't carry it on. */
   mapBots?: boolean;
+  /** Bot characters the host chose (null: the map's own, `mapCast`). Absent from older hosts: the pause menu then offers none. */
+  cast?: string[] | null;
+  /** The map's own bot characters (empty: all). */
+  mapCast?: string[];
 }
 
 export interface PlayerSnapshot {

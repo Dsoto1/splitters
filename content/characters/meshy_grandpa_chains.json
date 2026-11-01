@@ -6,6 +6,7 @@
   "name": "Grandpa Chains",
   "look": "core.grandpachains",
   "group": "folk",
+  "nameTheme": "townsfolk",
   "bio": "Slippers on, gold chain out, and a better aim than any of his grandchildren.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: old man, slippers, gold chain.",

@@ -6,6 +6,7 @@
   "name": "Santa",
   "look": "core.saintnick",
   "group": "legends",
+  "nameTheme": "myth",
   "bio": "Has a list. You are on the other one.",
   "body": "male",
   "size": "large",

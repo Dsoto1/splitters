@@ -94,6 +94,11 @@ const JOINT_MAP = {
   RightLeg: 'calf_r',
   RightFoot: 'foot_r',
   RightToeBase: 'ball_r',
+  // End markers some Mixamo-named rigs carry (the hand's tip, the toes' tip): folded into their joint.
+  LeftHandMiddle4: 'hand_l',
+  RightHandMiddle4: 'hand_r',
+  LeftToe_End: 'ball_l',
+  RightToe_End: 'ball_r',
 };
 
 /**
@@ -775,7 +780,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
 
   // Each rig joint onto its Meshy counterpart; the rest (fingers, leaf ends) keep their offsets from their parents.
   const target = new Map();
-  const reverse = new Map(Object.entries(JOINT_MAP).filter(([m]) => !/head_end|headfront/.test(m)).map(([m, u]) => [u, m]));
+  const reverse = new Map(Object.entries(JOINT_MAP).filter(([m]) => !/head_end|headfront|Middle4|Toe_End/.test(m)).map(([m, u]) => [u, m]));
   const place = (j) => {
     const name = j.getName();
     if (target.has(name)) return target.get(name);

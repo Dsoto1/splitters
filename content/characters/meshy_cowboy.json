@@ -6,6 +6,7 @@
   "name": "Dusty Ranger",
   "look": "core.dustycolt",
   "group": "folk",
+  "nameTheme": "cowboy",
   "bio": "Rode into the arena on a horse that has since left without him.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: cowboy.",

@@ -6,6 +6,7 @@
   "name": "Baseball Robot",
   "look": "core.rollerbot",
   "group": "creatures",
+  "nameTheme": "robot",
   "bio": "Built to field grounders. Now he IS the grounder, and he brought a gun.",
   "body": "male",
   "locomotion": "roll",

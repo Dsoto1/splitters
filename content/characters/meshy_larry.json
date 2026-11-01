@@ -6,6 +6,7 @@
   "name": "Scary Larry",
   "look": "core.larry",
   "group": "horror",
+  "nameTheme": "spooky",
   "bio": "Lives under the stairs of every map. Comes out for the scoreboard.",
   "body": "male",
   "notes": "The owner's own Meshy model, made and rigged in Meshy (Drive folder, 2026-11-01: \"scary larry rigged\", the All Animations GLB; its two clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. A grinning man in a cap, tactical vest and camouflage shorts.",

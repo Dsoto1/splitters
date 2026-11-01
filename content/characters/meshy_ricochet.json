@@ -6,6 +6,7 @@
   "name": "Ricochet",
   "look": "core.ricochet",
   "group": "creatures",
+  "nameTheme": "alien",
   "bio": "Bounces off walls, ceilings and, given half a chance, you.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: for Ricochet.",

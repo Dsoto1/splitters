@@ -6,6 +6,7 @@
   "name": "Ser Brannock",
   "look": "core.brannock",
   "group": "legends",
+  "nameTheme": "knight",
   "bio": "Swore an oath to defend the realm. The realm is now a deathmatch arena; the oath still holds.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: knight.",
