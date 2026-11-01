@@ -2788,6 +2788,19 @@ async function vehiclesFlow(browser) {
     return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
   });
   check(sprung.susp && sprung.wheels === 4 && sprung.pivots === 4 && sprung.tires === 4 && sprung.rolled, `the buggy rides the sim's suspension, its tires on hub pivots rolling (${JSON.stringify(sprung)})`);
+  // The drive and the turn leave the buggy anywhere (against a rock, on a slope): back to its spawn on open ground,
+  // stopped, before the camera and seat checks below.
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.evaluate(() => {
+    const match = window.__match;
+    const me = match.slots[window.__cs.slot];
+    const m = me.mount ? match.mounts[me.mount.index] : null;
+    if (!m) return;
+    m.pos = { ...m.home.pos };
+    m.yaw = m.home.yaw;
+    if ('speed' in m) m.speed = 0;
+  });
+  await frames(page, 3);
   // H switches to the chase camera (remembered for ground vehicles): behind the buggy, outside it and clear of walls.
   await page.keyboard.press('KeyH');
   // The first chase frame can take a while in software rendering (the wider view brings new things to draw).
