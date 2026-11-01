@@ -153,6 +153,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.engineer': 'core.dale',
   'core.warden': 'core.grunt68',
   'core.rustwalker': 'core.t350',
+  'core.slugger': 'core.t350',
 };
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */

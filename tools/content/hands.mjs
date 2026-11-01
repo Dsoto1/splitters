@@ -342,7 +342,8 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, log =
     const { along, across, palmSide, u0, u1, span, width, thickness, vP, tP, at } = hand;
     const uK = u0 + KNUCKLE_AT * span;
     const closed = hand.fist && o.curl === undefined;
-    const gaps = closed ? null : fingerGaps(hand.uvt, uK, u1);
+    // `mitten`: the fingers bend together even where gaps are found (a thumb or a fold read as a gap crumpled them).
+    const gaps = closed || o.mitten ? null : fingerGaps(hand.uvt, uK, u1);
     const mode = closed ? 'none' : gaps ? 'split' : 'mitten';
     // How far the fingers close in the game: open hands all the way. A mitten curls as one wide finger, at the
     // knuckle line and at the two joints along it (bent once at the knuckles, as it was, it stood out from the gun

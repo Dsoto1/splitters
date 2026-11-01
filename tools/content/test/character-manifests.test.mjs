@@ -41,6 +41,13 @@ describe('character manifests', () => {
     expect(manifestProblems({ ...good, group: undefined }, 'meshy_cat.json').join('\n')).toMatch(/group: what the character is/);
     expect(manifestProblems({ ...good, group: 'pets' }, 'meshy_cat.json').join('\n')).toMatch(/group: what the character is/);
     expect(manifestProblems({ ...good, group: undefined, use: 'npc' }, 'meshy_cat.json')).toEqual([]);
+    // The far copy's share (main's character-lod.mjs).
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 0.45 } }, 'meshy_cat.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 1 } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.lod: 0.15–0.6/);
+    expect(buildSpec({ ...good, fixes: { ...good.fixes, lod: 0.45 } }).lod).toBe(0.45);
+    // A hand bent as one, whatever gaps are found.
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { r: { mitten: true, curl: 1.2 } } } }, 'meshy_cat.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { mitten: 'yes' } } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.hands.mitten/);
   });
 
   it('take the intake queue\'s characters and creatures as queued stubs', () => {

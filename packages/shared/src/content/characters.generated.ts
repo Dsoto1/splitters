@@ -72,6 +72,15 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.rustymech', name: 'Rusty Mech', body: 'male', head: '', parts: ['meshy_rustymech'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_rustymech_fparms' }, group: 'creatures', nameTheme: 'robot' },
   { id: 'core.frida', name: 'Freaky Frida', body: 'female', head: '', parts: ['meshy_frida'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_frida_fparms' }, group: 'horror', nameTheme: 'spooky' },
   { id: 'core.larry', name: 'Scary Larry', body: 'male', head: '', parts: ['meshy_larry'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_larry_fparms' }, group: 'horror', nameTheme: 'spooky' },
+  { id: 'core.abe', name: 'Honest Abe', body: 'male', head: '', parts: ['meshy_abe'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_abe_fparms' }, group: 'legends', nameTheme: 'myth' },
+  { id: 'core.polysoldier', name: 'Virtua Soldier', body: 'male', head: '', parts: ['meshy_polysoldier'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_polysoldier_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.tposesoldier1', name: 'Hollis', body: 'male', head: '', parts: ['meshy_tposesoldier1'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_tposesoldier1_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.tposesoldier2', name: 'Briggs', body: 'male', head: '', parts: ['meshy_tposesoldier2'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_tposesoldier2_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.stancesoldier', name: 'Pemberton', body: 'male', head: '', parts: ['meshy_stancesoldier'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_stancesoldier_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.resolvesoldier', name: 'Kenji', body: 'male', head: '', parts: ['meshy_resolvesoldier'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_resolvesoldier_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
+  { id: 'core.zombiesoldier1', name: 'Zombie Soldier A', body: 'male', head: '', parts: ['meshy_zombiesoldier1'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_zombiesoldier1_fparms' }, group: 'horror', nameTheme: 'soldier' },
+  { id: 'core.zombiesoldier2', name: 'Grinning Gus', body: 'male', head: '', parts: ['meshy_zombiesoldier2'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_zombiesoldier2_fparms' }, group: 'horror', nameTheme: 'soldier' },
+  { id: 'core.undeadsoldier', name: 'Dog Tag Doyle', body: 'male', head: '', parts: ['meshy_undeadsoldier'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_undeadsoldier_fparms' }, group: 'horror', nameTheme: 'soldier' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -147,4 +156,13 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.rustymech': 'A white war machine gone to rust. Still runs. Still angry about it.',
   'core.frida': 'Smiles at everyone. Nobody has seen her blink.',
   'core.larry': 'Lives under the stairs of every map. Comes out for the scoreboard.',
+  'core.abe': 'Four score and seven rounds ago. Has never told a lie about a headshot.',
+  'core.polysoldier': 'Low-poly, high morale. Counts his edges before every drop and has never come up one short.',
+  'core.tposesoldier1': 'Carries three days of rations and eats them all on the flight in. Still first off the ramp.',
+  'core.tposesoldier2': 'Has shouted himself hoarse at every drill since basic. His whisper still rattles windows.',
+  'core.stancesoldier': 'Puts the kettle on between rounds. Has never once missed tea, or a flank.',
+  'core.resolvesoldier': 'Fresh out of basic with hair no regulation can tame. Swears this is his serious face.',
+  'core.zombiesoldier1': 'Reported for duty. Never stopped.',
+  'core.zombiesoldier2': 'Lost his face somewhere in the trenches and kept the grin. Still salutes anyone with a higher rank, or a pulse.',
+  'core.undeadsoldier': 'Buried with full honours in three different wars. Keeps marching back for a fourth.',
 };

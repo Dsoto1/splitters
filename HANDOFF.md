@@ -42,6 +42,43 @@ kind of creature; the bot characters setting is a map default the host can chang
 - Tests: botThemes.test.ts (lists, manifest themes, 96-bot soldiers-only roster, Scamp first, fallback, host
   override/recast, set keeps its own, setup/server rules/wire, MapMaker command + validation). e2e: editor flow ticks
   Soldiers in map properties; teams flow → `botCastFlow` (soldiers-only offline match from match setup).
+### Nine more characters (`wip/new-characters-2`, agent, 2026-11-01; not merged; main c5be6c4 merged in)
+The owner's second Drive batch (nine Meshy GLBs; downloads outside the repo in `/home/user/meshy-drive/drive-2026-11-01c/`,
+symlinked in `/home/user/meshy-drive/build-newchars2/`). **CC0 Meshy community models** (owner): pack
+`meshy-community-characters`, `source.community.model` as the download names it (Abe's "Abraham Lincoln with All
+Animations": Meshy cut the title; correct it if the page says otherwise). Look ids as on the Roster Board; the owner's names
+`core.polysoldier` **Virtua Soldier**, `core.zombiesoldier1` **Zombie Soldier A**; the rest named here. No credits spent.
+- After main's merge: far copies are main's (character-lod.mjs, default share 0.3; this branch's own `fixes.lod` path was
+  dropped and the nine carry no `fixes.lod`); all nine rebuilt from the downloads with main's pipeline, hands retuned for
+  main's three-joint mitten curl. Per character (body tris; far copy; rifle grip audit, The Visitor 0):
+  - **Honest Abe** (`meshy_abe`, Legends): the owner's rig (Mixamo names; `*HandMiddle4`/`*Toe_End` end markers fold into
+    their joints); 11,000; 3,297; **0** (right `mitten` curl 1.2: split-read fingers crumpled into shards; left curl 0.4).
+  - **Virtua Soldier** (`meshy_polysoldier`): found T-pose landmarks; 11,000; 3,300; **0** (right `mitten`, curl 0.9).
+  - **Hollis** (`meshy_tposesoldier1`): 10,998; 3,298; **3** (spikes: one edge at spine_01; right curl 0.9).
+  - **Briggs** (`meshy_tposesoldier2`): a 10k download, uncut; 9,988; 2,996; **0**.
+  - **Pemberton** (`meshy_stancesoldier`, a T-pose after all): 10,995; 3,298; **3** (flat: right curl gain 0.007; curl 1.5).
+  - **Kenji** (`meshy_resolvesoldier`, arms hanging, not a T-pose): shoulders/elbows set by hand down the middle of each
+    arm (found ones sat on the torso's edge: webs, a flap off the support arm), `armCloth`, hands 0.85; 10,000; 2,996; **0**.
+  - **Zombie Soldier A** (`meshy_zombiesoldier1`): 10,999; 3,292; **3** (spikes, one edge at hand_r).
+  - **Grinning Gus** (`meshy_zombiesoldier2`): careful cut stopped at 14,631 (kept); 4,342; **0**. Dark-metal skull in the
+    download; colour only kept, reads as bone.
+  - **Dog Tag Doyle** (`meshy_undeadsoldier`): `surface: rebake` at 14,000 (1.1M download stopped at 22k); knees set by
+    hand (straps between the legs crossed them); 14,065; 4,216; **0** (right curl 0.9).
+- **`fixes.hands.mitten`** (true): fingers bend together even where gaps are found (hands.mjs; tests in hands.test.mjs).
+- **Freaky Frida** (owner's screenshot: her support shoulder tore in the hold): found shoulders sat at the base of the neck
+  (6% of her height out), so the upper arms ran through the chest and took the vest along. Shoulders moved out to the arms'
+  roots, elbows a little out, `armCloth`; audit 0. Before/after: `frida-before.png`, `frida-after.png`,
+  `frida-shoulder-before-after.png` (a jagged vest armhole rim still shows from her back-left side). The other four of that
+  batch (Slugger-9, Barnaby, Rusty Mech, Scary Larry) checked in the hold from three sides (`batch1-shoulders.png`): no
+  such tear; audit Barnaby 3 (flat), the rest 0.
+- **Slugger-9 retired** (owner): `core.slugger` → `core.t350` in RETIRED_LOOKS; his files and manifest kept (he may come
+  back as a better model); no map or bot set used him.
+- Rebuild the nine: `ONLY=meshy_abe,meshy_polysoldier,meshy_tposesoldier1,meshy_tposesoldier2,meshy_stancesoldier,meshy_resolvesoldier,meshy_zombiesoldier1,meshy_zombiesoldier2,meshy_undeadsoldier node tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/build-newchars2`
+  (Frida: `ONLY=meshy_frida ... /home/user/meshy-drive/build-newchars`). Note: rehand-built.mjs on a built file and a fresh
+  build from the download give slightly different hands; tune on fresh builds.
+- Sheets (agent scratchpad `/tmp/claude-0/-home-user/99559628-4a1b-594f-bb6f-7638c8757e80/scratchpad/new-characters-2/`):
+  `grip-contact-sheet.png` (pre-merge), `grips-merged/`, `grips-final/`, `lod-distance-sheet.png` (pre-merge), `portraits-sheet.png`,
+  the Frida pictures above.
 
 ### Model quality, distance, thumbnails, Bandit's hold (`wip/model-quality`, agent, 2026-11-01; not merged; has `wip/new-characters` merged in)
 Owner's Roster Board flags (model, thumb, Bandit; Santa "awful from a distance"; later Giggles). Sheets in the agent's

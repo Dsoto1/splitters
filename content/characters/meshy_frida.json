@@ -9,7 +9,7 @@
   "nameTheme": "spooky",
   "bio": "Smiles at everyone. Nobody has seen her blink.",
   "body": "female",
-  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01: \"freaky frida lowpoly\"). The download is textured but not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A wide-eyed girl in pigtails, a tactical vest and camouflage shorts.",
+  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01: \"freaky frida lowpoly\"). The download is textured but not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A wide-eyed girl in pigtails, a tactical vest and camouflage shorts. Landmarks: found on the mesh, then the shoulders moved out to the arms' roots (found at the base of the neck, 6% of her height from the middle: the upper arms ran through the chest and took the vest with them, which tore at the shoulder in the hold) and the elbows a little out; `armCloth` keeps the vest's armholes on the body.",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -26,6 +26,150 @@
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true
+    "feet": true,
+    "armCloth": true
+  },
+  "landmarks": {
+    "spine": [
+      [
+        0,
+        0.487,
+        -0.002
+      ],
+      [
+        0,
+        0.546,
+        0.002
+      ],
+      [
+        0,
+        0.606,
+        0.007
+      ],
+      [
+        0,
+        0.673,
+        -0.005
+      ],
+      [
+        0,
+        0.807,
+        -0.016
+      ],
+      [
+        0,
+        0.847,
+        -0.003
+      ],
+      [
+        0,
+        1,
+        -0.005
+      ]
+    ],
+    "L": [
+      [
+        0.025,
+        0.762,
+        -0.023
+      ],
+      [
+        0.095,
+        0.752,
+        -0.022
+      ],
+      [
+        0.26,
+        0.741,
+        -0.029
+      ],
+      [
+        0.385,
+        0.729,
+        -0.017
+      ],
+      [
+        0.492,
+        0.723,
+        -0.018
+      ],
+      [
+        0.046,
+        0.457,
+        0.006
+      ],
+      [
+        0.047,
+        0.262,
+        -0.007
+      ],
+      [
+        0.058,
+        0.065,
+        0.018
+      ],
+      [
+        0.064,
+        0.02,
+        0.078
+      ],
+      [
+        0.064,
+        0.015,
+        0.122
+      ]
+    ],
+    "R": [
+      [
+        -0.025,
+        0.762,
+        -0.023
+      ],
+      [
+        -0.095,
+        0.752,
+        -0.025
+      ],
+      [
+        -0.26,
+        0.74,
+        -0.028
+      ],
+      [
+        -0.386,
+        0.733,
+        -0.018
+      ],
+      [
+        -0.491,
+        0.72,
+        -0.024
+      ],
+      [
+        -0.056,
+        0.457,
+        0.006
+      ],
+      [
+        -0.048,
+        0.262,
+        -0.008
+      ],
+      [
+        -0.058,
+        0.065,
+        0.014
+      ],
+      [
+        -0.062,
+        0.02,
+        0.077
+      ],
+      [
+        -0.062,
+        0.015,
+        0.121
+      ]
+    ]
   }
 }
