@@ -5,6 +5,7 @@
   "order": 14,
   "name": "Big Bogdan",
   "look": "core.bogdan",
+  "group": "folk",
   "bio": "Bent iron bars at the travelling circus until the circus ran out of bars.",
   "body": "male",
   "size": "large",

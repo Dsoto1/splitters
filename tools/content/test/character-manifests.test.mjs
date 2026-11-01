@@ -37,6 +37,10 @@ describe('character manifests', () => {
     expect(p.join('\n')).toMatch(/fixes.hands.curl/);
     expect(p.join('\n')).toMatch(/landmarks.L: 10 points/);
     expect(manifestProblems(good, 'meshy_dog.json').join('\n')).toMatch(/does not match the file name/);
+    // A player look says what it is (Character Select's group); an NPC-only body needn't.
+    expect(manifestProblems({ ...good, group: undefined }, 'meshy_cat.json').join('\n')).toMatch(/group: what the character is/);
+    expect(manifestProblems({ ...good, group: 'pets' }, 'meshy_cat.json').join('\n')).toMatch(/group: what the character is/);
+    expect(manifestProblems({ ...good, group: undefined, use: 'npc' }, 'meshy_cat.json')).toEqual([]);
   });
 
   it('take the intake queue\'s characters and creatures as queued stubs', () => {

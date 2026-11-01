@@ -5,6 +5,7 @@
   "order": 34,
   "name": "Chef Basile",
   "look": "core.basile",
+  "group": "folk",
   "bio": "Runs the hottest kitchen in the arena. Everything is served well done.",
   "body": "male",
   "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: chef.",

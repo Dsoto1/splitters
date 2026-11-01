@@ -5,6 +5,7 @@
   "order": 39,
   "name": "Anubis",
   "look": "core.anubis",
+  "group": "legends",
   "bio": "Weighs every heart in the arena. Most come up light.",
   "body": "male",
   "size": "large",

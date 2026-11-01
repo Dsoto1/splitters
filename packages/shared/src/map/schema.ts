@@ -437,12 +437,24 @@ export const AIRDROP_MODES = ['off', 'start', 'always'] as const;
 export type AirdropMode = (typeof AIRDROP_MODES)[number];
 
 /**
- * A transport plane flying a fixed route over the map. Position is the
- * route's anchor on the ground (MapMaker moves the whole route with it);
- * `route` points are [x, z] offsets from it, flown at `altitude` metres
- * above it, once round every `loopSeconds`. A closed route loops; an open
- * one flies first to last, then the plane starts over and anyone still
- * aboard is thrown out. Riders jump out with E or jump and parachute down.
+ * What flies a drop route: the transport `plane` (24 benches) or a
+ * `dropship` (12 on its deck). Looks and seats only: both fly the route the
+ * same way and have the same drop rules.
+ */
+export const AIR_CRAFTS = ['plane', 'dropship'] as const;
+export type AirCraft = (typeof AIR_CRAFTS)[number];
+export const AIR_CRAFT_LABELS: Record<AirCraft, string> = { plane: 'Transport Plane', dropship: 'Dropship' };
+
+/**
+ * A transport plane (or dropship, `craft`) flying a fixed route over the
+ * map. Position is the route's anchor on the ground (MapMaker moves the
+ * whole route with it); `route` points are [x, z] offsets from it, flown at
+ * `altitude` metres above it, once round every `loopSeconds`. The route may
+ * run outside the map's boundary (a run-in from off the map): riders can
+ * jump out only over ground they can land on (sim/airplane.ts, dropPlan),
+ * and anyone still aboard when the craft leaves that stretch is dropped at
+ * its last good point. A closed route loops; an open one flies first to
+ * last, then starts over. Riders jump out with E or jump and parachute down.
  */
 export const AirplaneEntity = EntityBase.extend({
   kind: z.literal('airplane'),
@@ -451,6 +463,8 @@ export const AirplaneEntity = EntityBase.extend({
   loopSeconds: z.number().min(10).max(600).default(60),
   closed: z.boolean().default(true),
   airdrop: z.enum(AIRDROP_MODES).default('off'),
+  /** What flies it (absent: the transport plane). Additive: older maps are valid as they are. */
+  craft: z.enum(AIR_CRAFTS).optional(),
 });
 
 /** A jump pad: stepping on it throws you up (`power` m/s) and along its facing (`push` m/s). */

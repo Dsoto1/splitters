@@ -5,6 +5,7 @@
   "order": 10,
   "name": "The Visitor",
   "look": "core.visitor",
+  "group": "creatures",
   "bio": "Came a very long way to study human culture. Stayed for the deathmatches.",
   "size": "small",
   "body": "male",

@@ -143,12 +143,16 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
-## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`)
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesHarbor.ts`, `map/packTilesSnow.ts`, `map/packTilesDesert.ts`, `map/packTilesJungle.ts`)
 
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
-alongside the set), then 10 Medieval Village and 11 Coastal Harbor (the owner's tileset sheets), one registry (`STYLE_PACKS`, in pack-number order). A Style
+alongside the set), then from the owner's tileset sheets 10 Medieval Village,
+11 Coastal Harbor and 12 Snow Outpost; 09 is now **Desert City**, which
+replaced Sands of Egypt (owner, 2026-10-31) and still carries all its pieces,
+and 06 Jungle Ruins was refreshed from the Jungle Ruins sheet with the Ancient
+Temple sheet folded in. One registry (`STYLE_PACKS`, in pack-number order). A Style
 Pack is a themed selection of the kit: the **Style Pack** picker under the
 MapMaker palette's search box narrows the tiles, props, gameplay pieces
 (Entities → Scenario), vehicles and pickups to one pack (headings left empty
@@ -283,7 +287,7 @@ CONTENT_PIPELINE.md and ASSET_SOURCES.md).
 | Pack | Themes | Facades (box-built) | Own tiles | Own props | Demo map |
 |---|---|---|---|---|---|
 | 05 Gothic Estate (Victorian horror) | **Gothic Estate** (`core.gothic_estate`: old floorboards, Damask Wallpaper, walnut, dark panels, brass); Gothic Manor, Castle Keep | **Gothic stone** (buttresses, string course, hood moulds, battlements and pinnacles), **Victorian brick** (stone plinth, quoins, sills and lintels, bracketed cornice) | 8 | 19 (category *Gothic Estate*) | Ravenscroft Hall |
-| 06 Jungle Ruins (lost civilisation) | **Jungle Temple** (`core.jungle_temple`: mossy cobbles, mossy castle stone, layered rock); Jungle Ruins, Forest Camp | **Temple stone** (stepped base, glyph frieze, stepped merlons), **Overgrown rock** (moss at foot and top, vines hanging down, never across openings) | 12 | 17 (category *Jungle Ruins*) | Verdant Ziggurat |
+| 06 Jungle Ruins (lost civilisation) | **Jungle Temple** (`core.jungle_temple`: mossy cobbles, mossy castle stone, layered rock), **Ancient Temple** (`core.ancient_temple`, from the refresh); Jungle Ruins, Forest Camp | **Temple stone** (stepped base, glyph frieze, stepped merlons), **Overgrown rock** (moss at foot and top, vines hanging down, never across openings) | 12 + 20 (refresh) | 17 + 26 (refresh; category *Jungle Ruins*) | Vinefall Sanctum (was Verdant Ziggurat; see *06 Jungle Ruins refresh* below) |
 | 08 Suburban Chaos (everyday modern) | **Suburban** (`core.suburban`: oak boards, white plaster, painted clapboard, white trim); Walled Garden, Downtown | **Clapboard siding** (corner boards, brick plinth, shutters, sills and lintels, fascia), **Suburban brick** (the same trim on brick) | 8 | 20 (category *Suburban Chaos*) | Cedar Lane |
 
 New materials: Damask Wallpaper (procedural stripes), Slate Shingles,
@@ -380,6 +384,11 @@ Content: `tools/content/build-style-props.mjs` models the 56 props in code
 (licence Owned); the facades are boxes drawn with the level.
 
 ### 03 Imperial Arena (Roman) and 09 Sands of Egypt
+
+*Sands of Egypt is no longer a pack of its own: 09 Desert City replaced it (see "09 Desert City" below).
+Its 11 tiles, 15 props, theme (`core.egypt`), facade (`egyptian`) and materials are all still defined, so
+maps that use them (Pharaoh's Reach, Sunken Kingdom, After Hours) load unchanged, and they are listed at the
+end of the Desert City pack (and under All pieces, and the props' "Sands of Egypt" heading).*
 
 | Pack | Theme | Facade | Own tiles (`map/packTilesAncient.ts`) | Own props | Demo map |
 |---|---|---|---|---|---|
@@ -562,6 +571,57 @@ doors, breakable and rotten planks; boats are vehicles placed with *Rides on wat
 **Navmesh notes.** A switchback stair inside four walls falls off Recast's navmesh (its watershed regions lose
 the stacked laps); open sides keep it (the lighthouse is a skeleton tower for that reason, like the Medieval
 watchtower). The 2 × 1 buildings use the Medieval houses' straight stair.
+### 09 Desert City (Middle Eastern city; replaces 09 Sands of Egypt)
+
+From the owner's concept sheet "Tileset 02 – Desert City" (Middle Eastern / arid / stone + plaster). Pack id
+`desert` (tiles `desert.*`), number 09 in Sands of Egypt's place (the sheet calls it 02; 02 stays Frontier
+Dust). Theme `core.desert_city` (worn paving floor, sandstone ashlar walls, weathered plaster solids, cedar
+undersides, sandstone tile trim; also Sands of Egypt, Desert Town and Desert Tomb); facades **Desert ashlar**
+(a sandstone plinth, a zellige band under the cornice, lattice screens and cedar lintels at the windows, a
+stepped parapet) and **Desert plaster** (stone quoins, cedar beam ends under the parapet). Demo map: Qasr Medina.
+
+**Tiles** (`map/packTilesDesert.ts`, 18). Every roof is flat and walkable at 8 m behind a 1 m parapet with
+2.4 m gaps on the cell centres of every side, so a row of houses is one rooftop and bridges, galleries and
+outside stairs join it there. Houses are 2 × 1 cells, two storeys: *Plaster House* (sun-faded plaster, cedar
+beam ends, lattice windows), *Ashlar House* (sandstone, a zellige band, an arched door), *Shop House* (the
+ground storey 2 m back behind a porch with a serving counter and a red canopy). Inside each: a stair along the
+north wall to the upper floor (doors east and west at 4 m, centred, for galleries and the next house) and a
+second along the south wall up to the roof, a rug and cushions, a shaded rooftop corner. *Outside Stair*
+(stone switchback round an open well: a landing at 4 m along the south side, a deck at 8 m on the south
+edge: put it north of a house and step through the roof's parapet gap), *Rope Bridge* (2.2 m wide at 8 m,
+east–west, between two roofs' gaps), *Cedar Gallery* (a covered walk with lattice sides at 4 m between upper
+doors), *Courtyard* (2 × 2: round arcades on columns round a zellige court and fountain, gateways on every
+cell centre, a terrace on the arcades' roofs at 4 m reached by a stair in the court), *Covered Bazaar* (1 × 2:
+a lane between shop alcoves with counters, cloths under the roof, a terrace on top round two little domes),
+*Market Street* (stalls under red canopies both sides of a 4.8 m lane), *Domed Hall* (an arch on every side, a
+fountain, a blue dome on an octagonal drum up to ~11 m), *Watch Tower* (switchback stair inside to a lookout
+at 8 m behind merlons, a blue cap on posts), *Minaret* (a 22 m landmark; not climbed), *City Wall*, *Wall
+Stair* (2 × 1), *City Gate* (3 × 1: a 4 m arched passage, two domed corner towers, stairs up both wall cells,
+the walk crossing over the gate), *Arcaded Terrace* (a terrace at 4 m on piers and columns, gaps on every
+side), *Well Court*, *Paved Street*.
+
+Every stair keeps the Medieval pack's navmesh rules (treads 0.45 m, flights 2.2 m wide, ~2 m of floor at
+both ends, full-width landings, roof holes off the steps). The tests walk bots onto every floor, roof,
+bridge, gallery, terrace, lookout and wall-walk in all four rotations (`test/stylePacksDesert.test.ts`) and
+keep every box inside its tile's cells. Not climbed: the Minaret and the Domed Hall's roof (landmarks).
+
+**Props** (20, category *Desert City*, `tools/content/prepare-desert.mjs`, built in code, licence Owned):
+Market Stall, Market Canopy, Desert Banner, Hanging Lantern, Palm Planter, Water Well, Tall Vase and Water
+Jars (both break), Market Rug, Timber Crane, Cloth Line, Scaffold, Awning Window, Lattice Window, Shuttered
+Window, Spice Baskets, Floor Cushions, Rug Rack, Sandstone Column, Ornate Arch (collides as a frame: walk
+through it). The Market Stall, Water Well and Timber Crane are simple in-house versions under stable ids
+(`dc_market_stall`, `dc_well`, `dc_crane`): a hero model can take the same id later in `content/props.json`
+without touching a map. The pack also lists the crates, barrels, sandbags, palms, lanterns, pots, carts,
+ladders and troughs already in the game, then every Sands of Egypt prop.
+
+**Materials** (procedural, `client/materials/patterns.ts`; ambientCG is not reachable from the build
+container): Sandstone Ashlar (coursed blocks, tooled faces), Weathered Plaster (flaked to the stone in
+patches), Blue Dome Tiles (glazed fish scales), Zellige Mosaic (eight-point stars and crosses), Worn Paving
+(uneven flagstones), Sandstone Tiles, Market Rug, Mashrabiya Lattice, Red Canopy, Cedar Beam.
+
+**Gameplay pieces**: *Lattice Screen* (`block:lattice`: a breakable cedar mashrabiya, 2.2 × 2.4 m, back after
+30 s), with the oak door, portcullis and portcullis gate, ladders, planks, boards, crates, barrels, wall
+lanterns, and the Sands of Egypt traps, portals and water.
 
 ### Portals (`sim/portals.ts`)
 
@@ -594,6 +654,111 @@ grenades, discs, spears) go through too.
   with no rule to enable it, and ground in front of either end that nobody
   can stand on (navigation).
 
+
+### 12 Snow Outpost (arctic military outpost)
+
+From the owner's concept sheet "Tileset 05 – Snow Outpost". Theme `core.snow_outpost` (packed snow floors,
+red prefab walls, snowy concrete), backdrop: snowy sky, snowy peaks, snow, light mist. Demo map
+`maps/whiteout_station.json`. Tiles in `map/packTilesSnow.ts` (box helpers shared with packTilesMedieval.ts):
+
+| Tile | Cells | What it is |
+|---|---|---|
+| `snow.hut` Prefab Hut | 1 × 1 | red panel hut, doors S and N; flat snow roof 3.5 m up by an outside steel stair from the north edge up the east strip |
+| `snow.barracks` Barracks | 2 × 1 | bunk rows, doors on every side, 25° snow roof (walkable); stair from the NW to a deck at the eaves (3.5 m) along the north |
+| `snow.comms_hut` Comms Tower | 1 × 1 (7 levels) | white Prefab Hut under a 24 m lattice mast with a red beacon |
+| `snow.hangar` Vehicle Hangar | 2 × 2 | 7 m corrugated shed, 6 × 4.6 m doorway S (hang a Roll-up Door), doors W/E/N, grating mezzanine 4 m up along N |
+| `snow.bunker` Snow Bunker | 1 × 1 | concrete room, firing slits S and W, door N; snow drift up the east side onto the roof (3.2 m), sandbags |
+| `snow.watchtower` Steel Watchtower | 1 × 1 | switchback grating stair to a lookout 7 m up, snow roof, floodlight |
+| `snow.radar_dome` Radar Dome | 1 × 1 | eight-sided drum (door S, consoles) under a 7.5 m radome |
+| `snow.fuel_depot` Fuel Depot | 1 × 1 | two tanks on cradles, pipe, valve rack, bund wall |
+| `snow.catwalk` / `snow.metal_stair` | 1 × 1 | grating catwalk 4 m up N–S; a stair from the ground (S) up to it (N edge) |
+| `snow.ice_wall` Ice Wall | 1 × 1 | jagged ice 4–6 m high along the S edge (turn it to line a map edge) |
+| `snow.ice_cliff` / `snow.drift_ramp` | 1 × 1 | frozen rock with a snow top 4 m high; a 27° snow drift from the ground (S) to 4 m (N) |
+| `snow.frozen_lake` / `snow.ice_ridge` / `snow.ice_hole` | 1 × 1 | lake ice; with a pressure ridge (cover); broken open 3.6 m over water 2 m down, steps out on the N side |
+| `snow.road` Snow Road | 1 × 1 | ploughed road N–S with tyre tracks and snow banks |
+
+Navmesh note (on top of Medieval's): a landing must start exactly where a sloped slab's top surface ends; a
+landing lapping over the slope leaves a sliver the navmesh can't stand on and bots stop a metre short
+(`zTop` in `bunker()` / `rampUp()`). `test/stylePacksSnow.test.ts` walks bots onto every roof, deck, lookout,
+mezzanine, catwalk and cliff top in all four rotations.
+
+**Props** (16, category *Snow Outpost*, `tools/content/prepare-snow.mjs`, built in code, licence Owned):
+Satellite Dish, Antenna Mast, Diesel Heater, Diesel Generator, Snowmobile, Crates under a Tarp, Arctic Lamp
+Post, Flagpole, Chain-link Fence, Snow Fence, Insulated Pipe Run, Oil Drums, Radio Console, Ski Rack, Supply
+Sled, Snow Pile. Snowmobile, Satellite Dish and Generator are stand-ins under stable ids (`so_snowmobile`,
+`so_satellite_dish`, `so_generator`) for Meshy or community hero versions later. The pack also lists the
+snowy trees and rocks, sandbags, barriers, containers, crates, barrels, tanks and lights already in the game;
+the drivable snowmobile is the `snow_sled` mount.
+
+**Materials** (procedural, `client/materials/patterns.ts`): Packed Snow and Snow Drift (wind ripples,
+glints), Lake Ice and Glacier Ice (cracks, bubbles), Red and White Prefab Panels (seams, ribs, rivets; one
+storey a repeat), Snowy Concrete, Frozen Rock (strata rimed with frost), Steel Grating, Red Beacon (glows).
+
+**Facades**: *Prefab panels* (`prefab`: white corner posts, steel plinth, snow on the hoods and the top) and
+*Snowy concrete* (`snow_bunker`: a snow berm, snow-capped hoods and top).
+
+**Gameplay pieces**: *Roll-up Door* (`mover:rollup_door`: a 6 × 4.6 m shutter a rule rolls up 4.4 m and
+down), *Ice Block* (breakable cover, back after 30 s), *Thin Ice* (4 × 4 m, gives way 0.7 s after you step
+on it, back after 12 s), with blast doors, ladders, alarm lights, water, mines and the generator.
+Not in the game yet: falling snow (the `snowy` sky has no precipitation) and slippery ice.
+
+### 06 Jungle Ruins refresh (Ancient Temple folded in)
+
+From the owner's concept sheets "Tileset 04 – Jungle Ruins" (weathered mossy stone, overgrown temple
+courtyards, waterfalls, rope bridges over chasms, torch-lit stairs, red banners) and "Tileset 07 – Ancient
+Temple" (sandstone with teal-and-gold inlay, teal/gold banners, wall torches, hanging braziers, chain rails,
+spikes, a portcullis, multi-level terraces with waterfalls). The owner folded Ancient Temple into the Jungle
+Ruins refresh (2026-10-31: the two sounded alike), so it is one pack, 06 Jungle Ruins; 03 Imperial Arena stays
+Roman. The pack's first twelve tiles (`packTiles2.ts`) and 17 `jg_*` props are unchanged, so Verdant Ziggurat,
+Erosion, Sunken Kingdom, Fernwood Moon, After Hours and Jungle Steps load as before. New theme
+`core.ancient_temple` (mossy stone slab floors, carved temple stone walls, temple sandstone solids, jungle rock
+undersides, gold trim; backdrop clear sky, forest, moss). Demo map: `maps/vinefall_sanctum.json` (Vinefall
+Sanctum; Verdant Ziggurat was the demo before).
+
+**Tiles** (`map/packTilesJungle.ts`, 20; one level is 4 m):
+
+| Tile | Cells | What it is |
+|---|---|---|
+| `jungle.terrace` Temple Terrace | 1 × 1 | carved stone one level high under a mossy cornice; its top is the next level's ground |
+| `jungle.terrace_stair` Terrace Stair | 1 × 2 | a 3.2 m wide stair (16 steps) north to a landing 4 m up; stack another on the landing a level up for a ziggurat (reached head-on and from the terraces either side) |
+| `jungle.temple` Carved Temple | 2 × 1 | carved and relief walls, a 3.2 m gate in the west cell's south edge (the Portcullis hangs in it), doors W and N, barred windows E, columns, beamed ceiling, altar; a stair inside the north wall to a flat roof walk 4 m up, parapet gaps E and W |
+| `jungle.shrine` Summit Shrine | 1 × 1 | small sanctuary on an inlaid apron, door S, stepped roof and gilded finial: a ziggurat's crown |
+| `jungle.wall_carved` / `wall_relief` / `wall_window` / `wall_arch` / `wall_column` / `wall_low` | 1 × 1 | 4 m temple walls along the north edge: step-fret frieze; relief panels; two windows (one barred: shoot through); a 3.2 m arch; four columns over a knee wall (see and vault through); waist-high cover |
+| `jungle.beamed_hall` Beamed Colonnade | 1 × 1 | four columns under a beamed timber ceiling 4 m up, open on every side; its roof is the next level's ground |
+| `jungle.arch_hall` Arched Vault | 1 × 1 | a 5.2 m passage N–S under a carved vault (3.5 m crown), roots breaking through; its top is the next level's ground |
+| `jungle.watch_tower` Jungle Watch Tower | 1 × 1 | the Medieval Watchtower's frame in lashed timber: switchback stair to a lookout 7 m up, palm thatch, a crossbar for a Zipline Post |
+| `jungle.chasm` / `chasm_steps` / `chasm_bridge` | 1 × 1 | a 5 m gorge 4 m deep E–W (add Water for a river); Gorge Steps out of its west end; a Chasm with a 3 m rope bridge across N–S at ground level |
+| `jungle.rope_bridge` / `stone_bridge` | 1 × 1 | bridge decks N–S with nothing underneath (rope with netting sides, 3 m; carved stone with balustrades, 3.4 m): lay them a level up between terraces, roofs and towers |
+| `jungle.waterfall_wall` Waterfall Wall | 1 × 1 | an 8 m carved wall on the north edge with a serpent spout (stand the Waterfall prop under it), a pool sunk 1 m (add Water), a passage through behind the falls; its top is a walk two levels up |
+| `jungle.overgrown_ruin` Overgrown Ruins | 1 × 1 | broken carved walls N and W, a broken column, a fallen drum, an overgrown beam, roots: scattered cover |
+
+Every stair keeps the Medieval pack's navmesh rules (treads 0.42 m or longer, flights 2 m wide or wider, about
+2 m of floor at both ends, turns on full-width landings, floor holes 0.3 m past the steps).
+`test/stylePacksJungle.test.ts` walks bots up the terrace stairs (stacked too), onto the temple roof and the
+colonnade roof beside it, the shrine, the tower lookout, across both bridge spans and the chasm rope bridge, out
+by the gorge steps and through the arch wall, the vaults and the passage behind the falls, in all four
+rotations; it validates every tile on its own and loads every map that uses jungle pieces.
+
+**Props** (26, category *Jungle Ruins*, `jt_*`, `tools/content/prepare-jungle.mjs`, built in code, licence
+Owned): Zipline Post, Crane and Pulley, Wooden Platform, Temple Guardian (Large and Small), Stone Obelisk,
+Temple Spire, Fire Bowl, Hanging Brazier, Wall Torch, Teal and Red Temple Banners, Tree Root Arch, Mossy Tree
+Trunk, Jungle Plant Cluster, Stone Planter, Temple Pottery, Rubble Pile, Collapsed Column, Broken Column, Stone
+Sarcophagus, Spike Row, Chain Rail, Rope Rail, Temple Altar, Overgrown Beam. Temple Guardian (Large), Crane and
+Pulley and Zipline Post are simple stand-ins under stable ids (`jt_statue_large`, `jt_crane`,
+`jt_zipline_post`): a hero model (Meshy, with the owner's approval) can take the same id later. The pack also
+lists the 17 earlier `jg_*` props, the ruins, rocks, jungle plants, expedition camp, crates and barrels already
+in the game.
+
+**Materials** (procedural, `client/materials/patterns.ts`; ambientCG is not reachable from the build
+container): Mossy Stone Slab (`slabs`), Carved Temple Stone (`fret`: step-fret courses), Relief Carving
+(`relief`: faces, sun discs, serpents), Temple Inlay Tiles (`inlay`: teal and gold), Root Cover (`roots`),
+Mossy Planks, Temple Sandstone, Palm Thatch (`thatch`).
+
+**Gameplay pieces**: the Portcullis door and Portcullis gate mover (in the Carved Temple's gate), braziers and
+wall torches (lights), ladders (rope ladders and vines), with the pack's rope bridges, crumbling planks,
+falling rocks, spikes, flames, water and swamp. **Zipline:** there is no zipline ride in the game; the Zipline
+Post is scenery and the pack lists the Grapple Hook to cross between posts. A real zipline (a new movement
+mechanic) is the owner's call.
 
 ## Materials and themes (`map/materials.ts`)
 
@@ -697,6 +862,27 @@ in the same themes and paint slots as straight walls.
   invisible barrier always reaches 60 m up, so nothing is thrown or jumped
   out. MapMaker shows it as an orange outline, and spawns outside it are an
   error.
+
+## Drop routes: transport plane and dropship (`sim/airplane.ts`)
+
+The **Paths, Roads & Routes** group (Terrain pane) has **Plane Drop Route** and
+**Dropship Drop Route**; both place an `airplane` entity (the Transport Plane is
+also in Game Modes & Objectives). Its inspector picks the **Aircraft** (`craft`:
+transport plane, 24 benches, or the Dropship's model, 12), altitude, lap time,
+loop or one way, and **Air drop** (off / round start / every spawn). **Draw route
+on the map** edits the points with the Paths tool's hands (click adds, drag
+moves, Shift-click inserts, right-click or Del removes). Draw it in and out of
+the map's boundary freely (a run-in from off the map): the route is drawn green
+over the play area and grey outside it.
+
+Riders (players and bots) can only jump out (Space or E) while the craft's tail
+ramp and the spot they'd land on are over the **play area** (the boundary, or
+without one what's built and the terrain, 3 m in from the edge) and over ground:
+not the void of a sky map, lava or acid. A jump elsewhere is refused with "Not
+over the drop zone". Anyone still aboard when the craft leaves that stretch (or
+an open route ends over it) is dropped at its last good point. Bots choose a
+jump point near their objective whose landing is on their navmesh. A route that
+never crosses the play area is flagged (`airplane.nodrop`).
 
 ## Jump pads
 

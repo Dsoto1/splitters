@@ -65,6 +65,7 @@ import {
   getItem,
   pickupPool,
   getMountDef,
+  airCraftDef,
   getWeapon,
   loadMap,
   pickUsable,
@@ -1654,7 +1655,8 @@ export class GameSession {
             if (ev.t === this.slot) this.hud.pickup(ev.s === this.slot ? `+${ev.n} health` : `${this.hud.name(ev.s)} healed you +${ev.n}`);
             else if (ev.s === this.slot) this.hud.pickup(`Healed ${this.hud.name(ev.t)} +${ev.n}`);
           } else if (ev.e === 'msg') {
-            this.hud.showMessage(ev.text, ev.secs);
+            // A message for one player (the drop route's "not over the drop zone") only shows for them.
+            if (ev.s === undefined || ev.s === this.slot) this.hud.showMessage(ev.text, ev.secs);
           } else if (ev.e === 'obj') {
             this.objectiveChanged.set(ev.i, performance.now());
           } else if (ev.e === 'broken') {
@@ -1762,6 +1764,8 @@ export class GameSession {
         const def = getMountDef(e.model);
         if (def) models.add(def.model);
       }
+      // The plane or dropship flying a drop route (riders start in it).
+      if (e.kind === 'airplane') models.add(airCraftDef(e.craft).model);
     }
     for (const m of models) jobs.push(this.view.models.load(m).catch(() => undefined));
     let done = 0;

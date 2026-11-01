@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { MODEL_FACADES, PhysicsWorld, SCENARIO_PALETTE, blockBoxes, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, newScenarioEntities, propBoxes, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
+import { MODEL_FACADES, PhysicsWorld, SCENARIO_PALETTE, blockBoxes, boxQuat, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, newScenarioEntities, propBoxes, quatRotate, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
 import { NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -55,6 +55,57 @@ describe('Style Pack 10 Medieval Village tiles', () => {
     const boxes = buildMapGeometry(makeMap([t('a', 'medieval.house', 0, 0)]));
     const mats = new Set(boxes.filter((b) => b.sourceId === 'a').map((b) => b.surface?.material));
     for (const m of ['core.timber_frame', 'core.roof_tiles_red', 'core.pbr_castle_stone']) expect(mats.has(m), m).toBe(true);
+  });
+
+  it('every tiled roof slab faces up and out from its ridge, at every rotation (no upside-down roofs)', () => {
+    const ids = coreCatalog.all().filter((d) => d.id.startsWith('medieval.')).map((d) => d.id);
+    let slabs = 0;
+    for (const id of ids)
+      for (const rotation of [0, 1, 2, 3] as Rotation[]) {
+        const roof = buildMapGeometry(makeMap([t('a', id, 0, 0, 0, rotation)])).filter((b) => b.sourceId === 'a' && (b.pitch || b.roll) && b.surface?.material === 'core.roof_tiles_red');
+        if (!roof.length) continue;
+        const centre = (b: (typeof roof)[number]) => [(b.min[0] + b.max[0]) / 2, (b.min[2] + b.max[2]) / 2] as const;
+        const mid = roof.map(centre).reduce((s, c) => [s[0] + c[0] / roof.length, s[1] + c[1] / roof.length], [0, 0]);
+        for (const b of roof) {
+          const up = quatRotate(boxQuat(b.yaw, b.pitch, b.roll), 0, 1, 0);
+          const [cx, cz] = centre(b);
+          expect(up[1], `${id} r${rotation}`).toBeGreaterThan(0.5);
+          // The slab's outward tilt points away from the ridge (the middle of the roof).
+          expect(up[0] * (cx - mid[0]) + up[2] * (cz - mid[1]), `${id} r${rotation}`).toBeGreaterThan(0);
+          slabs++;
+        }
+      }
+    expect(slabs).toBeGreaterThanOrEqual(5 * 2 * 4);
+  });
+
+  it('no two boxes of a tile in different materials share a visible face (z-fighting)', () => {
+    // Bottom faces (they stand on something), and the tops of walls under the roof (8 m), are never seen.
+    const key = (b: { surface?: { material: string; tint?: string | null } }) => `${b.surface?.material}|${b.surface?.tint ?? ''}`;
+    for (const def of coreCatalog.all().filter((d) => d.id.startsWith('medieval.'))) {
+      const boxes = (def.solids ?? []).filter((b) => !b.yaw && !b.pitch && !b.roll);
+      const fights: string[] = [];
+      for (let i = 0; i < boxes.length; i++)
+        for (let j = i + 1; j < boxes.length; j++) {
+          const [a, c] = [boxes[i]!, boxes[j]!];
+          if (key(a) === key(c)) continue;
+          for (const ax of [0, 1, 2] as const)
+            for (const side of ['min', 'max'] as const) {
+              const at = a[side][ax];
+              if (Math.abs(at - c[side][ax]) > 0.002 || (ax === 1 && (side === 'min' || at === 8))) continue;
+              let area = 1;
+              for (const k of [0, 1, 2] as const) if (k !== ax) area *= Math.max(0, Math.min(a.max[k], c.max[k]) - Math.max(a.min[k], c.min[k]));
+              // Small slivers (a post against a wall's end) don't show.
+              if (area > 0.12) fights.push(`${'xyz'[ax]}${side} ${at}: ${key(a)} / ${key(c)}`);
+            }
+        }
+      expect(fights, def.id).toEqual([]);
+    }
+  });
+
+  it('the shop counter and shelves keep every ground-floor door clear', () => {
+    const boxes = buildMapGeometry(makeMap([t('a', 'medieval.house_shop', 0, 0)])).filter((b) => b.sourceId === 'a' && b.kind !== 'trim' && b.surface?.material === 'core.oak_beam' && b.min[1] < 0.5);
+    // The east door: x 11.5..11.8, z -2.7..-0.5 (the west one mirrors it); nothing stands in front of either.
+    for (const b of boxes) for (const x of [11.2, -3.2]) expect(b.min[0] <= x && b.max[0] >= x && b.min[2] < -0.5 && b.max[2] > -2.7, JSON.stringify(b)).toBe(false);
   });
 
   it('the half-timbered and whitewash facades dress outside walls and leave the doorway clear', () => {
@@ -122,6 +173,26 @@ describe('Medieval pack navigation', () => {
 });
 
 describe('Market Town (the pack\'s demo map)', () => {
+  it('the fountain stands on the square\'s plinth, inside its upper step; the portcullis starts raised', () => {
+    const r = loadMap(read('maps/market_town.json'));
+    if (!r.ok) throw new Error(JSON.stringify(r.issues));
+    const map = r.map;
+    const fountain = map.entities.find((e) => e.kind === 'prop' && e.model.startsWith('prop.fountain'));
+    if (fountain?.kind !== 'prop') throw new Error('no fountain');
+    const size = getProp(fountain.model)!.size;
+    // The upper step of the plinth: 3.8 m across, its top 0.5 m up, centred on the square's middle.
+    const step = buildMapGeometry(map).filter((b) => b.max[1] === 0.5 && !b.yaw && Math.abs(b.max[0] - b.min[0] - 3.8) < 0.01);
+    expect(step).toHaveLength(1);
+    const [s] = step;
+    expect(fountain.position[1]).toBe(0.5);
+    expect(fountain.position[0] - (size[0] * fountain.scale) / 2).toBeGreaterThanOrEqual(s!.min[0]);
+    expect(fountain.position[0] + (size[0] * fountain.scale) / 2).toBeLessThanOrEqual(s!.max[0]);
+    expect(fountain.position[2] - (size[2] * fountain.scale) / 2).toBeGreaterThanOrEqual(s!.min[2]);
+    expect(fountain.position[2] + (size[2] * fountain.scale) / 2).toBeLessThanOrEqual(s!.max[2]);
+    const gate = map.entities.find((e) => e.kind === 'door' && e.style === 'portcullis');
+    expect(gate).toMatchObject({ startOpen: true, locked: false });
+  });
+
   it('validates with no issues, navigation included, and has the town\'s landmarks', { timeout: 180_000 }, () => {
     const r = loadMap(read('maps/market_town.json'));
     if (!r.ok) throw new Error(JSON.stringify(r.issues));

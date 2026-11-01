@@ -35,10 +35,16 @@ type Tile = MapDocument['classicStructure']['tiles'][number];
 const t = (id: string, tile: string, x: number, y: number, z = 0, rotation: Rotation = 0, extra: Partial<Tile> = {}): Tile => ({ id, tile, x, y, z, rotation, ...extra });
 
 describe('Style Packs 03 Imperial Arena and 09 Sands of Egypt', () => {
-  it.each([
-    ['imperial', '03', 'Imperial Arena', 'core.imperial', 'sandfall_colosseum'],
-    ['egypt', '09', 'Sands of Egypt', 'core.egypt', 'pharaohs_reach'],
-  ])('%s is registered with its theme, demo map and 25–40 pieces of its own', (id, number, name, theme, demo) => {
+  it('Sands of Egypt lives on inside 09 Desert City (which replaced it): its 26 pieces stay defined and listed', () => {
+    expect(getStylePack('egypt')).toBeUndefined();
+    const pack = getStylePack('desert')!;
+    const egypt = [...pack.tiles.filter((x) => x.startsWith('egypt.')), ...pack.props.filter((p) => getProp(p)?.category === 'Sands of Egypt')];
+    expect(egypt.length).toBe(26);
+    expect(pack.themes).toContain('core.egypt');
+    expect(pack.gameplay).toContain('portal');
+  });
+
+  it.each([['imperial', '03', 'Imperial Arena', 'core.imperial', 'sandfall_colosseum']])('%s is registered with its theme, demo map and 25–40 pieces of its own', (id, number, name, theme, demo) => {
     const pack = getStylePack(id)!;
     expect(pack).toBeDefined();
     expect(pack.number).toBe(number);
@@ -209,6 +215,6 @@ describe('Ancient pack demo maps', () => {
 
 describe('every ancient tile is in the catalog', () => {
   it('lists the tiles under their packs', () => {
-    for (const id of [...getStylePack('imperial')!.tiles, ...getStylePack('egypt')!.tiles]) expect(coreCatalog.get(id), id).toBeDefined();
+    for (const id of [...getStylePack('imperial')!.tiles, ...getStylePack('desert')!.tiles]) expect(coreCatalog.get(id), id).toBeDefined();
   });
 });

@@ -405,6 +405,89 @@ async function editorFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   // Close it, or its render loop keeps eating CPU through the later flows.
   await page.context().close();
+  await dropRouteChecks(browser);
+}
+
+/**
+ * A dropship drop route from the Paths group, drawn in and out of the map's bounds; in TEST you start aboard,
+ * a jump while it is still off the map is refused with a hint, over the map it goes, and you land in the map.
+ */
+async function dropRouteChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  // Open ground 96 m across (x and z -48..48): the play area riders may come down on.
+  await newMap(page, 96);
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const clickWorld = async (x, z) => {
+    const p = await page.evaluate(([x, z]) => window.__editor.view.project({ x, y: 0, z }), [x, z]);
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.click(p.x, p.y);
+  };
+  await clickTool(page, '[data-tool="path-drop-dropship"]');
+  await clickWorld(0, 0);
+  await page.keyboard.press('Escape');
+  let plane = (await doc()).entities.find((e) => e.kind === 'airplane');
+  check(plane?.craft === 'dropship' && plane.route.some(([x]) => Math.abs(x) > 60), `Paths → Dropship Drop Route places a dropship whose route runs in from off the map (${JSON.stringify(plane && { craft: plane.craft, route: plane.route })})`);
+  // Select it: the inspector offers the aircraft and the air drop.
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), plane?.id);
+  const craftSel = await page.waitForFunction(() => [...document.querySelectorAll('#editor select')].some((s) => [...s.options].some((o) => o.value === 'dropship')), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(craftSel, 'the inspector has an Aircraft choice (plane or dropship)');
+  await page.evaluate(() => {
+    const drop = [...document.querySelectorAll('#editor select')].find((s) => [...s.options].some((o) => o.value === 'start'));
+    drop.value = 'start';
+    drop.dispatchEvent(new Event('change'));
+  });
+  await page.waitForFunction(() => window.__editor.doc.entities.some((e) => e.kind === 'airplane' && e.airdrop === 'start'), null, { timeout: T(10000) }).catch(() => {});
+  // Draw route: a point far outside the map's edge is fine (riders only jump over the map).
+  await page.click('#ed-draw-route');
+  // (The route tool's own click, at a ground point past the boundary: a headless pointer can't reach that far.)
+  await page.evaluate(() => window.__editor.routes.pointerDown({ x: 62, y: 0, z: 22 }, false));
+  await page.keyboard.press('Escape');
+  plane = (await doc()).entities.find((e) => e.kind === 'airplane');
+  check(plane?.airdrop === 'start' && plane.route.length === 4 && plane.route[3][0] > 55, `the route tool adds a point outside the boundary (${JSON.stringify(plane && { airdrop: plane.airdrop, route: plane.route })})`);
+  const issues = await page.textContent('#ed-issues');
+  check(!/airplane|outside the map's boundary/i.test(issues ?? ''), `no warning for flying outside the boundary (${(issues ?? '').slice(0, 200)})`);
+
+  await page.keyboard.press('F5');
+  await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(20000) });
+  const aboard = await simWait(page, (m, me) => !!me.mount && m.mounts[me.mount.index].def.id === 'dropship_drop', null, T(20000));
+  const plan = await sim(page, (m) => {
+    const c = m.mounts.find((x) => x.route);
+    const p = m.dropPlanFor(c);
+    return { x: Math.round(c.pos.x), ok: p.ok.map((v) => (v ? '#' : '.')).join('') };
+  }).catch((e) => String(e));
+  // TEST's bots hold their fire (they would shoot you under the canopy).
+  await holdBots(page);
+  check(aboard, `TEST starts you aboard the dropship (${JSON.stringify(plan)})`);
+  // Still off the map's west edge: a jump is refused, with a hint.
+  const offMap = await sim(page, (m, me) => m.mounts[me.mount.index].pos.x < -60).catch(() => false);
+  // Jump held (headless pages have no pointer lock: the automation hook sends the buttons; 1 = jump).
+  await page.evaluate(() => (window.__autoInput = { buttons: 1 }));
+  const hinted = await page.waitForFunction(() => /drop zone/.test(document.getElementById('message')?.textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const stillAboard = await sim(page, (m, me) => !!me.mount).catch(() => false);
+  check(offMap && hinted && stillAboard, `a jump off the map is refused with a hint (off the map ${offMap}, hint ${hinted}, still aboard ${stillAboard})`);
+  // Over the map: jump.
+  const over = await simWait(page, (m, me) => !me.mount || m.mounts[me.mount.index].pos.x > -30, null, T(60000));
+  await page.evaluate(() => (window.__autoInput = { buttons: 1 }));
+  const out = await simWait(page, (m, me) => !me.mount, null, T(15000));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const after = await sim(page, (m, me) => ({ mount: me.mount ?? null, y: Math.round(me.move.pos.y), craft: Math.round(m.mounts.find((x) => x.route).pos.x) })).catch((e) => String(e));
+  check(over && out, `over the map the jump goes (over ${over}, out ${out}, ${JSON.stringify(after)})`);
+  const landed = await meWait(page, (m, me) => (me.move.chute ? false : me.alive && me.move.grounded), null, 40, T(120000));
+  const unhurt = await sim(page, (m, me) => me.deaths === 0).catch(() => false);
+  const at = await sim(page, (m, me) => ({ x: Math.round(me.move.pos.x), z: Math.round(me.move.pos.z), alive: me.alive, deaths: me.deaths, health: me.health })).catch(() => null);
+  check(landed && unhurt && at && Math.abs(at.x) < 48 && Math.abs(at.z) < 48, `you parachute down and land in the map, alive (${JSON.stringify(at)})`);
+  await page.evaluate(() => delete window.__autoInput);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
 }
 
 /** MapMaker tool bar, Erase tool, level strip and NPC palette. Screenshots go to E2E_SHOTS when set. */
@@ -859,6 +942,47 @@ async function offlineFlow(browser) {
   await page.keyboard.press('Escape');
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
+  // Tabs by what a character is; hovering only highlights, a click shows them, and only Choose (Enter / A
+  // again, a double-click) makes them yours. Leaving without it keeps your character.
+  await page.click('#nav-characters');
+  await page.waitForSelector('.char-grid .char-tile[data-look]');
+  const charTabs = await page.$$eval('.characters .tabs .tab', (bs) => bs.map((b) => b.dataset.group));
+  check(charTabs.join() === 'all,soldiers,legends,folk,horror,animals,creatures,mine', `Character Select's tabs are what a character is (${charTabs.join(', ')})`);
+  const front = () => page.evaluate(() => ({ look: window.__front.look, shown: window.__front.scene.look, screen: window.__front.screen }));
+  const mine = (await front()).look;
+  const others = (await page.$$eval('.char-tile[data-look]', (ts) => ts.map((t) => t.dataset.look))).filter((l) => l !== mine && l.startsWith('core.'));
+  const [pickA, pickB, pickC] = others;
+  const tileOf = (l) => `.char-tile[data-look="${l}"]`;
+  await page.hover(tileOf(pickA));
+  check((await front()).shown === mine, `hovering a portrait doesn't change who's shown (${(await front()).shown})`);
+  await page.click(tileOf(pickA));
+  await page.hover(tileOf(pickB));
+  await page.mouse.move(spin.x + spin.width / 2, spin.y + spin.height / 2);
+  const shownA = await front();
+  const chooseText = await page.textContent('#char-choose');
+  check(shownA.shown === pickA && shownA.look === mine && /^Choose /.test(chooseText ?? '') && (await page.$(`${tileOf(mine)} .chosen-badge`)) !== null, `a click shows the character, moving the mouse after doesn't change it, and it isn't chosen yet (${JSON.stringify(shownA)}, "${chooseText}")`);
+  await page.keyboard.press('e');
+  const stepped = await page.evaluate(() => ({ tab: document.querySelector('.characters .tabs .tab.on')?.dataset.group, shown: window.__front.scene.look }));
+  check(stepped.tab === 'soldiers' && stepped.shown === pickA, `E steps to the next group tab and keeps who's shown (${JSON.stringify(stepped)})`);
+  await page.keyboard.press('q');
+  await page.keyboard.press('Escape');
+  check((await front()).look === mine, 'leaving without choosing keeps your character');
+  await page.click('#nav-characters');
+  await page.click(tileOf(pickA));
+  await page.click('#char-choose');
+  const chose = await front();
+  check(chose.look === pickA && chose.screen === 'home', `Choose makes them yours (${JSON.stringify(chose)})`);
+  await page.click('#nav-characters');
+  check((await page.$(`${tileOf(pickA)} .chosen-badge`)) !== null, 'and their portrait wears the Chosen badge');
+  await page.focus(tileOf(pickC));
+  await page.keyboard.press('Enter');
+  const kbShown = await front();
+  await page.keyboard.press('Enter');
+  const kbChose = await front();
+  check(kbShown.shown === pickC && kbShown.look === pickA && kbChose.look === pickC, `keyboard: Enter on a portrait shows them, Enter again chooses (${kbShown.shown} / ${kbChose.look})`);
+  await page.click('#nav-characters');
+  await page.dblclick(tileOf(mine));
+  check((await front()).look === mine, 'a double-click on a portrait chooses them');
   await page.click('#nav-play');
   await page.waitForSelector('.map-card');
   const cards = () =>
@@ -2198,6 +2322,9 @@ async function arsenalFlow(browser) {
     await face(5);
     await stand(5);
     await aimAt(target.slot);
+    // The host rewinds targets to where the shooter saw them (lag compensation): let its history hold the bot at
+    // 5 m for a while first, or on a slow runner the pellets go where the bot stood a moment ago (1.6 m away).
+    await sim(page, (m) => m.tick).then((t0) => meWait(page, (m, _me, t) => m.tick >= t + 45, t0, 3));
     // After the swing's recovery (48 ticks): the barrel (bit 32, the alt trigger, as right mouse sends with a melee weapon in hand).
     await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
     const clouds = await page.evaluate(() => window.__cs.view.smokeClouds.local);
@@ -2205,7 +2332,15 @@ async function arsenalFlow(browser) {
     await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
     await meWait(page, (m, me) => me.weapons.get(me.current)?.alt < 2, null, 2);
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-    const blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
+    let blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
+    if (!blasted) {
+      // A spread can miss once at 5 m: the barrel holds two loads, so the second gets its chance.
+      await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
+      await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
+      await meWait(page, (m, me) => me.weapons.get(me.current)?.alt < 1, null, 2);
+      await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+      blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
+    }
     await page.waitForFunction((n) => window.__cs.view.smokeClouds.local > n, clouds, { timeout: T(5000) }).catch(() => {});
     const after = await page.evaluate(() => ({ smoke: window.__cs.view.smokeClouds.local, loads: window.__cs.local.inventory.get(window.__cs.local.held)?.[2], hud: `${document.getElementById('ammo-count')?.textContent} ${document.getElementById('ammo-reserve')?.textContent} · ${document.getElementById('ammo-alt')?.textContent}` }));
     const hp = await sim(page, (m, _me, t) => m.actor(t.slot).health, target);
@@ -3556,9 +3691,11 @@ async function hostgameFlow(browser) {
     const specOn = await simWait(host, (m, _me, s) => m.isSpectator(s) && m.slots[s] === null, fslot, T(10000));
     await friend.evaluate(() => (window.__autoInput = { forward: 1 }));
     await friend.waitForFunction(() => window.__cs.spec().spectator && window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
-    await friend.waitForTimeout(1500); // wait-ok: the free camera's input reaches the host for a while
-    await friend.evaluate(() => delete window.__autoInput);
+    // While the camera input is held, the host must see the spectator as active (measured then, not after letting
+    // go: on a slow runner the last input can reach the host a second or two before a later reading).
+    await simWait(host, (m, _me, s) => m.idleSeconds(s) < 1, fslot, T(8000));
     const idle = await sim(host, (m, _me, s) => m.idleSeconds(s), fslot);
+    await friend.evaluate(() => delete window.__autoInput);
     const fstate = await friend.evaluate(() => window.__cs.spec());
     check(specOn && fstate.spectator && fstate.out && idle < 2, `a friend spectates in the hosted match, their camera input counting as activity (${idle.toFixed(1)} s idle; spectator ${fstate.spectator}, ${fstate.free ? 'free camera' : `following ${fstate.following}`})`);
     await friend.evaluate(() => window.__cs.spectate(false));

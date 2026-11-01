@@ -41,13 +41,13 @@ export const PANE_CATEGORY: Readonly<Record<string, PaletteCategory>> = {
  * own categories. Nature and parked vehicles have their own tabs.
  */
 export const PROP_GROUPS = [
-  { id: 'industrial', label: 'Industrial & Military', categories: ['Crates & Barrels', 'Industrial', 'Military', 'Survival', 'Trains & Rail', 'Fences & Walls'] },
+  { id: 'industrial', label: 'Industrial & Military', categories: ['Snow Outpost', 'Crates & Barrels', 'Industrial', 'Military', 'Survival', 'Trains & Rail', 'Fences & Walls'] },
   { id: 'everyday', label: 'Home & Town', categories: ['Furniture', 'Home', 'Household', 'Decor', 'Shop', 'Garage & Garden', 'Gas Station', 'Hospital', 'Metro', 'Suburban Chaos'] },
   { id: 'scifi', label: 'Sci-Fi', categories: ['Sci-Fi', 'Sci-Fi Base', 'Sci-Fi Platforms', 'Sci-Fi Walls', 'Sci-Fi Decals', 'Orbital Station', 'Neon Megacity'] },
   { id: 'medieval', label: 'Medieval & Gothic', categories: ['Medieval Village', 'Medieval', 'Castle & Siege', 'Town & Market', 'Pirate & Coast', 'Ruins', 'Gothic', 'Gothic Estate'] },
   { id: 'dungeon', label: 'Dungeons & Caves', categories: ['Dungeon', 'Dark Dungeon', 'Mines & Caves'] },
   { id: 'western', label: 'Wild West', categories: ['Wild West', 'Frontier'] },
-  { id: 'ancient', label: 'Ancient & Jungle', categories: ['Imperial Arena', 'Sands of Egypt', 'Jungle Ruins'] },
+  { id: 'ancient', label: 'Desert, Ancient & Jungle', categories: ['Desert City', 'Imperial Arena', 'Sands of Egypt', 'Jungle Ruins'] },
   { id: 'harbor', label: 'Coastal Harbor', categories: ['Coastal Harbor'] },
 ] as const;
 /** Prop categories shown in the Nature tab. */
@@ -85,7 +85,7 @@ export function pictureKeys(): { key: string; tile?: string; file?: string }[] {
 
 /** Scenario palette entries (Objects & Logic tab) by sub-group; game-mode objects, lights and NPC spawners have their own tabs. */
 export function scenarioGroup(key: string): { pane: 'entities' | 'scenario' | 'lights' | 'npcs'; group: string } {
-  if (['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'airplane'].includes(key)) return { pane: 'entities', group: 'Game Modes & Objectives' };
+  if (['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'airplane', 'airplane:dropship'].includes(key)) return { pane: 'entities', group: 'Game Modes & Objectives' };
   if (key.startsWith('light:')) return { pane: 'lights', group: 'Lights' };
   if (key.startsWith('encounter')) return { pane: 'npcs', group: 'Spawners' };
   if (key.startsWith('door') || key === 'mover:portcullis' || key === 'mover:garage_door' || key === 'mover:bookcase') return { pane: 'scenario', group: 'Doors & Gates' };
