@@ -441,15 +441,24 @@ async function ziplineChecks(browser) {
   check(!!zip && Math.hypot(zip.end[0], zip.end[2]) > 10, `the Zipline palette entry places a zipline with a far end (${JSON.stringify(zip && { at: zip.position, end: zip.end })})`);
   await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), zip?.id);
   await page.waitForSelector('#ed-zip-ends', { timeout: T(10000) });
-  // Place ends on the map: a click on the ground puts the far end there (the route tool's own click, as in dropRouteChecks).
+  // Place ends on the map: a click on the ground puts the far end there, and the start drags out of the starter room
+  // at the origin (the route tool's own pointer calls, as in dropRouteChecks).
   await page.click('#ed-zip-ends');
-  await page.evaluate(() => window.__editor.routes.pointerDown({ x: 2, y: 0, z: 22 }, false));
+  await page.evaluate(([x, z]) => {
+    const r = window.__editor.routes;
+    r.pointerDown({ x: 26, y: 0, z: 12 }, false);
+    r.pointerDown({ x, y: 0, z }, false);
+    r.pointerMove({ x: 24, y: 0, z: -12 });
+    r.pointerUp();
+  }, [zip.position[0], zip.position[2]]);
   await page.keyboard.press('Escape');
   zip = (await doc()).entities.find((e) => e.kind === 'zipline');
-  const [ex, ey, ez] = zip?.end ?? [0, 0, 0];
-  check(Math.abs(ex - (2 - zip.position[0])) < 0.05 && Math.abs(ey - (0 - zip.position[1])) < 0.05 && Math.abs(ez - (22 - zip.position[2])) < 0.05, `"Place ends on the map" puts the far end where you click (${JSON.stringify(zip?.end)})`);
+  const far = zip && [zip.position[0] + zip.end[0], zip.position[1] + zip.end[1], zip.position[2] + zip.end[2]];
+  check(!!far && Math.hypot(far[0] - 26, far[2] - 12) < 0.05 && Math.abs(far[1]) < 0.05 && Math.hypot(zip.position[0] - 24, zip.position[2] + 12) < 0.05, `"Place ends on the map" puts the far end where you click and drags the start (${JSON.stringify(zip && { at: zip.position, far })})`);
+  // (The level checks run a moment after each change: a line through the starter room is flagged until they catch up.)
+  const valid = await page.waitForFunction(() => !/zipline/i.test(document.getElementById('ed-issues')?.textContent ?? ''), null, { timeout: T(20000) }).then(() => true, () => false);
   const issues = await page.textContent('#ed-issues');
-  check(!/zipline/i.test(issues ?? ''), `the zipline validates (${(issues ?? '').slice(0, 200)})`);
+  check(valid, `the zipline validates (${(issues ?? '').slice(0, 200)})`);
 
   await page.keyboard.press('F5');
   await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(20000) });
@@ -459,11 +468,19 @@ async function ziplineChecks(browser) {
   await sim(page, (m, me, p) => {
     me.move = { pos: { ...p }, velY: 0, grounded: true };
   }, start);
-  await page.evaluate(() => (window.__autoInput = { once: 16 }));
-  const grabbed = await meWait(page, (m, me) => me.move.zip !== undefined, null, 5, T(30000));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const prompt = await page.waitForFunction(() => /Grab the zipline/.test(document.getElementById('prompt')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(prompt, 'under the cable the prompt offers "Grab the zipline"');
+  // Press E (again, if a slow frame swallowed the press) until riding; never again once riding (that lets go).
+  let grabbed = false;
+  for (let i = 0; i < 4 && !grabbed; i++) {
+    if (await sim(page, (m, me) => me.move.zip !== undefined).catch(() => false)) break;
+    await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
+    grabbed = await simWait(page, (m, me) => me.move.zip !== undefined, null, T(6000));
+  }
   const trolley = grabbed && (await page.waitForFunction(() => window.__cs.view.localTrolley?.isEnabled() || [...window.__cs.view.avatars.values()].some((a) => a.trolley?.isEnabled()), null, { timeout: T(10000) }).then(() => true, () => false));
   check(grabbed && trolley, `E under the start grabs the zipline, a trolley overhead (grabbed ${grabbed}, trolley ${trolley})`);
-  const arrived = await meWait(page, (m, me, end) => me.move.zip === undefined && me.move.grounded && Math.hypot(me.move.pos.x - end.x, me.move.pos.z - end.z) < 2.5, { x: 2, z: 22 }, 12, T(90000));
+  const arrived = await meWait(page, (m, me, end) => me.move.zip === undefined && me.move.grounded && Math.hypot(me.move.pos.x - end.x, me.move.pos.z - end.z) < 2.5, { x: 26, z: 12 }, 12, T(90000));
   const at = await sim(page, (m, me) => ({ x: +me.move.pos.x.toFixed(1), y: +me.move.pos.y.toFixed(1), z: +me.move.pos.z.toFixed(1), zip: me.move.zip ?? null, health: me.health })).catch((e) => String(e));
   check(arrived, `the ride ends at the far post, dropping you onto the ground (${JSON.stringify(at)})`);
   await page.evaluate(() => delete window.__autoInput);

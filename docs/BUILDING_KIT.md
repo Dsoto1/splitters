@@ -902,8 +902,8 @@ foot (2.5–8, default 3.6). Options: `speed` (m/s, 3–30, default 12), `twoWay
 `team` (only that team rides it) and `sag` (how far the drawn cable droops, a share of its length; riders hang
 from it as drawn).
 
-- **Placing:** the palette puts the start post where you click, the far post 16 m along the facing and 2 m
-  lower. *Place ends on the map* (inspector) arms the Route tool's hands for its two ends: a click on the
+- **Placing:** the palette puts the start post where you click, the far post 16 m along the facing, level
+  with it. *Place ends on the map* (inspector) arms the Route tool's hands for its two ends: a click on the
   ground or a platform puts the far end there (click the start first to move that one), and either end drags;
   the cable is drawn while you drag. The inspector also has the far end's X, height and Z, post height,
   speed, *Both ways*, *Team only*, droop, and the line's length, slope and ride time.

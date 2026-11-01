@@ -751,9 +751,9 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'ladder':
       return { id: newId('ladder'), kind: 'ladder', ...base, height: 4, width: 0.9 };
     case 'zipline': {
-      // The far post 16 m along the facing and 2 m lower (a gentle run downhill): place its end with "Place ends on the map".
+      // The far post 16 m along the facing, level with the start (on flat ground it stands on it): place it with "Place ends on the map".
       const [dx, dz] = [Math.round(Math.sin(yaw) * 1600) / 100, Math.round(Math.cos(yaw) * 1600) / 100];
-      return { id: newId('zipline'), kind: 'zipline', position, end: [dx, -2, dz], height: 3.6, speed: 12, twoWay: false, sag: 0.03 };
+      return { id: newId('zipline'), kind: 'zipline', position, end: [dx, 0, dz], height: 3.6, speed: 12, twoWay: false, sag: 0.03 };
     }
     case 'crate':
     case 'barrel':
