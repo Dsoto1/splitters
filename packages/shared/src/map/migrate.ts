@@ -55,6 +55,8 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   [22, migratePathsV23],
   // v23 -> v24: optional `random` (a weapon category) and `keepFixed` on pickups. Absent = the item as placed: additive.
   [23, (doc) => ({ ...doc })],
+  // v24 -> v25: `zipline` entity kind. Existing entities are unchanged.
+  [24, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

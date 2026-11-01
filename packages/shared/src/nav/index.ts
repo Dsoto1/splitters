@@ -7,6 +7,8 @@ import type { Vec3 } from '../math.ts';
 import { PLAYER } from '../sim/constants.ts';
 import { trackGeometry } from '../map/track.ts';
 import { mapPortals, portalEntry, PORTAL_EXIT } from '../sim/portals.ts';
+import { mapZiplines, ziplineClearanceIssues, ziplineLinks } from '../sim/zipline.ts';
+import type { PhysicsWorld } from '../sim/physics.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hypot } from '../math.ts';
 
@@ -195,7 +197,11 @@ export class NavWorld {
  * Navigation checks for the validator: every spawn must be on the navmesh and
  * all spawns must reach each other, otherwise bots (and players) get stranded.
  */
-export function validateNavigation(map: MapDocument, nav: NavWorld): ValidationIssue[] {
+/**
+ * With `physics` (the level's colliders) ziplines are checked too: cable and riders clear of the level, ground to grab
+ * them from and to land on, and both ends on ground the navmesh reaches.
+ */
+export function validateNavigation(map: MapDocument, nav: NavWorld, physics?: PhysicsWorld): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const spawns = map.entities.filter((e) => e.kind === 'spawn');
   const onMesh = spawns.filter((s) => {
@@ -234,6 +240,18 @@ export function validateNavigation(map: MapDocument, nav: NavWorld): ValidationI
       if (!nav.closestPoint(at, { x: 1.2, y: 1.5, z: 1.2 })) {
         issues.push({ severity: 'warning', code: 'nav.portal_blocked', message: `the ground ${what} portal ${p.id} is not walkable (nothing to stand on, or something in the way)`, targetId: p.id });
         break;
+      }
+    }
+  }
+  if (physics) {
+    issues.push(...ziplineClearanceIssues(map.entities, physics));
+    // Ziplines: where you grab one and where it drops you must be walkable ground (players and bots get there and away).
+    const zips = mapZiplines(map.entities);
+    for (const z of zips) {
+      for (const l of ziplineLinks([z], physics)) {
+        for (const [what, at] of [['where riders grab it', l.start], ['where it drops riders off', l.end]] as const) {
+          if (!nav.closestPoint(at, { x: 1.5, y: 1.5, z: 1.5 })) issues.push({ severity: 'warning', code: 'nav.zipline_end', message: `zipline ${z.id}: the ground ${what} is not walkable (nothing to stand on, or something in the way)`, targetId: z.id });
+        }
       }
     }
   }

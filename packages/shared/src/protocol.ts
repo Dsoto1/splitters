@@ -159,6 +159,8 @@ export interface PlayerSnapshot {
   ch?: 1 | 2;
   /** The parachute's automatic opener is armed (jumped out of the plane or a flyer). */
   dr?: 1;
+  /** Riding a zipline: [line (index in mapZiplines), metres along it from its start, signed speed along it (m/s, + toward its end)]. */
+  zl?: [number, number, number];
 }
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */

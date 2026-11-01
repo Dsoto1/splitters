@@ -14,7 +14,7 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * and hills for Capture the Flag and King of the Hill, v18 the race `track`, v19 the transport plane and mount skins, v20 movers, logic-driven
  * lights and blocks, pitched blocks, team-only buttons/doors/zones and tinted liquids, v21 vehicles that ride on water, v22 the map's picture: `metadata.thumbnail`
  * and the camera it was taken from, `metadata.thumbnailCamera`, v23 one path primitive, v24 random weapon pickups:
- * a pickup's `random` category and `keepFixed`).
+ * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -25,7 +25,7 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 24;
+export const MAP_FORMAT_VERSION = 25;
 /** Content packs a map may name in `dependencies`. */
 export const MAX_MAP_DEPENDENCIES = 16;
 
@@ -683,7 +683,28 @@ export const PortalEntity = EntityBase.extend({
     .optional(),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity]);
+/**
+ * A zipline (v25): a cable between two posts that players ride (sim/zipline.ts).
+ * Position is the foot of the start post; `end` is the foot of the far post as
+ * an offset from it (MapMaker moves the whole line with its start). The cable
+ * runs between the posts' tops, `height` metres above each foot. Press E near
+ * an end (or under the cable) to grab it and ride to the far end at `speed`
+ * (downhill it runs faster); `twoWay` lets riders go either way (else only
+ * start to end). `team`: only that team can ride it. `sag` is how far the
+ * drawn cable droops (a share of its length; looks only: riders follow the
+ * straight line).
+ */
+export const ZiplineEntity = EntityBase.extend({
+  kind: z.literal('zipline'),
+  end: z.tuple([z.number().min(-400).max(400), z.number().min(-200).max(200), z.number().min(-400).max(400)]),
+  height: z.number().min(2.5).max(8).default(3.6),
+  speed: z.number().min(3).max(30).default(12),
+  twoWay: z.boolean().default(false),
+  team: TeamFilter,
+  sag: z.number().min(0).max(0.1).default(0.03),
+});
+
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity, ZiplineEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -981,6 +1002,7 @@ export type LightEntity = z.infer<typeof LightEntity>;
 export type AirplaneEntity = z.infer<typeof AirplaneEntity>;
 export type MoverEntity = z.infer<typeof MoverEntity>;
 export type PortalEntity = z.infer<typeof PortalEntity>;
+export type ZiplineEntity = z.infer<typeof ZiplineEntity>;
 export type BlockBehaviour = (typeof BLOCK_BEHAVIOURS)[number];
 export type Liquid = (typeof LIQUIDS)[number];
 export type Faction = z.infer<typeof Faction>;

@@ -395,6 +395,7 @@ export const SCENARIO_PALETTE = [
   { key: 'button', label: 'Button', search: 'button switch lever press use' },
   { key: 'pad', label: 'Jump Pad', search: 'jump pad launch bounce boost trampoline' },
   { key: 'ladder', label: 'Ladder', search: 'ladder climb wall up rungs' },
+  { key: 'zipline', label: 'Zipline', search: 'zipline zip line cable slide ride rope trolley flying fox cross chasm gap tower jungle' },
   { key: 'flag', label: 'Flag Base', search: 'flag base ctf capture the flag team objective' },
   { key: 'hill', label: 'Hill', search: 'hill king of the hill koth zone objective control point' },
   { key: 'hostage', label: 'Hostage', search: 'hostage rescue civilian objective counter strike cs' },
@@ -749,6 +750,11 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('pad'), kind: 'pad', ...base, power: 14, push: 6 };
     case 'ladder':
       return { id: newId('ladder'), kind: 'ladder', ...base, height: 4, width: 0.9 };
+    case 'zipline': {
+      // The far post 16 m along the facing and 2 m lower (a gentle run downhill): place its end with "Place ends on the map".
+      const [dx, dz] = [Math.round(Math.sin(yaw) * 1600) / 100, Math.round(Math.cos(yaw) * 1600) / 100];
+      return { id: newId('zipline'), kind: 'zipline', position, end: [dx, -2, dz], height: 3.6, speed: 12, twoWay: false, sag: 0.03 };
+    }
     case 'crate':
     case 'barrel':
     case 'wall':
@@ -863,7 +869,7 @@ export function snapToDoorway(x: number, z: number, cellSize: number): { x: numb
   return Math.hypot(x - ex, z - ez) <= Math.hypot(x - nx, z - nz) ? { x: ex, z: ez, yaw: Math.PI / 2 } : { x: nx, z: nz, yaw: 0 };
 }
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover', portal: 'Portal' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover', portal: 'Portal', zipline: 'Zipline' };
 
 /** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
 export function entityLabel(doc: MapDocument, e: MapEntity): string {
