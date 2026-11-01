@@ -2322,6 +2322,9 @@ async function arsenalFlow(browser) {
     await face(5);
     await stand(5);
     await aimAt(target.slot);
+    // The host rewinds targets to where the shooter saw them (lag compensation): let its history hold the bot at
+    // 5 m for a while first, or on a slow runner the pellets go where the bot stood a moment ago (1.6 m away).
+    await sim(page, (m) => m.tick).then((t0) => meWait(page, (m, _me, t) => m.tick >= t + 45, t0, 3));
     // After the swing's recovery (48 ticks): the barrel (bit 32, the alt trigger, as right mouse sends with a melee weapon in hand).
     await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
     const clouds = await page.evaluate(() => window.__cs.view.smokeClouds.local);
@@ -2329,7 +2332,15 @@ async function arsenalFlow(browser) {
     await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
     await meWait(page, (m, me) => me.weapons.get(me.current)?.alt < 2, null, 2);
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-    const blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
+    let blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
+    if (!blasted) {
+      // A spread can miss once at 5 m: the barrel holds two loads, so the second gets its chance.
+      await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
+      await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
+      await meWait(page, (m, me) => me.weapons.get(me.current)?.alt < 1, null, 2);
+      await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+      blasted = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 1);
+    }
     await page.waitForFunction((n) => window.__cs.view.smokeClouds.local > n, clouds, { timeout: T(5000) }).catch(() => {});
     const after = await page.evaluate(() => ({ smoke: window.__cs.view.smokeClouds.local, loads: window.__cs.local.inventory.get(window.__cs.local.held)?.[2], hud: `${document.getElementById('ammo-count')?.textContent} ${document.getElementById('ammo-reserve')?.textContent} · ${document.getElementById('ammo-alt')?.textContent}` }));
     const hp = await sim(page, (m, _me, t) => m.actor(t.slot).health, target);
