@@ -65,7 +65,6 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.scamp', name: 'Scamp', body: 'male', head: '', parts: ['meshy_scamp'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_scamp_fparms' }, group: 'animals' },
   { id: 'core.halvard', name: 'Old King Halvard', body: 'male', head: '', parts: ['meshy_halvard'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_halvard_fparms' }, group: 'legends' },
   { id: 'core.pruitt', name: 'Sgt. Pruitt', body: 'male', head: '', parts: ['meshy_pruitt'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_pruitt_fparms' }, group: 'soldiers' },
-  { id: 'core.barnaby', name: 'Barnaby Bruin', body: 'male', head: '', parts: ['meshy_barnaby'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_barnaby_fparms' }, group: 'animals' },
   { id: 'core.greyfang', name: 'Greyfang', body: 'male', head: '', parts: ['meshy_greyfang'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_greyfang_fparms' }, group: 'animals' },
 ];
 
@@ -135,6 +134,5 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.scamp': 'Swings in, steals the high ground and throws things at you from it.',
   'core.halvard': 'Reigned for fifty years and outlived every rival. Not planning to stop now.',
   'core.pruitt': 'Thirty years on the beat. Has heard every excuse, and believes none of them.',
-  'core.barnaby': 'Top hat, red coat, impeccable manners. Apologises before every headshot, and means it.',
   'core.greyfang': 'Hunts in packs. Today the pack is you lot, and he is keeping score.',
 };

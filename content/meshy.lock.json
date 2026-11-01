@@ -1516,10 +1516,10 @@
       "src": "Meshy_AI_wizard_t_pose_1101002955_texture.glb",
       "sourceTriangles": 84026,
       "file": "characters/meshy_wizard.glb",
-      "sha256": "24fddcccd7bda421",
-      "triangles": 11406,
-      "lodTriangles": 3206,
-      "bytes": 989184,
+      "sha256": "fa65b6b2555a052e",
+      "triangles": 11394,
+      "lodTriangles": 3215,
+      "bytes": 988672,
       "hands": true
     },
     {
@@ -1531,9 +1531,9 @@
       "src": "Meshy_AI_wizard_t_pose_1101002955_texture.glb",
       "sourceTriangles": 84026,
       "file": "characters/meshy_wizard_fparms.glb",
-      "sha256": "39b8b89b1eecbfab",
-      "triangles": 2712,
-      "bytes": 333152,
+      "sha256": "b8827a8e1bc9c312",
+      "triangles": 2812,
+      "bytes": 336468,
       "hands": true
     },
     {
@@ -1798,31 +1798,6 @@
       "sha256": "35e863abf590a582",
       "triangles": 3169,
       "bytes": 422572,
-      "hands": true
-    },
-    {
-      "role": "meshy-autorig",
-      "id": "meshy_barnaby",
-      "source": "meshy-owned",
-      "src": "Meshy_AI_Gentleman_Bear_T_Pose_1101003801_texture.glb",
-      "sourceTriangles": 1507108,
-      "file": "characters/meshy_barnaby.glb",
-      "sha256": "d93c6f6b5cdafbe1",
-      "triangles": 12858,
-      "lodTriangles": 3686,
-      "bytes": 981072,
-      "hands": true
-    },
-    {
-      "role": "meshy-fparms",
-      "id": "meshy_barnaby_fparms",
-      "source": "meshy-owned",
-      "src": "Meshy_AI_Gentleman_Bear_T_Pose_1101003801_texture.glb",
-      "sourceTriangles": 1507108,
-      "file": "characters/meshy_barnaby_fparms.glb",
-      "sha256": "3f498e00a19a1671",
-      "triangles": 4497,
-      "bytes": 609268,
       "hands": true
     },
     {

@@ -780,9 +780,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     // A dense rigged download (Meshy's rigging keeps every triangle sent to it) can hold the careful cut far above
     // its target: cut looser then, as an unrigged download is cut to its working detail.
     // An unrigged download is already cut to its working detail: it keeps the careful cut (looser passes there cost
-    // the hands and feet their shape, and changed the shipped builds). `fixes.looseCut`: a dense, many-islanded surface
-    // (a fur coat) that holds the careful cut far above its budget gets the looser passes, then a sloppy one, for the
-    // body only (the head and hands keep the careful cut).
+    // the hands and feet their shape, and changed the shipped builds).
     const headJoint = rigIndex.get('Head');
     const handJoints = new Set(rigNames.map((n, i) => (/^(hand|index|middle|ring|pinky|thumb)_/.test(n) ? i : -1)).filter((i) => i >= 0));
     const PJ = prim.getAttribute('JOINTS_0').getArray();
@@ -796,7 +794,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
       { inside: (v) => majorOf(v) === headJoint, share: HEAD_SHARE },
       { inside: (v) => handJoints.has(majorOf(v)), share: HANDS_SHARE },
     ];
-    const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008], ...(!loose && c.looseCut ? { restErrors: [0.008, 0.02, 0.05], sloppy: true } : {}) });
+    const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008] });
     prim.getIndices().setArray(cut);
     compactPrimitive(prim);
   }

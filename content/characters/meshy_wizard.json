@@ -28,7 +28,6 @@
   },
   "fixes": {
     "triangles": 11000,
-    "cloth": true,
     "feet": true
   },
   "landmarks": {

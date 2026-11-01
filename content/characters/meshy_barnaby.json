@@ -2,13 +2,14 @@
   "id": "meshy_barnaby",
   "kind": "character",
   "use": "player",
+  "status": "queued",
   "order": 63,
   "name": "Barnaby Bruin",
   "look": "core.barnaby",
   "group": "animals",
   "bio": "Top hat, red coat, impeccable manners. Apologises before every headshot, and means it.",
   "body": "male",
-  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not Teddy (a plush toy): a bear in a striped red coat, waistcoat, ruff and top hat. His fur (1.5M triangles, many texture islands) held the careful cut at 23k triangles, over the 20k budget: `looseCut` cuts the body looser (then sloppily) to 12.9k, the head and hands keeping their careful cut. Paws measure as closed blocks: `hands.curl` 1 makes them mittens that close on the grip.",
+  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not Teddy (a plush toy): a bear in a striped red coat, waistcoat, ruff and top hat. Paws measure as closed blocks: `hands.curl` 1 makes them mittens that close on the grip. Held back (queued, not built): his coat's texture is cut into thousands of small islands whose two sides differ (about 10,800 seam vertices kept apart), and every cut that keeps the texture right stops at 20.7-23k triangles, over the 20k character budget (careful cut with the head and hand shares 23.0k; seam-aware cut 20.6k; a sloppy cut reaches 12.9k but scrambles the coat). Needs a fresh texture layout for characters (the props' `rebake` surface, with the skin kept) or a lighter download. Landmarks and fixes are ready.",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -25,7 +26,6 @@
   },
   "fixes": {
     "triangles": 11000,
-    "looseCut": true,
     "cloth": true,
     "feet": true,
     "hands": {
