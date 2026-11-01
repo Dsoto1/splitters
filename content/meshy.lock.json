@@ -2016,10 +2016,10 @@
       "source": "meshy-owned",
       "src": "Meshy_AI_Abraham_Lincoln_with__All_Animations.glb",
       "file": "characters/meshy_abe.glb",
-      "sha256": "626b7fbc6b69a95f",
+      "sha256": "06d8e3c037b6a94b",
       "triangles": 11000,
-      "lodTriangles": 3298,
-      "bytes": 634252,
+      "lodTriangles": 3297,
+      "bytes": 638192,
       "hands": true
     },
     {
@@ -2028,7 +2028,7 @@
       "source": "meshy-owned",
       "src": "Meshy_AI_Abraham_Lincoln_with__All_Animations.glb",
       "file": "characters/meshy_abe_fparms.glb",
-      "sha256": "07d70cb3a51d0821",
+      "sha256": "234bee7c038254ca",
       "triangles": 1625,
       "bytes": 191988,
       "hands": true
@@ -2041,10 +2041,10 @@
       "sourceTriangles": 18204,
       "landmarks": "found",
       "file": "characters/meshy_polysoldier.glb",
-      "sha256": "bf1b194f76d7d0fb",
+      "sha256": "60f2023d63373c86",
       "triangles": 11000,
       "lodTriangles": 3300,
-      "bytes": 796092,
+      "bytes": 800584,
       "hands": true
     },
     {
@@ -2055,7 +2055,7 @@
       "sourceTriangles": 18204,
       "landmarks": "found",
       "file": "characters/meshy_polysoldier_fparms.glb",
-      "sha256": "08b21d25cfd777a9",
+      "sha256": "544f80ca5a65ecc3",
       "triangles": 2001,
       "bytes": 305152,
       "hands": true
@@ -2068,10 +2068,10 @@
       "sourceTriangles": 377889,
       "landmarks": "found",
       "file": "characters/meshy_tposesoldier1.glb",
-      "sha256": "ce1a055fc75b53fc",
+      "sha256": "3cea4f631e9562d4",
       "triangles": 10998,
       "lodTriangles": 3298,
-      "bytes": 921208,
+      "bytes": 925556,
       "hands": true
     },
     {
@@ -2082,9 +2082,9 @@
       "sourceTriangles": 377889,
       "landmarks": "found",
       "file": "characters/meshy_tposesoldier1_fparms.glb",
-      "sha256": "d675a66520a5df0a",
+      "sha256": "d8d6fe9728ddddd7",
       "triangles": 2768,
-      "bytes": 304304,
+      "bytes": 304320,
       "hands": true
     },
     {
@@ -2095,10 +2095,10 @@
       "sourceTriangles": 9988,
       "landmarks": "found",
       "file": "characters/meshy_tposesoldier2.glb",
-      "sha256": "3d5f19778ddbc057",
+      "sha256": "6ab88771a73ca24a",
       "triangles": 9988,
       "lodTriangles": 2996,
-      "bytes": 851176,
+      "bytes": 855728,
       "hands": true
     },
     {
@@ -2109,9 +2109,9 @@
       "sourceTriangles": 9988,
       "landmarks": "found",
       "file": "characters/meshy_tposesoldier2_fparms.glb",
-      "sha256": "aba6b9ba605ce0b0",
+      "sha256": "11d88fb50852bdfe",
       "triangles": 695,
-      "bytes": 266548,
+      "bytes": 266544,
       "hands": true
     },
     {
@@ -2122,10 +2122,10 @@
       "sourceTriangles": 449520,
       "landmarks": "found",
       "file": "characters/meshy_stancesoldier.glb",
-      "sha256": "4bf85f8fc30b8bd6",
+      "sha256": "a011c93c66d0c9e8",
       "triangles": 10995,
       "lodTriangles": 3298,
-      "bytes": 953100,
+      "bytes": 957664,
       "hands": true
     },
     {
@@ -2136,9 +2136,9 @@
       "sourceTriangles": 449520,
       "landmarks": "found",
       "file": "characters/meshy_stancesoldier_fparms.glb",
-      "sha256": "ba3cdfa9d72eb0ad",
+      "sha256": "31b55d0e04265a09",
       "triangles": 3415,
-      "bytes": 417152,
+      "bytes": 417132,
       "hands": true
     },
     {
@@ -2148,10 +2148,10 @@
       "src": "Meshy_AI_Soldier_s_Resolve_1101160942_texture.glb",
       "sourceTriangles": 10000,
       "file": "characters/meshy_resolvesoldier.glb",
-      "sha256": "01927b2609b5a07c",
+      "sha256": "8d6072329fc95565",
       "triangles": 10000,
-      "lodTriangles": 2998,
-      "bytes": 799312,
+      "lodTriangles": 2996,
+      "bytes": 803556,
       "hands": true
     },
     {
@@ -2161,9 +2161,9 @@
       "src": "Meshy_AI_Soldier_s_Resolve_1101160942_texture.glb",
       "sourceTriangles": 10000,
       "file": "characters/meshy_resolvesoldier_fparms.glb",
-      "sha256": "ecdc7da51b49eb10",
+      "sha256": "31673c571a40b8e4",
       "triangles": 851,
-      "bytes": 283820,
+      "bytes": 282868,
       "hands": true
     },
     {
@@ -2174,10 +2174,10 @@
       "sourceTriangles": 366661,
       "landmarks": "found",
       "file": "characters/meshy_zombiesoldier1.glb",
-      "sha256": "65aee3315cb56840",
+      "sha256": "4f9ae037111e19b7",
       "triangles": 10999,
-      "lodTriangles": 3290,
-      "bytes": 1046896,
+      "lodTriangles": 3292,
+      "bytes": 1051748,
       "hands": true
     },
     {
@@ -2201,10 +2201,10 @@
       "sourceTriangles": 674080,
       "landmarks": "found",
       "file": "characters/meshy_zombiesoldier2.glb",
-      "sha256": "52b4273b0246b4e6",
+      "sha256": "3c8c4d6843088d49",
       "triangles": 14631,
-      "lodTriangles": 4346,
-      "bytes": 1421264,
+      "lodTriangles": 4342,
+      "bytes": 1426080,
       "hands": true
     },
     {
@@ -2215,7 +2215,7 @@
       "sourceTriangles": 674080,
       "landmarks": "found",
       "file": "characters/meshy_zombiesoldier2_fparms.glb",
-      "sha256": "129103b829316e61",
+      "sha256": "71760f5e619bca44",
       "triangles": 4153,
       "bytes": 540268,
       "hands": true
@@ -2227,10 +2227,10 @@
       "src": "Meshy_AI_Undead_Soldier_1101160810_texture.glb",
       "sourceTriangles": 1131149,
       "file": "characters/meshy_undeadsoldier.glb",
-      "sha256": "7ce1141d72a65c86",
+      "sha256": "836d4574f5e9b392",
       "triangles": 14065,
-      "lodTriangles": 4212,
-      "bytes": 1347820,
+      "lodTriangles": 4216,
+      "bytes": 1351700,
       "hands": true,
       "surface": "rebake"
     },
@@ -2241,9 +2241,9 @@
       "src": "Meshy_AI_Undead_Soldier_1101160810_texture.glb",
       "sourceTriangles": 1131149,
       "file": "characters/meshy_undeadsoldier_fparms.glb",
-      "sha256": "bd838cc4b4975b84",
+      "sha256": "276bf884f3f225b3",
       "triangles": 1271,
-      "bytes": 433380,
+      "bytes": 433368,
       "hands": true
     }
   ]

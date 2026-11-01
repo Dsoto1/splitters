@@ -26,7 +26,12 @@
   "fixes": {
     "triangles": 14000,
     "surface": "rebake",
-    "feet": true
+    "feet": true,
+    "hands": {
+      "r": {
+        "curl": 0.9
+      }
+    }
   },
   "landmarks": {
     "spine": [
