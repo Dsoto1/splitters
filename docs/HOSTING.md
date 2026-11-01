@@ -682,8 +682,8 @@ hosting friends), in `BotFiller` (`shared/src/sim/match.ts`, `AWAY`):
 
 ## Profiles
 
-Signed-in players pick a **username** (Profile, at the bottom of the main
-menu): 3–16 letters, numbers, `_ - .`, unique in Tile Trigger whatever the
+Signed-in players pick a **username** (Profile: the Profile entry top right
+of the main menu): 3–16 letters, numbers, `_ - .`, unique in Tile Trigger whatever the
 case, no reserved or official-looking names. It is their name in every match:
 the hub signs it into the account ticket a host checks (dedicated servers and
 Host Services in Node, browser hosts on the page with Ed25519), and the
@@ -700,7 +700,7 @@ Every map, the official ones included, is made and edited in MapMaker. The
 game's owner publishes from there; nobody else can, and players never upload
 anything.
 
-**Once:** sign in on the site, open **Profile** (bottom of the main menu) and
+**Once:** sign in on the site, open **Profile** (top right of the main menu) and
 click **Copy my account ID**. In AWS CloudShell, run
 `infra/deploy-multiplayer.sh --owner <account ID>` (it keeps the ID in SSM,
 `/toshiro/trigger/owner-subs`, and gives the box a folder for published maps).

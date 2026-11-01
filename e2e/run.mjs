@@ -915,11 +915,23 @@ async function offlineFlow(browser) {
   check(await page.evaluate(() => Object.values(localStorage).some((v) => /"invertY":true/.test(v))), 'the Invert look switch saves');
   await page.click('.opt-row:has-text("Invert look") .switch');
   await page.keyboard.press('Escape');
+  // The main menu: no Characters item; the Profile entry (top right) shows your character, name and account
+  // state and opens Profile, whose Change character opens Character Select. Sign-in lives there, not in the bottom bar.
+  const navIds = await page.$$eval('#menu .nav button', (bs) => bs.map((b) => b.id));
+  const badge = await page.evaluate(() => ({ text: document.querySelector('#profile-badge')?.textContent ?? '', footer: !!document.querySelector('.menu-footer #sign-in, .menu-footer #profile-link, .menu-footer .menu-links') }));
+  check(navIds.join() === 'nav-play,nav-mapmaker,nav-online,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu's Profile entry replaces the Characters item and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
+  const groups = await page.$$eval('.menu-footer .hint-group', (gs) => gs.map((g) => g.className.replace('hint-group ', '')));
+  check(groups.join() === 'moves,acts,util', `the bottom bar's hints come in groups: getting about, actions, fullscreen (${groups.join(', ')})`);
+  /** Main menu or Profile → Profile → Change character. */
+  const openChars = async () => {
+    if (await page.isVisible('#profile-badge')) await page.click('#profile-badge');
+    await page.click('#profile-change-character');
+    await page.waitForSelector('.char-grid .char-tile[data-look]');
+  };
   // Character Select: whole square tiles row under row, and the grid ends above the info panel (it scrolls).
-  await page.click('#nav-characters');
-  await page.waitForSelector('.char-grid .char-tile');
+  await openChars();
   const charFit = await page.evaluate(() => {
-    const t = [...document.querySelectorAll('.char-grid .char-tile')].map((e) => e.getBoundingClientRect());
+    const t = [...document.querySelectorAll('.char-sec')[0].querySelectorAll('.char-tile')].map((e) => e.getBoundingClientRect());
     const perRow = t.filter((r) => Math.abs(r.top - t[0].top) < 1).length;
     const grid = document.querySelector('.char-grid').getBoundingClientRect();
     const info = document.querySelector('.char-info').getBoundingClientRect();
@@ -942,12 +954,55 @@ async function offlineFlow(browser) {
   await page.keyboard.press('Escape');
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
-  // Tabs by what a character is; hovering only highlights, a click shows them, and only Choose (Enter / A
-  // again, a double-click) makes them yours. Leaving without it keeps your character.
-  await page.click('#nav-characters');
-  await page.waitForSelector('.char-grid .char-tile[data-look]');
-  const charTabs = await page.$$eval('.characters .tabs .tab', (bs) => bs.map((b) => b.dataset.group));
-  check(charTabs.join() === 'all,soldiers,legends,folk,horror,animals,creatures,mine', `Character Select's tabs are what a character is (${charTabs.join(', ')})`);
+  check((await page.evaluate(() => window.__front.screen)) === 'profile', 'Back from Character Select returns to Profile, where it was opened');
+  // One grid in sections by what a character is (a compact header each), a jump strip that lights the
+  // section in view; Q / E scroll to the next / previous one, and so does scrolling with the wheel.
+  await openChars();
+  const layout = await page.evaluate(() => ({
+    secs: [...document.querySelectorAll('.char-grid .char-sec')].map((s) => s.dataset.section),
+    heads: [...document.querySelectorAll('.char-sec-head')].every((h) => /\d+$/.test(h.textContent.trim())),
+    chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
+    tabs: document.querySelectorAll('.characters .tabs .tab').length,
+  }));
+  check(layout.secs.join() === 'soldiers,legends,folk,horror,animals,creatures,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
+  const settled = async (want) => {
+    await page.waitForFunction((w) => {
+      const g = document.querySelector('.char-grid');
+      const s = document.querySelector(`.char-sec[data-section="${w}"]`);
+      return !window.__front.charJumping && document.querySelector('.char-chip.on')?.dataset.section === w && Math.abs(g.scrollTop - Math.min(s.offsetTop, g.scrollHeight - g.clientHeight)) < 2;
+    }, want, { timeout: T(5000) }).catch(() => {});
+    return section();
+  };
+  await page.click('.char-chip[data-section="soldiers"]');
+  await settled('soldiers');
+  await page.keyboard.press('e');
+  await page.keyboard.press('e');
+  const twoOn = await settled('folk');
+  check(twoOn.on === 'folk' && twoOn.top > 0, `E E scrolls the grid two sections on and the strip lights it (${JSON.stringify(twoOn)})`);
+  await page.keyboard.press('q');
+  const back1 = await settled('legends');
+  check(back1.on === 'legends', `Q scrolls back a section (${JSON.stringify(back1)})`);
+  await page.click('.char-chip[data-section="creatures"]');
+  const chipJump = await settled('creatures');
+  check(chipJump.on === 'creatures', `a chip in the strip jumps to its section (${JSON.stringify(chipJump)})`);
+  const g = await page.locator('.char-grid').boundingBox();
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
+  await page.mouse.wheel(0, -100000);
+  await page.waitForFunction(() => document.querySelector('.char-grid').scrollTop === 0 && document.querySelector('.char-chip.on')?.dataset.section === 'soldiers', null, { timeout: T(5000) }).catch(() => {});
+  const wheeled = await section();
+  check(wheeled.on === 'soldiers' && wheeled.top === 0, `the mouse wheel scrolls across sections and the strip follows (${JSON.stringify(wheeled)})`);
+  // Arrows move over the portraits and on across a section's end: Down from the last row of Soldiers lands in Knights & Legends.
+  const lastSoldier = await page.$eval('.char-sec[data-section="soldiers"] .char-tile:last-child', (t) => t.dataset.look);
+  await page.focus(`.char-tile[data-look="${lastSoldier}"]`);
+  await page.keyboard.press('ArrowDown');
+  const below = await page.evaluate(() => document.activeElement?.closest('.char-sec')?.dataset.section);
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('ArrowRight');
+  const after = await page.evaluate(() => document.activeElement?.closest('.char-sec')?.dataset.section);
+  check(below === 'legends' && after === 'legends', `arrow keys cross section boundaries (down: ${below}, right from the last soldier: ${after})`);
+  // Hovering only highlights, a click shows them, and only Choose (Enter / A again, a double-click) makes them
+  // yours. Leaving without it keeps your character.
   const front = () => page.evaluate(() => ({ look: window.__front.look, shown: window.__front.scene.look, screen: window.__front.screen }));
   const mine = (await front()).look;
   const others = (await page.$$eval('.char-tile[data-look]', (ts) => ts.map((t) => t.dataset.look))).filter((l) => l !== mine && l.startsWith('core.'));
@@ -962,17 +1017,17 @@ async function offlineFlow(browser) {
   const chooseText = await page.textContent('#char-choose');
   check(shownA.shown === pickA && shownA.look === mine && /^Choose /.test(chooseText ?? '') && (await page.$(`${tileOf(mine)} .chosen-badge`)) !== null, `a click shows the character, moving the mouse after doesn't change it, and it isn't chosen yet (${JSON.stringify(shownA)}, "${chooseText}")`);
   await page.keyboard.press('e');
-  const stepped = await page.evaluate(() => ({ tab: document.querySelector('.characters .tabs .tab.on')?.dataset.group, shown: window.__front.scene.look }));
-  check(stepped.tab === 'soldiers' && stepped.shown === pickA, `E steps to the next group tab and keeps who's shown (${JSON.stringify(stepped)})`);
-  await page.keyboard.press('q');
+  const stepped = await page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, shown: window.__front.scene.look }));
+  check(stepped.shown === pickA, `E keeps who's shown (${JSON.stringify(stepped)})`);
   await page.keyboard.press('Escape');
   check((await front()).look === mine, 'leaving without choosing keeps your character');
-  await page.click('#nav-characters');
+  await openChars();
   await page.click(tileOf(pickA));
   await page.click('#char-choose');
   const chose = await front();
-  check(chose.look === pickA && chose.screen === 'home', `Choose makes them yours (${JSON.stringify(chose)})`);
-  await page.click('#nav-characters');
+  const profName = await page.textContent('.prof-char h3').catch(() => '');
+  check(chose.look === pickA && chose.screen === 'profile' && !!profName, `Choose makes them yours and returns to Profile, which shows them (${JSON.stringify(chose)}, "${profName}")`);
+  await openChars();
   check((await page.$(`${tileOf(pickA)} .chosen-badge`)) !== null, 'and their portrait wears the Chosen badge');
   await page.focus(tileOf(pickC));
   await page.keyboard.press('Enter');
@@ -980,9 +1035,18 @@ async function offlineFlow(browser) {
   await page.keyboard.press('Enter');
   const kbChose = await front();
   check(kbShown.shown === pickC && kbShown.look === pickA && kbChose.look === pickC, `keyboard: Enter on a portrait shows them, Enter again chooses (${kbShown.shown} / ${kbChose.look})`);
-  await page.click('#nav-characters');
+  await openChars();
   await page.dblclick(tileOf(mine));
   check((await front()).look === mine, 'a double-click on a portrait chooses them');
+  // Keys: Esc from Profile goes home; P opens Profile there, C opens Character Select from Profile.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('p');
+  const viaP = (await front()).screen;
+  await page.keyboard.press('c');
+  const viaC = (await front()).screen;
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  check(viaP === 'profile' && viaC === 'characters' && (await front()).screen === 'home', `P opens Profile, C there opens Character Select, Esc steps back (${viaP} / ${viaC})`);
   await page.click('#nav-play');
   await page.waitForSelector('.map-card');
   const cards = () =>
@@ -3003,7 +3067,8 @@ async function designerFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(CLIENT);
-  await page.click('#nav-characters');
+  await page.click('#profile-badge');
+  await page.click('#profile-change-character');
   await page.click('.char-tile.new');
   await page.waitForFunction(() => !!window.__designer, null, { timeout: T(30000) });
   await page.click('#designer button:text-is("Female")');

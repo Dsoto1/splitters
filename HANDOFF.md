@@ -28,7 +28,29 @@ Meshy download (3.98M triangles, one 2048 px colour map) cut to 40k with one 204
   has; the gain is geometry (about 2x in the cockpit plus a sharper normal map) and the round steering wheel.
   Before/after shots were in the agent's scratchpad.
 
-### Grip audit and fix for every character (`wip/grip-audit`, agent, 2026-10-31/11-01; not merged)
+### `wip/menu-profile` (agent, 2026-10-31; merged to main 2026-11-01)
+Owner: Character Select's tabs "span too far and look cluttered", the bottom bar is cluttered, sign-in is
+hidden, and the top-right character tile should be the Profile with "Change character".
+- **Profile entry** (`profileEntry()`, `#profile-badge`, top right of Home): portrait, player name, character,
+  account chip (`accountState()`: Guest / ✓ Signed in / Pick a username); opens Profile (P, pad Y). Signed out
+  with sign-in offered: orange `#sign-in` (`button.cta`) under it. **Characters** left the Home nav.
+- **Profile** (`profile()`, `#profile-panel`): character (`#profile-change-character` → Character Select; C /
+  pad Y), player (guest name → "Change it in Options" / `#profile-sign-in`; signed in: username, `#sign-out`,
+  username form), region, privacy + Copy my account ID. Auth flow unchanged (account.ts untouched).
+- **Character Select**: `charSections()` → one `.char-grid` of `.char-sec` (sticky `.char-sec-head`, label +
+  count) with a `.char-jump` strip (`.char-chip`, lit by `sectionInView`/`markSection`); Q/E → `stepSection`;
+  chips/Q/E glide with our own rAF easing (`glideGrid`: a second smooth `scrollTo` while one was starting left
+  the grid in place); wheel/touch cancel it. Arrows / d-pad: `gridMove` (crosses sections). Opens on your
+  character's section. `charFrom`: Back and Choose return to the opener (Profile, Online). "All" is gone.
+- **Bottom bar** (`hints()`): `.hint-group`s moves | acts (main one `.main`, cyan) | util (Fullscreen); news +
+  Privacy only on Home (`footer[data-screen]`); the `, .` turn hint moved into the spin bar; touch: no bar off
+  Home. Footer account links (`footerLinks`) removed.
+- e2e: offline flow's Character Select block rewritten (Profile route, sections, strip, Q/E, wheel, arrows
+  across sections, Back/Choose → Profile, P/C keys); designer flow opens via Profile.
+- style.css changed, so CI runs the full suite on a check branch; locally run: offline, mobile, designer,
+  characters, visual. Screens: session scratchpad `profile/` (before/after at 1920, 1400, phone).
+
+### Grip audit and fix for every character (`wip/grip-audit`, agent, 2026-10-31/11-01; merged to main 8c5e491)
 The owner's screenshot brief (Character Select holding the AK, character by character; references: The Visitor and
 Rattles) is in the session branch's HANDOFF ("Queued (owner, 2026-10-31 evening): grip audit and fix"). What was done:
 - **Audit tool:** `tools/content/grip-audit.mjs` (+ `__grips.audit()` / `tools/gripAudit.ts`, `__grips.upper()`,
