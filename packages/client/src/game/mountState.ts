@@ -29,6 +29,20 @@ export interface ClientMount {
   tick: number;
   at: number;
   body: ReturnType<PhysicsWorld['createBox']>;
+  /**
+   * Raycast suspension from the server (snapshot `ms`, vehicles with MountDef.vehicle.suspension): the sprung body's
+   * height (m), pitch (+ nose up) and roll (+ leaning right), the front wheels' steering (-1..1) and each wheel's hub
+   * offset (m, + compressed). Null: none sent (an older host, or a vehicle without it).
+   */
+  susp: MountSuspension | null;
+}
+
+export interface MountSuspension {
+  h: number;
+  p: number;
+  r: number;
+  steer: number;
+  wheel: number[];
 }
 
 const angleLerp = (a: number, b: number, k: number) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k;
@@ -59,7 +73,7 @@ export class MountState {
       if (plane) physics.setBoxEnabled(body, false);
       const team = e.kind === 'mount' && e.faction ? (teams.find((t) => t.id === e.faction)?.color ?? null) : null;
       const tint = e.kind === 'mount' && def.kind !== 'sentry' ? mountTint(e.skin, team) : null;
-      this.mounts.set(index, { index, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: true, wreck: false, burning: false, wreckGoneAt: 0, seats: def.seats.map(() => -1), tint, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body });
+      this.mounts.set(index, { index, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: true, wreck: false, burning: false, wreckGoneAt: 0, seats: def.seats.map(() => -1), tint, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null });
     });
   }
 
@@ -116,13 +130,29 @@ export class MountState {
     this.physics.commit();
   }
 
+  /**
+   * The suspension entries of a snapshot (`ms`, see suspensionSnapshot): latest values, drawn eased by View.suspend.
+   * Undefined (none sent): every vehicle goes back to the drawn-only suspension.
+   */
+  applySuspension(list: readonly (readonly number[])[] | undefined): void {
+    const seen = new Set<number>();
+    for (const e of list ?? []) {
+      const m = this.mounts.get(e[0]!);
+      if (!m) continue;
+      seen.add(m.index);
+      const wheel = e.slice(5).map((v) => v / 100);
+      m.susp = { h: e[1]! / 100, p: e[2]! / 1000, r: e[3]! / 1000, steer: e[4]! / 100, wheel };
+    }
+    for (const m of this.mounts.values()) if (!seen.has(m.index)) m.susp = null;
+  }
+
   /** A sentry someone built (Classes): not on the map, so it first shows up in a snapshot. */
   private addBuilt(s: MountSnapshot): ClientMount {
     const def = MOUNT_DEFS.sentry;
     const pos = { x: s[1]!, y: s[2]!, z: s[3]! };
     const yaw = s[4]!;
     const body = this.physics.createBox({ x: pos.x, y: pos.y + def.half[1], z: pos.z }, { x: def.half[0], y: def.half[1], z: def.half[2] }, yaw);
-    const m: ClientMount = { index: s[0]!, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: false, wreck: false, burning: false, wreckGoneAt: 0, seats: [], tint: null, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body };
+    const m: ClientMount = { index: s[0]!, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: false, wreck: false, burning: false, wreckGoneAt: 0, seats: [], tint: null, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null };
     this.mounts.set(m.index, m);
     return m;
   }

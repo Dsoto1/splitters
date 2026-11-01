@@ -16,7 +16,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
-import { createMountNode, mountGun } from './mountVisuals.ts';
+import { createMountNode, mountGun, wheelsOf } from './mountVisuals.ts';
 import { CockpitInterior } from './cockpitInterior.ts';
 import { createViewCamera, poseCamera } from './cameraPose.ts';
 import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
@@ -69,6 +69,7 @@ import {
   hangDepth,
   mapZiplines,
   type Zipline,
+  suspensionOf,
 } from '@tiletrigger/shared';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
@@ -2368,6 +2369,11 @@ export class GameView {
    * simulation's collision box stays level.
    */
   private suspend(m: ClientMount, node: TransformNode): void {
+    if (m.susp) {
+      this.suspendSprung(m, node);
+      return;
+    }
+    this.sprung.delete(m.index);
     const now = performance.now();
     const p = m.shown.pos;
     let st = this.suspension.get(m.index);
@@ -2426,6 +2432,58 @@ export class GameView {
     st.speed = speed;
     st.t = now;
     st.air = air;
+    this.turnWheels(m, node, dt, null);
+  }
+
+  /** Per vehicle with server suspension: the drawn (eased) body and wheels, the wheels' roll, and when it was drawn. */
+  private sprung = new Map<number, { h: number; p: number; r: number; steer: number; wheel: number[]; t: number }>();
+
+  /**
+   * The body as the simulation's raycast suspension holds it (snapshot `ms`: height, pitch, roll, steering and each
+   * wheel's spring), eased toward the latest values like the pose is (nothing here reads frame-to-frame movement).
+   */
+  private suspendSprung(m: ClientMount, node: TransformNode): void {
+    const now = performance.now();
+    const want = m.susp!;
+    let st = this.sprung.get(m.index);
+    if (!st) this.sprung.set(m.index, (st = { h: want.h, p: want.p, r: want.r, steer: want.steer, wheel: [...want.wheel], t: now }));
+    const dt = Math.min(0.1, Math.max(0.001, (now - st.t) / 1000));
+    st.t = now;
+    const k = Math.min(1, dt * 18);
+    st.h += (want.h - st.h) * k;
+    st.p += (want.p - st.p) * k;
+    st.r += (want.r - st.r) * k;
+    st.steer += (want.steer - st.steer) * k;
+    want.wheel.forEach((w, i) => (st.wheel[i] = (st.wheel[i] ?? w) + (w - (st.wheel[i] ?? w)) * k));
+    // Babylon: rotation.x + is nose down, rotation.z + lifts the right side.
+    node.rotation.x = -st.p;
+    node.rotation.z = -st.r;
+    node.position.y += st.h;
+    this.turnWheels(m, node, dt, st);
+  }
+
+  /** Each wheel's roll angle (radians) per vehicle. */
+  private wheelRoll = new Map<number, number>();
+
+  /**
+   * Drawn wheels (MountDef.wheels, or a model's own on a vehicle with suspension): they roll with the vehicle's
+   * speed (its tick-based velocity), the front ones steer, and each rides its spring (the body's height and tilt
+   * are on the parent already, so a wheel's offset is along the body's up).
+   */
+  private turnWheels(m: ClientMount, node: TransformNode, dt: number, st: { steer: number; wheel: number[] } | null): void {
+    const wheels = wheelsOf(node);
+    if (!wheels.length) return;
+    const setup = suspensionOf(m.def);
+    const radius = setup?.hubY ?? m.def.wheels?.at[0]?.[1] ?? 0.4;
+    const speed = m.vel.x * Math.sin(m.shown.yaw) + m.vel.z * Math.cos(m.shown.yaw);
+    const roll = ((this.wheelRoll.get(m.index) ?? 0) + (speed * dt) / radius) % (Math.PI * 2);
+    this.wheelRoll.set(m.index, roll);
+    const lock = setup?.steer ?? 0;
+    for (const w of wheels) {
+      w.pivot.rotation.x = roll;
+      w.pivot.rotation.y = w.front && st ? st.steer * lock : 0;
+      w.pivot.position.y = w.rest + (st && w.slot >= 0 ? (st.wheel[w.slot] ?? 0) : 0);
+    }
   }
 
   /** Ground hazards and fields from the latest snapshot. */

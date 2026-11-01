@@ -34,6 +34,7 @@ import {
   stoppingPower,
   unarmedStrike,
   BUTTON_RELOAD,
+  BUTTON_STEER_LOOK,
   PhysicsWorld,
   SPEED_BOOST,
   TICK_DT,
@@ -1462,6 +1463,7 @@ export class GameSession {
         this.hud.setLife(msg.players);
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt, msg.tick);
+        this.mounts?.applySuspension(msg.ms);
         this.covers?.apply(msg.cv);
         this.seat = msg.me?.mo ?? null;
         this.uav = msg.me?.uv ?? 0;
@@ -2146,6 +2148,11 @@ export class GameSession {
           sample.right = 0;
           sample.buttons = 0;
         }
+        // Look-to-steer (Options): the driver's vehicle steers toward where they look.
+        if (this.seat && local.alive) {
+          const ride = this.mounts?.mounts.get(this.seat[0]);
+          if (ride && this.vehicleCam.steersByLook(ride.def, this.seat[1])) sample.buttons |= BUTTON_STEER_LOOK;
+        }
         moving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
         const meleeNow = (sample.buttons & BUTTON_MELEE) !== 0;
@@ -2247,6 +2254,7 @@ export class GameSession {
             vel: ride.vel,
             tilt: this.view.mountTilt(ride.index),
             cockpitEye: this.view.mountPoint(ride.index, cockpitEye(ride.def, seatIndex)) ?? mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex)),
+            levelEye: mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex)),
             // A real seat: a seated head height over the cushion (the sim's crouching eye); otherwise standing.
             seatEye: seatDef.seated ? mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex)) : { x: feet.x, y: feet.y + PLAYER.eyeHeight, z: feet.z },
           },

@@ -51,6 +51,7 @@ import {
 } from '@tiletrigger/shared';
 import { DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadMousePrefs, loadWheelKey, saveMousePrefs, saveWheelKey } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
+import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/vehicleCamera.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
 import { cachedProfile, checkUsername, loadProfile, myRegion, saveProfile, setRegion } from '../profile.ts';
 import { installTooltips } from './tooltip.ts';
@@ -1967,6 +1968,8 @@ export class FrontEnd {
       sensVal.textContent = `${(Number(sens.value) || 1).toFixed(1)}×`;
       zoomSensVal.textContent = `${(Number(zoomSens.value) || 1).toFixed(2)}×`;
     };
+    const steer = el('select', {}, el('option', { value: 'classic', textContent: 'Classic: A / D steer', selected: loadSteerMode() === 'classic' }), el('option', { value: 'look', textContent: 'Look to steer (Warthog style)', selected: loadSteerMode() === 'look' }));
+    steer.addEventListener('change', () => saveSteerMode(steer.value as SteerMode));
     sens.addEventListener('input', mouseChanged);
     zoomSens.addEventListener('input', mouseChanged);
     invert.addEventListener('change', mouseChanged);
@@ -2103,6 +2106,7 @@ export class FrontEnd {
         row('Mouse sensitivity', el('span', { class: 'opt-range' }, sens, sensVal)),
         row('Zoom sensitivity', el('span', { class: 'opt-range' }, zoomSens, zoomSensVal), 'Look speed when aiming down the sights or through a scope. At 1.00× the view moves on screen just as it does in hip fire; lower is steadier, higher is quicker.'),
         row('Invert look', toggle(invert), 'Mouse up looks down.'),
+        row('Vehicle steering', steer, 'Look to steer: cars, buggies and hovercraft turn toward where you look (A / D still steer too), and the view stays where you point it. Classic: A and D steer and the view turns with the vehicle. Applies from your next match.'),
         row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
         row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open a wheel of the weapons you carry, point with the mouse and let go to switch (a click picks too). A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
         ...(isTouchDevice() ? [el('h3', { class: 'opt-sub', textContent: 'Touch' }), touchList] : []),

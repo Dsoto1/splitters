@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MOUNT_DEFS, cockpitEye, mountToWorld, type MountDef, type Vec3 } from '@tiletrigger/shared';
-import { CHASE_RECENTRE_DELAY, DRIVER_LOOK_LIMIT, VehicleCamera, loadVehicleViews, rayBoxExit, vehicleClass, type RideFrame } from '../src/game/vehicleCamera.ts';
+import { CHASE_RECENTRE_DELAY, DEFAULT_STEER, DRIVER_LOOK_LIMIT, VehicleCamera, loadSteerMode, loadVehicleViews, rayBoxExit, saveSteerMode, vehicleClass, type RideFrame } from '../src/game/vehicleCamera.ts';
 
 const store = new Map<string, string>();
 const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
@@ -215,5 +215,50 @@ describe('geometry', () => {
       // Up to a head out of a hatch (the tank's commander) above the seat.
       expect(y, def.id).toBeLessThan(def.seats[seat]!.offset[1] + 1.6);
     }
+  });
+});
+
+describe('suspension and look-to-steer', () => {
+  it('the cockpit eye follows a bouncing body damped: well under half the bounce, all of a steady lean', () => {
+    const cam = new VehicleCamera();
+    const look = { yaw: 0, pitch: 0 };
+    const level = mountToWorld({ x: 0, y: 0, z: 0 }, 0, cockpitEye(MOUNT_DEFS.buggy, 0));
+    let lo = Infinity;
+    let hi = -Infinity;
+    // The body bounces ±0.15 m at 1.5 Hz (a hard landing on the buggy's springs), drawn at 60 fps.
+    for (let f = 0; f < 240; f++) {
+      const bounce = 0.15 * Math.sin((f / 60) * 2 * Math.PI * 1.5);
+      const pose = cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { cockpitEye: { ...level, y: level.y + bounce }, levelEye: level }), look, noWalls, FOV);
+      if (f > 60) {
+        lo = Math.min(lo, pose.pos.y - level.y);
+        hi = Math.max(hi, pose.pos.y - level.y);
+      }
+    }
+    expect(hi - lo).toBeLessThan(0.3 * 0.55);
+    // A steady offset (parked on a slope) is followed all the way: the eye stays in the seat.
+    let pose = cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { cockpitEye: { ...level, y: level.y + 0.1 }, levelEye: level }), look, noWalls, FOV);
+    for (let f = 0; f < 120; f++) pose = cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { cockpitEye: { ...level, y: level.y + 0.1 }, levelEye: level }), look, noWalls, FOV);
+    expect(pose.pos.y - level.y).toBeCloseTo(0.1, 3);
+  });
+
+  it('look-to-steer: the view stays where you point it while the vehicle turns; kept in the browser', () => {
+    expect(loadSteerMode()).toBe(DEFAULT_STEER);
+    saveSteerMode('look');
+    const cam = new VehicleCamera();
+    expect(cam.steersByLook(MOUNT_DEFS.buggy, 0)).toBe(true);
+    expect(cam.steersByLook(MOUNT_DEFS.buggy, 1)).toBe(false);
+    expect(cam.steersByLook(MOUNT_DEFS.skyfighter, 0)).toBe(false);
+    const look = { yaw: 0, pitch: 0 };
+    cam.update(1 / 60, ride(MOUNT_DEFS.buggy), look, noWalls, FOV);
+    look.yaw = 0.6;
+    for (let f = 1; f <= 30; f++) cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { yaw: (f / 30) * 0.5 }), look, noWalls, FOV);
+    expect(look.yaw).toBeCloseTo(0.6);
+    // Classic: the view turns with the vehicle.
+    saveSteerMode('classic');
+    const classic = new VehicleCamera();
+    const l2 = { yaw: 0, pitch: 0 };
+    classic.update(1 / 60, ride(MOUNT_DEFS.buggy), l2, noWalls, FOV);
+    for (let f = 1; f <= 30; f++) classic.update(1 / 60, ride(MOUNT_DEFS.buggy, { yaw: (f / 30) * 0.5 }), l2, noWalls, FOV);
+    expect(l2.yaw).toBeCloseTo(0.5);
   });
 });

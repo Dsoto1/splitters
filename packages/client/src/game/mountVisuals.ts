@@ -3,7 +3,8 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { getMountDef } from '@tiletrigger/shared';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { getMountDef, suspensionOf } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 
 /**
@@ -30,16 +31,36 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
       m.isPickable = false;
       if (tint) paint(m, tint);
     }
+    // A model with wheels of its own (Kenney Car Kit: meshes named wheel-front-left and so on) on a vehicle with
+    // suspension: each wheel goes on a pivot at its centre, so it can spin, steer and ride its spring.
+    if (!def.wheels && suspensionOf(def)) {
+      body.computeWorldMatrix(true);
+      const toBody = Matrix.Invert(body.getWorldMatrix());
+      for (const mesh of node.getChildMeshes()) {
+        if (!/wheel/i.test(mesh.name)) continue;
+        mesh.computeWorldMatrix(true);
+        const c = Vector3.TransformCoordinates(mesh.getBoundingInfo().boundingBox.centerWorld, toBody);
+        const pivot = new TransformNode(`${name}_pivot_${mesh.name}`, scene);
+        pivot.parent = body;
+        pivot.position.copyFrom(c);
+        mesh.setParent(pivot);
+        wheelsOf(root).push({ pivot, rest: c.y, front: c.z > 0, slot: nearestWheel(def, c.x, c.z) });
+      }
+    }
   });
   // Wheels on a body without its own: placed in the mount's frame, the axle across the body (the tire's model is
   // built with its axle along Z), the outside face out on each side. Under the body node so they ride with it.
   const wheels = def.wheels;
   if (wheels) {
     wheels.at.forEach(([x, y, z], i) => {
+      // On a pivot at the hub (in the mount's frame: spin about X, steer about Y, the spring along Y; View.suspend).
+      const pivot = new TransformNode(`${name}_pivot${i}`, scene);
+      pivot.parent = body;
+      pivot.position.set(x, y, z);
+      wheelsOf(root).push({ pivot, rest: y, front: z > 0, slot: nearestWheel(def, x, z) });
       void models.instantiate(wheels.model, `${name}_wheel${i}`).then((wheel) => {
         if (root.isDisposed()) return wheel.dispose();
-        wheel.parent = body;
-        wheel.position.set(x, y, z);
+        wheel.parent = pivot;
         wheel.rotation.y = x < 0 ? -Math.PI / 2 : Math.PI / 2;
         // Rubber stays black: no skin or team paint on the tires.
         for (const m of wheel.getChildMeshes()) m.isPickable = false;
@@ -47,6 +68,40 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
     });
   }
   return root;
+}
+
+/** A wheel drawn on a pivot at its hub, in the mount's frame: View.suspend spins, steers and moves it on its spring. */
+export interface MountWheel {
+  pivot: TransformNode;
+  /** The hub's height at rest (m, the pivot's position.y with the spring at rest). */
+  rest: number;
+  front: boolean;
+  /** Which of the suspension's wheels (snapshot order) it is, or -1 (no suspension). */
+  slot: number;
+}
+
+/** The suspension wheel nearest (x, z) in the mount's frame, or -1. */
+function nearestWheel(def: NonNullable<ReturnType<typeof getMountDef>>, x: number, z: number): number {
+  const points = suspensionOf(def)?.points;
+  if (!points) return -1;
+  let best = -1;
+  let bestD = Infinity;
+  points.forEach(([px, pz], i) => {
+    const d = (px - x) ** 2 + (pz - z) ** 2;
+    if (d < bestD) {
+      bestD = d;
+      best = i;
+    }
+  });
+  return best;
+}
+
+const wheelLists = new WeakMap<TransformNode, MountWheel[]>();
+/** A mount node's wheels, in the order of the def's `wheels.at` (filled in as they load). */
+export function wheelsOf(root: TransformNode): MountWheel[] {
+  let list = wheelLists.get(root);
+  if (!list) wheelLists.set(root, (list = []));
+  return list;
 }
 
 /** Give a mesh its own copy of its material, tinted (pale skins also glow a little, so snow paint reads white). */

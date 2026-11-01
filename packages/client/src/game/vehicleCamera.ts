@@ -26,6 +26,34 @@ export const SEAT_PITCH_MAX = 0.75;
 /** Chase camera: seconds without mouse look before it swings back behind the vehicle. */
 export const CHASE_RECENTRE_DELAY = 1.1;
 
+/**
+ * How a driver steers a ground vehicle: `classic` (A/D, the view turns with the vehicle) or `look` (the Warthog way:
+ * the vehicle steers toward where you look, and the view stays where you point it). Kept in the browser.
+ */
+export type SteerMode = 'classic' | 'look';
+const STEER_KEY = 'tiletrigger.vehicleSteer';
+export const DEFAULT_STEER: SteerMode = 'classic';
+
+export function loadSteerMode(): SteerMode {
+  try {
+    const v = localStorage.getItem(STEER_KEY);
+    return v === 'look' || v === 'classic' ? v : DEFAULT_STEER;
+  } catch {
+    return DEFAULT_STEER;
+  }
+}
+
+export function saveSteerMode(mode: SteerMode): void {
+  try {
+    localStorage.setItem(STEER_KEY, mode);
+  } catch {
+    // Private windows and blocked storage: the choice lasts for this session.
+  }
+}
+
+/** Cockpit eye: how quickly (1/s) it follows the drawn body's bounce and lean off the level pose (head steadying). */
+export const COCKPIT_EYE_FOLLOW = 5;
+
 /** Ground vehicles drive; flyers (and the transport plane) are air. */
 export function vehicleClass(def: MountDef): VehicleClass {
   return def.vehicle?.fly || def.airplane ? 'air' : 'ground';
@@ -63,6 +91,11 @@ export interface RideFrame {
   tilt: { pitch: number; roll: number };
   /** The driver's cockpit eye, carried by the drawn model (tilt, springs and all). */
   cockpitEye: Vec3;
+  /**
+   * The same eye on the level pose (no tilt or springs). With it, the cockpit eye follows the springs damped
+   * (COCKPIT_EYE_FOLLOW), so a bouncing body doesn't bounce your head as hard. Absent: the eye rides the body.
+   */
+  levelEye?: Vec3;
   /** Where a gunner or passenger's eye is: the seat plus standing eye height (where their rounds leave from). */
   seatEye: Vec3;
 }
@@ -132,6 +165,15 @@ export class VehicleCamera {
   private dist = 0;
   private reach: number | null = null;
   private fov = 0;
+  /** The cockpit eye's eased offset from the level pose (see RideFrame.levelEye). */
+  private eyeOff: Vec3 | null = null;
+  /** Classic or look-to-steer (Options); `steersByLook` tells the session to send BUTTON_STEER_LOOK. */
+  steer: SteerMode = loadSteerMode();
+
+  /** Whether driving `def` from `seat` steers toward the look right now. */
+  steersByLook(def: MountDef, seat: number): boolean {
+    return this.steer === 'look' && VehicleCamera.drives(def, seat) && vehicleClass(def) === 'ground';
+  }
 
   /** The view a driver of `def` gets now. */
   viewFor(def: MountDef): VehicleView {
@@ -175,14 +217,17 @@ export class VehicleCamera {
       this.dist = 0;
       this.reach = null;
       this.fov = baseFov;
+      this.eyeOff = null;
     }
+    const byLook = this.steersByLook(r.def, r.seat);
     // Mouse look since the last frame (before the vehicle's turn is added).
     const looked = Math.abs(wrap(look.yaw - this.leftYaw)) > 1e-5 || Math.abs(look.pitch - this.leftPitch) > 1e-5;
     this.idle = looked ? 0 : this.idle + dt;
     // Drivers and riders turn with the vehicle; gun seats stay on target (a stabilised mount) within their arc.
     const turn = wrap(r.yaw - this.lastYaw);
     this.lastYaw = r.yaw;
-    if (role !== 'gunner') look.yaw += turn;
+    // Look-to-steer: the view stays where you point it and the vehicle comes round to it.
+    if (role !== 'gunner' && !byLook) look.yaw += turn;
     let rel = wrap(look.yaw - r.yaw);
     let want = rel;
     if (seat?.arc !== undefined && role === 'gunner') {
@@ -192,7 +237,7 @@ export class VehicleCamera {
     look.pitch = clamp(look.pitch, SEAT_PITCH_MIN, SEAT_PITCH_MAX);
     const mode: CameraPose['mode'] = r.def.airplane ? 'chase' : driver ? this.viewFor(r.def) : 'seat';
     // The chase camera swings back behind the vehicle once you stop looking about.
-    if (mode === 'chase' && driver && this.idle > CHASE_RECENTRE_DELAY) {
+    if (mode === 'chase' && driver && !byLook && this.idle > CHASE_RECENTRE_DELAY) {
       want *= 1 - ease(dt, 2.5);
       look.pitch *= 1 - ease(dt, 2.5);
     }
@@ -217,11 +262,23 @@ export class VehicleCamera {
       const rx = this.tiltX * c - this.tiltZ * s;
       const rz = this.tiltX * s + this.tiltZ * c;
       this.orbitYaw = look.yaw;
-      return { pos: driver ? r.cockpitEye : r.seatEye, yaw: look.yaw, pitch: look.pitch - rx, roll: rz, fov: baseFov, mode };
+      let eye = driver ? r.cockpitEye : r.seatEye;
+      if (driver && r.levelEye) {
+        // The body bounces and leans on its springs; the head follows it eased, so the view stays steady.
+        const want = { x: r.cockpitEye.x - r.levelEye.x, y: r.cockpitEye.y - r.levelEye.y, z: r.cockpitEye.z - r.levelEye.z };
+        const o = (this.eyeOff ??= want);
+        const k = ease(dt, COCKPIT_EYE_FOLLOW);
+        o.x += (want.x - o.x) * k;
+        o.y += (want.y - o.y) * k;
+        o.z += (want.z - o.z) * k;
+        eye = { x: r.levelEye.x + o.x, y: r.levelEye.y + o.y, z: r.levelEye.z + o.z };
+      }
+      return { pos: eye, yaw: look.yaw, pitch: look.pitch - rx, roll: rz, fov: baseFov, mode };
     }
 
     // Chase: a spring on the orbit (not on the world position), so the vehicle stays steady on screen at any speed.
     this.tiltX = this.tiltZ = 0;
+    this.eyeOff = null;
     const [, hy, hz] = r.def.half;
     const pivot = { x: r.pos.x, y: r.pos.y + hy * 2 + 0.5, z: r.pos.z };
     const speed = Math.hypot(r.vel.x, air ? r.vel.y : 0, r.vel.z);
