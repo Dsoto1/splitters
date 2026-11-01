@@ -1,0 +1,73 @@
+{
+  "id": "meshy_scamp",
+  "kind": "character",
+  "use": "player",
+  "order": 60,
+  "name": "Scamp",
+  "look": "core.scamp",
+  "group": "animals",
+  "bio": "Swings in, steals the high ground and throws things at you from it.",
+  "body": "male",
+  "size": "small",
+  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not Big Bab (a macaque in a T-shirt, a CC0 community \"T Pose Monkey\" whose file name starts the same; this pattern takes only the 2026-11-01 download): a small dark monkey with a long curled tail (the tail is left on the hips).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_T_Pose_Monkey_1101\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.85
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "tail": [
+      [0, 0.44, 0.12],
+      [0, 0.47, -0.02],
+      [0, 0.62, -0.13],
+      [0, 0.85, -0.17],
+      [0, 0.97, -0.27]
+    ],
+    "feet": true
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.44, 0.19],
+      [0, 0.52, 0.2],
+      [0, 0.6, 0.21],
+      [0, 0.68, 0.21],
+      [0, 0.78, 0.22],
+      [0, 0.83, 0.27],
+      [0, 0.96, 0.28]
+    ],
+    "L": [
+      [0.03, 0.765, 0.2],
+      [0.09, 0.76, 0.2],
+      [0.3, 0.755, 0.2],
+      [0.5, 0.745, 0.2],
+      [0.6, 0.7, 0.2],
+      [0.05, 0.43, 0.18],
+      [0.06, 0.25, 0.17],
+      [0.06, 0.065, 0.165],
+      [0.065, 0.02, 0.27],
+      [0.065, 0.015, 0.32]
+    ],
+    "R": [
+      [-0.03, 0.765, 0.2],
+      [-0.09, 0.76, 0.2],
+      [-0.3, 0.755, 0.2],
+      [-0.5, 0.745, 0.2],
+      [-0.6, 0.7, 0.2],
+      [-0.05, 0.43, 0.18],
+      [-0.06, 0.25, 0.17],
+      [-0.06, 0.065, 0.165],
+      [-0.065, 0.02, 0.27],
+      [-0.065, 0.015, 0.32]
+    ]
+  }
+}

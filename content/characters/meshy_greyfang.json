@@ -1,0 +1,71 @@
+{
+  "id": "meshy_greyfang",
+  "kind": "character",
+  "use": "player",
+  "order": 64,
+  "name": "Greyfang",
+  "look": "core.greyfang",
+  "group": "animals",
+  "bio": "Hunts in packs. Today the pack is you lot, and he is keeping score.",
+  "body": "male",
+  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not the Hyena Warrior (armoured): a grey wolf standing upright, bushy tail (left on the hips).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Wolf_T_Pose_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.85
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "tail": [
+      [0, 0.45, 0.08],
+      [0, 0.4, -0.05],
+      [0, 0.3, -0.2],
+      [0, 0.2, -0.32]
+    ],
+    "feet": true
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.49, 0.144],
+      [0, 0.546, 0.15],
+      [0, 0.605, 0.153],
+      [0, 0.669, 0.14],
+      [0, 0.79, 0.165],
+      [0, 0.83, 0.165],
+      [0, 0.93, 0.16]
+    ],
+    "L": [
+      [0.025, 0.75, 0.13],
+      [0.1, 0.725, 0.125],
+      [0.2, 0.69, 0.123],
+      [0.29, 0.675, 0.14],
+      [0.365, 0.662, 0.155],
+      [0.05, 0.46, 0.14],
+      [0.055, 0.264, 0.13],
+      [0.055, 0.065, 0.129],
+      [0.09, 0.02, 0.2],
+      [0.09, 0.015, 0.229]
+    ],
+    "R": [
+      [-0.025, 0.75, 0.13],
+      [-0.1, 0.725, 0.125],
+      [-0.2, 0.69, 0.123],
+      [-0.29, 0.675, 0.14],
+      [-0.365, 0.662, 0.155],
+      [-0.05, 0.46, 0.14],
+      [-0.055, 0.264, 0.13],
+      [-0.055, 0.065, 0.129],
+      [-0.091, 0.02, 0.198],
+      [-0.091, 0.015, 0.227]
+    ]
+  }
+}

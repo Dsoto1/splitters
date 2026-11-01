@@ -920,10 +920,12 @@ export const HANDS_SHARE = 0.04;
  * Cut a triangle list to about `target` triangles, each of `parts` ({ inside(v), share }: a triangle is a part's
  * when two of its corners are inside it) cut apart from the rest with at least its share of the budget (never
  * more than it has) and never sloppily, the vertices on the parts' edges locked so they still meet. `errors`: the
- * careful passes tried in turn until a part is within 5% of its target; `sloppy`: then a sloppy pass for the
- * rest of the body only (it would crush a face). Returns the new index list.
+ * careful passes tried in turn until a part is within 5% of its target; `restErrors`: the passes for the rest of the
+ * body (default `errors`), so a body whose surface holds the careful cut can be cut looser while the head and hands
+ * keep theirs; `sloppy`: then a sloppy pass for the rest of the body only (it would crush a face). Returns the new
+ * index list.
  */
-export function cutKeeping(indices, positions, target, parts, { errors = [0.008], sloppy = false } = {}) {
+export function cutKeeping(indices, positions, target, parts, { errors = [0.008], restErrors = errors, sloppy = false } = {}) {
   const n = positions.length / 3;
   const lists = [...parts.map(() => []), []];
   for (let i = 0; i < indices.length; i += 3) {
@@ -950,16 +952,16 @@ export function cutKeeping(indices, positions, target, parts, { errors = [0.008]
   // Errors are the whole mesh's (a part alone is small, and an error relative to its own size held it far above
   // its target).
   const size = MeshoptSimplifier.getScale(positions, 3);
-  const cut = (part, wanted, allowSloppy) => {
+  const cut = (part, wanted, allowSloppy, passes) => {
     let idx = Uint32Array.from(part);
-    for (const error of errors) {
+    for (const error of passes) {
       if (idx.length / 3 <= wanted * 1.05) break;
       [idx] = MeshoptSimplifier.simplifyWithAttributes(idx, positions, 3, none, 1, [0], lock, wanted * 3, error * size, ['ErrorAbsolute']);
     }
     if (allowSloppy && idx.length / 3 > wanted * 2) [idx] = MeshoptSimplifier.simplifySloppy(idx, positions, 3, null, wanted * 3, 0.05);
     return idx;
   };
-  const out = lists.map((list, k) => cut(list, want[k], sloppy && k === parts.length));
+  const out = lists.map((list, k) => cut(list, want[k], sloppy && k === parts.length, k === parts.length ? restErrors : errors));
   const all = new Uint32Array(out.reduce((a, b) => a + b.length, 0));
   let at = 0;
   for (const o of out) {

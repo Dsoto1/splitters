@@ -9,7 +9,7 @@
   "bio": "Stood up on his hind legs one morning and never went back down. Knocks things off ledges, you included.",
   "body": "male",
   "size": "small",
-  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. Digitigrade hind legs: joints on the leg's centre line (hock as the ankle, paw as the foot), as for the hyena.",
+  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. Digitigrade hind legs: joints on the leg's centre line (hock as the ankle, paw as the foot), as for the hyena. Re-uploaded by the owner as an unrigged textured GLB (2026-11-01, same model) and rebuilt from it with the T-pose landmarks below, the head and hands keeping their share of the cut. Its paws measure as closed blocks: `hands.curl` 1 makes them mittens that close on the grip.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -18,7 +18,7 @@
     "community": {
       "model": "T Pose Cat"
     },
-    "file": "^Meshy_AI_T_Pose_Cat_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_T_Pose_Cat_\\d+_texture\\.(glb|fbx)$"
   },
   "finish": {
     "metallic": 0,
@@ -34,7 +34,10 @@
       [0, 0.17, -0.1],
       [0, 0.07, -0.27]
     ],
-    "feet": true
+    "feet": true,
+    "hands": {
+      "curl": 1
+    }
   },
   "landmarks": {
     "spine": [

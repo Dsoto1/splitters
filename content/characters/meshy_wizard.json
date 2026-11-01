@@ -8,7 +8,7 @@
   "group": "legends",
   "bio": "Studied magic for four hundred years. Found the rifle quicker.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: wizard.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB and first rigged by Meshy's rigging API (task 01a18a08-93d8-71f6-a9cc-d5754da6fbee), whose hands were lost in the sleeves; re-uploaded by the owner (2026-11-01, same model) and rigged here from T-pose landmarks (the manifest's) instead, the head and hands keeping their share of the cut. Queue note: wizard.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -17,11 +17,7 @@
     "community": {
       "model": "wizard t pose"
     },
-    "modelUrl": "upload",
-    "file": "^Meshy_AI_wizard_t_pose_\\d+_(image-to-3d-)?texture\\.glb$",
-    "meshy": {
-      "rig": "01a18a08-93d8-71f6-a9cc-d5754da6fbee"
-    }
+    "file": "^Meshy_AI_wizard_t_pose_\\d+_(image-to-3d-)?texture\\.glb$"
   },
   "finish": {
     "metallic": 0,
@@ -32,6 +28,42 @@
   },
   "fixes": {
     "triangles": 11000,
+    "cloth": true,
     "feet": true
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.47, 0],
+      [0, 0.53, 0],
+      [0, 0.59, 0],
+      [0, 0.65, 0],
+      [0, 0.72, 0.01],
+      [0, 0.76, 0.02],
+      [0, 0.87, 0.02]
+    ],
+    "L": [
+      [0.03, 0.7, 0],
+      [0.1, 0.69, 0],
+      [0.2, 0.683, 0.005],
+      [0.3, 0.675, 0.01],
+      [0.42, 0.672, 0.02],
+      [0.06, 0.47, 0],
+      [0.06, 0.27, 0.01],
+      [0.065, 0.065, 0],
+      [0.07, 0.02, 0.06],
+      [0.07, 0.015, 0.11]
+    ],
+    "R": [
+      [-0.03, 0.7, 0],
+      [-0.1, 0.69, 0],
+      [-0.2, 0.683, 0.005],
+      [-0.3, 0.675, 0.01],
+      [-0.42, 0.672, 0.02],
+      [-0.06, 0.47, 0],
+      [-0.06, 0.27, 0.01],
+      [-0.065, 0.065, 0],
+      [-0.07, 0.02, 0.06],
+      [-0.07, 0.015, 0.11]
+    ]
   }
 }

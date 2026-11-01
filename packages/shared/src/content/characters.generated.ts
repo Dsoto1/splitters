@@ -60,6 +60,13 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.bonejack', name: 'Bonejack', body: 'male', head: '', parts: ['meshy_bonejack'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_bonejack_fparms' }, group: 'horror' },
   { id: 'core.ashwalker', name: 'Ashwalker', body: 'male', head: '', parts: ['meshy_ashwalker'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_ashwalker_fparms' }, group: 'legends' },
   { id: 'core.thornweaver', name: 'Thornweaver', body: 'female', head: '', parts: ['meshy_thornweaver'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_thornweaver_fparms' }, group: 'legends' },
+  { id: 'core.croakley', name: 'Croakley', body: 'male', head: '', parts: ['meshy_croakley'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_croakley_fparms' }, group: 'animals' },
+  { id: 'core.snikkit', name: 'Snikkit', body: 'male', head: '', parts: ['meshy_snikkit'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_snikkit_fparms' }, group: 'creatures' },
+  { id: 'core.scamp', name: 'Scamp', body: 'male', head: '', parts: ['meshy_scamp'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_scamp_fparms' }, group: 'animals' },
+  { id: 'core.halvard', name: 'Old King Halvard', body: 'male', head: '', parts: ['meshy_halvard'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_halvard_fparms' }, group: 'legends' },
+  { id: 'core.pruitt', name: 'Sgt. Pruitt', body: 'male', head: '', parts: ['meshy_pruitt'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_pruitt_fparms' }, group: 'soldiers' },
+  { id: 'core.barnaby', name: 'Barnaby Bruin', body: 'male', head: '', parts: ['meshy_barnaby'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_barnaby_fparms' }, group: 'animals' },
+  { id: 'core.greyfang', name: 'Greyfang', body: 'male', head: '', parts: ['meshy_greyfang'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_greyfang_fparms' }, group: 'animals' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -123,4 +130,11 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.bonejack': 'Sailed off the edge of the map and came back lighter.',
   'core.ashwalker': 'Paints himself in the ash of the last arena he won.',
   'core.thornweaver': 'Tracks anything across any ground, then waits for it.',
+  'core.croakley': 'Ran the bait shop by the pond until somebody shot it up. Now he returns the favour, suspenders and all.',
+  'core.snikkit': 'All teeth, ears and loincloth. Giggles when he reloads, which is somehow worse.',
+  'core.scamp': 'Swings in, steals the high ground and throws things at you from it.',
+  'core.halvard': 'Reigned for fifty years and outlived every rival. Not planning to stop now.',
+  'core.pruitt': 'Thirty years on the beat. Has heard every excuse, and believes none of them.',
+  'core.barnaby': 'Top hat, red coat, impeccable manners. Apologises before every headshot, and means it.',
+  'core.greyfang': 'Hunts in packs. Today the pack is you lot, and he is keeping score.',
 };

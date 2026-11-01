@@ -1,0 +1,67 @@
+{
+  "id": "meshy_snikkit",
+  "kind": "character",
+  "use": "player",
+  "order": 59,
+  "name": "Snikkit",
+  "look": "core.snikkit",
+  "group": "creatures",
+  "bio": "All teeth, ears and loincloth. Giggles when he reloads, which is somehow worse.",
+  "body": "male",
+  "size": "small",
+  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not the shipped Goblin (meshy_goblin, rags and boots): a bare goblin in a loincloth.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_T_Pose_Goblin_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.7
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "cloth": true,
+    "feet": true
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.47, -0.07],
+      [0, 0.54, -0.075],
+      [0, 0.61, -0.075],
+      [0, 0.68, -0.08],
+      [0, 0.77, -0.04],
+      [0, 0.83, 0.03],
+      [0, 1, 0.02]
+    ],
+    "L": [
+      [0.03, 0.76, -0.09],
+      [0.13, 0.755, -0.09],
+      [0.29, 0.735, -0.1],
+      [0.43, 0.745, -0.08],
+      [0.52, 0.745, -0.075],
+      [0.07, 0.45, -0.075],
+      [0.11, 0.26, -0.08],
+      [0.15, 0.065, -0.077],
+      [0.19, 0.02, 0.03],
+      [0.2, 0.015, 0.1]
+    ],
+    "R": [
+      [-0.03, 0.76, -0.09],
+      [-0.13, 0.755, -0.09],
+      [-0.29, 0.735, -0.1],
+      [-0.43, 0.745, -0.08],
+      [-0.52, 0.745, -0.075],
+      [-0.07, 0.45, -0.075],
+      [-0.11, 0.26, -0.08],
+      [-0.15, 0.065, -0.077],
+      [-0.19, 0.02, 0.03],
+      [-0.2, 0.015, 0.1]
+    ]
+  }
+}

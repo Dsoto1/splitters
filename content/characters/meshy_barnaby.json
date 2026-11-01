@@ -1,0 +1,70 @@
+{
+  "id": "meshy_barnaby",
+  "kind": "character",
+  "use": "player",
+  "order": 63,
+  "name": "Barnaby Bruin",
+  "look": "core.barnaby",
+  "group": "animals",
+  "bio": "Top hat, red coat, impeccable manners. Apologises before every headshot, and means it.",
+  "body": "male",
+  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not Teddy (a plush toy): a bear in a striped red coat, waistcoat, ruff and top hat. His fur (1.5M triangles, many texture islands) held the careful cut at 23k triangles, over the 20k budget: `looseCut` cuts the body looser (then sloppily) to 12.9k, the head and hands keeping their careful cut. Paws measure as closed blocks: `hands.curl` 1 makes them mittens that close on the grip.",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-01",
+    "url": null,
+    "file": "^Meshy_AI_Gentleman_Bear_T_Pose_\\d+_texture\\.glb$"
+  },
+  "finish": {
+    "metallic": 0,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "looseCut": true,
+    "cloth": true,
+    "feet": true,
+    "hands": {
+      "curl": 1
+    }
+  },
+  "landmarks": {
+    "spine": [
+      [0, 0.32, 0],
+      [0, 0.42, 0],
+      [0, 0.52, -0.01],
+      [0, 0.62, -0.02],
+      [0, 0.72, -0.01],
+      [0, 0.77, 0],
+      [0, 0.93, 0]
+    ],
+    "L": [
+      [0.04, 0.665, -0.04],
+      [0.16, 0.64, -0.05],
+      [0.31, 0.625, -0.055],
+      [0.42, 0.615, -0.06],
+      [0.565, 0.605, -0.06],
+      [0.08, 0.31, -0.02],
+      [0.095, 0.17, -0.035],
+      [0.105, 0.06, -0.04],
+      [0.11, 0.02, 0.045],
+      [0.11, 0.015, 0.09]
+    ],
+    "R": [
+      [-0.04, 0.665, -0.04],
+      [-0.16, 0.64, -0.05],
+      [-0.31, 0.625, -0.055],
+      [-0.42, 0.615, -0.06],
+      [-0.565, 0.605, -0.06],
+      [-0.08, 0.31, -0.02],
+      [-0.095, 0.17, -0.035],
+      [-0.105, 0.06, -0.04],
+      [-0.11, 0.02, 0.045],
+      [-0.11, 0.015, 0.09]
+    ]
+  }
+}
