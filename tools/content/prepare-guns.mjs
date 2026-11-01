@@ -93,25 +93,29 @@ function markings(rules) {
  * `centre: base`: centre the model on its foot (the bottom 15% of its height) instead of its bounds, so a turret on
  * a pedestal turns about the pedestal (the mount turns the whole model, about the middle of its footprint).
  */
-function centreOnBase(doc) {
+function centreOnBase(doc, given = null) {
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
-  let [lo, hi] = [Infinity, -Infinity];
-  for (const p of prims) {
-    const a = p.getAttribute('POSITION').getArray();
-    for (let i = 1; i < a.length; i += 3) [lo, hi] = [Math.min(lo, a[i]), Math.max(hi, a[i])];
-  }
-  const foot = [Infinity, Infinity, -Infinity, -Infinity];
-  for (const p of prims) {
-    const a = p.getAttribute('POSITION').getArray();
-    for (let i = 0; i < a.length; i += 3) {
-      if (a[i + 1] > lo + (hi - lo) * 0.15) continue;
-      foot[0] = Math.min(foot[0], a[i]);
-      foot[1] = Math.min(foot[1], a[i + 2]);
-      foot[2] = Math.max(foot[2], a[i]);
-      foot[3] = Math.max(foot[3], a[i + 2]);
+  let shift = given;
+  if (!shift) {
+    let [lo, hi] = [Infinity, -Infinity];
+    for (const p of prims) {
+      const a = p.getAttribute('POSITION').getArray();
+      for (let i = 1; i < a.length; i += 3) [lo, hi] = [Math.min(lo, a[i]), Math.max(hi, a[i])];
     }
+    const foot = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const p of prims) {
+      const a = p.getAttribute('POSITION').getArray();
+      for (let i = 0; i < a.length; i += 3) {
+        if (a[i + 1] > lo + (hi - lo) * 0.15) continue;
+        foot[0] = Math.min(foot[0], a[i]);
+        foot[1] = Math.min(foot[1], a[i + 2]);
+        foot[2] = Math.max(foot[2], a[i]);
+        foot[3] = Math.max(foot[3], a[i + 2]);
+      }
+    }
+    shift = [(foot[0] + foot[2]) / 2, (foot[1] + foot[3]) / 2];
   }
-  const [cx, cz] = [(foot[0] + foot[2]) / 2, (foot[1] + foot[3]) / 2];
+  const [cx, cz] = shift;
   for (const p of prims) {
     const pos = p.getAttribute('POSITION');
     const a = pos.getArray().slice();
@@ -121,13 +125,41 @@ function centreOnBase(doc) {
     }
     pos.setArray(a);
   }
+  return shift;
 }
 
-async function build(src, entry, pack) {
+/**
+ * A box in the built model's frame (`interior.box`: [[x, y, z] min, [x, y, z] max], metres, +Z forward) taken back
+ * into the download's own frame through the body's placement (yaw, scale, centring, `centre: base` shift).
+ */
+function boxToSource([min, max], place) {
+  const th = (-FORWARD[place.forward] * Math.PI) / 180;
+  const [c, s] = [Math.cos(th), Math.sin(th)];
+  const lo = [Infinity, Infinity, Infinity];
+  const hi = [-Infinity, -Infinity, -Infinity];
+  for (const x of [min[0], max[0]]) {
+    for (const y of [min[1], max[1]]) {
+      for (const z of [min[2], max[2]]) {
+        // Undo the base shift and the centring/scale, then the yaw (a turn about +Y by -yaw).
+        const q = [x + place.base[0], y, z + place.base[1]].map((v, i) => (v - place.t[i]) / place.s);
+        const p = [q[0] * c + q[2] * s, q[1], -q[0] * s + q[2] * c];
+        for (let k = 0; k < 3; k++) [lo[k], hi[k]] = [Math.min(lo[k], p[k]), Math.max(hi[k], p[k])];
+      }
+    }
+  }
+  return { min: lo, max: hi };
+}
+
+/**
+ * Build one model. `place` (a body's placement, returned by its own build) puts an `interior` in exactly the body's
+ * frame: the same yaw, scale, centring and base shift, so the two line up to the vertex. Returns the placement used.
+ */
+async function build(src, entry, pack, place = null) {
   let meshy = null;
   if (pack.meshy) {
     const recolor = entry.paintOut ? async (img) => console.log(`  painted out ${await paintOut(img, markings(entry.paintOut), { grow: entry.grow ?? 2, holes: entry.holes ?? 0 })} px of markings`) : null;
-    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, lod: entry.lod ?? null, ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) }));
+    const crop = place && entry.box ? boxToSource(entry.box, place) : null;
+    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, lod: entry.lod ?? null, crop, ...(entry.normalSize > 1024 ? { normalSize: entry.normalSize } : {}), ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) }));
   }
   // FBX sources (the Guns & Explosives pack) keep their UVs; their colour and normal maps sit beside them
   // unlinked, so `baseColor` / `normal` name them and they go on every material.
@@ -139,18 +171,25 @@ async function build(src, entry, pack) {
     for (const mat of doc.getRoot().listMaterials()) mat[slot](tex).setBaseColorFactor([1, 1, 1, 1]);
   }
   const scene = doc.getRoot().listScenes()[0];
-  const root = doc.createNode('model').setRotation(yaw(FORWARD[entry.forward]));
+  const forward = place?.forward ?? entry.forward;
+  const root = doc.createNode('model').setRotation(yaw(FORWARD[forward]));
   for (const child of scene.listChildren()) {
     scene.removeChild(child);
     root.addChild(child);
   }
   scene.addChild(root);
-  const b = getBounds(scene);
-  const s = entry.length / (b.max[2] - b.min[2]);
-  root.setScale([s, s, s]).setTranslation(b.min.map((v, i) => (-(v + b.max[i]) / 2) * s));
+  let s = place?.s;
+  let t = place?.t;
+  if (!place) {
+    root.setScale([1, 1, 1]);
+    const b = getBounds(scene);
+    s = entry.length / (b.max[2] - b.min[2]);
+    t = b.min.map((v, i) => (-(v + b.max[i]) / 2) * s);
+  }
+  root.setScale([s, s, s]).setTranslation(t);
   await doc.transform(flatten());
   for (const node of doc.getRoot().listNodes()) if (node.getMesh()) clearNodeTransform(node);
-  if (entry.centre === 'base') centreOnBase(doc);
+  const base = entry.centre === 'base' || place?.centred ? centreOnBase(doc, place?.base ?? null) : [0, 0];
   for (const node of doc.getRoot().listNodes()) if (!node.getMesh()) node.dispose();
   const holder = doc.createNode('model');
   for (const node of scene.listChildren()) {
@@ -158,11 +197,14 @@ async function build(src, entry, pack) {
     holder.addChild(node);
   }
   scene.addChild(holder);
+  // An interior says which part of the body it stands in for: the game hides the body's triangles inside `box`
+  // while it draws the interior (packages/client/src/game/cockpitInterior.ts).
+  if (place && entry.box) holder.setExtras({ cockpit: { box: entry.box } });
   for (const mat of doc.getRoot().listMaterials()) {
     mat.setMetallicFactor(0).setRoughnessFactor(0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
     for (const ext of mat.listExtensions()) ext.dispose();
-    const base = mat.getBaseColorTexture();
-    if (base) await shrink(base, entry.textureSize ?? 512, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
+    const baseMap = mat.getBaseColorTexture();
+    if (baseMap) await shrink(baseMap, entry.textureSize ?? 512, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
     const normal = mat.getNormalTexture();
     // A Meshy model's normal map is baked from the full download (meshy-mesh.mjs): `normalSize` px (default 512, a
     // first-person gun is seen from a hand's length away); a pack's own is shrunk to 256 px.
@@ -175,30 +217,29 @@ async function build(src, entry, pack) {
   let triangles = 0;
   let lodTriangles = 0;
   for (const mesh of doc.getRoot().listMeshes()) {
-    let t = 0;
-    for (const p of mesh.listPrimitives()) t += (p.getIndices()?.getCount() ?? p.getAttribute('POSITION').getCount()) / 3;
-    if (mesh.listParents().some((n) => n.propertyType === 'Node' && n.getExtras()?.lod)) lodTriangles += t;
-    else triangles += t;
+    let n = 0;
+    for (const p of mesh.listPrimitives()) n += (p.getIndices()?.getCount() ?? p.getAttribute('POSITION').getCount()) / 3;
+    if (mesh.listParents().some((node) => node.propertyType === 'Node' && node.getExtras()?.lod)) lodTriangles += n;
+    else triangles += n;
   }
-  return { glb: Buffer.from(await io.writeBinary(doc)), triangles, lodTriangles, normalMap: !!pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()) };
+  const placed = { forward, s, t, base, centred: entry.centre === 'base' || !!place?.centred };
+  return { glb: Buffer.from(await io.writeBinary(doc)), triangles, lodTriangles, normalMap: !!pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()), place: placed };
 }
 
 mkdirSync(OUT, { recursive: true });
 const lock = { $comment: 'Generated by tools/content/prepare-guns.mjs. Do not edit by hand.', files: [] };
-for (const entry of manifest.models) {
-  const pack = manifest.packs[entry.pack];
-  const file = `models/${entry.out}`;
+
+/** Write (or keep and check) one output and add it to the lock file. */
+function record(out, entry, pack, made, extra = {}) {
+  const file = `models/${out}`;
   const path = join(ROOT, 'packages/client/public', file);
-  // ONLY=guns/a.glb,guns/b.glb rebuilds just those (the rest are kept and checked).
-  const skip = only && !only.includes(entry.out);
-  const src = entry.glb && !skip ? downloadFile(entry.glb) : null;
-  const dir = skip ? null : entry.glb ? src && dirname(src) : downloadDir(entry.download ?? pack.download);
   let glb;
   let triangles;
   let lodTriangles = 0;
   let normalMap = false;
-  if (dir) {
-    ({ glb, triangles, lodTriangles, normalMap } = await build(src ?? join(dir, pack.models ?? '.', entry.file), entry, pack));
+  if (made) {
+    ({ glb, triangles, lodTriangles, normalMap } = made);
+    mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, glb);
   } else {
     if (!existsSync(path)) throw new Error(`${file} is missing; rebuild it with --downloads <dir> (see docs/CONTENT_PIPELINE.md)`);
@@ -209,7 +250,27 @@ for (const entry of manifest.models) {
     lodTriangles = was.lodTriangles ?? 0;
     normalMap = !!was.normalMap;
   }
-  lock.files.push({ file, source: entry.pack, ...(entry.budget ? { budget: entry.budget } : {}), src: entry.label ?? entry.file ?? entry.glb, triangles, ...(lodTriangles ? { lodTriangles } : {}), ...(normalMap ? { normalMap } : {}), bytes: glb.byteLength, sha256: sha(glb) });
-  console.log(`${dir ? 'built' : 'kept '} ${file.padEnd(32)} ${String(triangles).padStart(5)} tris ${String(glb.byteLength).padStart(7)} B`);
+  lock.files.push({ file, source: entry.pack, ...(entry.budget ? { budget: entry.budget } : {}), src: entry.label ?? entry.file ?? entry.glb, ...extra, triangles, ...(lodTriangles ? { lodTriangles } : {}), ...(normalMap ? { normalMap } : {}), bytes: glb.byteLength, sha256: sha(glb) });
+  console.log(`${made ? 'built' : 'kept '} ${file.padEnd(32)} ${String(triangles).padStart(5)} tris ${String(glb.byteLength).padStart(7)} B`);
+}
+
+for (const entry of manifest.models) {
+  const pack = manifest.packs[entry.pack];
+  // `interior` (Meshy entries): a second model of the part of this one inside `interior.box` (in the built model's
+  // frame), cropped from the same download and cut far less, with colour and normal maps of its own; written to
+  // `interior.out` in the body's exact frame. The game draws it only for the player looking out of a vehicle's
+  // cockpit (MountDef.cockpitModel), and hides the body's triangles inside the box meanwhile. Built with its body.
+  const interior = entry.interior ? { ...entry, lod: null, centre: undefined, paintOut: entry.paintOut, budget: undefined, ...entry.interior } : null;
+  // ONLY=guns/a.glb,guns/b.glb rebuilds just those (the rest are kept and checked); naming an interior builds its body too.
+  const skip = only && !only.includes(entry.out) && !(interior && only.includes(interior.out));
+  const src = entry.glb && !skip ? downloadFile(entry.glb) : null;
+  const dir = skip ? null : entry.glb ? src && dirname(src) : downloadDir(entry.download ?? pack.download);
+  const from = dir ? (src ?? join(dir, pack.models ?? '.', entry.file)) : null;
+  const made = from ? await build(from, entry, pack) : null;
+  record(entry.out, entry, pack, made);
+  if (interior) {
+    console.log(`  interior ${interior.out}`);
+    record(interior.out, interior, pack, made ? await build(from, interior, pack, made.place) : null, { interiorOf: `models/${entry.out}` });
+  }
 }
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);

@@ -10,6 +10,7 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+<<<<<<< HEAD
 ### `wip/ziplines` (agent, 2026-11-01; not merged): real ziplines, a MapMaker element
 Owner: "build real ziplines if it's easy enough; should also be a MapMaker element". Built:
 - **Format v25** `zipline` entity (schema.ts `ZiplineEntity`: start post foot `position`, far post `end` as an offset,
@@ -37,6 +38,38 @@ Owner: "build real ziplines if it's easy enough; should also be a MapMaker eleme
   draw ziplines; R in MapMaker doesn't rotate a zipline (no yaw: drag its ends).
 
 ### T-pose characters (`wip/tpose-characters`, agent, 2026-11-01; not merged; branched from `wip/grip-audit` + main)
+=======
+### Vehicle shake fix (lead, 2026-11-01; on `wip/buggy-cockpit`)
+Owner: "the buggy shakes violently when I drove it". The sim is smooth (a scratch test drove it: height steady to the mm,
+no heading wobble). Cause, on the client: `View.suspend()` read speed, acceleration and turn rate off frame-to-frame
+movement of the eased drawn pose (`m.shown`), which surges and stalls as snapshots arrive; acceleration × 0.006 swung
+the drawn pitch by up to ~0.1 rad every few frames at a steady 18 m/s, and the cockpit eye rides that pose. Now it uses
+the mount's tick-based `vel` and `spin` (`mountState.apply`), with acceleration low-passed (the velocity steps once per
+snapshot). Second part: `smooth()` projected ahead from each snapshot's arrival time, so arrival jitter (worker, network)
+moved the drawn position; `m.at` now follows the ticks, pulled 10% toward the real arrival. Test:
+`mountSmooth.test.ts` (jittered arrivals at 144 fps: 6% speed wobble before, under 3% after). Note: headless software
+rendering runs 1-2 fps, so this can't be measured in the browser here; the replay scripts were plain Node.
+
+### Buggy cockpit interior (`wip/buggy-cockpit`, agent, 2026-11-01; not merged)
+Owner's screenshot: the buggy's cockpit view looked mushy up close (seats, wheel, dash). The body is the owner's
+Meshy download (3.98M triangles, one 2048 px colour map) cut to 40k with one 2048 map over 4.4 m.
+- **Pipeline:** a guns.json entry's `interior` (docs/CONTENT_PIPELINE.md, "Cockpit interiors"): prepare-guns.mjs
+  builds a second GLB cropped to a box in the model's frame (meshyDocument `crop`), placed with the body's exact
+  placement. The buggy's box: x ±0.95, y -0.63..0.8 (mount 0.35..1.78), z -1.05..1.45 (both seat rows, wheel, dash,
+  roll cage): 1.98M of the 3.98M source triangles → **31,898 triangles, 2048 px colour + 2048 px normal, 3.6 MB**
+  (`vehicles/offroad_buggy_cockpit.glb`, tier `cockpit`, lock + provenance as Meshy, owned). The body rebuilt
+  byte-identical. Rebuild: `ONLY=vehicles/offroad_buggy_cockpit.glb node tools/content/prepare-guns.mjs --downloads <dir>`.
+- **Client:** `MountDef.cockpitModel` (buggy only); `game/cockpitInterior.ts`, driven from `View.updateMounts`: in the
+  cockpit view it loads the interior once, parents it under the ridden body's model node (zOffset -1), and draws your
+  copy of the body through a submesh that leaves out its triangles wholly inside the box (the shared index buffer
+  reordered once, outside triangles first: the other copies draw the same). Chase view, other vehicles and other
+  players: the body alone, no extra load. `View.cockpitInteriorShown()` for tests; e2e vehicles checks both views.
+- **Limit:** the download's own colour map is 2048 px for the whole buggy, so colour detail is near what the source
+  has; the gain is geometry (about 2x in the cockpit plus a sharper normal map) and the round steering wheel.
+  Before/after shots were in the agent's scratchpad.
+
+### T-pose characters (`wip/tpose-characters`, agent, 2026-11-01; merged to main c3bce36; branched from `wip/grip-audit` + main)
+>>>>>>> origin/main
 Owner: "I uploaded T-poses to use, couldn't find some and found some new ones" (13 Meshy GLBs, kept outside the repo
 in the machine's `~/meshy-drive/tposes-2026-11-01/`). Merge after `wip/grip-audit` (this branch holds it, plus a merge
 of main for Character Select's groups). Each download was rendered front/side next to the shipped model and matched

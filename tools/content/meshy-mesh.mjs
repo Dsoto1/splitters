@@ -122,9 +122,11 @@ const HIDDEN_WORK = 40000;
  * The shape the cut takes away comes back as a normal map (`normalSize` px, lossless PNG: the builds re-encode it with
  * normalJpeg at its shipped size; 0 for none): baked from the full download's surface, its own normal map included,
  * onto the cut mesh's texture coordinates (bakeNormals), with the TANGENT attribute it is drawn with. Without it the
- * cut mesh shades as flat, lumpy facets. Returns { doc, sourceTriangles, triangles }.
+ * cut mesh shades as flat, lumpy facets. `crop: { min, max }` (in the download's own frame) keeps only the
+ * triangles whose centre is inside that box before anything else: a part of the model (a vehicle's cockpit) cut far
+ * less than the whole, with maps of its own (prepare-guns.mjs `interior`). Returns { doc, sourceTriangles, triangles }.
  */
-export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null } = {}) {
+export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null, crop = null } = {}) {
   const glb = /\.glb$/i.test(fbxPath);
   const { doc, normalImage } = glb ? await glbDocument(fbxPath) : { ...(await fbxToDocument(fbxPath, { keepUv: true })), normalImage: existsSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) : null };
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
@@ -136,7 +138,8 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
   const glbMap = glb ? prim.getMaterial()?.getBaseColorTexture()?.getImage() : null;
   if (glb && !glbMap) throw new Error(`${basename(fbxPath)}: no base colour map in the GLB`);
   await doc.transform(weld());
-  if (sourceTriangles > WORK_TRIANGLES) {
+  if (crop) cropToBox(prim, crop);
+  if (prim.getIndices().getCount() / 3 > WORK_TRIANGLES) {
     const [cut] = MeshoptSimplifier.simplify(new Uint32Array(prim.getIndices().getArray()), new Float32Array(prim.getAttribute('POSITION').getArray()), 3, WORK_TRIANGLES * 3, Math.max(0.01, maxError), []);
     prim.getIndices().setArray(cut);
     compactPrimitive(prim);
@@ -194,6 +197,25 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
   if (lod) addLod(doc, prim, lod);
   await doc.transform(prune());
   return { doc, sourceTriangles, triangles: prim.getIndices().getCount() / 3 };
+}
+
+/** Keep the triangles whose centre is inside the box `{ min, max }` (see meshyDocument's `crop`). */
+function cropToBox(prim, { min, max }) {
+  const P = prim.getAttribute('POSITION').getArray();
+  const idx = prim.getIndices().getArray();
+  const kept = [];
+  for (let i = 0; i < idx.length; i += 3) {
+    let inside = true;
+    for (let k = 0; k < 3 && inside; k++) {
+      const c = (P[idx[i] * 3 + k] + P[idx[i + 1] * 3 + k] + P[idx[i + 2] * 3 + k]) / 3;
+      inside = c >= min[k] && c <= max[k];
+    }
+    if (inside) kept.push(idx[i], idx[i + 1], idx[i + 2]);
+  }
+  if (!kept.length) throw new Error('crop: no triangles inside the box');
+  prim.getIndices().setArray(new Uint32Array(kept));
+  compactPrimitive(prim);
+  console.log(`  cropped to the box: ${kept.length / 3} of ${idx.length / 3} triangles`);
 }
 
 /**

@@ -124,6 +124,12 @@ export interface MountDef {
    * Absent: a seated head height above the driver's seat, a little forward (see cockpitEye).
    */
   cockpitEye?: [number, number, number];
+  /**
+   * A high-detail model of the cockpit (drawing only; a guns.json entry's `interior`, built in the body model's own
+   * frame), loaded and drawn only for the player looking out of this vehicle's cockpit view. While it shows, the
+   * body's triangles inside the box it names are hidden; everyone else, and the chase camera, see the body alone.
+   */
+  cockpitModel?: string;
   /** One line for MapMaker. */
   blurb: string;
 }
@@ -238,6 +244,9 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     ],
     // A seated head height, under the front roof bar (1.6 m at z 0.55), looking over the wheel and dash.
     cockpitEye: [-0.32, 1.36, 0.32],
+    // Seats, wheel, dash and roll cage up close: the body is cut to 1% of the download for everyone; the driver's
+    // own view draws this far finer cut of the cockpit (content/guns.json, the buggy's `interior`).
+    cockpitModel: 'vehicles/offroad_buggy_cockpit.glb',
     enterRadius: 3.2,
     respawnSeconds: 45,
     blast: { radius: 4.5, damage: 90 },

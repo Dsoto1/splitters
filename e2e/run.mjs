@@ -2702,6 +2702,15 @@ async function vehiclesFlow(browser) {
   const cockpit = await rideCam();
   const off = cockpit.eye ? Math.hypot(...cockpit.local.map((v, i) => v - cockpit.eye[i])) : Infinity;
   check(cockpit.view === 'cockpit' && off < 0.5 && Math.abs(cockpit.local[0]) < cockpit.half[0] && Math.abs(cockpit.local[2]) < cockpit.half[2], `in the cockpit the eye is in the buggy at the driver's seat (${cockpit.view}, ${off.toFixed(2)} m from the seat eye, at ${cockpit.local?.map((v) => v.toFixed(2)).join(', ')})`);
+  // The cockpit view draws the buggy's high-detail interior (MountDef.cockpitModel, loaded on first use) over your copy
+  // of the body, the body's own triangles inside its box left out; the chase view (below) draws the body alone.
+  const interiorOn = await page.waitForFunction(() => window.__cs.view.cockpitInteriorShown(), null, { timeout: T(20000) }).then(() => true, () => false);
+  const bodyCut = await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${window.__match.mounts[me.mount.index].index}`);
+    return root?.getChildMeshes().filter((m) => m.subMeshes?.length && !/_cockpit/.test(m.name)).map((m) => m.subMeshes[0].indexCount / m.getTotalIndices()) ?? [];
+  });
+  check(interiorOn && bodyCut.some((share) => share < 0.9), `in the cockpit the buggy's interior is drawn and its body's cockpit triangles are left out (${interiorOn}, body drawn ${bodyCut.map((v) => v.toFixed(2)).join(', ')})`);
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   // Headless frame rates vary: wait for the drive rather than a fixed time.
@@ -2727,6 +2736,12 @@ async function vehiclesFlow(browser) {
   }
   const saved = await page.evaluate(() => localStorage.getItem('tiletrigger.vehicleCamera'));
   check(worst.view === 'chase' && !worst.inBox && worst.clear && worst.sight && worst.dist > 1, `H gives a chase camera outside the buggy and not in a wall (${JSON.stringify({ view: worst.view, inBox: worst.inBox, clear: worst.clear, sight: worst.sight, dist: worst.dist?.toFixed(1) })})`);
+  const chaseBody = await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const root = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${me.mount ? window.__match.mounts[me.mount.index].index : -1}`);
+    return { interior: window.__cs.view.cockpitInteriorShown(), cut: root?.getChildMeshes().some((m) => m.subMeshes?.length && m.subMeshes[0].indexCount < m.getTotalIndices()) ?? null };
+  });
+  check(!chaseBody.interior && chaseBody.cut === false, `the chase view draws the whole body and no interior (${JSON.stringify(chaseBody)})`);
   check(/"ground":"chase"/.test(saved ?? ''), `the choice is remembered for ground vehicles (${saved})`);
   // Press E (again, if a slow frame swallowed the press) until we're out.
   for (let i = 0; i < 4; i++) {

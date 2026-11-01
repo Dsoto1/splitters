@@ -81,7 +81,14 @@ export class MountState {
         m.spin = 0;
       }
       if (tick >= 0) m.tick = tick;
-      m.at = now;
+      // When this snapshot "is" on our clock, for carrying the pose on between snapshots: the previous one plus the
+      // ticks between them, pulled a tenth of the way toward when it actually arrived (and never later than now).
+      // Snapshots from a worker or the network arrive a few ms early or late; projecting ahead from the arrival time
+      // itself moved a fast vehicle back and forth by that jitter every frame (the cockpit view shook with it).
+      if (dt > 0 && dt < 0.5 && m.at > 0) {
+        const due = m.at + dt * 1000;
+        m.at = Math.min(now, due + (now - due) * 0.1);
+      } else m.at = now;
       m.pos = pos;
       m.yaw = s[4]!;
       m.aimYaw = s[5]!;
