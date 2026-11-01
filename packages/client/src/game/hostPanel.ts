@@ -256,7 +256,7 @@ export class HostPanel {
     }
     // Bot characters: applies at once (random bots out of it change look and name); hosts that know it send HostState.cast.
     if (s.cast !== undefined) {
-      rows.push(settingRow('Bot characters', "Which characters random bots play, and so their names (a soldier is \"Sgt. Haskett\"; the first bot in a character takes its name). Map default: the map maker's choice. Applies at once: bots out of it change. Your bot set keeps its own.", botCastSelect(s.cast ?? undefined, s.mapCast, (v) => this.hooks.command({ c: 'bots', cast: v ?? null }), 'hc-cast')));
+      rows.push(settingRow('Bot characters', "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"; the first bot in a character takes its name). Map default: the map maker's choice. Applies at once: bots out of it change. Your bot set keeps its own.", botCastSelect(s.cast ?? undefined, s.mapCast, (v) => this.hooks.command({ c: 'bots', cast: v ?? null }), 'hc-cast')));
     }
     // Mix up weapon pickups: applies at once (hosts that know it send it in HostState.rules).
     if (s.rules?.mixPickups !== undefined) {

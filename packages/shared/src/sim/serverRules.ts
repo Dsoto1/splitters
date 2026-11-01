@@ -99,7 +99,7 @@ export const SERVER_RULES: readonly RuleSpec[] = [
     read: (r) => r.botStyle ?? 'mixed', write: (r, v) => (v === 'mixed' ? delete r.botStyle : (r.botStyle = v as 'arena' | 'tactical')),
   },
   {
-    key: 'cast', label: 'Bot characters', help: "Which characters random bots play, and so their names (a soldier is \"Sgt. Haskett\"): map (the map's own; most maps: all), all, a group (soldiers, legends, folk, horror, animals, creatures) or a name theme (pirate, monkey, knight…).", type: choice(['map', 'Map default'], ['all', 'All'], ...BOT_CAST_CHOICES.map((c): [string, string] => [c.id, c.label])), apply: 'live',
+    key: 'cast', label: 'Bot characters', help: "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"): map (the map's own; most maps: all), all, a group (soldiers, legends, folk, horror, animals, creatures) or a name theme (pirate, monkey, knight…).", type: choice(['map', 'Map default'], ['all', 'All'], ...BOT_CAST_CHOICES.map((c): [string, string] => [c.id, c.label])), apply: 'live',
     read: (r) => castRuleValue(r.botCast), write: (r, v) => (v === 'map' ? delete r.botCast : (r.botCast = castFromRuleValue(v as string) ?? [])),
   },
   {

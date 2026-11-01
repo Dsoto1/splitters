@@ -2258,7 +2258,7 @@ export class EditorApp {
 
   /**
    * Bot characters (MapDocument.botCast): which looks the map's random bots wear, and so their names (a D-Day map:
-   * soldiers only, named "Sgt. Haskett"). Groups and/or name themes; none ticked: every look. Hosts can change it.
+   * soldiers only, named "Sgt. Dunmore"). Groups and/or name themes; none ticked: every look. Hosts can change it.
    */
   private renderBotCast(el: HTMLElement): void {
     const cast = validBotCast(this.doc.botCast);

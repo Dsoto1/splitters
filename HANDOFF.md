@@ -10,6 +10,39 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Bot themes: bots named after their characters (`wip/bot-themes`, agent, 2026-11-01; not merged)
+Owner: "name and associate the bots after each character… 96 unique monkey names, same for pirates, medieval sets,
+soldiers (Sgt/Pvt/Lt…)… an entire server for the D-Day map that only uses soldier skins". Owner's picks: lists per
+kind of creature; the bot characters setting is a map default the host can change.
+- **Names** (`shared/content/botNames.ts`): 23 themes (`NAME_THEMES`: soldier, monkey, bear, wolf, dog, cat, raccoon,
+  critter, frog, pirate, knight, ninja, wizard, barbarian, undead, spooky, robot, alien, goblin, cowboy, gangster,
+  townsfolk, myth), each ≥ 96 names (≤ 20 chars, no digits, original; append-only). Soldiers are generated: 9 ranks ×
+  126 surnames, every surname once before any repeats. `BOT_NAMES` (the general list) moved here; match.ts re-exports it.
+- **Each look's theme**: whole-body characters declare `nameTheme` in content/characters/*.json (checked by
+  character-manifests.mjs, whose `NAME_THEMES` list a test keeps equal to botNames.ts; generated into
+  characters.generated.ts); the presets carry it in looks.ts (Linktifa knight, Sprout townsfolk); NPC skins in
+  `NPC_SKIN_THEMES`. A look without one takes its group's (soldiers → soldier, legends → knight, folk → townsfolk,
+  horror → spooky). **New soldier looks (wip/new-characters-2: core.polysoldier, core.tposesoldier1/2,
+  core.stancesoldier, core.resolvesoldier, core.zombiesoldier1/2, core.undeadsoldier) should declare
+  `"nameTheme": "soldier"`** (zombie/undead soldiers: `soldier` if they belong on a D-Day server, else `undead`) and
+  `core.abe` whatever he is; botThemes.test.ts fails for a built manifest without one, by design.
+- **Naming** (`BotFiller.nameFor` → `botNameFor`): the look's own name first (the first bot in Scamp is "Scamp"), then
+  its theme's next free name (from an offset by match seed; seed 1 = list order), then the general list, then
+  "Mildred 2". Never a name in use (players, bots, spectators, the host's set). `Match.addBot` takes a name function
+  so the name follows the look it picks.
+- **Bot characters** (`MapDocument.botCast`, optional, no migration: absent = all; `MatchRules.botCast`: absent = the
+  map's, `[]` = all): groups and/or themes. `Match.botLook` spreads random bots over `castLooks(cast)` (unrestricted:
+  `lookForBot` as before, so bot behaviour tests keep their looks). Editable in MapMaker (map properties → Bots → Bot
+  characters, checkboxes, `setBotCast` command, `validateMap` flags unknown ids), Match setup → Bots (select:
+  Map default / All / group / theme), pause menu (live: `{ c: 'bots', cast }`, `BotFiller.recast` re-dresses and
+  renames random bots out of it), server rules (`cast`, live; admin changes persist). HostState `cast`/`mapCast`.
+  Kept over a map change (hostRules KEPT). docs: HOSTING.md (bot names), CHARACTERS.md (`nameTheme`),
+  MULTIPLAYER_PROTOCOL.md §18.
+- No map in maps/ sets botCast yet (the owner picks: e.g. a D-Day map → soldiers, in MapMaker).
+- Tests: botThemes.test.ts (lists, manifest themes, 96-bot soldiers-only roster, Scamp first, fallback, host
+  override/recast, set keeps its own, setup/server rules/wire, MapMaker command + validation). e2e: editor flow ticks
+  Soldiers in map properties; teams flow → `botCastFlow` (soldiers-only offline match from match setup).
+
 ### Roster Board applied: CI fallout (`wip/roster-apply`, agent, 2026-11-01; not merged)
 Retiring 15 looks moved every bot's look (and body size) in the rotation (`lookForBot` walks CORE_LOOKS), so four
 seeded scenarios landed on real bugs, fixed: Small bodies couldn't use a portal set against a wall (the catch margin

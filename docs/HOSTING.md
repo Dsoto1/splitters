@@ -906,7 +906,7 @@ section:
   barbarian, undead, spooky, robot, alien, goblin, cowboy, gangster,
   townsfolk, myth). A random bot takes its look's own name first (the first
   bot in Scamp is "Scamp"), then the next free name of its theme's list (each
-  at least 96 names; soldiers are a rank and a surname, "Sgt. Haskett"), never a
+  at least 96 names; soldiers are a rank and a surname, "Sgt. Dunmore"), never a
   name in use in the match (players, bots, spectators, the host's set); the
   general list (`BOT_NAMES`) is the fallback (designs of yours, a list run
   out). Lists are append-only.
