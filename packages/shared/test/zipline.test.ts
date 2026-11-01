@@ -7,6 +7,7 @@ import {
   ZIP,
   blockBoxes,
   buildMapGeometry,
+  cablePoint,
   grabZipline,
   initPhysics,
   loadMap,
@@ -76,7 +77,7 @@ describe('ziplines', () => {
     expect(m.zv!).toBeGreaterThan(0);
     // Hanging: feet a body length and a hand below the cable.
     const z = mapZiplines(d.match.map.entities)[0]!;
-    const cableY = z.a.y + z.dir.y * m.zs!;
+    const cableY = cablePoint(z, m.zs!).y;
     expect(cableY - m.pos.y).toBeCloseTo(1.8 + ZIP.handGap, 1);
     expect(m.grounded).toBe(false);
     // The snapshot carries the rider state compactly.

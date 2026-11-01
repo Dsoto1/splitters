@@ -583,6 +583,14 @@
       "range": "near",
       "jitter": 0.03
     },
+    "zip.whirr": {
+      "synth": "hum",
+      "variants": 1,
+      "gain": 0.42,
+      "range": "mid",
+      "jitter": 0.04,
+      "rate": 2.4
+    },
     "trap.warn": {
       "synth": "beep",
       "variants": 1,

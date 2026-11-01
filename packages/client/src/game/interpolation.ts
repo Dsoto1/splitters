@@ -55,6 +55,9 @@ export interface RemotePose {
   sprinting?: boolean;
   /** Under a parachute (1) or glider (2). */
   chute?: number;
+  /** Riding a zipline: the line (index in mapZiplines) and the speed along it (m/s). */
+  zip?: number;
+  zipSpeed?: number;
 }
 
 /** Snapshot interpolation for remote players, driven by an estimate of the server clock. */
@@ -213,6 +216,7 @@ export class Interpolator {
         ...(pb.sr ? { sprinting: true } : {}),
         ...(pb.em ? { emote: true } : {}),
         ...(pb.ch ? { chute: pb.ch } : {}),
+        ...(pb.zl ? { zip: pb.zl[0], zipSpeed: Math.abs(pb.zl[2]) } : {}),
         weapon: pb.w,
         powerups: pb.pu,
         status: pb.fx ?? 0,

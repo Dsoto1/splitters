@@ -62,11 +62,13 @@ export interface Zipline {
   len: number;
   speed: number;
   twoWay: boolean;
+  /** How far (m) the cable droops at its middle: riders hang from the drooping cable as drawn. */
+  droop: number;
   /** Only this team can ride it (absent: everyone). */
   team?: string;
 }
 
-type ZiplineLike = { kind: string; id: string; position: [number, number, number]; end?: unknown; height?: number; speed?: number; twoWay?: boolean; team?: string };
+type ZiplineLike = { kind: string; id: string; position: [number, number, number]; end?: unknown; height?: number; speed?: number; twoWay?: boolean; team?: string; sag?: number };
 
 /** The ziplines of a map, in entity order (shared by the server, client prediction and the bots' navigation). */
 export function mapZiplines(entities: readonly ZiplineLike[]): Zipline[] {
@@ -79,7 +81,7 @@ export function mapZiplines(entities: readonly ZiplineLike[]): Zipline[] {
     const b = { x: a.x + ex, y: a.y + ey, z: a.z + ez };
     const len = Math.hypot(ex, ey, ez);
     if (len < 1e-3) return;
-    out.push({ i, id: e.id, a, b, dir: { x: ex / len, y: ey / len, z: ez / len }, len, speed: e.speed ?? 12, twoWay: !!e.twoWay, ...(e.team ? { team: e.team } : {}) });
+    out.push({ i, id: e.id, a, b, dir: { x: ex / len, y: ey / len, z: ez / len }, len, speed: e.speed ?? 12, twoWay: !!e.twoWay, droop: (e.sag ?? 0.03) * len, ...(e.team ? { team: e.team } : {}) });
   });
   return out;
 }
@@ -89,7 +91,9 @@ export const hangDepth = (scale = 1): number => STANCES[0].height * scale + ZIP.
 
 /** The point `s` metres along the cable. */
 export function cablePoint(z: Zipline, s: number): Vec3 {
-  return { x: z.a.x + z.dir.x * s, y: z.a.y + z.dir.y * s, z: z.a.z + z.dir.z * s };
+  // A parabola through both ends, `droop` down at the middle (speeds follow the straight chord; only the height sags).
+  const t = Math.max(0, Math.min(1, s / z.len));
+  return { x: z.a.x + z.dir.x * s, y: z.a.y + z.dir.y * s - z.droop * 4 * t * (1 - t), z: z.a.z + z.dir.z * s };
 }
 
 /** Where a rider `s` metres along hangs (feet). */
@@ -262,10 +266,15 @@ export function ziplineClearanceIssues(entities: readonly ZiplineLike[], physics
     const hang = hangDepth();
     // The cable (just under it, so a post's own platform edge doesn't count), and the rider's head, middle and feet.
     const lines = [0.1, ZIP.handGap + 0.1, hang / 2, hang - 0.15];
+    // Along the drooping cable in short straight pieces.
+    const pieces = Math.max(2, Math.ceil((s1 - s0) / 4));
     const blocked = lines.some((drop) => {
-      const p = cablePoint(z, s0);
-      const q = cablePoint(z, s1);
-      return !physics.lineOfSight({ x: p.x, y: p.y - drop, z: p.z }, { x: q.x, y: q.y - drop, z: q.z });
+      for (let k = 0; k < pieces; k++) {
+        const p = cablePoint(z, s0 + ((s1 - s0) * k) / pieces);
+        const q = cablePoint(z, s0 + ((s1 - s0) * (k + 1)) / pieces);
+        if (!physics.lineOfSight({ x: p.x, y: p.y - drop, z: p.z }, { x: q.x, y: q.y - drop, z: q.z })) return true;
+      }
+      return false;
     });
     if (blocked) out.push({ severity: 'error', code: 'zipline.blocked', message: `zipline ${z.id}: something solid is in the way of the cable or of riders hanging under it (raise the posts or move them)`, targetId: z.id });
     const below = (s: number, max: number) => {

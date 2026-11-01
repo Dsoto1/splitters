@@ -93,6 +93,6 @@ export function scenarioGroup(key: string): { pane: 'entities' | 'scenario' | 'l
   if (key === 'button' || key.startsWith('zone') || key === 'portal' || key === 'block:field') return { pane: 'scenario', group: 'Logic & Triggers' };
   if (key.startsWith('trap:')) return { pane: 'scenario', group: 'Traps & Hazards' };
   if (key.startsWith('water:')) return { pane: 'lights', group: 'Liquids' };
-  if (key === 'pad' || key.startsWith('ladder') || key === 'block:solid' || key === 'block:crumble' || key === 'block:trapdoor' || key === 'block:rope_bridge' || key === 'block:roof') return { pane: 'scenario', group: 'Platforms & Climbing' };
+  if (key === 'pad' || key.startsWith('ladder') || key === 'zipline' || key === 'block:solid' || key === 'block:crumble' || key === 'block:trapdoor' || key === 'block:rope_bridge' || key === 'block:roof') return { pane: 'scenario', group: 'Platforms & Climbing' };
   return { pane: 'scenario', group: 'Destructibles' };
 }

@@ -12,6 +12,7 @@ import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
+import { CreateTube } from '@babylonjs/core/Meshes/Builders/tubeBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import type { Material } from '@babylonjs/core/Materials/material';
@@ -47,6 +48,8 @@ import {
   type LightEntity,
   type Liquid,
   type MapEntity,
+  cablePoint,
+  mapZiplines,
 } from '@tiletrigger/shared';
 import { createFlagBase, createFlagModel, createHillModel, createBombsiteModel } from './flagVisuals.ts';
 import { buildFence } from '../borderVisuals.ts';
@@ -70,7 +73,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal', 'zipline'];
 
 /**
  * Place an entity's visual root: at its position, turned to its facing.
@@ -429,7 +432,54 @@ export class ScenarioVisuals {
         return this.mover(name, e);
       case 'portal':
         return this.portal(name, e);
+      case 'zipline':
+        return this.zipline(name, e);
     }
+  }
+
+  /**
+   * A zipline: a timber post at each end (a pole on a footing, a short arm
+   * out toward the line and a pulley block where the cable ties on) and the
+   * steel cable between them, drooping as riders feel it (zipline.ts
+   * cablePoint). Drawn in the entity's frame: the start post's foot at the
+   * origin, the far post at `end`.
+   */
+  private zipline(name: string, e: Extract<MapEntity, { kind: 'zipline' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const line = mapZiplines([e])[0];
+    const wood = this.mat('zipPost', '#7a5532', { spec: 0.05 });
+    const stone = this.mat('zipFooting', '#8a8478', { spec: 0.05 });
+    const steel = this.mat('zipCable', '#4a4f55', { spec: 0.6 });
+    const [ox, oy, oz] = e.position;
+    const posts: [number, number, number][] = [[0, 0, 0], e.end];
+    posts.forEach(([x, y, z], k) => {
+      const h = e.height + 0.35;
+      const pole = CreateCylinder(`${name}_pole${k}`, { diameterTop: 0.2, diameterBottom: 0.28, height: h, tessellation: 8 }, this.scene);
+      pole.parent = root;
+      pole.position.set(x, y + h / 2, z);
+      pole.material = wood;
+      this.box(`${name}_footing${k}`, root, [0.7, 0.25, 0.7], [x, y + 0.12, z], stone);
+      if (!line) return;
+      // The arm and pulley block lean out toward the line's other end.
+      const toward = k === 0 ? 1 : -1;
+      const yaw = Math.atan2(line.dir.x * toward, line.dir.z * toward);
+      const arm = this.box(`${name}_arm${k}`, root, [0.14, 0.14, 0.7], [x + Math.sin(yaw) * 0.25, y + e.height + 0.12, z + Math.cos(yaw) * 0.25], wood);
+      arm.rotation.y = yaw;
+      const block = this.box(`${name}_pulley${k}`, root, [0.16, 0.22, 0.22], [x + Math.sin(yaw) * 0.45, y + e.height, z + Math.cos(yaw) * 0.45], steel);
+      block.rotation.y = yaw;
+    });
+    if (line) {
+      const n = Math.max(8, Math.min(32, Math.ceil(line.len / 3)));
+      const path: Vector3[] = [];
+      for (let i = 0; i <= n; i++) {
+        const p = cablePoint(line, (line.len * i) / n);
+        path.push(new Vector3(p.x - ox, p.y - oy, p.z - oz));
+      }
+      const cable = CreateTube(`${name}_cable`, { path, radius: 0.025, tessellation: 6 }, this.scene);
+      cable.parent = root;
+      cable.material = steel;
+    }
+    return { root };
   }
 
   /**

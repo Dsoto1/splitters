@@ -18,6 +18,7 @@ export interface RouteToolHost {
 
 type Mover = Extract<MapEntity, { kind: 'mover' }>;
 type Plane = Extract<MapEntity, { kind: 'airplane' }>;
+type Zip = Extract<MapEntity, { kind: 'zipline' }>;
 
 /** How close (m, across the ground) a click must be to a point to grab it. */
 const GRAB = 2;
@@ -26,7 +27,9 @@ const r2 = (v: number) => Math.round(v * 100) / 100 + 0;
 /**
  * Drawing a mover's or a transport plane's route on the map, with the same hands as Paths and the
  * race Road: click adds a point after the selected one, drag a point to move it, Shift-click a
- * stretch puts a point in it, right-click or Delete removes one. Points stay what the map stores:
+ * stretch puts a point in it, right-click or Delete removes one. A zipline's two ends (its posts' feet) are
+ * placed the same way: click the ground to put the selected end (the far one at first) there, or drag
+ * either end; they sit on whatever was clicked. Points stay what the map stores:
  * offsets from the marker (a mover's keep their height; a plane's fly at its altitude). Each change
  * is one undo step (updateEntities).
  */
@@ -51,26 +54,29 @@ export class RouteTool {
     this.mats = { point: mat('routePoint', '#7dffb0'), sel: mat('routeSel', '#ff7a2a') };
   }
 
-  private get entity(): Mover | Plane | null {
+  private get entity(): Mover | Plane | Zip | null {
     const e = this.host.doc().entities.find((x) => x.id === this.entityId);
-    return e && (e.kind === 'mover' || e.kind === 'airplane') ? e : null;
+    return e && (e.kind === 'mover' || e.kind === 'airplane' || e.kind === 'zipline') ? e : null;
   }
 
-  /** The route in world space (a plane's at its altitude). */
-  private world(e: Mover | Plane): Vec3[] {
+  /** The route in world space (a plane's at its altitude; a zipline's two post feet). */
+  private world(e: Mover | Plane | Zip): Vec3[] {
     const [ox, oy, oz] = e.position;
+    if (e.kind === 'zipline') return [{ x: ox, y: oy, z: oz }, { x: ox + e.end[0], y: oy + e.end[1], z: oz + e.end[2] }];
     return e.kind === 'mover' ? e.points.map(([x, y, z]) => ({ x: ox + x, y: oy + y, z: oz + z })) : e.route.map(([x, z]) => ({ x: ox + x, y: oy + e.altitude, z: oz + z }));
   }
 
   get label(): string {
     const e = this.entity;
+    if (e?.kind === 'zipline') return 'zipline end';
     return e?.kind === 'airplane' ? (e.craft === 'dropship' ? 'dropship route' : 'plane route') : 'mover route';
   }
 
   /** Edit this entity's route (a mover or a plane), or nothing. */
   edit(id: string | null): void {
     this.entityId = id;
-    this.selected = -1;
+    // A zipline: clicks place its far end until you pick the start.
+    this.selected = this.host.doc().entities.find((x) => x.id === id)?.kind === 'zipline' ? 1 : -1;
     this.drag = null;
     this.draw();
   }
@@ -89,6 +95,12 @@ export class RouteTool {
   private commit(label: string, pts: Vec3[], angles?: number[]): boolean {
     const e = this.entity;
     if (!e) return false;
+    if (e.kind === 'zipline') {
+      const [a, b] = pts as [Vec3, Vec3];
+      const end: [number, number, number] = [r2(b.x - a.x), r2(b.y - a.y), r2(b.z - a.z)];
+      if (Math.hypot(end[0], end[2]) > 400 || Math.abs(end[1]) > 200) return (this.host.toast('A zipline reaches at most 400 m across and 200 m up or down', true), false);
+      return this.host.run(label, { kind: 'updateEntities', before: [e], after: [{ ...e, position: [r2(a.x), r2(a.y), r2(a.z)], end }] });
+    }
     const [ox, oy, oz] = e.position;
     const max = e.kind === 'mover' ? 16 : 32;
     if (pts.length < 2) return (this.host.toast(`A ${this.label} needs at least two points`, true), false);
@@ -116,7 +128,8 @@ export class RouteTool {
   }
 
   /** Where a click on the ground puts a point: a mover's at the height of the point it follows, a plane's at its altitude. */
-  private place(e: Mover | Plane, p: Vec3, after: number): Vec3 {
+  private place(e: Mover | Plane | Zip, p: Vec3, after: number): Vec3 {
+    if (e.kind === 'zipline') return { ...p };
     const pts = this.world(e);
     const y = e.kind === 'airplane' ? e.position[1] + e.altitude : (pts[Math.max(0, Math.min(pts.length - 1, after))]?.y ?? p.y);
     return { x: p.x, y, z: p.z };
@@ -134,6 +147,13 @@ export class RouteTool {
       return;
     }
     const pts = this.world(e);
+    if (e.kind === 'zipline') {
+      // Put the selected end (the far one unless the start was picked) where the click landed.
+      const i = this.selected === 0 ? 0 : 1;
+      this.selected = i;
+      this.commit(`Place ${i === 0 ? 'zipline start' : 'zipline far end'}`, pts.map((q, k) => (k === i ? { ...p } : q)));
+      return;
+    }
     let index = this.selected >= 0 && this.selected < pts.length ? this.selected + 1 : pts.length;
     // Shift-click: into the stretch nearest the pointer.
     if (shift) {
@@ -162,7 +182,8 @@ export class RouteTool {
     const d = this.drag;
     const e = this.entity;
     if (!d || !p || !e) return;
-    const at = { x: p.x, y: d.at.y, z: p.z };
+    // A zipline's ends follow the surface under the pointer; route points keep their height.
+    const at = { x: p.x, y: e.kind === 'zipline' ? p.y : d.at.y, z: p.z };
     if (Math.hypot(at.x - d.at.x, at.z - d.at.z) > 0.1) d.moved = true;
     d.at = at;
     this.draw();
@@ -192,6 +213,7 @@ export class RouteTool {
   private remove(i: number): void {
     const e = this.entity;
     if (!e) return;
+    if (e.kind === 'zipline') return this.host.toast('A zipline always has two ends: drag one, or delete the zipline', true);
     const angles = e.kind === 'mover' && e.angles ? e.angles.filter((_, k) => k !== i) : undefined;
     const pts = this.world(e).filter((_, k) => k !== i);
     if (this.commit(`Delete ${this.label} point`, pts, angles)) this.selected = Math.min(i, pts.length - 1);
@@ -221,6 +243,14 @@ export class RouteTool {
       this.markers.push(s);
     });
     const line = pts.map((q) => new Vector3(q.x, q.y + 0.4, q.z));
+    if (e.kind === 'zipline') {
+      // The cable while dragging (the posts' tops), so you see where it will run.
+      const l = CreateLines('routePoly', { points: pts.map((q) => new Vector3(q.x, q.y + e.height, q.z)) }, this.host.scene);
+      l.color = Color3.FromHexString('#7dffb0');
+      l.isPickable = false;
+      this.lines.push(l);
+      return;
+    }
     if ((e.kind === 'airplane' ? e.closed : e.mode === 'loop') && line.length >= 3) line.push(line[0]!.clone());
     if (e.kind === 'airplane') {
       // A drop route: green where it flies over the play area (riders may jump), grey outside it.
