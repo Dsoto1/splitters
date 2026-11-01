@@ -8,3 +8,5 @@ export * from './sim/encounters.ts';
 export * from './sim/modes/index.ts';
 export * from './sim/profile.ts';
 export * from './sim/clump.ts';
+// Bot naming and characters, for test hooks that run against the match (e2e: which looks bots wear).
+export { castAllows, lookTheme } from './content/botNames.ts';
