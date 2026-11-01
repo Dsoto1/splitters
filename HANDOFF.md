@@ -10,6 +10,17 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Vehicle shake fix (lead, 2026-11-01; on `wip/buggy-cockpit`)
+Owner: "the buggy shakes violently when I drove it". The sim is smooth (a scratch test drove it: height steady to the mm,
+no heading wobble). Cause, on the client: `View.suspend()` read speed, acceleration and turn rate off frame-to-frame
+movement of the eased drawn pose (`m.shown`), which surges and stalls as snapshots arrive; acceleration × 0.006 swung
+the drawn pitch by up to ~0.1 rad every few frames at a steady 18 m/s, and the cockpit eye rides that pose. Now it uses
+the mount's tick-based `vel` and `spin` (`mountState.apply`), with acceleration low-passed (the velocity steps once per
+snapshot). Second part: `smooth()` projected ahead from each snapshot's arrival time, so arrival jitter (worker, network)
+moved the drawn position; `m.at` now follows the ticks, pulled 10% toward the real arrival. Test:
+`mountSmooth.test.ts` (jittered arrivals at 144 fps: 6% speed wobble before, under 3% after). Note: headless software
+rendering runs 1-2 fps, so this can't be measured in the browser here; the replay scripts were plain Node.
+
 ### Buggy cockpit interior (`wip/buggy-cockpit`, agent, 2026-11-01; not merged)
 Owner's screenshot: the buggy's cockpit view looked mushy up close (seats, wheel, dash). The body is the owner's
 Meshy download (3.98M triangles, one 2048 px colour map) cut to 40k with one 2048 map over 4.4 m.

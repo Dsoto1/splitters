@@ -8,6 +8,10 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Vehicles**
+- Driving no longer shakes: the body's lean, squat and dive come from the vehicle's real speed and turn rate instead of from frame-to-frame movement of its drawn position, and that position no longer jumps with the few ms each update arrives early or late. Most noticeable in the buggy's cockpit view.
+- The buggy's cockpit is drawn in far more detail while you drive it in first person (seats, wheel, dash and roll cage at about twice the geometry, with a sharper surface map); everyone else still sees the lighter model.
+
 **Main menu: Profile**
 - The character card top right is now your **Profile**: your character's portrait and name, your player name and whether you're signed in (Guest, ✓ Signed in, Pick a username). It opens the Profile panel (also P, or Y on a controller): your character with **Change character**, your name, **Sign in** / **Sign out** and your username, your region and the privacy link. The separate Characters item is gone from the menu.
 - **Sign in** is no longer a small link in the bottom bar: signed out, an orange Sign in button sits under the Profile card and in the Profile panel. (Same Google sign-in as before.)
