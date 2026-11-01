@@ -719,6 +719,7 @@ export class Match {
         const c = this.npcs.get(id);
         return c && { alive: c.alive, pos: c.move.pos, brain: c.bot! };
       },
+      inShutDoor: (pos) => this.scenario.inShutDoor(pos, PLAYER.radius),
       entityPos: (id) => {
         const e = map.entities.find((x) => x.id === id);
         return e && { x: e.position[0], y: e.position[1], z: e.position[2] };

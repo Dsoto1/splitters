@@ -20,12 +20,12 @@ describe('character sizes', () => {
     const back = decodeLook(kitted)!;
     expect([back.size, back.cloth, back.trim, back.gear]).toEqual(['large', '#2a3a5c', null, ['goggles', 'vest', 'pack']]);
     // The helmets appended to GEAR widen the gear mask past four hex digits; older IDs keep four.
-    const bare = { ...getLook('core.commando'), gear: [] };
+    const bare = { ...getLook('core.warden'), gear: [] };
     const helmeted = encodeLook({ ...bare, gear: ['mk2_helmet', 'shades'] });
     expect(helmeted).toMatch(/-g[0-9a-f]{5}$/);
     expect(decodeLook(helmeted)?.gear).toEqual(['shades', 'mk2_helmet']);
     expect(encodeLook({ ...bare, gear: ['helmet'] })).toMatch(/-g0004$/);
-    expect(bodySizeOf('core.bulwark')).toBe('large');
+    expect(bodySizeOf('core.knight')).toBe('large');
     expect(bodySizeOf('core.sprout')).toBe('small');
     expect(bodySizeOf('core.ranger')).toBe('standard');
   });
@@ -46,14 +46,14 @@ describe('character sizes', () => {
 
   it('large characters have more health and move slower; the match setting can make everyone standard', () => {
     const on = new Match(room(), DEFAULT_DEATHMATCH_RULES);
-    const big = on.addHuman('big', 'core.bulwark')!;
+    const big = on.addHuman('big', 'core.knight')!;
     const small = on.addHuman('small', 'core.sprout')!;
     expect(big.maxHealth).toBe(BODY_SIZES.large.health);
     expect(big.speedMul).toBeLessThan(1);
     expect(small.size).toBe(BODY_SIZES.small.scale);
     expect(small.maxHealth).toBe(BODY_SIZES.small.health);
     const off = new Match(room(), { ...DEFAULT_DEATHMATCH_RULES, bodySizes: false });
-    const same = off.addHuman('big', 'core.bulwark')!;
+    const same = off.addHuman('big', 'core.knight')!;
     expect(same.size).toBe(1);
     expect(same.maxHealth).toBe(100);
   });

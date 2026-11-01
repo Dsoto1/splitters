@@ -1155,6 +1155,16 @@ export class Scenario {
     return out;
   }
 
+  /** Whether a body standing at `pos` (radius `radius`) would be in a door that is not open (spawns keep out of them). */
+  inShutDoor(pos: Vec3, radius: number): boolean {
+    for (const d of this.doors.values()) {
+      if (d.open >= 0.9) continue;
+      const b = this.doorPlane(d);
+      if (pos.x + radius > b.min.x && pos.x - radius < b.max.x && pos.z + radius > b.min.z && pos.z - radius < b.max.z && pos.y + PLAYER.height > b.min.y && pos.y < b.max.y) return true;
+    }
+    return false;
+  }
+
   private doorPlane(d: DoorRt): Aabb {
     return oboxAabb({ ...doorway(d.e), half: { ...doorway(d.e).half, z: DOOR.thickness } });
   }

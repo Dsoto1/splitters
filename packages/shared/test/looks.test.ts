@@ -87,11 +87,11 @@ describe('character looks', () => {
 
   it('gives players their chosen look and bots a spread of looks in the roster', () => {
     const match = new Match(loadArena());
-    match.addHuman('Ann', 'core.medic');
+    match.addHuman('Ann', 'core.warden');
     match.addHuman('Bo', 'not-a-look');
     for (let i = 0; i < 3; i++) match.addBot(`Bot${i}`, CORE_BOT_PROFILES[0]!);
     const roster = match.roster();
-    expect(roster.find((r) => r.name === 'Ann')!.look).toBe('core.medic');
+    expect(roster.find((r) => r.name === 'Ann')!.look).toBe('core.warden');
     expect(roster.find((r) => r.name === 'Bo')!.look).toBe(DEFAULT_LOOK);
     const bots = roster.filter((r) => r.bot);
     expect(bots.length).toBeGreaterThan(1);

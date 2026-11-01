@@ -4,6 +4,7 @@ import {
   CORE_BOT_PROFILES,
   DEFAULT_COOP_RULES,
   NPC_ID_BASE,
+  PLAYER,
   initPhysics,
   loadMap,
   lookAngles,
@@ -292,7 +293,20 @@ describe('co-op mission: Outpost Siege', () => {
     const match = new Match(map, DEFAULT_COOP_RULES, 5);
     for (let i = 0; i < 3; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i]!);
     const events: GameEvent[] = [];
-    for (let t = 0; t < 60 * 60; t++) events.push(...match.step());
+    // NPCs never spawn in a closed door. A guard sent in to fill the squad used to land in the locked gate, out of
+    // everyone's reach, and the courtyard never cleared.
+    const seen = new Set<number>();
+    const inDoor: number[] = [];
+    for (let t = 0; t < 60 * 60; t++) {
+      events.push(...match.step());
+      for (const [id, n] of match.npcs) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        if (match.scenario.inShutDoor(n.move.pos, PLAYER.radius)) inDoor.push(id);
+      }
+    }
+    expect(seen.size).toBeGreaterThan(4);
+    expect(inDoor).toEqual([]);
     expect(events.some((e) => e.e === 'kill' && e.victim >= NPC_ID_BASE)).toBe(true);
     expect(match.scenario.objectiveState('obj_courtyard')).toBe('complete');
   });

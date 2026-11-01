@@ -10,6 +10,23 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Roster Board applied: CI fallout (`wip/roster-apply`, agent, 2026-11-01; not merged)
+Retiring 15 looks moved every bot's look (and body size) in the rotation (`lookForBot` walks CORE_LOOKS), so four
+seeded scenarios landed on real bugs, fixed: Small bodies couldn't use a portal set against a wall (the catch margin
+scaled with size; now `PORTAL_CATCH`, the same for all); bots came out of a portal and walked straight back in (the
+leg now counts as done on teleport; `BotBrain.portalled`); an encounter fill-in could spawn inside a closed door
+(Outpost Siege: a guard in the locked gate, courtyard never cleared; `Scenario.inShutDoor`); the Battle Axe test's
+"nobody about" player respawned at once (now leaves). botMovement names the look its thresholds were measured on
+(Sprout). e2e `characters`: grip checks use Linktifa; `View.gripReport` measures each mesh at the LOD it was drawn at
+(a whole-body LOD has its own skeleton, posed only while drawn: the near mesh of a far bot held a stale or rest pose,
+0.3-1.6 m "off"); a gun just put in hand is hidden until placed (it sat at the feet until the next placement: a frame,
+or 66-100 ms on stepped far bots). Still open: **Boglurker**'s shooting hand is drawn ~20 cm off the grip (fingers
+along 0.36) at full detail, and its LOD has no right-hand skin (measures null); one bot of the check's allowance.
+Also seen, not touched: Pantry Raid's mouse holes are behind the 0.9 m skirting board (block_015/block_014), so nobody
+walks into them without jumping.
+
+### Drive intake + FX full packs (`wip/drive-intake`, agent, 2026-11-01; not merged)
+
 ### `wip/original-looks` (agent, 2026-11-01; not merged): the original characters' hats, eyewear and beards
 Owner: the part-built looks have "bowls on heads, eyewear and mustaches all strange"; Engineer's "accessories need work",
 Sprout's headband. Started from 899537c's ideas

@@ -227,6 +227,8 @@ export class CharacterAnimator {
   private readonly hand?: TransformNode;
   private weapon: TransformNode | null = null;
   private grip: WeaponHold | null = null;
+  /** The weapon was just put in hand and not yet placed there: hidden until it is (see hold). */
+  private unplaced = false;
   private readonly arms: { r: Arm; l: Arm } | null;
   /** The skeleton's root joint: IK works in its space (the glTF import mirrors everything above it). */
   private readonly skelRoot?: TransformNode;
@@ -331,9 +333,14 @@ export class CharacterAnimator {
     this.grip = weapon ? grip : null;
     this.external = null;
     this.inHand.valid = false;
+    this.unplaced = false;
     if (weapon) {
       weapon.parent = this.ch.root;
       weapon.rotationQuaternion ??= Quaternion.Identity();
+      // It starts at the character's feet (the root's origin) until the hands next take it, after the animations:
+      // for a far character whose clips step at 10-15 Hz that can be several frames. Hidden until then.
+      this.unplaced = !!(grip && this.arms && this.skelRoot && this.spine.length);
+      if (this.unplaced) weapon.setEnabled(false);
     }
   }
 
@@ -836,7 +843,7 @@ export class CharacterAnimator {
     this.weights.set('aim_idle', 1);
     this.play('aim_idle', 1);
     this.aimUpper?.start(true);
-    this.weapon?.setEnabled(true);
+    this.weapon?.setEnabled(!this.unplaced);
   }
 
   /** Bend the spine for aim pitch and counter-twist the hip turn, then put the weapon in the hands. */
@@ -1005,6 +1012,10 @@ export class CharacterAnimator {
     // Into the root's space.
     weapon.position.copyFrom(Vector3.TransformCoordinates(at, root.getWorldMatrix().clone().invert()));
     weapon.rotationQuaternion = Quaternion.Inverse(rootRot).multiply(rot);
+    if (this.unplaced) {
+      this.unplaced = false;
+      weapon.setEnabled(true);
+    }
   }
 
   /**

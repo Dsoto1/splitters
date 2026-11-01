@@ -351,8 +351,9 @@ describe('bot tactics', () => {
           if (e.e === 'melee' && e.s === bot.slot) swings++;
         }
       }
-      // Nobody about: it loads the barrel again from its shells.
-      me.alive = false;
+      // Nobody about: it loads the barrel again from its shells. The player leaves rather than just dying: a
+      // dead player respawns at once, at the far spawn, and a bot that walked that way would fight them there.
+      match.remove(me.slot);
       axe.alt = 0;
       const reserve = axe.reserve;
       let loaded = 0;

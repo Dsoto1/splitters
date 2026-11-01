@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BOT_STYLES, type BotStyle } from '../bots/profile.ts';
-import { CORE_LOOKS } from '../content/looks.ts';
+import { CORE_LOOKS, RETIRED_LOOKS } from '../content/looks.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { MAP_ID_RE } from './playlist.ts';
 import { MAX_TEAMS, NPC_LOOKS } from './npc.ts';
@@ -102,7 +102,9 @@ export function validateBotSet(raw: unknown): { set: BotSet; fixes: string[] } |
     used.add(name.toLowerCase());
     const out: BotEntry = { name };
     if (e.look !== undefined && e.look !== 'random' && e.look !== '') {
-      if (isBotLook(e.look)) out.look = e.look;
+      // A retired look (a set saved before it was retired) plays as the look that replaced it.
+      const look = typeof e.look === 'string' ? (RETIRED_LOOKS[e.look] ?? e.look) : e.look;
+      if (isBotLook(look)) out.look = look;
       else fixes.push(`${name}: unknown look, random instead`);
     }
     if (e.skill !== undefined && e.skill !== 'default' && e.skill !== '') {
@@ -209,8 +211,8 @@ export type BotSetPreset = z.infer<typeof BotSetPreset>;
 export function parseBotSetPreset(json: unknown): BotSetPreset | null {
   const r = BotSetPreset.safeParse(json);
   if (!r.success) return null;
-  if (r.data.entries.some((e) => e.look !== undefined && !isBotLook(e.look))) return null;
-  return r.data;
+  if (r.data.entries.some((e) => e.look !== undefined && !isBotLook(RETIRED_LOOKS[e.look] ?? e.look))) return null;
+  return { ...r.data, entries: r.data.entries.map((e) => (e.look !== undefined && RETIRED_LOOKS[e.look] ? { ...e, look: RETIRED_LOOKS[e.look] } : e)) };
 }
 
 /** A map's own bots (MapDocument.bots) as the set it plays, or null when it has none that change anything. */
