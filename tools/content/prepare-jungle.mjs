@@ -2,14 +2,15 @@
 // Jungle Ruins" sheet with "Tileset 07 Ancient Temple" folded in: the new
 // props we model ourselves, in code, from plain geometry
 // (tools/content/pieces.mjs): a zipline post, a crane with its pulley, a
-// wooden platform, temple guardian statues (large and small), an obelisk, a
+// wooden platform, a small temple guardian statue, an obelisk, a
 // temple spire, fire bowl, hanging brazier and wall torch, teal and red temple
 // banners, a tree-root arch, a mossy trunk, a plant cluster, a planter,
 // pottery, a rubble pile, a collapsed and a broken column, a sarcophagus, a
 // spike row, chain and rope rails, a temple altar and an overgrown beam. No
 // pack and no generative AI service is involved: the code is the source. (The
-// large statue, the crane and the zipline post are simple in-house versions;
-// Meshy hero versions wait for the owner.) The pack's first seventeen props
+// crane and the zipline post are simple in-house versions; Meshy hero versions
+// wait for the owner. The large statue, jt_statue_large, is the owner's Meshy
+// statue now: pack meshy-owned-landmarks.) The pack's first seventeen props
 // (jg_*) stay in tools/content/build-style-props.mjs, unchanged.
 //
 //   node tools/content/prepare-jungle.mjs
@@ -261,16 +262,6 @@ const PROPS = {
       const f = k / 7;
       p.box('plankDark', [-0.3, 2.0 * f - 0.03, 2.1 - 0.55 * f - 0.03], [0.3, 2.0 * f + 0.03, 2.1 - 0.55 * f + 0.03]);
     }
-    return p;
-  },
-  jt_statue_large() {
-    // A seated temple guardian on a stepped plinth, moss on its shoulders (a stand-in for a Meshy hero piece).
-    const p = piece('jt_statue_large');
-    p.box('stoneDark', [-1.4, 0, -1.2], [1.4, 0.4, 1.4]);
-    p.box('stone', [-1.2, 0.4, -1.0], [1.2, 0.9, 1.2]);
-    p.box('gold', [-1.21, 0.6, 1.2], [1.21, 0.7, 1.22]);
-    figure(p, 2.4, 0.9, 'stoneLight', 'stone', { seated: true });
-    for (const [x, y, z, r] of [[-0.9, 4.6, -0.2, 0.25], [0.8, 4.5, 0.1, 0.22], [-1.1, 1.0, 1.0, 0.3], [0.9, 0.95, -0.9, 0.28]]) blob(p, 'moss', [x, y, z], r, 0.5);
     return p;
   },
   jt_statue_small() {

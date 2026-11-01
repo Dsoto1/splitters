@@ -2719,9 +2719,9 @@
     },
     {
       "file": "characters/meshy_elder.glb",
-      "sha256": "4e09324e8be54629",
-      "triangles": 11000,
-      "bytes": 733100,
+      "sha256": "cbc2d9fa3a84e016",
+      "triangles": 12118,
+      "bytes": 1059164,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Elder T-pose (download dated 2025-11-14)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -2740,9 +2740,9 @@
     },
     {
       "file": "characters/meshy_elder_fparms.glb",
-      "sha256": "cede34607416a43f",
-      "triangles": 646,
-      "bytes": 275360,
+      "sha256": "5d2262ab207a52ee",
+      "triangles": 2587,
+      "bytes": 391316,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Elder T-pose (download dated 2025-11-14)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -2758,9 +2758,9 @@
     },
     {
       "file": "characters/meshy_alien.glb",
-      "sha256": "1be742c0c62994a0",
+      "sha256": "53e9ea6ae24bb218",
       "triangles": 9998,
-      "bytes": 485872,
+      "bytes": 603412,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Alien (download dated 2026-07-21)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -2779,9 +2779,9 @@
     },
     {
       "file": "characters/meshy_alien_fparms.glb",
-      "sha256": "3b95512d47f2215d",
-      "triangles": 1012,
-      "bytes": 195992,
+      "sha256": "64fd1e6a80ec3a58",
+      "triangles": 3296,
+      "bytes": 283484,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Alien (download dated 2026-07-21)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -2836,9 +2836,9 @@
     },
     {
       "file": "characters/meshy_pilot.glb",
-      "sha256": "e26fd39ac5c4338d",
-      "triangles": 10999,
-      "bytes": 752968,
+      "sha256": "792742c36600e800",
+      "triangles": 10998,
+      "bytes": 912440,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Pilot (download dated 2026-05-10)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -2857,9 +2857,9 @@
     },
     {
       "file": "characters/meshy_pilot_fparms.glb",
-      "sha256": "dd4725f74683d963",
-      "triangles": 963,
-      "bytes": 368736,
+      "sha256": "a1d7659ea9305fe9",
+      "triangles": 2350,
+      "bytes": 429012,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): T Pose Pilot (download dated 2026-05-10)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -3808,18 +3808,17 @@
     },
     {
       "file": "characters/meshy_bandit.glb",
-      "sha256": "8dec05a2bef32bb1",
-      "triangles": 10995,
-      "bytes": 834316,
+      "sha256": "edb81dcbe52fef01",
+      "triangles": 10989,
+      "bytes": 829244,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): a raccoon warrior in T-pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
       "modifications": [
-        "rigged in-house (joints found from the mesh's silhouette (tools/content/landmarks.mjs), skin weights computed from the mesh)",
         "re-posed to the rig's T-pose",
-        "bound to the rig's skeleton",
+        "rebound to the rig's skeleton",
         "simplified",
         "base colour only, downscaled to a JPEG",
         "vertices quantized",
@@ -3829,9 +3828,9 @@
     },
     {
       "file": "characters/meshy_bandit_fparms.glb",
-      "sha256": "f35defc5a2b7255e",
-      "triangles": 4270,
-      "bytes": 390964,
+      "sha256": "64de58889be75e2d",
+      "triangles": 1987,
+      "bytes": 301308,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): a raccoon warrior in T-pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4342,17 +4341,18 @@
     },
     {
       "file": "characters/meshy_wizard.glb",
-      "sha256": "a80e3a7ff34c4b61",
-      "triangles": 11176,
-      "bytes": 986164,
+      "sha256": "fa65b6b2555a052e",
+      "triangles": 11394,
+      "bytes": 988672,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): wizard t pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
       "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
         "re-posed to the rig's T-pose",
-        "rebound to the rig's skeleton",
+        "bound to the rig's skeleton",
         "simplified",
         "base colour only, downscaled to a JPEG",
         "vertices quantized",
@@ -4362,9 +4362,9 @@
     },
     {
       "file": "characters/meshy_wizard_fparms.glb",
-      "sha256": "dffd6f762df25022",
-      "triangles": 2779,
-      "bytes": 345320,
+      "sha256": "b8827a8e1bc9c312",
+      "triangles": 2812,
+      "bytes": 336468,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): wizard t pose (download dated 2026-10-29)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4560,6 +4560,240 @@
       "creator": "Meshy, owned (generated by the owner on their Meshy subscription)",
       "url": "https://www.meshy.ai",
       "license": "Owned",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_croakley.glb",
+      "sha256": "3f5b1fdc337b9319",
+      "triangles": 10996,
+      "bytes": 843352,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_croakley_fparms.glb",
+      "sha256": "95439ece1a7c8891",
+      "triangles": 2496,
+      "bytes": 339252,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_snikkit.glb",
+      "sha256": "e3dfe3ff6580ab45",
+      "triangles": 10997,
+      "bytes": 800492,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_snikkit_fparms.glb",
+      "sha256": "37ea4efb98bca3b5",
+      "triangles": 3884,
+      "bytes": 349240,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_scamp.glb",
+      "sha256": "1a40c21c12b5cca9",
+      "triangles": 10998,
+      "bytes": 589640,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_scamp_fparms.glb",
+      "sha256": "801746e998e16c50",
+      "triangles": 2128,
+      "bytes": 207288,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_halvard.glb",
+      "sha256": "f5f78a8a7ac940b6",
+      "triangles": 10998,
+      "bytes": 936152,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_halvard_fparms.glb",
+      "sha256": "dda1600ad275e538",
+      "triangles": 2611,
+      "bytes": 361868,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_pruitt.glb",
+      "sha256": "ae8c86c90bd002d0",
+      "triangles": 10998,
+      "bytes": 965188,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_pruitt_fparms.glb",
+      "sha256": "35e863abf590a582",
+      "triangles": 3169,
+      "bytes": 422572,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_greyfang.glb",
+      "sha256": "bba3dbb97cc5c366",
+      "triangles": 10998,
+      "bytes": 740976,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "rigged in-house (joints placed by hand, skin weights computed from the mesh)",
+        "re-posed to the rig's T-pose",
+        "bound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_greyfang_fparms.glb",
+      "sha256": "cf42cf1669aea1c2",
+      "triangles": 2238,
+      "bytes": 282252,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
       "modifications": [
         "arms cut from the body",
         "re-posed to the rig's T-pose",
@@ -25301,18 +25535,174 @@
       ]
     },
     {
-      "file": "props/mv_well.glb",
-      "sha256": "8cf768332d7e8fcf",
-      "triangles": 480,
-      "bytes": 21636,
-      "source": "tiletrigger-medieval/mv_well.glb",
-      "title": "Style Pack pieces (Medieval Village)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-medieval.mjs)",
-      "url": "tools/content/prepare-medieval.mjs",
+      "file": "props/mv_market_stall.glb",
+      "sha256": "8c0953626422be51",
+      "triangles": 13846,
+      "bytes": 954020,
+      "source": "meshy-owned-landmarks/Meshy_AI_Medieval_Market_Stall_1031210611_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Medieval Market Stall (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-medieval.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/rustic_market_stall.glb",
+      "sha256": "fd33d6fb702d719a",
+      "triangles": 11999,
+      "bytes": 736920,
+      "source": "meshy-owned-landmarks/654eb614-Meshy_AI_Rustic_Market_Stall_1031225038_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Rustic Market Stall (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/temple_fire_statue.glb",
+      "sha256": "e75fe0bfb2929f2e",
+      "triangles": 8999,
+      "bytes": 635312,
+      "source": "meshy-owned-landmarks/93717971-Meshy_AI_Fire_Statue_1031225423_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Fire Statue (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/temple_spear_statue.glb",
+      "sha256": "d125de5eb2db3f66",
+      "triangles": 16000,
+      "bytes": 1001600,
+      "source": "meshy-owned-landmarks/Meshy_AI_Spear_Statue_1031225310_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Spear Statue (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/temple_monk_statue.glb",
+      "sha256": "bb9554014bfc0bba",
+      "triangles": 16000,
+      "bytes": 995564,
+      "source": "meshy-owned-landmarks/Meshy_AI_Monk_Statue_1031225417_stylize.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Monk Statue (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/town_fountain.glb",
+      "sha256": "cd3baaca28faa8e7",
+      "triangles": 18000,
+      "bytes": 984792,
+      "source": "meshy-owned-landmarks/Meshy_AI_Fountain_1031231024_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Fountain (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/lion_head_fountain.glb",
+      "sha256": "414c28c98faebe75",
+      "triangles": 16000,
+      "bytes": 987440,
+      "source": "meshy-owned-landmarks/4701f0b8-Meshy_AI_Lion_Head_Fountain_1031231407_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Lion Head Fountain (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/eagle_fountain.glb",
+      "sha256": "be3592e5e4fc13c9",
+      "triangles": 18000,
+      "bytes": 1106276,
+      "source": "meshy-owned-landmarks/Meshy_AI_Eagle_Stone_Fountain_1031231423_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Eagle Stone Fountain (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
+      ]
+    },
+    {
+      "file": "props/mv_well.glb",
+      "sha256": "f05f05e7d818b1f0",
+      "triangles": 11886,
+      "bytes": 810776,
+      "source": "meshy-owned-landmarks/34953cf5-Meshy_AI_Wishing_Well_1031230639_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Wishing Well (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "modifications": [
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
@@ -26112,17 +26502,21 @@
     },
     {
       "file": "props/dc_market_stall.glb",
-      "sha256": "1cbcecea1772f953",
-      "triangles": 1486,
-      "bytes": 59132,
-      "source": "tiletrigger-desert/dc_market_stall.glb",
-      "title": "Style Pack pieces (Desert City)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
-      "url": "tools/content/prepare-desert.mjs",
+      "sha256": "328d07f15452ea9a",
+      "triangles": 12000,
+      "bytes": 621644,
+      "source": "meshy-owned-landmarks/df47cbd8-Meshy_AI_Market_Stall_Render_1031225044_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Market Stall (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-desert.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
@@ -26187,17 +26581,21 @@
     },
     {
       "file": "props/dc_well.glb",
-      "sha256": "ee1fa2a389ab6a86",
-      "triangles": 608,
-      "bytes": 27464,
-      "source": "tiletrigger-desert/dc_well.glb",
-      "title": "Style Pack pieces (Desert City)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
-      "url": "tools/content/prepare-desert.mjs",
+      "sha256": "f05f05e7d818b1f0",
+      "triangles": 11886,
+      "bytes": 810776,
+      "source": "meshy-owned-landmarks/34953cf5-Meshy_AI_Wishing_Well_1031230639_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Wishing Well (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-desert.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
@@ -26247,17 +26645,21 @@
     },
     {
       "file": "props/dc_crane.glb",
-      "sha256": "09d422b778f1d407",
-      "triangles": 184,
-      "bytes": 11680,
-      "source": "tiletrigger-desert/dc_crane.glb",
-      "title": "Style Pack pieces (Desert City)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
-      "url": "tools/content/prepare-desert.mjs",
+      "sha256": "99d3643c75608ee9",
+      "triangles": 17978,
+      "bytes": 1259648,
+      "source": "meshy-owned-landmarks/d2c8ef10-Meshy_AI_Crawler_Crane_1031230740_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Crawler Crane (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-desert.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {
@@ -26457,17 +26859,21 @@
     },
     {
       "file": "props/jt_statue_large.glb",
-      "sha256": "4b990bae4ccce4ea",
-      "triangles": 784,
-      "bytes": 27956,
-      "source": "tiletrigger-jungle/jt_statue_large.glb",
-      "title": "Style Pack pieces (Jungle Ruins refresh)",
-      "creator": "Tile Trigger team (modelled in code by tools/content/prepare-jungle.mjs)",
-      "url": "tools/content/prepare-jungle.mjs",
+      "sha256": "b34c37c5b2a497be",
+      "triangles": 16000,
+      "bytes": 1028676,
+      "source": "meshy-owned-landmarks/176cdb9a-Meshy_AI_mayan_statue_1031225330_texture.glb",
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane: Mayan Statue (owner's Meshy) (download dated 2026-10-31)",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
       "license": "Owned",
       "modifications": [
-        "built in code by tools/content/prepare-jungle.mjs",
-        "centred, stood on the ground and scaled to metres"
+        "converted to glTF (FBX via three.js FBXLoader)",
+        "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
+        "lower level of detail added",
+        "turned to face +Z, centred, stood on the ground and scaled to metres",
+        "maps re-encoded as JPEGs (1024 px colour)"
       ]
     },
     {

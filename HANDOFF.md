@@ -36,7 +36,82 @@ Owner: "build real ziplines if it's easy enough; should also be a MapMaker eleme
 - Left: a hand-over-head hanging pose (needs the grip IK to let go of the support hand); minimap/plan don't
   draw ziplines; R in MapMaker doesn't rotate a zipline (no yaw: drag its ends).
 
-### Grip audit and fix for every character (`wip/grip-audit`, agent, 2026-10-31/11-01; not merged)
+### T-pose characters (`wip/tpose-characters`, agent, 2026-11-01; not merged; branched from `wip/grip-audit` + main)
+Owner: "I uploaded T-poses to use, couldn't find some and found some new ones" (13 Meshy GLBs, kept outside the repo
+in the machine's `~/meshy-drive/tposes-2026-11-01/`). Merge after `wip/grip-audit` (this branch holds it, plus a merge
+of main for Character Select's groups). Each download was rendered front/side next to the shipped model and matched
+by looking, not by name:
+- **Same model, rebuilt** (look IDs unchanged; licence as the manifest had it, CC0 community): Alien → The Visitor,
+  Elder → Elder Tomo, Pilot → Flt. Lt. Ember, wizard → Merrow the Wise (now rigged here from T-pose landmarks instead
+  of Meshy's rig; no `cloth`, since his sleeves hang below the hips: hands out of the sleeves, audit 3 → 3, spikes 2 →
+  0). The first three keep their manifest landmarks (they fit the GLBs); `source.file` takes `.glb` or `.fbx`.
+  **Cat → Biscuit is the same model but NOT replaced yet**: rebuilt from the GLB with curled paws (`hands.curl` 1) the
+  grip audit went 10 → 0, but e2e `characters` ("hands are drawn ... flat to its side") failed on every Biscuit pose
+  (flat 0.02-0.10); with rigid paws one pose still fails (pistol, body, pitch -1.45: flat 0.59 < 0.6). The shipped
+  Biscuit (passes) is kept; next: a `fixes.hands.palm` / paw frame for him, then rebuild with
+  `ONLY=meshy_cat` (source.file `^Meshy_AI_T_Pose_Cat_\d+_texture\.(glb|fbx)$`, landmarks fit as they are).
+- **Different models, new characters** (owned, rigged here from landmarks read off front/side views): Frog in Suspenders
+  → **Croakley** (Animals; not Boglurker), Goblin → **Snikkit** (Creatures & Machines; not the shipped Goblin), Monkey
+  → **Scamp** (Animals, tail; not Big Bab, whose `source.file` was narrowed to its own download), Old medieval → **Old
+  King Halvard** (Knights & Legends; not King Aldric), Officer → **Sgt. Pruitt** (Soldiers), Wolf → **Greyfang**
+  (Animals, tail), Gentleman Bear → **Barnaby Bruin** (Animals; **queued**, not built: his coat's texture islands hold
+  every texture-safe cut at 20.6-23k triangles, over the 20k budget; a sloppy cut scrambles the coat. Needs a texture
+  re-layout for characters, like the props' `rebake`, keeping the skin, or a lighter download).
+- **Figure** is not a character: a carved spear (a prop or weapon, left for the owner).
+- **Bandit**: the shipped build was the in-house fallback (found landmarks: fused legs, turned head) because the
+  model-fidelity rebuild had no rigged GLB; rebuilt from his recorded Meshy rig task (re-fetched, **no credits spent**):
+  audit 9 → 6 (flat, spikes), legs apart, head forward. The 5 approved credits are unspent.
+- Grip audit (rifle, before → after): The Visitor 0 → 0, Elder Tomo 0 → 0, Ember 0 → 0, Merrow 3 → 3,
+  Bandit 9 → 6; new: Snikkit 0, Greyfang 0, Sgt. Pruitt 3 (flat), Old King Halvard 3 (spikes), Scamp 6 (open, off, fp),
+  Croakley 9 (open, off, spikes, fp: the frog's long fingers hang open). Portraits captured locally for the eleven built.
+- Open: Barnaby and Biscuit (above); Croakley's and Scamp's open hands. Licences settled (owner, 2026-11-01): the new T-pose
+  models are Meshy community models under CC0 (pack `meshy-community-characters`). The "Figure" download (a carved spear) is
+  to become the model of our Spear weapon (queued).
+
+### Owner's Meshy props (`wip/owner-props`, agent, 2026-11-01; not merged)
+The owner's 12 uploads of 2026-10-31 (Meshy, owned; raw files in `/home/user/meshy-drive/owner-uploads-2026-10-31/`,
+not in the repo) are props of the new pack `meshy-owned-landmarks` (content/props.json, `download: owned_landmarks`:
+to rebuild, link the GLBs and the monk's `_stylize.glb` into `<dir>/owned_landmarks/` and run
+`ONLY=<ids> node tools/content/prepare-props.mjs --downloads <dir>`). All hero tier, 1024 px colour map, baked
+normals (512 px), one LOD.
+- Same ids as the stand-ins (maps unchanged): `dc_market_stall` (2.8 m), `dc_well` and `mv_well` (both the wishing
+  well, 2.2 m), `dc_crane` (crawler crane, 10 m, turned so the boom points +Z; `collide: shell` with the new
+  `shellTop: 3.2`, so only tracks and cab collide), `jt_statue_large` (Mayan statue, 4 m; the stand-in was 6.35 m).
+  Their code-built stand-ins are gone from prepare-desert/medieval/jungle.mjs and assets-src; the style-pack tests
+  expect the Meshy pack for those ids.
+- New: `mv_market_stall` (2.9 m), `rustic_market_stall` (Town & Market, 2.7 m), `temple_fire_statue` (3 m),
+  `temple_spear_statue` (3.5 m), `temple_monk_statue` (3 m; all three Jungle Ruins), `town_fountain` (2 m tall,
+  3.3 m across), `lion_head_fountain` (2 m), `eagle_fountain` (2.6 m; fountains in Town & Market). Added to the
+  Jungle, Desert, Medieval, Harbor and (rustic stall) Frontier STYLE_PACKS lists.
+- Market Town: prop_062 is `town_fountain` at scale 1 on the plinth top (y 0.5), replacing `fountain_square` at 0.4
+  (that Kenney prop is shared with serene_city, so it stays).
+- Asset viewer: with one prop (`?mode=assets&set=props&filter=/<id>.glb`) the camera frames it from the front.
+- Menu bundle after this: 824.7 kB gzip / 2927 kB raw (budget 840 / 3000). Checks: typecheck, test:changed (the
+  pads timeouts under load pass alone), content OK, validate-map clean, e2e editor + maps (market_town, qasr_medina).
+
+### `wip/menu-profile` (agent, 2026-10-31; merged to main 2026-11-01)
+Owner: Character Select's tabs "span too far and look cluttered", the bottom bar is cluttered, sign-in is
+hidden, and the top-right character tile should be the Profile with "Change character".
+- **Profile entry** (`profileEntry()`, `#profile-badge`, top right of Home): portrait, player name, character,
+  account chip (`accountState()`: Guest / ✓ Signed in / Pick a username); opens Profile (P, pad Y). Signed out
+  with sign-in offered: orange `#sign-in` (`button.cta`) under it. **Characters** left the Home nav.
+- **Profile** (`profile()`, `#profile-panel`): character (`#profile-change-character` → Character Select; C /
+  pad Y), player (guest name → "Change it in Options" / `#profile-sign-in`; signed in: username, `#sign-out`,
+  username form), region, privacy + Copy my account ID. Auth flow unchanged (account.ts untouched).
+- **Character Select**: `charSections()` → one `.char-grid` of `.char-sec` (sticky `.char-sec-head`, label +
+  count) with a `.char-jump` strip (`.char-chip`, lit by `sectionInView`/`markSection`); Q/E → `stepSection`;
+  chips/Q/E glide with our own rAF easing (`glideGrid`: a second smooth `scrollTo` while one was starting left
+  the grid in place); wheel/touch cancel it. Arrows / d-pad: `gridMove` (crosses sections). Opens on your
+  character's section. `charFrom`: Back and Choose return to the opener (Profile, Online). "All" is gone.
+- **Bottom bar** (`hints()`): `.hint-group`s moves | acts (main one `.main`, cyan) | util (Fullscreen); news +
+  Privacy only on Home (`footer[data-screen]`); the `, .` turn hint moved into the spin bar; touch: no bar off
+  Home. Footer account links (`footerLinks`) removed.
+- e2e: offline flow's Character Select block rewritten (Profile route, sections, strip, Q/E, wheel, arrows
+  across sections, Back/Choose → Profile, P/C keys); designer flow opens via Profile.
+- style.css changed, so CI runs the full suite on a check branch; locally run: offline, mobile, designer,
+  characters, visual. Screens: session scratchpad `profile/` (before/after at 1920, 1400, phone).
+
+### Grip audit and fix for every character (`wip/grip-audit`, agent, 2026-10-31/11-01; merged to main 8c5e491)
 The owner's screenshot brief (Character Select holding the AK, character by character; references: The Visitor and
 Rattles) is in the session branch's HANDOFF ("Queued (owner, 2026-10-31 evening): grip audit and fix"). What was done:
 - **Audit tool:** `tools/content/grip-audit.mjs` (+ `__grips.audit()` / `tools/gripAudit.ts`, `__grips.upper()`,
@@ -93,6 +168,7 @@ Rattles) is in the session branch's HANDOFF ("Queued (owner, 2026-10-31 evening)
 - Checks: typecheck; full vitest (1194 pass); content:check OK; e2e characters (all grip checks, in play, bots 9/9),
   designer, arsenal, visual PASS (characters' first run failed on a model load and a bot count under machine load;
   passed on rerun).
+
 ### `wip/character-groups` (agent, 2026-10-31; not merged)
 Owner: "organize the characters better (soldiers, zombies, animals, creatures, human, etc)", then "clicking a
 character should just be how I look around, not this hover business; select, then confirm".

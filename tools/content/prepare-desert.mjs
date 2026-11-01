@@ -1,13 +1,13 @@
 // MapMaker Style Pack 09 Desert City (the owner's "Tileset 02" sheet): the
 // props we model ourselves, in code, from plain geometry
-// (tools/content/pieces.mjs): a market stall and canopy, banners, a hanging
-// brass lantern, a palm in a stone planter, a covered water well, a vase and
-// a cluster of jars, a rug, a timber crane, a cloth line, a scaffold, awning,
-// lattice and shuttered windows, spice baskets, floor cushions round a brass
-// tray, a rug rack, a column and an ornate arch. No pack and no generative AI
-// service is involved: the code is the source. (The market stall, well and
-// crane are simple in-house versions under stable ids; better hero models can
-// take the same ids later.)
+// (tools/content/pieces.mjs): a market canopy, banners, a hanging brass
+// lantern, a palm in a stone planter, a vase and a cluster of jars, a rug, a
+// cloth line, a scaffold, awning, lattice and shuttered windows, spice
+// baskets, floor cushions round a brass tray, a rug rack, a column and an
+// ornate arch. No pack and no generative AI service is involved: the code is
+// the source. (The pack's market stall, well and crane, dc_market_stall,
+// dc_well and dc_crane, are the owner's Meshy models now: content/props.json,
+// pack meshy-owned-landmarks.)
 //
 //   node tools/content/prepare-desert.mjs
 //
@@ -151,21 +151,6 @@ function star(p, mat, x, y, z, r) {
 
 /** Each is built in metres, standing on y = 0, facing +Z; prepare-props measures and centres it. */
 const PROPS = {
-  dc_market_stall() {
-    // A market stall: a plank counter heaped with spice baskets and pots, a back shelf, a red canopy on four cedar poles.
-    const p = piece('dc_market_stall');
-    p.box('plank', [-1.2, 0, 0.1], [1.2, 0.9, 0.8]);
-    p.box('cedarDark', [-1.25, 0.9, 0.05], [1.25, 0.98, 0.85]);
-    basket(p, -0.75, 0.98, 0.45, 0.24, 'saffron');
-    basket(p, -0.2, 0.98, 0.45, 0.24, 'paprika');
-    basket(p, 0.35, 0.98, 0.45, 0.24, 'sumac');
-    jar(p, 0.9, 0.45, 0.4, 0.14);
-    p.box('cedar', [-1.2, 0, -0.85], [1.2, 1.6, -0.6]);
-    for (const x of [-0.8, 0, 0.8]) jar(p, x, -0.72, 0.35, 0.1, 'blue');
-    for (const x of [-1.25, 1.25]) for (const z of [-0.9, 0.95]) p.box('cedar', [x - 0.05, 0, z - 0.05], [x + 0.05, z < 0 ? 2.5 : 2.2, z + 0.05]);
-    canopy(p, 'red', -1.4, 1.4, 2.55, -1.05, 2.2, 1.25, 'cream');
-    return p;
-  },
   dc_canopy() {
     // A free-standing market canopy: red cloth on four cedar poles, a striped valance, ropes.
     const p = piece('dc_canopy');
@@ -215,25 +200,6 @@ const PROPS = {
     palm(p, 0, 0.7, 0, 3.2);
     return p;
   },
-  dc_well() {
-    // A covered water well: an octagonal stone curb, four cedar posts under a little blue dome, a windlass, rope and bucket.
-    const p = piece('dc_well');
-    p.ring('sandstone', [0, 0, 0], 0.62, 0.95, 0, 0.85, { seg: 8 });
-    p.ring('sandDark', [0, 0, 0], 0.6, 1.02, 0.85, 0.1, { seg: 8 });
-    p.cylinder('water', [0, 0, 0], 0.62, 0.0, 0.35, { seg: 8 });
-    for (const x of [-0.8, 0.8]) for (const z of [-0.8, 0.8]) p.box('cedar', [x - 0.07, 0.85, z - 0.07], [x + 0.07, 2.4, z + 0.07]);
-    p.box('cedarDark', [-0.95, 2.4, -0.95], [0.95, 2.52, 0.95]);
-    for (let i = 0; i < 6; i++) {
-      const y = 2.52 + i * 0.13;
-      const r = 0.92 * Math.sqrt(1 - (i / 6) ** 2);
-      p.cylinder('blue', [0, y, 0], r, 0, 0.13, { seg: 12, r1: 0.92 * Math.sqrt(Math.max(0, 1 - ((i + 1) / 6) ** 2)) });
-    }
-    p.cylinder('gold', [0, 3.3, 0], 0.03, 0, 0.35, { seg: 6 });
-    p.cylinder('cedar', [-0.8, 1.6, 0], 0.07, 0, 1.6, { seg: 8, axis: 'x' });
-    p.cylinder('rope', [0, 0.75, 0], 0.012, 0, 0.85, { seg: 4 });
-    p.cylinder('plank', [0, 0.55, 0], 0.13, 0, 0.22, { seg: 10, r1: 0.16 });
-    return p;
-  },
   dc_vase() {
     // A tall terracotta storage vase with blue bands (breaks when shot).
     const p = piece('dc_vase');
@@ -259,21 +225,6 @@ const PROPS = {
     p.box('red', [-0.82, 0.016, -1.32], [0.82, 0.02, 1.32]);
     for (const [s, m] of [[0.7, 'cream'], [0.5, 'blue'], [0.3, 'saffron'], [0.12, 'cream']]) obox(p, m, [0, 0.02 + (0.8 - s) * 0.004, 0], [s, 0.004, s * 1.4], { ry: Math.PI / 4 });
     for (let i = 0; i < 9; i++) for (const z of [-1.55, 1.5]) p.box('cream', [-0.9 + i * 0.225, 0, z], [-0.87 + i * 0.225, 0.008, z + 0.05]);
-    return p;
-  },
-  dc_crane() {
-    // A timber crane: a post on a stone base, a braced jib, a pulley, rope and a hook with a bale of goods.
-    const p = piece('dc_crane');
-    p.box('sandstone', [-0.5, 0, -0.5], [0.5, 0.5, 0.5]);
-    p.box('cedar', [-0.15, 0.5, -0.15], [0.15, 4.4, 0.15]);
-    p.box('cedar', [-0.12, 4.1, -0.3], [0.12, 4.4, 2.6]);
-    obox(p, 'cedarDark', [0, 3.3, 0.85], [0.1, 0.1, 1.9], { rx: -0.82 });
-    p.cylinder('iron', [-0.12, 4.0, 2.45], 0.1, 0, 0.24, { seg: 10, axis: 'x' });
-    p.cylinder('rope', [0, 1.8, 2.45], 0.015, 0, 2.2, { seg: 4 });
-    p.box('iron', [-0.04, 1.6, 2.41], [0.04, 1.8, 2.49]);
-    p.box('sack', [-0.35, 0.95, 2.1], [0.35, 1.6, 2.8]);
-    for (const y of [1.1, 1.45]) p.box('rope', [-0.36, y, 2.09], [0.36, y + 0.04, 2.81]);
-    p.cylinder('cedar', [-0.3, 1.2, 0], 0.08, 0, 0.6, { seg: 8, axis: 'x' });
     return p;
   },
   dc_cloth_line() {

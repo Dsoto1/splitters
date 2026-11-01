@@ -9,7 +9,7 @@
   "bio": "Came a very long way to study human culture. Stayed for the deathmatches.",
   "size": "small",
   "body": "male",
-  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm.",
+  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. Re-uploaded by the owner as an unrigged textured GLB (2026-11-01, same model) and rebuilt from it with the T-pose landmarks below, the head and hands keeping their share of the cut.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -18,7 +18,7 @@
     "community": {
       "model": "T Pose Alien"
     },
-    "file": "^Meshy_AI_T_Pose_Alien_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_T_Pose_Alien_\\d+_texture\\.(glb|fbx)$"
   },
   "finish": {
     "metallic": 0,

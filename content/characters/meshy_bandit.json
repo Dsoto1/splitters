@@ -9,7 +9,7 @@
   "bio": "Steals your ammo, your cover and, if you blink, your lunch.",
   "body": "male",
   "size": "small",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: raccoon. Was held back: a squat raccoon with a long tail that the found landmarks did not fit.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: raccoon. Was held back: a squat raccoon with a long tail that the found landmarks did not fit. The model-fidelity rebuild (2026-10-31) had no rigged GLB at hand and fell back to landmarks found on the mesh (legs fused, head turned); rebuilt 2026-11-01 from the recorded rig task (fetched again, no new credits).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",

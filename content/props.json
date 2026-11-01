@@ -537,6 +537,18 @@
       "convert": true,
       "textureSize": 512
     },
+    "meshy-owned-landmarks": {
+      "title": "Tile Trigger originals (made with Meshy): market stalls, wells, statues, fountains and a crane",
+      "creator": "Meshy, owned (generated on the owner's Meshy subscription)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "licenseFile": "assets-src/meshy-owned/License.txt",
+      "retrieved": "2026-10-31",
+      "download": "owned_landmarks",
+      "meshy": true,
+      "convert": true,
+      "textureSize": 1024
+    },
     "tiletrigger-desert": {
       "title": "Style Pack pieces (Desert City)",
       "creator": "Tile Trigger team (modelled in code by tools/content/prepare-desert.mjs)",
@@ -12609,13 +12621,181 @@
       "textureSize": 1024
     },
     {
-      "id": "mv_well",
-      "pack": "tiletrigger-medieval",
-      "src": "mv_well.glb",
-      "name": "Stone Well",
+      "id": "mv_market_stall",
+      "pack": "meshy-owned-landmarks",
+      "src": "Meshy_AI_Medieval_Market_Stall_1031210611_texture.glb",
+      "name": "Market Stall",
       "category": "Medieval Village",
-      "height": 2.62,
-      "collide": "box"
+      "height": 2.9,
+      "collide": "box",
+      "triangles": 14000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Medieval Market Stall (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024
+    },
+    {
+      "id": "rustic_market_stall",
+      "pack": "meshy-owned-landmarks",
+      "src": "654eb614-Meshy_AI_Rustic_Market_Stall_1031225038_texture.glb",
+      "name": "Rustic Market Stall",
+      "category": "Town & Market",
+      "height": 2.7,
+      "collide": "box",
+      "triangles": 12000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Rustic Market Stall (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024
+    },
+    {
+      "id": "temple_fire_statue",
+      "pack": "meshy-owned-landmarks",
+      "src": "93717971-Meshy_AI_Fire_Statue_1031225423_texture.glb",
+      "name": "Fire Statue",
+      "category": "Jungle Ruins",
+      "height": 3.0,
+      "collide": "box",
+      "triangles": 9000,
+      "maxError": 0.02,
+      "source": {
+        "model": "Fire Statue (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024,
+      "lod": [
+        0.35,
+        40
+      ]
+    },
+    {
+      "id": "temple_spear_statue",
+      "pack": "meshy-owned-landmarks",
+      "src": "Meshy_AI_Spear_Statue_1031225310_texture.glb",
+      "name": "Spear Guardian Statue",
+      "category": "Jungle Ruins",
+      "height": 3.5,
+      "collide": "box",
+      "triangles": 16000,
+      "maxError": 0.02,
+      "source": {
+        "model": "Spear Statue (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024,
+      "lod": [
+        0.35,
+        40
+      ]
+    },
+    {
+      "id": "temple_monk_statue",
+      "pack": "meshy-owned-landmarks",
+      "src": "Meshy_AI_Monk_Statue_1031225417_stylize.glb",
+      "name": "Monk Statue",
+      "category": "Jungle Ruins",
+      "height": 3.0,
+      "collide": "box",
+      "triangles": 16000,
+      "maxError": 0.02,
+      "source": {
+        "model": "Monk Statue (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024,
+      "lod": [
+        0.35,
+        40
+      ]
+    },
+    {
+      "id": "town_fountain",
+      "pack": "meshy-owned-landmarks",
+      "src": "Meshy_AI_Fountain_1031231024_texture.glb",
+      "name": "Tiered Fountain",
+      "category": "Town & Market",
+      "height": 2.0,
+      "collide": "box",
+      "triangles": 18000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Fountain (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024,
+      "lod": [
+        0.35,
+        50
+      ]
+    },
+    {
+      "id": "lion_head_fountain",
+      "pack": "meshy-owned-landmarks",
+      "src": "4701f0b8-Meshy_AI_Lion_Head_Fountain_1031231407_texture.glb",
+      "name": "Lion Head Fountain",
+      "category": "Town & Market",
+      "height": 2.0,
+      "collide": "box",
+      "triangles": 16000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Lion Head Fountain (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024,
+      "lod": [
+        0.35,
+        50
+      ]
+    },
+    {
+      "id": "eagle_fountain",
+      "pack": "meshy-owned-landmarks",
+      "src": "Meshy_AI_Eagle_Stone_Fountain_1031231423_texture.glb",
+      "name": "Eagle Stone Fountain",
+      "category": "Town & Market",
+      "height": 2.6,
+      "collide": "box",
+      "triangles": 18000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Eagle Stone Fountain (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024,
+      "lod": [
+        0.35,
+        50
+      ]
+    },
+    {
+      "id": "mv_well",
+      "pack": "meshy-owned-landmarks",
+      "src": "34953cf5-Meshy_AI_Wishing_Well_1031230639_texture.glb",
+      "name": "Wishing Well",
+      "category": "Medieval Village",
+      "height": 2.2,
+      "collide": "box",
+      "triangles": 12000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Wishing Well (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024
     },
     {
       "id": "mv_awning",
@@ -13096,12 +13276,20 @@
     },
     {
       "id": "dc_market_stall",
-      "pack": "tiletrigger-desert",
-      "src": "dc_market_stall.glb",
+      "pack": "meshy-owned-landmarks",
+      "src": "df47cbd8-Meshy_AI_Market_Stall_Render_1031225044_texture.glb",
       "name": "Market Stall",
       "category": "Desert City",
-      "height": 2.565,
-      "collide": "box"
+      "height": 2.8,
+      "collide": "box",
+      "triangles": 12000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Market Stall (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024
     },
     {
       "id": "dc_canopy",
@@ -13141,12 +13329,20 @@
     },
     {
       "id": "dc_well",
-      "pack": "tiletrigger-desert",
-      "src": "dc_well.glb",
-      "name": "Water Well",
+      "pack": "meshy-owned-landmarks",
+      "src": "34953cf5-Meshy_AI_Wishing_Well_1031230639_texture.glb",
+      "name": "Wishing Well",
       "category": "Desert City",
-      "height": 3.65,
-      "collide": "box"
+      "height": 2.2,
+      "collide": "box",
+      "triangles": 12000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Wishing Well (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024
     },
     {
       "id": "dc_vase",
@@ -13185,12 +13381,26 @@
     },
     {
       "id": "dc_crane",
-      "pack": "tiletrigger-desert",
-      "src": "dc_crane.glb",
-      "name": "Timber Crane",
+      "pack": "meshy-owned-landmarks",
+      "src": "d2c8ef10-Meshy_AI_Crawler_Crane_1031230740_texture.glb",
+      "name": "Crawler Crane",
       "category": "Desert City",
-      "height": 4.4,
-      "collide": "box"
+      "height": 10.0,
+      "yaw": 90,
+      "collide": "shell",
+      "shellTop": 3.2,
+      "triangles": 18000,
+      "maxError": 0.03,
+      "source": {
+        "model": "Crawler Crane (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024,
+      "lod": [
+        0.35,
+        50
+      ]
     },
     {
       "id": "dc_cloth_line",
@@ -13311,12 +13521,24 @@
     },
     {
       "id": "jt_statue_large",
-      "pack": "tiletrigger-jungle",
-      "src": "jt_statue_large.glb",
+      "pack": "meshy-owned-landmarks",
+      "src": "176cdb9a-Meshy_AI_mayan_statue_1031225330_texture.glb",
       "name": "Temple Guardian (Large)",
       "category": "Jungle Ruins",
-      "height": 6.35,
-      "collide": "box"
+      "height": 4.0,
+      "collide": "box",
+      "triangles": 16000,
+      "maxError": 0.02,
+      "source": {
+        "model": "Mayan Statue (owner's Meshy)",
+        "date": "2026-10-31"
+      },
+      "budget": "hero",
+      "textureSize": 1024,
+      "lod": [
+        0.35,
+        40
+      ]
     },
     {
       "id": "jt_statue_small",
