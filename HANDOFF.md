@@ -35,7 +35,12 @@ Sprout's headband. Started from 899537c's ideas
 - **Beard**: `hair_beard`'s file is no longer loaded; `BEARD` in gear.ts builds a full beard (sideburns, jaw, chin,
   moustache, mouth clear, ragged edges) in the hair colour. Designer's Beard option uses it too.
 - Tools: `__grips.head(alpha, radius, beta?)` frames the head after `__grips.pose(look, weapon, 'third')`.
-- Sheets (agent scratchpad): `original-looks/before.png`, `after.png` and per-look closeups.
+- Portraits re-captured: Sprout, Warden, Engineer (Linktifa's has no head gear). Menu bundle 827.4 kB gzip.
+- Checks: typecheck; headFit/bodySizes/mergeParts and the shared files test:changed picks (the bot-match ones timed
+  out under a load of ~30 and pass alone); content OK; e2e designer, visual PASS; characters: all checks passed
+  across two runs except the known flaky Imp hold; once "third person and back (core.pistol): no hands" (the Dapper,
+  no gear) which passed on the rerun. Full-body first person: no head gear, helmet or beard in view (up, ahead, down).
+- Sheets (agent scratchpad): `original-looks/before.png`, `after.png` and per-look closeups (kept looks only).
 
 ### `wip/warthog-step1` (agent, 2026-11-01; not merged): Warthog feel, step 1 (raycast suspension)
 Owner: "make the buggy feel like Halo's Warthog (independent suspension)", step 1, "if performance remains intact".
