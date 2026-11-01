@@ -10,6 +10,47 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Model quality, distance, thumbnails, Bandit's hold (`wip/model-quality`, agent, 2026-11-01; not merged; has `wip/new-characters` merged in)
+Owner's Roster Board flags (model, thumb, Bandit; Santa "awful from a distance"; later Giggles). Sheets in the agent's
+scratchpad `model-quality/` (distance-before-after-1..6.png, closeups-before-after.png, thumbnails-before-after.png,
+portraits-rebuilt-before-after.png; scripts distance.mjs, closeups.mjs, crowd.mjs, ptune.mjs, holdtune.mjs there).
+- **Far copies were the real "distance" bug** (every whole-body character): the LOD was meshopt's sloppy cut, which joins
+  triangles across the texture's charts, so far characters wore scrambled colours (Santa: white streaks; Croakley grey;
+  Big Bab noise). New `tools/content/character-lod.mjs`: the careful cut with UV weights and the "Permissive" flag (seams
+  collapse only where the layout agrees; Santa 1,621 → 5 of the far triangles across a seam), welded-shape fallback.
+  `fixes.lod` (share, 0.3 default). `relod-built.mjs` remade every built character's far copy from its shipped file
+  (no downloads needed). No middle LOD step: the sheets show the 3.3k copy holding at 18.5/30/60 m. Cost: far-copy
+  VERTICES 1,400 → 4,100 average (the seams the colours need); triangles 3,371 → 3,495 average.
+- **Scope**: `setCharacterLodZoom` (characters.ts, called from view.setCamera) moves the 18 m switch out by the zoom
+  (tan ratio of FOVs; sniper 0.4 rad → ~71 m). e2e characters checks it (`__charLodZoom`).
+- **Rebuilt** (downloads in meshy-drive/meshystuff, rig tasks re-fetched: no credits), `triangles` 15-17k, `headShare`
+  0.16 (new fix), `handsShare` 0.08-0.1, `normalSize` 1024 (new fix), `lod` 0.22-0.3: King Aldric 15,074 → 16,998
+  (LOD 4,471 → 4,742), Bandit 10,989 → 14,993 (3,115 → 3,284), Desert Ranger 10,999 → 15,000 (3,273 → 3,300), Dust
+  Trooper 13,420 → 15,018 (3,777 → 3,286), Grizzelda 14,558 → 15,963 rebaked (4,209 → 4,142), Thornweaver 16,100 →
+  15,851 rebaked (4,715 → 4,742), Lancer Mei 11,062 → 14,986 (3,265 → 3,258), Sgt. Pruitt 10,998 → 14,996 (3,154 →
+  3,293), Rotter 11,000 → 15,000 (3,201 → 3,288), Saint Nick 10,998 → 15,998 (3,088 → 4,796), Giggles 11,000 → 14,999
+  (3,161 → 3,297). Grizzelda and Thornweaver stalled over budget (21k/20.8k, 1.9/2.3 MB) with their fragmented
+  layouts: `surface: rebake` at 16k. All under 20k triangles and 1.8 MB (biggest Brother Ansel 1.70 MB, untouched).
+- **Not improved here (far copy only):** Boglurker and Goblin (in-house FBX builds; the FBX folders aren't on this
+  machine), Capt. Nova and the Dapper (every Meshy task in their manifests 404s on this key: rig, refine, remesh,
+  preview). Still visible after the rebuild and not a budget matter: Grizzelda's hands are flaps of sleeve skin, Dust
+  Trooper's and Giggles' sleeve spikes (skin weights: see Grip pass 2 "spikes").
+- **Bandit**: `fixes.hold: { forward 0.06, down 0.12, out 0.12 }` (new: look `whole.hold`, applied to the long-gun
+  stock pocket in characterAnimator.placeWeapon: third person and Character Select). First person isn't touched (the
+  gun is the view's; it can't be in the face there); portraits hold no gun. No per-look scale: his size is gameplay
+  (`small`, 0.78, same height as the other small ones); a visual-only scale would shrink him inside his hitbox.
+- **Portraits**: `PORTRAIT_VIEWS` (portraits.ts) now takes `from`/`aim`/`zoom` arrays; entries for Bandit, Boglurker,
+  Croakley, Galloway, Grizzelda, Mei, Rattles, Rotter, Shade and Saint Nick (his rebuilt hat put his face low).
+  `renderLive(look, view)` tries a framing without a rebuild. Recaptured those plus the rebuilt bodies.
+- **Perf** (SwiftShader, load 8-12): crowd of every look in `?mode=characters` (133 characters, crowd.mjs): draws 134 →
+  134 at every distance; triangles past 18 m 418.8k → 427.3k (+2%); through a sniper scope at 60 m 418.8k → 1.24M
+  (full detail inside 71 m; the game's narrow scope frustum shows far fewer than this test row). perf96 frost_basin
+  medium (1-2 frames, views differ, so only draws/casters mean anything): spread draws 356 → 213, clump 247 → 277,
+  casters 82-90 either way. Character files 61.3 → 70.2 MB on the site.
+- Note for the lead: the five new characters were built before grip pass 2's hand rules; their GLBs are as
+  `wip/new-characters` shipped them (LODs remade here). Roster renames (Goblina, Sgt. Mackie) land on
+  `wip/roster-apply-2`: this branch changed meshy_grizzelda.json and meshy_pruitt.json `fixes` only; keep their new names on merge.
+
 ### Grip pass 2 (`wip/grip-pass-2`, agent, 2026-11-01; not merged)
 Owner: "when do all the grips get fixed, I see some still not right". Audit before/after (main d8a4afa vs this branch),
 rifle, pistol, shotgun and Spear, every player character (63 incl. the rig's Ranger), Character Select pose, sheets and
