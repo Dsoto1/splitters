@@ -86,12 +86,12 @@ every built-in look names exactly one, and a unit test
 
 | Group (`id`) | Who |
 |---|---|
-| Soldiers (`soldiers`) | Modern and sci-fi military, agents, pilots, hazmat, astronauts: Agent Zhao, Bulwark, Capt. Nova, Commando, Desert Ranger, Dust Trooper, Flt. Lt. Ember, Frost, Grunt '68, Hazmat, Medic, Operative, Scout, Sentinel, Trooper (NPC skin), Vanguard, Warden |
-| Knights & Legends (`legends`) | Medieval, royalty, monks, wizards, mythic and historical warriors: Anubis, Ashwalker, Brother Ansel, Elder Tomo, Grizzelda, Iron Knight, King Aldric, Lancer Mei, Linktifa, Merrow the Wise, Ser Brannock, Shade, Sir Galloway, Thornweaver |
+| Soldiers (`soldiers`) | Modern and sci-fi military, agents, pilots, hazmat, astronauts: Agent Zhao, Bulwark, Capt. Nova, Commando, Desert Ranger, Dust Trooper, Flt. Lt. Ember, Frost, Grunt '68, Hazmat, Medic, Operative, Scout, Sentinel, Sgt. Pruitt, Trooper (NPC skin), Vanguard, Warden |
+| Knights & Legends (`legends`) | Medieval, royalty, monks, wizards, mythic and historical warriors: Anubis, Ashwalker, Brother Ansel, Elder Tomo, Grizzelda, Iron Knight, King Aldric, Lancer Mei, Linktifa, Merrow the Wise, Old King Halvard, Ser Brannock, Shade, Sir Galloway, Thornweaver |
 | Everyday Folk (`folk`) | Ordinary people: Big Bogdan, Brawler, Cap'n Barnacle, Chef Basile, Dale, Drifter, Dusty Colt, Engineer, Farmhand, Grandpa Chains, Hector, Huntress, Pathfinder, Saint Nick, Sprout, The Dapper, Tracker, Uncle Bao, Wayfarer |
 | Undead & Horror (`horror`) | Bonejack, Count Bonesworth, Giggles, Gorgle, Groaner, Lurcher (queued), Punkin, Rattles, Rotter, Shambler |
-| Animals (`animals`) | Bandit, Big Bab, Biscuit, Brass Hare, Hyena Warrior, Shiba, Teddy, Wealthy Otter |
-| Creatures & Machines (`creatures`) | Aliens, goblins, reptiles, robots, monsters: Boglurker, Botboy, Goblin, Imp and Puglin (NPC skins), Ivory Rustwalker, Ricochet, Salamander Warlord, T-350, The Visitor |
+| Animals (`animals`) | Bandit, Barnaby Bruin (queued), Big Bab, Biscuit, Brass Hare, Croakley, Greyfang, Hyena Warrior, Scamp, Shiba, Teddy, Wealthy Otter |
+| Creatures & Machines (`creatures`) | Aliens, goblins, reptiles, robots, monsters: Boglurker, Botboy, Goblin, Imp and Puglin (NPC skins), Ivory Rustwalker, Ricochet, Salamander Warlord, Snikkit, T-350, The Visitor |
 
 Where a group comes from: a part-built preset has `group` on its entry in
 `CORE_LOOKS`; a whole-body character has `group` in its manifest (below,
@@ -441,7 +441,7 @@ repo; they live in a downloads dir outside it.
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -464,6 +464,18 @@ importer finds a character's download there by its manifest id or its
 
 Record which download a manifest takes in its `source.file` pattern (one
 download per pattern; the importer says when none matches).
+
+A fresh download of a model already shipped (the owner's T-pose uploads of
+2026-11-01: The Visitor, Elder Tomo, Flt. Lt. Ember and Biscuit came back as
+textured GLBs of the FBX models they were built from; Biscuit's rebuild waits
+on his paws, see HANDOFF.md) is the same character:
+widen `source.file` to take it (`…_texture\.(glb|fbx)$`), keep the look ID,
+licence and landmarks (they are in units of the model's height, so they fit
+the GLB too: check with front and side views), and rebuild with `ONLY=<id>`.
+Look before matching by name: the same uploads' Frog in Suspenders, Goblin
+and Monkey were different models from Boglurker, the Goblin and Big Bab, so
+they became new characters (a pattern that would match both, like Big Bab's
+`T_Pose_Monkey_`, is narrowed to its own download).
 
 **Community (CC0) models are downloaded by hand.** Meshy's API only serves
 tasks in the key holder's own account; it has no endpoint for community posts.

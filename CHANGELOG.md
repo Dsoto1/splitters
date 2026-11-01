@@ -12,6 +12,11 @@ made only on a commit that passed CI on a check branch.
 - Driving no longer shakes: the body's lean, squat and dive come from the vehicle's real speed and turn rate instead of from frame-to-frame movement of its drawn position, and that position no longer jumps with the few ms each update arrives early or late. Most noticeable in the buggy's cockpit view.
 - The buggy's cockpit is drawn in far more detail while you drive it in first person (seats, wheel, dash and roll cage at about twice the geometry, with a sharper surface map); everyone else still sees the lighter model.
 
+**New characters and sharper ones**
+- Six new characters from the owner's Meshy T-pose models: **Croakley** (a frog in suspenders), **Scamp** (a small monkey) and **Greyfang** (a wolf) in Animals, **Snikkit** (a goblin) in Creatures & Machines, **Old King Halvard** in Knights & Legends and **Sgt. Pruitt** (a police officer) in Soldiers. A seventh, Barnaby Bruin (a gentleman bear), waits for a lighter build.
+- The Visitor, Elder Tomo, Flt. Lt. Ember and Merrow the Wise are rebuilt from fresh downloads of the same models: sharper faces and hands, and hands fitted to the T-pose so they close on the grip. Merrow's hands come out of his sleeves.
+- Bandit (the raccoon) is built from his Meshy rig again (a later rebuild had fallen back to a fit that fused his legs and turned his head).
+
 **Main menu: Profile**
 - The character card top right is now your **Profile**: your character's portrait and name, your player name and whether you're signed in (Guest, ✓ Signed in, Pick a username). It opens the Profile panel (also P, or Y on a controller): your character with **Change character**, your name, **Sign in** / **Sign out** and your username, your region and the privacy link. The separate Characters item is gone from the menu.
 - **Sign in** is no longer a small link in the bottom bar: signed out, an orange Sign in button sits under the Profile card and in the Profile panel. (Same Google sign-in as before.)
@@ -21,6 +26,12 @@ made only on a commit that passed CI on a check branch.
 - Characters are grouped by what they are: **Soldiers**, **Knights & Legends**, **Everyday Folk**, **Undead & Horror**, **Animals** and **Creatures & Machines** (plus Yours), instead of by how the look was built (Originals, Ranger, Peasant, Sportswear, NPCs).
 - One scrolling grid instead of a long row of tabs: each group under a compact header with its count, and a strip of section chips above that lights the section you're looking at. Click a chip, or press Q / E (LB / RB), to glide to a section; the wheel, trackpad and touch scroll straight through, and arrow keys and the d-pad move across section ends. It opens on your character. Back and Choose return to where you opened it (Profile or Online).
 - Clicking a character shows them; **Choose** (or Enter / A again, or a double-click) makes them yours, and Back keeps the one you had. Hovering no longer swaps the preview, so you can drag the model round with the mouse. Your current character wears a **Chosen** badge.
+
+**Props: the owner's Meshy models**
+- Twelve new hero props made by the owner with Meshy, each with a baked normal map and a lighter version for distance: market stalls for Desert City, Medieval Village and a rustic one for the harbour, frontier and desert sets; a wishing well; a crawler crane (10 m); a Mayan guardian, a fire-dragon statue, a spear guardian and a seated monk for Jungle Ruins and Desert City; a tiered plaza fountain, a lion-head wall fountain and an eagle stone fountain for Medieval Village, Desert City and Coastal Harbor.
+- They replace the simple stand-ins under the same names, so maps that place them update on their own: Desert City's market stall, well and crane, Medieval Village's well and Jungle Ruins' large temple guardian (Qasr Medina, Market Town, Vinefall Sanctum).
+- Market Town's square has the new tiered fountain on its plinth.
+- You can walk under the crane's boom: only its tracks and cab are solid.
 
 **MapMaker: drop routes**
 - The **Dropship** can fly a drop route: Paths has **Plane Drop Route** and **Dropship Drop Route**, and the inspector an **Aircraft** choice. Routes can be drawn in and out of the map's boundary (green over the play area, grey outside).

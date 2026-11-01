@@ -19,7 +19,7 @@
       "model": "T Pose Monkey"
     },
     "modelUrl": "upload",
-    "file": "^Meshy_AI_T_Pose_Monkey_\\d+_(image-to-3d-)?texture\\.glb$",
+    "file": "^Meshy_AI_T_Pose_Monkey_1029\\d+_(image-to-3d-)?texture\\.glb$",
     "meshy": {
       "rig": "01a18a04-5cb8-716b-9c78-6a1a0ed2b97b"
     }

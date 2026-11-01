@@ -8,7 +8,7 @@
   "group": "legends",
   "bio": "Has meditated on this map for forty years. Knows where you will peek before you do.",
   "body": "male",
-  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. Its robe hangs below the hips.",
+  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. Its robe hangs below the hips. Re-uploaded by the owner as an unrigged textured GLB (2026-11-01, same model) and rebuilt from it with the T-pose landmarks below, the head and hands keeping their share of the cut.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -17,7 +17,7 @@
     "community": {
       "model": "Elder T-pose"
     },
-    "file": "^Meshy_AI_Elder_T_POSE_.*_texture\\.fbx$"
+    "file": "^Meshy_AI_Elder_T_POSE_\\d+_texture\\.(glb|fbx)$"
   },
   "finish": {
     "metallic": 0,

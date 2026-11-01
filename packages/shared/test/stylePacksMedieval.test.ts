@@ -29,7 +29,9 @@ describe('Style Pack 10 Medieval Village', () => {
     expect(manifest.packs['tiletrigger-medieval']).toMatchObject({ license: 'Owned', url: 'tools/content/prepare-medieval.mjs' });
     const ours = manifest.props.filter((p) => p.id.startsWith('mv_'));
     expect(ours.length).toBeGreaterThanOrEqual(18);
-    for (const p of ours) expect(p.pack, p.id).toBe('tiletrigger-medieval');
+    // The well and the market stall are the owner's Meshy models (the well under the stand-in's id).
+    const meshy = ['mv_well', 'mv_market_stall'];
+    for (const p of ours) expect(p.pack, p.id).toBe(meshy.includes(p.id) ? 'meshy-owned-landmarks' : 'tiletrigger-medieval');
     // The owner may swap these for community downloads later under the same ids (HANDOFF.md).
     for (const id of ['mv_forge', 'mv_hay_cart', 'mv_well', 'mv_tarp_tent']) expect(ours.some((p) => p.id === id), id).toBe(true);
     expect(read('assets-src/tiletrigger-medieval/License.txt')).toMatch(/no generative AI/);
@@ -177,7 +179,7 @@ describe('Market Town (the pack\'s demo map)', () => {
     const r = loadMap(read('maps/market_town.json'));
     if (!r.ok) throw new Error(JSON.stringify(r.issues));
     const map = r.map;
-    const fountain = map.entities.find((e) => e.kind === 'prop' && e.model.startsWith('prop.fountain'));
+    const fountain = map.entities.find((e) => e.kind === 'prop' && e.model.includes('fountain'));
     if (fountain?.kind !== 'prop') throw new Error('no fountain');
     const size = getProp(fountain.model)!.size;
     // The upper step of the plinth: 3.8 m across, its top 0.5 m up, centred on the square's middle.

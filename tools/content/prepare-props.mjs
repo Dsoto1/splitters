@@ -195,9 +195,11 @@ const SHELL_CELL = 0.4;
  * Collision that follows the model's footprint (corners, curved walls and
  * railings): the triangles are rasterised onto a grid seen from above, each
  * covered cell becomes a column as tall as the geometry in it, and runs of
- * cells are merged into as few boxes as possible.
+ * cells are merged into as few boxes as possible. `below` (a prop's `shellTop`,
+ * metres) leaves out what is higher than that: a crane's boom passes overhead
+ * instead of standing on a wall of columns.
  */
-function shellBoxes(size, tris) {
+function shellBoxes(size, tris, below = Infinity) {
   const [w, , d] = size;
   const nx = Math.max(1, Math.ceil(w / SHELL_CELL));
   const nz = Math.max(1, Math.ceil(d / SHELL_CELL));
@@ -210,6 +212,7 @@ function shellBoxes(size, tris) {
       for (let j = 0; i + j <= n; j++) {
         const [u, v] = [i / n, j / n];
         const q = [0, 1, 2].map((k) => a[k] * (1 - u - v) + b[k] * u + c[k] * v);
+        if (q[1] > below) continue;
         const [ix, iz] = cell(q[0], q[2]);
         top[iz * nx + ix] = Math.max(top[iz * nx + ix], q[1], 0.05);
       }
@@ -244,7 +247,7 @@ function shellBoxes(size, tris) {
  */
 function collisionBoxes(p, size, tris) {
   const [w, h, d] = size;
-  if (p.collide === 'shell') return shellBoxes(size, tris);
+  if (p.collide === 'shell') return shellBoxes(size, tris, p.shellTop);
   const pts = tris.flat();
   if (p.collide === 'stairs') {
     const n = Math.max(1, Math.ceil(h / STEP_RISE));
