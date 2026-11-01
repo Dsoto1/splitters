@@ -1966,12 +1966,11 @@
       "source": "meshy-owned",
       "src": "Meshy_AI_freaky_frida_lowpoly_1101132544_texture.glb",
       "sourceTriangles": 10760,
-      "landmarks": "found",
       "file": "characters/meshy_frida.glb",
-      "sha256": "22be5de9ee069e3a",
+      "sha256": "795e6d6a2b9885a3",
       "triangles": 10760,
       "lodTriangles": 3226,
-      "bytes": 969480,
+      "bytes": 973412,
       "hands": true
     },
     {
@@ -1980,11 +1979,10 @@
       "source": "meshy-owned",
       "src": "Meshy_AI_freaky_frida_lowpoly_1101132544_texture.glb",
       "sourceTriangles": 10760,
-      "landmarks": "found",
       "file": "characters/meshy_frida_fparms.glb",
-      "sha256": "af012d74a8ed0e9a",
-      "triangles": 813,
-      "bytes": 339780,
+      "sha256": "ce7c53f27b0af734",
+      "triangles": 787,
+      "bytes": 339404,
       "hands": true
     },
     {
@@ -2078,7 +2076,7 @@
       "sourceTriangles": 377889,
       "landmarks": "found",
       "file": "characters/meshy_tposesoldier1.glb",
-      "sha256": "a4d77b3bba0c3c09",
+      "sha256": "b0a4149eb3a9e61b",
       "triangles": 10998,
       "lodTriangles": 3298,
       "bytes": 925544,
@@ -2094,7 +2092,7 @@
       "sourceTriangles": 377889,
       "landmarks": "found",
       "file": "characters/meshy_tposesoldier1_fparms.glb",
-      "sha256": "4a0f7b3119742dab",
+      "sha256": "56cb62b3c6dbc157",
       "triangles": 2768,
       "bytes": 304304,
       "hands": true
