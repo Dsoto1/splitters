@@ -96,6 +96,7 @@ import {
   type RotationLookup,
   mapIdentity,
 } from '@tiletrigger/shared';
+import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
@@ -230,6 +231,8 @@ export class GameSession {
   private readonly abort = new AbortController();
   private slot = -1;
   private local: LocalPlayer | null = null;
+  /** Spawns, portals, jump pads and ziplines read off movement, for their effects (gameplayFxWatch.ts). */
+  private fxWatch: GameplayFxWatch | null = null;
   private map: MapDocument | null = null;
   private scenario: ScenarioState | null = null;
   /** When each objective last changed state, for fading out finished ones on the HUD. */
@@ -1406,6 +1409,8 @@ export class GameSession {
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.local.gravityZones = mapGravityZones(loaded.map.entities);
         this.local.portals = mapPortals(loaded.map.entities);
+        // Spawns, portals, jump pads and ziplines read off everyone's movement, for their effects (content/vfx.json map.gameplay).
+        this.fxWatch = new GameplayFxWatch(this.local.pads, this.local.portals, (key, at) => this.view.playGameplayFx(key, at));
         this.scenario = new ScenarioState(loaded.map, physics);
         if (this.scenario.movers.defs.length) this.local.platforms = this.scenario;
         if (this.local.portals.length) this.local.portalOn = this.scenario.portalOn;
@@ -1544,8 +1549,8 @@ export class GameSession {
                 return;
               }
               this.view.scenario.liquids.fx.shot(eye, to);
-              // The railgun's round lands with a big stylised impact (Binbun's Hit FX).
-              if (def?.id === 'core.railgun') this.view.hitFx(to, 'heavy');
+              // Weapons whose rounds land with an impact of their own (the railgun's: content/vfx.json map.weaponImpacts).
+              if (def) this.view.hitFx(to, def);
               const victim = ev.hit[i] ?? null;
               const zone = ev.z?.[i] ?? 0;
               if (victim === this.slot) {
@@ -1618,7 +1623,7 @@ export class GameSession {
             this.hurtFrom = { x: ev.p[0], z: ev.p[2], at: performance.now() };
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
             if (ev.m !== undefined) this.view.vehicleExplosion(at, ev.r);
-            else this.view.explosion(at, ev.r);
+            else this.view.explosion(at, ev.r, ev.w);
             this.view.blast(at, ev.r);
             // Blasts shake the camera of anyone near: a vehicle going up is felt from much further away.
             const cam = this.view.cameraPosition();
@@ -1633,6 +1638,9 @@ export class GameSession {
             if (near > 0) this.view.shake(near * ev.n * 0.6);
           } else if (ev.e === 'pickup') {
             if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
+            // A sparkle where it was taken (content/vfx.json map.gameplay, by the item's kind).
+            const at = this.view.chestOf(ev.s);
+            if (at) this.view.playGameplayFx(`pickup.${getItem(ev.item)?.effect.kind ?? 'item'}`, at);
           } else if (ev.e === 'kill') {
             this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs);
             if (ev.victim === this.slot && ev.killer !== null && ev.killer !== this.slot && this.local && msg.phase === 'playing') this.startKillCam(ev.killer, ev.weapon);
@@ -1687,6 +1695,10 @@ export class GameSession {
             if (ev.s === undefined || ev.s === this.slot) this.hud.showMessage(ev.text, ev.secs);
           } else if (ev.e === 'obj') {
             this.objectiveChanged.set(ev.i, performance.now());
+          } else if (ev.e === 'trap' && !ev.warn) {
+            // A trap going off (content/vfx.json map.gameplay: trap.<type>).
+            const e = this.map?.entities[ev.i];
+            if (e?.kind === 'trap') this.view.playGameplayFx(`trap.${e.trap}`, { x: e.position[0], y: e.position[1] + 0.3, z: e.position[2] });
           } else if (ev.e === 'broken') {
             const e = this.map?.entities[ev.i];
             // Glass (window panes past the entities, glass blocks, Window panes): a shower of shards.
@@ -2420,6 +2432,10 @@ export class GameSession {
       this.mounts?.sitters(),
     );
     this.sfx.remoteSteps(poses);
+    if (this.fxWatch) {
+      const me = this.local;
+      this.fxWatch.update(me ? [...poses.filter((p) => p.slot !== this.slot), { slot: this.slot, x: me.state.pos.x, y: me.state.pos.y, z: me.state.pos.z, alive: me.alive, grounded: me.state.grounded, ...(me.state.zip !== undefined ? { zip: me.state.zip } : {}) }] : poses);
+    }
     this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot, this.phase === 'intermission');
     this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0, this.allied);
     if (local) {

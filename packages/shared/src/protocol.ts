@@ -251,8 +251,8 @@ export type GameEvent =
   /** Someone threw a grenade or mine. */
   | { e: 'throw'; s: number }
   | { e: 'melee'; s: number; hit: number | null; /** Unarmed: 1 punch, 2 kick. */ u?: 1 | 2 }
-  /** `m`: a mount (map entity index) blowing up, drawn as a bigger, layered vehicle explosion. */
-  | { e: 'explode'; s: number; p: Tuple3; r: number; m?: number }
+  /** `m`: a mount (map entity index) blowing up, drawn as a bigger, layered vehicle explosion. `w`: what blew (a weapon id, `core.barrel`, `core.trap_<type>`, `core.bomb`), for its look (content/vfx.json map.explosions). */
+  | { e: 'explode'; s: number; p: Tuple3; r: number; m?: number; w?: string }
   /** A vehicle hit something hard (another vehicle, a wreck, a turret, a person): `n` 0..1 how hard. */
   | { e: 'crash'; p: Tuple3; n: number }
   /** Disc Arena: `s`'s disc struck `t` and knocked them about (no damage). */

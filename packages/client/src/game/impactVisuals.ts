@@ -8,7 +8,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { EffectsWorld, Vec3 } from '@tiletrigger/shared';
+import type { EffectsWorld, Vec3, WorldBox } from '@tiletrigger/shared';
 import { MeshPool } from './meshPool.ts';
 
 /** How fast drawn rounds fly (m/s): slow enough to see leave the muzzle and land, fast enough to feel like bullets. */
@@ -16,6 +16,15 @@ export const BULLET_SPEED = 260;
 /** Bullet holes kept per match (oldest reused first). */
 const MAX_HOLES = 700;
 const STREAK_LENGTH = 2.2;
+/** Dust with no surface given: the grey-brown it always was. */
+const DUST = new Color3(0.55, 0.52, 0.47);
+const dustColours = new Map<string, Color3>();
+function dustColour(hex: string | undefined): Color3 {
+  if (!hex) return DUST;
+  let c = dustColours.get(hex);
+  if (!c) dustColours.set(hex, (c = Color3.FromHexString(hex)));
+  return c;
+}
 
 interface Bullet {
   /** Null for rounds that fly without a tracer (they still land). */
@@ -129,7 +138,8 @@ export class ImpactVisuals {
     }, MAX_PUFFS);
 
     this.dustMat = new StandardMaterial('impactDustMat', scene);
-    this.dustMat.diffuseColor = new Color3(0.55, 0.52, 0.47);
+    // White: each puff takes its colour from its instance (the surface it rose from: impactVisuals' DUST).
+    this.dustMat.diffuseColor = new Color3(1, 1, 1);
     this.dustMat.specularColor = Color3.Black();
     this.dustMat.alpha = 0.5;
     this.dust = CreateSphere('impactDust', { diameter: 1, segments: 4 }, scene);
@@ -217,7 +227,7 @@ export class ImpactVisuals {
   }
 
   /** Where a shot ending at `to` (coming from `from`) hits the level, if it does: point and surface normal. */
-  surfaceHit(from: Vec3, to: Vec3): { point: Vec3; normal: Vec3 } | null {
+  surfaceHit(from: Vec3, to: Vec3): { point: Vec3; normal: Vec3; box?: WorldBox } | null {
     const world = this.physics();
     if (!world) return null;
     const d = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
@@ -227,11 +237,14 @@ export class ImpactVisuals {
     const hit = world.raycast(from, dir, len + 0.15);
     // Shots that ran out of range in the open, or stopped on something dynamic, leave no hole.
     if (!hit || Math.abs(hit.dist - len) > 0.35) return null;
-    return { point: { x: from.x + dir.x * hit.dist, y: from.y + dir.y * hit.dist, z: from.z + dir.z * hit.dist }, normal: hit.normal };
+    return { point: { x: from.x + dir.x * hit.dist, y: from.y + dir.y * hit.dist, z: from.z + dir.z * hit.dist }, normal: hit.normal, ...(hit.box ? { box: hit.box } : {}) };
   }
 
-  /** A round hitting a wall or floor: a hole that stays, sparks and dust. */
-  wallImpact(point: Vec3, normal: Vec3, size = 1): void {
+  /**
+   * A round hitting a wall or floor: a hole that stays, sparks and dust, as the surface's `style` says (content/vfx.json
+   * map.impacts, game/fxMap.ts: metal throws more sparks, wood and earth none, each its own dust).
+   */
+  wallImpact(point: Vec3, normal: Vec3, size = 1, style?: { sparks: number; dust: string; dustSize: number }): void {
     const n = new Vector3(normal.x, normal.y, normal.z).normalize();
     const q = new Quaternion();
     Quaternion.FromUnitVectorsToRef(new Vector3(0, 0, -1), n, q);
@@ -243,7 +256,7 @@ export class ImpactVisuals {
     this.holeNext = (this.holeNext + 1) % MAX_HOLES;
     this.holeCount = Math.min(MAX_HOLES, this.holeCount + 1);
     this.holes.thinInstanceCount = this.holeCount;
-    for (let i = 0; i < 5 && this.sparks.length < MAX_SPARKS; i++) {
+    for (let i = 0; i < (style?.sparks ?? 5) && this.sparks.length < MAX_SPARKS; i++) {
       const v = n.scale(2 + Math.random() * 3).add(new Vector3((Math.random() - 0.5) * 4, Math.random() * 3, (Math.random() - 0.5) * 4));
       const mesh = this.sparkPool.take();
       mesh.scaling.setAll(0.025 + Math.random() * 0.02);
@@ -255,8 +268,9 @@ export class ImpactVisuals {
     const dust = this.dustPool.take();
     dust.position.set(point.x + n.x * 0.12, point.y + n.y * 0.12, point.z + n.z * 0.12);
     dust.scaling.setAll(0.05);
-    (dust.instancedBuffers.color as Color4).a = 1;
-    this.dusts.push({ mesh: dust, age: 0, life: 0.45, grow: 0.5 * size });
+    const c = dustColour(style?.dust);
+    (dust.instancedBuffers.color as Color4).set(c.r, c.g, c.b, 1);
+    this.dusts.push({ mesh: dust, age: 0, life: 0.45, grow: 0.5 * size * (style?.dustSize ?? 1) });
   }
 
   /** A spray of hot sparks from a point (a badly damaged vehicle shorting out, a crash). */
