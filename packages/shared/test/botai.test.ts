@@ -154,7 +154,7 @@ describe('bot tactics', () => {
     // A waist-high wall across the yard at z = 8 from x = 4 to 12 (gap in the middle).
     const match = new Match(yard([], (x, z) => (x === 1 && z === 1 ? 'core.yard_wall' : 'core.yard')), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, 5);
     const shooter = match.addHuman('shooter')!;
-    const bot = match.addBot('bot', { ...CORE_BOT_PROFILES[3]!, tags: [] }, BOT_DIFFICULTIES.normal)!;
+    const bot = match.addBot('bot', { ...CORE_BOT_PROFILES[3]!, tags: [] }, BOT_DIFFICULTIES.normal, false, { look: 'core.ranger' })!; // a standard build: a large one crouched (1.42 m) doesn't fit behind a waist-high wall
     place(shooter, 6, 18, Math.PI);
     place(bot, 14, 6, 0);
     give(shooter, 'core.rifle');

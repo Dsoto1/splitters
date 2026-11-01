@@ -42,6 +42,8 @@ export interface AimTarget {
   slot: number;
   pos: Vec3;
   stance?: Stance;
+  /** Body size (BODY_SIZES scale, absent = 1): the aim point scales with it. */
+  size?: number;
 }
 
 export interface AimSolution {
@@ -77,6 +79,8 @@ export class AimModel {
   private held = false;
   private head = false;
   private nextPointPick = 0;
+  /** Aim at the upper body until this tick (the chest is behind something low). */
+  private highUntil = -Infinity;
 
   constructor(
     private readonly rng: () => number,
@@ -109,6 +113,22 @@ export class AimModel {
     this.errYaw = this.errPitch = 0;
     this.burstLeft = 0;
     this.held = false;
+    this.highUntil = -Infinity;
+  }
+
+  /**
+   * The crosshair is on something in the way while the target stands clear
+   * beside it: a person sees that and brings it back onto them. (The bot
+   * can't otherwise see its own error.) Halves the wander.
+   */
+  correct(): void {
+    this.errYaw *= 0.5;
+    this.errPitch *= 0.5;
+  }
+
+  /** Only their upper body shows over cover: aim there (not at the chest) until `until`. */
+  raise(until: number): void {
+    this.highUntil = until;
   }
 
   /** Ticks since the current target was acquired. */
@@ -203,7 +223,8 @@ export class AimModel {
     const lagTicks = Math.round(skill.lagSeconds * TICK_RATE);
     const seen = this.past(lagTicks) ?? target.pos;
     const v = this.velocity(lagTicks);
-    const height = STANCES[target.stance ?? 0].height;
+    const size = target.size ?? 1;
+    const height = STANCES[target.stance ?? 0].height * size;
     // Pick chest or head now and then (per burst), not every tick.
     if (ctx.tick >= this.nextPointPick) {
       const dist0 = hypot(target.pos.x - ctx.eye.x, target.pos.z - ctx.eye.z);
@@ -211,7 +232,7 @@ export class AimModel {
       this.head = settled && dist0 < 40 && this.rng() < skill.headChance * (this.profile.accuracy / 50);
       this.nextPointPick = ctx.tick + Math.round(TICK_RATE * (0.6 + this.rng() * 0.8));
     }
-    const up = this.head ? height - 0.15 : height * 0.6;
+    const up = this.head ? height - 0.15 * size : ctx.tick < this.highUntil ? height - 0.3 * size : height * 0.6;
     let lead = skill.lagSeconds * skill.prediction;
     const proj = ctx.weapon?.projectile;
     const dist = hypot(seen.x - ctx.eye.x, seen.y + up - ctx.eye.y, seen.z - ctx.eye.z);
@@ -235,8 +256,10 @@ export class AimModel {
   /**
    * Trigger discipline. Given whether the shot is lined up (the bot's own
    * view; it can't see its error), decide whether to hold fire this tick.
+   * `clear`, asked only when a round would otherwise go, can still hold it
+   * (BotBrain: the line from the eye is blocked short of the target).
    */
-  trigger(ctx: AimContext, sol: AimSolution, yaw: number, pitch: number, reacted: boolean): boolean {
+  trigger(ctx: AimContext, sol: AimSolution, yaw: number, pitch: number, reacted: boolean, clear?: () => boolean): boolean {
     const def = ctx.weapon;
     const skill = this.difficulty.aim;
     const tol = sol.halfAngle + 0.012;
@@ -246,12 +269,15 @@ export class AimModel {
       const mode = def.fireMode ?? 'auto';
       if (def.windupTicks) pull = true; // spin-up and charge weapons: keep the trigger down
       else if (def.kind === 'melee') pull = true;
-      else if (mode === 'auto' && def.fireIntervalTicks <= 12 && !def.projectile?.splashRadius) pull = this.autoBurst(ctx, sol, def);
+      else if (mode === 'auto' && def.fireIntervalTicks <= 12 && !def.projectile?.splashRadius) {
+        // (Asked only when a round would go: a pause between bursts costs no sight line.)
+        if ((sol.dist < 9 || ctx.tick >= this.pauseUntil) && (!clear || clear())) pull = this.autoBurst(ctx, sol, def);
+      }
       else {
         // Taps: semi-autos, burst rifles and slow single shots.
         const slow = def.fireIntervalTicks >= 30 || def.damage >= 50;
         const settledEnough = !slow || hypot(this.errYaw, this.errPitch) < sol.halfAngle * 1.3 || this.trackedTicks(ctx.tick) > skill.settleSeconds * TICK_RATE * 2.5;
-        if (!this.held && ctx.tick >= this.nextTap && settledEnough) {
+        if (!this.held && ctx.tick >= this.nextTap && settledEnough && (!clear || clear())) {
           pull = true;
           const gap = Math.max(def.fireIntervalTicks + 1, Math.round(skill.tapSeconds * TICK_RATE * (0.8 + this.rng() * 0.5)));
           this.nextTap = ctx.tick + gap;

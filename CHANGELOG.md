@@ -8,6 +8,9 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Gunplay**
+- **Third person: your rounds go where the crosshair points.** The camera sits over your shoulder, above and behind your eyes; rounds used to leave your eyes along the view, so crouched behind low cover you could see a target over it while your rounds hit the cover (and up close they landed beside the crosshair). Now they go from your eyes to what the crosshair is on. They still start at your eyes, so cover in front of you stops them as before. First person is unchanged.
+
 **Characters (the owner's Roster Board)**
 - Fourteen of the original modular characters leave Character Select and the bot rotation (Huntress, Bulwark, Scout, Farmhand, Tracker, Pathfinder, Drifter, Wayfarer, Brawler, Commando, Frost, Operative, Medic, Sentinel), and Ivory Rustwalker with them. A saved profile, bot set or map that still names one plays its closest kept character.
 - Renamed: Ashwalker is now **Shaka Mpande**, Dale is **Cal**, Hector is **Bill the Barbarian**, Saint Nick is **Santa**, T-350 is **T-TreeFitty** ("built to sweep floors for $3.50/hr") and Agent Zhao is **Customs Agent Zhao**.
@@ -29,6 +32,10 @@ made only on a commit that passed CI on a check branch.
 
 **Bots**
 - 108 bot names (from 12): even a full 96-bot match gives every bot its own name instead of "Mildred 2", "Mildred 3"…
+- **Bots stop shooting rocks.** A bot fired whenever its aim was on the target, even when the line from its eye (where every shot starts) ran into a boulder, a wall or a slope in between: on Shingle Point a quarter of bots' trigger pulls went into the world short of the target, the gully boulders worst of all. Now a bot holds fire when that line is blocked and fixes it: it brings a wandering aim back onto a target in the open, aims at the head and shoulders that show over low cover, or stands up from a crouch / steps aside. Over eight seeded two-minute Shingle Point matches (24 bots) shots into the world short of the target went from 28 % to 8 % of trigger pulls, rounds that hit someone from 8.8 % to 10.5 %, with about as many kills (206 → 201) from a quarter fewer rounds; trigger pulls aimed into the gully boulders: 190 → 7.
+- Small and large characters' bots now see, aim and shoot from their own eye height (a small bot used to look over a wall its rounds then hit), and aim at the middle of a small or large body.
+- Small and large characters join a match at their full health (85 / 115); their first life used to start on 100.
+- Suppression fire (SUPPRESSOR bots) at the spot an enemy ducked out of sight is shorter (1.5 s) and only while the rounds reach that spot.
 
 **Weapon wheel**
 - Carrying a lot no longer crowds the wheel: up to nine weapons look as before; with more, the items shrink to fit the ring, the names move to the middle (which shows the one you point at), and past sixteen only the icons stay round the ring.

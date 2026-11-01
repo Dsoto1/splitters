@@ -27,6 +27,7 @@ import {
   cockpitEye,
   mountToWorld,
   viewDirection,
+  thirdPersonCamera,
   type ZoneSnapshot,
   BUTTON_FIRE,
   BUTTON_MELEE,
@@ -35,6 +36,7 @@ import {
   unarmedStrike,
   BUTTON_RELOAD,
   BUTTON_STEER_LOOK,
+  BUTTON_THIRD_PERSON,
   PhysicsWorld,
   SPEED_BOOST,
   TICK_DT,
@@ -2166,6 +2168,8 @@ export class GameSession {
           const ride = this.mounts?.mounts.get(this.seat[0]);
           if (ride && this.vehicleCam.steersByLook(ride.def, this.seat[1])) sample.buttons |= BUTTON_STEER_LOOK;
         }
+        // Third person on foot: the host sends your rounds from the eye toward what the crosshair is on.
+        if (this.thirdPerson && !this.seat && local.alive) sample.buttons |= BUTTON_THIRD_PERSON;
         moving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
         const meleeNow = (sample.buttons & BUTTON_MELEE) !== 0;
@@ -2301,17 +2305,12 @@ export class GameSession {
           this.opts.audio.setListener(local.eye, this.input.yaw, this.input.pitch);
           this.view.setCamera(head, this.input.yaw, this.input.pitch, fov);
         } else if (this.thirdPerson && local.alive) {
-          // Over the right shoulder, pulled in where a wall is in the way.
-          const fwd = viewDirection(this.input.yaw, this.input.pitch);
-          const right = { x: Math.cos(this.input.yaw), y: 0, z: -Math.sin(this.input.yaw) };
-          const off = { x: -fwd.x * 3 + right.x * 0.6, y: -fwd.y * 3 + 0.35, z: -fwd.z * 3 + right.z * 0.6 };
-          const len = Math.hypot(off.x, off.y, off.z);
-          const dir = { x: off.x / len, y: off.y / len, z: off.z / len };
-          const hit = local.physics.raycastWorld(head, dir, len);
-          const d = hit === null ? len : Math.max(0.3, hit - 0.25);
+          // Over the right shoulder, pulled in where a wall is in the way (shared/sim/thirdPerson.ts: the host aims
+          // your rounds from the same camera).
+          const cam = thirdPersonCamera((o, d, max) => local.physics.raycastWorld(o, d, max), head, this.input.yaw, this.input.pitch);
           // Squeezed in against a wall: your own body would fill the screen, so it isn't drawn.
-          this.tpClose = d < 1.6;
-          this.view.setCamera({ x: head.x + dir.x * d, y: head.y + dir.y * d, z: head.z + dir.z * d }, this.input.yaw, this.input.pitch, fov);
+          this.tpClose = cam.dist < 1.6;
+          this.view.setCamera(cam.pos, this.input.yaw, this.input.pitch, fov);
         } else {
           // First person: the view carries the weapon's mechanical recoil (it is where your rounds go).
           const aimed = local.aimAngles(this.input.yaw, this.input.pitch);

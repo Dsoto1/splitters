@@ -37,6 +37,8 @@ export interface CoverQuery {
   avoid?: readonly Vec3[];
   /** Fleeing: prefer spots further from the threat. */
   away?: boolean;
+  /** The bot's body size (BODY_SIZES scale, absent = 1): its eye heights scale with it. */
+  eyeScale?: number;
   rng: () => number;
 }
 
@@ -69,6 +71,8 @@ export function findCover(q: CoverQuery): CoverSpot | null {
   let best: { spot: CoverSpot; score: number } | null = null;
   const tried: Vec3[] = [];
   const phase = q.rng() * Math.PI * 2;
+  const crouchY = CROUCH_EYE * (q.eyeScale ?? 1);
+  const standY = STAND_EYE * (q.eyeScale ?? 1);
   for (const r of RADII) {
     if (r > q.radius) break;
     for (let i = 0; i < DIRECTIONS; i++) {
@@ -80,7 +84,7 @@ export function findCover(q: CoverQuery): CoverSpot | null {
       tried.push(p);
       const dThreat = hypot(threat.x - p.x, threat.z - p.z);
       if (dThreat < 3) continue;
-      const crouchEye = { x: p.x, y: p.y + CROUCH_EYE, z: p.z };
+      const crouchEye = { x: p.x, y: p.y + crouchY, z: p.z };
       const blocker = blockedNear(physics, crouchEye, threat);
       if (blocker === null) continue;
       // The whole body must be hidden, not just its middle (e.g. at the edge of a gap).
@@ -89,14 +93,14 @@ export function findCover(q: CoverQuery): CoverSpot | null {
       if (blockedNear(physics, { x: crouchEye.x + sx, y: crouchEye.y, z: crouchEye.z + sz }, threat) === null) continue;
       if (blockedNear(physics, { x: crouchEye.x - sx, y: crouchEye.y, z: crouchEye.z - sz }, threat) === null) continue;
       // How to shoot from here.
-      const standEye = { x: p.x, y: p.y + STAND_EYE, z: p.z };
+      const standEye = { x: p.x, y: p.y + standY, z: p.z };
       const low = exposedTo(physics, standEye, threat);
       let peek: -1 | 0 | 1 = 0;
       if (!low) {
         const lx = (threat.z - p.z) / dThreat;
         const lz = -(threat.x - p.x) / dThreat;
         for (const side of [1, -1] as const) {
-          const lean = { x: p.x + lx * side * 1.1, y: p.y + STAND_EYE, z: p.z + lz * side * 1.1 };
+          const lean = { x: p.x + lx * side * 1.1, y: p.y + standY, z: p.z + lz * side * 1.1 };
           if (exposedTo(physics, lean, threat)) {
             peek = side;
             break;
@@ -116,6 +120,6 @@ export function findCover(q: CoverQuery): CoverSpot | null {
 }
 
 /** Is a spot still good cover against this threat (from crouched height)? */
-export function stillCovered(physics: PhysicsWorld, spot: Vec3, threat: Vec3): boolean {
-  return blockedNear(physics, { x: spot.x, y: spot.y + CROUCH_EYE, z: spot.z }, threat) !== null;
+export function stillCovered(physics: PhysicsWorld, spot: Vec3, threat: Vec3, eyeScale = 1): boolean {
+  return blockedNear(physics, { x: spot.x, y: spot.y + CROUCH_EYE * eyeScale, z: spot.z }, threat) !== null;
 }

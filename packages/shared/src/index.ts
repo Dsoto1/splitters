@@ -22,6 +22,7 @@ export * from './map/budgets.ts';
 export * from './sim/constants.ts';
 export * from './sim/physics.ts';
 export * from './sim/movement.ts';
+export * from './sim/thirdPerson.ts';
 export * from './sim/liquids.ts';
 export * from './sim/effectsPhysics.ts';
 export * from './sim/weapons.ts';

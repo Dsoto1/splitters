@@ -37,7 +37,7 @@ kind of creature; the bot characters setting is a map default the host can chang
   Map default / All / group / theme), pause menu (live: `{ c: 'bots', cast }`, `BotFiller.recast` re-dresses and
   renames random bots out of it), server rules (`cast`, live; admin changes persist). HostState `cast`/`mapCast`.
   Kept over a map change (hostRules KEPT). docs: HOSTING.md (bot names), CHARACTERS.md (`nameTheme`),
-  MULTIPLAYER_PROTOCOL.md §18.
+  MULTIPLAYER_PROTOCOL.md §19.
 - No map in maps/ sets botCast yet (the owner picks: e.g. a D-Day map → soldiers, in MapMaker).
 - Tests: botThemes.test.ts (lists, manifest themes, 96-bot soldiers-only roster, Scamp first, fallback, host
   override/recast, set keeps its own, setup/server rules/wire, MapMaker command + validation). e2e: editor flow ticks
@@ -133,6 +133,45 @@ Sprout's headband. Started from 899537c's ideas
   across two runs except the known flaky Imp hold; once "third person and back (core.pistol): no hands" (the Dapper,
   no gear) which passed on the rerun. Full-body first person: no head gear, helmet or beard in view (up, ahead, down).
 - Sheets (agent scratchpad): `original-looks/before.png`, `after.png` and per-look closeups (kept looks only).
+
+### Bots: clear shot (`wip/bot-clear-shot`, agent, 2026-11-01; not merged)
+Owner (spectating Shingle Point TDM): "that rock is blocking a bunch of bullets" (a gully boulder, `prop_490`/`prop_492`
+`prop.rock_large` at x≈24-26, pocked with holes). docs/BOTS.md "Shooting along a clear line".
+- **Cause** (measured, probe in the agent's scratchpad, not committed): bots fired whenever the aim was lined up on
+  the target; nobody checked the line from the eye (where `Match.fireNow` starts every shot) along the aim. Normal
+  bots' aim error at 40-55 m is 0.05-0.15 rad, so a quarter of trigger pulls (24 bots, 8 seeds × 120 s: 28.4 %) were
+  aimed into something short of the target (slopes, the gully boulders, the seawall); a target behind waist-high cover
+  showing head and shoulders drew fire at its hidden chest (yard test: 92 of 93 rounds into the wall). Also small and
+  large bots saw and aimed from a standard eye (1.6 m) while their rounds left from 0.78×/1.18× that.
+- **Fix** (`BotBrain.clearShot`, via `AimModel.trigger`'s new `clear` callback): one ray per pull (a clear verdict kept
+  3 ticks while aim/position barely move); blocked: hold 3 ticks, then by one or two rays correct the aim error
+  (target in the open), aim at head/shoulders for 1.5 s (low cover), or stand up / step aside (no line).
+  `CombatantView.size` scales eyes, sight lines, cover search and the aim point. SUPPRESSOR fire 2.5 → 1.5 s, only while
+  rounds reach the spot. Not checked: lobbed projectiles, melee, targets in vehicles/on guns/sentries.
+- **Numbers** (24 bots, 8 seeds × 120 s Shingle Point TDM): pulls into the world short of the target 28.4 % → 8.2 %,
+  rounds hitting players 8.8 % → 10.5 %, kills 206 → 201, rounds fired 11,786 → 8,582, pulls aimed into the gully boulders 190 → 7. Bench (Shingle Point TDM 60 s,
+  load ~13 on 4 cores): 24 bots CPU/tick 4.99 → 5.09 ms, 96 bots 8.83 → 8.77 ms (noise); bot aim 0.10 → 0.14 ms at
+  96; bench accuracy at 96 7.8 % → 13.3 %, kills 36 → 47.
+- **Player shots:** first person is consistent (camera = scaled eye = shot origin; tracers are drawn from the
+  muzzle, cosmetic) and unchanged. Third person was not (camera 3 m back, 0.6 m right, 0.35 m up; rounds along the view
+  from the eye: crouched behind low cover you saw over what your rounds hit). **Fixed with the owner's OK** ("yes for
+  third person"): `BUTTON_THIRD_PERSON` (8192) in the input; the host computes the crosshair's point itself
+  (`sim/thirdPerson.ts` `thirdPersonAim`: the camera's centre ray against the level and the lag-compensated bodies)
+  and fires from the eye toward it (`Match.aimOf`); nothing about the aim comes from the client
+  (MULTIPLAYER_PROTOCOL.md §18). The client camera uses the same `thirdPersonCamera`. Trade-offs: the client's
+  predicted tracer converges against the level only (cosmetic); the client's camera follows the eased eye and drawn
+  position, the host the true eye (they differ only mid-crouch and between ticks); a crosshair point less than 0.5 m
+  in front of the eye falls back to the view; throws (lifted) and melee are unchanged. Tests: `thirdPerson.test.ts`
+  (maths, the input bit, a sim shot over a 1.3 m wall: hits in third person, the wall without the bit); e2e arsenal
+  `thirdPersonShot` (the same in the browser, canyon offline).
+- **Also fixed:** `Match.applyBodySize` left a living combatant's health alone, and everyone is alive when their
+  look is applied on joining: large characters started their first life on 100 of 115 health, small ones on 100 of
+  85 (`bodySizes.test.ts` now checks). Disc Arena's "nobody takes damage" test caught it once a large bot survived.
+- **Seeded tests that changed:** forts.test.ts CTF ("reach the flag in 150 s") swings with the seed: seeds 1-11, base
+  within 6 m 9×/3 flag takes, now 9×/8 takes but not on seed 1 (the default): the test uses seed 4 (comment there).
+  discs.test.ts: the health bug above.
+- Residual 8 %: rounds the check passes inside its 1.5 m margin, recoil offset the bot doesn't see, grazing edges,
+  shots at mounted targets (unchecked by design).
 
 ### Grip pass 2 (`wip/grip-pass-2`, agent, 2026-11-01; merged to main 47acd97)
 Owner: "when do all the grips get fixed, I see some still not right". Audit before/after (main d8a4afa vs this branch),
