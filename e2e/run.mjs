@@ -2589,6 +2589,123 @@ async function arsenalFlow(browser) {
   check(spearHeld && spearOut && spearStuck && spearDrawn, `the Spear is held as its model, and thrown it flies and sticks as that model (held ${spearHeld}, thrown ${spearOut}, stuck ${spearStuck}, drawn ${spearDrawn})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await thirdPersonShot(browser);
+}
+
+/**
+ * Third-person shots go where the crosshair points (shared/sim/thirdPerson.ts): crouched behind a low wall in
+ * third person with the crosshair on a head over it, the round reaches them; the same view in first person
+ * (rounds along the view from the eye) hits the wall. The wall and the target are put in the match by hand on
+ * open ground (the wall only in the match's world: it is the host's shot that's checked).
+ */
+async function thirdPersonShot(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=2&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__give, null, { timeout: T(120000) });
+  // The one bot is the target: it stands where it's put and holds fire.
+  await simWait(page, (m) => m.combatants().some((c) => c.kind === 'bot' && c.alive), null, T(30000));
+  await holdBots(page);
+  await page.evaluate(() => window.__give('core.pistol'));
+  await meWait(page, (m, me) => me.weapons.get(me.current)?.def.id === 'core.pistol' && me.raiseTicks === 0, null, 3);
+  // Open, level ground: from where you are, the first direction with 22 m of it in front (eye-high sight line
+  // clear, ground within 0.3 m of yours all along).
+  const setup = await sim(page, (m, me) => {
+    const p = me.move.pos;
+    const ground = (x, z) => {
+      const d = m.physics.raycastWorld({ x, y: p.y + 3, z }, { x: 0, y: -1, z: 0 }, 6);
+      return d === null ? null : p.y + 3 - d;
+    };
+    for (let k = 0; k < 16; k++) {
+      const yaw = (k / 16) * Math.PI * 2;
+      const at = (r) => ({ x: p.x + Math.sin(yaw) * r, z: p.z + Math.cos(yaw) * r });
+      let ok = m.physics.lineOfSight({ x: p.x, y: p.y + 1, z: p.z }, { x: at(22).x, y: p.y + 1, z: at(22).z }) && m.physics.lineOfSight({ x: p.x, y: p.y + 2.2, z: p.z }, { x: at(22).x, y: p.y + 2.2, z: at(22).z });
+      for (let r = 1; ok && r <= 22; r += 1) {
+        const g = ground(at(r).x, at(r).z);
+        ok = g !== null && Math.abs(g - p.y) < 0.3;
+      }
+      // Room behind for the camera (3 m back and up).
+      const back = { x: p.x - Math.sin(yaw) * 3.5, z: p.z - Math.cos(yaw) * 3.5 };
+      ok = ok && m.physics.lineOfSight({ x: p.x, y: p.y + 1.5, z: p.z }, { x: back.x, y: p.y + 1.9, z: back.z });
+      if (!ok) continue;
+      // The wall: 1.3 m tall, 15 m out, 6 m wide, across the line; the target 20 m out.
+      const w = at(15);
+      // (Box axes turned by the yaw: its x runs across the line, its z along it.)
+      m.physics.createBox({ x: w.x, y: p.y + 0.65, z: w.z }, { x: 3, y: 0.65, z: 0.2 }, yaw);
+      const t = m.combatants().find((c) => c.kind === 'bot');
+      return { yaw, slot: t.slot, target: { x: at(20).x, y: p.y, z: at(20).z } };
+    }
+    return null;
+  });
+  if (!setup) {
+    check(false, 'third person: found open, level ground for the wall check');
+    await page.context().close();
+    return;
+  }
+  // Crouch (held), then into third person.
+  await page.evaluate((yaw) => {
+    window.__cs.input.yaw = yaw;
+    window.__cs.input.pitch = 0;
+    window.__autoInput = { buttons: 256 };
+  }, setup.yaw);
+  await meWait(page, (m, me) => me.move.stance === 1, null, 2);
+  // The target, once it has spawned, stood 20 m out (and seen there: shots are lag compensated).
+  await meWait(page, (m, _me, a) => m.combatants().find((c) => c.slot === a.slot)?.alive, setup, 5);
+  const placedAt = await sim(page, (m, _me, a) => {
+    const t = m.combatants().find((c) => c.slot === a.slot);
+    t.move = { pos: { ...a.target }, velY: 0, grounded: true };
+    return m.tick;
+  }, setup);
+  await seenAt(page, setup.slot, setup.target, T(10000), placedAt + 20);
+  const shoot = async (third) => {
+    for (let i = 0; i < 12 && (await page.evaluate(() => window.__cs.thirdPerson())) !== third; i++) {
+      if (await page.isVisible('#resume')) await page.click('#resume').catch(() => {});
+      await page.keyboard.press('KeyH');
+      await sleep(500);
+    }
+    // The view that puts the third-person crosshair on their head (the camera moves with the view: settle it).
+    const view = await sim(page, (m, me, a) => {
+      const t = m.combatants().find((c) => c.slot === a.slot);
+      t.health = t.maxHealth;
+      const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.02 * me.size, z: me.move.pos.z };
+      const head = { x: t.move.pos.x, y: t.move.pos.y + 1.6 * t.size, z: t.move.pos.z };
+      const look = (f, p) => ({ yaw: Math.atan2(p.x - f.x, p.z - f.z), pitch: Math.atan2(p.y - f.y, Math.hypot(p.x - f.x, p.z - f.z)) });
+      const cam = (v) => {
+        const cp = Math.cos(v.pitch);
+        const fwd = { x: Math.sin(v.yaw) * cp, y: Math.sin(v.pitch), z: Math.cos(v.yaw) * cp };
+        const o = { x: -fwd.x * 3 + Math.cos(v.yaw) * 0.6, y: -fwd.y * 3 + 0.35, z: -fwd.z * 3 - Math.sin(v.yaw) * 0.6 };
+        const len = Math.hypot(o.x, o.y, o.z);
+        const d = { x: o.x / len, y: o.y / len, z: o.z / len };
+        const hit = m.physics.raycastWorld(eye, d, len);
+        const k = hit === null ? len : Math.max(0.3, hit - 0.25);
+        return { x: eye.x + d.x * k, y: eye.y + d.y * k, z: eye.z + d.z * k };
+      };
+      let v = look(eye, head);
+      for (let i = 0; i < 20; i++) v = look(cam(v), head);
+      return { ...v, overWall: m.physics.lineOfSight(cam(v), head) };
+    }, setup);
+    await page.evaluate((v) => {
+      window.__cs.input.yaw = v.yaw;
+      window.__cs.input.pitch = v.pitch;
+    }, view);
+    await meWait(page, (m, me, v) => Math.abs(me.yaw - v.yaw) < 1e-3 && Math.abs(me.pitch - v.pitch) < 1e-3 && me.fireCooldown === 0, view, 2);
+    const mag0 = await sim(page, (m, me) => me.weapons.get(me.current).mag);
+    await page.evaluate(() => (window.__autoInput = { buttons: 256, once: 2 }));
+    await meWait(page, () => false, null, 0.6);
+    const after = await sim(page, (m, me, slot) => {
+      const t = m.combatants().find((c) => c.slot === slot);
+      return { hurt: t.maxHealth - t.health, mag: me.weapons.get(me.current).mag, tp: !!me.thirdPerson, stance: me.move.stance ?? 0, tpos: t.move.pos };
+    }, setup.slot);
+    return { ...view, third, ...after, fired: mag0 - after.mag };
+  };
+  const tp = await shoot(true);
+  const fp = await shoot(false);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  check(tp.overWall && tp.hurt > 0, `third person, crouched behind a low wall with the crosshair on a head over it: the round reaches them (seen over the wall ${tp.overWall}, damage ${tp.hurt}; ${JSON.stringify(tp)})`);
+  check(fp.hurt === 0, `the same view in first person (rounds along the view from the eye) hits the wall (damage ${fp.hurt}; ${JSON.stringify(fp)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 async function zombiesFlow(browser) {

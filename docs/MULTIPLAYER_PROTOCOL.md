@@ -543,3 +543,27 @@ input bit, so `PROTOCOL_VERSION` stays 4:
   driver has look-to-steer on: the host turns the vehicle toward the
   driver's look (`yaw`) on top of `right`. Ignored on foot, in flyers and by
   older hosts (they mask unknown bits off, so the driver steers with A/D only).
+
+## 18. Third-person aim (November 2026)
+
+In third person the camera sits over the right shoulder (3 m back, 0.6 m
+right, 0.35 m up from the eye; `shared/src/sim/thirdPerson.ts`
+`thirdPersonCamera`), so the crosshair's line and the eye's line differ.
+Rounds still leave from the eye (cover in front of the body protects it), but
+go toward the point the crosshair is on. One input bit, so `PROTOCOL_VERSION`
+stays 4:
+
+- **`BUTTON_THIRD_PERSON` (8192)** in `PlayerInput.buttons`, held while a
+  player on foot has the third-person view. The host works the aim out
+  itself (`Match.aimOf` → `thirdPersonAim`): the camera from the player's
+  eye and view, its centre ray against the level (`raycastWorld`) and the
+  bodies the player could hit as they saw them (`targetsFor` at the input's
+  `viewTick`, the same lag compensation as the shot), then the eye → that
+  point direction, plus the recoil offset. No aim point or direction comes
+  from the client: the bit only picks the view, so it can't steer a round
+  anywhere the player couldn't aim it with the mouse, and can't move its
+  origin. Ignored for riders (vehicle and gun cameras have their own aim)
+  and bots. Older hosts mask the bit off (rounds go along the view from the
+  eye, as before); older clients never send it.
+- The client's own predicted shot (tracers, `Prediction.shotAim`) does the
+  same against its level only (cosmetic: the host's hit decides).

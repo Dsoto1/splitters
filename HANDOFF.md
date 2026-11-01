@@ -77,10 +77,18 @@ Owner (spectating Shingle Point TDM): "that rock is blocking a bunch of bullets"
   rounds hitting players 8.8 % → 10.5 %, kills 206 → 201, rounds fired 11,786 → 8,582, pulls aimed into the gully boulders 190 → 7. Bench (Shingle Point TDM 60 s,
   load ~13 on 4 cores): 24 bots CPU/tick 4.99 → 5.09 ms, 96 bots 8.83 → 8.77 ms (noise); bot aim 0.10 → 0.14 ms at
   96; bench accuracy at 96 7.8 % → 13.3 %, kills 36 → 47.
-- **Player shots (reported, not changed):** first person is consistent (camera = scaled eye = shot origin; tracers
-  are drawn from the muzzle, cosmetic). Third person: the camera sits 3 m back and 0.35 m up from the eye and rounds go
-  from the eye along the view direction, so crouched behind low cover the camera can see over what the rounds then
-  hit (parallax). A gunplay call for the owner (e.g. aim the eye ray at what the crosshair ray hits).
+- **Player shots:** first person is consistent (camera = scaled eye = shot origin; tracers are drawn from the
+  muzzle, cosmetic) and unchanged. Third person was not (camera 3 m back, 0.6 m right, 0.35 m up; rounds along the view
+  from the eye: crouched behind low cover you saw over what your rounds hit). **Fixed with the owner's OK** ("yes for
+  third person"): `BUTTON_THIRD_PERSON` (8192) in the input; the host computes the crosshair's point itself
+  (`sim/thirdPerson.ts` `thirdPersonAim`: the camera's centre ray against the level and the lag-compensated bodies)
+  and fires from the eye toward it (`Match.aimOf`); nothing about the aim comes from the client
+  (MULTIPLAYER_PROTOCOL.md §18). The client camera uses the same `thirdPersonCamera`. Trade-offs: the client's
+  predicted tracer converges against the level only (cosmetic); the client's camera follows the eased eye and drawn
+  position, the host the true eye (they differ only mid-crouch and between ticks); a crosshair point less than 0.5 m
+  in front of the eye falls back to the view; throws (lifted) and melee are unchanged. Tests: `thirdPerson.test.ts`
+  (maths, the input bit, a sim shot over a 1.3 m wall: hits in third person, the wall without the bit); e2e arsenal
+  `thirdPersonShot` (the same in the browser, canyon offline).
 - **Also fixed:** `Match.applyBodySize` left a living combatant's health alone, and everyone is alive when their
   look is applied on joining: large characters started their first life on 100 of 115 health, small ones on 100 of
   85 (`bodySizes.test.ts` now checks). Disc Arena's "nobody takes damage" test caught it once a large bot survived.

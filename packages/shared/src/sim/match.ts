@@ -47,9 +47,10 @@ import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STRE
 import { pickupPool, rollPickup } from './pickupRoll.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
+import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
 import { getProp } from '../content/props.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
-import { BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
+import { BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
@@ -287,6 +288,8 @@ export interface Combatant {
   /** Tick this player last pressed Use (E): objective modes read it (Bomb: plant / defuse). */
   useTick?: number;
   windup: number;
+  /** A person on foot in the third-person view (their input's BUTTON_THIRD_PERSON): rounds go toward the crosshair. */
+  thirdPerson?: boolean;
   semiLatch: boolean;
   burstLeft: number;
   burstTimer: number;
@@ -2459,6 +2462,7 @@ export class Match {
       // On a zipline one hand holds the trolley: sidearms and blades only.
       const unarmed = (seatNow?.role === 'driver' && !gun) || (!!c.mount && !!this.mounts[c.mount.index]!.def.airplane) || (c.move.zip !== undefined && !gun && !oneHanded(held.def));
       const def = held.def;
+      c.thirdPerson = c.kind === 'human' && !c.mount && (input.buttons & BUTTON_THIRD_PERSON) !== 0;
       const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
       const pressed = input.buttons & ~c.prevButtons;
       c.prevButtons = input.buttons;
@@ -2608,14 +2612,38 @@ export class Match {
   }
 
   /** Where a shooter's rounds go: the view plus the mechanical recoil offset. */
-  private aimOf(c: Combatant): Vec3 {
-    return viewDirection(c.yaw + c.gun.ry, Math.max(-1.55, Math.min(1.55, c.pitch + c.gun.rp)));
+  /**
+   * Where a shot goes: the view plus the gun's recoil offset. In third person the view is first turned, from
+   * the eye, onto what the crosshair is on (sim/thirdPerson.ts), worked out here from the host's own world and
+   * `targets` (as the shooter saw them): the client only says the view is third person.
+   */
+  private aimOf(c: Combatant, targets?: ShotTargets): Vec3 {
+    let yaw = c.yaw;
+    let pitch = c.pitch;
+    if (c.thirdPerson && !c.mount) {
+      const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
+      const bodies: RayQuery | undefined = targets
+        ? (o, d, max) => {
+            let best: number | null = null;
+            for (const t of targets) {
+              const h = rayCapsule(o, d, t.feet, t.radius ?? PLAYER.radius, t.height);
+              if (h !== null && h < max && (best === null || h < best)) best = h;
+            }
+            return best;
+          }
+        : undefined;
+      ({ yaw, pitch } = thirdPersonAim(this.worldRay, eye, yaw, pitch, bodies));
+    }
+    return viewDirection(yaw + c.gun.ry, Math.max(-1.55, Math.min(1.55, pitch + c.gun.rp)));
   }
+
+  /** Level geometry along a ray (third-person aim). */
+  private readonly worldRay: RayQuery = (o, d, max) => this.physics.raycastWorld(o, d, max);
 
   /** Launch a projectile from the eye along the aim (lifted a little for throws, so they arc). */
   private launch(shooter: Combatant, spec: ProjectileSpec, weapon: string, lift = 0, spread = 0): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
-    const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : this.aimOf(shooter), spread);
+    const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, 0) : undefined), spread);
     this.projectiles.push({
       id: this.nextProjectileId++,
       owner: shooter.slot,
@@ -2645,7 +2673,7 @@ export class Match {
 
   private fireNow(shooter: Combatant, def: Trigger, viewTick: number): void {
     const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
-    const aim = this.aimOf(shooter);
+    const aim = this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, viewTick) : undefined);
     const gp = gunplayOf(getWeapon(def.id));
     let spread: number;
     if (gp.accuracy && !def.alt) {
