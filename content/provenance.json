@@ -4765,9 +4765,9 @@
     },
     {
       "file": "characters/meshy_barnaby.glb",
-      "sha256": "6cbfce6d92ff6390",
+      "sha256": "5d959b8e7e9bc1fd",
       "triangles": 17021,
-      "bytes": 1203256,
+      "bytes": 1202060,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Gentleman Bear T Pose (download dated 2026-11-01)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -4786,9 +4786,9 @@
     },
     {
       "file": "characters/meshy_barnaby_fparms.glb",
-      "sha256": "bee7ed0dcbd784f6",
+      "sha256": "c9df5030868c1948",
       "triangles": 2414,
-      "bytes": 474372,
+      "bytes": 474680,
       "source": "meshy-community-characters",
       "title": "Meshy community models (characters): Gentleman Bear T Pose (download dated 2026-11-01)",
       "creator": "Meshy community, CC0 (per owner)",

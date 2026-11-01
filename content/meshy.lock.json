@@ -1809,10 +1809,10 @@
       "src": "Meshy_AI_Gentleman_Bear_T_Pose_1101003801_texture.glb",
       "sourceTriangles": 1507108,
       "file": "characters/meshy_barnaby.glb",
-      "sha256": "6cbfce6d92ff6390",
+      "sha256": "5d959b8e7e9bc1fd",
       "triangles": 17021,
-      "lodTriangles": 4761,
-      "bytes": 1203256,
+      "lodTriangles": 4765,
+      "bytes": 1202060,
       "hands": true,
       "surface": "rebake"
     },
@@ -1825,9 +1825,9 @@
       "src": "Meshy_AI_Gentleman_Bear_T_Pose_1101003801_texture.glb",
       "sourceTriangles": 1507108,
       "file": "characters/meshy_barnaby_fparms.glb",
-      "sha256": "bee7ed0dcbd784f6",
+      "sha256": "c9df5030868c1948",
       "triangles": 2414,
-      "bytes": 474372,
+      "bytes": 474680,
       "hands": true
     },
     {
