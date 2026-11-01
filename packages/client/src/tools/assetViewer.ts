@@ -51,7 +51,7 @@ export async function openAssetViewer(engine: AbstractEngine, canvas: HTMLCanvas
     camera.radius = cols * step * 1.1;
     camera.maxZ = 1000;
   }
-  await Promise.all(
+  const roots = await Promise.all(
     assets.map(async (a, i) => {
       const x = (i % cols) * step;
       const z = Math.floor(i / cols) * (big ? step : 0.75) - (big ? 0 : 0.3);
@@ -63,8 +63,17 @@ export async function openAssetViewer(engine: AbstractEngine, canvas: HTMLCanvas
       row.style.cssText = 'padding:8px 0;border-top:1px solid #333';
       row.innerHTML = `<b>#${i + 1} ${a.file}</b><br>${a.triangles} tris · ${(a.bytes / 1024).toFixed(0)} KiB<br>${a.title} — ${a.creator} (${a.license})<br><span style="color:#9aa">${a.source}</span>`;
       panel.append(row);
+      return root;
     }),
   );
+  // One prop or creature (?filter=<its file>): a three-quarter view that frames it, however tall (a 10 m crane).
+  if (big && roots.length === 1) {
+    const { min, max } = roots[0]!.getHierarchyBoundingVectors(true);
+    camera.target = min.add(max).scale(0.5);
+    camera.alpha = -Math.PI / 2 + 0.6;
+    camera.beta = 1.2;
+    camera.radius = Math.max(1, max.subtract(min).length() * 1.15);
+  }
   (window as unknown as { __assetsReady: boolean }).__assetsReady = true;
 
   engine.runRenderLoop(() => scene.render());
