@@ -133,16 +133,39 @@ describe('portals', () => {
     withLinks.destroy();
     without.destroy();
     physics.free();
-    // A bot in the first room goes for the gun in the second, through the portals.
-    const match = new Match(doc, undefined, 7);
-    const bot = match.addBot('b', { ...CORE_BOT_PROFILES[0]!, exploration: 100 })!;
-    bot.move = { pos: { x: -2, y: 0, z: 1 }, velY: 0, grounded: true };
-    let maxX = -Infinity;
-    for (let t = 0; t < TICK_RATE * 20 && maxX < 13; t++) {
-      match.step();
-      if (bot.alive) maxX = Math.max(maxX, bot.move.pos.x);
+    // A bot in the first room goes for the gun in the second, through the portals, and on to it (it used to walk
+    // straight back in: the portal leg's end was out of a corner's reach, so it kept heading for the first portal).
+    // Every body size: a small one's catch used to stop short of the wall the portal is set on.
+    for (const look of ['core.sprout', 'core.ranger', 'core.knight']) {
+      const match = new Match(doc, undefined, 7);
+      const bot = match.addBot('b', { ...CORE_BOT_PROFILES[0]!, exploration: 100 }, undefined, false, { look })!;
+      bot.move = { pos: { x: -2, y: 0, z: 1 }, velY: 0, grounded: true };
+      let maxX = -Infinity;
+      for (let t = 0; t < TICK_RATE * 20 && maxX < 16; t++) {
+        match.step();
+        if (bot.alive) maxX = Math.max(maxX, bot.move.pos.x);
+      }
+      expect(maxX, look).toBeGreaterThan(16);
+      match.destroy();
     }
-    expect(maxX).toBeGreaterThan(13);
+  });
+
+  it('every body size walks through a portal set against a wall', () => {
+    const doc = loaded(rooms());
+    for (const [look, size] of [['core.sprout', 0.78], ['core.ranger', 1], ['core.knight', 1.18]] as const) {
+      const match = new Match(doc, undefined, 7);
+      const me = match.addHuman('me', look)!;
+      expect(me.size, look).toBe(size);
+      me.move = { pos: { x: 1, y: 0, z: 0 }, velY: 0, grounded: true };
+      let seq = 0;
+      for (let t = 0; t < TICK_RATE * 2; t++) {
+        match.queueInputs(me.slot, [{ seq: ++seq, forward: 1, right: 0, yaw: E, pitch: 0, buttons: 0 }]);
+        match.step();
+      }
+      // Out of B (facing +X at x = 12.4) and on across the second room.
+      expect(me.move.pos.x, look).toBeGreaterThan(14);
+      match.destroy();
+    }
   });
 
   it('the Portal Pair tool places two linked portals that validate, and the validator checks pairs', () => {
