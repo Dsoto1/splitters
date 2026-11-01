@@ -17,7 +17,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun, wheelsOf } from './mountVisuals.ts';
-import { CockpitInterior } from './cockpitInterior.ts';
+import { CockpitInterior, type CockpitDrive } from './cockpitInterior.ts';
 import { createViewCamera, poseCamera } from './cameraPose.ts';
 import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
@@ -2231,13 +2231,18 @@ export class GameView {
         if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
       }
     }
-    this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null);
+    let drive: CockpitDrive | null = null;
+    if (cockpit) {
+      const { m } = cockpit;
+      drive = { steer: this.sprung.get(m.index)?.steer ?? 0, speed: m.vel.x * Math.sin(m.shown.yaw) + m.vel.z * Math.cos(m.shown.yaw) };
+    }
+    this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null, drive);
   }
 
-  /** The ridden vehicle's high-detail cockpit (MountDef.cockpitModel), drawn only in your cockpit view. */
+  /** The ridden vehicle's in-house cockpit (content/cockpits.ts), drawn only in your cockpit view. */
   private cockpitInteriorRef: CockpitInterior | null = null;
   private get cockpitInterior(): CockpitInterior {
-    return (this.cockpitInteriorRef ??= new CockpitInterior(this.models));
+    return (this.cockpitInteriorRef ??= new CockpitInterior(this.scene));
   }
 
   /** Whether a vehicle's cockpit interior is drawn now (tests: shown in the cockpit view, never in the chase view). */

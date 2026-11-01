@@ -221,17 +221,6 @@
       "sha256": "48e73671ddf57ac8"
     },
     {
-      "file": "models/vehicles/offroad_buggy_cockpit.glb",
-      "source": "meshy-owned-guns",
-      "budget": "cockpit",
-      "src": "Tactical Off-Road Beast, the buggy's cockpit (owner's Meshy generation, 2026-10-29)",
-      "interiorOf": "models/vehicles/offroad_buggy.glb",
-      "triangles": 31898,
-      "normalMap": true,
-      "bytes": 3612960,
-      "sha256": "2e3ca88c8c74668f"
-    },
-    {
       "file": "models/vehicles/offroad_tire.glb",
       "source": "meshy-owned-guns",
       "budget": "vehicle",
