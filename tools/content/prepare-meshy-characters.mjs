@@ -792,7 +792,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     };
     const parts = [
       { inside: (v) => majorOf(v) === headJoint, share: HEAD_SHARE },
-      { inside: (v) => handJoints.has(majorOf(v)), share: HANDS_SHARE },
+      // (`fixes.handsShare`: more, where cuffs the skinning left on the hands took their share: King Aldric's.)
+      { inside: (v) => handJoints.has(majorOf(v)), share: c.handsShare ?? HANDS_SHARE },
     ];
     const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008] });
     prim.getIndices().setArray(cut);

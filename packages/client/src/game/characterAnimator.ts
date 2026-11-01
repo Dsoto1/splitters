@@ -163,6 +163,8 @@ interface Arm {
   gripOffset: number;
   /** How far the fingers close on a grip (1: the full curl; 0: a rigid or already closed hand). */
   curl: number;
+  /** The hand's length, wrist to fingertips (model m). */
+  span: number;
   /** Finger chains (index, middle, ring, pinky), knuckle first, for closing the hand. */
   fingers: TransformNode[][];
   /**
@@ -256,10 +258,10 @@ export class CharacterAnimator {
         const gripOffset = Math.max(MIN_GRIP_OFFSET, GRIP_RADIUS_MEASURED + (measured.thickness - REF_HAND_THICKNESS) / 2);
         // The hand's own frame, read off its skin (its measured palm side is the rig's, which a Meshy hand needn't match).
         const frame = skinHandFrame(ch.meshes, hand, ch.joints.get(`thumb_01_${side}`) ?? thumb, side) ?? undefined;
-        return { upper, lower, hand, palm: new Vector3(...measured.palm), gripOffset, curl: measured.curl, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
+        return { upper, lower, hand, palm: new Vector3(...measured.palm), gripOffset, curl: measured.curl, span: measured.length, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
       }
       // The rig's own hands: the palm sits a little over halfway from the wrist to the middle knuckle.
-      return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, fingers, index, pinky, knuckle, thumb };
+      return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, span: knuckle.position.length() * RIG_SPAN, fingers, index, pinky, knuckle, thumb };
     };
     const [r, l] = [arm('r'), arm('l')];
     this.arms = r && l ? { r, l } : null;
@@ -963,8 +965,8 @@ export class CharacterAnimator {
       }
       closeHand(space, arms.r, w, point(gripped.pos, gripped.rot, grip.grip));
       if (support) {
-        solveArm(space, arms.l, palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
-        closeHand(space, arms.l, w * 0.7, point(gripped.pos, gripped.rot, support));
+        solveArm(space, arms.l, palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale, grip.style === 'long'), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
+        closeHand(space, arms.l, w * supportCurl(grip), point(gripped.pos, gripped.rot, support));
       }
     }
 
@@ -1018,7 +1020,7 @@ export class CharacterAnimator {
     // The hands' turn on the gun, kept while the shoulders move below (a collarbone's roll would carry it off).
     const handsOn = { r: space.rot(arms.r.hand), l: space.rot(arms.l.hand) };
     const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
-    let supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale) : null;
+    let supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale, grip.style === 'long') : null;
     const view = this.ch.root.parent as TransformNode | null;
     if (this.fp) {
       // Full body: each shoulder starts from its own place on the body and comes forward toward the gun only as
@@ -1036,7 +1038,7 @@ export class CharacterAnimator {
         let back = 0;
         while (back < room && Vector3.Distance(s, supportAt) > reachL) {
           back = Math.min(room, back + 0.01);
-          supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale);
+          supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale, grip.style === 'long');
         }
       }
       // Shoulders come forward by rolling the collarbone first (a shrug toward the gun bends the skin as a body
@@ -1083,7 +1085,7 @@ export class CharacterAnimator {
         let back = 0;
         while (back < room && Vector3.Distance(s, supportAt) > reachL) {
           back = Math.min(room, back + 0.01);
-          supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale);
+          supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale, grip.style === 'long');
         }
       }
       placeShoulder(arms.r, anchor(1), gripAt, shift);
@@ -1097,7 +1099,7 @@ export class CharacterAnimator {
     closeHand(space, arms.r, w, point(grip.grip));
     if (supportAt) {
       solveArm(space, arms.l, supportAt, pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
-      closeHand(space, arms.l, w * 0.7, supportAt.add(palmSideWorld(arms.l).scale(arms.l.gripOffset * scale)));
+      closeHand(space, arms.l, w * supportCurl(grip), supportAt.add(palmSideWorld(arms.l).scale(arms.l.gripOffset * scale)));
     } else if (this.fp) {
       // Full body, one-handed (a knife, an axe): the free arm hangs at your side instead of holding the aim pose up in view.
       const s = pos(arms.l.upper);
@@ -1190,9 +1192,19 @@ const REF_HAND_THICKNESS = 0.026;
 /** A thin hand's palm still rests this far out (m), so the grip never ends up behind it. */
 const MIN_GRIP_OFFSET = 0.012;
 
-/** Where to put a palm so the grip point sits inside the closed hand rather than in the palm itself. */
-function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number): Vector3 {
-  return gripPoint.subtract(palmSideWorld(arm).scale(arm.gripOffset * scale));
+/** A rig hand's length against its wrist-to-middle-knuckle distance. */
+const RIG_SPAN = 1.9;
+/**
+ * A support hand cupping a long gun's handguard holds it over the base of its fingers, not the heel of its palm:
+ * its palm centre sits back from the handguard by this share of the hand's length (toward the wrist), so the
+ * fingers reach across under it and close up its far side instead of standing out past it.
+ */
+const CUP_BACK = 0.22;
+
+/** Where to put a palm so the grip point sits inside the closed hand rather than in the palm itself (`cup`: a support hand under a handguard). */
+function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number, cup = false): Vector3 {
+  const at = gripPoint.subtract(palmSideWorld(arm).scale(arm.gripOffset * scale));
+  return cup ? at.subtract(handAxes(arm).along.scale(CUP_BACK * arm.span * scale)) : at;
 }
 
 /** Unit vector out of the palm (the side the fingers close toward), in world space. */
@@ -1355,6 +1367,15 @@ function solveArm(space: SkeletonSpace, arm: Arm, palmTarget: Vector3, pole: Vec
   space.setRot(arm.hand, handRot, weight);
 }
 
+/**
+ * How far a support hand closes: round a long gun's handguard all the way (closed part way, the fingers stood out
+ * from under the handguard, open: King Aldric's, Dusty Colt's, the Dapper's); under a pistol's grip, part way
+ * (its fingers wrap the shooting hand).
+ */
+function supportCurl(grip: WeaponHold): number {
+  return grip.style === 'long' ? 1 : 0.7;
+}
+
 /** How far every hand closes, as a share of its own curl (1; the grip audit's curl test sets 0 to compare). */
 let curlShare = 1;
 /** The grip audit's curl test (tools/gripSheet.ts `__grips.curl`): close every hand by this share of its curl. */
@@ -1413,7 +1434,7 @@ export function armsFrom(joints: Map<string, TransformNode>, meshes: readonly Ab
     const pinky = get('pinky_01') ?? get('ring_01') ?? knuckle;
     const fingers = ['index', 'middle', 'ring', 'pinky'].map((f) => [1, 2, 3].map((j) => joints.get(`${f}_0${j}_${side}`)).filter((n): n is TransformNode => !!n)).filter((c) => c.length > 0);
     const frame = skinHandFrame(meshes, hand, get('thumb_01') ?? thumb, side) ?? undefined;
-    return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
+    return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, span: knuckle.position.length() * RIG_SPAN, fingers, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
   };
   const [r, l] = [arm('r'), arm('l')];
   return r && l ? { r, l } : null;
@@ -1433,7 +1454,7 @@ export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: Transf
   if (grip.support && grip.style === 'long') cupHand(space, arms.l, world, weight);
   else if (grip.support) gripHand(space, arms.l, world, 'support', weight, true);
   const gripAt = palmOnGrip(arms.r, point(grip.grip), scale);
-  const supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale) : null;
+  const supportAt = grip.support ? palmOnGrip(arms.l, point(grip.support), scale, grip.style === 'long') : null;
   refreshArm(arms.r);
   refreshArm(arms.l);
   const outward = arms.r.upper.getAbsolutePosition().subtract(arms.l.upper.getAbsolutePosition()).normalize();
@@ -1442,7 +1463,7 @@ export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: Transf
   closeHand(space, arms.r, weight, point(grip.grip));
   if (supportAt && grip.support) {
     solveArm(space, arms.l, supportAt, arms.l.upper.getAbsolutePosition().subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), weight);
-    closeHand(space, arms.l, weight * 0.7, point(grip.support));
+    closeHand(space, arms.l, weight * supportCurl(grip), point(grip.support));
   }
 }
 

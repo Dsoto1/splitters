@@ -27,7 +27,7 @@
         "rig": "01a173c0-4d21-712b-97ba-7f08daf670c7"
       },
       "file": "characters/meshy_knight_fparms.glb",
-      "sha256": "04fa24004a8ad9e4",
+      "sha256": "80da10762f25eeac",
       "triangles": 1119,
       "bytes": 350856,
       "hands": true
@@ -43,10 +43,10 @@
         "rig": "01a1740c-f882-7213-bc97-68ffda286170"
       },
       "file": "characters/meshy_nova.glb",
-      "sha256": "5cf4b2a7b9e8dcb6",
+      "sha256": "e209c84fccfe578e",
       "triangles": 8533,
       "lodTriangles": 2463,
-      "bytes": 855284,
+      "bytes": 855280,
       "hands": true
     },
     {
@@ -60,9 +60,9 @@
         "rig": "01a1740c-f882-7213-bc97-68ffda286170"
       },
       "file": "characters/meshy_nova_fparms.glb",
-      "sha256": "217b5f0865155a79",
+      "sha256": "a1ab4503246b21d7",
       "triangles": 1220,
-      "bytes": 379680,
+      "bytes": 379676,
       "hands": true
     },
     {
@@ -76,10 +76,10 @@
         "rig": "01a1740d-0845-7780-8c84-b7f26c5ea616"
       },
       "file": "characters/meshy_dapper.glb",
-      "sha256": "f009d9242a6eb821",
+      "sha256": "63c46386b5b1ce03",
       "triangles": 7738,
       "lodTriangles": 2295,
-      "bytes": 626020,
+      "bytes": 626016,
       "hands": true
     },
     {
@@ -93,9 +93,9 @@
         "rig": "01a1740d-0845-7780-8c84-b7f26c5ea616"
       },
       "file": "characters/meshy_dapper_fparms.glb",
-      "sha256": "9511b9a33b2a7c22",
+      "sha256": "adfa7c0dde2e5930",
       "triangles": 1931,
-      "bytes": 302008,
+      "bytes": 302004,
       "hands": true
     },
     {
@@ -105,7 +105,7 @@
       "src": "Meshy_AI_Goblin_1026113732_texture.fbx",
       "sourceTriangles": 1326047,
       "file": "characters/meshy_goblin.glb",
-      "sha256": "dd8c0fe82c751a19",
+      "sha256": "10abcac5f9342f05",
       "triangles": 11703,
       "lodTriangles": 3308,
       "bytes": 869080,
@@ -118,7 +118,7 @@
       "src": "Meshy_AI_Goblin_1026113732_texture.fbx",
       "sourceTriangles": 1326047,
       "file": "characters/meshy_goblin_fparms.glb",
-      "sha256": "51ecf289cfb7554a",
+      "sha256": "2699c853ef79b83c",
       "triangles": 739,
       "bytes": 357836,
       "hands": true
@@ -130,7 +130,7 @@
       "src": "Meshy_AI_Wealthy_Otter_20260307_texture.fbx",
       "sourceTriangles": 486780,
       "file": "characters/meshy_otter.glb",
-      "sha256": "df9ba2bd8d9d2b6a",
+      "sha256": "f144cbde64194f5c",
       "triangles": 11000,
       "lodTriangles": 3218,
       "bytes": 708804,
@@ -143,7 +143,7 @@
       "src": "Meshy_AI_Wealthy_Otter_20260307_texture.fbx",
       "sourceTriangles": 486780,
       "file": "characters/meshy_otter_fparms.glb",
-      "sha256": "95a58bd8bb94d1d3",
+      "sha256": "2d40903f363c3ff4",
       "triangles": 1751,
       "bytes": 301608,
       "hands": true
@@ -155,7 +155,7 @@
       "src": "Meshy_AI_Boglurker_the_toad_20260325_texture.fbx",
       "sourceTriangles": 852756,
       "file": "characters/meshy_toad.glb",
-      "sha256": "3ee15aa16fbb71f8",
+      "sha256": "35ff6fade7b0f731",
       "triangles": 11619,
       "lodTriangles": 3451,
       "bytes": 756372,
@@ -168,7 +168,7 @@
       "src": "Meshy_AI_Boglurker_the_toad_20260325_texture.fbx",
       "sourceTriangles": 852756,
       "file": "characters/meshy_toad_fparms.glb",
-      "sha256": "b04bca8bf6133309",
+      "sha256": "321f8fc3cc93fc8f",
       "triangles": 446,
       "bytes": 270136,
       "hands": true
@@ -232,7 +232,7 @@
       "src": "Meshy_AI_Elder_T_POSE_1101003417_texture.glb",
       "sourceTriangles": 598236,
       "file": "characters/meshy_elder.glb",
-      "sha256": "cbc2d9fa3a84e016",
+      "sha256": "ad96ccdded5d7bfd",
       "triangles": 12118,
       "lodTriangles": 3571,
       "bytes": 1059164,
@@ -247,9 +247,9 @@
       "src": "Meshy_AI_Elder_T_POSE_1101003417_texture.glb",
       "sourceTriangles": 598236,
       "file": "characters/meshy_elder_fparms.glb",
-      "sha256": "5d2262ab207a52ee",
+      "sha256": "e82aa03bdfd41c4a",
       "triangles": 2587,
-      "bytes": 391316,
+      "bytes": 391328,
       "hands": true
     },
     {
@@ -261,7 +261,7 @@
       "src": "Meshy_AI_T_Pose_Alien_1101003242_texture.glb",
       "sourceTriangles": 144758,
       "file": "characters/meshy_alien.glb",
-      "sha256": "53e9ea6ae24bb218",
+      "sha256": "df9d709e61e24c67",
       "triangles": 9998,
       "lodTriangles": 2896,
       "bytes": 603412,
@@ -276,9 +276,9 @@
       "src": "Meshy_AI_T_Pose_Alien_1101003242_texture.glb",
       "sourceTriangles": 144758,
       "file": "characters/meshy_alien_fparms.glb",
-      "sha256": "64fd1e6a80ec3a58",
+      "sha256": "0b30dbca90c4c85b",
       "triangles": 3296,
-      "bytes": 283484,
+      "bytes": 283468,
       "hands": true
     },
     {
@@ -287,13 +287,13 @@
       "source": "meshy-community-characters",
       "model": "T Pose Cat",
       "date": "2026-03-11",
-      "src": "Meshy_AI_T_Pose_Cat_20260311_texture.fbx",
+      "src": "Meshy_AI_T_Pose_Cat_1101002251_texture.glb",
       "sourceTriangles": 151127,
       "file": "characters/meshy_cat.glb",
-      "sha256": "c4364b259d8c2e98",
-      "triangles": 9994,
-      "lodTriangles": 2902,
-      "bytes": 610004,
+      "sha256": "4ac3045422a5d210",
+      "triangles": 10000,
+      "lodTriangles": 2838,
+      "bytes": 742376,
       "hands": true
     },
     {
@@ -302,12 +302,12 @@
       "source": "meshy-community-characters",
       "model": "T Pose Cat",
       "date": "2026-03-11",
-      "src": "Meshy_AI_T_Pose_Cat_20260311_texture.fbx",
+      "src": "Meshy_AI_T_Pose_Cat_1101002251_texture.glb",
       "sourceTriangles": 151127,
       "file": "characters/meshy_cat_fparms.glb",
-      "sha256": "b73349d7406e7b1d",
-      "triangles": 781,
-      "bytes": 237180,
+      "sha256": "6084efb5778be2ca",
+      "triangles": 2803,
+      "bytes": 327200,
       "hands": true
     },
     {
@@ -319,10 +319,10 @@
       "src": "Meshy_AI_T_Pose_Pilot_1101002708_texture.glb",
       "sourceTriangles": 33601,
       "file": "characters/meshy_pilot.glb",
-      "sha256": "792742c36600e800",
+      "sha256": "e375a77ed84d2bdb",
       "triangles": 10998,
       "lodTriangles": 3212,
-      "bytes": 912440,
+      "bytes": 912468,
       "hands": true
     },
     {
@@ -334,7 +334,7 @@
       "src": "Meshy_AI_T_Pose_Pilot_1101002708_texture.glb",
       "sourceTriangles": 33601,
       "file": "characters/meshy_pilot_fparms.glb",
-      "sha256": "a1d7659ea9305fe9",
+      "sha256": "c2601ae47499172e",
       "triangles": 2350,
       "bytes": 429012,
       "hands": true
@@ -348,10 +348,10 @@
       "src": "Meshy_AI_T_Pose_Pirate_20260714_texture.fbx",
       "sourceTriangles": 285308,
       "file": "characters/meshy_pirate.glb",
-      "sha256": "3cf7a3f5bc46105f",
+      "sha256": "342a348bb1bee193",
       "triangles": 11000,
       "lodTriangles": 3113,
-      "bytes": 587368,
+      "bytes": 587364,
       "hands": true
     },
     {
@@ -363,9 +363,9 @@
       "src": "Meshy_AI_T_Pose_Pirate_20260714_texture.fbx",
       "sourceTriangles": 285308,
       "file": "characters/meshy_pirate_fparms.glb",
-      "sha256": "644e22013bcf5839",
+      "sha256": "2e5b186b89ba677d",
       "triangles": 1136,
-      "bytes": 252056,
+      "bytes": 252052,
       "hands": true
     },
     {
@@ -377,10 +377,10 @@
       "src": "Meshy_AI_T_Pose_Titan_20260503_texture.fbx",
       "sourceTriangles": 189282,
       "file": "characters/meshy_titan.glb",
-      "sha256": "1a7f39f7ce40b677",
+      "sha256": "32ad67bdb6b11ec3",
       "triangles": 11000,
       "lodTriangles": 3148,
-      "bytes": 656288,
+      "bytes": 656284,
       "hands": true
     },
     {
@@ -392,9 +392,9 @@
       "src": "Meshy_AI_T_Pose_Titan_20260503_texture.fbx",
       "sourceTriangles": 189282,
       "file": "characters/meshy_titan_fparms.glb",
-      "sha256": "689f2fcf92a8de50",
+      "sha256": "4d304ded15134acb",
       "triangles": 1486,
-      "bytes": 275100,
+      "bytes": 275096,
       "hands": true
     },
     {
@@ -407,7 +407,7 @@
       "sourceTriangles": 1000000,
       "landmarks": "found",
       "file": "characters/meshy_rustmech.glb",
-      "sha256": "fce23a3d16263662",
+      "sha256": "5d6a7a20184a8ee8",
       "triangles": 11000,
       "lodTriangles": 3108,
       "bytes": 1124096,
@@ -438,10 +438,10 @@
       "sourceTriangles": 9986,
       "landmarks": "found",
       "file": "characters/meshy_t350.glb",
-      "sha256": "18da64f736fd74a6",
+      "sha256": "2b2ba64c2df546cc",
       "triangles": 9986,
       "lodTriangles": 2927,
-      "bytes": 1007376,
+      "bytes": 1007372,
       "hands": true
     },
     {
@@ -454,9 +454,9 @@
       "sourceTriangles": 9986,
       "landmarks": "found",
       "file": "characters/meshy_t350_fparms.glb",
-      "sha256": "9a7defdc84f8b844",
+      "sha256": "4de41efcec525b74",
       "triangles": 706,
-      "bytes": 397488,
+      "bytes": 397484,
       "hands": true
     },
     {
@@ -469,10 +469,10 @@
       "sourceTriangles": 577100,
       "landmarks": "found",
       "file": "characters/meshy_santa.glb",
-      "sha256": "d65b91b5ab9f3530",
+      "sha256": "ed309300fb666d12",
       "triangles": 10998,
       "lodTriangles": 3088,
-      "bytes": 677948,
+      "bytes": 677956,
       "hands": true
     },
     {
@@ -485,9 +485,9 @@
       "sourceTriangles": 577100,
       "landmarks": "found",
       "file": "characters/meshy_santa_fparms.glb",
-      "sha256": "33bbb79891de3e9e",
+      "sha256": "8a1d57c38fff55e6",
       "triangles": 5759,
-      "bytes": 366676,
+      "bytes": 366704,
       "hands": true
     },
     {
@@ -500,10 +500,10 @@
       "model": "Regal Monarch in Velvet",
       "date": "2026-10-29",
       "file": "characters/meshy_king.glb",
-      "sha256": "3361cda1be256046",
-      "triangles": 14608,
-      "lodTriangles": 4166,
-      "bytes": 1194736,
+      "sha256": "57598bcd0ed4001f",
+      "triangles": 15074,
+      "lodTriangles": 4471,
+      "bytes": 1217064,
       "hands": true
     },
     {
@@ -516,9 +516,9 @@
       "model": "Regal Monarch in Velvet",
       "date": "2026-10-29",
       "file": "characters/meshy_king_fparms.glb",
-      "sha256": "7fc56abbb36591d9",
+      "sha256": "44073ec3f97936fe",
       "triangles": 1882,
-      "bytes": 393024,
+      "bytes": 393012,
       "hands": true
     },
     {
@@ -530,10 +530,10 @@
       "src": "Meshy_AI_hunghu_female_lancer__1029193500_image-to-3d-texture.glb",
       "sourceTriangles": 1076578,
       "file": "characters/meshy_lancer.glb",
-      "sha256": "8b4247b6a8a7f24a",
+      "sha256": "ec6865b015a1029d",
       "triangles": 11062,
       "lodTriangles": 3265,
-      "bytes": 1099076,
+      "bytes": 1099072,
       "hands": true
     },
     {
@@ -545,9 +545,9 @@
       "src": "Meshy_AI_hunghu_female_lancer__1029193500_image-to-3d-texture.glb",
       "sourceTriangles": 1076578,
       "file": "characters/meshy_lancer_fparms.glb",
-      "sha256": "c7b080823fa0b97f",
+      "sha256": "8c69f6ec64abd8cf",
       "triangles": 1784,
-      "bytes": 426116,
+      "bytes": 426112,
       "hands": true
     },
     {
@@ -560,10 +560,10 @@
       "model": "Gloombraid Goblin Shaman",
       "date": "2026-10-29",
       "file": "characters/meshy_grizzelda.glb",
-      "sha256": "019cd486a2b9def5",
+      "sha256": "2317eb0a336400d5",
       "triangles": 14558,
       "lodTriangles": 4209,
-      "bytes": 1247724,
+      "bytes": 1247720,
       "hands": true
     },
     {
@@ -576,7 +576,7 @@
       "model": "Gloombraid Goblin Shaman",
       "date": "2026-10-29",
       "file": "characters/meshy_grizzelda_fparms.glb",
-      "sha256": "177f63cf07a4caaa",
+      "sha256": "34491cc39ba93ac6",
       "triangles": 2726,
       "bytes": 397996,
       "hands": true
@@ -591,7 +591,7 @@
       "model": "Energetic anthro rabbit",
       "date": "2026-10-29",
       "file": "characters/meshy_brass_hare.glb",
-      "sha256": "7dabd3fc4b455b50",
+      "sha256": "c99dfdf742488bb4",
       "triangles": 12653,
       "lodTriangles": 3683,
       "bytes": 1294424,
@@ -607,7 +607,7 @@
       "model": "Energetic anthro rabbit",
       "date": "2026-10-29",
       "file": "characters/meshy_brass_hare_fparms.glb",
-      "sha256": "4f71f54335315a10",
+      "sha256": "51d3116c421c62a8",
       "triangles": 4955,
       "bytes": 643248,
       "hands": true
@@ -622,7 +622,7 @@
       "sourceTriangles": 347238,
       "landmarks": "found",
       "file": "characters/meshy_grunt68.glb",
-      "sha256": "f807882fc17cf45f",
+      "sha256": "869d5c80b692df94",
       "triangles": 11000,
       "lodTriangles": 3203,
       "bytes": 772180,
@@ -638,7 +638,7 @@
       "sourceTriangles": 347238,
       "landmarks": "found",
       "file": "characters/meshy_grunt68_fparms.glb",
-      "sha256": "cec1dfd87d61cfa1",
+      "sha256": "6c71f3d254ecec60",
       "triangles": 1914,
       "bytes": 313340,
       "hands": true
@@ -653,10 +653,10 @@
       "sourceTriangles": 427364,
       "landmarks": "found",
       "file": "characters/meshy_galloway.glb",
-      "sha256": "ea3b970402934655",
+      "sha256": "b06ecafce4c95b78",
       "triangles": 10998,
       "lodTriangles": 3188,
-      "bytes": 690536,
+      "bytes": 690532,
       "hands": true
     },
     {
@@ -669,9 +669,9 @@
       "sourceTriangles": 427364,
       "landmarks": "found",
       "file": "characters/meshy_galloway_fparms.glb",
-      "sha256": "1ace656eb82e393e",
+      "sha256": "1505c20ad78f7bf4",
       "triangles": 3134,
-      "bytes": 280024,
+      "bytes": 280020,
       "hands": true
     },
     {
@@ -700,7 +700,7 @@
       "sourceTriangles": 408354,
       "landmarks": "found",
       "file": "characters/meshy_hector_fparms.glb",
-      "sha256": "7f88846217e41ea5",
+      "sha256": "99974c870ce24324",
       "triangles": 3375,
       "bytes": 337892,
       "hands": true
@@ -729,9 +729,9 @@
       "src": "Meshy_AI_Dapper_Elegant_Ghoul_1029194410_texture.glb",
       "sourceTriangles": 404985,
       "file": "characters/meshy_bonesworth_fparms.glb",
-      "sha256": "d92ead1b096a75f9",
+      "sha256": "4ba50fde9a5b3ca1",
       "triangles": 5078,
-      "bytes": 501752,
+      "bytes": 501748,
       "hands": true
     },
     {
@@ -744,10 +744,10 @@
       "sourceTriangles": 274516,
       "landmarks": "found",
       "file": "characters/meshy_ricochet.glb",
-      "sha256": "d5c742ce134d7cad",
+      "sha256": "cb69e3f0d5549eae",
       "triangles": 11000,
       "lodTriangles": 3211,
-      "bytes": 734204,
+      "bytes": 734200,
       "hands": true
     },
     {
@@ -760,9 +760,9 @@
       "sourceTriangles": 274516,
       "landmarks": "found",
       "file": "characters/meshy_ricochet_fparms.glb",
-      "sha256": "2f627b17bc8b6b26",
+      "sha256": "7635f83fed8bea80",
       "triangles": 4398,
-      "bytes": 384688,
+      "bytes": 384684,
       "hands": true
     },
     {
@@ -775,7 +775,7 @@
       "sourceTriangles": 477737,
       "landmarks": "found",
       "file": "characters/meshy_zombie_shambler.glb",
-      "sha256": "8eb7919fc1798087",
+      "sha256": "0000e0dcc38620f8",
       "triangles": 10997,
       "lodTriangles": 3129,
       "bytes": 959836,
@@ -805,7 +805,7 @@
       "src": "Meshy_AI_zombie_1028235400_texture.glb",
       "sourceTriangles": 387048,
       "file": "characters/meshy_zombie_rotter.glb",
-      "sha256": "cf678f37823b9434",
+      "sha256": "d7f1c8edda3ad9f7",
       "triangles": 11000,
       "lodTriangles": 3201,
       "bytes": 878848,
@@ -820,7 +820,7 @@
       "src": "Meshy_AI_zombie_1028235400_texture.glb",
       "sourceTriangles": 387048,
       "file": "characters/meshy_zombie_rotter_fparms.glb",
-      "sha256": "0f9f7afd2f788f29",
+      "sha256": "13f73efcb65bcb16",
       "triangles": 3192,
       "bytes": 315356,
       "hands": true
@@ -851,7 +851,7 @@
       "sourceTriangles": 421922,
       "landmarks": "found",
       "file": "characters/meshy_dale_fparms.glb",
-      "sha256": "9253cc5197920650",
+      "sha256": "e413595b7fdc8c81",
       "triangles": 3050,
       "bytes": 414568,
       "hands": true
@@ -866,10 +866,10 @@
       "sourceTriangles": 262407,
       "landmarks": "found",
       "file": "characters/meshy_grandpa_chains.glb",
-      "sha256": "7211b7136b04449e",
+      "sha256": "2de43b2b91f502d1",
       "triangles": 11000,
       "lodTriangles": 3207,
-      "bytes": 809888,
+      "bytes": 809884,
       "hands": true
     },
     {
@@ -897,10 +897,10 @@
       "sourceTriangles": 264348,
       "landmarks": "found",
       "file": "characters/meshy_hazmat.glb",
-      "sha256": "656c5c6dc3f0b24d",
+      "sha256": "7480af7890a69d20",
       "triangles": 11000,
       "lodTriangles": 3226,
-      "bytes": 687444,
+      "bytes": 687440,
       "hands": true
     },
     {
@@ -928,10 +928,10 @@
       "sourceTriangles": 485506,
       "landmarks": "found",
       "file": "characters/meshy_ninja.glb",
-      "sha256": "5ec8c90a91cd674f",
+      "sha256": "b1353f6546d77854",
       "triangles": 11000,
       "lodTriangles": 3184,
-      "bytes": 724024,
+      "bytes": 724020,
       "hands": true
     },
     {
@@ -944,7 +944,7 @@
       "sourceTriangles": 485506,
       "landmarks": "found",
       "file": "characters/meshy_ninja_fparms.glb",
-      "sha256": "4f20204c37b0c4f2",
+      "sha256": "ad3d0e1c70658418",
       "triangles": 2603,
       "bytes": 295416,
       "hands": true
@@ -990,10 +990,10 @@
       "sourceTriangles": 278180,
       "landmarks": "found",
       "file": "characters/meshy_chef.glb",
-      "sha256": "769e1d5883f8b085",
+      "sha256": "9e746d2431d042d7",
       "triangles": 10999,
       "lodTriangles": 3261,
-      "bytes": 883540,
+      "bytes": 883536,
       "hands": true
     },
     {
@@ -1006,7 +1006,7 @@
       "sourceTriangles": 278180,
       "landmarks": "found",
       "file": "characters/meshy_chef_fparms.glb",
-      "sha256": "06be6e2fb8246b70",
+      "sha256": "2bd2eba898d9ab22",
       "triangles": 3315,
       "bytes": 393236,
       "hands": true
@@ -1021,7 +1021,7 @@
       "sourceTriangles": 271665,
       "landmarks": "found",
       "file": "characters/meshy_cowboy.glb",
-      "sha256": "76d9fd66d73191c5",
+      "sha256": "414e1677f821288c",
       "triangles": 10999,
       "lodTriangles": 3194,
       "bytes": 809700,
@@ -1037,7 +1037,7 @@
       "sourceTriangles": 271665,
       "landmarks": "found",
       "file": "characters/meshy_cowboy_fparms.glb",
-      "sha256": "360dac0f87305f95",
+      "sha256": "17842939a6bf9f54",
       "triangles": 4620,
       "bytes": 390032,
       "hands": true
@@ -1052,7 +1052,7 @@
       "sourceTriangles": 308799,
       "landmarks": "found",
       "file": "characters/meshy_shiba.glb",
-      "sha256": "ef87012591a01d0b",
+      "sha256": "37d897b6d08149fe",
       "triangles": 10999,
       "lodTriangles": 3263,
       "bytes": 811172,
@@ -1068,7 +1068,7 @@
       "sourceTriangles": 308799,
       "landmarks": "found",
       "file": "characters/meshy_shiba_fparms.glb",
-      "sha256": "6b5927d958954f42",
+      "sha256": "5ce1f43463f27d67",
       "triangles": 2367,
       "bytes": 282228,
       "hands": true
@@ -1083,10 +1083,10 @@
       "model": "a raccoon warrior in T-pose",
       "date": "2026-10-29",
       "file": "characters/meshy_bandit.glb",
-      "sha256": "edb81dcbe52fef01",
+      "sha256": "3e39c59f9f026f13",
       "triangles": 10989,
       "lodTriangles": 3115,
-      "bytes": 829244,
+      "bytes": 829268,
       "hands": true
     },
     {
@@ -1099,9 +1099,9 @@
       "model": "a raccoon warrior in T-pose",
       "date": "2026-10-29",
       "file": "characters/meshy_bandit_fparms.glb",
-      "sha256": "64de58889be75e2d",
+      "sha256": "dd07296a9256ae2c",
       "triangles": 1987,
-      "bytes": 301308,
+      "bytes": 301304,
       "hands": true
     },
     {
@@ -1114,7 +1114,7 @@
       "model": "An adorable teddy bear",
       "date": "2026-10-29",
       "file": "characters/meshy_teddy.glb",
-      "sha256": "5daaeb0bf4b3584a",
+      "sha256": "9afbcbc6f87807e1",
       "triangles": 11000,
       "lodTriangles": 3111,
       "bytes": 762656,
@@ -1130,7 +1130,7 @@
       "model": "An adorable teddy bear",
       "date": "2026-10-29",
       "file": "characters/meshy_teddy_fparms.glb",
-      "sha256": "c86e120fd2e40698",
+      "sha256": "5035a3bbd8da2eea",
       "triangles": 3554,
       "bytes": 356712,
       "hands": true
@@ -1145,10 +1145,10 @@
       "model": "An ancient Egyptian Anubis",
       "date": "2026-10-29",
       "file": "characters/meshy_anubis.glb",
-      "sha256": "8f1509f8782f6944",
+      "sha256": "6dd798ba8d121cf4",
       "triangles": 11000,
       "lodTriangles": 3179,
-      "bytes": 790068,
+      "bytes": 790076,
       "hands": true
     },
     {
@@ -1161,9 +1161,9 @@
       "model": "An ancient Egyptian Anubis",
       "date": "2026-10-29",
       "file": "characters/meshy_anubis_fparms.glb",
-      "sha256": "67c234fedcdf5cbf",
+      "sha256": "2d371b4714f97e07",
       "triangles": 3620,
-      "bytes": 349500,
+      "bytes": 349512,
       "hands": true
     },
     {
@@ -1176,10 +1176,10 @@
       "model": "Knight Stance",
       "date": "2026-10-29",
       "file": "characters/meshy_brannock.glb",
-      "sha256": "5ab28c488e4a2abb",
+      "sha256": "76520c81ebc7dc3d",
       "triangles": 10997,
       "lodTriangles": 3201,
-      "bytes": 869780,
+      "bytes": 869776,
       "hands": true
     },
     {
@@ -1192,9 +1192,9 @@
       "model": "Knight Stance",
       "date": "2026-10-29",
       "file": "characters/meshy_brannock_fparms.glb",
-      "sha256": "d02ed08c089ea42b",
+      "sha256": "56786543b0f1b7d4",
       "triangles": 3443,
-      "bytes": 397484,
+      "bytes": 397480,
       "hands": true
     },
     {
@@ -1207,7 +1207,7 @@
       "model": "Medieval Monk in Contemplation",
       "date": "2026-10-29",
       "file": "characters/meshy_monk.glb",
-      "sha256": "e6fa4b17e28c958b",
+      "sha256": "d4d24a7662b141f6",
       "triangles": 18096,
       "lodTriangles": 5334,
       "bytes": 1556664,
@@ -1223,7 +1223,7 @@
       "model": "Medieval Monk in Contemplation",
       "date": "2026-10-29",
       "file": "characters/meshy_monk_fparms.glb",
-      "sha256": "8640fd5bb218a9eb",
+      "sha256": "cea801bcc23c0293",
       "triangles": 2030,
       "bytes": 374744,
       "hands": true
@@ -1238,10 +1238,10 @@
       "sourceTriangles": 202742,
       "landmarks": "found",
       "file": "characters/meshy_big_bab.glb",
-      "sha256": "7a44bdc40da3d1fa",
+      "sha256": "db80a739f4bcadc5",
       "triangles": 11000,
       "lodTriangles": 3164,
-      "bytes": 692716,
+      "bytes": 692712,
       "hands": true
     },
     {
@@ -1254,7 +1254,7 @@
       "sourceTriangles": 202742,
       "landmarks": "found",
       "file": "characters/meshy_big_bab_fparms.glb",
-      "sha256": "3259202d78e7be03",
+      "sha256": "a3e6bf8380bf7962",
       "triangles": 4655,
       "bytes": 355544,
       "hands": true
@@ -1269,10 +1269,10 @@
       "model": "Uniformed Worker in a Jacket",
       "date": "2026-10-29",
       "file": "characters/meshy_zhao.glb",
-      "sha256": "77269064a97dc43d",
+      "sha256": "fc0e77d2d56e761b",
       "triangles": 10999,
       "lodTriangles": 3158,
-      "bytes": 862048,
+      "bytes": 862064,
       "hands": true
     },
     {
@@ -1285,9 +1285,9 @@
       "model": "Uniformed Worker in a Jacket",
       "date": "2026-10-29",
       "file": "characters/meshy_zhao_fparms.glb",
-      "sha256": "6cc7b6abdbb66118",
+      "sha256": "e249ccfa09d7e0c4",
       "triangles": 4623,
-      "bytes": 469520,
+      "bytes": 469512,
       "hands": true
     },
     {
@@ -1300,7 +1300,7 @@
       "model": "Ultra detailed desert soldier",
       "date": "2026-10-29",
       "file": "characters/meshy_desert_ranger.glb",
-      "sha256": "d62986e8a8069a3b",
+      "sha256": "dd935f1d54467b28",
       "triangles": 10999,
       "lodTriangles": 3273,
       "bytes": 890048,
@@ -1316,9 +1316,9 @@
       "model": "Ultra detailed desert soldier",
       "date": "2026-10-29",
       "file": "characters/meshy_desert_ranger_fparms.glb",
-      "sha256": "ced56272a6bd52ff",
+      "sha256": "4e6619e63dcb1b88",
       "triangles": 2569,
-      "bytes": 361240,
+      "bytes": 361236,
       "hands": true
     },
     {
@@ -1331,7 +1331,7 @@
       "model": "Zombie T Pose",
       "date": "2026-10-29",
       "file": "characters/meshy_zombie_groaner.glb",
-      "sha256": "4e95fc5721de0b75",
+      "sha256": "fb50c2259819a965",
       "triangles": 10000,
       "lodTriangles": 2840,
       "bytes": 676156,
@@ -1347,7 +1347,7 @@
       "model": "Zombie T Pose",
       "date": "2026-10-29",
       "file": "characters/meshy_zombie_groaner_fparms.glb",
-      "sha256": "5e2ecf392e96c2a2",
+      "sha256": "9e2bcb57f1986187",
       "triangles": 1117,
       "bytes": 303936,
       "hands": true
@@ -1362,7 +1362,7 @@
       "model": "A horrifying mutated creature",
       "date": "2026-10-29",
       "file": "characters/meshy_gorgle.glb",
-      "sha256": "e66ac5e037e10309",
+      "sha256": "20e24bb79ecc311c",
       "triangles": 9997,
       "lodTriangles": 2915,
       "bytes": 671916,
@@ -1378,7 +1378,7 @@
       "model": "A horrifying mutated creature",
       "date": "2026-10-29",
       "file": "characters/meshy_gorgle_fparms.glb",
-      "sha256": "addd505a475d703b",
+      "sha256": "979ec822d19836a0",
       "triangles": 1000,
       "bytes": 290892,
       "hands": true
@@ -1424,7 +1424,7 @@
       "model": "A futuristic warrior character",
       "date": "2026-10-29",
       "file": "characters/meshy_vanguard.glb",
-      "sha256": "8d1b3839fd8d4c01",
+      "sha256": "c091c9cfaeffc5c5",
       "triangles": 11000,
       "lodTriangles": 3205,
       "bytes": 834812,
@@ -1440,7 +1440,7 @@
       "model": "A futuristic warrior character",
       "date": "2026-10-29",
       "file": "characters/meshy_vanguard_fparms.glb",
-      "sha256": "b6233c2600566589",
+      "sha256": "6a4bff76cc0aed5f",
       "triangles": 1959,
       "bytes": 347408,
       "hands": true
@@ -1455,10 +1455,10 @@
       "model": "Full body of a man wearing a mask",
       "date": "2026-10-29",
       "file": "characters/meshy_dust_trooper.glb",
-      "sha256": "62f00645a73ca649",
+      "sha256": "20cc158ddf7cb8d4",
       "triangles": 13420,
       "lodTriangles": 3777,
-      "bytes": 1161300,
+      "bytes": 1161296,
       "hands": true
     },
     {
@@ -1471,7 +1471,7 @@
       "model": "Full body of a man wearing a mask",
       "date": "2026-10-29",
       "file": "characters/meshy_dust_trooper_fparms.glb",
-      "sha256": "7d4603e03729e185",
+      "sha256": "4883a7bf898de55a",
       "triangles": 1539,
       "bytes": 303780,
       "hands": true
@@ -1486,10 +1486,10 @@
       "model": "Pumpkin head scarecrow",
       "date": "2026-10-29",
       "file": "characters/meshy_punkin.glb",
-      "sha256": "19a7be6ff9357138",
+      "sha256": "1e0495d4e7c41a28",
       "triangles": 11000,
       "lodTriangles": 3160,
-      "bytes": 796932,
+      "bytes": 796928,
       "hands": true
     },
     {
@@ -1502,7 +1502,7 @@
       "model": "Pumpkin head scarecrow",
       "date": "2026-10-29",
       "file": "characters/meshy_punkin_fparms.glb",
-      "sha256": "9c673595e4dc22e2",
+      "sha256": "76cd36e83c60f0e9",
       "triangles": 3087,
       "bytes": 356268,
       "hands": true
@@ -1516,10 +1516,10 @@
       "src": "Meshy_AI_wizard_t_pose_1101002955_texture.glb",
       "sourceTriangles": 84026,
       "file": "characters/meshy_wizard.glb",
-      "sha256": "fa65b6b2555a052e",
+      "sha256": "78f1153a90c39961",
       "triangles": 11394,
       "lodTriangles": 3215,
-      "bytes": 988672,
+      "bytes": 988660,
       "hands": true
     },
     {
@@ -1531,9 +1531,9 @@
       "src": "Meshy_AI_wizard_t_pose_1101002955_texture.glb",
       "sourceTriangles": 84026,
       "file": "characters/meshy_wizard_fparms.glb",
-      "sha256": "b8827a8e1bc9c312",
+      "sha256": "299cb01b93dfce67",
       "triangles": 2812,
-      "bytes": 336468,
+      "bytes": 336472,
       "hands": true
     },
     {
@@ -1546,10 +1546,10 @@
       "model": "Halloween 2025 ghoul",
       "date": "2026-10-29",
       "file": "characters/meshy_skeleton.glb",
-      "sha256": "e4ccce1a94117b1d",
+      "sha256": "651c2b1ee9e749c3",
       "triangles": 15211,
       "lodTriangles": 4444,
-      "bytes": 1276708,
+      "bytes": 1276732,
       "hands": true
     },
     {
@@ -1562,9 +1562,9 @@
       "model": "Halloween 2025 ghoul",
       "date": "2026-10-29",
       "file": "characters/meshy_skeleton_fparms.glb",
-      "sha256": "aa8fa2d39a2c8cc6",
+      "sha256": "b35097a4a0aa8494",
       "triangles": 7565,
-      "bytes": 734232,
+      "bytes": 734252,
       "hands": true
     },
     {
@@ -1575,10 +1575,10 @@
         "rig": "01a18a0a-0299-7411-ac24-653b171b3a1a"
       },
       "file": "characters/meshy_uncle_bao.glb",
-      "sha256": "8464c0647371d146",
+      "sha256": "9e71722cd7f17a23",
       "triangles": 10998,
       "lodTriangles": 3136,
-      "bytes": 721036,
+      "bytes": 721032,
       "hands": true
     },
     {
@@ -1589,9 +1589,9 @@
         "rig": "01a18a0a-0299-7411-ac24-653b171b3a1a"
       },
       "file": "characters/meshy_uncle_bao_fparms.glb",
-      "sha256": "c1cb5378c1b26f72",
+      "sha256": "cfb516a20cdf564a",
       "triangles": 3622,
-      "bytes": 382056,
+      "bytes": 382052,
       "hands": true
     },
     {
@@ -1602,10 +1602,10 @@
         "rig": "01a18a0a-85ac-77dc-94a8-df489f7fe426"
       },
       "file": "characters/meshy_bonejack.glb",
-      "sha256": "4cd9ada343c67898",
+      "sha256": "0cbf859ddb444f2b",
       "triangles": 10996,
       "lodTriangles": 3241,
-      "bytes": 892368,
+      "bytes": 892364,
       "hands": true
     },
     {
@@ -1616,7 +1616,7 @@
         "rig": "01a18a0a-85ac-77dc-94a8-df489f7fe426"
       },
       "file": "characters/meshy_bonejack_fparms.glb",
-      "sha256": "1845aebd2a0a8afa",
+      "sha256": "8b727ff8a6703089",
       "triangles": 3577,
       "bytes": 402928,
       "hands": true
@@ -1629,10 +1629,10 @@
         "rig": "01a18a0b-1e9b-7362-a818-d0779745bb32"
       },
       "file": "characters/meshy_ashwalker.glb",
-      "sha256": "95e39316274ba716",
+      "sha256": "39ad26c3c2552cf6",
       "triangles": 9904,
       "lodTriangles": 2863,
-      "bytes": 789816,
+      "bytes": 789836,
       "hands": true
     },
     {
@@ -1643,9 +1643,9 @@
         "rig": "01a18a0b-1e9b-7362-a818-d0779745bb32"
       },
       "file": "characters/meshy_ashwalker_fparms.glb",
-      "sha256": "dbc354408934028d",
+      "sha256": "c6e5d6a744cc05f0",
       "triangles": 749,
-      "bytes": 316680,
+      "bytes": 316692,
       "hands": true
     },
     {
@@ -1656,10 +1656,10 @@
         "rig": "01a18a0b-64fb-7054-9580-9320b4285f70"
       },
       "file": "characters/meshy_thornweaver.glb",
-      "sha256": "d1f52c55e25221c5",
+      "sha256": "47bc2bd827ea10e5",
       "triangles": 16100,
       "lodTriangles": 4715,
-      "bytes": 1478464,
+      "bytes": 1478460,
       "hands": true
     },
     {
@@ -1682,10 +1682,10 @@
       "src": "Meshy_AI_T_Pose_Frog_in_Suspen_1101003513_texture.glb",
       "sourceTriangles": 393764,
       "file": "characters/meshy_croakley.glb",
-      "sha256": "3f5b1fdc337b9319",
+      "sha256": "633e66a36aa1486f",
       "triangles": 10996,
       "lodTriangles": 3175,
-      "bytes": 843352,
+      "bytes": 843348,
       "hands": true
     },
     {
@@ -1695,7 +1695,7 @@
       "src": "Meshy_AI_T_Pose_Frog_in_Suspen_1101003513_texture.glb",
       "sourceTriangles": 393764,
       "file": "characters/meshy_croakley_fparms.glb",
-      "sha256": "95439ece1a7c8891",
+      "sha256": "e5227dcb8480388b",
       "triangles": 2496,
       "bytes": 339252,
       "hands": true
@@ -1707,10 +1707,10 @@
       "src": "Meshy_AI_T_Pose_Goblin_1101002319_texture.glb",
       "sourceTriangles": 366743,
       "file": "characters/meshy_snikkit.glb",
-      "sha256": "e3dfe3ff6580ab45",
+      "sha256": "6f685d17e8c4e89f",
       "triangles": 10997,
       "lodTriangles": 3252,
-      "bytes": 800492,
+      "bytes": 800496,
       "hands": true
     },
     {
@@ -1720,9 +1720,9 @@
       "src": "Meshy_AI_T_Pose_Goblin_1101002319_texture.glb",
       "sourceTriangles": 366743,
       "file": "characters/meshy_snikkit_fparms.glb",
-      "sha256": "37ea4efb98bca3b5",
+      "sha256": "0376fc26a6b43533",
       "triangles": 3884,
-      "bytes": 349240,
+      "bytes": 349260,
       "hands": true
     },
     {
@@ -1732,10 +1732,10 @@
       "src": "Meshy_AI_T_Pose_Monkey_1101002835_texture.glb",
       "sourceTriangles": 16084,
       "file": "characters/meshy_scamp.glb",
-      "sha256": "1a40c21c12b5cca9",
+      "sha256": "14dd37c31cc1464f",
       "triangles": 10998,
       "lodTriangles": 3256,
-      "bytes": 589640,
+      "bytes": 589648,
       "hands": true
     },
     {
@@ -1745,9 +1745,9 @@
       "src": "Meshy_AI_T_Pose_Monkey_1101002835_texture.glb",
       "sourceTriangles": 16084,
       "file": "characters/meshy_scamp_fparms.glb",
-      "sha256": "801746e998e16c50",
+      "sha256": "5fb07815612f9c99",
       "triangles": 2128,
-      "bytes": 207288,
+      "bytes": 207280,
       "hands": true
     },
     {
@@ -1757,10 +1757,10 @@
       "src": "Meshy_AI_T_Pose_Old_medieval__1101003858_texture.glb",
       "sourceTriangles": 207714,
       "file": "characters/meshy_halvard.glb",
-      "sha256": "f5f78a8a7ac940b6",
+      "sha256": "0e95b502f04057e3",
       "triangles": 10998,
       "lodTriangles": 3243,
-      "bytes": 936152,
+      "bytes": 936128,
       "hands": true
     },
     {
@@ -1770,9 +1770,9 @@
       "src": "Meshy_AI_T_Pose_Old_medieval__1101003858_texture.glb",
       "sourceTriangles": 207714,
       "file": "characters/meshy_halvard_fparms.glb",
-      "sha256": "dda1600ad275e538",
+      "sha256": "d34d7a0b358472d7",
       "triangles": 2611,
-      "bytes": 361868,
+      "bytes": 361848,
       "hands": true
     },
     {
@@ -1782,10 +1782,10 @@
       "src": "Meshy_AI_Officer_T_Pose_1101003111_texture.glb",
       "sourceTriangles": 412597,
       "file": "characters/meshy_pruitt.glb",
-      "sha256": "ae8c86c90bd002d0",
+      "sha256": "91dde1c8b59ee345",
       "triangles": 10998,
       "lodTriangles": 3154,
-      "bytes": 965188,
+      "bytes": 965192,
       "hands": true
     },
     {
@@ -1795,9 +1795,9 @@
       "src": "Meshy_AI_Officer_T_Pose_1101003111_texture.glb",
       "sourceTriangles": 412597,
       "file": "characters/meshy_pruitt_fparms.glb",
-      "sha256": "35e863abf590a582",
+      "sha256": "6c175b12a3b1e661",
       "triangles": 3169,
-      "bytes": 422572,
+      "bytes": 422584,
       "hands": true
     },
     {
@@ -1807,7 +1807,7 @@
       "src": "Meshy_AI_Wolf_T_Pose_1101002725_texture.glb",
       "sourceTriangles": 126088,
       "file": "characters/meshy_greyfang.glb",
-      "sha256": "bba3dbb97cc5c366",
+      "sha256": "0ad19e3ccae3424e",
       "triangles": 10998,
       "lodTriangles": 3216,
       "bytes": 740976,
@@ -1820,9 +1820,9 @@
       "src": "Meshy_AI_Wolf_T_Pose_1101002725_texture.glb",
       "sourceTriangles": 126088,
       "file": "characters/meshy_greyfang_fparms.glb",
-      "sha256": "cf42cf1669aea1c2",
+      "sha256": "5c4a258ccbe94a7f",
       "triangles": 2238,
-      "bytes": 282252,
+      "bytes": 282260,
       "hands": true
     }
   ]

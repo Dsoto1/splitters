@@ -64,7 +64,12 @@ const WEAPONS = [
   ['rifle', 'core.rifle'],
   ['pistol', 'core.pistol'],
   ['spin', 'core.lmg'],
+  ['shotgun', 'core.shotgun'],
+  ['spear', 'core.spear'],
 ];
+// WEAPONS_ONLY=rifle,pistol measures only those (a quick pass).
+const weaponsOnly = process.env.WEAPONS_ONLY?.split(',').filter(Boolean);
+const weapons = weaponsOnly ? WEAPONS.filter(([w]) => weaponsOnly.includes(w)) : WEAPONS;
 
 // Characters: player manifests, plus the part-built ranger as the rig's own baseline.
 const MANIFESTS = join(ROOT, 'content/characters');
@@ -80,11 +85,15 @@ if (!wanted.length) throw new Error('no characters matched');
 
 /** The flags a character's measurements raise (rifle side-view numbers for the body, every weapon for the hands). */
 export function flagsOf(r) {
-  const f = new Set();
+  const all = new Set();
   const notes = [];
+  /** The flags each weapon raises on its own (the before/after table per weapon class). */
+  const byWeapon = {};
   for (const [w, m] of Object.entries(r.weapons)) {
     const a = m.audit;
     if (!a) continue;
+    const f = new Set();
+    byWeapon[w] = f;
     if (w !== 'pistol' && a.gun) {
       if (w === 'rifle' && (a.gun.headToGun < FLAGS.FACE_M || a.gun.gripAboveShoulder > FLAGS.FACE_ABOVE)) f.add('face');
       if (a.gun.elbowSide.r < FLAGS.CROSSED) f.add('crossed');
@@ -114,9 +123,10 @@ export function flagsOf(r) {
     if (a.stretch.spikes >= FLAGS.SPIKES || a.stretch.max > FLAGS.SPIKE_MAX) f.add('spikes');
     const fp = m.fp;
     if (fp && ((fp.r ?? 0) > FLAGS.FP_OFF || (pistol && (fp.l ?? 0) > FLAGS.OFF_L) || (fp.aheadR ?? 1) < FLAGS.FP_AHEAD)) f.add('fp');
+    for (const x of f) all.add(x);
   }
-  const flags = [...f];
-  return { flags, notes, score: flags.reduce((s, x) => s + WEIGHT[x], 0) };
+  const flags = [...all];
+  return { flags, notes, score: flags.reduce((s, x) => s + WEIGHT[x], 0), byWeapon: Object.fromEntries(Object.entries(byWeapon).map(([w, f]) => [w, [...f]])) };
 }
 
 const TILE = 300;
@@ -130,7 +140,11 @@ const VIEWS = [
   ['pistol', 'front'],
   ['spin', 'side'],
   ['spin', 'front'],
+  ['shotgun', 'side'],
+  ['spear', 'side'],
 ];
+/** The views of the weapons measured this run. */
+const views = VIEWS.filter(([w]) => weapons.some(([x]) => x === w));
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/'/g, '&#39;');
 const text = (s, w, h, size = 14, weight = 600, fill = '#e8e8e8') =>
   Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#15181d"/><text x="8" y="${h / 2 + size / 3}" font-family="sans-serif" font-size="${size}" font-weight="${weight}" fill="${fill}">${esc(s)}</text></svg>`);
@@ -153,7 +167,9 @@ if (rescore) {
     ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}),
     args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
   });
-  const page = await browser.newPage({ viewport: { width: TILE * 2, height: TILE * 2 } });
+  // AUDIT_PX=<px>: a smaller page renders faster (software GL); the tiles are TILE px either way.
+  const px = Number(process.env.AUDIT_PX) || TILE * 2;
+  const page = await browser.newPage({ viewport: { width: px, height: px } });
 
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${base}/?mode=grips&test=1`, { waitUntil: 'domcontentloaded' });
@@ -170,11 +186,11 @@ if (rescore) {
     const t0 = Date.now();
     const r = { ...c, weapons: {} };
     const tiles = {};
-    for (const [w, weapon] of WEAPONS) {
+    for (const [w, weapon] of weapons) {
       const m = {};
       try {
         await page.evaluate(([l, wp]) => window.__grips.pose(l, wp, 'third'), [c.look, weapon]);
-        if (shots && VIEWS.some(([vw, v]) => vw === w && v === 'hands')) tiles[`${w}-hands`] = await page.screenshot({ type: 'png' });
+        if (shots && views.some(([vw, v]) => vw === w && v === 'hands')) tiles[`${w}-hands`] = await page.screenshot({ type: 'png' });
         m.audit = await page.evaluate(() => window.__grips.audit());
         m.drawn = await page.evaluate(() => window.__grips.drawn());
         if (w === 'rifle') {
@@ -184,7 +200,7 @@ if (rescore) {
           await page.evaluate(() => window.__grips.curl(1));
           m.curl = Object.fromEntries(['l', 'r'].map((s) => [s, open?.hands[s]?.tips != null && m.audit?.hands[s]?.tips != null ? Math.round((open.hands[s].tips - m.audit.hands[s].tips) * 1000) / 1000 : null]));
         }
-        for (const [vw, v] of VIEWS) {
+        for (const [vw, v] of views) {
           if (vw !== w || v === 'hands' || !shots) continue;
           await page.evaluate((from) => window.__grips.upper(from), v);
           tiles[`${w}-${v}`] = await page.screenshot({ type: 'png' });
@@ -203,15 +219,15 @@ if (rescore) {
     save();
     if (shots) {
       const composite = [];
-      VIEWS.forEach(([w, v], i) => {
+      views.forEach(([w, v], i) => {
         const shot = tiles[`${w}-${v}`];
         composite.push({ input: text(`${w} ${v}`, TILE, LABEL, 12, 500), left: i * TILE, top: HEAD });
         if (shot) composite.push({ input: shot, left: i * TILE, top: HEAD + LABEL });
       });
       const resized = await Promise.all(composite.map(async (t) => (t.top === HEAD + LABEL ? { ...t, input: await sharp(t.input).resize(TILE, TILE).png().toBuffer() } : t)));
       const title = `${c.name} (${c.id}, ${c.rig})  score ${r.score}: ${r.flags.join(', ') || 'ok'}`;
-      resized.push({ input: text(title, VIEWS.length * TILE, HEAD, 16, 700, r.score ? '#ffcf6a' : '#9be39b'), left: 0, top: 0 });
-      await sharp({ create: { width: VIEWS.length * TILE, height: HEAD + LABEL + TILE, channels: 3, background: '#15181d' } }).composite(resized).png().toFile(join(out, `${c.id}.png`));
+      resized.push({ input: text(title, views.length * TILE, HEAD, 16, 700, r.score ? '#ffcf6a' : '#9be39b'), left: 0, top: 0 });
+      await sharp({ create: { width: views.length * TILE, height: HEAD + LABEL + TILE, channels: 3, background: '#15181d' } }).composite(resized).png().toFile(join(out, `${c.id}.png`));
     }
     console.log(`${c.id}: ${r.score} ${r.flags.join(',')} (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
   }
@@ -239,6 +255,12 @@ writeFileSync(
     '|---|---|---|---|---|---|---|---|---|---|---|',
     ...rows,
     '',
+    `Flags per weapon (${weapons.map(([w]) => w).join(', ')}):`,
+    '',
+    `| Character | ${weapons.map(([w]) => w).join(' | ')} |`,
+    `|---|${weapons.map(() => '---').join('|')}|`,
+    ...results.map((r) => `| ${r.name} | ${weapons.map(([w]) => (r.byWeapon?.[w] ? r.byWeapon[w].join(' ') || 'ok' : '-')).join(' | ')} |`),
+    '',
   ].join('\n'),
 );
 if (shots && !rescore) {
@@ -246,7 +268,7 @@ if (shots && !rescore) {
   for (let p = 0; p * per < results.length; p++) {
     const page = results.slice(p * per, (p + 1) * per).filter((r) => existsSync(join(out, `${r.id}.png`)));
     const h = HEAD + LABEL + TILE;
-    await sharp({ create: { width: VIEWS.length * TILE, height: page.length * h, channels: 3, background: '#15181d' } })
+    await sharp({ create: { width: views.length * TILE, height: page.length * h, channels: 3, background: '#15181d' } })
       .composite(page.map((r, i) => ({ input: join(out, `${r.id}.png`), left: 0, top: i * h })))
       .png()
       .toFile(join(out, `sheet-${p + 1}.png`));
