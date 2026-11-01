@@ -1802,6 +1802,36 @@
     },
     {
       "role": "meshy-autorig",
+      "id": "meshy_barnaby",
+      "source": "meshy-community-characters",
+      "model": "Gentleman Bear T Pose",
+      "date": "2026-11-01",
+      "src": "Meshy_AI_Gentleman_Bear_T_Pose_1101003801_texture.glb",
+      "sourceTriangles": 1507108,
+      "file": "characters/meshy_barnaby.glb",
+      "sha256": "6cbfce6d92ff6390",
+      "triangles": 17021,
+      "lodTriangles": 4761,
+      "bytes": 1203256,
+      "hands": true,
+      "surface": "rebake"
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_barnaby_fparms",
+      "source": "meshy-community-characters",
+      "model": "Gentleman Bear T Pose",
+      "date": "2026-11-01",
+      "src": "Meshy_AI_Gentleman_Bear_T_Pose_1101003801_texture.glb",
+      "sourceTriangles": 1507108,
+      "file": "characters/meshy_barnaby_fparms.glb",
+      "sha256": "bee7ed0dcbd784f6",
+      "triangles": 2414,
+      "bytes": 474372,
+      "hands": true
+    },
+    {
+      "role": "meshy-autorig",
       "id": "meshy_greyfang",
       "source": "meshy-community-characters",
       "src": "Meshy_AI_Wolf_T_Pose_1101002725_texture.glb",
@@ -1852,6 +1882,32 @@
       "sha256": "a7ddb2cf9f1b8c2a",
       "triangles": 2617,
       "bytes": 366768,
+      "hands": true
+    },
+    {
+      "role": "meshy-autorig",
+      "id": "meshy_slugger",
+      "source": "meshy-owned",
+      "src": "Meshy_AI_robotic_baseball_play_1101011816_image-to-3d-texture.glb",
+      "sourceTriangles": 3156134,
+      "file": "characters/meshy_slugger.glb",
+      "sha256": "dc62253d3a84bead",
+      "triangles": 18082,
+      "lodTriangles": 5206,
+      "bytes": 1457244,
+      "hands": true,
+      "surface": "rebake"
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_slugger_fparms",
+      "source": "meshy-owned",
+      "src": "Meshy_AI_robotic_baseball_play_1101011816_image-to-3d-texture.glb",
+      "sourceTriangles": 3156134,
+      "file": "characters/meshy_slugger_fparms.glb",
+      "sha256": "42448bdd59e8a116",
+      "triangles": 1644,
+      "bytes": 504200,
       "hands": true
     }
   ]

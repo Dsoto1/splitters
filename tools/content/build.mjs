@@ -289,6 +289,11 @@ const CHAR_MODS = {
   'meshy-autorig': ['rigged in-house (joints placed by hand, skin weights computed from the mesh)', 're-posed to the rig\'s T-pose', 'bound to the rig\'s skeleton', 'simplified', 'base colour only, downscaled to a JPEG', 'vertices quantized'],
   texture: ['downscaled to a JPEG'],
 };
+/** A character built with `surface: rebake` (prepare-meshy-characters.mjs rebakeDownload): what those steps were instead. */
+const REBAKED_MODS = {
+  simplified: 'simplified with the texture seams closed, laid out afresh and its colour and normal maps painted from the full download',
+  'base colour only, downscaled to a JPEG': 'base colour and normal maps as JPEGs',
+};
 const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));
 // Whole-body characters made on the owner's Meshy subscription (tools/content/prepare-meshy-characters.mjs).
 const meshyLock = JSON.parse(readFileSync(join(ROOT, 'content/meshy.lock.json'), 'utf8'));
@@ -334,7 +339,7 @@ for (const f of charEntries) {
     creator: [...new Set(packs.map((p) => p.creator))].join(', '),
     url: packs.map((p) => p.url).join(' '),
     license: [...new Set(packs.map((p) => p.license))].join(', '),
-    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : [])],
+    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)).map((m) => (f.surface === 'rebake' ? REBAKED_MODS[m] ?? m : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : [])],
   });
 }
 const CHAR_DIR = join(ROOT, 'packages/client/public/characters');

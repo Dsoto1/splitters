@@ -56,7 +56,7 @@ import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
 import { keepArmsToArms } from './armweights.mjs';
-import { HANDS_SHARE, HEAD_SHARE, bakeNormals, cutKeeping, normalJpeg, seamAwareSimplify } from './meshy-mesh.mjs';
+import { HANDS_SHARE, HEAD_SHARE, bakeNormals, cutKeeping, normalJpeg, rebake, seamAwareSimplify } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -93,6 +93,16 @@ const JOINT_MAP = {
   RightLeg: 'calf_r',
   RightFoot: 'foot_r',
   RightToeBase: 'ball_r',
+};
+
+/**
+ * Mixamo's joint names (a Meshy rig exported "All Animations" names its joints `mixamorig:<name>`) as Meshy's own:
+ * Mixamo counts the spine up from the hips (Spine, Spine1, Spine2), Meshy down from the chest (Spine02, Spine01, Spine).
+ */
+const MIXAMO = { Spine: 'Spine02', Spine1: 'Spine01', Spine2: 'Spine', Neck: 'neck', HeadTop_End: 'head_end' };
+const meshyName = (name) => {
+  const m = /^mixamorig\d*:(.+)$/.exec(name);
+  return m ? (MIXAMO[m[1]] ?? m[1]) : name;
 };
 
 /** Bones turned to point the way the rig's do (Meshy joint, its child, rig joint, rig child). */
@@ -196,7 +206,7 @@ async function readMeshy(file, ual, c) {
   const skin = doc.getRoot().listSkins()[0];
   const joints = skin.listJoints();
   const ibm = skin.getInverseBindMatrices().getArray();
-  const names = joints.map((j) => j.getName());
+  const names = joints.map((j) => meshyName(j.getName()));
   for (const n of names) if (!JOINT_MAP[n]) throw new Error(`${file}: unknown Meshy joint ${n}`);
   const world = joints.map((j) => j.getWorldMatrix());
   const skinMat = joints.map((_, i) => mat4Mul(world[i], Array.from(ibm.slice(i * 16, i * 16 + 16))));
@@ -211,7 +221,7 @@ async function readMeshy(file, ual, c) {
   const baseColor = material.getBaseColorTexture()?.getImage();
   if (!baseColor) throw new Error(`${file}: no base colour texture`);
   const index = new Map(names.map((n, i) => [n, i]));
-  const skel = { names, parent: joints.map((j) => index.get(j.getParentNode()?.getName()) ?? -1), rest };
+  const skel = { names, parent: joints.map((j) => index.get(meshyName(j.getParentNode()?.getName() ?? '')) ?? -1), rest };
   const verts = {
     count: P.length / 3,
     joints: J,
@@ -448,6 +458,7 @@ async function readUnrigged(file, c, ual) {
     if (!p.getIndices()) p.setIndices(doc.createAccessor().setType('SCALAR').setArray(Uint32Array.from({ length: p.getAttribute('POSITION').getCount() }, (_, i) => i)));
   }
   await doc.transform(weld());
+  let rebaked = null;
   {
     // Cut to the working detail (texture seams are kept, so the base colour still fits); a mesh the
     // seams hold above twice that gets a looser cut, then a sloppy one.
@@ -462,11 +473,24 @@ async function readUnrigged(file, c, ual) {
     const neck = y0 + HEAD_FROM * (y1 - y0);
     const xm = (x0 + x1) / 2;
     const reach = HANDS_FROM * ((x1 - x0) / 2);
-    let cut = new Uint32Array(p.getIndices().getArray());
-    if (cut.length / 3 > target * 1.5)
-      cut = cutKeeping(cut, pos, target, [{ inside: (v) => pos[v * 3 + 1] > neck, share: HEAD_SHARE }, { inside: (v) => Math.abs(pos[v * 3] - xm) > reach, share: HANDS_SHARE }], { errors: [0.01, 0.03], sloppy: true });
-    p.getIndices().setArray(cut);
-    compactPrimitive(p);
+    const parts = [{ inside: (v) => pos[v * 3 + 1] > neck, share: HEAD_SHARE }, { inside: (v) => Math.abs(pos[v * 3] - xm) > reach, share: HANDS_SHARE }];
+    if (c.surface === 'rebake') {
+      // Cut straight to the character's budget with its seams closed, and painted afresh from the full download.
+      const mat = p.getMaterial();
+      const image = glb ? mat?.getBaseColorTexture()?.getImage() : readFileSync(file.replace(/\.fbx$/i, '.png'));
+      if (!image) throw new Error(`${file}: no base colour texture`);
+      const normalImage = glb ? (mat?.getNormalTexture()?.getImage() ?? null) : existsSync(file.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(file.replace(/\.fbx$/i, '_normal.png')) : null;
+      const full = { P: pos, N: new Float32Array(p.getAttribute('NORMAL').getArray()), UV: new Float32Array(p.getAttribute('TEXCOORD_0').getArray()), I: new Uint32Array(p.getIndices().getArray()) };
+      rebaked = await rebakeDownload(full, image, normalImage, c.triangles ?? 11000, [parts[0], { ...parts[1], share: REBAKE_HANDS_SHARE }]);
+      const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(doc.getRoot().listBuffers()[0]);
+      p.setAttribute('POSITION', acc('VEC3', rebaked.P)).setAttribute('NORMAL', acc('VEC3', rebaked.N)).setAttribute('TEXCOORD_0', acc('VEC2', rebaked.UV)).setIndices(acc('SCALAR', rebaked.I));
+      for (const sem of p.listSemantics()) if (!['POSITION', 'NORMAL', 'TEXCOORD_0'].includes(sem)) p.setAttribute(sem, null);
+    } else {
+      let cut = new Uint32Array(p.getIndices().getArray());
+      if (cut.length / 3 > target * 1.5) cut = cutKeeping(cut, pos, target, parts, { errors: [0.01, 0.03], sloppy: true });
+      p.getIndices().setArray(cut);
+      compactPrimitive(p);
+    }
   }
   await doc.transform(prune({ keepAttributes: true }));
   const prim = doc.getRoot().listMeshes()[0].listPrimitives()[0];
@@ -539,6 +563,7 @@ async function readUnrigged(file, c, ual) {
     const normal = file.replace(/\.fbx$/i, '_normal.png');
     if (existsSync(normal)) normalMap = readFileSync(normal);
   }
+  if (rebaked) [baseColor, normalMap] = [Buffer.from(rebaked.colour), rebaked.normal];
   const src = pose(
     { names, parent: FBX_JOINTS.map(([, p]) => (p ? index.get(p) : -1)), rest: names.map(at) },
     {
@@ -629,6 +654,61 @@ async function scrub(image, hex) {
     if (b > r + 35 && b > g + 15) data.set(to, i);
   }
   return sharp(data, { raw: { width: info.width, height: info.height, channels: 3 } }).png().toBuffer();
+}
+
+/** The colour map a rebaked character is painted at (px). */
+const REBAKE_SIZE = 1024;
+/** Its charts: grown while each triangle faces within this many degrees of the chart's first (meshy-mesh.mjs rebake). */
+const REBAKE_GROW = 60;
+/** How far its rays look for the download's surface (share of the model's size: the cut moves it far less). */
+const REBAKE_REACH = 0.012;
+/** The hands' share of a rebaked cut (straight from a million triangles to the budget, a paw at 4% came out a cone). */
+const REBAKE_HANDS_SHARE = 0.08;
+
+/**
+ * `surface: rebake`, for a download whose texture is cut into thousands of small islands (every cut that keeps its
+ * texture coordinates stops over the budget, and even the careful cut scrambles the coat in places). Done on the
+ * download as it stands, before it is rigged and posed: the copies of a vertex on either side of a seam become one,
+ * the mesh is cut to `target` with `parts` (cutKeeping: head and hands) keeping their share, laid out afresh in grown
+ * charts and its colour map painted from the full download (rebake); its normal map is baked from the full download
+ * too (bakeNormals, the download's own normal map bent in). Both maps are in the new layout, so they hold through the
+ * posing (the normal map is in tangent space). `mesh`: { P, N, UV, I } (welded, full detail); `parts` take a welded
+ * vertex index and its position. Returns { P, N, UV, I, from, colour, normal }: `from[i]` is the download vertex the
+ * new vertex i is (the cut only removes vertices), for its skin weights.
+ */
+async function rebakeDownload(mesh, image, normalImage, target, parts) {
+  const { P, N, UV, I } = mesh;
+  const n = P.length / 3;
+  const index = new Uint32Array(n);
+  const keys = new Map();
+  const first = [];
+  for (let v = 0; v < n; v++) {
+    const key = `${P[v * 3].toFixed(5)},${P[v * 3 + 1].toFixed(5)},${P[v * 3 + 2].toFixed(5)}`;
+    let k = keys.get(key);
+    if (k === undefined) {
+      k = first.length;
+      keys.set(key, k);
+      first.push(v);
+    }
+    index[v] = k;
+  }
+  const pos = new Float32Array(first.length * 3);
+  first.forEach((v, k) => pos.set([P[v * 3], P[v * 3 + 1], P[v * 3 + 2]], k * 3));
+  const tris = [];
+  for (let i = 0; i < I.length; i += 3) {
+    const [a, b, d] = [index[I[i]], index[I[i + 1]], index[I[i + 2]]];
+    if (a !== b && b !== d && a !== d) tris.push(a, b, d);
+  }
+  const at = (k) => [pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]];
+  const cut = cutKeeping(Uint32Array.from(tris), pos, target, parts.map((p) => ({ share: p.share, inside: (k) => p.inside(first[k], at(k)) })), { errors: [0.004, 0.008] });
+  console.log(`  seams closed: ${n} vertices welded to ${first.length}, ${I.length / 3} triangles cut to ${cut.length / 3}`);
+  const map = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const out = await rebake({ pos, idx: cut }, { P, I, UV }, map, REBAKE_SIZE, 0.008, { grow: REBAKE_GROW, crease: -1, reach: REBAKE_REACH });
+  const hiMap = normalImage ? await sharp(Buffer.from(normalImage)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
+  let [lo, hi] = [Infinity, -Infinity];
+  for (let v = 1; v < P.length; v += 3) [lo, hi] = [Math.min(lo, P[v]), Math.max(hi, P[v])];
+  const { png } = await bakeNormals({ P: out.pos, N: out.nrm, UV: out.uv, idx: out.idx }, { P, N, UV, I }, { size: REBAKE_SIZE, reach: (hi - lo) * REBAKE_REACH * 1.5, hiMap });
+  return { P: out.pos, N: out.nrm, UV: out.uv, I: out.idx, from: Uint32Array.from(out.from, (k) => first[k]), colour: out.jpeg, normal: png };
 }
 
 function triangles(doc) {
@@ -888,9 +968,10 @@ for (const c of SPECS) {
     continue;
   }
   const { src, sourceTriangles, workTriangles, landmarks } = await readUnrigged(found.file, c, ual);
-  const built = await build(c, src, `${c.id}.glb`, { ratio: Math.min(1, (c.triangles ?? 11000) / workTriangles) });
+  // A rebaked download is cut to its budget already (rebakeDownload).
+  const built = await build(c, src, `${c.id}.glb`, { ratio: c.surface === 'rebake' ? 1 : Math.min(1, (c.triangles ?? 11000) / workTriangles) });
   const from = { ...(c.community ?? {}), src: basename(found.file), sourceTriangles, ...(landmarks === 'found' ? { landmarks } : {}) };
-  lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.pack, ...from, ...built });
+  lock.files.push({ role: 'meshy-autorig', id: c.id, source: c.pack, ...from, ...built, ...(c.surface === 'rebake' ? { surface: 'rebake' } : {}) });
   lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src)) });
 }
 writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`);

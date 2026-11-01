@@ -417,9 +417,14 @@ const CREASE = Math.cos((40 * Math.PI) / 180);
  * round each, at one scale for all. Each texel then takes the download's colour where a ray along the low mesh's
  * normal through the texel's point meets the high mesh (the hit nearest the point), sampled from its own texture
  * coordinates; texels no ray reached, and the gutters, are filled from their neighbours. Normals keep creases
- * sharper than CREASE. Returns { pos, nrm, uv, idx, jpeg } (unwelded where charts or creases split).
+ * sharper than CREASE (`crease`: the cosine; -1 keeps every normal smooth, for a body whose normal map carries the
+ * shading). `grow` (degrees; characters): charts grown instead across shared edges from a seed triangle while each
+ * one faces within `grow` of the seed, projected flat across the seed's normal: an organic body cut along the six
+ * axes falls into thousands of slivers, each with its gutter and its own vertices. `quality`: the JPEG's. `reach`:
+ * how far the rays look (share of the model's size, at least maxError * 1.5; thin cloth over a body wants it short). Returns { pos, nrm, uv, idx, jpeg, from } (unwelded where charts or creases split; `from[i]`: the
+ * low mesh's vertex output vertex i was made from, so per-vertex data such as skin weights can follow).
  */
-export async function rebake(low, hi, map, size, maxError) {
+export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = CREASE, quality = 88, reach: near = 0.03 } = {}) {
   const { pos, idx } = low;
   const T = idx.length / 3;
   // Face normals and areas.
@@ -462,7 +467,7 @@ export async function rebake(low, hi, map, size, maxError) {
   }
   // Projected corners (model units) and each chart's box.
   const PLANE = [[2, 1], [2, 1], [0, 2], [0, 2], [0, 1], [0, 1]];
-  const list = [...charts.values()].map((tris) => {
+  const list = grow ? grownCharts(pos, idx, fn, area, Math.cos((grow * Math.PI) / 180)) : [...charts.values()].map((tris) => {
     const [pu, pv] = PLANE[axis[tris[0]]];
     let [u0, v0, u1, v1] = [Infinity, Infinity, -Infinity, -Infinity];
     for (const t of tris) {
@@ -502,6 +507,7 @@ export async function rebake(low, hi, map, size, maxError) {
   const outPos = [];
   const outNrm = [];
   const outUv = [];
+  const outFrom = [];
   const outIdx = new Uint32Array(T * 3);
   const faces = new Map();
   for (let t = 0; t < T; t++) for (let c = 0; c < 3; c++) (faces.get(idx[t * 3 + c]) ?? faces.set(idx[t * 3 + c], []).get(idx[t * 3 + c])).push(t);
@@ -516,7 +522,7 @@ export async function rebake(low, hi, map, size, maxError) {
         const nrm = [0, 0, 0];
         const group = [];
         for (const f of faces.get(v)) {
-          if (fn[f * 3] * fn[t * 3] + fn[f * 3 + 1] * fn[t * 3 + 1] + fn[f * 3 + 2] * fn[t * 3 + 2] < CREASE) continue;
+          if (fn[f * 3] * fn[t * 3] + fn[f * 3 + 1] * fn[t * 3 + 1] + fn[f * 3 + 2] * fn[t * 3 + 2] < crease) continue;
           group.push(f);
           for (let k = 0; k < 3; k++) nrm[k] += fn[f * 3 + k] * area[f];
         }
@@ -527,9 +533,11 @@ export async function rebake(low, hi, map, size, maxError) {
           made.set(key, out);
           const len = Math.hypot(...nrm) || 1;
           outPos.push(pos[v * 3], pos[v * 3 + 1], pos[v * 3 + 2]);
+          outFrom.push(v);
           outNrm.push(nrm[0] / len, nrm[1] / len, nrm[2] / len);
-          const tx = ch.x + (pos[v * 3 + ch.pu] - ch.u0) * scale;
-          const ty = ch.y + (pos[v * 3 + ch.pv] - ch.v0) * scale;
+          const [pu, pv] = ch.basis ? planar(pos, v, ch.basis) : [pos[v * 3 + ch.pu], pos[v * 3 + ch.pv]];
+          const tx = ch.x + (pu - ch.u0) * scale;
+          const ty = ch.y + (pv - ch.v0) * scale;
           outUv.push(tx / size, ty / size);
         }
         outIdx[t * 3 + c] = out;
@@ -557,7 +565,7 @@ export async function rebake(low, hi, map, size, maxError) {
     return out;
   };
   // As far as the simplifier may have moved the surface, and a little more.
-  const reach = caster.size * Math.max(0.03, maxError * 1.5);
+  const reach = caster.size * Math.max(near, maxError * 1.5);
   const img = Buffer.alloc(size * size * 3);
   const empty = new Uint8Array(size * size).fill(1);
   let [missed, painted] = [0, 0];
@@ -602,8 +610,132 @@ export async function rebake(low, hi, map, size, maxError) {
   }
   console.log(`  rebaked: ${list.length} charts, ${painted} texels painted, ${missed} missed (filled from their neighbours)`);
   await fillMasked({ data: img, info: { width: size, height: size } }, empty);
-  const jpeg = await sharp(img, { raw: { width: size, height: size, channels: 3 } }).jpeg({ quality: 88 }).toBuffer();
-  return { pos: P2, nrm: N2, uv, idx: outIdx, jpeg };
+  const jpeg = await sharp(img, { raw: { width: size, height: size, channels: 3 } }).jpeg({ quality }).toBuffer();
+  return { pos: P2, nrm: N2, uv, idx: outIdx, jpeg, from: Uint32Array.from(outFrom) };
+}
+
+/** Vertex v of `pos` projected onto a chart's plane (`basis`: two unit vectors across its normal). */
+const planar = (pos, v, [a, b]) => [pos[v * 3] * a[0] + pos[v * 3 + 1] * a[1] + pos[v * 3 + 2] * a[2], pos[v * 3] * b[0] + pos[v * 3 + 1] * b[1] + pos[v * 3 + 2] * b[2]];
+
+/**
+ * Charts grown across shared edges (rebake's `grow`): seeded from the largest triangle not yet in a chart, a chart
+ * takes each neighbour facing within `minDot` (cosine) of the seed, and is projected across the seed's normal (so no
+ * triangle in it turns over). Returns rebake's chart list ({ tris, basis, u0, v0, w, h }).
+ */
+function grownCharts(pos, idx, fn, area, minDot) {
+  const T = idx.length / 3;
+  const near = new Map();
+  let edgeSum = 0;
+  for (let t = 0; t < T; t++) {
+    for (let e = 0; e < 3; e++) {
+      const [a, b] = [idx[t * 3 + e], idx[t * 3 + ((e + 1) % 3)]];
+      const key = a < b ? a * 4294967296 + b : b * 4294967296 + a;
+      (near.get(key) ?? near.set(key, []).get(key)).push(t);
+      edgeSum += Math.hypot(pos[a * 3] - pos[b * 3], pos[a * 3 + 1] - pos[b * 3 + 1], pos[a * 3 + 2] - pos[b * 3 + 2]);
+    }
+  }
+  const edgeKey = (a, b) => (a < b ? a * 4294967296 + b : b * 4294967296 + a);
+  // A grid over each chart's plane, so a triangle that would lie over one already in it (the surface folds back
+  // under itself within the cone: a coat's hem over the leg) is left for another chart: they would share texels.
+  const cell = Math.max(1e-9, (edgeSum / Math.max(1, T * 3)) * 2);
+  const corners = (t, basis) => [0, 1, 2].map((c) => planar(pos, idx[t * 3 + c], basis));
+  const cellsOf = (q) => {
+    const out = [];
+    const xs = q.map((p) => p[0]);
+    const ys = q.map((p) => p[1]);
+    for (let x = Math.floor(Math.min(...xs) / cell); x <= Math.floor(Math.max(...xs) / cell); x++) for (let y = Math.floor(Math.min(...ys) / cell); y <= Math.floor(Math.max(...ys) / cell); y++) out.push(`${x},${y}`);
+    return out;
+  };
+  const overlaps = (ch, t) => {
+    const q = shrink(corners(t, ch.basis));
+    const seen = new Set();
+    for (const k of cellsOf(q)) for (const o of ch.grid.get(k) ?? []) if (!seen.has(o) && (seen.add(o), separated(q, shrink(corners(o, ch.basis))) === false)) return true;
+    return false;
+  };
+  const place = (ch, t) => {
+    ch.tris.push(t);
+    for (const k of cellsOf(corners(t, ch.basis))) (ch.grid.get(k) ?? ch.grid.set(k, []).get(k)).push(t);
+  };
+  const chart = new Int32Array(T).fill(-1);
+  const order = [...Array(T).keys()].sort((a, b) => area[b] - area[a]);
+  const list = [];
+  for (const seed of order) {
+    if (chart[seed] >= 0) continue;
+    const nrm = [fn[seed * 3], fn[seed * 3 + 1], fn[seed * 3 + 2]];
+    // Two unit vectors across the seed's normal.
+    const side = Math.abs(nrm[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+    let u = [side[1] * nrm[2] - side[2] * nrm[1], side[2] * nrm[0] - side[0] * nrm[2], side[0] * nrm[1] - side[1] * nrm[0]];
+    const len = Math.hypot(...u);
+    u = u.map((x) => x / len);
+    const w = [nrm[1] * u[2] - nrm[2] * u[1], nrm[2] * u[0] - nrm[0] * u[2], nrm[0] * u[1] - nrm[1] * u[0]];
+    const ch = { seed, basis: [u, w], tris: [], grid: new Map() };
+    chart[seed] = list.length;
+    place(ch, seed);
+    for (let i = 0; i < ch.tris.length; i++) {
+      const t = ch.tris[i];
+      for (let e = 0; e < 3; e++) {
+        for (const o of near.get(edgeKey(idx[t * 3 + e], idx[t * 3 + ((e + 1) % 3)]))) {
+          if (chart[o] >= 0 || fn[o * 3] * nrm[0] + fn[o * 3 + 1] * nrm[1] + fn[o * 3 + 2] * nrm[2] < minDot || overlaps(ch, o)) continue;
+          chart[o] = list.length;
+          place(ch, o);
+        }
+      }
+    }
+    list.push(ch);
+  }
+  // Slivers (a few triangles that faced too far from every seed near them) join a neighbouring chart they still face
+  // within ABSORB of and don't overlap, smallest first: each chart costs a gutter round it and its own vertices.
+  const ABSORB = Math.cos((80 * Math.PI) / 180);
+  const faces = (t, c) => fn[t * 3] * fn[c * 3] + fn[t * 3 + 1] * fn[c * 3 + 1] + fn[t * 3 + 2] * fn[c * 3 + 2] >= ABSORB;
+  for (const small of [...list].filter((c) => c.tris.length <= 8).sort((a, b) => a.tris.length - b.tris.length)) {
+    for (const t of [...small.tris]) {
+      let best = -1;
+      for (let e = 0; e < 3 && best < 0; e++) {
+        for (const o of near.get(edgeKey(idx[t * 3 + e], idx[t * 3 + ((e + 1) % 3)]))) {
+          const k = chart[o];
+          if (k !== chart[t] && list[k].tris.length > small.tris.length && faces(t, list[k].seed) && !overlaps(list[k], t)) {
+            best = k;
+            break;
+          }
+        }
+      }
+      if (best < 0) continue;
+      small.tris.splice(small.tris.indexOf(t), 1);
+      place(list[best], t);
+      chart[t] = best;
+    }
+  }
+  return list.filter((c) => c.tris.length).map(({ tris, basis }) => {
+    let [u0, v0, u1, v1] = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const t of tris) {
+      for (let c = 0; c < 3; c++) {
+        const [pu, pv] = planar(pos, idx[t * 3 + c], basis);
+        [u0, u1, v0, v1] = [Math.min(u0, pu), Math.max(u1, pu), Math.min(v0, pv), Math.max(v1, pv)];
+      }
+    }
+    return { tris, basis, u0, v0, w: u1 - u0, h: v1 - v0, x: 0, y: 0 };
+  });
+}
+
+/** A 2D triangle pulled 2% toward its centre (so triangles that only share an edge or a corner don't count as overlapping). */
+function shrink(q) {
+  const c = [(q[0][0] + q[1][0] + q[2][0]) / 3, (q[0][1] + q[1][1] + q[2][1]) / 3];
+  return q.map((p) => [c[0] + (p[0] - c[0]) * 0.98, c[1] + (p[1] - c[1]) * 0.98]);
+}
+
+/** Whether two 2D triangles are apart (an edge of one separates them: separating axis test). */
+function separated(a, b) {
+  for (const [p, q] of [[a, b], [b, a]]) {
+    for (let e = 0; e < 3; e++) {
+      const [x0, y0] = p[e];
+      const [x1, y1] = p[(e + 1) % 3];
+      const ax = [-(y1 - y0), x1 - x0];
+      const proj = (r) => r.map((v) => v[0] * ax[0] + v[1] * ax[1]);
+      const [pa, pb] = [proj(p), proj(q)];
+      if (Math.max(...pa) <= Math.min(...pb) || Math.max(...pb) <= Math.min(...pa)) return true;
+    }
+  }
+  return false;
 }
 
 /**
