@@ -51,7 +51,15 @@ layout prepare-vfx reads: `/home/user/fx-packs/links-full/`). No Meshy credits s
   flare zones), Status FX (pickups, heal, spawn protection) and Portal VFX need their shaders ported in godotVfx.ts
   (Electric: electric_particle, ground_impact, ground_streaks, zap; Flame: fire_core, fire_overlay, fire_particle; Status:
   11). Tracers are unchanged (impactVisuals streaks).
-- Checks: PERF_PLACEHOLDER
+- Checks: typecheck; content OK; new `packages/client/test/fxMap.test.ts` (6); style-pack tests (after renaming three
+  props: `temple_ruin_stair`, `smithy_workbench`, `tiled_well`); e2e `physicsfx` + `arsenal` PASS. `test:changed` on a
+  machine at load 21-27: 14 failures, all timeouts or bench thresholds except `host.test.ts` (Bob's account `sub`),
+  which fails the same on main's checkout (f0da0e4): not this branch. Menu bundle 833.4 kB gzip (budget 840); the map
+  is in the lazily loaded view chunk. Perf at 96 (load 23+, SwiftShader, so absolute numbers are noisy): server
+  `bench:96` Frost Basin tick avg 16.4 ms wall / 8.8 ms CPU; client perf96 Frost Basin medium: tick 8-9 ms, draws 457
+  spread / 308 clumped / 278 after a 20-kill blast, effect shadow casters 0, slowest effect start 1.5 ms (explosion;
+  every mapped effect warmed at load). Branch not rebased on main (f0da0e4): generated files (props.generated.ts,
+  provenance, palette atlases, characters.generated.ts, portraitIndex) need regenerating on merge.
 
 ### `wip/warthog-step1` (agent, 2026-11-01; not merged): Warthog feel, step 1 (raycast suspension)
 Owner: "make the buggy feel like Halo's Warthog (independent suspension)", step 1, "if performance remains intact".
