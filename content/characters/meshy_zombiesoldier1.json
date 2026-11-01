@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 76,
-  "name": "Corporal Calcium",
+  "name": "Zombie Soldier A",
   "look": "core.zombiesoldier1",
   "group": "horror",
   "bio": "Reported for duty. Never stopped.",

@@ -112,10 +112,11 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   if (x.hands !== undefined) {
     const h = x.hands;
     need(typeof h === 'object' && h !== null, 'fixes.hands: { palm, curl, scale }');
-    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale; or l / r for one side)`);
+    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'mitten', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, mitten; or l / r for one side)`);
     for (const side of [h, h?.l, h?.r].filter(Boolean)) {
       need(side.palm === undefined || isPoint(side.palm), 'fixes.hands.palm: [x, y, z] in the hand joint\'s space (m)');
       need(side.curl === undefined || (typeof side.curl === 'number' && side.curl >= 0 && side.curl <= 1.5), 'fixes.hands.curl: 0–1.5 (how far the fingers close)');
+      need(side.mitten === undefined || typeof side.mitten === 'boolean', 'fixes.hands.mitten: true (the fingers bend together, as one) or left out');
       need(side.scale === undefined || (typeof side.scale === 'number' && side.scale > 0.3 && side.scale < 3), 'fixes.hands.scale: 0.3–3');
     }
   }

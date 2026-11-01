@@ -620,7 +620,8 @@ of 133 triangles and hands of a few dozen (Lancer Mei, Merrow the Wise).
 The log prints each hand's size and what it got (`split`, `mitten`, `none`).
 For an odd model, `fixes.hands` overrides: `palm` (`[x, y, z]` in the hand
 joint's space, metres), `curl` (0–1.5, how far the fingers close), `scale`
-(shrink or grow the hand about the wrist), for both hands or one (`l`, `r`). A rigid gauntlet
+(shrink or grow the hand about the wrist), `mitten` (true: the fingers bend together even where
+gaps were found; a thumb or fold read as a gap crumples a split hand into shards), for both hands or one (`l`, `r`). A rigid gauntlet
 (`fingers: none`, curl 0) given a `curl` is skinned as a mitten that closes on the grip: the Knight has
 `fixes.hands.curl: 1` (rehanded with rehand-built.mjs).
 
