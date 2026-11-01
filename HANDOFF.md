@@ -30,6 +30,32 @@ Meshy community, CC0 per the owner, author not recorded) is the Spear's model `g
   characters (hand on the shaft in three views). Looking along a 2 m spear in first person, the flat blade shows
   mostly edge-on past the carved collar; a tilted first-person hold would need a view rotation field (none today).
 
+### `wip/ziplines` (agent, 2026-11-01; merged to main 89cc319): real ziplines, a MapMaker element
+Owner: "build real ziplines if it's easy enough; should also be a MapMaker element". Built:
+- **Format v25** `zipline` entity (schema.ts `ZiplineEntity`: start post foot `position`, far post `end` as an offset,
+  `height`, `speed`, `twoWay`, `team`, `sag`); migration 24 → 25 is additive. Maps keep their old formatVersion.
+- **Sim** `shared/src/sim/zipline.ts`, run inside `stepMovement` (so prediction and replays match): E within
+  reach grabs, ride along `MoveState.zip/zs/zv`, jump or E lets go with momentum, the far end drops you 1 m
+  before the post, a hit ≥ 30 knocks you off (`Match.damage`), one-handed weapons only (`oneHanded`, server
+  `unarmed` and client `trigger`). Riders hang from the drooping cable as drawn (sag is not only cosmetic).
+  Snapshot `zl` (MULTIPLAYER_PROTOCOL.md §16; added to interest.ts OPTIONAL_KEYS for deltas).
+- **Bots:** `ziplineLinks` in `navLinks`; brain `zipGrab` walks to the grab spot and presses E; the match strips
+  E/jump from riding bots; team lines are shut to others (`pathBlocked`).
+- **Client:** cable/posts in ScenarioVisuals (game and MapMaker), trolley on riders (view.ts `createTrolley`,
+  local one in first person), `zip.whirr` (synth `hum`), first-person bank (`Session.zipLean`), prompts.
+  The hanging pose is the existing air pose (no arm-up IK: the grip IK would fight it).
+- **MapMaker:** palette Zipline (Platforms & Climbing, Jungle Ruins pack), inspector, "Place ends on the map"
+  (RouteTool with two fixed points). Validation: shape in `validateMap`, clearance/reach/landing in
+  `validateNavigation(map, nav, physics)` (new optional `physics` argument; server, validate-map and MapMaker pass it).
+- **Vinefall Sanctum:** two one-way gorge lines (DECISIONS_AND_DEVIATIONS.md), validate-map 0 issues.
+- Tests: packages/shared/test/zipline.test.ts; e2e `editor` → `ziplineChecks` (place, place end, TEST ride).
+- Checks run locally: typecheck, test:changed (all: 1184 passed), build, bundle 828.3 kB gzip (budget 840),
+  e2e editor, editorux, maps (E2E_MAPS=vinefall_sanctum) PASS; offline PASS on a rerun (one flake in
+  "Join game puts you back in play", unrelated). Bench 24 bots 30 s Vinefall with / without the lines:
+  tick avg 3.37 / 3.68 ms (noise; loaded machine). Not yet on a check branch.
+- Left: a hand-over-head hanging pose (needs the grip IK to let go of the support hand); minimap/plan don't
+  draw ziplines; R in MapMaker doesn't rotate a zipline (no yaw: drag its ends).
+
 ### Vehicle shake fix (lead, 2026-11-01; on `wip/buggy-cockpit`)
 Owner: "the buggy shakes violently when I drove it". The sim is smooth (a scratch test drove it: height steady to the mm,
 no heading wobble). Cause, on the client: `View.suspend()` read speed, acceleration and turn rate off frame-to-frame

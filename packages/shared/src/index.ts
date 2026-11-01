@@ -45,6 +45,7 @@ export * from './sim/glass.ts';
 export * from './sim/scenario.ts';
 export * from './sim/movers.ts';
 export * from './sim/portals.ts';
+export * from './sim/zipline.ts';
 export * from './sim/npc.ts';
 export * from './sim/zombies.ts';
 export * from './sim/race.ts';

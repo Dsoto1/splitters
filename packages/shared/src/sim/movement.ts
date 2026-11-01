@@ -5,6 +5,7 @@ import type { GroundHeight, PhysicsWorld } from './physics.ts';
 import { JET, LIQUID_SPECS, SWIM_DEPTH, liquidAt, type LiquidBox } from './liquids.ts';
 import { mapPortals, portalLinks } from './portals.ts';
 import { CHUTE_GLIDER, CHUTE_PARACHUTE, chuteVelY, chuteWish, wantsChute, type ChuteKind } from './parachute.ts';
+import { grabZipline, rideZipline, startRide, ziplineLinks, mapZiplines, type Zipline } from './zipline.ts';
 import { hypot } from '../math.ts';
 
 export const BUTTON_JUMP = 1;
@@ -105,6 +106,14 @@ export interface MoveState {
   chute?: ChuteKind;
   /** Jumped out of something high (the plane, a flyer): the automatic opener is armed until you land. */
   drop?: boolean;
+  /**
+   * Riding a zipline (zipline.ts): the line (index in mapZiplines), how far
+   * along it from its start (m) and the signed speed along it (m/s, + toward
+   * its end). All three or none.
+   */
+  zip?: number;
+  zs?: number;
+  zv?: number;
 }
 
 /** Current stance of a move state. */
@@ -135,6 +144,10 @@ export interface MoveEnv {
   autoChute?: boolean;
   /** Coarse move over the terrain (bots no player is near): see PhysicsWorld.moveCharacter. */
   ground?: GroundHeight;
+  /** The map's ziplines (mapZiplines): E grabs one within reach. */
+  ziplines?: readonly Zipline[];
+  /** Your team or faction (team-only ziplines). */
+  team?: string | null;
 }
 
 /** A zone that changes gravity inside it (an axis-aligned box from `min` to `max`), as movement sees it. */
@@ -248,6 +261,12 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
  * snapshot reproduces the server result exactly.
  */
 export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, state: MoveState, input: PlayerInput, speedScale = 1, dt: number = TICK_DT, traction = 1, env: MoveEnv = {}): MoveState {
+  // On a zipline: the line carries you; jump or E lets go (zipline.ts). E within reach of one grabs it.
+  if (state.zip !== undefined) return rideZipline(physics, env.ziplines ?? [], state, (input.buttons & (BUTTON_JUMP | BUTTON_USE)) !== 0, (input.buttons & BUTTON_JUMP) !== 0, dt, env.scale ?? 1, env.gravity ?? 1);
+  if (input.buttons & BUTTON_USE && env.ziplines?.length) {
+    const grab = grabZipline(env.ziplines, state.pos, input.yaw, env.team);
+    if (grab) return rideZipline(physics, env.ziplines, startRide(env.ziplines, state, grab), false, false, dt, env.scale ?? 1, env.gravity ?? 1);
+  }
   // Stance: what you ask for, unless there's no room to stand (or crouch) up. Jumping gets you up first.
   let jumpPressed = (input.buttons & BUTTON_JUMP) !== 0;
   const k = env.scale ?? 1;
@@ -491,7 +510,7 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gra
   return out;
 }
 
-/** Every one-way navmesh link a map needs for bots: jump pad flights, ladders up and down, and portal pairs both ways. */
-export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0] & Parameters<typeof mapPortals>[0], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3; reach?: Vec3 }[] {
-  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities)), ...ladderLinks(mapLadders(entities)), ...portalLinks(mapPortals(entities))];
+/** Every one-way navmesh link a map needs for bots: jump pad flights, ladders up and down, portal pairs both ways and zipline rides. */
+export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0] & Parameters<typeof mapPortals>[0] & Parameters<typeof mapZiplines>[0], physics: PhysicsWorld, gravity = 1): { start: Vec3; end: Vec3; reach?: Vec3 }[] {
+  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities)), ...ladderLinks(mapLadders(entities)), ...portalLinks(mapPortals(entities)), ...ziplineLinks(mapZiplines(entities), physics)];
 }

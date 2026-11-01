@@ -756,9 +756,9 @@ Mossy Planks, Temple Sandstone, Palm Thatch (`thatch`).
 
 **Gameplay pieces**: the Portcullis door and Portcullis gate mover (in the Carved Temple's gate), braziers and
 wall torches (lights), ladders (rope ladders and vines), with the pack's rope bridges, crumbling planks,
-falling rocks, spikes, flames, water and swamp. **Zipline:** there is no zipline ride in the game; the Zipline
-Post is scenery and the pack lists the Grapple Hook to cross between posts. A real zipline (a new movement
-mechanic) is the owner's call.
+falling rocks, spikes, flames, water and swamp. **Zipline:** the pack lists the real *Zipline* (see
+[Ziplines](#ziplines-simziplinets-format-v25)); the Zipline Post prop stays as scenery, and the Grapple Hook
+still crosses between high points no line joins. Vinefall Sanctum has two gorge ziplines.
 
 ## Materials and themes (`map/materials.ts`)
 
@@ -892,6 +892,41 @@ roughly how high and how far that is. Launches are predicted on the client
 like any other movement. Each pad's flight is traced to where it lands and
 added to the navmesh as a one-way link, so bots ride pads too, and ledges
 reachable only by pad count as reachable for map validation.
+
+## Ziplines (`sim/zipline.ts`, format v25)
+
+A **Zipline** (palette *Zipline*, Objects & Logic → Platforms & Climbing; `kind: 'zipline'`) is a cable
+between two timber posts. `position` is the foot of the start post and `end` the foot of the far post as an
+offset from it (moving the zipline moves both); the cable runs between the posts' tops, `height` m above each
+foot (2.5–8, default 3.6). Options: `speed` (m/s, 3–30, default 12), `twoWay` (else only start → end),
+`team` (only that team rides it) and `sag` (how far the drawn cable droops, a share of its length; riders hang
+from it as drawn).
+
+- **Placing:** the palette puts the start post where you click, the far post 16 m along the facing, level
+  with it. *Place ends on the map* (inspector) arms the Route tool's hands for its two ends: a click on the
+  ground or a platform puts the far end there (click the start first to move that one), and either end drags;
+  the cable is drawn while you drag. The inspector also has the far end's X, height and Z, post height,
+  speed, *Both ways*, *Team only*, droop, and the line's length, slope and ride time.
+- **Riding:** E within reach of the cable (up to 1.5 m to the side, 0.9–4.2 m overhead: under either post or
+  anywhere along it) grabs it. You hang below it (feet a body length and a hand under the cable) and ride
+  toward the far end: a one-way line always toward its end; a two-way line toward the other end when you
+  grab near one, otherwise the way you face. The trolley holds the set speed, uphill too; downhill gravity
+  speeds you up to 1.6× it. Jump or E lets go and keeps the ride's momentum (a jump adds a hop); at the far
+  end you're dropped off 1 m before the post onto whatever is under it. A hit of 30 or more knocks you off.
+  One hand holds the trolley: sidearms and blades fire while riding (with the air spread), two-handed guns
+  don't until you let go. Shared deterministic sim, host-authoritative and predicted on the client like any
+  movement; the snapshot carries `zl` (docs/MULTIPLAYER_PROTOCOL.md).
+- **Looks and sound:** posts with a footing, an arm and a pulley block; a steel cable (a tube along the droop);
+  a trolley with a T-bar over each rider's head (riders use the air pose); the trolley's whirr (the synth
+  `hum`, pitched by speed); in first person the view banks with the ride.
+- **Bots:** each line is a one-way navmesh link from where it's grabbed to where it drops you (both ways on a
+  two-way line), so bots ride it when it shortens the route (Recast costs it by its length) and press E at
+  the grab spot; a team line is shut to the other teams.
+- **Validator:** too short (< 6 m) or long (> 160 m), too steep (> 35°): errors. With the level (MapMaker's
+  navigation check, `validate-map`, the server): the cable or a hanging rider's body blocked anywhere along it
+  (the same body check the ride makes every tick) is an error; ground too far below the grab point
+  (`zipline.out_of_reach`), nothing to land on at the end (`zipline.no_landing`) and grab or drop points off
+  the navmesh (`nav.zipline_end`) are warnings.
 
 ## Interior dressing (`map/dressing.ts`)
 

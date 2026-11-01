@@ -62,6 +62,8 @@ export interface CombatantView {
   object?: boolean;
   /** Hidden in a bush (and quiet): only spotted up close. */
   concealed?: boolean;
+  /** Riding a zipline (the line carries them; they can't steer). */
+  riding?: boolean;
 }
 
 export interface PickupView {
@@ -125,6 +127,12 @@ export interface BotWorldView {
    * (logic can switch portals off: then the shortcut is shut).
    */
   portals?: readonly { start: Vec3; end: Vec3; face: Vec3; on: boolean }[];
+  /**
+   * Ziplines (a navmesh link each, one way, or each way on a two-way line):
+   * where to stand and press E to grab it, where it drops you, and whether
+   * this bot may ride it (team lines are shut to the other teams).
+   */
+  ziplines?: readonly { start: Vec3; end: Vec3; on: boolean }[];
   /**
    * Squad order (NPCs) or co-op goal (Player Bots): when not fighting, go here
    * instead of roaming, and wait within `radius` of it.
@@ -365,6 +373,8 @@ export class BotBrain {
   private pressedAt = -Infinity;
   /** Waiting for or riding a lift: stand still this tick. */
   private holdStill = false;
+  /** Standing where a zipline on the route is grabbed: press E this tick. */
+  private zipPress = false;
   /** Last tick's act was aiming and shooting at the target (nothing else on): steer() can stand in for a think. */
   private steerable = false;
   /** Route variety and roles (seeded per bot): a stream of its own, so the bot's other choices stay as they were. */
@@ -1237,6 +1247,12 @@ export class BotBrain {
     if (hurt && inCoverHidden && this.tactical > 0.5) stance = 2;
 
     if (pressNow) buttons |= BUTTON_USE;
+    // At a zipline on the route: grab it (E once; the line does the rest).
+    if (this.zipPress && !me.riding && tick - this.lastUseTick > 15) {
+      buttons |= BUTTON_USE;
+      this.lastUseTick = tick;
+    }
+    this.zipPress = false;
     if (sprint && moveYaw !== null && forward > 0.3) buttons |= BUTTON_SPRINT;
     else if (stance === 2) buttons |= BUTTON_PRONE;
     else if (stance === 1) buttons |= BUTTON_CROUCH;
@@ -2158,6 +2174,11 @@ export class BotBrain {
 
   private followPathNow(view: BotWorldView, goal: Vec3, movingGoal: boolean): number | null {
     const me = view.self;
+    // On a zipline: it carries us to its end; plan again from where it drops us.
+    if (me.riding) {
+      const c = this.path[this.pathIndex];
+      return c ? Math.atan2(c.x - me.pos.x, c.z - me.pos.z) : null;
+    }
     // A door in the way that a button opens: the button first.
     if (this.pressPlan) {
       goal = this.pressPlan.stand;
@@ -2205,6 +2226,12 @@ export class BotBrain {
     // Taking a portal: the next corner is out of the far portal, so walk into this one's surface instead.
     const face = view.portals?.length ? this.portalFace(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null) : null;
     if (face) return Math.atan2(face.x - me.pos.x, face.z - me.pos.z);
+    // Taking a zipline: the next corner is where it drops us, so go back to where it's grabbed and press E there.
+    const grab = view.ziplines?.length ? this.zipGrab(view, corner, this.pathIndex > 0 ? this.path[this.pathIndex - 1]! : null) : null;
+    if (grab) {
+      if (horizontalDistance(me.pos, grab) < 1.1) this.zipPress = true;
+      return Math.atan2(grab.x - me.pos.x, grab.z - me.pos.z);
+    }
     return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
   }
 
@@ -2213,6 +2240,14 @@ export class BotBrain {
     if (!prev) return null;
     const near = (a: Vec3, b: Vec3, r: number) => horizontalDistance(a, b) < r && Math.abs(a.y - b.y) < 1.2;
     for (const p of view.portals!) if (near(prev, p.start, 1.6) && near(corner, p.end, 1.8)) return p.face;
+    return null;
+  }
+
+  /** Where to grab the zipline when the path's next leg is a zipline ride (from its grab spot to where it drops you). */
+  private zipGrab(view: BotWorldView, corner: Vec3, prev: Vec3 | null): Vec3 | null {
+    if (!prev) return null;
+    const near = (a: Vec3, b: Vec3, r: number) => horizontalDistance(a, b) < r && Math.abs(a.y - b.y) < 1.2;
+    for (const z of view.ziplines!) if (z.on && near(prev, z.start, 1.6) && near(corner, z.end, 1.8)) return z.start;
     return null;
   }
 
@@ -2283,8 +2318,8 @@ export class BotBrain {
   /** The closed door or breakable wall the planned path crosses, if any. */
   private pathBlocked(view: BotWorldView): Aabb | null {
     // A leg through a portal that is switched off is shut (there is no button to open it for the bot).
-    const shut = view.portals?.filter((p) => !p.on);
-    if (shut?.length) {
+    const shut = [...(view.portals?.filter((p) => !p.on) ?? []), ...(view.ziplines?.filter((z) => !z.on).map((z) => ({ ...z, face: z.start })) ?? [])];
+    if (shut.length) {
       const near = (a: Vec3, b: Vec3, r: number) => horizontalDistance(a, b) < r && Math.abs(a.y - b.y) < 1.2;
       for (let i = 1; i < this.path.length; i++) {
         const leg = shut.find((p) => near(this.path[i - 1]!, p.start, 1.6) && near(this.path[i]!, p.end, 1.8));

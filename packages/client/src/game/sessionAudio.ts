@@ -113,6 +113,13 @@ export class SessionAudio {
       this.wasGrounded = true;
       return;
     }
+    // On a zipline: the trolley's whirr, higher the faster it runs (no footsteps, no landing from it).
+    if (s.zip !== undefined) {
+      this.whirr(-1, undefined, Math.abs(s.zv ?? 0));
+      this.fallSpeed = 0;
+      this.prevReload = local.reloadTicks;
+      return;
+    }
     if (s.grounded) {
       if (!this.wasGrounded && this.fallSpeed > 5) this.audio.play('land', { gain: Math.min(1.4, this.fallSpeed / 9) });
       this.localStride += Math.hypot(s.pos.x - before.x, s.pos.z - before.z);
@@ -170,11 +177,24 @@ export class SessionAudio {
     this.prevReload = local.alive ? local.reloadTicks : 0;
   }
 
+  /** When each rider's (slot; -1 you) zipline whirr last started. */
+  private readonly whirrAt = new Map<number, number>();
+
+  /** A zipline trolley running: the whirr again every ~0.6 s (each one overlaps the last), pitched by speed. */
+  private whirr(slot: number, at: Vec3 | undefined, speed: number): void {
+    const now = performance.now();
+    if (now - (this.whirrAt.get(slot) ?? 0) < 600) return;
+    this.whirrAt.set(slot, now);
+    if (this.whirrAt.size > 64) this.whirrAt.clear();
+    this.audio.play('zip.whirr', { ...(at ? { at } : {}), rate: 0.75 + Math.min(1, speed / 20) * 0.6, gain: 0.5 + Math.min(1, speed / 15) * 0.6 });
+  }
+
   /** Per-frame remote movement: footsteps from interpolated poses. */
   remoteSteps(poses: readonly RemotePose[]): void {
     const me = this.localSlot();
     for (const p of poses) {
       if (p.slot === me) continue;
+      if (p.alive && p.zip !== undefined) this.whirr(p.slot, { x: p.x, y: p.y + 2, z: p.z }, p.zipSpeed ?? 0);
       const prev = this.strides.get(p.slot);
       if (!p.alive || !prev) {
         this.strides.set(p.slot, { x: p.x, z: p.z, acc: 0 });

@@ -60,6 +60,8 @@ import {
   type Vec3,
   type WeaponDefinition,
   type ZoneSnapshot,
+  type Zipline,
+  oneHanded,
 } from '@tiletrigger/shared';
 
 const MAX_PENDING = 120;
@@ -103,6 +105,9 @@ export class LocalPlayer {
   pads: JumpPad[] = [];
   liquids: LiquidBox[] = [];
   ladders: Ladder[] = [];
+  /** The map's ziplines (E grabs one; riding is predicted like the server's), and your team for team-only lines. */
+  ziplines: Zipline[] = [];
+  team: () => string | null = () => null;
   /** Your body size (BODY_SIZES scale), the same the server uses. */
   scale = 1;
   /** Jetpack fuel units (see JET), or null without a jetpack. */
@@ -314,9 +319,9 @@ export class LocalPlayer {
     }
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
     const before = state;
-    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}) }));
+    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, gravity: this.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}), ...(this.ziplines.length ? { ziplines: this.ziplines, team: this.team() } : {}) }));
     // Portals, exactly as the server takes them (Match.step).
-    const through = this.portals.length ? applyPortals(this.portals, before, next, this.portalOn, this.scale, bodyHeightOf(next, this.scale)) : null;
+    const through = this.portals.length && next.zip === undefined ? applyPortals(this.portals, before, next, this.portalOn, this.scale, bodyHeightOf(next, this.scale)) : null;
     if (through) {
       next = through.state;
       if (live) this.portalTurn += through.turn;
@@ -369,7 +374,8 @@ export class LocalPlayer {
       const able = fireDown && this.raiseTicks === 0 && this.reloadTicks === 0 && ammo[3] < 100 && (def.magazine === 0 || ready(ammo) > 0);
       this.windup = able ? Math.min(def.windupTicks, this.windup + 1) : Math.max(0, this.windup - 2);
     }
-    if (this.unarmed) return none;
+    // On a zipline (as the server): one hand on the trolley, so sidearms and blades only.
+    if (this.unarmed || (this.state.zip !== undefined && !this.seatGun && !oneHanded(def))) return none;
     if (this.burstLeft > 0) {
       if (--this.burstTimer > 0) return none;
       if (ready(ammo) === 0 || this.reloadTicks > 0 || this.statusSpeed === 0) {
@@ -503,6 +509,7 @@ export class LocalPlayer {
       ...(server.sn ? { stance: server.sn } : {}),
       ...(server.ch ? { chute: server.ch } : {}),
       ...(server.dr ? { drop: true } : {}),
+      ...(server.zl ? { zip: server.zl[0], zs: server.zl[1], zv: server.zl[2] } : {}),
       ...(sta ? { ...(sta[0] < 1000 ? { stamina: sta[0] / 1000 } : {}), ...(sta[1] ? { rest: sta[1] } : {}), ...(sta[2] ? { winded: true } : {}) } : {}),
       // Double jumps already used and whether jump was held, so a replay doesn't jump again.
       ...(me?.cl && me.cl[4] & 3 ? { airJumps: me.cl[4] & 3 } : {}),

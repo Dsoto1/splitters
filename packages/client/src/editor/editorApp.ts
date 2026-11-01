@@ -316,6 +316,7 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   rescue: '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#3ddc84" fill-opacity=".25" stroke="#3ddc84" stroke-width="2"/><path d="M20 30l8-12 8 12M28 18v18" stroke="#3ddc84" stroke-width="3" fill="none"/>',
   bombsite: '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#ff7a2a" fill-opacity=".25" stroke="#ff7a2a" stroke-width="2"/><text x="28" y="32" font-size="26" font-weight="bold" text-anchor="middle" fill="#ff7a2a">A</text>',
   hill: '<ellipse cx="28" cy="38" rx="22" ry="9" fill="#f2f2f2" fill-opacity=".2" stroke="#f2f2f2" stroke-width="2"/><path d="M14 38V26M42 38V26M28 47V35M28 29V17" stroke="#f2f2f2" stroke-width="2"/><path d="M22 14l6-8 6 8z" fill="#f2c14e"/>',
+  zipline: '<rect x="7" y="14" width="4" height="38" fill="#7a5532"/><rect x="45" y="30" width="4" height="22" fill="#7a5532"/><path d="M9 16Q28 30 47 32" stroke="#c9ccd0" stroke-width="2" fill="none"/><rect x="24" y="20" width="8" height="5" fill="#3a3f46"/><path d="M28 25v6M23 31h10" stroke="#3a3f46" stroke-width="2.5"/>',
   ladder: '<rect x="17" y="6" width="4" height="44" fill="#9a6b3d"/><rect x="35" y="6" width="4" height="44" fill="#9a6b3d"/><path d="M19 12h18M19 20h18M19 28h18M19 36h18M19 44h18" stroke="#c79a5e" stroke-width="3"/>',
   pad: '<ellipse cx="28" cy="42" rx="20" ry="7" fill="#2a2f3a"/><ellipse cx="28" cy="41" rx="15" ry="5" fill="#36d6ff"/><path d="M20 30l8-10 8 10M20 22l8-10 8 10" stroke="#36d6ff" stroke-width="3" fill="none"/>',
   button: '<rect x="24" y="24" width="8" height="26" fill="#3a3f48"/><rect x="17" y="12" width="22" height="16" rx="2" fill="#c9ccd2"/><circle cx="28" cy="20" r="5" fill="#3fd26b"/>',
@@ -861,6 +862,8 @@ export class EditorApp {
       path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · click the first point with the last selected to join the ends · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
       route: ['Route', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click a stretch inserts one · Esc when done'],
     };
+    // A zipline's ends go where you click (the Route tool's hands, two points only).
+    if (tool.kind === 'route' && this.routes.label === 'zipline end') hints.route = ['Zipline ends', 'Click the ground or a platform to put the far end there (click the start first to move that) · drag either end · Esc when done'];
     const [name, hint] = hints[tool.kind];
     const what = PLACING.has(tool.kind) ? `: ${this.toolName(tool)}` : tool.kind === 'edge' ? `: ${EDGE_STYLE_LABELS[tool.style]}` : '';
     const hintEl = $('ed-toolhint');
@@ -3652,6 +3655,36 @@ export class EditorApp {
         number('Radius (m)', e.radius, 0.5, (v) => ({ radius: clamp(v, 2, 20) }));
         el.append(small('King of the Hill: the hill moves between hills in the order they were placed, every minute. A team scores a point per second while it alone stands inside.'));
         break;
+      case 'zipline': {
+        // The far post, in world terms (the map keeps it as an offset from the start post).
+        const far = (i: number, v: number) => {
+          const end = [...e.end] as [number, number, number];
+          end[i] = clamp(v - e.position[i]!, i === 1 ? -200 : -400, i === 1 ? 200 : 400);
+          update('Move zipline end', { end });
+        };
+        el.append(
+          row('Far end X', numberInput(e.position[0] + e.end[0], 0.5, (v) => far(0, v))),
+          row('Far end height', numberInput(e.position[1] + e.end[1], 0.25, (v) => far(1, v))),
+          row('Far end Z', numberInput(e.position[2] + e.end[2], 0.5, (v) => far(2, v))),
+        );
+        const place = button('Place ends on the map', () => {
+          this.routes.edit(e.id);
+          this.setTool({ kind: 'route' });
+        });
+        place.id = 'ed-zip-ends';
+        place.title = 'Click the ground (or a platform) to put the far end there; drag either end to move it (Esc when done)';
+        el.append(place);
+        number('Post height (m)', e.height, 0.1, (v) => ({ height: clamp(v, 2.5, 8) }));
+        number('Speed (m/s)', e.speed, 1, (v) => ({ speed: clamp(v, 3, 30) }));
+        toggle('Both ways', e.twoWay, (v) => ({ twoWay: v }));
+        teamFilter(e.team, 'can ride it');
+        number('Droop (%)', Math.round(e.sag * 100), 1, (v) => ({ sag: clamp(v, 0, 10) / 100 }));
+        const run = Math.hypot(e.end[0], e.end[2]);
+        const len = Math.hypot(e.end[0], e.end[1], e.end[2]);
+        const slope = Math.round((Math.atan2(e.end[1], run) * 180) / Math.PI);
+        el.append(small(`${len.toFixed(1)} m, ${slope === 0 ? 'level' : slope < 0 ? `${-slope}° downhill` : `${slope}° uphill`}, about ${Math.max(1, Math.round(len / e.speed))} s a ride. Players press E under either post (or the cable) to grab it, ride to the far end${e.twoWay ? ' (or back)' : ''}, and jump or E to let go. Sidearms and blades fire on the way; bots use it as a shortcut.`));
+        break;
+      }
       case 'ladder':
         number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
         number('Height (m)', e.height, 0.5, (v) => ({ height: Math.max(1, Math.min(24, v)) }));
@@ -4052,8 +4085,8 @@ export class EditorApp {
         await initPhysics();
         const physics = new PhysicsWorld(geometry, mapTerrainMesh(doc));
         const nav = NavWorld.build(geometry, mapTerrainMesh(doc), [...navLinks(doc.entities, physics), ...liftLinks(doc)]);
+        this.navIssues = validateNavigation(doc, nav, physics);
         physics.free();
-        this.navIssues = validateNavigation(doc, nav);
         nav.destroy();
       } catch (e) {
         this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${(e as Error).message}` }];

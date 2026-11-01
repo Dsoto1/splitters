@@ -19,6 +19,9 @@ import {
   THROWABLE_DEFS,
   predictThrow,
   mapLadders,
+  mapZiplines,
+  grabZipline,
+  oneHanded,
   mapPortals,
   mapPads,
   cockpitEye,
@@ -390,6 +393,27 @@ export class GameSession {
   private breathSpent = false;
   /** Smoothed eye height above the feet (crouching and prone lower it). */
   private eyeOffset: number | null = null;
+  /** First-person roll riding a zipline (eased in and out). */
+  private zipRoll = 0;
+
+  /**
+   * Riding a zipline the view banks with the ride: leaning into the line's
+   * sideways run across your view, and swaying a little on the cable, more
+   * the faster you go. Level again once you let go.
+   */
+  private zipLean(local: LocalPlayer, dt: number, now: number): number {
+    const line = local.alive && local.state.zip !== undefined ? local.ziplines[local.state.zip] : undefined;
+    let target = 0;
+    if (line) {
+      const v = local.state.zv ?? 0;
+      const k = Math.min(1, Math.abs(v) / 15);
+      // Sideways component of the motion across your view (right positive).
+      const across = (Math.cos(this.input.yaw) * line.dir.x - Math.sin(this.input.yaw) * line.dir.z) * Math.sign(v || 1);
+      target = -across * 0.12 * k + Math.sin(now / 1000 * 1.9) * 0.025 * k;
+    }
+    this.zipRoll += (target - this.zipRoll) * Math.min(1, dt * 4);
+    return Math.abs(this.zipRoll) < 1e-4 ? 0 : this.zipRoll;
+  }
   /** Camera field of view now (eases for aiming down the sights), the scope's zoom level, and how far the gun is up to the eye. */
   private fov = DEFAULT_FOV;
   private zoomLevel = 0;
@@ -1373,6 +1397,8 @@ export class GameSession {
         this.local = new LocalPlayer(physics);
         this.local.pads = mapPads(loaded.map.entities);
         this.local.ladders = mapLadders(loaded.map.entities);
+        this.local.ziplines = mapZiplines(loaded.map.entities);
+        this.local.team = () => this.hud.team(this.slot)?.id ?? (this.rules?.mode === 'core.coop' ? 'players' : null);
         this.local.scale = this.sizeOf(this.slot);
         this.local.gravity = matchPhysics(msg.rules, loaded.map).gravity;
         this.local.rules = { ...(msg.rules.ballistics ? { ballistics: msg.rules.ballistics } : {}) };
@@ -1869,6 +1895,11 @@ export class GameSession {
       const m = this.mounts?.mounts.get(this.seat[0]);
       const hint = m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]) ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
       this.hud.setPrompt(m?.def.airplane ? 'Jump out (E or Space), then Space to open your parachute' : `Get out of the ${m?.def.displayName ?? 'vehicle'}`, false, hint);
+    } else if (local.alive && local.state.zip !== undefined) {
+      const two = local.weapon && !oneHanded(local.weapon);
+      this.hud.setPrompt(two ? 'Zipline: Space or E to let go (sidearm or blade to shoot)' : 'Zipline: Space or E to let go');
+    } else if (local.alive && !this.seat && !enter && local.ziplines.length && grabZipline(local.ziplines, local.state.pos, this.input.yaw, local.team())) {
+      this.hud.setPrompt('Grab the zipline');
     } else if (enter) {
       const seat = enter.mount.def.seats[enter.seat]!;
       const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';
@@ -2263,7 +2294,7 @@ export class GameSession {
         } else {
           // First person: the view carries the weapon's mechanical recoil (it is where your rounds go).
           const aimed = local.aimAngles(this.input.yaw, this.input.pitch);
-          this.view.setCamera(head, aimed.yaw, aimed.pitch, fov);
+          this.view.setCamera(head, aimed.yaw, aimed.pitch, fov, this.zipLean(local, dt, now));
           this.view.firstPersonEye = true;
         }
       }
@@ -2346,10 +2377,11 @@ export class GameSession {
     // Your own character drawn where prediction has you (not the delayed server copy): in third person, and in
     // full-body first person (under the camera).
     const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
-    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint });
+    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0) });
     const self = this.thirdPerson && !this.tpClose ? mine : undefined;
     // Your own canopy in first person (third person draws it over your character).
     this.view.updateLocalCanopy(local?.alive && !self && !this.seat && local.state.chute ? this.drawnPos : null, this.input.yaw, local?.state.chute ?? 0);
+    this.view.updateLocalTrolley(local?.alive && !self && !this.seat && local.state.zip !== undefined ? this.drawnPos : null, local?.state.zip, local?.scale ?? 1);
     // Hostage Rescue: the hostages walk about like everyone else.
     const hostages = this.modeHud?.hostagePoses() ?? [];
     this.view.updateAvatars(

@@ -17,7 +17,7 @@ export interface SnapshotViewer {
 }
 
 /** Optional player fields: a delta entry names one that went away with null. */
-const OPTIONAL_KEYS = ['vx', 'vz', 'fx', 'st', 'sn', 'em', 'sr', 'cl', 'ch', 'dr'] as const;
+const OPTIONAL_KEYS = ['vx', 'vz', 'fx', 'st', 'sn', 'em', 'sr', 'cl', 'ch', 'dr', 'zl'] as const;
 /** Fields a delta entry repeats only when they changed (position goes as `d`). */
 const FIELD_KEYS = ['vy', 'g', 'yaw', 'pitch', 'hp', 'ar', 'alive', 'w', 'pu', ...OPTIONAL_KEYS] as const;
 

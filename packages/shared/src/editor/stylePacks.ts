@@ -251,8 +251,9 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'core.mossy_stone', 'core.carved_stone', 'core.relief_stone', 'core.temple_inlay', 'core.root_cover', 'core.mossy_planks', 'core.temple_sandstone', 'core.palm_thatch',
     ],
     facades: ['temple', 'overgrown'],
-    gameplay: ['block:rope_bridge', 'block:old_planks', 'ladder:vines', 'trap:rockfall', 'trap:spikes', 'trap:flames', 'water:water', 'water:swamp', 'zone', 'button', 'mover:drawbridge', 'mover:lift', 'pad', 'door:portcullis', 'mover:portcullis', 'light:brazier', 'light:wall', 'ladder'],
+    gameplay: ['zipline', 'block:rope_bridge', 'block:old_planks', 'ladder:vines', 'trap:rockfall', 'trap:spikes', 'trap:flames', 'water:water', 'water:swamp', 'zone', 'button', 'mover:drawbridge', 'mover:lift', 'pad', 'door:portcullis', 'mover:portcullis', 'light:brazier', 'light:wall', 'ladder'],
     gameplayNotes: {
+      zipline: 'Zipline: a cable between two timber posts across a chasm or down from a tower; E to grab, ride to the far end',
       'block:rope_bridge': 'Rope bridge: eight sagging planks over 12 m between two anchors; the middle two give way under you',
       'block:old_planks': 'Crumbling planks: a rotten plank that gives way a moment after you step on it (patch bridges and ledges with it)',
       'ladder:vines': 'Climbing vines: a ladder up a cliff or temple wall, drawn as hanging vines',
@@ -273,7 +274,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       ladder: 'Rope ladder up a watch tower, a terrace or out of a chasm',
     },
     mounts: ['buggy', 'gun_jeep'],
-    // The Grapple Hook goes with the Zipline Posts: there is no zipline ride, so you grapple across between them.
+    // The Grapple Hook still crosses between high points the ziplines don't join.
     pickups: ['core.weapon_rifle', 'core.weapon_marksman', 'core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_launcher', 'core.weapon_grapple', 'core.dynamite', 'core.grenades', 'core.health_small', 'core.health_large', 'core.armor_small', 'core.armor_large'],
     demo: 'vinefall_sanctum',
   },

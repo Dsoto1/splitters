@@ -48,6 +48,7 @@ import { pickupPool, rollPickup } from './pickupRoll.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
 import { getProp } from '../content/props.ts';
+import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
 import { BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, navLinks,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
@@ -59,7 +60,7 @@ import type { CheckpointPlayer, MatchCheckpoint } from '../net/handoff.ts';
 import { CLASS_DEFS, ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
 import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
-import { Scenario } from './scenario.ts';
+import { Scenario, teamAllows } from './scenario.ts';
 import { liftLinks } from './movers.ts';
 import { IMPROMPTU_MIN_PLAYERS, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnSpot } from './spawns.ts';
 import { applyPortals, portalCarry, portalSegment } from './portals.ts';
@@ -504,6 +505,10 @@ export class Match {
   /** The tick each actor last fired (giving away where they hide). */
   private readonly lastShot = new Map<number, number>();
   private readonly ladders: Ladder[];
+  /** The map's ziplines (zipline.ts): riders' MoveState.zip indexes this. */
+  readonly ziplines: Zipline[];
+  /** Each zipline's ride as bots see it (its navmesh link's ends) and the team it is for. */
+  private readonly zipRides: { start: Vec3; end: Vec3; team?: string }[];
   private readonly liquids: LiquidBox[];
   /** Low-gravity (or heavy) zones: movement falls by their factor inside. */
   private readonly gravityZones: GravityZone[];
@@ -647,6 +652,8 @@ export class Match {
     });
     this.pads = mapPads(map.entities);
     this.ladders = mapLadders(map.entities);
+    this.ziplines = mapZiplines(map.entities);
+    this.zipRides = this.ziplines.flatMap((z) => ziplineLinks([z], this.physics).map((l) => ({ ...l, ...(z.team ? { team: z.team } : {}) })));
     this.liquids = mapLiquids(map.entities);
     this.gravityZones = mapGravityZones(map.entities);
     this.phaseEndTick = this.roundEndTick();
@@ -1683,7 +1690,7 @@ export class Match {
     const near = this.watched;
     if (!near || c.kind === 'human' || this.watchers.has(c.slot)) return 'full';
     const m = c.move;
-    if (!m.grounded || m.velY !== 0 || m.vx || m.vz || m.swim || m.climb || m.chute || m.jet || input.buttons & BUTTON_JUMP) return 'full';
+    if (!m.grounded || m.velY !== 0 || m.vx || m.vz || m.swim || m.climb || m.chute || m.jet || m.zip !== undefined || input.buttons & (BUTTON_JUMP | BUTTON_USE)) return 'full';
     const p = m.pos;
     // Near a portal (stepping through turns and moves you) or in a gravity zone: the exact move.
     for (const g of this.scenario.portals) if ((g.pos.x - p.x) ** 2 + (g.pos.z - p.z) ** 2 < (RELAXED_PORTAL + g.width / 2) ** 2) return 'full';
@@ -1845,6 +1852,7 @@ export class Match {
         doorButtons: doorButtonsFor(c.faction),
         ...(lifts.length ? { lifts } : {}),
         ...(portals.length ? { portals } : {}),
+        ...(this.zipRides.length ? { ziplines: this.zipRides.map((r) => ({ start: r.start, end: r.end, on: teamAllows(r.team, c.faction) })) } : {}),
         hazards,
         orderGoal: orderGoal ?? null,
         allies,
@@ -2328,6 +2336,7 @@ export class Match {
 
       if (input.weapon && input.weapon !== c.current && c.weapons.has(input.weapon)) this.switchTo(c, input.weapon);
 
+      const zipBefore = c.move.zip;
       const seat = c.mount ? this.seatOf(c) : null;
       if (seat) {
         // In a turret or vehicle: no walking. Drivers steer; gunners' aim stays within the gun's arc.
@@ -2356,7 +2365,7 @@ export class Match {
         }
       } else {
         // Standing on a moving platform: go where it goes.
-        const ridden = this.scenario.carry(c.move.pos);
+        const ridden = zipBefore === undefined ? this.scenario.carry(c.move.pos) : null;
         if (ridden) c.move = { ...c.move, pos: ridden };
         // In the way of a train: run over.
         else if (this.scenario.strike(c.move.pos, PLAYER.radius * c.size, PLAYER.height * c.size) > 0) {
@@ -2384,10 +2393,14 @@ export class Match {
           env.glider = c.glider ? true : undefined;
           env.autoChute = c.kind !== 'human' ? true : undefined;
           env.ground = detail !== 'full' && this.groundAt ? this.groundAt : undefined;
+          env.ziplines = this.ziplines.length ? this.ziplines : undefined;
+          env.team = this.ziplines.length ? c.faction : undefined;
+          // Bots ride a zipline to its end: a stray E (a door, a vehicle) or a stuck-hop must not drop them off it.
+          if (c.bot && c.move.zip !== undefined) input.buttons &= ~(BUTTON_USE | BUTTON_JUMP);
           const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), env);
           c.move = applyPads(this.pads, stepped);
           // Into a portal: out of its partner, turned by the difference in their facings (as client prediction does).
-          const through = this.scenario.portals.length ? applyPortals(this.scenario.portals, before, c.move, this.scenario.portalOn, c.size, bodyHeightOf(c.move, c.size)) : null;
+          const through = this.scenario.portals.length && c.move.zip === undefined ? applyPortals(this.scenario.portals, before, c.move, this.scenario.portalOn, c.size, bodyHeightOf(c.move, c.size)) : null;
           if (through) {
             c.move = through.state;
             c.yaw += through.turn;
@@ -2406,6 +2419,8 @@ export class Match {
       if (c.damageTicks > 0) c.damageTicks--;
       this.advanceReload(c);
 
+      // E that grabbed or let go of a zipline this tick was used up by it.
+      if (input.buttons & BUTTON_USE && (c.move.zip !== undefined) !== (zipBefore !== undefined)) input.buttons &= ~BUTTON_USE;
       if (input.buttons & BUTTON_USE) {
         c.useTick = this.tick;
         // Get out, get in, or use whatever you are looking at.
@@ -2421,8 +2436,9 @@ export class Match {
       const seatNow = c.mount ? this.seatOf(c) : null;
       const gun = seatNow?.weapon ? this.mounts[c.mount!.index]!.guns[c.mount!.seat]! : null;
       // Nobody shoots from the plane's benches (everyone shares the hold before the drop).
-      const unarmed = (seatNow?.role === 'driver' && !gun) || (!!c.mount && !!this.mounts[c.mount.index]!.def.airplane);
       const held = gun ?? heldWeapon(c);
+      // On a zipline one hand holds the trolley: sidearms and blades only.
+      const unarmed = (seatNow?.role === 'driver' && !gun) || (!!c.mount && !!this.mounts[c.mount.index]!.def.airplane) || (c.move.zip !== undefined && !gun && !oneHanded(held.def));
       const def = held.def;
       const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
       const pressed = input.buttons & ~c.prevButtons;
@@ -4439,6 +4455,8 @@ export class Match {
     }
     victim.health -= dmg;
     victim.hurtAt = this.tick;
+    // A hard hit knocks a zipline rider off the line (keeping the ride's momentum).
+    if (victim.move.zip !== undefined && dmg >= ZIP.knockDamage) victim.move = leaveZipline(this.ziplines, victim.move);
     if (victim.health <= 0) this.kill(victim, attacker === victim ? null : attacker, weapon, head);
   }
 
@@ -5080,6 +5098,7 @@ export class Match {
       if (c.move.sprint) s.sr = 1;
       if (c.move.chute) s.ch = c.move.chute;
       if (c.move.drop) s.dr = 1;
+      if (c.move.zip !== undefined) s.zl = [c.move.zip, c.move.zs ?? 0, c.move.zv ?? 0];
       return s;
     });
   }
@@ -5277,7 +5296,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -5294,6 +5313,7 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean): void {
   v.mounted = !!c.mount;
   v.grounded = c.move.grounded;
   v.concealed = concealed;
+  v.riding = c.move.zip !== undefined;
 }
 
 /** Distance from point p to the segment a-b. */

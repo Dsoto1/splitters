@@ -66,6 +66,9 @@ import {
   MOUNT_WRECK_FADE_SECONDS,
   mountDamageState,
   getLook,
+  hangDepth,
+  mapZiplines,
+  type Zipline,
 } from '@tiletrigger/shared';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
@@ -147,6 +150,8 @@ interface Avatar {
   shown?: number;
   /** Parachute or glider over them, and which. */
   canopy?: { node: TransformNode; kind: number };
+  /** The zipline trolley over a rider's head (made on first ride). */
+  trolley?: TransformNode;
   /** The body after death (until the next spawn): a ragdoll (full or cheap) or laid down (ragdoll.ts, ragdollBudget.ts). */
   ragdoll?: DeadBody;
   /** A body that died without a ragdoll (a creature) falls to the ground under gravity. */
@@ -388,6 +393,7 @@ export class GameView {
   }
 
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
+    this.ziplines = mapZiplines(doc.entities);
     const styler = new MapStyler(this.scene);
     styler.build(doc, boxes);
     buildRoadMeshes(this.scene, doc, styler);
@@ -638,6 +644,7 @@ export class GameView {
     a.tag = undefined;
     a.aura?.setEnabled(false);
     a.jet?.setEnabled(false);
+    a.trolley?.setEnabled(false);
     this.dropCanopy(a);
     a.flash?.setEnabled(false);
     a.flashRig?.hide();
@@ -868,6 +875,55 @@ export class GameView {
   }
 
   /** A jetpack flame (a glowing cone pointing down behind the shoulders). */
+  /** The map's ziplines (riders' poses name one by index). */
+  private ziplines: Zipline[] = [];
+  private localTrolley?: TransformNode;
+
+  /**
+   * A zipline trolley: a steel block with two grooved wheels riding the
+   * cable and a T-bar hanging down to the rider's hands. Built at the origin
+   * with the cable along +Z at y 0; `parent` places it.
+   */
+  private createTrolley(name: string, parent: TransformNode | null, y: number): TransformNode {
+    const root = new TransformNode(name, this.scene);
+    root.parent = parent;
+    root.position.y = y;
+    const steel = glow(this.scene, 'trolleySteel', '#3a3f46', 0.15);
+    const bright = glow(this.scene, 'trolleyBright', '#c9ccd0', 0.2);
+    const part = (m: Mesh, x: number, py: number, z: number) => {
+      m.parent = root;
+      m.position.set(x, py, z);
+      m.isPickable = false;
+      return m;
+    };
+    part(CreateBox(`${name}_body`, { width: 0.07, height: 0.18, depth: 0.36 }, this.scene), 0.06, -0.02, 0).material = steel;
+    for (const z of [-0.12, 0.12]) {
+      const wheel = part(CreateCylinder(`${name}_wheel`, { diameter: 0.11, height: 0.05, tessellation: 12 }, this.scene), 0, 0.03, z);
+      wheel.rotation.z = Math.PI / 2;
+      wheel.material = bright;
+    }
+    const rod = part(CreateCylinder(`${name}_rod`, { diameter: 0.03, height: 0.3, tessellation: 6 }, this.scene), 0.06, -0.26, 0);
+    rod.material = steel;
+    const bar = part(CreateCylinder(`${name}_bar`, { diameter: 0.035, height: 0.5, tessellation: 6 }, this.scene), 0.06, -0.41, 0);
+    bar.rotation.z = Math.PI / 2;
+    bar.material = bright;
+    return root;
+  }
+
+  /** Your own trolley in first person (overhead, where looking up shows it); null puts it away. */
+  updateLocalTrolley(pos: Vec3 | null, zip: number | undefined, scale = 1): void {
+    const line = zip !== undefined ? this.ziplines[zip] : undefined;
+    if (!pos || !line) {
+      this.localTrolley?.setEnabled(false);
+      return;
+    }
+    this.localTrolley ??= this.createTrolley('trolley_local', null, 0);
+    this.localTrolley.setEnabled(true);
+    this.localTrolley.position.set(pos.x, pos.y + hangDepth(scale), pos.z);
+    this.localTrolley.rotation.y = Math.atan2(line.dir.x, line.dir.z);
+    this.localTrolley.rotation.x = -Math.asin(line.dir.y);
+  }
+
   private createJetFlame(parent: TransformNode): Mesh {
     const flame = CreateCylinder('jetFlame', { diameterTop: 0.22, diameterBottom: 0.02, height: 0.8, tessellation: 10 }, this.scene);
     flame.parent = parent;
@@ -1376,6 +1432,13 @@ export class GameView {
         a.jet ??= this.createJetFlame(a.root);
         a.jet.setEnabled(jetting);
         if (jetting) a.jet.scaling.set(1, 0.8 + Math.random() * 0.5, 1);
+      }
+      // On a zipline: the trolley on the cable over their head, turned along the line (the body hangs, arms up in the air pose).
+      const line = p.alive && p.zip !== undefined ? this.ziplines[p.zip] : undefined;
+      if (line || a.trolley) {
+        a.trolley ??= this.createTrolley(`trolley_${p.slot}`, a.root, hangDepth());
+        a.trolley.setEnabled(!!line);
+        if (line) a.trolley.rotation.y = Math.atan2(line.dir.x, line.dir.z) - p.yaw;
       }
       // Parachute or glider: the canopy over them; gliders fly lying forward.
       const chute = p.alive && !seated.has(p.slot) ? (p.chute ?? 0) : 0;

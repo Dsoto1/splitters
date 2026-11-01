@@ -315,7 +315,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const forMatch = (r: MatchRules, m: MapDocument, fill: number): { rules: MatchRules; fill: number } => (managed ? applyServerRules(r, serverRules, m, fill) : { rules: withLeaders(r), fill });
   const firstMatch = forMatch(baseRules, map, Math.min(opts.botFill, MAX_PLAYER_SLOTS));
   let match = new Match(map, firstMatch.rules, opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
-  for (const issue of validateNavigation(map, match.nav)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
+  for (const issue of validateNavigation(map, match.nav, match.physics)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
   const botFill = firstMatch.fill;
   let motd = opts.motd?.trim().slice(0, 200) || null;
   let afkSeconds = opts.afkSeconds ?? AWAY.afkSeconds;
