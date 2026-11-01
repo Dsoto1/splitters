@@ -10,6 +10,37 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### T-pose characters (`wip/tpose-characters`, agent, 2026-11-01; not merged; branched from `wip/grip-audit` + main)
+Owner: "I uploaded T-poses to use, couldn't find some and found some new ones" (13 Meshy GLBs, kept outside the repo
+in the machine's `~/meshy-drive/tposes-2026-11-01/`). Merge after `wip/grip-audit` (this branch holds it, plus a merge
+of main for Character Select's groups). Each download was rendered front/side next to the shipped model and matched
+by looking, not by name:
+- **Same model, rebuilt** (look IDs unchanged; licence as the manifest had it, CC0 community): Alien → The Visitor,
+  Elder → Elder Tomo, Pilot → Flt. Lt. Ember, wizard → Merrow the Wise (now rigged here from T-pose landmarks instead
+  of Meshy's rig; no `cloth`, since his sleeves hang below the hips: hands out of the sleeves, audit 3 → 3, spikes 2 →
+  0). The first three keep their manifest landmarks (they fit the GLBs); `source.file` takes `.glb` or `.fbx`.
+  **Cat → Biscuit is the same model but NOT replaced yet**: rebuilt from the GLB with curled paws (`hands.curl` 1) the
+  grip audit went 10 → 0, but e2e `characters` ("hands are drawn ... flat to its side") failed on every Biscuit pose
+  (flat 0.02-0.10); with rigid paws one pose still fails (pistol, body, pitch -1.45: flat 0.59 < 0.6). The shipped
+  Biscuit (passes) is kept; next: a `fixes.hands.palm` / paw frame for him, then rebuild with
+  `ONLY=meshy_cat` (source.file `^Meshy_AI_T_Pose_Cat_\d+_texture\.(glb|fbx)$`, landmarks fit as they are).
+- **Different models, new characters** (owned, rigged here from landmarks read off front/side views): Frog in Suspenders
+  → **Croakley** (Animals; not Boglurker), Goblin → **Snikkit** (Creatures & Machines; not the shipped Goblin), Monkey
+  → **Scamp** (Animals, tail; not Big Bab, whose `source.file` was narrowed to its own download), Old medieval → **Old
+  King Halvard** (Knights & Legends; not King Aldric), Officer → **Sgt. Pruitt** (Soldiers), Wolf → **Greyfang**
+  (Animals, tail), Gentleman Bear → **Barnaby Bruin** (Animals; **queued**, not built: his coat's texture islands hold
+  every texture-safe cut at 20.6-23k triangles, over the 20k budget; a sloppy cut scrambles the coat. Needs a texture
+  re-layout for characters, like the props' `rebake`, keeping the skin, or a lighter download).
+- **Figure** is not a character: a carved spear (a prop or weapon, left for the owner).
+- **Bandit**: the shipped build was the in-house fallback (found landmarks: fused legs, turned head) because the
+  model-fidelity rebuild had no rigged GLB; rebuilt from his recorded Meshy rig task (re-fetched, **no credits spent**):
+  audit 9 → 6 (flat, spikes), legs apart, head forward. The 5 approved credits are unspent.
+- Grip audit (rifle, before → after): The Visitor 0 → 0, Elder Tomo 0 → 0, Ember 0 → 0, Merrow 3 → 3,
+  Bandit 9 → 6; new: Snikkit 0, Greyfang 0, Sgt. Pruitt 3 (flat), Old King Halvard 3 (spikes), Scamp 6 (open, off, fp),
+  Croakley 9 (open, off, spikes, fp: the frog's long fingers hang open). Portraits captured locally for the eleven built.
+- Open: Barnaby and Biscuit (above); Croakley's and Scamp's open hands; owned vs CC0 for the new models (recorded as owned, per the
+  owner; their file names follow Meshy's community "T Pose …" naming, so confirm none is a community download).
+
 ### Grip audit and fix for every character (`wip/grip-audit`, agent, 2026-10-31/11-01; not merged)
 The owner's screenshot brief (Character Select holding the AK, character by character; references: The Visitor and
 Rattles) is in the session branch's HANDOFF ("Queued (owner, 2026-10-31 evening): grip audit and fix"). What was done:

@@ -462,7 +462,8 @@ download per pattern; the importer says when none matches).
 
 A fresh download of a model already shipped (the owner's T-pose uploads of
 2026-11-01: The Visitor, Elder Tomo, Flt. Lt. Ember and Biscuit came back as
-textured GLBs of the FBX models they were built from) is the same character:
+textured GLBs of the FBX models they were built from; Biscuit's rebuild waits
+on his paws, see HANDOFF.md) is the same character:
 widen `source.file` to take it (`…_texture\.(glb|fbx)$`), keep the look ID,
 licence and landmarks (they are in units of the model's height, so they fit
 the GLB too: check with front and side views), and rebuild with `ONLY=<id>`.
