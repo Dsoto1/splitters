@@ -30,7 +30,7 @@
     "triangles": 11000,
     "headShare": 0.16,
     "handsShare": 0.1,
-    "lod": 0.25,
+    "lod": 0.35,
     "feet": true
   }
 }

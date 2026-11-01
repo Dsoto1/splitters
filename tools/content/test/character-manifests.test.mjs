@@ -43,6 +43,19 @@ describe('character manifests', () => {
     expect(manifestProblems({ ...good, group: undefined, use: 'npc' }, 'meshy_cat.json')).toEqual([]);
   });
 
+  it('carry a rolling body and an unnamed rig\'s joint names', () => {
+    const roller = list.find((m) => m.id === 'meshy_rollerbot');
+    const spec = buildSpec(roller);
+    expect(spec.locomotion).toBe('roll');
+    expect(spec.rigJoints.Bone_001).toBe('Hips');
+    expect(looksSource(list)).toMatch(/id: 'core\.rollerbot'.*locomotion: 'roll'/);
+    expect(manifestProblems(roller, 'meshy_rollerbot.json')).toEqual([]);
+    expect(manifestProblems({ ...roller, locomotion: 'hover' }, 'meshy_rollerbot.json').join('\n')).toMatch(/locomotion: roll/);
+    const twice = { ...roller.source.joints, Bone_000: 'Hips' };
+    expect(manifestProblems({ ...roller, source: { ...roller.source, joints: twice } }, 'meshy_rollerbot.json').join('\n')).toMatch(/each Meshy joint once/);
+    expect(manifestProblems({ ...roller, source: { ...roller.source, joints: { Bone_000: 'Pelvis' } } }, 'meshy_rollerbot.json').join('\n')).toMatch(/source.joints/);
+  });
+
   it('take the intake queue\'s characters and creatures as queued stubs', () => {
     const queue = JSON.parse(readFileSync(QUEUE_FILE, 'utf8')).queue.filter((e) => e.kind === 'character' || e.kind === 'creature');
     expect(queue.length).toBeGreaterThan(0);

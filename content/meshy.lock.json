@@ -2068,10 +2068,10 @@
       "sourceTriangles": 10226,
       "landmarks": "found",
       "file": "characters/meshy_crtrobot.glb",
-      "sha256": "b41fbe0a58136f51",
+      "sha256": "33fba6799b8c9ec4",
       "triangles": 10226,
-      "lodTriangles": 2650,
-      "bytes": 1658588,
+      "lodTriangles": 3529,
+      "bytes": 1746164,
       "hands": true
     },
     {
@@ -2124,10 +2124,10 @@
       "date": "2026-11-01",
       "src": "Meshy_AI_Mummy_Bot_All_Animations.glb",
       "file": "characters/meshy_mummybot.glb",
-      "sha256": "86f8f54f0f54fd0e",
+      "sha256": "ffe97f532077a32f",
       "triangles": 10432,
       "lodTriangles": 2608,
-      "bytes": 1719220,
+      "bytes": 1718168,
       "hands": true
     },
     {
@@ -2138,9 +2138,9 @@
       "date": "2026-11-01",
       "src": "Meshy_AI_Mummy_Bot_All_Animations.glb",
       "file": "characters/meshy_mummybot_fparms.glb",
-      "sha256": "4f06516316b9c6bc",
+      "sha256": "b1250f9837f278a0",
       "triangles": 1376,
-      "bytes": 634648,
+      "bytes": 634428,
       "hands": true
     },
     {
@@ -2151,10 +2151,10 @@
       "date": "2026-11-01",
       "src": "Meshy_AI_Pharaoh_Mummy_Warrior_All_Animations.glb",
       "file": "characters/meshy_pharaoh.glb",
-      "sha256": "e479b2a9fe325762",
+      "sha256": "a234a11dda2256a9",
       "triangles": 10200,
-      "lodTriangles": 2548,
-      "bytes": 1613468,
+      "lodTriangles": 2550,
+      "bytes": 1613112,
       "hands": true
     },
     {
@@ -2165,9 +2165,9 @@
       "date": "2026-11-01",
       "src": "Meshy_AI_Pharaoh_Mummy_Warrior_All_Animations.glb",
       "file": "characters/meshy_pharaoh_fparms.glb",
-      "sha256": "d0e7a9792c7f8130",
+      "sha256": "47881b5824c70853",
       "triangles": 767,
-      "bytes": 539428,
+      "bytes": 538572,
       "hands": true
     },
     {
@@ -2178,7 +2178,7 @@
       "date": "2026-11-01",
       "src": "Meshy_AI_Stealth_Operative_All_Animations.glb",
       "file": "characters/meshy_stealthop.glb",
-      "sha256": "6c56853a21ab5d9c",
+      "sha256": "7f3f6755183b9d2d",
       "triangles": 10399,
       "lodTriangles": 2598,
       "bytes": 1557676,
@@ -2192,7 +2192,7 @@
       "date": "2026-11-01",
       "src": "Meshy_AI_Stealth_Operative_All_Animations.glb",
       "file": "characters/meshy_stealthop_fparms.glb",
-      "sha256": "2401070d84578ac5",
+      "sha256": "6aa1230d723c8702",
       "triangles": 840,
       "bytes": 426040,
       "hands": true
