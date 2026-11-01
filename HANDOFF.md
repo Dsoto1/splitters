@@ -10,7 +10,6 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
-<<<<<<< HEAD
 ### `wip/ziplines` (agent, 2026-11-01; not merged): real ziplines, a MapMaker element
 Owner: "build real ziplines if it's easy enough; should also be a MapMaker element". Built:
 - **Format v25** `zipline` entity (schema.ts `ZiplineEntity`: start post foot `position`, far post `end` as an offset,
@@ -37,8 +36,6 @@ Owner: "build real ziplines if it's easy enough; should also be a MapMaker eleme
 - Left: a hand-over-head hanging pose (needs the grip IK to let go of the support hand); minimap/plan don't
   draw ziplines; R in MapMaker doesn't rotate a zipline (no yaw: drag its ends).
 
-### T-pose characters (`wip/tpose-characters`, agent, 2026-11-01; not merged; branched from `wip/grip-audit` + main)
-=======
 ### Vehicle shake fix (lead, 2026-11-01; on `wip/buggy-cockpit`)
 Owner: "the buggy shakes violently when I drove it". The sim is smooth (a scratch test drove it: height steady to the mm,
 no heading wobble). Cause, on the client: `View.suspend()` read speed, acceleration and turn rate off frame-to-frame
@@ -69,7 +66,6 @@ Meshy download (3.98M triangles, one 2048 px colour map) cut to 40k with one 204
   Before/after shots were in the agent's scratchpad.
 
 ### T-pose characters (`wip/tpose-characters`, agent, 2026-11-01; merged to main c3bce36; branched from `wip/grip-audit` + main)
->>>>>>> origin/main
 Owner: "I uploaded T-poses to use, couldn't find some and found some new ones" (13 Meshy GLBs, kept outside the repo
 in the machine's `~/meshy-drive/tposes-2026-11-01/`). Merge after `wip/grip-audit` (this branch holds it, plus a merge
 of main for Character Select's groups). Each download was rendered front/side next to the shipped model and matched

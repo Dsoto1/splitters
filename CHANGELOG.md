@@ -8,17 +8,15 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
-<<<<<<< HEAD
 **Ziplines (map format v25)**
 - Real **ziplines**: press **E** under either post (or anywhere under the cable) to grab one, hang below it and ride to the far end. The trolley holds the line's speed (uphill too) and runs faster downhill; **Space or E** lets go and keeps your momentum; the far end drops you off onto the ground or platform there; a hard hit knocks you off. One hand holds the trolley: **sidearms and blades** fire while you ride, two-handed guns wait until you let go. Predicted like any movement; the view banks with the ride; a trolley over every rider and its whirr.
 - **MapMaker → Zipline** (Platforms & Climbing; also in the Jungle Ruins pack): place the start post, then **Place ends on the map** puts the far post where you click (drag either end). Inspector: far end, post height, speed, both ways, team only, droop. The validator checks length and slope, that the cable and a hanging rider clear the level all along, and that both ends can be reached and landed on.
 - **Bots** ride ziplines when it's the shorter way (each line is a one-way link in their navigation; a two-way line goes both ways; team lines only for that team).
 - **Vinefall Sanctum** has two gorge ziplines, one from each team's terrace down across the gorge to the far bank.
-=======
+
 **Vehicles**
 - Driving no longer shakes: the body's lean, squat and dive come from the vehicle's real speed and turn rate instead of from frame-to-frame movement of its drawn position, and that position no longer jumps with the few ms each update arrives early or late. Most noticeable in the buggy's cockpit view.
 - The buggy's cockpit is drawn in far more detail while you drive it in first person (seats, wheel, dash and roll cage at about twice the geometry, with a sharper surface map); everyone else still sees the lighter model.
->>>>>>> origin/main
 
 **New characters and sharper ones**
 - Six new characters from the owner's Meshy T-pose models: **Croakley** (a frog in suspenders), **Scamp** (a small monkey) and **Greyfang** (a wolf) in Animals, **Snikkit** (a goblin) in Creatures & Machines, **Old King Halvard** in Knights & Legends and **Sgt. Pruitt** (a police officer) in Soldiers. A seventh, Barnaby Bruin (a gentleman bear), waits for a lighter build.
