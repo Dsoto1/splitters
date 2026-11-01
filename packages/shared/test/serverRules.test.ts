@@ -21,6 +21,7 @@ const PARITY: [string, unknown, GameMode, Partial<MatchSetup>, (keyof MatchRules
   ['mix', true, 'core.tdm', { mixPickups: true }, ['mixPickups']],
   ['drops', false, 'core.tdm', { dropWeapons: false }, ['dropWeapons']],
   ['style', 'arena', 'core.tdm', { botStyle: 'arena' }, ['botStyle']],
+  ['cast', 'soldiers', 'core.tdm', { botCast: ['soldiers'] }, ['botCast']],
   ['assign', 'random', 'core.tdm', { assign: 'random' }, ['teamAssign']],
   ['teamnames', ['Reds', 'Blues'], 'core.tdm', { teamNames: ['Reds', 'Blues'] }, ['teamNames']],
   ['teamcolors', ['#ff0000', '#0000ff'], 'core.tdm', { teamColors: ['#ff0000', '#0000ff'] }, ['teamColors']],
