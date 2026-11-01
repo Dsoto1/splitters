@@ -15,6 +15,8 @@ made only on a commit that passed CI on a check branch.
 - **Vinefall Sanctum** has two gorge ziplines, one from each team's terrace down across the gorge to the far bank.
 
 **Vehicles**
+- **The buggy drives like a Warthog** (and the gun jeep like its firmer cousin): each wheel has its own spring, so the body bounces over bumps, leans out of turns, squats when you floor it and dives when you brake, tips its nose a little in the air off a jump and lands bouncing. The tires roll with your speed, the front ones steer and each one rides its spring (the gun jeep's own wheels too). Both are loose at speed: a hard turn flat out powerslides. In the cockpit view your head follows the bounce gently, so it reads in the dash rather than your stomach. Tank and armored rover stay heavy; hovercraft and flyers are unchanged.
+- **Look to steer** (Options → Controls → Vehicle steering): the vehicle turns toward where you look, Warthog style, and the view stays where you point it; A and D still steer. Classic A/D steering stays the default.
 - Driving no longer shakes: the body's lean, squat and dive come from the vehicle's real speed and turn rate instead of from frame-to-frame movement of its drawn position, and that position no longer jumps with the few ms each update arrives early or late. Most noticeable in the buggy's cockpit view.
 - The buggy's cockpit is drawn in far more detail while you drive it in first person (seats, wheel, dash and roll cage at about twice the geometry, with a sharper surface map); everyone else still sees the lighter model.
 

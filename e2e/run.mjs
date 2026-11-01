@@ -2723,6 +2723,16 @@ async function vehiclesFlow(browser) {
   });
   check(after.seat === 0, `you are in the driver's seat (${after.seat}${after.alive ? '' : ', dead'})`);
   check(Math.hypot(after.pos.x - start.x, after.pos.z - start.z) > 8, `the buggy drives off (${Math.hypot(after.pos.x - start.x, after.pos.z - start.z).toFixed(1)} m)`);
+  // Raycast suspension (sim/suspension.ts): the host sends the sprung body (ms) and the client draws it, the four
+  // tires on pivots at the hubs, rolling with the speed.
+  const sprung = await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const m = me.mount ? window.__cs.mounts.mounts.get(window.__match.mounts[me.mount.index].index) : null;
+    const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
+    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot\d$/.test(n.name)) : [];
+    return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
+  });
+  check(sprung.susp && sprung.wheels === 4 && sprung.pivots === 4 && sprung.tires === 4 && sprung.rolled, `the buggy rides the sim's suspension, its tires on hub pivots rolling (${JSON.stringify(sprung)})`);
   // H switches to the chase camera (remembered for ground vehicles): behind the buggy, outside it and clear of walls.
   await page.keyboard.press('KeyH');
   // The first chase frame can take a while in software rendering (the wider view brings new things to draw).

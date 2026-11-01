@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, PLAYER, getWeapon, initPhysics, weaponCode, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
+import { BOT_DIFFICULTIES, BUTTON_USE, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, PLAYER, getWeapon, initPhysics, weaponCode, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { weaponScore, type CombatantView, type InventoryView, type MountView } from '../src/bots/brain.ts';
 import {
@@ -302,4 +302,54 @@ describe('bot vehicle sense in a match', () => {
     expect(heldRockets).toBe(true);
     expect(mounts[0]!.health).toBeLessThan(start);
   });
+});
+
+describe('bot drivers on loose, sprung vehicles', () => {
+  // The buggy and gun jeep are loose at speed (drift) on raycast suspension: the bots' steering (steer()) must still
+  // take them round hairpins without spinning out. A course of 90° and 135° turns over a 112 m field, driven flat out.
+  function field(model: string): MapDocument {
+    const tiles = [];
+    for (let x = 0; x < 14; x++) for (let y = 0; y < 14; y++) tiles.push({ id: `y${x}_${y}`, tile: 'core.yard', x, y, z: 0, rotation: 0 as const });
+    const map = makeMap(tiles, [[0, 0, 0]]);
+    return { ...map, entities: [...map.entities, { id: 'mount_0', kind: 'mount' as const, position: [20, 0, 20], model: model as 'buggy', yaw: 0, faction: null, respawnSeconds: null }] };
+  }
+  for (const model of ['buggy', 'gun_jeep'] as const) {
+    it(`${model}: round the course without spinning out`, () => {
+      const match = new Match(field(model), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 1);
+      const c = match.addHuman('driver')!;
+      match.step();
+      c.move = { pos: { x: 20, y: 0, z: 18 }, velY: 0, grounded: true };
+      let seq = 0;
+      const send = (i: Partial<PlayerInput>) => match.queueInputs(c.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: c.yaw, pitch: 0, buttons: 0, ...i }]);
+      send({ buttons: BUTTON_USE });
+      match.step();
+      send({});
+      match.step();
+      const m = (match as unknown as { mounts: { pos: { x: number; y: number; z: number }; yaw: number; speed: number; slide: number }[] }).mounts[0]!;
+      const course = [[20, 90], [90, 90], [90, 20], [30, 30], [80, 80], [20, 90], [20, 20], [90, 20], [55, 60], [20, 20]];
+      const st = freshDrive();
+      let wp = 0;
+      let slip = 0;
+      let top = 0;
+      const max = MOUNT_DEFS[model].vehicle!.maxSpeed;
+      for (let t = 0; t < 60 * 90 && wp < course.length; t++) {
+        const [x, z] = course[wp]!;
+        const d = Math.hypot(x - m.pos.x, z - m.pos.z);
+        if (d < 5) {
+          wp++;
+          continue;
+        }
+        const view = { ...car({ pos: m.pos, yaw: m.yaw }), maxSpeed: max, speed: Math.abs(m.speed) } as MountView;
+        send(steer(st, match.tick, view, { x, y: 0, z }, d + 30));
+        match.step();
+        top = Math.max(top, Math.abs(m.speed));
+        if (Math.abs(m.speed) > 4) slip = Math.max(slip, Math.atan2(Math.abs(m.slide), Math.abs(m.speed)));
+      }
+      expect(wp).toBe(course.length);
+      expect(top).toBeGreaterThan(max * 0.9);
+      // Sliding a little in the turns, never sideways (a spin-out is past ~0.6 rad).
+      expect(slip).toBeLessThan(0.3);
+      expect(st.stuck).toBe(false);
+    });
+  }
 });

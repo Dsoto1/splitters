@@ -523,3 +523,23 @@ ride. One optional field, so `PROTOCOL_VERSION` stays 4:
 Grabbing, letting go and being knocked off (a hit of `ZIP.knockDamage` or
 more) are decided by the host; nothing new goes from client to host (E and
 jump are the existing `BUTTON_USE` / `BUTTON_JUMP` input bits).
+
+## 17. Vehicle suspension and look-to-steer (November 2026)
+
+Wheeled light vehicles with `MountDef.vehicle.suspension` (the buggy and the
+gun jeep) ride a sprung body on one ray per wheel (`shared/src/sim/suspension.ts`),
+stepped by the host in the shared sim like the rest of the vehicle. Riding
+isn't predicted, so clients only draw it. One optional snapshot field and one
+input bit, so `PROTOCOL_VERSION` stays 4:
+
+- **`ms: number[][]`**, one entry per living vehicle with suspension:
+  `[mount index, body height (cm), pitch (mrad, + nose up), roll (mrad, +
+  leaning right), steering (-100..100), ...each wheel's hub offset (cm, +
+  compressed)]`, all integers. Absent when there are none. It is a
+  `REPEATABLE` field (sent only when it changed; parked vehicles settle and
+  stop changing). Older clients ignore it and draw the body settling to the
+  ground as before; with an older host the client does the same.
+- **`BUTTON_STEER_LOOK` (4096)** in `PlayerInput.buttons`, held while a
+  driver has look-to-steer on: the host turns the vehicle toward the
+  driver's look (`yaw`) on top of `right`. Ignored on foot, in flyers and by
+  older hosts (they mask unknown bits off, so the driver steers with A/D only).

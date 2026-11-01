@@ -26,7 +26,9 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
 | Snow Sled | 2 (driver, passenger) | Hover handling on runners: quick and slidey, sits on the snow instead of floating |
 
 - **Driving.** W/S throttle and reverse, A/D steer (harder the faster you
-  go). Vehicles slide along walls, lose half their speed in a crash and
+  go), or **look to steer** (Options → Controls → Vehicle steering: the
+  vehicle turns toward where you look, Warthog style, and the view stays
+  where you point it; A/D still steer too; classic is the default). Vehicles slide along walls, lose half their speed in a crash and
   follow the ground (terrain included). At speed they run down enemies,
   credited to the driver.
 - **Cameras.** Drivers and pilots start in the **cockpit**: the eye sits at
@@ -66,8 +68,9 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
   a long tube-frame buggy with a roof gun whose hubs are bare, so the owner's
   Rugged Off-Road Tire (`vehicles/offroad_tire.glb`, 676 triangles) is drawn at
   each hub from the def's `wheels` (`mountVisuals.ts`), and the body rides
-  0.24 m up (`rideHeight`) on them. The wheels don't turn or steer yet (no
-  vehicle's do).
+  0.24 m up (`rideHeight`) on them. The tires roll with the buggy's speed,
+  the front pair steers, and each rides its own spring (see Suspension below);
+  the gun jeep's own wheels (the Car Kit model's wheel meshes) do the same.
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no
   reloading) within its arc; side door guns (the gunship's) have arcs centred
   on their own side (`facing` on the seat). Passengers use their own weapons. Drivers can't
@@ -129,6 +132,44 @@ two sentries mid-field. Coldwater Gulch adds a gun jeep to each base's apron;
 Frost Basin a pair of snow sleds on each plateau, a glider on each roof and
 the air drop (below).
 
+## Suspension (the Warthog feel)
+
+The buggy and the gun jeep ride on **raycast suspension** in the simulation
+(`shared/src/sim/suspension.ts`, tuning in `MOUNT_DEFS[…].vehicle.suspension`):
+one ray straight down per wheel each tick finds the ground under it, and a
+spring and damper per wheel push on a sprung body above the chassis. The four
+pushes set the body's **height, pitch and roll**: it bounces over bumps, leans
+out of turns, squats under power and dives under the brakes, keeps the spin it
+leaves a ramp with and drops its nose a little in the air (the tumble), and
+lands on its springs with a bounce (hard landings hit the bump stops). Wheels
+off the ground (over a crest, two on a kerb) grip less. The chassis itself
+moves as before (the vehicle probe, its collision box level), so hit boxes,
+seats and shots are unchanged; the sprung body is what everyone sees, sent in
+snapshots as `ms` (MULTIPLAYER_PROTOCOL.md §17).
+
+Both are also **loose at speed** (`drift`: the share of tyre grip lost at top
+speed, rising with the square of speed), so a hard turn flat out powerslides,
+and the handbrake (Space) still breaks grip for a proper slide.
+
+| Vehicle | Springs (freq, damping) | Travel / bump stop | Squat · lean (rad per m/s²) | Air tumble | Landing | Drift | Steering lock |
+|---|---|---|---|---|---|---|---|
+| Buggy | 1.5 Hz, 0.32 (soft, bouncy) | 0.20 / 0.16 m | 0.004 · 0.0045 | 1.4 rad/s² | 0.5 | 0.55 | 0.5 rad |
+| Gun Jeep | 1.8 Hz, 0.38 (a pickup: firmer) | 0.16 / 0.13 m | 0.0028 · 0.0038 | 1.2 rad/s² | 0.45 | 0.4 | 0.45 rad |
+
+Tank and armored rover stay heavy and planted, and the kart, ice cream truck,
+hovercraft and flyers are unchanged: their bodies are drawn settling to the
+ground as before (`View.suspend`, drawing only).
+
+In first person the cockpit eye follows the springs eased (COCKPIT_EYE_FOLLOW
+in vehicleCamera.ts: well under half of a landing's bounce, all of a steady
+lean), on top of the view's already damped tilt, so the bounce shows in the
+dash and the frame, not in your stomach.
+
+**Cost.** Four rays per vehicle per tick, only while it moves: a parked vehicle
+stops once its springs settle, empty vehicles far from every player skip it,
+and past 96 rays in a tick (24 four-wheelers) the rest reuse the ground they
+found last tick on two ticks of three.
+
 ## Handling classes
 
 Every vehicle is one of the classes the simulation already runs, with its
@@ -136,7 +177,7 @@ own tuning (top speed, acceleration, turn rate, grip, weight, health, blast):
 
 | Class | How it drives | Vehicles |
 |---|---|---|
-| Wheeled light | Grippy, quick to turn, ramps launch it, hard landings dent it | Go-Kart, Buggy, Gun Jeep, Ice Cream Truck |
+| Wheeled light | Grippy, quick to turn, ramps launch it, hard landings dent it (buggy and gun jeep: on raycast suspension, loose at speed) | Go-Kart, Buggy, Gun Jeep, Ice Cream Truck |
 | Wheeled heavy | Slow to speed up, high grip and weight: shrugs off pushes, loses little in crashes | Armored Rover |
 | Tracked | Slowest, heaviest, turns on the spot | Tank |
 | Hover | Low grip, drifts, floats over bumps, no landing damage | Speeder, Hauler, Hover Bike, Snow Sled |
