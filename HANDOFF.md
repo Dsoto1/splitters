@@ -49,7 +49,27 @@ Owner: "make the buggy feel like Halo's Warthog (independent suspension)", step 
 - Step 2 (rollovers, rigid body) not started. Ideas: the sprung pitch could feed the probe's launch angle off ramps;
   bots could ease throttle when `slide` grows (MountView has no slide yet).
 
-### `wip/ziplines` (agent, 2026-11-01; not merged): real ziplines, a MapMaker element
+### Spear model (`wip/spear-model`, agent, 2026-11-01; merged to main 5756b31)
+Owner: "New spear is for our spear". The "T Pose Figure" download in `~/meshy-drive/tposes-2026-11-01/` (a carved spear;
+Meshy community, CC0 per the owner, author not recorded) is the Spear's model `guns/spear.glb`:
+- **Pipeline:** content/guns.json, new pack `meshy-community-weapons` (Meshy community GLB downloads, CC0); the download
+  stands upright, so prepare-guns.mjs takes `forward: "+y"` / `"-y"` now (laid down about +X; not for `interior`).
+  2.0 m, hero tier: **14,000 triangles + a 2,800 LOD (12 m), 1024 px colour, 512 px normal, 690 KB** (source 1.3M
+  triangles, 2048 px maps). Rebuild: `ONLY=guns/spear.glb node tools/content/prepare-guns.mjs --downloads <dir>`
+  (a fresh dir with a link to the GLB). Licence notes: assets-src/meshy-community/License.txt, docs/ASSET_SOURCES.md.
+- **Wiring:** `core.spear` view: model `guns/spear.glb`, fallback `procedural/spear` (re-laid to the same 2 m, centred,
+  grip at z -0.35), viewOffset [0.28, -0.24, 0.65], hold pistol, grip [0, 0, -0.35] (a third of the way back on the
+  plain shaft; drawn hand 1.5-3 cm off in first, full-body and third person). Pickups and other players' hands use
+  the view model. Thrown spears: `View.spearProjectile` instances the model over the plain shapes (shapes until it
+  loads), its tip 0.52 m ahead of the sim point as before. **Fix:** `animateArsenalProjectile` had no case for
+  `spear`, so a thrown spear always faced world +Z; it now points along its flight and keeps that heading stuck (a
+  spear first seen already stuck, e.g. joining late, still faces +Z: snapshots carry no velocity). New icon
+  `guns_spear.webp` (the procedural one removed).
+- **Checks:** unit `spearProjectile.test.ts`; e2e arsenal (held as the model, thrown, stuck, drawn as the model),
+  characters (hand on the shaft in three views). Looking along a 2 m spear in first person, the flat blade shows
+  mostly edge-on past the carved collar; a tilted first-person hold would need a view rotation field (none today).
+
+### `wip/ziplines` (agent, 2026-11-01; merged to main 89cc319): real ziplines, a MapMaker element
 Owner: "build real ziplines if it's easy enough; should also be a MapMaker element". Built:
 - **Format v25** `zipline` entity (schema.ts `ZiplineEntity`: start post foot `position`, far post `end` as an offset,
   `height`, `speed`, `twoWay`, `team`, `sag`); migration 24 → 25 is additive. Maps keep their old formatVersion.
@@ -134,7 +154,7 @@ by looking, not by name:
   Croakley 9 (open, off, spikes, fp: the frog's long fingers hang open). Portraits captured locally for the eleven built.
 - Open: Barnaby and Biscuit (above); Croakley's and Scamp's open hands. Licences settled (owner, 2026-11-01): the new T-pose
   models are Meshy community models under CC0 (pack `meshy-community-characters`). The "Figure" download (a carved spear) is
-  to become the model of our Spear weapon (queued).
+  to become the model of our Spear weapon (done on `wip/spear-model`, above).
 
 ### Owner's Meshy props (`wip/owner-props`, agent, 2026-11-01; not merged)
 The owner's 12 uploads of 2026-10-31 (Meshy, owned; raw files in `/home/user/meshy-drive/owner-uploads-2026-10-31/`,

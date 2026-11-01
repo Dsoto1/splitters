@@ -224,6 +224,8 @@ export function animateArsenalProjectile(node: TransformNode, look: ProjectileVi
       break;
     case 'nail':
     case 'swarm':
+    // A spear points along its flight and keeps its last heading where it sticks.
+    case 'spear':
       along();
       break;
     case 'sticky': {
