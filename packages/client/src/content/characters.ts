@@ -17,7 +17,7 @@ import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, firstPersonArms, getLook, npcL
 import { GLB, versioned } from '../assetUrl.ts';
 import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
-import { BEARD, GEAR_MODEL_BASE, buildGear, gearModels } from './gear.ts';
+import { BEARD, GEAR_MODEL_BASE, gearModels } from './gearModels.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
 import { asNode } from './models.ts';
 
@@ -273,6 +273,12 @@ export class CharacterLibrary {
         const models = new Map(names.flatMap((g, i) => (loaded[i] ? [[g, loaded[i]] as const] : [])));
         const headIndex = look.parts.length;
         const head = of(headIndex).filter((m) => !/_lod/.test(m.name));
+        // Gear is built by its own module, loaded with the first character that wears any (the menu's first load doesn't carry it).
+        const { buildGear } = await import('./gear.ts');
+        if (this.scene.isDisposed) {
+          holder.dispose();
+          return gone();
+        }
         const gear = buildGear(this.scene, look, {
           root: holder,
           joints,

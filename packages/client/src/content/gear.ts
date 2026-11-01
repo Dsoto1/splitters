@@ -13,6 +13,7 @@ import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { gearInfo, type CharacterLook } from '@tiletrigger/shared';
+import { BEARD } from './gearModels.ts';
 import { Geo, HeadMap, fitModel, outline, ringHeight, v3, type ModelFit, type P3 } from './headFit.ts';
 
 /** Where each helmet model sits on each head and hair (the same for every wearer of them: fitting takes a while). */
@@ -27,12 +28,6 @@ const seats = new Map<string, ModelFit>();
  * on the Head joint.
  */
 
-/** Where the gear models are (packages/client/public/gear). */
-export const GEAR_MODEL_BASE = `${import.meta.env.BASE_URL}gear/`;
-
-/** The model files a look's gear needs (without .glb). */
-export const gearModels = (look: Pick<CharacterLook, 'gear' | 'whole'>): string[] =>
-  look.whole ? [] : (look.gear ?? []).flatMap((id) => (gearInfo(id)?.model ? [gearInfo(id)!.model!] : []));
 
 /** Default colours when a look has no dye: the outfit family's own greens and browns. */
 const DEFAULT_CLOTH = '#3e5230';
@@ -292,12 +287,10 @@ function measureHead(t: GearTargets, headBox: Box): HeadFit {
 }
 
 /**
- * The beard hairstyle (HAIR_STYLES' `hair_beard`), built here on the wearer's own face instead of the part file's
- * thin hair cards: a full beard from the sideburns down the jaw to the chin, a moustache over the upper lip, the
- * mouth left clear between them, its edges ragged like hair.
+ * The beard hairstyle (BEARD), built on the wearer's own face instead of the part file's thin hair cards: a full
+ * beard from the sideburns down the jaw to the chin, a moustache over the upper lip, the mouth left clear between
+ * them, its edges ragged like hair.
  */
-export const BEARD = 'hair_beard';
-
 function buildBeard(scene: Scene, f: HeadFit, hairColor: string, shape: (name: string, g: Geo, mat: PBRMaterial) => void): void {
   const c = f.skin.c;
   const chinPts = within(f.skinPts, (x, _y, z) => Math.abs(x - f.cx) < 0.025 && z > c[2] + 0.04);
@@ -436,12 +429,13 @@ export function buildGear(scene: Scene, look: CharacterLook, t: GearTargets): Me
       continue;
     }
     if (!fit && (id === BEARD || ['hat', 'face'].includes(gearInfo(id)?.slot ?? ''))) continue;
-    const f = fit!;
+    // Only head gear reads the head's measurements (and it has them: checked above).
+    const f = fit as HeadFit;
     if (id === BEARD) {
       buildBeard(scene, f, look.hairColor ?? '#3a2a22', (name, g, mat) => shape(name, g, mat));
       continue;
     }
-    const c = f.hat.c;
+    const c: P3 = fit ? fit.hat.c : [0, 0, 0];
     const TH = 48;
     const around = (n: number, from = 0, to = Math.PI * 2) => Array.from({ length: n }, (_, i) => from + ((to - from) * i) / (n - (to - from >= Math.PI * 2 - 1e-6 ? 0 : 1)));
     const full = (n: number) => around(n);
