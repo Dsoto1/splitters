@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+## 0.6.0 (2026-11-01)
+
+**Main menu**
+- **Characters** is back on the main menu (Character Select), beside the Profile entry top right.
+
 **Weapons**
 - The Spear is now a carved wooden spear with an iron head (the owner's pick, a Meshy community model), about as long as a person is tall: in your hands in first person, in other players' hands, lying as a pickup, in flight and stuck where it lands.
 - A thrown spear points the way it flies and stays at that slant where it sticks (it used to fly and land facing one fixed direction).

@@ -62,6 +62,21 @@ layout prepare-vfx reads: `/home/user/fx-packs/links-full/`). No Meshy credits s
   every mapped effect warmed at load). Branch not rebased on main (f0da0e4): generated files (props.generated.ts,
   provenance, palette atlases, characters.generated.ts, portraitIndex) need regenerating on merge.
 
+### Updater: cosign's 128 MiB cap (lead, 2026-11-01; `wip/flaky-characters`)
+`sudo tiletrigger-update` refused d8a4afa: "cosign: size of layer (138391411) exceeded the limit (134217728)"
+(the site tarball passed 128 MiB). cosign v3 caps what it reads unless `COSIGN_MAX_ATTACHMENT_SIZE` is set; the
+updater now passes `COSIGN_MAX_ATTACHMENT_SIZE=1GiB` (env overrides). Tested locally with cosign v3.0.2 against the real
+build: default refused on size; with the variable "Verified OK"; a tampered tarball still fails (digest mismatch).
+Until a box runs this updater (it installs itself from the checkout after an update), use
+`sudo COSIGN_MAX_ATTACHMENT_SIZE=1GiB tiletrigger-update`. Worth watching: the site is 138 MB packed and growing.
+
+### Flaky grip checks fixed (lead, 2026-11-01; `wip/flaky-characters`)
+"An Imp player holds the gun… (pistol r null)" and "bots' hands … 0 of 0" (characters flow) failed on slow boxes and
+once on CI. Cause: `View.gripReport()` read `scene.getActiveMeshes()` between frames, and that list is often empty
+there (a probe showed the Imp steadily drawn by the main camera while the between-frames list flickered 5 → 0). It now
+uses a copy taken right after the main camera's own evaluation (`drawnByCamera()`, hooked on first use, so play pays
+nothing). Anything else reading the active-mesh list from a test should do the same.
+
 ### `wip/warthog-step1` (agent, 2026-11-01; not merged): Warthog feel, step 1 (raycast suspension)
 Owner: "make the buggy feel like Halo's Warthog (independent suspension)", step 1, "if performance remains intact".
 - **Sim** `shared/src/sim/suspension.ts`: one ray down per wheel (`PhysicsWorld.groundBelow`, own box excluded), a

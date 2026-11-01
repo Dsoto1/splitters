@@ -1531,9 +1531,30 @@ export class GameView {
    * every character in view holding a gun, nearest first, with its distance. For each: model metres from each
    * hand's skin to its point on the gun, and how its shooting hand lies on the grip (`aheadR`, `sideR`).
    */
+  /** The meshes the main camera drew in its last pass (tests; recorded from the first call on). */
+  private mainDrawn: Set<AbstractMesh> | null = null;
+
+  /**
+   * What the main camera drew last frame. The scene's active-mesh list, read between frames, is whatever the last
+   * evaluation left in it, and it was often empty there (the grip checks then saw nobody drawn: "0 of 0" bots, an Imp
+   * with no report). So it is copied right after the main camera's own evaluation, once something asks for it.
+   */
+  private drawnByCamera(): Set<AbstractMesh> {
+    if (!this.mainDrawn) {
+      this.mainDrawn = new Set();
+      this.scene.onAfterActiveMeshesEvaluationObservable.add(() => {
+        if (this.scene.activeCamera !== this.camera) return;
+        const am = this.scene.getActiveMeshes();
+        this.mainDrawn = new Set(am.data.slice(0, am.length));
+      });
+      const am = this.scene.getActiveMeshes();
+      return new Set(am.data.slice(0, am.length));
+    }
+    return this.mainDrawn;
+  }
+
   gripReport(): { local: ({ mode: 'body' | 'arms' } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>) | null; remote: ({ slot: number; dist: number } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>)[]; creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] } {
-    const am = this.scene.getActiveMeshes();
-    const active = new Set(am.data.slice(0, am.length));
+    const active = this.drawnByCamera();
     let local: ReturnType<GameView['gripReport']>['local'] = null;
     if (this.fpBody?.a.anim instanceof CharacterAnimator) {
       const g = this.fpBody.a.anim.drawnGrip([...this.fpBody.rig.drawnMeshes, ...this.fpBody.a.anim.ch.meshes]);
