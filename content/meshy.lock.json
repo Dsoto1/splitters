@@ -1828,7 +1828,7 @@
     {
       "role": "meshy-autorig",
       "id": "meshy_rourke",
-      "source": "meshy-community-characters",
+      "source": "meshy-owned",
       "model": "Realistic stylized man (T-pose)",
       "date": "2026-11-01",
       "src": "Meshy_AI_Realistic_stylized_ma_1031121851_texture.glb",
@@ -1843,7 +1843,7 @@
     {
       "role": "meshy-fparms",
       "id": "meshy_rourke_fparms",
-      "source": "meshy-community-characters",
+      "source": "meshy-owned",
       "model": "Realistic stylized man (T-pose)",
       "date": "2026-11-01",
       "src": "Meshy_AI_Realistic_stylized_ma_1031121851_texture.glb",
