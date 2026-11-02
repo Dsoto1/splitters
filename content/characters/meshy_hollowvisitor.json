@@ -9,7 +9,7 @@
   "nameTheme": "alien",
   "bio": "Nobody has seen inside the hood. Nobody who stayed to tell, anyway.",
   "body": "male",
-  "notes": "Drive, 2026-11-02 (\"The Hollow Visitor\", rigged; the owner's download \"Meshy_AI_The_Hollow_Visitor_All_Animations.glb\"). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), like the clip set's sources (content/clip-sets/shooter.json, where its clips were measured). It moves with the shared clip set. Name a placeholder.",
+  "notes": "Drive, 2026-11-02 (\"The Hollow Visitor\", rigged; the owner's download \"Meshy_AI_The_Hollow_Visitor_All_Animations.glb\"). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), like the clip set's sources (content/clip-sets/shooter.json, where its clips were measured). It moves with the shared clip set. Hands: long split fingers (curl 1.3: at 1 the support hand stood open under the handguard); its claws still read splayed on a support hand. The grip audit's stretch spikes are in the calves (baggy trouser hems over the levelled feet, 14-15 degrees toes up in the download), not visible at play distance. Name a placeholder.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -33,6 +33,9 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": {
+      "curl": 1.3
+    }
   }
 }

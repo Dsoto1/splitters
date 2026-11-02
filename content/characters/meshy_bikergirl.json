@@ -9,7 +9,7 @@
   "nameTheme": "gangster",
   "bio": "Rides with the pack, shoots with the pack, and never once waited at a red light.",
   "body": "female",
-  "notes": "Drive, 2026-11-02 (\"Biker Gang Girl\", rigged; the owner's download \"Meshy_AI_Biker_Gang_Girl_All_Animations.glb\"). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), like the clip set's sources (content/clip-sets/shooter.json, where its clips were measured). It moves with the shared clip set. Name a placeholder.",
+  "notes": "Drive, 2026-11-02 (\"Biker Gang Girl\", rigged; the owner's download \"Meshy_AI_Biker_Gang_Girl_All_Animations.glb\"). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), like the clip set's sources (content/clip-sets/shooter.json, where its clips were measured). It moves with the shared clip set. Hands: fingerless gloves whose fingers are modelled fused, with shallow gaps that the splitter read as fingers (the left hand crumpled into shards on the grip): both hands bend as mittens (fixes.hands.mitten, curl 0.9). Her bare low-poly fingertips still fold sharply against the dark glove up close; the curl test on her shooting hand stays flat (grip audit 3, as WWII Infantry's). Name a placeholder.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -33,6 +33,10 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": {
+      "mitten": true,
+      "curl": 0.9
+    }
   }
 }
