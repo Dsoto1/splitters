@@ -76,10 +76,24 @@ infantry for now to test". Brief: lead scratchpad `anim-retarget-brief.md`.
   Mixamo body, fingers as Bone_0xx; same seven clips), Fearsome Undead (66 joints; the same minus
   Walk_Forward_While_Shooting). All three have every joint the retarget needs and work as clip sources
   (`node tools/content/clip-set.mjs <glb>` lists them). Their licence must be recorded before a set is built from them.
-- Checks: see the CHANGELOG/commit; tests `tools/content/test/retarget.test.mjs`, `packages/client/test/clipGait.test.ts`;
-  e2e characters flow has a third-person strafing/backing check (shoulders square, hips turned, hand on gun, WWII on
-  its clips). Harness: `__grips.drive(motion, shotsPerSecond, frames)` in `?mode=grips`. Evidence sheets: agent
-  scratchpad `anim/` (frames/, `before-*` vs `after-*`).
+- While a clip holds the upper body, the shoulders are brought back onto the aim pose's line (`chestFix`, measured
+  standing in aim_idle): the authored torso turned 13-19° off strafing and 44° backing up; now 0 (shoulder line 134°
+  in every direction, the hips 160-170° strafing).
+- **Measured:** in game (arena, third person, ADS, firing) the drawn barrel lies along the rounds' path within 0.0-0.1°
+  (the old view-parallel barrel: 14.8° off at a point 1.6 m out, 1.4° at 15 m); `__cs.tpAim()` reads the turn. Perf,
+  96 characters each (`__grips.crowd`, SwiftShader at load ~16, so noisy): clip evaluation WWII 7-9 ms/frame against
+  14-58 for the rig-gait looks, after-clip work (aim/IK) ~145 ms for all alike; +9 animatables a character while
+  strafing (the upper-body copy), fewer backing up. The clip set file loads once (90 KB, not in the menu's JS; bundle
+  835.1 kB gzip).
+- Checks: typecheck; test:changed 1284 pass (2 failures under load, host.test and sandgate, pass alone); content OK;
+  e2e characters: the new third-person check PASS, the flow failed only on a page.screenshot timeout in the Imp
+  grips-in-play step (load 9-16 on 4 cores); offline: the kill-cam banner check (a 5 s window) failed twice; visual:
+  the canyon screenshot timed out twice (menu, mapmaker and arena match baselines). All three look environmental;
+  CI should confirm on a check branch (the change maps to the full suite). Tests:
+  `tools/content/test/retarget.test.mjs`, `packages/client/test/clipGait.test.ts`. Harness: `__grips.drive(motion,
+  shotsPerSecond, frames)`, `__grips.crowd(look, n)` in `?mode=grips`. Evidence: agent scratchpad `anim/frames/`
+  (`compare-ranger.jpg`, `compare-polysoldier.jpg`, `compare-wwiisoldier.jpg`: before main 8bc4001 vs after,
+  over-the-shoulder and side views, strafe/back/ADS while firing; `game-ads-ranger.jpg`).
 ### Seetah J. Chloth (`wip/seetah`, agent, 2026-11-01; not merged; from main c6751d5)
 - `core.seetah` (`meshy_seetah`, order 96, Animals, `nameTheme: cat`): the owner's cheetah/sloth hybrid (owned, Meshy), from the
   rigged Drive download "Meshy_AI_rigged_cheetah_sloth_All_Animations.glb" (gdown into `/home/user/meshy-drive/drive-2026-11-01-seetah/`,
