@@ -16,7 +16,7 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift } from '@tiletrigger/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift } from '@tiletrigger/shared';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyToneMapping } from '../game/graphicsSettings.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
@@ -524,6 +524,8 @@ export class EditorView {
     if (e.kind === 'prop') {
       orientProp(node, e, doc.terrain);
       node.position.y += hungPropLift(this.scenario.ceilings, e);
+      // Shown on the ground as played (paths laid in), as the game re-beds it (settle.ts rebedProps).
+      if (doc.terrain && this.shownTerrain && this.shownTerrain !== doc.terrain) node.position.y += rebedShift(doc.terrain, this.shownTerrain, e);
     } else if (e.kind === 'mount') node.rotation.y = e.yaw;
     else if (e.kind !== 'pickup') placeScenarioNode(node, e);
   }

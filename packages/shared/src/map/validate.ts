@@ -8,7 +8,7 @@ import { getProp } from '../content/props.ts';
 import { buildMapGeometry, buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, resolveEdge, yawXZ } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
-import { floatingProps, terrainUnderFloors } from './settle.ts';
+import { floatingProps, rebedProps, terrainUnderFloors } from './settle.ts';
 import { withPathsLaid } from './paths.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
@@ -73,7 +73,12 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   // As played: paths laid into the ground (paths.ts; MapMaker keeps them apart, `forEditing`, so the ground
   // follows a path that moves), then terrain kept under every floor (settle.ts terrainUnderFloors).
   let map = opts.forEditing ? parsed.data : withPathsLaid(parsed.data);
-  if (map.terrain) map = { ...map, terrain: terrainUnderFloors(map, buildMapGeometry(map, catalog)) };
+  if (map.terrain) {
+    const boxes = buildMapGeometry(map, catalog);
+    // Props MapMaker bedded on the ground stay bedded on the ground as played (settle.ts rebedProps).
+    if (parsed.data.terrain && map.terrain !== parsed.data.terrain) map = rebedProps(map, parsed.data.terrain, map.terrain, boxes);
+    map = { ...map, terrain: terrainUnderFloors(map, boxes) };
+  }
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
 }
 

@@ -132,6 +132,38 @@ export function floatingProps(map: MapDocument, boxes: readonly WorldBox[] = sup
 }
 
 /**
+ * Props bedded on the ground stay bedded when the ground changes under them.
+ * MapMaker settles props on the map's own ground, but the game plays it with
+ * the paths laid in (paths.ts: the ground under a walk is levelled to the
+ * walk, its shoulders blended), so a bush or a lamp post beside a walk sat
+ * sunk into it or stood off it by up to a quarter of a metre. A prop resting
+ * on the ground before (its base within REBED_TOLERANCE of where settling
+ * puts it) is moved by as much as its settled height moves; one held up by a
+ * floor, block or another prop, or placed off the ground, stays put.
+ */
+export const REBED_TOLERANCE = 0.06;
+export function rebedShift(before: TerrainData, after: TerrainData, e: Pick<PropEntity, 'model' | 'position' | 'yaw' | 'scale'>): number {
+  const was = settledPropY(before, e);
+  if (was === null || Math.abs(e.position[1] - was) > REBED_TOLERANCE) return 0;
+  const now = settledPropY(after, e);
+  return now === null ? 0 : Math.round((now - was) * 100) / 100;
+}
+
+/** The map's props on the ground re-bedded on `after` (the same map when none moves). `boxes`: what could hold a prop up instead. */
+export function rebedProps(map: MapDocument, before: TerrainData, after: TerrainData, boxes: readonly WorldBox[]): MapDocument {
+  let entities: MapDocument['entities'] | null = null;
+  map.entities.forEach((e, i) => {
+    if (e.kind !== 'prop') return;
+    const dy = rebedShift(before, after, e);
+    if (!dy) return;
+    if (supportUnder(boxes, e.position[0], e.position[2], e.position[1], e.id) > e.position[1] - FLOAT_TOLERANCE) return;
+    entities ??= [...map.entities];
+    entities[i] = { ...e, position: [e.position[0], Math.round((e.position[1] + dy) * 1000) / 1000, e.position[2]] };
+  });
+  return entities ? { ...map, entities } : map;
+}
+
+/**
  * Hung fixtures. Ceiling panels, strip lights, hanging bulbs and chandelier
  * lights, and props that hang (chandeliers, a ceiling light panel, a hanging
  * brazier), are drawn fastened to the underside of whatever is over them: a
