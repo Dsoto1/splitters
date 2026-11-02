@@ -58,8 +58,8 @@ Cameras and before/after pictures: agent scratchpad `st-johns/before`, `st-johns
   a manifest knob (e.g. `firstPerson: { arms: "own", sleeve: 1, hand: 1 }`, checked in character-manifests.mjs and
   read by `slimArms`), then `ONLY=meshy_alien node tools/content/prepare-meshy-characters.mjs
   /home/user/meshy-drive/tposes-2026-11-01` (the download is there) and a grip sheet.
-- Checks: typecheck; test:changed 1245 pass, 4 timed out under load (host, botai, npc, sandgate), all pass rerun
-  alone (new: hungFixtures.test.ts, rebed.test.ts); validate-map st_johns 0 issues. e2e (machine at load 16 on 4
+- Checks (rebased on main e465758, with wip/fix-terrain): typecheck; test:changed 1262 pass (new: hungFixtures.test.ts,
+  rebed.test.ts; before the rebase 4 timed out under load and passed rerun alone); validate-map st_johns 0 issues. e2e (machine at load 16 on 4
   cores, so `CI=1` for the CI timeouts): editor, visual, maps with `E2E_MAPS=st_johns` PASS; offline FAIL twice on
   the kill-cam banner (arena, nothing here touches it; first run a killer-name mismatch, second no banner in time),
   maps6 "no match" timeouts on maps this doesn't touch without `CI=1`. The change touches shared code: the full suite
