@@ -78,6 +78,16 @@ export function clipGaitWeights(speed: number, walk: number, run: number): { wal
   return { walk: 1 - r, run: r };
 }
 
+/**
+ * The clip set's upper body going forward, from the legs' walk/run split (clipGaitWeights): the shooting walk takes
+ * the walk's share and the running shot the run's, in step with the legs; a set with only one of them gives it all.
+ */
+export function clipUpperWeights(legs: { walk: number; run: number }, has: { fwd: boolean; run: boolean }): { fwd: number; run: number } {
+  const all = legs.walk + legs.run;
+  if (has.fwd && has.run) return { fwd: legs.walk, run: legs.run };
+  return { fwd: has.fwd ? all : 0, run: has.run ? all : 0 };
+}
+
 /** Cycles per second that keep the planted foot still at `speed` for loops blended by `weights` (gaitCycleRate for clip loops). */
 export function clipCycleRate(speed: number, loops: readonly { loop: ClipLoop; weight: number }[], scale = 1): number {
   let dist = 0;

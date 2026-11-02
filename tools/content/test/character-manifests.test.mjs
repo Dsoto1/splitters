@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { MANIFEST_DIR, QUEUE_FILE, armsOf, buildSpec, looksProblems, looksSource, manifestProblems, readManifests, stubFromQueue } from '../character-manifests.mjs';
+import { CLIP_SETS_DIR, MANIFEST_DIR, QUEUE_FILE, armsOf, buildSpec, clipSetProblems, looksProblems, looksSource, manifestProblems, readClipSets, readManifests, stubFromQueue } from '../character-manifests.mjs';
 
 describe('character manifests', () => {
   const list = readManifests();
@@ -48,6 +48,35 @@ describe('character manifests', () => {
     // A hand bent as one, whatever gaps are found.
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { r: { mitten: true, curl: 1.2 } } } }, 'meshy_cat.json')).toEqual([]);
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { mitten: 'yes' } } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.hands.mitten/);
+  });
+
+  it('move with the default clip set, name another, or opt out with a reason', () => {
+    const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_cat.json'), 'utf8'));
+    expect(manifestProblems({ ...good, clips: 'shooter' }, 'meshy_cat.json')).toEqual([]);
+    expect(manifestProblems({ ...good, clips: false, clipsWhy: 'a four-legged walk' }, 'meshy_cat.json')).toEqual([]);
+    expect(manifestProblems({ ...good, clips: false }, 'meshy_cat.json').join('\n')).toMatch(/clipsWhy/);
+    expect(manifestProblems({ ...good, clipsWhy: 'no reason' }, 'meshy_cat.json').join('\n')).toMatch(/clipsWhy/);
+    expect(manifestProblems({ ...good, clips: true }, 'meshy_cat.json').join('\n')).toMatch(/clips: the clip set/);
+    // The generated look: nothing for the default, the set's id, or false.
+    const lines = looksSource([{ ...good, clips: false, clipsWhy: 'x' }, { ...good, id: 'meshy_cat2', look: 'core.cat2', name: 'Cat 2', order: 999, clips: 'shooter' }, { ...good, id: 'meshy_cat3', look: 'core.cat3', name: 'Cat 3', order: 1000 }]);
+    expect(lines).toMatch(/core\.biscuit',[^\n]*clips: false/);
+    expect(lines).toMatch(/core\.cat2',[^\n]*clips: 'shooter'/);
+    expect(lines).not.toMatch(/core\.cat3',[^\n]*clips:/);
+  });
+
+  it('shared clip sets: each clip from a recorded download', () => {
+    const sets = readClipSets();
+    expect(sets.map((c) => c.id)).toContain('shooter');
+    const good = JSON.parse(readFileSync(join(CLIP_SETS_DIR, 'shooter.json'), 'utf8'));
+    expect(clipSetProblems(good, 'shooter.json')).toEqual([]);
+    // Every source is a CC0 model the owner rigged and animated, with its licence recorded.
+    for (const s of Object.values(good.sources)) expect([s.license, s.rig]).toEqual(['CC0', 'owner']);
+    const bad = { ...good, sources: { ...good.sources, x: { license: 'CC-BY', file: '(' } }, clips: { clip_walk: good.clips.clip_walk, clip_dance: { from: 'nobody', clip: 'Dance' } } };
+    const p = clipSetProblems(bad, 'shooter.json').join('\n');
+    expect(p).toMatch(/sources.x.license/);
+    expect(p).toMatch(/sources.x.file/);
+    expect(p).toMatch(/clips.clip_dance: not a clip set clip/);
+    expect(p).toMatch(/clip_walk and clip_run at least/);
   });
 
   it('carry a rolling body and an unnamed rig\'s joint names', () => {

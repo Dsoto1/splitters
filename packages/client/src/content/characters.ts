@@ -13,7 +13,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import './gltf.ts';
-import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook } from '@tiletrigger/shared';
+import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
 import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
@@ -82,10 +82,12 @@ export type Clip =
   | 'zombie_attack'
   | 'jab'
   | 'hit_head'
-  // A look's authored clip set (`clips`; tools/content/clip-set.mjs): walk and run legs, walking forward and back while shooting.
+  // A look's authored clip set (clipSetOf; tools/content/clip-set.mjs): walk and run legs, the upper body walking and
+  // running while shooting, walking back while shooting.
   | 'clip_walk'
   | 'clip_run'
   | 'clip_shoot_fwd'
+  | 'clip_shoot_run'
   | 'clip_shoot_back';
 
 export interface CharacterInstance {
@@ -200,7 +202,8 @@ export class CharacterLibrary {
       const l = getLook(spec.look);
       files.push(...(l.whole ? l.parts : [...l.parts, l.head, ...l.hair.filter((h) => h !== BEARD)]).map((p) => `${p}.glb`));
       files.push(`${firstPersonArms(l)}.glb`);
-      if (l.clips) files.push(clipSetFile(l.clips));
+      const set = clipSetOf(l);
+      if (set) files.push(clipSetFile(set));
       return Promise.allSettled([...files.map((f) => this.load(f)), ...gearModels(l).map((g) => this.loadGear(g))]);
     }
     return Promise.allSettled(files.map((f) => this.load(f)));
@@ -341,16 +344,18 @@ export class CharacterLibrary {
       owned.push(...carrier.skeletons);
       body = look.body;
       clips = this.retarget(rig, joints, `${name}_${look.body}`, look.body);
-      if (look.clips && !spec.armsOnly) {
-        // Authored clips (walking and shooting) on the rig's joints, shared by every look that names the set: a set
-        // that fails to load leaves the body on the rig's own gait.
-        const set = await this.load(clipSetFile(look.clips)).catch(() => null);
+      const setId = spec.armsOnly ? null : clipSetOf(look);
+      if (setId) {
+        // Authored clips (walking and shooting) on the rig's joints: one file, loaded once and shared by every look
+        // that moves with it (the default set unless the look opts out); a set that fails to load leaves the body on
+        // the rig's own gait.
+        const set = await this.load(clipSetFile(setId)).catch(() => null);
         if (this.scene.isDisposed) {
           holder.dispose();
           return gone();
         }
         if (set) {
-          for (const [c, g] of this.retarget(rig, joints, `${name}_${look.clips}`, look.body, set)) clips.set(c, g);
+          for (const [c, g] of this.retarget(rig, joints, `${name}_${setId}`, look.body, set)) clips.set(c, g);
           clipLoops = clipLoopsOf(set);
         }
       }

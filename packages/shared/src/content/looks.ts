@@ -36,11 +36,12 @@ export interface CharacterLook {
    */
   locomotion?: 'roll';
   /**
-   * An authored clip set this body moves with while it holds a gun and walks or runs upright (the id of the character
-   * manifest whose download the clips came from: characters/<id>_clips.glb, tools/content/clip-set.mjs): walk and run
-   * legs, walking forward and back while shooting. Absent: the rig's own gait. `clips` in its manifest.
+   * The authored clip set this body moves with while it holds a gun and walks or runs upright (characters/<set>_clips.glb,
+   * tools/content/clip-set.mjs: walk and run legs, the upper body walking and running while shooting, walking back
+   * while shooting). Absent: DEFAULT_CLIP_SET; a set's id: that one; `false`: the rig's own gait. `clips` in its
+   * manifest. A rolling body has none (clipSetOf).
    */
-  clips?: string;
+  clips?: string | false;
   /** Outfit dye: the cloth (greens, olives, sportswear) recoloured to this, or the original. */
   cloth?: string | null;
   /** Second dye: leather, belts and trim (the browns). */
@@ -246,6 +247,19 @@ const ALL_LOOKS: readonly CharacterLook[] = [
   ...WHOLE_BODY_LOOKS,
   { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'], group: 'soldiers' },
 ];
+
+/**
+ * The clip set every look on the shared rig moves with unless it names another or opts out (`clips: false`):
+ * content/clip-sets/shooter.json (tools/content/character-manifests.mjs keeps the same name). Looks made later,
+ * Designer looks and characters rigged later get it without asking.
+ */
+export const DEFAULT_CLIP_SET = 'shooter';
+
+/** The clip set a look moves with (`clips`, else DEFAULT_CLIP_SET), or null: opted out, or a rolling body (no legs). */
+export function clipSetOf(look: Pick<CharacterLook, 'clips' | 'locomotion'>): string | null {
+  if (look.clips === false || look.locomotion === 'roll') return null;
+  return look.clips ?? DEFAULT_CLIP_SET;
+}
 
 /** The looks on offer (Character Select, bots, presets): every preset not retired. */
 export const CORE_LOOKS: readonly CharacterLook[] = ALL_LOOKS.filter((l) => !(l.id in RETIRED_LOOKS));

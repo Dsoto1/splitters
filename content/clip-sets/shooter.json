@@ -1,0 +1,49 @@
+{
+  "id": "shooter",
+  "notes": "The default clip set: every look on the rig walks, runs and shoots on the move with it unless its manifest says otherwise (clips). Each clip from whichever download retargets onto the rig closest to the four downloads' consensus (mean world bone direction against the others, measured per region at 24 phases): Walking from WWII Infantry (legs 2.0 deg, the others 2.4-3.4), Running from The Hollow Visitor (legs 3.5; Fearsome Undead, 7.5, is the outlier), Walk_Forward_While_Shooting from Biker Gang Girl (upper body 2.0; the others 2.4-2.6), Run_and_Shoot from The Hollow Visitor (upper body 2.4; 3.2-3.4), Walk_Backward_While_Shooting_inplace from Biker Gang Girl (3.1 overall; 3.3-3.8). Side_Shot (all three new downloads) is not used: a 4 s kneeling shot in place (hips 0.45-0.56 m against 1.01 standing), no help to an upright strafe. Fearsome Undead was measured as a candidate and gives no clip. The four downloads: the owner's Drive, 2026-11-02 (all CC0 Meshy community models that the owner rigged and animated on their Meshy account; licence per the owner, 2 Nov).",
+  "sources": {
+    "wwii": {
+      "license": "CC0",
+      "author": "Meshy community (author not recorded; CC0 per the owner)",
+      "community": { "model": "WWII Infantry Soldier" },
+      "rig": "owner",
+      "date": "2026-11-02",
+      "url": null,
+      "file": "^Meshy_AI_WWII_Infantry_Soldier_All_Animations(-\\d+)?\\.glb$"
+    },
+    "biker": {
+      "license": "CC0",
+      "author": "Meshy community (author not recorded; CC0 per the owner)",
+      "community": { "model": "Biker Gang Girl" },
+      "rig": "owner",
+      "date": "2026-11-02",
+      "url": null,
+      "file": "^Meshy_AI_Biker_Gang_Girl_All_Animations(-\\d+)?\\.glb$"
+    },
+    "visitor": {
+      "license": "CC0",
+      "author": "Meshy community (author not recorded; CC0 per the owner)",
+      "community": { "model": "The Hollow Visitor" },
+      "rig": "owner",
+      "date": "2026-11-02",
+      "url": null,
+      "file": "^Meshy_AI_The_Hollow_Visitor_All_Animations(-\\d+)?\\.glb$"
+    },
+    "undead": {
+      "license": "CC0",
+      "author": "Meshy community (author not recorded; CC0 per the owner)",
+      "community": { "model": "Fearsome Undead" },
+      "rig": "owner",
+      "date": "2026-11-02",
+      "url": null,
+      "file": "^Meshy_AI_Fearsome_Undead_All_Animations(-\\d+)?\\.glb$"
+    }
+  },
+  "clips": {
+    "clip_walk": { "from": "wwii", "clip": "Walking" },
+    "clip_run": { "from": "visitor", "clip": "Running" },
+    "clip_shoot_fwd": { "from": "biker", "clip": "Walk_Forward_While_Shooting" },
+    "clip_shoot_run": { "from": "visitor", "clip": "Run_and_Shoot" },
+    "clip_shoot_back": { "from": "biker", "clip": "Walk_Backward_While_Shooting_inplace" }
+  }
+}

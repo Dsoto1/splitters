@@ -17,6 +17,9 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const MANIFEST_DIR = join(ROOT, 'content/characters');
 export const LOOKS_FILE = join(ROOT, 'packages/shared/src/content/characters.generated.ts');
 export const QUEUE_FILE = join(ROOT, 'content/intake/meshy-queue.json');
+/** Shared clip sets (tools/content/clip-set.mjs --build): content/clip-sets/<id>.json, and what was built from them. */
+export const CLIP_SETS_DIR = join(ROOT, 'content/clip-sets');
+export const CLIP_SETS_LOCK = join(ROOT, 'content/clip-sets.lock.json');
 
 /** Meshy task kinds a manifest may name, and the API each one's result comes from (fetch-meshy.mjs). */
 export const MESHY_TASKS = {
@@ -37,7 +40,9 @@ const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tai
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The clips a clip set (`clipsFrom`, tools/content/clip-set.mjs) can hold, as the game asks for them (characterAnimator.ts). */
-export const CLIP_SET_CLIPS = ['clip_walk', 'clip_run', 'clip_shoot_fwd', 'clip_shoot_back'];
+export const CLIP_SET_CLIPS = ['clip_walk', 'clip_run', 'clip_shoot_fwd', 'clip_shoot_run', 'clip_shoot_back'];
+/** The clip set looks move with unless they name another or opt out: DEFAULT_CLIP_SET in packages/shared/src/content/looks.ts (a test keeps them equal). */
+export const DEFAULT_CLIP_SET = 'shooter';
 const LEAN_JOINTS = new Set(['Spine02', 'Spine01', 'Spine', 'neck', 'Head']);
 const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
@@ -106,7 +111,8 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     need(m.clipsFrom && typeof m.clipsFrom === 'object' && e.length > 0 && e.every(([k, v]) => CLIP_SET_CLIPS.includes(k) && typeof v === 'string' && v.length > 0), `clipsFrom: { "<clip>": "<the download's clip name>" } for clips ${CLIP_SET_CLIPS.join(', ')} (its download's authored clips, retargeted onto the rig as <id>_clips.glb)`);
     need(['clip_walk', 'clip_run'].every((k) => m.clipsFrom?.[k]), 'clipsFrom: clip_walk and clip_run at least (the legs the set walks and runs with)');
   }
-  need(m.clips === undefined || (typeof m.clips === 'string' && /^[a-z0-9_]+$/.test(m.clips)), 'clips: the id of the character manifest whose download\'s clip set (clipsFrom) this body moves with, or left out (the rig\'s gait)');
+  need(m.clips === undefined || m.clips === false || (typeof m.clips === 'string' && /^[a-z0-9_]+$/.test(m.clips)), `clips: the clip set this body moves with (a shared set in content/clip-sets, or a character manifest's own with clipsFrom), false (the rig's own gait), or left out (the default set, ${DEFAULT_CLIP_SET})`);
+  need((m.clips === false) === (typeof m.clipsWhy === 'string' && m.clipsWhy.length > 0), 'clipsWhy: why the body keeps the rig\'s own gait, with clips: false (and only then)');
   need((m.kind ?? 'character') === 'character', 'kind creature: creatures have their own rigs (prepare-creatures.mjs) and are not built here; keep it queued');
   need(typeof s.author === 'string' && s.author.length > 0, 'source.author');
   need(typeof s.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.date), 'source.date: YYYY-MM-DD');
@@ -176,7 +182,10 @@ export function readManifests({ ready = false } = {}) {
     list.push(m);
   }
   const built = list.filter((m) => !isQueued(m));
-  for (const m of built) if (m.clips && !built.some((o) => o.id === m.clips && o.clipsFrom)) problems.push(`${m.id}.json: clips ${m.clips} names no built character manifest with clipsFrom`);
+  const sets = new Set(readClipSets().map((c) => c.id));
+  if (!sets.has(DEFAULT_CLIP_SET)) problems.push(`content/clip-sets/${DEFAULT_CLIP_SET}.json: the default clip set (DEFAULT_CLIP_SET) is not defined`);
+  for (const m of built) if (m.clips && !sets.has(m.clips) && !built.some((o) => o.id === m.clips && o.clipsFrom)) problems.push(`${m.id}.json: clips ${m.clips} names no clip set in content/clip-sets and no built character manifest with clipsFrom`);
+  for (const m of built) if (m.clipsFrom && sets.has(m.id)) problems.push(`${m.id}.json: its clip set (clipsFrom) has the same id as content/clip-sets/${m.id}.json`);
   for (const key of ['look', 'name', 'order']) {
     const seen = new Map();
     for (const m of built) {
@@ -186,6 +195,51 @@ export function readManifests({ ready = false } = {}) {
   }
   if (problems.length) throw new Error(`character manifests:\n  ${problems.join('\n  ')}`);
   return (ready ? built : list).sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity) || a.id.localeCompare(b.id));
+}
+
+/** Problems with one shared clip set definition (content/clip-sets/<id>.json; empty when it is fine). */
+export function clipSetProblems(c, file = `${c?.id}.json`) {
+  const out = [];
+  const need = (ok, what) => {
+    if (!ok) out.push(`clip-sets/${file}: ${what}`);
+  };
+  need(typeof c.id === 'string' && /^[a-z0-9_]+$/.test(c.id) && `${c.id}.json` === file, 'id: lower case letters, digits and _, the file name');
+  const sources = c.sources && typeof c.sources === 'object' ? c.sources : {};
+  need(Object.keys(sources).length > 0, 'sources: { "<key>": { license, author, community.model, date, file, rig } } (the downloads the clips come from)');
+  for (const [k, s] of Object.entries(sources)) {
+    need(s.license === 'CC0' || s.license === 'owned', `sources.${k}.license: CC0 (a Meshy community model) or owned`);
+    need(typeof s.author === 'string' && s.author.length > 0, `sources.${k}.author`);
+    need(typeof s.community?.model === 'string' && s.community.model.length > 0, `sources.${k}.community.model: the model's name as on the download`);
+    need(typeof s.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.date), `sources.${k}.date: YYYY-MM-DD`);
+    need(s.rig === 'owner' || s.rig === 'meshy', `sources.${k}.rig: owner (rigged and animated on the owner's Meshy account) or meshy`);
+    let ok = typeof s.file === 'string';
+    try {
+      new RegExp(s.file);
+    } catch {
+      ok = false;
+    }
+    need(ok, `sources.${k}.file: a regular expression for the download's file name`);
+  }
+  const clips = c.clips && typeof c.clips === 'object' ? c.clips : {};
+  for (const [as, v] of Object.entries(clips)) {
+    need(CLIP_SET_CLIPS.includes(as), `clips.${as}: not a clip set clip (${CLIP_SET_CLIPS.join(', ')})`);
+    need(v && v.from in sources && typeof v.clip === 'string' && v.clip.length > 0, `clips.${as}: { from: "<a source key>", clip: "<the download's clip name>" }`);
+  }
+  need(['clip_walk', 'clip_run'].every((k) => clips[k]), 'clips: clip_walk and clip_run at least (the legs the set walks and runs with)');
+  return out;
+}
+
+/** Every shared clip set definition (content/clip-sets/*.json), validated. */
+export function readClipSets() {
+  const files = existsSync(CLIP_SETS_DIR) ? readdirSync(CLIP_SETS_DIR).filter((f) => f.endsWith('.json')) : [];
+  const problems = [];
+  const list = files.map((file) => {
+    const c = JSON.parse(readFileSync(join(CLIP_SETS_DIR, file), 'utf8'));
+    problems.push(...clipSetProblems(c, file));
+    return c;
+  });
+  if (problems.length) throw new Error(`clip sets:\n  ${problems.join('\n  ')}`);
+  return list.sort((a, b) => a.id.localeCompare(b.id));
 }
 
 /** The provenance pack a character's files are recorded under. */
@@ -247,7 +301,7 @@ function lookLine(m) {
   const hold = m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '';
   const body = (fp.body === false ? ', body: false' : '') + hold;
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
-  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : [])];
+  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : [])];
   return `  { ${parts.join(', ')} },`;
 }
 

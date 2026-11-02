@@ -1,23 +1,32 @@
-// A clip set: clips from a rigged Meshy "All Animations" download (Mixamo joint names), retargeted onto the game's
+// A clip set: clips from rigged Meshy "All Animations" downloads (Mixamo joint names), retargeted onto the game's
 // rig (retarget.mjs) and written as one small GLB of the rig's joints and those clips
-// (packages/client/public/characters/<id>_clips.glb). Any character built on the rig plays them: a look names the
-// set with `clips` in its manifest (docs/CHARACTERS.md). prepare-meshy-characters.mjs writes the set of a manifest
-// with `clipsFrom` when it builds that character; run alone it only reports what a download's clips would give:
+// (packages/client/public/characters/<id>_clips.glb). Every character built on the rig plays them: looks move with
+// the default set (DEFAULT_CLIP_SET in packages/shared/src/content/looks.ts) unless their manifest names another
+// (`clips`) or opts out (`clips: false`); docs/CHARACTERS.md. Two kinds of set:
+//   - a shared set, content/clip-sets/<id>.json: each clip taken from whichever download does it best (`sources`
+//     record each download's model and licence, `clips` which clip comes from which). Built here:
+//       node tools/content/clip-set.mjs --build <downloads dir> [<id> ...]
+//     (writes the set and its entry in content/clip-sets.lock.json; pnpm content:build then records its provenance);
+//   - one character's own (`clipsFrom` in its manifest), built with it by prepare-meshy-characters.mjs.
+// Run on one download it only reports what its clips would give (speeds, directions):
 //
 //   node tools/content/clip-set.mjs <download.glb> [out.glb] [as=Source_Clip ...]
 //
 // The clips' natural ground speeds (m/s at the rig's size, from the planted foot) and directions go in the top
 // node's extras ({ clips: { <as>: { speed, dir: [x, z], seconds, from } } }): the game plays each at the rate that
 // keeps the feet still.
-import { writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { RIG_FROM_MESHY, meshyName, retargetClip } from './retarget.mjs';
+import { CLIP_SETS_LOCK, readClipSets } from './character-manifests.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const RIG = join(ROOT, 'packages/client/public/characters/rig.glb');
+const OUT = join(ROOT, 'packages/client/public/characters');
+const RIG = join(OUT, 'rig.glb');
 /** Frames a second the clips are sampled at (the downloads' own rate). */
 const FPS = 30;
 
@@ -62,13 +71,18 @@ function tracksOf(anim) {
 }
 
 /**
- * Retarget `clips` ({ as: source clip name }) from a source document onto the rig; returns the clip set's
- * document and each clip's measurements.
+ * Retarget `clips` onto the rig: { as: source clip name } from `srcDoc`, or { as: { doc, clip, src } } each from its
+ * own download (`src`: which one, recorded with the clip's measurements). Returns the clip set's document and each
+ * clip's measurements.
  */
 export async function clipSet(srcDoc, clips, rigDoc) {
   const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
   rigDoc ??= await io.read(RIG);
-  const src = skeletonOf(srcDoc, meshyName);
+  const skeletons = new Map();
+  const skeleton = (doc) => {
+    if (!skeletons.has(doc)) skeletons.set(doc, skeletonOf(doc, meshyName));
+    return skeletons.get(doc);
+  };
   const rig = skeletonOf(rigDoc, (n) => n);
   const out = new Document();
   const buffer = out.createBuffer();
@@ -85,9 +99,11 @@ export async function clipSet(srcDoc, clips, rigDoc) {
     else scene.addChild(node);
   });
   const report = {};
-  for (const [as, from] of Object.entries(clips)) {
-    const anim = srcDoc.getRoot().listAnimations().find((a) => a.getName() === from);
-    if (!anim) throw new Error(`no clip ${from} (has ${srcDoc.getRoot().listAnimations().map((a) => a.getName()).join(', ')})`);
+  for (const [as, what] of Object.entries(clips)) {
+    const { doc, clip: from, src: source } = typeof what === 'string' ? { doc: srcDoc, clip: what } : what;
+    const anim = doc.getRoot().listAnimations().find((a) => a.getName() === from);
+    if (!anim) throw new Error(`no clip ${from}${source ? ` in ${source}` : ''} (has ${doc.getRoot().listAnimations().map((a) => a.getName()).join(', ')})`);
+    const src = skeleton(doc);
     const { tracks, end } = tracksOf(anim);
     const count = Math.max(2, Math.round(end * FPS) + 1);
     const times = Array.from({ length: count }, (_, i) => (i * end) / (count - 1));
@@ -114,7 +130,7 @@ export async function clipSet(srcDoc, clips, rigDoc) {
       channel(node, 'rotation', 'VEC4', values);
     }
     channel(nodes.get('pelvis'), 'translation', 'VEC3', r.pelvis.flat());
-    report[as] = { from, seconds: +end.toFixed(3), speed: +r.speed.toFixed(3), dir: r.dir.map((x) => +x.toFixed(3)), footDown: +r.footDown.toFixed(3) };
+    report[as] = { from, ...(source ? { src: source } : {}), seconds: +end.toFixed(3), speed: +r.speed.toFixed(3), dir: r.dir.map((x) => +x.toFixed(3)), footDown: +r.footDown.toFixed(3) };
   }
   scene.listChildren()[0].setExtras({ clips: report });
   return { doc: out, report };
@@ -128,7 +144,69 @@ export async function writeClipSet(doc, path) {
   return glb;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+/**
+ * Build the shared clip sets (content/clip-sets/<id>.json; `only`: just these ids) from the downloads in `dir`:
+ * each set's file in packages/client/public/characters and its entry in content/clip-sets.lock.json (the others
+ * kept as they were).
+ */
+export async function buildClipSets(dir, only) {
+  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+  const rigDoc = await io.read(RIG);
+  const sets = readClipSets();
+  for (const id of only ?? []) if (!sets.some((s) => s.id === id)) throw new Error(`no clip set content/clip-sets/${id}.json`);
+  const old = existsSync(CLIP_SETS_LOCK) ? JSON.parse(readFileSync(CLIP_SETS_LOCK, 'utf8')) : { files: [] };
+  const lock = { $comment: 'Generated by tools/content/clip-set.mjs --build. Do not edit by hand.', files: [] };
+  const files = readdirSync(dir);
+  for (const set of sets) {
+    if (only && !only.includes(set.id)) {
+      lock.files.push(...old.files.filter((f) => f.id === `${set.id}_clips`));
+      continue;
+    }
+    // Each download the set takes a clip from, read once.
+    const docs = new Map();
+    const docOf = async (key) => {
+      if (!docs.has(key)) {
+        const s = set.sources[key];
+        const re = new RegExp(s.file);
+        const file = files.filter((f) => re.test(f)).sort().pop();
+        if (!file) throw new Error(`${set.id}: no download for ${key} (${s.file}) in ${dir}`);
+        docs.set(key, { file, doc: await io.read(join(dir, file)) });
+      }
+      return docs.get(key);
+    };
+    const clips = {};
+    for (const [as, c] of Object.entries(set.clips)) clips[as] = { doc: (await docOf(c.from)).doc, clip: c.clip, src: set.sources[c.from].community.model };
+    const { doc, report } = await clipSet(null, clips, rigDoc);
+    const out = `${set.id}_clips.glb`;
+    const glb = await writeClipSet(doc, join(OUT, out));
+    for (const [as, r] of Object.entries(report)) console.log(`  ${as.padEnd(16)} ${r.src}, ${r.from}: ${r.seconds} s, ${r.speed} m/s`);
+    console.log(`${out.padEnd(28)} ${Object.keys(report).length} clips ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
+    const used = [...docs.keys()];
+    const dates = [...new Set(used.map((k) => set.sources[k].date))].sort();
+    lock.files.push({
+      role: 'meshy-clips',
+      id: `${set.id}_clips`,
+      source: 'meshy-community-characters',
+      model: used.map((k) => set.sources[k].community.model).join(', '),
+      date: dates[dates.length - 1],
+      src: used.map((k) => docs.get(k).file).join(', '),
+      ...(used.every((k) => set.sources[k].rig === 'owner') ? { rig: 'owner' } : {}),
+      file: `characters/${out}`,
+      sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16),
+      triangles: 0,
+      bytes: glb.byteLength,
+      clips: report,
+    });
+  }
+  writeFileSync(CLIP_SETS_LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+  console.log(`wrote ${lock.files.length} clip sets and ${basename(CLIP_SETS_LOCK)}`);
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url) && process.argv[2] === '--build') {
+  const [dir, ...ids] = process.argv.slice(3);
+  if (!dir) throw new Error('usage: clip-set.mjs --build <downloads dir> [<set id> ...]');
+  await buildClipSets(dir, ids.length ? ids : undefined);
+} else if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [file, outPath, ...pairs] = process.argv.slice(2);
   if (!file) throw new Error('usage: clip-set.mjs <download.glb> [out.glb] [as=Source_Clip ...]');
   const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);

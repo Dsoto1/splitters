@@ -172,13 +172,13 @@ describe('retargetClip', () => {
   });
 });
 
-describe('the WWII Infantry clip set', () => {
-  const file = join(ROOT, 'packages/client/public/characters/meshy_wwiisoldier_clips.glb');
-  it.skipIf(!existsSync(file))('holds the clips its manifest names, on the rig\'s joints, with their measured loops', async () => {
+describe('the shared clip set', () => {
+  const file = join(ROOT, 'packages/client/public/characters/shooter_clips.glb');
+  it.skipIf(!existsSync(file))('holds the clips its definition names, on the rig\'s joints, with their measured loops', async () => {
     const doc = await new NodeIO().read(file);
-    const manifest = JSON.parse(readFileSync(join(ROOT, 'content/characters/meshy_wwiisoldier.json'), 'utf8'));
+    const def = JSON.parse(readFileSync(join(ROOT, 'content/clip-sets/shooter.json'), 'utf8'));
     const names = doc.getRoot().listAnimations().map((a) => a.getName());
-    expect(names.sort()).toEqual(Object.keys(manifest.clipsFrom).sort());
+    expect(names.sort()).toEqual(Object.keys(def.clips).sort());
     for (const n of names) expect(CLIP_SET_CLIPS).toContain(n);
     const top = doc.getRoot().listScenes()[0].listChildren()[0];
     const loops = top.getExtras().clips;
@@ -190,9 +190,13 @@ describe('the WWII Infantry clip set', () => {
       const l = loops[a.getName()];
       expect(l.speed).toBeGreaterThan(0.1);
       expect(l.seconds).toBeGreaterThan(0.3);
+      // Each clip records the download it came from, as its definition says.
+      expect(l.src).toBe(def.sources[def.clips[a.getName()].from].community.model);
+      expect(l.from).toBe(def.clips[a.getName()].clip);
     }
-    // Walking forward and back: which way each goes, and the run is the fastest.
+    // Walking forward and back: which way each goes, and the run is the fastest; the running shot runs forward.
     expect(loops.clip_run.dir[1]).toBeGreaterThan(0.95);
+    expect(loops.clip_shoot_run.dir[1]).toBeGreaterThan(0.95);
     expect(loops.clip_shoot_back.dir[1]).toBeLessThan(-0.95);
     expect(loops.clip_run.speed).toBeGreaterThan(loops.clip_walk.speed);
   });

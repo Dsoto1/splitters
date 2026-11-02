@@ -11,7 +11,7 @@ import type { ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
 import { gripReport, skinHandFrame } from './handProbe.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
-import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
+import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
 
 /** What the animator needs to know each frame (from interpolated snapshots). */
 export interface MotionState {
@@ -186,6 +186,9 @@ interface ClipGait {
   /** The forward shooting walk, on the upper body (a masked copy). */
   fwd: { g: AnimationGroup; loop: ClipLoop } | null;
   fwdUpper: AnimationGroup | null;
+  /** Running while shooting, on the upper body (a masked copy): takes over from the shooting walk as the legs run. */
+  runShoot: { g: AnimationGroup; loop: ClipLoop } | null;
+  runUpper: AnimationGroup | null;
   /** The backward shooting walk, on the whole body. */
   back: { g: AnimationGroup; loop: ClipLoop } | null;
   /** The backward clip's middle pose of each thigh and knee (stride warping). */
@@ -652,7 +655,7 @@ export class CharacterAnimator {
   /** Share of the upper body the clip set's shooting clips hold now (the aim pose takes the rest). */
   private clipUpper = 0;
   /** The clip set's blend now: each loop's share, eased (a turn from forward to backward crossfades). */
-  private readonly clipMix = { walk: 0, run: 0, fwd: 0, back: 0 };
+  private readonly clipMix = { walk: 0, run: 0, fwd: 0, shootRun: 0, back: 0 };
   /** Stride warping on the backward clip now (gait.ts strideWarp; 1: none). */
   private strideGain = 1;
 
@@ -666,6 +669,9 @@ export class CharacterAnimator {
     const fwd = this.ch.clips.get('clip_shoot_fwd');
     const fwdUpper = fwd && loops.clip_shoot_fwd ? fwd.clone(`${fwd.name}_upper`) : null;
     if (fwdUpper) fwdUpper.mask = this.mask;
+    const shootRun = this.ch.clips.get('clip_shoot_run');
+    const runUpper = shootRun && loops.clip_shoot_run ? shootRun.clone(`${shootRun.name}_upper`) : null;
+    if (runUpper) runUpper.mask = this.mask;
     const back = this.ch.clips.get('clip_shoot_back');
     // The backward clip's middle leg pose (its keys averaged), which stride warping swings the legs further about.
     const neutral = new Map<TransformNode, Quaternion>();
@@ -688,6 +694,8 @@ export class CharacterAnimator {
       run: { g: run, loop: loops.clip_run },
       fwd: fwdUpper && loops.clip_shoot_fwd ? { g: fwdUpper, loop: loops.clip_shoot_fwd } : null,
       fwdUpper,
+      runShoot: runUpper && loops.clip_shoot_run ? { g: runUpper, loop: loops.clip_shoot_run } : null,
+      runUpper,
       back: back && loops.clip_shoot_back ? { g: back, loop: loops.clip_shoot_back } : null,
       neutral,
     };
@@ -696,21 +704,23 @@ export class CharacterAnimator {
   /**
    * The clip set's gait (weight 0: fade it out). Forward and strafing (the hips turned toward the motion as with the
    * rig's gait), the walk and run legs blend by speed at the one cycle rate that keeps the planted foot still, with the
-   * forward shooting walk on the upper body in step; backing up, the backward shooting walk plays on the whole body,
+   * shooting walk and the running shot on the upper body in step (each with its legs' share, clipUpperWeights); backing up, the backward shooting walk plays on the whole body,
    * its stride warped once it would have to step faster than STRIDE_MAX_RATE times its own pace.
    */
   private driveClipGait(weight: number, speed: number, back: boolean, dt: number): void {
     const cs = this.clipGait;
     if (!cs) return;
     const scale = Math.abs(this.ch.root.scaling.y) || 1;
-    const want = { walk: 0, run: 0, fwd: 0, back: 0 };
+    const want = { walk: 0, run: 0, fwd: 0, shootRun: 0, back: 0 };
     if (weight > 0.001) {
       if (back && cs.back) want.back = 1;
       else {
         const m = clipGaitWeights(speed, cs.walk.loop.speed * scale, cs.run.loop.speed * scale);
         want.walk = m.walk;
         want.run = m.run;
-        want.fwd = cs.fwd ? 1 : 0;
+        const up = clipUpperWeights(m, { fwd: !!cs.fwd, run: !!cs.runShoot });
+        want.fwd = up.fwd;
+        want.shootRun = up.run;
       }
     }
     const mix = this.clipMix;
@@ -721,14 +731,19 @@ export class CharacterAnimator {
     const split = want.walk + want.run > 0 ? want.run : mix.walk + mix.run > 0 ? mix.run / (mix.walk + mix.run) : 0;
     mix.walk = total * (1 - split);
     mix.run = total * split;
-    mix.fwd = toward(mix.fwd, want.fwd);
+    // The upper body likewise: its walk/run split with the legs', a change of direction crossfading.
+    const upper = toward(mix.fwd + mix.shootRun, want.fwd + want.shootRun);
+    const upSplit = want.fwd + want.shootRun > 0 ? want.shootRun / (want.fwd + want.shootRun) : mix.fwd + mix.shootRun > 0 ? mix.shootRun / (mix.fwd + mix.shootRun) : 0;
+    mix.fwd = upper * (1 - upSplit);
+    mix.shootRun = upper * upSplit;
     mix.back = toward(mix.back, want.back);
-    // Forward: one cycle rate for the walk, the run and the shooting upper body, phase-locked on the left foot.
+    // Forward: one cycle rate for the walk, the run and the shooting upper bodies, phase-locked on the left foot.
     const rate = clipCycleRate(speed, [{ loop: cs.walk.loop, weight: mix.walk }, { loop: cs.run.loop, weight: mix.run }], scale);
     const fwdLoops: { g: AnimationGroup; loop: ClipLoop; w: number }[] = [
       { ...cs.walk, w: weight * mix.walk },
       { ...cs.run, w: weight * mix.run },
       ...(cs.fwd ? [{ ...cs.fwd, w: weight * mix.fwd }] : []),
+      ...(cs.runShoot ? [{ ...cs.runShoot, w: weight * mix.shootRun }] : []),
     ];
     let lead: { loop: ClipLoop; phase: number; w: number } | null = null;
     for (const l of fwdLoops) {
@@ -771,13 +786,14 @@ export class CharacterAnimator {
         this.strideGain = 1 + (warp.gain - 1) * Math.min(1, w);
       }
     }
-    this.clipUpper = weight * Math.min(1, mix.fwd * (cs.fwd ? 1 : 0) + (cs.back ? mix.back : 0));
+    this.clipUpper = weight * Math.min(1, (cs.fwd ? mix.fwd : 0) + (cs.runShoot ? mix.shootRun : 0) + (cs.back ? mix.back : 0));
   }
 
   /** Down (death, ragdoll): the clip set's loops stop and its blend starts afresh. */
   private stopClipGait(): void {
     this.clipGait?.fwdUpper?.stop();
-    Object.assign(this.clipMix, { walk: 0, run: 0, fwd: 0, back: 0 });
+    this.clipGait?.runUpper?.stop();
+    Object.assign(this.clipMix, { walk: 0, run: 0, fwd: 0, shootRun: 0, back: 0 });
     this.clipUpper = 0;
     this.strideGain = 1;
   }
@@ -848,6 +864,7 @@ export class CharacterAnimator {
     const all = new Set(this.ch.clips.values());
     if (this.aimUpper) all.add(this.aimUpper);
     if (this.clipGait?.fwdUpper) all.add(this.clipGait.fwdUpper);
+    if (this.clipGait?.runUpper) all.add(this.clipGait.runUpper);
     return all;
   }
 
@@ -1493,6 +1510,7 @@ export class CharacterAnimator {
     this.scene.onAfterAnimationsObservable.remove(this.observer);
     this.aimUpper?.dispose();
     this.clipGait?.fwdUpper?.dispose();
+    this.clipGait?.runUpper?.dispose();
     this.weapon?.dispose();
     this.ch.dispose();
   }

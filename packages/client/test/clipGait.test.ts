@@ -3,7 +3,7 @@ import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { STRIDE_MAX_GAIN, STRIDE_MAX_RATE, clipCycleRate, clipGaitWeights, matchClipPhase, strideWarp, type ClipLoop } from '../src/game/gait.ts';
+import { STRIDE_MAX_GAIN, STRIDE_MAX_RATE, clipCycleRate, clipGaitWeights, clipUpperWeights, matchClipPhase, strideWarp, type ClipLoop } from '../src/game/gait.ts';
 import { scaleTurn, worldTurn } from '../src/game/characterAnimator.ts';
 
 const engines: NullEngine[] = [];
@@ -11,10 +11,24 @@ afterEach(() => {
   for (const e of engines.splice(0)) e.dispose();
 });
 
-// The WWII Infantry clip set's loops as measured (content/meshy.lock.json): walk, run, backward shooting walk.
+// Clip loops as measured (the WWII Infantry download's walk and run, content/clip-sets.lock.json's backward shooting walk).
 const WALK: ClipLoop = { speed: 1.532, seconds: 1.033, footDown: 0.194 };
 const RUN: ClipLoop = { speed: 5.019, seconds: 0.633, footDown: 0.211 };
 const BACK: ClipLoop = { speed: 0.847, seconds: 1.267, footDown: 0.526 };
+
+describe('clip gait: the upper body going forward', () => {
+  it('the shooting walk with the walk\'s share, the running shot with the run\'s; a set with one gives it all', () => {
+    const legs = clipGaitWeights(3, WALK.speed, RUN.speed);
+    const both = clipUpperWeights(legs, { fwd: true, run: true });
+    expect(both).toEqual({ fwd: legs.walk, run: legs.run });
+    // At the game's speeds (3.9 aiming, 5.2 otherwise) the running shot holds nearly all of it.
+    expect(clipUpperWeights(clipGaitWeights(3.9, WALK.speed, RUN.speed), { fwd: true, run: true }).run).toBeGreaterThan(0.9);
+    expect(clipUpperWeights(clipGaitWeights(5.2, WALK.speed, RUN.speed), { fwd: true, run: true })).toEqual({ fwd: 0, run: 1 });
+    expect(clipUpperWeights(legs, { fwd: true, run: false })).toEqual({ fwd: 1, run: 0 });
+    expect(clipUpperWeights(legs, { fwd: false, run: true })).toEqual({ fwd: 0, run: 1 });
+    expect(clipUpperWeights(legs, { fwd: false, run: false })).toEqual({ fwd: 0, run: 0 });
+  });
+});
 
 describe('clip gait: speed blend', () => {
   it('walks at the walk\'s own speed and below, runs from most of the run\'s, blends between', () => {
