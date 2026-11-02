@@ -3558,6 +3558,39 @@ async function charactersFlow(browser) {
     }
   }
   check(bodyMisses.length === 0, `full-body first person: palms on the gun's grip and handguard (${bodyMisses.join('; ') || 'all within 2 cm'})`);
+  // Third person, strafing and backing up while firing: the hips turn toward the motion and the shoulders stay square
+  // to the aim (they used to wind about 140 degrees off it), the hands on the gun. A modular character on the rig's gait
+  // and WWII Infantry on his authored clip set (its walk/run, shooting walk and backward shooting walk playing).
+  const strafes = [];
+  for (const look of ['core.ranger', 'core.wwiisoldier']) {
+    await page.evaluate((l) => window.__grips.pose(l, 'core.rifle', 'third'), look);
+    const shoulderYaw = () =>
+      page.evaluate(() => {
+        const j = window.__grips.joints();
+        const d = [j.upperarm_r[0] - j.upperarm_l[0], j.upperarm_r[2] - j.upperarm_l[2]];
+        const h = [j.thigh_r[0] - j.thigh_l[0], j.thigh_r[2] - j.thigh_l[2]];
+        return { shoulders: Math.atan2(d[0], d[1]), hips: Math.atan2(h[0], h[1]) };
+      });
+    await page.evaluate(() => window.__grips.drive({ speed: 5.2, moveAngle: 0, pitch: 0 }, 8, 40));
+    const ahead = await shoulderYaw();
+    const clips = await page.evaluate(() => {
+      const c = window.__grips.anim().ch.clips;
+      return { set: c.has('clip_run'), run: !!c.get('clip_run')?.isPlaying, rigRun: !!c.get('run')?.isPlaying };
+    });
+    for (const [label, moveAngle, speed] of [['right', Math.PI / 2, 5.2], ['left', -Math.PI / 2, 5.2], ['back', Math.PI, 3.9]]) {
+      await page.evaluate(([a, v]) => window.__grips.drive({ speed: v, moveAngle: a, pitch: 0 }, 8, 40), [moveAngle, speed]);
+      const y = await shoulderYaw();
+      const off = Math.abs(Math.atan2(Math.sin(y.shoulders - ahead.shoulders), Math.cos(y.shoulders - ahead.shoulders)));
+      const hipTurn = Math.abs(Math.atan2(Math.sin(y.hips - ahead.hips), Math.cos(y.hips - ahead.hips)));
+      const grip = await page.evaluate(() => window.__grips.drawn());
+      const back = await page.evaluate(() => !!window.__grips.anim().ch.clips.get('clip_shoot_back')?.isPlaying);
+      const ok = off < 0.2 && (label === 'back' || hipTurn > 0.8) && !!grip && grip.r !== null && grip.r < 0.12 && (look !== 'core.wwiisoldier' || label !== 'back' || back);
+      if (!ok) strafes.push(`${look} ${label}: shoulders ${((off * 180) / Math.PI).toFixed(0)} deg off the aim, hips turned ${((hipTurn * 180) / Math.PI).toFixed(0)}, right hand ${grip?.r == null ? '-' : (grip.r * 100).toFixed(0)} cm${look === 'core.wwiisoldier' && label === 'back' ? `, backward clip ${back}` : ''}`);
+    }
+    await page.evaluate(() => window.__grips.drive({ speed: 0 }, 0, 2));
+    if (look === 'core.wwiisoldier' ? !(clips.set && clips.run && !clips.rigRun) : clips.set || !clips.rigRun) strafes.push(`${look} runs on ${JSON.stringify(clips)}`);
+  }
+  check(strafes.length === 0, `third person, strafing and backing up while firing: shoulders square to the aim, hips toward the motion, hands on the gun; WWII Infantry on his own clips (${strafes.join('; ') || 'all'})`);
   // The palm checks above measure the joints. Where the hands are DRAWN (each hand's skin through its skeleton,
   // handProbe.ts): on the grip, the shooting hand's fingers along the barrel and its flat against the grip's side.
   // A Meshy hand sits on its joint its own way: the dapper's palm faced the camera and its edge the grip in every

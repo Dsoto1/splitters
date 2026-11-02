@@ -31,6 +31,55 @@ Contact sheets (before/after, scratchpad of the session): `ragdoll-fix/sheet-bef
 Open: the cheap tier (far, in view) still hangs the limbs in the death clip's last frame relative to a tumbling
 torso; no self-collision between a body's own limbs (an arm can rest inside the torso).
 
+### Third-person shooting while moving + clip retargeting (`wip/anim-retarget`, agent, 2026-11-02; not merged; from main 8bc4001)
+Owner: "shooting while moving looks wrong", specifically strafing while shooting and aiming (ADS) in third person and
+shooting; and "extract this [WWII Infantry walk-and-shoot] animation and reuse it with all the t-posers. just ww2
+infantry for now to test". Brief: lead scratchpad `anim-retarget-brief.md`.
+- **Strafe bug (every character, bots and remote players too):** the after-clip turns read the world's up axis through
+  a rotation-only inverse of a mirrored joint frame (`getRotationMatrix` of the glTF import's z-flipped skeleton). That
+  happened to be right for the hips (the root joint's frame) and the spine's pitch, and backwards for the spine's
+  twist, so the spine's counter-turn went the same way as the hips: strafing at full speed put the chest ~140° off the
+  aim (measured shoulder line: fwd 120°, strafe right -100°, left -27°), the arms IK-wrapped round to a gun still
+  pointing ahead. Firing never froze the legs (shoot is masked to the upper body). Fix: `worldTurn(parent, axis,
+  angle)` (characterAnimator.ts) through the parent's full inverse with the mirror's sign; hips, spine pitch/twist,
+  flinch, kick and seated legs use it (callers' signs put in the one world convention: + about up turns +Z toward +X,
+  + about right tips the top forward). Now the shoulder line stays at 122-124° for still/forward/strafes/back. The FP
+  clavicle roll self-corrected already (unchanged result). Seated legs measured the same (knee/foot within cm).
+- **ADS in third person:** your rounds go from the eye to the crosshair point (thirdPersonAim, 0.6.1), the gun pointed
+  along the view beside it; zoom magnified the miss. Now session.ts sets your own pose's pitch and `aimYaw` from
+  `thirdPersonAim` (world raycast only) and the animator turns the gun (aim quaternion) and shoulders onto it
+  (`MotionState.aimYaw`, eased 18/s). Remote players/bots unchanged (they aim along their view).
+- **Clip retargeting** (`tools/content/retarget.mjs` math, `tools/content/clip-set.mjs` GLB + CLI): rig(t) = src(t) ·
+  srcRest⁻¹ · repose⁻¹ · rigRest per joint (repose = the pipeline's own A→T bone turns, feet included), local under the
+  rig parent; hips: straight-line travel stripped, bob/sway scaled by leg length; natural speed + direction from the
+  planted foot, left touchdown phase; stored in the set's top node extras. Validated: the same Meshy clip from four
+  different downloads (WWII, Biker Gang Girl, Hollow Visitor, Fearsome Undead) gives world bone directions within
+  0-8° on the rig (locals differ by bone roll only); the root-motion and in-place backward clips measure the same
+  speed (0.85 m/s).
+- **WWII Infantry rebuilt** from `Meshy_AI_WWII_Infantry_Soldier_All_Animations-3.glb` (gdown into
+  `/home/user/meshy-drive/drive-2026-11-02-anim/`, linked in `/home/user/meshy-drive/build-anim/`): the body and arms
+  came out byte-identical (same model; only clips added). Manifest: `clipsFrom` (Walking, Running,
+  Walk_Forward_While_Shooting, Walk_Backward_While_Shooting_inplace) → `characters/meshy_wwiisoldier_clips.glb` (90 KB,
+  lock role `meshy-clips`), `clips: meshy_wwiisoldier` on the look (`look.clips`). Rebuild:
+  `ONLY=meshy_wwiisoldier node tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/build-anim`.
+- **In game** (`CharacterAnimator.driveClipGait`, armed + upright gait only; everyone else on the rig's gait): forward
+  and strafes: the set's walk/run on the legs blended by speed (gait.ts `clipGaitWeights`, `clipCycleRate`, phase-locked
+  on the left foot), the forward shooting walk on the upper body (a masked copy; aim pose takes the rest); backing up:
+  the backward shooting walk on the whole body with **stride warping** past 2× its cadence (`strideWarp`, thighs/knees
+  scaled about the clip's mean pose, up to 2.2×). Crouch/prone/jumps/seats/first person unchanged. **Finding:** the
+  download's shooting walks are slow combat steps (fwd 0.30 m/s over a 3.27 s loop, back 0.85 m/s) against the game's
+  3.9 (ADS) - 5.2 m/s, so they can't drive the legs at game pace as authored; Walking (1.53) and Running (5.02 m/s)
+  can. `Run_and_Shoot` (2.0 m/s, 0.67 s), in the three other downloads but not WWII's, is the best fit if the owner
+  wants a running-while-shooting body.
+- **Other downloads (not built):** Biker Gang Girl (66 joints, Mixamo; Running, Walking, Run_and_Shoot, Side_Shot 4 s
+  standing, Walk_Backward_While_Shooting(+_inplace), Walk_Forward_While_Shooting), The Hollow Visitor (32 joints:
+  Mixamo body, fingers as Bone_0xx; same seven clips), Fearsome Undead (66 joints; the same minus
+  Walk_Forward_While_Shooting). All three have every joint the retarget needs and work as clip sources
+  (`node tools/content/clip-set.mjs <glb>` lists them). Their licence must be recorded before a set is built from them.
+- Checks: see the CHANGELOG/commit; tests `tools/content/test/retarget.test.mjs`, `packages/client/test/clipGait.test.ts`;
+  e2e characters flow has a third-person strafing/backing check (shoulders square, hips turned, hand on gun, WWII on
+  its clips). Harness: `__grips.drive(motion, shotsPerSecond, frames)` in `?mode=grips`. Evidence sheets: agent
+  scratchpad `anim/` (frames/, `before-*` vs `after-*`).
 ### Seetah J. Chloth (`wip/seetah`, agent, 2026-11-01; not merged; from main c6751d5)
 - `core.seetah` (`meshy_seetah`, order 96, Animals, `nameTheme: cat`): the owner's cheetah/sloth hybrid (owned, Meshy), from the
   rigged Drive download "Meshy_AI_rigged_cheetah_sloth_All_Animations.glb" (gdown into `/home/user/meshy-drive/drive-2026-11-01-seetah/`,

@@ -171,7 +171,17 @@ Mixing rules (`lookProblems`; the designer shows them and won't save until they'
   legs) turn toward the direction of travel, up to 77°, and the spine turns
   back by as much, keeping the shoulders and the gun on the aim. Moving more
   than 108° from facing (staying until under 94°) turns the hips toward the
-  opposite of the motion and plays the gait backwards.
+  opposite of the motion and plays the gait backwards. Every turn after the
+  clips is about a world axis (`worldTurn`): the glTF import mirrors the
+  skeleton, and reading the up axis through a rotation-only inverse wound the
+  spine the same way as the hips, so until 2026-11-02 a strafe turned the chest
+  about 140° off the aim (the arms wrapped round to a gun still pointing ahead).
+- **Third person, your own body:** the gun points at what the crosshair is on
+  (`MotionState.aimYaw` and the aim's pitch from `thirdPersonAim`, where the
+  host sends the rounds), not along the view beside it; the shoulders turn
+  with it. Remote players and bots aim along their view.
+- **Authored clip sets (`clips`):** a look can move with clips authored on a
+  Meshy rig instead of the rig's gait while it holds a gun upright (below).
 - **Upper body:** holds the aim pose while moving, so the weapon stays up.
   One-shots (shooting, melee, reloads) play over it through an upper-body mask.
 - **After the clips:**
@@ -196,6 +206,53 @@ Universal Animation Library 2 (Standard, checked 2026-10-27) has no jog, run,
 sprint, strafe or locomotion transition clips (its 43 clips are carry, zombie,
 slide, ninja jump, sword, farming and idle variants), so locomotion stays on
 Library 1's walk, jog and sprint.
+
+### Authored clip sets (clip retargeting)
+
+A rigged Meshy "All Animations" download carries its own clips on Mixamo-named
+joints (Walking, Running, Walk_Forward_While_Shooting, ...).
+`tools/content/clip-set.mjs` retargets them onto the rig (`retarget.mjs`):
+
+- **Rest pose compensated per bone:** each rig joint takes its source joint's
+  world turn away from the source's rest pose, applied to the rig's T-pose
+  re-posed onto that rest pose the way `prepare-meshy-characters.mjs` re-poses
+  the mesh (arms, forearms, thighs, shins and feet turned onto the rig's
+  directions). On the character the clips came from, every vertex moves as in
+  the download; on any other character on the rig the pose reads the same.
+- **Root motion stripped:** the hips' straight-line travel from the first frame
+  to the last comes off (the game moves the body); their bob and sway stay,
+  scaled from the source's legs to the rig's.
+- **Measured:** each clip's natural ground speed (m/s at the rig's size) and
+  direction from its planted foot, and where its left foot goes down, are kept
+  in the file's top node extras; the game plays each at the rate that keeps the
+  feet still and joins loops in step.
+
+The set is one small file shared by every look that names it
+(`characters/<id>_clips.glb`, about 90 KB, loaded with the first such
+character, never with the menu's code). A manifest with `clipsFrom`
+(`{ "clip_walk": "Walking", "clip_run": "Running", "clip_shoot_fwd":
+"Walk_Forward_While_Shooting", "clip_shoot_back":
+"Walk_Backward_While_Shooting_inplace" }`) builds its set with the character
+(`prepare-meshy-characters.mjs`, lock role `meshy-clips`); a manifest with
+`"clips": "<that id>"` moves with it. `node tools/content/clip-set.mjs
+<download.glb>` lists what a download's clips would give (speeds, directions).
+
+In game (`CharacterAnimator`, armed, upright, on the ground): forward and
+strafing (hips turned toward the motion as with the rig's gait), the set's walk
+and run play on the legs, blended by speed between their own speeds at one
+cycle rate, and the forward shooting walk holds the upper body in step;
+backing up, the backward shooting walk plays on the whole body, and past twice
+its own cadence its stride lengthens (thighs and knees swing up to 2.2× as far
+about the clip's middle pose: `strideWarp`) rather than stepping faster. The
+arms still go to the gun by IK and the aim, recoil and grips are unchanged;
+crouch, prone, jumps, seats and first person are the rig's.
+
+The WWII Infantry download's shooting walks are slow combat steps (forward
+0.3 m/s, back 0.85 m/s, measured), far below the game's 3.9-5.2 m/s, which is
+why its legs come from its Walking (1.5 m/s) and Running (5.0 m/s) clips and the
+shooting walks hold the upper body (forward) or are stride-warped (back).
+Only `core.wwiisoldier` uses a set so far (`clips: meshy_wwiisoldier`), to
+compare with the rig's gait.
 
 ## Holding weapons
 
@@ -482,6 +539,8 @@ repo; they live in a downloads dir outside it.
 | `source.meshy` | The owner's own models only: Meshy task IDs (`preview`, `refine`, `image`, `multiImage`, `remesh`, `retexture`, `rig`), which `fetch-meshy.mjs` downloads by. |
 | `source.file` | A regular expression for the download's file name (a rigged `.glb`, or the textured `.fbx`), when it isn't saved as `<id>.glb`. |
 | `finish` | The one material's metallic and roughness (0–1). |
+| `clipsFrom` | A rigged download's own clips to retarget onto the rig as this character's clip set (`<id>_clips.glb`): `{ "<clip>": "<the download's clip name>" }` for `clip_walk`, `clip_run` (both needed), `clip_shoot_fwd`, `clip_shoot_back`. See "Authored clip sets". |
+| `clips` | The id of a manifest with `clipsFrom` whose clip set this look moves with while it holds a gun (itself or any other). Left out: the rig's gait. |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
 | `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel and square to it, in third person and Character Select; Bandit's broad build put the stock at his snout). |

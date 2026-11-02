@@ -14,6 +14,14 @@ made only on a commit that passed CI on a check branch.
 **New character**
 - **Seetah J. Chloth** (Animals): the owner's cheetah/sloth hybrid. Fastest cat alive, for about four seconds a day; bots wearing him take cat names.
 
+**Third person: shooting while moving**
+- **Strafing no longer twists the body off the gun.** Strafing turns the hips and legs toward where you go and the shoulders back onto the aim; the shoulders were turned the wrong way, so a strafe (or a bot dodging while it fires) wound the chest about 140° away from the gun while the arms wrapped round to it. Now the chest stays square to the aim whichever way you move, for every character, players, bots and remote players alike. The fix (turns about world axes through the mirrored skeleton) also puts the hit flinch, the kick and the seated legs the way they were meant to go.
+- **Aiming in third person: your gun points at what the crosshair is on.** Your rounds already went there (since 0.6.1), but the gun pointed along the view beside it, so aiming down the sights magnified the gap between the barrel and the target. Now the gun and shoulders turn onto the point the rounds go to. First person is unchanged.
+
+**WWII Infantry: authored clips**
+- Rebuilt from the owner's updated download (the same model, with clips of walking forward and back while shooting). **WWII Infantry now moves with his own animations**: his download's walk and run on the legs, his walking-while-shooting clip on the upper body, and his backward shooting walk when backing up. Everyone else keeps the generated animation, so the two can be compared.
+- New: **clip retargeting** (tools/content/clip-set.mjs). Clips made on a Meshy auto-rig are turned into clips on the game's own skeleton (rest pose compensated bone by bone, root motion stripped, scaled to the rig's legs, each clip's walking speed measured from its planted foot) and saved once as a small shared file, so any character on the rig can use them (`clips` in its manifest). The download's shooting walks are slow combat steps (0.3 and 0.85 m/s, against the game's 3.9-5.2 m/s): the backward one takes longer strides rather than stepping seven times a second.
+
 ## 0.6.1 (2026-11-01)
 
 **New characters (batch 3)**

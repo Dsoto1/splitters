@@ -5924,7 +5924,7 @@
       "triangles": 10373,
       "bytes": 1428508,
       "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): WWII Infantry Soldier (download dated 2026-11-01)",
+      "title": "Meshy community models (characters): WWII Infantry Soldier (download dated 2026-11-02)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
@@ -5944,7 +5944,7 @@
       "triangles": 939,
       "bytes": 481320,
       "source": "meshy-community-characters",
-      "title": "Meshy community models (characters): WWII Infantry Soldier (download dated 2026-11-01)",
+      "title": "Meshy community models (characters): WWII Infantry Soldier (download dated 2026-11-02)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
       "license": "CC0-1.0",
@@ -5954,6 +5954,21 @@
         "rebound to the rig's skeleton",
         "vertices quantized",
         "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_wwiisoldier_clips.glb",
+      "sha256": "1b241ebb8dfa28ed",
+      "triangles": 0,
+      "bytes": 92544,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): WWII Infantry Soldier (download dated 2026-11-02)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "clips retargeted onto the rig's skeleton (tools/content/clip-set.mjs: rest pose compensated, root motion stripped, hips scaled to the rig's legs)",
+        "no mesh"
       ]
     },
     {
