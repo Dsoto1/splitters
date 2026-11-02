@@ -57,6 +57,35 @@ don't push. docs/BOTS.md "Riding, and pushing with a leader" (causes, before/aft
 - Open: Iron Maw idle out of a fight is a couple of points higher on some seeds (bots in `mount` waiting by a
   vehicle); kills/min within noise. CTF unchanged (no squads in objective modes).
 
+### St. John's: Welles built to the top, banners as cloth (`wip/st-johns-2`, agent, 2026-11-02; not merged; from main e29a097)
+Owner's answers (2 Nov) to the two choices below: "build the walls", "sure, read as cloth". All MapMaker data, made by
+driving MapMaker with Playwright (Import → select → Ctrl+D / Shift+PgUp / arrow keys / R / inspector fields / toolbar
+Delete → Save; the saved file is MapMaker's own output). No code changes. Scratch driver, steps, probes and pictures:
+agent scratchpad `st-johns-2/` (`tools/maker2.mjs`, `tools/steps.mjs`, `before/`, `after/`).
+- **Welles (the east-west hall, local frame yaw 0.5°, lx 19.3-76.9, lz -90.6..-70.8)**: 3rd storey floor 8.04-8.34 m,
+  4th 12.04-12.34, roof 16.04-16.34 (the old 8 m roof `block_1426` moved up and run to the north wall), parapets
+  16.34-17.24 and battlements 17.24-17.94 (the old ones moved up 8 m; the six north battlements past x 29.5 deleted,
+  the north-south hall's wall carries its own). South, east, west and north-west walls (with their windows) and the
+  string courses are the 2nd storey's copied up one and two storeys (38 blocks each). Stairs: the hall's own flight
+  (16 steps) copied turned about beside the stairwell (2nd → 3rd, lx 23.5-26.1, rising south) and straight above the
+  first (3rd → 4th, rising north). Doorways (2 × 2.8 m, lx 47-49) through the north wall (`block_1072`, `block_1082`
+  split into left/right/lintel) onto the north-south hall's stair landings, with a stone threshold (its floors are
+  0.4 m higher; steps are max 0.3 m). Sills (1.1 m) in the two 9 m openings over the courtyard (`block_1073`, `1083`).
+  Inside: the 2nd storey's bunks, dressers and rug and the refectory's four long tables copied onto both floors
+  (30 props), 6 ceiling lights (3 a floor), rifle ammo (3rd) and health small (4th). `light_1459` moved 0.9 m east
+  (off the new stair hole). Totals: +121 blocks (2,480), +30 props (729, 59 models), +6 lights (72), +2 pickups.
+- **Chapel banners** `block_601`-`626`: Light Panel → Canvas, tints kept (Canvas's pale weave keeps the colours;
+  Carpet is dark red and would muddy them).
+- Owner (2 Nov, later): "yes add a weapon pickup up there": a **marksman rifle** (`pickup_dmxokrxrmg`, a MapMaker
+  copy of Hazelwood's `pickup_2873`) on the 4th storey at (60.4, 12.34, -74.1), by the wide window over the courtyard
+  and the doorway into the north-south hall. The map had one marksman (west side, upstairs in Hazelwood); this is the
+  east side's. Rifle ammo is on the 3rd storey.
+- Bots: navmesh routes from both teams' spawns to both new floors (by the stairs and through the doorways); bots sent
+  there (hold orders, no enemies) arrive in 45-70 s. Free TDM (24 bots, 600 s, seeds 1-3; bot-seconds on the floor,
+  distinct bots): without the marksman, 3rd 1/20/0 (1/2/0 bots), 4th 0/0/0; with it, 3rd 42/16/4 (6/3/1 bots),
+  4th 48/73/24 (5/2/2 bots). No kills up there yet in those runs. Probe: agent scratchpad `st-johns-2/tools/reach.mts`.
+- Left open from below: `block_1737` (a stray stone piece), Visitor first-person arms.
+
 ### St. John's: owner's screenshots of 2 Nov (`wip/st-johns`, agent, 2026-11-02; not merged; from main 8bc4001)
 Owner's shots 62 (courtyard), 63 (walk by the hall with the clock tower), 64 (inside, where the two halls meet).
 Cameras and before/after pictures: agent scratchpad `st-johns/before`, `st-johns/after` (scratch tools in `tools/`).

@@ -7,7 +7,7 @@
     "author": "Tile Trigger",
     "description": "A look-alike of the St. John's Northwestern Military Academy campus in Delafield, Wisconsin, laid out on the real ground at its real size: grey lannonstone halls built like castles, with towers, turrets and battlements, round the drill field and its flagpole. Fight through the barracks of Hazelwood and Scott Johnston along Exeter Street and the classrooms of the Knight block, through the Argonne Gate into the Welles refectory under its clock tower and up DeKoven's four storeys, across the quad to Memorial Hall, the Victory Memorial Chapel and Smythe Hall by St. John's Road. Take the sniper rifle from DeKoven's roof, the railgun from upstairs in Smythe, rockets from the chapel and the damage boost from the Gerber pool. The west team holds the drill field and Hazelwood; the east team the Farrand gym, the old red church and its churchyard above the bluff down to the Bark River flats. Layout: map data © OpenStreetMap contributors (ODbL). Ground: USGS 3D Elevation Program (3DEP), public domain.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-11-02T03:21:00.326Z",
+    "updatedAt": "2026-11-02T16:46:44.658Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 8,
@@ -11778,7 +11778,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -11800,7 +11800,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -11822,7 +11822,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#b33a3f",
       "behaviour": "solid",
       "trigger": "step",
@@ -11844,7 +11844,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#b33a3f",
       "behaviour": "solid",
       "trigger": "step",
@@ -11866,7 +11866,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#d6a83a",
       "behaviour": "solid",
       "trigger": "step",
@@ -11888,7 +11888,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#d6a83a",
       "behaviour": "solid",
       "trigger": "step",
@@ -11910,7 +11910,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3f8f5a",
       "behaviour": "solid",
       "trigger": "step",
@@ -11932,7 +11932,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3f8f5a",
       "behaviour": "solid",
       "trigger": "step",
@@ -11954,7 +11954,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -11976,7 +11976,7 @@
         0.181
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -11998,7 +11998,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -12020,7 +12020,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -12042,7 +12042,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#b33a3f",
       "behaviour": "solid",
       "trigger": "step",
@@ -12064,7 +12064,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#b33a3f",
       "behaviour": "solid",
       "trigger": "step",
@@ -12086,7 +12086,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#d6a83a",
       "behaviour": "solid",
       "trigger": "step",
@@ -12108,7 +12108,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#d6a83a",
       "behaviour": "solid",
       "trigger": "step",
@@ -12130,7 +12130,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3f8f5a",
       "behaviour": "solid",
       "trigger": "step",
@@ -12152,7 +12152,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3f8f5a",
       "behaviour": "solid",
       "trigger": "step",
@@ -12174,7 +12174,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -12196,7 +12196,7 @@
         0.202
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -12218,7 +12218,7 @@
         0.987
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -12240,7 +12240,7 @@
         0.987
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#3c5fc8",
       "behaviour": "solid",
       "trigger": "step",
@@ -12262,7 +12262,7 @@
         0.987
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#b33a3f",
       "behaviour": "solid",
       "trigger": "step",
@@ -12284,7 +12284,7 @@
         0.987
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#b33a3f",
       "behaviour": "solid",
       "trigger": "step",
@@ -12306,7 +12306,7 @@
         0.987
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#d6a83a",
       "behaviour": "solid",
       "trigger": "step",
@@ -12328,7 +12328,7 @@
         0.987
       ],
       "yaw": 0,
-      "material": "core.light_strip",
+      "material": "core.canvas",
       "tint": "#d6a83a",
       "behaviour": "solid",
       "trigger": "step",
@@ -21977,13 +21977,13 @@
     {
       "id": "block_1072",
       "position": [
-        49.045,
+        44.168,
         8.04,
-        -70.914
+        -70.871
       ],
       "kind": "block",
       "size": [
-        14.184,
+        4.43,
         4,
         0.6
       ],
@@ -22006,7 +22006,7 @@
       "kind": "block",
       "size": [
         9.078,
-        0.3000000000000007,
+        1.1,
         0.6
       ],
       "yaw": 0.00873,
@@ -22197,13 +22197,13 @@
     {
       "id": "block_1082",
       "position": [
-        49.045,
+        44.168,
         12.04,
-        -70.914
+        -70.871
       ],
       "kind": "block",
       "size": [
-        14.184,
+        4.43,
         4,
         0.6
       ],
@@ -22226,7 +22226,7 @@
       "kind": "block",
       "size": [
         9.078,
-        0.3000000000000007,
+        1.1,
         0.6
       ],
       "yaw": 0.00873,
@@ -29639,15 +29639,15 @@
     {
       "id": "block_1426",
       "position": [
-        47.348,
-        8.04,
-        -81.112
+        47.351,
+        16.04,
+        -80.811
       ],
       "kind": "block",
       "size": [
         56.413,
         0.3000000000000007,
-        18.624
+        19.23
       ],
       "yaw": 0.00873,
       "material": "core.pbr_flagstone",
@@ -29662,7 +29662,7 @@
       "id": "block_1427",
       "position": [
         47.264,
-        8.34,
+        16.34,
         -90.774
       ],
       "kind": "block",
@@ -29683,13 +29683,13 @@
     {
       "id": "block_1428",
       "position": [
-        47.432,
-        8.34,
-        -71.45
+        23.764,
+        16.34,
+        -71.243
       ],
       "kind": "block",
       "size": [
-        57.613,
+        10.27,
         0.9000000000000004,
         0.5
       ],
@@ -29706,7 +29706,7 @@
       "id": "block_1429",
       "position": [
         18.793,
-        8.34,
+        16.34,
         -80.863
       ],
       "kind": "block",
@@ -29728,7 +29728,7 @@
       "id": "block_1430",
       "position": [
         75.903,
-        8.34,
+        16.34,
         -81.361
       ],
       "kind": "block",
@@ -29750,7 +29750,7 @@
       "id": "block_1431",
       "position": [
         19.558,
-        9.24,
+        17.240000000000002,
         -90.532
       ],
       "kind": "block",
@@ -29772,7 +29772,7 @@
       "id": "block_1432",
       "position": [
         19.727,
-        9.24,
+        17.240000000000002,
         -71.209
       ],
       "kind": "block",
@@ -29794,7 +29794,7 @@
       "id": "block_1433",
       "position": [
         22.158,
-        9.24,
+        17.240000000000002,
         -90.555
       ],
       "kind": "block",
@@ -29816,7 +29816,7 @@
       "id": "block_1434",
       "position": [
         22.327,
-        9.24,
+        17.240000000000002,
         -71.231
       ],
       "kind": "block",
@@ -29838,7 +29838,7 @@
       "id": "block_1435",
       "position": [
         26.116,
-        9.24,
+        17.240000000000002,
         -90.589
       ],
       "kind": "block",
@@ -29860,7 +29860,7 @@
       "id": "block_1436",
       "position": [
         26.285,
-        9.24,
+        17.240000000000002,
         -71.266
       ],
       "kind": "block",
@@ -29882,30 +29882,8 @@
       "id": "block_1437",
       "position": [
         35.917,
-        9.24,
+        17.240000000000002,
         -90.675
-      ],
-      "kind": "block",
-      "size": [
-        3.782,
-        0.6999999999999993,
-        0.5
-      ],
-      "yaw": 0.00873,
-      "material": "core.stone_trim",
-      "tint": "#d8d3c6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1438",
-      "position": [
-        36.085,
-        9.24,
-        -71.351
       ],
       "kind": "block",
       "size": [
@@ -29926,30 +29904,8 @@
       "id": "block_1439",
       "position": [
         45.751,
-        9.24,
+        17.240000000000002,
         -90.76
-      ],
-      "kind": "block",
-      "size": [
-        3.782,
-        0.6999999999999993,
-        0.5
-      ],
-      "yaw": 0.00873,
-      "material": "core.stone_trim",
-      "tint": "#d8d3c6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1440",
-      "position": [
-        45.92,
-        9.24,
-        -71.437
       ],
       "kind": "block",
       "size": [
@@ -29970,30 +29926,8 @@
       "id": "block_1441",
       "position": [
         55.585,
-        9.24,
+        17.240000000000002,
         -90.846
-      ],
-      "kind": "block",
-      "size": [
-        3.782,
-        0.6999999999999993,
-        0.5
-      ],
-      "yaw": 0.00873,
-      "material": "core.stone_trim",
-      "tint": "#d8d3c6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1442",
-      "position": [
-        55.754,
-        9.24,
-        -71.523
       ],
       "kind": "block",
       "size": [
@@ -30014,30 +29948,8 @@
       "id": "block_1443",
       "position": [
         65.419,
-        9.24,
+        17.240000000000002,
         -90.932
-      ],
-      "kind": "block",
-      "size": [
-        3.782,
-        0.6999999999999993,
-        0.5
-      ],
-      "yaw": 0.00873,
-      "material": "core.stone_trim",
-      "tint": "#d8d3c6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1444",
-      "position": [
-        65.588,
-        9.24,
-        -71.609
       ],
       "kind": "block",
       "size": [
@@ -30058,30 +29970,8 @@
       "id": "block_1445",
       "position": [
         71.569,
-        9.24,
+        17.240000000000002,
         -90.986
-      ],
-      "kind": "block",
-      "size": [
-        1,
-        0.6999999999999993,
-        0.5
-      ],
-      "yaw": 0.00873,
-      "material": "core.stone_trim",
-      "tint": "#d8d3c6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1446",
-      "position": [
-        71.738,
-        9.24,
-        -71.662
       ],
       "kind": "block",
       "size": [
@@ -30102,30 +29992,8 @@
       "id": "block_1447",
       "position": [
         74.169,
-        9.24,
+        17.240000000000002,
         -91.008
-      ],
-      "kind": "block",
-      "size": [
-        1,
-        0.6999999999999993,
-        0.5
-      ],
-      "yaw": 0.00873,
-      "material": "core.stone_trim",
-      "tint": "#d8d3c6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1448",
-      "position": [
-        74.338,
-        9.24,
-        -71.685
       ],
       "kind": "block",
       "size": [
@@ -30146,7 +30014,7 @@
       "id": "block_1449",
       "position": [
         18.739,
-        9.24,
+        17.240000000000002,
         -87.075
       ],
       "kind": "block",
@@ -30168,7 +30036,7 @@
       "id": "block_1450",
       "position": [
         75.849,
-        9.24,
+        17.240000000000002,
         -87.573
       ],
       "kind": "block",
@@ -30190,7 +30058,7 @@
       "id": "block_1451",
       "position": [
         18.766,
-        9.24,
+        17.240000000000002,
         -83.889
       ],
       "kind": "block",
@@ -30212,7 +30080,7 @@
       "id": "block_1452",
       "position": [
         75.877,
-        9.24,
+        17.240000000000002,
         -84.387
       ],
       "kind": "block",
@@ -30234,7 +30102,7 @@
       "id": "block_1453",
       "position": [
         18.8,
-        9.24,
+        17.240000000000002,
         -80.083
       ],
       "kind": "block",
@@ -30256,7 +30124,7 @@
       "id": "block_1454",
       "position": [
         75.91,
-        9.24,
+        17.240000000000002,
         -80.581
       ],
       "kind": "block",
@@ -30278,7 +30146,7 @@
       "id": "block_1455",
       "position": [
         18.833,
-        9.24,
+        17.240000000000002,
         -76.28
       ],
       "kind": "block",
@@ -30300,7 +30168,7 @@
       "id": "block_1456",
       "position": [
         75.943,
-        9.24,
+        17.240000000000002,
         -76.778
       ],
       "kind": "block",
@@ -30349,9 +30217,9 @@
     {
       "id": "light_1459",
       "position": [
-        25.977,
+        26.894,
         7.49,
-        -81.024
+        -81.032
       ],
       "kind": "light",
       "yaw": 0.00873,
@@ -63727,6 +63595,3205 @@
       "scale": 1.11,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "block_dmxokrxrmg",
+      "position": [
+        19.293,
+        8.04,
+        -71.255
+      ],
+      "kind": "block",
+      "size": [
+        1.333,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_jo92buckom",
+      "position": [
+        20.61,
+        8.04,
+        -71.266
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_1b7vb2ebxt",
+      "position": [
+        20.61,
+        10.84,
+        -71.266
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ddrdoryh7l",
+      "position": [
+        22.593,
+        8.04,
+        -71.284
+      ],
+      "kind": "block",
+      "size": [
+        2.667,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_w42hr4qujz",
+      "position": [
+        25.656,
+        8.04,
+        -71.31
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_6ctcqgmocs",
+      "position": [
+        25.656,
+        10.84,
+        -71.31
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_6ac1tuagd0",
+      "position": [
+        28.183,
+        8.04,
+        -71.332
+      ],
+      "kind": "block",
+      "size": [
+        1.59,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_zpwk35dqcp",
+      "position": [
+        19.126,
+        8.04,
+        -90.478
+      ],
+      "kind": "block",
+      "size": [
+        1.333,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_5ts8ky0uqr",
+      "position": [
+        20.442,
+        8.04,
+        -90.49
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_t7qf6k4zjn",
+      "position": [
+        20.442,
+        10.84,
+        -90.49
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_2jqidvnp6y",
+      "position": [
+        22.425,
+        8.04,
+        -90.507
+      ],
+      "kind": "block",
+      "size": [
+        2.667,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_05ldagivf5",
+      "position": [
+        25.488,
+        8.04,
+        -90.534
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_mfl0mwrrnn",
+      "position": [
+        25.488,
+        10.84,
+        -90.534
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_x0rc1yotvd",
+      "position": [
+        32.261,
+        8.04,
+        -90.593
+      ],
+      "kind": "block",
+      "size": [
+        10.087,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ypl82jhglz",
+      "position": [
+        39.763,
+        8.04,
+        -90.658
+      ],
+      "kind": "block",
+      "size": [
+        4.917,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_7nlyaxevjz",
+      "position": [
+        39.763,
+        10.84,
+        -90.658
+      ],
+      "kind": "block",
+      "size": [
+        4.917,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_amleo2l0kj",
+      "position": [
+        47.264,
+        8.04,
+        -90.724
+      ],
+      "kind": "block",
+      "size": [
+        10.087,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_w9sdjfv9q9",
+      "position": [
+        54.766,
+        8.04,
+        -90.789
+      ],
+      "kind": "block",
+      "size": [
+        4.917,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_odkmv3mx3b",
+      "position": [
+        54.766,
+        10.84,
+        -90.789
+      ],
+      "kind": "block",
+      "size": [
+        4.917,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_x9abza46ly",
+      "position": [
+        62.268,
+        8.04,
+        -90.855
+      ],
+      "kind": "block",
+      "size": [
+        10.087,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_e2hxfyh75y",
+      "position": [
+        69.04,
+        8.04,
+        -90.914
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_q1y59c4csi",
+      "position": [
+        69.04,
+        10.84,
+        -90.914
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_gp7msgjmhm",
+      "position": [
+        72.103,
+        8.04,
+        -90.94
+      ],
+      "kind": "block",
+      "size": [
+        2.667,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_26cjl0x171",
+      "position": [
+        74.086,
+        8.04,
+        -90.958
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_epqtnvm8q3",
+      "position": [
+        74.086,
+        10.84,
+        -90.958
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_xo4odrco3m",
+      "position": [
+        75.403,
+        8.04,
+        -90.969
+      ],
+      "kind": "block",
+      "size": [
+        1.333,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_kkfpi0eazr",
+      "position": [
+        75.842,
+        8.04,
+        -82.723
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        4,
+        17.099
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_y07fpt0nwn",
+      "position": [
+        75.922,
+        8.04,
+        -73.524
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1.0999999999999996,
+        1.3
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_0af7pnzsw8",
+      "position": [
+        75.922,
+        10.84,
+        -73.524
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1.2000000000000002,
+        1.3
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_xvlpf0046m",
+      "position": [
+        75.934,
+        8.04,
+        -72.162
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        4,
+        1.425
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_obwnq2ue59",
+      "position": [
+        18.831,
+        8.04,
+        -82.226
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        4,
+        17.099
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_tjjq2xgvb7",
+      "position": [
+        18.911,
+        8.04,
+        -73.027
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1.0999999999999996,
+        1.3
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_7e9xd33y98",
+      "position": [
+        18.911,
+        10.84,
+        -73.027
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1.2000000000000002,
+        1.3
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_u5uhixt8oj",
+      "position": [
+        18.923,
+        8.04,
+        -71.664
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        4,
+        1.425
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_e1i8otvjc9",
+      "position": [
+        47.261,
+        7.94,
+        -91.099
+      ],
+      "kind": "block",
+      "size": [
+        57.913,
+        0.30000000000000027,
+        0.202
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_9w07a2nv37",
+      "position": [
+        47.435,
+        7.94,
+        -71.125
+      ],
+      "kind": "block",
+      "size": [
+        57.913,
+        0.30000000000000027,
+        0.202
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_1386hhpdg3",
+      "position": [
+        18.468,
+        7.94,
+        -80.86
+      ],
+      "kind": "block",
+      "size": [
+        0.202,
+        0.30000000000000027,
+        19.824
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_mc5vpcweqh",
+      "position": [
+        76.228,
+        7.94,
+        -81.364
+      ],
+      "kind": "block",
+      "size": [
+        0.202,
+        0.30000000000000027,
+        19.824
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_g63cql0iu5",
+      "position": [
+        19.293,
+        12.04,
+        -71.255
+      ],
+      "kind": "block",
+      "size": [
+        1.333,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_6lmfgc3cff",
+      "position": [
+        20.61,
+        12.04,
+        -71.266
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_0w3jql50ed",
+      "position": [
+        20.61,
+        14.84,
+        -71.266
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_7z14fgs7s3",
+      "position": [
+        22.593,
+        12.04,
+        -71.284
+      ],
+      "kind": "block",
+      "size": [
+        2.667,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_89yclntz5q",
+      "position": [
+        25.656,
+        12.04,
+        -71.31
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_je74016k41",
+      "position": [
+        25.656,
+        14.84,
+        -71.31
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_nl8jy5oyw4",
+      "position": [
+        28.183,
+        12.04,
+        -71.332
+      ],
+      "kind": "block",
+      "size": [
+        1.59,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ekrqxstr16",
+      "position": [
+        19.126,
+        12.04,
+        -90.478
+      ],
+      "kind": "block",
+      "size": [
+        1.333,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_3n235pv1oz",
+      "position": [
+        20.442,
+        12.04,
+        -90.49
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_83reavktfo",
+      "position": [
+        20.442,
+        14.84,
+        -90.49
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_6zlwkdt8y3",
+      "position": [
+        22.425,
+        12.04,
+        -90.507
+      ],
+      "kind": "block",
+      "size": [
+        2.667,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_jrtyepj7rp",
+      "position": [
+        25.488,
+        12.04,
+        -90.534
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_inq9aipltk",
+      "position": [
+        25.488,
+        14.84,
+        -90.534
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_wi4ho8ca33",
+      "position": [
+        32.261,
+        12.04,
+        -90.593
+      ],
+      "kind": "block",
+      "size": [
+        10.087,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_zlsiuwh1ug",
+      "position": [
+        39.763,
+        12.04,
+        -90.658
+      ],
+      "kind": "block",
+      "size": [
+        4.917,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_6tweacke6m",
+      "position": [
+        39.763,
+        14.84,
+        -90.658
+      ],
+      "kind": "block",
+      "size": [
+        4.917,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_7uar2m0i99",
+      "position": [
+        47.264,
+        12.04,
+        -90.724
+      ],
+      "kind": "block",
+      "size": [
+        10.087,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_2ee3q5cgbj",
+      "position": [
+        54.766,
+        12.04,
+        -90.789
+      ],
+      "kind": "block",
+      "size": [
+        4.917,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_azewwg7z21",
+      "position": [
+        54.766,
+        14.84,
+        -90.789
+      ],
+      "kind": "block",
+      "size": [
+        4.917,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_9ub9w6ja6r",
+      "position": [
+        62.268,
+        12.04,
+        -90.855
+      ],
+      "kind": "block",
+      "size": [
+        10.087,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_coehsj8kjp",
+      "position": [
+        69.04,
+        12.04,
+        -90.914
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_thl0nkfedj",
+      "position": [
+        69.04,
+        14.84,
+        -90.914
+      ],
+      "kind": "block",
+      "size": [
+        3.459,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_8np7bt897v",
+      "position": [
+        72.103,
+        12.04,
+        -90.94
+      ],
+      "kind": "block",
+      "size": [
+        2.667,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_3fruyf5bpp",
+      "position": [
+        74.086,
+        12.04,
+        -90.958
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.0999999999999996,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_5pn91n9pz2",
+      "position": [
+        74.086,
+        14.84,
+        -90.958
+      ],
+      "kind": "block",
+      "size": [
+        1.3,
+        1.2000000000000002,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_xe5g9lehu1",
+      "position": [
+        75.403,
+        12.04,
+        -90.969
+      ],
+      "kind": "block",
+      "size": [
+        1.333,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_uzvhpr479j",
+      "position": [
+        75.842,
+        12.04,
+        -82.723
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        4,
+        17.099
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_soabhlvmd7",
+      "position": [
+        75.922,
+        12.04,
+        -73.524
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1.0999999999999996,
+        1.3
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_m8jm44lcxl",
+      "position": [
+        75.922,
+        14.84,
+        -73.524
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1.2000000000000002,
+        1.3
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ok7o5ywlld",
+      "position": [
+        75.934,
+        12.04,
+        -72.162
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        4,
+        1.425
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_r0wmxg5lcl",
+      "position": [
+        18.831,
+        12.04,
+        -82.226
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        4,
+        17.099
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_xar0tlzf5u",
+      "position": [
+        18.911,
+        12.04,
+        -73.027
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1.0999999999999996,
+        1.3
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_0k9l5mqjxn",
+      "position": [
+        18.911,
+        14.84,
+        -73.027
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        1.2000000000000002,
+        1.3
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_g2j0wzjl7h",
+      "position": [
+        18.923,
+        12.04,
+        -71.664
+      ],
+      "kind": "block",
+      "size": [
+        0.6,
+        4,
+        1.425
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_qixhvyh38z",
+      "position": [
+        47.261,
+        11.94,
+        -91.099
+      ],
+      "kind": "block",
+      "size": [
+        57.913,
+        0.30000000000000027,
+        0.202
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_vnep3x90tg",
+      "position": [
+        47.435,
+        11.94,
+        -71.125
+      ],
+      "kind": "block",
+      "size": [
+        57.913,
+        0.30000000000000027,
+        0.202
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_kt84oj5at5",
+      "position": [
+        18.468,
+        11.94,
+        -80.86
+      ],
+      "kind": "block",
+      "size": [
+        0.202,
+        0.30000000000000027,
+        19.824
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_k0wvcts41w",
+      "position": [
+        76.228,
+        11.94,
+        -81.364
+      ],
+      "kind": "block",
+      "size": [
+        0.202,
+        0.30000000000000027,
+        19.824
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_8qukscw57c",
+      "position": [
+        24.114,
+        4.14,
+        -77.061
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.24999999999999997,
+        0.5
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ufstji1wwp",
+      "position": [
+        24.11,
+        4.14,
+        -77.561
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.5,
+        0.5
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_rleokbu6da",
+      "position": [
+        24.106,
+        4.14,
+        -78.061
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.75,
+        0.5
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_c76bc267wp",
+      "position": [
+        24.101,
+        4.14,
+        -78.576
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        1,
+        0.529
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_s7iqmnh3mt",
+      "position": [
+        24.096,
+        4.14,
+        -79.206
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        1.25,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_o6rktgh2o4",
+      "position": [
+        24.089,
+        4.14,
+        -79.938
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        1.5,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ycv3x7inc2",
+      "position": [
+        24.083,
+        4.14,
+        -80.67
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        1.75,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ccm5opi7g0",
+      "position": [
+        24.077,
+        4.14,
+        -81.402
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        2,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_srwz78hp01",
+      "position": [
+        24.07,
+        4.14,
+        -82.134
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        2.25,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_v7py97m061",
+      "position": [
+        24.064,
+        4.14,
+        -82.866
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        2.5,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_vilfj3cdq6",
+      "position": [
+        24.057,
+        4.14,
+        -83.598
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        2.75,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ccgzk7ihbe",
+      "position": [
+        24.051,
+        4.14,
+        -84.33
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ukisvx1rdn",
+      "position": [
+        24.045,
+        4.14,
+        -85.061
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3.25,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_mfvwb9wot7",
+      "position": [
+        24.038,
+        4.14,
+        -85.793
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3.5,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_wpajxx4ytg",
+      "position": [
+        24.032,
+        4.14,
+        -86.525
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3.75,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_tlukk9x7r6",
+      "position": [
+        24.026,
+        4.14,
+        -87.257
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3.9999999999999996,
+        0.732
+      ],
+      "yaw": -3.132,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_35eg7pya3j",
+      "position": [
+        20.386,
+        8.14,
+        -87.439
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.24999999999999997,
+        0.5
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_lozelwtkwu",
+      "position": [
+        20.39,
+        8.14,
+        -86.939
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.5,
+        0.5
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_sih5ot68yj",
+      "position": [
+        20.394,
+        8.14,
+        -86.439
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        0.75,
+        0.5
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_srezmtnbvh",
+      "position": [
+        20.399,
+        8.14,
+        -85.924
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        1,
+        0.529
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_qhmxcda41f",
+      "position": [
+        20.404,
+        8.14,
+        -85.294
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        1.25,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_oj2egz3sti",
+      "position": [
+        20.411,
+        8.14,
+        -84.562
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        1.5,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_s46ym6p3bn",
+      "position": [
+        20.417,
+        8.14,
+        -83.83
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        1.75,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_4xhfu606ly",
+      "position": [
+        20.423,
+        8.14,
+        -83.098
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        2,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_uyg6jmjefw",
+      "position": [
+        20.43,
+        8.14,
+        -82.366
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        2.25,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_r0bly556e3",
+      "position": [
+        20.436,
+        8.14,
+        -81.634
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        2.5,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_q0d528so4u",
+      "position": [
+        20.443,
+        8.14,
+        -80.902
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        2.75,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_jmefi12vtn",
+      "position": [
+        20.449,
+        8.14,
+        -80.17
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_18pxa38wco",
+      "position": [
+        20.455,
+        8.14,
+        -79.439
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3.25,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_zmk0bsjowm",
+      "position": [
+        20.462,
+        8.14,
+        -78.707
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3.5,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ttbvgdzaxy",
+      "position": [
+        20.468,
+        8.14,
+        -77.975
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3.75,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_033nrtsvjn",
+      "position": [
+        20.474,
+        8.14,
+        -77.243
+      ],
+      "kind": "block",
+      "size": [
+        2.6,
+        3.9999999999999996,
+        0.732
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d8d3c6",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_uo0gfu8430",
+      "position": [
+        47.278,
+        8.04,
+        -89.174
+      ],
+      "kind": "block",
+      "size": [
+        56.413,
+        0.2999999999999998,
+        2.5
+      ],
+      "yaw": 0.00873,
+      "material": "core.pbr_floorboards",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_9t2ybfsbs3",
+      "position": [
+        47.409,
+        8.04,
+        -74.157
+      ],
+      "kind": "block",
+      "size": [
+        56.413,
+        0.2999999999999998,
+        5.92
+      ],
+      "yaw": 0.00873,
+      "material": "core.pbr_floorboards",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_t0kbeiohxg",
+      "position": [
+        50.476,
+        8.04,
+        -82.545
+      ],
+      "kind": "block",
+      "size": [
+        50.13,
+        0.2999999999999998,
+        10.812
+      ],
+      "yaw": 0.00873,
+      "material": "core.pbr_floorboards",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_bflv0apm62",
+      "position": [
+        47.278,
+        12.04,
+        -89.174
+      ],
+      "kind": "block",
+      "size": [
+        56.413,
+        0.2999999999999998,
+        2.5
+      ],
+      "yaw": 0.00873,
+      "material": "core.pbr_floorboards",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_4cb9c6sjtt",
+      "position": [
+        47.409,
+        12.04,
+        -74.157
+      ],
+      "kind": "block",
+      "size": [
+        56.413,
+        0.2999999999999998,
+        5.92
+      ],
+      "yaw": 0.00873,
+      "material": "core.pbr_floorboards",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_e9zuoew6wy",
+      "position": [
+        48.886,
+        12.04,
+        -82.531
+      ],
+      "kind": "block",
+      "size": [
+        53.313,
+        0.2999999999999998,
+        10.812
+      ],
+      "yaw": 0.00873,
+      "material": "core.pbr_floorboards",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_fhzubd5s2b",
+      "position": [
+        20.932,
+        8.04,
+        -82.287
+      ],
+      "kind": "block",
+      "size": [
+        3.6,
+        0.2999999999999998,
+        10.812
+      ],
+      "yaw": 0.00873,
+      "material": "core.pbr_floorboards",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_jx4vrg2qa0",
+      "position": [
+        52.258,
+        8.04,
+        -70.939
+      ],
+      "kind": "block",
+      "size": [
+        7.75,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_3bqb1949dl",
+      "position": [
+        47.383,
+        10.84,
+        -70.896
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        1.2,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_589lc1xei7",
+      "position": [
+        47.384,
+        8.04,
+        -70.806
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.5,
+        1.98
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_xk7nhy021j",
+      "position": [
+        52.258,
+        12.04,
+        -70.939
+      ],
+      "kind": "block",
+      "size": [
+        7.75,
+        4,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_nvzidnb3mz",
+      "position": [
+        47.383,
+        14.84,
+        -70.896
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        1.2,
+        0.6
+      ],
+      "yaw": 0.00873,
+      "material": "core.cobble",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_s1ttxhdcjl",
+      "position": [
+        47.384,
+        12.04,
+        -70.806
+      ],
+      "kind": "block",
+      "size": [
+        2,
+        0.5,
+        1.98
+      ],
+      "yaw": 0.00873,
+      "material": "core.stone_trim",
+      "tint": "#d9d5cb",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "light_rhiywgs3b9",
+      "position": [
+        26.894,
+        11.49,
+        -81.032
+      ],
+      "kind": "light",
+      "yaw": 0.00873,
+      "color": "#ffe9c4",
+      "intensity": 0.8,
+      "range": 11,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_29tl6mv6b6",
+      "position": [
+        68.718,
+        11.49,
+        -81.397
+      ],
+      "kind": "light",
+      "yaw": 0.00873,
+      "color": "#ffe9c4",
+      "intensity": 0.8,
+      "range": 11,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_iorih3kirh",
+      "position": [
+        26.894,
+        15.49,
+        -81.032
+      ],
+      "kind": "light",
+      "yaw": 0.00873,
+      "color": "#ffe9c4",
+      "intensity": 0.8,
+      "range": 11,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_ivcnj4spsr",
+      "position": [
+        68.718,
+        15.49,
+        -81.397
+      ],
+      "kind": "light",
+      "yaw": 0.00873,
+      "color": "#ffe9c4",
+      "intensity": 0.8,
+      "range": 11,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_ru7sjb46g0",
+      "position": [
+        47.793,
+        11.49,
+        -81.145
+      ],
+      "kind": "light",
+      "yaw": 0.00873,
+      "color": "#ffe9c4",
+      "intensity": 0.8,
+      "range": 11,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "light_i8b91fjzo9",
+      "position": [
+        47.793,
+        15.49,
+        -81.145
+      ],
+      "kind": "light",
+      "yaw": 0.00873,
+      "color": "#ffe9c4",
+      "intensity": 0.8,
+      "range": 11,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "prop_xfpntiquk3",
+      "position": [
+        40.091,
+        8.34,
+        -89.111
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mf9yg53z9a",
+      "position": [
+        48.028,
+        8.34,
+        -89.93
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 0.00873,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_thzi9unpjd",
+      "position": [
+        40.232,
+        8.34,
+        -72.988
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_pj8v4wswbn",
+      "position": [
+        43.971,
+        8.34,
+        -72.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 3.15033,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mvh0aa8axo",
+      "position": [
+        55.221,
+        8.34,
+        -89.243
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ljz6nk7dxy",
+      "position": [
+        63.157,
+        8.34,
+        -90.062
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 0.00873,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_f83a7wfgzq",
+      "position": [
+        70.283,
+        8.34,
+        -89.374
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0sacnu279y",
+      "position": [
+        72.377,
+        8.34,
+        -90.143
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 0.00873,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_95h2qo8jbg",
+      "position": [
+        70.424,
+        8.34,
+        -73.251
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5y4n28dis6",
+      "position": [
+        72.53,
+        8.34,
+        -72.519
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 3.15033,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_a84zzt522k",
+      "position": [
+        58.694,
+        8.34,
+        -81.309
+      ],
+      "kind": "prop",
+      "model": "prop.hm_rug",
+      "yaw": 1.57953,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_80pn9rk83a",
+      "position": [
+        40.091,
+        12.34,
+        -89.111
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wax16wq3y1",
+      "position": [
+        48.028,
+        12.34,
+        -89.93
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 0.00873,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5hy6dvkne0",
+      "position": [
+        40.232,
+        12.34,
+        -72.988
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_psac53n92r",
+      "position": [
+        43.971,
+        12.34,
+        -72.27
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 3.15033,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_oyml4jic9p",
+      "position": [
+        55.221,
+        12.34,
+        -89.243
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4vq6yu1oe6",
+      "position": [
+        63.157,
+        12.34,
+        -90.062
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 0.00873,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_z2xqr7q556",
+      "position": [
+        70.283,
+        12.34,
+        -89.374
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wyq23377ir",
+      "position": [
+        72.377,
+        12.34,
+        -90.143
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 0.00873,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yri62o6xh4",
+      "position": [
+        70.424,
+        12.34,
+        -73.251
+      ],
+      "kind": "prop",
+      "model": "prop.hm_bunk_bed",
+      "yaw": 1.57953,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wq83r4b4re",
+      "position": [
+        72.53,
+        12.34,
+        -72.519
+      ],
+      "kind": "prop",
+      "model": "prop.hm_dresser",
+      "yaw": 3.15033,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w8m4jpnvg1",
+      "position": [
+        58.694,
+        12.34,
+        -81.309
+      ],
+      "kind": "prop",
+      "model": "prop.hm_rug",
+      "yaw": 1.57953,
+      "scale": 1.4,
+      "solid": false,
+      "tint": null
+    },
+    {
+      "id": "prop_b0umu8cauy",
+      "position": [
+        38.665,
+        8.34,
+        -79.231
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 0.00873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3lsq7od2xg",
+      "position": [
+        53.037,
+        8.34,
+        -79.357
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 0.00873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_n3nvi37mko",
+      "position": [
+        67.41,
+        8.34,
+        -79.482
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 0.00873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mpclo2zh2q",
+      "position": [
+        73.369,
+        8.34,
+        -79.534
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 0.00873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_eav9exogr1",
+      "position": [
+        38.665,
+        12.34,
+        -79.231
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 0.00873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_kzsdiyqodo",
+      "position": [
+        53.037,
+        12.34,
+        -79.357
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 0.00873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5oyovlk5uy",
+      "position": [
+        67.41,
+        12.34,
+        -79.482
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 0.00873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_hymephh0he",
+      "position": [
+        73.369,
+        12.34,
+        -79.534
+      ],
+      "kind": "prop",
+      "model": "prop.dg_table_long",
+      "yaw": 0.00873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "pickup_f6epumzmbr",
+      "position": [
+        30.335,
+        8.34,
+        -76.268
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_r9a4recog9",
+      "position": [
+        59.264,
+        12.34,
+        -84.521
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_dmxokrxrmg",
+      "position": [
+        60.355,
+        12.34,
+        -74.13
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
     }
   ],
   "factions": [],
