@@ -139,7 +139,7 @@ health() { # sha: the hub answers, serves this build's page, and one of its scri
 }
 
 hub_active() { "$SYSTEMCTL" is-active --quiet "$HUB_SERVICE"; }
-restart_hub() { "$SYSTEMCTL" restart "$HUB_SERVICE" 9>&-; echo "$1" > "$STATE/hub.sha"; } # (the lock stays with this run)
+restart_hub() { "$SYSTEMCTL" daemon-reload 9>&- 2>/dev/null || true; "$SYSTEMCTL" restart "$HUB_SERVICE" 9>&-; echo "$1" > "$STATE/hub.sha"; } # reload units first (a changed unit file would otherwise restart with the old one); the lock stays with this run
 
 hub_code_changed() { # new sha: does the hub's code differ from what it runs now?
   local running; running="$(cat "$STATE/hub.sha" 2>/dev/null || true)"
