@@ -8,6 +8,9 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Ragdolls**
+- **Bodies no longer fold in impossible ways.** A ragdoll's joints were free: knees and elbows bent backwards, thighs swung up behind the back, heads and arms twisted round, so corpses (whole-body characters and creatures most of all) came to rest with limbs pointing up or splayed and twisted. Every joint now moves like a body's: knees and elbows fold one way only, hips swing forward a long way and back a little, shoulders cover the arm's reach, the neck nods and turns but never round. The limits are worked out from each body's own pose at death, so they hold for every character, modular or whole-body, small or large, the rolling Baseball Robot included. No extra cost (bodies settle sooner).
+
 **New characters (batch 3)**
 - Fifteen new characters: **Orange Suit Engineer** and **Coffee Brown** (Everyday Folk), **Gas Mask Engineer**, **Stealth Operative** and **WWII Infantry** (Soldiers), **Mummy Bot**, **Pharaoh Mummy Warrior** and **Vampire** (Undead & Horror), **CRT Robot**, **Field Medic Automaton** (a large one), **Alien Biker**, **Pink Mantis**, **Alien Encounter** and **Beanie Alien** (both small) and the **Baseball Robot** (Creatures & Machines).
 - The Baseball Robot has no feet: he **rolls** on his ball. No walk cycle: he glides, leaning into his speed and into his turns, and still holds and fires every gun. (Any character can be made to roll: `locomotion: roll` in its manifest.)

@@ -10,6 +10,27 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Ragdoll joint limits (`wip/fix-ragdoll`, agent, 2026-11-02; not merged; from main c6751d5)
+Owner's report: on Iron Maw (TDM, many bots) corpses lay with limbs bent impossibly (a dark character folded with
+arms and legs up, a green creature splayed and twisted). **Cause:** `ragdoll.ts` joined its capsules with Rapier
+spherical joints with **no limits** (HANDOFF's 2026-10-29 note), so elbows/knees bent backwards, thighs swung up
+behind the back, heads and limbs twisted round; whole-body rigs (different proportions, death poses) showed it most.
+Checked and not the cause: the far copy (LOD) shares the joints (its skeleton follows the same nodes; `freezePose`
+prepares every skin), the scope zoom only moves the LOD switch, capsule sizes/pushes are unchanged and hold on the
+ground. **Fix:** `game/ragdollJoints.ts` plans each joint's frame on both bodies from the joint *positions* at death
+(body up/right/forward with the avatar's facing settling front and back; each limb's direction; the elbow's and
+knee's own bend axis), never bone axes, so one table of anatomical limits (`JOINT_LIMITS`) holds for every rig;
+each range is widened to include the pose at death (no snap). Sides come from where a limb is, not its name;
+folded joints (rolling robot's legs) fall back to hanging. `EffectsWorld.ballJoint` takes the frames and sets
+limits on all three angular axes (Rapier limits 2·asin of the relative rotation's x/y/z; limiting only one axis of
+a spherical joint doesn't hold it). Test: `client/test/ragdollJoints.test.ts` (eight rig layouts: A/T/aim poses,
+small, large, turned, mirrored names, folded legs; knee/elbow hyperextension, shin twist, thigh behind the back and
+head turned round are outside, normal folds inside; a Rapier check that a knee driven forward stops at straight).
+Perf: a 30-ragdoll Rapier bench steps no slower with limits (bodies settle and sleep sooner); budget unchanged.
+Contact sheets (before/after, scratchpad of the session): `ragdoll-fix/sheet-before.png`, `sheet-after.png`.
+Open: the cheap tier (far, in view) still hangs the limbs in the death clip's last frame relative to a tumbling
+torso; no self-collision between a body's own limbs (an arm can rest inside the torso).
+
 ### Characters batch 3 (`wip/char-batch-3`, agent, 2026-11-01; not merged; from main c5be6c4)
 Owner's Drive drops of 1 Nov evening (brief: lead scratchpad `drive-batch-1101-evening.md`). Downloads outside the repo in
 `/home/user/meshy-drive/drive-2026-11-01-batch3/` and `...-batch3b/` (gdown: the Drive tool caps downloads at 10 MB); the
@@ -1655,7 +1676,7 @@ Profiled the page's main thread in a clumped 96-player Frost Basin fight (produc
 - canopies are pooled per kind with shared materials (`releaseCanopy`).
 Result: main thread idle 74% with 53 characters in view (was 43% with 36, and 31% before the icons). Left, in order: held weapons are rebuilt on every switch (`view.setAvatarWeapon`, ~15 nodes/s, each dispose walking the animatables: pool them per model); the ~12k animatables themselves (AnimationGroup per clip per bone; Babylon's `stop`/`_start` splice that array); `computeWorldMatrix` ~4%. The physicsfx ragdoll check now waits for the corpse before sampling; it still fails in this sandbox on stalled frames, on main too.
 
-Ragdolls (asked 2026-10-29): no neutral pose, no soft joint limits, no muscle tension. `game/ragdoll.ts` uses Rapier spherical joints with no limits or motors, and damping only (linear 0.6, angular 1.6, `shared/sim/effectsPhysics.ts`). Not started.
+Ragdolls (asked 2026-10-29): no neutral pose, no muscle tension. Joint limits done 2026-11-02 (`wip/fix-ragdoll`, below).
 ## Map rotation (2026-10-29)
 
 Regular matches can go on to a queued map instead of replaying: `shared/sim/rotation.ts` (`MapRotation`, `validateRotation`, presets in `maps/rotations/*.json`). Protocol: host commands `rotation` (the whole list, and/or shuffle) and `skip`, `HostState.rotation`, `round_end.up` (everyone's scoreboard: "Next map: …"); older hosts ignore them and the panel hides the section. Dedicated server: `server.ts` plans the travel at the end of the intermission (chains first), `server/src/rotation.ts` (suite lookup, presets, `preset:` items); Host Service: `ROTATION` / `ROTATION_SHUFFLE`, console `rotation` / `skip`, the launcher's Rotation card, in-game changes saved via status (`main.ts`). Browser host: the page keeps it (`main.ts` → `SessionOptions.rotation`, `session.ts` `rotateOn` / `skipRotation`), tells the match where it goes (`setUpNext`), and travels like Change map. Not done: Play → Match setup doesn't take a rotation yet; the site's /host page doesn't edit it (the launcher and console do).
