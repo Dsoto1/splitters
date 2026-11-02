@@ -22,6 +22,18 @@ export interface Quat {
   w: number;
 }
 
+/**
+ * A ball joint's limits: its frame in each body (rotations in the bodies' own frames) and the range
+ * of each angle between the two frames (radians, about the frame's X, Y and Z).
+ */
+export interface JointLimitSpec {
+  frameA: Quat;
+  frameB: Quat;
+  x: readonly [number, number];
+  y: readonly [number, number];
+  z: readonly [number, number];
+}
+
 /** Same shape to within a centimetre (a pooled collider is kept). */
 function sameShape(a: EffectShape, b: EffectShape): boolean {
   if (a.kind !== b.kind) return false;
@@ -103,8 +115,20 @@ export class EffectsWorld {
   }
 
   /** A ball joint holding two bodies together at a shared point (anchors in each body's own frame). */
-  ballJoint(a: RAPIER.RigidBody, b: RAPIER.RigidBody, anchorA: Vec3, anchorB: Vec3): RAPIER.ImpulseJoint {
-    return this.world.createImpulseJoint(RAPIER.JointData.spherical(anchorA, anchorB), a, b, true);
+  ballJoint(a: RAPIER.RigidBody, b: RAPIER.RigidBody, anchorA: Vec3, anchorB: Vec3, limits?: JointLimitSpec): RAPIER.ImpulseJoint {
+    const j = this.world.createImpulseJoint(RAPIER.JointData.spherical(anchorA, anchorB), a, b, true);
+    if (limits) {
+      // The joint's frame on each body, then limits on all three angles between them (Rapier limits
+      // 2·asin of the relative rotation's x, y, z). All three: a spherical joint limited on one axis only
+      // doesn't hold it.
+      j.setLocalFrame1(anchorA, limits.frameA);
+      j.setLocalFrame2(anchorB, limits.frameB);
+      const raw = (this.world.impulseJoints as unknown as { raw: { jointSetLimits(h: number, axis: number, min: number, max: number): void } }).raw;
+      raw.jointSetLimits(j.handle, RAPIER.JointAxis.AngX, limits.x[0], limits.x[1]);
+      raw.jointSetLimits(j.handle, RAPIER.JointAxis.AngY, limits.y[0], limits.y[1]);
+      raw.jointSetLimits(j.handle, RAPIER.JointAxis.AngZ, limits.z[0], limits.z[1]);
+    }
+    return j;
   }
 
   removeJoint(j: RAPIER.ImpulseJoint): void {

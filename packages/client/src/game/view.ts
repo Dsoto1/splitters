@@ -206,6 +206,9 @@ export function bodiesPreference(): BodiesSetting {
 const MAX_CORPSES = 32;
 /** Time (ms) a frame may spend starting dead bodies before further fresh deaths wait for the next frame (at least one starts). */
 const DEATH_START_MS = 4;
+/** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
+const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
+
 /** Ragdoll parts parked in the effects world's pool when the map is built (a standard body's, this many times). */
 const RAGDOLL_PREWARM_BODIES = 12;
 /**
@@ -556,7 +559,7 @@ export class GameView {
       if (fit.tier === 'posed') this.layDown(a, v);
       else {
         a.anim.ragdoll(fit.tier === 'cheap' ? 'limp' : 'stop');
-        a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, v, fit.tier);
+        a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, v, fit.tier, facingOf(a));
       }
     } catch {
       a.ragdoll = undefined;
@@ -597,7 +600,7 @@ export class GameView {
     const v = r.velocity;
     r.dispose();
     a.anim.ragdoll('limp');
-    a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, v, 'cheap');
+    a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, v, 'cheap', facingOf(a));
   }
 
   /** Out of view: no simulation; the body lies on the ground along the hit, in the death's final pose. */
