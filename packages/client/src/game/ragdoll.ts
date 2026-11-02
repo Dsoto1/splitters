@@ -3,39 +3,36 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { EffectShape, EffectsWorld, Vec3 } from '@tiletrigger/shared';
 import { SkeletonSpace } from './characterAnimator.ts';
 import { RAGDOLL_BUDGET, type RagdollTier } from './ragdollBudget.ts';
+import { planJoints, type PlanSegment } from './ragdollJoints.ts';
 
 type Body = ReturnType<EffectsWorld['addBody']>;
 type Joint = ReturnType<EffectsWorld['ballJoint']>;
 
 /** One limb segment: a capsule from joint `from` to joint `to`, posing the bone at `from`. */
-interface Segment {
-  bone: string;
-  from: string;
-  to: string;
+/** Ball-jointed to its `parent` segment, limited as that kind of joint (ragdollJoints.ts). */
+interface Segment extends PlanSegment {
   radius: number;
   /** Extend past `to` (hands, feet, the head's crown), metres. */
   extend?: number;
-  /** Ball-joint to this segment, at this joint. */
-  parent?: { segment: string; at: string };
 }
 
 /** Full tier: ten capsules (torso, head, upper and lower arms, thighs, shins). */
 const FULL: readonly Segment[] = [
   { bone: 'pelvis', from: 'pelvis', to: 'neck_01', radius: 0.14 },
-  { bone: 'neck_01', from: 'neck_01', to: 'Head', radius: 0.1, extend: 0.18, parent: { segment: 'pelvis', at: 'neck_01' } },
+  { bone: 'neck_01', from: 'neck_01', to: 'Head', radius: 0.1, extend: 0.18, parent: { segment: 'pelvis', at: 'neck_01', joint: 'neck' } },
   ...(['l', 'r'] as const).flatMap((s): Segment[] => [
-    { bone: `upperarm_${s}`, from: `upperarm_${s}`, to: `lowerarm_${s}`, radius: 0.055, parent: { segment: 'pelvis', at: `upperarm_${s}` } },
-    { bone: `lowerarm_${s}`, from: `lowerarm_${s}`, to: `hand_${s}`, radius: 0.05, extend: 0.1, parent: { segment: `upperarm_${s}`, at: `lowerarm_${s}` } },
-    { bone: `thigh_${s}`, from: `thigh_${s}`, to: `calf_${s}`, radius: 0.075, parent: { segment: 'pelvis', at: `thigh_${s}` } },
-    { bone: `calf_${s}`, from: `calf_${s}`, to: `foot_${s}`, radius: 0.06, extend: 0.08, parent: { segment: `thigh_${s}`, at: `calf_${s}` } },
+    { bone: `upperarm_${s}`, from: `upperarm_${s}`, to: `lowerarm_${s}`, radius: 0.055, side: s, parent: { segment: 'pelvis', at: `upperarm_${s}`, joint: 'shoulder' } },
+    { bone: `lowerarm_${s}`, from: `lowerarm_${s}`, to: `hand_${s}`, radius: 0.05, extend: 0.1, side: s, parent: { segment: `upperarm_${s}`, at: `lowerarm_${s}`, joint: 'elbow' } },
+    { bone: `thigh_${s}`, from: `thigh_${s}`, to: `calf_${s}`, radius: 0.075, side: s, parent: { segment: 'pelvis', at: `thigh_${s}`, joint: 'hip' } },
+    { bone: `calf_${s}`, from: `calf_${s}`, to: `foot_${s}`, radius: 0.06, extend: 0.08, side: s, parent: { segment: `thigh_${s}`, at: `calf_${s}`, joint: 'knee' } },
   ]),
 ];
 
 /** Cheap tier: pelvis, chest and head; the limbs hang in a limp pose (CharacterAnimator.ragdoll('limp')). */
 const CHEAP: readonly Segment[] = [
   { bone: 'pelvis', from: 'pelvis', to: 'spine_02', radius: 0.15 },
-  { bone: 'spine_02', from: 'spine_02', to: 'neck_01', radius: 0.15, parent: { segment: 'pelvis', at: 'spine_02' } },
-  { bone: 'neck_01', from: 'neck_01', to: 'Head', radius: 0.1, extend: 0.18, parent: { segment: 'spine_02', at: 'neck_01' } },
+  { bone: 'spine_02', from: 'spine_02', to: 'neck_01', radius: 0.15, parent: { segment: 'pelvis', at: 'spine_02', joint: 'spine' } },
+  { bone: 'neck_01', from: 'neck_01', to: 'Head', radius: 0.1, extend: 0.18, parent: { segment: 'spine_02', at: 'neck_01', joint: 'neck' } },
 ];
 
 /** A standard body's parts, to park in the pool before the first death (sizes near the mannequin's). */
@@ -97,6 +94,8 @@ export class Ragdoll {
     rootJoint: TransformNode,
     push: Vec3,
     readonly tier: Exclude<RagdollTier, 'posed'> = 'full',
+    /** The way the body faced (horizontal), to tell its front from its back whatever the rig. */
+    facing: Vec3 | null = null,
   ) {
     this.born = world.steps;
     this.space = new SkeletonSpace(rootJoint);
@@ -116,13 +115,15 @@ export class Ragdoll {
       return j.getAbsolutePosition().clone();
     };
     const byName = new Map<string, Part>();
-    for (const seg of tier === 'full' ? FULL : CHEAP) {
-      const bone = joints.get(seg.bone);
-      if (!bone || !joints.get(seg.from) || !joints.get(seg.to)) continue;
+    // The joints' frames and limits, made from where the joints are at death (ragdollJoints.ts), whatever
+    // way the rig's bones point.
+    const plan = planJoints((n) => (joints.get(n) ? world0(n) : null), tier === 'full' ? FULL : CHEAP, facing ? new Vector3(facing.x, 0, facing.z) : null);
+    const segs = (tier === 'full' ? FULL : CHEAP).filter((seg) => joints.get(seg.bone) && plan.dirs.has(seg.bone));
+    for (const seg of segs) {
+      const bone = joints.get(seg.bone)!;
       const a = world0(seg.from);
       let b = world0(seg.to);
-      const axis = b.subtract(a);
-      axis.normalize();
+      const axis = plan.dirs.get(seg.bone)!;
       if (seg.extend) b = b.add(axis.scale(seg.extend));
       const full = Vector3.Distance(a, b);
       const rot = new Quaternion();
@@ -142,9 +143,19 @@ export class Ragdoll {
       byName.set(seg.bone, part);
       if (seg.parent) {
         const p = byName.get(seg.parent.segment);
-        if (p) {
+        const j = plan.joints.get(seg.bone);
+        if (p && j) {
           const at = world0(seg.parent.at);
-          this.joints.push(this.world.ballJoint(p.body, body, this.local(p.body, at), this.local(body, at)));
+          // Each frame in its body's own space (the bodies stand as they were made: rotations body0).
+          const frameA = p.body0Inv.multiply(j.parent);
+          const frameB = part.body0Inv.multiply(j.child);
+          this.joints.push(
+            this.world.ballJoint(p.body, body, this.local(p.body, at), this.local(body, at), {
+              frameA: { x: frameA.x, y: frameA.y, z: frameA.z, w: frameA.w },
+              frameB: { x: frameB.x, y: frameB.y, z: frameB.z, w: frameB.w },
+              ...j.limits,
+            }),
+          );
         }
       }
     }
