@@ -9,7 +9,7 @@
   "nameTheme": "undead",
   "bio": "Died in a wreck in 1979. Kept riding anyway.",
   "body": "male",
-  "notes": "Drive, 2026-11-02 (\"Spiked Skeleton Biker\", rigged; the owner's download \"Meshy_AI_Spiked_Skeleton_Biker_All_Animations.glb\", put on disk by the lead with the owner's approval). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its Walking and Running clips are not used). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), recorded like WWII Infantry and the clip set's sources (content/clip-sets/shooter.json). It moves with the shared clip set. Normal map 512 px (the default): at 1024 px the body was over the 1.8 MB file budget. Name a placeholder.",
+  "notes": "Drive, 2026-11-02 (\"Spiked Skeleton Biker\", rigged; the owner's download \"Meshy_AI_Spiked_Skeleton_Biker_All_Animations.glb\", put on disk by the lead with the owner's approval). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its Walking and Running clips are not used). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), recorded like WWII Infantry and the clip set's sources (content/clip-sets/shooter.json). It moves with the shared clip set. Normal map 512 px (the default): at 1024 px the body was over the 1.8 MB file budget. Hands: spiked gauntlets with long, thin, spread finger bones that read as one mitten; at the measured size they curled into sticks splayed off the gun (grip audit 6-9 at curl 1-1.5, scale 0.85): scale 0.7, curl 1, as Rattles, the Vampire and the Pharaoh. They sit compact on the grip; the audit's curl test still reads flat (score 6, flat and one stretched edge). Name a placeholder.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -32,6 +32,10 @@
     "headShare": 0.16,
     "handsShare": 0.1,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": {
+      "scale": 0.7,
+      "curl": 1
+    }
   }
 }

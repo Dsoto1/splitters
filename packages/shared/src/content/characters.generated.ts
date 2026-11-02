@@ -102,7 +102,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.hollowvisitor', name: 'The Hollow Visitor', body: 'male', head: '', parts: ['meshy_hollowvisitor'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hollowvisitor_fparms' }, group: 'creatures', nameTheme: 'alien' },
   { id: 'core.fearsomeundead', name: 'Fearsome Undead', body: 'male', head: '', parts: ['meshy_fearsomeundead'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_fearsomeundead_fparms' }, group: 'horror', nameTheme: 'undead' },
   { id: 'core.emeraldrobot', name: 'Emerald Robot', body: 'male', head: '', parts: ['meshy_emeraldrobot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_emeraldrobot_fparms' }, group: 'creatures', nameTheme: 'robot' },
-  { id: 'core.spacemarine', name: 'Space Marine', body: 'male', head: '', parts: ['meshy_spacemarine'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_spacemarine_fparms' }, group: 'soldiers', nameTheme: 'goblin' },
+  { id: 'core.spacemarine', name: 'Space Marine', body: 'male', head: '', parts: ['meshy_spacemarine'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_spacemarine_fparms', hold: { forward: 0.06, down: 0.1, out: 0.08 } }, group: 'soldiers', nameTheme: 'goblin' },
   { id: 'core.skeletonbiker', name: 'Spiked Skeleton Biker', body: 'male', head: '', parts: ['meshy_skeletonbiker'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_skeletonbiker_fparms' }, group: 'horror', nameTheme: 'undead' },
 ];
 

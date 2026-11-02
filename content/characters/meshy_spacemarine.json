@@ -10,7 +10,7 @@
   "bio": "Short, green and fully kitted out. Passed every fitness test by standing on a crate.",
   "body": "male",
   "size": "small",
-  "notes": "Drive, 2026-11-02 (\"space marine uniform\", rigged; the owner's download \"Meshy_AI_space_marine_uniform_All_Animations.glb\", put on disk by the lead with the owner's approval). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its Walking and Running clips are not used). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), recorded like WWII Infantry and the clip set's sources (content/clip-sets/shooter.json). It moves with the shared clip set. Despite the download's name it is a short, green-skinned, pointy-eared alien in a red uniform (0.91 m in the download): small, with goblin bot names. Name a placeholder.",
+  "notes": "Drive, 2026-11-02 (\"space marine uniform\", rigged; the owner's download \"Meshy_AI_space_marine_uniform_All_Animations.glb\", put on disk by the lead with the owner's approval). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its Walking and Running clips are not used). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), recorded like WWII Infantry and the clip set's sources (content/clip-sets/shooter.json). It moves with the shared clip set. Despite the download's name it is a short, green-skinned, pointy-eared alien in a red uniform (0.91 m in the download): small, with goblin bot names. Hands: big gloved hands (25-30 cm long at the rig's size) stayed open off the gun (grip audit 9): scale 0.8, curl 1.2. Its big head put the rifle's stock at its mouth: fixes.hold forward 0.06, down 0.1, out 0.08 (head to gun 0.15 m -> 0.29). Audit 4: the shooting palm 7-8 cm off the grip in first and third person (off, fp). Name a placeholder.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -34,6 +34,15 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": {
+      "scale": 0.8,
+      "curl": 1.2
+    },
+    "hold": {
+      "forward": 0.06,
+      "down": 0.1,
+      "out": 0.08
+    }
   }
 }

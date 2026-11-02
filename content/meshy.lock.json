@@ -2839,10 +2839,10 @@
       "date": "2026-11-02",
       "src": "Meshy_AI_space_marine_uniform_All_Animations.glb",
       "file": "characters/meshy_spacemarine.glb",
-      "sha256": "98952e00e673a5df",
+      "sha256": "987e49d86c513d91",
       "triangles": 10404,
       "lodTriangles": 2600,
-      "bytes": 1566256,
+      "bytes": 1566228,
       "hands": true
     },
     {
@@ -2853,9 +2853,9 @@
       "date": "2026-11-02",
       "src": "Meshy_AI_space_marine_uniform_All_Animations.glb",
       "file": "characters/meshy_spacemarine_fparms.glb",
-      "sha256": "f6a5d96d0766941c",
+      "sha256": "ad53feba683c3e72",
       "triangles": 1265,
-      "bytes": 533288,
+      "bytes": 533112,
       "hands": true
     },
     {
@@ -2866,10 +2866,10 @@
       "date": "2026-11-02",
       "src": "Meshy_AI_Spiked_Skeleton_Biker_All_Animations.glb",
       "file": "characters/meshy_skeletonbiker.glb",
-      "sha256": "1044a6cb97d20af5",
+      "sha256": "56100cc9595dbcda",
       "triangles": 10205,
-      "lodTriangles": 2533,
-      "bytes": 1476808,
+      "lodTriangles": 2529,
+      "bytes": 1476108,
       "hands": true
     },
     {
@@ -2880,9 +2880,9 @@
       "date": "2026-11-02",
       "src": "Meshy_AI_Spiked_Skeleton_Biker_All_Animations.glb",
       "file": "characters/meshy_skeletonbiker_fparms.glb",
-      "sha256": "efb0bedb0c634df1",
+      "sha256": "a655a089ad0e11d4",
       "triangles": 1070,
-      "bytes": 470720,
+      "bytes": 470180,
       "hands": true
     }
   ]

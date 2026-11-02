@@ -29,6 +29,7 @@ made only on a commit that passed CI on a check branch.
 **New characters**
 - **Seetah J. Chloth** (Animals): the owner's cheetah/sloth hybrid. Fastest cat alive, for about four seconds a day; bots wearing him take cat names.
 - **Biker Gang Girl** (Everyday Folk), **The Hollow Visitor** (Creatures & Machines; a grey alien in a worn sweater, not The Visitor) and **Fearsome Undead** (Undead & Horror): the three models the shared shooting clips came from, now playable themselves. They move on those clips like everyone else; bots wearing them take gangster, alien and undead names.
+- **Emerald Robot** (Creatures & Machines), **Space Marine** (Soldiers; a short green alien in a red uniform, small) and **Spiked Skeleton Biker** (Undead & Horror): three more of the owner's rigged models, on the same shooting clips; bots wearing them take robot, goblin and undead names.
 
 **Third person: shooting while moving**
 - **Strafing no longer twists the body off the gun.** Strafing turns the hips and legs toward where you go and the shoulders back onto the aim; the shoulders were turned the wrong way, so a strafe (or a bot dodging while it fires) wound the chest about 140° away from the gun while the arms wrapped round to it. Now the chest stays square to the aim whichever way you move, for every character, players, bots and remote players alike. The fix (turns about world axes through the mirrored skeleton) also puts the hit flinch, the kick and the seated legs the way they were meant to go.

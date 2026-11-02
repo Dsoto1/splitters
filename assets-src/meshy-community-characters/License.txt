@@ -71,6 +71,15 @@ not used by the character):
 - "The Hollow Visitor" (downloaded 2026-11-02)  -> its Running and Run_and_Shoot clips (also character meshy_hollowvisitor, look The Hollow Visitor)
 - "Fearsome Undead" (downloaded 2026-11-02)  -> measured as a candidate; no clip of it is used (character meshy_fearsomeundead, look Fearsome Undead)
 
+Characters only (2026-11-02): CC0 community models that the owner rigged and
+animated on their Meshy account ("All Animations" downloads from the owner's
+Drive), rebuilt on the game's rig by tools/content/prepare-meshy-characters.mjs
+(their own clips are not used):
+
+- "Emerald Robot" (downloaded 2026-11-02)  -> character meshy_emeraldrobot (look Emerald Robot)
+- "space marine uniform" (downloaded 2026-11-02)  -> character meshy_spacemarine (look Space Marine)
+- "Spiked Skeleton Biker" (downloaded 2026-11-02)  -> character meshy_skeletonbiker (look Spiked Skeleton Biker)
+
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):
 
