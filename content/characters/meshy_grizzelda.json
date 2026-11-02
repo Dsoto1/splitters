@@ -50,6 +50,7 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "surface": "rebake",
-    "lod": 0.26
+    "lod": 0.26,
+    "skinClean": true
   }
 }

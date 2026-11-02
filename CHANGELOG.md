@@ -14,6 +14,9 @@ made only on a commit that passed CI on a check branch.
 **Ragdolls**
 - **Bodies no longer fold in impossible ways.** A ragdoll's joints were free: knees and elbows bent backwards, thighs swung up behind the back, heads and arms twisted round, so corpses (whole-body characters and creatures most of all) came to rest with limbs pointing up or splayed and twisted. Every joint now moves like a body's: knees and elbows fold one way only, hips swing forward a long way and back a little, shoulders cover the arm's reach, the neck nods and turns but never round. The limits are worked out from each body's own pose at death, so they hold for every character, modular or whole-body, small or large, the rolling Baseball Robot included. No extra cost (bodies settle sooner).
 
+**Characters**
+- **Giggles, Dust Trooper, Goblina and Luther Vanguard look right in every pose.** Long strands and sheets ran from their hands and sleeves down to their hips (Giggles' and the Dust Trooper's "sleeve spikes", threads from Vanguard's fingertips, Goblina's hands smeared into flaps), and swung about whenever they held a gun or ran. Their models stood with their arms down and hands on their hips, and the skin there was tied to both the arm and the hip; it is now cleaned before the arms are raised, so hands are hands again (they also close round the gun better). Vanguard is rigged afresh with his shoulders and elbows set by hand.
+
 **New character**
 - **Seetah J. Chloth** (Animals): the owner's cheetah/sloth hybrid. Fastest cat alive, for about four seconds a day; bots wearing him take cat names.
 

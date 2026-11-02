@@ -33,7 +33,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 const LEAN_JOINTS = new Set(['Spine02', 'Spine01', 'Spine', 'neck', 'Head']);
@@ -129,7 +129,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.hold: { forward, down, out } (metres at a 1.8 m body)');
     for (const k of ['forward', 'down', 'out']) need(h?.[k] === undefined || (typeof h[k] === 'number' && Math.abs(h[k]) <= 0.15), `fixes.hold.${k}: metres (−0.15–0.15)`);
   }
-  for (const k of ['seamWeld', 'cloth', 'feet', 'armCloth']) need(x[k] === undefined || typeof x[k] === 'boolean', `fixes.${k}: true or false`);
+  for (const k of ['seamWeld', 'cloth', 'feet', 'armCloth', 'skinClean']) need(x[k] === undefined || typeof x[k] === 'boolean', `fixes.${k}: true or false`);
   if (x.hands !== undefined) {
     const h = x.hands;
     need(typeof h === 'object' && h !== null, 'fixes.hands: { palm, curl, scale }');
@@ -215,6 +215,7 @@ export function buildSpec(m) {
     lean: x.lean,
     cloth: x.cloth,
     armCloth: x.armCloth,
+    skinClean: x.skinClean,
     tail: x.tail,
     feet: x.feet,
     scrubBlue: x.scrubBlue,

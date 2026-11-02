@@ -52,6 +52,48 @@ Contact sheets (before/after, scratchpad of the session): `ragdoll-fix/sheet-bef
 Open: the cheap tier (far, in view) still hangs the limbs in the death clip's last frame relative to a tumbling
 torso; no self-collision between a body's own limbs (an arm can rest inside the torso).
 
+### Skin fix: Giggles, Dust Trooper, Goblina, Luther Vanguard (`wip/fix-skin`, agent, 2026-11-02; not merged; from main 93c22d8)
+Owner: "Giggles and Vanguard models still distorted." Sheets (several angles, hold, run, close-ups, first person; before
+above after) in the agent scratchpad `skin-fix/`: `core.<look>-before-after.jpg`, `before/weights-before.jpg` and
+`after/weights-after.jpg` (bind pose coloured by limb: left arm red, right green, torso blue, legs yellow, magenta where an
+arm and the body share a vertex away from the shoulder), `after/v14-close.jpg`, `others/pair-*.jpg` (the sample below);
+scripts in `skin-fix/tools/` (sheet.mjs, close.mjs: `?mode=grips` renders; weights.mjs: offline bind/hold pictures of a
+built GLB or a rigged download).
+- **Cause (all four):** the downloads stand with the arms down, hands on the hips, sleeves against the body, and their
+  weights (Meshy's, and ours on Vanguard) tie the hands, the sleeves' insides and the body's side under the arm to
+  both the arm and the hip/spine. Turning the arms out to the T-pose (pose()) dragged those vertices halfway: sheets and
+  strands from the hands to the hips were already in the BUILT BIND POSE (the grip audit's stretch test compares the
+  hold with the bind pose, so it never counted them: its "spikes" were 0 on Giggles and the Dust Trooper). Goblina's
+  "flap hands" are her clawed hands smeared that way; Vanguard's threads run from his fingertips (which touched his
+  thighs). Vanguard also had the Frida fault: found shoulders under the pauldrons at the base of the neck, elbows and
+  wrists on the arms' inner edge.
+- **Fix:** `tools/content/skinclean.mjs`, opt-in `fixes.skinClean: true` (rigged and unrigged downloads; in pose(),
+  before the turn): skin facing away from its own bone decides arm vs body (a sleeve's inside is the arm's; the body's
+  side under a hanging arm is the body's when that patch is joined mostly to the body; else the nearer bone); only
+  joints within 2 of the anchor on the rig's skeleton keep a share; after the turn, triangles reaching a forearm or a
+  hand that stretched past 3x (fingertip fused to a thigh) are torn and the holes closed with flat fans; armpits are
+  never torn (tearing them opened Goblina's side under her cape). Tests: tools/content/test/skinclean.test.mjs.
+  Tried and dropped: tearing every stretched triangle (holes down Giggles' and Goblina's sides), copying the sleeve's
+  contact skin onto the body (a print of the cuff left on the hip).
+- **Vanguard:** his rig task 404s on this key (as the Dapper's and Nova's), so he is rigged in-house from the unrigged
+  download (meshystuff) with shoulders, elbows, wrists and hand tips set by hand (`landmarks` in his manifest); lock role
+  `meshy-autorig`. Hands: right curl 0.5 (a `hands.scale` 0.85 try changed nothing in the audit: dropped).
+- **Rifle grip audit, before → after:** Dust Trooper 9 (flat open off fp) → **3** (spikes); Giggles 9 (flat open off fp)
+  → 10 (flat off spikes fp: one spike edge at spine_01, the small blue sleeve-hem flaps below); Goblina 9 → 9 (open off
+  spikes fp; her spikes are the ragged skirt and braids, before and after); Vanguard 5 (back fp) → 10 (flat off spikes
+  fp: 3 small spikes, max 4.9). Finger skin (finger share R/L) Giggles and Dust Trooper 0/0 → 0.4-0.58 (the hands are
+  hands now); drawn hand to grip Giggles 13/24 → 7/8 cm, Goblina 17/11 → 9/7 cm, Dust Trooper 9/12 → 6/8 cm. The
+  sheets are the judge: no strands from any angle in the hold or the run. Remaining: Giggles' sleeve hems leave small
+  blue flaps under the arms close up; the Dust Trooper's coat shows a few dark shards at the hips close up.
+- **Why opt-in (others checked):** on by default it rebuilt a sample (Desert Ranger, King Aldric, Scary Larry, Honest
+  Abe, Freaky Frida, Kenji, Virtua Soldier; `others/pair-*.jpg`): Desert Ranger, Larry, Abe, Virtua Soldier unchanged;
+  Frida's pigtails pulled into strands, a flap on Kenji's vest side, a dark shard on King's back: so none of them uses
+  it and their files are main's. Try it on characters whose download pose has the hands on the hips.
+- Rebuild: `ONLY=meshy_giggles,meshy_dust_trooper,meshy_grizzelda,meshy_vanguard node tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/skin-fix-rig`
+  (links: the three rigged GLBs re-fetched earlier into the model-quality scratchpad `dl/rig/`, and Vanguard's unrigged
+  download from meshystuff; the rigged ones re-fetch with fetch-meshy.mjs, no credits). No Meshy credits spent.
+- Checks: typecheck; test:changed 46/46; content:check OK; bundle 833.0 kB gzip (budget 840); e2e characters PASS (1,003 s; the first run failed one check on the Dapper (`look=core.dapper`, untouched): "hands drawn on the gun through switches", mouse wheel, body 12 cm, at load 10-17; passed on rerun).
+
 ### Seetah J. Chloth (`wip/seetah`, agent, 2026-11-01; not merged; from main c6751d5)
 - `core.seetah` (`meshy_seetah`, order 96, Animals, `nameTheme: cat`): the owner's cheetah/sloth hybrid (owned, Meshy), from the
   rigged Drive download "Meshy_AI_rigged_cheetah_sloth_All_Animations.glb" (gdown into `/home/user/meshy-drive/drive-2026-11-01-seetah/`,
