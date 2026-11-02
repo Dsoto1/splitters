@@ -1,6 +1,5 @@
 // Skin weights cleaned in the download's own pose, before it is turned to the rig's T-pose (prepare-meshy-characters.mjs
-// pose()), and the triangles that turn tears apart (`fixes.skinClean`, on by default; false keeps the weights as they
-// come).
+// pose()), and the triangles that turn tears apart; opt-in per character (`fixes.skinClean: true`).
 //
 // Meshy's downloads mostly stand with the arms down, hands against the hips and wide sleeves against the body. Their
 // weights (Meshy's rigging, and our own bone heat on unrigged downloads) leak across those contacts: hand and finger
@@ -10,12 +9,20 @@
 // spikes", Luther Vanguard's threads from his fingertips, Goblina's hands smeared into flaps); every clip that lifts
 // the arms (the gun holds, running) waves them about.
 //
-// The rule, per vertex: the side it belongs to is the arm or the body, whichever's bones it is nearer (only asked when
-// both hold it); the heaviest joint on that side is its anchor, and only joints within HOPS of the anchor on the rig's
-// skeleton keep their share (a hand keeps its forearm and upper arm, never the hips; a torso side keeps the chest and
-// the clavicle, never the forearm); the other arm never. Then, after the turn to the T-pose, a triangle whose edges
-// stretched far past their length in the download joined two parts that only touched there (a fingertip fused to a
-// thigh, a sleeve fused to the coat): it is dropped (`tear`).
+// The rules (cleanSkin, then tearStretched and capTears after the turn):
+// - whose skin a vertex an arm holds is: skin faces away from its own bone, so the inside of a sleeve (facing the body)
+//   is the arm's, and the body's side under a hanging arm (facing the arm) is the body's, when the patch it makes is
+//   joined mostly to the body (the inside of a wide cuff faces its bone the same way, but is joined to the sleeve);
+//   where facing doesn't tell, the nearer bone. Body skin no body joint held takes the nearest body vertex's weights;
+// - the heaviest joint on that side is the vertex's anchor, and only joints within HOPS of it on the rig's skeleton
+//   keep their share (a hand keeps its forearm and upper arm, never the hips; a torso side keeps the chest and the
+//   clavicle, never the forearm); the other arm never;
+// - after the turn to the T-pose, a triangle reaching a forearm or a hand whose edges stretched far past their length
+//   in the download joined two parts that only touched there (a fingertip fused to a thigh, a cuff to the hip): torn
+//   out, and each hole closed with a flat fan. Skin between the upper arm and the body rightly stretches (the armpit).
+// Opt-in: on by default it rebuilt Freaky Frida's pigtails (hair hanging by the shoulders, weighted by nearest bone)
+// into strands and put a flap on Kenji's vest; characters whose downloads stand with the arms at their sides and show
+// strands or flaps from the hands or sleeves are the ones to try it on.
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -403,7 +410,6 @@ export function capTears({ before, after, pos, nrm, uv, J, W, side, deep = () =>
         if (inBody.get(k) === 1 && all.get(k) >= 2 && !next.has(a)) next.set(a, b);
       }
     }
-    if (process.env.CAP_DEBUG) console.log(`  sockets: ${next.size} rim edges, chains ${chains(next).map((c) => `${c.length}${c[0] === c[c.length - 1] ? 'o' : '-'}${deep(c) ? 'D' : ''}`).join(' ')}`);
     for (const chain of chains(next)) {
       if (chain.length < 4 || chain[0] !== chain[chain.length - 1] || !deep(chain)) continue;
       const run = [];

@@ -300,7 +300,7 @@ function pose(skel, verts, ual, c) {
     for (let k = 0; k < 4; k++) if (W[v * 4 + k]) p = add(p, scale(verts.at(v, J[v * 4 + k])[0], W[v * 4 + k]));
     return p;
   };
-  const clean = c.skinClean !== false;
+  const clean = !!c.skinClean;
   let restPos = null;
   if (clean) {
     restPos = new Float32Array(count * 3);

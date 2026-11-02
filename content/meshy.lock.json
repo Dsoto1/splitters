@@ -1406,34 +1406,32 @@
       "hands": true
     },
     {
-      "role": "meshy",
+      "role": "meshy-autorig",
       "id": "meshy_vanguard",
       "source": "meshy-community-characters",
-      "meshy": {
-        "rig": "01a18a06-dcea-72f8-a307-6aa4a8efc97e"
-      },
       "model": "A futuristic warrior character",
       "date": "2026-10-29",
+      "src": "Meshy_AI_a_warrior_character__1029194603_texture.glb",
+      "sourceTriangles": 26808,
       "file": "characters/meshy_vanguard.glb",
-      "sha256": "efd9f3de133dd17f",
-      "triangles": 11000,
-      "lodTriangles": 3300,
-      "bytes": 897460,
+      "sha256": "98ee97e57de82b60",
+      "triangles": 10994,
+      "lodTriangles": 3296,
+      "bytes": 908376,
       "hands": true
     },
     {
       "role": "meshy-fparms",
       "id": "meshy_vanguard_fparms",
       "source": "meshy-community-characters",
-      "meshy": {
-        "rig": "01a18a06-dcea-72f8-a307-6aa4a8efc97e"
-      },
       "model": "A futuristic warrior character",
       "date": "2026-10-29",
+      "src": "Meshy_AI_a_warrior_character__1029194603_texture.glb",
+      "sourceTriangles": 26808,
       "file": "characters/meshy_vanguard_fparms.glb",
-      "sha256": "6a4bff76cc0aed5f",
-      "triangles": 1959,
-      "bytes": 347408,
+      "sha256": "07e3f3e5145d13e6",
+      "triangles": 2152,
+      "bytes": 354504,
       "hands": true
     },
     {
