@@ -56,6 +56,7 @@ import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
 import { keepArmsToArms } from './armweights.mjs';
+import { SIDE_DEPTH, capTears, cleanSkin, tearStretched } from './skinclean.mjs';
 import { addLowDetail } from './character-lod.mjs';
 import { HANDS_SHARE, HEAD_SHARE, bakeNormals, cutKeeping, normalJpeg, rebake, seamAwareSimplify } from './meshy-mesh.mjs';
 
@@ -290,7 +291,33 @@ async function readMeshy(file, ual, c) {
  */
 function pose(skel, verts, ual, c) {
   const { names, parent, rest } = skel;
-  const { count, joints: J, weights: W } = verts;
+  const { count } = verts;
+  let J = verts.joints;
+  let W = verts.weights;
+  // The vertices where the download stands (its own pose), for the weight cleanup and the tear test below.
+  const restAt = (v) => {
+    let p = [0, 0, 0];
+    for (let k = 0; k < 4; k++) if (W[v * 4 + k]) p = add(p, scale(verts.at(v, J[v * 4 + k])[0], W[v * 4 + k]));
+    return p;
+  };
+  const clean = c.skinClean !== false;
+  let restPos = null;
+  if (clean) {
+    restPos = new Float32Array(count * 3);
+    for (let v = 0; v < count; v++) restPos.set(restAt(v), v * 3);
+    // Weights leaking across the download's contacts (hands on the hips, sleeves on the body) off (skinclean.mjs).
+    W = Float32Array.from(W);
+    J = J.slice();
+    const restNrmAt = (v) => {
+      let n = [0, 0, 0];
+      for (let q = 0; q < 4; q++) if (W[v * 4 + q]) n = add(n, scale(verts.at(v, J[v * 4 + q])[1], W[v * 4 + q]));
+      return n;
+    };
+    const restN = new Float32Array(count * 3);
+    for (let v = 0; v < count; v++) restN.set(restNrmAt(v), v * 3);
+    const changed = cleanSkin({ rig: skel.rig ?? names.map((n) => JOINT_MAP[n]), parent, rest, restAt: (v) => [restPos[v * 3], restPos[v * 3 + 1], restPos[v * 3 + 2]], restNrm: (v) => [restN[v * 3], restN[v * 3 + 1], restN[v * 3 + 2]], count, J, W, indices: verts.indices });
+    console.log(`  skin: ${changed} vertices kept to their own limb (weights from far joints dropped)`);
+  }
   // Re-pose: walk the joints parents first, turning the listed bones to the rig's directions.
   const index = new Map(names.map((n, i) => [n, i]));
   let rot = new Array(names.length);
@@ -385,21 +412,26 @@ function pose(skel, verts, ual, c) {
     }
   }
 
-  const pos = new Float32Array(count * 3);
-  const nrm = new Float32Array(count * 3);
-  for (let v = 0; v < count; v++) {
+  const rigOf = skel.rig ?? names.map((n) => JOINT_MAP[n]);
+  /** Vertex v (of the original `o`'s skin, with row v's influences) at the joints' turned places, and its normal. */
+  const place = (v, o) => {
     let p = [0, 0, 0];
     let n = [0, 0, 0];
-    for (let k = 0; k < 4; k++) {
-      const w = W[v * 4 + k];
+    for (let q = 0; q < 4; q++) {
+      const w = W[v * 4 + q];
       if (!w) continue;
-      const j = J[v * 4 + k];
+      const j = J[v * 4 + q];
       // Rest pose in world space, then about the joint to its re-posed place.
-      const [pw, nw] = verts.at(v, j);
+      const [pw, nw] = verts.at(o, j);
       p = add(p, scale(add(posed[j], qrot(rot[j], sub(pw, rest[j]))), w));
       n = add(n, scale(qrot(rot[j], nw), w));
     }
-    n = norm(n);
+    return [p, norm(n)];
+  };
+  const pos = new Float32Array(count * 3);
+  const nrm = new Float32Array(count * 3);
+  for (let v = 0; v < count; v++) {
+    const [p, n] = place(v, v);
     pos.set(p, v * 3);
     nrm.set(n, v * 3);
   }
@@ -409,17 +441,46 @@ function pose(skel, verts, ual, c) {
   const k = HEIGHT / (high - low);
   const fit = (p) => [p[0] * k, (p[1] - low) * k, p[2] * k];
   for (let v = 0; v < pos.length; v += 3) pos.set(fit([pos[v], pos[v + 1], pos[v + 2]]), v);
+  let out = { pos, nrm, uv: verts.uv, J, W, indices: verts.indices };
+  if (clean) {
+    const sideOf = (v) => {
+      const s = { l: 0, r: 0, body: 0 };
+      for (let q = 0; q < 4; q++) {
+        const m = /^(upperarm|lowerarm|hand)_([lr])$/.exec(rigOf[J[v * 4 + q]] ?? '');
+        s[m ? m[2] : 'body'] += W[v * 4 + q];
+      }
+      return s.l >= 0.5 ? 'l' : s.r >= 0.5 ? 'r' : 'body';
+    };
+    // Triangles the turn stretched far past their length in the download joined parts that only touched there (a
+    // fingertip fused to a thigh): torn out, and the holes they leave closed (skinclean.mjs).
+    // Skin between the upper arm and the body rightly stretches as the arm comes up (the armpit, down the side under a
+    // cape): only triangles reaching a forearm or a hand (a sleeve's cuff on the hip, fingertips on a thigh) are torn.
+    const major = (v) => {
+      let b = 0;
+      for (let q = 1; q < 4; q++) if (W[v * 4 + q] > W[v * 4 + b]) b = q;
+      return rigOf[J[v * 4 + b]] ?? '';
+    };
+    const spare = (...tri) => !tri.some((v) => /^(lowerarm|hand)_/.test(major(v)));
+    const torn = tearStretched(verts.indices, restPos, pos, k, HEIGHT, spare);
+    // A body rim against an arm that reaches well below the shoulder (in the T-pose: the arm is level) is a side the
+    // arm covered in the download.
+    const shoulderYs = ['l', 'r'].map((s) => posed[rigOf.indexOf(`upperarm_${s}`)]).filter(Boolean).map((p) => fit(p)[1]);
+    const top = shoulderYs.length ? Math.min(...shoulderYs) : -Infinity;
+    const deep = (ring) => ring.some((v) => pos[v * 3 + 1] < top - SIDE_DEPTH * HEIGHT);
+    out = capTears({ before: verts.indices, after: torn.indices, pos, nrm, uv: verts.uv, J, W, side: sideOf, deep });
+    if (torn.torn || out.sides) console.log(`  skin: ${torn.torn} triangles stretched across a contact in the download's pose torn out, ${out.capped} holes closed, ${out.sides} sides the arms hid closed`);
+  }
   for (let i = 0; i < posed.length; i++) posed[i] = fit(posed[i]);
   return {
     names,
     rig: skel.rig ?? names.map((n) => JOINT_MAP[n]),
     posed: new Map(names.map((n, i) => [n, posed[i]])),
-    pos,
-    nrm,
-    uv: verts.uv,
-    joints: J,
-    weights: W,
-    indices: verts.indices,
+    pos: out.pos,
+    nrm: out.nrm,
+    uv: out.uv,
+    joints: out.J,
+    weights: out.W,
+    indices: out.indices,
     baseColor: verts.baseColor,
     normalMap: verts.normalMap ?? null,
   };

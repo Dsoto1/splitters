@@ -550,10 +550,10 @@
       "model": "Gloombraid Goblin Shaman",
       "date": "2026-10-29",
       "file": "characters/meshy_grizzelda.glb",
-      "sha256": "55f3d5f1b80deea3",
-      "triangles": 15963,
-      "lodTriangles": 4142,
-      "bytes": 1404172,
+      "sha256": "0545141f3590c15d",
+      "triangles": 15927,
+      "lodTriangles": 4133,
+      "bytes": 1461424,
       "hands": true,
       "surface": "rebake"
     },
@@ -567,9 +567,9 @@
       "model": "Gloombraid Goblin Shaman",
       "date": "2026-10-29",
       "file": "characters/meshy_grizzelda_fparms.glb",
-      "sha256": "35c478573be5ff82",
-      "triangles": 1720,
-      "bytes": 412908,
+      "sha256": "06ddd21212e927c5",
+      "triangles": 2026,
+      "bytes": 452948,
       "hands": true
     },
     {
@@ -1384,10 +1384,10 @@
       "model": "A humanoid harlequin clown",
       "date": "2026-10-29",
       "file": "characters/meshy_giggles.glb",
-      "sha256": "9cb450210d29e3c0",
-      "triangles": 14999,
-      "lodTriangles": 3297,
-      "bytes": 1002840,
+      "sha256": "353bfedf92db2ac0",
+      "triangles": 14998,
+      "lodTriangles": 3298,
+      "bytes": 1002268,
       "hands": true
     },
     {
@@ -1400,9 +1400,9 @@
       "model": "A humanoid harlequin clown",
       "date": "2026-10-29",
       "file": "characters/meshy_giggles_fparms.glb",
-      "sha256": "59127290b93b67d3",
-      "triangles": 2442,
-      "bytes": 364048,
+      "sha256": "46a11d6544e9a2ec",
+      "triangles": 3696,
+      "bytes": 389488,
       "hands": true
     },
     {
@@ -1446,10 +1446,10 @@
       "model": "Full body of a man wearing a mask",
       "date": "2026-10-29",
       "file": "characters/meshy_dust_trooper.glb",
-      "sha256": "a6b34e593de7ea64",
-      "triangles": 15018,
-      "lodTriangles": 3286,
-      "bytes": 1641376,
+      "sha256": "151bb5d39011a7e0",
+      "triangles": 16027,
+      "lodTriangles": 3505,
+      "bytes": 1705916,
       "hands": true
     },
     {
@@ -1462,9 +1462,9 @@
       "model": "Full body of a man wearing a mask",
       "date": "2026-10-29",
       "file": "characters/meshy_dust_trooper_fparms.glb",
-      "sha256": "258fdf2edb0c42d6",
-      "triangles": 1540,
-      "bytes": 358456,
+      "sha256": "e47eaa89523d0d1e",
+      "triangles": 2154,
+      "bytes": 380892,
       "hands": true
     },
     {
