@@ -65,8 +65,12 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   let fireRate = 0;
   let firedAt = 0;
 
+  /** `__grips.crowd`: extra characters driven like the posed one (an animation cost measurement). */
+  const crowd: CharacterAnimator[] = [];
+
   engine.runRenderLoop(() => {
     current?.anim.update(1 / 30, { ...still, pitch: eyePitch });
+    for (const a of crowd) a.update(1 / 30, { ...still, pitch: eyePitch });
     if (fireRate > 0 && current && frames - firedAt >= 30 / fireRate) {
       firedAt = frames;
       current.anim.trigger('shoot');
@@ -293,6 +297,43 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       Object.assign(still, { moveAngle: 0, speed: 0, ...rest });
       fireRate = rate;
       await settle(frames);
+    },
+    /**
+     * Animation cost: `n` more characters of `look` (each holding `weapon`, in a grid behind the posed one) driven by
+     * the same motion (`drive`), or none (n 0). Returns, over `seconds`, the mean milliseconds a frame spends
+     * evaluating clips and in the animators' after-clip work (aim, IK, grip), and the playing animatables.
+     */
+    crowd: async (look: string, n: number, weapon = 'core.rifle', seconds = 3) => {
+      for (const a of crowd.splice(0)) a.dispose();
+      for (let i = 0; i < n; i++) {
+        const ch = await characters.create({ look }, `crowd_${i}`);
+        ch.root.position.set((i % 12) * 1.2 - 6.6, 0, 3 + Math.floor(i / 12) * 1.5);
+        const a = new CharacterAnimator(scene, ch);
+        a.hold(await models.instantiate(getWeapon(weapon).view.model, `crowd_w${i}`), getWeapon(weapon).view.hold);
+        crowd.push(a);
+      }
+      await settle(20);
+      let t0 = 0;
+      let anim = 0;
+      let after = 0;
+      let count = 0;
+      const b = scene.onBeforeAnimationsObservable.add(() => (t0 = performance.now()));
+      // Added first among the after-animation observers' tail: clip evaluation ends here; the animators' own work follows.
+      const m = scene.onAfterAnimationsObservable.add(() => {
+        const t = performance.now();
+        anim += t - t0;
+        t0 = t;
+      }, undefined, true);
+      const e = scene.onAfterAnimationsObservable.add(() => {
+        after += performance.now() - t0;
+        count++;
+      });
+      const until = performance.now() + seconds * 1000;
+      while (performance.now() < until) await settle(1);
+      scene.onBeforeAnimationsObservable.remove(b);
+      scene.onAfterAnimationsObservable.remove(m);
+      scene.onAfterAnimationsObservable.remove(e);
+      return { frames: count, animMs: anim / Math.max(1, count), afterMs: after / Math.max(1, count), animatables: scene.animatables.length };
     },
     /** World positions of the posed character's joints (third person), by name. */
     joints: (): Record<string, [number, number, number]> =>
