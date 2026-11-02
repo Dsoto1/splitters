@@ -190,6 +190,13 @@ function pathLength(route: readonly Vec3[]): number {
 const VEHICLE_TRIP = 55;
 /** How far (m, plus height) a bot with only a sidearm detours for a gun. */
 const GUN_DETOUR = 30;
+/** Riding along: a vehicle standing still this long (s), with nothing to shoot for 4 s, is parked; riders get out. */
+const RIDE_PARKED_SECONDS = 8;
+/** A bot at the wheel gives up (gets out) when the route left hasn't shrunk this much (m) in this long (s). */
+const DRIVE_PROGRESS_SECONDS = 12;
+const DRIVE_MIN_PROGRESS = 10;
+/** A pickup a bot got stuck going for is left alone this long (s). */
+const PICKUP_GIVE_UP_SECONDS = 90;
 /** How far (m) a bot goes to hop into a teammate's vehicle. */
 const RIDE_REACH = 25;
 /** Enemy vehicles: how far (m, plus height) a bot goes for a rocket or grenade launcher once one has been seen lately (VEHICLE_MEMORY s). */
@@ -380,6 +387,8 @@ export class BotBrain {
   private readonly skipMount = (m: MountView): boolean => (this.avoidMounts.get(m.index) ?? -Infinity) > this.lastThinkTick;
   /** Riding with a bot at the wheel: is it getting anywhere? */
   private riderHeadway: Headway = { pos: null, tick: 0 };
+  /** Driving: how far the route still was when the current progress window opened, and when. */
+  private driveLeft = { left: Infinity, tick: 0 };
   /** The target's mount, when it is in one (refreshed each think). */
   private targetMount: MountView | null = null;
   /** Last tick an enemy in a vehicle was in sight (launchers are worth fetching for a while after). */
@@ -412,6 +421,12 @@ export class BotBrain {
   stuckLoops = 0;
   /** A goal it kept getting stuck on: left alone until then. */
   private avoid: { pos: Vec3; until: number } | null = null;
+  /**
+   * Pickups this bot got stuck going for (stuck three times by the same spot): left alone for
+   * PICKUP_GIVE_UP_SECONDS, across respawns (a bot spawns by the same unreachable item again). Without it the
+   * pickup check every 2 s sent it straight back, and whole squads stood at their spawn walking into a wall.
+   */
+  private readonly lostPickups: { pos: Vec3; until: number }[] = [];
   /** The squad goal last taken on (a new one replaces the bot's own goal). */
   private squadGoal: Vec3 | null = null;
   /** Catching up with its squad's leader. */
@@ -1083,13 +1098,19 @@ export class BotBrain {
             this.squadGoal = { ...cl.goal };
             this.roamGoal = { ...cl.goal };
             this.via = cl.via ? { ...cl.via } : null;
-          }
+          } else if (!this.roamGoal) this.roamGoal = { ...cl.goal };
         } else this.squadGoal = null;
         if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 2 || (tick + this.slot) % (TICK_RATE * 2) === 0) {
           // Re-evaluate pickups now and then; otherwise keep advancing on the current goal.
           const pick = this.pickupGoal(view);
           if (pick) this.roamGoal = pick;
-          else if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 2) this.pickAdvanceGoal(view);
+          else if (this.squadGoal && horizontalDistance(me.pos, this.squadGoal) > 2 && (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 2)) {
+            // Back from a detour (a pickup, a goal it reached or couldn't reach): on to the squad's goal again, not one
+            // of its own. (Before, a member or the leader that picked something up went off to a goal of its own until
+            // the squad picked its next one: the leader one way, the members another, regrouping back and forth.)
+            this.roamGoal = { ...this.squadGoal };
+            this.via = null;
+          } else if (!this.roamGoal || horizontalDistance(me.pos, this.roamGoal) < 2) this.pickAdvanceGoal(view);
         }
         let goal = this.roamGoal!;
         if (this.via) {
@@ -1108,6 +1129,10 @@ export class BotBrain {
         moveYaw = waiting ? null : this.followPathTo(view, goal, regroup);
         // Arrived or unreachable: pick another goal next tick.
         if (moveYaw === null && !regroup && !waiting) {
+          // No way to the squad's goal from here: leave it to the others for a while (its own goals meanwhile).
+          if (this.squadGoal && this.roamGoal && horizontalDistance(this.roamGoal, this.squadGoal) < 1 && horizontalDistance(me.pos, this.squadGoal) > 3) this.avoid = { pos: { ...this.squadGoal }, until: tick + TICK_RATE * 20 };
+          // No way to a pickup it was after (not there yet): the same, or the next pickup check sends it back.
+          else if (this.roamGoal && !this.via && horizontalDistance(me.pos, this.roamGoal) > 1.5) this.losePickup(view, this.roamGoal);
           this.roamGoal = null;
           this.via = null;
         }
@@ -1918,6 +1943,7 @@ export class BotBrain {
       this.rideIdleSince = this.noDriverSince = -Infinity;
       this.bailDelay = Math.round(TICK_RATE * (0.35 + this.rng() * 0.5));
       this.riderHeadway = { pos: null, tick: 0 };
+      this.driveLeft = { left: Infinity, tick };
       this.dodge = null;
       this.roadkill = null;
     }
@@ -1960,6 +1986,15 @@ export class BotBrain {
         const a = Math.atan2(aimPt.x - m.pos.x, aimPt.z - m.pos.z);
         this.turnToward(a, 0);
       }
+      // Getting nowhere while moving (circling a spot it can't drive out of, a shore a boat can't climb): the route
+      // left must shrink by DRIVE_MIN_PROGRESS m every DRIVE_PROGRESS_SECONDS, or it gives up like a stuck one. (The
+      // stuck check only catches a vehicle standing or grinding in place; riders now stay aboard, so a circling
+      // driver would take them round and round.)
+      const routeLeft = this.path.length > 1 ? pathLength(this.path) : left;
+      if (tick - this.driveLeft.tick >= TICK_RATE * DRIVE_PROGRESS_SECONDS) {
+        if (!fireAt && routeLeft > this.driveLeft.left - DRIVE_MIN_PROGRESS) this.drive.stuck = true;
+        this.driveLeft = { left: routeLeft, tick };
+      } else if (this.driveLeft.left === Infinity) this.driveLeft = { left: routeLeft, tick };
       // Get out: arrived, about to blow (or on fire), stuck for good (a back-out didn't free it), or a fight with no gun.
       if (left < 14 || aboutToBlow(m) || this.drive.stuck || (target && !seat.weapon && horizontalDistance(m.pos, target.pos) < 22)) leave = true;
       // Don't climb straight back into the one that got stuck.
@@ -1975,7 +2010,9 @@ export class BotBrain {
       else if (this.noDriverSince === -Infinity) this.noDriverSince = tick;
       if ((m.speed ?? 0) > 0.5 || fireAt) this.rideIdleSince = -Infinity;
       else if (this.rideIdleSince === -Infinity) this.rideIdleSince = tick;
-      const parked = tick - this.rideIdleSince > TICK_RATE * 8 && tick - this.lastTargetTick > TICK_RATE * 4;
+      // (rideIdleSince is -Infinity while it moves: only a vehicle that has actually stood still 8 s is parked. Testing
+      // the gap alone read every moving vehicle as parked for good, and riders got out as soon as the driver set off.)
+      const parked = this.rideIdleSince !== -Infinity && tick - this.rideIdleSince > TICK_RATE * RIDE_PARKED_SECONDS && tick - this.lastTargetTick > TICK_RATE * 4;
       // (A human at the wheel may stop on purpose; a bot driver never parks with riders.)
       const stuck = driven && !ally.human && noHeadway(this.riderHeadway, m.pos, tick, RIDER_STUCK_TICKS, RIDER_MIN_PROGRESS);
       if (stuck) this.avoidMounts.set(m.index, tick + TICK_RATE * STUCK_AVOID_SECONDS);
@@ -2048,6 +2085,7 @@ export class BotBrain {
       // Arena bots time the respawns: head for an item that will be back by the time they get there.
       const timed = this.arena && p.respawnIn !== undefined && p.respawnIn < horizontalDistance(me.pos, p.pos) / 5 + 1;
       if (!p.available && !timed) continue;
+      if (this.lostPickups.length && this.pickupLost(p.pos)) continue;
       const e = p.item.effect;
       if (only && e.kind !== only) continue;
       if (weapons && (e.kind !== 'weapon' || !weapons(getWeapon(e.weapon)))) continue;
@@ -2062,6 +2100,23 @@ export class BotBrain {
       if (score > 0.12 && (!best || score > best.score)) best = { pos: p.pos, score };
     }
     return best ? { ...best.pos } : null;
+  }
+
+  /** `goal` is a pickup this bot can't get to (stuck on the way, or no way there): leave it alone for a good while. */
+  private losePickup(view: BotWorldView, goal: Vec3): void {
+    if (!view.pickups.some((p) => horizontalDistance(p.pos, goal) < 0.5)) return;
+    if (this.lostPickups.length >= 8) this.lostPickups.shift();
+    this.lostPickups.push({ pos: { ...goal }, until: view.tick + TICK_RATE * PICKUP_GIVE_UP_SECONDS });
+  }
+
+  /** A pickup at `pos` this bot gave up on (stuck going for it) and still leaves alone. */
+  private pickupLost(pos: Vec3): boolean {
+    const list = this.lostPickups;
+    for (let i = list.length - 1; i >= 0; i--) {
+      if (list[i]!.until <= this.lastThinkTick) list.splice(i, 1);
+      else if (horizontalDistance(list[i]!.pos, pos) < 1.5) return true;
+    }
+    return false;
   }
 
   /**
@@ -2531,6 +2586,8 @@ export class BotBrain {
       log.length = 0;
       this.stuckLoops++;
       if (this.roamGoal) this.avoid = { pos: { ...this.roamGoal }, until: view.tick + TICK_RATE * 20 };
+      // A pickup it was after: off its list for a good while (the 2 s pickup check would send it straight back).
+      if (this.roamGoal) this.losePickup(view, this.roamGoal);
       this.roamGoal = null;
       this.via = null;
       this.heard = null;

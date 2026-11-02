@@ -10,6 +10,19 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Bots: riders stay, squads push (`wip/bot-tactics`, agent, 2026-11-02; not merged; from main 8bc4001)
+Owner (2 Nov): bots get out of his vehicle when he starts driving; tactical squads with a leader go in circles or
+don't push. docs/BOTS.md "Riding, and pushing with a leader" (causes, before/after table).
+- **Riders**: the rider's `parked` check took the idle clock (`-Infinity` while moving) at face value, so every moving
+  vehicle read as parked: out ~1 s after setting off. Fixed; bot drivers that make no route progress (10 m / 12 s)
+  now give up like stuck ones (riders no longer bail on them for free). `test/botRiders.test.ts` (Iron Maw, 60 s).
+- **Squads**: unreachable pickups re-picked every 2 s (Shingle Point's sunken-bunker rocket launcher held the
+  assault squads at their spawn) → given up 90 s, across respawns; members/leader back to the squad goal after a
+  detour; squad goals kept while the leader is closing; half the squad at the goal counts as arrived.
+  `test/botPush.test.ts`, `botRoles.test.ts` "squad goals". Probes (not committed): agent scratchpad `probe/`
+  (`push.mts` metrics, `lead.mts` player-leader orders, `loops*.mts` breakdowns).
+- Open: Iron Maw idle out of a fight is a couple of points higher on some seeds (bots in `mount` waiting by a
+  vehicle); kills/min within noise. CTF unchanged (no squads in objective modes).
 ### Iron Maw "snow patches": overlapping roads z-fought (`wip/fix-terrain`, agent, 2026-11-02; not merged; from main c6751d5)
 Owner's screenshot: pale "snow/ice" patches with hard jagged borders on brown dirt near Iron Maw's crusher. **Not the
 terrain**: Iron Maw's terrain holds only sand, stone and gravel (no snow, unchanged since the greybox; `terrainMaterialFor`

@@ -122,6 +122,36 @@ describe('squads (clusters)', () => {
   });
 });
 
+describe('squad goals', () => {
+  it('a squad still closing on its goal keeps it past its time; one getting nowhere picks another', () => {
+    const places = grid();
+    const towards = [{ x: 135, y: 0, z: 135 }, { x: 100, y: 0, z: 135 }, { x: 135, y: 0, z: 100 }];
+    const run = (moves: boolean) => {
+      const d = new BotDirector(11, regionLayout(places), places);
+      const team = Array.from({ length: 6 }, (_, i) => member(i, { x: 5 + i, y: 0, z: 5 }));
+      const goals: string[] = [];
+      for (let s = 1; s <= 150; s++) {
+        d.update(TICK_RATE * s, 'red', team.map((m) => m.pos), team, towards, true, () => {});
+        const sq = d.squads('red')[0]!;
+        const g = sq.goal!;
+        if (goals[goals.length - 1] !== `${g.x},${g.z}`) goals.push(`${g.x},${g.z}`);
+        if (moves) {
+          // The squad walks toward its goal at 1 m/s (a slow, fighting advance: never there within the goal's time).
+          const lead = team[sq.leader]!.pos;
+          const dist = horizontalDistance(lead, g);
+          if (dist > 13) for (const m of team) m.pos = { x: m.pos.x + (g.x - lead.x) / dist, y: 0, z: m.pos.z + (g.z - lead.z) / dist };
+        }
+      }
+      return goals;
+    };
+    // Standing still, the goal changes every 20-35 s; walking toward it, the same goal is kept until reached.
+    const still = run(false);
+    const walking = run(true);
+    expect(still.length).toBeGreaterThanOrEqual(4);
+    expect(walking.length).toBeLessThanOrEqual(2);
+  });
+});
+
 describe('route variety', () => {
   it('sends a side to regions nobody has been to lately, and spreads bots over them', () => {
     const places = grid();
