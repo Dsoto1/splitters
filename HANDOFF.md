@@ -23,6 +23,89 @@ don't push. docs/BOTS.md "Riding, and pushing with a leader" (causes, before/aft
   (`push.mts` metrics, `lead.mts` player-leader orders, `loops*.mts` breakdowns).
 - Open: Iron Maw idle out of a fight is a couple of points higher on some seeds (bots in `mount` waiting by a
   vehicle); kills/min within noise. CTF unchanged (no squads in objective modes).
+### Iron Maw "snow patches": overlapping roads z-fought (`wip/fix-terrain`, agent, 2026-11-02; not merged; from main c6751d5)
+Owner's screenshot: pale "snow/ice" patches with hard jagged borders on brown dirt near Iron Maw's crusher. **Not the
+terrain**: Iron Maw's terrain holds only sand, stone and gravel (no snow, unchanged since the greybox; `terrainMaterialFor`
+only affects new painting in MapMaker, never how stored cells render). The pale surface is the **concrete
+`crusher_apron` path** (Concrete034), the brown the **dirt `rim_haul_road`** (Ground109): the apron starts and ends on the
+haul road and runs over it, both ribbons sat at the same lift with the same polygon offset, so the depth buffer picked a
+winner pixel by pixel (jagged, triangle-shaped patches). Fix: `pathDrawRanks` (shared/map/paths.ts) gives each drawn path
+a draw rank (0 when it overlaps nothing drawn before it, else one above the highest it overlaps: the later path in the
+list lies on top); pathMeshes/roadMeshes lift each rank `PATH_RANK_LIFT` (3 cm) and pull it `pathRankUnits` (−8 polygon
+offset units per rank) toward the camera, lines and curbs with it (`flat()` takes units). Rank 0 renders exactly as
+before. Iron Maw ranks: rim 0; spiral, switchback, ne/west spurs, apron 1; nw/se spurs 2 (≈30 ms once per build).
+Shots: lead scratchpad `terrain-fix/compare-apron.png`, `before-*.png` / `after-*.png`.
+- Owner's call (MapMaker data, not code): whether the pale concrete apron belongs in a desert mine (Paths tool → its
+  style, e.g. Gravel or Dirt trail), and where it should end on the haul road.
+- Noted, not changed: the terrain itself has **no blending** between ground layers (one mesh per layer, hard 3 m cell
+  edges, MapStyler.buildTerrain); on any painted map the borders are square steps. Soft blending is a renderer feature
+  of its own (vertex weights + layered alpha, or a splat shader), not part of this fix.
+- Checks: typecheck; test:changed 1246 pass (new: paths.test.ts `pathDrawRanks`); e2e editorux, race PASS; maps3 failed
+  only diamond_park/mercy_ward "no match" and a MapMaker import timeout after them: the diamond_park page crashes the same
+  way on a main build in this container (load ~14), so not this change. ci:plan says full suite (shared/map/paths.ts).
+
+### Ragdoll joint limits (`wip/fix-ragdoll`, agent, 2026-11-02; not merged; from main c6751d5)
+Owner's report: on Iron Maw (TDM, many bots) corpses lay with limbs bent impossibly (a dark character folded with
+arms and legs up, a green creature splayed and twisted). **Cause:** `ragdoll.ts` joined its capsules with Rapier
+spherical joints with **no limits** (HANDOFF's 2026-10-29 note), so elbows/knees bent backwards, thighs swung up
+behind the back, heads and limbs twisted round; whole-body rigs (different proportions, death poses) showed it most.
+Checked and not the cause: the far copy (LOD) shares the joints (its skeleton follows the same nodes; `freezePose`
+prepares every skin), the scope zoom only moves the LOD switch, capsule sizes/pushes are unchanged and hold on the
+ground. **Fix:** `game/ragdollJoints.ts` plans each joint's frame on both bodies from the joint *positions* at death
+(body up/right/forward with the avatar's facing settling front and back; each limb's direction; the elbow's and
+knee's own bend axis), never bone axes, so one table of anatomical limits (`JOINT_LIMITS`) holds for every rig;
+each range is widened to include the pose at death (no snap). Sides come from where a limb is, not its name;
+folded joints (rolling robot's legs) fall back to hanging. `EffectsWorld.ballJoint` takes the frames and sets
+limits on all three angular axes (Rapier limits 2·asin of the relative rotation's x/y/z; limiting only one axis of
+a spherical joint doesn't hold it). Test: `client/test/ragdollJoints.test.ts` (eight rig layouts: A/T/aim poses,
+small, large, turned, mirrored names, folded legs; knee/elbow hyperextension, shin twist, thigh behind the back and
+head turned round are outside, normal folds inside; a Rapier check that a knee driven forward stops at straight).
+Perf: a 30-ragdoll Rapier bench steps no slower with limits (bodies settle and sleep sooner); budget unchanged.
+Contact sheets (before/after, scratchpad of the session): `ragdoll-fix/sheet-before.png`, `sheet-after.png`.
+Open: the cheap tier (far, in view) still hangs the limbs in the death clip's last frame relative to a tumbling
+torso; no self-collision between a body's own limbs (an arm can rest inside the torso).
+
+### Skin fix: Giggles, Dust Trooper, Goblina, Luther Vanguard (`wip/fix-skin`, agent, 2026-11-02; not merged; from main 93c22d8)
+Owner: "Giggles and Vanguard models still distorted." Sheets (several angles, hold, run, close-ups, first person; before
+above after) in the agent scratchpad `skin-fix/`: `core.<look>-before-after.jpg`, `before/weights-before.jpg` and
+`after/weights-after.jpg` (bind pose coloured by limb: left arm red, right green, torso blue, legs yellow, magenta where an
+arm and the body share a vertex away from the shoulder), `after/v14-close.jpg`, `others/pair-*.jpg` (the sample below);
+scripts in `skin-fix/tools/` (sheet.mjs, close.mjs: `?mode=grips` renders; weights.mjs: offline bind/hold pictures of a
+built GLB or a rigged download).
+- **Cause (all four):** the downloads stand with the arms down, hands on the hips, sleeves against the body, and their
+  weights (Meshy's, and ours on Vanguard) tie the hands, the sleeves' insides and the body's side under the arm to
+  both the arm and the hip/spine. Turning the arms out to the T-pose (pose()) dragged those vertices halfway: sheets and
+  strands from the hands to the hips were already in the BUILT BIND POSE (the grip audit's stretch test compares the
+  hold with the bind pose, so it never counted them: its "spikes" were 0 on Giggles and the Dust Trooper). Goblina's
+  "flap hands" are her clawed hands smeared that way; Vanguard's threads run from his fingertips (which touched his
+  thighs). Vanguard also had the Frida fault: found shoulders under the pauldrons at the base of the neck, elbows and
+  wrists on the arms' inner edge.
+- **Fix:** `tools/content/skinclean.mjs`, opt-in `fixes.skinClean: true` (rigged and unrigged downloads; in pose(),
+  before the turn): skin facing away from its own bone decides arm vs body (a sleeve's inside is the arm's; the body's
+  side under a hanging arm is the body's when that patch is joined mostly to the body; else the nearer bone); only
+  joints within 2 of the anchor on the rig's skeleton keep a share; after the turn, triangles reaching a forearm or a
+  hand that stretched past 3x (fingertip fused to a thigh) are torn and the holes closed with flat fans; armpits are
+  never torn (tearing them opened Goblina's side under her cape). Tests: tools/content/test/skinclean.test.mjs.
+  Tried and dropped: tearing every stretched triangle (holes down Giggles' and Goblina's sides), copying the sleeve's
+  contact skin onto the body (a print of the cuff left on the hip).
+- **Vanguard:** his rig task 404s on this key (as the Dapper's and Nova's), so he is rigged in-house from the unrigged
+  download (meshystuff) with shoulders, elbows, wrists and hand tips set by hand (`landmarks` in his manifest); lock role
+  `meshy-autorig`. Hands: right curl 0.5 (a `hands.scale` 0.85 try changed nothing in the audit: dropped).
+- **Rifle grip audit, before → after:** Dust Trooper 9 (flat open off fp) → **3** (spikes); Giggles 9 (flat open off fp)
+  → 10 (flat off spikes fp: one spike edge at spine_01, the small blue sleeve-hem flaps below); Goblina 9 → 9 (open off
+  spikes fp; her spikes are the ragged skirt and braids, before and after); Vanguard 5 (back fp) → 10 (flat off spikes
+  fp: 3 small spikes, max 4.9). Finger skin (finger share R/L) Giggles and Dust Trooper 0/0 → 0.4-0.58 (the hands are
+  hands now); drawn hand to grip Giggles 13/24 → 7/8 cm, Goblina 17/11 → 9/7 cm, Dust Trooper 9/12 → 6/8 cm. The
+  sheets are the judge: no strands from any angle in the hold or the run. Remaining: Giggles' sleeve hems leave small
+  blue flaps under the arms close up; the Dust Trooper's coat shows a few dark shards at the hips close up.
+- **Why opt-in (others checked):** on by default it rebuilt a sample (Desert Ranger, King Aldric, Scary Larry, Honest
+  Abe, Freaky Frida, Kenji, Virtua Soldier; `others/pair-*.jpg`): Desert Ranger, Larry, Abe, Virtua Soldier unchanged;
+  Frida's pigtails pulled into strands, a flap on Kenji's vest side, a dark shard on King's back: so none of them uses
+  it and their files are main's. Try it on characters whose download pose has the hands on the hips.
+- Rebuild: `ONLY=meshy_giggles,meshy_dust_trooper,meshy_grizzelda,meshy_vanguard node tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/skin-fix-rig`
+  (links: the three rigged GLBs re-fetched earlier into the model-quality scratchpad `dl/rig/`, and Vanguard's unrigged
+  download from meshystuff; the rigged ones re-fetch with fetch-meshy.mjs, no credits). No Meshy credits spent.
+- Checks: typecheck; test:changed 46/46; content:check OK; bundle 833.0 kB gzip (budget 840); e2e characters PASS (1,003 s; the first run failed one check on the Dapper (`look=core.dapper`, untouched): "hands drawn on the gun through switches", mouse wheel, body 12 cm, at load 10-17; passed on rerun).
 
 ### Seetah J. Chloth (`wip/seetah`, agent, 2026-11-01; not merged; from main c6751d5)
 - `core.seetah` (`meshy_seetah`, order 96, Animals, `nameTheme: cat`): the owner's cheetah/sloth hybrid (owned, Meshy), from the
@@ -1676,7 +1759,7 @@ Profiled the page's main thread in a clumped 96-player Frost Basin fight (produc
 - canopies are pooled per kind with shared materials (`releaseCanopy`).
 Result: main thread idle 74% with 53 characters in view (was 43% with 36, and 31% before the icons). Left, in order: held weapons are rebuilt on every switch (`view.setAvatarWeapon`, ~15 nodes/s, each dispose walking the animatables: pool them per model); the ~12k animatables themselves (AnimationGroup per clip per bone; Babylon's `stop`/`_start` splice that array); `computeWorldMatrix` ~4%. The physicsfx ragdoll check now waits for the corpse before sampling; it still fails in this sandbox on stalled frames, on main too.
 
-Ragdolls (asked 2026-10-29): no neutral pose, no soft joint limits, no muscle tension. `game/ragdoll.ts` uses Rapier spherical joints with no limits or motors, and damping only (linear 0.6, angular 1.6, `shared/sim/effectsPhysics.ts`). Not started.
+Ragdolls (asked 2026-10-29): no neutral pose, no muscle tension. Joint limits done 2026-11-02 (`wip/fix-ragdoll`, below).
 ## Map rotation (2026-10-29)
 
 Regular matches can go on to a queued map instead of replaying: `shared/sim/rotation.ts` (`MapRotation`, `validateRotation`, presets in `maps/rotations/*.json`). Protocol: host commands `rotation` (the whole list, and/or shuffle) and `skip`, `HostState.rotation`, `round_end.up` (everyone's scoreboard: "Next map: …"); older hosts ignore them and the panel hides the section. Dedicated server: `server.ts` plans the travel at the end of the intermission (chains first), `server/src/rotation.ts` (suite lookup, presets, `preset:` items); Host Service: `ROTATION` / `ROTATION_SHUFFLE`, console `rotation` / `skip`, the launcher's Rotation card, in-game changes saved via status (`main.ts`). Browser host: the page keeps it (`main.ts` → `SessionOptions.rotation`, `session.ts` `rotateOn` / `skipRotation`), tells the match where it goes (`setUpNext`), and travels like Change map. Not done: Play → Match setup doesn't take a rotation yet; the site's /host page doesn't edit it (the launcher and console do).

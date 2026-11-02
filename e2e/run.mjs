@@ -3934,7 +3934,9 @@ async function dedicatedhostFlow(browser) {
     const button = await admin.waitForFunction((s) => !!document.getElementById(`hc-kick-${s}`), slot, { timeout: T(45000), polling: 500 }).then(() => true, () => false);
     check(button, `the admin gets the match controls, with the visitor in its player list${button ? '' : ` (${await admin.evaluate(() => JSON.stringify({ host: window.__cs?.host?.(), panels: document.querySelectorAll('[id=host-controls]').length, people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`) }))}, visitor slot ${slot})`}`);
     if (button) {
-      await admin.evaluate((s) => document.getElementById(`hc-kick-${s}`).click(), slot);
+      // The player list is rebuilt as the roster changes, so the button can be replaced between the wait above and a
+      // separate click (CI: "Cannot read properties of null (reading 'click')"): find and click it in one step.
+      await admin.waitForFunction((s) => { const b = document.getElementById(`hc-kick-${s}`); if (!b) return false; b.click(); return true; }, slot, { timeout: T(15000), polling: 250 });
       const kicked = await player.waitForFunction(() => /kicked/i.test(document.body.innerText), null, { timeout: T(20000) }).then(() => true, () => false);
       // What the player saw and what the host logged, when the kick didn't land (CI annotations carry it).
       const why = kicked

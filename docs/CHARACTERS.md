@@ -484,7 +484,7 @@ repo; they live in a downloads dir outside it.
 | `finish` | The one material's metallic and roughness (0–1). |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel and square to it, in third person and Character Select; Bandit's broad build put the stock at his snout). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `skinClean` (weights cleaned in the download's own pose, contacts torn; see "Skin cleaned in the download's pose"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel and square to it, in third person and Character Select; Bandit's broad build put the stock at his snout). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -645,6 +645,29 @@ character needs it: the audit's spikes are in the legs (a tabard or coat
 between them: the Iron Knight, Ser Brannock), the armpits (Big Bogdan, the
 Dapper) and low-detail fingers, which it does not touch. The audit reports
 spikes by joint (`stretch.by`).
+
+**Skin cleaned in the download's pose** (`tools/content/skinclean.mjs`, opt-in
+with `fixes.skinClean: true`; rigged and unrigged downloads alike, in
+prepare-meshy-characters.mjs `pose()`). Most Meshy downloads stand with their
+arms down, hands on the hips and wide sleeves against the body, and their
+weights leak across those contacts (hand vertices partly on the hips or a
+thigh, a sleeve's inside partly on the spine). Turning the arms out to the
+T-pose dragged those vertices part of the way between arm and hip: long sheets
+and strands from the hands to the hips, already in the built bind pose (so the
+grip audit's stretch test, which compares the hold with the bind pose, never
+saw them). The pass, before the turn: whose skin each arm-held vertex is (skin
+faces away from its own bone: a sleeve's inside faces the body; the body's side
+under a hanging arm faces the arm, when that patch is joined mostly to the
+body; else the nearer bone); only joints within two of its anchor on the rig's
+skeleton keep a share (a hand never keeps the hips). After the turn, triangles
+reaching a forearm or a hand that stretched past 3x their length (a fingertip
+fused to a thigh, a cuff to the hip) are torn out and each hole closed with a
+flat fan; the upper arm's skin to the body (armpits) is never torn. Used by
+Giggles, the Dust Trooper, Goblina and Luther Vanguard. Not on by default: on
+Freaky Frida it pulled pigtails hanging by her shoulders into strands, and it
+put a flap on Kenji's vest side (both already fixed by hand-set landmarks and
+`armCloth`). Check a character in its download pose with the weight pictures
+(any rest mesh coloured by limb) before turning it on.
 
 **Head and hands keep their detail** (`cutKeeping` in `tools/content/meshy-mesh.mjs`):
 both cuts (an unrigged download's work cut to 40k triangles, and the final

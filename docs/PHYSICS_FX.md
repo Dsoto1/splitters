@@ -35,6 +35,18 @@ Every death is physical, cheaply. A body gets one of three tiers
   harder; once they rest, or after 4 s (cheap: 2.5 s), the bodies go back to
   the pool and the pose stays as it is: the skeleton and its joints stop
   updating, so a body on the ground costs nothing per frame.
+- **Joint limits** (`ragdollJoints.ts`): every joint is limited like a body's:
+  knees and elbows are hinges that fold one way only (never past straight),
+  hips swing forward far and back a little, shoulders cover the arm's
+  reach, the neck nods and turns but never round, and nothing twists far.
+  The joints' frames are made from where the joints are at the moment of
+  death (body up, right, forward; each limb's direction; the elbow's and
+  knee's own bend), never from the bones' axes, so the same limits hold for
+  the modular rig and every whole-body Meshy rig, small or large, a rig that
+  folds two joints into one place, or one that calls its left side right.
+  Each range is widened to take the pose at death, so nothing snaps.
+  Before 2026-11-02 the joints were free balls: bodies came to rest folded
+  with knees and elbows bent backwards and limbs twisted round.
 - Creatures (zombies' toads, aliens and the like) keep their own death and
   fall to the ground under gravity.
 
