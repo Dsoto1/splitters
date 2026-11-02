@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { REBED_TOLERANCE, buildMapGeometry, loadMap, newMapDocument, newTerrain, rebedProps, rebedShift, settledPropY, supportUnder, type MapDocument, type MapEntity } from '../src/index.ts';
 
-const prop = (id: string, x: number, y: number, z: number, model = 'prop.bush_large'): MapEntity => ({ id, kind: 'prop', model, position: [x, y, z], yaw: 0, scale: 1, solid: false, tint: null }) as MapEntity;
+type Prop = Extract<MapEntity, { kind: 'prop' }>;
+const prop = (id: string, x: number, y: number, z: number, model = 'prop.bush_large'): Prop => ({ id, kind: 'prop', model, position: [x, y, z], yaw: 0, scale: 1, solid: false, tint: null });
 
 describe('props stay bedded on the ground as played', () => {
   // The ground before and after: a walk laid in raised it 0.2 m round x = 0.
@@ -45,7 +46,7 @@ describe('props stay bedded on the ground as played', () => {
       const bed = settledPropY(raw.terrain, e);
       if (bed === null || Math.abs(e.position[1] - bed) > 0.01) continue;
       if (supportUnder(boxes, e.position[0], e.position[2], e.position[1], e.id) > e.position[1] - 0.2) continue;
-      const p = played.get(e.id)!;
+      const p = played.get(e.id) as Prop;
       const now = settledPropY(r.map.terrain!, p)!;
       checked++;
       if (p.position[1] !== e.position[1]) moved++;
