@@ -113,6 +113,17 @@
       "sha256": "676c2a554120429f"
     },
     {
+      "file": "models/guns/plasma_blaster.glb",
+      "source": "meshy-community-weapons",
+      "budget": "hero",
+      "src": "Plasma Blaster (Meshy community model, downloaded 2026-11-02): the Singularity Cannon",
+      "triangles": 13662,
+      "lodTriangles": 2676,
+      "normalMap": true,
+      "bytes": 1173320,
+      "sha256": "976bc8d77d72b18c"
+    },
+    {
       "file": "models/guns/freeze_gun.glb",
       "source": "meshy-owned-guns",
       "budget": "hero",

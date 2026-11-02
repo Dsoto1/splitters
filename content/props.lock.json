@@ -1541,6 +1541,21 @@
       ]
     },
     {
+      "file": "props/rock_mossy_spire.glb",
+      "source": "meshy-community-drive-1102",
+      "title": "low poly beautiful mo… (Meshy community, name cut short on the download) (download dated 2026-11-01)",
+      "src": "Meshy_AI_low_poly_beautiful_mo_1101170024_texture.glb",
+      "triangles": 5000,
+      "normalMap": true,
+      "bytes": 210524,
+      "sha256": "2da4a769b968a31b",
+      "size": [
+        2.333,
+        2.4,
+        1.936
+      ]
+    },
+    {
       "file": "props/rock_spire_tall.glb",
       "source": "kenney-nature-kit",
       "src": "rock_tallB.glb",

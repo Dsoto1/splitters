@@ -234,6 +234,32 @@
       "textureSize": 1024
     },
     {
+      "out": "guns/plasma_blaster.glb",
+      "pack": "meshy-community-weapons",
+      "glb": "Meshy_AI_Plasma_Blaster_1102011031_texture.glb",
+      "label": "Plasma Blaster (Meshy community model, downloaded 2026-11-02): the Singularity Cannon",
+      "forward": "-x",
+      "length": 0.78,
+      "triangles": 14000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "textureSize": 1024,
+      "glow": {
+        "color": "#b07aff",
+        "warm": [
+          130,
+          60,
+          35
+        ],
+        "strength": 1
+      }
+    },
+    {
       "out": "guns/freeze_gun.glb",
       "pack": "meshy-owned-guns",
       "glb": "Meshy_AI_Freeze_Gun_1029214340_texture.glb",

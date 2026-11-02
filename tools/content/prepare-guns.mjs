@@ -31,6 +31,11 @@
 // `budget: "hero"` holds an entry to `budgets.tiers.hero` instead of the default caps (content:check), and
 // `lod: [share, metres]` adds a lower level of detail that instanced copies (a crowd's guns) draw from that far.
 //
+// `glow: { color, warm: [r, r-b, r-g], strength }` (Meshy entries): the download's own glowing parts (lit panels,
+// a muzzle ring: the orange and red pixels the `warm` test picks, as in `paintOut`) are recoloured to `color`,
+// keeping their light and dark, and the built model gets an emissive map of them (glowColour): a weapon whose
+// in-house model glowed in its own colour keeps that glow on its new model (the Singularity Cannon's purple).
+//
 // Packs with `glb: true` too (the owner's own Meshy generations, licence Owned) are Meshy's textured GLB
 // downloads instead: each entry names its file in `glb`, found directly in the downloads dir or one folder
 // down (so the owner's download folders can sit side by side in it), and is read the same way.
@@ -94,6 +99,50 @@ async function shrink(tex, size, mime) {
 function markings(rules) {
   const tests = rules.map((r) => (r.warm ? (R, G, B) => R >= r.warm[0] && R - B >= r.warm[1] && R - G >= r.warm[2] : (R, G, B) => Math.min(R, G, B) >= r.light && Math.max(R, G, B) - Math.min(R, G, B) < r.chroma));
   return (R, G, B) => tests.some((t) => t(R, G, B));
+}
+
+/** `glow` (see the header): turn the glowing pixels the `warm` test picks to the glow colour, light and dark kept. */
+function recolourGlow(glow) {
+  const [R0, G0, B0] = [1, 3, 5].map((i) => parseInt(glow.color.slice(i, i + 2), 16));
+  const warm = markings([{ warm: glow.warm }]);
+  return async ({ data }) => {
+    let n = 0;
+    for (let i = 0; i < data.length; i += 3) {
+      if (!warm(data[i], data[i + 1], data[i + 2])) continue;
+      // Brighter source pixels read brighter: 0.55-1.45 of the glow colour, white-hot past full.
+      const l = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11) / 255;
+      const k = 0.55 + 0.9 * l;
+      data[i] = Math.min(255, Math.round(R0 * k));
+      data[i + 1] = Math.min(255, Math.round(G0 * k));
+      data[i + 2] = Math.min(255, Math.round(B0 * k));
+      n++;
+    }
+    console.log(`  recoloured ${n} px of glow to ${glow.color}`);
+  };
+}
+
+/**
+ * The emissive map for `glow`: the built colour map's pixels of the glow's hue (the recoloured parts, after the
+ * rebake has blended their edges), weighted by how strongly they carry it; everything else black. A JPEG of `size` px.
+ */
+async function glowMap(colour, glow, size) {
+  const { data, info } = await sharp(Buffer.from(colour)).removeAlpha().resize(size, size, { fit: 'inside' }).raw().toBuffer({ resolveWithObject: true });
+  const g = [1, 3, 5].map((i) => parseInt(glow.color.slice(i, i + 2), 16));
+  const gMin = Math.min(...g);
+  const gc = g.map((v) => v - gMin);
+  const gLen = Math.hypot(...gc) || 1;
+  const out = Buffer.alloc(data.length);
+  for (let i = 0; i < data.length; i += 3) {
+    const p = [data[i], data[i + 1], data[i + 2]];
+    const lo = Math.min(...p);
+    const c = p.map((v) => v - lo);
+    const len = Math.hypot(...c);
+    if (len < 40) continue;
+    const cos = (c[0] * gc[0] + c[1] * gc[1] + c[2] * gc[2]) / (len * gLen);
+    const w = Math.max(0, Math.min(1, (cos - 0.9) / 0.07)) * Math.min(1, (len - 40) / 60);
+    for (let k = 0; k < 3; k++) out[i + k] = Math.round(p[k] * w);
+  }
+  return sharp(out, { raw: { width: info.width, height: info.height, channels: 3 } }).jpeg({ quality: 85, mozjpeg: true }).toBuffer();
 }
 
 /**
@@ -165,7 +214,12 @@ function boxToSource([min, max], place) {
 async function build(src, entry, pack, place = null) {
   let meshy = null;
   if (pack.meshy) {
-    const recolor = entry.paintOut ? async (img) => console.log(`  painted out ${await paintOut(img, markings(entry.paintOut), { grow: entry.grow ?? 2, holes: entry.holes ?? 0 })} px of markings`) : null;
+    const paint = entry.paintOut ? async (img) => console.log(`  painted out ${await paintOut(img, markings(entry.paintOut), { grow: entry.grow ?? 2, holes: entry.holes ?? 0 })} px of markings`) : null;
+    const glow = entry.glow ? recolourGlow(entry.glow) : null;
+    const recolor = paint || glow ? async (img) => {
+      if (paint) await paint(img);
+      if (glow) await glow(img);
+    } : null;
     const crop = place && entry.box ? boxToSource(entry.box, place) : null;
     ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, lod: entry.lod ?? null, crop, ...(entry.normalSize > 1024 ? { normalSize: entry.normalSize } : {}), ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) }));
   }
@@ -212,6 +266,11 @@ async function build(src, entry, pack, place = null) {
     for (const ext of mat.listExtensions()) ext.dispose();
     const baseMap = mat.getBaseColorTexture();
     if (baseMap) await shrink(baseMap, entry.textureSize ?? 512, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
+    // `glow`: an emissive map of the glowing parts, taken from the colour map as shipped.
+    if (entry.glow && baseMap) {
+      const strength = entry.glow.strength ?? 1;
+      mat.setEmissiveTexture(doc.createTexture('glow').setImage(await glowMap(baseMap.getImage(), entry.glow, Math.min(512, entry.textureSize ?? 512))).setMimeType('image/jpeg')).setEmissiveFactor([strength, strength, strength]);
+    }
     const normal = mat.getNormalTexture();
     // A Meshy model's normal map is baked from the full download (meshy-mesh.mjs): `normalSize` px (default 512, a
     // first-person gun is seen from a hand's length away); a pack's own is shrunk to 256 px.
