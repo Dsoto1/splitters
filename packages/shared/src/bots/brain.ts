@@ -190,6 +190,8 @@ function pathLength(route: readonly Vec3[]): number {
 const VEHICLE_TRIP = 55;
 /** How far (m, plus height) a bot with only a sidearm detours for a gun. */
 const GUN_DETOUR = 30;
+/** Riding along: a vehicle standing still this long (s), with nothing to shoot for 4 s, is parked; riders get out. */
+const RIDE_PARKED_SECONDS = 8;
 /** How far (m) a bot goes to hop into a teammate's vehicle. */
 const RIDE_REACH = 25;
 /** Enemy vehicles: how far (m, plus height) a bot goes for a rocket or grenade launcher once one has been seen lately (VEHICLE_MEMORY s). */
@@ -1975,7 +1977,9 @@ export class BotBrain {
       else if (this.noDriverSince === -Infinity) this.noDriverSince = tick;
       if ((m.speed ?? 0) > 0.5 || fireAt) this.rideIdleSince = -Infinity;
       else if (this.rideIdleSince === -Infinity) this.rideIdleSince = tick;
-      const parked = tick - this.rideIdleSince > TICK_RATE * 8 && tick - this.lastTargetTick > TICK_RATE * 4;
+      // (rideIdleSince is -Infinity while it moves: only a vehicle that has actually stood still 8 s is parked. Testing
+      // the gap alone read every moving vehicle as parked for good, and riders got out as soon as the driver set off.)
+      const parked = this.rideIdleSince !== -Infinity && tick - this.rideIdleSince > TICK_RATE * RIDE_PARKED_SECONDS && tick - this.lastTargetTick > TICK_RATE * 4;
       // (A human at the wheel may stop on purpose; a bot driver never parks with riders.)
       const stuck = driven && !ally.human && noHeadway(this.riderHeadway, m.pos, tick, RIDER_STUCK_TICKS, RIDER_MIN_PROGRESS);
       if (stuck) this.avoidMounts.set(m.index, tick + TICK_RATE * STUCK_AVOID_SECONDS);
