@@ -97,6 +97,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.vampire', name: 'Vampire', body: 'male', head: '', parts: ['meshy_vampire'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_vampire_fparms' }, group: 'horror', nameTheme: 'spooky' },
   { id: 'core.wwiisoldier', name: 'WWII Infantry', body: 'male', head: '', parts: ['meshy_wwiisoldier'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_wwiisoldier_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
   { id: 'core.beaniealien', name: 'Beanie Alien', body: 'male', head: '', parts: ['meshy_beaniealien'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_beaniealien_fparms' }, group: 'creatures', nameTheme: 'alien' },
+  { id: 'core.seetah', name: 'Seetah J. Chloth', body: 'male', head: '', parts: ['meshy_seetah'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_seetah_fparms' }, group: 'animals', nameTheme: 'cat' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -197,4 +198,5 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.vampire': 'Five hundred years old, never once sunburnt. Bring your own garlic.',
   'core.wwiisoldier': 'Dug in since \'44. Nobody told him the war ended, and he is not taking chances.',
   'core.beaniealien': 'Varsity jacket, knit beanie, three-fingered trigger discipline.',
+  'core.seetah': 'Fastest cat alive, for about four seconds a day. The rest is a very long nap with excellent aim.',
 };

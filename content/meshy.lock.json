@@ -2699,6 +2699,29 @@
       "triangles": 1015,
       "bytes": 484668,
       "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_seetah",
+      "source": "meshy-owned",
+      "src": "Meshy_AI_rigged_cheetah_sloth_All_Animations.glb",
+      "file": "characters/meshy_seetah.glb",
+      "sha256": "02d17f613064c32c",
+      "triangles": 10439,
+      "lodTriangles": 2608,
+      "bytes": 1445320,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_seetah_fparms",
+      "source": "meshy-owned",
+      "src": "Meshy_AI_rigged_cheetah_sloth_All_Animations.glb",
+      "file": "characters/meshy_seetah_fparms.glb",
+      "sha256": "6a441eb214da58b7",
+      "triangles": 795,
+      "bytes": 577128,
+      "hands": true
     }
   ]
 }

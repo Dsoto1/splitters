@@ -52,6 +52,13 @@ built GLB or a rigged download).
   download from meshystuff; the rigged ones re-fetch with fetch-meshy.mjs, no credits). No Meshy credits spent.
 - Checks: typecheck; test:changed 46/46; content:check OK; bundle 833.0 kB gzip (budget 840); e2e characters PASS (1,003 s; the first run failed one check on the Dapper (`look=core.dapper`, untouched): "hands drawn on the gun through switches", mouse wheel, body 12 cm, at load 10-17; passed on rerun).
 
+### Seetah J. Chloth (`wip/seetah`, agent, 2026-11-01; not merged; from main c6751d5)
+- `core.seetah` (`meshy_seetah`, order 96, Animals, `nameTheme: cat`): the owner's cheetah/sloth hybrid (owned, Meshy), from the
+  rigged Drive download "Meshy_AI_rigged_cheetah_sloth_All_Animations.glb" (gdown into `/home/user/meshy-drive/drive-2026-11-01-seetah/`,
+  linked in `/home/user/meshy-drive/build-seetah/`; no Meshy credits). Built like The Dapper/Alien Biker: 10,439 triangles (the whole
+  download), far copy 2,608 (`lod` 0.25), 1.41 MB + arms 0.56 MB; grip audit **2** (`off` on rifle/spin/shotgun: holds look right);
+  portrait captured. Checks: typecheck; test:changed 1244 pass; content OK; bundle 833.1 kB gzip; e2e characters (476 s), offline PASS.
+  Contact sheet: agent scratchpad `seetah/contact-sheet.png`. Rebuild: `ONLY=meshy_seetah node tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/build-seetah`.
 ### Characters batch 3 (`wip/char-batch-3`, agent, 2026-11-01; not merged; from main c5be6c4)
 Owner's Drive drops of 1 Nov evening (brief: lead scratchpad `drive-batch-1101-evening.md`). Downloads outside the repo in
 `/home/user/meshy-drive/drive-2026-11-01-batch3/` and `...-batch3b/` (gdown: the Drive tool caps downloads at 10 MB); the
