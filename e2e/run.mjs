@@ -3142,6 +3142,85 @@ async function vehiclesFlow(browser) {
   await frames(page, 5);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await arcTurretChecks(browser);
+}
+
+/**
+ * The Arc Turret (MOUNT_DEFS.sentry_arc): placed from MapMaker's Turrets & Sentries palette, offered in the
+ * inspector's Type list; in TEST play it winds up on you first (charging, its charge orb drawn, no damage), then
+ * locks its arc on (hits, drawn and sent as arc events), and walking out of its reach drops the lock.
+ */
+async function arcTurretChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await page.evaluate(() => window.__editor.view.focus({ x: -20, y: 0, z: 20 }));
+  await clickTool(page, '[data-tool="mount:sentry_arc"]');
+  const p = await page.evaluate(() => window.__editor.view.project({ x: -20, y: 0, z: 20 }));
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.click(p.x, p.y);
+  await page.keyboard.press('Escape');
+  const turret = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'mount' && e.model === 'sentry_arc'));
+  check(!!turret, `MapMaker's Turrets & Sentries palette places an Arc Turret (${JSON.stringify(turret?.position)})`);
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), turret?.id);
+  const typed = await page.waitForFunction(() => [...document.querySelectorAll('#editor select')].some((s) => s.value === 'sentry_arc' && [...s.options].some((o) => o.value === 'sentry')), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(typed, 'the inspector shows it as an Arc Turret among the turret types');
+  const issues = await page.textContent('#ed-issues');
+  check(!/Arc Turret/.test(issues ?? ''), `no spawn warning for an Arc Turret placed away from the spawn (${(issues ?? '').slice(0, 160)})`);
+
+  await page.keyboard.press('F5');
+  await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) });
+  await holdBots(page);
+  // Bots far off (out of its reach); you, tough, out of its reach too until the check starts.
+  const at = turret.position;
+  await sim(page, (m, me, a) => {
+    for (const c of m.combatants()) if (c.bot) c.move = { pos: { x: a[0] + 45, y: 0.5, z: a[2] - 40 }, velY: 0, grounded: false };
+    me.maxHealth = me.health = 5000;
+    me.move = { pos: { x: a[0] + 40, y: 0.5, z: a[2] }, velY: 0, grounded: false };
+  }, at);
+  const arcState = () => page.evaluate(() => {
+    const m = [...window.__cs.mounts.mounts.values()].find((x) => x.def.id === 'sentry_arc');
+    return m ? { charging: !!m.charging, arcing: m.arcing, orb: window.__cs.view.chargeOrb(m.index) } : null;
+  });
+  await page.waitForFunction(() => [...window.__cs.mounts.mounts.values()].some((x) => x.def.id === 'sentry_arc' && x.alive && !x.charging && !x.arcing), null, { timeout: T(20000) }).catch(() => {});
+  // Step in 11 m in front of it and count the arcs this page is sent.
+  await page.evaluate(() => {
+    window.__arcs = 0;
+    const s = window.__cs;
+    const draw = s.view.addArc.bind(s.view);
+    s.view.addArc = (pts, color) => {
+      if (color === '#8f7bff') window.__arcs++;
+      draw(pts, color);
+    };
+  });
+  const start = await sim(page, (m, me, a) => {
+    me.move = { pos: { x: a[0] + 11, y: 0.5, z: a[2] }, velY: 0, grounded: false };
+    return me.health;
+  }, at);
+  const charged = await page.waitForFunction(() => [...window.__cs.mounts.mounts.values()].some((x) => x.def.id === 'sentry_arc' && x.charging), null, { timeout: T(20000) }).then(() => true, () => false);
+  const during = await sim(page, (m, me) => me.health);
+  const orb = (await arcState())?.orb ?? 0;
+  check(charged && during === start, `it winds up on you first: charging, no damage yet (${JSON.stringify({ charged, health: [start, during] })})`);
+  check(orb > 0, `its charge orb is drawn while it winds up (${orb})`);
+  const locked = await meWait(page, (m, me, s) => me.health < s, start, 4, T(60000));
+  await page.waitForFunction(() => window.__arcs > 0, null, { timeout: T(10000) }).catch(() => {});
+  const fired = { ...(await arcState()), arcs: await page.evaluate(() => window.__arcs), health: await sim(page, (m, me) => me.health) };
+  check(locked && fired.arcs > 0, `then its arc locks on: you take hits, and the arc is drawn in its colour (${JSON.stringify(fired)})`);
+  // Out of its reach: the lock drops.
+  await sim(page, (m, me, a) => { me.move = { pos: { x: a[0] + 40, y: 0.5, z: a[2] }, velY: 0, grounded: false }; }, at);
+  const dropped = await page.waitForFunction(() => [...window.__cs.mounts.mounts.values()].some((x) => x.def.id === 'sentry_arc' && !x.charging && !x.arcing), null, { timeout: T(15000) }).then(() => true, () => false);
+  const after = await sim(page, (m, me) => me.health);
+  await meWait(page, () => false, null, 1);
+  const later = await sim(page, (m, me) => me.health);
+  check(dropped && later === after, `walking out of its reach drops the lock: no more hits (${JSON.stringify({ dropped, health: [after, later] })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
 }
 
 /** Race mode on Sandsweep Circuit, and drawing a track with MapMaker's Road tool. */

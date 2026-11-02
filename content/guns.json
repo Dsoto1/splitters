@@ -239,7 +239,7 @@
       "glb": "Meshy_AI_Plasma_Blaster_1102011031_texture.glb",
       "label": "Plasma Blaster (Meshy community model, downloaded 2026-11-02): the Singularity Cannon",
       "forward": "-x",
-      "length": 0.78,
+      "length": 0.66,
       "triangles": 14000,
       "maxError": 0.03,
       "surface": "rebake",

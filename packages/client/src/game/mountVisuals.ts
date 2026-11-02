@@ -137,8 +137,8 @@ function energise(mesh: { material: PBRMaterial | StandardMaterial | null | unkn
 }
 
 /** How brightly an energy-coloured mount glows (its colour scaled): idle, and at the peak of a wind-up or an arc. */
-export const MOUNT_GLOW_IDLE = 0.18;
-export const MOUNT_GLOW_PEAK = 0.9;
+export const MOUNT_GLOW_IDLE = 0.12;
+export const MOUNT_GLOW_PEAK = 0.5;
 
 const glowLists = new WeakMap<TransformNode, (PBRMaterial | StandardMaterial)[]>();
 /** A mount node's energy-coloured materials (filled in as its model loads). */

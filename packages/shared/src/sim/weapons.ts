@@ -1002,7 +1002,7 @@ function arsenal(): Record<string, WeaponDefinition> {
       botDesirability: 0.65, botRange: [8, 30],
       // Model: the Plasma Blaster (Meshy community, CC0 per the owner; content/guns.json), its glow turned purple; the
       // Quaternius sci-fi sniper it replaced is the fallback.
-      view: longarm('singularity', 0.75, '#b07aff', { model: 'guns/plasma_blaster.glb', fallback: 'weapons/singularity.glb', hold: { style: 'long', grip: [0, -0.15, -0.16], support: [0, -0.09, 0.2], shoulder: [0, 0, -0.39] }, muzzleAt: [0, 0.05, 0.39], sound: 'fire.vortex' }),
+      view: longarm('singularity', 0.75, '#b07aff', { model: 'guns/plasma_blaster.glb', fallback: 'weapons/singularity.glb', viewOffset: [0.27, -0.28, 0.54], hold: { style: 'long', grip: [0, -0.13, -0.17], support: [0, -0.076, 0.17], shoulder: [0, 0, -0.33] }, muzzleAt: [0, 0.042, 0.33], sound: 'fire.vortex' }),
     }),
     // ---------------------------------------------------------------- 9: energy and chemical
     weapon({

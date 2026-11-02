@@ -18,6 +18,7 @@ export const SHIPPED_WEAPON_ICONS: Readonly<Record<string, string>> = {
   'guns/medkit.glb': 'guns_medkit.webp?v=fdc97742c1',
   'guns/neon_flux.glb': 'guns_neon_flux.webp?v=654550ca97',
   'guns/ornate_pistol.glb': 'guns_ornate_pistol.webp?v=a33d6fa288',
+  'guns/plasma_blaster.glb': 'guns_plasma_blaster.webp?v=2a45073e7a',
   'guns/rocket_launcher.glb': 'guns_rocket_launcher.webp?v=54073467e8',
   'guns/sentry_turret.glb': 'guns_sentry_turret.webp?v=a008c14418',
   'guns/shotgun.glb': 'guns_shotgun.webp?v=0b560bdabc',

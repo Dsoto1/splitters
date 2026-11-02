@@ -11,7 +11,8 @@
 // side and front), and <out>/sheet-<n>.png (ranked contact sheets, eight characters each).
 // ONLY=<manifest ids or look ids> for some; NO_SHOTS=1 measures without pictures; NO_FP=1 skips first person;
 // RESCORE=1 flags and ranks <out>/audit.json again (after changing a threshold) without rendering; RESUME=1 skips
-// characters already measured there (audit.json is written after every character). WEAPONS_ONLY=rifle,pistol,...
+// characters already measured there (audit.json is written after every character). WEAPONS_ADD=<name>:<weapon id>,...
+// measures more weapons. WEAPONS_ONLY=rifle,pistol,...
 // measures only those weapons; AUDIT_PX=<px> renders a smaller page (quicker in software GL). summary.md ends with
 // every character's flags per weapon (`byWeapon` in audit.json).
 //
@@ -68,6 +69,9 @@ const WEAPONS = [
   ['spin', 'core.lmg'],
   ['shotgun', 'core.shotgun'],
   ['spear', 'core.spear'],
+  // WEAPONS_ADD=singularity:core.singularity measures another weapon too (a new model's holds: in audit.json and
+  // summary.md, not in the pictures, which show the five above).
+  ...(process.env.WEAPONS_ADD ?? '').split(',').filter(Boolean).map((s) => s.split(':')),
 ];
 // WEAPONS_ONLY=rifle,pistol measures only those (a quick pass).
 const weaponsOnly = process.env.WEAPONS_ONLY?.split(',').filter(Boolean);
