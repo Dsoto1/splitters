@@ -2722,6 +2722,87 @@
       "triangles": 795,
       "bytes": 577128,
       "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_bikergirl",
+      "source": "meshy-community-characters",
+      "model": "Biker Gang Girl",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_Biker_Gang_Girl_All_Animations.glb",
+      "file": "characters/meshy_bikergirl.glb",
+      "sha256": "6481fa0673158539",
+      "triangles": 10374,
+      "lodTriangles": 2592,
+      "bytes": 1562016,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_bikergirl_fparms",
+      "source": "meshy-community-characters",
+      "model": "Biker Gang Girl",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_Biker_Gang_Girl_All_Animations.glb",
+      "file": "characters/meshy_bikergirl_fparms.glb",
+      "sha256": "266f4f2df765a367",
+      "triangles": 979,
+      "bytes": 559736,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_hollowvisitor",
+      "source": "meshy-community-characters",
+      "model": "The Hollow Visitor",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_The_Hollow_Visitor_All_Animations.glb",
+      "file": "characters/meshy_hollowvisitor.glb",
+      "sha256": "413cf5f9afb24280",
+      "triangles": 10407,
+      "lodTriangles": 2601,
+      "bytes": 1228356,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_hollowvisitor_fparms",
+      "source": "meshy-community-characters",
+      "model": "The Hollow Visitor",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_The_Hollow_Visitor_All_Animations.glb",
+      "file": "characters/meshy_hollowvisitor_fparms.glb",
+      "sha256": "3a37fc2505e01c0c",
+      "triangles": 1426,
+      "bytes": 472112,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_fearsomeundead",
+      "source": "meshy-community-characters",
+      "model": "Fearsome Undead",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_Fearsome_Undead_All_Animations.glb",
+      "file": "characters/meshy_fearsomeundead.glb",
+      "sha256": "2565c9552e7be25e",
+      "triangles": 10125,
+      "lodTriangles": 2529,
+      "bytes": 1543796,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_fearsomeundead_fparms",
+      "source": "meshy-community-characters",
+      "model": "Fearsome Undead",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_Fearsome_Undead_All_Animations.glb",
+      "file": "characters/meshy_fearsomeundead_fparms.glb",
+      "sha256": "78c1e4316433633b",
+      "triangles": 678,
+      "bytes": 493220,
+      "hands": true
     }
   ]
 }

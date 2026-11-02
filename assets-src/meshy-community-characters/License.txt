@@ -62,12 +62,14 @@ Clip sources (2026-11-02): CC0 community models that the owner rigged and
 animated on their Meshy account ("All Animations" downloads from the owner's
 Drive). Only their animation clips are used, retargeted onto the game's rig as
 the shared clip set characters/shooter_clips.glb (content/clip-sets/shooter.json,
-tools/content/clip-set.mjs); no mesh or texture of theirs ships:
+tools/content/clip-set.mjs). Each is also a character of its own (rebuilt on
+the game's rig by tools/content/prepare-meshy-characters.mjs; its own clips are
+not used by the character):
 
 - "WWII Infantry Soldier" (downloaded 2026-11-02)  -> its Walking clip (also character meshy_wwiisoldier, look WWII Infantry)
-- "Biker Gang Girl" (downloaded 2026-11-02)  -> its shooting walks, forward and backward
-- "The Hollow Visitor" (downloaded 2026-11-02)  -> its Running and Run_and_Shoot clips
-- "Fearsome Undead" (downloaded 2026-11-02)  -> measured as a candidate; no clip of it is used
+- "Biker Gang Girl" (downloaded 2026-11-02)  -> its shooting walks, forward and backward (also character meshy_bikergirl, look Biker Gang Girl)
+- "The Hollow Visitor" (downloaded 2026-11-02)  -> its Running and Run_and_Shoot clips (also character meshy_hollowvisitor, look The Hollow Visitor)
+- "Fearsome Undead" (downloaded 2026-11-02)  -> measured as a candidate; no clip of it is used (character meshy_fearsomeundead, look Fearsome Undead)
 
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):

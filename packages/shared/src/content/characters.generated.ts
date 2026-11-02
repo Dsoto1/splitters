@@ -98,6 +98,9 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.wwiisoldier', name: 'WWII Infantry', body: 'male', head: '', parts: ['meshy_wwiisoldier'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_wwiisoldier_fparms' }, group: 'soldiers', nameTheme: 'soldier' },
   { id: 'core.beaniealien', name: 'Beanie Alien', body: 'male', head: '', parts: ['meshy_beaniealien'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_beaniealien_fparms' }, group: 'creatures', nameTheme: 'alien' },
   { id: 'core.seetah', name: 'Seetah J. Chloth', body: 'male', head: '', parts: ['meshy_seetah'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_seetah_fparms' }, group: 'animals', nameTheme: 'cat' },
+  { id: 'core.bikergirl', name: 'Biker Gang Girl', body: 'female', head: '', parts: ['meshy_bikergirl'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_bikergirl_fparms' }, group: 'folk', nameTheme: 'gangster' },
+  { id: 'core.hollowvisitor', name: 'The Hollow Visitor', body: 'male', head: '', parts: ['meshy_hollowvisitor'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hollowvisitor_fparms' }, group: 'creatures', nameTheme: 'alien' },
+  { id: 'core.fearsomeundead', name: 'Fearsome Undead', body: 'male', head: '', parts: ['meshy_fearsomeundead'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_fearsomeundead_fparms' }, group: 'horror', nameTheme: 'undead' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -199,4 +202,7 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.wwiisoldier': 'Dug in since \'44. Nobody told him the war ended, and he is not taking chances.',
   'core.beaniealien': 'Varsity jacket, knit beanie, three-fingered trigger discipline.',
   'core.seetah': 'Fastest cat alive, for about four seconds a day. The rest is a very long nap with excellent aim.',
+  'core.bikergirl': 'Rides with the pack, shoots with the pack, and never once waited at a red light.',
+  'core.hollowvisitor': 'Nobody has seen inside the hood. Nobody who stayed to tell, anyway.',
+  'core.fearsomeundead': 'Dug himself out for one more round. He plans to stay for several.',
 };

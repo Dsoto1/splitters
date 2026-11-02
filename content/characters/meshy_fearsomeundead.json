@@ -1,0 +1,38 @@
+{
+  "id": "meshy_fearsomeundead",
+  "kind": "character",
+  "use": "player",
+  "order": 99,
+  "name": "Fearsome Undead",
+  "look": "core.fearsomeundead",
+  "group": "horror",
+  "nameTheme": "undead",
+  "bio": "Dug himself out for one more round. He plans to stay for several.",
+  "body": "male",
+  "notes": "Drive, 2026-11-02 (\"Fearsome Undead\", rigged; the owner's download \"Meshy_AI_Fearsome_Undead_All_Animations.glb\"). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), like the clip set's sources (content/clip-sets/shooter.json, where its clips were measured). It moves with the shared clip set. Name a placeholder.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Fearsome Undead"
+    },
+    "date": "2026-11-02",
+    "url": null,
+    "file": "^Meshy_AI_Fearsome_Undead_All_Animations(-\\d+)?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}
