@@ -158,6 +158,79 @@ are per bot); when the leader is fighting, members within 45 m who aren't
 are told where its enemy is (`alert`) and close in. Squads keep 3.5 m apart
 (grunts 2 m).
 
+## Riding, and pushing with a leader (November 2026)
+
+Two owner reports from 2 Nov, both fixed at the cause (`bots/brain.ts`,
+`bots/director.ts`):
+
+**Riders got out as soon as the driver set off.** A teammate bot riding in
+someone's vehicle (passenger or gunner seat) gets out when the vehicle is
+"parked": stood still 8 s (`RIDE_PARKED_SECONDS`) with nothing to shoot. The
+idle clock is `-Infinity` while the vehicle moves, and the check only looked
+at the gap from it, so every moving vehicle read as parked for good: riders
+pressed E about a second after the driver pulled away (and hopped back in
+when it stopped). Now only a vehicle that has really stood still counts.
+Riders stay while a teammate drives; they get out when it burns or is about
+to blow, when it has been parked 8 s, or when a bot at the wheel has got it
+stuck. A bot driver that is getting nowhere while moving (circling a spot it
+can't drive out of, a boat at a shore it can't climb) gives up too: the
+route left must shrink by 10 m every 12 s (`DRIVE_MIN_PROGRESS`,
+`DRIVE_PROGRESS_SECONDS`), or it gets out and leaves that vehicle alone a
+while, as when stuck. `test/botRiders.test.ts`: a player drives two bots
+over Iron Maw for 60 s (stops included): they stay; on fire, or wrecked to a
+quarter, both are out within 1.5 s; parked, they leave after 8 s.
+
+**Tactical squads with a leader stood about or went back and forth.** Found
+by measuring (both teams: first contact, progress from the side's base to
+the enemy's, share of time standing still out of a fight, share of time
+walking in circles: over 30 m walked in 20 s, under 8 m from the start; kills
+and deaths a minute):
+
+- *Unreachable pickups.* The pickup check every 2 s sent a bot straight back
+  to an item it had just given up on (stuck three times by it), and nothing
+  remembered it across a respawn. On Shingle Point the assault side's
+  squads stood at their spawn walking into the wall of the sunken bunker
+  round the rocket launcher (43 stuck recoveries for one bot in 60 s; the
+  squad waited on its leader). A pickup a bot gets stuck going for, or has
+  no route to, is now left alone for 90 s (`PICKUP_GIVE_UP_SECONDS`, up to
+  8 remembered, kept across respawns).
+- *The squad's goal after a detour.* A member or the leader that went for a
+  pickup (or reached or lost its goal) then picked a goal of its own until
+  the squad picked its next one: the leader one way, the members another,
+  regrouping back and forth. It now goes back to the squad's goal; a squad
+  goal it has no route to is left for 20 s (its own goals meanwhile).
+- *Goals swapped on the timer.* A squad re-picked its goal every 20–35 s
+  even while closing on it; on a big map half its goals are an enemy spawn
+  hundreds of metres off, so squads zig-zagged between far goals. A squad
+  still 15 m (`GOAL_PROGRESS`) nearer its goal when the time is up keeps it
+  for another 15–25 s; a squad also counts as there when half its members
+  are within 12 m (they no longer wait out the timer for a leader held up in
+  a fight).
+
+Measured, 24 tactical bots with team leaders, 120 s, before (main 8bc4001)
+→ after, per side (first / second team):
+
+| Map, seeds | first contact s | idle out of a fight % | looping % | progress (0 own base, 1 enemy's) | kills/min | deaths/min |
+|---|---|---|---|---|---|---|
+| Shingle Point TDM, 1–3 | 15.5 / 15.2 → 15.5 / 15.2 | 28.3 / 8.8 → 11.6 / 10.5 | 2.9 / 4.7 → 4.0 / 3.5 | 0.18 / 0.32 → 0.23 / 0.30 | 2.8 / 4.5 → 2.7 / 4.2 | 5.3 / 3.0 → 5.7 / 3.0 |
+| Iron Maw TDM, 1–3 | 28.3 / 28.0 → 28.9 / 29.8 | 4.4 / 5.0 → 6.8 / 7.0 | 2.6 / 5.4 → 2.9 / 2.7 | 0.33 / 0.23 → 0.36 / 0.28 | 5.5 / 6.7 → 6.3 / 5.3 | 6.7 / 5.7 → 5.5 / 6.5 |
+| Iron Maw TDM, 4–6 | 26.4 / 25.7 → 26.6 / 25.9 | 5.6 / 4.5 → 4.3 / 7.9 | 3.9 / 2.3 → 2.9 / 4.5 | 0.28 / 0.21 → 0.37 / 0.24 | 5.0 / 5.3 → 3.7 / 4.2 | 5.7 / 5.0 → 4.5 / 3.7 |
+| Iron Maw CTF, 1–3 | 16.6 / 16.5 → 16.6 / 16.5 | 22.1 / 27.6 → 19.6 / 27.9 | 3.8 / 2.2 → 3.9 / 2.9 | 0.18 / 0.27 → 0.19 / 0.28 | 6.7 / 7.7 → 6.7 / 7.7 | 7.7 / 6.7 → 8.0 / 6.7 |
+
+Kills a minute are few events (±20 % between runs of the same code); CTF has
+no squads (objective modes send bots to the objective) and barely moves.
+Not suicidal: the assault side's extra deaths on Shingle Point are the
+garrison's sentries on the bluff it now reaches (7 in three matches, 3
+before). Stuck recoveries on Shingle Point 266 → 121–166 a match. A player
+leading ("Follow me!" / "Hold here!") was checked too: bots hold or follow as
+ordered, no circling round the leader. `test/botPush.test.ts` (Shingle Point,
+10 v 10, 60 s, seed 1, both sides: contact within 30 s, idle under 20 %,
+looping under 10 %, worst bot under 16 stuck recoveries, progress, kills; it
+fails on main: idle 31 %, 26 stuck recoveries); `botRoles.test.ts` "squad
+goals". Cost: a few comparisons per think; 96 bots on Frost Basin, CPU a tick
+9.75 / 9.16 ms after vs 9.28 / 9.28 before (two runs each, alternating, load
+13–15 on 4 cores: noise).
+
 ## Hopping
 
 ARENA bots hop to be harder to hit (`arenaHop`, `bots/brain.ts`):
