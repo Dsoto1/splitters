@@ -10,6 +10,39 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Clips on every character (`wip/clips-all`, agent, 2026-11-02; not merged; from main e29a097)
+Owner (2 Nov): "Use those clips on all of them; that should save time when we rig the rest that don't have them."
+- **Default clip set:** `DEFAULT_CLIP_SET = 'shooter'` (shared looks.ts, `clipSetOf(look)`): every look on the rig moves
+  with it while armed and upright, with nothing in its manifest: the modular looks (Linktifa, Sprout), Designer looks,
+  all 91 walking whole bodies, and characters rigged later. Opt out per manifest: `"clips": false` + `"clipsWhy"`
+  (checked); name another set: `"clips": "<id>"`. Rolling bodies (`locomotion: roll`) get none. Nobody opted out.
+- **Shared sets:** `content/clip-sets/<id>.json` (sources with model/licence/rig, clip → source), built by
+  `node tools/content/clip-set.mjs --build /home/user/meshy-drive/drive-2026-11-02-anim` → `characters/shooter_clips.glb`
+  (103 KB, loaded once) and `content/clip-sets.lock.json` (build.mjs checks it, provenance records it; role
+  `meshy-clips`, `rig: owner`). Licence: assets-src/meshy-community-characters/License.txt, docs/ASSET_SOURCES.md.
+- **Chosen clips** (consensus deviation, per region, of the same Meshy clip from the four downloads; scratch tool
+  `clips-all/tools/measure.mjs`): Walking from WWII Infantry (legs 2.0° vs 2.4-3.4), Running from The Hollow Visitor
+  (3.5; Undead 7.5), Walk_Forward_While_Shooting from Biker Gang Girl (upper 2.0), **Run_and_Shoot** from The Hollow
+  Visitor (upper 2.4; new slot `clip_shoot_run`), Walk_Backward_While_Shooting_inplace from Biker Gang Girl (3.1).
+  Side_Shot unused (a kneeling shot in place: hips 0.45-0.56 m). Undead gives nothing.
+- **Animator:** `clip_shoot_run` on the upper body (masked copy) with the legs' run share, the shooting walk with the
+  walk share (gait.ts `clipUpperWeights`); at 3.9/5.2 m/s it is ~all the running shot. WWII Infantry moved onto the
+  shared set (his own `meshy_wwiisoldier_clips.glb` retired; body files rebuilt byte-identical).
+- **Not on clips:** Baseball Robot (rolls), creature skins (own rigs), NPC soldier mannequins (`spec.npc`, rig gait;
+  an easy follow-up if wanted).
+- Evidence: lead scratchpad `clips-all/before/*.jpg`, `clips-all/after/*.jpg` (all 93 looks: strafe-shoot,
+  back-shoot, run-shoot, ADS-strafe; over the shoulder and side), `clips-all/compare-key-looks.jpg`,
+  `*-state.json` (which clips play), `tools/sheet.mjs` (the harness driver).
+- **Perf** (load 4-20 from other agents, SwiftShader; noisy): `__grips.crowd` 96 characters, clip evaluation
+  ms/frame strafing+firing before→after: Linktifa 28.8→12.1, Poly Soldier 18.9→9.6, WWII 7.8→7.2; backing up 22.9→6.3,
+  14.6→9.6, 16.7→23.4; after-clip work 119-156 → 125-177 ms (noise); animatables strafing 9,175→10,071 (+9 a
+  character: the upper-body copy), heap the same. `pnpm perf:budget` (frost_basin): draws 316/222 (budget 900),
+  casters 87 (600), slowest effect 0.9 ms (40): pass. Menu bundle 836.4 kB gzip (836.0 before; budget 840).
+- Checks: typecheck; test:changed 1314 pass, 2 fail = pads.test eagle_spires/frost_basin timing out at 180 s
+  under load 20 (24/24 pass alone); content OK; e2e (`CI=1`) characters PASS (849 s; the third-person check now wants
+  every walking look on the shared set with its running shot, and the Baseball Robot on none), visual PASS (no
+  baseline change), offline PASS. ci:plan: full suite (shared looks.ts, gait.ts): needs a `check/` run before main.
+
 ### Bots: riders stay, squads push (`wip/bot-tactics`, agent, 2026-11-02; not merged; from main 8bc4001)
 Owner (2 Nov): bots get out of his vehicle when he starts driving; tactical squads with a leader go in circles or
 don't push. docs/BOTS.md "Riding, and pushing with a leader" (causes, before/after table).
