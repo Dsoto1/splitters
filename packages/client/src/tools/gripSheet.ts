@@ -61,9 +61,16 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   /** The third-person pose's character, gun and hold (`__grips.audit`). */
   let posed: { ch: CharacterInstance; weapon: TransformNode; hold: WeaponHold } | null = null;
   let frames = 0;
+  /** `__grips.drive`: shots a second fired while driven (0: none), and the frame of the last one. */
+  let fireRate = 0;
+  let firedAt = 0;
 
   engine.runRenderLoop(() => {
     current?.anim.update(1 / 30, { ...still, pitch: eyePitch });
+    if (fireRate > 0 && current && frames - firedAt >= 30 / fireRate) {
+      firedAt = frames;
+      current.anim.trigger('shoot');
+    }
     if (rig) {
       eye.position.set(0, PLAYER.eyeHeight - eyeDrop, 0);
       poseCamera(eye, 0, eyePitch);
@@ -275,6 +282,17 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       eyeDrop = motion.drop ?? 0;
       Object.assign(still, { speed: motion.speed ?? 0, stance: motion.stance ?? 0, airborne: !!motion.airborne, sprinting: !!motion.sprinting });
       await settle(30);
+    },
+    /**
+     * Third person in motion (the legs step in place; the animator is fed 1/30 s a frame): the body's motion (speed,
+     * moveAngle, stance, sprinting; `pitch` the aim) and `rate` shots a second fired meanwhile (0: none).
+     */
+    drive: async (motion: Partial<MotionState>, rate = 0, frames = 30) => {
+      if (motion.pitch !== undefined) eyePitch = motion.pitch;
+      const { pitch: _pitch, ...rest } = motion;
+      Object.assign(still, { moveAngle: 0, speed: 0, ...rest });
+      fireRate = rate;
+      await settle(frames);
     },
     /** World positions of the posed character's joints (third person), by name. */
     joints: (): Record<string, [number, number, number]> =>

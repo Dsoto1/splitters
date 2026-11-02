@@ -211,6 +211,25 @@ let gatePatched = false;
  * is shut: their bones hold the last pose, and the next evaluation samples the
  * clip at the current time, so nothing falls behind.
  */
+const turnInv = new Matrix();
+const turnAxis = new Vector3();
+
+/**
+ * A rotation by `angle` about `axisWorld` (a world direction through the joint), as a local rotation for a child
+ * of `parent`: `worldTurn(parent, up, a).multiply(child.rotationQuaternion)` turns the child about the world's up.
+ * Read through the parent's full inverse: the glTF import mirrors the skeleton (its world matrices have a negative
+ * determinant), which turns the rotation's sense round too; a rotation-only inverse (getRotationMatrix) gets the
+ * axis right in some joint frames and reversed in others (the spine's: a twist about up went the wrong way).
+ */
+export function worldTurn(parent: TransformNode, axisWorld: Vector3, angle: number): Quaternion {
+  parent.computeWorldMatrix(true);
+  const m = parent.getWorldMatrix();
+  m.invertToRef(turnInv);
+  Vector3.TransformNormalToRef(axisWorld, turnInv, turnAxis);
+  turnAxis.normalize();
+  return Quaternion.RotationAxis(turnAxis, m.determinant() < 0 ? -angle : angle);
+}
+
 function patchAnimatables(): void {
   if (gatePatched) return;
   gatePatched = true;
@@ -635,10 +654,7 @@ export class CharacterAnimator {
   private turnJoint(bone: TransformNode | undefined, axisWorld: Vector3, angle: number): void {
     const parent = bone?.parent as TransformNode | null | undefined;
     if (!bone?.rotationQuaternion || !parent || Math.abs(angle) < 1e-4) return;
-    parent.computeWorldMatrix(true);
-    const inv = Quaternion.FromRotationMatrix(parent.getWorldMatrix().getRotationMatrix()).invert();
-    const axis = Vector3.TransformNormal(axisWorld, Matrix.FromQuaternionToRef(inv, new Matrix())).normalize();
-    bone.rotationQuaternion = Quaternion.RotationAxis(axis, angle).multiply(bone.rotationQuaternion);
+    bone.rotationQuaternion = worldTurn(parent, axisWorld, angle).multiply(bone.rotationQuaternion);
   }
 
   /** The flinch and the kick, on top of the pose (afterAnimations). */
@@ -651,28 +667,28 @@ export class CharacterAnimator {
       const chest = this.spine[this.spine.length - 1];
       if (f.zone === 1) {
         // Head snaps back, the neck and head sharing it.
-        this.turnJoint(head, right, FLINCH_HEAD * e * 0.5);
-        this.turnJoint(this.ch.joints.get('Head'), right, FLINCH_HEAD * e * 0.5);
+        this.turnJoint(head, right, -FLINCH_HEAD * e * 0.5);
+        this.turnJoint(this.ch.joints.get('Head'), right, -FLINCH_HEAD * e * 0.5);
       } else if (f.zone === 2) {
         // A leg hit buckles the body forward a little.
-        this.turnJoint(this.spine[0], right, -FLINCH_BUCKLE * e);
+        this.turnJoint(this.spine[0], right, FLINCH_BUCKLE * e);
       } else {
         // The shoulders twist away from the round (the side it came in on goes back), and lean back a touch.
         const forward = new Vector3(0, 0, 1).applyRotationQuaternion(rootRot);
         const side = Math.sign(Vector3.Dot(f.dir, right)) || 1;
         const facing = Vector3.Dot(f.dir, forward) < 0 ? 1 : -1;
         this.turnJoint(chest, up, -FLINCH_TWIST * e * side * facing);
-        this.turnJoint(chest, right, FLINCH_TWIST * 0.4 * e);
+        this.turnJoint(chest, right, -FLINCH_TWIST * 0.4 * e);
       }
     } else if (f) this.flinchState = null;
     const k = (now - this.kickAt) / 1000 / KICK_SECONDS;
     if (k >= 0 && k < 1) {
       // Up fast, down slower: the thigh swings forward and the body leans back to balance it.
       const env = k < 0.35 ? Math.sin((k / 0.35) * (Math.PI / 2)) : Math.cos(((k - 0.35) / 0.65) * (Math.PI / 2));
-      this.turnJoint(this.spine[0], right, KICK_LEAN * env);
-      this.turnJoint(this.ch.joints.get('thigh_r'), right, KICK_THIGH * env);
+      this.turnJoint(this.spine[0], right, -KICK_LEAN * env);
+      this.turnJoint(this.ch.joints.get('thigh_r'), right, -KICK_THIGH * env);
       // Chambered on the way up, straight at full reach.
-      this.turnJoint(this.ch.joints.get('calf_r'), right, -0.9 * env * (1 - Math.min(1, k / 0.35)));
+      this.turnJoint(this.ch.joints.get('calf_r'), right, 0.9 * env * (1 - Math.min(1, k / 0.35)));
     }
   }
 
@@ -884,8 +900,8 @@ export class CharacterAnimator {
     const shinAngle = Math.acos(Math.max(0, Math.min(1, reach)));
     const knee = Math.max(SIT_KNEE_MIN, Math.min(SIT_KNEE_MAX, SIT_THIGH - shinAngle));
     for (const side of ['l', 'r'] as const) {
-      this.turnJoint(this.ch.joints.get(`thigh_${side}`), right, SIT_THIGH * this.sit);
-      this.turnJoint(this.ch.joints.get(`calf_${side}`), right, -knee * this.sit);
+      this.turnJoint(this.ch.joints.get(`thigh_${side}`), right, -SIT_THIGH * this.sit);
+      this.turnJoint(this.ch.joints.get(`calf_${side}`), right, knee * this.sit);
     }
   }
 
@@ -933,31 +949,27 @@ export class CharacterAnimator {
     const right = Vector3.TransformNormal(Vector3.Right(), Matrix.FromQuaternionToRef(rootRot, new Matrix()));
     const up = Vector3.Up();
     // The hips (and with them the legs) turn toward the motion; the spine above turns back by as
-    // much. Joint space is mirrored from the game's yaw (glTF import), hence the minus.
-    const hipTurn = -this.twist;
+    // much (less the long gun's blade), so the shoulders stay square to the aim. Turns are about world axes (worldTurn).
+    const hipTurn = this.twist;
     const twist = hipTurn - this.blade;
     const hips = this.pelvis;
     const hipsParent = hips?.parent as TransformNode | null | undefined;
     if (hips?.rotationQuaternion && hipsParent && Math.abs(hipTurn) > 1e-4) {
-      hipsParent.computeWorldMatrix(true);
-      const inv = Quaternion.FromRotationMatrix(hipsParent.getWorldMatrix().getRotationMatrix()).invert();
-      const axis = Vector3.TransformNormal(up, Matrix.FromQuaternionToRef(inv, new Matrix())).normalize();
-      hips.rotationQuaternion = Quaternion.RotationAxis(axis, hipTurn).multiply(hips.rotationQuaternion);
+      hips.rotationQuaternion = worldTurn(hipsParent, up, hipTurn).multiply(hips.rotationQuaternion);
     }
     for (const [i, bone] of this.spine.entries()) {
       const parent = bone.parent as TransformNode | null;
       if (!parent || !bone.rotationQuaternion) continue;
-      parent.computeWorldMatrix(true);
-      const inv = Quaternion.FromRotationMatrix(parent.getWorldMatrix().getRotationMatrix()).invert();
-      const toLocal = Matrix.FromQuaternionToRef(inv, new Matrix());
-      const pitchAxis = Vector3.TransformNormal(right, toLocal).normalize();
-      const twistAxis = Vector3.TransformNormal(up, toLocal).normalize();
       const share = 1 / this.spine.length;
       // A rolling body tipped forward (roll): the spine takes the tip back, so the shoulders and the gun keep the aim;
       // hunched (crouching on its ball), the low spine bends forward and the chest takes it back (the aim is kept).
       const hunch = i === 0 ? -this.rollLean.hunch : i === this.spine.length - 1 ? this.rollLean.hunch : 0;
-      const pitch = (this.pitch * (this.fp ? FP_BODY_PITCH : 1) + this.rollLean.fwd) * share + hunch;
-      const q = Quaternion.RotationAxis(pitchAxis, pitch).multiply(Quaternion.RotationAxis(twistAxis, -twist * share));
+      // About the world's right a positive turn tips the top forward: aiming up (and a roll's forward tip) leans back.
+      const pitch = -((this.pitch * (this.fp ? FP_BODY_PITCH : 1) + this.rollLean.fwd) * share + hunch);
+      // Both about world axes (worldTurn): the spine's joint frames are mirrored by the glTF import, and turning
+      // about the up axis read through a rotation-only inverse wound the shoulders the same way as the hips (a
+      // strafe turned the chest 140 degrees off the aim instead of keeping it square to the gun).
+      const q = worldTurn(parent, right, pitch).multiply(worldTurn(parent, up, -twist * share));
       bone.rotationQuaternion = q.multiply(bone.rotationQuaternion);
     }
     this.applySit(right);
