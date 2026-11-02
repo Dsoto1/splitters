@@ -65,6 +65,7 @@ MapMaker's pickup palette lists every item, so **anything below can be placed in
 - Tank Cannon
 - Speeder Blasters
 - Sentry Gun (also the Mechanic's sentry)
+- Arc Turret (the arc sentry's locked arc: docs/VEHICLES.md, "Arc Turret")
 
 ### Throwables
 
@@ -145,7 +146,7 @@ Match setting **Weapons**: Normal / Spears only / Discs only (any mode).
 ## Other features
 
 ### Vehicles
-- 16 kinds, all used on maps: MG and rocket turrets, sentry, kart, speeder, buggy, hauler, skyfighter, dropship, tank, gun jeep, armored rover, hover bike, gunship, ice cream truck, snow sled.
+- 17 kinds (the Arc Turret, new, on no official map yet; the rest all used on maps): MG and rocket turrets, sentry, arc turret, kart, speeder, buggy, hauler, skyfighter, dropship, tank, gun jeep, armored rover, hover bike, gunship, ice cream truck, snow sled.
 - Vehicles have skins.
 - Airdrop plane with parachutes and gliders (eagle_spires, frost_basin, runway_nine).
 

@@ -11,6 +11,7 @@ Car Kit and Holiday Kit, Quaternius' Ultimate Spaceships and Tank Pack (all CC0)
 | Heavy MG Turret | 1 gunner | Twin machine gun on a pedestal, ±80° arc, overheats instead of reloading |
 | Rocket Turret | 1 gunner | Slow, heavy rockets, ±70° arc (model: a Meshy community cannon on a pedestal, CC0 per the owner, `guns/arc_cannon_turret.glb`, centred on its pedestal so it turns about it) |
 | Sentry Gun | none | Aims and fires on its own at its team's enemies (no team: everyone) |
+| Arc Turret | none | An auto-turret like the Sentry Gun, with a tell: it winds up (0.75 s, a growing charge ball and a warning sound) on an enemy it can see within 22 m, then locks an energy arc on that hits 5 every 0.1 s and jumps to one enemy within 6 m of them (half damage). Breaking its line of sight or leaving its reach drops the lock and the charge; a 2 s lock ends in a 1.25 s vent. 240 health. Drawn on the Rocket Turret's cannon in its own violet energy colour (`MountDef.glow`). MapMaker warns (`mount.arc_spawn`) when one stands within 12 m of a spawn it would shoot at. See "Arc Turret" below |
 | Go-Kart | 1 driver | Very quick, no gun: run people over |
 | Speeder | 2 (pilot, passenger) | Hovering; the pilot fires twin blasters ahead, the passenger shoots their own weapon |
 | Buggy | 4 (driver, 3 passengers) | Everyone but the driver sits and shoots their own weapon, all round; the roof gun is scenery |
@@ -130,6 +131,27 @@ turret on each roof, a hauler on the west ledge, a dropship on the east and
 two sentries mid-field. Coldwater Gulch adds a gun jeep to each base's apron;
 Frost Basin a pair of snow sleds on each plateau, a glider on each roof and
 the air drop (below).
+
+## Arc Turret
+
+`MOUNT_DEFS.sentry_arc` (`sentry.arc`: `ArcSentrySpec`), its weapon `core.sentry_arc`, run by `Match.runArcSentry`.
+The point is a counterable auto-turret: the Sentry Gun fires on sight and its spread decides the fight, the Arc
+Turret never misses but tells you it is coming and lets go when you break its line.
+
+| | Sentry Gun | Arc Turret | Heavy MG Turret (manned) | Rocket Turret (manned) |
+|---|---|---|---|---|
+| Damage | 7 a round, every 7 ticks (60/s), 0.03 rad spread | 5 a hit, every 6 ticks (50/s), no miss; jumps once (6 m, half) | 11 every 4 ticks (165/s) | 110 splash, 30 on impact |
+| Range | 30 m | 22 m | 160 m | rockets |
+| Before the first hit | turning only | 0.75 s wind-up, lined up (±0.2 rad) | gunner | gunner |
+| 100 health in the open | ~1.6 s if every round lands | 20 hits: 2.65 s from the start of the wind-up (1.9 s of arc) | ~0.6 s | 1 rocket near-hit |
+| Counter | cover, distance (spread) | break its line of sight or leave 22 m: the lock and the charge drop, the next lock needs the full wind-up; a full 2 s lock (100 at most) ends in a 1.25 s vent | kill the gunner | dodge |
+
+States go to clients as mount snapshot bits (`MOUNT_FLAG_CHARGING`, `MOUNT_FLAG_ARC`): the body glows brighter
+through the wind-up and a ball of its colour grows over the gun where the arc starts (`View.arcSentryGlow`);
+the warning sound (`trap.warn`) plays as a wind-up starts; each hit is an `arc` event with the mount's index
+(`m`), drawn in its colour and heard as a crackle a few times a second. Bots treat it as the Sentry Gun: a target
+they shoot back at (`hostileSentries`). Unit tests: `packages/shared/test/arcSentry.test.ts`; e2e: the vehicles
+flow's `arcTurretChecks`. Not placed on any official map (the owner decides where).
 
 ## In-house cockpits
 

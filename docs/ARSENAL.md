@@ -146,9 +146,17 @@ its own grip, handguard and stock:
 | Large Sentry Gun | Sentry Gun (`sentry`, `core.sentry_gun`) | Kenney turret |
 | Medkit | health pickups, Medkit and Medi-Beam | boxes built in code |
 
-Also a Meshy community model (CC0 per the owner, pack `meshy-community-weapons`):
+Also Meshy community models (CC0 per the owner, pack `meshy-community-weapons`):
 the carved spear (download "T Pose Figure") is the Spear's (`core.spear`; held, pickup,
-thrown and stuck), replacing the spear built in code, which stays as its fallback.
+thrown and stuck), replacing the spear built in code, which stays as its fallback; and the
+Plasma Blaster (download of 2026-11-02) is the Singularity Cannon's (`guns/plasma_blaster.glb`,
+0.66 m, 13.7k triangles plus a LOD, 1024 px colour map), replacing the Quaternius sci-fi sniper
+(`weapons/singularity.glb`, the fallback). Its orange glowing panels and muzzle ring are recoloured
+to the cannon's purple (`#b07aff`) with an emissive map of them (`glow` in guns.json,
+prepare-guns.mjs). Holds: grip on the rear handle with the fingers through the guard, support
+under the front shroud, shoulder at the back, muzzle at the front ring; checked with
+`grip-sheet.mjs` (WEAPONS=core.singularity) and `grip-audit.mjs` (WEAPONS_ADD=singularity:core.singularity:
+no flag the rifle doesn't raise on the same characters). Its behaviour is unchanged.
 
 The Freeze Gun, Glue Gun, Futuristic Blaster and toy machine gun became the
 models of the Freeze Ray, Goo Gun, Plasma Rifle and Heavy MG Turret rather than

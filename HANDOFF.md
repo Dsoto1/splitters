@@ -10,6 +10,28 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Arc Turret, Singularity Cannon model, Mossy Rock Spire (`wip/arc-turret`, agent, 2026-11-02; not merged; from main 151d9dc, rebased on 371f63d)
+Owner's three Drive models (Meshy community, CC0 per the owner; downloads in `/home/user/meshy-drive/drive-2026-11-02-props`,
+not in the repo). Owner's choice (2 Nov): the Arc Turret reuses the Rocket Turret's processed cannon, told apart by its colour.
+- **Mossy Rock Spire** (`prop.rock_mossy_spire`, Rocks & Wood; pack `meshy-community-drive-1102`): 5.0k triangles, 211 KB,
+  2.4 m. Tilts with the slope (TILTED_PROP_CATEGORIES), settles to the lowest ground under it, collides as a rounded
+  rock (`isRock`: the id has "rock"). Rebuild: `ONLY=rock_mossy_spire node tools/content/prepare-props.mjs --downloads /home/user/meshy-drive`.
+- **Singularity Cannon** on `guns/plasma_blaster.glb` (0.66 m, 13.7k + 2.7k LOD, 1.17 MB, hero tier; fallback the old
+  Quaternius model). New guns.json knob `glow` (prepare-guns.mjs): the download's orange glow recoloured to `#b07aff`
+  plus an emissive map. Holds grip [0,-0.13,-0.17], support [0,-0.076,0.17], shoulder [0,0,-0.33], muzzle [0,0.042,0.33],
+  view offset [0.27,-0.28,0.54]. Grip audit (`grip-audit.mjs` now takes `WEAPONS_ADD=singularity:core.singularity`):
+  on Ranger, Knight, WWII Infantry and The Visitor the cannon raises no flag the rifle doesn't. It is big in first
+  person (lower right quarter of the screen): a cannon, but shrink `length` if the owner finds it too much.
+- **Arc Turret** (`MOUNT_DEFS.sentry_arc`, weapon `core.sentry_arc`, `Match.runArcSentry`; docs/VEHICLES.md "Arc Turret"
+  has the numbers against the other turrets): 0.75 s wind-up while lined up, then 5 per 0.1 s locked (no miss), one
+  chain jump (6 m, ×0.5), range 22 m, 2 s lock then 1.25 s vent, 240 health; losing sight/range drops lock and charge.
+  Snapshot bits MOUNT_FLAG_CHARGING (8) / MOUNT_FLAG_ARC (16); `arc` events carry `m` (mount index). Client: glow
+  (`MountDef.glow`, mountVisuals `setMountGlow`), charge orb (`View.chargeOrb`), wind-up sound (`trap.warn`), crackle
+  `fire.arc` every 300 ms. Validation `mount.arc_spawn` (within 12 m of a spawn it would shoot). On no official map.
+- Tests: `packages/shared/test/arcSentry.test.ts` (9); e2e vehicles flow `arcTurretChecks`. Palette atlas and the
+  cannon's kill-feed icon regenerated. Evidence: agent scratchpad `props4/` (rock on a slope, turret charging and
+  firing, cannon first person and grip sheets, close-ups).
+
 ### Characters batch 4: six new characters (`wip/char-batch-4`, agent, 2026-11-02; not merged; from main 151d9dc)
 The owner's "All Animations" downloads of 2 Nov (CC0 Meshy community
 models the owner rigged and animated on Meshy; recorded like WWII Infantry and the clip set's sources), built with

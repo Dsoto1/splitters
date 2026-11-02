@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Turrets, weapons and props**
+- **New: the Arc Turret** (MapMaker → Vehicles → Turrets & Sentries). An auto-turret with a tell: when it sees an enemy within 22 m it winds up for 0.75 s (it glows brighter, a violet ball grows over the gun and you hear a warning), then locks an energy arc onto them that never misses (5 damage ten times a second) and jumps to one enemy next to them for half. Break its line of sight or get out of its reach and it lets go; the next lock needs the whole wind-up again. A lock lasts 2 s at most (100 damage), then it vents for 1.25 s. Slower to kill than the Sentry Gun (about 2.65 s in the open against 1.6 s), never in an instant. Bots shoot it like the Sentry Gun. It wears the Rocket Turret's cannon in its own energy colour. MapMaker warns when one stands within 12 m of a spawn it would shoot at. It isn't on any official map yet.
+- **The Singularity Cannon has a new model**: a heavy plasma blaster with the cannon's purple glow in its panels and muzzle ring, held by its rear grip with the other hand under the front. It works exactly as before.
+- **New prop: Mossy Rock Spire** (Rocks & Wood), a 2.4 m stack of mossy boulders. Like the other rocks it beds into the ground, leans with the slope and blocks players and shots.
+
 **Bots**
 - **Teammate bots stay in your vehicle when you drive off.** They used to get out about a second after you set off (a "parked" check that read any moving vehicle as parked). They now ride along, shooting from their seats, and get out when it's on fire or about to blow, or once you've parked a while. A bot driver going round in circles somewhere it can't drive out of gives up instead of taking its riders round and round.
 - **Squads push.** Tactical squads with a team leader no longer stand at their spawn walking into a wall for a pickup they can't reach (a bot now gives up on such a pickup for a while), go back to the squad's goal after grabbing something instead of wandering off on their own, and keep heading for a far goal instead of swapping goals every half minute. On Shingle Point the assault side now stands about 12 % of the time out of a fight instead of 28 %.
