@@ -20,7 +20,7 @@
 //   node tools/content/capture-map-shots.mjs http://localhost:4799 [map ids…]
 // SHOT_JOBS=2 captures maps in parallel; SHOT_MISSING=1 only maps without a picture; SHOT_CANDIDATES=<dir> also saves every rendered candidate there.
 // For pictures elsewhere (e.g. a review page): SHOT_OUT=<dir> (files <id><SHOT_SUFFIX>.jpg), SHOT_SIZE=900x600 (the
-// viewport takes that shape), SHOT_QUALITY=80, SHOT_TEST=1 (the deterministic ?test=1 match: the maps in maps/, not published ones).
+// viewport takes that shape), SHOT_QUALITY=80, SHOT_TEST=1, SHOT_RENDERED=1 (render only the best ray-scored view: faster on a busy machine) (the deterministic ?test=1 match: the maps in maps/, not published ones).
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -49,7 +49,7 @@ if (CANDS) mkdirSync(CANDS, { recursive: true });
 /** Vertical field of view of the picture (radians). */
 const FOV = 0.9;
 /** How many of the best ray-scored views are rendered and judged on the image. */
-const RENDERED = 3;
+const RENDERED = Math.max(1, Number(process.env.SHOT_RENDERED) || 3);
 
 /**
  * Runs in the page: score candidate views through the match's physics world
@@ -327,6 +327,7 @@ async function captureOne(id) {
       views = r.views;
       info = `${r.indoor ? 'indoor' : 'outdoor'}, ${r.candidates} eye points`;
     }
+    const tLoaded = Date.now();
     let best = null;
     for (const [i, v] of views.entries()) {
       await page.evaluate(({ eye, yaw, pitch, fov }) => {
@@ -361,7 +362,7 @@ async function captureOne(id) {
     const v = best.v;
     const cam = camera(v);
     results.push({ id, pick: best.i, cam });
-    console.log(`${id}: ok #${best.i} ${kb.toFixed(0)} KB (${info}; ${((Date.now() - t0) / 1000).toFixed(0)} s) camera ${JSON.stringify(cam)}`);
+    console.log(`${id}: ok #${best.i} ${kb.toFixed(0)} KB (${info}; ${((Date.now() - t0) / 1000).toFixed(0)} s, ${((tLoaded - t0) / 1000).toFixed(0)} s to load) camera ${JSON.stringify(cam)}`);
   } catch (e) {
     console.log(`${id}: FAILED ${String(e).slice(0, 200)}`);
   }
