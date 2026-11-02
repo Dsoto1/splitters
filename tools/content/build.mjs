@@ -285,6 +285,7 @@ const CHAR_MODS = {
   npc: ['rebound to the rig pose', 'simplified'],
   fparms: ['arms cut from the base body', 'rebound to the regular body pose', 'simplified'],
   meshy: ['re-posed to the rig\'s T-pose', 'rebound to the rig\'s skeleton', 'simplified', 'base colour only, downscaled to a JPEG', 'vertices quantized'],
+  'meshy-clips': ['clips retargeted onto the rig\'s skeleton (tools/content/clip-set.mjs: rest pose compensated, root motion stripped, hips scaled to the rig\'s legs)', 'no mesh'],
   'meshy-fparms': ['arms cut from the body', 're-posed to the rig\'s T-pose', 'rebound to the rig\'s skeleton', 'vertices quantized'],
   'meshy-autorig': ['rigged in-house (joints placed by hand, skin weights computed from the mesh)', 're-posed to the rig\'s T-pose', 'bound to the rig\'s skeleton', 'simplified', 'base colour only, downscaled to a JPEG', 'vertices quantized'],
   texture: ['downscaled to a JPEG'],
@@ -305,7 +306,8 @@ try {
   problems.push(...looksProblems(all));
   const characters = all.filter((m) => !isQueued(m));
   for (const m of characters) if (!meshyLock.files.some((f) => f.id === m.id)) problems.push(`content/characters/${m.id}.json: not built (run node tools/content/prepare-meshy-characters.mjs <downloads> with ONLY=${m.id})`);
-  for (const f of meshyLock.files) if (!characters.some((m) => f.id === m.id || f.id === `${m.id}_fparms`)) problems.push(`${f.file}: no manifest in content/characters`);
+  for (const m of characters) if (m.clipsFrom && !meshyLock.files.some((f) => f.id === `${m.id}_clips`)) problems.push(`content/characters/${m.id}.json: its clip set is not built (run node tools/content/prepare-meshy-characters.mjs <downloads> with ONLY=${m.id})`);
+  for (const f of meshyLock.files) if (!characters.some((m) => f.id === m.id || f.id === `${m.id}_fparms` || (f.id === `${m.id}_clips` && m.clipsFrom))) problems.push(`${f.file}: no manifest in content/characters`);
   console.log(`checked ${characters.length} character manifests and their looks`);
 } catch (e) {
   problems.push(e.message);

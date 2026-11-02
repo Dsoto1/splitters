@@ -57,6 +57,8 @@ import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
 import { keepArmsToArms } from './armweights.mjs';
 import { addLowDetail } from './character-lod.mjs';
+import { clipSet, writeClipSet } from './clip-set.mjs';
+import { meshyName } from './retarget.mjs';
 import { HANDS_SHARE, HEAD_SHARE, bakeNormals, cutKeeping, normalJpeg, rebake, seamAwareSimplify } from './meshy-mesh.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -99,16 +101,6 @@ const JOINT_MAP = {
   RightHandMiddle4: 'hand_r',
   LeftToe_End: 'ball_l',
   RightToe_End: 'ball_r',
-};
-
-/**
- * Mixamo's joint names (a Meshy rig exported "All Animations" names its joints `mixamorig:<name>`) as Meshy's own:
- * Mixamo counts the spine up from the hips (Spine, Spine1, Spine2), Meshy down from the chest (Spine02, Spine01, Spine).
- */
-const MIXAMO = { Spine: 'Spine02', Spine1: 'Spine01', Spine2: 'Spine', Neck: 'neck', HeadTop_End: 'head_end' };
-const meshyName = (name) => {
-  const m = /^mixamorig\d*:(.+)$/.exec(name);
-  return m ? (MIXAMO[m[1]] ?? m[1]) : name;
 };
 
 /**
@@ -939,7 +931,7 @@ const ual = new Map(rigDoc.getRoot().listSkins()[0].listJoints().map((j) => [j.g
 
 /** Keep a character whose download isn't in the downloads dir as built (its files must still match the lock). */
 function keepAsBuilt(id) {
-  const was = oldLock.files.filter((f) => f.id === id || f.id === `${id}_fparms`);
+  const was = oldLock.files.filter((f) => f.id === id || f.id === `${id}_fparms` || f.id === `${id}_clips`);
   if (!was.length && only && !only.includes(id)) {
     console.log(`${id.padEnd(28)} not built yet (not in ONLY)`);
     return;
@@ -997,6 +989,15 @@ for (const c of SPECS) {
     lock.files.push({ role: 'meshy', id: c.id, source: c.pack, ...from, ...(await build(c, src, `${c.id}.glb`, { loose: true, ...ratio })), ...(c.surface === 'rebake' ? { surface: 'rebake' } : {}) });
     // The arms as finely as an unrigged download's (cut to its working detail first) when the rigged download is denser.
     lock.files.push({ role: 'meshy-fparms', id: `${c.id}_fparms`, source: c.pack, ...from, ...(await fparms(c, src, Math.min(0.8, (0.8 * WORK_TRIANGLES) / (src.indices.length / 3)), true)) });
+    if (c.clipsFrom) {
+      // Its authored clips, retargeted onto the rig (clip-set.mjs): any look on the rig can move with them (`clips`).
+      const { doc, report } = await clipSet(await io.read(found.file), c.clipsFrom, rigDoc);
+      const out = `${c.id}_clips.glb`;
+      const glb = await writeClipSet(doc, join(OUT, out));
+      for (const [as, r] of Object.entries(report)) console.log(`  ${as.padEnd(16)} ${r.from}: ${r.seconds} s, ${r.speed} m/s`);
+      console.log(`${out.padEnd(28)} ${Object.keys(report).length} clips ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
+      lock.files.push({ role: 'meshy-clips', id: `${c.id}_clips`, source: c.pack, ...from, file: `characters/${out}`, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: 0, bytes: glb.byteLength, clips: report });
+    }
     continue;
   }
   const { src, sourceTriangles, workTriangles, landmarks } = await readUnrigged(found.file, c, ual);

@@ -35,6 +35,12 @@ export interface CharacterLook {
    * ball) and glides, leaning into its motion and its turns (CharacterAnimator). `locomotion` in its manifest.
    */
   locomotion?: 'roll';
+  /**
+   * An authored clip set this body moves with while it holds a gun and walks or runs upright (the id of the character
+   * manifest whose download the clips came from: characters/<id>_clips.glb, tools/content/clip-set.mjs): walk and run
+   * legs, walking forward and back while shooting. Absent: the rig's own gait. `clips` in its manifest.
+   */
+  clips?: string;
   /** Outfit dye: the cloth (greens, olives, sportswear) recoloured to this, or the original. */
   cloth?: string | null;
   /** Second dye: leather, belts and trim (the browns). */

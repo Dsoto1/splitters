@@ -36,6 +36,8 @@ const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
 const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'scrubBlue', 'hands', 'armCloth', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
+/** The clips a clip set (`clipsFrom`, tools/content/clip-set.mjs) can hold, as the game asks for them (characterAnimator.ts). */
+export const CLIP_SET_CLIPS = ['clip_walk', 'clip_run', 'clip_shoot_fwd', 'clip_shoot_back'];
 const LEAN_JOINTS = new Set(['Spine02', 'Spine01', 'Spine', 'neck', 'Head']);
 const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
@@ -99,6 +101,12 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(m.body === 'male' || m.body === 'female', 'body: male or female');
   need(m.size === undefined || m.size === 'small' || m.size === 'large', 'size: small, large or left out');
   need(m.locomotion === undefined || LOCOMOTION.has(m.locomotion), `locomotion: ${[...LOCOMOTION].join(' or ')} (no legs to walk on: it rolls or glides on what it has), or left out (walks)`);
+  if (m.clipsFrom !== undefined) {
+    const e = Object.entries(m.clipsFrom ?? {});
+    need(m.clipsFrom && typeof m.clipsFrom === 'object' && e.length > 0 && e.every(([k, v]) => CLIP_SET_CLIPS.includes(k) && typeof v === 'string' && v.length > 0), `clipsFrom: { "<clip>": "<the download's clip name>" } for clips ${CLIP_SET_CLIPS.join(', ')} (its download's authored clips, retargeted onto the rig as <id>_clips.glb)`);
+    need(['clip_walk', 'clip_run'].every((k) => m.clipsFrom?.[k]), 'clipsFrom: clip_walk and clip_run at least (the legs the set walks and runs with)');
+  }
+  need(m.clips === undefined || (typeof m.clips === 'string' && /^[a-z0-9_]+$/.test(m.clips)), 'clips: the id of the character manifest whose download\'s clip set (clipsFrom) this body moves with, or left out (the rig\'s gait)');
   need((m.kind ?? 'character') === 'character', 'kind creature: creatures have their own rigs (prepare-creatures.mjs) and are not built here; keep it queued');
   need(typeof s.author === 'string' && s.author.length > 0, 'source.author');
   need(typeof s.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.date), 'source.date: YYYY-MM-DD');
@@ -168,6 +176,7 @@ export function readManifests({ ready = false } = {}) {
     list.push(m);
   }
   const built = list.filter((m) => !isQueued(m));
+  for (const m of built) if (m.clips && !built.some((o) => o.id === m.clips && o.clipsFrom)) problems.push(`${m.id}.json: clips ${m.clips} names no built character manifest with clipsFrom`);
   for (const key of ['look', 'name', 'order']) {
     const seen = new Map();
     for (const m of built) {
@@ -207,6 +216,7 @@ export function buildSpec(m) {
     file: m.source.file ? new RegExp(m.source.file) : null,
     rigJoints: m.source.joints,
     locomotion: m.locomotion,
+    clipsFrom: m.clipsFrom,
     metallic: m.finish.metallic,
     roughness: m.finish.roughness,
     triangles: x.triangles,
@@ -236,7 +246,7 @@ function lookLine(m) {
   const hold = m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '';
   const body = (fp.body === false ? ', body: false' : '') + hold;
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
-  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : [])];
+  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : [])];
   return `  { ${parts.join(', ')} },`;
 }
 

@@ -7,18 +7,25 @@
   "look": "core.wwiisoldier",
   "group": "soldiers",
   "nameTheme": "soldier",
+  "clips": "meshy_wwiisoldier",
+  "clipsFrom": {
+    "clip_walk": "Walking",
+    "clip_run": "Running",
+    "clip_shoot_fwd": "Walk_Forward_While_Shooting",
+    "clip_shoot_back": "Walk_Backward_While_Shooting_inplace"
+  },
   "bio": "Dug in since '44. Nobody told him the war ended, and he is not taking chances.",
   "body": "male",
-  "notes": "Drive, 2026-11-01 evening, fourth drop (\"WWII Infantry Soldier\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). CC0 (Meshy community; confirmed by the owner 2026-11-01). Name a placeholder.",
+  "notes": "Drive, 2026-11-01 evening, fourth drop (\"WWII Infantry Soldier\", rigged); rebuilt 2026-11-02 from the owner's updated download (\"Meshy_AI_WWII_Infantry_Soldier_All_Animations-3.glb\", Drive id 1-aQAgjpSXNcO3XmZjkjNL7S4SxrsMFze), which adds clips of walking forward and back while shooting. A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). Its clips (clipsFrom) are retargeted onto the rig as meshy_wwiisoldier_clips.glb (tools/content/clip-set.mjs), which this look moves with (clips); any look on the rig can name the set. CC0 (Meshy community; confirmed by the owner 2026-11-01). Name a placeholder.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
     "community": {
       "model": "WWII Infantry Soldier"
     },
-    "date": "2026-11-01",
+    "date": "2026-11-02",
     "url": null,
-    "file": "^Meshy_AI_WWII_Infantry_Soldier_All_Animations\\.glb$"
+    "file": "^Meshy_AI_WWII_Infantry_Soldier_All_Animations(-\\d+)?\\.glb$"
   },
   "finish": {
     "metallic": 0.05,

@@ -20,6 +20,7 @@ import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
 import { BEARD, GEAR_MODEL_BASE, gearModels } from './gearModels.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
 import { asNode } from './models.ts';
+import type { ClipLoop } from '../game/gait.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes (further through a scope: setCharacterLodZoom). */
 export const LOD_DISTANCE = 18;
@@ -80,7 +81,12 @@ export type Clip =
   | 'zombie_walk'
   | 'zombie_attack'
   | 'jab'
-  | 'hit_head';
+  | 'hit_head'
+  // A look's authored clip set (`clips`; tools/content/clip-set.mjs): walk and run legs, walking forward and back while shooting.
+  | 'clip_walk'
+  | 'clip_run'
+  | 'clip_shoot_fwd'
+  | 'clip_shoot_back';
 
 export interface CharacterInstance {
   /** Place and turn this node; the model stands on its origin facing +Z. */
@@ -96,6 +102,8 @@ export interface CharacterInstance {
   hold?: { forward?: number; down?: number; out?: number };
   /** How the body gets about (the look's `locomotion`): `roll` glides with no walk cycle. */
   locomotion?: 'roll';
+  /** The look's authored clip set (`clips`), loaded: each clip's natural speed, length and left-foot touchdown (gait.ts ClipLoop). */
+  clipLoops?: Partial<Record<Clip, ClipLoop>>;
   dispose(): void;
 }
 
@@ -192,6 +200,7 @@ export class CharacterLibrary {
       const l = getLook(spec.look);
       files.push(...(l.whole ? l.parts : [...l.parts, l.head, ...l.hair.filter((h) => h !== BEARD)]).map((p) => `${p}.glb`));
       files.push(`${firstPersonArms(l)}.glb`);
+      if (l.clips) files.push(clipSetFile(l.clips));
       return Promise.allSettled([...files.map((f) => this.load(f)), ...gearModels(l).map((g) => this.loadGear(g))]);
     }
     return Promise.allSettled(files.map((f) => this.load(f)));
@@ -221,6 +230,7 @@ export class CharacterLibrary {
     let hands: CharacterInstance['hands'] = {};
     let hold: CharacterInstance['hold'];
     let locomotion: CharacterInstance['locomotion'];
+    let clipLoops: CharacterInstance['clipLoops'];
 
     if (spec.npc) {
       // The rig's own mannequin: skeleton and clips come along with the instance.
@@ -331,6 +341,19 @@ export class CharacterLibrary {
       owned.push(...carrier.skeletons);
       body = look.body;
       clips = this.retarget(rig, joints, `${name}_${look.body}`, look.body);
+      if (look.clips && !spec.armsOnly) {
+        // Authored clips (walking and shooting) on the rig's joints, shared by every look that names the set: a set
+        // that fails to load leaves the body on the rig's own gait.
+        const set = await this.load(clipSetFile(look.clips)).catch(() => null);
+        if (this.scene.isDisposed) {
+          holder.dispose();
+          return gone();
+        }
+        if (set) {
+          for (const [c, g] of this.retarget(rig, joints, `${name}_${look.clips}`, look.body, set)) clips.set(c, g);
+          clipLoops = clipLoopsOf(set);
+        }
+      }
     }
     // Each mesh's low-detail copy (`<name>_lod`, in the same file) is drawn beyond LOD_DISTANCE.
     const low = meshes.filter((m) => /_lod(_primitive\d+)?$/.test(m.name));
@@ -375,6 +398,7 @@ export class CharacterLibrary {
       hands,
       ...(hold ? { hold } : {}),
       ...(locomotion ? { locomotion } : {}),
+      ...(clipLoops ? { clipLoops } : {}),
       dispose: () => {
         for (const g of new Set(clips.values())) g.dispose();
         for (const o of owned) o.dispose();
@@ -423,8 +447,8 @@ export class CharacterLibrary {
     }
   }
 
-  /** Clone the rig's clips onto another skeleton's joints, correcting the hip height for that body. */
-  private retarget(rig: AssetContainer, joints: Map<string, TransformNode>, name: string, body: BodyType): Map<Clip, AnimationGroup> {
+  /** Clone the rig's clips (or a clip set's, `from`: clips on the rig's joints) onto another skeleton's joints, correcting the hip height for that body. */
+  private retarget(rig: AssetContainer, joints: Map<string, TransformNode>, name: string, body: BodyType, from: AssetContainer = rig): Map<Clip, AnimationGroup> {
     const rigPelvis = rig.transformNodes.find((n) => n.name === 'pelvis');
     const pelvis = joints.get('pelvis');
     const offset = rigPelvis && pelvis ? pelvis.position.subtract(rigPelvis.position) : Vector3.Zero();
@@ -434,7 +458,7 @@ export class CharacterLibrary {
     const scale = Math.abs(ratio - 1) > 0.1 ? ratio : 1;
     if (scale !== 1) offset.copyFrom(pelvis!.position.subtract(rigPelvis!.position.scale(scale)));
     const out = new Map<Clip, AnimationGroup>();
-    for (const src of rig.animationGroups) {
+    for (const src of from.animationGroups) {
       const g = new AnimationGroup(`${name}_${src.name}`, this.scene);
       for (const ta of src.targetedAnimations) {
         const target = joints.get((ta.target as TransformNode).name);
@@ -489,6 +513,21 @@ export class CharacterLibrary {
 
   /** Character height in metres before scaling, for fitting to the player capsule. */
   static readonly TARGET_HEIGHT = PLAYER.height;
+}
+
+/** A look's clip set file (tools/content/clip-set.mjs writes characters/<set>_clips.glb). */
+const clipSetFile = (set: string) => `${set}_clips.glb`;
+
+/** A clip set's measured loops: its top node's extras ({ clips: { <clip>: { speed, seconds, footDown } } }). */
+function clipLoopsOf(set: AssetContainer): CharacterInstance['clipLoops'] {
+  const out: CharacterInstance['clipLoops'] = {};
+  for (const n of set.transformNodes) {
+    const extras = (n.metadata as { gltf?: { extras?: { clips?: Record<string, Partial<ClipLoop>> } } } | null)?.gltf?.extras?.clips;
+    for (const [c, l] of Object.entries(extras ?? {})) {
+      if (typeof l.speed === 'number' && typeof l.seconds === 'number') out[c as Clip] = { speed: l.speed, seconds: l.seconds, footDown: l.footDown ?? 0 };
+    }
+  }
+  return out;
 }
 
 /** The measured hands a character file carries on its hand joints (glTF extras, read as metadata). */

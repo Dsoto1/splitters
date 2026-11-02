@@ -2653,8 +2653,8 @@
       "id": "meshy_wwiisoldier",
       "source": "meshy-community-characters",
       "model": "WWII Infantry Soldier",
-      "date": "2026-11-01",
-      "src": "Meshy_AI_WWII_Infantry_Soldier_All_Animations.glb",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_WWII_Infantry_Soldier_All_Animations-3.glb",
       "file": "characters/meshy_wwiisoldier.glb",
       "sha256": "d59a77f655ac1abb",
       "triangles": 10373,
@@ -2667,13 +2667,67 @@
       "id": "meshy_wwiisoldier_fparms",
       "source": "meshy-community-characters",
       "model": "WWII Infantry Soldier",
-      "date": "2026-11-01",
-      "src": "Meshy_AI_WWII_Infantry_Soldier_All_Animations.glb",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_WWII_Infantry_Soldier_All_Animations-3.glb",
       "file": "characters/meshy_wwiisoldier_fparms.glb",
       "sha256": "0cb07c7845da311a",
       "triangles": 939,
       "bytes": 481320,
       "hands": true
+    },
+    {
+      "role": "meshy-clips",
+      "id": "meshy_wwiisoldier_clips",
+      "source": "meshy-community-characters",
+      "model": "WWII Infantry Soldier",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_WWII_Infantry_Soldier_All_Animations-3.glb",
+      "file": "characters/meshy_wwiisoldier_clips.glb",
+      "sha256": "1b241ebb8dfa28ed",
+      "triangles": 0,
+      "bytes": 92544,
+      "clips": {
+        "clip_walk": {
+          "from": "Walking",
+          "seconds": 1.033,
+          "speed": 1.532,
+          "dir": [
+            -0.002,
+            1
+          ],
+          "footDown": 0.194
+        },
+        "clip_run": {
+          "from": "Running",
+          "seconds": 0.633,
+          "speed": 5.019,
+          "dir": [
+            0.017,
+            1
+          ],
+          "footDown": 0.211
+        },
+        "clip_shoot_fwd": {
+          "from": "Walk_Forward_While_Shooting",
+          "seconds": 3.267,
+          "speed": 0.305,
+          "dir": [
+            -0.114,
+            0.994
+          ],
+          "footDown": 0.153
+        },
+        "clip_shoot_back": {
+          "from": "Walk_Backward_While_Shooting_inplace",
+          "seconds": 1.267,
+          "speed": 0.847,
+          "dir": [
+            0.015,
+            -1
+          ],
+          "footDown": 0.526
+        }
+      }
     },
     {
       "role": "meshy",

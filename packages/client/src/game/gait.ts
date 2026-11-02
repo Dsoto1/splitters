@@ -56,3 +56,59 @@ export function matchPhase(from: GaitClip, phase: number, to: GaitClip): number 
   const p = phase - GAIT[from].footDown + GAIT[to].footDown;
   return p - Math.floor(p);
 }
+
+/**
+ * Authored clip locomotion (a look's clip set, `clips`: tools/content/clip-set.mjs): each loop's natural ground speed
+ * (m/s at body scale 1, measured from its planted foot), its length (s) and where its left foot goes down (0..1).
+ */
+export interface ClipLoop {
+  speed: number;
+  seconds: number;
+  footDown: number;
+}
+
+/**
+ * The forward clip gait's weights: the walk below its own natural speed, the run from RUN_SHARE_FULL of the run's,
+ * linear between (both play at one cycle rate, see clipCycleRate).
+ */
+export const RUN_SHARE_FULL = 0.8;
+export function clipGaitWeights(speed: number, walk: number, run: number): { walk: number; run: number } {
+  const full = Math.max(walk + 0.1, run * RUN_SHARE_FULL);
+  const r = clamp01((speed - walk) / (full - walk));
+  return { walk: 1 - r, run: r };
+}
+
+/** Cycles per second that keep the planted foot still at `speed` for loops blended by `weights` (gaitCycleRate for clip loops). */
+export function clipCycleRate(speed: number, loops: readonly { loop: ClipLoop; weight: number }[], scale = 1): number {
+  let dist = 0;
+  let total = 0;
+  for (const { loop, weight } of loops) {
+    if (weight <= 0 || !loop.seconds) continue;
+    dist += weight * loop.speed * loop.seconds * scale;
+    total += weight;
+  }
+  return total > 0 && dist > 0 ? speed / (dist / total) : 0;
+}
+
+/** Most a clip's cadence is raised (times its own) before its stride lengthens instead, and the longest stride (times its own). */
+export const STRIDE_MAX_RATE = 2;
+export const STRIDE_MAX_GAIN = 2.2;
+
+/**
+ * Stride warping: a loop authored for `natural` m/s played at `speed`. Up to STRIDE_MAX_RATE times its cadence it
+ * simply plays faster (`rate` = its speedRatio, `gain` 1); past that the legs swing further (`gain`: the thighs' and
+ * knees' swing about the loop's own middle pose is scaled by it, up to STRIDE_MAX_GAIN) so the steps stay a believable
+ * pace: a slow combat backstep at a full backpedal's speed takes longer steps rather than seven a second.
+ */
+export function strideWarp(speed: number, natural: number, scale = 1, maxRate = STRIDE_MAX_RATE, maxGain = STRIDE_MAX_GAIN): { rate: number; gain: number } {
+  const ratio = natural > 0 ? speed / (natural * scale) : 0;
+  if (ratio <= maxRate) return { rate: ratio, gain: 1 };
+  const gain = Math.min(maxGain, ratio / maxRate);
+  return { rate: ratio / gain, gain };
+}
+
+/** Where (0..1) a clip loop should start to put its left foot down with another's at `phase` of its loop. */
+export function matchClipPhase(from: ClipLoop, phase: number, to: ClipLoop): number {
+  const p = phase - from.footDown + to.footDown;
+  return p - Math.floor(p);
+}
