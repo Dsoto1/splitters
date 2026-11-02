@@ -227,32 +227,71 @@ joints (Walking, Running, Walk_Forward_While_Shooting, ...).
   in the file's top node extras; the game plays each at the rate that keeps the
   feet still and joins loops in step.
 
-The set is one small file shared by every look that names it
-(`characters/<id>_clips.glb`, about 90 KB, loaded with the first such
-character, never with the menu's code). A manifest with `clipsFrom`
-(`{ "clip_walk": "Walking", "clip_run": "Running", "clip_shoot_fwd":
-"Walk_Forward_While_Shooting", "clip_shoot_back":
-"Walk_Backward_While_Shooting_inplace" }`) builds its set with the character
-(`prepare-meshy-characters.mjs`, lock role `meshy-clips`); a manifest with
-`"clips": "<that id>"` moves with it. `node tools/content/clip-set.mjs
-<download.glb>` lists what a download's clips would give (speeds, directions).
+**Every look on the rig moves with a clip set by default.** `DEFAULT_CLIP_SET`
+(`shooter`, packages/shared/src/content/looks.ts; `clipSetOf(look)`) applies to
+every look that doesn't say otherwise: the modular looks, Designer looks and
+every whole-body manifest, including ones rigged later, with nothing to add to
+their manifests. A manifest can name another set (`"clips": "<set id>"`) or opt
+out with a reason (`"clips": false, "clipsWhy": "..."`: the rig's own gait). A
+rolling body (`locomotion: roll`) has no set. The set's file
+(`characters/shooter_clips.glb`, 103 KB) is loaded once, with the first
+character that needs it (never with the menu's code), and shared by all.
+
+**Shared sets** (`content/clip-sets/<id>.json`) take each clip from whichever
+download does it best: `sources` records each download (model, licence, who
+rigged it, its file name pattern), `clips` which clip comes from which.
+`node tools/content/clip-set.mjs --build <downloads dir> [<id>]` writes the set
+and `content/clip-sets.lock.json`; `pnpm content:build` records its
+provenance. A manifest can still carry `clipsFrom` to build a set of its own
+download with the character (`prepare-meshy-characters.mjs`, lock role
+`meshy-clips`). `node tools/content/clip-set.mjs <download.glb>` lists what a
+download's clips would give (speeds, directions).
+
+The `shooter` set (2026-11-02), each clip from the download that retargets
+closest to the four downloads' consensus (mean world bone direction against
+the others at 24 phases, per region):
+
+| Clip | What it does in game | From | Measured |
+|---|---|---|---|
+| `clip_walk` | legs, below running pace | WWII Infantry, Walking | 1.53 m/s; legs 2.0° from consensus (others 2.4-3.4) |
+| `clip_run` | legs, running | The Hollow Visitor, Running | 4.98 m/s; legs 3.5° (Fearsome Undead 7.5) |
+| `clip_shoot_fwd` | upper body with the walk's share | Biker Gang Girl, Walk_Forward_While_Shooting | 0.31 m/s; upper body 2.0° (2.4-2.6) |
+| `clip_shoot_run` | upper body with the run's share | The Hollow Visitor, Run_and_Shoot | 2.02 m/s, 0.67 s; upper body 2.4° (3.2-3.4) |
+| `clip_shoot_back` | whole body, backing up | Biker Gang Girl, Walk_Backward_While_Shooting_inplace | 0.83 m/s; 3.1° (3.3-3.8) |
+
+Side_Shot (in the three newer downloads) isn't used: it is a 4 s kneeling shot
+in place (hips 0.45-0.56 m against 1.01 m standing), no help to an upright
+strafe, which already turns the hips toward the motion and the shoulders onto
+the aim. Run_and_Shoot is a crouched run (hips 0.87 m) whose legs take short
+2 m/s steps, so only its upper body is used, over the Running legs; its loop
+(0.67 s) is one stride like Running's (0.63 s), so it plays at about its own
+pace at game speeds.
 
 In game (`CharacterAnimator`, armed, upright, on the ground): forward and
 strafing (hips turned toward the motion as with the rig's gait), the set's walk
 and run play on the legs, blended by speed between their own speeds at one
-cycle rate, and the forward shooting walk holds the upper body in step;
+cycle rate; the upper body plays the shooting walk with the walk's share and
+the running shot with the run's (`clipUpperWeights`, in step with the legs: at
+the game's 3.9 m/s aiming and 5.2 m/s it is nearly all the running shot);
 backing up, the backward shooting walk plays on the whole body, and past twice
 its own cadence its stride lengthens (thighs and knees swing up to 2.2× as far
 about the clip's middle pose: `strideWarp`) rather than stepping faster. The
 arms still go to the gun by IK and the aim, recoil and grips are unchanged;
-crouch, prone, jumps, seats and first person are the rig's.
+crouch, prone, jumps, seats, unarmed movement and first person are the rig's.
 
-The WWII Infantry download's shooting walks are slow combat steps (forward
-0.3 m/s, back 0.85 m/s, measured), far below the game's 3.9-5.2 m/s, which is
-why its legs come from its Walking (1.5 m/s) and Running (5.0 m/s) clips and the
-shooting walks hold the upper body (forward) or are stride-warped (back).
-Only `core.wwiisoldier` uses a set so far (`clips: meshy_wwiisoldier`), to
-compare with the rig's gait.
+The downloads' shooting walks are slow combat steps (forward 0.3 m/s, back
+0.85 m/s, measured), far below the game's 3.9-5.2 m/s, which is why the legs
+come from Walking (1.5 m/s) and Running (5.0 m/s) and the shooting clips hold
+the upper body (forward) or are stride-warped (back).
+
+Not on clips: the rolling Baseball Robot (no legs); creature skins (Imp,
+Puglin: their own rigs, CreatureAnimator); the NPC soldier mannequins (NPC
+roles, `spec.npc`), which keep the rig's gait. No manifest opts out: every
+walking look was checked on contact sheets (strafing, backing up and running
+while firing, ADS strafing; over the shoulder and from the side, 2026-11-02),
+small and large bodies, creatures, animals with tails and the modular looks
+alike, and none looked wrong on the clips. A body that does gets `"clips":
+false` and its reason in `clipsWhy`.
 
 ## Holding weapons
 
@@ -539,8 +578,9 @@ repo; they live in a downloads dir outside it.
 | `source.meshy` | The owner's own models only: Meshy task IDs (`preview`, `refine`, `image`, `multiImage`, `remesh`, `retexture`, `rig`), which `fetch-meshy.mjs` downloads by. |
 | `source.file` | A regular expression for the download's file name (a rigged `.glb`, or the textured `.fbx`), when it isn't saved as `<id>.glb`. |
 | `finish` | The one material's metallic and roughness (0–1). |
-| `clipsFrom` | A rigged download's own clips to retarget onto the rig as this character's clip set (`<id>_clips.glb`): `{ "<clip>": "<the download's clip name>" }` for `clip_walk`, `clip_run` (both needed), `clip_shoot_fwd`, `clip_shoot_back`. See "Authored clip sets". |
-| `clips` | The id of a manifest with `clipsFrom` whose clip set this look moves with while it holds a gun (itself or any other). Left out: the rig's gait. |
+| `clipsFrom` | A rigged download's own clips to retarget onto the rig as this character's clip set (`<id>_clips.glb`): `{ "<clip>": "<the download's clip name>" }` for `clip_walk`, `clip_run` (both needed), `clip_shoot_fwd`, `clip_shoot_run`, `clip_shoot_back`. See "Authored clip sets". |
+| `clips` | The clip set this look moves with while it holds a gun: left out, the default (`shooter`); a shared set's id (`content/clip-sets`) or a manifest with `clipsFrom`; `false` (with `clipsWhy`, the reason): the rig's own gait. |
+| `clipsWhy` | With `clips: false` only: why this body keeps the rig's own gait. |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
 | `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `skinClean` (weights cleaned in the download's own pose, contacts torn; see "Skin cleaned in the download's pose"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel and square to it, in third person and Character Select; Bandit's broad build put the stock at his snout). |
