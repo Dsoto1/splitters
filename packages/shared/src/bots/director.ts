@@ -65,6 +65,8 @@ const CLUSTER_MIN_FREE = 6;
 const LEAVE_RADIUS = 60;
 const JOIN_RADIUS = 30;
 const GATHER_RADIUS = 25;
+/** A squad still this much closer (m) to its goal when its time there is up keeps the goal. */
+const GOAL_PROGRESS = 15;
 /** Roles (other than tag-driven sniping) only for matches with this many Player Bots. */
 export const ROLE_MIN_BOTS = 6;
 
@@ -73,6 +75,8 @@ interface Cluster {
   members: number[];
   goalUntil: number;
   region: number;
+  /** The leader's distance from the goal when it was picked (or last given more time). */
+  goalDist: number;
 }
 
 /** Share of the Player Bots that may play each role, by match style (campers stay a small minority: GUNPLAY_DIRECTION, fun over mil-sim). */
@@ -234,6 +238,7 @@ export class BotDirector {
         members: group.map((g) => g.slot),
         goalUntil: 0,
         region: -1,
+        goalDist: Infinity,
       };
       for (const g of group) assigned.add(g.slot);
       list.push(c);
@@ -252,7 +257,20 @@ export class BotDirector {
       v.leaderBusy = leader.fighting;
       v.lagging = c.members.some((s) => horizontalDistance(free.get(s)!.pos, leader.pos) > 22);
       v.spacing = c.members.every((s) => hasTag(free.get(s)!.profile, 'GRUNT')) ? 2 : 3.5;
-      if (!v.goal || horizontalDistance(leader.pos, v.goal) < 12 || tick >= c.goalUntil) {
+      // Time up on a goal the squad is still closing on (a far enemy spawn on a big map): more time, not a new goal.
+      // Re-picking on the timer alone swung squads from one far goal to another every 20-35 s (zig-zags, no push).
+      if (v.goal && tick >= c.goalUntil) {
+        const d = horizontalDistance(leader.pos, v.goal);
+        if (d < c.goalDist - GOAL_PROGRESS) {
+          c.goalDist = d;
+          c.goalUntil = tick + Math.round(TICK_RATE * (15 + this.rng() * 10));
+          regions.claim(c.region, c.goalUntil);
+        }
+      }
+      // There: the leader, or half the squad (members waiting at the goal for a leader held up by a fight or a pickup
+      // shouldn't wait out the timer; the next goal keeps the push going).
+      const arrived = !!v.goal && (horizontalDistance(leader.pos, v.goal) < 12 || c.members.filter((m) => horizontalDistance(free.get(m)!.pos, v.goal!) < 12).length * 2 >= c.members.length);
+      if (!v.goal || arrived || tick >= c.goalUntil) {
         // Half the time straight for the enemy's side (a spawn point of theirs: fights keep happening), else a
         // region the side hasn't seen lately; either way by a route of the squad's own.
         const toEnemy = !!towards?.length && this.rng() < 0.5;
@@ -261,6 +279,7 @@ export class BotDirector {
           v.goal = pick.pos;
           c.region = pick.region;
           c.goalUntil = tick + Math.round(TICK_RATE * (20 + this.rng() * 15));
+          c.goalDist = horizontalDistance(leader.pos, pick.pos);
           regions.claim(pick.region, c.goalUntil);
           // Squads spread over the routes: each takes a different side of the straight line (and some the middle).
           const l = ((c.view.id + lane++) % 3) - 1;

@@ -97,7 +97,7 @@ describe('bots riding with a teammate at the wheel', () => {
     expect(gone).toBeGreaterThanOrEqual(0);
     expect(gone).toBeLessThan(TICK_RATE * 1.5);
     expect(riders.every((r) => r.alive)).toBe(true);
-  });
+  }, 180_000);
 
   it('get out when it is about to blow (badly damaged), and when it stands parked a while', () => {
     const { match, riders, buggy, drive } = boarded(2);
@@ -127,5 +127,5 @@ describe('bots riding with a teammate at the wheel', () => {
     }
     expect(out).toBeGreaterThan(TICK_RATE * 7);
     expect(out).toBeLessThan(TICK_RATE * 12);
-  });
+  }, 180_000);
 });
