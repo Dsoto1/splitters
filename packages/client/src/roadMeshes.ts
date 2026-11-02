@@ -4,8 +4,15 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { PATH_LOOKS, coreMaterials, pathDrawn, racePath, roadStrip, roadSurfaceY, trackGeometry, type MapDocument } from '@tiletrigger/shared';
+import { PATH_LOOKS, PATH_RANK_LIFT, coreMaterials, pathDrawRanks, pathDrawn, racePath, roadStrip, roadSurfaceY, trackGeometry, type MapDocument } from '@tiletrigger/shared';
 import type { MapStyler } from './mapMeshes.ts';
+
+/**
+ * Depth-buffer steps (polygon offset units) a path of this draw rank is pulled toward the camera, on top of its
+ * height step: overlapping ribbons at the same height on flat ground are exactly coplanar, and only this keeps
+ * the later one on top at any distance. Rank 0 is as before (none).
+ */
+export const pathRankUnits = (rank: number): number => -8 * rank;
 
 /**
  * The race track (the map's race path) drawn: the road ribbon (in its style, laid on
@@ -24,6 +31,10 @@ export function buildRoadMeshes(scene: Scene, doc: MapDocument, styler: MapStyle
   const half = t.width / 2;
   // A race path that is also a road is drawn as a race road; one that isn't gets only its start line and arches.
   const road = pathDrawn(path);
+  // Over or under the map's other drawn paths where they overlap (pathDrawRanks).
+  const rank = pathDrawRanks(doc.paths).get(path.id) ?? 0;
+  const up = rank * PATH_RANK_LIFT;
+  const units = pathRankUnits(rank);
   if (road) {
     const cols = Math.max(2, Math.ceil(t.width / 3));
     // Asphalt and dirt as race tracks always were; any other path style in its own surface.
@@ -34,19 +45,20 @@ export function buildRoadMeshes(scene: Scene, doc: MapDocument, styler: MapStyle
     // The road's own copy of the ground material, pulled toward the camera so it never fights the terrain under it.
     const roadMat = styler.surfaceMaterial(doc, surfaceId, tint).clone(`${name}_surface`) as StandardMaterial;
     roadMat.zOffset = -2;
-    out.push(strip(scene, `${name}_surface`, roadStrip(doc, -half, half, cols, 0.04), roadMat, (c, s) => [((c / cols) * t.width) / scale, s / scale]));
+    roadMat.zOffsetUnits = units;
+    out.push(strip(scene, `${name}_surface`, roadStrip(doc, -half, half, cols, 0.04 + up), roadMat, (c, s) => [((c / cols) * t.width) / scale, s / scale]));
     if (path.style === 'asphalt') {
-      const white = flat(scene, `${name}_paint`, '#e8e8e2', -4);
-      out.push(strip(scene, `${name}_edge_l`, roadStrip(doc, -half + 0.5, -half + 0.8, 1, 0.06), white));
-      out.push(strip(scene, `${name}_edge_r`, roadStrip(doc, half - 0.8, half - 0.5, 1, 0.06), white));
-      out.push(strip(scene, `${name}_centre`, roadStrip(doc, -0.15, 0.15, 1, 0.06), white, undefined, (s) => Math.floor(s / 3) % 2 === 0));
+      const white = flat(scene, `${name}_paint`, '#e8e8e2', -4, 0, units);
+      out.push(strip(scene, `${name}_edge_l`, roadStrip(doc, -half + 0.5, -half + 0.8, 1, 0.06 + up), white));
+      out.push(strip(scene, `${name}_edge_r`, roadStrip(doc, half - 0.8, half - 0.5, 1, 0.06 + up), white));
+      out.push(strip(scene, `${name}_centre`, roadStrip(doc, -0.15, 0.15, 1, 0.06 + up), white, undefined, (s) => Math.floor(s / 3) % 2 === 0));
     }
   }
   if (road && t.curbs) {
-    const red = flat(scene, `${name}_curb_red`, '#c8322a', -4);
-    const white = flat(scene, `${name}_curb_white`, '#ecebe6', -4);
+    const red = flat(scene, `${name}_curb_red`, '#c8322a', -4, 0, units);
+    const white = flat(scene, `${name}_curb_white`, '#ecebe6', -4, 0, units);
     for (const [side, from, to] of [['l', -half - 1.1, -half + 0.1], ['r', half - 0.1, half + 1.1]] as const) {
-      const rows = roadStrip(doc, from, to, 1, 0.1);
+      const rows = roadStrip(doc, from, to, 1, 0.1 + up);
       out.push(strip(scene, `${name}_curb_${side}_r`, rows, red, undefined, (s) => Math.floor(s / 2) % 2 === 0));
       out.push(strip(scene, `${name}_curb_${side}_w`, rows, white, undefined, (s) => Math.floor(s / 2) % 2 === 1));
     }
@@ -58,8 +70,8 @@ export function buildRoadMeshes(scene: Scene, doc: MapDocument, styler: MapStyle
     if (!gate) continue;
     const squares = Math.max(6, Math.round(t.width));
     const size = t.width / squares;
-    const black = flat(scene, `${name}_chq_b`, '#141414', -5);
-    const whiteSq = flat(scene, `${name}_chq_w`, '#f2f2f2', -5);
+    const black = flat(scene, `${name}_chq_b`, '#141414', -5, 0, units);
+    const whiteSq = flat(scene, `${name}_chq_w`, '#f2f2f2', -5, 0, units);
     for (const [colour, mat] of [[0, black], [1, whiteSq]] as const) {
       const vd = new QuadBuffer();
       for (let row = 0; row < 2; row++) {
@@ -72,7 +84,7 @@ export function buildRoadMeshes(scene: Scene, doc: MapDocument, styler: MapStyle
           const pt = (lat: number, along: number): [number, number, number] => {
             const x = gate.x + gate.dz * lat + gate.dx * along;
             const z = gate.z - gate.dx * lat + gate.dz * along;
-            return [x, roadSurfaceY(doc.terrain, x, z, gate.y) + 0.08, z];
+            return [x, roadSurfaceY(doc.terrain, x, z, gate.y) + 0.08 + up, z];
           };
           vd.quad(pt(a0, b0), pt(a1, b0), pt(a1, b1), pt(a0, b1));
         }
@@ -120,10 +132,10 @@ function arches(scene: Scene, doc: MapDocument, name: string): Mesh[] {
 
 const flats = new WeakMap<Scene, Map<string, StandardMaterial>>();
 
-export function flat(scene: Scene, name: string, hex: string, zOffset: number, glow = 0): StandardMaterial {
+export function flat(scene: Scene, name: string, hex: string, zOffset: number, glow = 0, zOffsetUnits = 0): StandardMaterial {
   let cache = flats.get(scene);
   if (!cache) flats.set(scene, (cache = new Map()));
-  const key = `${hex}|${zOffset}|${glow}`;
+  const key = `${hex}|${zOffset}|${glow}|${zOffsetUnits}`;
   let m = cache.get(key);
   if (!m) {
     m = new StandardMaterial(name, scene);
@@ -131,6 +143,7 @@ export function flat(scene: Scene, name: string, hex: string, zOffset: number, g
     m.specularColor = new Color3(0.1, 0.1, 0.1);
     m.emissiveColor = Color3.FromHexString(hex).scale(glow);
     m.zOffset = zOffset;
+    m.zOffsetUnits = zOffsetUnits;
     cache.set(key, m);
   }
   return m;

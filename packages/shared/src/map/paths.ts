@@ -147,3 +147,43 @@ export function pathsExtent(paths: readonly MapPath[] | null | undefined): { min
   }
   return Number.isFinite(x0) ? { min: [x0, z0], max: [x1, z1] } : null;
 }
+
+/** Height step (m) between overlapping drawn paths, one per draw rank (pathDrawRanks). */
+export const PATH_RANK_LIFT = 0.03;
+
+/**
+ * Which drawn path goes on top where drawn paths overlap (a concrete apron laid
+ * over a haul road, a spur joining a road): each drawn path's draw rank, by id.
+ * A path that overlaps none drawn before it is rank 0; otherwise one above the
+ * highest of those it overlaps, so the later path in the map's list is drawn
+ * over the earlier ones. Ribbons with the same rank lie at the same height on
+ * the same ground, and where they cross the depth buffer picks a winner pixel
+ * by pixel: hard, jagged patches of one through the other. The renderer lifts
+ * each rank a little (PATH_RANK_LIFT) and pulls it toward the camera.
+ */
+export function pathDrawRanks(paths: readonly MapPath[] | null | undefined): Map<string, number> {
+  const ranks = new Map<string, number>();
+  const drawn: { id: string; half: number; pts: { x: number; z: number }[]; box: [number, number, number, number] }[] = [];
+  for (const p of paths ?? []) {
+    if (p.points.length < 2 || !pathDrawn(p)) continue;
+    const half = p.width / 2;
+    const pts = pathGeometry(p).samples.map((s) => ({ x: s.x, z: s.z }));
+    const box: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const q of pts) {
+      box[0] = Math.min(box[0], q.x - half);
+      box[1] = Math.min(box[1], q.z - half);
+      box[2] = Math.max(box[2], q.x + half);
+      box[3] = Math.max(box[3], q.z + half);
+    }
+    let rank = 0;
+    for (const o of drawn) {
+      if (box[0] > o.box[2] || o.box[0] > box[2] || box[1] > o.box[3] || o.box[1] > box[3]) continue;
+      // Centre-line samples are 2 m apart: a metre of slack so ribbons that just touch count.
+      const reach = (half + o.half + 1) ** 2;
+      if (pts.some((a) => o.pts.some((b) => (a.x - b.x) ** 2 + (a.z - b.z) ** 2 < reach))) rank = Math.max(rank, ranks.get(o.id)! + 1);
+    }
+    ranks.set(p.id, rank);
+    drawn.push({ id: p.id, half, pts, box });
+  }
+  return ranks;
+}

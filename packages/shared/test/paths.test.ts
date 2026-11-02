@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyCommand, buildMapGeometry, invertCommand, layPathsIntoTerrain, pathGeometry, pathsExtent, terrainRaycast, loadMap, newMapDocument, newTerrain, serializeMap, terrainHeightAt, withPathsLaid, type MapDocument, type MapPath } from '../src/index.ts';
+import { readFileSync } from 'node:fs';
+import { applyCommand, buildMapGeometry, invertCommand, layPathsIntoTerrain, pathDrawRanks, pathGeometry, pathsExtent, terrainRaycast, loadMap, newMapDocument, newTerrain, serializeMap, terrainHeightAt, withPathsLaid, type MapDocument, type MapPath } from '../src/index.ts';
 
 /** A map on a slope (rising 1 m every 4 m east) with one dirt path across it, west to east. */
 function sloped(path: Partial<MapPath> = {}): MapDocument {
@@ -87,5 +88,33 @@ describe('paths', () => {
     })());
     expect(hit).not.toBeNull();
     expect(Math.abs(hit!.y - terrainHeightAt(doc.terrain!, hit!.x, hit!.z)!)).toBeLessThan(0.05);
+  });
+});
+
+describe('pathDrawRanks', () => {
+  const road = (id: string, points: [number, number, number][], extra: Partial<MapPath> = {}): MapPath => ({ id, points, closed: false, uses: ['road'], width: 10, style: 'dirt', lay: false, ...extra });
+
+  it('puts a later overlapping path on top, so overlapping ribbons never share a height (Iron Maw crusher apron over its haul road)', () => {
+    // A concrete apron that starts and ends on a haul road and runs along it in between.
+    const haul = road('haul', [[-60, 0, 130], [0, 0, 145], [30, 0, 132]], { width: 13 });
+    const apron = road('apron', [[-50, 0, 130], [-30, 0, 115], [0, 0, 117], [19, 0, 134]], { width: 12, style: 'concrete' });
+    const far = road('far', [[-60, 0, -100], [30, 0, -100]]);
+    const route = { ...road('route', [[-60, 0, 130], [30, 0, 132]]), uses: ['route' as const] };
+    const ranks = pathDrawRanks([haul, route, apron, far]);
+    expect(ranks.get('haul')).toBe(0);
+    expect(ranks.get('apron')).toBe(1);
+    // Paths that overlap nothing drawn before them stay as they were; routes aren't drawn at all.
+    expect(ranks.get('far')).toBe(0);
+    expect(ranks.has('route')).toBe(false);
+    // A third path over both goes above the highest of them.
+    expect(pathDrawRanks([haul, apron, road('spur', [[-40, 0, 120], [-40, 0, 160]])]).get('spur')).toBe(2);
+  });
+
+  it('puts the shipped Iron Maw\'s concrete crusher apron over the rim haul road it overlaps', () => {
+    const loaded = loadMap(readFileSync(new URL('../../../maps/iron_maw.json', import.meta.url), 'utf8'));
+    if (!loaded.ok) throw new Error('Iron Maw does not load');
+    const ranks = pathDrawRanks(loaded.map.paths);
+    expect(ranks.get('rim_haul_road')).toBe(0);
+    expect(ranks.get('crusher_apron')).toBeGreaterThan(ranks.get('rim_haul_road')!);
   });
 });
