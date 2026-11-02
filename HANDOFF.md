@@ -23,6 +23,62 @@ don't push. docs/BOTS.md "Riding, and pushing with a leader" (causes, before/aft
   (`push.mts` metrics, `lead.mts` player-leader orders, `loops*.mts` breakdowns).
 - Open: Iron Maw idle out of a fight is a couple of points higher on some seeds (bots in `mount` waiting by a
   vehicle); kills/min within noise. CTF unchanged (no squads in objective modes).
+
+### St. John's: owner's screenshots of 2 Nov (`wip/st-johns`, agent, 2026-11-02; not merged; from main 8bc4001)
+Owner's shots 62 (courtyard), 63 (walk by the hall with the clock tower), 64 (inside, where the two halls meet).
+Cameras and before/after pictures: agent scratchpad `st-johns/before`, `st-johns/after` (scratch tools in `tools/`).
+- **Engine, every map** (settle.ts, both in the game and MapMaker):
+  - **Hung fixtures** (`fixtureGap`, `hungPropLift`, `HANG_REACH` 1.5 m, `HANGING_PROPS`): ceiling panels and strips
+    are drawn flush under the ceiling over them, a bulb's cord and a chandelier light's chain reach up to it, and
+    hung props (Chandelier, Candle Chandelier, Ceiling Light Panel, Hanging Brazier) are drawn with their top against
+    it. Data unchanged; the light still shines from where it was put. St. John's: every ceiling panel hung 0.55 m
+    under its ceiling (the "white triangle" in 64 is one seen edge-on), the chapel's chandeliers 1 m under the roof
+    (the white chandelier "floating" in 64). ScenarioVisuals gets `ceilings` (the level's boxes) from build and from
+    MapMaker's setMap.
+  - **Props stay bedded as played** (`rebedShift`, `rebedProps`, in `loadMap` before terrain-under-floors; MapMaker's
+    view shifts them the same way): MapMaker settles props on the map's own ground, the game lays the walks into it
+    at load, so props by a walk sat up to 0.24 m sunk or standing off (18 on St. John's: street trees, lamp posts,
+    bushes). Props on a floor/block/prop or placed off the ground stay put. The "half-sunk teal plant" of 63 is
+    Kenney's Large Bush (`prop_3299`, a blocky low-poly model, leaning with the slope) at the walk's edge: re-bedded
+    5 cm; the rest is the model.
+- **MapMaker data** (Import → select → toolbar Delete / inspector fields → Save, Playwright driving the page; the
+  saved file is MapMaker's own output, which also took the map to format 25):
+  - Deleted `block_1318`: a blue **Light Panel** block (the striped "diamond" in 63) 1.1 m off the fourth-floor
+    window of the north-south hall's west face, over the lower half of the window: a stray piece, nothing like it on
+    any facade.
+  - `block_946` (the north-south hall's ground floor) reached 0.5-0.7 m short of its south wall: the grass strip at
+    the floor's edge in 64. Depth 45.76 → 46.46 m, moved 0.35 m south (its edge now under the wall).
+  - validate-map 0 issues.
+- **For the owner** (not changed):
+  1. The "hollow shell" of 62: the east-west hall's north wall carries on up from 8 to 16 m (`block_1069`-`1088`, string
+     courses `block_1232`, `block_1240`, battlements `block_1244`-`1254`) along its whole 47 m, but the hall's roof is
+     at 8 m: a two-storey screen with sky through its windows. It looks like the north-south hall's south end, stretched to
+     the other hall's length when the halls went onto the OSM footprints. Choose: cut it back to the north-south
+     hall's 14 m width (delete the parts over the east-west hall), or build the east-west hall's 3rd and 4th
+     storeys (floors at 12 and 16 m, south and end walls, stairs).
+  2. The chapel's ten wall banners (`block_601`-`626`) are the same glowing striped Light Panel material: Canvas or
+     Carpet in their colours would read as cloth.
+  3. `block_1737` (a 0.5 × 0.5 × 1.4 m stone piece at 2.0, 5.5, -87.2) touches nothing.
+  4. Not bugs: the "flat picture of trees" in 62's low opening is the street trees seen through the east-west hall's
+     open ground floor; the far hall's dark, busy look in 63 is its material, Mossy Castle Stone (Bricks076C, 512²,
+     mipmapped, 3 m per repeat; Grey Stone Blocks or a lighter tint if wanted); the big teal tree is the low-poly
+     `oak_dark` model; the window boxes are the 0.6 m wall reveals onto unlit rooms.
+- **The Visitor's first-person arms** (the owner's alien is **The Visitor**, `core.visitor`, `meshy_alien`): cause
+  found, not fixed. `<id>_fparms.glb` is cut with one recipe for every character (prepare-meshy-characters.mjs
+  `slimArms`: the elbow 40% of the forearm dropped, the forearm pulled to 60% of its girth towards the bone
+  (`FP_SLEEVE`, made for sleeves), the hands shrunk to 78% (`FP_HAND`, made for gauntlets)). The Visitor's bare
+  forearms and slender hands are already thin, so they come out as pale stalks with spike-thin hands at the grip
+  (grip sheet: agent scratchpad `st-johns/fp-compare.png`; Alien Encounter and Alien Biker keep visible hands). Fix:
+  a manifest knob (e.g. `firstPerson: { arms: "own", sleeve: 1, hand: 1 }`, checked in character-manifests.mjs and
+  read by `slimArms`), then `ONLY=meshy_alien node tools/content/prepare-meshy-characters.mjs
+  /home/user/meshy-drive/tposes-2026-11-01` (the download is there) and a grip sheet.
+- Checks (rebased on main e465758, with wip/fix-terrain): typecheck; test:changed 1262 pass (new: hungFixtures.test.ts,
+  rebed.test.ts; before the rebase 4 timed out under load and passed rerun alone); validate-map st_johns 0 issues. e2e (machine at load 16 on 4
+  cores, so `CI=1` for the CI timeouts): editor, visual, maps with `E2E_MAPS=st_johns` PASS; offline FAIL twice on
+  the kill-cam banner (arena, nothing here touches it; first run a killer-name mismatch, second no banner in time),
+  maps6 "no match" timeouts on maps this doesn't touch without `CI=1`. The change touches shared code: the full suite
+  needs a `check/` run before main.
+
 ### Iron Maw "snow patches": overlapping roads z-fought (`wip/fix-terrain`, agent, 2026-11-02; not merged; from main c6751d5)
 Owner's screenshot: pale "snow/ice" patches with hard jagged borders on brown dirt near Iron Maw's crusher. **Not the
 terrain**: Iron Maw's terrain holds only sand, stone and gravel (no snow, unchanged since the greybox; `terrainMaterialFor`

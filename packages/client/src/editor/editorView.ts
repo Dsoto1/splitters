@@ -16,7 +16,7 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid } from '@tiletrigger/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift } from '@tiletrigger/shared';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyToneMapping } from '../game/graphicsSettings.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
@@ -322,6 +322,8 @@ export class EditorView {
     }
     this.setGrid(doc, level);
     this.setBoundsOutline(doc);
+    // Light fixtures and hung props are drawn fastened to the ceiling over them (settle.ts fixtureGap, hungPropLift).
+    this.scenario.ceilings = boxes;
     this.setEntities(doc, level, showAll, new Set());
     // Glass in glazed windows (after the backdrop, whose sky it reflects).
     this.scenario.glass.build(visible, { windowsOnly: true });
@@ -519,8 +521,12 @@ export class EditorView {
   /** Put an entity's visual (not a spawn's) where the entity is, facing its way. */
   private placeEntityNode(node: TransformNode, e: MapEntity, doc: MapDocument): void {
     node.position.set(e.position[0], e.position[1] + (e.kind === 'pickup' ? PICKUP_HOVER : 0), e.position[2]);
-    if (e.kind === 'prop') orientProp(node, e, doc.terrain);
-    else if (e.kind === 'mount') node.rotation.y = e.yaw;
+    if (e.kind === 'prop') {
+      orientProp(node, e, doc.terrain);
+      node.position.y += hungPropLift(this.scenario.ceilings, e);
+      // Shown on the ground as played (paths laid in), as the game re-beds it (settle.ts rebedProps).
+      if (doc.terrain && this.shownTerrain && this.shownTerrain !== doc.terrain) node.position.y += rebedShift(doc.terrain, this.shownTerrain, e);
+    } else if (e.kind === 'mount') node.rotation.y = e.yaw;
     else if (e.kind !== 'pickup') placeScenarioNode(node, e);
   }
 

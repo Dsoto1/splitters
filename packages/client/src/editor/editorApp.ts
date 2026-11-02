@@ -3696,7 +3696,7 @@ export class EditorApp {
         toggle('Starts off', !!e.off, (v) => ({ off: v || undefined }));
         number('Blinks per s (0 steady)', e.blink ?? 0, 0.5, (v) => ({ blink: v <= 0 ? undefined : clamp(v, 0.2, 10) }));
         el.append(small('Logic can switch it on and off, change its colour, flash it or make it blink (alarms, trap tells, a cinema dimming).'));
-        el.append(small('Lights the area round it out to its reach (lighting only). Ceiling panels and strips go just under a ceiling, wall lamps on a wall facing into the room. Hundreds are fine on most GPUs.'));
+        el.append(small('Lights the area round it out to its reach (lighting only). Ceiling panels and strips go just under a ceiling (within 1.5 m they are drawn fastened to it; a bulb\'s cord and a chandelier\'s chain reach up to it), wall lamps on a wall facing into the room. Hundreds are fine on most GPUs.'));
         break;
       }
       case 'hostage':

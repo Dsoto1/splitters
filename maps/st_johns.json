@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 24,
+  "formatVersion": 25,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
     "author": "Tile Trigger",
     "description": "A look-alike of the St. John's Northwestern Military Academy campus in Delafield, Wisconsin, laid out on the real ground at its real size: grey lannonstone halls built like castles, with towers, turrets and battlements, round the drill field and its flagpole. Fight through the barracks of Hazelwood and Scott Johnston along Exeter Street and the classrooms of the Knight block, through the Argonne Gate into the Welles refectory under its clock tower and up DeKoven's four storeys, across the quad to Memorial Hall, the Victory Memorial Chapel and Smythe Hall by St. John's Road. Take the sniper rifle from DeKoven's roof, the railgun from upstairs in Smythe, rockets from the chapel and the damage boost from the Gerber pool. The west team holds the drill field and Hazelwood; the east team the Farrand gym, the old red church and its churchyard above the bluff down to the Bark River flats. Layout: map data © OpenStreetMap contributors (ODbL). Ground: USGS 3D Elevation Program (3DEP), public domain.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-02T03:21:00.326Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 8,
@@ -19205,15 +19205,15 @@
     {
       "id": "block_946",
       "position": [
-        46.651,
+        46.642,
         0.04,
-        -47.119
+        -47.469
       ],
       "kind": "block",
       "size": [
         14.3,
         0.5,
-        45.76
+        46.46
       ],
       "yaw": 0.02443,
       "material": "core.pbr_floorboards",
@@ -27281,28 +27281,6 @@
       "scale": 1.1,
       "solid": false,
       "tint": null
-    },
-    {
-      "id": "block_1318",
-      "position": [
-        37.666,
-        12.44,
-        -47.418
-      ],
-      "kind": "block",
-      "size": [
-        0.202,
-        2.4000000000000004,
-        2.513
-      ],
-      "yaw": 0.02443,
-      "material": "core.light_strip",
-      "tint": "#3c5fc8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
     },
     {
       "id": "block_1319",
