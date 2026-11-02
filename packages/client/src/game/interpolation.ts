@@ -58,6 +58,11 @@ export interface RemotePose {
   /** Riding a zipline: the line (index in mapZiplines) and the speed along it (m/s). */
   zip?: number;
   zipSpeed?: number;
+  /**
+   * Your own body in third person: how far (radians, + to the right) the gun turns from the body's yaw to point at
+   * what the crosshair is on (shared/sim/thirdPerson.ts thirdPersonAim; `pitch` is that aim's pitch then).
+   */
+  aimYaw?: number;
 }
 
 /** Snapshot interpolation for remote players, driven by an estimate of the server clock. */

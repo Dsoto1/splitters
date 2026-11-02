@@ -28,6 +28,8 @@ import {
   mountToWorld,
   viewDirection,
   thirdPersonCamera,
+  thirdPersonAim,
+  angleDelta,
   type ZoneSnapshot,
   BUTTON_FIRE,
   BUTTON_MELEE,
@@ -2399,6 +2401,13 @@ export class GameSession {
     const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
     if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0) });
     const self = this.thirdPerson && !this.tpClose ? mine : undefined;
+    if (self && local) {
+      // The gun points where your rounds go: at what the crosshair is on (the host aims them from the same camera),
+      // not along the view, beside it: aiming down the sights magnified that miss.
+      const aim = thirdPersonAim((o, d, max) => local.physics.raycastWorld(o, d, max), local.eye, this.input.yaw, this.input.pitch);
+      self.pitch = aim.pitch;
+      self.aimYaw = angleDelta(this.input.yaw, aim.yaw);
+    }
     // Your own canopy in first person (third person draws it over your character).
     this.view.updateLocalCanopy(local?.alive && !self && !this.seat && local.state.chute ? this.drawnPos : null, this.input.yaw, local?.state.chute ?? 0);
     this.view.updateLocalTrolley(local?.alive && !self && !this.seat && local.state.zip !== undefined ? this.drawnPos : null, local?.state.zip, local?.scale ?? 1);

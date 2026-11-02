@@ -23,6 +23,12 @@ export interface MotionState {
   alive: boolean;
   /** Aim pitch (radians, positive = up). */
   pitch: number;
+  /**
+   * The gun's turn from the body's facing toward what it aims at (radians, + to the right; your own body in third
+   * person, whose rounds go where the over-the-shoulder crosshair is: shared/sim/thirdPerson.ts). The shoulders turn
+   * with it. Absent: straight ahead.
+   */
+  aimYaw?: number;
   /** Victory dance (intermission). */
   celebrate: boolean;
   /** Crouching (1) or prone (2). */
@@ -108,6 +114,8 @@ const ROLL_HUNCH_PRONE = 0.32;
 const ROLL_SMOOTH = 10;
 const ROLL_LEAN_EASE = 6;
 const ROLL_TELEPORT = 3;
+/** How fast the gun follows a third-person aim point's turn (MotionState.aimYaw), per second. */
+const AIM_YAW_EASE = 18;
 /** Overlays outweigh locomotion on the upper body. */
 const OVERLAY_WEIGHT = 4;
 
@@ -254,6 +262,8 @@ export class CharacterAnimator {
   private dead = false;
   private readonly observer: Observer<Scene>;
   private pitch = 0;
+  /** MotionState.aimYaw, eased (radians, + right). */
+  private aimYaw = 0;
   private twist = 0;
   /** Moving backwards (the gait plays in reverse); kept with a margin so it doesn't flicker at a sideways strafe. */
   private backing = false;
@@ -452,6 +462,8 @@ export class CharacterAnimator {
     if (this.dead) this.revive();
     this.maskLegs(this.armed);
     this.pitch = this.armed ? s.pitch : 0;
+    // Quick (it follows the crosshair), but not a jump when the crosshair crosses from a near wall to the far distance.
+    this.aimYaw += ((this.armed && !this.fp ? (s.aimYaw ?? 0) : 0) - this.aimYaw) * Math.min(1, dt * AIM_YAW_EASE);
 
     // Backpedal by playing the gait in reverse; strafe by turning the hips (and so the legs) toward
     // the motion while the spine turns back, so the shoulders and the gun stay on the aim. Moving
@@ -951,7 +963,8 @@ export class CharacterAnimator {
     // The hips (and with them the legs) turn toward the motion; the spine above turns back by as
     // much (less the long gun's blade), so the shoulders stay square to the aim. Turns are about world axes (worldTurn).
     const hipTurn = this.twist;
-    const twist = hipTurn - this.blade;
+    // The shoulders also turn toward a third-person aim point off to the side (aimYaw).
+    const twist = hipTurn - this.blade - this.aimYaw;
     const hips = this.pelvis;
     const hipsParent = hips?.parent as TransformNode | null | undefined;
     if (hips?.rotationQuaternion && hipsParent && Math.abs(hipTurn) > 1e-4) {
@@ -995,7 +1008,7 @@ export class CharacterAnimator {
    */
   private placeWeapon(root: TransformNode, rootRot: Quaternion, weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace): void {
     const scale = root.absoluteScaling.x;
-    const aim = rootRot.multiply(Quaternion.RotationAxis(Vector3.Right(), -this.pitch));
+    const aim = rootRot.multiply(Quaternion.RotationAxis(Vector3.Up(), this.aimYaw)).multiply(Quaternion.RotationAxis(Vector3.Right(), -this.pitch));
     const point = (origin: Vector3, rot: Quaternion, p: ModelPoint) => origin.add(new Vector3(p[0], p[1], p[2]).scale(scale).applyRotationQuaternion(rot));
     const pos = (n: TransformNode) => {
       n.computeWorldMatrix(true);

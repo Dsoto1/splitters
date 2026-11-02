@@ -1457,6 +1457,7 @@ export class GameView {
           airborne: !p.grounded && !seated.has(p.slot),
           alive: p.alive,
           pitch: p.pitch,
+          ...(p.aimYaw ? { aimYaw: p.aimYaw } : {}),
           celebrate: (celebrate || !!p.emote) && p.alive,
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
