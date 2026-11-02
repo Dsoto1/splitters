@@ -19,6 +19,8 @@
 //   pnpm --filter @tiletrigger/client exec vite preview --port 4799
 //   node tools/content/capture-map-shots.mjs http://localhost:4799 [map ids…]
 // SHOT_JOBS=2 captures maps in parallel; SHOT_MISSING=1 only maps without a picture; SHOT_CANDIDATES=<dir> also saves every rendered candidate there.
+// For pictures elsewhere (e.g. a review page): SHOT_OUT=<dir> (files <id><SHOT_SUFFIX>.jpg), SHOT_SIZE=900x600 (the
+// viewport takes that shape), SHOT_QUALITY=80, SHOT_TEST=1 (the deterministic ?test=1 match: the maps in maps/, not published ones).
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,7 +28,11 @@ import { chromium } from 'playwright';
 import sharp from 'sharp';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const OUT = join(ROOT, 'packages/client/public/maps/shots');
+const OUT = process.env.SHOT_OUT ? resolve(process.env.SHOT_OUT) : join(ROOT, 'packages/client/public/maps/shots');
+const SUFFIX = process.env.SHOT_SUFFIX ?? '';
+const [SHOT_W, SHOT_H] = (process.env.SHOT_SIZE ?? '640x360').split('x').map(Number);
+const QUALITY = Number(process.env.SHOT_QUALITY) || 74;
+const QUERY = process.env.SHOT_TEST === '1' ? '&test=1' : '';
 const base = process.argv[2] ?? 'http://localhost:4799';
 const only = process.argv.slice(3);
 const CANDS = process.env.SHOT_CANDIDATES;
@@ -37,7 +43,7 @@ const ids = readdirSync(join(ROOT, 'maps'))
   .map((f) => f.slice(0, -5))
   .filter((id) => (only.length ? only.includes(id) : !RETIRED.has(id)))
   // SHOT_MISSING=1: only maps without a picture yet (resuming an interrupted run).
-  .filter((id) => !process.env.SHOT_MISSING || !existsSync(join(OUT, `${id}.jpg`)));
+  .filter((id) => !process.env.SHOT_MISSING || !existsSync(join(OUT, `${id}${SUFFIX}.jpg`)));
 mkdirSync(OUT, { recursive: true });
 if (CANDS) mkdirSync(CANDS, { recursive: true });
 /** Vertical field of view of the picture (radians). */
@@ -269,7 +275,9 @@ const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=sw
 const results = [];
 async function captureOne(id) {
   const map = JSON.parse(readFileSync(join(ROOT, 'maps', `${id}.json`), 'utf8'));
-  const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
+  // 16:9 by default (960×540 for a 640×360 picture); another shape takes a viewport of that shape.
+  const vw = Math.round((SHOT_W / SHOT_H) * 540) === 960 ? 960 : SHOT_W;
+  const ctx = await browser.newContext({ viewport: { width: vw, height: Math.round((vw * SHOT_H) / SHOT_W) } });
   await ctx.addInitScript(() => {
     try {
       localStorage.setItem('tiletrigger.graphics', 'medium');
@@ -280,7 +288,7 @@ async function captureOne(id) {
   const page = await ctx.newPage();
   const t0 = Date.now();
   try {
-    await page.goto(`${base}/?offline=${id}`, { timeout: 600000 });
+    await page.goto(`${base}/?offline=${id}${QUERY}`, { timeout: 600000 });
     await page.waitForFunction(() => window.__match && window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: 600000 });
     await page.addStyleTag({ content: '#hud, #pause, #crosshair, #countdown, #loading-screen, #toast, .toast { display: none !important; }' });
     // Bots out of the way; the camera is ours from here.
@@ -347,8 +355,8 @@ async function captureOne(id) {
       if (!best || total > best.total) best = { total, png, v, i, line };
       console.log(`${id}${line}`);
     }
-    const file = join(OUT, `${id}.jpg`);
-    await sharp(best.png).resize(640, 360).jpeg({ quality: 74, mozjpeg: true }).toFile(file);
+    const file = join(OUT, `${id}${SUFFIX}.jpg`);
+    await sharp(best.png).resize(SHOT_W, SHOT_H).jpeg({ quality: QUALITY, mozjpeg: true }).toFile(file);
     const kb = statSync(file).size / 1024;
     const v = best.v;
     const cam = camera(v);
