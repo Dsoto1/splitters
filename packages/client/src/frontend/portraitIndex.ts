@@ -89,6 +89,7 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.saintnick': 'core.saintnick.webp?v=1e55787da2',
   'core.scamp': 'core.scamp.webp?v=a42db47895',
   'core.scout': 'core.scout.webp?v=f9105c1202',
+  'core.seetah': 'core.seetah.webp?v=cedab81575',
   'core.sentinel': 'core.sentinel.webp?v=fc6527bce7',
   'core.shade': 'core.shade.webp?v=23ba646576',
   'core.shambler': 'core.shambler.webp?v=935dc336c2',
