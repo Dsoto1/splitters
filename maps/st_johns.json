@@ -7,7 +7,7 @@
     "author": "Tile Trigger",
     "description": "A look-alike of the St. John's Northwestern Military Academy campus in Delafield, Wisconsin, laid out on the real ground at its real size: grey lannonstone halls built like castles, with towers, turrets and battlements, round the drill field and its flagpole. Fight through the barracks of Hazelwood and Scott Johnston along Exeter Street and the classrooms of the Knight block, through the Argonne Gate into the Welles refectory under its clock tower and up DeKoven's four storeys, across the quad to Memorial Hall, the Victory Memorial Chapel and Smythe Hall by St. John's Road. Take the sniper rifle from DeKoven's roof, the railgun from upstairs in Smythe, rockets from the chapel and the damage boost from the Gerber pool. The west team holds the drill field and Hazelwood; the east team the Farrand gym, the old red church and its churchyard above the bluff down to the Bark River flats. Layout: map data © OpenStreetMap contributors (ODbL). Ground: USGS 3D Elevation Program (3DEP), public domain.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-11-02T15:27:50.428Z",
+    "updatedAt": "2026-11-02T16:46:44.658Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 8,
@@ -66782,6 +66782,17 @@
       ],
       "kind": "pickup",
       "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_dmxokrxrmg",
+      "position": [
+        60.355,
+        12.34,
+        -74.13
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
       "respawnSeconds": null
     }
   ],

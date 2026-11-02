@@ -43,9 +43,14 @@ agent scratchpad `st-johns-2/` (`tools/maker2.mjs`, `tools/steps.mjs`, `before/`
   (off the new stair hole). Totals: +121 blocks (2,480), +30 props (729, 59 models), +6 lights (72), +2 pickups.
 - **Chapel banners** `block_601`-`626`: Light Panel → Canvas, tints kept (Canvas's pale weave keeps the colours;
   Carpet is dark red and would muddy them).
+- Owner (2 Nov, later): "yes add a weapon pickup up there": a **marksman rifle** (`pickup_dmxokrxrmg`, a MapMaker
+  copy of Hazelwood's `pickup_2873`) on the 4th storey at (60.4, 12.34, -74.1), by the wide window over the courtyard
+  and the doorway into the north-south hall. The map had one marksman (west side, upstairs in Hazelwood); this is the
+  east side's. Rifle ammo is on the 3rd storey.
 - Bots: navmesh routes from both teams' spawns to both new floors (by the stairs and through the doorways); bots sent
-  there (hold orders, no enemies) arrive in 45-70 s. In free TDM (24 bots, 600 s, 3 seeds) bots go up to the 3rd storey
-  now and then, the 4th rarely: nothing draws them there but the small pickups (a weapon upstairs would, owner's call).
+  there (hold orders, no enemies) arrive in 45-70 s. Free TDM (24 bots, 600 s, seeds 1-3; bot-seconds on the floor,
+  distinct bots): without the marksman, 3rd 1/20/0 (1/2/0 bots), 4th 0/0/0; with it, 3rd 42/16/4 (6/3/1 bots),
+  4th 48/73/24 (5/2/2 bots). No kills up there yet in those runs. Probe: agent scratchpad `st-johns-2/tools/reach.mts`.
 - Left open from below: `block_1737` (a stray stone piece), Visitor first-person arms.
 
 ### St. John's: owner's screenshots of 2 Nov (`wip/st-johns`, agent, 2026-11-02; not merged; from main 8bc4001)
