@@ -782,6 +782,41 @@ export class CharacterAnimator {
     this.strideGain = 1;
   }
 
+  /** The aim pose's shoulder line (radians from the body's facing), measured standing in it; null until then. */
+  private aimShoulders: number | null = null;
+
+  /** The shoulder line's yaw relative to the body's facing (radians; 0 square to it), as the bones are now. */
+  private shoulderYaw(rootRot: Quaternion): number | null {
+    const [l, r] = [this.arms?.l.upper, this.arms?.r.upper];
+    if (!l || !r) return null;
+    l.computeWorldMatrix(true);
+    r.computeWorldMatrix(true);
+    const d = r.getAbsolutePosition().subtract(l.getAbsolutePosition());
+    const local = d.applyRotationQuaternion(Quaternion.Inverse(rootRot));
+    return Math.atan2(local.x, local.z) - Math.PI / 2;
+  }
+
+  /**
+   * How far (radians, + right) the spine turns to bring a clip-held upper body's shoulders onto the aim pose's line,
+   * after the hips' turn: the clip's own torso turn taken out by as much as the clip holds the upper body. The aim
+   * pose's line is measured whenever the body stands in it.
+   */
+  private chestFix(rootRot: Quaternion, hipTurn: number): number {
+    if (!this.clipGait) return 0;
+    if (this.clipUpper <= 0.001) {
+      if (this.current === 'aim_idle' && (this.weights.get('aim_idle') ?? 0) > 0.99 && Math.abs(hipTurn) < 1e-3 && !this.overlay) {
+        const y = this.shoulderYaw(rootRot);
+        if (y !== null) this.aimShoulders = y;
+      }
+      return 0;
+    }
+    if (this.aimShoulders === null) return 0;
+    const now = this.shoulderYaw(rootRot);
+    if (now === null) return 0;
+    const off = now - hipTurn - this.aimShoulders;
+    return -Math.atan2(Math.sin(off), Math.cos(off)) * Math.min(1, this.clipUpper);
+  }
+
   /** Stride warping (after the clips): the thighs and knees swing `strideGain` times as far about the backward clip's middle pose. */
   private warpStride(): void {
     const cs = this.clipGait;
@@ -1146,13 +1181,16 @@ export class CharacterAnimator {
     // much (less the long gun's blade), so the shoulders stay square to the aim. Turns are about world axes (worldTurn).
     this.warpStride();
     const hipTurn = this.twist;
-    // The shoulders also turn toward a third-person aim point off to the side (aimYaw).
-    const twist = hipTurn - this.blade - this.aimYaw;
     const hips = this.pelvis;
     const hipsParent = hips?.parent as TransformNode | null | undefined;
     if (hips?.rotationQuaternion && hipsParent && Math.abs(hipTurn) > 1e-4) {
       hips.rotationQuaternion = worldTurn(hipsParent, up, hipTurn).multiply(hips.rotationQuaternion);
     }
+    // An authored clip holding the upper body (a clip set's shooting walks) has its own torso turn, which isn't the aim
+    // pose's: the shoulders are brought back to the aim pose's line (measured from it) by as much as the clip holds.
+    const chest = this.chestFix(rootRot, hipTurn);
+    // The shoulders also turn toward a third-person aim point off to the side (aimYaw).
+    const twist = hipTurn - this.blade - this.aimYaw - chest;
     for (const [i, bone] of this.spine.entries()) {
       const parent = bone.parent as TransformNode | null;
       if (!parent || !bone.rotationQuaternion) continue;
