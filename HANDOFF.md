@@ -58,7 +58,13 @@ Cameras and before/after pictures: agent scratchpad `st-johns/before`, `st-johns
   a manifest knob (e.g. `firstPerson: { arms: "own", sleeve: 1, hand: 1 }`, checked in character-manifests.mjs and
   read by `slimArms`), then `ONLY=meshy_alien node tools/content/prepare-meshy-characters.mjs
   /home/user/meshy-drive/tposes-2026-11-01` (the download is there) and a grip sheet.
-- Checks: see the end of this entry once filled in.
+- Checks: typecheck; test:changed 1245 pass, 4 timed out under load (host, botai, npc, sandgate), all pass rerun
+  alone (new: hungFixtures.test.ts, rebed.test.ts); validate-map st_johns 0 issues. e2e (machine at load 16 on 4
+  cores, so `CI=1` for the CI timeouts): editor, visual, maps with `E2E_MAPS=st_johns` PASS; offline FAIL twice on
+  the kill-cam banner (arena, nothing here touches it; first run a killer-name mismatch, second no banner in time),
+  maps6 "no match" timeouts on maps this doesn't touch without `CI=1`. The change touches shared code: the full suite
+  needs a `check/` run before main.
+
 ### Iron Maw "snow patches": overlapping roads z-fought (`wip/fix-terrain`, agent, 2026-11-02; not merged; from main c6751d5)
 Owner's screenshot: pale "snow/ice" patches with hard jagged borders on brown dirt near Iron Maw's crusher. **Not the
 terrain**: Iron Maw's terrain holds only sand, stone and gravel (no snow, unchanged since the greybox; `terrainMaterialFor`
