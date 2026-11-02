@@ -3969,7 +3969,9 @@ async function dedicatedhostFlow(browser) {
     if (button) {
       // The player list is rebuilt as the roster changes, so the button can be replaced between the wait above and a
       // separate click (CI: "Cannot read properties of null (reading 'click')"): find and click it in one step.
-      await admin.waitForFunction((s) => { const b = document.getElementById(`hc-kick-${s}`); if (!b) return false; b.click(); return true; }, slot, { timeout: T(15000), polling: 250 });
+      const clicked = await admin.waitForFunction((s) => { const b = document.getElementById(`hc-kick-${s}`); if (!b) return false; b.click(); return true; }, slot, { timeout: T(15000), polling: 250 }).then(() => true, () => false);
+      // CI once timed out here with the button gone for 45 s after it had shown: what the admin's list held then.
+      if (!clicked) check(false, `the admin can click Kick for the visitor (${await admin.evaluate(() => JSON.stringify({ people: [...document.querySelectorAll('.hc-person')].map((e) => e.textContent), ids: [...document.querySelectorAll('[id^=hc-kick]')].map((e) => e.id), roster: [...(window.__cs?.hud?.roster?.values() ?? [])].filter((p) => !p.bot).map((p) => `${p.slot}:${p.name}`), phase: window.__cs?.phase?.() })).catch(() => '')}, visitor slot ${slot}, now ${await player.evaluate(() => window.__cs?.slot).catch(() => 'gone')})`);
       const kicked = await player.waitForFunction(() => /kicked/i.test(document.body.innerText), null, { timeout: T(20000) }).then(() => true, () => false);
       // What the player saw and what the host logged, when the kick didn't land (CI annotations carry it).
       const why = kicked
@@ -4652,6 +4654,7 @@ try {
     for (let attempt = 0; attempt <= retries; attempt++) {
       attemptFails = [];
       failures = before;
+      const procsBefore = procs.length;
       if (attempt) console.log(`RETRY ${name} (attempt ${attempt + 1}) after: ${tries.at(-1).join(' | ')}`);
       try {
         await flow(browser);
@@ -4667,6 +4670,19 @@ try {
       for (const ctx of [...open]) await ctx.close().catch(() => {});
       tries.push(attemptFails);
       if (failures === before) break;
+      // Before a retry, stop what this attempt started (a hub, a Host Service): left running, it keeps its port and the
+      // retry's own copy can't bind, so the retry talks to the old one (CI: the Host Service's console said 401 to the
+      // retry's pairing token).
+      if (attempt < retries) {
+        const mine = procs.splice(procsBefore);
+        for (const p of mine) {
+          try {
+            process.kill(-p.pid, 'SIGTERM');
+          } catch {}
+        }
+        await Promise.all(mine.map((p) => (p.exitCode !== null || p.signalCode !== null ? null : Promise.race([new Promise((r) => p.once('exit', r)), sleep(10000)]))));
+        await sleep(1000);
+      }
     }
     const status = failures > before ? 'FAIL' : tries.length > 1 ? 'FLAKY' : 'PASS';
     const seconds = (Date.now() - t0) / 1000;
