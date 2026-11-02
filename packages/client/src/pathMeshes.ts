@@ -5,9 +5,9 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { CreateDashedLines, CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { PATH_LOOKS, coreMaterials, pathDrawn, pathGeometry, racePath, terrainHeightAt, type MapDocument, type MapPath, type TerrainData } from '@tiletrigger/shared';
+import { PATH_LOOKS, PATH_RANK_LIFT, coreMaterials, pathDrawRanks, pathDrawn, pathGeometry, racePath, terrainHeightAt, type MapDocument, type MapPath, type TerrainData } from '@tiletrigger/shared';
 import type { MapStyler } from './mapMeshes.ts';
-import { flat, strip } from './roadMeshes.ts';
+import { flat, pathRankUnits, strip } from './roadMeshes.ts';
 
 /** Height of a path's surface at (x, z): on the ground wherever there is ground (a path drapes over it), the curve's own height elsewhere. */
 export function pathSurfaceY(terrain: TerrainData | null, curveY: number, x: number, z: number): number {
@@ -54,31 +54,37 @@ function pathStrip(terrain: TerrainData | null, p: MapPath, from: number, to: nu
  * The map's paths (paths.ts): each a ribbon of its style's surface laid on
  * the ground it follows (drawn just above it, pulled toward the camera so it
  * never fights the terrain), asphalt roads with white edge lines and a dashed
- * centre line. Shared by the game and MapMaker; `terrain` is the ground as
- * played (with the paths laid in).
+ * centre line. Where drawn paths overlap, the later one in the map's list lies
+ * on top (pathDrawRanks: each rank a little higher and pulled further toward
+ * the camera), never fighting the other in jagged patches. Shared by the game
+ * and MapMaker; `terrain` is the ground as played (with the paths laid in).
  */
 export function buildPathMeshes(scene: Scene, doc: MapDocument, terrain: TerrainData | null, styler: MapStyler, name = 'path'): Mesh[] {
   const out: Mesh[] = [];
   const mats = new Map<string, StandardMaterial>();
   const race = racePath(doc);
+  const ranks = pathDrawRanks(doc.paths);
   for (const p of doc.paths ?? []) {
     // Roads only (routes are never drawn; the race track is drawn as a race road, roadMeshes.ts).
     if (p.points.length < 2 || !pathDrawn(p) || p === race) continue;
     const look = PATH_LOOKS[p.style];
-    let mat = mats.get(p.style);
+    const rank = ranks.get(p.id) ?? 0;
+    const units = pathRankUnits(rank);
+    let mat = mats.get(`${p.style}|${rank}`);
     if (!mat) {
-      mat = styler.surfaceMaterial(doc, look.surface, look.tint).clone(`${name}_ribbon_${p.style}`) as StandardMaterial;
+      mat = styler.surfaceMaterial(doc, look.surface, look.tint).clone(`${name}_ribbon_${p.style}${rank ? `_${rank}` : ''}`) as StandardMaterial;
       mat.zOffset = -2;
-      mats.set(p.style, mat);
+      mat.zOffsetUnits = units;
+      mats.set(`${p.style}|${rank}`, mat);
     }
     const half = p.width / 2;
     // Columns about a metre apart, so the ribbon follows the ground's bumps across it.
     const cols = Math.max(2, Math.ceil(p.width));
     const scale = coreMaterials.get(look.surface)?.scale ?? 4;
-    const lift = pathLift(p);
+    const lift = pathLift(p) + rank * PATH_RANK_LIFT;
     out.push(strip(scene, `${name}_${p.id}`, pathStrip(terrain, p, -half, half, cols, lift), mat, (c, s) => [((c / cols) * p.width) / scale, s / scale]));
     if (look.lines && p.width >= 5) {
-      const white = flat(scene, `${name}_paint`, '#e8e8e2', -4);
+      const white = flat(scene, `${name}_paint`, '#e8e8e2', -4, 0, units);
       out.push(strip(scene, `${name}_${p.id}_edge_l`, pathStrip(terrain, p, -half + 0.3, -half + 0.5, 1, lift + 0.02), white));
       out.push(strip(scene, `${name}_${p.id}_edge_r`, pathStrip(terrain, p, half - 0.5, half - 0.3, 1, lift + 0.02), white));
       out.push(strip(scene, `${name}_${p.id}_centre`, pathStrip(terrain, p, -0.1, 0.1, 1, lift + 0.02), white, undefined, (s) => Math.floor(s / 3) % 2 === 0));
