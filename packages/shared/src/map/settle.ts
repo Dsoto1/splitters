@@ -1,7 +1,7 @@
 import { getProp } from '../content/props.ts';
 import type { Vec3 } from '../math.ts';
 import { blockBoxes, buildMapGeometry, propBoxes, type WorldBox } from './geometry.ts';
-import type { MapDocument, PropEntity } from './schema.ts';
+import type { LightEntity, LightFixture, MapDocument, PropEntity } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
 
 /**
@@ -129,6 +129,68 @@ export function floatingProps(map: MapDocument, boxes: readonly WorldBox[] = sup
     out.push({ id: e.id, gap: Math.round(gap * 100) / 100 });
   }
   return out;
+}
+
+/**
+ * Hung fixtures. Ceiling panels, strip lights, hanging bulbs and chandelier
+ * lights, and props that hang (chandeliers, a ceiling light panel, a hanging
+ * brazier), are drawn fastened to the underside of whatever is over them: a
+ * panel placed a little under a ceiling is drawn flush against it, a bulb's
+ * cord and a chandelier's chain reach up to it, and a hung prop is drawn
+ * with its top against it. Only a ceiling within HANG_REACH counts: further
+ * up there is nothing to hang from and the fixture stays where it was put.
+ * The light itself (where it shines from) and the map data never change.
+ */
+export const HANG_REACH = 1.5;
+/** Props drawn hanging from the ceiling over them. */
+export const HANGING_PROPS: ReadonlySet<string> = new Set(['prop.hm_chandelier', 'prop.ge_chandelier', 'prop.hp_ceiling_light', 'prop.jt_hanging_brazier']);
+/** How far above a light's position each fixture's top is (where it fastens to a ceiling). */
+const FIXTURE_TOP: Partial<Record<LightFixture, number>> = { ceiling: 0.065, strip: 0.035, bulb: 0.6, chandelier: 0 };
+
+/** The underside of the lowest box over (x, z) whose bottom is between `y` (less a hair) and `y` + `reach`, or null. */
+export function ceilingOver(boxes: readonly WorldBox[], x: number, z: number, y: number, reach = HANG_REACH, skip = ''): number | null {
+  let best: number | null = null;
+  for (const b of boxes) {
+    if (b.sourceId === skip || b.kind === 'barrier' || b.pitch || b.roll) continue;
+    const bottom = b.min[1];
+    if (bottom < y - 0.02 || bottom > y + reach || (best !== null && bottom >= best)) continue;
+    let px = x;
+    let pz = z;
+    if (b.yaw) {
+      const cx = (b.min[0] + b.max[0]) / 2;
+      const cz = (b.min[2] + b.max[2]) / 2;
+      const c = Math.cos(-b.yaw);
+      const s = Math.sin(-b.yaw);
+      const dx = x - cx;
+      const dz = z - cz;
+      px = cx + dx * c + dz * s;
+      pz = cz - dx * s + dz * c;
+    }
+    if (px >= b.min[0] && px <= b.max[0] && pz >= b.min[2] && pz <= b.max[2]) best = bottom;
+  }
+  return best;
+}
+
+/** How far a light's fixture is drawn raised (ceiling panels, strips) or its cord/chain lengthened (bulbs, chandeliers) to reach the ceiling over it; 0 when there's none in reach or it already touches. */
+export function fixtureGap(boxes: readonly WorldBox[], e: Pick<LightEntity, 'position' | 'fixture'>): number {
+  const top = FIXTURE_TOP[e.fixture];
+  if (top === undefined) return 0;
+  const [x, y, z] = e.position;
+  const ceiling = ceilingOver(boxes, x, z, y + top);
+  const gap = ceiling === null ? 0 : ceiling - (y + top);
+  return gap > 0.01 ? Math.round(gap * 1000) / 1000 : 0;
+}
+
+/** How far a hanging prop is drawn raised so its top meets the ceiling over it (0: not a hanging prop, no ceiling in reach, or touching). */
+export function hungPropLift(boxes: readonly WorldBox[], e: Pick<PropEntity, 'id' | 'model' | 'position' | 'scale'>): number {
+  if (!HANGING_PROPS.has(e.model)) return 0;
+  const def = getProp(e.model);
+  if (!def) return 0;
+  const [x, y, z] = e.position;
+  const top = y + def.size[1] * e.scale;
+  const ceiling = ceilingOver(boxes, x, z, top, HANG_REACH, e.id);
+  const gap = ceiling === null ? 0 : ceiling - top;
+  return gap > 0.01 ? Math.round(gap * 1000) / 1000 : 0;
 }
 
 /**

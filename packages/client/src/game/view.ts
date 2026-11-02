@@ -71,6 +71,7 @@ import {
   mapZiplines,
   type Zipline,
   suspensionOf,
+  hungPropLift,
 } from '@tiletrigger/shared';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
@@ -434,7 +435,11 @@ export class GameView {
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
     doc.entities.forEach((e, i) => {
-      if (e.kind === 'prop') this.props.set(i, createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain));
+      if (e.kind !== 'prop') return;
+      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain);
+      // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
+      if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
+      this.props.set(i, node);
     });
     this.scenario.build(doc.entities, doc);
     this.entrances = doc.entities.filter((e): e is Extract<MapEntity, { kind: 'encounter' }> => e.kind === 'encounter' && (e.entrance ?? 'none') !== 'none');

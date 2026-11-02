@@ -50,6 +50,9 @@ import {
   type MapEntity,
   cablePoint,
   mapZiplines,
+  buildMapGeometry,
+  fixtureGap,
+  type WorldBox,
 } from '@tiletrigger/shared';
 import { createFlagBase, createFlagModel, createHillModel, createBombsiteModel } from './flagVisuals.ts';
 import { buildFence } from '../borderVisuals.ts';
@@ -142,10 +145,14 @@ export class ScenarioVisuals {
   /** Blocks movers carry (they follow their mover, so they can't be instanced with the static glass). */
   private carriedBlocks: ReadonlySet<string> = new Set();
 
+  /** What light fixtures hang from (the level and the blocks that stay put; settle.ts fixtureGap). MapMaker sets it. */
+  ceilings: readonly WorldBox[] = [];
+
   /** (Re)build visuals for every scenario entity in the list. Indices match map.entities. */
   build(entities: readonly MapEntity[], map?: MapDocument): void {
     this.clear();
     this.dynamicBlocks = map ? dynamicBlockIds(map) : new Set();
+    this.ceilings = map && entities.some((e) => e.kind === 'light') ? buildMapGeometry(map) : [];
     // Lights nothing ever changes (no logic aims at them, not off or blinking at the start) share their
     // glow material, and their fixtures are merged into a few meshes below.
     const targets = map && !this.opts.editor ? logicTargets(map.logic) : null;
@@ -660,6 +667,8 @@ export class ScenarioVisuals {
     let offset = new Vector3(0, 0, 0);
     /** Signs and billboards: their lettered face, lit with the light (and dark when it is off). */
     let face: { mesh: Mesh; mat: StandardMaterial } | null = null;
+    // How far the fixture's top is under the ceiling over it (settle.ts fixtureGap): it's drawn fastened there.
+    const gap = fixtureGap(this.ceilings, e);
     switch (e.fixture) {
       case 'ceiling': {
         const panel = CreateBox(`${name}_panel`, { width: 1.2, height: 0.06, depth: 1.2 }, this.scene);
@@ -668,6 +677,9 @@ export class ScenarioVisuals {
         rim.position.y = 0.04;
         rim.material = housing;
         panel.parent = rim.parent = root;
+        // Fastened to the ceiling over it (a panel placed a little under one would float).
+        panel.position.y += gap;
+        rim.position.y += gap;
         offset = new Vector3(0, -0.4, 0);
         break;
       }
@@ -682,9 +694,10 @@ export class ScenarioVisuals {
         break;
       }
       case 'bulb': {
-        const cord = CreateCylinder(`${name}_cord`, { diameter: 0.03, height: 0.6, tessellation: 6 }, this.scene);
+        // The cord reaches up to the ceiling over it.
+        const cord = CreateCylinder(`${name}_cord`, { diameter: 0.03, height: 0.6 + gap, tessellation: 6 }, this.scene);
         cord.material = housing;
-        cord.position.y = 0.3;
+        cord.position.y = (0.6 + gap) / 2;
         const bulb = CreateSphere(`${name}_bulb`, { diameter: 0.18, segments: 8 }, this.scene);
         bulb.material = glow;
         cord.parent = bulb.parent = root;
@@ -694,6 +707,7 @@ export class ScenarioVisuals {
         const tube = CreateBox(`${name}_tube`, { width: 2.4, height: 0.07, depth: 0.14 }, this.scene);
         tube.material = glow;
         tube.parent = root;
+        tube.position.y = gap;
         offset = new Vector3(0, -0.3, 0);
         break;
       }
@@ -730,9 +744,10 @@ export class ScenarioVisuals {
         const hanging = e.fixture === 'chandelier';
         const spots: [number, number, number][] = [];
         if (hanging) {
-          const chain = CreateCylinder(`${name}_chain`, { diameter: 0.05, height: 0.7, tessellation: 6 }, this.scene);
+          // The chain reaches up to the ceiling over it.
+          const chain = CreateCylinder(`${name}_chain`, { diameter: 0.05, height: 0.7 + gap, tessellation: 6 }, this.scene);
           chain.material = brass;
-          chain.position.y = -0.35;
+          chain.position.y = (gap - 0.7) / 2;
           chain.parent = root;
           const ring = CreateCylinder(`${name}_ring`, { diameter: 1.3, height: 0.06, tessellation: 20 }, this.scene);
           ring.material = brass;
