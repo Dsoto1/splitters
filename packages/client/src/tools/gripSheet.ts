@@ -300,11 +300,12 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     },
     /**
      * Animation cost: `n` more characters of `look` (each holding `weapon`, in a grid behind the posed one) driven by
-     * the same motion (`drive`), or none (n 0). Returns, over `seconds`, the mean milliseconds a frame spends
+     * the same motion (`drive`), or none (n 0; n < 0 keeps the crowd there is). Returns, over `seconds`, the mean milliseconds a frame spends
      * evaluating clips and in the animators' after-clip work (aim, IK, grip), and the playing animatables.
      */
     crowd: async (look: string, n: number, weapon = 'core.rifle', seconds = 3) => {
-      for (const a of crowd.splice(0)) a.dispose();
+      // n < 0: measure the crowd already there.
+      if (n >= 0) for (const a of crowd.splice(0)) a.dispose();
       for (let i = 0; i < n; i++) {
         const ch = await characters.create({ look }, `crowd_${i}`);
         ch.root.position.set((i % 12) * 1.2 - 6.6, 0, 3 + Math.floor(i / 12) * 1.5);
