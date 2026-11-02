@@ -6148,6 +6148,120 @@
       ]
     },
     {
+      "file": "characters/meshy_emeraldrobot.glb",
+      "sha256": "1293749b009e92fe",
+      "triangles": 10352,
+      "bytes": 1517392,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Emerald Robot (download dated 2026-11-02)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_emeraldrobot_fparms.glb",
+      "sha256": "1a9ad1a135c3008f",
+      "triangles": 589,
+      "bytes": 428228,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Emerald Robot (download dated 2026-11-02)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_spacemarine.glb",
+      "sha256": "98952e00e673a5df",
+      "triangles": 10404,
+      "bytes": 1566256,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): space marine uniform (download dated 2026-11-02)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_spacemarine_fparms.glb",
+      "sha256": "f6a5d96d0766941c",
+      "triangles": 1265,
+      "bytes": 533288,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): space marine uniform (download dated 2026-11-02)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_skeletonbiker.glb",
+      "sha256": "1044a6cb97d20af5",
+      "triangles": 10205,
+      "bytes": 1476808,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Spiked Skeleton Biker (download dated 2026-11-02)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "simplified",
+        "base colour only, downscaled to a JPEG",
+        "vertices quantized",
+        "low-detail copy of each mesh added",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
+      "file": "characters/meshy_skeletonbiker_fparms.glb",
+      "sha256": "efb0bedb0c634df1",
+      "triangles": 1070,
+      "bytes": 470720,
+      "source": "meshy-community-characters",
+      "title": "Meshy community models (characters): Spiked Skeleton Biker (download dated 2026-11-02)",
+      "creator": "Meshy community, CC0 (per owner)",
+      "url": "https://www.meshy.ai (community page URL pending from the owner)",
+      "license": "CC0-1.0",
+      "modifications": [
+        "arms cut from the body",
+        "re-posed to the rig's T-pose",
+        "rebound to the rig's skeleton",
+        "vertices quantized",
+        "hands measured and the fingers weighted to the rig's finger joints (tools/content/hands.mjs)"
+      ]
+    },
+    {
       "file": "characters/shooter_clips.glb",
       "sha256": "039efaacb583a940",
       "triangles": 0,

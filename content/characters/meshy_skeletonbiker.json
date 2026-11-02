@@ -1,0 +1,37 @@
+{
+  "id": "meshy_skeletonbiker",
+  "kind": "character",
+  "use": "player",
+  "order": 102,
+  "name": "Spiked Skeleton Biker",
+  "look": "core.skeletonbiker",
+  "group": "horror",
+  "nameTheme": "undead",
+  "bio": "Died in a wreck in 1979. Kept riding anyway.",
+  "body": "male",
+  "notes": "Drive, 2026-11-02 (\"Spiked Skeleton Biker\", rigged; the owner's download \"Meshy_AI_Spiked_Skeleton_Biker_All_Animations.glb\", put on disk by the lead with the owner's approval). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its Walking and Running clips are not used). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), recorded like WWII Infantry and the clip set's sources (content/clip-sets/shooter.json). It moves with the shared clip set. Normal map 512 px (the default): at 1024 px the body was over the 1.8 MB file budget. Name a placeholder.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Spiked Skeleton Biker"
+    },
+    "date": "2026-11-02",
+    "url": null,
+    "file": "^Meshy_AI_Spiked_Skeleton_Biker_All_Animations(-\\d+)?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.05,
+    "roughness": 0.75
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "lod": 0.25,
+    "feet": true
+  }
+}

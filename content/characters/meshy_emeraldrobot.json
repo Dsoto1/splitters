@@ -1,0 +1,37 @@
+{
+  "id": "meshy_emeraldrobot",
+  "kind": "character",
+  "use": "player",
+  "order": 100,
+  "name": "Emerald Robot",
+  "look": "core.emeraldrobot",
+  "group": "creatures",
+  "nameTheme": "robot",
+  "bio": "Polished to a mirror shine. Every scratch is a story, and it remembers every one of them.",
+  "body": "male",
+  "notes": "Drive, 2026-11-02 (\"Emerald Robot\", rigged; the owner's download \"Meshy_AI_Emerald_Robot_All_Animations.glb\", put on disk by the lead with the owner's approval). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its Walking and Running clips are not used). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), recorded like WWII Infantry and the clip set's sources (content/clip-sets/shooter.json). It moves with the shared clip set. Normal map 512 px (the default): at 1024 px the body was over the 1.8 MB file budget. Name a placeholder.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy community (author not recorded; CC0 per the owner)",
+    "community": {
+      "model": "Emerald Robot"
+    },
+    "date": "2026-11-02",
+    "url": null,
+    "file": "^Meshy_AI_Emerald_Robot_All_Animations(-\\d+)?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.5,
+    "roughness": 0.4
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "lod": 0.25,
+    "feet": true
+  }
+}

@@ -101,6 +101,9 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.bikergirl', name: 'Biker Gang Girl', body: 'female', head: '', parts: ['meshy_bikergirl'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_bikergirl_fparms' }, group: 'folk', nameTheme: 'gangster' },
   { id: 'core.hollowvisitor', name: 'The Hollow Visitor', body: 'male', head: '', parts: ['meshy_hollowvisitor'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_hollowvisitor_fparms' }, group: 'creatures', nameTheme: 'alien' },
   { id: 'core.fearsomeundead', name: 'Fearsome Undead', body: 'male', head: '', parts: ['meshy_fearsomeundead'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_fearsomeundead_fparms' }, group: 'horror', nameTheme: 'undead' },
+  { id: 'core.emeraldrobot', name: 'Emerald Robot', body: 'male', head: '', parts: ['meshy_emeraldrobot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_emeraldrobot_fparms' }, group: 'creatures', nameTheme: 'robot' },
+  { id: 'core.spacemarine', name: 'Space Marine', body: 'male', head: '', parts: ['meshy_spacemarine'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_spacemarine_fparms' }, group: 'soldiers', nameTheme: 'goblin' },
+  { id: 'core.skeletonbiker', name: 'Spiked Skeleton Biker', body: 'male', head: '', parts: ['meshy_skeletonbiker'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_skeletonbiker_fparms' }, group: 'horror', nameTheme: 'undead' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -205,4 +208,7 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.bikergirl': 'Rides with the pack, shoots with the pack, and never once waited at a red light.',
   'core.hollowvisitor': 'Nobody has seen inside the hood. Nobody who stayed to tell, anyway.',
   'core.fearsomeundead': 'Dug himself out for one more round. He plans to stay for several.',
+  'core.emeraldrobot': 'Polished to a mirror shine. Every scratch is a story, and it remembers every one of them.',
+  'core.spacemarine': 'Short, green and fully kitted out. Passed every fitness test by standing on a crate.',
+  'core.skeletonbiker': 'Died in a wreck in 1979. Kept riding anyway.',
 };

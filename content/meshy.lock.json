@@ -2803,6 +2803,87 @@
       "triangles": 678,
       "bytes": 493212,
       "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_emeraldrobot",
+      "source": "meshy-community-characters",
+      "model": "Emerald Robot",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_Emerald_Robot_All_Animations.glb",
+      "file": "characters/meshy_emeraldrobot.glb",
+      "sha256": "1293749b009e92fe",
+      "triangles": 10352,
+      "lodTriangles": 2577,
+      "bytes": 1517392,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_emeraldrobot_fparms",
+      "source": "meshy-community-characters",
+      "model": "Emerald Robot",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_Emerald_Robot_All_Animations.glb",
+      "file": "characters/meshy_emeraldrobot_fparms.glb",
+      "sha256": "1a9ad1a135c3008f",
+      "triangles": 589,
+      "bytes": 428228,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_spacemarine",
+      "source": "meshy-community-characters",
+      "model": "space marine uniform",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_space_marine_uniform_All_Animations.glb",
+      "file": "characters/meshy_spacemarine.glb",
+      "sha256": "98952e00e673a5df",
+      "triangles": 10404,
+      "lodTriangles": 2600,
+      "bytes": 1566256,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_spacemarine_fparms",
+      "source": "meshy-community-characters",
+      "model": "space marine uniform",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_space_marine_uniform_All_Animations.glb",
+      "file": "characters/meshy_spacemarine_fparms.glb",
+      "sha256": "f6a5d96d0766941c",
+      "triangles": 1265,
+      "bytes": 533288,
+      "hands": true
+    },
+    {
+      "role": "meshy",
+      "id": "meshy_skeletonbiker",
+      "source": "meshy-community-characters",
+      "model": "Spiked Skeleton Biker",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_Spiked_Skeleton_Biker_All_Animations.glb",
+      "file": "characters/meshy_skeletonbiker.glb",
+      "sha256": "1044a6cb97d20af5",
+      "triangles": 10205,
+      "lodTriangles": 2533,
+      "bytes": 1476808,
+      "hands": true
+    },
+    {
+      "role": "meshy-fparms",
+      "id": "meshy_skeletonbiker_fparms",
+      "source": "meshy-community-characters",
+      "model": "Spiked Skeleton Biker",
+      "date": "2026-11-02",
+      "src": "Meshy_AI_Spiked_Skeleton_Biker_All_Animations.glb",
+      "file": "characters/meshy_skeletonbiker_fparms.glb",
+      "sha256": "efb0bedb0c634df1",
+      "triangles": 1070,
+      "bytes": 470720,
+      "hands": true
     }
   ]
 }
