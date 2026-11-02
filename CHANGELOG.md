@@ -8,6 +8,9 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Maps**
+- **Roads that overlap no longer flicker through each other in jagged patches.** Where two drawn paths cover the same ground (Iron Maw's pale concrete crusher apron laid over the brown rim haul road, a spur joining a road), the later path in the map's list now lies cleanly on top; before, both sat at the same height and the depth buffer picked a winner pixel by pixel, which read as hard-edged snow patches on dirt.
+
 **New characters (batch 3)**
 - Fifteen new characters: **Orange Suit Engineer** and **Coffee Brown** (Everyday Folk), **Gas Mask Engineer**, **Stealth Operative** and **WWII Infantry** (Soldiers), **Mummy Bot**, **Pharaoh Mummy Warrior** and **Vampire** (Undead & Horror), **CRT Robot**, **Field Medic Automaton** (a large one), **Alien Biker**, **Pink Mantis**, **Alien Encounter** and **Beanie Alien** (both small) and the **Baseball Robot** (Creatures & Machines).
 - The Baseball Robot has no feet: he **rolls** on his ball. No walk cycle: he glides, leaning into his speed and into his turns, and still holds and fires every gun. (Any character can be made to roll: `locomotion: roll` in its manifest.)

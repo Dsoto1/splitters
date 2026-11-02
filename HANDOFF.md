@@ -10,6 +10,27 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Iron Maw "snow patches": overlapping roads z-fought (`wip/fix-terrain`, agent, 2026-11-02; not merged; from main c6751d5)
+Owner's screenshot: pale "snow/ice" patches with hard jagged borders on brown dirt near Iron Maw's crusher. **Not the
+terrain**: Iron Maw's terrain holds only sand, stone and gravel (no snow, unchanged since the greybox; `terrainMaterialFor`
+only affects new painting in MapMaker, never how stored cells render). The pale surface is the **concrete
+`crusher_apron` path** (Concrete034), the brown the **dirt `rim_haul_road`** (Ground109): the apron starts and ends on the
+haul road and runs over it, both ribbons sat at the same lift with the same polygon offset, so the depth buffer picked a
+winner pixel by pixel (jagged, triangle-shaped patches). Fix: `pathDrawRanks` (shared/map/paths.ts) gives each drawn path
+a draw rank (0 when it overlaps nothing drawn before it, else one above the highest it overlaps: the later path in the
+list lies on top); pathMeshes/roadMeshes lift each rank `PATH_RANK_LIFT` (3 cm) and pull it `pathRankUnits` (−8 polygon
+offset units per rank) toward the camera, lines and curbs with it (`flat()` takes units). Rank 0 renders exactly as
+before. Iron Maw ranks: rim 0; spiral, switchback, ne/west spurs, apron 1; nw/se spurs 2 (≈30 ms once per build).
+Shots: lead scratchpad `terrain-fix/compare-apron.png`, `before-*.png` / `after-*.png`.
+- Owner's call (MapMaker data, not code): whether the pale concrete apron belongs in a desert mine (Paths tool → its
+  style, e.g. Gravel or Dirt trail), and where it should end on the haul road.
+- Noted, not changed: the terrain itself has **no blending** between ground layers (one mesh per layer, hard 3 m cell
+  edges, MapStyler.buildTerrain); on any painted map the borders are square steps. Soft blending is a renderer feature
+  of its own (vertex weights + layered alpha, or a splat shader), not part of this fix.
+- Checks: typecheck; test:changed 1246 pass (new: paths.test.ts `pathDrawRanks`); e2e editorux, race PASS; maps3 failed
+  only diamond_park/mercy_ward "no match" and a MapMaker import timeout after them: the diamond_park page crashes the same
+  way on a main build in this container (load ~14), so not this change. ci:plan says full suite (shared/map/paths.ts).
+
 ### Characters batch 3 (`wip/char-batch-3`, agent, 2026-11-01; not merged; from main c5be6c4)
 Owner's Drive drops of 1 Nov evening (brief: lead scratchpad `drive-batch-1101-evening.md`). Downloads outside the repo in
 `/home/user/meshy-drive/drive-2026-11-01-batch3/` and `...-batch3b/` (gdown: the Drive tool caps downloads at 10 MB); the
