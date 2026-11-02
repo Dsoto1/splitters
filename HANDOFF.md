@@ -10,6 +10,35 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Characters batch 4, first three (`wip/char-batch-4`, agent, 2026-11-02; not merged; from main 151d9dc)
+Six new characters were asked for; three are in. The owner's "All Animations" downloads of 2 Nov (CC0 Meshy community
+models the owner rigged and animated on Meshy; recorded like WWII Infantry and the clip set's sources), built with
+`ONLY=<ids> node tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/drive-2026-11-02-anim`:
+- **Biker Gang Girl** `core.bikergirl` (`meshy_bikergirl`, folk, gangster names, female, order 97): fingerless gloves
+  with fused, low-poly fingers. Split, the left hand crumpled into shards on the grip: both hands are mittens
+  (`fixes.hands.mitten`, curl 0.9). Her bare fingertips still fold sharply against the dark glove up close; the curl
+  test on her shooting hand stays flat (grip audit 3 "flat", as WWII Infantry's 3 "back"). A palm override made it worse.
+- **The Hollow Visitor** `core.hollowvisitor` (`meshy_hollowvisitor`, creatures, alien names, order 98): a grey
+  bilobed-headed alien in a worn sweater; a new character beside The Visitor (`core.visitor`). Long split fingers,
+  curl 1.3; the support hand's claws still read splayed under the handguard. Audit 3 "spikes": calf/foot stretch
+  (baggy trouser hems over feet levelled 14-15 degrees), not visible at play distance.
+- **Fearsome Undead** `core.fearsomeundead` (`meshy_fearsomeundead`, horror, undead names, order 99): plaid-shirt
+  zombie with clawed hands (mitten, curl 1). Audit 0.
+- All three on the shared clip set (no opt-out): strafe-shoot, back-shoot, run-shoot and ADS-strafe read like WWII
+  Infantry's. Feet on the ground; standard size (heads 1.54 / 1.62 / 1.59 m posed). Portraits captured and indexed.
+- **Waiting on the owner:** Emerald Robot (`core.emeraldrobot`, Drive 1qr_ZJl6TbjM8Wa35R75lS9v9fNyQ43sY, 17.8 MB),
+  Space Marine (`core.spacemarine`, 1FK5l20NcxsVoYaHYK-rxfRUXjTUJX4E7, 48 MB) and Spiked Skeleton Biker
+  (`core.skeletonbiker`, 1fIjEWuxK9r_m1vP1K0qDSrkiU3QA5lay, 17.4 MB): the Drive connector downloads only files under
+  10 MB, so they need to be put in a downloads dir by hand (say `/home/user/meshy-drive/drive-2026-11-02-batch4/`),
+  then the same steps (manifest like `meshy_bikergirl.json`, orders 100-102).
+- Evidence (lead scratchpad `chars4/`): `before/`, `after/` (clip sheets with WWII Infantry for reference),
+  `after/lineup.jpg`, `grip/`, `grip2/` (grip sheets before/after the hand fixes), `audit-before/`, `audit-2/`,
+  `close/` (hand close-ups, raw download hands, first person), `portraits.png`; scratch tools in `chars4/tools/`.
+- Checks: typecheck; test:changed 141 files, 1271 pass (2 skipped); content OK; e2e (`CI=1`) characters PASS (557 s),
+  designer PASS, visual PASS (menu 0.36 % off its baseline). ci:plan: content paths count as shared, so the full suite
+  (38 flows) needs a `check/` run before main; only these three ran here. Menu bundle 836.6 kB gzip (836.4; budget 840).
+  `__grips.crowd` 25 strafing+firing (load 7, noisy): clip ms/frame 1.8-2.3 vs WWII 2.8, after-clip 36-37 vs 49.
+
 ### Clips on every character (`wip/clips-all`, agent, 2026-11-02; not merged; from main e29a097)
 Owner (2 Nov): "Use those clips on all of them; that should save time when we rig the rest that don't have them."
 - **Default clip set:** `DEFAULT_CLIP_SET = 'shooter'` (shared looks.ts, `clipSetOf(look)`): every look on the rig moves
