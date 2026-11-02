@@ -30,6 +30,7 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
     for (const m of node.getChildMeshes()) {
       m.isPickable = false;
       if (tint) paint(m, tint);
+      else if (def.glow) glowsOf(root).push(...energise(m, def.glow));
     }
     // A model with wheels of its own (Kenney Car Kit: meshes named wheel-front-left and so on) on a vehicle with
     // suspension: each wheel goes on a pivot at its centre, so it can spin, steer and ride its spring.
@@ -115,6 +116,46 @@ function paint(mesh: { material: PBRMaterial | StandardMaterial | null | unknown
   else if ('diffuseColor' in mat) mat.diffuseColor = mat.diffuseColor.multiply(c);
   if (c.r * 0.3 + c.g * 0.59 + c.b * 0.11 > 0.85) mat.emissiveColor = c.scale(0.18);
   mesh.material = mat;
+}
+
+/**
+ * A mount drawn in its energy colour (MountDef.glow, the Arc Turret): its own copy of the material, the colour
+ * mixed half into its paint and glowing in it (setMountGlow sets how brightly). Returns the material to drive.
+ */
+function energise(mesh: { material: PBRMaterial | StandardMaterial | null | unknown }, glow: string): (PBRMaterial | StandardMaterial)[] {
+  const src = mesh.material as PBRMaterial | StandardMaterial | null;
+  if (!src) return [];
+  const c = Color3.FromHexString(glow);
+  const mat = src.clone(`${src.name}_glow_${glow}`) as PBRMaterial | StandardMaterial | null;
+  if (!mat) return [];
+  const mix = Color3.Lerp(Color3.White(), c, 0.5);
+  if ('albedoColor' in mat) mat.albedoColor = (mat.albedoColor ?? Color3.White()).multiply(mix);
+  else if ('diffuseColor' in mat) mat.diffuseColor = mat.diffuseColor.multiply(mix);
+  mat.emissiveColor = c.scale(MOUNT_GLOW_IDLE);
+  mesh.material = mat;
+  return [mat];
+}
+
+/** How brightly an energy-coloured mount glows (its colour scaled): idle, and at the peak of a wind-up or an arc. */
+export const MOUNT_GLOW_IDLE = 0.18;
+export const MOUNT_GLOW_PEAK = 0.9;
+
+const glowLists = new WeakMap<TransformNode, (PBRMaterial | StandardMaterial)[]>();
+/** A mount node's energy-coloured materials (filled in as its model loads). */
+function glowsOf(root: TransformNode): (PBRMaterial | StandardMaterial)[] {
+  let list = glowLists.get(root);
+  if (!list) glowLists.set(root, (list = []));
+  return list;
+}
+
+/** Set an energy-coloured mount's glow: `level` 0 (idle) to 1 (peak). Returns the level set, or null (no glow). */
+export function setMountGlow(root: TransformNode, glow: string, level: number): number | null {
+  const list = glowLists.get(root);
+  if (!list?.length) return null;
+  const k = MOUNT_GLOW_IDLE + (MOUNT_GLOW_PEAK - MOUNT_GLOW_IDLE) * Math.max(0, Math.min(1, level));
+  const c = Color3.FromHexString(glow).scale(k);
+  for (const m of list) m.emissiveColor = c;
+  return k;
 }
 
 /** The part of a mount that turns with the gunner's aim (turrets), or null. */

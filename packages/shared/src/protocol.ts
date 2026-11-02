@@ -226,7 +226,7 @@ export const FX_OVERCHARGE = 256;
 /**
  * A turret, sentry or vehicle: [map entity index, x, y, z, yaw, aim yaw, aim
  * pitch, health %, state bits (MOUNT_FLAG_ALIVE, MOUNT_FLAG_WRECK,
- * MOUNT_FLAG_BURNING; 0 = gone), ...occupant slot per seat (-1 = empty)]. A
+ * MOUNT_FLAG_BURNING, an arc sentry's MOUNT_FLAG_CHARGING and MOUNT_FLAG_ARC; 0 = gone), ...occupant slot per seat (-1 = empty)]. A
  * sentry a player built (Classes) has index BUILT_MOUNT_BASE + their slot.
  */
 export type MountSnapshot = number[];
@@ -251,7 +251,8 @@ export type GameEvent =
   /** A bullet that was in flight landed: on a player (`hit`), a surface, or nowhere (`gone`, out of range). */
   | { e: 'impact'; s: number; w: string; from: Tuple3; to: Tuple3; hit: number | null; z?: number; ar?: 1; pn?: Tuple3[]; gone?: 1 }
   /** Chain lightning: the points it jumped through, from the muzzle on. */
-  | { e: 'arc'; s: number; pts: Tuple3[] }
+  /** Lightning through `pts` (from the first): a gun's chain, an electric fence (`s` -1), or an arc sentry's arc (`m`: its mount index). */
+  | { e: 'arc'; s: number; pts: Tuple3[]; m?: number }
   /** Someone got into a seat (seat ≥ 0) or out of one (seat -1); `m` is the mount's map entity index. */
   | { e: 'mount'; s: number; m: number; seat: number }
   /** Someone threw a grenade or mine. */

@@ -11,7 +11,7 @@
 import type { SuspensionTuning } from './suspension.ts';
 
 export const MOUNT_MODELS = [
-  'turret_mg', 'turret_rocket', 'sentry', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank',
+  'turret_mg', 'turret_rocket', 'sentry', 'sentry_arc', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank',
   // Sprint 5 lineup (see VEHICLES.md): each one is an existing handling class with its own tuning.
   'gun_jeep', 'armored_rover', 'hover_bike', 'gunship', 'ice_cream_truck', 'snow_sled',
 ] as const;
@@ -118,7 +118,12 @@ export interface MountDef {
     /** Share of tyre grip lost at top speed (rising with the square of speed): loose at speed, so it powerslides. Default 0. */
     drift?: number;
   };
-  sentry?: { weapon: string; range: number; turnRate: number };
+  sentry?: { weapon: string; range: number; turnRate: number; arc?: ArcSentrySpec };
+  /**
+   * Drawing: the model's energy colour (the Arc Turret's): its body is tinted toward it and glows in it, brighter
+   * while it winds up (MOUNT_FLAG_CHARGING) and while its arc is locked on (MOUNT_FLAG_ARC); its arcs are this colour.
+   */
+  glow?: string;
   /** The transport plane: flies its map entity's route on its own, can't be hurt, and riders jump out (E or jump) to parachute down. */
   airplane?: boolean;
   /** Drawn this far above the ground (m) instead of the class default (hovercraft float 0.35 m; sleds sit on the snow). */
@@ -135,6 +140,19 @@ export interface MountDef {
   cockpitEye?: [number, number, number];
   /** One line for MapMaker. */
   blurb: string;
+}
+
+/**
+ * An arc sentry (the Arc Turret): instead of firing on sight it winds up on a target it can see (a visible,
+ * audible charge), then locks an energy arc onto it that hits every `fireIntervalTicks` of its weapon without
+ * missing and jumps to one enemy beside it (the weapon's `chain`). Breaking the line of sight, or leaving its
+ * range, drops the lock: the next target needs the whole wind-up again. A lock lasts at most `lockSeconds`, then
+ * it vents for `ventSeconds` and can't fire. Tuned in docs/ARSENAL.md (Arc Turret).
+ */
+export interface ArcSentrySpec {
+  windUpSeconds: number;
+  lockSeconds: number;
+  ventSeconds: number;
 }
 
 const ALL_ROUND = undefined;
@@ -182,6 +200,22 @@ export const MOUNT_DEFS: Readonly<Record<MountModel, MountDef>> = {
     blast: { radius: 3, damage: 50 },
     sentry: { weapon: 'core.sentry_gun', range: 30, turnRate: 2.4 },
     blurb: 'Shoots enemies of its team on sight (any team: everyone). Destroy it and it comes back later',
+  },
+  sentry_arc: {
+    id: 'sentry_arc',
+    displayName: 'Arc Turret',
+    kind: 'sentry',
+    // The Rocket Turret's cannon (Meshy community, CC0 per the owner), drawn in its own energy colour.
+    model: 'guns/arc_cannon_turret.glb',
+    health: 240,
+    half: [0.6, 0.5, 0.6],
+    seats: [],
+    enterRadius: 0,
+    respawnSeconds: 45,
+    blast: { radius: 3, damage: 50 },
+    sentry: { weapon: 'core.sentry_arc', range: 22, turnRate: 2.0, arc: { windUpSeconds: 0.75, lockSeconds: 2, ventSeconds: 1.25 } },
+    glow: '#8f7bff',
+    blurb: 'Winds up on an enemy it can see, then locks an energy arc onto them that jumps to one more. Break its line of sight to shake it off',
   },
   kart: {
     id: 'kart',
@@ -584,6 +618,10 @@ export const MOUNT_WRECK_FADE_SECONDS = 1.5;
 export const MOUNT_FLAG_ALIVE = 1;
 export const MOUNT_FLAG_WRECK = 2;
 export const MOUNT_FLAG_BURNING = 4;
+/** An arc sentry winding up on a target (its charge glow and warning sound). */
+export const MOUNT_FLAG_CHARGING = 8;
+/** An arc sentry's arc locked onto a target. */
+export const MOUNT_FLAG_ARC = 16;
 
 export type MountDamageState = 'intact' | 'smoking' | 'heavy' | 'burning';
 
@@ -628,4 +666,31 @@ export function footprintGap(
     if (gap > best.gap) best = { gap, nx: along >= 0 ? l.x : -l.x, nz: along >= 0 ? l.z : -l.z };
   }
   return best;
+}
+
+/**
+ * How close (m, across the ground) to a spawn an arc sentry may stand before MapMaker warns: nearer, a player
+ * coming in can be inside its wind-up before they can move (it locks on in 0.75 s and can't be outrun in the open).
+ */
+export const ARC_SENTRY_SPAWN_CLEAR = 12;
+
+/**
+ * MapMaker checks for arc sentries (the Arc Turret): `mount.arc_spawn` when one stands within
+ * ARC_SENTRY_SPAWN_CLEAR of a spawn it would shoot at (no team, or a spawn of another team or a shared one).
+ */
+export function arcSentryIssues(entities: readonly { kind: string; id: string; position: readonly number[]; model?: string; faction?: string | null }[]): { severity: 'warning'; code: string; message: string; targetId: string }[] {
+  const out: { severity: 'warning'; code: string; message: string; targetId: string }[] = [];
+  const spawns = entities.filter((e) => e.kind === 'spawn');
+  for (const e of entities) {
+    if (e.kind !== 'mount' || !e.model || !MOUNT_DEFS[e.model as MountModel]?.sentry?.arc) continue;
+    let near: { id: string; d: number } | null = null;
+    for (const s of spawns) {
+      // Its own team's spawn is safe (it doesn't shoot its team).
+      if (e.faction && s.faction === e.faction) continue;
+      const d = Math.hypot(s.position[0]! - e.position[0]!, s.position[2]! - e.position[2]!);
+      if (d < ARC_SENTRY_SPAWN_CLEAR && (!near || d < near.d)) near = { id: s.id, d };
+    }
+    if (near) out.push({ severity: 'warning', code: 'mount.arc_spawn', message: `${MOUNT_DEFS[e.model as MountModel].displayName} ${e.id} is ${near.d.toFixed(1)} m from spawn ${near.id}: players it shoots at could spawn inside its wind-up. Keep it ${ARC_SENTRY_SPAWN_CLEAR} m away, or give it that spawn's team`, targetId: e.id });
+  }
+  return out;
 }

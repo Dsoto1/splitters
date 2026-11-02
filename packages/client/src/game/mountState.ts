@@ -1,4 +1,4 @@
-import { BUILT_MOUNT_BASE, airCraftDef, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import { BUILT_MOUNT_BASE, airCraftDef, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -16,6 +16,10 @@ export interface ClientMount {
   wreck: boolean;
   /** On fire (bail out!). */
   burning: boolean;
+  /** An arc sentry winding up on someone, and when that started (ms; 0: not charging). */
+  charging: number;
+  /** An arc sentry's arc locked on. */
+  arcing: boolean;
   /** When the wreck stopped being solid (ms), so it can fade out; 0 otherwise. */
   wreckGoneAt: number;
   seats: number[];
@@ -54,6 +58,15 @@ const angleLerp = (a: number, b: number, k: number) => a + Math.atan2(Math.sin(b
  */
 export class MountState {
   readonly mounts = new Map<number, ClientMount>();
+  /** Where arc sentries started winding up since the last takeCharges. */
+  private charges: Vec3[] = [];
+
+  /** Arc sentries that started winding up since the last call (where they stand), for their warning sound. */
+  takeCharges(): Vec3[] {
+    const out = this.charges;
+    this.charges = [];
+    return out;
+  }
 
   constructor(
     map: MapDocument,
@@ -73,7 +86,7 @@ export class MountState {
       if (plane) physics.setBoxEnabled(body, false);
       const team = e.kind === 'mount' && e.faction ? (teams.find((t) => t.id === e.faction)?.color ?? null) : null;
       const tint = e.kind === 'mount' && def.kind !== 'sentry' ? mountTint(e.skin, team) : null;
-      this.mounts.set(index, { index, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: true, wreck: false, burning: false, wreckGoneAt: 0, seats: def.seats.map(() => -1), tint, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null });
+      this.mounts.set(index, { index, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: true, wreck: false, burning: false, charging: 0, arcing: false, wreckGoneAt: 0, seats: def.seats.map(() => -1), tint, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null });
     });
   }
 
@@ -121,6 +134,11 @@ export class MountState {
       m.alive = alive;
       m.wreck = wreck;
       m.burning = (flags & MOUNT_FLAG_BURNING) !== 0;
+      // An arc sentry starting a wind-up: noted once (its warning sound, see takeCharges).
+      const charging = (flags & MOUNT_FLAG_CHARGING) !== 0;
+      if (charging && !m.charging) this.charges.push({ ...m.pos });
+      m.charging = charging ? m.charging || now : 0;
+      m.arcing = (flags & MOUNT_FLAG_ARC) !== 0;
       m.seats = s.slice(9);
       // The wreck is solid on the server too: keep it in the prediction physics until it goes. The plane never blocks.
       const solid = (alive || wreck) && !m.def.airplane;
@@ -152,7 +170,7 @@ export class MountState {
     const pos = { x: s[1]!, y: s[2]!, z: s[3]! };
     const yaw = s[4]!;
     const body = this.physics.createBox({ x: pos.x, y: pos.y + def.half[1], z: pos.z }, { x: def.half[0], y: def.half[1], z: def.half[2] }, yaw);
-    const m: ClientMount = { index: s[0]!, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: false, wreck: false, burning: false, wreckGoneAt: 0, seats: [], tint: null, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null };
+    const m: ClientMount = { index: s[0]!, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: false, wreck: false, burning: false, charging: 0, arcing: false, wreckGoneAt: 0, seats: [], tint: null, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null };
     this.mounts.set(m.index, m);
     return m;
   }

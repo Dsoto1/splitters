@@ -812,6 +812,15 @@ function mountWeapons(): Record<string, WeaponDefinition> {
       // Model: the owner's Large Sentry Gun (Meshy, owned), the space-kit turret as the fallback.
       view: { model: 'guns/sentry_turret.glb', fallback: 'turrets/sentry.glb', viewOffset: [0, 0, 0], tracer: '#ff6a5a', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.smg' },
     }),
+    weapon({
+      // The Arc Turret's locked arc (mounts.ts ArcSentrySpec): a hit every 0.1 s while it holds the lock, never a
+      // miss, but only after a 0.75 s wind-up and only while it can see you. 50 a second: 100 health is 20 hits, 1.9 s
+      // of arc (2.65 s in the open from when it starts charging); a 2 s lock does 100 at most, then it vents 1.25 s.
+      id: 'core.sentry_arc', displayName: 'Arc Turret', kind: 'hitscan', slot: 0,
+      damage: 5, spread: 0, fireIntervalTicks: 6, range: 22, magazine: 0, reserveMax: 0, pickupAmmo: 0, reloadTicks: 0, raiseTicks: 0,
+      chain: { jumps: 1, range: 6, falloff: 0.5 }, botDesirability: 0, botRange: [0, 22],
+      view: { model: 'guns/arc_cannon_turret.glb', fallback: 'turrets/rocket.glb', viewOffset: [0, 0, 0], tracer: '#8f7bff', hold: { style: 'long', grip: [0, 0, 0] }, sound: 'fire.arc', beam: true },
+    }),
   ];
   return Object.fromEntries(list.map((w) => [w.id, w]));
 }
@@ -991,7 +1000,9 @@ function arsenal(): Record<string, WeaponDefinition> {
       fireIntervalTicks: 90, magazine: 1, reserveMax: 4, pickupAmmo: 2, reloadTicks: 110, raiseTicks: 34, ammo: 'cells',
       projectile: { speed: 13, gravity: 0, fuseSeconds: 1.6, splashRadius: 1, splashDamage: 0, splashEdgeDamage: 0, selfDamageScale: 0, visual: 'vortex', zone: { kind: 'singularity', radius: 8, seconds: 2.4 } },
       botDesirability: 0.65, botRange: [8, 30],
-      view: longarm('singularity', 0.75, '#b07aff', { hold: { style: 'long', grip: [0, -0.036, -0.073], support: [0, 0.061, 0.272], shoulder: [0, 0.017, -0.405] }, sound: 'fire.vortex' }),
+      // Model: the Plasma Blaster (Meshy community, CC0 per the owner; content/guns.json), its glow turned purple; the
+      // Quaternius sci-fi sniper it replaced is the fallback.
+      view: longarm('singularity', 0.75, '#b07aff', { model: 'guns/plasma_blaster.glb', fallback: 'weapons/singularity.glb', hold: { style: 'long', grip: [0, -0.15, -0.16], support: [0, -0.09, 0.2], shoulder: [0, 0, -0.39] }, muzzleAt: [0, 0.05, 0.39], sound: 'fire.vortex' }),
     }),
     // ---------------------------------------------------------------- 9: energy and chemical
     weapon({

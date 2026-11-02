@@ -1474,6 +1474,7 @@ export class GameSession {
         this.hud.setLife(msg.players);
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt, msg.tick);
+        for (const at of this.mounts?.takeCharges() ?? []) this.sfx.sentryCharge(at);
         this.mounts?.applySuspension(msg.ms);
         this.covers?.apply(msg.cv);
         this.seat = msg.me?.mo ?? null;
@@ -1625,7 +1626,9 @@ export class GameSession {
           } else if (ev.e === 'knock') {
             if (ev.s === this.slot) this.hud.hit();
           } else if (ev.e === 'arc') {
-            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })));
+            // An arc sentry's arc is drawn in its own colour.
+            const glow = ev.m !== undefined ? this.mounts?.mounts.get(ev.m)?.def.glow : undefined;
+            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow);
           } else if (ev.e === 'explode') {
             this.hurtFrom = { x: ev.p[0], z: ev.p[2], at: performance.now() };
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };

@@ -18,6 +18,7 @@ import { RESOURCE_BUDGETS, resourceBudgetIssues, utf8Length } from './budgets.ts
 import { mapContentHash } from './identity.ts';
 import { validateTrack } from './track.ts';
 import { airplaneIssues } from '../sim/airplane.ts';
+import { arcSentryIssues } from '../sim/mounts.ts';
 import { ziplineShapeIssues } from '../sim/zipline.ts';
 import { GLASS_EDGES } from '../sim/glass.ts';
 
@@ -213,6 +214,7 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   const terrain = map.terrain;
   issues.push(...airplaneIssues(map, (x, z) => (terrain ? terrainHeightAt(terrain, x, z) : null)));
   issues.push(...ziplineShapeIssues(map.entities));
+  issues.push(...arcSentryIssues(map.entities));
 
   const { min, max } = map.metadata.recommendedPlayers;
   if (min > max) issues.push({ severity: 'error', code: 'meta.players', message: `recommended players min ${min} > max ${max}` });

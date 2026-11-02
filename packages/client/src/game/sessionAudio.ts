@@ -18,6 +18,9 @@ const tuple = (p: readonly number[]): Vec3 => ({ x: p[0]!, y: p[1]!, z: p[2]! })
  * footsteps, reloads) play immediately from prediction and without position;
  * everything else is positioned in the world.
  */
+/** How often an arc sentry's locked arc is heard (ms): its hits come ten a second. */
+const ARC_SOUND_MS = 300;
+
 export class SessionAudio {
   private readonly pickupAt = new Map<string, Vec3>();
   private entities: MapDocument['entities'] = [];
@@ -35,6 +38,8 @@ export class SessionAudio {
   /** Force fields (block index and the run of its long side) and when one last hummed. */
   private fields: { i: number; line: ShockLine }[] = [];
   private fieldHumAt = 0;
+  /** When each arc sentry (mount index) last crackled: its arc hits ten times a second, heard every ARC_SOUND_MS. */
+  private readonly arcSoundAt = new Map<number, number>();
 
   /** Whether a block (entity index) is up: force fields only hum while they stand. */
   blockPresent: (i: number) => boolean = () => true;
@@ -49,6 +54,11 @@ export class SessionAudio {
     private readonly audio: AudioSystem,
     private readonly localSlot: () => number,
   ) {}
+
+  /** An arc sentry starting its wind-up on someone: the warning (break its line of sight). */
+  sentryCharge(at: Vec3): void {
+    this.audio.play('trap.warn', { at });
+  }
 
   setMap(doc: MapDocument): void {
     this.entities = doc.entities;
@@ -385,8 +395,16 @@ export class SessionAudio {
         else if (ev.ok) this.audio.play('button.press', { at: this.entityAt(ev.i, 1.2) });
         break;
       case 'arc':
+        if (ev.m !== undefined && ev.pts[0]) {
+          // An arc sentry's locked arc: its crackle at the gun, a few times a second.
+          const now = performance.now();
+          if (now - (this.arcSoundAt.get(ev.m) ?? -Infinity) >= ARC_SOUND_MS) {
+            this.arcSoundAt.set(ev.m, now);
+            this.audio.play('fire.arc', { at: tuple(ev.pts[0]), gain: 0.8 });
+          }
+        }
         // An electric fence zapping someone (chain-lightning arcs are heard as the gun's own sound).
-        if (ev.s === -1 && ev.pts[0]) this.audio.play('trap.shock', { at: tuple(ev.pts[0]) });
+        else if (ev.s === -1 && ev.pts[0]) this.audio.play('trap.shock', { at: tuple(ev.pts[0]) });
         break;
       case 'trap': {
         const e = this.entities[ev.i];

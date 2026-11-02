@@ -12,7 +12,7 @@ import { blockBoxes, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type
 import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole, type PickupEntity } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3, hypot } from '../math.ts';
 import {
-  MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_BURNING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
+  MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
   airCraftDef, BUILT_MOUNT_BASE, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole,
 } from './mounts.ts';
 import { airRoute, botDropIndex, canDrop, dropArea, dropIndex, dropOffsets, dropPlan, dropStretchEnds, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute, type DropPlan } from './airplane.ts';
@@ -186,6 +186,8 @@ interface MountRt {
   rammed: Map<number, number>;
   /** A sentry a player built (Classes): their slot. It never comes back by itself. */
   builtBy?: number;
+  /** An arc sentry's state (mounts.ts ArcSentrySpec): wind-up ticks done, the slot it is on, ticks locked, vent ticks left. */
+  arc?: ArcSentryState;
   /** The transport plane: the route it flies and how players board it (see airplane.ts). */
   route?: AirRoute;
   airdrop?: 'off' | 'start' | 'always';
@@ -193,6 +195,18 @@ interface MountRt {
   drops?: DropPlan;
   /** The tick its route's clock started (play began). */
   routeT0?: number;
+}
+
+/** An arc sentry's runtime state (see Match.runArcSentry). */
+export interface ArcSentryState {
+  /** Ticks of wind-up done on `target` (the arc locks on once they reach the spec's wind-up). */
+  charge: number;
+  /** The slot it is winding up on or locked onto, or null. */
+  target: number | null;
+  /** Ticks the arc has been locked on. */
+  lockTicks: number;
+  /** Ticks left venting after a full lock (it can't charge or fire). */
+  vent: number;
 }
 
 /** A spectator by choice (Match.spectate): who they are and the score they had, kept for when they join again. */
@@ -459,6 +473,14 @@ interface PickupState {
 }
 
 const r3 = (v: number): number => Math.round(v * 1000) / 1000;
+
+/** An arc sentry's snapshot bits: winding up on a target, or its arc locked on. */
+function arcFlags(m: MountRt): number {
+  const st = m.arc!;
+  const arc = m.def.sentry?.arc;
+  if (!arc || st.target === null || st.vent > 0) return 0;
+  return st.charge < Math.round(arc.windUpSeconds * TICK_RATE) ? MOUNT_FLAG_CHARGING : MOUNT_FLAG_ARC;
+}
 /** Look-to-steer: steering (-1..1) per radian the driver looks off the nose. */
 const LOOK_STEER_GAIN = 2.2;
 /** The vehicle probe's feet ride this far over the ground (the character controller's skin): the wheels' rest. */
@@ -3995,6 +4017,7 @@ export class Match {
     m.alive = false;
     m.health = 0;
     m.burning = false;
+    m.arc = undefined;
     m.respawnAt = this.tick + m.respawnTicks;
     const aboard = m.seats.map((slot) => (slot === null ? undefined : this.actor(slot))).filter((c): c is Combatant => !!c);
     for (const c of aboard) this.leaveMount(c, true);
@@ -4359,6 +4382,7 @@ export class Match {
   /** Sentries turn toward the nearest enemy they can see and fire while lined up. */
   private runSentry(m: MountRt): void {
     const spec = m.def.sentry!;
+    if (spec.arc) return this.runArcSentry(m);
     const muzzle = { x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z };
     let target: Combatant | null = null;
     let bestD = spec.range;
@@ -4393,6 +4417,101 @@ export class Match {
     if (shot.hitSlot !== null) this.damage(this.actor(shot.hitSlot)!, def.damage, m.builtBy === undefined ? null : (this.slots[m.builtBy] ?? null), def.id);
   }
 
+  /** Whether an arc sentry may shoot this combatant (alive, not its builder, an enemy of its team if it has one). */
+  private arcTargetable(m: MountRt, c: Combatant | undefined): c is Combatant {
+    if (!c || !c.alive || c.slot === m.builtBy) return false;
+    return m.faction === null || relation(this.factions, m.faction, c.faction) === 'enemy';
+  }
+
+  /**
+   * An arc sentry (mounts.ts ArcSentrySpec): keeps to the target it has while it can see it in range, else takes
+   * the nearest one it can see; turns to it, winds up while lined up, then holds an arc on it that hits every
+   * `fireIntervalTicks` (and jumps to one enemy beside it, `chain`). Losing sight or range drops the lock and the
+   * charge: the next target needs the full wind-up. A full lock ends in a vent.
+   */
+  private runArcSentry(m: MountRt): void {
+    const spec = m.def.sentry!;
+    const arc = spec.arc!;
+    const st = (m.arc ??= { charge: 0, target: null, lockTicks: 0, vent: 0 });
+    const def = getWeapon(spec.weapon);
+    const muzzle = { x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z };
+    const sees = (c: Combatant): boolean => distance(muzzle, chest(c.move.pos)) <= spec.range && this.physics.lineOfSight(muzzle, chest(c.move.pos));
+    if (m.cooldown > 0) m.cooldown--;
+    if (st.vent > 0) {
+      st.vent--;
+      return;
+    }
+    const held = st.target === null ? undefined : this.actor(st.target);
+    if (!this.arcTargetable(m, held) || !sees(held)) {
+      // Lost (or never had) it: start again on whoever is nearest in sight.
+      st.target = null;
+      st.charge = 0;
+      st.lockTicks = 0;
+      let bestD = spec.range;
+      for (const c of this.actors()) {
+        if (!this.arcTargetable(m, c)) continue;
+        const d = distance(muzzle, chest(c.move.pos));
+        if (d < bestD && this.physics.lineOfSight(muzzle, chest(c.move.pos))) {
+          bestD = d;
+          st.target = c.slot;
+        }
+      }
+      if (st.target === null) return;
+    }
+    const target = this.actor(st.target!)!;
+    const want = lookAngles(muzzle, chest(target.move.pos));
+    const dy = Math.atan2(Math.sin(want.yaw - m.aimYaw), Math.cos(want.yaw - m.aimYaw));
+    const turn = spec.turnRate * TICK_DT;
+    m.aimYaw += Math.max(-turn, Math.min(turn, dy));
+    m.aimPitch += Math.max(-turn, Math.min(turn, want.pitch - m.aimPitch));
+    const windUp = Math.round(arc.windUpSeconds * TICK_RATE);
+    if (st.charge < windUp) {
+      // Winds up only while lined up (a quick sidestep out of its swing slows the charge, it doesn't reset it).
+      if (Math.abs(dy) <= 0.2) st.charge++;
+      return;
+    }
+    // Locked on: it follows the target without missing, hitting on its weapon's beat.
+    if (st.lockTicks >= Math.round(arc.lockSeconds * TICK_RATE)) {
+      st.vent = Math.round(arc.ventSeconds * TICK_RATE);
+      st.target = null;
+      st.charge = 0;
+      st.lockTicks = 0;
+      m.cooldown = 0;
+      return;
+    }
+    st.lockTicks++;
+    if (m.cooldown > 0) return;
+    m.cooldown = def.fireIntervalTicks;
+    const by = m.builtBy === undefined ? null : (this.slots[m.builtBy] ?? null);
+    const pts: Tuple3[] = [tuple(muzzle), tuple(chest(target.move.pos))];
+    this.damage(target, def.damage, by, def.id);
+    // The arc jumps on to the nearest other enemy in reach with a clear line, weaker.
+    const chain = def.chain;
+    let at = target;
+    let damage = def.damage;
+    const hit = new Set([target.slot]);
+    for (let j = 0; chain && j < chain.jumps; j++) {
+      const here = chest(at.move.pos);
+      let next: Combatant | null = null;
+      let best = chain.range;
+      for (const o of this.actors()) {
+        if (hit.has(o.slot) || !this.arcTargetable(m, o)) continue;
+        const d = distance(here, chest(o.move.pos));
+        if (d < best && this.physics.lineOfSight(here, chest(o.move.pos))) {
+          best = d;
+          next = o;
+        }
+      }
+      if (!next) break;
+      damage *= chain.falloff;
+      hit.add(next.slot);
+      pts.push(tuple(chest(next.move.pos)));
+      this.damage(next, damage, by, def.id);
+      at = next;
+    }
+    this.pendingEvents.push({ e: 'arc', s: -1, pts, m: m.index });
+  }
+
   /** Vehicles with raycast suspension, alive, for snapshots (`ms`, see suspensionSnapshot). */
   suspensionSnapshots(): number[][] {
     const out: number[][] = [];
@@ -4402,7 +4521,7 @@ export class Match {
 
   /** Mounts for snapshots (see MountSnapshot). */
   mountSnapshots(): MountSnapshot[] {
-    return this.mounts.map((m) => [m.index, r3(m.pos.x), r3(m.pos.y), r3(m.pos.z), r3(m.yaw), r3(m.aimYaw), r3(m.aimPitch), Math.ceil((Math.max(0, m.health) / m.def.health) * 100), (m.alive ? MOUNT_FLAG_ALIVE : 0) | (this.tick < m.wreckUntil ? MOUNT_FLAG_WRECK : 0) | (m.burning ? MOUNT_FLAG_BURNING : 0), ...m.seats.map((s) => s ?? -1)]);
+    return this.mounts.map((m) => [m.index, r3(m.pos.x), r3(m.pos.y), r3(m.pos.z), r3(m.yaw), r3(m.aimYaw), r3(m.aimPitch), Math.ceil((Math.max(0, m.health) / m.def.health) * 100), (m.alive ? MOUNT_FLAG_ALIVE : 0) | (this.tick < m.wreckUntil ? MOUNT_FLAG_WRECK : 0) | (m.burning ? MOUNT_FLAG_BURNING : 0) | (m.alive && m.arc ? arcFlags(m) : 0), ...m.seats.map((s) => s ?? -1)]);
   }
 
   // ---------------------------------------------------------------- hazards and status effects

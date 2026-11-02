@@ -16,7 +16,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
-import { createMountNode, mountGun, wheelsOf } from './mountVisuals.ts';
+import { createMountNode, mountGun, setMountGlow, wheelsOf } from './mountVisuals.ts';
 import { CockpitInterior, type CockpitDrive } from './cockpitInterior.ts';
 import { createViewCamera, poseCamera } from './cameraPose.ts';
 import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
@@ -2303,6 +2303,7 @@ export class GameView {
         const gun = mountGun(node);
         if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
       }
+      if (m.def.glow) this.arcSentryGlow(m, node, now);
     }
     let drive: CockpitDrive | null = null;
     if (cockpit) {
@@ -2310,6 +2311,45 @@ export class GameView {
       drive = { steer: this.sprung.get(m.index)?.steer ?? 0, speed: m.vel.x * Math.sin(m.shown.yaw) + m.vel.z * Math.cos(m.shown.yaw) };
     }
     this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null, drive);
+  }
+
+  /** Arc sentries' charge orbs (over the gun, where their arc starts), by mount index. */
+  private readonly chargeOrbs = new Map<number, Mesh>();
+
+  /**
+   * An arc sentry's tell: its body glows brighter through a wind-up and a ball of its colour grows over the gun
+   * (where the arc will start), then both hold, flickering, while the arc is locked on. Idle: a faint glow, no ball.
+   */
+  private arcSentryGlow(m: ClientMount, node: TransformNode, now: number): void {
+    const glow = m.def.glow!;
+    const windUp = (m.def.sentry?.arc?.windUpSeconds ?? 0.75) * 1000;
+    const flicker = 0.5 + 0.5 * Math.sin(now * 0.045);
+    const charge = m.alive && m.charging ? Math.min(1, (now - m.charging) / windUp) : 0;
+    const level = !m.alive ? 0 : m.arcing ? 0.8 + 0.2 * flicker : charge ? charge * (0.75 + 0.25 * flicker) : 0;
+    setMountGlow(node, glow, level);
+    let orb = this.chargeOrbs.get(m.index);
+    if (!orb) {
+      orb = CreateSphere(`charge_${m.index}`, { diameter: 1, segments: 8 }, this.scene);
+      const mat = new StandardMaterial(`charge_${m.index}`, this.scene);
+      mat.disableLighting = true;
+      mat.emissiveColor = Color3.FromHexString(glow);
+      mat.alpha = 0.75;
+      orb.material = mat;
+      orb.isPickable = false;
+      this.chargeOrbs.set(m.index, orb);
+    }
+    const size = m.arcing ? 0.3 + 0.08 * flicker : charge ? 0.08 + 0.32 * charge : 0;
+    orb.setEnabled(size > 0 && node.isEnabled());
+    if (size > 0) {
+      orb.scaling.setAll(size);
+      orb.position.set(m.shown.pos.x, m.shown.pos.y + m.def.half[1] * 2 + 0.2, m.shown.pos.z);
+    }
+  }
+
+  /** An arc sentry's charge orb as drawn now (tests): its size (0: hidden), or null (not an arc sentry). */
+  chargeOrb(index: number): number | null {
+    const orb = this.chargeOrbs.get(index);
+    return orb ? (orb.isEnabled() ? orb.scaling.x : 0) : null;
   }
 
   /** The ridden vehicle's in-house cockpit (content/cockpits.ts), drawn only in your cockpit view. */
