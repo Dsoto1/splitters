@@ -10,8 +10,8 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
-### Characters batch 4, first three (`wip/char-batch-4`, agent, 2026-11-02; not merged; from main 151d9dc)
-Six new characters were asked for; three are in. The owner's "All Animations" downloads of 2 Nov (CC0 Meshy community
+### Characters batch 4: six new characters (`wip/char-batch-4`, agent, 2026-11-02; not merged; from main 151d9dc)
+The owner's "All Animations" downloads of 2 Nov (CC0 Meshy community
 models the owner rigged and animated on Meshy; recorded like WWII Infantry and the clip set's sources), built with
 `ONLY=<ids> node tools/content/prepare-meshy-characters.mjs /home/user/meshy-drive/drive-2026-11-02-anim`:
 - **Biker Gang Girl** `core.bikergirl` (`meshy_bikergirl`, folk, gangster names, female, order 97): fingerless gloves
@@ -26,18 +26,32 @@ models the owner rigged and animated on Meshy; recorded like WWII Infantry and t
   zombie with clawed hands (mitten, curl 1). Audit 0.
 - All three on the shared clip set (no opt-out): strafe-shoot, back-shoot, run-shoot and ADS-strafe read like WWII
   Infantry's. Feet on the ground; standard size (heads 1.54 / 1.62 / 1.59 m posed). Portraits captured and indexed.
-- **Waiting on the owner:** Emerald Robot (`core.emeraldrobot`, Drive 1qr_ZJl6TbjM8Wa35R75lS9v9fNyQ43sY, 17.8 MB),
-  Space Marine (`core.spacemarine`, 1FK5l20NcxsVoYaHYK-rxfRUXjTUJX4E7, 48 MB) and Spiked Skeleton Biker
-  (`core.skeletonbiker`, 1fIjEWuxK9r_m1vP1K0qDSrkiU3QA5lay, 17.4 MB): the Drive connector downloads only files under
-  10 MB, so they need to be put in a downloads dir by hand (say `/home/user/meshy-drive/drive-2026-11-02-batch4/`),
-  then the same steps (manifest like `meshy_bikergirl.json`, orders 100-102).
+- **The last three** (2 Nov evening; the lead put the downloads in `/home/user/meshy-drive/drive-2026-11-02-big/` with
+  the owner's approval: the Drive connector only takes files under 10 MB):
+  - **Emerald Robot** `core.emeraldrobot` (`meshy_emeraldrobot`, creatures, robot names, order 100): a slim teal-and-grey
+    robot with a boxy camera head; clamp hands (turned on their joints, mitten). Audit 0 as built. 512 px normal map
+    (at 1024 the body was 1.89 MB, over the 1.8 MB file budget).
+  - **Space Marine** `core.spacemarine` (`meshy_spacemarine`, soldiers, soldier names, **small**, order 101): despite
+    the name a short green, pointy-eared alien in a red uniform (0.91 m in the download). Hands scale 0.8, curl 1.2
+    (25-30 cm hands stayed open off the gun: audit 9); `fixes.hold` forward 0.06 / down 0.1 / out 0.08 (the big head put
+    the stock at its mouth; head to gun 0.15 -> 0.29 m). Audit 4: shooting palm 7-8 cm off the grip (off, fp). Goblin
+    names broke the soldiers-only bot test (botThemes.test.ts), so soldier names.
+  - **Spiked Skeleton Biker** `core.skeletonbiker` (`meshy_skeletonbiker`, horror, undead names, order 102): skeleton in
+    a spiked leather jacket and spiked gauntlets. Its long, thin, spread finger bones read as one mitten and curled into
+    splayed sticks (audit 6-9 at curl 1-1.5): hands scale 0.7, curl 1 (as Rattles, the Vampire, the Pharaoh); compact
+    on the grip, audit 6 (curl test flat, one stretched edge). 512 px normal map (1.85 MB at 1024).
+  - All three on the shared clips (no opt-out); feet planted.
 - Evidence (lead scratchpad `chars4/`): `before/`, `after/` (clip sheets with WWII Infantry for reference),
   `after/lineup.jpg`, `grip/`, `grip2/` (grip sheets before/after the hand fixes), `audit-before/`, `audit-2/`,
-  `close/` (hand close-ups, raw download hands, first person), `portraits.png`; scratch tools in `chars4/tools/`.
-- Checks: typecheck; test:changed 141 files, 1271 pass (2 skipped); content OK; e2e (`CI=1`) characters PASS (557 s),
-  designer PASS, visual PASS (menu 0.36 % off its baseline). ci:plan: content paths count as shared, so the full suite
-  (38 flows) needs a `check/` run before main; only these three ran here. Menu bundle 836.6 kB gzip (836.4; budget 840).
-  `__grips.crowd` 25 strafing+firing (load 7, noisy): clip ms/frame 1.8-2.3 vs WWII 2.8, after-clip 36-37 vs 49.
+  `close/` (hand close-ups, raw download hands, first person), `portraits.png`; the last three: `after-b/`
+  (clip sheets, `lineup.jpg`), `grip-b/`, `grip-b2/`, `audit-b1/`..`audit-b5/`, `portraits-b.png`; scratch tools in
+  `chars4/tools/`.
+- Checks (all six): typecheck; test:changed 1269 pass, 2 failed then passed rerun: botThemes "soldiers only" (the Space
+  Marine had goblin names; fixed) and host.test.ts (a 20 s hub wait at load 12; passed alone); content OK; e2e (`CI=1`)
+  characters PASS (955 s), designer PASS, visual PASS (menu 0.30 % off its baseline). ci:plan: content paths count as
+  shared, so the full suite (38 flows) needs a `check/` run before main; only these three ran here. Menu bundle 836.9 kB
+  gzip (836.4 before; budget 840). `__grips.crowd` 25 strafing+firing (load 7-13, noisy): clip ms/frame 1.8-2.8
+  against WWII's 2.0-2.8, after-clip work within noise of WWII's.
 
 ### Clips on every character (`wip/clips-all`, agent, 2026-11-02; not merged; from main e29a097)
 Owner (2 Nov): "Use those clips on all of them; that should save time when we rig the rest that don't have them."
