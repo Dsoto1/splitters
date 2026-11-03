@@ -232,11 +232,11 @@
     {
       "file": "models/pickups/ammo_rifle.glb",
       "source": "meshy-community-pickups",
-      "src": "Rifle ammo (Meshy community model, downloaded 2026-11-03): the rifle rounds pickup",
-      "triangles": 2994,
+      "src": "Rifle ammo (Meshy community model, downloaded 2026-11-03): the rifle rounds pickup, markings painted out",
+      "triangles": 2991,
       "normalMap": true,
-      "bytes": 131668,
-      "sha256": "80fc688eb1dcee69"
+      "bytes": 130484,
+      "sha256": "42a00c4774cc1168"
     },
     {
       "file": "models/vehicles/offroad_buggy.glb",

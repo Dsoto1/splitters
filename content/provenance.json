@@ -29633,10 +29633,10 @@
     },
     {
       "file": "models/pickups/ammo_rifle.glb",
-      "sha256": "80fc688eb1dcee69",
-      "triangles": 2994,
-      "bytes": 131668,
-      "source": "meshy-community-pickups/Rifle ammo (Meshy community model, downloaded 2026-11-03): the rifle rounds pickup",
+      "sha256": "42a00c4774cc1168",
+      "triangles": 2991,
+      "bytes": 130484,
+      "source": "meshy-community-pickups/Rifle ammo (Meshy community model, downloaded 2026-11-03): the rifle rounds pickup, markings painted out",
       "title": "Meshy community models (pickups, textured GLB downloads of 2026-11-03)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
@@ -29644,6 +29644,7 @@
       "modifications": [
         "read from Meshy's textured GLB download (base colour map only)",
         "simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)",
+        "lettering and logos painted out of the colour map",
         "normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)",
         "turned so the barrel runs along +Z, centred and scaled",
         "colour map shrunk to 512 px, matte material"

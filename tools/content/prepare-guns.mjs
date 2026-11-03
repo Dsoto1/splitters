@@ -21,8 +21,9 @@
 // Meshy's maps are cut into too many islands to keep), markings the generator
 // painted on (lettering, logos) painted out first where `paintOut` lists
 // colour rules for them: `{ light, chroma }` picks near-white pixels (every
-// channel at least `light`, channels within `chroma` of each other), `{ warm:
-// [r, r-b, r-g] }` orange and red ones. `label` names the model in the lock
+// channel at least `light`, channels within `chroma` of each other), `{ dark,
+// chroma }` near-black ones (black stencilling: every channel at most `dark`),
+// `{ warm: [r, r-b, r-g] }` orange and red ones. `label` names the model in the lock
 // file and provenance instead of the download's file name. `centre: base`
 // centres a turret on its pedestal (centreOnBase). `textureSize` (px, default 512) sizes the colour map of a
 // bigger model (the buggy) or a first-person weapon (1024: seen from a hand's length); `sloppy: true` cuts a mesh
@@ -97,7 +98,13 @@ async function shrink(tex, size, mime) {
 
 /** The colour test for `paintOut` rules (see the header). */
 function markings(rules) {
-  const tests = rules.map((r) => (r.warm ? (R, G, B) => R >= r.warm[0] && R - B >= r.warm[1] && R - G >= r.warm[2] : (R, G, B) => Math.min(R, G, B) >= r.light && Math.max(R, G, B) - Math.min(R, G, B) < r.chroma));
+  const tests = rules.map((r) =>
+    r.warm
+      ? (R, G, B) => R >= r.warm[0] && R - B >= r.warm[1] && R - G >= r.warm[2]
+      : r.dark !== undefined
+        ? (R, G, B) => Math.max(R, G, B) <= r.dark && Math.max(R, G, B) - Math.min(R, G, B) < r.chroma
+        : (R, G, B) => Math.min(R, G, B) >= r.light && Math.max(R, G, B) - Math.min(R, G, B) < r.chroma,
+  );
   return (R, G, B) => tests.some((t) => t(R, G, B));
 }
 

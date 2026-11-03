@@ -433,11 +433,17 @@
       "out": "pickups/ammo_rifle.glb",
       "pack": "meshy-community-pickups",
       "glb": "ammo_rifle.glb",
-      "label": "Rifle ammo (Meshy community model, downloaded 2026-11-03): the rifle rounds pickup",
+      "label": "Rifle ammo (Meshy community model, downloaded 2026-11-03): the rifle rounds pickup, markings painted out",
       "forward": "+x",
       "length": 0.5,
       "triangles": 3000,
       "maxError": 0.03,
+      "paintOut": [
+        {
+          "dark": 80,
+          "chroma": 30
+        }
+      ],
       "surface": "rebake",
       "normalSize": 256
     },
