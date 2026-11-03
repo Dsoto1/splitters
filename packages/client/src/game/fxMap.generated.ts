@@ -370,6 +370,31 @@ export const FX_MAP = {
       "pack": "electric_fx",
       "effect": "vfx_ball_lightning_04",
       "scale": 0.6
+    },
+    "fire.zone": {
+      "pack": "flame_fx",
+      "effect": "vfx_basic_fire_02",
+      "scale": 1.1
+    },
+    "fire.vehicle": {
+      "pack": "flame_fx",
+      "effect": "vfx_basic_fire_01",
+      "scale": 1.1
+    },
+    "fire.wreck": {
+      "pack": "flame_fx",
+      "effect": "vfx_basic_fire_01",
+      "scale": 0.5
+    },
+    "fire.flare": {
+      "pack": "flame_fx",
+      "effect": "vfx_basic_fire_01",
+      "scale": 0.3
+    },
+    "fire.trap": {
+      "pack": "flame_fx",
+      "effect": "vfx_basic_fire_02",
+      "scale": 0.8
     }
   }
 } as const;

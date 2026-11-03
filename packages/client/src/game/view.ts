@@ -84,6 +84,7 @@ import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
+import { LastingFx } from './lastingFx.ts';
 import { ACCENT_RANGE, arcFx, explosionFor, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
 import { buildPathMeshes } from '../pathMeshes.ts';
 
@@ -283,6 +284,8 @@ export class GameView {
   private effects: Fx[] = [];
   /** Binbun's hit and explosion effects (godotVfx.ts), once their packs are in. */
   private readonly vfx: GodotVfx;
+  /** Pack effects that last while something burns or glows (fires, flares), the nearest drawn first. */
+  private readonly lasting: LastingFx;
   /** Each placement's surface (stone, metal, wood …) for where rounds land (fxMap.ts), made with the map. */
   private surfaces: Map<string, Surface> | null = null;
   private sunLight?: DirectionalLight;
@@ -389,6 +392,9 @@ export class GameView {
     this.vfx = new GodotVfx(this.scene);
     // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
     this.vfx.quality = this.atmosphere.quality;
+    this.lasting = new LastingFx(this.vfx);
+    this.zoneVisuals.lasting = this.lasting;
+    this.scenario.lasting = this.lasting;
     void GodotVfx.preload(...mappedPacks());
     this.flashRig = new MuzzleFlashRig(this.scene, 'muzzleFlashRig', { renderingGroupId: 1 });
     this.flashRig.root.parent = this.viewRoot;
@@ -846,6 +852,7 @@ export class GameView {
     const wall = Math.min(1, (now - this.lastFrame) / 1000);
     const dt = Math.min(0.1, wall);
     this.lastFrame = now;
+    this.lasting.update(this.camera.globalPosition);
     if (this.vfx.count) {
       // The packs' toon smoke is lit like everything else: this sun, this sky.
       if (this.sunLight) this.vfx.setLight(this.sunLight.direction.clone(), this.sunLight.diffuse.scale(this.sunLight.intensity), (this.hemi?.diffuse ?? Color3.White()).scale((this.hemi?.intensity ?? 0.8) * 0.7));
@@ -1984,6 +1991,8 @@ export class GameView {
       const prev = p.node.position.clone();
       p.node.position.set(pos[0], pos[1], pos[2]);
       const look = PROJECTILE_VISUALS[p.look];
+      // A flare burns in flight and where it sticks (Flame FX, map.lasting `fire.flare`).
+      if (look === 'flare') this.lasting.want(`proj:${id}`, 'fire.flare', { x: pos[0], y: pos[1], z: pos[2] });
       if (look && ARSENAL_LOOKS.has(look)) animateArsenalProjectile(p.node, look, now, p.node.position.subtract(prev), p.born);
       else if (look === 'grenade' || look === 'frag') p.node.rotation.x += 0.3;
       else if (look === 'rocket') {
@@ -2540,11 +2549,19 @@ export class GameView {
    * alight); the wreck smoulders black. Drawing only.
    */
   private mountDamageFx(m: ClientMount, now: number): void {
-    if ((this.mountFxAt.get(m.index) ?? 0) > now) return;
     const state = m.wreck ? 'wreck' : m.alive ? mountDamageState(m.health / 100, m.burning) : 'gone';
     if (state === 'intact' || state === 'gone') return;
     const [hx, hy, hz] = m.def.half;
     const p = m.shown.pos;
+    // Burning, and the wreck smouldering: the pack's fire on top (Flame FX, map.lasting `fire.vehicle` / `fire.wreck`),
+    // sized to the vehicle; the plain flame puffs only where it isn't drawn.
+    let fire = false;
+    if (state === 'burning' || state === 'wreck') {
+      const id = `mount:${m.index}`;
+      this.lasting.want(id, state === 'burning' ? 'fire.vehicle' : 'fire.wreck', { x: p.x, y: p.y + hy * 2 - 0.25, z: p.z }, { size: Math.max(0.8, Math.min(2.2, (hx + hz) * 0.6)) });
+      fire = this.lasting.drawn(id);
+    }
+    if ((this.mountFxAt.get(m.index) ?? 0) > now) return;
     const spot = (spread: number) => ({ x: p.x + (Math.random() - 0.5) * hx * spread, y: p.y + hy * 2 - 0.1, z: p.z + (Math.random() - 0.5) * hz * spread });
     const size = Math.max(0.8, Math.min(2, (hx + hz) * 0.5));
     if (state === 'smoking') {
@@ -2555,15 +2572,17 @@ export class GameView {
       if (Math.random() < 0.3) this.impacts.sparkBurst(spot(1.4), 6, 2.5);
       this.mountFxAt.set(m.index, now + 120);
     } else if (state === 'burning') {
-      this.impacts.puff(spot(1.1), '#ff7a1a', size * 0.7, 0.45, 1.8, true);
-      this.impacts.puff(spot(0.8), Math.random() < 0.5 ? '#ffb347' : '#e8541c', size * 0.5, 0.35, 2.2, true);
+      if (!fire) {
+        this.impacts.puff(spot(1.1), '#ff7a1a', size * 0.7, 0.45, 1.8, true);
+        this.impacts.puff(spot(0.8), Math.random() < 0.5 ? '#ffb347' : '#e8541c', size * 0.5, 0.35, 2.2, true);
+      }
       this.impacts.puff(spot(0.9), '#151312', size * 1.5, 2.6, 2.4);
       if (Math.random() < 0.35) this.impacts.sparkBurst(spot(1.2), 8, 3);
       this.mountFxAt.set(m.index, now + 70);
     } else {
       // The wreck: a column of black smoke and the last licks of flame.
       this.impacts.puff(spot(0.7), '#151312', size * 1.4, 3.2, 2.2);
-      if (Math.random() < 0.4) this.impacts.puff(spot(1), '#ff6a14', size * 0.4, 0.4, 1.2, true);
+      if (!fire && Math.random() < 0.4) this.impacts.puff(spot(1), '#ff6a14', size * 0.4, 0.4, 1.2, true);
       this.mountFxAt.set(m.index, now + 160);
     }
   }

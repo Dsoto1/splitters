@@ -39,6 +39,16 @@
       "edition": "Full edition, purchased by the owner (Drive fx/ElectricFXFull.zip, 2026-10-31); its license.txt is CC0 (Creative Commons Zero, no attribution required). 18 effects: zaps, impacts and balls of lightning and plasma.",
       "dir": "BinbunVFX_Vol2/ElectricFX",
       "file": "electric_fx"
+    },
+    "binbun-flame-fx": {
+      "title": "Stylized Flame FX (full edition, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/binbun-flame-fx/License.txt",
+      "edition": "Full edition, purchased by the owner (Drive fx/FlameFXFull.zip, 2026-10-31); its license.txt is CC0 (Creative Commons Zero, no attribution required). 30 effects: fires, bonfires and candles in six colours.",
+      "dir": "BinbunVFX_Vol2/FlameFX",
+      "file": "flame_fx"
     }
   },
   "budgets": { "maxBytes": 400000 },
@@ -119,8 +129,13 @@
       "fence": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_01", "scale": 0.22 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.3 }, "speed": 2.5 }
     },
     "lasting": {
-      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball).",
-      "charge.sentry_arc": { "pack": "electric_fx", "effect": "vfx_ball_lightning_04", "scale": 0.6 }
+      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball). fire.zone: a burning patch (molotov, flamethrower, flare, lit oil; scale per metre of its radius, one fire per ~1.5 m of it). fire.vehicle / fire.wreck: a burning vehicle and the wreck smouldering (scale per metre of its size). fire.flare: a flare burning in flight or where it stuck. fire.trap: a flame trap's jet (laid along it).",
+      "charge.sentry_arc": { "pack": "electric_fx", "effect": "vfx_ball_lightning_04", "scale": 0.6 },
+      "fire.zone": { "pack": "flame_fx", "effect": "vfx_basic_fire_02", "scale": 1.1 },
+      "fire.vehicle": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 1.1 },
+      "fire.wreck": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 0.5 },
+      "fire.flare": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 0.3 },
+      "fire.trap": { "pack": "flame_fx", "effect": "vfx_basic_fire_02", "scale": 0.8 }
     }
   }
 }

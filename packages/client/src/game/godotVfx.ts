@@ -8,7 +8,7 @@ import { Constants } from '@babylonjs/core/Engines/constants';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { Matrix, Quaternion, Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { versioned } from '../assetUrl.ts';
 import { sampleCurve } from './muzzleFlash.ts';
@@ -453,9 +453,13 @@ interface ShaderPort {
   cut?: number;
   cull?: boolean;
   billboardUniform?: boolean;
+  /** The shader turns its quads to the camera itself (Godot's billboard written into its vertex()). */
+  billboard?: boolean;
   lit?: boolean;
   vertex?: string;
   fragment: string;
+  /** GLSL functions the bodies call (put before main in both stages). */
+  helpers?: string;
 }
 
 const PORTS: Record<string, ShaderPort> = {
@@ -872,6 +876,140 @@ PORTS.ground_streaks = {
       outAlpha = a;`,
 };
 
+// ---- Flame FX (Binbun VFX Vol. 2): camera-facing flames
+/** A flame tongue: a soft disc eaten by scrolling noise in world space, hot at birth, cooling to its second colour. */
+PORTS.fire_particle = {
+  uniforms: { primary_color: [1, 0.72, 0.29], secondary_color: [0.69, 0, 0.18], emission: 4, color_curve: 1, noise_scale: [1, 1], noise_scroll: [0, 1], flame_density: 0.5, wobble_amount: 1, wobble_frequency: 12, wobble_scroll: 4, edge_hardness: 0.9, edge_position: 0.2, effect_amount: 1, speed_scale: 1 },
+  samplers: ['noise_texture'],
+  blend: 'mix',
+  billboard: true,
+  fragment: `
+      float wobble = sin(vWorld.y * u_wobble_frequency - (u_time * u_wobble_scroll * u_speed_scale)) * (u_wobble_amount * 0.1);
+      vec2 scroll = u_noise_scroll * u_time * u_speed_scale;
+      vec2 wuv = ((vWorld.xy + vWorld.zz * 0.5) * u_noise_scale + vec2(wobble, 0.0)) * vec2(-1.0, 1.0);
+      float off = texture2D(noise_texture, wuv * 0.5).r * 0.1;
+      float noise = texture2D(noise_texture, wuv + vec2(0.0, off) - scroll).r;
+      float mask = max((1.0 - length(vUV * 2.0 - 1.0)) - (1.0 - vColor.a), 0.0);
+      float value = noise * mask;
+      value += pow(mask, (1.0 - u_flame_density) * 8.0) * pow(vColor.a, 8.0);
+      value -= 1.0 - u_effect_amount * vExtra.w;
+      value = clamp(value, 0.0, 1.0);
+      value = smoothstep(u_edge_position, mix(1.0, u_edge_position + 0.01, u_edge_hardness), value);
+      vec3 col = mix(u_primary_color, u_secondary_color, pow(max(vColor.r, 0.0), u_color_curve));
+      outColor = col * u_emission * (1.0 - vColor.r);
+      outAlpha = value;`,
+};
+/** The flame's bright heart: a soft disc under scrolling noise. */
+PORTS.fire_core = {
+  uniforms: { primary_color: [1, 0.72, 0.29], secondary_color: [0.69, 0, 0.18], emission: 4, noise_scale: [1, 1], noise_scroll: [0, 1], flame_scale: [1, 1], edge_hardness: 0.9, edge_position: 0.2, effect_amount: 1, speed_scale: 1 },
+  samplers: ['noise_texture'],
+  blend: 'mix',
+  billboard: true,
+  fragment: `
+      vec2 scroll = u_noise_scroll * u_time * u_speed_scale;
+      float mask = max(1.0 - length(vUV * 2.0 - 1.0), 0.0);
+      float noise = texture2D(noise_texture, (vUV * u_flame_scale * u_noise_scale) + scroll).r;
+      float value = (mask * 4.0 - (1.0 - noise)) / 4.0;
+      value -= 1.0 - u_effect_amount * vExtra.w;
+      value = clamp(value, 0.0, 1.0);
+      value = smoothstep(u_edge_position, mix(1.0, u_edge_position + 0.01, u_edge_hardness), value);
+      outColor = u_primary_color * u_emission;
+      outAlpha = value;`,
+};
+
+// ---- Binbun VFX Vol. 1 (Poison, Ice, Magic Orbs, Projectiles, Portal, Smoke …): one family of shaders shared by
+// the packs: up to three scrolling noise masks blended together, coloured between two or three colours, lit
+// softly and glowing (EMISSION), faded by the particle's alpha.
+const VOL1_HELPERS = `
+float blendf(float a, float b, float mode) {
+  if (mode < 0.5) return a + b;
+  if (mode < 1.5) return a - b;
+  if (mode < 2.5) return a * b;
+  if (mode < 3.5) return min(a, b);
+  if (mode < 4.5) return max(a, b);
+  if (mode < 5.5) return 1.0 - (1.0 - a) * (1.0 - b);
+  if (mode < 6.5) return a < 0.5 ? 2.0 * a * b : 1.0 - 2.0 * (1.0 - a) * (1.0 - b);
+  if (mode < 7.5) return b < 0.5 ? 2.0 * a * b : 1.0 - 2.0 * (1.0 - a) * (1.0 - b);
+  if (mode < 8.5) return b < 0.5 ? 2.0 * a * b + a * a * (1.0 - 2.0 * b) : sqrt(max(a, 0.0)) * (2.0 * b - 1.0) + 2.0 * a * (1.0 - b);
+  if (mode < 9.5) return a / max(1.0 - b, 1e-3);
+  if (mode < 10.5) return 1.0 - (1.0 - a) / max(b, 1e-3);
+  return a + b - 1.0;
+}
+vec2 uvAlign(vec2 uv, float m) {
+  if (m < 0.5) return uv;
+  if (m < 1.5) return uv.yx;
+  if (m < 2.5) return vec2(1.0 - uv.x, uv.y);
+  return vec2(1.0 - uv.y, uv.x);
+}
+vec2 uvRadial(vec2 uv) {
+  vec2 c = uv - 0.5;
+  return vec2(atan(c.x, c.y) / 6.2831853, length(c));
+}
+vec2 uvRotate(vec2 uv, float a) {
+  mat2 r = mat2(vec2(sin(a), -cos(a)), vec2(cos(a), sin(a)));
+  return (uv - 0.5) * r + 0.5;
+}
+float maskOne(sampler2D tex, vec2 uv, vec2 scale, vec2 scroll, float radial, float rot, float offset) {
+  vec2 mapped = (radial > 0.5 ? uvRadial(uv) : uv) * scale + vec2(offset);
+  vec2 muv = uvRotate(uvAlign(mapped, u_uv_alignment) + vec2(u_time * u_time_scale) * scroll, u_time * rot);
+  return texture2D(tex, muv).r;
+}
+float vol1Mask(vec2 uv, float offset) {
+  float m = maskOne(mask1_texture, uv, u_mask1_scale, u_mask1_scroll, u_mask1_radial, u_mask1_rotation, offset);
+  if (u_use_mask2 > 0.5) m = mix(m, blendf(m, maskOne(mask2_texture, uv, u_mask2_scale, u_mask2_scroll, u_mask2_radial, u_mask2_rotation, 0.0), u_mask2_blend_mode), u_mask2_strength);
+  if (u_use_mask3 > 0.5) m = mix(m, blendf(m, maskOne(mask3_texture, uv, u_mask3_scale, u_mask3_scroll, u_mask3_radial, u_mask3_rotation, 0.0), u_mask3_blend_mode), u_mask3_strength);
+  return m;
+}`;
+const VOL1_UNIFORMS = {
+  mask1_scroll: [0, 0], mask1_scale: [1, 1], mask1_radial: 0, mask1_rotation: 0,
+  use_mask2: 0, mask2_scroll: [0, 0], mask2_scale: [1, 1], mask2_strength: 0, mask2_blend_mode: 0, mask2_radial: 0, mask2_rotation: 0,
+  use_mask3: 0, mask3_scroll: [0, 0], mask3_scale: [1, 1], mask3_strength: 0, mask3_blend_mode: 0, mask3_radial: 0, mask3_rotation: 0,
+  primary_color: [1, 1, 1], secondary_color: [0.5, 0.5, 0.5], tertiary_color: [0.2, 0.2, 0.2], use_tertiary: 0, color_smoothness: 0.5,
+  displacement_scale: 0, displacement_offset: 0.5, time_scale: 1, uv_alignment: 0, emission_strength: 2,
+  alpha_smoothness: 0.954, alpha_multiplier: 0.954, alpha_mode: 0, alpha_cutoff: 0.05, edge_cutoff: [0, 0, 0, 0],
+} as Record<string, number | number[]>;
+/** Fragment of the family: `offset` is the particle's own random (particle) or none; `lit` mixes in the scene's light. */
+const vol1Fragment = (offset: string, tertiaryMixesB = false) => `
+      float m = vol1Mask(vUV, ${offset});
+      float cm = smoothstep(0.5 - u_color_smoothness * 0.5, 0.5 + u_color_smoothness * 0.5, m);
+      vec3 albedo = ${tertiaryMixesB ? 'mix(mix(u_secondary_color, u_primary_color, pow(cm, 2.0)), u_tertiary_color, vColor.b)' : 'u_use_tertiary > 0.5 ? mix(u_tertiary_color, u_secondary_color, pow(cm, 3.0)) : mix(u_secondary_color, u_primary_color, pow(cm, 3.0))'};
+      // Godot lights these (toon-ish) and adds EMISSION = albedo × strength: the sun, the sky and the glow.
+      outColor = albedo * (u_ambient * 0.8 + u_sunColor * 0.35) + albedo * u_emission_strength * 0.5;
+      // (Godot's clamp(lo, hi, mask) is min(hi, mask).)
+      float am = min(0.5 + u_alpha_smoothness * 0.5, m);
+      float a = clamp(pow(am, 3.0) * u_alpha_multiplier * vColor.a * vExtra.w, 0.0, 1.0);
+      if (vUV.x < u_edge_cutoff.x || vUV.y < u_edge_cutoff.y || vUV.x > 1.0 - u_edge_cutoff.z || vUV.y > 1.0 - u_edge_cutoff.w) a = 0.0;
+      if (u_alpha_mode > 0.5 && a < u_alpha_cutoff) a = 0.0;
+      outAlpha = a;`;
+const vol1Vertex = (offset: string) => `
+      p += n * (vol1Mask(uv, ${offset}) - u_displacement_offset) * u_displacement_scale;`;
+PORTS.transparent = {
+  uniforms: VOL1_UNIFORMS,
+  samplers: ['mask1_texture', 'mask2_texture', 'mask3_texture'],
+  helpers: VOL1_HELPERS,
+  blend: 'mix',
+  billboardUniform: true,
+  vertex: vol1Vertex('0.0'),
+  fragment: vol1Fragment('0.0'),
+};
+PORTS.particle = { ...PORTS.transparent, vertex: vol1Vertex('pcolor.r'), fragment: vol1Fragment('vColor.r') };
+PORTS.opaque = { ...PORTS.transparent, blend: 'cut', cut: 0.05 };
+/** Smoke: the family's masks, its third colour mixed in by the particle's blue (darker puffs). */
+PORTS.smoke = { ...PORTS.transparent, vertex: '', fragment: vol1Fragment('vColor.r', true) };
+/** A fresnel glow (a shell round an orb): bright at the rim through its gradient. */
+PORTS.glow_fresnel = {
+  uniforms: { fresnel_amount: 1, fresnel_exponent: 1, enable_mask: 0, mask_scroll: [0, 0], mask_scale: [1, 1], mask_blend_mode: 0, mask_blend: 0, emission_strength: 1, primary_color: [1, 1, 1], secondary_color: [0.5, 0.5, 0.5], alpha_multiplier: 0.954 },
+  samplers: ['fresnel_gradient', 'mask_texture'],
+  helpers: VOL1_HELPERS.slice(0, VOL1_HELPERS.indexOf('vec2 uvAlign')),
+  blend: 'add',
+  fragment: `
+      float fres = pow(1.0 - clamp(dot(normalize(vNormal), normalize(vView)), 0.0, 1.0), u_fresnel_amount);
+      float value = pow(texture2D(fresnel_gradient, vec2(fres, 0.5)).r, u_fresnel_exponent);
+      if (u_enable_mask > 0.5) value = clamp(mix(value, blendf(value, texture2D(mask_texture, vUV * u_mask_scale + vec2(u_time) * u_mask_scroll).r, u_mask_blend_mode), u_mask_blend), 0.0, 1.0);
+      outColor = mix(u_secondary_color, u_primary_color, value) * u_emission_strength;
+      outAlpha = value * u_alpha_multiplier * vColor.a * vExtra.w;`,
+};
+
 const VERTEX = `
 precision highp float;
 attribute vec3 position;
@@ -896,6 +1034,8 @@ varying vec4 vColor;
 varying vec4 vExtra;
 varying vec3 vNormal;
 varying vec3 vView;
+varying vec3 vWorld;
+HELPERS
 void main(void) {
   mat4 fw = world;
 #ifdef INSTANCES
@@ -922,6 +1062,7 @@ void main(void) {
   vExtra = pextra;
   vNormal = (view * vec4(wn, 0.0)).xyz;
   vView = (view * vec4(eye - wp, 0.0)).xyz;
+  vWorld = wp;
 #ifdef WORLD_NORMAL
   vNormal = wn;
 #endif
@@ -935,6 +1076,7 @@ varying vec4 vColor;
 varying vec4 vExtra;
 varying vec3 vNormal;
 varying vec3 vView;
+varying vec3 vWorld;
 uniform float u_time;
 uniform float u_bright;
 uniform vec3 u_sunDir;
@@ -945,6 +1087,7 @@ float overlay(float base, float blend) {
   float limit = step(0.5, base);
   return mix(2.0 * base * blend, 1.0 - 2.0 * (1.0 - base) * (1.0 - blend), limit);
 }
+HELPERS
 void main(void) {
   vec3 outColor = vec3(0.0);
   float outAlpha = 1.0;
@@ -962,7 +1105,7 @@ void main(void) {
 
 function glslUniforms(port: ShaderPort): string {
   const lines: string[] = [];
-  for (const [k, v] of Object.entries(port.uniforms)) lines.push(`uniform ${Array.isArray(v) ? (v.length === 2 ? 'vec2' : 'vec3') : 'float'} u_${k};`);
+  for (const [k, v] of Object.entries(port.uniforms)) lines.push(`uniform ${Array.isArray(v) ? (v.length === 2 ? 'vec2' : v.length === 4 ? 'vec4' : 'vec3') : 'float'} u_${k};`);
   for (const s of port.samplers ?? []) lines.push(`uniform sampler2D ${s};`);
   return lines.join('\n');
 }
@@ -982,8 +1125,8 @@ function registerShaders(): void {
   for (const [key, port] of Object.entries(PORTS)) {
     const u = glslUniforms(port);
     const name = shaderId(key);
-    Effect.ShadersStore[`gv_${name}VertexShader`] = VERTEX.replace('UNIFORMS', u).replace('VERTEX_BODY', port.vertex ?? '');
-    Effect.ShadersStore[`gv_${name}FragmentShader`] = FRAGMENT.replace('UNIFORMS', u).replace('FRAGMENT_BODY', port.fragment);
+    Effect.ShadersStore[`gv_${name}VertexShader`] = VERTEX.replace('UNIFORMS', u).replace('HELPERS', port.helpers ?? '').replace('VERTEX_BODY', port.vertex ?? '');
+    Effect.ShadersStore[`gv_${name}FragmentShader`] = FRAGMENT.replace('UNIFORMS', u).replace('HELPERS', port.helpers ?? '').replace('FRAGMENT_BODY', port.fragment);
   }
 }
 
@@ -996,7 +1139,7 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   const hit = cache.get(key);
   if (hit) return hit;
   registerShaders();
-  const billboard = billboardAlign || (port.billboardUniform === true && bool(mat['shader_parameter/billboard'], false));
+  const billboard = billboardAlign || port.billboard === true || (port.billboardUniform === true && bool(mat['shader_parameter/billboard'], false));
   const defines = [...(billboard ? ['#define BILLBOARD'] : []), ...(port.blend === 'cut' || (port.cut !== undefined && port.blend !== 'add') ? [`#define CUT ${(port.cut ?? 0.5) < 0 ? '-1.0' : (port.cut ?? 0.5).toFixed(3)}`] : []), ...(port.lit ? ['#define WORLD_NORMAL'] : [])];
   const uniforms = ['world', 'view', 'viewProjection', 'eye', 'u_time', 'u_bright', 'u_sunDir', 'u_sunColor', 'u_ambient', ...Object.keys(port.uniforms).map((k) => `u_${k}`)];
   const m = new ShaderMaterial(`gv_${key}`, scene, { vertex: `gv_${shaderName}`, fragment: `gv_${shaderName}` }, {
@@ -1019,18 +1162,21 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   };
   for (const [k, d] of Object.entries(port.uniforms)) {
     const v = param(k);
-    if (Array.isArray(d) && d.length === 3) {
+    if (Array.isArray(d) && d.length === 4) {
+      const a = ctor(v, 'Vector4') ?? (d as number[]);
+      m.setVector4(`u_${k}`, new Vector4(a[0] ?? 0, a[1] ?? 0, a[2] ?? 0, a[3] ?? 0));
+    } else if (Array.isArray(d) && d.length === 3) {
       const c = color(v, [d[0]!, d[1]!, d[2]!, 1]);
       m.setColor3(`u_${k}`, new Color3(c[0], c[1], c[2]));
     } else if (Array.isArray(d)) {
       const c = vec2(v, [d[0]!, d[1]!]);
       m.setVector2(`u_${k}`, new Vector2(c[0], c[1]));
-    } else m.setFloat(`u_${k}`, typeof v === 'boolean' ? (v ? 1 : 0) : num(v, d));
+    } else m.setFloat(`u_${k}`, typeof v === 'boolean' ? (v ? 1 : 0) : num(v, d as number));
   }
   for (const s of port.samplers ?? []) {
     let spec = (mat[`shader_parameter/${s}`] ?? (s === 'noise_texture' ? root.noise_texture : s === 'smoke_texture' ? root.smoke_texture : null)) as Json | null;
     if (s === 'normal_texture' && !spec && root.smoke_texture) spec = { ...(root.smoke_texture as Json), as_normal_map: true, bump_strength: 32 };
-    m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && spec.type === 'GradientTexture2D' ? gradientTexture(scene, spec) : noiseTexture(scene, spec));
+    m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && (spec.type === 'GradientTexture2D' || spec.type === 'GradientTexture1D') ? gradientTexture(scene, spec) : noiseTexture(scene, spec));
   }
   m.setFloat('u_bright', 0.55);
   cache.set(key, m);
@@ -1060,6 +1206,7 @@ interface Proc {
   radial: [number, number];
   radialCurve: number[][] | null;
   radialVel: [number, number];
+  velLimit: number[][] | null;
   orbit: number[][] | null;
   alignY: boolean;
   rotateY: boolean;
@@ -1088,6 +1235,7 @@ function procOf(p: Json): Proc {
     radial: [num(p.radial_accel_min, 0), num(p.radial_accel_max, 0)],
     radialCurve: curveOf(p.radial_accel_curve),
     radialVel: [num(p.radial_velocity_min, 0), num(p.radial_velocity_max, 0)],
+    velLimit: curveOf(p.velocity_limit_curve),
     orbit: curveOf(p.orbit_velocity_curve),
     alignY: bool(p.particle_flag_align_y, false),
     rotateY: bool(p.particle_flag_rotate_y, false),
@@ -1321,6 +1469,12 @@ class Emitter {
         const px = p.pos.x;
         p.pos.x = px * c - p.pos.z * s;
         p.pos.z = px * s + p.pos.z * c;
+      }
+      if (pr.velLimit) {
+        // Godot's velocity limit: speed held under the curve over the particle's life.
+        const lim = sampleCurve(pr.velLimit, x, Infinity);
+        const sp = p.vel.length();
+        if (sp > lim && sp > 0) p.vel.scaleInPlace(lim / sp);
       }
       p.pos.addInPlace(p.vel.scale(dt));
       if (p.radialVel) {
@@ -1589,6 +1743,11 @@ export class GodotVfx {
         return !self.playing.includes(p);
       },
     };
+  }
+
+  /** How many more lasting effects may start now (by graphics quality). */
+  get loopRoom(): number {
+    return Math.max(0, this.caps.loops - this.loopCount);
   }
 
   /** Lasting effects playing now. */

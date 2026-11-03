@@ -40,6 +40,14 @@
       "title": "electric effect scenes",
       "bytes": 42736,
       "sha256": "69a4f8415b0d2de7"
+    },
+    {
+      "file": "vfx/flame_fx.json",
+      "source": "binbun-flame-fx",
+      "src": "BinbunVFX_Vol2/FlameFX/effects/**/*.tscn",
+      "title": "flame effect scenes",
+      "bytes": 9676,
+      "sha256": "37c190bb59c54eef"
     }
   ]
 }

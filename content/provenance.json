@@ -29702,6 +29702,20 @@
       ]
     },
     {
+      "file": "vfx/flame_fx.json",
+      "sha256": "37c190bb59c54eef",
+      "bytes": 9676,
+      "source": "binbun-flame-fx/BinbunVFX_Vol2/FlameFX/effects/**/*.tscn",
+      "title": "Stylized Flame FX (full edition, purchased by the owner): flame effect scenes",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js",
+        "only the effects the game plays (content/vfx.json map)"
+      ]
+    },
+    {
       "file": "gear/military_helmet.glb",
       "sha256": "0758ab953e797375",
       "triangles": 2930,
