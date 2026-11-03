@@ -10,7 +10,7 @@ const MAPS: Record<string, { name: string; modes: GameMode[] }> = {
   frost_basin: { name: 'Frost Basin', modes: ['core.tdm', 'core.deathmatch', 'core.elim', 'core.zombies'] },
   diamond_park: { name: 'Diamond Park', modes: ['core.tdm', 'core.ctf', 'core.koth'] },
   atomic_court: { name: 'Atomic Court', modes: ['core.deathmatch', 'core.tdm'] },
-  clockwork: { name: 'Clockwork', modes: ['core.deathmatch'] },
+  overhang: { name: 'Overhang', modes: ['core.deathmatch'] },
 };
 const lookup: RotationLookup = (id) => MAPS[id] ?? null;
 const e = (map: string, mode: GameMode): RotationEntry => ({ map, mode });
@@ -41,10 +41,10 @@ describe('map rotation', () => {
   });
 
   it('skip moves on now; a one-map rotation plays that map every time', () => {
-    const r = new MapRotation([e('clockwork', 'core.deathmatch')]);
-    expect(r.advance()).toEqual(e('clockwork', 'core.deathmatch'));
-    expect(r.advance()).toEqual(e('clockwork', 'core.deathmatch'));
-    const two = new MapRotation([e('clockwork', 'core.deathmatch'), e('atomic_court', 'core.tdm')]);
+    const r = new MapRotation([e('overhang', 'core.deathmatch')]);
+    expect(r.advance()).toEqual(e('overhang', 'core.deathmatch'));
+    expect(r.advance()).toEqual(e('overhang', 'core.deathmatch'));
+    const two = new MapRotation([e('overhang', 'core.deathmatch'), e('atomic_court', 'core.tdm')]);
     two.advance();
     // "Skip to next" is an advance mid-match: the one after the current.
     expect(two.advance()).toEqual(e('atomic_court', 'core.tdm'));
@@ -54,7 +54,7 @@ describe('map rotation', () => {
     const r = new MapRotation([e('frost_basin', 'core.tdm'), e('diamond_park', 'core.ctf'), e('atomic_court', 'core.tdm')]);
     r.advance(); // Frost Basin plays.
     // Moved down, with a map added in front: still current, and the next is what follows it now.
-    r.set([e('clockwork', 'core.deathmatch'), e('diamond_park', 'core.ctf'), e('frost_basin', 'core.tdm'), e('atomic_court', 'core.tdm')]);
+    r.set([e('overhang', 'core.deathmatch'), e('diamond_park', 'core.ctf'), e('frost_basin', 'core.tdm'), e('atomic_court', 'core.tdm')]);
     expect(r.current).toBe(2);
     expect(r.peek()?.entry).toEqual(e('atomic_court', 'core.tdm'));
     // Removed: start from the top.
@@ -90,14 +90,14 @@ describe('map rotation', () => {
   });
 
   it('drops unknown maps and modes a map cannot play, each with a reason, and holds at most 20', () => {
-    const v = validateRotation(['frost_basin:tdm', 'diamond_park:core.ctf', 'clockwork:ctf', 'somebody_elses_map:tdm', '../secrets', 'atomic_court', 'frost_basin:nonsense', { map: 'diamond_park', mode: 'core.koth' }], lookup);
+    const v = validateRotation(['frost_basin:tdm', 'diamond_park:core.ctf', 'overhang:ctf', 'somebody_elses_map:tdm', '../secrets', 'atomic_court', 'frost_basin:nonsense', { map: 'diamond_park', mode: 'core.koth' }], lookup);
     expect(v.entries).toEqual([e('frost_basin', 'core.tdm'), e('diamond_park', 'core.ctf'), e('atomic_court', 'core.deathmatch'), e('diamond_park', 'core.koth')]);
     expect(v.dropped).toHaveLength(4);
-    expect(v.dropped.join('\n')).toMatch(/Clockwork can't play Capture the Flag/);
+    expect(v.dropped.join('\n')).toMatch(/Overhang can't play Capture the Flag/);
     expect(v.dropped.join('\n')).toMatch(/somebody_elses_map is not one of our maps/);
     expect(v.dropped.join('\n')).toMatch(/not a map ID/);
     expect(v.dropped.join('\n')).toMatch(/not a mode/);
-    const many = validateRotation(Array.from({ length: 25 }, () => 'clockwork'), lookup);
+    const many = validateRotation(Array.from({ length: 25 }, () => 'overhang'), lookup);
     expect(many.entries).toHaveLength(ROTATION_MAX);
     expect(many.dropped).toHaveLength(5);
     expect(validateRotation('frost_basin', lookup).entries).toEqual([]);

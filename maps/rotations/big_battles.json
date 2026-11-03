@@ -7,7 +7,6 @@
   "shuffle": true,
   "maps": [
     { "map": "capitol_mall", "mode": "core.tdm" },
-    { "map": "glacier_line", "mode": "core.bomb" },
     { "map": "riot_junction", "mode": "core.ctf" },
     { "map": "st_johns", "mode": "core.tdm" },
     { "map": "fernwood_moon", "mode": "core.ctf" },
