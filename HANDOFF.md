@@ -10,6 +10,54 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Character fixes: faces, roster (`wip/char-fixes`, agent, 2026-11-03; not merged, not pushed; from main ef2c103)
+Owner's notes of 3 Nov (agent scratchpad `charfix/owner-notes.md`). Steps 1-2 done here; steps 3-5 (Imp thumbnail,
+bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agent scratchpad `charfix/`.
+- **Faces (16 looks; the owner's "sgt" and "mackie" are one look, Sgt. Mackie).** Not the shared clip set: the same
+  faces with the set switched off (`clips = false` at runtime) and in a plain glTF viewer are the same, and the shipped
+  GLBs had these faces since they were built (`probe/`). Causes, each checked against the download rendered at the
+  same framing (`faces-raw-new-rebake-old-<1-4>.jpg`: raw / this build / rebake / main):
+  1. **Download normal maps read upside down** (meshy-mesh.mjs `DOWNLOAD_GREEN = -1`, was GREEN). Meshy's low-poly
+     downloads ("All Animations", many texture GLBs) have flat vertex normals and get their smooth shading from the
+     normal map alone; built with the wrong green they shaded in flat facets (WWII Infantry, Stealth Operative).
+  2. **The head cut at the body's loose errors** (work cut 1-3 %, final cut up to 5 % of the model's size): heads
+     that missed their share at 1 % were cut at several cm (Cal's pointed skull, halves of a face out of line). Now
+     `cutKeeping(..., { seamParts: [0] })` cuts the head at `FINE_ERRORS` (0.2 %, 0.4 %) only; the body takes what is
+     left of the budget (never under `BODY_FLOOR` 60 %).
+  3. **Chart borders pulled straight**: collapses along a texture seam laid a triangle across the gutter or another
+     chart (dark/pale wedges over eyes and noses). The head's seam vertices are locked now (charts cut inside their
+     outline). Seam copies are also skinned alike (`shareSeamWeights` in pose()).
+  4. Rebaked heads get 2.5x the texel density (`REBAKE_HEAD_DENSITY`).
+  Per look (manifest `fixes.surface`): download layout, seams locked: Biker Gang Girl, WWII Infantry, Stealth
+  Operative, Lancer Mei, Rourke, Grandpa Chains, Grinning Gus, Pemberton. Rebaked (`surface: rebake`): Cal, Sgt.
+  Mackie, Elder Tomo, Count Bonesworth (seam-locked their dense heads stay at 15k+ triangles: Tomo 21.8k, Bonesworth
+  26.7k, over the 20k budget; Mackie kept an eye wedge), plus Thornweaver and Dog Tag Doyle (already rebake). Rattles:
+  his rig task isn't on this machine, so `tools/content/reface-built.mjs` (new) moved his skull's 9-13 % collarbone
+  weights onto the head in the shipped file (a green flip there made it worse: not used). Kenji: his download is
+  10k triangles, not cut, and every build looked like main: left as on main.
+  **Not yet like the download** (owner/lead to judge): Cal and Sgt. Mackie (rebake: softer, chart lines), Biker Gang
+  Girl (nose wedge remains), Kenji (pale fringe patch also in an uncut build: the cause is outside the cut, not
+  found), Grinning Gus and Dog Tag Doyle (the downloads are glossy black/chrome from a metal-roughness map the
+  pipeline drops: ours are matte white), Rattles (head pose). Rebuild: `ONLY=<ids> node tools/content/prepare-meshy-characters.mjs <dir>`
+  with the downloads linked in agent scratchpad `charfix/dl/` (Thornweaver's from model-quality `dl/rig/`).
+- **Roster** (looks.ts RETIRED_LOOKS, files and manifests kept): Vampire -> Count Bonesworth, The Hollow Visitor ->
+  The Visitor, Dust Trooper -> Desert Ranger, Goblin -> Goblina, Rotter -> Shambler, Giggles -> Punkin (Rotter and
+  Giggles tear open at the waist and sides: `charfix/core.rotter-before-hold.png`, `core.giggles-before-hold.png`;
+  their hands-on-hips downloads, skinClean's tears; not fixable without a new rig). The goblin NPC role still draws
+  `core.goblin` (`NPC_KEPT_LOOKS`: getLook gives the look itself, validLookId maps a player's saved choice).
+  Imp and Puglin: off `PLAYER_NPC_LOOKS` (Character Select), still NPC roles, NPC_LOOKS and bot looks.
+- **Open (steps 3-5, not started or not committed):** Imp portrait framed on its top 42 % (`charfix/step3-imp-portrait.patch`,
+  portraits.ts `CREATURE_TOPS`; then capture `npc:imp`). Bodies: Character Select draws every hero at 1.8 m whatever
+  its size (menuScene.ts), which is why Goblina and the Space Marine (both already `small`) and Honest Abe (standard)
+  read wrong there: `charfix/step4-menu.py` scales the hero by BODY_SIZES; Abe wants `"size": "large"`; Goblina's
+  head-down is her `lean.neck` 10. Grip audit BEFORE (rifle+pistol, the 29 looks in step 5 incl. Santa and Zombie
+  Soldier A): total 101, 21 flagged (`charfix/audit-before/summary.md`); no after yet.
+- Checks (on 2c8ab3e): typecheck; content OK; test:changed 1280 pass, 4 failed, of which looks.test (retired goblin)
+  and forts.test (seed 4 missed stairs with the new bot looks: now seed 3) are fixed; host.test (hub wait) and
+  pads eagle_spires (210 s timeout) failed at load 20-40, as in earlier sessions; e2e (`CI=1`) characters PASS
+  (1,677 s), visual PASS (menu 0.01 %). ci:plan: content paths, full suite: needs a `check/` run before main.
+  Not pushed: the lead asked that the face rebuilds not go towards main until they match the downloads.
+
 ### Queued (owner-approved, 2026-11-03): content scalability, see docs/CONTENT_SCALABILITY.md
 The owner approved every pick in docs/CONTENT_SCALABILITY.md. Not started. Order:
 1. Get the menu's first JS off its 800 KB gzip ceiling: pack tiles, the prop table and STYLE_PACKS load with a

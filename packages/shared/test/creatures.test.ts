@@ -3,6 +3,7 @@ import {
   rosterSize,
   BUTTON_FIRE,
   CORE_LOOKS,
+  getLook,
   CORE_PROPS,
   NPC_LOOKS,
   CREATURE_ROLES,
@@ -75,7 +76,10 @@ describe('creature NPC kinds', () => {
     expect(looked).toEqual(['goblin', 'otter', 'boglurker', 'warlord', 'hyena', 'alien', 'pirate', 'titan']);
     for (const role of looked) {
       const spec = NPC_ROLE_SPECS[role];
-      expect(CORE_LOOKS.find((l) => l.id === spec.look)?.whole, role).toBeDefined();
+      // Drawn as its look even when the look is off the roster (the goblin: NPC_KEPT_LOOKS).
+      const look = getLook(spec.look);
+      expect(look.id, role).toBe(spec.look);
+      expect(look.whole, role).toBeDefined();
       expect(spec.creature, role).toBeUndefined();
       if (spec.melee) expect(getWeapon(spec.weapon).kind, role).toBe('melee');
       expect(NPC_LOOKS.some((l) => l.role === role), role).toBe(false);

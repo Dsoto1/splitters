@@ -424,7 +424,7 @@ const CREASE = Math.cos((40 * Math.PI) / 180);
  * how far the rays look (share of the model's size, at least maxError * 1.5; thin cloth over a body wants it short). Returns { pos, nrm, uv, idx, jpeg, from } (unwelded where charts or creases split; `from[i]`: the
  * low mesh's vertex output vertex i was made from, so per-vertex data such as skin weights can follow).
  */
-export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = CREASE, quality = 88, reach: near = 0.03 } = {}) {
+export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = CREASE, quality = 88, reach: near = 0.03, dense = null } = {}) {
   const { pos, idx } = low;
   const T = idx.length / 3;
   // Face normals and areas.
@@ -481,16 +481,26 @@ export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = 
     }
     return { tris, pu, pv, u0, v0, w: u1 - u0, h: v1 - v0, x: 0, y: 0 };
   });
-  // Shelf packing at one scale, shrunk until everything fits.
+  // `dense(t)`: how many times finer than the rest a triangle's chart is laid out (a face: its texels are what a
+  // close look reads; a chart takes the factor most of its area asks for).
+  for (const c of list) {
+    if (!dense) c.k = 1;
+    else {
+      let [on, all] = [0, 0];
+      for (const t of c.tris) [on, all] = [on + (dense(t) > 1 ? area[t] : 0), all + area[t]];
+      c.k = on > all / 2 ? Math.max(...c.tris.map((t) => dense(t))) : 1;
+    }
+  }
+  // Shelf packing at one scale (times each chart's density), shrunk until everything fits.
   const PAD = 2;
-  const total = list.reduce((s, c) => s + c.w * c.h, 0);
+  const total = list.reduce((s, c) => s + c.w * c.h * c.k * c.k, 0);
   let scale = Math.sqrt((0.6 * size * size) / Math.max(total, 1e-12));
-  list.sort((a, b) => b.h - a.h);
+  list.sort((a, b) => b.h * b.k - a.h * a.k);
   for (;;) {
     let [x, y, row] = [0, 0, 0];
     let fits = true;
     for (const c of list) {
-      const [cw, ch] = [Math.ceil(c.w * scale) + PAD * 2 + 1, Math.ceil(c.h * scale) + PAD * 2 + 1];
+      const [cw, ch] = [Math.ceil(c.w * scale * c.k) + PAD * 2 + 1, Math.ceil(c.h * scale * c.k) + PAD * 2 + 1];
       if (x + cw > size) [x, y, row] = [0, y + row, 0];
       if (cw > size || y + ch > size) {
         fits = false;
@@ -536,8 +546,8 @@ export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = 
           outFrom.push(v);
           outNrm.push(nrm[0] / len, nrm[1] / len, nrm[2] / len);
           const [pu, pv] = ch.basis ? planar(pos, v, ch.basis) : [pos[v * 3 + ch.pu], pos[v * 3 + ch.pv]];
-          const tx = ch.x + (pu - ch.u0) * scale;
-          const ty = ch.y + (pv - ch.v0) * scale;
+          const tx = ch.x + (pu - ch.u0) * scale * ch.k;
+          const ty = ch.y + (pv - ch.v0) * scale * ch.k;
           outUv.push(tx / size, ty / size);
         }
         outIdx[t * 3 + c] = out;
@@ -832,6 +842,18 @@ export async function normalJpeg(image, size, quality = 85) {
  * own map is read with the same sign (Babylon draws it the same way).
  */
 const GREEN = 1;
+/**
+ * Which way the DOWNLOAD's normal map green channel points against vertexTangents' bitangent (along increasing v):
+ * the other way from ours. Meshy's maps follow glTF (green toward the texture's top, decreasing v), which Babylon
+ * draws through its own derivative frame when a file has no TANGENT attribute (the download). Read with GREEN, the
+ * download's map was bent upside down into every bake: harmless on a smooth download (a little detail lit from below),
+ * but a low-poly download with flat vertex normals (Meshy's "All Animations" and many texture downloads) gets its
+ * smooth shading from that map alone, so the characters built from them came out in flat facets, faces worst (owner,
+ * 2026-11-03: "distorted faces"; WWII Infantry, Stealth Operative, Biker Gang Girl, Cal, Sgt. Mackie, ...). Checked by
+ * rendering the download, its build with this sign and the old build at the same close framing (agent scratchpad
+ * `charfix/`): with -1 the build's face shades like the download's.
+ */
+const DOWNLOAD_GREEN = -1;
 
 /**
  * A tangent-space normal map for a low-detail mesh, from the high-detail surface it was cut from: every texel a
@@ -901,7 +923,7 @@ export async function bakeNormals(low, hi, { size, reach, hiMap = null, caster =
           if (hiMap) {
             const m = sampleMap(at(hi.UV, 2, 0), at(hi.UV, 2, 1));
             const ht = unit(across([0, 1, 2].map((k) => at(HT, 4, k)), h));
-            const hb = cross3(h, ht).map((v) => v * HT[i0 * 4 + 3] * GREEN);
+            const hb = cross3(h, ht).map((v) => v * HT[i0 * 4 + 3] * DOWNLOAD_GREEN);
             const bentN = [0, 1, 2].map((k) => ht[k] * m[0] + hb[k] * m[1] + h[k] * m[2]);
             if (Math.hypot(...bentN) > 1e-6) {
               h = unit(bentN);
@@ -1062,7 +1084,7 @@ function sphereDirections(count) {
  * Triangles nothing outside can see: from points on each triangle, rays in `rays` directions over the whole sphere
  * (both faces count: Meshy's sheet metal is one-sided) all hit the model again. Returns a flag per triangle.
  */
-export function hiddenTriangles(P, idx, rays = 40) {
+export function hiddenTriangles(P, idx, rays = 40, only = null) {
   const T = idx.length / 3;
   const caster = bvh(P, idx);
   const dirs = sphereDirections(rays);
@@ -1072,6 +1094,7 @@ export function hiddenTriangles(P, idx, rays = 40) {
   // From the centre and from points towards each corner (a sliver showing past an edge still counts as seen).
   const at = [[1 / 3, 1 / 3, 1 / 3], [0.7, 0.15, 0.15], [0.15, 0.7, 0.15], [0.15, 0.15, 0.7]];
   for (let t = 0; t < T; t++) {
+    if (only && !only(t)) continue;
     const [i0, i1, i2] = [idx[t * 3] * 3, idx[t * 3 + 1] * 3, idx[t * 3 + 2] * 3];
     let seen = false;
     for (const w of at) {
@@ -1096,6 +1119,14 @@ export function hiddenTriangles(P, idx, rays = 40) {
  * 2,500) and hands of a few dozen each (Merrow the Wise 110 for both: thin shards in his sleeves).
  */
 export const HEAD_SHARE = 0.12;
+/**
+ * The errors (share of the model's size) a `seamParts` part (the head) is cut at, at most. The body's looser passes
+ * (up to 3-5%: several centimetres) were also the head's, and a head that hadn't reached its share at 1% was cut at
+ * 3-5%: skulls came out pointed, the halves of a face out of line and its charts' borders across the eyes and nose.
+ */
+const FINE_ERRORS = [0.002, 0.004];
+/** The least share of a cut's budget the body (all but its parts) keeps, however many triangles the parts held on to. */
+const BODY_FLOOR = 0.6;
 export const HANDS_SHARE = 0.04;
 
 /**
@@ -1105,7 +1136,7 @@ export const HANDS_SHARE = 0.04;
  * careful passes tried in turn until a part is within 5% of its target; `sloppy`: then a sloppy pass for the
  * rest of the body only (it would crush a face). Returns the new index list.
  */
-export function cutKeeping(indices, positions, target, parts, { errors = [0.008], sloppy = false } = {}) {
+export function cutKeeping(indices, positions, target, parts, { errors = [0.008], sloppy = false, seamParts = [], fineErrors = FINE_ERRORS } = {}) {
   const n = positions.length / 3;
   const lists = [...parts.map(() => []), []];
   for (let i = 0; i < indices.length; i += 3) {
@@ -1129,19 +1160,37 @@ export function cutKeeping(indices, positions, target, parts, { errors = [0.008]
     }
   });
   const none = new Float32Array(n);
+  // `seamParts` (the head): their texture seams locked too (a vertex sharing its position with another: the copies
+  // either side of a seam). Collapses along a seam pulled a chart's curved border straight across the gutter or a
+  // neighbouring chart, and the triangle drew a dark or pale wedge across the face (owner, 2026-11-03: "distorted
+  // faces"; Elder Tomo, Sgt. Mackie, Cal, ...). Locked, each chart keeps its outline and is cut inside it.
+  const seamLock = Uint8Array.from(lock);
+  if (seamParts.length) {
+    const first = new Map();
+    for (let v = 0; v < n; v++) {
+      const k = `${positions[v * 3]},${positions[v * 3 + 1]},${positions[v * 3 + 2]}`;
+      const o = first.get(k);
+      if (o === undefined) first.set(k, v);
+      else seamLock[v] = seamLock[o] = 1;
+    }
+  }
   // Errors are the whole mesh's (a part alone is small, and an error relative to its own size held it far above
   // its target).
   const size = MeshoptSimplifier.getScale(positions, 3);
-  const cut = (part, wanted, allowSloppy) => {
+  const cut = (part, wanted, allowSloppy, seams) => {
     let idx = Uint32Array.from(part);
-    for (const error of errors) {
+    for (const error of seams ? fineErrors : errors) {
       if (idx.length / 3 <= wanted * 1.05) break;
-      [idx] = MeshoptSimplifier.simplifyWithAttributes(idx, positions, 3, none, 1, [0], lock, wanted * 3, error * size, ['ErrorAbsolute']);
+      [idx] = MeshoptSimplifier.simplifyWithAttributes(idx, positions, 3, none, 1, [0], seams ? seamLock : lock, wanted * 3, error * size, ['ErrorAbsolute']);
     }
     if (allowSloppy && idx.length / 3 > wanted * 2) [idx] = MeshoptSimplifier.simplifySloppy(idx, positions, 3, null, wanted * 3, 0.05);
     return idx;
   };
-  const out = lists.map((list, k) => cut(list, want[k], sloppy && k === parts.length));
+  // The parts first; the rest of the body takes what they left of the budget (a seam-locked head stops above its
+  // share), but never less than BODY_FLOOR of it.
+  const out = parts.map((_, k) => cut(lists[k], want[k], false, seamParts.includes(k)));
+  const used = out.reduce((a, o) => a + o.length / 3, 0);
+  out.push(cut(lists[parts.length], Math.max(Math.round(target * BODY_FLOOR), target - used), sloppy, false));
   const all = new Uint32Array(out.reduce((a, b) => a + b.length, 0));
   let at = 0;
   for (const o of out) {

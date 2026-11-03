@@ -286,6 +286,10 @@ function pose(skel, verts, ual, c) {
   const { count } = verts;
   let J = verts.joints;
   let W = verts.weights;
+  // The copies of a vertex either side of a texture seam (one position, two texture coordinates) follow the same
+  // bones: skinned apart, posing pulled them apart, the cut took each side for an open edge, and the face opened along
+  // its seams onto the inside of the head (owner, 2026-11-03: "distorted faces"; Cal's face split down the middle).
+  ({ J, W } = shareSeamWeights(count, J, W, (v) => verts.at(v, J[v * 4])[0]));
   // The vertices where the download stands (its own pose), for the weight cleanup and the tear test below.
   const restAt = (v) => {
     let p = [0, 0, 0];
@@ -587,7 +591,7 @@ async function readUnrigged(file, c, ual) {
       for (const sem of p.listSemantics()) if (!['POSITION', 'NORMAL', 'TEXCOORD_0'].includes(sem)) p.setAttribute(sem, null);
     } else {
       let cut = new Uint32Array(p.getIndices().getArray());
-      if (cut.length / 3 > target * 1.5) cut = cutKeeping(cut, pos, target, parts, { errors: [0.01, 0.03], sloppy: true });
+      if (cut.length / 3 > target * 1.5) cut = cutKeeping(cut, pos, target, parts, { errors: [0.01, 0.03], sloppy: true, seamParts: [0] });
       p.getIndices().setArray(cut);
       compactPrimitive(p);
     }
@@ -762,6 +766,8 @@ const REBAKE_SIZE = 1024;
 const REBAKE_GROW = 60;
 /** How far its rays look for the download's surface (share of the model's size: the cut moves it far less). */
 const REBAKE_REACH = 0.012;
+/** How much finer a rebaked head's charts are laid out than the rest of the body (linear: 2.5 is 6 times the texels). */
+const REBAKE_HEAD_DENSITY = 2.5;
 /** The hands' share of a rebaked cut (straight from a million triangles to the budget, a paw at 4% came out a cone). */
 const REBAKE_HANDS_SHARE = 0.08;
 
@@ -803,12 +809,47 @@ async function rebakeDownload(mesh, image, normalImage, target, parts) {
   const cut = cutKeeping(Uint32Array.from(tris), pos, target, parts.map((p) => ({ share: p.share, inside: (k) => p.inside(first[k], at(k)) })), { errors: [0.004, 0.008] });
   console.log(`  seams closed: ${n} vertices welded to ${first.length}, ${I.length / 3} triangles cut to ${cut.length / 3}`);
   const map = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-  const out = await rebake({ pos, idx: cut }, { P, I, UV }, map, REBAKE_SIZE, 0.008, { grow: REBAKE_GROW, crease: -1, reach: REBAKE_REACH });
+  // The head's charts laid out finer (REBAKE_HEAD_DENSITY): at one density for the whole body a face got a few dozen
+  // texels across and read as a smear up close.
+  const headK = (k) => parts[0].inside(first[k], at(k));
+  const dense = (t) => (headK(cut[t * 3]) + headK(cut[t * 3 + 1]) + headK(cut[t * 3 + 2]) >= 2 ? REBAKE_HEAD_DENSITY : 1);
+  const out = await rebake({ pos, idx: cut }, { P, I, UV }, map, REBAKE_SIZE, 0.008, { grow: REBAKE_GROW, crease: -1, reach: REBAKE_REACH, dense });
   const hiMap = normalImage ? await sharp(Buffer.from(normalImage)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
   let [lo, hi] = [Infinity, -Infinity];
   for (let v = 1; v < P.length; v += 3) [lo, hi] = [Math.min(lo, P[v]), Math.max(hi, P[v])];
   const { png } = await bakeNormals({ P: out.pos, N: out.nrm, UV: out.uv, idx: out.idx }, { P, N, UV, I }, { size: REBAKE_SIZE, reach: (hi - lo) * REBAKE_REACH * 1.5, hiMap });
   return { P: out.pos, N: out.nrm, UV: out.uv, I: out.idx, from: Uint32Array.from(out.from, (k) => first[k]), colour: out.jpeg, normal: png };
+}
+
+/** Every group of vertices at one position given the same skin: their weights summed per joint, the four largest kept. */
+function shareSeamWeights(count, J, W, at) {
+  const groups = new Map();
+  for (let v = 0; v < count; v++) {
+    const p = at(v);
+    const key = `${p[0].toFixed(6)},${p[1].toFixed(6)},${p[2].toFixed(6)}`;
+    const g = groups.get(key);
+    if (g) g.push(v);
+    else groups.set(key, [v]);
+  }
+  const J2 = J.slice();
+  const W2 = Float32Array.from(W);
+  let shared = 0;
+  for (const g of groups.values()) {
+    if (g.length < 2) continue;
+    const sum = new Map();
+    for (const v of g) for (let k = 0; k < 4; k++) if (W[v * 4 + k] > 0) sum.set(J[v * 4 + k], (sum.get(J[v * 4 + k]) ?? 0) + W[v * 4 + k]);
+    const top = [...sum].sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const total = top.reduce((a, [, w]) => a + w, 0) || 1;
+    for (const v of g) {
+      for (let k = 0; k < 4; k++) {
+        J2[v * 4 + k] = top[k]?.[0] ?? 0;
+        W2[v * 4 + k] = top[k] ? top[k][1] / total : 0;
+      }
+    }
+    shared += g.length;
+  }
+  console.log(`  seams: ${shared} vertices on texture seams share their skin`);
+  return { J: J2, W: W2 };
 }
 
 function triangles(doc) {
@@ -956,7 +997,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
       // (`fixes.handsShare`: more, where cuffs the skinning left on the hands took their share: King Aldric's.)
       { inside: (v) => handJoints.has(majorOf(v)), share: c.handsShare ?? HANDS_SHARE },
     ];
-    const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008] });
+    const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008], seamParts: [0] });
     prim.getIndices().setArray(cut);
     compactPrimitive(prim);
   }
