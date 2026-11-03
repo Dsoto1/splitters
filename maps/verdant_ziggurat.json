@@ -7,7 +7,7 @@
     "author": "Tile Trigger",
     "description": "A lost temple in a misty jungle clearing: a stepped temple of carved relief stone with its shrine and golden idol on top, Mayan guardians at its gateway, an overgrown court before it and the jungle closing in over ruined walls. Caves to the west where the roof comes down behind you; a rock ridge with vines up to a sniper walk over the waterfall; a river crossed by a sagging rope bridge, a stone slab bridge and stepping stones; a giant tree with a zipline from its lookout down to the temple; a watch tower in the south-east. Grapples at both ends.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-11-03T16:01:03.633Z",
+    "updatedAt": "2026-11-03T16:53:44.179Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 4,
@@ -24,6 +24,28 @@
     "levelHeight": 4,
     "theme": "core.jungle_temple",
     "tiles": [
+      {
+        "id": "tile_001",
+        "tile": "jungle.ziggurat",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.mossy_stone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.carved_stone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        }
+      },
       {
         "id": "tile_002",
         "tile": "jungle.overgrown_ruin",
@@ -104,7 +126,7 @@
       },
       {
         "id": "tile_008",
-        "tile": "jungle.overgrown_ruin",
+        "tile": "jungle.ruined_court",
         "x": -1,
         "y": 3,
         "z": 0,
@@ -575,94 +597,6 @@
           "0,0,0:E": "broken",
           "0,0,0:N": "broken"
         }
-      },
-      {
-        "id": "tile_dmxokrxrmg",
-        "tile": "jungle.terrace",
-        "x": 0,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_jo92buckom",
-        "tile": "jungle.terrace",
-        "x": 2,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_1b7vb2ebxt",
-        "tile": "jungle.terrace",
-        "x": 0,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ddrdoryh7l",
-        "tile": "jungle.terrace",
-        "x": 2,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_w42hr4qujz",
-        "tile": "jungle.terrace",
-        "x": 0,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_6ctcqgmocs",
-        "tile": "jungle.terrace",
-        "x": 1,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_6ac1tuagd0",
-        "tile": "jungle.terrace",
-        "x": 2,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_zpwk35dqcp",
-        "tile": "jungle.terrace_stair",
-        "x": 1,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_5ts8ky0uqr",
-        "tile": "jungle.terrace",
-        "x": 0,
-        "y": 3,
-        "z": 1,
-        "rotation": 0
-      },
-      {
-        "id": "tile_t7qf6k4zjn",
-        "tile": "jungle.terrace",
-        "x": 2,
-        "y": 3,
-        "z": 1,
-        "rotation": 0
-      },
-      {
-        "id": "tile_2jqidvnp6y",
-        "tile": "jungle.shrine",
-        "x": 1,
-        "y": 3,
-        "z": 1,
-        "rotation": 0
       }
     ]
   },
@@ -1320,13 +1254,13 @@
     {
       "id": "vines_temple",
       "position": [
-        20.15,
+        19.15,
         0,
         16
       ],
       "kind": "ladder",
       "yaw": 1.5707963267948966,
-      "height": 4,
+      "height": 2,
       "width": 1.2,
       "style": "vines"
     },
@@ -1415,9 +1349,9 @@
     {
       "id": "prop_062",
       "position": [
-        0,
         8,
-        24
+        6,
+        20.8
       ],
       "kind": "prop",
       "model": "prop.jg_gold_idol",
@@ -1429,9 +1363,9 @@
     {
       "id": "prop_063",
       "position": [
-        -2.5,
-        4,
-        18.5
+        4.6,
+        6,
+        14.4
       ],
       "kind": "prop",
       "model": "prop.jg_brazier",
@@ -1443,9 +1377,9 @@
     {
       "id": "prop_064",
       "position": [
-        18.5,
-        4,
-        18.5
+        11.4,
+        6,
+        14.4
       ],
       "kind": "prop",
       "model": "prop.jg_brazier",
@@ -1933,9 +1867,9 @@
     {
       "id": "light_099",
       "position": [
-        -2.5,
-        5.9,
-        18.5
+        4.6,
+        7.9,
+        14.4
       ],
       "kind": "light",
       "yaw": 0,
@@ -1947,9 +1881,9 @@
     {
       "id": "light_100",
       "position": [
-        18.5,
-        5.9,
-        18.5
+        11.4,
+        7.9,
+        14.4
       ],
       "kind": "light",
       "yaw": 0,
@@ -1990,7 +1924,7 @@
       "id": "light_103",
       "position": [
         8,
-        10.5,
+        8.5,
         24
       ],
       "kind": "light",
@@ -2302,8 +2236,8 @@
       "id": "pickup_130",
       "position": [
         8,
-        4.2,
-        25
+        6,
+        19.2
       ],
       "kind": "pickup",
       "item": "core.weapon_launcher",
@@ -2389,9 +2323,9 @@
     {
       "id": "pickup_138",
       "position": [
-        0,
-        4,
-        16
+        8,
+        6,
+        14
       ],
       "kind": "pickup",
       "item": "core.armor_large",
@@ -2467,8 +2401,8 @@
       "id": "hill_145",
       "position": [
         8,
-        4,
-        13.5
+        6,
+        14.5
       ],
       "kind": "hill",
       "radius": 3
@@ -2656,7 +2590,7 @@
       ],
       "kind": "zipline",
       "end": [
-        -23.4,
+        -23.799999999999997,
         -3.5,
         0
       ],
@@ -2697,8 +2631,8 @@
       "id": "prop_amleo2l0kj",
       "position": [
         -1.5,
-        4,
-        5.5
+        2,
+        6.5
       ],
       "kind": "prop",
       "model": "prop.jt_fire_bowl",
@@ -2711,8 +2645,8 @@
       "id": "prop_w9sdjfv9q9",
       "position": [
         17.5,
-        4,
-        5.5
+        2,
+        6.5
       ],
       "kind": "prop",
       "model": "prop.jt_fire_bowl",
@@ -3150,56 +3084,172 @@
       "respawnSeconds": null
     },
     {
-      "id": "ladder_mfl0mwrrnn",
-      "kind": "ladder",
+      "id": "prop_4np7umrgol",
+      "kind": "prop",
       "position": [
-        0,
-        4,
-        19.85
+        3.8,
+        6,
+        22
       ],
+      "model": "prop.temple_monk_statue",
       "yaw": 3.142,
-      "height": 4,
-      "width": 1.2,
-      "style": "vines"
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "ladder_ypl82jhglz",
-      "kind": "ladder",
+      "id": "prop_7bx3655tha",
+      "kind": "prop",
       "position": [
-        16,
-        4,
-        19.85
+        12.2,
+        6,
+        22
       ],
+      "model": "prop.temple_monk_statue",
       "yaw": 3.142,
-      "height": 4,
-      "width": 1.2,
-      "style": "vines"
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "ladder_amleo2l0kj",
-      "kind": "ladder",
+      "id": "prop_n3v86bkc4j",
+      "kind": "prop",
       "position": [
-        -4.15,
-        0,
+        5.2,
+        6,
+        11.2
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_st8bd02gw4",
+      "kind": "prop",
+      "position": [
+        10.8,
+        6,
+        11.2
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_miejf7xudn",
+      "kind": "prop",
+      "position": [
+        -2.6,
+        2,
+        26.4
+      ],
+      "model": "prop.hanging_moss",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_u4y61xf504",
+      "kind": "prop",
+      "position": [
+        18.6,
+        2,
+        26.4
+      ],
+      "model": "prop.hanging_moss",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_eo5v8jcjg6",
+      "kind": "prop",
+      "position": [
+        0.5,
+        4,
+        25.5
+      ],
+      "model": "prop.jg_liana",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4avlgmpksl",
+      "kind": "prop",
+      "position": [
+        15.5,
+        4,
+        25.5
+      ],
+      "model": "prop.jg_liana",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yftb1t9gw9",
+      "kind": "prop",
+      "position": [
+        -3.4,
+        2,
+        18
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_k22sqpe49m",
+      "kind": "prop",
+      "position": [
+        18.4,
+        2,
         12
       ],
-      "yaw": -1.571,
-      "height": 4,
-      "width": 1.2,
-      "style": "vines"
+      "model": "prop.jt_plant_cluster",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "ladder_odkmv3mx3b",
-      "kind": "ladder",
+      "id": "prop_efvfoqi6bc",
+      "kind": "prop",
       "position": [
-        -4.15,
-        0,
-        24
+        6.2,
+        0.8,
+        4.3
       ],
-      "yaw": -1.571,
-      "height": 8,
-      "width": 1.2,
-      "style": "vines"
+      "model": "prop.jt_wall_torch",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3x6wz52cmk",
+      "kind": "prop",
+      "position": [
+        9.8,
+        0.8,
+        4.3
+      ],
+      "model": "prop.jt_wall_torch",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
