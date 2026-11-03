@@ -16,7 +16,8 @@ made only on a commit that passed CI on a check branch.
 - **Lightning looks like lightning.** The Arc Caster's chain, the Arc Turret's violet lock and electric fences now throw crackling bolts (Electric FX) along each jump with a burst where they land, instead of thin jagged lines; a shock trap going off crackles. The Arc Turret's wind-up is a ball of violet lightning over its orb (same size and timing as before). Damage, timing and range are unchanged.
 - **Fire burns.** Burning patches (molotovs, the flamethrower, flares, lit oil), burning vehicles and smouldering wrecks, flares and flame traps carry stylised flames (Flame FX) in place of the orange cones and puffs.
 - **Gas and smoke.** Toxic gas rolls as a glowing green cloud over its (now fainter) dome, and badly damaged, burning or wrecked vehicles trail a column of pack smoke (Poison VFX, Smoke VFX).
-- Low graphics plays fewer of these at once (and thinner fires); far away, or when many are going, the old plain look stands in.
+- **Fire props burn too.** Braziers, fire bowls, hanging braziers, temple altars, fire stands, the forge, wall torches, torch stands, campfires, wood fires, the writing desk's candle and the graveyard lantern now carry Flame FX flames (the Step Temple's fire baskets in green, matching their green fire) in place of the models' simple flame shapes. Torches and candles use the pack's smaller candle flame; on maps full of torches only the nearest are drawn, after every fire that matters in a fight.
+- Low graphics plays fewer of these at once (and thinner fires); far away, or when many are going, the old plain look stands in. On low graphics fire props keep their own flames.
 
 **Pickups and props**
 - **Large health has its own model**: a battered medical bag with a red cross, in place of the bigger copy of the small medkit. It heals the same as before (50, back in 25 s); small health keeps the medkit.
