@@ -23,6 +23,9 @@ made only on a commit that passed CI on a check branch.
 - **Rifle rounds have a model**: an olive ammo box instead of the striped block. The other ammo pickups (general ammo, light rounds, shells, sniper rounds, explosives, energy cells, fuel and chem canisters) keep the striped block in their colour.
 - **New prop: WWII Ammo Crate** (MapMaker → Crates & Barrels, and the Military style pack): two stacked wooden ammo crates, 0.9 m tall. It blocks players and shots and breaks like the other crates.
 
+**Infrastructure**
+- Faster CI: a commit whose code matches one already green on a check branch (only docs differ) isn't tested again; `tools/ci/train.mjs` lands several green branches as one candidate; a change to the match renderer or a content manifest runs only the browser tests that exercise it.
+
 ## 0.7.0 (2026-11-03)
 
 **Turrets, weapons and props**
