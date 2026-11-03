@@ -105,7 +105,7 @@ export const CORE_PROPS: readonly PropDefinition[] = [
   {id: 'prop.lightpost_double', file: 'props/lightpost_double.glb', displayName: 'Double Lamp Post', category: 'Gothic', size: [0.495,3,1.721], collision: [0.495,3,0.5]},
   {id: 'prop.lantern', file: 'props/lantern.glb', displayName: 'Lantern', category: 'Gothic', size: [0.371,0.6,0.371], collision: null, flame: {fx: 'candle', at: [0,0.25,0], size: 0.1}},
   {id: 'prop.candles', file: 'props/candles.glb', displayName: 'Candles', category: 'Gothic', size: [0.51,0.4,0.533], collision: null},
-  {id: 'prop.fire_basket', file: 'props/fire_basket.glb', displayName: 'Fire Basket', category: 'Gothic', size: [2.979,1.2,2.979], collision: [2.979,1.2,2.979], breakable: {health: 30, debris: '#7a8088', blast: {radius: 3, damage: 50, edge: 8}}, flame: {fx: 'brazier', at: [0,0.55,0], size: 1.1}},
+  {id: 'prop.fire_basket', file: 'props/fire_basket.glb', displayName: 'Fire Basket', category: 'Gothic', size: [2.979,1.2,2.979], collision: [2.979,1.2,2.979], breakable: {health: 30, debris: '#7a8088', blast: {radius: 3, damage: 50, edge: 8}}, flame: {fx: 'brazier', at: [0,0.67,0], size: 1.3}},
   {id: 'prop.urn', file: 'props/urn.glb', displayName: 'Urn', category: 'Gothic', size: [0.551,0.8,0.551], collision: [0.551,0.8,0.551], breakable: {health: 15, debris: '#b06a40'}},
   {id: 'prop.pumpkin', file: 'props/pumpkin.glb', displayName: 'Carved Pumpkin', category: 'Gothic', size: [0.529,0.45,0.529], collision: null},
   {id: 'prop.hay_bale', file: 'props/hay_bale.glb', displayName: 'Hay Bale', category: 'Gothic', size: [1.37,0.8,0.908], collision: [1.37,0.8,0.908], breakable: {health: 30, debris: '#d8b860'}},
