@@ -141,7 +141,7 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
     }
   }
   // A boundary (or terrain) reaching well round the built part (open ground beyond a town) would shrink
-  // the plan to a speck: frame what's built and placed instead when it fills much less of the area.
+  // the plan to a speck: frame what's built and placed instead when it fills noticeably less of the area.
   {
     let [bx0, bz0, bx1, bz1] = [Infinity, Infinity, -Infinity, -Infinity];
     const grow = (x: number, z: number) => {
@@ -156,8 +156,8 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
       grow(b.max[0], b.max[2]);
     }
     for (const e of map.entities) if (e.kind === 'spawn' || e.kind === 'pickup' || e.kind === 'flag' || e.kind === 'hill' || e.kind === 'encounter') grow(e.position[0], e.position[2]);
-    [bx0, bz0, bx1, bz1] = [Math.max(x0, bx0 - 4), Math.max(z0, bz0 - 4), Math.min(x1, bx1 + 4), Math.min(z1, bz1 + 4)];
-    if (bx1 - bx0 > 8 && bz1 - bz0 > 8 && (bx1 - bx0) * (bz1 - bz0) < 0.6 * (x1 - x0) * (z1 - z0)) [x0, z0, x1, z1] = [bx0, bz0, bx1, bz1];
+    [bx0, bz0, bx1, bz1] = [Math.max(x0, bx0 - 3), Math.max(z0, bz0 - 3), Math.min(x1, bx1 + 3), Math.min(z1, bz1 + 3)];
+    if (bx1 - bx0 > 8 && bz1 - bz0 > 8 && (bx1 - bx0) * (bz1 - bz0) < 0.85 * (x1 - x0) * (z1 - z0)) [x0, z0, x1, z1] = [bx0, bz0, bx1, bz1];
   }
   if (!Number.isFinite(x0) || x1 - x0 < 1 || z1 - z0 < 1) [x0, z0, x1, z1] = [-8, -8, 8, 8];
   // Markers scale with the canvas, so small list thumbnails stay readable.

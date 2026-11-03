@@ -1,4 +1,4 @@
-# Handoff: where Tile Trigger stands (2026-10-30, afternoon)
+# Handoff: where Tile Trigger stands (2026-11-03)
 
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
@@ -57,6 +57,81 @@ bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agen
   pads eagle_spires (210 s timeout) failed at load 20-40, as in earlier sessions; e2e (`CI=1`) characters PASS
   (1,677 s), visual PASS (menu 0.01 %). ci:plan: content paths, full suite: needs a `check/` run before main.
   Not pushed: the lead asked that the face rebuilds not go towards main until they match the downloads.
+
+### Queued (owner-approved, 2026-11-03): content scalability, see docs/CONTENT_SCALABILITY.md
+The owner approved every pick in docs/CONTENT_SCALABILITY.md. Not started. Order:
+1. Get the menu's first JS off its 800 KB gzip ceiling: pack tiles, the prop table and STYLE_PACKS load with a
+   match or MapMaker, not the menu.
+2. Per-pack prop files and palette atlases, plus one `pnpm content:rebuild` command, so parallel branches stop
+   colliding in generated files.
+
+Do 1 and 2 before the remaining style packs (Desert City, Jungle). Then:
+3. Weapons, throwables, classes and abilities as data. This adds explicit network codes and the Workbench fields.
+   Start after the Snow pack and the Market Town/dropship work are on main.
+4. Vehicles and NPC roles as data.
+5. Pickups as data.
+6. Materials as data.
+7. Tiles as data, as the base of the MapMaker overhaul (scope it with the owner first).
+
+Each step goes on its own `wip/` branch, green on a `check/` branch, then onto main.
+
+Queue (owner, 2026-11-03): **first** the CI pipeline fixes (accept a commit whose code matches an already-green
+check commit when only docs differ; a batch-landing script that merges waiting green branches into one candidate;
+finer e2e/unit routing: `view.ts`/`content/` stop running all flows, map JSON runs the tests that read maps), **then**
+content scalability 1 → 7 above.
+
+**Planned after content scalability (owner, 2026-11-03; not before, in case the structure changes):** core and
+experimental tiers for maps and characters, promoted by the owner from the Control Center Workbench (`tier` fields in
+the content JSON; `.control-center/workbench.json` collections, dashboard docs/WORKBENCH.md), with quality gates
+(grip audit, portrait and face checks, map card not facing a wall, perf budget, spawn and route reachability, a
+bots-only match) that block promotion to core and only report for experimental.
+
+### Map removals round 2 and card pictures (`wip/map-removals-2`, agent, 2026-11-03; not merged; from main ef2c103)
+- Deleted (file, picture, inspirations, rotation entries): after_hours, clockwork, fallout_lane, ridge_camp, stonewatch_keep.
+  Retired (RETIRED_MAPS, kept as fixtures): blackout (co-op mission test in npc.test.ts), cedar_lane (style pack 08 demo and
+  tests), glacier_line (editor mover-group test). rotation.test.ts uses Overhang in its fake lookup. The host-controls e2e
+  already used atomic_court, so no e2e change. Removed glacier_line/clockwork from the shipped rotation presets.
+- `tools/content/capture-map-shots.mjs`: views now look toward the busy area (middle 80% of spawns/pickups/objectives), score
+  places of interest in the cone, penalise walls within 8 m low in frame, and add aerial three-quarter views framed to the busy
+  area. Regenerated citadel, silo_complex, reactor, step_temple. frost_basin picks the same high overview (terrain material
+  looks olive in the render): the owner's call, not changed. mapPlan.ts crops to the built area when it fills <85% (was 60%), 3 m margin.
+- Note: pads.test.ts (eagle_spires, frost_basin) timed out at 180 s under machine load in a full run; they are slow, not broken.
+
+### FX pass: the purchased Binbun packs (`wip/fx-pass`, agent, 2026-11-03; not merged; from main a2fd44b = v0.7.0)
+Owner's request: put the bought FX packs to use (full licence, "purchased by the owner"). docs/PHYSICS_FX.md "Pack
+effects" is the guide; docs/PERF_96.md "Pack effects pass" has the numbers. Raw packs stay outside the repo:
+zips in `/home/user/fx-packs/drive-2026-11-01/fx/`, extracted in `extracted-2026-11-01/` (Vol. 2) and
+`extracted-2026-11-03/` (Vol. 1, this session), links prepare-vfx reads in `/home/user/fx-packs/links-full/`.
+- **Shared support** (godotVfx.ts, prepare-vfx.mjs): any pack in content/vfx.json (`dir`, `file`) exports; per-pack
+  shader ports (`<PackDir>/<shader>`); lasting effects (`start` → handle: move/setLevel/stop, fade in/out);
+  time scaling, part filters, stretched tubes, nested nodes, draw_pass_2, radial velocity, velocity limit, sampled
+  textures, torus meshes; caps by graphics quality (low 6/3/4 one-shots/minor/lasting, medium 12/7/10, high
+  16/10/16; low thins lasting particles). Cylinders now use Godot's UVs (side in v 0..0.5: explosion rings and
+  streaks draw as the packs meant). Four-point stars with no smoothness are hard-edged (they were squares).
+  `game/lastingFx.ts`: owners ask per frame by id; the nearest 70 m win the places, the rest keep their plain look.
+- **Electric FX** (CC0 licence file): Arc Caster / Arc Turret / fence arcs are pack bolts per jump (map.arcs; 2.5-4x
+  speed for the 0.1-0.15 s between arcs; plain lines for any jump not drawn), crackle where the last lands; the
+  Arc Turret's charge is a ball of lightning over the orb (orb kept at 0.35 alpha so the tell still reads; same
+  size and timing; `chargeOrb()` reports the drawn size); `trap.shock` crackles.
+- **Flame FX** (CC0): fires on burning patches (3-4 per patch; tongues where none drawn), burning vehicles and
+  wrecks (flame puffs only where none drawn), flares, flame-trap nozzles.
+- **Poison VFX / Smoke VFX** (Vol. 1, no licence file: `LicenseRef-Purchased`, a tier build.mjs now accepts; licence
+  notes in `assets-src/binbun-*-vfx/License.txt`): toxic gas cloud over its fainter dome; pack smoke column on
+  heavy/burning/wrecked vehicles (black puffs past 70 m or when not drawn).
+- **Not done** (and why): smoke grenades (no such weapon), burning barrels (barrels explode, they don't burn),
+  acid (none; `goo` is a slowing goo); flamethrower puffs (each puff lives 0.55 s, ~11 per user: too many lasting
+  effects; needs a cheap shared-material puff); Beam/Magic Orbs/Projectiles (railgun, Singularity vortex, bolts:
+  the beam pack is driven by its controller script's length/radius, not ported yet); Status FX (11 shaders);
+  **Loot** glows: shaders and the torus ported, map entries removed: their MeshInstance parts were active but
+  drew nothing as lasting effects (even with a StandardMaterial swapped in), cause not found; check whether
+  lasting effects' mesh parts draw at all (fire `Core`, the poison cloud's `Glow` may be affected too) before
+  wiring loot; Portal VFX, Ice/Frosted Glass, Battle/Dark/Elemental Magic not started.
+- Evidence (agent scratchpad `fx/`): `electric/strip_arc.jpg`, `strip_sentryarc.jpg`, `strip_charge.jpg`,
+  `strip_fence.jpg`, `zoom_charge.png`; `flame/strip_fire.jpg`, `after_fire_03.png`; `smoke/strip_smoke.jpg`;
+  `loot/` (the failed glow). Harness: `fx/../tools/shot.mjs` (frame clock: 1/60 s per drawn frame, bots held off).
+- Checks: typecheck; test:changed 12 pass (fxMap 8 incl. "every mapped part's shader is ported", lastingFx 3);
+  content OK; perf:budget pass (above); menu 837.5 kB gzip (unchanged). E2E (`CI=1`): physicsfx PASS (273 s), arsenal PASS (454 s), vehicles PASS (289 s, the Arc Turret checks), visual PASS (no baseline change; canyon 0.1 %). ci:plan: content and
+  assets-src paths → full suite (38 flows): needs a `check/` run before main.
 
 ### Pickup models: medical bag, rifle ammo box, WWII Ammo Crate (`wip/pickup-models`, agent, 2026-11-03; not merged; from main a2fd44b)
 Owner's three Drive models (Meshy community, CC0 per the owner; downloads in `/home/user/meshy-drive/drive-2026-11-03-pickups`,

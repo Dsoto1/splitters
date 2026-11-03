@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 25,
   "metadata": {
     "id": "verdant_ziggurat",
     "name": "Verdant Ziggurat",
     "author": "Tile Trigger",
-    "description": "A lost temple in a jungle clearing, built from the Jungle Ruins style pack: a stepped temple with its shrine and golden idol on top, an overgrown court and a temple gateway before it, caves to the west where the roof comes down behind you, a rock ridge with vines up to a sniper walk over the waterfall and its hidden recess, a river with a sagging rope bridge (two of its planks are rotten) and a giant tree with stairs spiralling up to a lookout.",
+    "description": "A lost temple in a misty jungle clearing: a stepped temple of carved relief stone with its shrine and golden idol on top, Mayan guardians at its gateway, an overgrown court before it and the jungle closing in over ruined walls. Caves to the west where the roof comes down behind you; a rock ridge with vines up to a sniper walk over the waterfall; a river crossed by a sagging rope bridge, a stone slab bridge and stepping stones; a giant tree with a zipline from its lookout down to the temple; a watch tower in the south-east. Grapples at both ends.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-03T16:53:44.179Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 4,
@@ -30,23 +30,49 @@
         "x": 0,
         "y": 1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.mossy_stone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.carved_stone",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_002",
-        "tile": "jungle.ruined_court",
+        "tile": "jungle.overgrown_ruin",
         "x": 0,
         "y": -1,
         "z": 0,
-        "rotation": 0
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.mossy_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_003",
-        "tile": "jungle.ruined_court",
+        "tile": "jungle.overgrown_ruin",
         "x": 2,
         "y": -1,
         "z": 0,
-        "rotation": 0
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.mossy_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_004",
@@ -58,11 +84,17 @@
       },
       {
         "id": "tile_005",
-        "tile": "jungle.ruined_court",
+        "tile": "jungle.overgrown_ruin",
         "x": 0,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.mossy_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_006",
@@ -70,15 +102,27 @@
         "x": 1,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.mossy_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_007",
-        "tile": "jungle.ruined_court",
+        "tile": "jungle.overgrown_ruin",
         "x": 2,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.mossy_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_008",
@@ -86,7 +130,13 @@
         "x": -1,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.mossy_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_009",
@@ -222,7 +272,17 @@
         "x": 3,
         "y": -1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_026",
@@ -230,7 +290,17 @@
         "x": 3,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_027",
@@ -238,7 +308,17 @@
         "x": 3,
         "y": 1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_028",
@@ -246,7 +326,17 @@
         "x": 3,
         "y": 2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_029",
@@ -254,7 +344,17 @@
         "x": 3,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_030",
@@ -262,7 +362,20 @@
         "x": 5,
         "y": -1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "broken"
+        }
       },
       {
         "id": "tile_031",
@@ -270,7 +383,20 @@
         "x": 5,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "broken"
+        }
       },
       {
         "id": "tile_032",
@@ -278,7 +404,20 @@
         "x": 5,
         "y": 1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "broken"
+        }
       },
       {
         "id": "tile_033",
@@ -286,7 +425,20 @@
         "x": 5,
         "y": 3,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "broken"
+        }
       },
       {
         "id": "tile_034",
@@ -302,7 +454,21 @@
         "x": -1,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "broken",
+          "0,0,0:W": "broken"
+        }
       },
       {
         "id": "tile_036",
@@ -310,7 +476,20 @@
         "x": 0,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "broken"
+        }
       },
       {
         "id": "tile_037",
@@ -318,7 +497,20 @@
         "x": 1,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "broken"
+        }
       },
       {
         "id": "tile_038",
@@ -326,7 +518,20 @@
         "x": 2,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "broken"
+        }
       },
       {
         "id": "tile_039",
@@ -334,15 +539,42 @@
         "x": 3,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "broken"
+        }
       },
       {
         "id": "tile_040",
-        "tile": "core.yard",
+        "tile": "jungle.watch_tower",
         "x": 5,
         "y": -2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:S": "broken",
+          "0,0,0:E": "broken"
+        }
       },
       {
         "id": "tile_041",
@@ -350,7 +582,21 @@
         "x": 5,
         "y": 4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_forest",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_jungle_rock",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "broken",
+          "0,0,0:N": "broken"
+        }
       }
     ]
   },
@@ -1802,9 +2048,9 @@
     {
       "id": "spawn_113",
       "position": [
-        40,
+        38,
         0,
-        -16
+        -6
       ],
       "kind": "spawn",
       "yaw": 0,
@@ -2193,6 +2439,817 @@
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
+    },
+    {
+      "id": "pickup_dmxokrxrmg",
+      "position": [
+        37.5,
+        0,
+        -12.6
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "block_1b7vb2ebxt",
+      "position": [
+        32,
+        -0.25,
+        -12
+      ],
+      "kind": "block",
+      "size": [
+        8.4,
+        0.5,
+        3.2
+      ],
+      "yaw": 0,
+      "material": "core.carved_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_w42hr4qujz",
+      "position": [
+        29.6,
+        -0.9,
+        25
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.mossy_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_6ac1tuagd0",
+      "position": [
+        32,
+        -0.9,
+        25.6
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.mossy_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_5ts8ky0uqr",
+      "position": [
+        34.4,
+        -0.9,
+        25
+      ],
+      "kind": "block",
+      "size": [
+        1.6,
+        1,
+        1.6
+      ],
+      "yaw": 0,
+      "material": "core.mossy_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_t7qf6k4zjn",
+      "position": [
+        26.8,
+        0,
+        -14.2
+      ],
+      "kind": "prop",
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2jqidvnp6y",
+      "position": [
+        26.8,
+        0,
+        -9.8
+      ],
+      "kind": "prop",
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_05ldagivf5",
+      "position": [
+        37.2,
+        0,
+        -14.6
+      ],
+      "kind": "prop",
+      "model": "prop.jt_obelisk",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "zipline_x0rc1yotvd",
+      "position": [
+        38.4,
+        7.5,
+        16
+      ],
+      "kind": "zipline",
+      "end": [
+        -23.799999999999997,
+        -3.5,
+        0
+      ],
+      "height": 3.6,
+      "speed": 12,
+      "twoWay": false,
+      "sag": 0.03
+    },
+    {
+      "id": "prop_ypl82jhglz",
+      "position": [
+        3,
+        0,
+        -12.8
+      ],
+      "kind": "prop",
+      "model": "prop.jt_statue_large",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7nlyaxevjz",
+      "position": [
+        13,
+        0,
+        -12.8
+      ],
+      "kind": "prop",
+      "model": "prop.jt_statue_large",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_amleo2l0kj",
+      "position": [
+        -1.5,
+        2,
+        6.5
+      ],
+      "kind": "prop",
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w9sdjfv9q9",
+      "position": [
+        17.5,
+        2,
+        6.5
+      ],
+      "kind": "prop",
+      "model": "prop.jt_fire_bowl",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_odkmv3mx3b",
+      "position": [
+        1.5,
+        4,
+        9.5
+      ],
+      "kind": "prop",
+      "model": "prop.jt_statue_small",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x9abza46ly",
+      "position": [
+        14.5,
+        4,
+        9.5
+      ],
+      "kind": "prop",
+      "model": "prop.jt_statue_small",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_e2hxfyh75y",
+      "position": [
+        -2,
+        0,
+        30.5
+      ],
+      "kind": "prop",
+      "model": "prop.temple_spear_statue",
+      "yaw": 1.571,
+      "scale": 0.9,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_q1y59c4csi",
+      "position": [
+        6.2,
+        0,
+        -12.2
+      ],
+      "kind": "prop",
+      "model": "prop.jt_banner_teal",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_gp7msgjmhm",
+      "position": [
+        9.8,
+        0,
+        -12.2
+      ],
+      "kind": "prop",
+      "model": "prop.jt_banner_teal",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_26cjl0x171",
+      "position": [
+        -11,
+        0,
+        -19.2
+      ],
+      "kind": "prop",
+      "model": "prop.jt_tree_trunk",
+      "yaw": 2.321,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_epqtnvm8q3",
+      "position": [
+        -6,
+        0,
+        -19.2
+      ],
+      "kind": "prop",
+      "model": "prop.nt_palm_tall",
+      "yaw": -0.733,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xo4odrco3m",
+      "position": [
+        -3,
+        0,
+        -19.2
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 1.204,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_kkfpi0eazr",
+      "position": [
+        3.5,
+        0,
+        -19.2
+      ],
+      "kind": "prop",
+      "model": "prop.mn_banana",
+      "yaw": -0.873,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_y07fpt0nwn",
+      "position": [
+        12.5,
+        0,
+        -19.2
+      ],
+      "kind": "prop",
+      "model": "prop.nt_palm_curved",
+      "yaw": -1.344,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0af7pnzsw8",
+      "position": [
+        19,
+        0,
+        -19.2
+      ],
+      "kind": "prop",
+      "model": "prop.jt_tree_trunk",
+      "yaw": 2.845,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xvlpf0046m",
+      "position": [
+        22,
+        0,
+        -19.2
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": -1.501,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_obwnq2ue59",
+      "position": [
+        28,
+        0,
+        -19.2
+      ],
+      "kind": "prop",
+      "model": "prop.mn_fern",
+      "yaw": 2.374,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_tjjq2xgvb7",
+      "position": [
+        43.3,
+        0,
+        -10
+      ],
+      "kind": "prop",
+      "model": "prop.nt_palm_tall",
+      "yaw": 0.175,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7e9xd33y98",
+      "position": [
+        43.3,
+        0,
+        -2
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 1.292,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_u5uhixt8oj",
+      "position": [
+        43.3,
+        0,
+        3
+      ],
+      "kind": "prop",
+      "model": "prop.mn_banana",
+      "yaw": -0.367,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_e1i8otvjc9",
+      "position": [
+        43.3,
+        0,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.jt_tree_trunk",
+      "yaw": -1.1,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_9w07a2nv37",
+      "position": [
+        43.3,
+        0,
+        23
+      ],
+      "kind": "prop",
+      "model": "prop.nt_palm_curved",
+      "yaw": -0.716,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1386hhpdg3",
+      "position": [
+        43.3,
+        0,
+        27.5
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": -2.827,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mc5vpcweqh",
+      "position": [
+        43.3,
+        0,
+        34.5
+      ],
+      "kind": "prop",
+      "model": "prop.jt_tree_trunk",
+      "yaw": -2.635,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_g63cql0iu5",
+      "position": [
+        -11.5,
+        0,
+        -19
+      ],
+      "kind": "prop",
+      "model": "prop.jg_bamboo",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6lmfgc3cff",
+      "position": [
+        -11.5,
+        0,
+        33
+      ],
+      "kind": "prop",
+      "model": "prop.nt_palm_tall",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0w3jql50ed",
+      "position": [
+        -11,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.jg_giant_fern",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7z14fgs7s3",
+      "position": [
+        24,
+        0,
+        -2
+      ],
+      "kind": "prop",
+      "model": "prop.jt_tree_root_arch",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_89yclntz5q",
+      "position": [
+        40,
+        0,
+        2
+      ],
+      "kind": "prop",
+      "model": "prop.nt_log_moss",
+      "yaw": 0.524,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_je74016k41",
+      "position": [
+        24,
+        0,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.nt_log_moss",
+      "yaw": -0.262,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_nl8jy5oyw4",
+      "position": [
+        40.5,
+        0,
+        27
+      ],
+      "kind": "prop",
+      "model": "prop.nt_boulder_moss",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ekrqxstr16",
+      "position": [
+        21.5,
+        0,
+        -14
+      ],
+      "kind": "prop",
+      "model": "prop.jt_collapsed_column",
+      "yaw": 1.222,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3n235pv1oz",
+      "position": [
+        6.5,
+        3.4,
+        -4.6
+      ],
+      "kind": "prop",
+      "model": "prop.hanging_moss",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "pickup_83reavktfo",
+      "position": [
+        16,
+        0,
+        -17
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_grapple",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_6zlwkdt8y3",
+      "position": [
+        26,
+        0,
+        27
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_grapple",
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_4np7umrgol",
+      "kind": "prop",
+      "position": [
+        3.8,
+        6,
+        22
+      ],
+      "model": "prop.temple_monk_statue",
+      "yaw": 3.142,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7bx3655tha",
+      "kind": "prop",
+      "position": [
+        12.2,
+        6,
+        22
+      ],
+      "model": "prop.temple_monk_statue",
+      "yaw": 3.142,
+      "scale": 0.8,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_n3v86bkc4j",
+      "kind": "prop",
+      "position": [
+        5.2,
+        6,
+        11.2
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_st8bd02gw4",
+      "kind": "prop",
+      "position": [
+        10.8,
+        6,
+        11.2
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_miejf7xudn",
+      "kind": "prop",
+      "position": [
+        -2.6,
+        2,
+        26.4
+      ],
+      "model": "prop.hanging_moss",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_u4y61xf504",
+      "kind": "prop",
+      "position": [
+        18.6,
+        2,
+        26.4
+      ],
+      "model": "prop.hanging_moss",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_eo5v8jcjg6",
+      "kind": "prop",
+      "position": [
+        0.5,
+        4,
+        25.5
+      ],
+      "model": "prop.jg_liana",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4avlgmpksl",
+      "kind": "prop",
+      "position": [
+        15.5,
+        4,
+        25.5
+      ],
+      "model": "prop.jg_liana",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yftb1t9gw9",
+      "kind": "prop",
+      "position": [
+        -3.4,
+        2,
+        18
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_k22sqpe49m",
+      "kind": "prop",
+      "position": [
+        18.4,
+        2,
+        12
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_efvfoqi6bc",
+      "kind": "prop",
+      "position": [
+        6.2,
+        0.8,
+        4.3
+      ],
+      "model": "prop.jt_wall_torch",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3x6wz52cmk",
+      "kind": "prop",
+      "position": [
+        9.8,
+        0.8,
+        4.3
+      ],
+      "model": "prop.jt_wall_torch",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -2270,13 +3327,12 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "misty",
     "scenery": "forest",
     "ground": "moss",
     "haze": 0.6,
-    "mist": 0.25,
+    "mist": 0.45,
     "border": "forest"
   },
   "physics": null,

@@ -1786,6 +1786,31 @@ async function physicsfxFlow(browser) {
   const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat' && m.isEnabled()).length }));
   check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
+  // A body that has come to rest (its capsules back in the pool) is a ragdoll again when a round hits it,
+  // rather than staying a stiff pose that rounds pass through (owner, 3 Nov).
+  // Its time is simulated time (steps at 60 a second), which on a 1-2 fps CI page takes minutes: stop it the way
+  // the view does when the time runs out (Ragdoll.freeze, then the pose frozen), then shoot it.
+  const reshot = await page.evaluate(() => {
+    const v = window.__cs.view;
+    const c = v.corpses.findLast((x) => x.slot === window.__botSlot);
+    const r0 = c?.a.ragdoll;
+    if (!r0 || r0.tier === 'posed') return { rested: false, tier: r0?.tier ?? null, kind: r0?.constructor?.name ?? null };
+    if (!r0.frozen) {
+      r0.freeze();
+      c.a.anim.freezePose();
+    }
+    const p = c.a.anim.ch.joints.get('pelvis').getAbsolutePosition();
+    // A round from 3 m off and 1.5 m up, through the pelvis and on into the ground.
+    const eye = { x: p.x + 3, y: p.y + 1.5, z: p.z };
+    const to = { x: p.x - 1, y: p.y - 0.5, z: p.z };
+    const len = Math.hypot(to.x - eye.x, to.y - eye.y, to.z - eye.z);
+    const dir = { x: (to.x - eye.x) / len, y: (to.y - eye.y) / len, z: (to.z - eye.z) / len };
+    const why = { capsule: !!v.physics?.raycastRagdoll(eye, dir, len), onRay: !!v.restingBodyOnRay(eye, dir, len) };
+    v.landRound({ eye, to, victim: null, zone: 0, strength: 1 });
+    const r1 = c.a.ragdoll;
+    return { rested: true, woke: !!r1 && r1 !== r0 && !r1.frozen, tier: r1?.tier ?? null, ...why };
+  });
+  check(reshot.rested && reshot.woke, `a resting body shot again becomes a ragdoll again (${JSON.stringify(reshot)})`);
   // Out of view, a death isn't simulated at all: the body is laid on the ground along the hit (ragdollBudget.ts),
   // even one killed in mid-air behind you.
   await page.waitForFunction(() => window.__match.slots.some((c) => c && c.slot !== window.__cs.slot && c.alive && window.__cs.view.avatars.get(c.slot)?.anim?.ch), null, { timeout: T(8000) }).catch(() => {});

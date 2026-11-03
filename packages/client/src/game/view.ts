@@ -83,8 +83,9 @@ import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
-import { GodotVfx } from './godotVfx.ts';
-import { ACCENT_RANGE, explosionFor, gameplayFx, impactStyle, mappedEffects, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
+import { GodotVfx, type VfxHandle } from './godotVfx.ts';
+import { LastingFx } from './lastingFx.ts';
+import { ACCENT_RANGE, arcFx, explosionFor, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
 import { buildPathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
@@ -109,6 +110,11 @@ import type { RemotePose } from './interpolation.ts';
 
 /** Remote players' pack muzzle flashes: within this range of the camera (m), on at most this many guns. */
 const REMOTE_FLASH_RANGE = 45;
+/** Electric FX's zap: a bolt 6 m tall (its tubes, stretched to a jump's length) with a burst where it lands. */
+const ZAP_LENGTH = 6;
+const ZAP_TUBES = ['Zap', 'ZapExtra'] as const;
+/** The bolt and the burst at its foot; the ground ring and streaks are left out (an arc lands on a body, not the floor). */
+const ZAP_PARTS = ['Zap', 'ZapExtra', 'ZapSphere', 'ZapGlow'] as const;
 const MAX_REMOTE_RIGS = 8;
 /** Your own pack flash: this much bigger than the weapon's scale, starting this far (m) past the muzzle so the gun doesn't hide it. */
 const OWN_FLASH_SCALE = 1.6;
@@ -278,6 +284,8 @@ export class GameView {
   private effects: Fx[] = [];
   /** Binbun's hit and explosion effects (godotVfx.ts), once their packs are in. */
   private readonly vfx: GodotVfx;
+  /** Pack effects that last while something burns or glows (fires, flares), the nearest drawn first. */
+  private readonly lasting: LastingFx;
   /** Each placement's surface (stone, metal, wood …) for where rounds land (fxMap.ts), made with the map. */
   private surfaces: Map<string, Surface> | null = null;
   private sunLight?: DirectionalLight;
@@ -382,7 +390,12 @@ export class GameView {
     // Browser tests hold flashes still to look at them (window.__flashHold = ms after the shot).
     Object.defineProperty(window, '__flashHold', { configurable: true, set: (v: number | undefined) => (MuzzleFlashRig.hold = v), get: () => MuzzleFlashRig.hold });
     this.vfx = new GodotVfx(this.scene);
-    void GodotVfx.preload('hit_fx', 'explosion_fx');
+    // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
+    this.vfx.quality = this.atmosphere.quality;
+    this.lasting = new LastingFx(this.vfx);
+    this.zoneVisuals.lasting = this.lasting;
+    this.scenario.lasting = this.lasting;
+    void GodotVfx.preload(...mappedPacks());
     this.flashRig = new MuzzleFlashRig(this.scene, 'muzzleFlashRig', { renderingGroupId: 1 });
     this.flashRig.root.parent = this.viewRoot;
     this.brass = new StandardMaterial('brassMat', this.scene);
@@ -454,9 +467,9 @@ export class GameView {
     });
     this.blood.warm();
     this.impacts.warm();
-    void GodotVfx.preload('hit_fx', 'explosion_fx').then(() => {
+    void GodotVfx.preload(...mappedPacks()).then(() => {
       if (this.scene.isDisposed) return;
-      // Every effect content/vfx.json's map can play (impacts, explosions, moments of play).
+      // Every effect content/vfx.json's map can play (impacts, explosions, moments of play, lightning, lasting ones).
       for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
     });
   }
@@ -592,6 +605,53 @@ export class GameView {
     return out;
   }
 
+  /**
+   * The nearest dead body along a ray whose ragdoll has come to rest (frozen), tested against a sphere at
+   * its pelvis and one at its chest (it lies on the ground, so these cover most of it).
+   */
+  private restingBodyOnRay(from: Vec3, dir: Vec3, len: number): { a: Avatar; at: Vec3 } | null {
+    let best: { a: Avatar; at: Vec3; t: number } | null = null as { a: Avatar; at: Vec3; t: number } | null;
+    const test = (a: Avatar) => {
+      const r = a.ragdoll;
+      if (!(r instanceof Ragdoll) || !r.frozen || !(a.anim instanceof CharacterAnimator)) return;
+      for (const name of ['pelvis', 'spine_02']) {
+        const j = a.anim.ch.joints.get(name);
+        if (!j) continue;
+        const c = j.getAbsolutePosition();
+        const t = (c.x - from.x) * dir.x + (c.y - from.y) * dir.y + (c.z - from.z) * dir.z;
+        if (t < 0 || t > len + 0.4) continue;
+        const px = from.x + dir.x * t - c.x, py = from.y + dir.y * t - c.y, pz = from.z + dir.z * t - c.z;
+        if (px * px + py * py + pz * pz > 0.3 * 0.3) continue;
+        if (!best || t < best.t) best = { a, at: { x: from.x + dir.x * t, y: from.y + dir.y * t, z: from.z + dir.z * t }, t };
+      }
+    };
+    for (const c of this.corpses) test(c.a);
+    for (const a of this.avatars.values()) test(a);
+    return best ? { a: best.a, at: best.at } : null;
+  }
+
+  /** A resting body hit again: a ragdoll from the pose it lies in, if the budget has room (else it stays as it is). */
+  private rewake(a: Avatar, push: Vec3): boolean {
+    const root = a.anim?.skeletonRoot;
+    if (!(a.anim instanceof CharacterAnimator) || !root || !this.physics) return false;
+    const p = a.root.position;
+    const cam = this.scene.activeCamera?.globalPosition;
+    const dist = cam ? Math.hypot(p.x - cam.x, p.y - cam.y, p.z - cam.z) : 0;
+    const moving = this.movingRagdolls();
+    const fit = fitBudget(tierFor(dist, true), dist, moving.map((m) => ({ tier: m.body.tier, dist: m.dist })));
+    if (fit.tier === 'posed') return false;
+    for (const i of fit.drop) this.dropTier(moving[i]!.a);
+    try {
+      a.ragdoll?.dispose();
+      a.anim.thawPose();
+      a.anim.ragdoll(fit.tier === 'cheap' ? 'limp' : 'stop');
+      a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, push, fit.tier, facingOf(a));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   /** Past the budget: a full ragdoll carries on as a cheap one (same motion); a cheap one freezes where it is. */
   private dropTier(a: Avatar): void {
     const r = a.ragdoll;
@@ -725,11 +785,22 @@ export class GameView {
     const len = Math.hypot(d.x, d.y, d.z) || 1;
     const dir = { x: d.x / len, y: d.y / len, z: d.z / len };
     // A corpse in the line of fire.
-    const body = this.physics?.raycastRagdoll(o.eye, dir, len);
+    const hit = this.physics?.raycastRagdoll(o.eye, dir, len);
+    const owner = hit ? this.movingRagdolls().find((m) => m.body.owns(hit.body)) : undefined;
+    const body = owner ? hit : null;
     if (body) {
       const at = { x: o.eye.x + dir.x * body.dist, y: o.eye.y + dir.y * body.dist, z: o.eye.z + dir.z * body.dist };
       body.body.applyImpulseAtPoint({ x: dir.x * 4 * o.strength, y: dir.y * 4 * o.strength + 0.4, z: dir.z * 4 * o.strength }, at, true);
       this.blood.hit(at, dir, o.strength);
+      // Its time to settle starts again from the hit (else a body hit late in its fall froze mid-tumble).
+      owner?.body.kick();
+    } else {
+      // A body that has come to rest (its capsules went back to the pool) is a ragdoll again when hit.
+      const rest = this.restingBodyOnRay(o.eye, dir, len);
+      if (rest) {
+        const push = { x: dir.x * 2.5 * o.strength, y: 0.6 + dir.y * 2.5 * o.strength, z: dir.z * 2.5 * o.strength };
+        if (this.rewake(rest.a, push)) this.blood.hit(rest.at, dir, o.strength);
+      }
     }
     if (o.victim !== null) {
       this.blood.hit(o.to, dir, o.zone === 1 ? o.strength * 1.8 : o.strength);
@@ -839,6 +910,7 @@ export class GameView {
     const wall = Math.min(1, (now - this.lastFrame) / 1000);
     const dt = Math.min(0.1, wall);
     this.lastFrame = now;
+    this.lasting.update(this.camera.globalPosition);
     if (this.vfx.count) {
       // The packs' toon smoke is lit like everything else: this sun, this sky.
       if (this.sunLight) this.vfx.setLight(this.sunLight.direction.clone(), this.sunLight.diffuse.scale(this.sunLight.intensity), (this.hemi?.diffuse ?? Color3.White()).scale((this.hemi?.intensity ?? 0.8) * 0.7));
@@ -1977,6 +2049,8 @@ export class GameView {
       const prev = p.node.position.clone();
       p.node.position.set(pos[0], pos[1], pos[2]);
       const look = PROJECTILE_VISUALS[p.look];
+      // A flare burns in flight and where it sticks (Flame FX, map.lasting `fire.flare`).
+      if (look === 'flare') this.lasting.want(`proj:${id}`, 'fire.flare', { x: pos[0], y: pos[1], z: pos[2] });
       if (look && ARSENAL_LOOKS.has(look)) animateArsenalProjectile(p.node, look, now, p.node.position.subtract(prev), p.born);
       else if (look === 'grenade' || look === 'frag') p.node.rotation.x += 0.3;
       else if (look === 'rocket') {
@@ -2313,8 +2387,10 @@ export class GameView {
     this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null, drive);
   }
 
-  /** Arc sentries' charge orbs (over the gun, where their arc starts), by mount index. */
+  /** Arc sentries' charge orbs (over the gun, where their arc starts), by mount index: the plain sphere stands in when the pack's ball can't play. */
   private readonly chargeOrbs = new Map<number, Mesh>();
+  /** Arc sentries' balls of lightning (Electric FX, content/vfx.json map.lasting `charge.<mount>`) and their drawn size, by mount index. */
+  private readonly chargeBalls = new Map<number, { fx: VfxHandle | null; size: number }>();
 
   /**
    * An arc sentry's tell: its body glows brighter through a wind-up and a ball of its colour grows over the gun
@@ -2339,17 +2415,46 @@ export class GameView {
       this.chargeOrbs.set(m.index, orb);
     }
     const size = m.arcing ? 0.3 + 0.08 * flicker : charge ? 0.08 + 0.32 * charge : 0;
-    orb.setEnabled(size > 0 && node.isEnabled());
+    const shown = size > 0 && node.isEnabled();
+    const at = new Vector3(m.shown.pos.x, m.shown.pos.y + m.def.half[1] * 2 + 0.2, m.shown.pos.z);
+    // The pack's ball of lightning grows with the charge and crackles through the lock (the same size as the orb it
+    // replaces: the tell's timing and reach are the game's); it fades out when the sentry lets go.
+    let ball = this.chargeBalls.get(m.index);
+    if (!ball) this.chargeBalls.set(m.index, (ball = { fx: null, size: 0 }));
+    const ref = lastingFx(`charge.${m.def.id}`);
+    if (shown && ref && (!ball.fx || ball.fx.done)) ball.fx = this.vfx.start(ref.pack, ref.effect, at, { scale: size * ref.scale });
+    else if (!shown && ball.fx) {
+      ball.fx.stop();
+      ball.fx = null;
+    }
+    ball.fx?.move(at, { scale: size * ref!.scale });
+    ball.size = shown ? size : 0;
+    // The plain orb stays under the pack's ball, fainter: the tell reads as a solid ball of its colour from afar.
+    orb.setEnabled(shown);
+    (orb.material as StandardMaterial).alpha = ball.fx ? 0.35 : 0.75;
     if (size > 0) {
       orb.scaling.setAll(size);
-      orb.position.set(m.shown.pos.x, m.shown.pos.y + m.def.half[1] * 2 + 0.2, m.shown.pos.z);
+      orb.position.copyFrom(at);
     }
+  }
+
+  /** What starting each lasting effect costs (tools/perf/perf96.mjs): each started at `at` and stopped at once, in ms. */
+  lastingProbe(at: Vec3): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const key of lastingKeys()) {
+      const ref = lastingFx(key)!;
+      const t0 = performance.now();
+      const h = this.vfx.start(ref.pack, ref.effect, new Vector3(at.x, at.y, at.z), { scale: ref.scale });
+      out[`lasting ${key}`] = Math.round((performance.now() - t0) * 10) / 10;
+      h?.stop();
+    }
+    return out;
   }
 
   /** An arc sentry's charge orb as drawn now (tests): its size (0: hidden), or null (not an arc sentry). */
   chargeOrb(index: number): number | null {
-    const orb = this.chargeOrbs.get(index);
-    return orb ? (orb.isEnabled() ? orb.scaling.x : 0) : null;
+    const ball = this.chargeBalls.get(index);
+    return ball ? ball.size : null;
   }
 
   /** The ridden vehicle's in-house cockpit (content/cockpits.ts), drawn only in your cockpit view. */
@@ -2502,30 +2607,47 @@ export class GameView {
    * alight); the wreck smoulders black. Drawing only.
    */
   private mountDamageFx(m: ClientMount, now: number): void {
-    if ((this.mountFxAt.get(m.index) ?? 0) > now) return;
     const state = m.wreck ? 'wreck' : m.alive ? mountDamageState(m.health / 100, m.burning) : 'gone';
     if (state === 'intact' || state === 'gone') return;
     const [hx, hy, hz] = m.def.half;
     const p = m.shown.pos;
+    // Burning, and the wreck smouldering: the pack's fire on top (Flame FX, map.lasting `fire.vehicle` / `fire.wreck`),
+    // sized to the vehicle; the plain flame puffs only where it isn't drawn.
+    let fire = false;
+    if (state === 'burning' || state === 'wreck') {
+      const id = `mount:${m.index}`;
+      this.lasting.want(id, state === 'burning' ? 'fire.vehicle' : 'fire.wreck', { x: p.x, y: p.y + hy * 2 - 0.25, z: p.z }, { size: Math.max(0.8, Math.min(2.2, (hx + hz) * 0.6)) });
+      fire = this.lasting.drawn(id);
+    }
+    // Heavy damage, burning and the wreck: Smoke VFX's column over it (map.lasting `smoke.wreck`), in place of the black puffs.
+    let smoke = false;
+    if (state === 'heavy' || state === 'burning' || state === 'wreck') {
+      const id = `mountSmoke:${m.index}`;
+      this.lasting.want(id, 'smoke.wreck', { x: p.x, y: p.y + hy * 2, z: p.z }, { size: Math.max(0.8, Math.min(2.2, (hx + hz) * 0.6)) });
+      smoke = this.lasting.drawn(id);
+    }
+    if ((this.mountFxAt.get(m.index) ?? 0) > now) return;
     const spot = (spread: number) => ({ x: p.x + (Math.random() - 0.5) * hx * spread, y: p.y + hy * 2 - 0.1, z: p.z + (Math.random() - 0.5) * hz * spread });
     const size = Math.max(0.8, Math.min(2, (hx + hz) * 0.5));
     if (state === 'smoking') {
       this.impacts.puff(spot(0.8), '#8c8884', size * 0.8, 1.8, 1.6);
       this.mountFxAt.set(m.index, now + 240);
     } else if (state === 'heavy') {
-      this.impacts.puff(spot(0.9), '#2a2725', size * 1.2, 2.2, 2);
+      if (!smoke) this.impacts.puff(spot(0.9), '#2a2725', size * 1.2, 2.2, 2);
       if (Math.random() < 0.3) this.impacts.sparkBurst(spot(1.4), 6, 2.5);
       this.mountFxAt.set(m.index, now + 120);
     } else if (state === 'burning') {
-      this.impacts.puff(spot(1.1), '#ff7a1a', size * 0.7, 0.45, 1.8, true);
-      this.impacts.puff(spot(0.8), Math.random() < 0.5 ? '#ffb347' : '#e8541c', size * 0.5, 0.35, 2.2, true);
-      this.impacts.puff(spot(0.9), '#151312', size * 1.5, 2.6, 2.4);
+      if (!fire) {
+        this.impacts.puff(spot(1.1), '#ff7a1a', size * 0.7, 0.45, 1.8, true);
+        this.impacts.puff(spot(0.8), Math.random() < 0.5 ? '#ffb347' : '#e8541c', size * 0.5, 0.35, 2.2, true);
+      }
+      if (!smoke) this.impacts.puff(spot(0.9), '#151312', size * 1.5, 2.6, 2.4);
       if (Math.random() < 0.35) this.impacts.sparkBurst(spot(1.2), 8, 3);
       this.mountFxAt.set(m.index, now + 70);
     } else {
       // The wreck: a column of black smoke and the last licks of flame.
-      this.impacts.puff(spot(0.7), '#151312', size * 1.4, 3.2, 2.2);
-      if (Math.random() < 0.4) this.impacts.puff(spot(1), '#ff6a14', size * 0.4, 0.4, 1.2, true);
+      if (!smoke) this.impacts.puff(spot(0.7), '#151312', size * 1.4, 3.2, 2.2);
+      if (!fire && Math.random() < 0.4) this.impacts.puff(spot(1), '#ff6a14', size * 0.4, 0.4, 1.2, true);
       this.mountFxAt.set(m.index, now + 160);
     }
   }
@@ -2716,10 +2838,43 @@ export class GameView {
     });
   }
 
-  /** Chain lightning through the points it jumped. */
-  addArc(pts: readonly Vec3[], color = '#9fd8ff'): void {
-    this.effects.push({ mesh: createArc(this.scene, pts, color), born: performance.now(), ttl: 140 });
-    this.effects.push({ mesh: createArc(this.scene, pts, '#ffffff'), born: performance.now(), ttl: 70 });
+  /**
+   * Chain lightning through the points it jumped: a bolt of Binbun's Electric FX along each jump, rooted where it
+   * lands, and a crackle where the last one lands (content/vfx.json map.arcs, by source: an arc sentry, an electric
+   * fence or a gun). Each bolt plays a few times faster than the pack's, to last about as long as the game's gap
+   * between arcs. Where the pack can't play (not in yet, or too many effects at once) the plain jagged line does.
+   */
+  addArc(pts: readonly Vec3[], color = '#9fd8ff', source: 'mount' | 'fence' | 'default' = 'default'): void {
+    const fx = arcFx(source);
+    const plain: Vec3[][] = [];
+    let drawn = 0;
+    const cam = this.camera.globalPosition;
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const a = pts[i]!;
+      const b = pts[i + 1]!;
+      const d = new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+      const len = d.length();
+      // Far off the plain line reads as well and costs less.
+      const ok =
+        !!fx &&
+        len > 0.2 &&
+        Math.hypot(cam.x - b.x, cam.y - b.y, cam.z - b.z) <= ACCENT_RANGE * 2 &&
+        this.vfx.play(fx.zap.pack, fx.zap.effect, new Vector3(b.x, b.y, b.z), {
+          scale: fx.zap.scale,
+          up: d.scale(1 / Math.max(len, 1e-3)),
+          speed: fx.speed,
+          only: ZAP_PARTS,
+          stretch: { nodes: ZAP_TUBES, by: len / (ZAP_LENGTH * fx.zap.scale) },
+        });
+      if (ok) drawn++;
+      else plain.push([a, b]);
+    }
+    const end = pts[pts.length - 1];
+    if (drawn && fx?.hit && end) this.accent(fx.hit, end);
+    for (const seg of plain) {
+      this.effects.push({ mesh: createArc(this.scene, seg, color), born: performance.now(), ttl: 140 });
+      this.effects.push({ mesh: createArc(this.scene, seg, '#ffffff'), born: performance.now(), ttl: 70 });
+    }
   }
 
   /** A shot's trail: beam weapons draw beams, everything else tracers. */

@@ -673,3 +673,18 @@ starts a frame, at least one) the after build's worst frame was 28–49 ms:
 twenty bodies started in one frame. On this slow page a start takes over 4 ms,
 so the 20 deaths took about 13 frames to all go down (run 2 had handled 7 by
 the end of its window); on a normal machine several start per frame.
+
+## Pack effects pass (3 Nov 2026, `wip/fx-pass`)
+
+Electric, Flame, Poison and Smoke pack effects added (docs/PHYSICS_FX.md, "Pack effects"). `pnpm perf:budget`
+(Frost Basin, 96 players, SwiftShader on a shared 4-core box: frame times are noise, compare draws and starts),
+main a2fd44b → this branch:
+
+| | medium spread | medium clump | low spread | low clump | slowest effect start |
+|---|---|---|---|---|---|
+| draws, before | 297 | 237 | 100 | 217 | 5.7 ms (hit heavy) |
+| draws, after | 239 | 219 | 280 | 204 | 11.9 ms (`arc`: a 3-jump chain, 3 bolts built) |
+
+Shadow casters 76 → 89 (medium clump; characters in view), effect casters 0. Lasting effects start in 0.1–1.6 ms
+each. Draw counts swing with what is in view (low spread 100 → 280 is where the camera landed, not effects: the
+scene counts show 15 → 47 characters shown). Menu bundle 837.5 kB gzip before and after (budget 840).

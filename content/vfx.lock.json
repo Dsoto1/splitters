@@ -22,16 +22,48 @@
       "source": "binbun-hit-fx",
       "src": "BinbunVFX_Vol2/StylizedHitFX/effects/**/*.tscn",
       "title": "hit effect scenes",
-      "bytes": 213702,
-      "sha256": "4d45a69363f9c42d"
+      "bytes": 113581,
+      "sha256": "374d3df3b00f0970"
     },
     {
       "file": "vfx/explosion_fx.json",
       "source": "binbun-explosion-fx",
       "src": "BinbunVFX_Vol2/ExplosionFX/effects/**/*.tscn",
       "title": "explosion effect scenes",
-      "bytes": 220672,
-      "sha256": "00da797f4b2c72a4"
+      "bytes": 148733,
+      "sha256": "7064876e7fd6eab1"
+    },
+    {
+      "file": "vfx/electric_fx.json",
+      "source": "binbun-electric-fx",
+      "src": "BinbunVFX_Vol2/ElectricFX/effects/**/*.tscn",
+      "title": "electric effect scenes",
+      "bytes": 42736,
+      "sha256": "69a4f8415b0d2de7"
+    },
+    {
+      "file": "vfx/flame_fx.json",
+      "source": "binbun-flame-fx",
+      "src": "BinbunVFX_Vol2/FlameFX/effects/**/*.tscn",
+      "title": "flame effect scenes",
+      "bytes": 9676,
+      "sha256": "37c190bb59c54eef"
+    },
+    {
+      "file": "vfx/poison_fx.json",
+      "source": "binbun-poison-vfx",
+      "src": "BinbunVFX/poison_effects/effects/**/*.tscn",
+      "title": "poison effect scenes",
+      "bytes": 11248,
+      "sha256": "1cf24ca1050fbcda"
+    },
+    {
+      "file": "vfx/smoke_fx.json",
+      "source": "binbun-smoke-vfx",
+      "src": "BinbunVFX/smoke_effects/effects/**/*.tscn",
+      "title": "smoke effect scenes",
+      "bytes": 4126,
+      "sha256": "23852bdc3251048f"
     }
   ]
 }

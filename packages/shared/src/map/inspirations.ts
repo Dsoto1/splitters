@@ -25,10 +25,8 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   dead_reel: 'Kino der Toten (Call of Duty: Black Ops)',
   shingle_point: 'the D-Day beach landings (1944)',
   atomic_court: 'Nuketown (Call of Duty: Black Ops)',
-  fallout_lane: 'Nuketown (Call of Duty: Black Ops)',
   glasswork_office: 'Office (Counter-Strike)',
   razor_edge: 'The Edge (Quake II)',
-  stonewatch_keep: "Helm's Deep (The Lord of the Rings: The Two Towers)",
   serpent_gorge: 'the Indiana Jones films',
   undergate_transit: 'the transit system (Half-Life)',
   iron_tide: 'Assault Ship (Counter-Strike: Condition Zero)',
@@ -41,7 +39,6 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   fernwood_moon: 'Endor (Star Wars)',
   glacier_line: 'Hoth (Star Wars)',
   serene_city: 'Demolition Man',
-  after_hours: 'Night at the Museum',
 };
 
 /** "Inspired by …" for a map, if it has one. */

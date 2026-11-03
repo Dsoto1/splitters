@@ -1,4 +1,5 @@
 import type { Scene } from '@babylonjs/core/scene';
+import type { LastingFx } from './lastingFx.ts';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -120,6 +121,8 @@ export interface VisualOptions {
 }
 
 export class ScenarioVisuals {
+  /** Pack effects that last (a flame trap's fire: content/vfx.json map.lasting `fire.trap`), set by the game view. */
+  lasting: LastingFx | null = null;
   private readonly visuals = new Map<number, Visual>();
   private readonly mats = new Map<string, StandardMaterial>();
   private last = performance.now();
@@ -1829,6 +1832,13 @@ export class ScenarioVisuals {
       root,
       update: (flags, _b, now) => {
         const active = !!(flags & TRAP_ACTIVE);
+        // The pack's fire roaring out of the nozzle along the jet while it's on.
+        if (active && this.lasting) {
+          const w = root.getWorldMatrix();
+          const at = Vector3.TransformCoordinates(new Vector3(0, 1.1, 0.7), w);
+          const dir = Vector3.TransformNormal(new Vector3(0, 0.35, 1), w).normalize();
+          this.lasting.want(`trap:${name}`, 'fire.trap', at, { up: dir });
+        }
         on(active);
         pilot.setEnabled(!!(flags & TRAP_ENABLED));
         if (active) {

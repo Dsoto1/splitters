@@ -90,7 +90,9 @@ export class EffectsWorld {
 
   /** First ragdoll body along a ray (a corpse in the way of a shot): the body, distance and surface normal. */
   raycastRagdoll(from: Vec3, dir: Vec3, maxDist: number): { body: RAPIER.RigidBody; dist: number; normal: Vec3 } | null {
-    const hit = this.world.castRayAndGetNormal(new RAPIER.Ray(from, dir), maxDist, true, undefined, groups(0xffff, GROUP_RAGDOLL));
+    // Parts given back to the pool are disabled, but the ray query only learns that on the next step: skip them.
+    const live = (c: RAPIER.Collider) => c.parent()?.isEnabled() ?? false;
+    const hit = this.world.castRayAndGetNormal(new RAPIER.Ray(from, dir), maxDist, true, undefined, groups(0xffff, GROUP_RAGDOLL), undefined, undefined, live);
     const body = hit?.collider.parent();
     return hit && body ? { body, dist: hit.timeOfImpact, normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z } } : null;
   }

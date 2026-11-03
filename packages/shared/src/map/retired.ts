@@ -13,6 +13,9 @@ export const RETIRED_MAPS: ReadonlySet<string> = new Set([
   'pharaohs_reach',
   'skyward',
   'sandsweep',
+  'blackout',
+  'cedar_lane',
+  'glacier_line',
 ]);
 
 export const isRetiredMap = (id: string): boolean => RETIRED_MAPS.has(id);
