@@ -1556,6 +1556,21 @@
       ]
     },
     {
+      "file": "props/ww2_ammo_crate.glb",
+      "source": "meshy-community-drive-1103",
+      "title": "WWII Ammo Crate (Meshy community) (download dated 2026-11-03)",
+      "src": "ww2_ammo_crate.glb",
+      "triangles": 5204,
+      "normalMap": true,
+      "bytes": 242160,
+      "sha256": "3b1870414a61bb92",
+      "size": [
+        1.035,
+        0.9,
+        0.625
+      ]
+    },
+    {
       "file": "props/rock_spire_tall.glb",
       "source": "kenney-nature-kit",
       "src": "rock_tallB.glb",

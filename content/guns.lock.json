@@ -221,6 +221,24 @@
       "sha256": "8424c89e962a6971"
     },
     {
+      "file": "models/pickups/health_large.glb",
+      "source": "meshy-community-pickups",
+      "src": "Vintage Medical Supply (Meshy community model, downloaded 2026-11-03): the large health pickup",
+      "triangles": 2423,
+      "normalMap": true,
+      "bytes": 149980,
+      "sha256": "89b61d9d941d5fc8"
+    },
+    {
+      "file": "models/pickups/ammo_rifle.glb",
+      "source": "meshy-community-pickups",
+      "src": "Rifle ammo (Meshy community model, downloaded 2026-11-03): the rifle rounds pickup",
+      "triangles": 2994,
+      "normalMap": true,
+      "bytes": 131668,
+      "sha256": "80fc688eb1dcee69"
+    },
+    {
       "file": "models/vehicles/offroad_buggy.glb",
       "source": "meshy-owned-guns",
       "budget": "vehicle",
