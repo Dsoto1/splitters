@@ -23,9 +23,15 @@ export const RAGDOLL_BUDGET = {
   near: 10,
   /** In view: full up to here (m), cheap beyond. */
   fullInView: 35,
-  /** A ragdoll stops simulating (frozen into a static pose) after this long (s), or as soon as it comes to rest. */
+  /**
+   * A ragdoll stops simulating (frozen into a static pose) as soon as it comes to rest, or once it has had this long
+   * (s) and is moving slower than `stillSpeed` (m/s, its torso): a body still rolling down a long hill carries on
+   * (owner, 3 Nov: one stopped halfway down), up to `maxSeconds` at most.
+   */
   fullSeconds: 4,
   cheapSeconds: 2.5,
+  stillSpeed: 0.6,
+  maxSeconds: 15,
 } as const;
 
 /** The tier a fresh death gets from where it is (before the budget). */

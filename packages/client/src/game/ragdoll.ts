@@ -218,14 +218,26 @@ export class Ragdoll {
     const age = (this.world.steps - this.born) / 60;
     // Settle faster: once the first tumble is over and the body has slowed, damping goes up so it comes to rest sooner.
     const torso = this.parts[0]?.body.linvel();
-    if (!this.settled && age > 0.9 && (!torso || Math.hypot(torso.x, torso.y, torso.z) < 0.8)) {
+    const speed = torso ? Math.hypot(torso.x, torso.y, torso.z) : 0;
+    if (!this.settled && age > 0.9 && speed < 0.8) {
       this.settled = true;
       for (const p of this.parts) {
         p.body.setLinearDamping(2.2);
         p.body.setAngularDamping(5);
       }
+    } else if (this.settled && speed > 1.6) {
+      // Picking up speed again (it slowed at the top of a slope and went on down it): fresh-fall damping, so the
+      // hill carries it rather than the damping holding it halfway.
+      this.settled = false;
+      for (const p of this.parts) {
+        p.body.setLinearDamping(0.6);
+        p.body.setAngularDamping(1.6);
+      }
     }
-    if (this.parts.every((p) => p.body.isSleeping()) || age > (this.tier === 'full' ? RAGDOLL_BUDGET.fullSeconds : RAGDOLL_BUDGET.cheapSeconds)) {
+    // Its time runs out only once it has slowed: a body still tumbling down a slope rolls on (to maxSeconds at most).
+    const still = speed < RAGDOLL_BUDGET.stillSpeed;
+    const time = this.tier === 'full' ? RAGDOLL_BUDGET.fullSeconds : RAGDOLL_BUDGET.cheapSeconds;
+    if (this.parts.every((p) => p.body.isSleeping()) || (age > time && still) || age > RAGDOLL_BUDGET.maxSeconds) {
       this.freeze();
       return true;
     }
