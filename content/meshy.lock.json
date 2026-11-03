@@ -551,10 +551,10 @@
       "model": "Gloombraid Goblin Shaman",
       "date": "2026-10-29",
       "file": "characters/meshy_grizzelda.glb",
-      "sha256": "0545141f3590c15d",
-      "triangles": 15927,
-      "lodTriangles": 4133,
-      "bytes": 1461424,
+      "sha256": "723a2cca75ea2298",
+      "triangles": 15930,
+      "lodTriangles": 4131,
+      "bytes": 1441808,
       "hands": true,
       "surface": "rebake"
     },
@@ -568,9 +568,9 @@
       "model": "Gloombraid Goblin Shaman",
       "date": "2026-10-29",
       "file": "characters/meshy_grizzelda_fparms.glb",
-      "sha256": "06ddd21212e927c5",
-      "triangles": 2026,
-      "bytes": 452948,
+      "sha256": "0a3a0dcf4ccf59f5",
+      "triangles": 2139,
+      "bytes": 434100,
       "hands": true
     },
     {

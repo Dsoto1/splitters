@@ -9,6 +9,7 @@
   "nameTheme": "myth",
   "bio": "Four score and seven rounds ago. Has never told a lie about a headshot.",
   "body": "male",
+  "size": "large",
   "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): rigged in Meshy (the All Animations GLB; its clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. Abraham Lincoln in a stovepipe hat, frock coat and waistcoat. Hands: his right hand's fingers were read as split (the thumb gap) and crumpled into shards, so it bends as a mitten (`mitten`, curl 1.2); his left measures as a fist, and curled fully it bends away from the grip, so curl 0.4.",
   "source": {
     "license": "CC0",

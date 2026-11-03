@@ -44,7 +44,8 @@
       "Spine02": 4,
       "Spine01": 6,
       "Spine": 6,
-      "neck": 10
+      "neck": 0,
+      "Head": 18
     },
     "headShare": 0.16,
     "handsShare": 0.1,
