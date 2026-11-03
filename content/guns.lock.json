@@ -214,11 +214,11 @@
     {
       "file": "models/guns/medkit.glb",
       "source": "meshy-owned-guns",
-      "src": "Medkit (owner's Meshy generation, 2026-10-29)",
-      "triangles": 4469,
+      "src": "Medkit (owner's Meshy generation, 2026-10-29), red recoloured green",
+      "triangles": 4475,
       "normalMap": true,
-      "bytes": 358668,
-      "sha256": "8424c89e962a6971"
+      "bytes": 359012,
+      "sha256": "20b3133f7f379088"
     },
     {
       "file": "models/pickups/health_large.glb",
