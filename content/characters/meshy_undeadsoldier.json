@@ -21,15 +21,17 @@
     "file": "^Meshy_AI_Undead_Soldier_\\d+_texture\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.8
+    "metallic": 1,
+    "roughness": 1,
+    "maps": true
   },
   "firstPerson": {
     "arms": "own"
   },
   "fixes": {
-    "triangles": 14000,
+    "triangles": 17000,
     "surface": "rebake",
+    "headShare": 0.24,
     "feet": true,
     "hands": {
       "r": {

@@ -119,6 +119,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   if (s.license === 'CC0') need(typeof s.community?.model === 'string', 'source.community.model: the community model\'s name as on its page');
   const f = m.finish ?? {};
   need([f.metallic, f.roughness].every((x) => typeof x === 'number' && x >= 0 && x <= 1), 'finish: metallic and roughness, 0–1');
+  need(f.maps === undefined || typeof f.maps === 'boolean', 'finish.maps: true to keep the download\'s metal-roughness map');
   const fp = m.firstPerson ?? {};
   if (fp.arms === 'own' || fp.arms === undefined) need(fp.skin === undefined && fp.cloth === undefined && fp.trim === undefined, 'firstPerson: dyes only go with universal arms');
   else {
@@ -273,6 +274,7 @@ export function buildSpec(m) {
     clipsFrom: m.clipsFrom,
     metallic: m.finish.metallic,
     roughness: m.finish.roughness,
+    finishMaps: m.finish.maps === true,
     triangles: x.triangles,
     surface: x.surface,
     seamWeld: x.seamWeld,

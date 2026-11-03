@@ -21,8 +21,9 @@
     "file": "^Meshy_AI_Zombie_Soldier_1101160817_texture\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.75
+    "metallic": 1,
+    "roughness": 1,
+    "maps": true
   },
   "firstPerson": {
     "arms": "own"

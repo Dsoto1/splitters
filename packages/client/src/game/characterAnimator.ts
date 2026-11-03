@@ -146,8 +146,17 @@ const FLINCH_BUCKLE = 0.22;
 const KICK_SECONDS = 0.5;
 const KICK_THIGH = 1.35;
 const KICK_LEAN = 0.22;
-/** Upper-body turn (radians) that brings the left shoulder forward onto a long gun. */
-const LONG_GUN_BLADE = 0.45;
+/** Upper-body turn (radians) that brings the left shoulder forward onto a long gun (0.45 until 2026-11-03: see POCKET_IN). */
+const LONG_GUN_BLADE = 0.22;
+/**
+ * Long gun: how far (model m) the stock's pocket sits inside the shooting shoulder's joint, and where that arm's
+ * elbow bends toward (out from the shoulder and down, m). With the body bladed 0.45 rad, a stock 7 cm in and the
+ * elbow aimed 0.3 m down, the shooting shoulder sat far back and the upper arm ran forward along the chest: "his
+ * right shoulder is tucked too far in" (owner, 2026-11-03, Santa and Zombie Soldier A; most looks did it).
+ */
+const POCKET_IN = 0.04;
+const ELBOW_POLE_OUT = 0.45;
+const ELBOW_POLE_DOWN = 0.18;
 /** Half the width of a rifle stock (m): torso skin within this of the barrel line is in its way. */
 const STOCK_RADIUS = 0.035;
 /** Short arms slide the support hand back along the handguard, but keep it this far ahead of the grip (model m). */
@@ -1272,7 +1281,7 @@ export class CharacterAnimator {
       const inward = pos(this.spine[this.spine.length - 1]!).subtract(shoulder);
       inward.y = 0;
       // The stock sits just inside the shoulder joint, a little in front and below.
-      const pocket = shoulder.add(inward.normalize().scale(0.07 * scale)).add(new Vector3(0, -0.03, 0.05).scale(scale).applyRotationQuaternion(aim));
+      const pocket = shoulder.add(inward.normalize().scale(POCKET_IN * scale)).add(new Vector3(0, -0.03, 0.05).scale(scale).applyRotationQuaternion(aim));
       // Out along the barrel onto the body's own surface: armour or a big chest stands well in front of the joint.
       // Measured once the body is fully in its aim (the chest turned across the gun), so the surface ahead of the shoulder is the one the barrel crosses.
       if (this.torso === undefined && this.ik >= 0.999 && Math.abs(this.blade - LONG_GUN_BLADE) < 0.01) this.torso = TorsoSurface.measure(this.ch);
@@ -1338,7 +1347,7 @@ export class CharacterAnimator {
       const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
       const down = new Vector3(0, -1, 0);
       if (grip.style === 'long') {
-        solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, grip.grip), scale), pos(arms.r.upper).add(outward.scale(0.35)).add(down.scale(0.3)), w);
+        solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, grip.grip), scale), pos(arms.r.upper).add(outward.scale(ELBOW_POLE_OUT)).add(down.scale(ELBOW_POLE_DOWN)), w);
       }
       closeHand(space, arms.r, w, point(gripped.pos, gripped.rot, grip.grip));
       if (support) {
@@ -1583,11 +1592,14 @@ const RIG_SPAN = 1.9;
  * fingers reach across under it and close up its far side instead of standing out past it.
  */
 const CUP_BACK = 0.22;
+/** EXPERIMENT */
+const GRIP_AHEAD = 0.3;
+const FINGER_CURL = [0.75, 0.85, 0.55];
 
 /** Where to put a palm so the grip point sits inside the closed hand rather than in the palm itself (`cup`: a support hand under a handguard). */
 function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number, cup = false): Vector3 {
   const at = gripPoint.subtract(palmSideWorld(arm).scale(arm.gripOffset * scale));
-  return cup ? at.subtract(handAxes(arm).along.scale(CUP_BACK * arm.span * scale)) : at;
+  return cup ? at.subtract(handAxes(arm).along.scale(CUP_BACK * arm.span * scale)) : at.add(handAxes(arm).along.scale(GRIP_AHEAD * arm.span * scale));
 }
 
 /** Unit vector out of the palm (the side the fingers close toward), in world space. */
@@ -1793,7 +1805,7 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector
     const swung = (s: number) => Vector3.Distance(knuckle.add(tip.applyRotationQuaternion(Quaternion.RotationAxis(across, s * 1.2))), target);
     sign = swung(1) <= swung(-1) ? 1 : -1;
   }
-  const curl = [0.9, 1.1, 0.7];
+  const curl = FINGER_CURL;
   for (const chain of arm.fingers) {
     chain.forEach((joint, i) => {
       const q = Quaternion.RotationAxis(across, sign * curl[i]! * weight);

@@ -292,6 +292,48 @@ async function fillMasked({ data, info }, mask) {
 }
 
 /**
+ * A download's texture with its gutters filled (texels no triangle covers, by the mesh's `UV` and `idx`, filled from
+ * the charts round them, fillMasked), so shrinking it doesn't blend the gutter's colour into the charts' edges: a
+ * pale wedge down Biker Gang Girl's nose where her face's charts meet (2048 px download, shipped at 1024). Covered
+ * texels are grown by `grow` px first. Returns a PNG buffer at the image's own size.
+ */
+export async function padCharts(image, UV, idx, { grow = 2 } = {}) {
+  const { data, info } = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const [W, H] = [info.width, info.height];
+  const covered = new Uint8Array(W * H);
+  for (let t = 0; t < idx.length; t += 3) {
+    const pts = [idx[t], idx[t + 1], idx[t + 2]].map((v) => [UV[v * 2] * W - 0.5, UV[v * 2 + 1] * H - 0.5]);
+    const [x0, x1] = [Math.max(0, Math.floor(Math.min(...pts.map((p) => p[0])))), Math.min(W - 1, Math.ceil(Math.max(...pts.map((p) => p[0]))))];
+    const [y0, y1] = [Math.max(0, Math.floor(Math.min(...pts.map((p) => p[1])))), Math.min(H - 1, Math.ceil(Math.max(...pts.map((p) => p[1]))))];
+    const [[ax, ay], [bx, by], [cx, cy]] = pts;
+    const d = (bx - ax) * (cy - ay) - (cx - ax) * (by - ay);
+    for (const p of pts) if (p[0] >= 0 && p[0] < W && p[1] >= 0 && p[1] < H) covered[Math.round(p[1]) * W + Math.round(p[0])] = 1;
+    if (Math.abs(d) < 1e-9) continue;
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        const l1 = ((bx - x) * (cy - y) - (cx - x) * (by - y)) / d;
+        const l2 = ((cx - x) * (ay - y) - (ax - x) * (cy - y)) / d;
+        if (l1 >= 0 && l2 >= 0 && l1 + l2 <= 1) covered[y * W + x] = 1;
+      }
+    }
+  }
+  let grown = covered;
+  for (let g = 0; g < grow; g++) {
+    const next = grown.slice();
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (grown[y * W + x]) continue;
+        if ((x > 0 && grown[y * W + x - 1]) || (x < W - 1 && grown[y * W + x + 1]) || (y > 0 && grown[(y - 1) * W + x]) || (y < H - 1 && grown[(y + 1) * W + x])) next[y * W + x] = 1;
+      }
+    }
+    grown = next;
+  }
+  const mask = grown.map((c) => (c ? 0 : 1));
+  await fillMasked({ data, info }, mask);
+  return sharp(data, { raw: { width: W, height: H, channels: 3 } }).png().toBuffer();
+}
+
+/**
  * Paint out markings in a colour map (`{ data, info }`, raw RGB): every pixel `marked(r, g, b)` picks, grown by
  * `grow` pixels (and the holes enclosed within `holes` pixels: a skull's eyes, the counters of an O), is refilled
  * from the unmarked pixels round it, so lettering, logos and decals become the plain surface they sit on. Returns
@@ -841,7 +883,7 @@ export async function normalJpeg(image, size, quality = 85) {
  * other lights every dent from the wrong side and came out further from it than no normal map at all. The download's
  * own map is read with the same sign (Babylon draws it the same way).
  */
-const GREEN = 1;
+export const GREEN = 1;
 /**
  * Which way the DOWNLOAD's normal map green channel points against vertexTangents' bitangent (along increasing v):
  * the other way from ours. Meshy's maps follow glTF (green toward the texture's top, decreasing v), which Babylon
@@ -862,9 +904,10 @@ const DOWNLOAD_GREEN = -1;
  * download's own normal map `hiMap` when there is one: raw RGB in the high mesh's texture coordinates and tangent
  * space) and writes it in the low mesh's tangent space (`vertexTangents`, shipped as its TANGENT attribute). Texels
  * nothing reached, and the gutters, are filled from their neighbours. `low`: { P, N, UV, idx }, `hi`: { P, N, UV, I };
- * `reach`: how far from the low surface the high one may be. Returns { tangents, png }.
+ * `reach`: how far from the low surface the high one may be; `hiGreen`: the green convention `hiMap` is in (a
+ * download's, DOWNLOAD_GREEN, unless it is one of our own bakes: GREEN). Returns { tangents, png }.
  */
-export async function bakeNormals(low, hi, { size, reach, hiMap = null, caster = null }) {
+export async function bakeNormals(low, hi, { size, reach, hiMap = null, caster = null, hiGreen = DOWNLOAD_GREEN }) {
   const T = vertexTangents(low.P, low.N, low.UV, low.idx);
   caster ??= bvh(hi.P, hi.I);
   const HT = hiMap ? vertexTangents(hi.P, hi.N, hi.UV, hi.I) : null;
@@ -922,8 +965,19 @@ export async function bakeNormals(low, hi, { size, reach, hiMap = null, caster =
           h = unit([0, 1, 2].map((k) => at(hi.N, 3, k)));
           if (hiMap) {
             const m = sampleMap(at(hi.UV, 2, 0), at(hi.UV, 2, 1));
-            const ht = unit(across([0, 1, 2].map((k) => at(HT, 4, k)), h));
-            const hb = cross3(h, ht).map((v) => v * HT[i0 * 4 + 3] * DOWNLOAD_GREEN);
+            let ht;
+            let hb;
+            const face = hiGreen === DOWNLOAD_GREEN ? faceFrame(hi.P, hi.UV, i0, i1, i2) : null;
+            if (face) {
+              // A download's map in the frame its renderer draws it in (no TANGENT attribute: the texel's own derivatives,
+              // so the hit triangle's dP/du and dP/dv). Averaged per vertex, frames where charts meet mirrored (down a
+              // nose) came out turned and the map bent in wrong there: Biker Gang Girl's pale nose wedge (2026-11-03).
+              ht = unit(across(face.t, h));
+              hb = unit(across(face.b, h)).map((v) => v * hiGreen);
+            } else {
+              ht = unit(across([0, 1, 2].map((k) => at(HT, 4, k)), h));
+              hb = cross3(h, ht).map((v) => v * HT[i0 * 4 + 3] * hiGreen);
+            }
             const bentN = [0, 1, 2].map((k) => ht[k] * m[0] + hb[k] * m[1] + h[k] * m[2]);
             if (Math.hypot(...bentN) > 1e-6) {
               h = unit(bentN);
@@ -932,8 +986,13 @@ export async function bakeNormals(low, hi, { size, reach, hiMap = null, caster =
           }
           painted++;
         } else missed++;
-        // Into the low mesh's tangent space (green as GREEN says), kept on the outside of the surface.
-        let ts = [dot3(h, tg), dot3(h, bt) * GREEN, dot3(h, n)];
+        // Into the low mesh's tangent space (green as GREEN says), kept on the outside of the surface. The shader turns
+        // the map by the per-vertex frames interpolated as they are (Babylon's vTBN: unit tangent, cross(normal, tangent)
+        // * w, unit normal, not normalised again), so the map is the inverse of that matrix applied to h: where a
+        // triangle's corners differ in handedness (charts mirrored down a nose) its bitangent shrinks through zero and
+        // flips, and a frame taken from one corner put a pale wedge down Biker Gang Girl's nose (2026-11-03).
+        let ts = tbnSolve(T, N, a, b, c, l1, l2, l3, h) ?? [dot3(h, tg), dot3(h, bt), dot3(h, n)];
+        ts[1] *= GREEN;
         if (ts[2] < 0.2) ts = unit([ts[0], ts[1], 0.2 * Math.hypot(ts[0], ts[1]) + 1e-6]);
         img.set(ts.map((v) => Math.round((v * 0.5 + 0.5) * 255)), (y * size + x) * 3);
         empty[y * size + x] = 0;
@@ -948,6 +1007,43 @@ export async function bakeNormals(low, hi, { size, reach, hiMap = null, caster =
 }
 
 const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+/**
+ * The tangent-space vector m with T m ∝ h, T the shader's interpolated frame at barycentrics (l1, l2, l3) of
+ * triangle (a, b, c): columns lerp(unit tangent), lerp(cross(normal, tangent) * w), lerp(unit normal). Unit length;
+ * null where the frame is too near singular to invert.
+ */
+function tbnSolve(T, N, a, b, c, l1, l2, l3, h) {
+  const cols = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  for (const [v, l] of [[a, l1], [b, l2], [c, l3]]) {
+    const t = unit([T[v * 4], T[v * 4 + 1], T[v * 4 + 2]]);
+    const n = unit([N[v * 3], N[v * 3 + 1], N[v * 3 + 2]]);
+    const bt = cross3(n, t).map((x) => x * T[v * 4 + 3]);
+    for (let k = 0; k < 3; k++) {
+      cols[0][k] += t[k] * l;
+      cols[1][k] += bt[k] * l;
+      cols[2][k] += n[k] * l;
+    }
+  }
+  const [X, Y, Z] = cols;
+  const det = dot3(X, cross3(Y, Z));
+  if (Math.abs(det) < 0.05) return null;
+  // Cramer's rule.
+  const m = [dot3(h, cross3(Y, Z)) / det, dot3(X, cross3(h, Z)) / det, dot3(X, cross3(Y, h)) / det];
+  const len = Math.hypot(...m);
+  return len > 1e-9 ? m.map((x) => x / len) : null;
+}
+
+/** A triangle's own texture directions (dP/du, dP/dv, unnormalised), or null where its texture coordinates are degenerate. */
+function faceFrame(P, UV, a, b, c) {
+  const e1 = [P[b * 3] - P[a * 3], P[b * 3 + 1] - P[a * 3 + 1], P[b * 3 + 2] - P[a * 3 + 2]];
+  const e2 = [P[c * 3] - P[a * 3], P[c * 3 + 1] - P[a * 3 + 1], P[c * 3 + 2] - P[a * 3 + 2]];
+  const [du1, dv1, du2, dv2] = [UV[b * 2] - UV[a * 2], UV[b * 2 + 1] - UV[a * 2 + 1], UV[c * 2] - UV[a * 2], UV[c * 2 + 1] - UV[a * 2 + 1]];
+  const det = du1 * dv2 - du2 * dv1;
+  if (Math.abs(det) < 1e-14) return null;
+  const t = [0, 1, 2].map((k) => (e1[k] * dv2 - e2[k] * dv1) / det);
+  const b2 = [0, 1, 2].map((k) => (e2[k] * du1 - e1[k] * du2) / det);
+  return Math.hypot(...t) > 1e-12 && Math.hypot(...b2) > 1e-12 ? { t, b: b2 } : null;
+}
 const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const unit = (a) => {
   const l = Math.hypot(...a) || 1;
