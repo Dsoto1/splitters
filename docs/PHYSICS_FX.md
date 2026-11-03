@@ -119,3 +119,22 @@ Props no longer float on hillsides:
   (`prop.floating`), and map scripts settle props when they save.
 
 (`packages/shared/src/map/settle.ts`)
+
+## Pack effects (Binbun VFX)
+
+Also drawn only. The owner's Binbun packs are Godot 4 projects; `tools/content/prepare-vfx.mjs` writes each pack
+named in `content/vfx.json` (`packs.<id>.dir`, `.file`) as JSON (only the effects `map` names; pictures they sample
+as small WebPs), and `game/godotVfx.ts` plays them: a small GPUParticles3D simulator plus each pack shader rewritten
+in GLSL (`PORTS`, keyed `<PackDir>/<shader>` where two packs' shaders share a name). Rebuild one pack with
+`ONLY=<file> node tools/content/prepare-vfx.mjs --downloads /home/user/fx-packs/links-full` (the links point at
+the extracted zips in `/home/user/fx-packs/`); `node tools/content/vfx-map.mjs` after editing the map.
+
+- **One-shots** (`GodotVfx.play`): impacts, explosions, lightning bolts (`map.arcs`: each jump a pack zap whose
+  tube is stretched to the jump and played 2.5-4x faster to fit 0.1-0.15 s between arcs), moments of play.
+- **Lasting effects** (`map.lasting`, `game/lastingFx.ts`): owners ask every frame for an effect at a spot under
+  an id (a fire on a burning patch, a vehicle, a flare, a flame trap; the Arc Turret's charge ball; a toxic cloud;
+  wreck smoke). The nearest within 70 m are drawn, as many as the graphics quality allows (low 4, medium 10,
+  high 16; low also thins their particles), started once and moved; the rest keep their plain look (`drawn(id)`).
+- One-shots are capped too (low 6 / medium 12 / high 16 at once, minor ones 3 / 7 / 10), and every mapped effect
+  is built while the map loads (`warm`), so the first one mid-fight costs no build.
+- `pnpm perf:budget` times starting each kind (`arc`, `arc sentry`, `lasting <key>`) against the 40 ms budget.
