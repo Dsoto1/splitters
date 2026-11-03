@@ -79,7 +79,7 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] `canyon` (Rockfall Canyon): the west ledge, the stairs up to each base roof, the ruins on the east side.
 - [ ] `skyward`: jump pads throw you up to the next platform and you land on it.
 - [ ] `sky_islands`: see section 4.
-- [ ] `ridge_camp`, `twin_spires`, `lantern_quarter`, `frost_basin`, `felicity_yard`, `jungle_steps`,
+- [ ] `twin_spires`, `lantern_quarter`, `frost_basin`, `felicity_yard`, `jungle_steps`,
       `reactor`, `gallows_yard`, `bottling`, `step_temple`, `silo_complex`.
 - [ ] Bots move around each map and don't stand stuck against walls.
 

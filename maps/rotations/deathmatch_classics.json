@@ -6,7 +6,6 @@
   "family": "ffa",
   "maps": [
     { "map": "atomic_court", "mode": "core.deathmatch" },
-    { "map": "clockwork", "mode": "core.deathmatch" },
     { "map": "bottling", "mode": "core.deathmatch" },
     { "map": "jade_sanctum", "mode": "core.deathmatch" },
     { "map": "void_yard", "mode": "core.deathmatch" },
