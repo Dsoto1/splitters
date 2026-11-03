@@ -1,4 +1,4 @@
-# Handoff: where Tile Trigger stands (2026-10-30, afternoon)
+# Handoff: where Tile Trigger stands (2026-11-03)
 
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
@@ -20,6 +20,42 @@ Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors
   area. Regenerated citadel, silo_complex, reactor, step_temple. frost_basin picks the same high overview (terrain material
   looks olive in the render): the owner's call, not changed. mapPlan.ts crops to the built area when it fills <85% (was 60%), 3 m margin.
 - Note: pads.test.ts (eagle_spires, frost_basin) timed out at 180 s under machine load in a full run; they are slow, not broken.
+
+### FX pass: the purchased Binbun packs (`wip/fx-pass`, agent, 2026-11-03; not merged; from main a2fd44b = v0.7.0)
+Owner's request: put the bought FX packs to use (full licence, "purchased by the owner"). docs/PHYSICS_FX.md "Pack
+effects" is the guide; docs/PERF_96.md "Pack effects pass" has the numbers. Raw packs stay outside the repo:
+zips in `/home/user/fx-packs/drive-2026-11-01/fx/`, extracted in `extracted-2026-11-01/` (Vol. 2) and
+`extracted-2026-11-03/` (Vol. 1, this session), links prepare-vfx reads in `/home/user/fx-packs/links-full/`.
+- **Shared support** (godotVfx.ts, prepare-vfx.mjs): any pack in content/vfx.json (`dir`, `file`) exports; per-pack
+  shader ports (`<PackDir>/<shader>`); lasting effects (`start` → handle: move/setLevel/stop, fade in/out);
+  time scaling, part filters, stretched tubes, nested nodes, draw_pass_2, radial velocity, velocity limit, sampled
+  textures, torus meshes; caps by graphics quality (low 6/3/4 one-shots/minor/lasting, medium 12/7/10, high
+  16/10/16; low thins lasting particles). Cylinders now use Godot's UVs (side in v 0..0.5: explosion rings and
+  streaks draw as the packs meant). Four-point stars with no smoothness are hard-edged (they were squares).
+  `game/lastingFx.ts`: owners ask per frame by id; the nearest 70 m win the places, the rest keep their plain look.
+- **Electric FX** (CC0 licence file): Arc Caster / Arc Turret / fence arcs are pack bolts per jump (map.arcs; 2.5-4x
+  speed for the 0.1-0.15 s between arcs; plain lines for any jump not drawn), crackle where the last lands; the
+  Arc Turret's charge is a ball of lightning over the orb (orb kept at 0.35 alpha so the tell still reads; same
+  size and timing; `chargeOrb()` reports the drawn size); `trap.shock` crackles.
+- **Flame FX** (CC0): fires on burning patches (3-4 per patch; tongues where none drawn), burning vehicles and
+  wrecks (flame puffs only where none drawn), flares, flame-trap nozzles.
+- **Poison VFX / Smoke VFX** (Vol. 1, no licence file: `LicenseRef-Purchased`, a tier build.mjs now accepts; licence
+  notes in `assets-src/binbun-*-vfx/License.txt`): toxic gas cloud over its fainter dome; pack smoke column on
+  heavy/burning/wrecked vehicles (black puffs past 70 m or when not drawn).
+- **Not done** (and why): smoke grenades (no such weapon), burning barrels (barrels explode, they don't burn),
+  acid (none; `goo` is a slowing goo); flamethrower puffs (each puff lives 0.55 s, ~11 per user: too many lasting
+  effects; needs a cheap shared-material puff); Beam/Magic Orbs/Projectiles (railgun, Singularity vortex, bolts:
+  the beam pack is driven by its controller script's length/radius, not ported yet); Status FX (11 shaders);
+  **Loot** glows: shaders and the torus ported, map entries removed: their MeshInstance parts were active but
+  drew nothing as lasting effects (even with a StandardMaterial swapped in), cause not found; check whether
+  lasting effects' mesh parts draw at all (fire `Core`, the poison cloud's `Glow` may be affected too) before
+  wiring loot; Portal VFX, Ice/Frosted Glass, Battle/Dark/Elemental Magic not started.
+- Evidence (agent scratchpad `fx/`): `electric/strip_arc.jpg`, `strip_sentryarc.jpg`, `strip_charge.jpg`,
+  `strip_fence.jpg`, `zoom_charge.png`; `flame/strip_fire.jpg`, `after_fire_03.png`; `smoke/strip_smoke.jpg`;
+  `loot/` (the failed glow). Harness: `fx/../tools/shot.mjs` (frame clock: 1/60 s per drawn frame, bots held off).
+- Checks: typecheck; test:changed 12 pass (fxMap 8 incl. "every mapped part's shader is ported", lastingFx 3);
+  content OK; perf:budget pass (above); menu 837.5 kB gzip (unchanged). E2E (`CI=1`): physicsfx PASS (273 s), arsenal PASS (454 s), vehicles PASS (289 s, the Arc Turret checks), visual PASS (no baseline change; canyon 0.1 %). ci:plan: content and
+  assets-src paths → full suite (38 flows): needs a `check/` run before main.
 
 ### Pickup models: medical bag, rifle ammo box, WWII Ammo Crate (`wip/pickup-models`, agent, 2026-11-03; not merged; from main a2fd44b)
 Owner's three Drive models (Meshy community, CC0 per the owner; downloads in `/home/user/meshy-drive/drive-2026-11-03-pickups`,
