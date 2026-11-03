@@ -39,7 +39,7 @@ MapMaker's pickup palette lists every item, so **anything below can be placed in
 | Gilded Pistol | hitscan | 2 | 6 pickups | 999 damage, 1 round |
 | Spear | thrown, retrievable | 1 | Spears-only rule; 6 pickups | one-hit kill; fetch it back |
 | Nailgun | projectile | 7 | 4 pickups; Medic | |
-| Disc Launcher | projectile | 6 | 4 pickups (frost_basin, ridge_camp) | |
+| Disc Launcher | projectile | 6 | 4 pickups (frost_basin) | |
 | Arena Disc | disc | 6 | Disc Arena / Discs-only rule | shoves, never hurts; picked up like ammo |
 | Flare Gun | sticky projectile | 2 | 2 pickups (cinder_foundry) | fire zone |
 | Goo Gun | projectile | 6 | 2 pickups (cinder_foundry) | slow zone |
@@ -136,7 +136,7 @@ A map offers its listed modes, plus these automatically:
 | Fort Wars | 150 s build phase with the Builder, then CTF | 48 (only fort_meadow lists it) |
 | Bomb | plant/defuse at A/B, rounds | 14 |
 | Hostage Rescue | lead hostages out | 8 |
-| Co-op | players vs the map's NPCs | 5 (after_hours, blackout, mercy_ward, primeval_park, stonewatch_keep) |
+| Co-op | players vs the map's NPCs | 3 (blackout (retired), mercy_ward, primeval_park) |
 | Zombies | endless waves | all 77 |
 | Disc Arena | knock players into the void, 10 knock-offs | 3 (erosion, grid_rings, sushi_belt_sumo) |
 | Race | checkpoints and laps in vehicles | 4 (apex_ring, neon_spire, serene_city, undergate_transit) |

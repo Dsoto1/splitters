@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 25,
   "metadata": {
     "id": "step_temple",
     "name": "Step Temple",
     "author": "Tile Trigger",
-    "description": "A stepped marble temple round a pillared court. Cloisters and side chambers ring the court; stairs climb to galleries that look down over half walls, and four bridges meet on a railed platform above the dais. Take the railgun from the platform and you are in everyone's sights; the heavy armour waits at the foot of the dais below.",
+    "description": "A stepped sun temple of carved stone in the forest. Cloisters and roofed galleries ring an inlaid court with a fire altar on its dais; four bridges meet on a railed platform above it. Outside, a broad stair climbs each side from the ring of ground to a landing, an arch into the galleries and a terrace with a shrine and armour. Take the railgun from the platform and you are in everyone's sights; the heavy armour waits at the foot of the dais, the spear under the south bridge.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-03T15:02:42.954Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 2,
@@ -21,7 +21,7 @@
   "classicStructure": {
     "cellSize": 8,
     "levelHeight": 4,
-    "theme": "core.temple",
+    "theme": "core.ancient_temple",
     "tiles": [
       {
         "id": "tile_001",
@@ -29,7 +29,16 @@
         "x": 1,
         "y": 1,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.temple_inlay",
+            "tint": null
+          }
+        },
+        "options": {
+          "corners": "columns"
+        }
       },
       {
         "id": "tile_002",
@@ -37,7 +46,13 @@
         "x": 2,
         "y": 2,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_003",
@@ -75,7 +90,21 @@
         "x": 4,
         "y": 0,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
+        }
       },
       {
         "id": "tile_007",
@@ -84,9 +113,23 @@
         "y": 0,
         "z": 0,
         "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "wide",
           "0,0,0:E": "slit"
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
         }
       },
       {
@@ -96,8 +139,22 @@
         "y": 1,
         "z": 0,
         "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "wide"
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
         }
       },
       {
@@ -106,7 +163,17 @@
         "x": 5,
         "y": 2,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_010",
@@ -115,10 +182,24 @@
         "y": 0,
         "z": 1,
         "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "window"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -128,9 +209,23 @@
         "y": 0,
         "z": 1,
         "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:N": "half"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -140,9 +235,23 @@
         "y": 0,
         "z": 1,
         "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
-          "0,0,0:S": "windows",
+          "0,0,0:S": "arch",
           "0,0,0:E": "window"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -151,7 +260,13 @@
         "x": 2,
         "y": 1,
         "z": 1,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_014",
@@ -189,7 +304,21 @@
         "x": 4,
         "y": 4,
         "z": 0,
-        "rotation": 3
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
+        }
       },
       {
         "id": "tile_018",
@@ -198,9 +327,23 @@
         "y": 5,
         "z": 0,
         "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "wide",
           "0,0,0:E": "slit"
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
         }
       },
       {
@@ -210,8 +353,22 @@
         "y": 5,
         "z": 0,
         "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "wide"
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
         }
       },
       {
@@ -220,7 +377,17 @@
         "x": 2,
         "y": 5,
         "z": 0,
-        "rotation": 3
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_021",
@@ -229,10 +396,24 @@
         "y": 2,
         "z": 1,
         "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "window"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -242,9 +423,23 @@
         "y": 3,
         "z": 1,
         "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:N": "half"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -254,9 +449,23 @@
         "y": 4,
         "z": 1,
         "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
-          "0,0,0:S": "windows",
+          "0,0,0:S": "arch",
           "0,0,0:E": "window"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -265,7 +474,13 @@
         "x": 3,
         "y": 2,
         "z": 1,
-        "rotation": 3
+        "rotation": 3,
+        "surfaces": {
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_025",
@@ -303,7 +518,21 @@
         "x": 0,
         "y": 4,
         "z": 0,
-        "rotation": 2
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
+        }
       },
       {
         "id": "tile_029",
@@ -312,9 +541,23 @@
         "y": 4,
         "z": 0,
         "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "wide",
           "0,0,0:E": "slit"
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
         }
       },
       {
@@ -324,8 +567,22 @@
         "y": 3,
         "z": 0,
         "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "wide"
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
         }
       },
       {
@@ -334,7 +591,17 @@
         "x": -1,
         "y": 2,
         "z": 0,
-        "rotation": 2
+        "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_032",
@@ -343,10 +610,24 @@
         "y": 4,
         "z": 1,
         "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "window"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -356,9 +637,23 @@
         "y": 4,
         "z": 1,
         "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:N": "half"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -368,9 +663,23 @@
         "y": 4,
         "z": 1,
         "rotation": 2,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
-          "0,0,0:S": "windows",
+          "0,0,0:S": "arch",
           "0,0,0:E": "window"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -379,7 +688,13 @@
         "x": 2,
         "y": 3,
         "z": 1,
-        "rotation": 2
+        "rotation": 2,
+        "surfaces": {
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_036",
@@ -417,7 +732,21 @@
         "x": 0,
         "y": 0,
         "z": 0,
-        "rotation": 1
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
+        }
       },
       {
         "id": "tile_040",
@@ -426,9 +755,23 @@
         "y": -1,
         "z": 0,
         "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "wide",
           "0,0,0:E": "slit"
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
         }
       },
       {
@@ -438,8 +781,22 @@
         "y": -1,
         "z": 0,
         "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "wide"
+        },
+        "options": {
+          "ceiling": "beams",
+          "facade": "temple"
         }
       },
       {
@@ -448,7 +805,17 @@
         "x": 2,
         "y": -1,
         "z": 0,
-        "rotation": 1
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_flagstone",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.relief_stone",
+            "tint": null
+          }
+        }
       },
       {
         "id": "tile_043",
@@ -457,10 +824,24 @@
         "y": 2,
         "z": 1,
         "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:N": "open",
           "0,0,0:E": "open",
           "0,0,0:S": "window"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -470,9 +851,23 @@
         "y": 1,
         "z": 1,
         "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
           "0,0,0:E": "open",
           "0,0,0:N": "half"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -482,9 +877,23 @@
         "y": 0,
         "z": 1,
         "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.sandstone_tiles",
+            "tint": null
+          },
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        },
         "edges": {
-          "0,0,0:S": "windows",
+          "0,0,0:S": "arch",
           "0,0,0:E": "window"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "temple"
         }
       },
       {
@@ -493,7 +902,109 @@
         "x": 1,
         "y": 2,
         "z": 1,
+        "rotation": 1,
+        "surfaces": {
+          "underside": {
+            "material": "core.temple_sandstone",
+            "tint": null
+          }
+        }
+      },
+      {
+        "id": "tile_dmxokrxrmg",
+        "tile": "jungle.terrace",
+        "x": 3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jo92buckom",
+        "tile": "jungle.terrace_stair",
+        "x": 5,
+        "y": -1,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_1b7vb2ebxt",
+        "tile": "jungle.shrine",
+        "x": 3,
+        "y": -1,
+        "z": 1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_ddrdoryh7l",
+        "tile": "jungle.terrace",
+        "x": 5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_w42hr4qujz",
+        "tile": "jungle.terrace_stair",
+        "x": 5,
+        "y": 5,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_6ctcqgmocs",
+        "tile": "jungle.shrine",
+        "x": 5,
+        "y": 3,
+        "z": 1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_6ac1tuagd0",
+        "tile": "jungle.terrace",
+        "x": 1,
+        "y": 5,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zpwk35dqcp",
+        "tile": "jungle.terrace_stair",
+        "x": -1,
+        "y": 5,
+        "z": 0,
         "rotation": 1
+      },
+      {
+        "id": "tile_5ts8ky0uqr",
+        "tile": "jungle.shrine",
+        "x": 1,
+        "y": 5,
+        "z": 1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_t7qf6k4zjn",
+        "tile": "jungle.terrace",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2jqidvnp6y",
+        "tile": "jungle.terrace_stair",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_05ldagivf5",
+        "tile": "jungle.shrine",
+        "x": -1,
+        "y": 1,
+        "z": 1,
+        "rotation": 0
       }
     ]
   },
@@ -506,9 +1017,9 @@
         6.8
       ],
       "kind": "prop",
-      "model": "prop.fire_basket",
+      "model": "prop.jt_fire_bowl",
       "yaw": 0,
-      "scale": 0.7,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -520,9 +1031,9 @@
         6.8
       ],
       "kind": "prop",
-      "model": "prop.fire_basket",
+      "model": "prop.jt_fire_bowl",
       "yaw": 0,
-      "scale": 0.7,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -534,9 +1045,9 @@
         25.2
       ],
       "kind": "prop",
-      "model": "prop.fire_basket",
+      "model": "prop.jt_fire_bowl",
       "yaw": 0,
-      "scale": 0.7,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -548,9 +1059,9 @@
         25.2
       ],
       "kind": "prop",
-      "model": "prop.fire_basket",
+      "model": "prop.jt_fire_bowl",
       "yaw": 0,
-      "scale": 0.7,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -562,24 +1073,10 @@
         17.2
       ],
       "kind": "prop",
-      "model": "prop.altar",
+      "model": "prop.jt_altar_fire",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_052",
-      "position": [
-        16,
-        2,
-        17.2
-      ],
-      "kind": "prop",
-      "model": "prop.candles",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
       "tint": null
     },
     {
@@ -590,7 +1087,7 @@
         10.8
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -604,7 +1101,7 @@
         21.2
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -618,7 +1115,7 @@
         10.8
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -632,7 +1129,7 @@
         21.2
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -646,9 +1143,9 @@
         -3
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_planter",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -660,7 +1157,7 @@
         -2.6
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
+      "model": "prop.jt_statue_small",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -674,7 +1171,7 @@
         2.8
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -688,9 +1185,9 @@
         13
       ],
       "kind": "prop",
-      "model": "prop.cross_column",
+      "model": "prop.jg_carved_pillar",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -702,9 +1199,9 @@
         13
       ],
       "kind": "prop",
-      "model": "prop.cross_column",
+      "model": "prop.jg_carved_pillar",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -716,7 +1213,7 @@
         18.4
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -730,7 +1227,7 @@
         16
       ],
       "kind": "prop",
-      "model": "prop.banner",
+      "model": "prop.jt_banner_teal",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": false,
@@ -744,7 +1241,7 @@
         -3
       ],
       "kind": "prop",
-      "model": "prop.dungeon_chest",
+      "model": "prop.jt_sarcophagus",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -758,9 +1255,9 @@
         4.8
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_planter",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -772,7 +1269,7 @@
         5.5
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -786,7 +1283,7 @@
         -3
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -800,7 +1297,7 @@
         -1
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "prop.jg_rubble_blocks",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -814,7 +1311,7 @@
         -3
       ],
       "kind": "prop",
-      "model": "prop.lantern",
+      "model": "prop.jt_hanging_brazier",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -828,9 +1325,9 @@
         27
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_planter",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -842,7 +1339,7 @@
         34.6
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
+      "model": "prop.jt_statue_small",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -856,7 +1353,7 @@
         29.2
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -870,9 +1367,9 @@
         43
       ],
       "kind": "prop",
-      "model": "prop.cross_column",
+      "model": "prop.jg_carved_pillar",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -884,9 +1381,9 @@
         37
       ],
       "kind": "prop",
-      "model": "prop.cross_column",
+      "model": "prop.jg_carved_pillar",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -898,7 +1395,7 @@
         37.4
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -912,7 +1409,7 @@
         43.6
       ],
       "kind": "prop",
-      "model": "prop.banner",
+      "model": "prop.jt_banner_teal",
       "yaw": -3.141592653589793,
       "scale": 1,
       "solid": false,
@@ -926,7 +1423,7 @@
         42.8
       ],
       "kind": "prop",
-      "model": "prop.dungeon_chest",
+      "model": "prop.jt_sarcophagus",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -940,9 +1437,9 @@
         43
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_planter",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -954,7 +1451,7 @@
         43.2
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -968,7 +1465,7 @@
         35
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -982,7 +1479,7 @@
         24
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "prop.jg_rubble_blocks",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -996,7 +1493,7 @@
         13
       ],
       "kind": "prop",
-      "model": "prop.lantern",
+      "model": "prop.jt_hanging_brazier",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -1010,9 +1507,9 @@
         35
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_planter",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -1024,7 +1521,7 @@
         34.6
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
+      "model": "prop.jt_statue_small",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1038,7 +1535,7 @@
         29.2
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1052,9 +1549,9 @@
         19
       ],
       "kind": "prop",
-      "model": "prop.cross_column",
+      "model": "prop.jg_carved_pillar",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -1066,9 +1563,9 @@
         19
       ],
       "kind": "prop",
-      "model": "prop.cross_column",
+      "model": "prop.jg_carved_pillar",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -1080,7 +1577,7 @@
         13.600000000000001
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1094,7 +1591,7 @@
         16
       ],
       "kind": "prop",
-      "model": "prop.banner",
+      "model": "prop.jt_banner_teal",
       "yaw": -4.71238898038469,
       "scale": 1,
       "solid": false,
@@ -1108,7 +1605,7 @@
         35
       ],
       "kind": "prop",
-      "model": "prop.dungeon_chest",
+      "model": "prop.jt_sarcophagus",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1122,9 +1619,9 @@
         27.2
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_planter",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -1136,7 +1633,7 @@
         26.5
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1150,7 +1647,7 @@
         35
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1164,7 +1661,7 @@
         33
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "prop.jg_rubble_blocks",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1178,7 +1675,7 @@
         35
       ],
       "kind": "prop",
-      "model": "prop.lantern",
+      "model": "prop.jt_hanging_brazier",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -1192,9 +1689,9 @@
         5
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_planter",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -1206,7 +1703,7 @@
         -2.6000000000000014
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
+      "model": "prop.jt_statue_small",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1220,7 +1717,7 @@
         2.8000000000000007
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1234,9 +1731,9 @@
         -11
       ],
       "kind": "prop",
-      "model": "prop.cross_column",
+      "model": "prop.jg_carved_pillar",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -1248,9 +1745,9 @@
         -5
       ],
       "kind": "prop",
-      "model": "prop.cross_column",
+      "model": "prop.jg_carved_pillar",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -1262,7 +1759,7 @@
         -5.399999999999999
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1276,7 +1773,7 @@
         -11.600000000000001
       ],
       "kind": "prop",
-      "model": "prop.banner",
+      "model": "prop.jt_banner_teal",
       "yaw": -6.283185307179586,
       "scale": 1,
       "solid": false,
@@ -1290,7 +1787,7 @@
         -10.799999999999997
       ],
       "kind": "prop",
-      "model": "prop.dungeon_chest",
+      "model": "prop.jt_sarcophagus",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1304,9 +1801,9 @@
         -11
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_planter",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -1318,7 +1815,7 @@
         -11.200000000000003
       ],
       "kind": "prop",
-      "model": "prop.pot",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1332,7 +1829,7 @@
         -3
       ],
       "kind": "prop",
-      "model": "prop.urn",
+      "model": "prop.jt_pottery",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1346,7 +1843,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "prop.jg_rubble_blocks",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1360,7 +1857,7 @@
         19
       ],
       "kind": "prop",
-      "model": "prop.lantern",
+      "model": "prop.jt_hanging_brazier",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -1539,7 +2036,7 @@
         -1.5
       ],
       "kind": "pickup",
-      "item": "core.ammo_rifle",
+      "item": "core.ammo_light",
       "respawnSeconds": null
     },
     {
@@ -1567,9 +2064,9 @@
     {
       "id": "pickup_127",
       "position": [
-        16,
-        4,
-        1
+        24,
+        4.2,
+        -8
       ],
       "kind": "pickup",
       "item": "core.armor_small",
@@ -1594,7 +2091,7 @@
         16
       ],
       "kind": "pickup",
-      "item": "core.ammo_shells",
+      "item": "core.ammo_rifle",
       "respawnSeconds": null
     },
     {
@@ -1649,7 +2146,7 @@
         33.5
       ],
       "kind": "pickup",
-      "item": "core.ammo_sniper",
+      "item": "core.ammo_shells",
       "respawnSeconds": null
     },
     {
@@ -1677,9 +2174,9 @@
     {
       "id": "pickup_137",
       "position": [
-        16,
-        4,
-        31
+        8,
+        4.2,
+        40
       ],
       "kind": "pickup",
       "item": "core.armor_small",
@@ -1704,7 +2201,7 @@
         16
       ],
       "kind": "pickup",
-      "item": "core.ammo_light",
+      "item": "core.ammo_sniper",
       "respawnSeconds": null
     },
     {
@@ -1748,7 +2245,7 @@
         6.5
       ],
       "kind": "pickup",
-      "item": "core.weapon_laser_rifle",
+      "item": "core.weapon_spear",
       "respawnSeconds": null
     },
     {
@@ -6322,9 +6819,9 @@
         5
       ],
       "kind": "prop",
-      "model": "prop.rn_statue_fox",
+      "model": "prop.temple_spear_statue",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -6336,9 +6833,9 @@
         5
       ],
       "kind": "prop",
-      "model": "prop.rn_statue_fox",
+      "model": "prop.temple_monk_statue",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -6378,9 +6875,9 @@
         12.1
       ],
       "kind": "prop",
-      "model": "prop.rn_statue_fox",
+      "model": "prop.temple_spear_statue",
       "yaw": -1.5707963267948966,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -6392,9 +6889,9 @@
         19.9
       ],
       "kind": "prop",
-      "model": "prop.rn_statue_fox",
+      "model": "prop.temple_monk_statue",
       "yaw": -1.5707963267948966,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -6434,9 +6931,9 @@
         27
       ],
       "kind": "prop",
-      "model": "prop.rn_statue_fox",
+      "model": "prop.temple_spear_statue",
       "yaw": -3.141592653589793,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -6448,9 +6945,9 @@
         27
       ],
       "kind": "prop",
-      "model": "prop.rn_statue_fox",
+      "model": "prop.temple_monk_statue",
       "yaw": -3.141592653589793,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -6490,9 +6987,9 @@
         19.9
       ],
       "kind": "prop",
-      "model": "prop.rn_statue_fox",
+      "model": "prop.temple_spear_statue",
       "yaw": -4.71238898038469,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -6504,9 +7001,9 @@
         12.100000000000001
       ],
       "kind": "prop",
-      "model": "prop.rn_statue_fox",
+      "model": "prop.temple_monk_statue",
       "yaw": -4.71238898038469,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -6621,6 +7118,816 @@
       "intensity": 1,
       "range": 9,
       "fixture": "ceiling"
+    },
+    {
+      "id": "pickup_dmxokrxrmg",
+      "kind": "pickup",
+      "position": [
+        40,
+        4.2,
+        24
+      ],
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_jo92buckom",
+      "kind": "pickup",
+      "position": [
+        -8,
+        4.2,
+        8
+      ],
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "light_ddrdoryh7l",
+      "kind": "light",
+      "position": [
+        29,
+        4,
+        -11
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_6ctcqgmocs",
+      "kind": "light",
+      "position": [
+        35,
+        4,
+        -11
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "prop_6ac1tuagd0",
+      "kind": "prop",
+      "position": [
+        42.7,
+        0,
+        -11.2
+      ],
+      "model": "prop.temple_fire_statue",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_zpwk35dqcp",
+      "kind": "prop",
+      "position": [
+        42.7,
+        0,
+        -4.8
+      ],
+      "model": "prop.temple_fire_statue",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5ts8ky0uqr",
+      "kind": "prop",
+      "position": [
+        27.6,
+        4.3,
+        -4.25
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_t7qf6k4zjn",
+      "kind": "prop",
+      "position": [
+        36.4,
+        4.3,
+        -4.25
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "block_05ldagivf5",
+      "kind": "block",
+      "position": [
+        44.6,
+        -0.4,
+        -8
+      ],
+      "yaw": 0,
+      "size": [
+        1.2,
+        0.2,
+        8
+      ],
+      "material": "core.mossy_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_mfl0mwrrnn",
+      "kind": "prop",
+      "position": [
+        21,
+        -1.65,
+        -13
+      ],
+      "model": "prop.jg_monstera",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x0rc1yotvd",
+      "kind": "prop",
+      "position": [
+        26,
+        -0.43,
+        -13.2
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ypl82jhglz",
+      "kind": "prop",
+      "position": [
+        33,
+        -0.33,
+        -13.2
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7nlyaxevjz",
+      "kind": "prop",
+      "position": [
+        39,
+        -0.34,
+        -13
+      ],
+      "model": "prop.jg_monstera",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_amleo2l0kj",
+      "kind": "spawn",
+      "position": [
+        42.6,
+        0,
+        -8
+      ],
+      "yaw": -1.571,
+      "faction": null
+    },
+    {
+      "id": "block_odkmv3mx3b",
+      "kind": "block",
+      "position": [
+        9.5,
+        0,
+        9.5
+      ],
+      "yaw": 0.785,
+      "size": [
+        2.6,
+        1.1,
+        0.8
+      ],
+      "material": "core.carved_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "light_e2hxfyh75y",
+      "kind": "light",
+      "position": [
+        43,
+        4,
+        29
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_gp7msgjmhm",
+      "kind": "light",
+      "position": [
+        43,
+        4,
+        35
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "prop_26cjl0x171",
+      "kind": "prop",
+      "position": [
+        43.2,
+        0,
+        42.7
+      ],
+      "model": "prop.temple_fire_statue",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_epqtnvm8q3",
+      "kind": "prop",
+      "position": [
+        36.8,
+        0,
+        42.7
+      ],
+      "model": "prop.temple_fire_statue",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xo4odrco3m",
+      "kind": "prop",
+      "position": [
+        36.25,
+        4.3,
+        27.6
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_kkfpi0eazr",
+      "kind": "prop",
+      "position": [
+        36.25,
+        4.3,
+        36.4
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "block_0af7pnzsw8",
+      "kind": "block",
+      "position": [
+        40,
+        -0.4,
+        44.6
+      ],
+      "yaw": -1.571,
+      "size": [
+        1.2,
+        0.2,
+        8
+      ],
+      "material": "core.mossy_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_xvlpf0046m",
+      "kind": "prop",
+      "position": [
+        45,
+        -1.79,
+        21
+      ],
+      "model": "prop.jg_monstera",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_obwnq2ue59",
+      "kind": "prop",
+      "position": [
+        45.2,
+        -0.44,
+        26
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_tjjq2xgvb7",
+      "kind": "prop",
+      "position": [
+        45.2,
+        -0.39,
+        33
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7e9xd33y98",
+      "kind": "prop",
+      "position": [
+        45,
+        -0.18,
+        39
+      ],
+      "model": "prop.jg_monstera",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_u5uhixt8oj",
+      "kind": "spawn",
+      "position": [
+        40,
+        0,
+        42.6
+      ],
+      "yaw": 3.142,
+      "faction": null
+    },
+    {
+      "id": "block_9w07a2nv37",
+      "kind": "block",
+      "position": [
+        22.5,
+        0,
+        9.5
+      ],
+      "yaw": -0.785,
+      "size": [
+        2.6,
+        1.1,
+        0.8
+      ],
+      "material": "core.carved_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "light_mc5vpcweqh",
+      "kind": "light",
+      "position": [
+        3,
+        4,
+        43
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_6lmfgc3cff",
+      "kind": "light",
+      "position": [
+        -3,
+        4,
+        43
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "prop_0w3jql50ed",
+      "kind": "prop",
+      "position": [
+        -10.7,
+        0,
+        43.2
+      ],
+      "model": "prop.temple_fire_statue",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7z14fgs7s3",
+      "kind": "prop",
+      "position": [
+        -10.7,
+        0,
+        36.8
+      ],
+      "model": "prop.temple_fire_statue",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_89yclntz5q",
+      "kind": "prop",
+      "position": [
+        4.4,
+        4.3,
+        36.25
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_je74016k41",
+      "kind": "prop",
+      "position": [
+        -4.4,
+        4.3,
+        36.25
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "block_ekrqxstr16",
+      "kind": "block",
+      "position": [
+        -12.6,
+        -0.4,
+        40
+      ],
+      "yaw": 3.142,
+      "size": [
+        1.2,
+        0.2,
+        8
+      ],
+      "material": "core.mossy_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_3n235pv1oz",
+      "kind": "prop",
+      "position": [
+        11,
+        -1.66,
+        45
+      ],
+      "model": "prop.jg_monstera",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_83reavktfo",
+      "kind": "prop",
+      "position": [
+        6,
+        -0.52,
+        45.2
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6zlwkdt8y3",
+      "kind": "prop",
+      "position": [
+        -1,
+        -0.43,
+        45.2
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jrtyepj7rp",
+      "kind": "prop",
+      "position": [
+        -7,
+        -0.43,
+        45
+      ],
+      "model": "prop.jg_monstera",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_inq9aipltk",
+      "kind": "spawn",
+      "position": [
+        -10.6,
+        0,
+        40
+      ],
+      "yaw": 1.571,
+      "faction": null
+    },
+    {
+      "id": "block_zlsiuwh1ug",
+      "kind": "block",
+      "position": [
+        22.5,
+        0,
+        22.5
+      ],
+      "yaw": -2.356,
+      "size": [
+        2.6,
+        1.1,
+        0.8
+      ],
+      "material": "core.carved_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "light_7uar2m0i99",
+      "kind": "light",
+      "position": [
+        -11,
+        4,
+        3
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "light_azewwg7z21",
+      "kind": "light",
+      "position": [
+        -11,
+        4,
+        -3
+      ],
+      "yaw": 0,
+      "color": "#ff9a3c",
+      "intensity": 1.4,
+      "range": 11,
+      "fixture": "bulb",
+      "blink": 0.4
+    },
+    {
+      "id": "prop_9ub9w6ja6r",
+      "kind": "prop",
+      "position": [
+        -11.2,
+        0,
+        -10.7
+      ],
+      "model": "prop.temple_fire_statue",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_coehsj8kjp",
+      "kind": "prop",
+      "position": [
+        -4.8,
+        0,
+        -10.7
+      ],
+      "model": "prop.temple_fire_statue",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_thl0nkfedj",
+      "kind": "prop",
+      "position": [
+        -4.25,
+        4.3,
+        4.4
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_8np7bt897v",
+      "kind": "prop",
+      "position": [
+        -4.25,
+        4.3,
+        -4.4
+      ],
+      "model": "prop.jt_banner_red",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "block_5pn91n9pz2",
+      "kind": "block",
+      "position": [
+        -8,
+        -0.4,
+        -12.6
+      ],
+      "yaw": 1.571,
+      "size": [
+        1.2,
+        0.2,
+        8
+      ],
+      "material": "core.mossy_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_xe5g9lehu1",
+      "kind": "prop",
+      "position": [
+        -13,
+        -1.79,
+        11
+      ],
+      "model": "prop.jg_monstera",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_uzvhpr479j",
+      "kind": "prop",
+      "position": [
+        -13.2,
+        -0.43,
+        6
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_soabhlvmd7",
+      "kind": "prop",
+      "position": [
+        -13.2,
+        -0.05,
+        -1
+      ],
+      "model": "prop.jt_plant_cluster",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_m8jm44lcxl",
+      "kind": "prop",
+      "position": [
+        -13,
+        2.17,
+        -7
+      ],
+      "model": "prop.jg_monstera",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_ok7o5ywlld",
+      "kind": "spawn",
+      "position": [
+        -8,
+        0,
+        -10.6
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "block_xar0tlzf5u",
+      "kind": "block",
+      "position": [
+        9.5,
+        0,
+        22.5
+      ],
+      "yaw": 2.356,
+      "size": [
+        2.6,
+        1.1,
+        0.8
+      ],
+      "material": "core.carved_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
     }
   ],
   "factions": [],
@@ -12252,7 +13559,7 @@
       480,
       429,
       220,
-      220,
+      -5,
       -40,
       -40,
       -40,
@@ -12373,7 +13680,7 @@
       480,
       418,
       220,
-      220,
+      -5,
       -40,
       -40,
       -40,
@@ -12856,8 +14163,8 @@
       480,
       480,
       273,
-      220,
-      220,
+      -2,
+      -2,
       -40,
       -40,
       -40,
@@ -12977,8 +14284,8 @@
       476,
       429,
       235,
-      220,
-      220,
+      -2,
+      -2,
       -40,
       -40,
       -40,
@@ -13220,7 +14527,7 @@
       220,
       220,
       214,
-      212,
+      -5,
       -40,
       -40,
       -40,
