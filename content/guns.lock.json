@@ -223,11 +223,11 @@
     {
       "file": "models/pickups/health_large.glb",
       "source": "meshy-community-pickups",
-      "src": "Vintage Medical Supply (Meshy community model, downloaded 2026-11-03): the large health pickup",
+      "src": "Vintage Medical Supply (Meshy community model, downloaded 2026-11-03): the large health pickup, crosses recoloured green",
       "triangles": 2423,
       "normalMap": true,
-      "bytes": 149980,
-      "sha256": "89b61d9d941d5fc8"
+      "bytes": 150012,
+      "sha256": "4947ec9f9fb8b30f"
     },
     {
       "file": "models/pickups/ammo_rifle.glb",
