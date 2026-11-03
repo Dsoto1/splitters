@@ -52,8 +52,11 @@ bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agen
   read wrong there: `charfix/step4-menu.py` scales the hero by BODY_SIZES; Abe wants `"size": "large"`; Goblina's
   head-down is her `lean.neck` 10. Grip audit BEFORE (rifle+pistol, the 29 looks in step 5 incl. Santa and Zombie
   Soldier A): total 101, 21 flagged (`charfix/audit-before/summary.md`); no after yet.
-- Checks: typecheck; vitest (tools/content tests, lookGroups, creatures, botThemes) pass; content OK; e2e characters
-  PASS on the first face build (2,060 s); see the agent report for test:changed.
+- Checks (on 2c8ab3e): typecheck; content OK; test:changed 1280 pass, 4 failed, of which looks.test (retired goblin)
+  and forts.test (seed 4 missed stairs with the new bot looks: now seed 3) are fixed; host.test (hub wait) and
+  pads eagle_spires (210 s timeout) failed at load 20-40, as in earlier sessions; e2e (`CI=1`) characters PASS
+  (1,677 s), visual PASS (menu 0.01 %). ci:plan: content paths, full suite: needs a `check/` run before main.
+  Not pushed: the lead asked that the face rebuilds not go towards main until they match the downloads.
 
 ### Pickup models: medical bag, rifle ammo box, WWII Ammo Crate (`wip/pickup-models`, agent, 2026-11-03; not merged; from main a2fd44b)
 Owner's three Drive models (Meshy community, CC0 per the owner; downloads in `/home/user/meshy-drive/drive-2026-11-03-pickups`,
