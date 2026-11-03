@@ -167,7 +167,21 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.rustwalker': 'core.t350',
   'core.slugger': 'core.t350',
   'core.crimsonop': 'core.stealthop', // held back: a close likeness of a famous game character; owner to decide (files kept)
+  // Owner, 2026-11-03: off the roster (files and manifests kept). Rotter and Giggles tear open at the sides and
+  // waist (their downloads stand with the hands on the hips; see HANDOFF); the others by the owner's choice.
+  'core.vampire': 'core.bonesworth',
+  'core.hollowvisitor': 'core.visitor',
+  'core.dusttrooper': 'core.desertranger',
+  'core.goblin': 'core.grizzelda',
+  'core.rotter': 'core.shambler',
+  'core.giggles': 'core.punkin',
 };
+
+/**
+ * Retired looks an NPC role is still drawn as (NPC_ROLE_SPECS `look`): off the roster, and a player's saved choice
+ * of one plays its replacement (validLookId), but getLook still gives the look itself so the NPC keeps its model.
+ */
+export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin']);
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
 const ALL_LOOKS: readonly CharacterLook[] = [
@@ -437,6 +451,8 @@ export function decodeLook(id: string): CharacterLook | null {
 
 /** A preset or custom look by ID (a retired preset gives its replacement); anything unknown or invalid falls back to the default. */
 export const getLook = (id: string | undefined): CharacterLook => {
+  const npc = id && NPC_KEPT_LOOKS.has(id) ? ALL_LOOKS.find((l) => l.id === id) : undefined;
+  if (npc) return npc;
   const key = (id && RETIRED_LOOKS[id]) || id;
   return CORE_LOOKS.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? CORE_LOOKS[0]!;
 };
