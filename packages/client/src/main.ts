@@ -198,10 +198,10 @@ function applyPublished(maps: ArcadeMap[], published: ReadonlyMap<string, Publis
   maps.push(...rest);
 }
 
-/** Your MapMaker maps (this browser's library), for an offline host's Change map (in a match: `m` is its code). */
-function ownMaps(m: MatchCode): ArcadeMap[] {
-  return m.listLibrary().flatMap((e): ArcadeMap[] => {
-    const r = m.openFromLibrary(e.id);
+/** Your MapMaker maps (this browser's library), for an offline host's Change map (in a match: `code` is its code). */
+function ownMaps(code: MatchCode): ArcadeMap[] {
+  return code.listLibrary().flatMap((e): ArcadeMap[] => {
+    const r = code.openFromLibrary(e.id);
     return 'map' in r ? [loadedEntry(`own:${e.id}`, r.map, { blurb: 'Your map', modes: playableModes(r.map), bots: 4, group: 'Your' })] : [];
   });
 }
@@ -502,11 +502,11 @@ class App {
   }
 
   /** The host's Change map (pause menu → Match): the Arcade's map cards; offline, your MapMaker maps too. */
-  private mapPicker = (m: MatchCode): NonNullable<SessionOptions['mapPicker']> => (o) =>
+  private mapPicker = (code: MatchCode): NonNullable<SessionOptions['mapPicker']> => (o) =>
     this.front!.hostMapPicker({
       ...o,
       isSuite: inSuite,
-      own: o.suiteOnly ? [] : ownMaps(m),
+      own: o.suiteOnly ? [] : ownMaps(code),
       // A built-in map loads when its card is picked; usually it's in by the time Change map is pressed.
       onPick: (m, mode) => (m.map ? o.onPick(m.map, mode) : void m.load().then((doc) => o.onPick(doc, mode), (e: unknown) => console.warn('map failed to load', e))),
     });
