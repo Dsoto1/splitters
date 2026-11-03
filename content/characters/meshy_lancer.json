@@ -30,7 +30,6 @@
   },
   "fixes": {
     "triangles": 15000,
-    "surface": "rebake",
     "feet": true,
     "cloth": true,
     "headShare": 0.16,

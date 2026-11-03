@@ -1084,7 +1084,7 @@ function sphereDirections(count) {
  * Triangles nothing outside can see: from points on each triangle, rays in `rays` directions over the whole sphere
  * (both faces count: Meshy's sheet metal is one-sided) all hit the model again. Returns a flag per triangle.
  */
-export function hiddenTriangles(P, idx, rays = 40) {
+export function hiddenTriangles(P, idx, rays = 40, only = null) {
   const T = idx.length / 3;
   const caster = bvh(P, idx);
   const dirs = sphereDirections(rays);
@@ -1094,6 +1094,7 @@ export function hiddenTriangles(P, idx, rays = 40) {
   // From the centre and from points towards each corner (a sliver showing past an edge still counts as seen).
   const at = [[1 / 3, 1 / 3, 1 / 3], [0.7, 0.15, 0.15], [0.15, 0.7, 0.15], [0.15, 0.15, 0.7]];
   for (let t = 0; t < T; t++) {
+    if (only && !only(t)) continue;
     const [i0, i1, i2] = [idx[t * 3] * 3, idx[t * 3 + 1] * 3, idx[t * 3 + 2] * 3];
     let seen = false;
     for (const w of at) {
@@ -1118,6 +1119,14 @@ export function hiddenTriangles(P, idx, rays = 40) {
  * 2,500) and hands of a few dozen each (Merrow the Wise 110 for both: thin shards in his sleeves).
  */
 export const HEAD_SHARE = 0.12;
+/**
+ * The errors (share of the model's size) a `seamParts` part (the head) is cut at, at most. The body's looser passes
+ * (up to 3-5%: several centimetres) were also the head's, and a head that hadn't reached its share at 1% was cut at
+ * 3-5%: skulls came out pointed, the halves of a face out of line and its charts' borders across the eyes and nose.
+ */
+const FINE_ERRORS = [0.002, 0.004];
+/** The least share of a cut's budget the body (all but its parts) keeps, however many triangles the parts held on to. */
+const BODY_FLOOR = 0.6;
 export const HANDS_SHARE = 0.04;
 
 /**
@@ -1127,7 +1136,7 @@ export const HANDS_SHARE = 0.04;
  * careful passes tried in turn until a part is within 5% of its target; `sloppy`: then a sloppy pass for the
  * rest of the body only (it would crush a face). Returns the new index list.
  */
-export function cutKeeping(indices, positions, target, parts, { errors = [0.008], sloppy = false } = {}) {
+export function cutKeeping(indices, positions, target, parts, { errors = [0.008], sloppy = false, seamParts = [], fineErrors = FINE_ERRORS } = {}) {
   const n = positions.length / 3;
   const lists = [...parts.map(() => []), []];
   for (let i = 0; i < indices.length; i += 3) {
@@ -1151,19 +1160,37 @@ export function cutKeeping(indices, positions, target, parts, { errors = [0.008]
     }
   });
   const none = new Float32Array(n);
+  // `seamParts` (the head): their texture seams locked too (a vertex sharing its position with another: the copies
+  // either side of a seam). Collapses along a seam pulled a chart's curved border straight across the gutter or a
+  // neighbouring chart, and the triangle drew a dark or pale wedge across the face (owner, 2026-11-03: "distorted
+  // faces"; Elder Tomo, Sgt. Mackie, Cal, ...). Locked, each chart keeps its outline and is cut inside it.
+  const seamLock = Uint8Array.from(lock);
+  if (seamParts.length) {
+    const first = new Map();
+    for (let v = 0; v < n; v++) {
+      const k = `${positions[v * 3]},${positions[v * 3 + 1]},${positions[v * 3 + 2]}`;
+      const o = first.get(k);
+      if (o === undefined) first.set(k, v);
+      else seamLock[v] = seamLock[o] = 1;
+    }
+  }
   // Errors are the whole mesh's (a part alone is small, and an error relative to its own size held it far above
   // its target).
   const size = MeshoptSimplifier.getScale(positions, 3);
-  const cut = (part, wanted, allowSloppy) => {
+  const cut = (part, wanted, allowSloppy, seams) => {
     let idx = Uint32Array.from(part);
-    for (const error of errors) {
+    for (const error of seams ? fineErrors : errors) {
       if (idx.length / 3 <= wanted * 1.05) break;
-      [idx] = MeshoptSimplifier.simplifyWithAttributes(idx, positions, 3, none, 1, [0], lock, wanted * 3, error * size, ['ErrorAbsolute']);
+      [idx] = MeshoptSimplifier.simplifyWithAttributes(idx, positions, 3, none, 1, [0], seams ? seamLock : lock, wanted * 3, error * size, ['ErrorAbsolute']);
     }
     if (allowSloppy && idx.length / 3 > wanted * 2) [idx] = MeshoptSimplifier.simplifySloppy(idx, positions, 3, null, wanted * 3, 0.05);
     return idx;
   };
-  const out = lists.map((list, k) => cut(list, want[k], sloppy && k === parts.length));
+  // The parts first; the rest of the body takes what they left of the budget (a seam-locked head stops above its
+  // share), but never less than BODY_FLOOR of it.
+  const out = parts.map((_, k) => cut(lists[k], want[k], false, seamParts.includes(k)));
+  const used = out.reduce((a, o) => a + o.length / 3, 0);
+  out.push(cut(lists[parts.length], Math.max(Math.round(target * BODY_FLOOR), target - used), sloppy, false));
   const all = new Uint32Array(out.reduce((a, b) => a + b.length, 0));
   let at = 0;
   for (const o of out) {

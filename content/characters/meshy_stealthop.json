@@ -29,7 +29,6 @@
   },
   "fixes": {
     "triangles": 11000,
-    "surface": "rebake",
     "headShare": 0.16,
     "handsShare": 0.1,
     "normalSize": 1024,

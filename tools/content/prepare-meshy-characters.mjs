@@ -286,6 +286,10 @@ function pose(skel, verts, ual, c) {
   const { count } = verts;
   let J = verts.joints;
   let W = verts.weights;
+  // The copies of a vertex either side of a texture seam (one position, two texture coordinates) follow the same
+  // bones: skinned apart, posing pulled them apart, the cut took each side for an open edge, and the face opened along
+  // its seams onto the inside of the head (owner, 2026-11-03: "distorted faces"; Cal's face split down the middle).
+  ({ J, W } = shareSeamWeights(count, J, W, (v) => verts.at(v, J[v * 4])[0]));
   // The vertices where the download stands (its own pose), for the weight cleanup and the tear test below.
   const restAt = (v) => {
     let p = [0, 0, 0];
@@ -587,7 +591,7 @@ async function readUnrigged(file, c, ual) {
       for (const sem of p.listSemantics()) if (!['POSITION', 'NORMAL', 'TEXCOORD_0'].includes(sem)) p.setAttribute(sem, null);
     } else {
       let cut = new Uint32Array(p.getIndices().getArray());
-      if (cut.length / 3 > target * 1.5) cut = cutKeeping(cut, pos, target, parts, { errors: [0.01, 0.03], sloppy: true });
+      if (cut.length / 3 > target * 1.5) cut = cutKeeping(cut, pos, target, parts, { errors: [0.01, 0.03], sloppy: true, seamParts: [0] });
       p.getIndices().setArray(cut);
       compactPrimitive(p);
     }
@@ -817,6 +821,37 @@ async function rebakeDownload(mesh, image, normalImage, target, parts) {
   return { P: out.pos, N: out.nrm, UV: out.uv, I: out.idx, from: Uint32Array.from(out.from, (k) => first[k]), colour: out.jpeg, normal: png };
 }
 
+/** Every group of vertices at one position given the same skin: their weights summed per joint, the four largest kept. */
+function shareSeamWeights(count, J, W, at) {
+  const groups = new Map();
+  for (let v = 0; v < count; v++) {
+    const p = at(v);
+    const key = `${p[0].toFixed(6)},${p[1].toFixed(6)},${p[2].toFixed(6)}`;
+    const g = groups.get(key);
+    if (g) g.push(v);
+    else groups.set(key, [v]);
+  }
+  const J2 = J.slice();
+  const W2 = Float32Array.from(W);
+  let shared = 0;
+  for (const g of groups.values()) {
+    if (g.length < 2) continue;
+    const sum = new Map();
+    for (const v of g) for (let k = 0; k < 4; k++) if (W[v * 4 + k] > 0) sum.set(J[v * 4 + k], (sum.get(J[v * 4 + k]) ?? 0) + W[v * 4 + k]);
+    const top = [...sum].sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const total = top.reduce((a, [, w]) => a + w, 0) || 1;
+    for (const v of g) {
+      for (let k = 0; k < 4; k++) {
+        J2[v * 4 + k] = top[k]?.[0] ?? 0;
+        W2[v * 4 + k] = top[k] ? top[k][1] / total : 0;
+      }
+    }
+    shared += g.length;
+  }
+  console.log(`  seams: ${shared} vertices on texture seams share their skin`);
+  return { J: J2, W: W2 };
+}
+
 function triangles(doc) {
   let tris = 0;
   for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) tris += p.getIndices().getCount() / 3;
@@ -962,7 +997,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
       // (`fixes.handsShare`: more, where cuffs the skinning left on the hands took their share: King Aldric's.)
       { inside: (v) => handJoints.has(majorOf(v)), share: c.handsShare ?? HANDS_SHARE },
     ];
-    const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008] });
+    const cut = cutKeeping(prim.getIndices().getArray(), prim.getAttribute('POSITION').getArray(), want, parts, { errors: loose ? [0.008, 0.02, 0.05] : [0.008], seamParts: [0] });
     prim.getIndices().setArray(cut);
     compactPrimitive(prim);
   }
