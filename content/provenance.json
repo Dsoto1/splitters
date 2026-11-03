@@ -29615,10 +29615,10 @@
     },
     {
       "file": "models/pickups/health_large.glb",
-      "sha256": "89b61d9d941d5fc8",
+      "sha256": "4947ec9f9fb8b30f",
       "triangles": 2423,
-      "bytes": 149980,
-      "source": "meshy-community-pickups/Vintage Medical Supply (Meshy community model, downloaded 2026-11-03): the large health pickup",
+      "bytes": 150012,
+      "source": "meshy-community-pickups/Vintage Medical Supply (Meshy community model, downloaded 2026-11-03): the large health pickup, crosses recoloured green",
       "title": "Meshy community models (pickups, textured GLB downloads of 2026-11-03)",
       "creator": "Meshy community, CC0 (per owner)",
       "url": "https://www.meshy.ai (community page URL pending from the owner)",
