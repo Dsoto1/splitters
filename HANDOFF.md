@@ -27,6 +27,17 @@ Do 1 and 2 before the remaining style packs (Desert City, Jungle). Then:
 
 Each step goes on its own `wip/` branch, green on a `check/` branch, then onto main.
 
+Queue (owner, 2026-11-03): **first** the CI pipeline fixes (accept a commit whose code matches an already-green
+check commit when only docs differ; a batch-landing script that merges waiting green branches into one candidate;
+finer e2e/unit routing: `view.ts`/`content/` stop running all flows, map JSON runs the tests that read maps), **then**
+content scalability 1 → 7 above.
+
+**Planned after content scalability (owner, 2026-11-03; not before, in case the structure changes):** core and
+experimental tiers for maps and characters, promoted by the owner from the Control Center Workbench (`tier` fields in
+the content JSON; `.control-center/workbench.json` collections, dashboard docs/WORKBENCH.md), with quality gates
+(grip audit, portrait and face checks, map card not facing a wall, perf budget, spawn and route reachability, a
+bots-only match) that block promotion to core and only report for experimental.
+
 ### Map removals round 2 and card pictures (`wip/map-removals-2`, agent, 2026-11-03; not merged; from main ef2c103)
 - Deleted (file, picture, inspirations, rotation entries): after_hours, clockwork, fallout_lane, ridge_camp, stonewatch_keep.
   Retired (RETIRED_MAPS, kept as fixtures): blackout (co-op mission test in npc.test.ts), cedar_lane (style pack 08 demo and
