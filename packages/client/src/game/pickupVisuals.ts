@@ -82,7 +82,7 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     };
     if (large) void models.instantiate(HEALTH_LARGE_MODEL, `${name}_hp`, instanced).then(attach(1), () => models.instantiate(HEALTH_MODEL, `${name}_hp`, instanced).then(attach(1.6)));
     else void models.instantiate(HEALTH_MODEL, `${name}_hp`, instanced).then(attach(1.25));
-    part(CreateCylinder(`${name}_ring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, '#e23b3b', 0.5)).position.y = -0.4;
+    part(CreateCylinder(`${name}_ring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, '#3fbf5a', 0.5)).position.y = -0.4;
   } else if (fx.kind === 'armor') {
     const s = fx.amount >= 50 ? 1.25 : 1;
     part(CreateCylinder(`${name}_ar`, { diameter: 0.6 * s, height: 0.12, tessellation: 6 }, scene), mat(scene, '#3c8dff', 0.35)).rotation.x = Math.PI / 2;
@@ -225,7 +225,7 @@ export function itemColor(itemId: string): string {
   if (!fx) return '#ff00ff';
   switch (fx.kind) {
     case 'health':
-      return '#e23b3b';
+      return '#3fbf5a';
     case 'armor':
       return '#3c8dff';
     case 'ammo':
