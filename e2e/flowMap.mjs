@@ -43,6 +43,15 @@ const MAP_USERS = {
   void_yard: ['hostcontrols'],
 };
 
+/**
+ * Docs and notes: nothing reads them to build or test the game. Also what CI ignores when it asks whether a
+ * commit's code equals a commit that already went green (tools/ci/greenTree.mjs). Keep this list strict.
+ */
+export const DOC_PATTERNS = [/^docs\//, /^[^/]*\.md$/, /^packages\/[^/]+\/[^/]*\.md$/, /^LICENSE/];
+
+/** Whether a repo-relative path is docs only (DOC_PATTERNS). */
+export const isDocPath = (p) => DOC_PATTERNS.some((re) => re.test(p.replace(/^\.\//, '')));
+
 const FULL = Symbol('full');
 const NONE = Symbol('none');
 const UNIT_ALL = 'all';
@@ -53,11 +62,8 @@ const UNIT_ALL = 'all';
  */
 const RULES = [
   // Docs and notes: nothing to run.
-  [/^docs\//, NONE, []],
-  [/^(?!CLAUDE\.md$)[^/]*\.md$/, NONE, []],
-  [/^CLAUDE\.md$/, NONE, []],
-  [/^packages\/[^/]+\/[^/]*\.md$/, NONE, []],
-  [/^LICENSE|^\.gitignore$|^\.editorconfig$/, NONE, []],
+  ...DOC_PATTERNS.map((re) => [re, NONE, []]),
+  [/^\.gitignore$|^\.editorconfig$/, NONE, []],
   // The Lightsail box's scripts: no flow or unit test runs them (the check job lints them; infra/test/ by hand).
   [/^(infra|deploy)\//, NONE, []],
 
