@@ -86,7 +86,7 @@ the content JSON; `.control-center/workbench.json` collections, dashboard docs/W
 (grip audit, portrait and face checks, map card not facing a wall, perf budget, spawn and route reachability, a
 bots-only match) that block promotion to core and only report for experimental.
 
-### Fire props: pack flames on braziers, fire bowls, torches, campfires (`wip/fire-props`, agent, 2026-11-03; not merged; from main c3e7e7b)
+### Fire props: pack flames on braziers, fire bowls, torches, campfires (`wip/fire-props`, agent, 2026-11-03; not merged; from main c3e7e7b, rebased on 716c012)
 Owner's request: the bought Flame FX on the fire props placed on maps. docs/PHYSICS_FX.md "Pack effects" has the rule.
 - **Data, not maps**: content/props.json `flame` per prop (`fx` brazier / torch / candle / campfire, `at` the
   flame's foot in the prop's space as drawn (x mirrored), `size` its height in m, `hide` the model's own flame
