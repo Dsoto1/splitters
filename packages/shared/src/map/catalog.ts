@@ -558,7 +558,8 @@ function balconies(): TileDefinition[] {
   ];
 }
 
-export const CORE_TILES: readonly TileDefinition[] = [
+// Built in a pure call: a module that reads only catalog's helpers can drop the tables (docs/LOADING.md).
+export const CORE_TILES: readonly TileDefinition[] = /* @__PURE__ */ (() => [
   { id: 'core.room', category: 'Rooms', displayName: 'Room', cells: [[0, 0, 0]], floors: [0], ports: ALL_SIDES, configurable: true },
   {
     id: 'core.room_pillar', configurable: true, category: 'Rooms',
@@ -1070,7 +1071,7 @@ export const CORE_TILES: readonly TileDefinition[] = [
   ...desertPackTiles(),
   // Style Pack pieces (the 06 Jungle Ruins refresh, Ancient Temple folded in): see packTilesJungle.ts.
   ...junglePackTiles(),
-];
+])();
 
 // ---------------------------------------------------------------- buildings
 
@@ -1391,4 +1392,4 @@ export class TileCatalog {
   }
 }
 
-export const coreCatalog = new TileCatalog();
+export const coreCatalog = /* @__PURE__ */ new TileCatalog();

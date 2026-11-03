@@ -46,5 +46,5 @@ export interface PropFlame {
 
 export { CORE_PROPS, PROP_CATEGORIES };
 
-const byId = new Map(CORE_PROPS.map((p) => [p.id, p]));
-export const getProp = (id: string): PropDefinition | undefined => byId.get(id);
+let byId: Map<string, PropDefinition> | undefined; // built on first use (as in serverRules.ts)
+export const getProp = (id: string): PropDefinition | undefined => (byId ??= new Map(CORE_PROPS.map((p) => [p.id, p]))).get(id);

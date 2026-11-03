@@ -59,9 +59,9 @@ export const NPC_SKIN_THEMES: Readonly<Record<string, string>> = {
   scolitex: 'alien',
 };
 
-const lookById = new Map(CORE_LOOKS.map((l) => [l.id, l]));
+let lookById: Map<string, CharacterLook> | undefined; // built on first use (as in serverRules.ts)
 /** A built-in look (a retired one gives its replacement), or undefined (a design of yours, an NPC skin, unknown). */
-export const builtInLook = (id: string | undefined): CharacterLook | undefined => (id ? lookById.get(RETIRED_LOOKS[id] ?? id) : undefined);
+export const builtInLook = (id: string | undefined): CharacterLook | undefined => (id ? (lookById ??= new Map(CORE_LOOKS.map((l) => [l.id, l]))).get(RETIRED_LOOKS[id] ?? id) : undefined);
 
 /** A look's name theme: its own, else its group's; an NPC skin's; null for a design of yours or anything unknown. */
 export function lookTheme(id: string | undefined): string | null {
