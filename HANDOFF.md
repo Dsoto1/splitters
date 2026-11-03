@@ -10,6 +10,23 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Queued (owner-approved, 2026-11-03): content scalability, see docs/CONTENT_SCALABILITY.md
+The owner approved every pick in docs/CONTENT_SCALABILITY.md. Not started. Order:
+1. Get the menu's first JS off its 800 KB gzip ceiling: pack tiles, the prop table and STYLE_PACKS load with a
+   match or MapMaker, not the menu.
+2. Per-pack prop files and palette atlases, plus one `pnpm content:rebuild` command, so parallel branches stop
+   colliding in generated files.
+
+Do 1 and 2 before the remaining style packs (Desert City, Jungle). Then:
+3. Weapons, throwables, classes and abilities as data. This adds explicit network codes and the Workbench fields.
+   Start after the Snow pack and the Market Town/dropship work are on main.
+4. Vehicles and NPC roles as data.
+5. Pickups as data.
+6. Materials as data.
+7. Tiles as data, as the base of the MapMaker overhaul (scope it with the owner first).
+
+Each step goes on its own `wip/` branch, green on a `check/` branch, then onto main.
+
 ### Map removals round 2 and card pictures (`wip/map-removals-2`, agent, 2026-11-03; not merged; from main ef2c103)
 - Deleted (file, picture, inspirations, rotation entries): after_hours, clockwork, fallout_lane, ridge_camp, stonewatch_keep.
   Retired (RETIRED_MAPS, kept as fixtures): blackout (co-op mission test in npc.test.ts), cedar_lane (style pack 08 demo and
