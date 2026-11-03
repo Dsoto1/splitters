@@ -10,8 +10,12 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { getItem, getWeapon , type AmmoType, type DiscPower } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 
-/** The health pickups' model: the medkit (it falls back to the boxes-in-code case when it can't load). */
+/** The small health pickup's model: the medkit (it falls back to the boxes-in-code case when it can't load). */
 const HEALTH_MODEL = 'guns/medkit.glb';
+/** The large health pickup's model: a medical bag (Meshy community, content/guns.json), built to its size (0.5 m long). */
+const HEALTH_LARGE_MODEL = 'pickups/health_large.glb';
+/** The rifle rounds pickup's model: an ammo box (Meshy community, content/guns.json), built to its size (0.5 m long). */
+const AMMO_RIFLE_MODEL = 'pickups/ammo_rifle.glb';
 
 /** Height of a pickup's centre above the floor. */
 export const PICKUP_HOVER = 0.55;
@@ -39,7 +43,8 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
 /**
  * The look of a pickup, shared by the game and MapMaker so what creators
  * place is exactly what players see: models on a glowing ring for weapons
- * and health (the medkit), and simple in-house shapes for armor, ammo and
+ * and health (the medkit, and the medical bag for large health), the ammo box
+ * model for rifle rounds, and simple in-house shapes for armor, other ammo and
  * powerups.
  * The returned root is centred on the item; place it PICKUP_HOVER above the floor.
  * `lying`: a weapon dropped by the fallen, on its side on a small ring (place it DROP_LIE_HEIGHT above the ground).
@@ -67,21 +72,33 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     if (lying) part(CreateCylinder(`${name}_ring`, { diameter: 0.6, height: 0.02, tessellation: 20 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -DROP_LIE_HEIGHT + 0.01;
     else part(CreateCylinder(`${name}_ring`, { diameter: 0.9, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -0.5;
   } else if (fx.kind === 'health') {
-    // The medkit model (the owner's Meshy medkit, content/guns.json); large health is a bigger case.
-    const s = fx.amount >= 50 ? 1.6 : 1.25;
-    void models.instantiate(HEALTH_MODEL, `${name}_hp`, instanced).then((model) => {
+    // Small health is the medkit (the owner's Meshy medkit); large health is the medical bag, or a bigger medkit
+    // when the bag can't load.
+    const large = fx.amount >= 50;
+    const attach = (s: number) => (model: TransformNode) => {
       if (root.isDisposed()) return model.dispose();
       model.parent = root;
       model.scaling.setAll(s);
-    });
+    };
+    if (large) void models.instantiate(HEALTH_LARGE_MODEL, `${name}_hp`, instanced).then(attach(1), () => models.instantiate(HEALTH_MODEL, `${name}_hp`, instanced).then(attach(1.6)));
+    else void models.instantiate(HEALTH_MODEL, `${name}_hp`, instanced).then(attach(1.25));
     part(CreateCylinder(`${name}_ring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, '#e23b3b', 0.5)).position.y = -0.4;
   } else if (fx.kind === 'armor') {
     const s = fx.amount >= 50 ? 1.25 : 1;
     part(CreateCylinder(`${name}_ar`, { diameter: 0.6 * s, height: 0.12, tessellation: 6 }, scene), mat(scene, '#3c8dff', 0.35)).rotation.x = Math.PI / 2;
+  } else if (fx.kind === 'ammo' && fx.ammo === 'rifle') {
+    // Rifle rounds: the ammo box model (the striped box in code when it can't load).
+    void models.instantiate(AMMO_RIFLE_MODEL, `${name}_ammo`, instanced).then(
+      (model) => {
+        if (root.isDisposed()) return model.dispose();
+        model.parent = root;
+      },
+      () => {
+        if (!root.isDisposed()) ammoBoxes(scene, root, name, fx.ammo);
+      },
+    );
   } else if (fx.kind === 'ammo') {
-    part(CreateBox(`${name}_ammo`, { width: 0.5, height: 0.3, depth: 0.32 }, scene), mat(scene, '#6b7048'));
-    // The stripe tells the ammo type apart (general boxes are yellow).
-    part(CreateBox(`${name}_stripe`, { width: 0.51, height: 0.06, depth: 0.33 }, scene), mat(scene, fx.ammo ? AMMO_COLORS[fx.ammo] : '#f2c14e', 0.4)).position.y = 0.05;
+    ammoBoxes(scene, root, name, fx.ammo, part);
   } else if (fx.kind === 'throwable') {
     // A small cluster of the thing itself.
     for (const [x, z] of [[-0.12, 0], [0.12, 0.04], [0, -0.13]] as const) {
@@ -136,6 +153,20 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
   }
   if (instanced) instanceParts(scene, root);
   return root;
+}
+
+/** The ammo box in code: an olive box with a stripe that tells the ammo type apart (general boxes are yellow). */
+function ammoBoxes(scene: Scene, root: TransformNode, name: string, ammo: AmmoType | undefined, part?: (m: Mesh, material: StandardMaterial) => Mesh): void {
+  const add =
+    part ??
+    ((m: Mesh, material: StandardMaterial) => {
+      m.material = material;
+      m.parent = root;
+      m.isPickable = false;
+      return m;
+    });
+  add(CreateBox(`${name}_ammo`, { width: 0.5, height: 0.3, depth: 0.32 }, scene), mat(scene, '#6b7048'));
+  add(CreateBox(`${name}_stripe`, { width: 0.51, height: 0.06, depth: 0.33 }, scene), mat(scene, ammo ? AMMO_COLORS[ammo] : '#f2c14e', 0.4)).position.y = 0.05;
 }
 
 const sources = new WeakMap<Scene, Map<string, Mesh>>();

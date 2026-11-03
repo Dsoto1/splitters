@@ -63,7 +63,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // The owner's Meshy barriers and parked vehicles (Drive, 2026-10-31).
       'jersey_barrier_hazard', 'hazard_block_barrier', 'plastic_road_barrier', 'vehicle_raider_buggy', 'vehicle_armored_truck',
       'jersey_barrier', 'jersey_barrier_striped', 'jersey_barrier_broken', 'road_barrier', 'concrete_block', 'brick_rubble',
-      'ammo_crate', 'ammo_stack', 'fuel_drum', 'fuel_tank', 'storage_tank', 'steel_water_tower',
+      'ammo_crate', 'ammo_stack', 'ww2_ammo_crate', 'fuel_drum', 'fuel_tank', 'storage_tank', 'steel_water_tower',
       'shipping_container_red', 'shipping_container_blue', 'shipping_container_green', 'container', 'container_tall', 'metal_crate',
       'floodlight', 'yard_lamp', 'pallet', 'supply_truck', 'flatbed_truck', 'dumpster',
       'sv_tent', 'sv_radio', 'sv_gas_can', 'warning_sign', 'cone', 'bunk_bed',
