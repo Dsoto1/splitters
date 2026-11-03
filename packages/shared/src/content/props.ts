@@ -38,7 +38,7 @@ export interface PropDefinition {
 }
 
 export interface PropFlame {
-  fx: 'brazier' | 'green' | 'torch' | 'candle' | 'campfire';
+  fx: 'brazier' | 'torch' | 'candle' | 'campfire';
   at: readonly [number, number, number];
   size: number;
   hide?: readonly string[];

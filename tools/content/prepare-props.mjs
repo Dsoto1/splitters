@@ -670,7 +670,7 @@ for (const p of manifest.props) {
  */
 function propFlame(p) {
   const f = p.flame;
-  const kinds = ['brazier', 'green', 'torch', 'candle', 'campfire'];
+  const kinds = ['brazier', 'torch', 'candle', 'campfire'];
   if (!kinds.includes(f.fx)) throw new Error(`${p.id}: flame.fx must be one of ${kinds.join(', ')}`);
   if (!Array.isArray(f.at) || f.at.length !== 3 || !f.at.every(Number.isFinite)) throw new Error(`${p.id}: flame.at must be [x, y, z]`);
   if (!(f.size > 0)) throw new Error(`${p.id}: flame.size must be above 0`);

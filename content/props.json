@@ -1,5 +1,5 @@
 {
-  "$comment": "Placeable props from CC0 packs. tools/content/prepare-props.mjs normalises each model (centred, standing on y = 0, scaled to `height` metres), embeds its texture, writes packages/client/public/props, content/props.lock.json and packages/shared/src/content/props.generated.ts (sizes and collision for the simulation). collide: box = the model's bounds, trunk = a 0.5 m post, none = walk through. flame: a fire prop's open flame, drawn with the Flame FX pack near the camera (content/vfx.json map.lasting `flame.<fx>`: brazier, green, torch, candle or campfire): `at` where it stands in the prop's space as the game draws it (x mirrored like the collision boxes), `size` its height in metres, `hide` the model's own flame materials, shown only where the pack flame isn't drawn.",
+  "$comment": "Placeable props from CC0 packs. tools/content/prepare-props.mjs normalises each model (centred, standing on y = 0, scaled to `height` metres), embeds its texture, writes packages/client/public/props, content/props.lock.json and packages/shared/src/content/props.generated.ts (sizes and collision for the simulation). collide: box = the model's bounds, trunk = a 0.5 m post, none = walk through. flame: a fire prop's open flame, drawn with the Flame FX pack near the camera (content/vfx.json map.lasting `flame.<fx>`: brazier, torch, candle or campfire): `at` where it stands in the prop's space as the game draws it (x mirrored like the collision boxes), `size` its height in metres, `hide` the model's own flame materials, shown only where the pack flame isn't drawn.",
   "packs": {
     "kenney-survival-kit": {
       "title": "Survival Kit",
@@ -1826,7 +1826,7 @@
           "edge": 8
         }
       },
-      "flame": {"fx": "green", "at": [0, 0.6, 0], "size": 0.9}
+      "flame": {"fx": "brazier", "at": [0, 0.55, 0], "size": 1.1}
     },
     {
       "id": "urn",
@@ -6859,7 +6859,7 @@
       "category": "Dungeon",
       "height": 0.8,
       "collide": "none",
-      "flame": {"fx": "torch", "at": [0, 0.46, 0.06], "size": 0.34, "hide": ["Fire"]}
+      "flame": {"fx": "torch", "at": [0, 0.5, 0.06], "size": 0.34, "hide": ["Fire"]}
     },
     {
       "id": "dg_vase",
@@ -13805,7 +13805,7 @@
       "category": "Jungle Ruins",
       "height": 0.95,
       "collide": "none",
-      "flame": {"fx": "torch", "at": [0, 0.67, 0.105], "size": 0.3, "hide": ["fire"]}
+      "flame": {"fx": "torch", "at": [0, 0.69, 0.105], "size": 0.3, "hide": ["fire"]}
     },
     {
       "id": "jt_banner_teal",

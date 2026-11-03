@@ -412,22 +412,16 @@ export const FX_MAP = {
       "scale": 1,
       "decor": true
     },
-    "flame.green": {
-      "pack": "flame_fx",
-      "effect": "vfx_green_fire_02",
-      "scale": 1,
-      "decor": true
-    },
     "flame.torch": {
       "pack": "flame_fx",
       "effect": "vfx_basic_candle_02",
-      "scale": 1,
+      "scale": 2,
       "decor": true
     },
     "flame.candle": {
       "pack": "flame_fx",
       "effect": "vfx_basic_candle_01",
-      "scale": 1,
+      "scale": 2,
       "decor": true
     },
     "flame.campfire": {

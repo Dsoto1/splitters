@@ -29758,8 +29758,8 @@
     },
     {
       "file": "vfx/flame_fx.json",
-      "sha256": "37c190bb59c54eef",
-      "bytes": 9676,
+      "sha256": "f425d7fbc90b9e21",
+      "bytes": 25032,
       "source": "binbun-flame-fx/BinbunVFX_Vol2/FlameFX/effects/**/*.tscn",
       "title": "Stylized Flame FX (full edition, purchased by the owner): flame effect scenes",
       "creator": "Binbun (bun3d.com)",
