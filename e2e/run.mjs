@@ -1788,12 +1788,17 @@ async function physicsfxFlow(browser) {
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
   // A body that has come to rest (its capsules back in the pool) is a ragdoll again when a round hits it,
   // rather than staying a stiff pose that rounds pass through (owner, 3 Nov).
-  await page.waitForFunction(() => window.__cs.view.corpses.findLast((c) => c.slot === window.__botSlot)?.a.ragdoll?.frozen, null, { timeout: T(12000) }).catch(() => {});
+  // Its time is simulated time (steps at 60 a second), which on a 1-2 fps CI page takes minutes: stop it the way
+  // the view does when the time runs out (Ragdoll.freeze, then the pose frozen), then shoot it.
   const reshot = await page.evaluate(() => {
     const v = window.__cs.view;
     const c = v.corpses.findLast((x) => x.slot === window.__botSlot);
     const r0 = c?.a.ragdoll;
-    if (!r0?.frozen) return { rested: false, tier: r0?.tier ?? null };
+    if (!r0 || !('owns' in r0)) return { rested: false, tier: r0?.tier ?? null };
+    if (!r0.frozen) {
+      r0.freeze();
+      c.a.anim.freezePose();
+    }
     const p = c.a.anim.ch.joints.get('pelvis').getAbsolutePosition();
     // A round from 3 m off and 1.5 m up, through the pelvis and on into the ground.
     v.landRound({ eye: { x: p.x + 3, y: p.y + 1.5, z: p.z }, to: { x: p.x - 1, y: p.y - 0.5, z: p.z }, victim: null, zone: 0, strength: 1 });
