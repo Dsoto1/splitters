@@ -67,11 +67,21 @@ function chooseViews({ map, keep }) {
     for (const e of map.entities) if (e.kind === 'spawn' || e.kind === 'pickup') grow(e.position[0], e.position[2], 4);
     if (!Number.isFinite(a.x0)) a = { x0: -20, z0: -20, x1: 20, z1: 20 };
   }
-  const cx = (a.x0 + a.x1) / 2;
-  const cz = (a.z0 + a.z1) / 2;
+  // The busiest area: where spawns, pickups and objectives are (the middle 80% of them), not the middle of the boundary
+  // (open ground round a town, a big terrain). Views look toward it and the aerial views frame it.
+  const interest = map.entities.filter((e) => ['spawn', 'pickup', 'flag', 'hill', 'bombsite'].includes(e.kind)).map((e) => e.position);
+  const pct = (v, q) => {
+    const s2 = [...v].sort((p, r) => p - r);
+    return s2.length ? s2[Math.min(s2.length - 1, Math.floor(q * s2.length))] : 0;
+  };
+  const xs = interest.map((p) => p[0]);
+  const zs = interest.map((p) => p[2]);
+  const busy = interest.length >= 3 ? { x0: pct(xs, 0.1), x1: pct(xs, 0.9), z0: pct(zs, 0.1), z1: pct(zs, 0.9) } : null;
+  const cx = busy ? (busy.x0 + busy.x1) / 2 : (a.x0 + a.x1) / 2;
+  const cz = busy ? (busy.z0 + busy.z1) / 2 : (a.z0 + a.z1) / 2;
   const w = a.x1 - a.x0;
   const d = a.z1 - a.z0;
-  const diag = Math.hypot(w, d);
+  const diag = busy ? Math.max(20, Math.min(Math.hypot(w, d), Math.hypot(busy.x1 - busy.x0, busy.z1 - busy.z0) * 1.4 + 12)) : Math.hypot(w, d);
   const inside = (x, z, m = 0) => x >= a.x0 - m && x <= a.x1 + m && z >= a.z0 - m && z <= a.z1 + m;
   const down = { x: 0, y: -1, z: 0 };
   const up = { x: 0, y: 1, z: 0 };
@@ -161,7 +171,7 @@ function chooseViews({ map, keep }) {
         const hz = eye.z + dir.z * h.dist;
         if (inside(hx, hz, 2)) inb++;
         const wall = Math.abs(h.normal.y) < 0.6;
-        if (wall && h.dist < 4 && !h.barrier) near++;
+        if (wall && h.dist < (off < -0.1 ? 8 : 4) && !h.barrier) near++;
         // Anything solid in the middle of the frame within a few metres: the view is blocked.
         if (Math.abs(s) <= 0.3 && off >= -0.2 && off <= 0.04 && h.dist < 6 && !h.barrier) blocked++;
         if (off >= -0.08) {
@@ -175,7 +185,17 @@ function chooseViews({ map, keep }) {
     const toC = Math.atan2(cx - eye.x, cz - eye.z);
     const farFromCentre = Math.hypot(cx - eye.x, cz - eye.z) > diag * 0.12;
     const align = farFromCentre ? (Math.cos(toC - yaw) + 1) / 2 : 0.6;
+    // Places of interest (spawns, pickups, objectives) in the cone of the picture, a few metres to well across the area.
+    let cone = 0;
+    for (const p of interest) {
+      const dx = p[0] - eye.x;
+      const dz = p[2] - eye.z;
+      const dist = Math.hypot(dx, dz);
+      if (dist < 5 || dist > diag * 0.7) continue;
+      if (Math.cos(Math.atan2(dx, dz) - yaw) > Math.cos(0.5)) cone++;
+    }
     const parts = {
+      cone: Math.min(1, cone / 8),
       depth: depthN ? depth / depthN : 0,
       variety: Math.min(1, seen.size / 14),
       align,
@@ -185,7 +205,7 @@ function chooseViews({ map, keep }) {
       sky: sky / rays,
       voids: voids / rays,
     };
-    const score = 1.3 * parts.depth + 0.9 * parts.variety + 0.7 * parts.align + 0.5 * parts.inb - 3 * parts.near - 4 * parts.blocked - 1.5 * Math.max(0, parts.sky - 0.25) - 1.5 * parts.voids;
+    const score = 1.3 * parts.depth + 0.9 * parts.variety + 0.7 * parts.align + 0.5 * parts.inb + 0.8 * parts.cone - 3 * parts.near - 4 * parts.blocked - 1.5 * Math.max(0, parts.sky - 0.25) - 1.5 * parts.voids;
     return { score, parts };
   };
   const views = [];
@@ -195,6 +215,22 @@ function chooseViews({ map, keep }) {
     for (let k = 0; k < YAWS; k++) {
       const yaw = (k / YAWS) * Math.PI * 2;
       views.push({ ...scoreView(c.eye, yaw, pitch), eye: c.eye, yaw, pitch, tag: c.tag });
+    }
+  }
+  // Aerial three-quarter views of the busy area from outside it, framed to fit it: the picture of a walled place
+  // or open ground shows its layout rather than one wall. Eight sides, each looking at the middle.
+  if (busy) {
+    const span = Math.max(busy.x1 - busy.x0, busy.z1 - busy.z0) + 10;
+    const gy = solidHit({ x: cx, y: TOP, z: cz }, down, TOP * 2);
+    const focusY = gy ? TOP - gy.dist : 0;
+    for (const elev of [0.3, 0.5, 0.7]) {
+      for (let k = 0; k < 8; k++) {
+        const ang = (k / 8) * Math.PI * 2;
+        const dist = (span / 2 / Math.tan(0.5)) * 1.05;
+        const eye = { x: cx - Math.sin(ang) * dist * Math.cos(elev), y: focusY + 2 + Math.sin(elev) * dist, z: cz - Math.cos(ang) * dist * Math.cos(elev) };
+        if (!phys.boxClear(eye, { x: 0.5, y: 0.5, z: 0.5 })) continue;
+        views.push({ ...scoreView(eye, ang, -elev), eye, yaw: ang, pitch: -elev, tag: 'aerial' });
+      }
     }
   }
   views.sort((p, q) => q.score - p.score);

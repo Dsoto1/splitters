@@ -10,6 +10,17 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Map removals round 2 and card pictures (`wip/map-removals-2`, agent, 2026-11-03; not merged; from main ef2c103)
+- Deleted (file, picture, inspirations, rotation entries): after_hours, clockwork, fallout_lane, ridge_camp, stonewatch_keep.
+  Retired (RETIRED_MAPS, kept as fixtures): blackout (co-op mission test in npc.test.ts), cedar_lane (style pack 08 demo and
+  tests), glacier_line (editor mover-group test). rotation.test.ts uses Overhang in its fake lookup. The host-controls e2e
+  already used atomic_court, so no e2e change. Removed glacier_line/clockwork from the shipped rotation presets.
+- `tools/content/capture-map-shots.mjs`: views now look toward the busy area (middle 80% of spawns/pickups/objectives), score
+  places of interest in the cone, penalise walls within 8 m low in frame, and add aerial three-quarter views framed to the busy
+  area. Regenerated citadel, silo_complex, reactor, step_temple. frost_basin picks the same high overview (terrain material
+  looks olive in the render): the owner's call, not changed. mapPlan.ts crops to the built area when it fills <85% (was 60%), 3 m margin.
+- Note: pads.test.ts (eagle_spires, frost_basin) timed out at 180 s under machine load in a full run; they are slow, not broken.
+
 ### Pickup models: medical bag, rifle ammo box, WWII Ammo Crate (`wip/pickup-models`, agent, 2026-11-03; not merged; from main a2fd44b)
 Owner's three Drive models (Meshy community, CC0 per the owner; downloads in `/home/user/meshy-drive/drive-2026-11-03-pickups`,
 not in the repo). docs/ASSET_SOURCES.md and docs/CONTENT_PIPELINE.md have the rows and rebuild commands.
