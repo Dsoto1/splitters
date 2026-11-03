@@ -37,11 +37,6 @@
     "headShare": 0.16,
     "handsShare": 0.08,
     "normalSize": 1024,
-    "lod": 0.22,
-    "hands": {
-      "r": {
-        "mitten": true
-      }
-    }
+    "lod": 0.22
   }
 }

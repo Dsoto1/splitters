@@ -120,7 +120,7 @@
       "src": "Meshy_AI_Wealthy_Otter_20260307_texture.fbx",
       "sourceTriangles": 486780,
       "file": "characters/meshy_otter.glb",
-      "sha256": "96b064f6a504cf59",
+      "sha256": "fe04b1da39b61a3b",
       "triangles": 11000,
       "lodTriangles": 3290,
       "bytes": 782260,
@@ -133,7 +133,7 @@
       "src": "Meshy_AI_Wealthy_Otter_20260307_texture.fbx",
       "sourceTriangles": 486780,
       "file": "characters/meshy_otter_fparms.glb",
-      "sha256": "999dbfe4e14e3d26",
+      "sha256": "2d40903f363c3ff4",
       "triangles": 1751,
       "bytes": 301608,
       "hands": true
@@ -922,10 +922,10 @@
       "sourceTriangles": 485506,
       "landmarks": "found",
       "file": "characters/meshy_ninja.glb",
-      "sha256": "8c2f651a70f25216",
+      "sha256": "de9f70430a803e70",
       "triangles": 11000,
       "lodTriangles": 3296,
-      "bytes": 769496,
+      "bytes": 769500,
       "hands": true
     },
     {
@@ -938,9 +938,9 @@
       "sourceTriangles": 485506,
       "landmarks": "found",
       "file": "characters/meshy_ninja_fparms.glb",
-      "sha256": "ccf085777e73dc62",
+      "sha256": "ad3d0e1c70658418",
       "triangles": 2603,
-      "bytes": 295412,
+      "bytes": 295416,
       "hands": true
     },
     {
@@ -1155,9 +1155,9 @@
       "model": "An ancient Egyptian Anubis",
       "date": "2026-10-29",
       "file": "characters/meshy_anubis_fparms.glb",
-      "sha256": "5a2a8f520744df70",
+      "sha256": "cd111124c5844aaa",
       "triangles": 3620,
-      "bytes": 349504,
+      "bytes": 349512,
       "hands": true
     },
     {
@@ -1248,9 +1248,9 @@
       "sourceTriangles": 202742,
       "landmarks": "found",
       "file": "characters/meshy_big_bab_fparms.glb",
-      "sha256": "a0e09adc92af496e",
+      "sha256": "a3e6bf8380bf7962",
       "triangles": 4655,
-      "bytes": 355536,
+      "bytes": 355544,
       "hands": true
     },
     {
@@ -1263,10 +1263,10 @@
       "model": "Uniformed Worker in a Jacket",
       "date": "2026-10-29",
       "file": "characters/meshy_zhao.glb",
-      "sha256": "a3e3636d4f75d9c9",
+      "sha256": "0f600ddf0b2489ca",
       "triangles": 10999,
       "lodTriangles": 3298,
-      "bytes": 937392,
+      "bytes": 937388,
       "hands": true
     },
     {
@@ -1279,9 +1279,9 @@
       "model": "Uniformed Worker in a Jacket",
       "date": "2026-10-29",
       "file": "characters/meshy_zhao_fparms.glb",
-      "sha256": "eb3b9149415318b2",
+      "sha256": "f6a90c0da1927001",
       "triangles": 4623,
-      "bytes": 469512,
+      "bytes": 469516,
       "hands": true
     },
     {
@@ -1294,10 +1294,10 @@
       "model": "Ultra detailed desert soldier",
       "date": "2026-10-29",
       "file": "characters/meshy_desert_ranger.glb",
-      "sha256": "6b24b796fb647b84",
+      "sha256": "be913007c1cd4c00",
       "triangles": 15000,
       "lodTriangles": 3300,
-      "bytes": 1227236,
+      "bytes": 1227244,
       "hands": true
     },
     {
@@ -1310,9 +1310,9 @@
       "model": "Ultra detailed desert soldier",
       "date": "2026-10-29",
       "file": "characters/meshy_desert_ranger_fparms.glb",
-      "sha256": "db4961b9cc5605d4",
+      "sha256": "c399aaebf71a889c",
       "triangles": 2569,
-      "bytes": 389056,
+      "bytes": 389072,
       "hands": true
     },
     {
@@ -1608,9 +1608,9 @@
         "rig": "01a18a0a-85ac-77dc-94a8-df489f7fe426"
       },
       "file": "characters/meshy_bonejack_fparms.glb",
-      "sha256": "4de57c78df14f7a1",
+      "sha256": "8b727ff8a6703089",
       "triangles": 3577,
-      "bytes": 402924,
+      "bytes": 402928,
       "hands": true
     },
     {
@@ -2392,10 +2392,10 @@
       "date": "2026-11-01",
       "src": "Meshy_AI_Mummy_Bot_All_Animations.glb",
       "file": "characters/meshy_mummybot.glb",
-      "sha256": "cc037d1b9966d4b0",
+      "sha256": "ffe97f532077a32f",
       "triangles": 10432,
       "lodTriangles": 2608,
-      "bytes": 1718180,
+      "bytes": 1718168,
       "hands": true
     },
     {
@@ -2406,9 +2406,9 @@
       "date": "2026-11-01",
       "src": "Meshy_AI_Mummy_Bot_All_Animations.glb",
       "file": "characters/meshy_mummybot_fparms.glb",
-      "sha256": "2e38c2381464f845",
+      "sha256": "b1250f9837f278a0",
       "triangles": 1376,
-      "bytes": 634408,
+      "bytes": 634428,
       "hands": true
     },
     {
@@ -2548,10 +2548,10 @@
       "source": "meshy-owned",
       "src": "Meshy_AI_stylized_alien_biker__All_Animations.glb",
       "file": "characters/meshy_alienbiker.glb",
-      "sha256": "4c40b441ede72c2a",
+      "sha256": "6cd74bfa86f8fc30",
       "triangles": 10398,
       "lodTriangles": 2598,
-      "bytes": 1289712,
+      "bytes": 1289708,
       "hands": true
     },
     {
@@ -2560,9 +2560,9 @@
       "source": "meshy-owned",
       "src": "Meshy_AI_stylized_alien_biker__All_Animations.glb",
       "file": "characters/meshy_alienbiker_fparms.glb",
-      "sha256": "e127683b4a847343",
+      "sha256": "3ba4e9d4f9a9a222",
       "triangles": 974,
-      "bytes": 444600,
+      "bytes": 444620,
       "hands": true
     },
     {
@@ -2654,10 +2654,10 @@
       "date": "2026-11-02",
       "src": "Meshy_AI_WWII_Infantry_Soldier_All_Animations-3.glb",
       "file": "characters/meshy_wwiisoldier.glb",
-      "sha256": "374fdac31458b639",
+      "sha256": "e46a0f0770c65f10",
       "triangles": 10373,
       "lodTriangles": 2590,
-      "bytes": 1397584,
+      "bytes": 1397588,
       "hands": true
     },
     {
@@ -2668,9 +2668,9 @@
       "date": "2026-11-02",
       "src": "Meshy_AI_WWII_Infantry_Soldier_All_Animations-3.glb",
       "file": "characters/meshy_wwiisoldier_fparms.glb",
-      "sha256": "9c6c5c53ae575b6d",
+      "sha256": "636249d9c1105e13",
       "triangles": 1032,
-      "bytes": 477032,
+      "bytes": 477020,
       "hands": true
     },
     {

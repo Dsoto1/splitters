@@ -37,8 +37,7 @@
     "feet": true,
     "hands": {
       "scale": 0.85,
-      "curl": 0.8,
-      "mitten": true
+      "curl": 0.8
     }
   }
 }
