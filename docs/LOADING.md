@@ -119,7 +119,7 @@ dynamic `import()` at the mode switch that needs it. Raise the budget only on
 purpose, in the commit that needs it (`BUDGET_GZIP_KB`, `BUDGET_RAW_KB`).
 
 Content scalability step 1 (2026-11-03) took the menu's first JS from
-836.6 to 649.0 kB gzip (2969 to 2305 kB raw; `index` 395.7 to 208.1 kB gzip)
+837.0 to 649.0 kB gzip (2970 to 2305 kB raw; `index` 396.1 to 208.1 kB gzip)
 by moving the map content out (above). The map content is about 149 kB gzip
 (550 kB raw), fetched with the first map.
 

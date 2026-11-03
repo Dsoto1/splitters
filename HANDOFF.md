@@ -10,8 +10,8 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
-### Content scalability step 1: the menu's first download (`wip/menu-bundle`, agent, 2026-11-03; not merged; from main 716c012)
-docs/CONTENT_SCALABILITY.md step 1. **Menu's first JS 836.6 -> 649.0 kB gzip** (2969 -> 2305 kB raw; `index` 395.7 ->
+### Content scalability step 1: the menu's first download (`wip/menu-bundle`, agent, 2026-11-03; not merged; rebased on main 51519b2)
+docs/CONTENT_SCALABILITY.md step 1. **Menu's first JS 837.0 -> 649.0 kB gzip** (2970 -> 2305 kB raw, on main 51519b2; `index` 396.1 ->
 208.1 kB gzip; `babylon` and `vendor` unchanged). Budget left at 840 kB (now ~190 kB of room). How it works:
 docs/LOADING.md, "Map content".
 - **What moved out:** the pack tiles (`packTiles*.ts`), `catalog.ts`'s tables, the prop table (`props.generated.ts`),
@@ -37,7 +37,8 @@ docs/LOADING.md, "Map content".
 - **Checks:** `pnpm typecheck` clean. `pnpm test:changed` (everything, the change is unmapped): 1450 pass, 2 fail,
   both known load failures: host.test (hub wait: Bob's account) and pads eagle_spires (180 s timeout). E2E: see the
   next line. `pnpm ci:plan`: full suite (the new client files have no rule): needs a `check/` run before main.
-- **E2E (local):** E2E_PENDING
+- **E2E (local):** offline (53 checks), editor (60), visual (4: menu, mapmaker, arena, canyon at 0.1 %) and maps (30) PASS
+  (`CI=1 E2E_CLIENT_PORT=4273 E2E_SERVER_PORT=7887`: another session's preview held 4173).
 
 ### Character fixes: faces, roster (`wip/char-fixes`, agent, 2026-11-03; not merged, not pushed; from main ef2c103)
 Owner's notes of 3 Nov (agent scratchpad `charfix/owner-notes.md`). Steps 1-2 done here; steps 3-5 (Imp thumbnail,
