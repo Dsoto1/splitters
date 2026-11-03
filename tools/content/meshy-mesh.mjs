@@ -832,6 +832,18 @@ export async function normalJpeg(image, size, quality = 85) {
  * own map is read with the same sign (Babylon draws it the same way).
  */
 const GREEN = 1;
+/**
+ * Which way the DOWNLOAD's normal map green channel points against vertexTangents' bitangent (along increasing v):
+ * the other way from ours. Meshy's maps follow glTF (green toward the texture's top, decreasing v), which Babylon
+ * draws through its own derivative frame when a file has no TANGENT attribute (the download). Read with GREEN, the
+ * download's map was bent upside down into every bake: harmless on a smooth download (a little detail lit from below),
+ * but a low-poly download with flat vertex normals (Meshy's "All Animations" and many texture downloads) gets its
+ * smooth shading from that map alone, so the characters built from them came out in flat facets, faces worst (owner,
+ * 2026-11-03: "distorted faces"; WWII Infantry, Stealth Operative, Biker Gang Girl, Cal, Sgt. Mackie, ...). Checked by
+ * rendering the download, its build with this sign and the old build at the same close framing (agent scratchpad
+ * `charfix/`): with -1 the build's face shades like the download's.
+ */
+const DOWNLOAD_GREEN = -1;
 
 /**
  * A tangent-space normal map for a low-detail mesh, from the high-detail surface it was cut from: every texel a
@@ -901,7 +913,7 @@ export async function bakeNormals(low, hi, { size, reach, hiMap = null, caster =
           if (hiMap) {
             const m = sampleMap(at(hi.UV, 2, 0), at(hi.UV, 2, 1));
             const ht = unit(across([0, 1, 2].map((k) => at(HT, 4, k)), h));
-            const hb = cross3(h, ht).map((v) => v * HT[i0 * 4 + 3] * GREEN);
+            const hb = cross3(h, ht).map((v) => v * HT[i0 * 4 + 3] * DOWNLOAD_GREEN);
             const bentN = [0, 1, 2].map((k) => ht[k] * m[0] + hb[k] * m[1] + h[k] * m[2]);
             if (Math.hypot(...bentN) > 1e-6) {
               h = unit(bentN);
