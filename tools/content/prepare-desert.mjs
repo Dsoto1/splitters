@@ -142,6 +142,32 @@ function jar(p, x, z, h, r, mat = 'terracotta') {
   p.cylinder(mat === 'terracotta' ? 'terraDark' : mat, [x, h * 0.85, z], r * 0.3, 0, h * 0.15, { seg: 10, r1: r * 0.38 });
 }
 
+/**
+ * A dome on a drum, 5 m across: the drum and its cornice, the shell as a stack of turned rings following a
+ * quarter circle (squashed to 0.8), and a finial. `shell` the dome's material, `band` the drum's, `tip` the finial's.
+ */
+function dome(p, shell, band, tip) {
+  const R = 2.5;
+  p.cylinder(band, [0, 0, 0], R, 0, 0.45, { seg: 24 });
+  p.cylinder(band, [0, 0.45, 0], R + 0.08, 0, 0.12, { seg: 24 });
+  const n = 8;
+  const y0 = 0.57;
+  const H = (R - 0.1) * 0.8;
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * (Math.PI / 2);
+    const a1 = ((i + 1) / n) * (Math.PI / 2);
+    const r0 = (R - 0.1) * Math.cos(a0);
+    const r1 = Math.max(0.04, (R - 0.1) * Math.cos(a1));
+    const h0 = y0 + H * Math.sin(a0);
+    const h1 = y0 + H * Math.sin(a1);
+    p.cylinder(shell, [0, h0, 0], r0, 0, h1 - h0, { seg: 24, r1, caps: i === n - 1 });
+  }
+  const top = y0 + H;
+  p.cylinder(tip, [0, top - 0.05, 0], 0.16, 0, 0.25, { seg: 10, r1: 0.06 });
+  p.sphere(tip, [0, top + 0.32, 0], 0.11, { rings: 5, seg: 8 });
+  p.cylinder(tip, [0, top + 0.4, 0], 0.03, 0, 0.3, { seg: 6 });
+}
+
 /** An eight-point star (two squares, one turned 45°) on a face along x at z, `r` across. */
 function star(p, mat, x, y, z, r) {
   for (const a of [0, Math.PI / 4]) obox(p, mat, [x, y, z], [r, r, 0.02], { rz: a });
@@ -367,6 +393,19 @@ const PROPS = {
     p.box('blue', [-1.7, 3.95, -0.36], [1.7, 4.1, 0.36]);
     p.box('sandDark', [-1.85, 4.15, -0.42], [1.85, 4.35, 0.42]);
     for (const s of [-1, 1]) star(p, 'teal', s * 1.3, 3.25, 0.34, 0.3), star(p, 'teal', s * 1.3, 3.25, -0.34, 0.3);
+    return p;
+  },
+  dc_dome() {
+    // A whitewashed plaster dome on a low drum, for a flat roof (5 m across, Scale for bigger or smaller houses):
+    // the round roof of a desert house, in place of stacked slabs.
+    const p = piece('dc_dome');
+    dome(p, 'plaster', 'sandDark', 'terracotta');
+    return p;
+  },
+  dc_dome_blue() {
+    // The same dome glazed in blue tiles with a gilded finial: a mosque, a bathhouse, the cantina.
+    const p = piece('dc_dome_blue');
+    dome(p, 'blue', 'sandstone', 'gold');
     return p;
   },
 };
