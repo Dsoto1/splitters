@@ -28,6 +28,31 @@ Measured with a module-size dump of the 0.3.0 build (sizes before minifying):
   every map at startup (`src/mapIndex.ts`). A card's plan draws once its map is
   in; the setup panel shows "Loading …" for the moment a map takes. The home
   screen's featured map loads alongside the engine.
+- **Map content** (`client/src/mapContent.ts`, through `mapContentLoader.ts`):
+  the tile tables (`map/catalog.ts` and the Style Pack pieces in
+  `packTiles*.ts`), the prop table (`content/props.generated.ts`) and what
+  reads them: `loadMap`, map geometry and `drawMapPlan`. It loads alongside
+  the first map that is drawn, opened or played (a card's plan, Play, a
+  playlist's next map), and with a match or MapMaker, which import the same
+  modules. MapMaker's tile pictures import `mapMeshes.ts` on demand; the
+  host's Change map reads your MapMaker maps through the match code. Three
+  things keep it out of the menu's chunk, and each matters (Rollup puts a
+  whole module in the first chunk that reaches it statically):
+  - `@tiletrigger/shared` declares `"sideEffects": false`, so a module the
+    barrel (`shared/src/index.ts`) re-exports but the menu doesn't use isn't
+    one of the menu's dependencies. Keep shared free of import-for-effect
+    modules; a table built at load from a call goes behind a lazy map
+    (`ruleSpec` in `serverRules.ts`, `getProp`) or a `/* @__PURE__ */` call
+    (`CORE_TILES`).
+  - The light vocabulary the menu's modules read lives apart from the
+    tables: `map/tileOptions.ts` (sides, edge styles, facades, labels; out of
+    `catalog.ts`, which re-exports it) and `map/mapKeys.ts` (format version,
+    NPC roles, factions; out of `schema.ts`, whose zod schemas have no purity
+    annotations, so all of them stay once the module is in).
+  - Menu code reaches map loading and drawing only through
+    `loadMapContent()`. A static import of `loadMap`, `buildMapGeometry`,
+    `mapPlan.ts` or `mapMeshes.ts` from anything the menu loads brings back
+    about 190 kB gzip.
 - **The match** (`game/matchCode.ts`: session, transports, physics init): a
   dynamic import at main.ts's mode switch. Physics (Rapier) initialises with it
   instead of before the menu. The match worker (`simWorker`) shares the page's
@@ -88,10 +113,15 @@ to 6.1 MB (the match worker no longer carries its own copy of Rapier).
 `tools/ci/bundle-budget.mjs` (CI's build and site jobs) adds up the JS a first
 visit loads before the menu (index.html's entry and everything it imports
 statically, i.e. its modulepreloads), gzipped as the hub serves it, and fails
-over **800 kB gzip / 2.9 MB raw**. Over budget usually means a static import
+over **840 kB gzip / 3 MB raw** (raised from 800 kB / 2.9 MB for the Snow and Desert City packs, ad1ba06, before step 1 below took the menu down to 649 kB). Over budget usually means a static import
 pulled something the menu doesn't draw back into the first load: make it a
 dynamic `import()` at the mode switch that needs it. Raise the budget only on
 purpose, in the commit that needs it (`BUDGET_GZIP_KB`, `BUDGET_RAW_KB`).
+
+Content scalability step 1 (2026-11-03) took the menu's first JS from
+836.6 to 649.0 kB gzip (2969 to 2305 kB raw; `index` 395.7 to 208.1 kB gzip)
+by moving the map content out (above). The map content is about 149 kB gzip
+(550 kB raw), fetched with the first map.
 
 Measure a change: `pnpm build && node tools/ci/bundle-budget.mjs`, and
 `node tools/perf/first-load.mjs [dist …]` for times (it serves each build the
