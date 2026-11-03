@@ -122,6 +122,10 @@ Owner's request: the bought Flame FX on the fire props placed on maps. docs/PHYS
   31.1 ms before (arc, noise). Effects in the shadow pass: 0 both. Frame times not comparable: SwiftShader drew
   1-4 frames per 4 s under that load. A drawn flame is 2 draws (particles + Core), at most 10 on medium.
 - Not in MapMaker's view: the editor has no pack effects, so it shows the models' own flames (as before).
+- Checks: typecheck clean; test:changed 1282 pass, 5 timing tests failed under load (host e2e, bigMatch bench, two
+  npc missions, eagle_spires pads) and pass alone (51/51); new tests propFlames 3, lastingFx decor 1; content:check
+  OK after content:build (provenance for flame_fx.json). E2E (`CI=1`): physicsfx PASS (198 s), visual PASS (canyon
+  0.1 %, no baseline change), setpieces PASS (33 s). ci:plan: content paths -> full suite; needs a `check/` run.
 
 ### Map removals round 2 and card pictures (`wip/map-removals-2`, agent, 2026-11-03; not merged; from main ef2c103)
 - Deleted (file, picture, inspirations, rotation entries): after_hours, clockwork, fallout_lane, ridge_camp, stonewatch_keep.
