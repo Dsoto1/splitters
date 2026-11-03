@@ -26,6 +26,7 @@
   },
   "fixes": {
     "triangles": 11000,
+    "surface": "rebake",
     "feet": true
   },
   "landmarks": {

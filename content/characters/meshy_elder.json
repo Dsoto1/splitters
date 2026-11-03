@@ -29,6 +29,7 @@
   },
   "fixes": {
     "triangles": 11000,
+    "surface": "rebake",
     "cloth": true,
     "feet": true
   },
