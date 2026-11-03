@@ -36,6 +36,8 @@
 // a muzzle ring: the orange and red pixels the `warm` test picks, as in `paintOut`) are recoloured to `color`,
 // keeping their light and dark, and the built model gets an emissive map of them (glowColour): a weapon whose
 // in-house model glowed in its own colour keeps that glow on its new model (the Singularity Cannon's purple).
+// `tint: { color, warm }` recolours the same way without the emissive map: a painted emblem in another colour
+// (the medical bag's red crosses, green by the owner's call, 2026-11-03).
 //
 // Packs with `glb: true` too (the owner's own Meshy generations, licence Owned) are Meshy's textured GLB
 // downloads instead: each entry names its file in `glb`, found directly in the downloads dir or one folder
@@ -223,9 +225,11 @@ async function build(src, entry, pack, place = null) {
   if (pack.meshy) {
     const paint = entry.paintOut ? async (img) => console.log(`  painted out ${await paintOut(img, markings(entry.paintOut), { grow: entry.grow ?? 2, holes: entry.holes ?? 0 })} px of markings`) : null;
     const glow = entry.glow ? recolourGlow(entry.glow) : null;
-    const recolor = paint || glow ? async (img) => {
+    const tint = entry.tint ? recolourGlow(entry.tint) : null;
+    const recolor = paint || glow || tint ? async (img) => {
       if (paint) await paint(img);
       if (glow) await glow(img);
+      if (tint) await tint(img);
     } : null;
     const crop = place && entry.box ? boxToSource(entry.box, place) : null;
     ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, lod: entry.lod ?? null, crop, ...(entry.normalSize > 1024 ? { normalSize: entry.normalSize } : {}), ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) }));
