@@ -10,6 +10,27 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Pickup models: medical bag, rifle ammo box, WWII Ammo Crate (`wip/pickup-models`, agent, 2026-11-03; not merged; from main a2fd44b)
+Owner's three Drive models (Meshy community, CC0 per the owner; downloads in `/home/user/meshy-drive/drive-2026-11-03-pickups`,
+not in the repo). docs/ASSET_SOURCES.md and docs/CONTENT_PIPELINE.md have the rows and rebuild commands.
+- **Large health** (`core.health_large`, already 50 HP / 25 s respawn / bot value 0.7; small is 25 / 15 s / 0.4; unchanged)
+  is drawn as the medical bag `models/pickups/health_large.glb` (0.5 m long, 2.4k triangles, 147 KB; falls back to the
+  medkit at 1.6x). Small health keeps the medkit. No new pickup type was needed. Bots seek it as before (kind `health`).
+- **Rifle rounds** (`core.ammo_rifle`) are drawn as the ammo box `models/pickups/ammo_rifle.glb` (0.5 m, 3.0k triangles,
+  127 KB; falls back to the striped block). Its stencilling named a real ammunition maker, so all of it is painted out
+  (prepare-guns.mjs `paintOut` gained a near-black rule `{ dark, chroma }`): a plain olive box. Every other ammo pickup
+  (`core.ammo` and light/shells/sniper/explosive/cells/fuel/chem) keeps the striped block in code; giving them the box
+  too is one line in `pickupVisuals.ts`, but they would then look alike (the stripe colour is what tells them apart).
+- **WWII Ammo Crate** prop `prop.ww2_ammo_crate` (Crates & Barrels, Military style pack; two stacked crates, 0.9 m,
+  5.2k triangles, 236 KB, box collision 1.04 x 0.9 x 0.63 m, breakable 40 like the other crates). There is no ammo-crate
+  pickup or resupply in the game, so it is a prop only; the in-house `prop.ammo_crate` stays.
+- Pickup models live in guns.json (pack `meshy-community-pickups`, folder `models/pickups/`) like the medkit, sized to
+  the small-prop budget (6k triangles / 400 KB) since a map has many. No glow or effect changes (wip/fx-pass owns those);
+  the existing hover/spin and rings are kept.
+- Evidence: agent scratchpad `pickups/` (in-game shots next to a bot, MapMaker shots, asset viewer, the texture before
+  and after the paint-out; scratch tools in `pickups/tools/`).
+- Note: the bag carries a red cross on white roundels (as the code fallback medkit does); flagged to the owner.
+
 ### Arc Turret, Singularity Cannon model, Mossy Rock Spire (`wip/arc-turret`, agent, 2026-11-02; not merged; from main 151d9dc, rebased on 371f63d)
 Owner's three Drive models (Meshy community, CC0 per the owner; downloads in `/home/user/meshy-drive/drive-2026-11-02-props`,
 not in the repo). Owner's choice (2 Nov): the Arc Turret reuses the Rocket Turret's processed cannon, told apart by its colour.
