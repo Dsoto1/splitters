@@ -12,6 +12,15 @@ made only on a commit that passed CI on a check branch.
 - **The menu's first download is about a fifth smaller** (837 to 649 kB gzipped): MapMaker's building pieces, the prop table and the map checks now load with the first map that is drawn, opened or played, not before the menu. The game, maps and MapMaker work as before.
 
 **Maps**
+- **Map reworks from the owner's review** (made in MapMaker):
+  - **Step Temple** is a stepped sun temple in carved stone: an inlaid court with cover, roofed galleries, and outside on each side a broad stair to a terrace with a shrine (armour) and an arch into the galleries. The owner's temple statues, fire bowls, banners and braziers; ammo matched to each wing's weapon; the spear for the laser rifle.
+  - **Verdant Ziggurat**: the jungle closes in over ruined walls, and there is more mist. A stone bridge and stepping stones cross the river, a zipline runs from the giant tree to the temple, and a watch tower stands in the south-east. Mayan guardians stand at the gateway and Overgrown Ruins fill the side courts. Grapples at both ends.
+  - **Dustwater** is a fuller frontier town in red-rock country. It gains a hotel, a gunsmith, a barber, an assay office, a graveyard and the gallows, and each building has its own boards, brick or plaster. A stagecoach, wagons and troughs give cover along the street. Red Rock Spires mesas, low rises and desert scrub fill the plain. Revolvers at each end of town.
+  - **Bottling Plant** has roofs now: concrete over the corridors, corrugated steel over the tank hall, a glass skylight over the atrium. The black-and-yellow stripes are gone (steel, brick, painted steel). Chemical drums and an acid spill in the tank hall.
+  - **Concrete Annex**: each part of the works has its own materials, so the hangars, hall, tunnels and corridors tell apart, and the hazard stripes are gone. The owner's shipping containers and crates fill the hangars, and a flame jet runs in the tunnels.
+  - **Dune Harbor**: real domes instead of stacked slabs, the cantina and trading house in blue tiles; the market in the Desert City kit and the owner's stalls, well and raider buggies.
+  - **Coldwater Gulch**: one family of mossy rock instead of five mismatched ones, bedded into the slopes.
+- **New props: Plaster Dome and Blue Tiled Dome** (MapMaker → Desert City): round roofs for desert houses, 5 m across, Scale for any size.
 - **Five maps removed, three more retired** (owner's review of 3 Nov): After Hours, Clockwork, Fallout Lane, Ridge Camp and Stonewatch Keep are deleted with their pictures; Blackout, Cedar Lane and Glacier Line stay only as test fixtures (retired: no menu, playlist or host picker offers them).
 - **Better automatic map pictures**: the capture tool now aims at the busy area (spawns, pickups, objectives) and can take a three-quarter aerial view framed to it, so Citadel, Silo Complex and Step Temple show their layout instead of a wall or empty ground; map plans crop tighter to what is built.
 

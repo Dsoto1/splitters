@@ -13576,6 +13576,24 @@
       "collide": "frame"
     },
     {
+      "id": "dc_dome",
+      "pack": "tiletrigger-desert",
+      "src": "dc_dome.glb",
+      "name": "Plaster Dome",
+      "category": "Desert City",
+      "height": 3.19,
+      "collide": "box"
+    },
+    {
+      "id": "dc_dome_blue",
+      "pack": "tiletrigger-desert",
+      "src": "dc_dome_blue.glb",
+      "name": "Blue Tiled Dome",
+      "category": "Desert City",
+      "height": 3.19,
+      "collide": "box"
+    },
+    {
       "id": "jt_zipline_post",
       "pack": "tiletrigger-jungle",
       "src": "jt_zipline_post.glb",

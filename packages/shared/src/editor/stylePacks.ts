@@ -375,7 +375,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'imperial.colonnade', 'imperial.tunnel', 'core.yard', 'core.corridor_clear', 'core.corner', 'core.junction_t', 'core.stairwell',
     ],
     props: /* @__PURE__ */ props(
-      'dc_market_stall', 'dc_canopy', 'dc_banner', 'dc_lantern', 'dc_palm_planter', 'dc_well', 'dc_vase', 'dc_jars', 'dc_rug', 'dc_crane',
+      'dc_market_stall', 'dc_canopy', 'dc_dome', 'dc_dome_blue', 'dc_banner', 'dc_lantern', 'dc_palm_planter', 'dc_well', 'dc_vase', 'dc_jars', 'dc_rug', 'dc_crane',
       'dc_cloth_line', 'dc_scaffold', 'dc_awning_window', 'dc_lattice_window', 'dc_shutter_window', 'dc_spice_baskets', 'dc_cushions', 'dc_rug_rack', 'dc_column', 'dc_ornate_arch',
       // The owner's Meshy pieces (the market stall, well and crane above are the owner's too): a stall, temple statues, fountains.
       'rustic_market_stall', 'temple_spear_statue', 'temple_monk_statue', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',

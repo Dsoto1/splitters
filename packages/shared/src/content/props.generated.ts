@@ -1312,6 +1312,8 @@ export const CORE_PROPS: readonly PropDefinition[] = [
   {id: 'prop.dc_rug_rack', file: 'props/dc_rug_rack.glb', displayName: 'Rug Rack', category: 'Desert City', size: [2.5,2.03,0.7], collision: [2.5,2.03,0.7]},
   {id: 'prop.dc_column', file: 'props/dc_column.glb', displayName: 'Sandstone Column', category: 'Desert City', size: [0.84,3.62,0.84], collision: [0.84,3.62,0.84]},
   {id: 'prop.dc_ornate_arch', file: 'props/dc_ornate_arch.glb', displayName: 'Ornate Arch', category: 'Desert City', size: [3.7,4.35,0.84], collision: [3.7,4.35,0.84], boxes: [[0.84,0,-0.42,1.85,4.35,0.42],[-1.85,0,-0.42,-0.84,4.35,0.42],[-0.84,3.422,-0.42,0.84,4.35,0.42]]},
+  {id: 'prop.dc_dome', file: 'props/dc_dome.glb', displayName: 'Plaster Dome', category: 'Desert City', size: [5.16,3.19,5.16], collision: [5.16,3.19,5.16]},
+  {id: 'prop.dc_dome_blue', file: 'props/dc_dome_blue.glb', displayName: 'Blue Tiled Dome', category: 'Desert City', size: [5.16,3.19,5.16], collision: [5.16,3.19,5.16]},
   {id: 'prop.jt_zipline_post', file: 'props/jt_zipline_post.glb', displayName: 'Zipline Post', category: 'Jungle Ruins', size: [1.719,6.02,4.956], collision: [0.5,6.02,0.5]},
   {id: 'prop.jt_crane', file: 'props/jt_crane.glb', displayName: 'Crane and Pulley', category: 'Jungle Ruins', size: [1.2,4.6,4.77], collision: [0.5,4.6,0.5]},
   {id: 'prop.jt_wooden_platform', file: 'props/jt_wooden_platform.glb', displayName: 'Wooden Platform', category: 'Jungle Ruins', size: [3.001,2.91,3.635], collision: [3.001,2.91,3.635]},
