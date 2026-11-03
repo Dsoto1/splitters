@@ -12,6 +12,8 @@ export interface FxRef {
   readonly pack: string;
   readonly effect: string;
   readonly scale: number;
+  /** A lasting effect that only dresses the scene (a fire prop's flame): drawn after every other lasting one. */
+  readonly decor?: boolean;
 }
 
 export type Surface = 'stone' | 'metal' | 'wood' | 'dirt' | 'flesh' | 'water';

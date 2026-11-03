@@ -65,9 +65,10 @@ export class LastingFx {
     const order = [...this.wants.values()]
       .map((w) => ({ w, d: Math.hypot(w.at.x - cam.x, w.at.y - cam.y, w.at.z - cam.z) }))
       .filter((x) => x.d <= RANGE)
-      // Hazards (fire, charge, gas) before decoration (a pickup's glow): a glow counts as LOOT_FAR times as far off.
-      .map((x) => ({ ...x, d: x.w.key.startsWith('loot.') ? x.d * LOOT_FAR : x.d }))
-      .sort((a, b) => a.d - b.d);
+      // Hazards (fire, charge, gas) before decoration (a pickup's glow): a glow counts as LOOT_FAR times as far off,
+      // and a decor effect (a fire prop's flame) comes after all of them, nearest first among its own.
+      .map((x) => ({ ...x, d: x.w.key.startsWith('loot.') ? x.d * LOOT_FAR : x.d, decor: !!lastingFx(x.w.key)?.decor }))
+      .sort((a, b) => Number(a.decor) - Number(b.decor) || a.d - b.d);
     const room = this.vfx.loopRoom + this.live.size;
     const keep = new Set(order.slice(0, room).map((x) => x.w));
     for (const [id, l] of this.live) {

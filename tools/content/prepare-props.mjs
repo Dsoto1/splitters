@@ -658,8 +658,23 @@ for (const p of manifest.props) {
   const collision = p.collide === 'none' ? null : p.collide === 'trunk' ? [Math.min(0.5, size[0]), size[1], Math.min(0.5, size[2])] : gltfKit || converted ? [thick(size[0]), size[1], thick(size[2])] : size;
   // The game draws glTF models mirrored in x (Babylon's import into its left-handed space), so the boxes are too.
   const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene))?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
-  defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}) });
+  defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}), ...(p.flame ? { flame: propFlame(p) } : {}) });
   lock.files.push({ file, source: p.pack, ...(p.budget ? { budget: p.budget } : {}), ...(p.source ? { title: `${p.source.model} (download dated ${p.source.date})` } : {}), src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, ...(lodTriangles.length ? { lodTriangles } : {}), ...(pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()) ? { normalMap: true } : {}), bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
+}
+
+/**
+ * A fire prop's open flame (`flame` in content/props.json), drawn as a Binbun Flame FX effect (content/vfx.json
+ * map.lasting `flame.<fx>`): `at` is where the flame stands in the prop's own space as the game draws it (x
+ * mirrored like the collision boxes; metres at scale 1), `size` its height in metres, `hide` the model's
+ * materials (its own flame) that give way to it while it is drawn.
+ */
+function propFlame(p) {
+  const f = p.flame;
+  const kinds = ['brazier', 'green', 'torch', 'candle', 'campfire'];
+  if (!kinds.includes(f.fx)) throw new Error(`${p.id}: flame.fx must be one of ${kinds.join(', ')}`);
+  if (!Array.isArray(f.at) || f.at.length !== 3 || !f.at.every(Number.isFinite)) throw new Error(`${p.id}: flame.at must be [x, y, z]`);
+  if (!(f.size > 0)) throw new Error(`${p.id}: flame.size must be above 0`);
+  return { fx: f.fx, at: f.at.map(round), size: round(f.size), ...(f.hide?.length ? { hide: f.hide } : {}) };
 }
 
 // Files left behind by renamed or removed props.
