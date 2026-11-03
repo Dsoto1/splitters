@@ -772,13 +772,15 @@ export class GameView {
     const len = Math.hypot(d.x, d.y, d.z) || 1;
     const dir = { x: d.x / len, y: d.y / len, z: d.z / len };
     // A corpse in the line of fire.
-    const body = this.physics?.raycastRagdoll(o.eye, dir, len);
+    const hit = this.physics?.raycastRagdoll(o.eye, dir, len);
+    const owner = hit ? this.movingRagdolls().find((m) => m.body.owns(hit.body)) : undefined;
+    const body = owner ? hit : null;
     if (body) {
       const at = { x: o.eye.x + dir.x * body.dist, y: o.eye.y + dir.y * body.dist, z: o.eye.z + dir.z * body.dist };
       body.body.applyImpulseAtPoint({ x: dir.x * 4 * o.strength, y: dir.y * 4 * o.strength + 0.4, z: dir.z * 4 * o.strength }, at, true);
       this.blood.hit(at, dir, o.strength);
       // Its time to settle starts again from the hit (else a body hit late in its fall froze mid-tumble).
-      this.movingRagdolls().find((m) => m.body.owns(body.body))?.body.kick();
+      owner?.body.kick();
     } else {
       // A body that has come to rest (its capsules went back to the pool) is a ragdoll again when hit.
       const rest = this.restingBodyOnRay(o.eye, dir, len);

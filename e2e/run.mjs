@@ -1794,16 +1794,21 @@ async function physicsfxFlow(browser) {
     const v = window.__cs.view;
     const c = v.corpses.findLast((x) => x.slot === window.__botSlot);
     const r0 = c?.a.ragdoll;
-    if (!r0 || !('owns' in r0)) return { rested: false, tier: r0?.tier ?? null };
+    if (!r0 || r0.tier === 'posed') return { rested: false, tier: r0?.tier ?? null, kind: r0?.constructor?.name ?? null };
     if (!r0.frozen) {
       r0.freeze();
       c.a.anim.freezePose();
     }
     const p = c.a.anim.ch.joints.get('pelvis').getAbsolutePosition();
     // A round from 3 m off and 1.5 m up, through the pelvis and on into the ground.
-    v.landRound({ eye: { x: p.x + 3, y: p.y + 1.5, z: p.z }, to: { x: p.x - 1, y: p.y - 0.5, z: p.z }, victim: null, zone: 0, strength: 1 });
+    const eye = { x: p.x + 3, y: p.y + 1.5, z: p.z };
+    const to = { x: p.x - 1, y: p.y - 0.5, z: p.z };
+    const len = Math.hypot(to.x - eye.x, to.y - eye.y, to.z - eye.z);
+    const dir = { x: (to.x - eye.x) / len, y: (to.y - eye.y) / len, z: (to.z - eye.z) / len };
+    const why = { capsule: !!v.physics?.raycastRagdoll(eye, dir, len), onRay: !!v.restingBodyOnRay(eye, dir, len) };
+    v.landRound({ eye, to, victim: null, zone: 0, strength: 1 });
     const r1 = c.a.ragdoll;
-    return { rested: true, woke: !!r1 && r1 !== r0 && !r1.frozen, tier: r1?.tier ?? null };
+    return { rested: true, woke: !!r1 && r1 !== r0 && !r1.frozen, tier: r1?.tier ?? null, ...why };
   });
   check(reshot.rested && reshot.woke, `a resting body shot again becomes a ragdoll again (${JSON.stringify(reshot)})`);
   // Out of view, a death isn't simulated at all: the body is laid on the ground along the hit (ragdollBudget.ts),
