@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 25,
   "metadata": {
     "id": "dune_harbor",
     "name": "Dune Harbor",
     "author": "Tile Trigger",
     "description": "A sun-bleached desert spaceport under a hot, hazy sky. Domed adobe huts line a dusty main street patrolled by hover speeders, narrow alleys wind between them past a market of stalls and awnings and moisture vaporators on the roofs. The cantina has a bar, booths and a band stage, a back room where the hostages are held and a smugglers' cellar below. Three sunken circular docking bays: dropships and haulers in Bay 3 and Bay 7, and a light freighter you can walk into up its ramp, with a cockpit tube and a gun turret on its roof. Speeders and hover bikes to take, dunes beyond the town and a crashed escape pod half buried in the sand.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-03T20:31:21.515Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 12,
@@ -1160,3878 +1160,6 @@
     ]
   },
   "entities": [
-    {
-      "id": "block_080",
-      "position": [
-        -48,
-        4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_081",
-      "position": [
-        -48,
-        4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_082",
-      "position": [
-        -48,
-        4.7,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_083",
-      "position": [
-        -48,
-        4.7,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_084",
-      "position": [
-        -48,
-        5.4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_085",
-      "position": [
-        -48,
-        5.4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_086",
-      "position": [
-        -48,
-        6,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_087",
-      "position": [
-        -48,
-        6,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_088",
-      "position": [
-        -40,
-        4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_089",
-      "position": [
-        -40,
-        4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_090",
-      "position": [
-        -40,
-        4.7,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_091",
-      "position": [
-        -40,
-        4.7,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_092",
-      "position": [
-        -40,
-        5.4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_093",
-      "position": [
-        -40,
-        5.4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_094",
-      "position": [
-        -40,
-        6,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_095",
-      "position": [
-        -40,
-        6,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_096",
-      "position": [
-        -48,
-        4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_097",
-      "position": [
-        -48,
-        4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_098",
-      "position": [
-        -48,
-        4.7,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_099",
-      "position": [
-        -48,
-        4.7,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_100",
-      "position": [
-        -48,
-        5.4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_101",
-      "position": [
-        -48,
-        5.4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_102",
-      "position": [
-        -48,
-        6,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_103",
-      "position": [
-        -48,
-        6,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_104",
-      "position": [
-        8,
-        4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_105",
-      "position": [
-        8,
-        4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_106",
-      "position": [
-        8,
-        4.7,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_107",
-      "position": [
-        8,
-        4.7,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_108",
-      "position": [
-        8,
-        5.4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_109",
-      "position": [
-        8,
-        5.4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_110",
-      "position": [
-        8,
-        6,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_111",
-      "position": [
-        8,
-        6,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_112",
-      "position": [
-        32,
-        4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_113",
-      "position": [
-        32,
-        4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_114",
-      "position": [
-        32,
-        4.7,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_115",
-      "position": [
-        32,
-        4.7,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_116",
-      "position": [
-        32,
-        5.4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_117",
-      "position": [
-        32,
-        5.4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_118",
-      "position": [
-        32,
-        6,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_119",
-      "position": [
-        32,
-        6,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_120",
-      "position": [
-        48,
-        4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_121",
-      "position": [
-        48,
-        4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_122",
-      "position": [
-        48,
-        4.7,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_123",
-      "position": [
-        48,
-        4.7,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_124",
-      "position": [
-        48,
-        5.4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_125",
-      "position": [
-        48,
-        5.4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_126",
-      "position": [
-        48,
-        6,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_127",
-      "position": [
-        48,
-        6,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_128",
-      "position": [
-        48,
-        4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_129",
-      "position": [
-        48,
-        4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_130",
-      "position": [
-        48,
-        4.7,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_131",
-      "position": [
-        48,
-        4.7,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_132",
-      "position": [
-        48,
-        5.4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_133",
-      "position": [
-        48,
-        5.4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_134",
-      "position": [
-        48,
-        6,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_135",
-      "position": [
-        48,
-        6,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_136",
-      "position": [
-        -48,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_137",
-      "position": [
-        -48,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_138",
-      "position": [
-        -48,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_139",
-      "position": [
-        -48,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_140",
-      "position": [
-        -48,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_141",
-      "position": [
-        -48,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_142",
-      "position": [
-        -48,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_143",
-      "position": [
-        -48,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_144",
-      "position": [
-        -32,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_145",
-      "position": [
-        -32,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_146",
-      "position": [
-        -32,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_147",
-      "position": [
-        -32,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_148",
-      "position": [
-        -32,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_149",
-      "position": [
-        -32,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_150",
-      "position": [
-        -32,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_151",
-      "position": [
-        -32,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_152",
-      "position": [
-        -24,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_153",
-      "position": [
-        -24,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_154",
-      "position": [
-        -24,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_155",
-      "position": [
-        -24,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_156",
-      "position": [
-        -24,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_157",
-      "position": [
-        -24,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_158",
-      "position": [
-        -24,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_159",
-      "position": [
-        -24,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_160",
-      "position": [
-        -8,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_161",
-      "position": [
-        -8,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_162",
-      "position": [
-        -8,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_163",
-      "position": [
-        -8,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_164",
-      "position": [
-        -8,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_165",
-      "position": [
-        -8,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_166",
-      "position": [
-        -8,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_167",
-      "position": [
-        -8,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_168",
-      "position": [
-        0,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_169",
-      "position": [
-        0,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_170",
-      "position": [
-        0,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_171",
-      "position": [
-        0,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_172",
-      "position": [
-        0,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_173",
-      "position": [
-        0,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_174",
-      "position": [
-        0,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_175",
-      "position": [
-        0,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_176",
-      "position": [
-        48,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_177",
-      "position": [
-        48,
-        4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_178",
-      "position": [
-        48,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_179",
-      "position": [
-        48,
-        4.7,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_180",
-      "position": [
-        48,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_181",
-      "position": [
-        48,
-        5.4,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_182",
-      "position": [
-        48,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_183",
-      "position": [
-        48,
-        6,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_184",
-      "position": [
-        -40,
-        4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_185",
-      "position": [
-        -40,
-        4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_186",
-      "position": [
-        -40,
-        4.7,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_187",
-      "position": [
-        -40,
-        4.7,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_188",
-      "position": [
-        -40,
-        5.4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_189",
-      "position": [
-        -40,
-        5.4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_190",
-      "position": [
-        -40,
-        6,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_191",
-      "position": [
-        -40,
-        6,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_192",
-      "position": [
-        0,
-        4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_193",
-      "position": [
-        0,
-        4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_194",
-      "position": [
-        0,
-        4.7,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_195",
-      "position": [
-        0,
-        4.7,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_196",
-      "position": [
-        0,
-        5.4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_197",
-      "position": [
-        0,
-        5.4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_198",
-      "position": [
-        0,
-        6,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_199",
-      "position": [
-        0,
-        6,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_200",
-      "position": [
-        32,
-        4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_201",
-      "position": [
-        32,
-        4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_202",
-      "position": [
-        32,
-        4.7,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_203",
-      "position": [
-        32,
-        4.7,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_204",
-      "position": [
-        32,
-        5.4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_205",
-      "position": [
-        32,
-        5.4,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_206",
-      "position": [
-        32,
-        6,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_207",
-      "position": [
-        32,
-        6,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_208",
-      "position": [
-        -4,
-        4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        11.44,
-        1.54,
-        11.44
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_209",
-      "position": [
-        -4,
-        4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        11.44,
-        1.54,
-        11.44
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_210",
-      "position": [
-        -4,
-        5.54,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        9.24,
-        1.54,
-        9.24
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_211",
-      "position": [
-        -4,
-        5.54,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        9.24,
-        1.54,
-        9.24
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_212",
-      "position": [
-        -4,
-        7.08,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        6.6,
-        1.32,
-        6.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_213",
-      "position": [
-        -4,
-        7.08,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        6.6,
-        1.32,
-        6.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_214",
-      "position": [
-        -4,
-        8.4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        3.52,
-        1.1,
-        3.52
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_215",
-      "position": [
-        -4,
-        8.4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        3.52,
-        1.1,
-        3.52
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_216",
-      "position": [
-        -16,
-        4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_217",
-      "position": [
-        -16,
-        4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_218",
-      "position": [
-        -16,
-        4.7,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_219",
-      "position": [
-        -16,
-        4.7,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_220",
-      "position": [
-        -16,
-        5.4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_221",
-      "position": [
-        -16,
-        5.4,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_222",
-      "position": [
-        -16,
-        6,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_223",
-      "position": [
-        -16,
-        6,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_224",
-      "position": [
-        -16,
-        4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_225",
-      "position": [
-        -16,
-        4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        5.2,
-        0.7,
-        5.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_226",
-      "position": [
-        -16,
-        4.7,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_227",
-      "position": [
-        -16,
-        4.7,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.7,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_228",
-      "position": [
-        -16,
-        5.4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_229",
-      "position": [
-        -16,
-        5.4,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        3,
-        0.6,
-        3
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_230",
-      "position": [
-        -16,
-        6,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_231",
-      "position": [
-        -16,
-        6,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        1.6,
-        0.5,
-        1.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_232",
-      "position": [
-        8,
-        4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        7.28,
-        0.98,
-        7.28
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_233",
-      "position": [
-        8,
-        4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        7.28,
-        0.98,
-        7.28
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_234",
-      "position": [
-        8,
-        4.98,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        5.88,
-        0.98,
-        5.88
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_235",
-      "position": [
-        8,
-        4.98,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        5.88,
-        0.98,
-        5.88
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_236",
-      "position": [
-        8,
-        5.96,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.84,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_237",
-      "position": [
-        8,
-        5.96,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        4.2,
-        0.84,
-        4.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_238",
-      "position": [
-        8,
-        6.8,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        2.24,
-        0.7,
-        2.24
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_239",
-      "position": [
-        8,
-        6.8,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        2.24,
-        0.7,
-        2.24
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_240",
-      "position": [
-        36,
-        4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        10.4,
-        1.4,
-        10.4
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_241",
-      "position": [
-        36,
-        4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        10.4,
-        1.4,
-        10.4
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_242",
-      "position": [
-        36,
-        5.4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        8.4,
-        1.4,
-        8.4
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_243",
-      "position": [
-        36,
-        5.4,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        8.4,
-        1.4,
-        8.4
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_244",
-      "position": [
-        36,
-        6.8,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        6,
-        1.2,
-        6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_245",
-      "position": [
-        36,
-        6.8,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        6,
-        1.2,
-        6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_246",
-      "position": [
-        36,
-        8,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        3.2,
-        1,
-        3.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_247",
-      "position": [
-        36,
-        8,
-        12
-      ],
-      "kind": "block",
-      "size": [
-        3.2,
-        1,
-        3.2
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_248",
-      "position": [
-        -4,
-        4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        6.24,
-        0.84,
-        6.24
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_249",
-      "position": [
-        -4,
-        4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        6.24,
-        0.84,
-        6.24
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_250",
-      "position": [
-        -4,
-        4.84,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        5.04,
-        0.84,
-        5.04
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_251",
-      "position": [
-        -4,
-        4.84,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        5.04,
-        0.84,
-        5.04
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_252",
-      "position": [
-        -4,
-        5.68,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        3.6,
-        0.72,
-        3.6
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_253",
-      "position": [
-        -4,
-        5.68,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        3.6,
-        0.72,
-        3.6
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_254",
-      "position": [
-        -4,
-        6.4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        1.92,
-        0.6,
-        1.92
-      ],
-      "yaw": 0,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_255",
-      "position": [
-        -4,
-        6.4,
-        24
-      ],
-      "kind": "block",
-      "size": [
-        1.92,
-        0.6,
-        1.92
-      ],
-      "yaw": 0.7853981633974483,
-      "material": "core.pbr_plaster",
-      "tint": "#f4e6c8",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
     {
       "id": "block_256",
       "position": [
@@ -8463,7 +4591,7 @@
         -7.5
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "prop.dc_market_stall",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -8477,7 +4605,7 @@
         -7.5
       ],
       "kind": "prop",
-      "model": "prop.stall_green",
+      "model": "prop.dc_market_stall",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -8491,7 +4619,7 @@
         -16.5
       ],
       "kind": "prop",
-      "model": "prop.nc_food_stall",
+      "model": "prop.dc_canopy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8505,7 +4633,7 @@
         -16.5
       ],
       "kind": "prop",
-      "model": "prop.stall_bench",
+      "model": "prop.dc_spice_baskets",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8533,7 +4661,7 @@
         -19
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "prop.dc_jars",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8547,7 +4675,7 @@
         -19
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "prop.dc_vase",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -8589,7 +4717,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.lantern_post",
+      "model": "prop.dc_lantern",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8603,7 +4731,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.lantern_post",
+      "model": "prop.dc_lantern",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8701,7 +4829,7 @@
         3.4
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "prop.street_rusty_barrel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8715,7 +4843,7 @@
         3.2
       ],
       "kind": "prop",
-      "model": "prop.barrel_open",
+      "model": "prop.dc_jars",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8729,7 +4857,7 @@
         -3.3
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "prop.cargo_crate_stack",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -8743,7 +4871,7 @@
         -3.5
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "prop.cargo_army_crate",
       "yaw": 0.7,
       "scale": 1,
       "solid": true,
@@ -8785,7 +4913,7 @@
         21
       ],
       "kind": "prop",
-      "model": "prop.sf_crate",
+      "model": "prop.cargo_scifi_crate",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -8799,7 +4927,7 @@
         27
       ],
       "kind": "prop",
-      "model": "prop.sf_barrel",
+      "model": "prop.street_rusty_barrel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13467,7 +9595,7 @@
         5.08
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "prop.dc_vase",
       "yaw": 0.7703,
       "scale": 1,
       "solid": true,
@@ -13789,7 +9917,7 @@
         -4.97
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "prop.dc_jars",
       "yaw": 2.4285,
       "scale": 1,
       "solid": true,
@@ -14001,6 +10129,370 @@
       "kind": "prop",
       "model": "prop.crate_small",
       "yaw": 2.5297,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dmxokrxrmg",
+      "position": [
+        -48,
+        4,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jo92buckom",
+      "position": [
+        -40,
+        4,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1b7vb2ebxt",
+      "position": [
+        -48,
+        4,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ddrdoryh7l",
+      "position": [
+        8,
+        4,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w42hr4qujz",
+      "position": [
+        32,
+        4,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6ctcqgmocs",
+      "position": [
+        48,
+        4,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6ac1tuagd0",
+      "position": [
+        48,
+        4,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_zpwk35dqcp",
+      "position": [
+        -48,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5ts8ky0uqr",
+      "position": [
+        -32,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_t7qf6k4zjn",
+      "position": [
+        -24,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2jqidvnp6y",
+      "position": [
+        -8,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_05ldagivf5",
+      "position": [
+        0,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mfl0mwrrnn",
+      "position": [
+        48,
+        4,
+        -8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x0rc1yotvd",
+      "position": [
+        -40,
+        4,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ypl82jhglz",
+      "position": [
+        0,
+        4,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7nlyaxevjz",
+      "position": [
+        32,
+        4,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_amleo2l0kj",
+      "position": [
+        -4,
+        4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome_blue",
+      "yaw": 0,
+      "scale": 2.22,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w9sdjfv9q9",
+      "position": [
+        -16,
+        4,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_odkmv3mx3b",
+      "position": [
+        -16,
+        4,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.01,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x9abza46ly",
+      "position": [
+        8,
+        4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.41,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_e2hxfyh75y",
+      "position": [
+        36,
+        4,
+        12
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome_blue",
+      "yaw": 0,
+      "scale": 2.02,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_q1y59c4csi",
+      "position": [
+        -4,
+        4,
+        24
+      ],
+      "kind": "prop",
+      "model": "prop.dc_dome",
+      "yaw": 0,
+      "scale": 1.21,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_c21s6extmy",
+      "kind": "prop",
+      "position": [
+        19.5,
+        0,
+        -12
+      ],
+      "model": "prop.tiled_well",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mv1hjyr2b3",
+      "kind": "prop",
+      "position": [
+        -66,
+        -0.49,
+        8
+      ],
+      "model": "prop.vehicle_raider_buggy",
+      "yaw": 0.524,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dy2f5b95fu",
+      "kind": "prop",
+      "position": [
+        66,
+        -0.49,
+        -8
+      ],
+      "model": "prop.vehicle_raider_buggy",
+      "yaw": -2.618,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5hcaxh24b1",
+      "kind": "prop",
+      "position": [
+        16,
+        0,
+        -20
+      ],
+      "model": "prop.dc_rug_rack",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -39430,12 +35922,11 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "clear",
     "scenery": "dunes",
     "ground": "sand",
-    "haze": 0.72
+    "haze": 0.6
   },
   "physics": null,
   "blood": null,
