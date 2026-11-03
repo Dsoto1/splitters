@@ -2561,6 +2561,13 @@ export class GameView {
       this.lasting.want(id, state === 'burning' ? 'fire.vehicle' : 'fire.wreck', { x: p.x, y: p.y + hy * 2 - 0.25, z: p.z }, { size: Math.max(0.8, Math.min(2.2, (hx + hz) * 0.6)) });
       fire = this.lasting.drawn(id);
     }
+    // Heavy damage, burning and the wreck: Smoke VFX's column over it (map.lasting `smoke.wreck`), in place of the black puffs.
+    let smoke = false;
+    if (state === 'heavy' || state === 'burning' || state === 'wreck') {
+      const id = `mountSmoke:${m.index}`;
+      this.lasting.want(id, 'smoke.wreck', { x: p.x, y: p.y + hy * 2, z: p.z }, { size: Math.max(0.8, Math.min(2.2, (hx + hz) * 0.6)) });
+      smoke = this.lasting.drawn(id);
+    }
     if ((this.mountFxAt.get(m.index) ?? 0) > now) return;
     const spot = (spread: number) => ({ x: p.x + (Math.random() - 0.5) * hx * spread, y: p.y + hy * 2 - 0.1, z: p.z + (Math.random() - 0.5) * hz * spread });
     const size = Math.max(0.8, Math.min(2, (hx + hz) * 0.5));
@@ -2568,7 +2575,7 @@ export class GameView {
       this.impacts.puff(spot(0.8), '#8c8884', size * 0.8, 1.8, 1.6);
       this.mountFxAt.set(m.index, now + 240);
     } else if (state === 'heavy') {
-      this.impacts.puff(spot(0.9), '#2a2725', size * 1.2, 2.2, 2);
+      if (!smoke) this.impacts.puff(spot(0.9), '#2a2725', size * 1.2, 2.2, 2);
       if (Math.random() < 0.3) this.impacts.sparkBurst(spot(1.4), 6, 2.5);
       this.mountFxAt.set(m.index, now + 120);
     } else if (state === 'burning') {
@@ -2576,12 +2583,12 @@ export class GameView {
         this.impacts.puff(spot(1.1), '#ff7a1a', size * 0.7, 0.45, 1.8, true);
         this.impacts.puff(spot(0.8), Math.random() < 0.5 ? '#ffb347' : '#e8541c', size * 0.5, 0.35, 2.2, true);
       }
-      this.impacts.puff(spot(0.9), '#151312', size * 1.5, 2.6, 2.4);
+      if (!smoke) this.impacts.puff(spot(0.9), '#151312', size * 1.5, 2.6, 2.4);
       if (Math.random() < 0.35) this.impacts.sparkBurst(spot(1.2), 8, 3);
       this.mountFxAt.set(m.index, now + 70);
     } else {
       // The wreck: a column of black smoke and the last licks of flame.
-      this.impacts.puff(spot(0.7), '#151312', size * 1.4, 3.2, 2.2);
+      if (!smoke) this.impacts.puff(spot(0.7), '#151312', size * 1.4, 3.2, 2.2);
       if (!fire && Math.random() < 0.4) this.impacts.puff(spot(1), '#ff6a14', size * 0.4, 0.4, 1.2, true);
       this.mountFxAt.set(m.index, now + 160);
     }

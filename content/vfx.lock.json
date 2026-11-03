@@ -48,6 +48,22 @@
       "title": "flame effect scenes",
       "bytes": 9676,
       "sha256": "37c190bb59c54eef"
+    },
+    {
+      "file": "vfx/poison_fx.json",
+      "source": "binbun-poison-vfx",
+      "src": "BinbunVFX/poison_effects/effects/**/*.tscn",
+      "title": "poison effect scenes",
+      "bytes": 11248,
+      "sha256": "1cf24ca1050fbcda"
+    },
+    {
+      "file": "vfx/smoke_fx.json",
+      "source": "binbun-smoke-vfx",
+      "src": "BinbunVFX/smoke_effects/effects/**/*.tscn",
+      "title": "smoke effect scenes",
+      "bytes": 4126,
+      "sha256": "23852bdc3251048f"
     }
   ]
 }

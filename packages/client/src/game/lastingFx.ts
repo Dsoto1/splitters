@@ -25,6 +25,8 @@ interface Want {
 const KEEP_MS = 300;
 /** Lasting effects further than this from the camera aren't drawn (their plain look stands in). */
 const RANGE = 70;
+/** Pickup glows count as this much further off when places are handed out. */
+const LOOT_FAR = 2.5;
 
 /**
  * Lasting pack effects for things that burn, glow or crackle while they last (content/vfx.json map.lasting):
@@ -63,6 +65,8 @@ export class LastingFx {
     const order = [...this.wants.values()]
       .map((w) => ({ w, d: Math.hypot(w.at.x - cam.x, w.at.y - cam.y, w.at.z - cam.z) }))
       .filter((x) => x.d <= RANGE)
+      // Hazards (fire, charge, gas) before decoration (a pickup's glow): a glow counts as LOOT_FAR times as far off.
+      .map((x) => ({ ...x, d: x.w.key.startsWith('loot.') ? x.d * LOOT_FAR : x.d }))
       .sort((a, b) => a.d - b.d);
     const room = this.vfx.loopRoom + this.live.size;
     const keep = new Set(order.slice(0, room).map((x) => x.w));

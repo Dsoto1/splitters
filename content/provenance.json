@@ -29716,6 +29716,34 @@
       ]
     },
     {
+      "file": "vfx/poison_fx.json",
+      "sha256": "1cf24ca1050fbcda",
+      "bytes": 11248,
+      "source": "binbun-poison-vfx/BinbunVFX/poison_effects/effects/**/*.tscn",
+      "title": "Poison VFX (Binbun store licence, purchased by the owner): poison effect scenes",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "LicenseRef-Purchased",
+      "modifications": [
+        "effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js",
+        "only the effects the game plays (content/vfx.json map)"
+      ]
+    },
+    {
+      "file": "vfx/smoke_fx.json",
+      "sha256": "23852bdc3251048f",
+      "bytes": 4126,
+      "source": "binbun-smoke-vfx/BinbunVFX/smoke_effects/effects/**/*.tscn",
+      "title": "Smoke VFX (Binbun store licence, purchased by the owner): smoke effect scenes",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "LicenseRef-Purchased",
+      "modifications": [
+        "effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js",
+        "only the effects the game plays (content/vfx.json map)"
+      ]
+    },
+    {
       "file": "gear/military_helmet.glb",
       "sha256": "0758ab953e797375",
       "triangles": 2930,

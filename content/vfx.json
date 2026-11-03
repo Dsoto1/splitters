@@ -49,6 +49,26 @@
       "edition": "Full edition, purchased by the owner (Drive fx/FlameFXFull.zip, 2026-10-31); its license.txt is CC0 (Creative Commons Zero, no attribution required). 30 effects: fires, bonfires and candles in six colours.",
       "dir": "BinbunVFX_Vol2/FlameFX",
       "file": "flame_fx"
+    },
+    "binbun-poison-vfx": {
+      "title": "Poison VFX (Binbun store licence, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "LicenseRef-Purchased",
+      "licenseFile": "assets-src/binbun-poison-vfx/License.txt",
+      "edition": "Vol. 1 pack, purchased by the owner (Drive fx/PoisonVFX.zip, 2026-10-31); no licence file in the download (the owner's full licence; CLAUDE.md content rules). 30 effects: clouds, stink, puddles, bubbles, areas.",
+      "dir": "BinbunVFX/poison_effects",
+      "file": "poison_fx"
+    },
+    "binbun-smoke-vfx": {
+      "title": "Smoke VFX (Binbun store licence, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "LicenseRef-Purchased",
+      "licenseFile": "assets-src/binbun-smoke-vfx/License.txt",
+      "edition": "Vol. 1 pack, purchased by the owner (Drive fx/SmokeVFX.zip, 2026-10-31); no licence file in the download (the owner's full licence; CLAUDE.md content rules). 24 effects: thin, plain and big smoke.",
+      "dir": "BinbunVFX/smoke_effects",
+      "file": "smoke_fx"
     }
   },
   "budgets": { "maxBytes": 400000 },
@@ -129,13 +149,15 @@
       "fence": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_01", "scale": 0.22 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.3 }, "speed": 2.5 }
     },
     "lasting": {
-      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball). fire.zone: a burning patch (molotov, flamethrower, flare, lit oil; scale per metre of its radius, one fire per ~1.5 m of it). fire.vehicle / fire.wreck: a burning vehicle and the wreck smouldering (scale per metre of its size). fire.flare: a flare burning in flight or where it stuck. fire.trap: a flame trap's jet (laid along it).",
+      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball). fire.zone: a burning patch (molotov, flamethrower, flare, lit oil; scale per metre of its radius, three or four overlapping). fire.vehicle / fire.wreck: a burning vehicle and the wreck smouldering (scale per metre of its size). fire.flare: a flare burning in flight or where it stuck. fire.trap: a flame trap's jet (laid along it). cloud.toxic: a toxic gas cloud (scale per metre of its radius). smoke.wreck: the smoke column over a burning vehicle or its wreck (scale per metre of its size).",
       "charge.sentry_arc": { "pack": "electric_fx", "effect": "vfx_ball_lightning_04", "scale": 0.6 },
       "fire.zone": { "pack": "flame_fx", "effect": "vfx_basic_fire_02", "scale": 1.1 },
       "fire.vehicle": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 1.1 },
       "fire.wreck": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 0.5 },
       "fire.flare": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 0.3 },
-      "fire.trap": { "pack": "flame_fx", "effect": "vfx_basic_fire_02", "scale": 0.8 }
+      "fire.trap": { "pack": "flame_fx", "effect": "vfx_basic_fire_02", "scale": 0.8 },
+      "cloud.toxic": { "pack": "poison_fx", "effect": "poison_cloud_vfx_01", "scale": 0.5 },
+      "smoke.wreck": { "pack": "smoke_fx", "effect": "smoke_thin_vfx_01", "scale": 0.35 }
     }
   }
 }

@@ -218,6 +218,8 @@ function exportGodotPack(dir, id) {
       // What the player draws: particles and meshes (the animation is written below; lights, sound and the
       // animation player's own copy of its library are left out).
       if (!['GPUParticles3D', 'MeshInstance3D', 'Node3D'].includes(n.attrs.type)) continue;
+      // Vol. 1 smoke's shadow-only particles: effects cast no shadows here (atmosphere.ts leaves them out).
+      if (n.attrs.name === 'ShadowCaster' || /ShadowCaster/.test(String(n.attrs.groups ?? ''))) continue;
       fx.nodes.push({ name: n.attrs.name, type: n.attrs.type, ...(n.attrs.parent && n.attrs.parent !== '.' ? { parent: n.attrs.parent } : {}), ...plain(n.props, own, base) });
     }
     const player = nodes.find((n) => n.attrs.type === 'AnimationPlayer');

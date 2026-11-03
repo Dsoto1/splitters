@@ -415,7 +415,9 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
     // `Owned`: pieces the team made itself (the Style Pack props and facades, modelled in code).
     // `LicenseRef-Free-Use`: an author's grant to use the models in any project with no conditions at all
     // (the household items); accepted like the credit-only tier, and credited the same way.
-    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$|^Owned$|^LicenseRef-Free-Use$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
+    // `LicenseRef-Purchased`: a pack the owner bought a full licence for (always allowed, owner 2026-11-01; CLAUDE.md
+    // "Content rules"), recorded with its licence's name in the pack's title and licence file.
+    if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$|^Owned$|^LicenseRef-Free-Use$|^LicenseRef-Purchased$/.test(pack.license)) problems.push(`${f.file}: licence ${pack.license} is not an approved tier`);
     const path = join(ROOT, 'packages/client/public', f.file);
     if (!existsSync(path)) problems.push(`${f.file}: missing (run ${prepare})`);
     else if (createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${f.file}: does not match ${lockPath}`);

@@ -291,6 +291,13 @@ export class ZoneVisuals {
       // Fade out over the last second.
       const fade = Math.min(1, z[5]);
       if (m.kind === 'fire' && this.lasting) this.burn(key, m, fade);
+      if (m.kind === 'toxic' && this.lasting) {
+        // Poison VFX's cloud rolling over the patch; the plain dome stays, fainter, to show how far it reaches.
+        const id = `zone:${key}`;
+        const p = m.root.position;
+        this.lasting.want(id, 'cloud.toxic', { x: p.x, y: p.y + 0.1, z: p.z }, { size: m.radius, level: fade });
+        for (const c of m.root.getChildMeshes()) c.visibility = this.lasting.drawn(id) ? 0.45 : 1;
+      }
       this.animate(m, now, fade);
     }
     for (const [key, m] of this.zones) {

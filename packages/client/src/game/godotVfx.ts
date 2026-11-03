@@ -407,6 +407,28 @@ function godotMesh(scene: Scene, spec: Json, name: string): Mesh {
       }
     }
     grid(seg, rings);
+  } else if (type === 'TorusMesh') {
+    // A ring lying flat (round Y): u round the ring, v round its tube.
+    const inner = num(spec.inner_radius, 0.5);
+    const outer = num(spec.outer_radius, 1);
+    const R = (inner + outer) / 2;
+    const r = (outer - inner) / 2;
+    const seg = Math.max(8, Math.min(32, num(spec.rings, 64)));
+    const side = Math.max(4, Math.min(12, num(spec.ring_segments, 32)));
+    for (let j = 0; j <= side; j++) {
+      const v = j / side;
+      const b = v * Math.PI * 2;
+      for (let i = 0; i <= seg; i++) {
+        const u = i / seg;
+        const a = u * Math.PI * 2;
+        const ca = Math.cos(a);
+        const sa = Math.sin(a);
+        positions.push(ca * (R + r * Math.cos(b)), r * Math.sin(b), sa * (R + r * Math.cos(b)));
+        normals.push(ca * Math.cos(b), Math.sin(b), sa * Math.cos(b));
+        uvs.push(u, v);
+      }
+    }
+    grid(seg, side);
   } else {
     // Cylinders and tube trails: open tubes along Y, v = 0 at the top. Godot puts a cylinder's side in the top half
     // of its UVs (v 0..0.5; the caps take the rest), and the packs' shaders are written for that.
@@ -1010,6 +1032,102 @@ PORTS.glow_fresnel = {
       outAlpha = value * u_alpha_multiplier * vColor.a * vExtra.w;`,
 };
 
+// ---- Loot VFX (Binbun VFX Vol. 1): the glow round a pickup waiting to be taken
+const LOOT_HELPERS = `
+vec2 toPolar(vec2 uv) {
+  vec2 d = uv - 0.5;
+  return vec2(atan(d.y, d.x) / 6.2831853, length(d) * 2.0);
+}
+vec3 shiftHue(vec3 c, float s) {
+  vec3 g = vec3(0.57735);
+  vec3 pr = g * dot(g, c);
+  vec3 u = c - pr;
+  vec3 v = cross(g, u);
+  return u * cos(s * 6.2831853) + v * sin(s * 6.2831853) + pr;
+}`;
+/** A flare of streaks and a ring, turned to the camera. */
+PORTS.billboard_flare = {
+  uniforms: { primary_color: [1, 1, 1], secondary_color: [0.5, 0.5, 1], emission: 2, hue_variation: 0.05, flare_streaks: 20, flare_ring: 0.6, flare_amount: 1, edge_hardness: 0 },
+  samplers: ['noise_texture'],
+  helpers: LOOT_HELPERS,
+  blend: 'mix',
+  billboardUniform: true,
+  fragment: `
+      vec2 pu = toPolar(vUV);
+      float vo = vNormal.x * 4.0;
+      float g1 = sin(pu.x * 3.14159265 * (u_flare_streaks * 0.4) + vo + u_time);
+      float g2 = -sin(pu.x * 3.14159265 * u_flare_streaks - vo - u_time);
+      float value = clamp(g1 * g2, 0.0, 1.0);
+      float fm = pow(max(sin(pu.y * 3.14159265), 0.0), 8.0);
+      value = pow(value, pu.y * 2.0);
+      value = smoothstep(0.4 * u_edge_hardness, mix(1.0, 0.41, u_edge_hardness), value) * fm;
+      float ring = max(1.0 - abs(pu.y * 2.0 - 1.0), 0.0);
+      value += ring * ring * ring * ring * u_flare_ring;
+      value *= u_flare_amount * vExtra.w;
+      vec3 col = mix(u_secondary_color, u_primary_color, value);
+      col = shiftHue(col, (texture2D(noise_texture, vUV).r * 2.0 - 1.0) * u_hue_variation);
+      outColor = col * u_emission;
+      outAlpha = value * 0.2;`,
+};
+/** The glowing heart: a fresnel ball, bobbing. */
+PORTS.glow_core = {
+  uniforms: { primary_color: [1, 1, 1], secondary_color: [0.5, 0.5, 1], emission: 2, hue_variation: 0.05, glow_amount: 1, edge_hardness: 0, fade_bottom: 0, bob_amount: 0.05 },
+  samplers: ['noise_texture'],
+  helpers: LOOT_HELPERS,
+  blend: 'add',
+  vertex: `
+      p.y += sin(u_time * 2.0) * u_bob_amount;`,
+  fragment: `
+      float f = pow(max(dot(normalize(vView), normalize(vNormal)), 0.0), 4.0) * u_glow_amount;
+      f = smoothstep(0.0, 1.0, f);
+      if (u_fade_bottom > 0.01) f = mix(f, f * pow(max((1.0 - vUV.y) * 2.0 - 1.0, 0.0), 0.2), u_fade_bottom);
+      vec3 col = mix(u_secondary_color, u_primary_color, f);
+      col = shiftHue(col, (texture2D(noise_texture, vUV).r * 2.0 - 1.0) * (min(vUV.y, 1.0 - vUV.y) * 2.0) * u_hue_variation);
+      outColor = col * u_emission;
+      outAlpha = clamp(f, 0.0, 1.0) * vExtra.w;`,
+};
+/** Rings and pillars of light: streaks scrolling round a tube. */
+PORTS.glow_tube = {
+  uniforms: { primary_color: [1, 1, 1], secondary_color: [0.5, 0.5, 1], emission: 2, hue_variation: 0.05, align: 0, edge_hardness: 0, direction: [1, 0], detail_direction: [0, 1], density: 0.6, streaks: 8, scroll: 1, scale: 2, falloff: 4 },
+  samplers: ['noise_texture'],
+  helpers: LOOT_HELPERS,
+  blend: 'add',
+  cull: false,
+  vertex: `
+      p.y += sin(u_time * 2.0) * 0.05;`,
+  fragment: `
+      float dir = dot(vUV, u_direction);
+      float gr = 1.0 - abs(mod((dir - 0.5) * u_scale * 2.0 + u_time * u_scroll, 2.0) - 1.0);
+      gr *= gr;
+      float fr = abs(dot(normalize(vView), normalize(vNormal)));
+      fr = fr * fr * fr;
+      float glow = gr * fr;
+      vec2 duv = u_align > 0.5 ? vUV.yx : vUV;
+      float detail = abs(mod((dot(duv, u_detail_direction) - 0.5) * u_streaks + u_time, 2.0) - 1.0);
+      detail = sqrt(detail) * 2.0 - (2.0 - u_density);
+      glow *= detail;
+      glow = smoothstep(0.03 * u_edge_hardness, mix(0.4, 0.03, u_edge_hardness), glow);
+      float noise = texture2D(noise_texture, vUV).r;
+      glow = overlay(glow, noise);
+      vec3 col = shiftHue(mix(u_secondary_color, u_primary_color, fr), (noise * 2.0 - 1.0) * u_hue_variation);
+      outColor = col * (u_emission / 2.0);
+      outAlpha = clamp(glow, 0.0, 1.0) * vExtra.w;`,
+};
+/** Sparkles drifting up round it. */
+PORTS.particle_star = {
+  uniforms: { primary_color: [1, 1, 1], use_texture: 0, lock: 0, emission: 2 },
+  samplers: ['particle_texture'],
+  blend: 'mix',
+  vertex: `
+      p.y += sin(u_time * 2.0 + pextra.x) * 0.05;`,
+  fragment: `
+      float shape;
+      if (u_use_texture > 0.5 && u_lock < 0.5) shape = texture2D(particle_texture, vUV).a;
+      else shape = smoothstep(1.0, 1.2, length(fract(vUV - 0.5) * 2.0 - 1.0));
+      outColor = u_primary_color * u_emission;
+      outAlpha = shape * vColor.a * vExtra.w;`,
+};
+
 const VERTEX = `
 precision highp float;
 attribute vec3 position;
@@ -1176,7 +1294,7 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   for (const s of port.samplers ?? []) {
     let spec = (mat[`shader_parameter/${s}`] ?? (s === 'noise_texture' ? root.noise_texture : s === 'smoke_texture' ? root.smoke_texture : null)) as Json | null;
     if (s === 'normal_texture' && !spec && root.smoke_texture) spec = { ...(root.smoke_texture as Json), as_normal_map: true, bump_strength: 32 };
-    m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && (spec.type === 'GradientTexture2D' || spec.type === 'GradientTexture1D') ? gradientTexture(scene, spec) : noiseTexture(scene, spec));
+    m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && (spec.type === 'GradientTexture2D' || spec.type === 'GradientTexture1D' || (spec.gradient && !spec.noise)) ? gradientTexture(scene, spec) : noiseTexture(scene, spec));
   }
   m.setFloat('u_bright', 0.55);
   cache.set(key, m);

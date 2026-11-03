@@ -395,6 +395,16 @@ export const FX_MAP = {
       "pack": "flame_fx",
       "effect": "vfx_basic_fire_02",
       "scale": 0.8
+    },
+    "cloud.toxic": {
+      "pack": "poison_fx",
+      "effect": "poison_cloud_vfx_01",
+      "scale": 0.5
+    },
+    "smoke.wreck": {
+      "pack": "smoke_fx",
+      "effect": "smoke_thin_vfx_01",
+      "scale": 0.35
     }
   }
 } as const;
