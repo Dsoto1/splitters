@@ -384,6 +384,11 @@ for (const id of maps) {
             time('explosion', () => v.explosion(p, 4));
             time('hit heavy', () => v.hitFx(p, 'heavy'));
             time('hit melee', () => v.hitFx(p, 'melee'));
+            // Lightning (Electric FX): a gun's chain of two jumps and an arc sentry's bolt.
+            time('arc', () => v.addArc([p, { x: p.x + 3, y: p.y, z: p.z }, { x: p.x + 3, y: p.y, z: p.z + 3 }], '#9fd8ff', 'default'));
+            time('arc sentry', () => v.addArc([p, { x: p.x, y: p.y + 2, z: p.z + 4 }], '#8f7bff', 'mount'));
+            // Lasting effects (fires, glows, balls): the first of each kind the map can start, started and stopped.
+            if (v.lastingProbe) Object.assign(times, v.lastingProbe(p));
             const pack = await fetch(new URL('vfx/muzzle_flash.json', document.baseURI)).then((r) => r.json(), () => null);
             // Three fresh rigs per flash, the median kept: the page shares 4 cores with 96 bots and a CPU renderer,
             // so one sample can be a lost time slice rather than the code.

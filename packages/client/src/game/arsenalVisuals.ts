@@ -1,4 +1,5 @@
 import type { Scene } from '@babylonjs/core/scene';
+import type { LastingFx } from './lastingFx.ts';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
@@ -265,6 +266,8 @@ interface ZoneMesh {
 /** Ground hazards and fields from the snapshot, kept in step every frame. */
 export class ZoneVisuals {
   private readonly zones = new Map<string, ZoneMesh>();
+  /** Pack fires on burning patches (content/vfx.json map.lasting `fire.zone`); the plain tongues show where none is drawn. */
+  lasting: LastingFx | null = null;
 
   constructor(private readonly scene: Scene) {}
 
@@ -287,6 +290,14 @@ export class ZoneVisuals {
       }
       // Fade out over the last second.
       const fade = Math.min(1, z[5]);
+      if (m.kind === 'fire' && this.lasting) this.burn(key, m, fade);
+      if (m.kind === 'toxic' && this.lasting) {
+        // Poison VFX's cloud rolling over the patch; the plain dome stays, fainter, to show how far it reaches.
+        const id = `zone:${key}`;
+        const p = m.root.position;
+        this.lasting.want(id, 'cloud.toxic', { x: p.x, y: p.y + 0.1, z: p.z }, { size: m.radius, level: fade });
+        for (const c of m.root.getChildMeshes()) c.visibility = this.lasting.drawn(id) ? 0.45 : 1;
+      }
       this.animate(m, now, fade);
     }
     for (const [key, m] of this.zones) {
@@ -356,6 +367,23 @@ export class ZoneVisuals {
       }
     }
     return { root, kind, radius, phase: Math.random() * 10 };
+  }
+
+  /** A burning patch's pack fires: three or four overlapping, round its middle, so the whole patch reads as burning. */
+  private burn(key: string, m: ZoneMesh, fade: number): void {
+    const n = Math.max(3, Math.min(4, Math.round(m.radius * 1.2)));
+    const p = m.root.position;
+    let all = true;
+    for (let j = 0; j < n; j++) {
+      const a = (j / n) * Math.PI * 2 + m.phase;
+      const r = m.radius * 0.5;
+      const id = `zone:${key}:${j}`;
+      this.lasting!.want(id, 'fire.zone', { x: p.x + Math.cos(a) * r, y: p.y + 0.05, z: p.z + Math.sin(a) * r }, { size: Math.max(0.8, m.radius * 0.6), level: fade });
+      all &&= this.lasting!.drawn(id);
+    }
+    m.root.getChildMeshes().forEach((c, i) => {
+      if (i >= 2) c.setEnabled(!all);
+    });
   }
 
   private animate(m: ZoneMesh, now: number, fade: number): void {
