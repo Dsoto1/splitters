@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 25,
   "metadata": {
     "id": "coldwater_gulch",
     "name": "Coldwater Gulch",
     "author": "Tile Trigger",
     "description": "A long grassy box canyon walled in by sheer rock, with two squat concrete bunkers facing each other from the far ends: Red holds the north, Blue the south. Each bunker keeps its flag behind the dais on the ground floor, a sniper rifle on its roof deck (open stairs at the front corners, a long ramp up the back) and a buggy, a gun jeep, two speeders, a tank and a skyfighter on the apron. A jump pad beside each base throws you onto the 10 m sniper ledge along the far side cliff; each ledge also has a ramp at one end. Rolling grass, boulders, rock outcrops by the cliffs and bushes to hide in fill the floor; rockets wait on the knoll in the middle. A layout homage to the classic two-base canyon of 2001.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-03T21:11:45.576Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 4,
@@ -1636,13 +1636,13 @@
       "id": "prop_142",
       "position": [
         -44.38,
-        0.53,
+        0.59,
         -78.36
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 0.284,
-      "scale": 3.13,
+      "scale": 3.6,
       "solid": true,
       "tint": null
     },
@@ -1650,13 +1650,13 @@
       "id": "prop_143",
       "position": [
         44.38,
-        0.57,
+        0.58,
         78.36
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 5.427,
-      "scale": 3.13,
+      "scale": 3.6,
       "solid": true,
       "tint": null
     },
@@ -1664,13 +1664,13 @@
       "id": "prop_144",
       "position": [
         -15.7,
-        2.55,
+        3.16,
         49.05
       ],
       "kind": "prop",
-      "model": "prop.boulder_jagged",
+      "model": "prop.nt_boulder_moss",
       "yaw": 5.765,
-      "scale": 1.07,
+      "scale": 1.34,
       "solid": true,
       "tint": null
     },
@@ -1678,13 +1678,13 @@
       "id": "prop_145",
       "position": [
         15.7,
-        2.67,
+        3.21,
         -49.05
       ],
       "kind": "prop",
-      "model": "prop.boulder_jagged",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.638,
-      "scale": 1.07,
+      "scale": 1.34,
       "solid": true,
       "tint": null
     },
@@ -1748,13 +1748,13 @@
       "id": "prop_150",
       "position": [
         -22.38,
-        0.05,
+        0.07,
         12.34
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 2.262,
-      "scale": 2.87,
+      "scale": 3.3,
       "solid": true,
       "tint": null
     },
@@ -1762,13 +1762,13 @@
       "id": "prop_151",
       "position": [
         22.38,
-        0.05,
+        0.07,
         -12.34
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 5.032,
-      "scale": 2.87,
+      "scale": 3.3,
       "solid": true,
       "tint": null
     },
@@ -1776,13 +1776,13 @@
       "id": "prop_152",
       "position": [
         0.15,
-        0.34,
+        0.36,
         -69.3
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 3.736,
-      "scale": 2.76,
+      "scale": 3.17,
       "solid": true,
       "tint": null
     },
@@ -1790,13 +1790,13 @@
       "id": "prop_153",
       "position": [
         -0.15,
-        0.35,
+        0.36,
         69.3
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 3.913,
-      "scale": 2.76,
+      "scale": 3.17,
       "solid": true,
       "tint": null
     },
@@ -1832,13 +1832,13 @@
       "id": "prop_156",
       "position": [
         34.71,
-        1.71,
+        1.83,
         61.23
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 3.528,
-      "scale": 2.78,
+      "scale": 3.2,
       "solid": true,
       "tint": null
     },
@@ -1846,13 +1846,13 @@
       "id": "prop_157",
       "position": [
         -34.71,
-        1.73,
+        1.86,
         -61.23
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 0.275,
-      "scale": 2.78,
+      "scale": 3.2,
       "solid": true,
       "tint": null
     },
@@ -1888,13 +1888,13 @@
       "id": "prop_160",
       "position": [
         -37.29,
-        1.03,
+        1.26,
         -70.74
       ],
       "kind": "prop",
-      "model": "prop.boulder_round",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.485,
-      "scale": 0.57,
+      "scale": 0.63,
       "solid": true,
       "tint": null
     },
@@ -1902,13 +1902,13 @@
       "id": "prop_161",
       "position": [
         37.29,
-        1.02,
+        1.26,
         70.74
       ],
       "kind": "prop",
-      "model": "prop.boulder_round",
+      "model": "prop.nt_boulder_moss",
       "yaw": 6.184,
-      "scale": 0.57,
+      "scale": 0.63,
       "solid": true,
       "tint": null
     },
@@ -1916,13 +1916,13 @@
       "id": "prop_162",
       "position": [
         12.37,
-        0.41,
+        0.45,
         -2.85
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 5.494,
-      "scale": 2.57,
+      "scale": 2.96,
       "solid": true,
       "tint": null
     },
@@ -1930,13 +1930,13 @@
       "id": "prop_163",
       "position": [
         -12.37,
-        0.42,
+        0.54,
         2.85
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 3.958,
-      "scale": 2.57,
+      "scale": 2.96,
       "solid": true,
       "tint": null
     },
@@ -1944,13 +1944,13 @@
       "id": "prop_164",
       "position": [
         -39.64,
-        0.86,
+        1.22,
         -24.62
       ],
       "kind": "prop",
-      "model": "prop.boulder_jagged",
+      "model": "prop.nt_boulder_moss",
       "yaw": 1.406,
-      "scale": 0.85,
+      "scale": 1.06,
       "solid": true,
       "tint": null
     },
@@ -1958,13 +1958,13 @@
       "id": "prop_165",
       "position": [
         39.64,
-        0.85,
+        1.22,
         24.62
       ],
       "kind": "prop",
-      "model": "prop.boulder_jagged",
+      "model": "prop.nt_boulder_moss",
       "yaw": 2.871,
-      "scale": 0.85,
+      "scale": 1.06,
       "solid": true,
       "tint": null
     },
@@ -1972,13 +1972,13 @@
       "id": "prop_166",
       "position": [
         -51.15,
-        0.25,
+        0.35,
         -3.35
       ],
       "kind": "prop",
-      "model": "prop.boulder_round",
+      "model": "prop.nt_boulder_moss",
       "yaw": 5.042,
-      "scale": 0.63,
+      "scale": 0.69,
       "solid": true,
       "tint": null
     },
@@ -1986,13 +1986,13 @@
       "id": "prop_167",
       "position": [
         51.15,
-        0.25,
+        0.35,
         3.35
       ],
       "kind": "prop",
-      "model": "prop.boulder_round",
+      "model": "prop.nt_boulder_moss",
       "yaw": 4.751,
-      "scale": 0.63,
+      "scale": 0.69,
       "solid": true,
       "tint": null
     },
@@ -2000,13 +2000,13 @@
       "id": "prop_168",
       "position": [
         37.24,
-        0.27,
+        0.3,
         -6.9
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 4.136,
-      "scale": 2.59,
+      "scale": 2.98,
       "solid": true,
       "tint": null
     },
@@ -2014,13 +2014,13 @@
       "id": "prop_169",
       "position": [
         -37.24,
-        0.25,
+        0.26,
         6.9
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 4.883,
-      "scale": 2.59,
+      "scale": 2.98,
       "solid": true,
       "tint": null
     },
@@ -2028,13 +2028,13 @@
       "id": "prop_170",
       "position": [
         -15.55,
-        0.83,
+        0.91,
         57.89
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 5.482,
-      "scale": 2.37,
+      "scale": 2.73,
       "solid": true,
       "tint": null
     },
@@ -2042,13 +2042,13 @@
       "id": "prop_171",
       "position": [
         15.55,
-        0.83,
+        0.88,
         -57.89
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 3.819,
-      "scale": 2.37,
+      "scale": 2.73,
       "solid": true,
       "tint": null
     },
@@ -2056,13 +2056,13 @@
       "id": "prop_172",
       "position": [
         -19.06,
-        1.48,
+        1.5,
         27.64
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 5.746,
-      "scale": 2.01,
+      "scale": 2.31,
       "solid": true,
       "tint": null
     },
@@ -2070,13 +2070,13 @@
       "id": "prop_173",
       "position": [
         19.06,
-        1.47,
+        1.5,
         -27.64
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 2.586,
-      "scale": 2.01,
+      "scale": 2.31,
       "solid": true,
       "tint": null
     },
@@ -2140,13 +2140,13 @@
       "id": "prop_178",
       "position": [
         43.55,
-        0.66,
+        1.09,
         11.08
       ],
       "kind": "prop",
-      "model": "prop.boulder_round",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.345,
-      "scale": 0.89,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -2154,13 +2154,13 @@
       "id": "prop_179",
       "position": [
         -43.55,
-        0.66,
+        1.09,
         -11.08
       ],
       "kind": "prop",
-      "model": "prop.boulder_round",
+      "model": "prop.nt_boulder_moss",
       "yaw": 2.188,
-      "scale": 0.89,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -2168,13 +2168,13 @@
       "id": "prop_180",
       "position": [
         46.79,
-        -0.1,
+        -0.04,
         -20.48
       ],
       "kind": "prop",
-      "model": "prop.boulder_round",
+      "model": "prop.nt_boulder_moss",
       "yaw": 2.492,
-      "scale": 0.58,
+      "scale": 0.64,
       "solid": true,
       "tint": null
     },
@@ -2182,13 +2182,13 @@
       "id": "prop_181",
       "position": [
         -46.79,
-        -0.1,
+        -0.04,
         20.48
       ],
       "kind": "prop",
-      "model": "prop.boulder_round",
+      "model": "prop.nt_boulder_moss",
       "yaw": 1.235,
-      "scale": 0.58,
+      "scale": 0.64,
       "solid": true,
       "tint": null
     },
@@ -2200,9 +2200,9 @@
         -27.55
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 4.378,
-      "scale": 1.85,
+      "scale": 2.13,
       "solid": true,
       "tint": null
     },
@@ -2214,9 +2214,9 @@
         27.55
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 5.577,
-      "scale": 1.85,
+      "scale": 2.13,
       "solid": true,
       "tint": null
     },
@@ -2224,13 +2224,13 @@
       "id": "prop_184",
       "position": [
         27.8,
-        1.57,
+        1.64,
         55.51
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 2.346,
-      "scale": 2.18,
+      "scale": 2.51,
       "solid": true,
       "tint": null
     },
@@ -2238,13 +2238,13 @@
       "id": "prop_185",
       "position": [
         -27.8,
-        1.62,
+        1.65,
         -55.51
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "prop.nt_rock_moss",
       "yaw": 0.243,
-      "scale": 2.18,
+      "scale": 2.51,
       "solid": true,
       "tint": null
     },
@@ -2252,13 +2252,13 @@
       "id": "prop_186",
       "position": [
         56.06,
-        -0.02,
+        -0.01,
         -1
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 2.369,
-      "scale": 2.2,
+      "scale": 3.52,
       "solid": true,
       "tint": null
     },
@@ -2266,13 +2266,13 @@
       "id": "prop_187",
       "position": [
         51.06,
-        0.15,
+        0.28,
         2
       ],
       "kind": "prop",
-      "model": "prop.boulder_jagged",
+      "model": "prop.nt_boulder_moss",
       "yaw": 2.551,
-      "scale": 1.9,
+      "scale": 2.38,
       "solid": true,
       "tint": null
     },
@@ -2280,13 +2280,13 @@
       "id": "prop_188",
       "position": [
         50.06,
-        0.34,
+        0.51,
         9
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 4.609,
-      "scale": 2.4,
+      "scale": 2.88,
       "solid": true,
       "tint": null
     },
@@ -2294,13 +2294,13 @@
       "id": "prop_189",
       "position": [
         55.06,
-        0.44,
+        0.45,
         14
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 0.23,
-      "scale": 2,
+      "scale": 3.2,
       "solid": true,
       "tint": null
     },
@@ -2308,13 +2308,13 @@
       "id": "prop_190",
       "position": [
         59.06,
-        0.63,
+        0.58,
         16
       ],
       "kind": "prop",
-      "model": "prop.boulder_jagged",
+      "model": "prop.nt_boulder_moss",
       "yaw": 3.746,
-      "scale": 1.7,
+      "scale": 2.13,
       "solid": true,
       "tint": null
     },
@@ -2326,9 +2326,9 @@
         -13
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 3.729,
-      "scale": 2.2,
+      "scale": 3.52,
       "solid": true,
       "tint": null
     },
@@ -2336,13 +2336,13 @@
       "id": "prop_192",
       "position": [
         -51.06,
-        0.38,
+        0.54,
         -10
       ],
       "kind": "prop",
-      "model": "prop.boulder_jagged",
+      "model": "prop.nt_boulder_moss",
       "yaw": 3.778,
-      "scale": 1.9,
+      "scale": 2.38,
       "solid": true,
       "tint": null
     },
@@ -2350,13 +2350,13 @@
       "id": "prop_193",
       "position": [
         -50.06,
-        0.17,
+        0.32,
         -3
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.564,
-      "scale": 2.4,
+      "scale": 2.88,
       "solid": true,
       "tint": null
     },
@@ -2368,9 +2368,9 @@
         2
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 0.762,
-      "scale": 2,
+      "scale": 3.2,
       "solid": true,
       "tint": null
     },
@@ -2378,13 +2378,13 @@
       "id": "prop_195",
       "position": [
         -59.06,
-        -0.05,
+        0.04,
         4
       ],
       "kind": "prop",
-      "model": "prop.boulder_jagged",
+      "model": "prop.nt_boulder_moss",
       "yaw": 2.994,
-      "scale": 1.7,
+      "scale": 2.13,
       "solid": true,
       "tint": null
     },
@@ -2396,9 +2396,9 @@
         25.23
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 3.056,
-      "scale": 2.05,
+      "scale": 3.28,
       "solid": true,
       "tint": null
     },
@@ -2410,9 +2410,9 @@
         50.24
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 1.27,
-      "scale": 1.68,
+      "scale": 2.02,
       "solid": true,
       "tint": null
     },
@@ -2420,13 +2420,13 @@
       "id": "prop_198",
       "position": [
         60.27,
-        0.38,
+        0.39,
         -106.98
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 5.418,
-      "scale": 2,
+      "scale": 3.2,
       "solid": true,
       "tint": null
     },
@@ -2434,13 +2434,13 @@
       "id": "prop_199",
       "position": [
         58.93,
-        0.46,
+        0.6,
         32
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.782,
-      "scale": 1.24,
+      "scale": 1.49,
       "solid": true,
       "tint": null
     },
@@ -2448,13 +2448,13 @@
       "id": "prop_200",
       "position": [
         -59.23,
-        0.5,
+        0.59,
         114.34
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 2.91,
-      "scale": 1.27,
+      "scale": 1.52,
       "solid": true,
       "tint": null
     },
@@ -2462,13 +2462,13 @@
       "id": "prop_201",
       "position": [
         -59.01,
-        0.47,
+        0.6,
         -28.43
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 3.987,
-      "scale": 2.05,
+      "scale": 2.46,
       "solid": true,
       "tint": null
     },
@@ -2476,13 +2476,13 @@
       "id": "prop_202",
       "position": [
         -60.4,
-        3.91,
+        2.27,
         -40.35
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 2.041,
-      "scale": 1.53,
+      "scale": 1.84,
       "solid": true,
       "tint": null
     },
@@ -2494,9 +2494,9 @@
         -51.23
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 4.535,
-      "scale": 2.13,
+      "scale": 3.41,
       "solid": true,
       "tint": null
     },
@@ -2504,13 +2504,13 @@
       "id": "prop_204",
       "position": [
         60.5,
-        0.19,
+        0.6,
         65.25
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.256,
-      "scale": 1.72,
+      "scale": 2.06,
       "solid": true,
       "tint": null
     },
@@ -2522,9 +2522,9 @@
         105.59
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 1.039,
-      "scale": 1.3,
+      "scale": 2.08,
       "solid": true,
       "tint": null
     },
@@ -2532,13 +2532,13 @@
       "id": "prop_206",
       "position": [
         -59.06,
-        0.03,
+        0.1,
         91.99
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 4.527,
-      "scale": 1.88,
+      "scale": 2.26,
       "solid": true,
       "tint": null
     },
@@ -2550,9 +2550,9 @@
         54.38
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 4.033,
-      "scale": 1.52,
+      "scale": 2.43,
       "solid": true,
       "tint": null
     },
@@ -2560,13 +2560,13 @@
       "id": "prop_208",
       "position": [
         -56.57,
-        0.78,
+        0.69,
         59.47
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 3.119,
-      "scale": 1.83,
+      "scale": 2.2,
       "solid": true,
       "tint": null
     },
@@ -2574,13 +2574,13 @@
       "id": "prop_209",
       "position": [
         52.8,
-        0.3,
+        0.42,
         -38.97
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 5.927,
-      "scale": 2.27,
+      "scale": 2.72,
       "solid": true,
       "tint": null
     },
@@ -2588,13 +2588,13 @@
       "id": "prop_210",
       "position": [
         55.78,
-        0.83,
+        0.84,
         -50.64
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 2.547,
-      "scale": 2.24,
+      "scale": 3.58,
       "solid": true,
       "tint": null
     },
@@ -2606,9 +2606,9 @@
         123.34
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.365,
-      "scale": 2.13,
+      "scale": 2.56,
       "solid": true,
       "tint": null
     },
@@ -2616,13 +2616,13 @@
       "id": "prop_212",
       "position": [
         56.85,
-        0.72,
+        0.71,
         -59.41
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 4.606,
-      "scale": 1.54,
+      "scale": 1.85,
       "solid": true,
       "tint": null
     },
@@ -2630,13 +2630,13 @@
       "id": "prop_213",
       "position": [
         58.77,
-        0.2,
+        0.24,
         42.62
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 1.985,
-      "scale": 1.29,
+      "scale": 2.06,
       "solid": true,
       "tint": null
     },
@@ -2644,13 +2644,13 @@
       "id": "prop_214",
       "position": [
         -59.83,
-        0.1,
+        0.26,
         -62.46
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 0.014,
-      "scale": 1.37,
+      "scale": 1.64,
       "solid": true,
       "tint": null
     },
@@ -2662,9 +2662,9 @@
         -124.01
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 3.271,
-      "scale": 1.68,
+      "scale": 2.02,
       "solid": true,
       "tint": null
     },
@@ -2676,9 +2676,9 @@
         38.46
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 3.626,
-      "scale": 1.93,
+      "scale": 3.09,
       "solid": true,
       "tint": null
     },
@@ -2690,9 +2690,9 @@
         -13.02
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 4.255,
-      "scale": 2,
+      "scale": 2.4,
       "solid": true,
       "tint": null
     },
@@ -2700,13 +2700,13 @@
       "id": "prop_218",
       "position": [
         -61.04,
-        0.41,
+        0.53,
         122.7
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 5.909,
-      "scale": 2,
+      "scale": 2.4,
       "solid": true,
       "tint": null
     },
@@ -2714,13 +2714,13 @@
       "id": "prop_219",
       "position": [
         59.32,
-        0.39,
+        0.57,
         -115.56
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 5.789,
-      "scale": 2.23,
+      "scale": 2.68,
       "solid": true,
       "tint": null
     },
@@ -2732,9 +2732,9 @@
         -88.62
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 4.52,
-      "scale": 1.79,
+      "scale": 2.86,
       "solid": true,
       "tint": null
     },
@@ -2746,9 +2746,9 @@
         -22.92
       ],
       "kind": "prop",
-      "model": "prop.rock_spire_tall",
+      "model": "prop.rock_mossy_spire",
       "yaw": 2.198,
-      "scale": 1.6,
+      "scale": 2.56,
       "solid": true,
       "tint": null
     },
@@ -2756,13 +2756,13 @@
       "id": "prop_222",
       "position": [
         -56.16,
-        -0.11,
+        -0.08,
         13.77
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 5.409,
-      "scale": 1.76,
+      "scale": 2.11,
       "solid": true,
       "tint": null
     },
@@ -2770,13 +2770,13 @@
       "id": "prop_223",
       "position": [
         60.96,
-        0.42,
+        0.5,
         -124.31
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "prop.nt_boulder_moss",
       "yaw": 6.181,
-      "scale": 1.28,
+      "scale": 1.54,
       "solid": true,
       "tint": null
     },
@@ -4937,20 +4937,6 @@
       "tint": null
     },
     {
-      "id": "prop_378",
-      "position": [
-        -35.29,
-        2.19,
-        81.59
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 3.998,
-      "scale": 1.98,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_379",
       "position": [
         53.72,
@@ -5147,20 +5133,6 @@
       "tint": null
     },
     {
-      "id": "prop_393",
-      "position": [
-        -21.91,
-        0.06,
-        71.22
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 0.636,
-      "scale": 1.49,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_394",
       "position": [
         11.35,
@@ -5203,20 +5175,6 @@
       "tint": null
     },
     {
-      "id": "prop_397",
-      "position": [
-        -26.14,
-        2.36,
-        52.71
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 4.77,
-      "scale": 1.05,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_398",
       "position": [
         55.14,
@@ -5228,20 +5186,6 @@
       "yaw": 3.237,
       "scale": 1.3,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_399",
-      "position": [
-        -43.59,
-        -0.03,
-        122.98
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 5.528,
-      "scale": 1.89,
-      "solid": true,
       "tint": null
     },
     {
@@ -5340,20 +5284,6 @@
       "yaw": 4.656,
       "scale": 1.07,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_407",
-      "position": [
-        -55.41,
-        0.63,
-        -22.15
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 5.796,
-      "scale": 1.22,
-      "solid": true,
       "tint": null
     },
     {
@@ -5651,20 +5581,6 @@
       "tint": null
     },
     {
-      "id": "prop_429",
-      "position": [
-        -45.65,
-        0.12,
-        -39.15
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 3.303,
-      "scale": 1.45,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_430",
       "position": [
         20.87,
@@ -5721,20 +5637,6 @@
       "tint": null
     },
     {
-      "id": "prop_434",
-      "position": [
-        25.54,
-        0.7,
-        37.43
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 1.601,
-      "scale": 1.49,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_435",
       "position": [
         -29.73,
@@ -5788,20 +5690,6 @@
       "yaw": 2.508,
       "scale": 2.12,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_439",
-      "position": [
-        -9.32,
-        0.77,
-        28.53
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 4.044,
-      "scale": 1.22,
-      "solid": true,
       "tint": null
     },
     {
@@ -5900,20 +5788,6 @@
       "yaw": 4.241,
       "scale": 1.03,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_447",
-      "position": [
-        40.76,
-        0.23,
-        -22.18
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 3.895,
-      "scale": 1.6,
-      "solid": true,
       "tint": null
     },
     {
@@ -6127,20 +6001,6 @@
       "tint": null
     },
     {
-      "id": "prop_463",
-      "position": [
-        -9.25,
-        2.18,
-        -2.18
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 2.847,
-      "scale": 1.13,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_464",
       "position": [
         -5.72,
@@ -6151,20 +6011,6 @@
       "model": "prop.nt_rock_moss",
       "yaw": 4.211,
       "scale": 1.5,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_465",
-      "position": [
-        -27.29,
-        1.05,
-        58.4
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 5.78,
-      "scale": 1.14,
       "solid": true,
       "tint": null
     },
@@ -6194,20 +6040,6 @@
       "yaw": 5.386,
       "scale": 2.13,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_468",
-      "position": [
-        -53.6,
-        0.18,
-        -55.07
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 5.182,
-      "scale": 1.42,
-      "solid": true,
       "tint": null
     },
     {
@@ -6250,20 +6082,6 @@
       "yaw": 1.887,
       "scale": 2.39,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_472",
-      "position": [
-        -40.58,
-        0.27,
-        16.2
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 0.007,
-      "scale": 1.51,
-      "solid": true,
       "tint": null
     },
     {
@@ -6645,20 +6463,6 @@
       "tint": null
     },
     {
-      "id": "prop_500",
-      "position": [
-        -27.76,
-        3.03,
-        33.7
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 2.859,
-      "scale": 1.63,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_501",
       "position": [
         -15.89,
@@ -6687,20 +6491,6 @@
       "tint": null
     },
     {
-      "id": "prop_503",
-      "position": [
-        26.81,
-        2.37,
-        68.42
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 3.934,
-      "scale": 1.88,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_504",
       "position": [
         -51.57,
@@ -6726,34 +6516,6 @@
       "yaw": 0.998,
       "scale": 1.44,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_506",
-      "position": [
-        -13.97,
-        0.08,
-        68.9
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 0.588,
-      "scale": 1.58,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_507",
-      "position": [
-        -25.74,
-        0.33,
-        74.4
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 5,
-      "scale": 1.57,
-      "solid": true,
       "tint": null
     },
     {
@@ -6967,20 +6729,6 @@
       "tint": null
     },
     {
-      "id": "prop_523",
-      "position": [
-        23.19,
-        0.29,
-        -82.8
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 4.073,
-      "scale": 1.08,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_524",
       "position": [
         10.13,
@@ -7020,20 +6768,6 @@
       "yaw": 1.307,
       "scale": 1.04,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_527",
-      "position": [
-        -25.3,
-        0.69,
-        -36.36
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 1.751,
-      "scale": 1.13,
-      "solid": true,
       "tint": null
     },
     {
@@ -7090,20 +6824,6 @@
       "yaw": 2.454,
       "scale": 2.02,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_532",
-      "position": [
-        -41.41,
-        1.19,
-        -66.08
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 4.908,
-      "scale": 1.94,
-      "solid": true,
       "tint": null
     },
     {
@@ -7174,20 +6894,6 @@
       "yaw": 2.161,
       "scale": 1.2,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_538",
-      "position": [
-        42.8,
-        0.05,
-        -127.4
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 4.345,
-      "scale": 1.88,
-      "solid": true,
       "tint": null
     },
     {
@@ -7289,20 +6995,6 @@
       "tint": null
     },
     {
-      "id": "prop_546",
-      "position": [
-        25.62,
-        1.14,
-        73.46
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 3.19,
-      "scale": 1.47,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_547",
       "position": [
         13.41,
@@ -7359,20 +7051,6 @@
       "tint": null
     },
     {
-      "id": "prop_551",
-      "position": [
-        -27.45,
-        0.57,
-        -32.23
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 5.617,
-      "scale": 1.28,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_552",
       "position": [
         28.93,
@@ -7426,20 +7104,6 @@
       "yaw": 0.659,
       "scale": 1.55,
       "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_556",
-      "position": [
-        54.97,
-        0.22,
-        60.85
-      ],
-      "kind": "prop",
-      "model": "prop.rock_small",
-      "yaw": 4.994,
-      "scale": 1.1,
-      "solid": true,
       "tint": null
     },
     {
@@ -84795,7 +84459,6 @@
     "style": "invisible",
     "height": 40
   },
-  "track": null,
   "backdrop": {
     "sky": "sunset",
     "scenery": "mountains",
