@@ -146,6 +146,53 @@ The first item of the owner's queue above. Three commits:
 - Tests: tools/ci/test/greenTree.test.mjs, train.test.mjs, testChanged.test.mjs; select.test.mjs's "runs everything" list
   lost view.ts and content/props.json (they no longer do) and gained models.json, packs.json, intake/, assets-src/.
 - Not proven on GitHub yet: the github-script step (dynamic import of greenTree.mjs, listWorkflowRuns) needs one check/ run.
+### Map reworks from the owner's review (`wip/map-rework`, agent, 2026-11-03; ST and VZ on main, the rest pushed, not merged)
+Owner's notes (review page, rounds 1 and 2) for the rework-verdict maps. Every edit was made in MapMaker by a
+Playwright driver (agent scratchpad `rework/tools/maker3.mjs`): Import, palette card plus a click on the view, then
+the inspector's fields, selects and checkboxes, the toolbar's Delete, Ctrl+D, R, terrain-brush strokes, Settle on
+ground, the theme picker and the sky pane, then Save. The saved file is MapMaker's own output. Steps files are in
+`rework/<map>/pass*.mjs`. Before and after pictures are in `rework/<map>-before-*.png` / `-after-*.png`, side by
+side in `rework/<map>/cmp-*.png`.
+- **Driving MapMaker fast (SwiftShader runs at about 1 fps here):** the driver pauses the engine's render loop while
+  it edits. Edits are synchronous, and setSelection rebuilds the inspector from the document, so nothing waits on a
+  frame. It drops new pieces at a fixed point on the view and the inspector puts them in place, clears the
+  400 ms navigation-check timer between edits, and runs one full check (navigation included) before Save. Terrain
+  strokes resume the loop while the button is held. Give each pass on an already-edited map its own `&seed=N`:
+  test-mode ids restart from the seed, and a second pass's new props collided with the first's.
+- **Step Temple:** Ancient Temple theme; inlaid court with column corners, plinth cover and a fire altar; galleries
+  roofed, wing rooms beamed with relief walls. Four Terrace Stairs from the ring of ground to landings, arches into
+  the galleries, terraces with Summit Shrines (armour). Props swapped for the jungle/temple set and the owner's
+  Meshy statues. Ammo matched to the wing weapons, spear for the laser rifle, four spawns at the stair feet.
+- **Verdant Ziggurat:** jungle.ziggurat kept as the core (stylePacks2.test.ts wants it; a carved-terrace rebuild
+  was reverted). The pack's ziggurat stone is hard-coded castle stone, so tile paint can't lighten it; it is dressed
+  instead (monk statues, banners, lianas, moss, torches). River crossings (slab bridge, stepping stones), a zipline
+  from the giant tree's 7.5 m lookout to the 4 m tier, a watch tower (its lookout pickup didn't path, so the
+  pickup is at its foot), ruined walls at the edges, mist 0.45, grapples. Side courts are Overgrown Ruins; the
+  north-west court is not (its walls cut off two spawns).
+- **Dustwater:** hotel (Saloon tile turned about), gunsmith, barber, assay office, graveyard and gallows. Buildings
+  painted (clapboard, siding, brick, sandstone, plaster). Street cover from the purchased Wild West kit. Red Rock
+  Spires mesas, raised mounds (terrain brush), scrub, revolvers, explosive barrels. Prop models kept under the
+  80-model budget.
+- **Bottling Plant:** roofs as Sky Blocks (concrete, corrugated, a reinforced-glass skylight), 14 ceiling lights,
+  hazard solids/trim repainted steel, theme Downtown (the factory theme's backdrop dressing is hazard-striped
+  blocks), acid spill.
+- **Concrete Annex:** it already had a roof (an extra one floated past the walls and was dropped); per-area
+  materials; hangar props swapped to the owner's Meshy cargo; a flame trap in the tunnels.
+- **Dune Harbor:** new MapMaker props `prop.dc_dome` / `prop.dc_dome_blue` (prepare-desert.mjs, Desert City pack,
+  palette atlas rebuilt) replace the 22 eight-slab domes; Desert City market, Meshy well, stalls, buggies.
+- **Coldwater Gulch:** rocks unified (spires → Mossy Rock Spire, rest → Quaternius mossy), small rocks removed,
+  all settled.
+- **Checks:** validate-map 0 issues on each. Every vitest file that reads maps/ passes. `pnpm test:changed` finds
+  no test files for JSON-only changes, so run those files by hand. The dome commit's full test:changed, run under
+  load 20+, timed out heavy sim tests (hub, bots, pads); they don't touch props, and need a clean rerun on a
+  `check/` branch (the dome commit maps to the full suite). e2e maps flow passes for all eight maps. perf96
+  clumped medium draws/casters (budget 900/600): Step Temple 483/163, Dustwater 523/289, Bottling 496/163,
+  Concrete Annex 311/100. Verdant Ziggurat is over and was over before the rework: main's original map measured
+  1153/524, the rework 1302/601, and a copy with 9 edge plants removed 1363/618. The clump frames are too noisy
+  under this load to tell ±150 draws apart, so the plants stayed. VZ needs a clean perf run (most casters are the
+  characters in view).
+- **Not reached:** fogbound, runway_nine, citadel, eagle_spires, express_lobby, underdrain, sandgate,
+  sandfall_colosseum, capitol_mall, atomic_court, backwoods, st_johns, iron_compound, gallows_yard, apex_ring.
 
 ### Map removals round 2 and card pictures (`wip/map-removals-2`, agent, 2026-11-03; not merged; from main ef2c103)
 - Deleted (file, picture, inspirations, rotation entries): after_hours, clockwork, fallout_lane, ridge_camp, stonewatch_keep.
