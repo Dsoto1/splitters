@@ -83,7 +83,7 @@ export class Ragdoll {
   /** Pelvis joint relative to the torso capsule's centre (world, at death, in the capsule's frame). */
   private readonly pelvisLocal: Vec3;
   /** The effects world's step count at death: age is simulated time, so a slow frame doesn't cut a fall short. */
-  private readonly born: number;
+  private born: number;
   private settled = false;
   /** No longer simulated: the bodies went back to the pool and the pose stays as it is. */
   frozen = false;
@@ -230,6 +230,27 @@ export class Ragdoll {
       return true;
     }
     return false;
+  }
+
+  /** Whether `body` is one of this ragdoll's capsules. */
+  owns(body: unknown): boolean {
+    return this.parts.some((p) => p.body === body);
+  }
+
+  /**
+   * A round (or a blast) knocked the body about: it gets its time again, counted from now, and its
+   * damping goes back to a fresh fall's, so it tumbles and settles limp instead of freezing mid-air
+   * when the time it had from its death runs out.
+   */
+  kick(): void {
+    if (this.frozen) return;
+    this.born = this.world.steps;
+    this.settled = false;
+    for (const p of this.parts) {
+      p.body.setLinearDamping(0.6);
+      p.body.setAngularDamping(1.6);
+      p.body.wakeUp();
+    }
   }
 
   /** Stop simulating: the bodies go back to the pool; the bones keep the pose they have. */

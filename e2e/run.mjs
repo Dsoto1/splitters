@@ -1786,6 +1786,21 @@ async function physicsfxFlow(browser) {
   const dead = await page.evaluate(() => ({ splats: window.__cs.view.scene.meshes.filter((m) => m.name === 'bloodSplat' && m.isEnabled()).length }));
   check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
+  // A body that has come to rest (its capsules back in the pool) is a ragdoll again when a round hits it,
+  // rather than staying a stiff pose that rounds pass through (owner, 3 Nov).
+  await page.waitForFunction(() => window.__cs.view.corpses.findLast((c) => c.slot === window.__botSlot)?.a.ragdoll?.frozen, null, { timeout: T(12000) }).catch(() => {});
+  const reshot = await page.evaluate(() => {
+    const v = window.__cs.view;
+    const c = v.corpses.findLast((x) => x.slot === window.__botSlot);
+    const r0 = c?.a.ragdoll;
+    if (!r0?.frozen) return { rested: false, tier: r0?.tier ?? null };
+    const p = c.a.anim.ch.joints.get('pelvis').getAbsolutePosition();
+    // A round from 3 m off and 1.5 m up, through the pelvis and on into the ground.
+    v.landRound({ eye: { x: p.x + 3, y: p.y + 1.5, z: p.z }, to: { x: p.x - 1, y: p.y - 0.5, z: p.z }, victim: null, zone: 0, strength: 1 });
+    const r1 = c.a.ragdoll;
+    return { rested: true, woke: !!r1 && r1 !== r0 && !r1.frozen, tier: r1?.tier ?? null };
+  });
+  check(reshot.rested && reshot.woke, `a resting body shot again becomes a ragdoll again (${JSON.stringify(reshot)})`);
   // Out of view, a death isn't simulated at all: the body is laid on the ground along the hit (ragdollBudget.ts),
   // even one killed in mid-air behind you.
   await page.waitForFunction(() => window.__match.slots.some((c) => c && c.slot !== window.__cs.slot && c.alive && window.__cs.view.avatars.get(c.slot)?.anim?.ch), null, { timeout: T(8000) }).catch(() => {});

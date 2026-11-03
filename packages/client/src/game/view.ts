@@ -592,6 +592,53 @@ export class GameView {
     return out;
   }
 
+  /**
+   * The nearest dead body along a ray whose ragdoll has come to rest (frozen), tested against a sphere at
+   * its pelvis and one at its chest (it lies on the ground, so these cover most of it).
+   */
+  private restingBodyOnRay(from: Vec3, dir: Vec3, len: number): { a: Avatar; at: Vec3 } | null {
+    let best: { a: Avatar; at: Vec3; t: number } | null = null as { a: Avatar; at: Vec3; t: number } | null;
+    const test = (a: Avatar) => {
+      const r = a.ragdoll;
+      if (!(r instanceof Ragdoll) || !r.frozen || !(a.anim instanceof CharacterAnimator)) return;
+      for (const name of ['pelvis', 'spine_02']) {
+        const j = a.anim.ch.joints.get(name);
+        if (!j) continue;
+        const c = j.getAbsolutePosition();
+        const t = (c.x - from.x) * dir.x + (c.y - from.y) * dir.y + (c.z - from.z) * dir.z;
+        if (t < 0 || t > len + 0.4) continue;
+        const px = from.x + dir.x * t - c.x, py = from.y + dir.y * t - c.y, pz = from.z + dir.z * t - c.z;
+        if (px * px + py * py + pz * pz > 0.3 * 0.3) continue;
+        if (!best || t < best.t) best = { a, at: { x: from.x + dir.x * t, y: from.y + dir.y * t, z: from.z + dir.z * t }, t };
+      }
+    };
+    for (const c of this.corpses) test(c.a);
+    for (const a of this.avatars.values()) test(a);
+    return best ? { a: best.a, at: best.at } : null;
+  }
+
+  /** A resting body hit again: a ragdoll from the pose it lies in, if the budget has room (else it stays as it is). */
+  private rewake(a: Avatar, push: Vec3): boolean {
+    const root = a.anim?.skeletonRoot;
+    if (!(a.anim instanceof CharacterAnimator) || !root || !this.physics) return false;
+    const p = a.root.position;
+    const cam = this.scene.activeCamera?.globalPosition;
+    const dist = cam ? Math.hypot(p.x - cam.x, p.y - cam.y, p.z - cam.z) : 0;
+    const moving = this.movingRagdolls();
+    const fit = fitBudget(tierFor(dist, true), dist, moving.map((m) => ({ tier: m.body.tier, dist: m.dist })));
+    if (fit.tier === 'posed') return false;
+    for (const i of fit.drop) this.dropTier(moving[i]!.a);
+    try {
+      a.ragdoll?.dispose();
+      a.anim.thawPose();
+      a.anim.ragdoll(fit.tier === 'cheap' ? 'limp' : 'stop');
+      a.ragdoll = new Ragdoll(this.physics, a.anim.ch.joints, root, push, fit.tier, facingOf(a));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   /** Past the budget: a full ragdoll carries on as a cheap one (same motion); a cheap one freezes where it is. */
   private dropTier(a: Avatar): void {
     const r = a.ragdoll;
@@ -730,6 +777,15 @@ export class GameView {
       const at = { x: o.eye.x + dir.x * body.dist, y: o.eye.y + dir.y * body.dist, z: o.eye.z + dir.z * body.dist };
       body.body.applyImpulseAtPoint({ x: dir.x * 4 * o.strength, y: dir.y * 4 * o.strength + 0.4, z: dir.z * 4 * o.strength }, at, true);
       this.blood.hit(at, dir, o.strength);
+      // Its time to settle starts again from the hit (else a body hit late in its fall froze mid-tumble).
+      this.movingRagdolls().find((m) => m.body.owns(body.body))?.body.kick();
+    } else {
+      // A body that has come to rest (its capsules went back to the pool) is a ragdoll again when hit.
+      const rest = this.restingBodyOnRay(o.eye, dir, len);
+      if (rest) {
+        const push = { x: dir.x * 2.5 * o.strength, y: 0.6 + dir.y * 2.5 * o.strength, z: dir.z * 2.5 * o.strength };
+        if (this.rewake(rest.a, push)) this.blood.hit(rest.at, dir, o.strength);
+      }
     }
     if (o.victim !== null) {
       this.blood.hit(o.to, dir, o.zone === 1 ? o.strength * 1.8 : o.strength);
