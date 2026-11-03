@@ -8,6 +8,8 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+## 0.7.0 (2026-11-03)
+
 **Turrets, weapons and props**
 - **New: the Arc Turret** (MapMaker → Vehicles → Turrets & Sentries). An auto-turret with a tell: when it sees an enemy within 22 m it winds up for 0.75 s (it glows brighter, a violet ball grows over the gun and you hear a warning), then locks an energy arc onto them that never misses (5 damage ten times a second) and jumps to one enemy next to them for half. Break its line of sight or get out of its reach and it lets go; the next lock needs the whole wind-up again. A lock lasts 2 s at most (100 damage), then it vents for 1.25 s. Slower to kill than the Sentry Gun (about 2.65 s in the open against 1.6 s), never in an instant. Bots shoot it like the Sentry Gun. It wears the Rocket Turret's cannon in its own energy colour. MapMaker warns when one stands within 12 m of a spawn it would shoot at. It isn't on any official map yet.
 - **The Singularity Cannon has a new model**: a heavy plasma blaster with the cannon's purple glow in its panels and muzzle ring, held by its rear grip with the other hand under the front. It works exactly as before.
