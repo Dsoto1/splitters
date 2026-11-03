@@ -762,6 +762,8 @@ const REBAKE_SIZE = 1024;
 const REBAKE_GROW = 60;
 /** How far its rays look for the download's surface (share of the model's size: the cut moves it far less). */
 const REBAKE_REACH = 0.012;
+/** How much finer a rebaked head's charts are laid out than the rest of the body (linear: 2.5 is 6 times the texels). */
+const REBAKE_HEAD_DENSITY = 2.5;
 /** The hands' share of a rebaked cut (straight from a million triangles to the budget, a paw at 4% came out a cone). */
 const REBAKE_HANDS_SHARE = 0.08;
 
@@ -803,7 +805,11 @@ async function rebakeDownload(mesh, image, normalImage, target, parts) {
   const cut = cutKeeping(Uint32Array.from(tris), pos, target, parts.map((p) => ({ share: p.share, inside: (k) => p.inside(first[k], at(k)) })), { errors: [0.004, 0.008] });
   console.log(`  seams closed: ${n} vertices welded to ${first.length}, ${I.length / 3} triangles cut to ${cut.length / 3}`);
   const map = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-  const out = await rebake({ pos, idx: cut }, { P, I, UV }, map, REBAKE_SIZE, 0.008, { grow: REBAKE_GROW, crease: -1, reach: REBAKE_REACH });
+  // The head's charts laid out finer (REBAKE_HEAD_DENSITY): at one density for the whole body a face got a few dozen
+  // texels across and read as a smear up close.
+  const headK = (k) => parts[0].inside(first[k], at(k));
+  const dense = (t) => (headK(cut[t * 3]) + headK(cut[t * 3 + 1]) + headK(cut[t * 3 + 2]) >= 2 ? REBAKE_HEAD_DENSITY : 1);
+  const out = await rebake({ pos, idx: cut }, { P, I, UV }, map, REBAKE_SIZE, 0.008, { grow: REBAKE_GROW, crease: -1, reach: REBAKE_REACH, dense });
   const hiMap = normalImage ? await sharp(Buffer.from(normalImage)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
   let [lo, hi] = [Infinity, -Infinity];
   for (let v = 1; v < P.length; v += 3) [lo, hi] = [Math.min(lo, P[v]), Math.max(hi, P[v])];

@@ -424,7 +424,7 @@ const CREASE = Math.cos((40 * Math.PI) / 180);
  * how far the rays look (share of the model's size, at least maxError * 1.5; thin cloth over a body wants it short). Returns { pos, nrm, uv, idx, jpeg, from } (unwelded where charts or creases split; `from[i]`: the
  * low mesh's vertex output vertex i was made from, so per-vertex data such as skin weights can follow).
  */
-export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = CREASE, quality = 88, reach: near = 0.03 } = {}) {
+export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = CREASE, quality = 88, reach: near = 0.03, dense = null } = {}) {
   const { pos, idx } = low;
   const T = idx.length / 3;
   // Face normals and areas.
@@ -481,16 +481,26 @@ export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = 
     }
     return { tris, pu, pv, u0, v0, w: u1 - u0, h: v1 - v0, x: 0, y: 0 };
   });
-  // Shelf packing at one scale, shrunk until everything fits.
+  // `dense(t)`: how many times finer than the rest a triangle's chart is laid out (a face: its texels are what a
+  // close look reads; a chart takes the factor most of its area asks for).
+  for (const c of list) {
+    if (!dense) c.k = 1;
+    else {
+      let [on, all] = [0, 0];
+      for (const t of c.tris) [on, all] = [on + (dense(t) > 1 ? area[t] : 0), all + area[t]];
+      c.k = on > all / 2 ? Math.max(...c.tris.map((t) => dense(t))) : 1;
+    }
+  }
+  // Shelf packing at one scale (times each chart's density), shrunk until everything fits.
   const PAD = 2;
-  const total = list.reduce((s, c) => s + c.w * c.h, 0);
+  const total = list.reduce((s, c) => s + c.w * c.h * c.k * c.k, 0);
   let scale = Math.sqrt((0.6 * size * size) / Math.max(total, 1e-12));
-  list.sort((a, b) => b.h - a.h);
+  list.sort((a, b) => b.h * b.k - a.h * a.k);
   for (;;) {
     let [x, y, row] = [0, 0, 0];
     let fits = true;
     for (const c of list) {
-      const [cw, ch] = [Math.ceil(c.w * scale) + PAD * 2 + 1, Math.ceil(c.h * scale) + PAD * 2 + 1];
+      const [cw, ch] = [Math.ceil(c.w * scale * c.k) + PAD * 2 + 1, Math.ceil(c.h * scale * c.k) + PAD * 2 + 1];
       if (x + cw > size) [x, y, row] = [0, y + row, 0];
       if (cw > size || y + ch > size) {
         fits = false;
@@ -536,8 +546,8 @@ export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = 
           outFrom.push(v);
           outNrm.push(nrm[0] / len, nrm[1] / len, nrm[2] / len);
           const [pu, pv] = ch.basis ? planar(pos, v, ch.basis) : [pos[v * 3 + ch.pu], pos[v * 3 + ch.pv]];
-          const tx = ch.x + (pu - ch.u0) * scale;
-          const ty = ch.y + (pv - ch.v0) * scale;
+          const tx = ch.x + (pu - ch.u0) * scale * ch.k;
+          const ty = ch.y + (pv - ch.v0) * scale * ch.k;
           outUv.push(tx / size, ty / size);
         }
         outIdx[t * 3 + c] = out;
