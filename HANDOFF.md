@@ -3,6 +3,14 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## Project Control Center Workbench (2026-11-03)
+`.control-center/workbench.json` tells the dashboard's Workbench tab what to show: characters & NPCs (content/characters), maps
+(maps/*.json, metadata) and props & map features (content/props.json), with the fields the owner may edit. The owner's edits arrive
+at session start as "Workbench changes to apply": apply them in the JSON (for props, in content/props.json, then
+`pnpm content:build`), run the checks, commit, and report each in session-summary.json ("workbench": [{"id", "state", "commit"}]).
+Weapons and abilities still live in code (packages/shared/src/sim/weapons.ts, classes.ts); moving their numbers into content JSON
+is the next step (owner 192a).
+
 ## Start here (session of 2026-10-30 afternoon, handed off)
 
 **Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.

@@ -1,0 +1,13 @@
+{ "collections": [
+  { "id": "characters", "label": "Characters & NPCs", "files": "content/characters/*.json", "key": "id", "title": "name", "subtitle": "group",
+    "image": "packages/client/public/portraits/{look}.webp", "filters": ["group", "use", "body"],
+    "fields": [ {"path": "name", "label": "Name", "type": "text", "edit": true}, {"path": "bio", "label": "Bio", "type": "longtext", "edit": true},
+      {"path": "group", "label": "Group", "type": "text", "edit": true}, {"path": "use", "label": "Use"}, {"path": "body", "label": "Body"},
+      {"path": "source.license", "label": "Licence"}, {"path": "source.author", "label": "Author"} ] },
+  { "id": "maps", "label": "Maps", "files": "maps/*.json", "key": "metadata.id", "title": "metadata.name", "image": "packages/client/public/maps/shots/{metadata.id}.jpg",
+    "fields": [ {"path": "metadata.name", "label": "Name", "type": "text", "edit": true}, {"path": "metadata.description", "label": "Description", "type": "longtext", "edit": true},
+      {"path": "metadata.supportedModes", "label": "Modes", "type": "list", "edit": true}, {"path": "metadata.recommendedPlayers.max", "label": "Max players", "type": "number", "edit": true} ] },
+  { "id": "props", "label": "Props & map features", "files": "content/props.json", "items": "props", "key": "id", "title": "name", "subtitle": "category", "filters": ["category", "pack"],
+    "fields": [ {"path": "name", "label": "Name", "type": "text", "edit": true}, {"path": "category", "label": "Category", "type": "text", "edit": true},
+      {"path": "height", "label": "Height (m)", "type": "number", "edit": true}, {"path": "breakable.health", "label": "Health", "type": "number", "edit": true}, {"path": "pack", "label": "Pack"} ] }
+] }
