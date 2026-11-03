@@ -83,8 +83,8 @@ import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
-import { GodotVfx } from './godotVfx.ts';
-import { ACCENT_RANGE, explosionFor, gameplayFx, impactStyle, mappedEffects, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
+import { GodotVfx, type VfxHandle } from './godotVfx.ts';
+import { ACCENT_RANGE, arcFx, explosionFor, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
 import { buildPathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
@@ -109,6 +109,11 @@ import type { RemotePose } from './interpolation.ts';
 
 /** Remote players' pack muzzle flashes: within this range of the camera (m), on at most this many guns. */
 const REMOTE_FLASH_RANGE = 45;
+/** Electric FX's zap: a bolt 6 m tall (its tubes, stretched to a jump's length) with a burst where it lands. */
+const ZAP_LENGTH = 6;
+const ZAP_TUBES = ['Zap', 'ZapExtra'] as const;
+/** The bolt and the burst at its foot; the ground ring and streaks are left out (an arc lands on a body, not the floor). */
+const ZAP_PARTS = ['Zap', 'ZapExtra', 'ZapSphere', 'ZapGlow'] as const;
 const MAX_REMOTE_RIGS = 8;
 /** Your own pack flash: this much bigger than the weapon's scale, starting this far (m) past the muzzle so the gun doesn't hide it. */
 const OWN_FLASH_SCALE = 1.6;
@@ -382,7 +387,9 @@ export class GameView {
     // Browser tests hold flashes still to look at them (window.__flashHold = ms after the shot).
     Object.defineProperty(window, '__flashHold', { configurable: true, set: (v: number | undefined) => (MuzzleFlashRig.hold = v), get: () => MuzzleFlashRig.hold });
     this.vfx = new GodotVfx(this.scene);
-    void GodotVfx.preload('hit_fx', 'explosion_fx');
+    // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
+    this.vfx.quality = this.atmosphere.quality;
+    void GodotVfx.preload(...mappedPacks());
     this.flashRig = new MuzzleFlashRig(this.scene, 'muzzleFlashRig', { renderingGroupId: 1 });
     this.flashRig.root.parent = this.viewRoot;
     this.brass = new StandardMaterial('brassMat', this.scene);
@@ -454,9 +461,9 @@ export class GameView {
     });
     this.blood.warm();
     this.impacts.warm();
-    void GodotVfx.preload('hit_fx', 'explosion_fx').then(() => {
+    void GodotVfx.preload(...mappedPacks()).then(() => {
       if (this.scene.isDisposed) return;
-      // Every effect content/vfx.json's map can play (impacts, explosions, moments of play).
+      // Every effect content/vfx.json's map can play (impacts, explosions, moments of play, lightning, lasting ones).
       for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
     });
   }
@@ -2313,8 +2320,10 @@ export class GameView {
     this.cockpitInterior.update(cockpit?.m.index ?? null, cockpit?.node ?? null, cockpit?.m.def ?? null, drive);
   }
 
-  /** Arc sentries' charge orbs (over the gun, where their arc starts), by mount index. */
+  /** Arc sentries' charge orbs (over the gun, where their arc starts), by mount index: the plain sphere stands in when the pack's ball can't play. */
   private readonly chargeOrbs = new Map<number, Mesh>();
+  /** Arc sentries' balls of lightning (Electric FX, content/vfx.json map.lasting `charge.<mount>`) and their drawn size, by mount index. */
+  private readonly chargeBalls = new Map<number, { fx: VfxHandle | null; size: number }>();
 
   /**
    * An arc sentry's tell: its body glows brighter through a wind-up and a ball of its colour grows over the gun
@@ -2339,17 +2348,46 @@ export class GameView {
       this.chargeOrbs.set(m.index, orb);
     }
     const size = m.arcing ? 0.3 + 0.08 * flicker : charge ? 0.08 + 0.32 * charge : 0;
-    orb.setEnabled(size > 0 && node.isEnabled());
+    const shown = size > 0 && node.isEnabled();
+    const at = new Vector3(m.shown.pos.x, m.shown.pos.y + m.def.half[1] * 2 + 0.2, m.shown.pos.z);
+    // The pack's ball of lightning grows with the charge and crackles through the lock (the same size as the orb it
+    // replaces: the tell's timing and reach are the game's); it fades out when the sentry lets go.
+    let ball = this.chargeBalls.get(m.index);
+    if (!ball) this.chargeBalls.set(m.index, (ball = { fx: null, size: 0 }));
+    const ref = lastingFx(`charge.${m.def.id}`);
+    if (shown && ref && (!ball.fx || ball.fx.done)) ball.fx = this.vfx.start(ref.pack, ref.effect, at, { scale: size * ref.scale });
+    else if (!shown && ball.fx) {
+      ball.fx.stop();
+      ball.fx = null;
+    }
+    ball.fx?.move(at, { scale: size * ref!.scale });
+    ball.size = shown ? size : 0;
+    // The plain orb stays under the pack's ball, fainter: the tell reads as a solid ball of its colour from afar.
+    orb.setEnabled(shown);
+    (orb.material as StandardMaterial).alpha = ball.fx ? 0.35 : 0.75;
     if (size > 0) {
       orb.scaling.setAll(size);
-      orb.position.set(m.shown.pos.x, m.shown.pos.y + m.def.half[1] * 2 + 0.2, m.shown.pos.z);
+      orb.position.copyFrom(at);
     }
+  }
+
+  /** What starting each lasting effect costs (tools/perf/perf96.mjs): each started at `at` and stopped at once, in ms. */
+  lastingProbe(at: Vec3): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const key of lastingKeys()) {
+      const ref = lastingFx(key)!;
+      const t0 = performance.now();
+      const h = this.vfx.start(ref.pack, ref.effect, new Vector3(at.x, at.y, at.z), { scale: ref.scale });
+      out[`lasting ${key}`] = Math.round((performance.now() - t0) * 10) / 10;
+      h?.stop();
+    }
+    return out;
   }
 
   /** An arc sentry's charge orb as drawn now (tests): its size (0: hidden), or null (not an arc sentry). */
   chargeOrb(index: number): number | null {
-    const orb = this.chargeOrbs.get(index);
-    return orb ? (orb.isEnabled() ? orb.scaling.x : 0) : null;
+    const ball = this.chargeBalls.get(index);
+    return ball ? ball.size : null;
   }
 
   /** The ridden vehicle's in-house cockpit (content/cockpits.ts), drawn only in your cockpit view. */
@@ -2716,10 +2754,43 @@ export class GameView {
     });
   }
 
-  /** Chain lightning through the points it jumped. */
-  addArc(pts: readonly Vec3[], color = '#9fd8ff'): void {
-    this.effects.push({ mesh: createArc(this.scene, pts, color), born: performance.now(), ttl: 140 });
-    this.effects.push({ mesh: createArc(this.scene, pts, '#ffffff'), born: performance.now(), ttl: 70 });
+  /**
+   * Chain lightning through the points it jumped: a bolt of Binbun's Electric FX along each jump, rooted where it
+   * lands, and a crackle where the last one lands (content/vfx.json map.arcs, by source: an arc sentry, an electric
+   * fence or a gun). Each bolt plays a few times faster than the pack's, to last about as long as the game's gap
+   * between arcs. Where the pack can't play (not in yet, or too many effects at once) the plain jagged line does.
+   */
+  addArc(pts: readonly Vec3[], color = '#9fd8ff', source: 'mount' | 'fence' | 'default' = 'default'): void {
+    const fx = arcFx(source);
+    const plain: Vec3[][] = [];
+    let drawn = 0;
+    const cam = this.camera.globalPosition;
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const a = pts[i]!;
+      const b = pts[i + 1]!;
+      const d = new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+      const len = d.length();
+      // Far off the plain line reads as well and costs less.
+      const ok =
+        !!fx &&
+        len > 0.2 &&
+        Math.hypot(cam.x - b.x, cam.y - b.y, cam.z - b.z) <= ACCENT_RANGE * 2 &&
+        this.vfx.play(fx.zap.pack, fx.zap.effect, new Vector3(b.x, b.y, b.z), {
+          scale: fx.zap.scale,
+          up: d.scale(1 / Math.max(len, 1e-3)),
+          speed: fx.speed,
+          only: ZAP_PARTS,
+          stretch: { nodes: ZAP_TUBES, by: len / (ZAP_LENGTH * fx.zap.scale) },
+        });
+      if (ok) drawn++;
+      else plain.push([a, b]);
+    }
+    const end = pts[pts.length - 1];
+    if (drawn && fx?.hit && end) this.accent(fx.hit, end);
+    for (const seg of plain) {
+      this.effects.push({ mesh: createArc(this.scene, seg, color), born: performance.now(), ttl: 140 });
+      this.effects.push({ mesh: createArc(this.scene, seg, '#ffffff'), born: performance.now(), ttl: 70 });
+    }
   }
 
   /** A shot's trail: beam weapons draw beams, everything else tracers. */

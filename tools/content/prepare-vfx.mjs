@@ -24,19 +24,24 @@ const OUT = join(ROOT, 'packages/client/public/vfx');
 const LOCK = join(ROOT, 'content/vfx.lock.json');
 const argv = process.argv.slice(2);
 const downloads = argv.includes('--downloads') ? resolve(argv[argv.indexOf('--downloads') + 1]) : null;
-if (!downloads) throw new Error('usage: node tools/content/prepare-vfx.mjs --downloads <dir>');
+if (!downloads) throw new Error('usage: [ONLY=electric_fx,…] node tools/content/prepare-vfx.mjs --downloads <dir>');
+/** ONLY=<file,…> rebuilds just those packs (muzzle_flash, hit_fx, electric_fx …); the rest keep their lock entries. */
+const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
 mkdirSync(OUT, { recursive: true });
 
 const r4 = (n) => Math.round(n * 10000) / 10000;
 const sha = (buf) => createHash('sha256').update(buf).digest('hex').slice(0, 16);
 const lock = [];
+const oldLock = existsSync(LOCK) ? JSON.parse(readFileSync(LOCK, 'utf8')) : { files: [] };
 function write(file, buf, source, src, title) {
   writeFileSync(join(OUT, file), buf);
   lock.push({ file: `vfx/${file}`, source, src, title, bytes: buf.length, sha256: sha(buf) });
 }
 
 // ------------------------------------------------------------------ muzzle flashes
-{
+if (ONLY && !ONLY.includes('muzzle_flash')) {
+  for (const f of oldLock.files.filter((f) => f.source === 'binbun-muzzle-flash')) lock.push(f);
+} else {
   const pack = join(downloads, 'binbun-muzzle-flash/assets/BinbunVFX');
   if (!existsSync(pack)) throw new Error(`no ${pack}: unzip MuzzleFlashVFX there`);
   const res = (p) => join(pack, p.replace('res://assets/BinbunVFX/', ''));
@@ -196,19 +201,23 @@ function plain(v, own, base) {
   return out;
 }
 
-function exportVol2(dir, id, title) {
+function exportGodotPack(dir, id) {
+  // Vol. 2 packs unzip to <id>/assets/BinbunVFX_Vol2/<Pack>; Vol. 1 packs to <id>/assets/BinbunVFX/<Pack>.
   const base = join(downloads, id, 'assets');
   const root = join(base, dir);
   if (!existsSync(root)) throw new Error(`no ${root}: unzip the pack there`);
+  const set = dir.split('/').pop();
   const effects = {};
   const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith('.tscn') ? [join(d, e.name)] : []));
   for (const file of walk(join(root, 'effects')).sort()) {
     const secs = parseGodot(file);
     const own = resources(secs);
     const nodes = secs.filter((s) => s.kind === 'node');
-    const fx = { root: plain(nodes[0].props, own, base), nodes: [] };
+    const fx = { set, root: plain(nodes[0].props, own, base), nodes: [] };
     for (const n of nodes.slice(1)) {
-      if (n.attrs.type === 'AudioStreamPlayer3D') continue;
+      // What the player draws: particles and meshes (the animation is written below; lights, sound and the
+      // animation player's own copy of its library are left out).
+      if (!['GPUParticles3D', 'MeshInstance3D', 'Node3D'].includes(n.attrs.type)) continue;
       fx.nodes.push({ name: n.attrs.name, type: n.attrs.type, ...(n.attrs.parent && n.attrs.parent !== '.' ? { parent: n.attrs.parent } : {}), ...plain(n.props, own, base) });
     }
     const player = nodes.find((n) => n.attrs.type === 'AnimationPlayer');
@@ -225,29 +234,61 @@ function exportVol2(dir, id, title) {
         if (a.props[`tracks/${i}/enabled`] === false) continue;
         const keys = a.props[`tracks/${i}/keys`];
         const path = String(a.props[`tracks/${i}/path`]?.['@NodePath']?.[0] ?? a.props[`tracks/${i}/path`]);
-        if (/AudioStreamPlayer3D/.test(path)) continue;
+        if (/AudioStreamPlayer3D|OmniLight|light_mult/.test(path)) continue;
         tracks.push({ type: a.props[`tracks/${i}/type`], path, interp: a.props[`tracks/${i}/interp`], keys: plain(keys, own, base) });
       }
-      animations[name] = { length: a.props.length ?? 1, tracks };
+      animations[name] = { length: a.props.length ?? 1, ...(a.props.loop_mode ? { loop: a.props.loop_mode } : {}), tracks };
     }
     fx.animations = animations;
     effects[basename(file, '.tscn')] = fx;
   }
-  return effects;
+  return { effects, base };
 }
-const refs = referencedEffects(readVfxManifest());
-for (const [id, dir, file, title] of [
-  ['binbun-hit-fx', 'BinbunVFX_Vol2/StylizedHitFX', 'hit_fx.json', 'hit effect scenes'],
-  ['binbun-explosion-fx', 'BinbunVFX_Vol2/ExplosionFX', 'explosion_fx.json', 'explosion effect scenes'],
-]) {
+
+/** The pictures the kept effects sample (Vol. 1 packs draw with textures): each shrunk and written beside the pack's JSON. */
+async function shipTextures(effects, base, file, id, dir) {
+  const pngs = new Map();
+  const visit = (v) => {
+    if (Array.isArray(v)) return v.forEach(visit);
+    if (!v || typeof v !== 'object') return;
+    if (typeof v.file === 'string' && /\.png$/i.test(v.file)) {
+      const name = `${file}_${basename(v.file, '.png').toLowerCase().replace(/[^a-z0-9_]+/g, '_')}.webp`;
+      pngs.set(v.file, name);
+      v.texture = name;
+      delete v.file;
+      return;
+    }
+    Object.values(v).forEach(visit);
+  };
+  visit(effects);
+  for (const [src, name] of pngs) {
+    const img = sharp(join(base, src));
+    const meta = await img.metadata();
+    const size = Math.min(256, meta.width ?? 256);
+    const buf = await img.resize(size, size, { fit: 'fill', kernel: 'lanczos3' }).webp({ quality: 88, alphaQuality: 90 }).toBuffer();
+    write(name, buf, id, `${dir}/**/${basename(src)}`, `texture ${basename(src, '.png')} (${size} px)`);
+  }
+  return pngs.size;
+}
+
+const manifest = readVfxManifest();
+const refs = referencedEffects(manifest);
+for (const [id, pack] of Object.entries(manifest.packs)) {
+  if (!pack.file || !pack.dir) continue;
+  if (ONLY && !ONLY.includes(pack.file)) {
+    // Not rebuilt this time: keep what the lock says about it.
+    for (const f of oldLock.files.filter((f) => f.source === id)) lock.push(f);
+    continue;
+  }
   // Only the effects the game plays (content/vfx.json `map`, and the pack's `keep`): a match fetches nothing else.
-  const all = exportVol2(dir, id, title);
-  const used = refs[file.replace(/\.json$/, '')];
-  for (const n of used) if (!all[n]) throw new Error(`content/vfx.json map: ${dir} has no effect ${n}`);
+  const { effects: all, base } = exportGodotPack(pack.dir, id);
+  const used = refs[pack.file] ?? new Set();
+  for (const n of used) if (!all[n]) throw new Error(`content/vfx.json map: ${pack.dir} has no effect ${n}`);
   const effects = Object.fromEntries(Object.entries(all).filter(([n]) => used.has(n)));
-  const json = Buffer.from(`${JSON.stringify({ $comment: `Generated by tools/content/prepare-vfx.mjs from Binbun's ${dir.split('/').pop()} (CC0; the full edition the owner bought). Only the effects content/vfx.json's map plays. Do not edit by hand.`, effects })}\n`);
-  write(file, json, id, `${dir}/effects/**/*.tscn`, title);
-  console.log(`${file}: ${Object.keys(effects).length} of ${Object.keys(all).length} effects: ${Object.keys(effects).join(', ')} (${(json.length / 1024).toFixed(0)} KB)`);
+  const textures = await shipTextures(effects, base, pack.file, id, pack.dir);
+  const json = Buffer.from(`${JSON.stringify({ $comment: `Generated by tools/content/prepare-vfx.mjs from Binbun's ${pack.dir.split('/').pop()} (${pack.title}). Only the effects content/vfx.json's map plays. Do not edit by hand.`, effects })}\n`);
+  write(`${pack.file}.json`, json, id, `${pack.dir}/effects/**/*.tscn`, `${pack.file.replace(/_fx$/, '').replace(/_/g, ' ')} effect scenes`);
+  console.log(`${pack.file}.json: ${Object.keys(effects).length} of ${Object.keys(all).length} effects${textures ? ` and ${textures} textures` : ''}: ${Object.keys(effects).join(', ')} (${(json.length / 1024).toFixed(0)} KB)`);
 }
 
 writeFileSync(FX_MAP_FILE, fxMapSource());

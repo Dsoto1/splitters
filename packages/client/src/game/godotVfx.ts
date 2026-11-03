@@ -38,7 +38,7 @@ import { sampleCurve } from './muzzleFlash.ts';
 
 type Json = Record<string, unknown>;
 interface Pack {
-  effects: Record<string, { root: Json; nodes: Json[]; animations: Record<string, { length: number; tracks: Track[] }> }>;
+  effects: Record<string, { set?: string; root: Json; nodes: Json[]; animations: Record<string, { length: number; loop?: number; tracks: Track[] }> }>;
 }
 interface Track {
   type: string;
@@ -51,7 +51,7 @@ const BASE = `${import.meta.env.BASE_URL}vfx/`;
 /** Marks effect meshes: the atmosphere leaves them out of shadows (atmosphere.ts `worldly`). */
 const EFFECT = { effect: true };
 const packs = new Map<string, Promise<Pack | null>>();
-/** Fetch a pack's effects once ('hit_fx', 'explosion_fx'). */
+/** Fetch a pack's effects once ('hit_fx', 'explosion_fx', 'electric_fx' …). */
 export function loadVfxPack(name: string): Promise<Pack | null> {
   let p = packs.get(name);
   if (!p) {
@@ -320,6 +320,20 @@ function gradientTexture(scene: Scene, spec: Json): Texture {
   return tex;
 }
 
+/** A picture a pack's effect samples (Vol. 1 packs), shipped beside its JSON (public/vfx/<pack>_<name>.webp). */
+function packTexture(scene: Scene, file: string): Texture {
+  let cache = noiseCache.get(scene);
+  if (!cache) noiseCache.set(scene, (cache = new Map()));
+  const key = `t${file}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const tex = new Texture(versioned(`${BASE}${file}`), scene, false, true, Texture.TRILINEAR_SAMPLINGMODE);
+  tex.wrapU = Texture.WRAP_ADDRESSMODE;
+  tex.wrapV = Texture.WRAP_ADDRESSMODE;
+  cache.set(key, tex);
+  return tex;
+}
+
 // ------------------------------------------------------------------ meshes (Godot's primitive meshes, with their UVs)
 
 /**
@@ -394,12 +408,14 @@ function godotMesh(scene: Scene, spec: Json, name: string): Mesh {
     }
     grid(seg, rings);
   } else {
-    // Cylinders and tube trails: open tubes along Y, v = 0 at the top.
+    // Cylinders and tube trails: open tubes along Y, v = 0 at the top. Godot puts a cylinder's side in the top half
+    // of its UVs (v 0..0.5; the caps take the rest), and the packs' shaders are written for that.
     const top = type === 'TubeTrailMesh' ? num(spec.radius, 0.5) : num(spec.top_radius, 0.5);
     const bottom = type === 'TubeTrailMesh' ? num(spec.radius, 0.5) : num(spec.bottom_radius, 0.5);
     const height = type === 'TubeTrailMesh' ? num(spec.section_length, 0.2) * num(spec.sections, 5) : num(spec.height, 2);
-    const seg = 24;
-    const rings = 4;
+    const seg = Math.max(6, Math.min(24, num(spec.radial_segments, 24)));
+    // Zaps bend their tubes along their length: those need the rings they were made with (capped).
+    const rings = Math.max(4, Math.min(32, num(spec.rings, 4)));
     for (let j = 0; j <= rings; j++) {
       const v = j / rings;
       const y = (0.5 - v) * height;
@@ -409,7 +425,7 @@ function godotMesh(scene: Scene, spec: Json, name: string): Mesh {
         const a = u * Math.PI * 2;
         positions.push(Math.sin(a) * rr, y, Math.cos(a) * rr);
         normals.push(Math.sin(a), (bottom - top) / Math.max(1e-6, height), Math.cos(a));
-        uvs.push(u, v);
+        uvs.push(u, type === 'TubeTrailMesh' ? v : v * 0.5);
       }
     }
     grid(seg, rings);
@@ -451,7 +467,8 @@ const PORTS: Record<string, ShaderPort> = {
       vec2 uv = abs(vUV * 2.0 - 1.0);
       float decay = vColor.a;
       float value = clamp(pow(uv.x, u_star_shape * decay) + pow(uv.y, u_star_shape * decay), 0.0, 2.0);
-      value = smoothstep(0.95, 0.95 - u_star_smoothness, value);
+      // No smoothness is a hard edge (smoothstep with equal edges is undefined in GLSL).
+      value = u_star_smoothness < 0.001 ? 1.0 - step(0.95, value) : smoothstep(0.95, 0.95 - u_star_smoothness, value);
       outColor = mix(u_secondary_color, u_primary_color, value) * vColor.rgb * u_emission * u_emission_mult;
       outAlpha = value;`,
   },
@@ -730,6 +747,131 @@ const PORTS: Record<string, ShaderPort> = {
   },
 };
 
+// ---- Electric FX (Binbun VFX Vol. 2): the pack's own glow and impact sphere differ from the hit pack's
+PORTS['ElectricFX/glow'] = {
+  uniforms: { primary_color: [1, 1, 1], secondary_color: [0, 0.84, 1], emission: 2, exponent: 4 },
+  blend: 'add',
+  fragment: `
+      float fresnel = clamp(pow(max(dot(normalize(vView), normalize(vNormal)), 0.0), u_exponent), 0.0, 1.0);
+      outColor = mix(u_secondary_color, u_primary_color, fresnel) * u_emission;
+      outAlpha = fresnel * vColor.a * vExtra.w;`,
+};
+PORTS['ElectricFX/impact_sphere'] = {
+  uniforms: { primary_color: [1, 1, 1], emission: 2, noise_scale: [1, 1], edge_hardness: 0.5 },
+  samplers: ['noise_texture'],
+  blend: 'mix',
+  fragment: `
+      float noise = texture2D(noise_texture, vUV * u_noise_scale).r;
+      float a = smoothstep(1.0 - vColor.a, 1.0, noise);
+      a = smoothstep(0.5 * u_edge_hardness, 1.0 - 0.5 * u_edge_hardness, a);
+      outColor = u_primary_color * u_emission;
+      outAlpha = a * vExtra.w;`,
+};
+/** A bolt: a tall tube bent into a zigzag along its length (Y), dissolving into its noise as it fades. */
+PORTS.zap = {
+  uniforms: { primary_color: [1, 1, 1], secondary_color: [0, 0.84, 1], noise_scale: [1, 1], noise_strength: 0.4, frequency: 0.4, amplitude: 0.4, zap_shape: 1 },
+  samplers: ['noise_texture'],
+  blend: 'cut',
+  cut: 0.5,
+  cull: false,
+  vertex: `
+      // Metres along the bolt (Godot reads the world height of a bolt standing up; ours may lie along any line).
+      float y = p.y * length(fw[1].xyz) / max(length(fw[0].xyz), 1e-4);
+      float motion = u_time * 0.1;
+      float rnd = pcolor.r;
+      vec4 w;
+      for (int i = 0; i < 4; i++) {
+        float fr = (i == 1 || i == 3) ? u_frequency * 1.5 : u_frequency;
+        float off = i == 0 ? motion + rnd : i == 1 ? 3.14159265 - motion - rnd : i == 2 ? -3.14159265 + motion + rnd : -6.2831853 - motion - rnd;
+        float wave = abs(fract(y * fr + off) * 2.0 - 1.0) - 0.5;
+        if (u_zap_shape > 2.5) wave = wave * wave * wave * wave * wave * 30.0;
+        else if (u_zap_shape > 1.5) wave = wave * wave * wave * 6.0;
+        w[i] = wave;
+      }
+      vec2 offset = vec2(w.x + w.y, w.z + w.w);
+      float mask = pow(max(1.0 - uv.y * 2.0, 0.0), 0.5);
+      p.xz += offset * u_amplitude * mask * (1.0 + (1.0 - pcolor.a));
+      float detail = texture2D(noise_texture, vec2(uv.x, y) * u_noise_scale).r * u_noise_strength * mask;
+      p.xz += n.xz * detail * offset;`,
+  fragment: `
+      float fresnel = pow(max(dot(normalize(vView), normalize(vNormal)), 0.0), 2.0);
+      float noise = texture2D(noise_texture, vec2(vUV.x, vUV.y * 2.0) * u_noise_scale).r;
+      float a = step(1.0 - vColor.a * vExtra.w, noise);
+      a = clamp(a * (vUV.y * 4.0), 0.0, 1.0);
+      outColor = mix(u_secondary_color, u_primary_color, step(0.5, fresnel)) * 3.0;
+      outAlpha = a;`,
+};
+/** Short zaps crackling round a ball or an impact: tubes pinched at both ends, wiggling. */
+PORTS.electric_particle = {
+  uniforms: { primary_color: [1, 1, 1], secondary_color: [0, 0.84, 1], emission: 2, noise_scale: [1, 1], frequency: 1.5, amplitude: 0.3, edge_hardness: 1, edge_position: 0 },
+  samplers: ['noise_texture'],
+  blend: 'cut',
+  cut: 0.5,
+  cull: false,
+  vertex: `
+      float mask = 1.0 - abs(uv.y * 4.0 - 1.0);
+      float motion = u_time * 0.1;
+      float rnd = pcolor.r;
+      float w1 = abs(fract(uv.y * 2.0 * u_frequency + motion + rnd) * 2.0 - 1.0) - 0.5;
+      float w2 = abs(fract(uv.y * 2.0 * u_frequency + 3.14159265 + motion - rnd) * 2.0 - 1.0) - 0.5;
+      p.xz *= mask;
+      p.xz += vec2(w1, w2) * u_amplitude;`,
+  fragment: `
+      float fresnel = pow(max(dot(normalize(vView), normalize(vNormal)), 0.0), 2.0);
+      float noise = texture2D(noise_texture, vUV * u_noise_scale).r;
+      noise -= 1.0 - vColor.a * vExtra.w;
+      noise *= fresnel;
+      noise -= u_edge_position;
+      float a = u_edge_hardness >= 0.999 ? step(0.0001, noise) : smoothstep(0.0, 1.0 - u_edge_hardness, noise);
+      float value = mix(fresnel, step(0.6, fresnel), u_edge_hardness);
+      outColor = mix(u_secondary_color, u_primary_color, value) * u_emission;
+      outAlpha = a;`,
+};
+/** The scorch ring where a bolt lands: a ragged ring of light running out over the ground. */
+PORTS.ground_impact = {
+  uniforms: { primary_color: [1, 1, 1], secondary_color: [0, 0.84, 1], emission: 2, impact_frequency: 4, grow_amount: 0.5, edge_hardness: 0.5, edge_position: 0.5 },
+  blend: 'mix',
+  cull: false,
+  fragment: `
+      vec2 c = vUV * 2.0 - 1.0;
+      float radius = length(c);
+      float angle = atan(c.x, c.y);
+      float r = vColor.r;
+      float f = u_impact_frequency;
+      float wave = (sin(angle * f + radius + r * 3.14159265) * 0.5 + 0.5) * 2.0
+        + (sin(angle * f * 1.76 - radius - r * 0.5) * 0.5 + 0.5) * 1.5
+        + (sin(angle * f * 3.14159265 + radius + r * 3.14159265) * 0.5 + 0.5)
+        + (sin(angle * (f * 10.0 + 1.0) + radius - r * 0.5) * 0.5 + 0.5) * 0.2;
+      float factor = max(1.0 - vColor.a * vExtra.w, 1e-3);
+      float value = radius + wave * 0.1;
+      value -= u_grow_amount - factor;
+      value = max(1.0 - abs(value / factor), 0.0);
+      value = clamp((value - u_edge_position) / (1.0 - u_edge_position), 0.0, 1.0);
+      float a = smoothstep(0.1 * u_edge_hardness, 1.0 - 0.9 * u_edge_hardness, value);
+      value = mix(value, floor(value * 4.0) / 3.0, u_edge_hardness);
+      outColor = mix(u_secondary_color, u_primary_color, value) * 0.5 * (1.0 + value * u_emission);
+      outAlpha = a;`,
+};
+/** Light streaking up from where a bolt lands. */
+PORTS.ground_streaks = {
+  uniforms: { primary_color: [1, 1, 1], emission: 4, streaks_frequency: 8, edge_hardness: 0.5, edge_position: 0.5 },
+  blend: 'add',
+  cull: false,
+  fragment: `
+      float y = vUV.y;
+      float sf = u_streaks_frequency;
+      float wave = (sin(vUV.x * 6.2831853 * sf + u_time) * 0.5 + 0.5) * 2.0
+        + (sin(vUV.x * 6.2831853 * (sf + 1.0) - u_time) * 0.5 + 0.5) * 2.0
+        + (sin(vUV.x * 6.2831853 * (sf * 8.0) + u_time) * 0.5 + 0.5);
+      float value = clamp(y - wave * 0.1, 0.0, 1.0);
+      value = min(value, y);
+      float ep = pow(u_edge_position, 3.0);
+      value = clamp((value - ep) / (1.0 - ep), 0.0, 1.0);
+      float a = smoothstep(0.009 * u_edge_hardness, 1.0 - 0.99 * u_edge_hardness, value) * vColor.a * vExtra.w;
+      outColor = u_primary_color * u_emission * 2.0;
+      outAlpha = a;`,
+};
+
 const VERTEX = `
 precision highp float;
 attribute vec3 position;
@@ -825,22 +967,32 @@ function glslUniforms(port: ShaderPort): string {
   return lines.join('\n');
 }
 
+/** A port's name as a shader-store id (`ElectricFX/glow` → `ElectricFX_glow`). */
+const shaderId = (name: string): string => name.replace(/[^A-Za-z0-9_]/g, '_');
+/** A pack's port of a shader: its own (`<set>/<name>`, where two packs' shaders share a name), else the shared one. */
+export function portName(set: string | undefined, name: string): string | null {
+  if (set && PORTS[`${set}/${name}`]) return `${set}/${name}`;
+  return PORTS[name] ? name : null;
+}
+
 let registered = false;
 function registerShaders(): void {
   if (registered) return;
   registered = true;
-  for (const [name, port] of Object.entries(PORTS)) {
+  for (const [key, port] of Object.entries(PORTS)) {
     const u = glslUniforms(port);
+    const name = shaderId(key);
     Effect.ShadersStore[`gv_${name}VertexShader`] = VERTEX.replace('UNIFORMS', u).replace('VERTEX_BODY', port.vertex ?? '');
     Effect.ShadersStore[`gv_${name}FragmentShader`] = FRAGMENT.replace('UNIFORMS', u).replace('FRAGMENT_BODY', port.fragment);
   }
 }
 
 /** Uniform values from the Godot material (and the effect root's shared colours), falling back to the shader's defaults. */
-function materialFor(scene: Scene, mat: Json, root: Json, billboardAlign: boolean, key: string, cache: Map<string, ShaderMaterial>): ShaderMaterial | null {
-  const shaderName = String((mat.shader as Json | undefined)?.shader ?? '');
-  const port = PORTS[shaderName];
-  if (!port) return null;
+function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefined, billboardAlign: boolean, key: string, cache: Map<string, ShaderMaterial>): ShaderMaterial | null {
+  const portKey = portName(set, String((mat.shader as Json | undefined)?.shader ?? ''));
+  if (!portKey) return null;
+  const port = PORTS[portKey]!;
+  const shaderName = shaderId(portKey);
   const hit = cache.get(key);
   if (hit) return hit;
   registerShaders();
@@ -878,7 +1030,7 @@ function materialFor(scene: Scene, mat: Json, root: Json, billboardAlign: boolea
   for (const s of port.samplers ?? []) {
     let spec = (mat[`shader_parameter/${s}`] ?? (s === 'noise_texture' ? root.noise_texture : s === 'smoke_texture' ? root.smoke_texture : null)) as Json | null;
     if (s === 'normal_texture' && !spec && root.smoke_texture) spec = { ...(root.smoke_texture as Json), as_normal_map: true, bump_strength: 32 };
-    m.setTexture(s, spec && spec.type === 'GradientTexture2D' ? gradientTexture(scene, spec) : noiseTexture(scene, spec));
+    m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && spec.type === 'GradientTexture2D' ? gradientTexture(scene, spec) : noiseTexture(scene, spec));
   }
   m.setFloat('u_bright', 0.55);
   cache.set(key, m);
@@ -907,6 +1059,7 @@ interface Proc {
   angle: [number, number];
   radial: [number, number];
   radialCurve: number[][] | null;
+  radialVel: [number, number];
   orbit: number[][] | null;
   alignY: boolean;
   rotateY: boolean;
@@ -934,6 +1087,7 @@ function procOf(p: Json): Proc {
     angle: [num(p.angle_min, 0), num(p.angle_max, 0)],
     radial: [num(p.radial_accel_min, 0), num(p.radial_accel_max, 0)],
     radialCurve: curveOf(p.radial_accel_curve),
+    radialVel: [num(p.radial_velocity_min, 0), num(p.radial_velocity_max, 0)],
     orbit: curveOf(p.orbit_velocity_curve),
     alignY: bool(p.particle_flag_align_y, false),
     rotateY: bool(p.particle_flag_rotate_y, false),
@@ -949,6 +1103,7 @@ interface Particle {
   angle: number;
   damp: number;
   radial: number;
+  radialVel: number;
   init: number[];
   id: number;
   nextSub: number;
@@ -1008,6 +1163,10 @@ function spawnVelocity(pr: Proc): Vector3 {
 /** One GPUParticles3D of a playing effect. */
 class Emitter {
   readonly mesh: Mesh;
+  /** A second draw pass (Godot's draw_pass_2): another mesh drawn with the same particles. */
+  mesh2: Mesh | null = null;
+  /** The playing effect's strength (fading in or out), handed to the shaders as pextra.w. */
+  level = 1;
   private readonly proc: Proc;
   private parts: Particle[] = [];
   private spawned = 0;
@@ -1062,6 +1221,27 @@ class Emitter {
     this.spawned = 0;
   }
 
+  /** Stop putting out particles at `t`; those out finish their lives. */
+  stop(t: number): void {
+    this.emitTo = Math.min(this.emitTo, t);
+    if (this.oneShot && this.emitFrom >= 0) this.spawned = Math.max(this.spawned, this.amount);
+  }
+
+  /** A lasting effect's one-shot emitter that has finished goes again (Godot's looping emitters). */
+  rearm(t: number): void {
+    if (this.oneShot && this.emitFrom >= 0 && this.emitTo === Infinity && this.spawned >= this.amount && t >= this.emitFrom + this.lifetime) this.start(t, Infinity);
+  }
+
+  /** Share the particles with a second mesh (draw_pass_2). */
+  addPass(mesh: Mesh, material: ShaderMaterial): void {
+    mesh.material = material;
+    mesh.thinInstanceSetBuffer('matrix', this.matrices, 16, false);
+    mesh.thinInstanceSetBuffer('pcolor', this.colors, 4, false);
+    mesh.thinInstanceSetBuffer('pextra', this.extras, 4, false);
+    mesh.thinInstanceCount = 0;
+    this.mesh2 = mesh;
+  }
+
   /** A particle at `pos` (sub-emitters: where the parent is now). */
   spawnAt(t: number, pos: Vector3 | null): void {
     // Counted even when full: the emission loops run until `spawned` catches up, and a particle
@@ -1080,6 +1260,7 @@ class Emitter {
       angle: rnd(pr.angle[0], pr.angle[1]) * DEG,
       damp: rnd(pr.damp[0], pr.damp[1]),
       radial: rnd(pr.radial[0], pr.radial[1]),
+      radialVel: rnd(pr.radialVel[0], pr.radialVel[1]),
       init: pr.initRamp ? sampleGradient(pr.initRamp, Math.random(), [1, 1, 1, 1]) : [1, 1, 1, 1],
       id: this.spawned++,
       nextSub: t,
@@ -1142,6 +1323,11 @@ class Emitter {
         p.pos.z = px * s + p.pos.z * c;
       }
       p.pos.addInPlace(p.vel.scale(dt));
+      if (p.radialVel) {
+        // Godot's radial velocity: straight out from the emitter (in from it when negative), on top of the motion.
+        const l = p.pos.length();
+        if (l > 1e-6) p.pos.scaleInPlace(Math.max(0, l + p.radialVel * dt) / l);
+      }
       if (this.sub && t >= p.nextSub) {
         p.nextSub = t + 1 / Math.max(1, this.sub.freq);
         this.sub.emitter.spawnAt(t, p.pos);
@@ -1155,7 +1341,9 @@ class Emitter {
       // Turn: Y along the motion (align_y), about Y (rotate_y), else about Z (camera-facing quads turn in the shader).
       let angle = 0;
       if (pr.alignY || this.align === 2 || this.trail) {
-        const v = p.vel.lengthSquared() > 1e-8 ? p.vel.clone().normalize() : Vector3.Up();
+        // The way it moves, its radial velocity included (sparks round a ball point out from it).
+        const mv = p.radialVel && p.pos.lengthSquared() > 1e-8 ? p.vel.add(p.pos.normalizeToNew().scale(p.radialVel)) : p.vel;
+        const v = mv.lengthSquared() > 1e-8 ? mv.normalizeToNew() : Vector3.Up();
         const ref = Math.abs(v.y) < 0.95 ? Vector3.Up() : Vector3.Right();
         const xAxis = Vector3.Cross(v, ref).normalize();
         const zAxis = Vector3.Cross(xAxis, v);
@@ -1186,21 +1374,24 @@ class Emitter {
       this.extras[n * 4] = p.id;
       this.extras[n * 4 + 1] = 0;
       this.extras[n * 4 + 2] = angle;
-      this.extras[n * 4 + 3] = Math.random();
+      this.extras[n * 4 + 3] = this.level;
       n++;
       return true;
     });
-    this.mesh.thinInstanceCount = n;
-    if (n) {
-      this.mesh.thinInstanceBufferUpdated('matrix');
-      this.mesh.thinInstanceBufferUpdated('pcolor');
-      this.mesh.thinInstanceBufferUpdated('pextra');
+    for (const mesh of this.mesh2 ? [this.mesh, this.mesh2] : [this.mesh]) {
+      mesh.thinInstanceCount = n;
+      if (n) {
+        mesh.thinInstanceBufferUpdated('matrix');
+        mesh.thinInstanceBufferUpdated('pcolor');
+        mesh.thinInstanceBufferUpdated('pextra');
+      }
+      mesh.setEnabled(n > 0);
     }
-    this.mesh.setEnabled(n > 0);
   }
 
   dispose(): void {
     this.mesh.dispose();
+    this.mesh2?.dispose();
   }
 }
 
@@ -1209,11 +1400,13 @@ class Prop {
   readonly mesh: Mesh;
   readonly matrix = new Float32Array(16);
   readonly colorBuf = new Float32Array([1, 1, 1, 1]);
-  readonly extraBuf = new Float32Array([0, 0, 0, 0]);
+  readonly extraBuf = new Float32Array([0, 0, 0, 1]);
   scale: [number, number, number] = [1, 1, 1];
   pos: [number, number, number];
   rot: [number, number, number] = [0, 0, 0];
   decay = 0;
+  /** The playing effect's strength (pextra.w). */
+  level = 1;
   constructor(
     mesh: Mesh,
     readonly name: string,
@@ -1235,6 +1428,7 @@ class Prop {
     const m = Matrix.Compose(new Vector3(s.x * this.scale[0], s.y * this.scale[1], s.z * this.scale[2]), q, new Vector3(...this.pos)).multiply(root);
     m.copyToArray(this.matrix, 0);
     this.extraBuf[1] = this.decay;
+    this.extraBuf[3] = this.level;
     this.mesh.thinInstanceBufferUpdated('matrix');
     this.mesh.thinInstanceBufferUpdated('pextra');
   }
@@ -1256,11 +1450,75 @@ interface Playing {
   props: Prop[];
   tracks: Track[];
   started: Set<string>;
+  /** Time runs this many times faster than the pack's (an effect fitted to the game's timing). */
+  speed: number;
+  /** A lasting effect (a fire, a charge ball): runs until stopped. */
+  loop: boolean;
+  /** When a lasting effect was told to stop (its own time), or null. */
+  stopAt: number | null;
+  /** Strength now and wanted (lasting effects fade in and out over FADE seconds). */
+  level: number;
+  want: number;
+  minor: boolean;
+}
+
+/** Ways to place an effect. */
+export interface VfxPlace {
+  /** Times its size (all axes). */
+  scale?: number;
+  /** Turn it so its up follows this (a surface's normal, the way a bolt runs). */
+  up?: Vector3;
+  /** Turn it about its up by this much (radians), after `up`. */
+  yaw?: number;
+}
+
+export interface VfxOptions extends VfxPlace {
+  /** Time this many times faster than the pack's (fitted to how long the game's moment lasts). */
+  speed?: number;
+  /** Minor effects (an impact's accent, a pickup's sparkle) give way when many are playing. */
+  minor?: boolean;
+  /** Only these of its parts (node names). */
+  only?: readonly string[];
+  /** Leave these of its parts out (node names). */
+  skip?: readonly string[];
+  /** Stretch these parts along their Y by `by` (a bolt's tube, made 6 m long, laid between two points). */
+  stretch?: { nodes: readonly string[]; by: number };
+}
+
+/** A lasting effect playing (GodotVfx.start): move it, fade it, stop it. */
+export interface VfxHandle {
+  /** Put it somewhere else (a ball over a moving turret). */
+  move(at: Vector3, place?: VfxPlace): void;
+  /** How strong it is, 0..1 (shaders fade or thin it; 0 hides it). */
+  setLevel(level: number): void;
+  /** Stop: no new particles, those out finish, then it is gone. */
+  stop(): void;
+  /** Gone (stopped and finished, or never fitted in). */
+  readonly done: boolean;
+}
+
+/** Settings by graphics quality: how many effects may play at once (one-shots, minor ones, lasting ones). */
+const QUALITY = {
+  low: { playing: 6, minor: 3, loops: 4, density: 0.5 },
+  medium: { playing: 12, minor: 7, loops: 10, density: 1 },
+  high: { playing: 16, minor: 10, loops: 16, density: 1 },
+} as const;
+export type VfxQuality = keyof typeof QUALITY;
+
+/** Seconds a lasting effect takes to fade in or out. */
+const FADE = 0.25;
+
+function rootMatrix(at: Vector3, place: VfxPlace): Matrix {
+  const scale = place.scale ?? 1;
+  const q = place.up && Math.abs(place.up.y) < 0.999 ? Quaternion.FromUnitVectorsToRef(Vector3.Up(), place.up.clone().normalize(), new Quaternion()) : place.up && place.up.y < 0 ? Quaternion.RotationAxis(Vector3.Right(), Math.PI) : Quaternion.Identity();
+  if (place.yaw) q.multiplyInPlace(Quaternion.RotationAxis(Vector3.Up(), place.yaw));
+  return Matrix.Compose(new Vector3(scale, scale, scale), q, at);
 }
 
 /**
- * Plays the packs' effects in a scene. `play` puts one at a point (scaled,
- * optionally turned so its up follows a surface normal); `update` each frame.
+ * Plays the packs' effects in a scene. `play` puts a one-shot at a point (scaled, optionally turned so its up
+ * follows a surface normal); `start` a lasting one (a fire, a charge ball) that runs until its handle stops it;
+ * `update` each frame. How many may play at once follows the graphics quality (`quality`).
  */
 export class GodotVfx {
   private playing: Playing[] = [];
@@ -1268,8 +1526,14 @@ export class GodotVfx {
   private readonly meshes = new Map<string, Mesh>();
   private serial = 0;
   private sun = { dir: new Vector3(-0.4, -1, 0.3).normalize(), color: new Color3(1, 0.97, 0.9), ambient: new Color3(0.45, 0.45, 0.5) };
+  private caps: (typeof QUALITY)[VfxQuality] = QUALITY.medium;
 
   constructor(private readonly scene: Scene) {}
+
+  /** Low graphics plays fewer effects at once and thins the lasting ones; high plays more. */
+  set quality(q: VfxQuality) {
+    this.caps = QUALITY[q] ?? QUALITY.medium;
+  }
 
   /** Light the lit effects (smoke) like the scene: the sun's direction and colour, and the sky's. */
   setLight(dir: Vector3, sunColor: Color3, ambient: Color3): void {
@@ -1295,66 +1559,127 @@ export class GodotVfx {
    * isn't in yet or too many are playing. `minor` effects (an impact's accent, a pickup's sparkle) stop at
    * MAX_MINOR, so they never crowd out an explosion.
    */
-  play(pack: string, effect: string, at: Vector3, opts: { scale?: number; up?: Vector3; speed?: number; minor?: boolean } = {}): boolean {
-    const fx = loaded.get(pack)?.effects[effect];
-    if (!fx) return false;
+  play(pack: string, effect: string, at: Vector3, opts: VfxOptions = {}): boolean {
+    const oneShots = this.playing.length - this.loopCount;
     // A big fight can ask for dozens at once: past the cap the caller's plain effect stands in.
-    if (this.playing.length >= (opts.minor ? GodotVfx.MAX_MINOR : GodotVfx.MAX_PLAYING)) return false;
-    const scale = opts.scale ?? 1;
-    const q = opts.up && Math.abs(opts.up.y) < 0.999 ? Quaternion.FromUnitVectorsToRef(Vector3.Up(), opts.up.clone().normalize(), new Quaternion()) : Quaternion.Identity();
-    const root = Matrix.Compose(new Vector3(scale, scale, scale), q, at);
-    const anim = fx.animations.main ?? Object.values(fx.animations).find((a) => a.length > 0.01);
+    if (oneShots >= (opts.minor ? this.caps.minor : this.caps.playing)) return false;
+    return !!this.begin(pack, effect, at, opts, false);
+  }
+
+  /**
+   * Start a lasting effect (a fire, a charge ball, a glow): it runs, fading in, until its handle stops it. Null when
+   * the pack isn't in or as many lasting effects play as the quality allows (callers keep their plain look).
+   */
+  start(pack: string, effect: string, at: Vector3, opts: VfxOptions = {}): VfxHandle | null {
+    if (this.loopCount >= this.caps.loops) return null;
+    const p = this.begin(pack, effect, at, opts, true);
+    if (!p) return null;
+    const self = this;
+    return {
+      move(to: Vector3, place?: VfxPlace) {
+        p.root = rootMatrix(to, { scale: opts.scale, up: opts.up, yaw: opts.yaw, ...place });
+      },
+      setLevel(level: number) {
+        p.want = Math.max(0, Math.min(1, level));
+      },
+      stop() {
+        if (p.stopAt === null) p.stopAt = p.t;
+      },
+      get done() {
+        return !self.playing.includes(p);
+      },
+    };
+  }
+
+  /** Lasting effects playing now. */
+  get loopCount(): number {
+    let n = 0;
+    for (const p of this.playing) if (p.loop) n++;
+    return n;
+  }
+
+  private begin(pack: string, effect: string, at: Vector3, opts: VfxOptions, loop: boolean): Playing | null {
+    const fx = loaded.get(pack)?.effects[effect];
+    if (!fx) return null;
+    const root = rootMatrix(at, opts);
+    // A lasting effect opens (its `open` animation) and runs; a one-shot plays `main`.
+    const anim = (loop ? (fx.animations.open ?? fx.animations.main) : fx.animations.main) ?? Object.values(fx.animations).find((a) => a.length > 0.01);
     const emitters = new Map<string, Emitter>();
     const props: Prop[] = [];
     const id = this.serial++;
+    const wanted = (name: string) => (!opts.only || opts.only.includes(name)) && !opts.skip?.includes(name);
+    const byName = new Map(fx.nodes.map((n) => [String(n.name), n]));
+    // A node's place in the effect: its own transform under its parents' (Godot nests them).
+    const placeOf = (node: Json): Matrix => {
+      let m = godotMatrix(node.transform);
+      for (let parent = typeof node.parent === 'string' ? node.parent : null, guard = 0; parent && guard < 8; guard++) {
+        const up = byName.get(parent.split('/').pop()!);
+        if (!up) break;
+        m = m.multiply(godotMatrix(up.transform));
+        parent = typeof up.parent === 'string' ? up.parent : null;
+      }
+      const stretch = opts.stretch && opts.stretch.nodes.includes(String(node.name)) ? opts.stretch.by : 1;
+      return stretch !== 1 ? m.multiply(Matrix.Scaling(1, stretch, 1)) : m;
+    };
     // Sub-emitter targets first, so their parents can find them.
     const subTargets = new Set(fx.nodes.map((n) => n.sub_emitter).filter((s): s is string => typeof s === 'string').map((s) => s.replace(/^\.\.\//, '')));
     const order = [...fx.nodes].sort((a, b) => Number(subTargets.has(String(b.name))) - Number(subTargets.has(String(a.name))));
     for (const node of order) {
       const name = String(node.name);
+      if (!wanted(name) || node.visible === false) continue;
       if (node.type === 'GPUParticles3D') {
         const meshSpec = node.draw_pass_1 as Json | undefined;
         const matSpec = node.material_override as Json | undefined;
         if (!meshSpec || !matSpec) continue;
-        const material = materialFor(this.scene, matSpec, fx.root, num(node.transform_align, 0) === 1 || num(node.transform_align, 0) === 3, `${pack}/${effect}/${name}`, this.materials);
+        const material = materialFor(this.scene, matSpec, fx.root, fx.set, num(node.transform_align, 0) === 1 || num(node.transform_align, 0) === 3, `${pack}/${effect}/${name}`, this.materials);
         if (!material) continue;
         const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
         mesh.setEnabled(false);
-        mesh.alwaysSelectAsActiveMesh = true;
         const subName = typeof node.sub_emitter === 'string' ? node.sub_emitter.replace(/^\.\.\//, '') : null;
         const target = subName ? emitters.get(subName) : undefined;
         const freq = num((node.process_material as Json | undefined)?.sub_emitter_frequency, 4);
-        const e = new Emitter(mesh, subTargets.has(name) ? { ...node, __subTarget: true } : node, godotMatrix(node.transform), material, target ? { emitter: target, freq } : undefined);
+        // Lasting effects on low graphics put out fewer particles (each a quad or a tube to fill).
+        const thin = loop && this.caps.density < 1 && num(node.amount, 8) > 4 ? { amount: Math.max(2, Math.round(num(node.amount, 8) * this.caps.density)) } : {};
+        const e = new Emitter(mesh, { ...(subTargets.has(name) ? { ...node, __subTarget: true } : node), ...thin }, placeOf(node), material, target ? { emitter: target, freq } : undefined);
+        const pass2 = num(node.draw_passes, 1) > 1 ? (node.draw_pass_2 as Json | undefined) : undefined;
+        if (pass2) {
+          const m2 = pieceOf(this.baseMesh(`${pack}/${effect}/${name}#2`, pass2), `gv_${name}2_${id}`);
+          m2.metadata = EFFECT;
+          m2.setEnabled(false);
+          e.addPass(m2, material);
+        }
         emitters.set(name, e);
       } else if (node.type === 'MeshInstance3D') {
         const meshSpec = node.mesh as Json | undefined;
-        const matSpec = node.material_override as Json | undefined;
-        if (!meshSpec || !matSpec || node.visible === false) continue;
-        const material = materialFor(this.scene, matSpec, fx.root, false, `${pack}/${effect}/${name}`, this.materials);
+        const matSpec = (node.material_override ?? node['surface_material_override/0']) as Json | undefined;
+        if (!meshSpec || !matSpec) continue;
+        const material = materialFor(this.scene, matSpec, fx.root, fx.set, false, `${pack}/${effect}/${name}`, this.materials);
         if (!material) continue;
         const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
-        mesh.alwaysSelectAsActiveMesh = true;
         mesh.material = material;
-        const prop = new Prop(mesh, name, godotMatrix(node.transform));
+        const prop = new Prop(mesh, name, placeOf(node));
         prop.decay = num(matSpec['shader_parameter/effect_decay'], 0);
         props.push(prop);
       }
     }
+    if (!emitters.size && !props.length) return null;
     // Emitters with no animation track start at once (Godot's `emitting` default).
     const tracks = anim?.tracks ?? [];
     const started = new Set<string>();
     for (const [name, e] of emitters) {
-      const node = fx.nodes.find((n) => n.name === name)!;
+      const node = byName.get(name)!;
       const tr = tracks.find((t) => t.path === `${name}:emitting`);
       if (!tr && node.emitting !== false && ![...emitters.values()].some((x) => x.sub?.emitter === e)) {
-        e.start(0, anim?.length ?? 1);
+        e.start(0, loop ? Infinity : (anim?.length ?? 1));
         started.add(name);
       }
     }
-    this.playing.push({ t: 0, length: anim?.length ?? 1, root, emitters, props, tracks, started });
-    return true;
+    const level = loop ? 0 : 1;
+    const p: Playing = { t: 0, length: anim?.length ?? 1, root, emitters, props, tracks, started, speed: opts.speed ?? 1, loop, stopAt: null, level, want: 1, minor: !!opts.minor };
+    this.playing.push(p);
+    return p;
   }
 
   private baseMesh(key: string, spec: Json): Mesh {
@@ -1369,7 +1694,7 @@ export class GodotVfx {
 
   update(dtMs: number): void {
     if (!this.playing.length) return;
-    const dt = Math.min(0.05, dtMs / 1000);
+    const wall = Math.min(0.05, dtMs / 1000);
     const now = performance.now() / 1000;
     for (const m of this.materials.values()) {
       m.setFloat('u_time', now % 1000);
@@ -1380,7 +1705,15 @@ export class GodotVfx {
     }
     const cam = this.scene.activeCamera;
     this.playing = this.playing.filter((p) => {
+      const dt = wall * p.speed;
       p.t += dt;
+      if (p.loop) {
+        // Fade toward what's wanted (out once stopped); the emitters stop putting out particles when told.
+        const target = p.stopAt !== null ? 0 : p.want;
+        p.level += Math.sign(target - p.level) * Math.min(Math.abs(target - p.level), wall / FADE);
+        if (p.stopAt !== null) for (const e of p.emitters.values()) e.stop(p.stopAt);
+        else for (const e of p.emitters.values()) e.rearm(p.t);
+      }
       // The animation: emitters switched on (and off), props moved, scaled and faded.
       for (const tr of p.tracks) {
         const [node, prop] = tr.path.split(':');
@@ -1390,9 +1723,9 @@ export class GodotVfx {
           const e = p.emitters.get(node);
           if (!e) continue;
           const on = v === true;
-          if (on && !p.started.has(node)) {
+          if (on && !p.started.has(node) && p.stopAt === null) {
             p.started.add(node);
-            // Off again at the next key that says false.
+            // Off again at the next key that says false (a lasting effect's `open` leaves them on).
             const times = tr.keys.times?.['@PackedFloat32Array'] ?? [];
             const vals = tr.keys.values ?? [];
             const i = vals.findIndex((x, k) => x === false && times[k]! > p.t - dt);
@@ -1408,13 +1741,16 @@ export class GodotVfx {
         else if (prop === 'rotation' && v3) pr.rot = [v3[0]!, v3[1]!, v3[2]!];
         else if (prop.endsWith('effect_decay') && typeof v === 'number') pr.decay = v;
       }
-      let alive = p.t < p.length;
+      const showProps = p.loop ? p.level > 0.001 : p.t < p.length;
+      let alive = p.loop ? p.stopAt === null || p.level > 0.001 : p.t < p.length;
       for (const e of p.emitters.values()) {
+        e.level = p.level;
         e.update(p.t, dt, cam, p.root);
         alive ||= e.alive;
       }
       for (const pr of p.props) {
-        pr.mesh.setEnabled(p.t < p.length);
+        pr.level = p.level;
+        pr.mesh.setEnabled(showProps);
         pr.update(p.root);
       }
       if (!alive) {
@@ -1431,16 +1767,17 @@ export class GodotVfx {
    * it polls every 16 ms until the material is ready, for ever once its mesh is gone.)
    */
   warm(pack: string, effect: string): void {
-    if (!this.play(pack, effect, new Vector3(0, -10000, 0))) return;
-    const p = this.playing.pop()!;
+    const p = this.begin(pack, effect, new Vector3(0, -10000, 0), {}, false);
+    if (!p) return;
+    this.playing.splice(this.playing.indexOf(p), 1);
     for (const e of p.emitters.values()) e.dispose();
     for (const pr of p.props) pr.mesh.dispose();
   }
 
-  /** At most this many effects play at once (each is a handful of meshes and particles). */
-  static MAX_PLAYING = 10;
-  /** Minor effects play only while fewer than this many effects are playing. */
-  static MAX_MINOR = 6;
+  /** At most this many one-shot effects play at once on medium graphics (each is a handful of meshes and particles). */
+  static MAX_PLAYING = QUALITY.medium.playing;
+  /** Minor effects play only while fewer than this many one-shots are playing (medium graphics). */
+  static MAX_MINOR = QUALITY.medium.minor;
 
   /** How many effects are playing (tests). */
   get count(): number {

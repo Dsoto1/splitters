@@ -483,7 +483,7 @@ const gunCount = checkLocked(
   'node tools/content/prepare-guns.mjs --downloads <dir>',
 );
 const vfxManifest = JSON.parse(readFileSync(join(ROOT, 'content/vfx.json'), 'utf8'));
-const vfxCount = checkLocked('content/vfx.lock.json', 'vfx', (f) => vfxManifest.packs[f.source], vfxManifest.budgets, (f) => (f.file.endsWith('.json') ? ['effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js', ...(f.source === 'binbun-muzzle-flash' ? [] : ['only the effects the game plays (content/vfx.json map)'])] : ['textures packed into one grey atlas, 256 px each']), 'node tools/content/prepare-vfx.mjs --downloads <dir>');
+const vfxCount = checkLocked('content/vfx.lock.json', 'vfx', (f) => vfxManifest.packs[f.source], vfxManifest.budgets, (f) => (f.file.endsWith('.json') ? ['effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js', ...(f.source === 'binbun-muzzle-flash' ? [] : ['only the effects the game plays (content/vfx.json map)'])] : f.source === 'binbun-muzzle-flash' ? ['textures packed into one grey atlas, 256 px each'] : ['texture an effect the game plays samples, shrunk to at most 256 px, WebP']), 'node tools/content/prepare-vfx.mjs --downloads <dir>');
 problems.push(...checkFxMap());
 console.log(`checked ${vfxCount} effect files`);
 const gearManifest = JSON.parse(readFileSync(join(ROOT, 'content/gear.json'), 'utf8'));

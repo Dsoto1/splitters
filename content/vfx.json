@@ -1,5 +1,5 @@
 {
-  "$comment": "Effect packs (CC0, by Binbun). tools/content/prepare-vfx.mjs reads each Godot 4 pack (its scenes, materials and textures) and writes what the game draws: an atlas of the pack's textures and the effects' settings, in packages/client/public/vfx (recorded in content/vfx.lock.json); only the effects `map` below names (and a pack's `keep`) are written. The packs themselves are never committed. `map` says which effect plays where; tools/content/vfx-map.mjs turns it into packages/client/src/game/fxMap.generated.ts (content:check fails when that is stale or names an effect that isn't shipped).",
+  "$comment": "Effect packs by Binbun (the owner bought the full editions). tools/content/prepare-vfx.mjs reads each Godot 4 pack (its scenes, materials and textures) and writes what the game draws: the effects' settings as JSON (`file`.json, from the pack's `dir`) and any pictures they sample, in packages/client/public/vfx (recorded in content/vfx.lock.json); only the effects `map` below names (and a pack's `keep`) are written. The packs themselves are never committed. `map` says which effect plays where; tools/content/vfx-map.mjs turns it into packages/client/src/game/fxMap.generated.ts (content:check fails when that is stale or names an effect that isn't shipped).",
   "packs": {
     "binbun-muzzle-flash": {
       "title": "Muzzle Flash VFX",
@@ -15,7 +15,9 @@
       "url": "https://binbun3d.itch.io/",
       "license": "CC0-1.0",
       "licenseFile": "assets-src/binbun-hit-fx/License.txt",
-      "edition": "Full edition, purchased by the owner (Drive fx/HitFXFull.zip, 2026-10-31); its license.txt is CC0, word for word the free edition's. 28 effects (the free edition had 6)."
+      "edition": "Full edition, purchased by the owner (Drive fx/HitFXFull.zip, 2026-10-31); its license.txt is CC0, word for word the free edition's. 28 effects (the free edition had 6).",
+      "dir": "BinbunVFX_Vol2/StylizedHitFX",
+      "file": "hit_fx"
     },
     "binbun-explosion-fx": {
       "title": "Stylized Explosion FX (full edition, purchased by the owner)",
@@ -24,12 +26,24 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/binbun-explosion-fx/License.txt",
       "edition": "Full edition, purchased by the owner (Drive fx/ExplosionFXFull.zip, 2026-10-31); its license.txt is CC0, word for word the free edition's. 16 effects (the free edition had 3).",
-      "keep": ["vfx_ground_explosion_01"]
+      "keep": ["vfx_ground_explosion_01"],
+      "dir": "BinbunVFX_Vol2/ExplosionFX",
+      "file": "explosion_fx"
+    },
+    "binbun-electric-fx": {
+      "title": "Electric FX (full edition, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/binbun-electric-fx/License.txt",
+      "edition": "Full edition, purchased by the owner (Drive fx/ElectricFXFull.zip, 2026-10-31); its license.txt is CC0 (Creative Commons Zero, no attribution required). 18 effects: zaps, impacts and balls of lightning and plasma.",
+      "dir": "BinbunVFX_Vol2/ElectricFX",
+      "file": "electric_fx"
     }
   },
   "budgets": { "maxBytes": 400000 },
   "map": {
-    "$comment": "Effects by use. An effect is { pack, effect, scale } (pack: hit_fx or explosion_fx, public/vfx/<pack>.json). Lookups fall back from the most specific key to `default`.",
+    "$comment": "Effects by use. An effect is { pack, effect, scale } (pack: a pack's `file`, public/vfx/<file>.json: hit_fx, explosion_fx, electric_fx …). Lookups fall back from the most specific key to `default`.",
     "muzzle": {
       "$comment": "Muzzle flash by weapon family (WeaponDefinition.family; a weapon's own view.muzzle wins): effects of public/vfx/muzzle_flash.json. `projectile`: launchers with no family; `pellets`: other multi-pellet guns; `heavy`: other guns of 60+ damage.",
       "pistol": { "effect": "short_flash_01", "scale": 0.15 },
@@ -95,8 +109,18 @@
       "portal": { "pack": "hit_fx", "effect": "vfx_impact_07", "scale": 0.45 },
       "pad": { "pack": "hit_fx", "effect": "vfx_impact_04", "scale": 0.35 },
       "trap": { "pack": "hit_fx", "effect": "vfx_impact_06", "scale": 0.4 },
-      "trap.shock": { "pack": "hit_fx", "effect": "vfx_hit_04", "scale": 0.45 },
+      "trap.shock": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.5 },
       "zipline": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.14 }
+    },
+    "arcs": {
+      "$comment": "Lightning (the `arc` event): a bolt laid along each jump (`zap`: its tube stretched to the jump, rooted where it lands; `width` scales its thickness; `speed` fits the pack's 0.6 s bolt to the game's 0.1-0.15 s between arcs) and a crackle where the last one lands (`hit`, minor). By who made it: an arc sentry (`mount`, in its violet), an electric fence (`fence`) or a gun (`default`: the Arc Caster).",
+      "default": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_01", "scale": 0.4 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.35 }, "speed": 3 },
+      "mount": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_04", "scale": 0.36 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_04", "scale": 0.35 }, "speed": 4 },
+      "fence": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_01", "scale": 0.22 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.3 }, "speed": 2.5 }
+    },
+    "lasting": {
+      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball).",
+      "charge.sentry_arc": { "pack": "electric_fx", "effect": "vfx_ball_lightning_04", "scale": 0.6 }
     }
   }
 }

@@ -22,16 +22,24 @@
       "source": "binbun-hit-fx",
       "src": "BinbunVFX_Vol2/StylizedHitFX/effects/**/*.tscn",
       "title": "hit effect scenes",
-      "bytes": 213702,
-      "sha256": "4d45a69363f9c42d"
+      "bytes": 113581,
+      "sha256": "374d3df3b00f0970"
     },
     {
       "file": "vfx/explosion_fx.json",
       "source": "binbun-explosion-fx",
       "src": "BinbunVFX_Vol2/ExplosionFX/effects/**/*.tscn",
       "title": "explosion effect scenes",
-      "bytes": 220672,
-      "sha256": "00da797f4b2c72a4"
+      "bytes": 148733,
+      "sha256": "7064876e7fd6eab1"
+    },
+    {
+      "file": "vfx/electric_fx.json",
+      "source": "binbun-electric-fx",
+      "src": "BinbunVFX_Vol2/ElectricFX/effects/**/*.tscn",
+      "title": "electric effect scenes",
+      "bytes": 42736,
+      "sha256": "69a4f8415b0d2de7"
     }
   ]
 }

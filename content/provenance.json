@@ -29661,8 +29661,8 @@
     },
     {
       "file": "vfx/hit_fx.json",
-      "sha256": "4d45a69363f9c42d",
-      "bytes": 213702,
+      "sha256": "374d3df3b00f0970",
+      "bytes": 113581,
       "source": "binbun-hit-fx/BinbunVFX_Vol2/StylizedHitFX/effects/**/*.tscn",
       "title": "Stylized Hit FX (full edition, purchased by the owner): hit effect scenes",
       "creator": "Binbun (bun3d.com)",
@@ -29675,10 +29675,24 @@
     },
     {
       "file": "vfx/explosion_fx.json",
-      "sha256": "00da797f4b2c72a4",
-      "bytes": 220672,
+      "sha256": "7064876e7fd6eab1",
+      "bytes": 148733,
       "source": "binbun-explosion-fx/BinbunVFX_Vol2/ExplosionFX/effects/**/*.tscn",
       "title": "Stylized Explosion FX (full edition, purchased by the owner): explosion effect scenes",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "modifications": [
+        "effect settings read from the Godot scenes and materials into JSON (tools/content/prepare-vfx.mjs); the shaders redrawn for Babylon.js",
+        "only the effects the game plays (content/vfx.json map)"
+      ]
+    },
+    {
+      "file": "vfx/electric_fx.json",
+      "sha256": "69a4f8415b0d2de7",
+      "bytes": 42736,
+      "source": "binbun-electric-fx/BinbunVFX_Vol2/ElectricFX/effects/**/*.tscn",
+      "title": "Electric FX (full edition, purchased by the owner): electric effect scenes",
       "creator": "Binbun (bun3d.com)",
       "url": "https://binbun3d.itch.io/",
       "license": "CC0-1.0",
