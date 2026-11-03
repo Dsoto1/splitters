@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { CHARACTER_PARTS, COLORWAYS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, decodeLook, encodeLook, getLook, HAIR_STYLES, initPhysics, lookForBot, lookProblems, materialTint, partInfo, RETIRED_LOOKS, textureFor, validLookId } from '../src/index.ts';
+import { CHARACTER_PARTS, COLORWAYS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, decodeLook, encodeLook, getLook, HAIR_STYLES, initPhysics, lookForBot, lookProblems, materialTint, NPC_KEPT_LOOKS, partInfo, RETIRED_LOOKS, textureFor, validLookId } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 import { loadArena } from './helpers.ts';
 
@@ -80,7 +80,8 @@ describe('character looks', () => {
   it('resolves retired presets to a kept look', () => {
     for (const [old, now] of Object.entries(RETIRED_LOOKS)) {
       expect(CORE_LOOKS.some((l) => l.id === old), old).toBe(false);
-      expect(getLook(old).id, old).toBe(now);
+      // An NPC role's look stays drawable as itself (NPC_KEPT_LOOKS); a player's saved choice of it still moves on.
+      expect(getLook(old).id, old).toBe(NPC_KEPT_LOOKS.has(old) ? old : now);
       expect(validLookId(old), old).toBe(now);
     }
   });
