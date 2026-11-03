@@ -43,6 +43,15 @@ const MAP_USERS = {
   void_yard: ['hostcontrols'],
 };
 
+/**
+ * Docs and notes: nothing reads them to build or test the game. Also what CI ignores when it asks whether a
+ * commit's code equals a commit that already went green (tools/ci/greenTree.mjs). Keep this list strict.
+ */
+export const DOC_PATTERNS = [/^docs\//, /^[^/]*\.md$/, /^packages\/[^/]+\/[^/]*\.md$/, /^LICENSE/];
+
+/** Whether a repo-relative path is docs only (DOC_PATTERNS). */
+export const isDocPath = (p) => DOC_PATTERNS.some((re) => re.test(p.replace(/^\.\//, '')));
+
 const FULL = Symbol('full');
 const NONE = Symbol('none');
 const UNIT_ALL = 'all';
@@ -53,11 +62,8 @@ const UNIT_ALL = 'all';
  */
 const RULES = [
   // Docs and notes: nothing to run.
-  [/^docs\//, NONE, []],
-  [/^(?!CLAUDE\.md$)[^/]*\.md$/, NONE, []],
-  [/^CLAUDE\.md$/, NONE, []],
-  [/^packages\/[^/]+\/[^/]*\.md$/, NONE, []],
-  [/^LICENSE|^\.gitignore$|^\.editorconfig$/, NONE, []],
+  ...DOC_PATTERNS.map((re) => [re, NONE, []]),
+  [/^\.gitignore$|^\.editorconfig$/, NONE, []],
   // The Lightsail box's scripts: no flow or unit test runs them (the check job lints them; infra/test/ by hand).
   [/^(infra|deploy)\//, NONE, []],
 
@@ -78,11 +84,29 @@ const RULES = [
   [/^\.github\//, FULL, UNIT_ALL],
   [/^e2e\//, FULL, ['tools']],
   [/^tools\/(ci|content)\//, FULL, UNIT_ALL],
+  // Content manifests (content/*.json, tools/content builds from them; `pnpm content:check`, which the check job
+  // always runs, holds them to the built files). What the runtime reads is the build output (public/models,
+  // packages/shared/src/content/*.generated.ts: those run everything), so a manifest alone runs the flows that
+  // look at that kind of content, and the unit tests that read it. Any other content/ path: everything.
+  [/^content\/(characters\/|characters\.lock\.json$)/, ['characters', 'designer', 'visual'], ['client', 'content', 'shared']],
+  [/^content\/(clip-sets\/|clip-sets\.lock\.json$)/, ['characters', 'visual'], ['client', 'content', 'shared']],
+  [/^content\/gear(\.lock)?\.json$/, ['characters', 'designer', 'visual'], ['shared']],
+  [/^content\/props(\.lock)?\.json$/, ['editor', 'scenery', 'setpieces', 'visual'], ['shared']],
+  // Guns: the arsenal, the grips on them (characters), mounted guns (vehicles).
+  [/^content\/guns(\.lock)?\.json$/, ['arsenal', 'characters', 'vehicles'], ['shared']],
+  [/^content\/vfx(\.lock)?\.json$/, ['physicsfx', 'arsenal'], ['client']],
+  [/^content\/skies(\.lock)?\.json$/, [...MAP_FLOWS, 'scenery', 'setpieces', 'canyon', 'visual'], ['shared']],
+  [/^content\/city(\.lock)?\.json$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces'], ['client', 'shared']],
+  [/^content\/sounds\.json$/, ['offline'], ['client']],
   [/^(content|assets-src)\//, FULL, UNIT_ALL],
   [/^packages\/client\/(public|index\.html|vite\.config\.ts|package\.json|tsconfig\.json)/, FULL, ['client']],
   [/^packages\/client\/src\/(main|engine|assetUrl|renamedStorage|style)\./, FULL, ['client']],
-  [/^packages\/client\/src\/game\/(session|view|hud|localTransport|matchHost|simWorker|input|prediction|interpolation|snapshotMerge|characterAnimator|atmosphere|framePacer|cameraPose|transport)\.ts$/, FULL, ['client']],
+  [/^packages\/client\/src\/game\/(session|hud|localTransport|matchHost|simWorker|input|prediction|interpolation|snapshotMerge|characterAnimator|atmosphere|framePacer|cameraPose|transport)\.ts$/, FULL, ['client']],
   [/^packages\/client\/src\/(content|materials)\//, FULL, ['client']],
+
+  // The match renderer: every flow that plays a match (all but the MapMaker UI, the host page and the WebGPU
+  // menu check, which never load it: main.ts imports the session on demand).
+  [/^packages\/client\/src\/game\/view\.ts$/, FLOWS.filter((f) => !['editorux', 'hostpage', 'webgpu'].includes(f)), ['client']],
 
   // The rest of the client, by area.
   // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
@@ -197,5 +221,5 @@ export function selectForPaths(paths, mapIds = []) {
 /** vitest path filters for a selection's unit packages ('all' → none: every test). */
 export function unitTestPaths(unit) {
   if (unit === UNIT_ALL) return [];
-  return unit.map((u) => (u === 'tools' ? 'tools/ci/test' : `packages/${u}/test`));
+  return unit.map((u) => (u === 'tools' ? 'tools/ci/test' : u === 'content' ? 'tools/content/test' : `packages/${u}/test`));
 }

@@ -127,6 +127,26 @@ Owner's request: the bought Flame FX on the fire props placed on maps. docs/PHYS
   OK after content:build (provenance for flame_fx.json). E2E (`CI=1`): physicsfx PASS (198 s), visual PASS (canyon
   0.1 %, no baseline change), setpieces PASS (33 s). ci:plan: content paths -> full suite; needs a `check/` run.
 
+### CI pipeline: green by code, batch landing, finer routing (`wip/ci-pipeline`, agent, 2026-11-03; not merged; from main d30d9c5)
+The first item of the owner's queue above. Three commits:
+- **Green by code** (`tools/ci/greenTree.mjs`, ci.yml's "Already green on a check branch?" step, now also on `check/**`
+  pushes): when the commit itself has no green check run, the step lists the last 100 successful CI push runs
+  (`listWorkflowRuns`, ci.yml), takes the check/ ones (up to 30 commits, fetching a deleted branch's commit by sha) and
+  skips when `git diff --name-only --no-renames <green> <candidate>` lists only docs (`DOC_PATTERNS` in e2e/flowMap.mjs:
+  docs/, top-level and package-level *.md, LICENSE; `.gitignore`/`.editorconfig` deliberately not). A twin's package names
+  the other commit, so on main the release job builds this commit's package again (run_id left empty).
+- **Batch landing** `tools/ci/train.mjs` (CLAUDE.md Git workflow): merges wip/ or check/ branches in order in a temporary
+  worktree, stops on a conflict naming the branch and files, pushes `check/train-<UTC>`; `--land <sha>` checks the
+  branch's latest CI run (gh api) and that origin/main is an ancestor, then pushes `<sha>:main` without force.
+- **Routing** (e2e/flowMap.mjs): `game/view.ts` runs the 35 flows that play a match (not editorux/hostpage/webgpu) and the
+  client tests, not all 38 + all units; content manifests route by kind (characters, clip-sets, gear, props, guns, vfx,
+  skies, city, sounds); other content/ paths (models.json, packs.json, intake/, textures…) still run everything. New unit
+  name `content` = tools/content/test. `pnpm test:changed` is now `tools/ci/testChanged.mjs`: vitest --changed, plus the
+  tests whose source (or test helper) reads a changed maps/ file (19 for an ordinary map, ~95 for phase0_arena).
+- Tests: tools/ci/test/greenTree.test.mjs, train.test.mjs, testChanged.test.mjs; select.test.mjs's "runs everything" list
+  lost view.ts and content/props.json (they no longer do) and gained models.json, packs.json, intake/, assets-src/.
+- Not proven on GitHub yet: the github-script step (dynamic import of greenTree.mjs, listWorkflowRuns) needs one check/ run.
+
 ### Map removals round 2 and card pictures (`wip/map-removals-2`, agent, 2026-11-03; not merged; from main ef2c103)
 - Deleted (file, picture, inspirations, rotation entries): after_hours, clockwork, fallout_lane, ridge_camp, stonewatch_keep.
   Retired (RETIRED_MAPS, kept as fixtures): blackout (co-op mission test in npc.test.ts), cedar_lane (style pack 08 demo and
