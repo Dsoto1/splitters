@@ -31,7 +31,12 @@
       [0.18, 0.13, -0.18],
       [0.36, 0.22, -0.3]
     ],
-    "feet": true
+    "feet": true,
+    "hands": {
+      "r": {
+        "wrist": true
+      }
+    }
   },
   "landmarks": {
     "spine": [

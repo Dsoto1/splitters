@@ -33,6 +33,9 @@
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true
+    "feet": true,
+    "hands": {
+      "mitten": true
+    }
   }
 }

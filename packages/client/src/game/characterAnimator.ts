@@ -1592,14 +1592,11 @@ const RIG_SPAN = 1.9;
  * fingers reach across under it and close up its far side instead of standing out past it.
  */
 const CUP_BACK = 0.22;
-/** EXPERIMENT */
-const GRIP_AHEAD = 0.3;
-const FINGER_CURL = [0.75, 0.85, 0.55];
 
 /** Where to put a palm so the grip point sits inside the closed hand rather than in the palm itself (`cup`: a support hand under a handguard). */
 function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number, cup = false): Vector3 {
   const at = gripPoint.subtract(palmSideWorld(arm).scale(arm.gripOffset * scale));
-  return cup ? at.subtract(handAxes(arm).along.scale(CUP_BACK * arm.span * scale)) : at.add(handAxes(arm).along.scale(GRIP_AHEAD * arm.span * scale));
+  return cup ? at.subtract(handAxes(arm).along.scale(CUP_BACK * arm.span * scale)) : at;
 }
 
 /** Unit vector out of the palm (the side the fingers close toward), in world space. */
@@ -1805,7 +1802,7 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector
     const swung = (s: number) => Vector3.Distance(knuckle.add(tip.applyRotationQuaternion(Quaternion.RotationAxis(across, s * 1.2))), target);
     sign = swung(1) <= swung(-1) ? 1 : -1;
   }
-  const curl = FINGER_CURL;
+  const curl = [0.9, 1.1, 0.7];
   for (const chain of arm.fingers) {
     chain.forEach((joint, i) => {
       const q = Quaternion.RotationAxis(across, sign * curl[i]! * weight);

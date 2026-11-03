@@ -33,6 +33,9 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": {
+      "mitten": true
+    }
   }
 }
