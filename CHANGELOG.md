@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Pickups and props**
+- **Large health has its own model**: a battered medical bag with a red cross, in place of the bigger copy of the small medkit. It heals the same as before (50, back in 25 s); small health keeps the medkit.
+- **Rifle rounds have a model**: an olive ammo box instead of the striped block. The other ammo pickups (general ammo, light rounds, shells, sniper rounds, explosives, energy cells, fuel and chem canisters) keep the striped block in their colour.
+- **New prop: WWII Ammo Crate** (MapMaker → Crates & Barrels, and the Military style pack): two stacked wooden ammo crates, 0.9 m tall. It blocks players and shots and breaks like the other crates.
+
 ## 0.7.0 (2026-11-03)
 
 **Turrets, weapons and props**
