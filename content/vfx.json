@@ -1,5 +1,5 @@
 {
-  "$comment": "Effect packs (CC0, by Binbun). tools/content/prepare-vfx.mjs reads each Godot 4 pack (its scenes, materials and textures) and writes what the game draws: an atlas of the pack's textures and the effects' settings, in packages/client/public/vfx (recorded in content/vfx.lock.json); only the effects `map` below names (and a pack's `keep`) are written. The packs themselves are never committed. `map` says which effect plays where; tools/content/vfx-map.mjs turns it into packages/client/src/game/fxMap.generated.ts (content:check fails when that is stale or names an effect that isn't shipped).",
+  "$comment": "Effect packs by Binbun (the owner bought the full editions). tools/content/prepare-vfx.mjs reads each Godot 4 pack (its scenes, materials and textures) and writes what the game draws: the effects' settings as JSON (`file`.json, from the pack's `dir`) and any pictures they sample, in packages/client/public/vfx (recorded in content/vfx.lock.json); only the effects `map` below names (and a pack's `keep`) are written. The packs themselves are never committed. `map` says which effect plays where; tools/content/vfx-map.mjs turns it into packages/client/src/game/fxMap.generated.ts (content:check fails when that is stale or names an effect that isn't shipped).",
   "packs": {
     "binbun-muzzle-flash": {
       "title": "Muzzle Flash VFX",
@@ -15,7 +15,9 @@
       "url": "https://binbun3d.itch.io/",
       "license": "CC0-1.0",
       "licenseFile": "assets-src/binbun-hit-fx/License.txt",
-      "edition": "Full edition, purchased by the owner (Drive fx/HitFXFull.zip, 2026-10-31); its license.txt is CC0, word for word the free edition's. 28 effects (the free edition had 6)."
+      "edition": "Full edition, purchased by the owner (Drive fx/HitFXFull.zip, 2026-10-31); its license.txt is CC0, word for word the free edition's. 28 effects (the free edition had 6).",
+      "dir": "BinbunVFX_Vol2/StylizedHitFX",
+      "file": "hit_fx"
     },
     "binbun-explosion-fx": {
       "title": "Stylized Explosion FX (full edition, purchased by the owner)",
@@ -24,12 +26,54 @@
       "license": "CC0-1.0",
       "licenseFile": "assets-src/binbun-explosion-fx/License.txt",
       "edition": "Full edition, purchased by the owner (Drive fx/ExplosionFXFull.zip, 2026-10-31); its license.txt is CC0, word for word the free edition's. 16 effects (the free edition had 3).",
-      "keep": ["vfx_ground_explosion_01"]
+      "keep": ["vfx_ground_explosion_01"],
+      "dir": "BinbunVFX_Vol2/ExplosionFX",
+      "file": "explosion_fx"
+    },
+    "binbun-electric-fx": {
+      "title": "Electric FX (full edition, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/binbun-electric-fx/License.txt",
+      "edition": "Full edition, purchased by the owner (Drive fx/ElectricFXFull.zip, 2026-10-31); its license.txt is CC0 (Creative Commons Zero, no attribution required). 18 effects: zaps, impacts and balls of lightning and plasma.",
+      "dir": "BinbunVFX_Vol2/ElectricFX",
+      "file": "electric_fx"
+    },
+    "binbun-flame-fx": {
+      "title": "Stylized Flame FX (full edition, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/binbun-flame-fx/License.txt",
+      "edition": "Full edition, purchased by the owner (Drive fx/FlameFXFull.zip, 2026-10-31); its license.txt is CC0 (Creative Commons Zero, no attribution required). 30 effects: fires, bonfires and candles in six colours.",
+      "dir": "BinbunVFX_Vol2/FlameFX",
+      "file": "flame_fx"
+    },
+    "binbun-poison-vfx": {
+      "title": "Poison VFX (Binbun store licence, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "LicenseRef-Purchased",
+      "licenseFile": "assets-src/binbun-poison-vfx/License.txt",
+      "edition": "Vol. 1 pack, purchased by the owner (Drive fx/PoisonVFX.zip, 2026-10-31); no licence file in the download (the owner's full licence; CLAUDE.md content rules). 30 effects: clouds, stink, puddles, bubbles, areas.",
+      "dir": "BinbunVFX/poison_effects",
+      "file": "poison_fx"
+    },
+    "binbun-smoke-vfx": {
+      "title": "Smoke VFX (Binbun store licence, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "LicenseRef-Purchased",
+      "licenseFile": "assets-src/binbun-smoke-vfx/License.txt",
+      "edition": "Vol. 1 pack, purchased by the owner (Drive fx/SmokeVFX.zip, 2026-10-31); no licence file in the download (the owner's full licence; CLAUDE.md content rules). 24 effects: thin, plain and big smoke.",
+      "dir": "BinbunVFX/smoke_effects",
+      "file": "smoke_fx"
     }
   },
   "budgets": { "maxBytes": 400000 },
   "map": {
-    "$comment": "Effects by use. An effect is { pack, effect, scale } (pack: hit_fx or explosion_fx, public/vfx/<pack>.json). Lookups fall back from the most specific key to `default`.",
+    "$comment": "Effects by use. An effect is { pack, effect, scale } (pack: a pack's `file`, public/vfx/<file>.json: hit_fx, explosion_fx, electric_fx …). Lookups fall back from the most specific key to `default`.",
     "muzzle": {
       "$comment": "Muzzle flash by weapon family (WeaponDefinition.family; a weapon's own view.muzzle wins): effects of public/vfx/muzzle_flash.json. `projectile`: launchers with no family; `pellets`: other multi-pellet guns; `heavy`: other guns of 60+ damage.",
       "pistol": { "effect": "short_flash_01", "scale": 0.15 },
@@ -95,8 +139,25 @@
       "portal": { "pack": "hit_fx", "effect": "vfx_impact_07", "scale": 0.45 },
       "pad": { "pack": "hit_fx", "effect": "vfx_impact_04", "scale": 0.35 },
       "trap": { "pack": "hit_fx", "effect": "vfx_impact_06", "scale": 0.4 },
-      "trap.shock": { "pack": "hit_fx", "effect": "vfx_hit_04", "scale": 0.45 },
+      "trap.shock": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.5 },
       "zipline": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.14 }
+    },
+    "arcs": {
+      "$comment": "Lightning (the `arc` event): a bolt laid along each jump (`zap`: its tube stretched to the jump, rooted where it lands; `width` scales its thickness; `speed` fits the pack's 0.6 s bolt to the game's 0.1-0.15 s between arcs) and a crackle where the last one lands (`hit`, minor). By who made it: an arc sentry (`mount`, in its violet), an electric fence (`fence`) or a gun (`default`: the Arc Caster).",
+      "default": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_01", "scale": 0.4 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.35 }, "speed": 3 },
+      "mount": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_04", "scale": 0.36 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_04", "scale": 0.35 }, "speed": 4 },
+      "fence": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_01", "scale": 0.22 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.3 }, "speed": 2.5 }
+    },
+    "lasting": {
+      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball). fire.zone: a burning patch (molotov, flamethrower, flare, lit oil; scale per metre of its radius, three or four overlapping). fire.vehicle / fire.wreck: a burning vehicle and the wreck smouldering (scale per metre of its size). fire.flare: a flare burning in flight or where it stuck. fire.trap: a flame trap's jet (laid along it). cloud.toxic: a toxic gas cloud (scale per metre of its radius). smoke.wreck: the smoke column over a burning vehicle or its wreck (scale per metre of its size).",
+      "charge.sentry_arc": { "pack": "electric_fx", "effect": "vfx_ball_lightning_04", "scale": 0.6 },
+      "fire.zone": { "pack": "flame_fx", "effect": "vfx_basic_fire_02", "scale": 1.1 },
+      "fire.vehicle": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 1.1 },
+      "fire.wreck": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 0.5 },
+      "fire.flare": { "pack": "flame_fx", "effect": "vfx_basic_fire_01", "scale": 0.3 },
+      "fire.trap": { "pack": "flame_fx", "effect": "vfx_basic_fire_02", "scale": 0.8 },
+      "cloud.toxic": { "pack": "poison_fx", "effect": "poison_cloud_vfx_01", "scale": 0.5 },
+      "smoke.wreck": { "pack": "smoke_fx", "effect": "smoke_thin_vfx_01", "scale": 0.35 }
     }
   }
 }

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { CORE_WEAPONS, WEAPONS_BY_SLOT, type WorldBox } from '@tiletrigger/shared';
-import { explosionFor, gameplayFx, impactStyle, mappedEffects, muzzleEffectFor, surfaceOfBox, surfaceOfName, weaponImpact } from '../src/game/fxMap.ts';
+import { arcFx, explosionFor, gameplayFx, impactStyle, lastingFx, mappedEffects, mappedPacks, muzzleEffectFor, surfaceOfBox, surfaceOfName, weaponImpact } from '../src/game/fxMap.ts';
+import { portName } from '../src/game/godotVfx.ts';
 import { GameplayFxWatch, type WatchedPose } from '../src/game/gameplayFxWatch.ts';
 
 const shipped = (pack: string): Record<string, unknown> => JSON.parse(readFileSync(new URL(`../public/vfx/${pack}.json`, import.meta.url), 'utf8')).effects;
@@ -9,13 +10,34 @@ const lookup = (id: string) => CORE_WEAPONS[id];
 
 describe('fx map (content/vfx.json map)', () => {
   it('names only effects that ship', () => {
-    const packs = { hit_fx: shipped('hit_fx'), explosion_fx: shipped('explosion_fx') };
-    for (const r of mappedEffects()) expect(packs[r.pack][r.effect], `${r.pack}/${r.effect}`).toBeTruthy();
+    const packs = Object.fromEntries(mappedPacks().map((p) => [p, shipped(p)]));
+    for (const r of mappedEffects()) expect(packs[r.pack]?.[r.effect], `${r.pack}/${r.effect}`).toBeTruthy();
     const flashes = shipped('muzzle_flash');
     for (const w of WEAPONS_BY_SLOT) {
       const fx = muzzleEffectFor(w);
       if (fx) expect(flashes[fx.id], `${w.id}: ${fx.id}`).toBeTruthy();
     }
+  });
+
+  it('draws every part of every mapped effect: each shader its parts use is ported (godotVfx.ts PORTS)', () => {
+    const missing = new Set<string>();
+    for (const r of mappedEffects()) {
+      const fx = shipped(r.pack)[r.effect] as { set?: string; nodes: { type: string; name: string; material_override?: { shader?: { shader?: string } } }[] };
+      for (const n of fx.nodes) {
+        const shader = n.material_override?.shader?.shader;
+        if ((n.type === 'GPUParticles3D' || n.type === 'MeshInstance3D') && shader && !portName(fx.set, shader)) missing.add(`${r.pack}/${r.effect}/${n.name}: ${fx.set}/${shader}`);
+      }
+    }
+    expect([...missing]).toEqual([]);
+  });
+
+  it('plays lightning by its source and lasting effects by key', () => {
+    expect(arcFx('default')?.zap.pack).toBe('electric_fx');
+    expect(arcFx('mount')?.zap.effect).not.toBe(arcFx('default')?.zap.effect);
+    // A bolt fitted to the game's 0.1-0.15 s between arcs plays faster than the pack's 0.6 s.
+    for (const s of ['default', 'mount', 'fence'] as const) expect(arcFx(s)!.speed).toBeGreaterThanOrEqual(2);
+    expect(lastingFx('charge.sentry_arc')?.effect).toMatch(/ball/);
+    expect(lastingFx('nothing.here')).toBeNull();
   });
 
   it('gives each weapon class its muzzle flash, and none to melee or the railgun', () => {

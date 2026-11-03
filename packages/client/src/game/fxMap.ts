@@ -7,9 +7,9 @@ import { FX_MAP } from './fxMap.generated.ts';
  * Everything here is data lookups; godotVfx.ts and impactVisuals.ts draw.
  */
 
-/** One Binbun effect: `pack` is public/vfx/<pack>.json. */
+/** One Binbun effect: `pack` is public/vfx/<pack>.json (hit_fx, explosion_fx, electric_fx …). */
 export interface FxRef {
-  readonly pack: 'hit_fx' | 'explosion_fx';
+  readonly pack: string;
   readonly effect: string;
   readonly scale: number;
 }
@@ -116,13 +116,45 @@ export function gameplayFx(key: string): FxRef | null {
   return gameplay[key] ?? gameplay[key.split('.')[0]!] ?? null;
 }
 
+/** Lightning along an `arc` event's jumps: the bolt, the crackle where it lands, and how much faster than the pack's it plays. */
+export interface ArcFx {
+  readonly zap: FxRef;
+  readonly hit: FxRef | null;
+  readonly speed: number;
+}
+const arcs = ((FX_MAP as Record<string, unknown>).arcs ?? {}) as Record<string, ArcFx>;
+
+/** The lightning for an arc: `mount` (an arc sentry), `fence` (an electric fence) or `default` (a gun: the Arc Caster). */
+export function arcFx(source: 'mount' | 'fence' | 'default'): ArcFx | null {
+  return arcs[source] ?? arcs.default ?? null;
+}
+
+const lasting = ((FX_MAP as Record<string, unknown>).lasting ?? {}) as Record<string, FxRef>;
+
+/** An effect that lasts while something is so (`charge.sentry_arc`, `fire.zone` …): the exact key, else the part before the dot. */
+export function lastingFx(key: string): FxRef | null {
+  return lasting[key] ?? lasting[key.split('.')[0]!] ?? null;
+}
+
+/** Every lasting effect's key (`charge.sentry_arc`, `fire.zone` …), for the performance probe. */
+export function lastingKeys(): string[] {
+  return Object.keys(lasting);
+}
+
 /** Every pack effect the map can play, for warming up a match's effects before the first fight. */
 export function mappedEffects(): FxRef[] {
   const seen = new Map<string, FxRef>();
-  const add = (r: unknown) => {
-    if (r && typeof r === 'object' && 'pack' in r && 'effect' in r) seen.set(`${(r as FxRef).pack}/${(r as FxRef).effect}`, r as FxRef);
+  const visit = (r: unknown) => {
+    if (!r || typeof r !== 'object') return;
+    if ('pack' in r && 'effect' in r) seen.set(`${(r as FxRef).pack}/${(r as FxRef).effect}`, r as FxRef);
+    else for (const x of Object.values(r)) visit(x);
   };
-  for (const s of Object.values(impacts)) if (typeof s === 'object') add(s.accent);
-  for (const r of [...Object.values(weaponImpacts), ...Object.values(explosions), ...Object.values(gameplay)]) add(r);
+  const { muzzle: _m, surfaces: _s, ...rest } = FX_MAP as Record<string, unknown>;
+  visit(rest);
   return [...seen.values()];
+}
+
+/** The effect packs (public/vfx/<pack>.json) the map plays from, for loading with the match. */
+export function mappedPacks(): string[] {
+  return [...new Set(mappedEffects().map((r) => r.pack))];
 }
