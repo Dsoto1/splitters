@@ -1,5 +1,5 @@
 import type { MapDocument } from '@tiletrigger/shared';
-import { drawMapPlan } from './mapPlan.ts';
+import { loadMapContent, mapContentNow } from '../mapContentLoader.ts';
 
 /** A map that may not have loaded yet (a built-in map: mapIndex.ts): its metadata now, the whole map on demand. */
 export interface MapSource {
@@ -80,8 +80,18 @@ export function mapThumbs(map: MapDocument | MapSource, shipped: boolean): MapTh
       );
       return;
     }
+    // The plan reads the tile and prop tables (mapContent.ts): they normally come in with the map.
+    const content = mapContentNow();
+    if (!content) {
+      loading = true;
+      void loadMapContent().then(
+        () => ((loading = false), draw()),
+        () => (loading = false),
+      );
+      return;
+    }
     drawn = true;
-    drawMapPlan(canvas, doc);
+    content.drawMapPlan(canvas, doc);
   };
   return { pic, plan, draw };
 }

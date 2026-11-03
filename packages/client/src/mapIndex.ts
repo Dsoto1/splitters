@@ -1,5 +1,6 @@
-import { loadMap, type GameMode, type MapDocument } from '@tiletrigger/shared';
+import type { GameMode, MapDocument } from '@tiletrigger/shared';
 import index from 'virtual:map-index';
+import { loadMapContent } from './mapContentLoader.ts';
 import { publishedMapJson } from './publishedMaps.ts';
 
 /**
@@ -42,7 +43,8 @@ export async function builtInMapJson(key: string): Promise<unknown> {
 
 /** A built-in map, loaded and checked (null when there is none or it doesn't load). */
 export async function loadBuiltInMap(key: string, opts: { forEditing?: boolean } = {}): Promise<MapDocument | null> {
-  const json = await builtInMapJson(key);
+  // The map's file and the tables that check it (mapContent.ts) come in side by side.
+  const [json, { loadMap }] = await Promise.all([builtInMapJson(key), loadMapContent()]);
   if (json === undefined) return null;
   const r = loadMap(json, undefined, opts);
   return r.ok ? r.map : null;
