@@ -5,7 +5,7 @@ A briefing for the next Claude session or agent picking up this repo. Read
 
 ## Start here (session of 2026-11-04, handed off to the next account)
 
-**State:** `main` = 798bf75, green. Everything below "Landed" is on main; nothing is half-merged.
+**State:** `main` = f61f2cf (+ this note), green. Everything below "Landed" is on main; nothing is half-merged.
 Workflow is unchanged (CLAUDE.md): work on a `wip/<name>` branch → push `check/<name>` (or a train of several) → when
 that run is green, fast-forward `main`. CI is now ~9–10 min a round (balanced shards, headless all-maps check,
 coverage map; browser map tour only nightly/tags/Run workflow; new push cancels the older check run; fail-fast).
@@ -27,12 +27,9 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
 ### In flight
-- **Surface types** (`wip/surface-types`, worktree /home/user/wt-surfaces if the container survives): one shared
-  list of surface types (ballistic class + impact effect), optional `surface`/`ballistic` field on materials and
-  props (unset = today's guess), fixes for the misreads (bush→"bus" thin_metal, tree_plateau→metal, trunks/boulders
-  →concrete): trunks become heavy_wood (still full cover), bushes foliage (pass-through, still conceal), boulders
-  stone; client impact effects keyed by surface type. See its HANDOFF entry on that branch for exact next steps.
-  Not merged: finish, run fast checks, push `check/surface-types`, land.
+- Nothing. Surface types landed last (f61f2cf): `content/surface-types.json` (23 types), optional `surface` on props
+  and `surface`/`ballistic` on materials, trunks heavy_wood / bushes foliage / boulders stone, impact effects keyed by
+  surface type. Its open questions are below.
 
 ### Next, in the owner's agreed order
 1. **Environment Phase 1** (after surface types): vertical slice per docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 — one
@@ -62,6 +59,9 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   `WORLD_GRADE`, `content/surfaces.json`).
 - Hands round 5 (offered, not yet answered): Grunt '68 long-gun-only hand roll (small); new hand geometry for
   Vanguard, Beanie Alien, Alien Biker, Mummy Bot, Zhao; Croakley re-rig (pipeline or Meshy credits; Meshy needs approval).
+- Surface types: are stumps, logs and cliffs right as trunk/boulder? About 100 more props are misread by the name
+  guesser (e.g. wooden `ww_*` buildings stop bullets like concrete; `iron_fence` reads as wood); each fix changes cover,
+  so each needs a yes. Terrain still counts as concrete on the server. heavy_wood needs a playtest.
 - Older open items: Underdrain (what did the owner expect?), Apex Ring race-car class, menu budget 840 → ~700 kB,
   unify legacy spread bloom on exotic weapons, a smaller size class for Goblina/Space Marine, frost_basin card look.
 - Known bug found by the de-toy job: `ModelLibrary.mergeModel` drops glTF mesh instances (a mesh reused under several
