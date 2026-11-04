@@ -27,7 +27,19 @@
 // tools/content/meshy-mesh.mjs cuts each to `triangles` and paints its colour
 // map afresh onto new charts (`surface`, default `rebake`), dropping what can't
 // be seen from outside first where `dropHidden` says so; `stone` turns the
-// colour map to weathered stone of that colour (a statue).
+// colour map to weathered stone of that colour (a statue). `paintOut` (the
+// guns' colour rules, meshy-mesh.mjs `markings`) paints lettering and logos out
+// of the download's colour map first; `bakeSize` is the size of the map the
+// rebake paints (px, default 1024) before `textureSize` shrinks it.
+//
+// `cut` (any prop): boxes [x0, y0, z0, x1, y1, z1] in the prop's space as the
+// game draws it (metres, x mirrored like the collision boxes) where the built
+// model is cut away, every level of detail included, the triangles crossing a
+// box clipped to its faces so the opening has straight edges: the doors of an
+// airliner's shell. `collide: "boxes"` takes the prop's collision from its own
+// `boxes` (same space), `collide: "model"` from the `collision` boxes a
+// code-built GLB carries in its first node's extras (in the GLB's own frame,
+// normalised with the model).
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -41,7 +53,7 @@ import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
 import { flattenTextures } from './flatten.mjs';
 import { buildNatureDocument, cutBelow, normalise, readSoup } from './nature.mjs';
-import { MESHY_QUANTIZE, meshyDocument, normalJpeg } from './meshy-mesh.mjs';
+import { MESHY_QUANTIZE, markings, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
 import { readLock, writeLock } from './lockfile.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
 
@@ -190,6 +202,99 @@ function sceneTriangles(scene) {
   return tris;
 }
 
+/** The inverse of an affine glTF matrix (column-major 4 × 4). */
+function invertAffine(m) {
+  const [a, b, c, d, e, f, g, h, i] = [m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10]];
+  const det = a * (e * i - f * h) - d * (b * i - c * h) + g * (b * f - c * e);
+  const r = [(e * i - f * h) / det, (c * h - b * i) / det, (b * f - c * e) / det, (f * g - d * i) / det, (a * i - c * g) / det, (c * d - a * f) / det, (d * h - e * g) / det, (b * g - a * h) / det, (a * e - b * d) / det];
+  const t = [m[12], m[13], m[14]];
+  const tt = [0, 1, 2].map((k) => -(r[k] * t[0] + r[k + 3] * t[1] + r[k + 6] * t[2]));
+  return [r[0], r[1], r[2], 0, r[3], r[4], r[5], 0, r[6], r[7], r[8], 0, tt[0], tt[1], tt[2], 1];
+}
+
+const applyMat = (m, [x, y, z]) => [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]];
+
+/**
+ * `cut` (see the header): every mesh of the document loses what lies inside the boxes (given in the game's frame,
+ * mirrored to the glTF's here). A triangle crossing a box is clipped against its six faces in turn, keeping the parts
+ * outside each (convex, fanned back into triangles), every attribute interpolated along the cut edges.
+ */
+function cutOpenings(doc, boxes) {
+  const B = boxes.map(([x0, y0, z0, x1, y1, z1]) => ({ min: [-x1, y0, z0], max: [-x0, y1, z1] }));
+  for (const node of doc.getRoot().listNodes()) {
+    const mesh = node.getMesh();
+    if (!mesh) continue;
+    const M = node.getWorldMatrix();
+    const inv = invertAffine(M);
+    for (const prim of mesh.listPrimitives()) {
+      const sem = prim.listSemantics();
+      const accs = sem.map((k) => prim.getAttribute(k));
+      const size = accs.map((a) => a.getElementSize());
+      const n = accs[0].getCount();
+      const idx = prim.getIndices()?.getArray() ?? Array.from({ length: n }, (_, i) => i);
+      const pi = sem.indexOf('POSITION');
+      const ni = sem.indexOf('NORMAL');
+      const vert = (i) => {
+        const v = accs.map((a) => a.getElement(i, []));
+        v[pi] = applyMat(M, v[pi]);
+        return v;
+      };
+      const lerp = (u, v, t) => u.map((arr, k) => arr.map((q, j) => (k === sem.indexOf('TANGENT') && j === 3 ? q : q + (v[k][j] - q) * t)));
+      // Clip a convex polygon to one side of the plane axis = value (keep > value when `above`).
+      const clip = (poly, axis, value, above) => {
+        const out = [];
+        for (let i = 0; i < poly.length; i++) {
+          const a = poly[i];
+          const b = poly[(i + 1) % poly.length];
+          const da = (a[pi][axis] - value) * (above ? 1 : -1);
+          const db = (b[pi][axis] - value) * (above ? 1 : -1);
+          if (da >= 0) out.push(a);
+          if (da >= 0 !== db >= 0) out.push(lerp(a, b, da / (da - db)));
+        }
+        return out.length >= 3 ? out : null;
+      };
+      let tris = [];
+      for (let t = 0; t + 2 < idx.length; t += 3) tris.push([vert(idx[t]), vert(idx[t + 1]), vert(idx[t + 2])]);
+      let cut = 0;
+      for (const box of B) {
+        const next = [];
+        for (const tri of tris) {
+          const lo = [0, 1, 2].map((k) => Math.min(...tri.map((v) => v[pi][k])));
+          const hi = [0, 1, 2].map((k) => Math.max(...tri.map((v) => v[pi][k])));
+          if ([0, 1, 2].some((k) => hi[k] <= box.min[k] || lo[k] >= box.max[k])) {
+            next.push(tri);
+            continue;
+          }
+          cut++;
+          let rest = tri;
+          for (const [axis, value, above] of [[0, box.min[0], false], [0, box.max[0], true], [1, box.min[1], false], [1, box.max[1], true], [2, box.min[2], false], [2, box.max[2], true]]) {
+            const outside = clip(rest, axis, value, above);
+            if (outside) for (let k = 1; k + 1 < outside.length; k++) next.push([outside[0], outside[k], outside[k + 1]]);
+            rest = clip(rest, axis, value, !above);
+            if (!rest) break;
+          }
+        }
+        tris = next;
+      }
+      if (!cut) continue;
+      const arrays = accs.map((a, k) => new Float32Array(tris.length * 3 * size[k]));
+      tris.flat().forEach((v, i) => {
+        const local = v.map((x) => x.slice());
+        local[pi] = applyMat(inv, v[pi]);
+        if (ni >= 0) {
+          const l = Math.hypot(...local[ni]) || 1;
+          local[ni] = local[ni].map((q) => q / l);
+        }
+        local.forEach((x, k) => arrays[k].set(x, i * size[k]));
+      });
+      const buffer = accs[0].getBuffer();
+      sem.forEach((k, j) => prim.setAttribute(k, doc.createAccessor().setType(accs[j].getType()).setArray(arrays[j]).setBuffer(buffer)));
+      prim.setIndices(null);
+      console.log(`  cut ${cut} triangles round ${B.length} openings in ${mesh.getName() || node.getName() || 'mesh'}`);
+    }
+  }
+}
+
 /** Cell size of the `shell` collision grid (metres). */
 const SHELL_CELL = 0.4;
 
@@ -247,8 +352,14 @@ function shellBoxes(size, tris, below = Infinity) {
  * every doorway along a wall open (Low Poly Wild West's shop fronts); `shell`
  * follows the footprint (see shellBoxes).
  */
-function collisionBoxes(p, size, tris) {
+function collisionBoxes(p, size, tris, modelBoxes = null) {
   const [w, h, d] = size;
+  // Given in the game's frame: mirrored here so the caller's mirror puts them back.
+  if (p.collide === 'boxes') return p.boxes.map(([x0, y0, z0, x1, y1, z1]) => [-x1, y0, z0, -x0, y1, z1].map(round));
+  if (p.collide === 'model') {
+    if (!modelBoxes?.length) throw new Error(`${p.id}: collide "model" but the GLB carries no collision boxes`);
+    return modelBoxes.map((b) => b.map(round));
+  }
   if (p.collide === 'shell') return shellBoxes(size, tris, p.shellTop);
   const pts = tris.flat();
   if (p.collide === 'stairs') {
@@ -326,17 +437,23 @@ async function normaliseGlb(src, p) {
   const doc = await io.read(src);
   const scene = doc.getRoot().listScenes()[0];
   const b = getBounds(scene);
-  const s = p.height / Math.max(1e-6, b.max[1] - b.min[1]);
+  // `scale` instead of `height`: pieces modelled to size in code (the cabin kit) keep exactly their size.
+  const s = p.height ? p.height / Math.max(1e-6, b.max[1] - b.min[1]) : (p.scale ?? 1);
   const cx = (b.min[0] + b.max[0]) / 2;
   const cz = (b.min[2] + b.max[2]) / 2;
+  // `collide: "model"`: the collision boxes the code-built GLB carries, normalised with it.
+  const carried = scene.listChildren().map((n) => n.getExtras()?.collision).find(Array.isArray) ?? null;
+  const boxes = carried?.map(([x0, y0, z0, x1, y1, z1]) => [(x0 - cx) * s, (y0 - b.min[1]) * s, (z0 - cz) * s, (x1 - cx) * s, (y1 - b.min[1]) * s, (z1 - cz) * s]) ?? null;
+  for (const n of scene.listChildren()) if (n.getExtras()?.collision) n.setExtras({ ...n.getExtras(), collision: undefined });
   const root = doc.createNode('prop').setScale([s, s, s]).setTranslation([-cx * s, -b.min[1] * s, -cz * s]);
   for (const child of scene.listChildren()) {
     scene.removeChild(child);
     root.addChild(child);
   }
   scene.addChild(root);
+  if (p.cut) cutOpenings(doc, p.cut);
   await doc.transform(weld(), dedup(), prune());
-  return { glb: Buffer.from(await io.writeBinary(doc)), size: [round((b.max[0] - b.min[0]) * s), round(p.height), round((b.max[2] - b.min[2]) * s)] };
+  return { glb: Buffer.from(await io.writeBinary(doc)), size: [round((b.max[0] - b.min[0]) * s), round((b.max[1] - b.min[1]) * s), round((b.max[2] - b.min[2]) * s)], boxes };
 }
 
 const linear = (hex) => [1, 3, 5].map((i) => {
@@ -463,13 +580,78 @@ function normalSizeOf(pack, p) {
   return Math.max(0, Math.min(1024, size ?? 256));
 }
 
+/**
+ * The texels of a GLB download's colour map that its triangles inside `boxes` cover (1), for `paintOut` rules with
+ * `within`. The boxes are in the built prop's frame as the game draws it (as `cut`): the download is turned by the
+ * prop's `yaw`, centred on its footprint, stood on y = 0 and scaled by its `scale` here the way convertPiece does it.
+ */
+async function regionMask(path, p, boxes, W, H) {
+  const doc = await io.read(path);
+  const prim = doc.getRoot().listMeshes()[0].listPrimitives()[0];
+  const P = prim.getAttribute('POSITION').getArray();
+  const UV = prim.getAttribute('TEXCOORD_0').getArray();
+  const idx = prim.getIndices()?.getArray() ?? Array.from({ length: P.length / 3 }, (_, i) => i);
+  const a = ((p.yaw ?? 0) * Math.PI) / 180;
+  const turn = (i) => [P[i * 3] * Math.cos(a) + P[i * 3 + 2] * Math.sin(a), P[i * 3 + 1], -P[i * 3] * Math.sin(a) + P[i * 3 + 2] * Math.cos(a)];
+  const lo = [Infinity, Infinity, Infinity];
+  const hi = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < P.length / 3; i++) turn(i).forEach((v, k) => ((lo[k] = Math.min(lo[k], v)), (hi[k] = Math.max(hi[k], v))));
+  const s = p.height ? p.height / (hi[1] - lo[1]) : (p.scale ?? 1);
+  const built = (i) => {
+    const [x, y, z] = turn(i);
+    return [-(x - (lo[0] + hi[0]) / 2) * s, (y - lo[1]) * s, (z - (lo[2] + hi[2]) / 2) * s];
+  };
+  const mask = new Uint8Array(W * H);
+  for (let t = 0; t + 2 < idx.length; t += 3) {
+    const c = [0, 1, 2].map((k) => (built(idx[t])[k] + built(idx[t + 1])[k] + built(idx[t + 2])[k]) / 3);
+    if (!boxes.some(([x0, y0, z0, x1, y1, z1]) => c[0] >= x0 && c[0] <= x1 && c[1] >= y0 && c[1] <= y1 && c[2] >= z0 && c[2] <= z1)) continue;
+    const uv = [idx[t], idx[t + 1], idx[t + 2]].map((v) => [UV[v * 2] * W, UV[v * 2 + 1] * H]);
+    const [x0, x1] = [Math.floor(Math.min(...uv.map((q) => q[0]))) - 1, Math.ceil(Math.max(...uv.map((q) => q[0]))) + 1];
+    const [y0, y1] = [Math.floor(Math.min(...uv.map((q) => q[1]))) - 1, Math.ceil(Math.max(...uv.map((q) => q[1]))) + 1];
+    const [A, B, C] = uv;
+    const d = (B[0] - A[0]) * (C[1] - A[1]) - (C[0] - A[0]) * (B[1] - A[1]);
+    if (Math.abs(d) < 1e-9) continue;
+    for (let y = Math.max(0, y0); y <= Math.min(H - 1, y1); y++)
+      for (let x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) {
+        const u = ((x + 0.5 - A[0]) * (C[1] - A[1]) - (C[0] - A[0]) * (y + 0.5 - A[1])) / d;
+        const v = ((B[0] - A[0]) * (y + 0.5 - A[1]) - (x + 0.5 - A[0]) * (B[1] - A[1])) / d;
+        // A pixel's margin round the triangle, so its edge texels count.
+        if (u >= -0.02 && v >= -0.02 && u + v <= 1.04) mask[y * W + x] = 1;
+      }
+  }
+  return mask;
+}
+
 /** A prop from a `convert` pack: picked from its FBX/GLB, flattened if asked, turned, centred, stood on the ground and scaled. */
 async function convertPiece(dir, pack, p) {
   const [file, pickSrc] = p.src.split('#');
   const path = join(dir, pack.models ?? '.', file);
   const pick = pickSrc ? new RegExp(pickSrc) : null;
   let doc;
-  if (pack.meshy) ({ doc } = await meshyDocument(path, { triangles: p.triangles, maxError: p.maxError, surface: p.surface ?? 'rebake', dropHidden: p.dropHidden, normalSize: normalSizeOf(pack, p) ? 1024 : 0, lod: p.lod ?? (p.budget === 'hero' ? HERO_LOD : null), recolor: p.stone ? (map) => stone(map, p.stone) : null }));
+  if (pack.meshy) {
+    // What paintOut painted, so the download's normal map goes flat there too (its relief would draw the marking).
+    const painted = {};
+    const renormal = p.paintOut ? ({ data, info }) => {
+      let flat = 0;
+      for (const mask of painted.masks ?? []) {
+        if (mask.length !== info.width * info.height) throw new Error(`${p.id}: the download's normal map is ${info.width} px, its colour map isn't`);
+        for (let i = 0; i < mask.length; i++) if (mask[i]) (data.set([128, 128, 255], i * 3), flat++);
+      }
+      console.log(`  ${p.id}: normal map flat under ${flat} px of markings`);
+    } : null;
+    const recolor = p.stone || p.paintOut ? async (map) => {
+      // Rules with `within` (boxes in the built prop's frame, as `cut`) only touch the texels of the download's
+      // triangles there: lettering on an engine, not the dark windows of the same colour.
+      const global = p.paintOut?.filter((r) => !r.within) ?? [];
+      if (global.length) console.log(`  ${p.id}: painted out ${await paintOut(map, markings(global), { grow: p.grow ?? 2, holes: p.holes ?? 0, keep: painted })} px of markings`);
+      for (const r of p.paintOut?.filter((q) => q.within) ?? []) {
+        const within = await regionMask(path, p, r.within, map.info.width, map.info.height);
+        console.log(`  ${p.id}: painted out ${await paintOut(map, markings([r]), { grow: p.grow ?? 2, holes: p.holes ?? 0, within, keep: painted })} px of markings in ${r.within.length} region(s)`);
+      }
+      if (p.stone) stone(map, p.stone);
+    } : null;
+    ({ doc } = await meshyDocument(path, { triangles: p.triangles, maxError: p.maxError, surface: p.surface ?? 'rebake', dropHidden: p.dropHidden, normalSize: normalSizeOf(pack, p) ? 1024 : 0, lod: p.lod ?? (p.budget === 'hero' ? HERO_LOD : null), recolor, renormal, ...(p.bakeSize ? { textureSize: p.bakeSize } : {}) }));
+  }
   else if (/\.fbx$/i.test(file)) ({ doc } = await fbxToDocument(path, { pick }));
   else {
     doc = await io.read(path);
@@ -524,6 +706,7 @@ async function convertPiece(dir, pack, p) {
     for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) prim.setAttribute('NORMAL', null);
     await doc.transform(weld(), simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.01 }), unweld(), normals({ overwrite: true }));
   }
+  if (p.cut) cutOpenings(doc, p.cut);
   await doc.transform(weld(), dedup(), prune(), quantize(pack.meshy ? MESHY_QUANTIZE : undefined));
   // Embedded textures: palettes (the cars') as small PNGs, painted maps (`textureSize`) as JPEGs.
   const normalMaps = new Set(doc.getRoot().listMaterials().map((m) => m.getNormalTexture()).filter(Boolean));
@@ -599,6 +782,7 @@ for (const p of manifest.props) {
   const dir = external && downloads && (!only || only.includes(p.id)) ? downloadDir(p.download ?? pack.download) : null;
   let glb;
   let size;
+  let modelBoxes = null;
   if (gltfKit && dir) {
     const srcs = Array.isArray(p.src) ? p.src : [p.src];
     const doc = await readPieces(srcs.map((s) => join(dir, pack.models, s)), join(dir, pack.images));
@@ -636,7 +820,7 @@ for (const p of manifest.props) {
     if (was?.sha256 !== createHash('sha256').update(glb).digest('hex').slice(0, 16)) throw new Error(`${file} does not match content/props.lock.json; rebuild it with --downloads <dir>`);
     if (was.size) size = was.size;
   } else {
-    ({ glb, size } = await normaliseGlb(join(ROOT, 'assets-src', p.pack, p.src), p));
+    ({ glb, size, boxes: modelBoxes } = await normaliseGlb(join(ROOT, 'assets-src', p.pack, p.src), p));
     writeFileSync(path, glb);
   }
   // Measure what was written (the same whether it was just built or kept).
@@ -659,7 +843,7 @@ for (const p of manifest.props) {
   const thick = (v) => round(Math.max(v, MIN_THICKNESS));
   const collision = p.collide === 'none' ? null : p.collide === 'trunk' ? [Math.min(0.5, size[0]), size[1], Math.min(0.5, size[2])] : gltfKit || converted ? [thick(size[0]), size[1], thick(size[2])] : size;
   // The game draws glTF models mirrored in x (Babylon's import into its left-handed space), so the boxes are too.
-  const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene))?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
+  const boxes = collision ? collisionBoxes(p, size, sceneTriangles(scene), modelBoxes)?.map(([x0, y0, z0, x1, y1, z1]) => [round(-x1), y0, z0, round(-x0), y1, z1]) : null;
   defs.push({ id: `prop.${p.id}`, file, displayName: p.name, category: p.category, size, collision, ...(boxes ? { boxes } : {}), ...(p.breakable && collision ? { breakable: p.breakable } : {}), ...(p.conceals ? { conceals: true } : {}), ...(p.flame ? { flame: propFlame(p) } : {}) });
   lock.files.push({ file, source: p.pack, ...(p.budget ? { budget: p.budget } : {}), ...(p.source ? { title: `${p.source.model} (download dated ${p.source.date})` } : {}), src: Array.isArray(p.src) ? p.src.join(' + ') : p.src, triangles, ...(lodTriangles.length ? { lodTriangles } : {}), ...(pack.meshy && doc.getRoot().listMaterials().some((m) => m.getNormalTexture()) ? { normalMap: true } : {}), bytes: glb.byteLength, sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16) , ...(external && !gltfKit ? { size } : {}) });
 }

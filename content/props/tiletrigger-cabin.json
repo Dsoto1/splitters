@@ -1,0 +1,141 @@
+{
+  "pack": {
+    "title": "Airliner cabin kit (built in code)",
+    "creator": "Tile Trigger team (modelled in code by tools/content/prepare-cabin.mjs)",
+    "url": "tools/content/prepare-cabin.mjs",
+    "license": "Owned",
+    "licenseFile": "assets-src/tiletrigger-cabin/License.txt",
+    "retrieved": "2026-11-04"
+  },
+  "order": 841,
+  "props": [
+    {
+      "id": "ac_section_nose",
+      "src": "ac_section_nose.glb",
+      "name": "Cabin: Nose & Flight Deck",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_section_door",
+      "src": "ac_section_door.glb",
+      "name": "Cabin: Door Section",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_section_straight",
+      "src": "ac_section_straight.glb",
+      "name": "Cabin: Straight Section",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_section_short",
+      "src": "ac_section_short.glb",
+      "name": "Cabin: Short Section",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_section_wing",
+      "src": "ac_section_wing.glb",
+      "name": "Cabin: Over-Wing Exits",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_section_tail",
+      "src": "ac_section_tail.glb",
+      "name": "Cabin: Tail & Rear Doors",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_economy_triple",
+      "src": "ac_economy_triple.glb",
+      "name": "Economy Seats (Triple)",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_economy_pair",
+      "src": "ac_economy_pair.glb",
+      "name": "Economy Seats (Pair)",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_business_seat",
+      "src": "ac_business_seat.glb",
+      "name": "Business Seat",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_cockpit_seat",
+      "src": "ac_cockpit_seat.glb",
+      "name": "Pilot Seat",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_overhead_bins",
+      "src": "ac_overhead_bins.glb",
+      "name": "Overhead Bins",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_overhead_bins_short",
+      "src": "ac_overhead_bins_short.glb",
+      "name": "Overhead Bins (Short)",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_galley",
+      "src": "ac_galley.glb",
+      "name": "Galley",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_lavatory",
+      "src": "ac_lavatory.glb",
+      "name": "Lavatory",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_partition",
+      "src": "ac_partition.glb",
+      "name": "Cabin Divider",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "ac_boarding_stairs",
+      "src": "ac_boarding_stairs.glb",
+      "name": "Boarding Stairs",
+      "category": "Airliner Cabin",
+      "scale": 1,
+      "collide": "model"
+    }
+  ]
+}

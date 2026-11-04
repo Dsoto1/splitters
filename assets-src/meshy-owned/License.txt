@@ -37,3 +37,9 @@ The barrels, bins and street props (street_*: wooden, blue, yellow hazard and ru
 wheelie bin, trash piles, a dumpster, a fuel can, a hanging shop sign and a historic city building) were
 generated on 2026-10-29/30 on the owner's subscription and built by tools/content/prepare-props.mjs
 (pack meshy-owned-street) from the textured GLB downloads.
+
+The airliner shell (prop airliner_shell, pack meshy-owned-airliner) is built by
+tools/content/prepare-props.mjs from the owner's refined GLB download of
+2026-11-04 (Meshy preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine
+task 01a1a451-ee8d-72d3-99ea-48063cd52abe): cut to a hero prop's budget, the
+small red mark on the engine nacelles painted out, the cabin doors cut open.

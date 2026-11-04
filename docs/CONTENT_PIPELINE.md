@@ -94,6 +94,7 @@ folder can sit directly in it or one level down), and run:
 | The owner's Meshy weapon, turret and medkit downloads (textured GLBs `Meshy_AI_<name>_<id>_texture.glb`, named in each entry's `glb`; the download folders may sit side by side, or be linked, one level down) | `node tools/content/prepare-guns.mjs --downloads <dir>` (`ONLY=guns/<file>.glb` for one) | `public/models/guns/*.glb` of pack `meshy-owned-guns`, `content/guns.lock.json` (then `capture-weapon-icons.mjs` and, for turrets, `build-palette-atlas.mjs`) |
 | Meshy community pickup and prop downloads of 2026-11-03 (CC0 per owner; `medical_supply.glb`, `ammo_rifle.glb`, `ww2_ammo_crate.glb` in the folder `drive-2026-11-03-pickups`) | `ONLY=pickups/health_large.glb,pickups/ammo_rifle.glb node tools/content/prepare-guns.mjs --downloads <dir>/drive-2026-11-03-pickups`; `ONLY=ww2_ammo_crate node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `public/models/pickups/{health_large,ammo_rifle}.glb` (pack `meshy-community-pickups`, drawn by `game/pickupVisuals.ts`; pickup models sit in guns.json like the medkit and keep to the small-prop budget, as a map carries many) and `props/ww2_ammo_crate.glb` (pack `meshy-community-drive-1103`) |
 | The owner's Meshy landmark props of 2026-10-31 (textured GLBs, named in each entry's `src`; the monk statue is the `_stylize.glb` from its zip), all in one folder named `owned_landmarks` | `node tools/content/prepare-props.mjs --downloads <dir>` (`ONLY=<id>,…` for some) | pack `meshy-owned-landmarks`: market stalls (`dc_market_stall`, `mv_market_stall`, `rustic_market_stall`), the wishing well (`dc_well` and `mv_well`, one download), the crawler crane `dc_crane`, statues (`jt_statue_large`, `temple_fire_statue`, `temple_spear_statue`, `temple_monk_statue`) and fountains (`town_fountain`, `lion_head_fountain`, `eagle_fountain`); all hero tier |
+| The owner's Meshy airliner of 2026-11-04 (the refined GLB in a folder `airliner-2026-11-04/refined/airliner.glb`; preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe) | `node tools/content/fuselage-profile.mjs <dir>` (its cross-section for the cabin kit, `assets-src/tiletrigger-cabin/fuselage.json`, and its collision and openings, written into its pack file), then `ONLY=airliner_shell node tools/content/prepare-props.mjs --downloads <dir>` | `props/airliner_shell.glb` (pack `meshy-owned-airliner`, hero tier: 19.7k triangles, a 6.1k one from 120 m, 1.38 MB) |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 
 Locomotion clips (walk, run, sprint) come from Library 1: the Standard edition
@@ -130,6 +131,22 @@ paints lettering and logos out of the colour map before anything else, from
 colour rules (near-white, orange); `stone` (props) turns the map to stone of
 one colour; `centre: base` (guns) centres a turret on its pedestal.
 `surface: vertex` keeps the colours in the vertices instead (no image).
+Props take `paintOut` too (the guns' colour rules); a rule with `within` (boxes in
+the built prop's frame) only touches the texels of the download's triangles
+inside them (the airliner's nacelle lettering, not its windows of the same
+grey), and the download's normal map goes flat under everything painted out,
+or its relief would draw the marking again. `bakeSize` sets the rebake's map
+(px, default 1024) before `textureSize` shrinks it.
+
+**Openings and box collision (any prop).** `cut` lists boxes
+`[x0, y0, z0, x1, y1, z1]` in the prop's frame as the game draws it (x
+mirrored like the collision boxes) where the built model is cut away, every
+level of detail included; triangles crossing a box are clipped to its faces,
+so the opening has straight edges (the airliner's doors). `collide: "boxes"`
+takes the collision from the prop's own `boxes` (same frame); `collide:
+"model"` from the `collision` boxes a code-built GLB carries in its first
+node's extras (the cabin kit), normalised with the model. `scale` instead of
+`height` keeps a code-built piece at exactly its modelled size.
 
 **Normal maps (shape kept past the cut).** The cut mesh alone shades as flat,
 lumpy facets: the download's 10k–1.8M triangles become a few thousand. So
@@ -188,6 +205,12 @@ accepts for our own work:
 - `node tools/content/prepare-ancient.mjs` writes the Imperial Arena and Sands
   of Egypt props (flat colours, built with `pieces.mjs`) to
   `assets-src/tiletrigger-ancient/`.
+- `node tools/content/prepare-cabin.mjs` writes the airliner cabin kit
+  (fuselage sections lofted from the shell's measured rings in
+  `assets-src/tiletrigger-cabin/fuselage.json`, seats, bins, galley,
+  lavatory, divider, boarding stairs; flat colours, each with its collision
+  boxes) to `assets-src/tiletrigger-cabin/`, and `assembly.json` there (where
+  each section sits in the shell). docs/BUILDING_KIT.md, "Airliner".
 
 `prepare-props.mjs` then builds them like any in-repo pack. The 05, 06 and 08
 facades are boxes drawn with the level (`map/geometry.ts`), so they need no

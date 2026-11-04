@@ -1,0 +1,54 @@
+{
+  "$comment": "Where each section sits when the airliner shell stands at the origin, yaw 0 (written by tools/content/prepare-cabin.mjs): the position to give the prop (its footprint centre, its bottom).",
+  "floor": 6.79,
+  "sections": {
+    "ac_section_straight": {
+      "centre": [
+        0,
+        4.107,
+        0
+      ],
+      "length": 3.6
+    },
+    "ac_section_short": {
+      "centre": [
+        0,
+        4.107,
+        0
+      ],
+      "length": 1.8
+    },
+    "ac_section_door": {
+      "centre": [
+        0,
+        4.107,
+        0
+      ],
+      "length": 3.6
+    },
+    "ac_section_wing": {
+      "centre": [
+        0,
+        4.107,
+        0
+      ],
+      "length": 3.6
+    },
+    "ac_section_nose": {
+      "centre": [
+        0,
+        4.011,
+        28.525
+      ],
+      "length": 9.75
+    },
+    "ac_section_tail": {
+      "centre": [
+        0,
+        4.107,
+        -19.875
+      ],
+      "length": 11.45
+    }
+  }
+}

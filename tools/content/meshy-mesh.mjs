@@ -126,7 +126,7 @@ const HIDDEN_WORK = 40000;
  * triangles whose centre is inside that box before anything else: a part of the model (a vehicle's cockpit) cut far
  * less than the whole, with maps of its own (prepare-guns.mjs `interior`). Returns { doc, sourceTriangles, triangles }.
  */
-export async function meshyDocument(fbxPath, { triangles, recolor = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null, crop = null } = {}) {
+export async function meshyDocument(fbxPath, { triangles, recolor = null, renormal = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null, crop = null } = {}) {
   const glb = /\.glb$/i.test(fbxPath);
   const { doc, normalImage } = glb ? await glbDocument(fbxPath) : { ...(await fbxToDocument(fbxPath, { keepUv: true })), normalImage: existsSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) : null };
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
@@ -155,6 +155,8 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, metall
   const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(buffer);
   // The download's own normal map (raw RGB), bent into the baked one; and the bake onto the cut mesh.
   const hiMap = normalSize && normalImage ? await sharp(Buffer.from(normalImage)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
+  // `renormal`: the caller's changes to the download's normal map (flat under painted-out markings).
+  if (hiMap && renormal) await renormal(hiMap);
   const bake = async (low, hi) => {
     if (!normalSize) return;
     let [lo, up] = [[Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]];
@@ -334,14 +336,32 @@ export async function padCharts(image, UV, idx, { grow = 2 } = {}) {
 }
 
 /**
+ * The colour test for `paintOut` rules (Meshy guns and props): `{ light, chroma }` picks near-white pixels (every
+ * channel at least `light`, channels within `chroma` of each other), `{ dark, chroma }` near-black ones, `{ warm:
+ * [r, r-b, r-g] }` orange and red ones.
+ */
+export function markings(rules) {
+  const tests = rules.map((r) =>
+    r.warm
+      ? (R, G, B) => R >= r.warm[0] && R - B >= r.warm[1] && R - G >= r.warm[2]
+      : r.dark !== undefined
+        ? (R, G, B) => Math.max(R, G, B) <= r.dark && Math.max(R, G, B) - Math.min(R, G, B) < r.chroma
+        : (R, G, B) => Math.min(R, G, B) >= r.light && Math.max(R, G, B) - Math.min(R, G, B) < r.chroma,
+  );
+  return (R, G, B) => tests.some((t) => t(R, G, B));
+}
+
+/**
  * Paint out markings in a colour map (`{ data, info }`, raw RGB): every pixel `marked(r, g, b)` picks, grown by
  * `grow` pixels (and the holes enclosed within `holes` pixels: a skull's eyes, the counters of an O), is refilled
  * from the unmarked pixels round it, so lettering, logos and decals become the plain surface they sit on. Returns
  * the number of pixels refilled.
  */
-export async function paintOut(map, marked, { grow = 2, holes = 0 } = {}) {
+export async function paintOut(map, marked, { grow = 2, holes = 0, within = null, keep = null } = {}) {
   const { width: w, height: h } = map.info;
   let mask = markMask(map, marked);
+  // `within`: only the pixels a region mask (1 = inside) allows.
+  if (within) for (let i = 0; i < mask.length; i++) mask[i] &= within[i];
   if (holes > 0) {
     const hit = (x, y, dx, dy) => {
       for (let k = 1; k <= holes; k++) {
@@ -366,6 +386,9 @@ export async function paintOut(map, marked, { grow = 2, holes = 0 } = {}) {
     mask = next;
   }
   const total = mask.reduce((s, m) => s + m, 0);
+  // `keep`: the pixels painted out, for the caller (to flatten the download's normal map under them too). A copy:
+  // the fill uses the mask up.
+  if (keep) keep.masks = [...(keep.masks ?? []), mask.slice()];
   await fillMasked(map, mask);
   return total;
 }

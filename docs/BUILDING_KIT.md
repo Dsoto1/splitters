@@ -931,6 +931,47 @@ from it as drawn).
   (`zipline.out_of_reach`), nothing to land on at the end (`zipline.no_landing`) and grab or drop points off
   the navmesh (`nav.zipline_end`) are warnings.
 
+## Airliner (shell and cabin kit)
+
+MapMaker category **Airliner Cabin**. The **Airliner (Widebody Shell)** (`prop.airliner_shell`) is the owner's
+Meshy widebody (white livery, 68.4 m long, 59.9 m span, 21.6 m to the fin tip: a real widebody grown about a sixth so
+a two-aisle cabin fits). Its doors are cut open (L1/R1, L2/R2, the over-wing exits, the rear doors), and it collides
+as boxes: wings, engines, the fin and stabilisers, the gear, and the body as hollow bands round the cabin with gaps at
+the doors, so the cabin kit goes inside it. Alone it is an empty hull you can walk into; with the kit it is a plane.
+
+The **cabin kit** is built in code from the shell's own measured cross-section (tools/content/prepare-cabin.mjs) and
+sits a few centimetres inside it: sidewall panels with windows (glass you see the world through: the shell's inner
+faces are not drawn), carpet with a runner down each aisle, a flat ceiling at 2.55 m with light strips, the openings
+lined and signed. Sections snap end to end on 0.9 m window bays:
+
+| Piece | Length | What it is |
+|---|---|---|
+| Cabin: Nose & Flight Deck | 9.75 m | windscreen, instrument panel, pedestal, overhead panel; bulkhead with a 1.6 m doorway; the forward cabin and the L1/R1 doors |
+| Cabin: Door Section | 3.6 m | a door each side, centred (the shell's L2/R2) |
+| Cabin: Straight Section / Short Section | 3.6 m / 1.8 m | windows every 0.9 m |
+| Cabin: Over-Wing Exits | 3.6 m | an exit each side, centred, up a 0.25 m sill onto the wing root |
+| Cabin: Tail & Rear Doors | 11.45 m | the taper, the rear doors, two lavatories, the aft galley, the pressure bulkhead |
+
+Fittings: Economy Seats (Triple, Pair) for a 2-3-2 layout with 1.2 m aisles, Business Seat (a pod; 1-1-1 suites),
+Pilot Seat, Overhead Bins (3.6 m and 1.8 m: both sides and the centre; set at 1.95 m above the floor), Galley,
+Lavatory, Cabin Divider and Boarding Stairs (a stair truck up to the cabin floor, 27 steps of 0.25 m, 2 m wide; its
+platform end goes against the door).
+
+**Bots in the cabin.** The navmesh keeps about 0.8 m off every obstacle, so a lane needs 2 m between collision boxes.
+Seat rows collide to their backrests' tops but 0.4 m short of each aisle (players brush into the aisle seats), the
+business pods 0.2 m short of each side, and every opening's collision gap is at least 2 m wide (the shell's cut holes
+stay on its painted doors; players brush the jambs). Keep a fitting in the middle of the cabin (the galley, a
+divider) at least 2 m clear of the rows round it, and never two in line, or the aisles between them close off.
+
+**Assembling** (shell at (sx, sy, sz), facing 0; positions are what the inspector shows; z along the shell): cabin
+floor at sy + 6.79. Nose at (sx, sy + 4.011, sz + 28.525); every other section at height sy + 4.107 and centre z:
+straight sz + 21.85, 18.25, 14.65; door sz + 11.05; straight sz + 7.45; short sz + 4.75; over-wing sz + 2.05;
+straight sz − 1.55, −5.15, −8.75, −12.35; tail sz − 19.875 (assets-src/tiletrigger-cabin/assembly.json). Bins at
+sy + 8.74 over the straight and short sections (not over the door and exit sections). The shell's doors: L1/R1 at
+z 24.2–25.62, L2/R2 10.3–11.8, the exits 1.28–2.82, the rear doors −23.2 to −21.7 (shell frame); the hull at the
+floor stands 2.97 m out at L1 and 2.28 m at the rear doors. Runway Nine has it all assembled at gate 9: copy from
+there.
+
 ## Interior dressing (`map/dressing.ts`)
 
 Furnishes a room so it reads as what it is, from a recipe per room type:
