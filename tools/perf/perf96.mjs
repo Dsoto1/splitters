@@ -264,6 +264,8 @@ for (const id of maps) {
       await ctx.close();
       continue;
     }
+    // The loading gate's shader warm-up (builds that have it): how long, programs, samples.
+    console.log(`${id}/${graphics}: prewarm ${JSON.stringify(await page.evaluate(() => window.__cs.view.prewarmed ?? null))}`);
     // Shader programs built from here on (after the loading gate): each one mid-match is a first-sight stall.
     await page.evaluate(() => {
       const e = window.__cs.view.scene.getEngine();
@@ -379,9 +381,28 @@ for (const id of maps) {
                 const d = Math.hypot(a.root.position.x - cam.x, a.root.position.z - cam.z);
                 bands[d < 15 ? '<15' : d < 35 ? '15-35' : d < 70 ? '35-70' : '>70']++;
               }
+              // The shadow map's casters by kind (its own per-frame list), and how many characters cast.
+              const casterKinds = {};
+              let castingCharacters = 0;
+              const map = sc.lights.map((l) => l.getShadowGenerator?.()?.getShadowMap()).find(Boolean);
+              if (map?.getCustomRenderList && map.renderList) {
+                const list = map.getCustomRenderList(0, map.renderList, map.renderList.length) ?? map.renderList;
+                const roots = new Set();
+                for (const m of list) {
+                  if (!m.isEnabled()) continue;
+                  const k = kindOf(m);
+                  casterKinds[k] = (casterKinds[k] ?? 0) + 1;
+                  if (k === 'characters') {
+                    let r = m;
+                    while (r.parent) r = r.parent;
+                    roots.add(r);
+                  }
+                }
+                castingCharacters = roots.size;
+              }
               const n = Math.max(1, s.draws.length);
               const kinds = Object.fromEntries(Object.entries(s.kinds).map(([k, v]) => [k, Math.round(v / n)]));
-              return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length, posed: avg(s.posed), animated: avg(s.animated), bands, activeByKind: kinds, shaders: window.__cs.view.shaderCount?.() ?? Object.keys(engine._compiledEffects ?? {}).length };
+              return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length, posed: avg(s.posed), animated: avg(s.animated), bands, activeByKind: kinds, casterKinds, castingCharacters, shaders: window.__cs.view.shaderCount?.() ?? Object.keys(engine._compiledEffects ?? {}).length };
             });
             const prof = await sim(PROFILE, false);
             const wall = (Date.now() - t0) / 1000;

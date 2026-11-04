@@ -511,6 +511,7 @@ export class GameView {
    * doesn't stall on a shader build. Resolves with how many shader programs were built by then.
    */
   async prewarm(specs: readonly AvatarSpec[]): Promise<number> {
+    const t0 = performance.now();
     const stage = new TransformNode('prewarm', this.scene);
     stage.position.set(0, -10000, 0);
     const made = await Promise.all(
@@ -527,19 +528,31 @@ export class GameView {
       ),
     );
     if (this.scene.isDisposed) return 0;
+    const ends: (() => void)[] = [];
     try {
       await GodotVfx.preload(...mappedPacks());
-      for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect, true);
+      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
+      for (const r of mappedEffects()) {
+        const end = this.vfx.warm(r.pack, r.effect, true);
+        if (end) ends.push(end);
+      }
     } catch {
       // Effects that didn't load stay as they were (their first play builds them).
     }
-    // Two frames: the atmosphere sorts new meshes into the shadow map a frame later (its shaders differ).
-    await this.afterFrames(2, 1500);
+    // A few frames: the effects' particles come out, and the atmosphere sorts new meshes into the shadow map a
+    // frame later (their shaders differ).
+    await this.afterFrames(4, 2500);
     if (!this.scene.isDisposed) await Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]);
+    await this.afterFrames(1, 500);
+    for (const end of ends) end();
     for (const ch of made) ch?.dispose();
     stage.dispose();
-    return this.shaderCount();
+    this.prewarmed = { ms: Math.round(performance.now() - t0), shaders: this.shaderCount(), characters: made.filter(Boolean).length, effects: ends.length };
+    return this.prewarmed.shaders;
   }
+
+  /** What the loading gate's warm-up did (tests and perf96): how long it took, shader programs by then, samples. */
+  prewarmed: { ms: number; shaders: number; characters: number; effects: number } | null = null;
 
   /** After `n` rendered frames (or `ms` at most: a hidden tab renders none). */
   private afterFrames(n: number, ms: number): Promise<void> {
