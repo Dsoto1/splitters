@@ -48,7 +48,14 @@ Owner's request: a CI round in about 8-10 min (run 41851112171 took 36 min: buil
   capture-map-shots). Tests: client mapIndexPlugin.test, server testMaps.test, host units.
 - **tilesData test:** the per-map hash section and its fixture part are gone (failed on every intended map/prop
   change); kit, edge styles and the style map stay, ~3 s.
-- Results: see the report of this session (run times by kind of change).
+- **Results** (wall time, plan to last job): full check-branch run (everything but the tour) 10.5 min, green
+  (run 41910774081 on 21c28a5; 13 e2e shards 2.6-7.5 min, unit 1.1-5.2, perf 2.9/5.6); client-only change
+  (hostPage.ts comment, check/ci-speed-client) 4.3 min (1 e2e shard); one map (apex_ring description,
+  check/ci-speed-map) 6.7 min (`maps` touring apex_ring only, 1.7 min; bounded by unit 1/3). Was 36 min.
+- **Next:** vitest's `--shard` splits by file count, and unit (1/3) takes 5.2-5.5 min while the others take 1-2.3:
+  try 4 shards or a duration-based split. hostcontrols (320 s) is the longest flow (it sets the shard goal of ~6 min).
+  The first nightly run will be the first all-parts tour on 16 shards: check its times.
+  check/ci-speed-client and check/ci-speed-map are probe branches; delete them, don't merge them.
 
 ### Procedural environment, Phase 0: audit and plan (`wip/env-audit`, agent, 2026-11-04; docs only, pushed, not merged)
 The owner's spec for replacing natural assets with an in-house procedural pipeline is `docs/PROCEDURAL_ENVIRONMENT.md`
