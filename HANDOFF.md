@@ -39,9 +39,9 @@ Owner-approved. Guide for the owner: docs/PERF_TOOLS.md (how to record on the ho
   - Static props: Shingle Point's 446 props are 38 untinted models, all already GPU instances merged per material
     with frozen world matrices; nothing left to batch. Materials not frozen (atmosphere changes; PERF_96.md).
   - Merging far characters' draws: not done (each has its own skeleton; needs baked animation textures).
-  - First-sight hitch: `GameView.prewarm` at the loading gate (session.prepareMatch, waits 8 s at most): one
-    character per look (up to 32) at y −10000, every mapped effect played out of sight, `scene.whenReadyAsync`, then
-    disposed; `Effect.PersistentMode = true` keeps the programs. Shader programs built by a round of effects after
+  - First-sight hitch: `GameView.prewarm` at the loading gate (session.prepareMatch, waits 8 s at most): every
+    mapped effect played out of sight until `scene.whenReadyAsync`, then ended; then one character per look (up to
+    32) at y −10000, `whenReadyAsync`, disposed; `Effect.PersistentMode = true` keeps the programs. Shader programs built by a round of effects after
     loading (explosion, hits, both lightning, lasting ones): main 6 (gv_zap, streaks, flare, four_point_star,
     ElectricFX impact/glow) → 0. On this SwiftShader box the prewarm took 192 s (finished in the background after the
     start); on a GPU expect seconds, unmeasured. Risk: 32 characters built during loading.
@@ -49,7 +49,17 @@ Owner-approved. Guide for the owner: docs/PERF_TOOLS.md (how to record on the ho
   casters by kind, `rows` scenario (PERF_SCENARIOS=rows), shader builds after the gate, prewarm report. Its spread/clump
   views differ between runs, so draws/casters there don't compare build to build (see probe numbers above).
 - Menu bundle 837.2 → 835.4 kB gzip (perfOverlay out of the menu; net probe in its own file).
-- Checks: see the commit after this entry (CHECKS).
+- Recording/trace smoke (Frost Basin, 31 players, SwiftShader): Record → Stop downloaded a 38 KB file that
+  compare.mjs reads (split, counts, 47 hitch snapshots with in-view counts and server tick); the trace downloaded
+  14 KB of `tt:` spans; no page errors. Second same-frame probe after the two-phase prewarm: shaders built by the
+  round of effects 0; casting characters 10 → 10 (nobody past 30 m in view then), small clutter casting 45 → 0,
+  animation evaluations 610 → 490 a second.
+- Checks: typecheck; test:changed 1295 pass, 2 fail at load 20-28 (host.test account ticket, botai aim timeout),
+  both pass alone; e2e (`CI=1`, other ports): physicsfx PASS (twice), characters PASS (1,666 s), hostpage PASS;
+  offline FAIL (kill cam banner checks) and dedicatedhost FAIL (admin player list), and main 9b2373f's build fails
+  the same checks of both flows on this box at the same load, so not from this branch; menu 837.2 → 835.4 kB gzip.
+  ci:plan: full suite (index.html, atmosphere, characters): needs a `check/` run before main; visual baselines may
+  move where small clutter's far shadows went (not run here).
 
 ### Character fixes: faces, roster (`wip/char-fixes`, agent, 2026-11-03; not merged, not pushed; from main ef2c103)
 Owner's notes of 3 Nov (agent scratchpad `charfix/owner-notes.md`). Steps 1-2 done here; steps 3-5 (Imp thumbnail,

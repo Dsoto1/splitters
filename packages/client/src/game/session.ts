@@ -406,7 +406,7 @@ export class GameSession {
       players: this.view.avatarCount + 1,
       match: this.opts.transport.label,
       renderer: this.opts.rendererKind,
-      pos: this.local ? [this.drawnPos.x, this.drawnPos.y, this.drawnPos.z] : [cam.x, cam.y, cam.z],
+      pos: this.local ? [this.local.state.pos.x, this.local.state.pos.y, this.local.state.pos.z] : [cam.x, cam.y, cam.z],
       server: this.serverStats,
       shaders: this.view.shaderCount(),
     };

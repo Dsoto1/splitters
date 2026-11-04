@@ -7,10 +7,11 @@ import { SpikeLog, StatsWindow } from '../src/stats.ts';
 describe('StatsWindow', () => {
   it('averages the tick sections a tick and keeps the slowest', () => {
     const w = new StatsWindow();
-    for (const [think, slowest] of [
+    const rows: [number, number][] = [
       [2, 1],
       [4, 3],
-    ]) {
+    ];
+    for (const [think, slowest] of rows) {
       w.absorb(
         new Map([
           ['botThink', think],

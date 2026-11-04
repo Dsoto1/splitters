@@ -119,7 +119,7 @@ export class PerfRecorder {
       counts: n,
       shadersNew: this.shaders0 >= 0 ? shaders - this.shadersAt : 0,
       quality: { graphics: loadGraphicsQuality(), renderScale: loadRenderScale(), frameCap: currentFrameCap() || null },
-      server: x.server ? { tickAvg: x.server.tickMsAvg, tickMax: x.server.tickMsMax, aiAvg: x.server.aiMsAvg, late: x.server.lateTicks, bots: x.server.bots, ...(x.server.split ? { split: x.server.split } : {}) } : null,
+      server: x.server ? { tickAvg: round(x.server.tickMsAvg), tickMax: round(x.server.tickMsMax), aiAvg: round(x.server.aiMsAvg), late: x.server.lateTicks, bots: x.server.bots, ...(x.server.split ? { split: x.server.split } : {}) } : null,
     });
   }
 
@@ -152,8 +152,8 @@ export class PerfRecorder {
       drawn('effects'),
       ...COUNT_NAMES.map((_, i) => round(avg(counts.map((n) => n[i] ?? 0)), 2)),
       shadersNew,
-      x.server ? x.server.tickMsAvg : -1,
-      x.server ? x.server.tickMsMax : -1,
+      x.server ? round(x.server.tickMsAvg) : -1,
+      x.server ? round(x.server.tickMsMax) : -1,
     ]);
   }
 
