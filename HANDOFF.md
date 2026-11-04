@@ -83,14 +83,26 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 
 ### Environment Phase 1: the vertical slice (`wip/env-phase1`, agent, 2026-11-04; in progress, pushed, not merged; from main b1423beb)
 Plan: docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 and "Owner decisions". Status is kept here at every push.
-- **Done:** the generator. `content/environment.json` + `content/environment/<family>.json` (six species, two
-  material variants each) → `node tools/content/environment.mjs` (`--check`: rebuild in memory, byte-identical)
-  → `packages/client/public/env/*.glb` (levels of detail + crossed-card stand-in), shared pictures (bark, rock,
-  leaves atlas), `content/environment.lock.json`, `packages/shared/src/content/environment.generated.ts`
-  (gameplay data), `packages/client/src/content/environment.generated.ts`. Code: `tools/content/env/*.mjs`.
-- **Next:** shared schema + collision/nav/surface integration, client renderer behind `?env=1`, `?envlab`, the
-  showcase map via MapMaker, tests, perf, screenshots.
+- **Generator** (owned, seeded, no Math.random): `content/environment.json` + `content/environment/<family>.json`
+  (six species, two material variants each) → `pnpm content:environment` (`--check` rebuilds in memory,
+  byte-identical; run by content:check/rebuild) → `packages/client/public/env/*.glb` (LODs + crossed-card stand-in),
+  shared pictures (bark, rock, leaves atlas), `content/environment.lock.json`, both `environment.generated.ts`.
+  Code `tools/content/env/*.mjs`. Docs: CONTENT_PIPELINE.md "Environment species".
+- **Shared/sim:** `content/environment.ts` (lookups, PropDefinition view: `getProp('env.…')` has no box),
+  `environmentSchema.ts` (zod), `map/environment.ts` (world shapes, nav prisms, hash), `PhysicsWorld(boxes, terrain,
+  shapes)` (capsules/hulls/trimeshes; `blocks: 'shots'` limbs in a new group: shots + sight only), `shapeAt` →
+  surface → ballistic class in `Match.materialAt`; nav gets the shapes' triangles; shrubs conceal from species data;
+  `PropEntity.variant` (optional, no format bump). Client prediction, MapMaker nav check and the effects world get
+  the same shapes.
+- **Client:** `src/environment/` (renderer behind `?env=1`: thin instances per species-variant/LOD/part/64 m sector,
+  per-copy LOD with hysteresis, wind MaterialPlugin GLSL+WGSL, tiers), foliage grows env grass under `?env=1`,
+  ModelLibrary draws `env/` GLBs as props otherwise. `?envlab` (src/tools/envLab.ts). MapMaker with `?env=1`:
+  Environment (preview) palette group, env scatter sets, Variant in the inspector.
+- **Tests:** tools/content/test/environment.test.mjs, shared environmentData/environmentCollision tests (+ fixture
+  `environment-resolved.json`), e2e flow `environment`, webgpu flow extended to envlab, visual scene `envlab`.
+- **Next / resume:** see the report at the end of this section once the slice is finished.
 - **Resume:** `git fetch && git checkout wip/env-phase1`; `node tools/content/environment.mjs --check`.
+
 
 ## Earlier start notes (session of 2026-10-30 afternoon)
 
