@@ -4605,9 +4605,10 @@ async function handoffFlow(browser) {
     p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
     // The friends' console (warnings and up, and timed lines), shown when a check after the handoff fails.
     p.on('console', (m) => (m.type() === 'warning' || m.type() === 'error' || process.env.E2E_HANDOFF_LOG) && logs.push(`${((Date.now() - began) / 1000).toFixed(1)} ${name} ${m.type()}: ${m.text().slice(0, 300)}`));
+    // …and the match's worker (where a hosted match runs: matchHost.ts says why it closes a friend's link).
+    p.on('worker', (w) => w.on('console', (m) => (m.type() === 'warning' || m.type() === 'error') && logs.push(`${((Date.now() - began) / 1000).toFixed(1)} ${name} worker ${m.type()}: ${m.text().slice(0, 300)}`)));
     // The console's "Failed to load resource" doesn't say which: name it.
     p.on('response', (r) => r.status() >= 400 && logs.push(`${((Date.now() - began) / 1000).toFixed(1)} ${name} ${r.status()}: ${r.url().slice(0, 200)}`));
-    if (process.env.E2E_CPU_THROTTLE_TMP) await (await p.context().newCDPSession(p)).send('Emulation.setCPUThrottlingRate', { rate: +process.env.E2E_CPU_THROTTLE_TMP });
     await p.addInitScript((n) => localStorage.setItem('cs.name', n), name);
     await p.goto(url, { waitUntil: 'domcontentloaded', timeout: T(60000) });
     return p;
