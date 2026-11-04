@@ -5,18 +5,14 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type TilePlacement, type WorldBox } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type RenderFace, type TilePlacement, type WorldBox, visibleFaces } from '@tiletrigger/shared';
 import { materialPixels, patternSize } from './materials/patterns.ts';
 import { versioned } from './assetUrl.ts';
 
-/**
- * Faces of a box: corners (clockwise from outside, Babylon's front face),
- * outward normal, and the corners before any turn (texture coordinates are
- * laid out on those, so a turned wall's bricks run along it).
- */
-type Face = [corners: number[][], normal: [number, number, number], flat: number[][], flatNormal: [number, number, number]];
+/** Faces of a box: corners (clockwise from outside), outward normal, and the same before any turn (texture coordinates are laid out on those). */
+type Face = [corners: number[][], normal: readonly [number, number, number], flat: number[][], flatNormal: readonly [number, number, number]];
 function boxFaces(b: WorldBox): Face[] {
-  const faces = axisFaces(b);
+  const faces = axisFaces(b.min, b.max);
   if (b.pitch || b.roll) {
     // Pitched blocks (ramps, roofs): turn and tilt about the box centre.
     const q = boxQuat(b.yaw, b.pitch, b.roll);
@@ -40,19 +36,6 @@ function boxFaces(b: WorldBox): Face[] {
     const [nx, nz] = yawXZ(n[0], n[2], b.yaw!);
     return [c.map(turn), [nx, n[1], nz], c, n];
   });
-}
-
-function axisFaces(b: WorldBox): [number[][], [number, number, number]][] {
-  const [x0, y0, z0] = b.min;
-  const [x1, y1, z1] = b.max;
-  return [
-    [[[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], [1, 0, 0]],
-    [[[x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [x0, y0, z0]], [-1, 0, 0]],
-    [[[x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0]], [0, 1, 0]],
-    [[[x0, y0, z1], [x0, y0, z0], [x1, y0, z0], [x1, y0, z1]], [0, -1, 0]],
-    [[[x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [x0, y0, z1]], [0, 0, 1]],
-    [[[x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [x1, y0, z0]], [0, 0, -1]],
-  ];
 }
 
 class FaceBuffer {
@@ -129,36 +112,26 @@ export class MapStyler {
     return this.meshes;
   }
 
-  /** Style exactly these boxes (no trim, no terrain), replacing this styler's previous box meshes. */
-  buildBoxes(doc: MapDocument, boxes: readonly WorldBox[], name = 'map'): Mesh[] {
+  /**
+   * Style exactly these boxes (no trim, no terrain), replacing this styler's previous box meshes.
+   * Each face draws only where it can be seen and no other face shares its plane (visibleFaces:
+   * the build-time pass that ended the z-fighting flicker). `faces`: those faces, already worked
+   * out (MapMaker clips every level against all of them, then draws them in two sets).
+   */
+  buildBoxes(doc: MapDocument, boxes: readonly WorldBox[], name = 'map', faces: readonly RenderFace[] = visibleFaces(boxes)): Mesh[] {
     for (const m of this.meshes) m.dispose();
     const tiles = new Map<string, TilePlacement>(doc.classicStructure.tiles.map((t) => [t.id, t]));
     const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
-    const hidden = containedBoxes(boxes);
-    for (let i = 0; i < boxes.length; i++) {
-      const raw = boxes[i]!;
-      if (raw.kind === 'prop' || raw.kind === 'barrier') continue; // drawn by the prop's model / invisible
-      // A box wholly inside another (the shared wall of two neighbouring rooms) is never seen,
-      // and its faces would sit exactly on the outer box's and flicker.
-      if (hidden.has(i)) continue;
-      // Partly overlapping pieces would still put faces in the same plane: grow each box by its
-      // own small amount (2-14 mm, far enough apart for the depth buffer at range) so one wins.
-      const g = 0.002 * (1 + (Math.imul(i + 1, 2654435761) >>> 0) % 7);
-      // Walls and trim run up to the next level's floor top: their tops go a little *down*
-      // instead, so the floor above always wins (otherwise white wall tops showed through
-      // the floor as strips). Floors grow up as before.
-      const top = raw.kind === 'floor' ? g : -g;
-      const b: WorldBox = { ...raw, min: [raw.min[0] - g, raw.min[1] - g, raw.min[2] - g], max: [raw.max[0] + g, raw.max[1] + top, raw.max[2] + g] };
+    for (const f of faces) {
+      const b = boxes[f.box]!;
       const tile = tiles.get(b.sourceId);
       // Free blocks carry their own material on every face.
       const own = b.surface ? { material: coreMaterials.get(b.surface.material), tint: b.surface.tint } : null;
-      for (const [corners, n, flat, fn] of boxFaces(b)) {
-        const style = own?.material ? (own as ResolvedStyle) : resolveSurface(doc, tile, faceSlot(b, n));
-        const key = styleKey(style);
-        let g = groups.get(key);
-        if (!g) groups.set(key, (g = { style, buf: new FaceBuffer() }));
-        g.buf.add(corners, n, 1 / style.material.scale, flat, fn);
-      }
+      const style = own?.material ? (own as ResolvedStyle) : resolveSurface(doc, tile, faceSlot(b, f.normal));
+      const key = styleKey(style);
+      let g = groups.get(key);
+      if (!g) groups.set(key, (g = { style, buf: new FaceBuffer() }));
+      g.buf.add(f.corners, f.normal, 1 / style.material.scale, f.flat, f.flatNormal);
     }
     this.meshes = [...groups.entries()].map(([key, g]) => {
       const mesh = new Mesh(`${name}_${key}`, this.scene);
@@ -329,28 +302,4 @@ export class MapStyler {
     }
     return mat;
   }
-}
-
-/**
- * Indices of axis-aligned boxes that lie wholly inside another (exact duplicates keep
- * the first). Neighbouring rooms each build their shared wall, giving identical boxes.
- */
-export function containedBoxes(boxes: readonly WorldBox[]): Set<number> {
-  const out = new Set<number>();
-  const eps = 1e-4;
-  // Sort by x extent so only boxes overlapping in x are compared.
-  const order = boxes.map((_, i) => i).filter((i) => !boxes[i]!.yaw && !boxes[i]!.pitch && !boxes[i]!.roll && boxes[i]!.kind !== 'prop' && boxes[i]!.kind !== 'barrier').sort((a, b) => boxes[a]!.min[0] - boxes[b]!.min[0]);
-  for (let a = 0; a < order.length; a++) {
-    const i = order[a]!;
-    const bi = boxes[i]!;
-    for (let c = a + 1; c < order.length; c++) {
-      const j = order[c]!;
-      const bj = boxes[j]!;
-      if (bj.min[0] > bi.max[0] + eps) break;
-      const inside = (p: WorldBox, q: WorldBox) => p.min.every((v, k) => v >= q.min[k]! - eps) && p.max.every((v, k) => v <= q.max[k]! + eps);
-      if (inside(bj, bi) && !out.has(i)) out.add(j);
-      else if (inside(bi, bj) && !out.has(j)) out.add(i);
-    }
-  }
-  return out;
 }

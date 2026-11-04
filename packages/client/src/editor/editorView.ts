@@ -16,7 +16,7 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, PropEntity, Rotation, TerrainData, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift } from '@tiletrigger/shared';
+import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebedShift, visibleFaces } from '@tiletrigger/shared';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
@@ -277,8 +277,10 @@ export class EditorView {
     const boxKey = `${boxesFingerprint(drawn)}|${theme}`;
     if (boxKey !== this.builtBoxes) {
       this.builtBoxes = boxKey;
-      this.mapMeshes = this.styler.buildBoxes(visible, drawn.filter(onLevel), 'edmap');
-      this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn.filter((b) => !onLevel(b)), 'edmapdim');
+      // Faces clipped against every level (a wall's top still gives way to the floor above it), then drawn in two sets.
+      const faces = visibleFaces(drawn);
+      this.mapMeshes = this.styler.buildBoxes(visible, drawn, 'edmap', faces.filter((f) => onLevel(drawn[f.box]!)));
+      this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn, 'edmapdim', faces.filter((f) => !onLevel(drawn[f.box]!)));
       for (const m of this.dimMeshes) m.visibility = 0.4;
       this.applyTileLayer();
     }
