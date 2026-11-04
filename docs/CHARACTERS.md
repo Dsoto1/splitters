@@ -870,8 +870,15 @@ hitboxes, no evening-out within a size class; small or thin looks are harder to 
   depth, so a broad body is wider than deep); a round capsule for each thigh and each shin (with its foot), so the
   gap between the legs and a stride are not body; and an arm capsule only where an arm sticks out of the rest
   (mostly the forearms on the gun). Creatures get their own (an alien without legs or a head has none of those).
-- **Zones** come from the shape a ray meets first: head sphere = head (×`head`), thighs and shins = legs (×`legs`),
-  torso and arms = body. No height bands (the old fixed 0.32 m head band was a third of a small look's height).
+- **Margin** (owner, 2026-11-04: generous padding): every shape is tested `HITBOX_MARGIN` larger (constants.ts:
+  `body` 0.18 m on the torso, legs and arms, `head` 0.12 m on the head sphere; metres at a 1.8 m body, scaled with its
+  size), so players hit about as often as on the old 0.8 m capsule and TTK stays where it was (tuned on the duel,
+  weapons, ballistics and bot-aim tests, which pass with main's thresholds). Each look keeps its own proportions: a
+  standard chest is 0.68 × 0.62 m with the margin (0.32 × 0.26 measured), its head 0.50 m across (0.26).
+- **Zones:** a round strikes the nearest padded surface; its zone is the shape whose own (unpadded) core the line
+  passes deepest into or nearest to: head sphere = head (×`head`), thighs and shins = legs (×`legs`), torso and arms =
+  body (1.0×). A shot at the face over a padded forearm is a head shot, one at the belt a body shot. No height bands
+  (the old fixed 0.32 m head band was a third of a small look's height).
 - **Stance and size:** standing, crouching and prone each have their own shapes, measured in the pose the game draws
   (below). They turn with the body's yaw and scale with its size (the size class, or a `size` stat). The game has
   no lean input; a hunched body's lean (`fixes.lean`, Hyena, Croakley) is in the model, so its shapes have it.
@@ -879,9 +886,13 @@ hitboxes, no evening-out within a size class; small or thin looks are harder to 
 - **Lag compensation** records each body's feet, yaw, stance, scale and shapes; a rewound shot is tested against
   exactly what was there (`Match.targetsFor`). Bullets in flight rewind less each tick, as before.
 - **Melee** keeps its forgiving reach capsule (`PLAYER.radius` at the body's size): a swing is a sweep. Thrown and
-  launched projectiles (spears, rockets, grenades, discs) are `PROJECTILE_THICKNESS` (0.12 m) thick against bodies.
+  launched projectiles (spears, rockets, grenades, discs) are `PROJECTILE_THICKNESS` (0.12 m) thick against bodies,
+  on top of the margin; a sticky grenade sticks on the body (within 0.25 m of its middle), not out on the margin.
+- **Not hittable** (owner, 2026-11-04): tails, capes' hems and hat brims (they are left out of the shapes). Crouched
+  shapes may sit up to ~8 cm sideways of the drawn body (accepted).
   Medkit and ping aim keep their generous capsules.
-- **Bots** aim at the real head (the head sphere's centre) and the middle of the real chest (`bots/aim.ts`).
+- **Bots** aim at the real head (the head sphere's centre) and the middle of the real chest (`bots/aim.ts`); with
+  the margin their aim error is as before and each difficulty hits as often as on main (botai.test.ts).
 - **NPCs:** a creature is hit as drawn (its own shapes in its own metres); an NPC drawn as a character look uses that
   look's shapes at the role's scale; soldiers the male or female mannequin (as the client picks, by id); zombies the
   zombie body or the mannequin. A player in a creature skin uses the creature's shapes fitted to a player's height.
@@ -911,7 +922,7 @@ Then `node tools/content/hitboxes.mjs`. None are set yet.
 
 **Seeing them:** Options → Display → **Show hitboxes** (only on a dev server, a test build or a page served from
 this machine), or `?hitboxes=1`: every body's shapes over it in a match (head red, torso yellow, arms green, legs
-blue). The character viewer (`?mode=characters`) has **Hitboxes** and **Stand / Crouch / Prone** buttons
+blue), and a faint shell round each with the margin that shots are actually tested against. The character viewer (`?mode=characters`) has **Hitboxes** and **Stand / Crouch / Prone** buttons
 (`&hitboxes=1`; `window.__charHitboxes(on, stance)`).
 
 **The audit** (`tools/content/test/hitboxes.test.mjs`, in the unit tests): for every look and creature, posed
@@ -921,7 +932,7 @@ the model's vertices inside the shapes with 4 cm of slack (creatures 70%). `HITB
 numbers. The same file checks shots at the drawn heads of a short, a tall and two hunched looks.
 
 **Cost:** a shot against 96 bodies is about 8-12 µs (a bounding-sphere test rejects almost every body; the old
-capsule test was 16-19 µs); `HITBOX_BENCH=1 npx vitest run packages/shared/test/hitboxPerf.test.ts`.
+capsule test was 13-19 µs); `HITBOX_BENCH=1 npx vitest run packages/shared/test/hitboxPerf.test.ts`.
 
 ## Character stats
 
@@ -944,7 +955,8 @@ nothing changes until a field is set (`packages/shared/src/sim/characterStats.ts
 ```
 
 The match setting **Character stats** (On / Off; `MatchRules.characterStats`, setup `stats`, host rule `stats`)
-off ignores every look's own stats: everyone plays their size class (and with Character sizes: All equal, standard).
+off ignores every look's own stats: everyone plays their size class (owner, 2026-11-04: it doesn't touch size classes;
+Character sizes: All equal makes everyone standard).
 Character Select shows a look's stats as bars (each across its range, a mark at standard; green above, amber below)
 while the match setup has stats on. The Workbench's **Characters** collection edits them. The manifests' checker
 keeps its own copy of the ranges (`STAT_RANGES` in character-manifests.mjs; a test keeps them equal). Speed, jump

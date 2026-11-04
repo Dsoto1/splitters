@@ -16,14 +16,17 @@ Docs: CHARACTERS.md "Hitboxes", "Character stats", "Random characters"; GUNPLAY_
 scratchpad `hitboxes/`): overlay shots `<look>-<stance>-<front|side>.png` (Sprout small, Linktifa standard, Honest Abe
 large, Hyena and Croakley hunched, T-TreeFitty robot, Big Bogdan wide; creatures), `charselect-*.png`, `setup-rules.png`.
 - **Hit shapes** (`shared/sim/hitbox.ts`): head sphere, torso capsule squashed across the body, a round capsule per
-  thigh and shin, arm capsules where they stick out; stand / crouch / prone each; zone = the shape met (head sphere
-  head, legs legs). Generated per look and creature by `tools/content/hitboxes.mjs` (Node skinning,
+  thigh and shin, arm capsules where they stick out; stand / crouch / prone each. **Margin** (owner's follow-up the
+  same day: generous padding): `HITBOX_MARGIN` in constants.ts, 0.18 m body / 0.12 m head at a 1.8 m body, so hit
+  rates and TTK stay at main's; a standard chest is 0.68 x 0.62 m with it (0.32 x 0.26 measured), its head 0.50 m
+  across (0.26). Zone = the shape whose own core the round passes nearest (the strike is the nearest padded surface). Generated per look and creature by `tools/content/hitboxes.mjs` (Node skinning,
   `tools/content/skinpose.mjs`) into `hitboxes.generated.ts`; `content:check` and `content:rebuild` run it. Manifest
-  overrides `hitbox` (none set). `Combatant.hitbox/hitScale` (refreshed when the look changes); NPCs as drawn.
+  overrides `hitbox` (Otter, Boglurker). `Combatant.hitbox/hitScale` (refreshed when the look changes); NPCs as drawn.
 - **Wired:** hitscan, pellets, piercing, ballistic bullets, rockets/spears/grenades (0.12 m thick), sentries, third
   person aim, lag compensation (history keeps feet, yaw, stance, scale, shapes). Melee keeps its reach capsule;
-  medkit and ping aim keep theirs. Bots aim at the head sphere / chest middle (head base over cover); their aim error
-  is scaled by `BODY_AIM` 0.5 so each difficulty keeps its hit rates (15/34/55 % against base 18/31/54 %).
+  medkit and ping aim keep theirs; a sticky grenade sticks within 0.25 m of the body's middle. Bots aim at the head
+  sphere / chest middle (head base over cover); aim error unchanged (the first pass's `BODY_AIM` scaling is gone with
+  the margin): 5-seed hit rates easy / normal / hard 16.8 / 33.6 / 51.6 % against main's 17.6 / 30.6 / 53.6 %.
 - **Pitfalls:** crouch is measured as drawn, by hand-checked rules (crouch_idle hips and legs, the chest, neck and head
   3/4 of the way to the aim pose, `CROUCH_AIM`; the standing arms carried with the head): the drawn crouch also turns
   the upper body toward the gun side, so crouched shapes sit up to ~8 cm off sideways. The audit (stand pose) flagged
@@ -37,17 +40,17 @@ large, Hyena and Croakley hunched, T-TreeFitty robot, Big Bogdan wide; creatures
   Workbench: new Characters collection. Stat bars on Character Select.
 - **Random characters** (`shared/sim/randomLooks.ts`): setting (default off), per life, hash of seed/slot/life, roster
   looks only; the look rides the `spawn` event (`l`); own choice kept in `Combatant.ownLook`.
-- **Tests changed (intended):** bodies are about 0.35 m across the chest, not 0.8 m: mechanics (duel targets face the
-  shooter; chest at 1.25 m; thigh shot; scoped sniper ≥ 75 % at 30 m), weapons (shotgun ≥ 3 of 10 pellets at 5.7 m),
-  ballistics (holdover retries until a round strikes the 0.26 m head; running target 4 of 6), benchmarks (targets face
-  the shooter), botClearShot (rounds > 14), botPush (first contact < 36 s), serverRules parity (two rules).
-- **Owner to decide:** (1) every weapon lands fewer rounds than it was tuned against (a body is ~0.35 m across the chest,
-  was 0.8 m): TTK goes up, the shotgun's one-shot range shrinks; bots were compensated (`BODY_AIM`), players weren't;
-  (2) Character stats off = everyone plays their size class (Character sizes still decides sizes); (3) arms count as
-  body (1.0x), the spec allows 0.8-1.0x; (4) tails, capes' hems and hat brims are not hittable.
+- **Tests:** with the margin, mechanics, weapons, ballistics, benchmarks and botClearShot are main's files unchanged
+  (scoped sniper 100 % at 30 m, shotgun > 4 pellets, running target 5 of 6, holdover, rounds > 20). Still off main:
+  botPush first contact < 36 s (33 s; main 24 s) and worst stuck bot < 26 (23; main 12), botMovement easy speed
+  > 1.15 m/s (1.18; main > 1.2): emergent fight metrics that shift with any change to who wins fights; serverRules
+  parity (two new rules).
+- **Owner's defaults (2026-11-04):** Character stats off leaves size classes alone; arms 1.0x; tails, capes' hems and
+  brims unhittable; the up-to-8 cm crouch offset accepted.
 - **Perf (96 bots, Frost Basin TDM, 30 s, process CPU per tick, two interleaved runs each, load 12-17):** clumped
   6.41 / 6.36 ms -> 6.69 / 6.69 ms; combat 0.44 / 0.41 -> 0.48 / 0.50 ms; spread 7.40 / 7.51 -> 7.72 / 8.29 ms (noisy).
-  A shot against 96 bodies: 8-12 us (old capsule 16-19 us), `hitboxPerf.test.ts`.
+  (measured before the margin; the margin adds a few additions per shape). A shot against 96 bodies with the margin:
+  11.8 us (old capsule 13.8 us, same run), `hitboxPerf.test.ts`; 4060 vs 3633 hits on its random rays.
 - **Checks:** typecheck clean; content:check OK (hitboxes up to date); test:changed (all units: shared code) 1359 of
   1366 passed, then the 5 fixed or re-run alone (sticky grenade throw and botPush bound fixed; host.test and two
   pads.test cases are load timeouts, pass alone). E2E (`CI=1`, ports 4951/7951/9951-9954/7953-7954; the change maps to

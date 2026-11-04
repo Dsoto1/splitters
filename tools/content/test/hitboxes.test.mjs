@@ -3,7 +3,7 @@
 // meets, and the audit: every look's shapes match its posed model's bounds within a tolerance.
 import { describe, expect, it } from 'vitest';
 import { MEASURED_HITBOXES } from '../../../packages/shared/src/content/hitboxes.generated.ts';
-import { BODY_SIZES } from '../../../packages/shared/src/sim/constants.ts';
+import { BODY_SIZES, HITBOX_MARGIN } from '../../../packages/shared/src/sim/constants.ts';
 import { lookHitbox, rayBody, lastHit } from '../../../packages/shared/src/sim/hitbox.ts';
 import { hitZone } from '../../../packages/shared/src/sim/weapons.ts';
 import { getLook } from '../../../packages/shared/src/content/looks.ts';
@@ -52,8 +52,8 @@ describe('head spheres where the heads are drawn', () => {
         expect(t, `${look} turn ${turn}`).not.toBeNull();
         expect(lastHit.zone, `${look} turn ${turn}`).toBe(1);
       }
-      // Over the top of the drawn head (5 cm above it) nothing is hit.
-      const over = world([head[0], top + 0.05 / body.scale, head[2]]);
+      // Over the top of the drawn head by the head's margin and 5 cm more, nothing is hit.
+      const over = world([head[0], top + HITBOX_MARGIN.head + 0.05 / body.scale, head[2]]);
       const { o, d } = ray({ x: over.x + 6, y: over.y, z: over.z }, over);
       expect(rayBody(o, d, body)).toBeNull();
     });

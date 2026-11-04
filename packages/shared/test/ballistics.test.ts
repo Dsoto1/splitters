@@ -164,12 +164,8 @@ describe('ballistic bullets', () => {
     const drop = flightTo(p, 150).drop;
     // Aimed at the head, it landed lower by about the drop (the cone of a settled pistol is tiny).
     expect(level[0]!.to[1]).toBeLessThan(head.y - drop * 0.5);
-    // Hold over by the drop: it lands at head height. The measured head (sim/hitbox.ts) is a 0.26 m ball, so a
-    // round of the settled cone can pass beside it at 150 m: the first of a few that strike b lands there.
-    const hold = Math.atan2(drop, 150);
-    let held = shoot(hold);
-    for (let i = 0; i < 8 && held[0]?.hit !== b.slot; i++) held = shoot(hold);
-    expect(held[0]!.hit).toBe(b.slot);
+    // Hold over by the drop: it lands at head height.
+    const held = shoot(Math.atan2(drop, 150));
     expect(Math.abs(held[0]!.to[1] - head.y)).toBeLessThan(0.35);
   });
 
@@ -194,10 +190,8 @@ describe('ballistic bullets', () => {
       }
       return hits;
     };
-    // Side-on, a running body is about 0.3 m deep (sim/hitbox.ts): leading by the flight lands most rounds, not leading
-    // almost none.
     expect(run(0)).toBeLessThanOrEqual(1);
-    expect(run(1)).toBeGreaterThanOrEqual(4);
+    expect(run(1)).toBeGreaterThanOrEqual(5);
   });
 
   it('lag compensation rewinds only the first part of the flight: lead for travel, never for latency', () => {

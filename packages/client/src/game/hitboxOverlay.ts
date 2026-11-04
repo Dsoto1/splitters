@@ -5,7 +5,7 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { MEASURED_HITBOXES, creatureSkinScale, lookHitbox, shapesFor, type HitShapes, type LookHitbox, type Stance } from '@tiletrigger/shared';
+import { HITBOX_MARGIN, MEASURED_HITBOXES, creatureSkinScale, lookHitbox, shapesFor, type HitShapes, type LookHitbox, type Stance } from '@tiletrigger/shared';
 import type { AvatarSpec } from '../content/creatures.ts';
 export { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from './hitboxPrefs.ts';
 
@@ -27,31 +27,44 @@ export function hitboxForSpec(spec: AvatarSpec): { box: LookHitbox; scale: numbe
 }
 
 const COLORS = { head: '#ff3b30', torso: '#ffd60a', arms: '#34c759', legs: '#2f8cff' } as const;
-const mats = new WeakMap<Scene, Record<keyof typeof COLORS, StandardMaterial>>();
-function materials(scene: Scene): Record<keyof typeof COLORS, StandardMaterial> {
+type Mats = Record<keyof typeof COLORS, StandardMaterial>;
+const mats = new WeakMap<Scene, { core: Mats; pad: Mats }>();
+/** The measured shapes solid-ish, their margin (what shots are tested against) a faint shell round them. */
+function materials(scene: Scene): { core: Mats; pad: Mats } {
   let m = mats.get(scene);
   if (!m) {
-    const make = (name: string, hex: string) => {
+    const make = (name: string, hex: string, alpha: number) => {
       const mat = new StandardMaterial(`hitbox_${name}`, scene);
       mat.diffuseColor = Color3.Black();
       mat.specularColor = Color3.Black();
       mat.emissiveColor = Color3.FromHexString(hex);
       mat.disableLighting = true;
-      mat.alpha = 0.38;
+      mat.alpha = alpha;
       mat.backFaceCulling = false;
       return mat;
     };
-    m = { head: make('head', COLORS.head), torso: make('torso', COLORS.torso), arms: make('arms', COLORS.arms), legs: make('legs', COLORS.legs) };
+    const set = (tag: string, alpha: number): Mats => ({ head: make(`head${tag}`, COLORS.head, alpha), torso: make(`torso${tag}`, COLORS.torso, alpha), arms: make(`arms${tag}`, COLORS.arms, alpha), legs: make(`legs${tag}`, COLORS.legs, alpha) });
+    m = { core: set('', 0.42), pad: set('_pad', 0.14) };
     mats.set(scene, m);
   }
   return m;
 }
 
-/** One stance's shapes as meshes under a node in the body's frame (x right, y up, z forward; unscaled metres). */
+/**
+ * One stance's shapes as meshes under a node in the body's frame (x right, y up, z forward; unscaled metres): the
+ * measured shapes, and round them a faint shell with the margin (HITBOX_MARGIN) that shots are tested against.
+ */
 export function drawHitShapes(scene: Scene, s: HitShapes, name: string): TransformNode {
   const root = new TransformNode(name, scene);
-  const m = materials(scene);
-  const capsule = (part: 'torso' | 'arms' | 'legs', a: Vector3, b: Vector3, r: number, squash = 1) => {
+  const all = materials(scene);
+  drawLayer(scene, s, name, root, all.core, 0, 0);
+  drawLayer(scene, s, `${name}_pad`, root, all.pad, HITBOX_MARGIN.body, HITBOX_MARGIN.head);
+  return root;
+}
+
+function drawLayer(scene: Scene, s: HitShapes, name: string, root: TransformNode, m: Mats, pad: number, padHead: number): void {
+  const capsule = (part: 'torso' | 'arms' | 'legs', a: Vector3, b: Vector3, r0: number, squash = 1) => {
+    const r = r0 + pad;
     const len = Vector3.Distance(a, b);
     const mesh = CreateCapsule(`${name}_${part}`, { radius: r, height: len + 2 * r, tessellation: 14, subdivisions: 2, capSubdivisions: 6 }, scene);
     mesh.material = m[part];
@@ -65,7 +78,7 @@ export function drawHitShapes(scene: Scene, s: HitShapes, name: string): Transfo
     mesh.scaling.x = squash;
   };
   if (s.head) {
-    const h = CreateSphere(`${name}_head`, { diameter: s.head.r * 2, segments: 12 }, scene);
+    const h = CreateSphere(`${name}_head`, { diameter: (s.head.r + padHead) * 2, segments: 12 }, scene);
     h.material = m.head;
     h.isPickable = false;
     h.parent = root;
@@ -73,11 +86,10 @@ export function drawHitShapes(scene: Scene, s: HitShapes, name: string): Transfo
   }
   if (s.torso) {
     const t = s.torso;
-    capsule('torso', new Vector3(t.x, t.a[0], t.a[1]), new Vector3(t.x, t.b[0], t.b[1]), t.r, t.w / t.r);
+    capsule('torso', new Vector3(t.x, t.a[0], t.a[1]), new Vector3(t.x, t.b[0], t.b[1]), t.r, (t.w + pad) / (t.r + pad));
   }
   for (const l of s.legs) capsule('legs', Vector3.FromArray(l.a), Vector3.FromArray(l.b), l.r);
   for (const l of s.arms) capsule('arms', Vector3.FromArray(l.a), Vector3.FromArray(l.b), l.r);
-  return root;
 }
 
 /** The overlay on one body: rebuilt when its shapes or stance change, scaled with it. */

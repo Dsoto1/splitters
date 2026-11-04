@@ -3239,7 +3239,11 @@ export class Match {
           if (spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
           if (spec.status) this.applyStatus(victim, spec.status, owner ?? null, p.weapon);
           p.stuckTo = victim.slot;
-          p.stuckOffset = { x: at.x - victim.move.pos.x, y: Math.min(PLAYER.height, Math.max(0.3, at.y - victim.move.pos.y)), z: at.z - victim.move.pos.z };
+          // On the body itself, not out on the hit shapes' margin (HITBOX_MARGIN): at most a quarter metre from its middle.
+          const ox = at.x - victim.move.pos.x;
+          const oz = at.z - victim.move.pos.z;
+          const in_ = Math.min(1, (0.25 * victim.size) / Math.max(1e-6, Math.hypot(ox, oz)));
+          p.stuckOffset = { x: ox * in_, y: Math.min(PLAYER.height, Math.max(0.3, at.y - victim.move.pos.y)), z: oz * in_ };
           keep.push(p);
           continue;
         }

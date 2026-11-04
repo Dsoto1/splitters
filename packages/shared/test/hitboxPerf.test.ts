@@ -37,7 +37,7 @@ function time(f: () => number, rounds = 5): { ms: number; hits: number } {
 }
 
 describe('hit shapes: cost per shot with 96 bodies', () => {
-  it('a shot against 96 measured bodies costs a few microseconds, no more than the old capsule', () => {
+  it('a shot against 96 measured bodies costs a few microseconds and hits about as often as the old capsule', () => {
     const { bodies, rays } = scene();
     const shapes = time(() => {
       let n = 0;
@@ -53,8 +53,8 @@ describe('hit shapes: cost per shot with 96 bodies', () => {
     if (process.env.HITBOX_BENCH) console.log(`per shot vs 96 bodies: shapes ${perShot(shapes.ms).toFixed(2)} µs (${shapes.hits} hits), old capsule ${perShot(capsule.ms).toFixed(2)} µs (${capsule.hits} hits)`);
     // Generous for a loaded CI box: a shot against 96 bodies well under 0.1 ms (a 96-bot match fires about one shot a tick).
     expect(perShot(shapes.ms)).toBeLessThan(100);
-    // The measured bodies are smaller than the old 0.8 m-wide capsule: fewer of these loose rays hit.
-    expect(shapes.hits).toBeLessThan(capsule.hits);
-    expect(shapes.hits).toBeGreaterThan(0);
+    // With the margin (HITBOX_MARGIN) the measured bodies are about as easy to hit as the old 0.8 m-wide capsule.
+    expect(shapes.hits).toBeGreaterThan(capsule.hits * 0.8);
+    expect(shapes.hits).toBeLessThan(capsule.hits * 1.25);
   });
 });

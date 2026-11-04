@@ -13,7 +13,7 @@
 import { MEASURED_HITBOXES } from '../content/hitboxes.generated.ts';
 import { decodeLook, getLook, NPC_KEPT_LOOKS, RETIRED_LOOKS } from '../content/looks.ts';
 import type { Vec3 } from '../math.ts';
-import { PLAYER, type Stance } from './constants.ts';
+import { HITBOX_MARGIN, PLAYER, type Stance } from './constants.ts';
 import { CREATURE_SPECS, isCreature, zombieHasCreatureBody } from './creatures.ts';
 import type { NpcRole } from '../map/schema.ts';
 import { NPC_ROLE_SPECS, npcLookRole } from './npc.ts';
@@ -195,6 +195,36 @@ function capsule(ox: number, oy: number, oz: number, dx: number, dy: number, dz:
   return best;
 }
 
+/** Least distance between the half-line from `o` along `d` (any length) and the segment `a`→`b`. */
+function raySegment(ox: number, oy: number, oz: number, dx: number, dy: number, dz: number, ax: number, ay: number, az: number, bx: number, by: number, bz: number): number {
+  const dl = Math.hypot(dx, dy, dz) || 1;
+  dx /= dl;
+  dy /= dl;
+  dz /= dl;
+  const ex = bx - ax, ey = by - ay, ez = bz - az;
+  const wx = ox - ax, wy = oy - ay, wz = oz - az;
+  const b = dx * ex + dy * ey + dz * ez;
+  const c = ex * ex + ey * ey + ez * ez;
+  const dw = dx * wx + dy * wy + dz * wz;
+  const ew = ex * wx + ey * wy + ez * wz;
+  const den = c - b * b;
+  let sAlong = 0;
+  let u = c > 1e-12 ? ew / c : 0;
+  if (den > 1e-12) {
+    sAlong = (b * ew - c * dw) / den;
+    u = (ew - b * dw) / den;
+  }
+  if (sAlong < 0) {
+    sAlong = 0;
+    u = c > 1e-12 ? ew / c : 0;
+  }
+  if (u < 0 || u > 1) {
+    u = Math.max(0, Math.min(1, u));
+    sAlong = Math.max(0, b * u - dw);
+  }
+  return Math.hypot(wx + dx * sAlong - ex * u, wy + dy * sAlong - ey * u, wz + dz * sAlong - ez * u);
+}
+
 /** The zone of the last hit `rayBody` found. */
 export const lastHit: { zone: HitZone } = { zone: 0 };
 
@@ -206,10 +236,12 @@ export const lastHit: { zone: HitZone } = { zone: 0 };
 export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity, thick = 0): number | null {
   const s = shapesFor(body.box, body.stance);
   const k = body.scale;
-  const fat = thick / k;
+  // The margin (HITBOX_MARGIN, at the body's size) and a projectile's own thickness fatten every shape.
+  const fat = HITBOX_MARGIN.body + thick / k;
+  const fatHead = HITBOX_MARGIN.head + thick / k;
   // Broad phase: the stance's bounding sphere.
   const [cy, R0] = shapesBounds(s);
-  const R = R0 + fat;
+  const R = R0 + Math.max(fat, fatHead);
   const ex = o.x - body.feet.x;
   const ey = o.y - (body.feet.y + cy * k);
   const ez = o.z - body.feet.z;
@@ -224,11 +256,19 @@ export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity, thick =
   const px = o.x - body.feet.x, py = o.y - body.feet.y, pz = o.z - body.feet.z;
   const lx = (px * cos - pz * sin) / k, ly = py / k, lz = (px * sin + pz * cos) / k;
   const qx = (d.x * cos - d.z * sin) / k, qy = d.y / k, qz = (d.x * sin + d.z * cos) / k;
+  // The round strikes the nearest padded surface; its zone is the shape whose own (unpadded) core the line passes
+  // deepest into or nearest to: a shot at the face over a padded forearm is still a head shot, one at the belt a body
+  // shot, not the thigh's padding.
   let best = max;
   let zone: HitZone | -1 = -1;
-  const take = (t: number, z: HitZone) => {
-    if (t >= 0 && t < best) {
-      best = t;
+  let depth = Infinity;
+  const ql = Math.hypot(qx, qy, qz);
+  const ux = qx / ql, uy = qy / ql, uz = qz / ql;
+  const take = (t: number, z: HitZone, core: number) => {
+    if (t < 0 || t > max) return;
+    if (t < best) best = t;
+    if (core < depth) {
+      depth = core;
       zone = z;
     }
   };
@@ -237,19 +277,31 @@ export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity, thick =
     const cx = lx - h.x, cyy = ly - h.y, cz = lz - h.z;
     const dd = qx * qx + qy * qy + qz * qz;
     const B = qx * cx + qy * cyy + qz * cz;
-    const hr = h.r + fat;
+    const hr = h.r + fatHead;
     const C = cx * cx + cyy * cyy + cz * cz - hr * hr;
     const disc = B * B - dd * C;
-    if (C <= 0) take(0, 1);
-    else if (disc >= 0) take((-B - Math.sqrt(disc)) / dd, 1);
+    const t = C <= 0 ? 0 : disc >= 0 ? (-B - Math.sqrt(disc)) / dd : -1;
+    if (t >= 0) {
+      // How near the line passes the head's centre, less its own radius.
+      const along = Math.max(0, -(ux * cx + uy * cyy + uz * cz));
+      take(t, 1, Math.hypot(cx + ux * along, cyy + uy * along, cz + uz * along) - h.r);
+    }
   }
   if (s.torso) {
     const c = s.torso;
     const sq = (c.r + fat) / (c.w + fat);
-    take(capsule((lx - c.x) * sq, ly, lz, qx * sq, qy, qz, 0, c.a[0], c.a[1], 0, c.b[0], c.b[1], c.r + fat), 0);
+    const t = capsule((lx - c.x) * sq, ly, lz, qx * sq, qy, qz, 0, c.a[0], c.a[1], 0, c.b[0], c.b[1], c.r + fat);
+    if (t >= 0) {
+      const cs = c.r / c.w;
+      take(t, 0, raySegment((lx - c.x) * cs, ly, lz, qx * cs, qy, qz, 0, c.a[0], c.a[1], 0, c.b[0], c.b[1]) - c.r);
+    }
   }
-  for (const l of s.legs) take(capsule(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r + fat), 2);
-  for (const l of s.arms) take(capsule(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r + fat), 0);
+  for (let pass = 0; pass < 2; pass++) {
+    for (const l of pass ? s.arms : s.legs) {
+      const t = capsule(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r + fat);
+      if (t >= 0) take(t, pass ? 0 : 2, raySegment(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2]) - l.r);
+    }
+  }
   if (zone === -1) return null;
   lastHit.zone = zone;
   return best;

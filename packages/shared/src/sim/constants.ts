@@ -38,6 +38,14 @@ export const PLAYER = {
   killY: -40,
 } as const;
 
+/**
+ * Hitbox margin (owner, 2026-11-04: generous padding): added to every measured hit shape (sim/hitbox.ts) so players'
+ * hit rates and TTK stay about where they were with the old 0.8 m-wide capsule, while each look keeps its own
+ * proportions (a small or thin look is still a smaller target). Metres at a 1.8 m body, scaled with the body's size:
+ * `body` widens the torso, legs and arms, `head` the head sphere.
+ */
+export const HITBOX_MARGIN = { body: 0.18, head: 0.12 } as const;
+
 /** Standing, crouching and prone: body height, eye height and speed (× runSpeed). */
 /**
  * Character sizes. Small: a smaller, quicker target that fits through gaps
