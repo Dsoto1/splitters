@@ -41,7 +41,8 @@ import {
   type MountSnapshot,
   type CoverSnapshot,
 } from '../protocol.ts';
-import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE } from './constants.ts';
+import { BODY_SIZES, MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE, type Stance } from './constants.ts';
+import { lastHit, lookHitbox, npcHitbox, type LookHitbox } from './hitbox.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { pickupPool, rollPickup } from './pickupRoll.ts';
@@ -83,12 +84,14 @@ import {
   type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
 import { GLASS, glassAt } from './glass.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, hitZone, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, zoneContains, rayCapsule, rayTarget, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 import { blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
 const MAX_QUEUED_INPUTS = 16;
+/** The default look's shapes (a new combatant's until its look is set). */
+const DEFAULT_HITBOX = lookHitbox(DEFAULT_LOOK);
 /** Lag compensation never rewinds further than this (≈ 300 ms). */
 export const MAX_REWIND_TICKS = 18;
 const HISTORY_TICKS = MAX_REWIND_TICKS + 2;
@@ -232,6 +235,13 @@ export interface Combatant {
   speedMul: number;
   /** Body size scale (BODY_SIZES): height, width and eyes. 1 for standard. */
   size: number;
+  /**
+   * Measured hit shapes (sim/hitbox.ts) of the look `hitLook` they were taken for, and their scale before `size`
+   * (an NPC role's drawn scale, a creature skin's fit). Refreshed whenever the look changes (Match.hitBodyOf).
+   */
+  hitbox: LookHitbox;
+  hitLook: string;
+  hitScale: number;
   /** Health on spawn and the most health pickups can give. */
   maxHealth: number;
   /** Dancing until this tick (emote); and the next tick a quick message or emote may be sent. */
@@ -419,7 +429,11 @@ interface BulletEnd {
 }
 
 /** Bodies a shot can hit; `who` is the actor (lists kept for a whole bullet pass skip anyone killed during it). */
-type ShotTargets = readonly { slot: number; feet: Vec3; height: number; radius: number; who?: Combatant }[];
+type ShotTargets = readonly ShotBody[];
+/** A body as a shot sees it: where it stands and, for the measured shapes, its yaw, stance, scale and shapes. */
+type ShotBody = { slot: number; feet: Vec3; height: number; radius: number; box: LookHitbox; yaw: number; stance: Stance; scale: number; who?: Combatant };
+/** One body in the lag-compensation history. */
+type PastBody = Vec3 & { h: number; yaw: number; stance: Stance; scale: number; box: LookHitbox };
 
 /** A ground hazard or field (see ZONE_KINDS). */
 interface Zone {
@@ -570,7 +584,7 @@ export class Match {
    * oldest entry's map and position objects instead of making new ones (they lived just long enough to be
    * promoted out of the young generation, then died: work for the full collections behind the hiccups).
    */
-  private readonly history: { tick: number; at: Map<number, Vec3 & { h: number }>; pool: Map<number, Vec3 & { h: number }> }[] = [];
+  private readonly history: { tick: number; at: Map<number, PastBody>; pool: Map<number, PastBody> }[] = [];
   /** Bot AI time spent in the most recent tick, for instrumentation. */
   lastAiMs = 0;
   /**
@@ -1180,6 +1194,7 @@ export class Match {
     const spec = NPC_ROLE_SPECS[role];
     const id = this.nextNpcId++;
     const def = getWeapon(spec.weapon);
+    const npcHit = npcHitbox(role, id);
     const c: Combatant = {
       ...this.blankCombatant(id, 'npc', spec.label),
       faction: e.faction,
@@ -1190,6 +1205,9 @@ export class Match {
       health: spec.health * (e.health ?? 1),
       maxHealth: spec.health * (e.health ?? 1),
       size: e.size ?? 1,
+      // Hit as drawn: its creature body, its character look or the mannequin, at the role's scale.
+      hitbox: npcHit.box,
+      hitScale: npcHit.scale,
       alive: true,
       weapons: new Map([[weaponCode(def), { def, mag: def.magazine, reserve: def.reserveMax, alt: def.alt?.max ?? 0 }]]),
       current: weaponCode(def),
@@ -1209,6 +1227,9 @@ export class Match {
       faction: kind === 'npc' ? null : (team !== undefined ? team : this.factionFor(kind)),
       speedMul: 1,
       size: 1,
+      hitbox: DEFAULT_HITBOX.box,
+      hitLook: DEFAULT_LOOK,
+      hitScale: DEFAULT_HITBOX.scale,
       maxHealth: PLAYER.maxHealth,
       collider: this.physics.createPlayerCollider(),
       move: { pos: { x: 0, y: 0, z: 0 }, velY: 0, grounded: false },
@@ -2693,7 +2714,7 @@ export class Match {
         ? (o, d, max) => {
             let best: number | null = null;
             for (const t of targets) {
-              const h = rayCapsule(o, d, t.feet, t.radius ?? PLAYER.radius, t.height);
+              const h = rayTarget(o, d, t, max);
               if (h !== null && h < max && (best === null || h < best)) best = h;
             }
             return best;
@@ -2805,8 +2826,6 @@ export class Match {
     const zones: number[] = [];
     const bodies: number[] = [];
     const struck: { slot: number; dir: Vec3; zone: HitZone; dist: number; keep: number }[] = [];
-    const feetOf = (slot: number) => targets.find((t) => t.slot === slot)!.feet;
-    const heightOf = (slot: number) => targets.find((t) => t.slot === slot)!.height;
     for (let p = 0; p < def.pellets; p++) {
       const dir = this.spreadDir(aim, spread);
       const world = this.physics.raycastHit(eye, dir, def.range);
@@ -2814,17 +2833,20 @@ export class Match {
         // Piercing rounds go through players (not walls): everyone along the line, nearest first.
         const wallAt = world?.dist ?? def.range;
         const along = targets
-          .map((t) => ({ slot: t.slot, d: rayCapsule(eye, dir, t.feet, t.radius ?? PLAYER.radius, t.height) }))
-          .filter((t): t is { slot: number; d: number } => t.d !== null && t.d < wallAt)
+          .map((t) => {
+            const d = rayTarget(eye, dir, t, wallAt);
+            return { slot: t.slot, d, zone: d === null ? (0 as HitZone) : lastHit.zone };
+          })
+          .filter((t): t is { slot: number; d: number; zone: HitZone } => t.d !== null && t.d < wallAt)
           .sort((a, b) => a.d - b.d)
           .slice(0, def.pierce + 1);
         // Breakable glass on the way shatters; a round that went through some hits a little softer (GLASS.passDamage).
         const panes = this.scenario.glassAlong(eye, dir, wallAt);
         this.scenario.shootGlass(eye, dir, wallAt, shooter.slot);
-        for (const t of along) struck.push({ slot: t.slot, dir, zone: hitZone(feetOf(t.slot), eye.y + dir.y * t.d, heightOf(t.slot)), dist: t.d, keep: GLASS.passDamage ** panes.filter((d) => d < t.d).length });
+        for (const t of along) struck.push({ slot: t.slot, dir, zone: t.zone, dist: t.d, keep: GLASS.passDamage ** panes.filter((d) => d < t.d).length });
         to.push(tuple(add(eye, scale(dir, wallAt))));
         hits.push(along[0]?.slot ?? null);
-        zones.push(along[0] ? hitZone(feetOf(along[0].slot), eye.y + dir.y * along[0].d, heightOf(along[0].slot)) : 0);
+        zones.push(along[0]?.zone ?? 0);
         if (world) bodies.push(world.handle);
         continue;
       }
@@ -2833,7 +2855,7 @@ export class Match {
       const broke = this.scenario.shootGlass(eye, dir, hypot(shot.end.x - eye.x, shot.end.y - eye.y, shot.end.z - eye.z), shooter.slot);
       to.push(tuple(shot.end));
       hits.push(shot.hitSlot);
-      const zone = shot.hitSlot !== null ? hitZone(feetOf(shot.hitSlot), shot.end.y, heightOf(shot.hitSlot)) : 0;
+      const zone = shot.hitSlot !== null ? shot.zone : 0;
       zones.push(zone);
       if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir, zone, dist: shot.distance, keep: GLASS.passDamage ** broke });
       else if (world) bodies.push(world.handle);
@@ -3031,8 +3053,8 @@ export class Match {
    * resolved against recorded positions at the tick they were viewing
    * (bounded by MAX_REWIND_TICKS). Bots see the present.
    */
-  private targetsFor(shooter: Combatant, viewTick: number): { slot: number; feet: Vec3; height: number; radius: number }[] {
-    let past: Map<number, Vec3 & { h: number }> | undefined;
+  private targetsFor(shooter: Combatant, viewTick: number): ShotBody[] {
+    let past: Map<number, PastBody> | undefined;
     if (shooter.kind === 'human' && viewTick > 0) {
       const t = Math.max(this.tick - MAX_REWIND_TICKS, Math.min(this.tick, viewTick));
       const e = this.history[t % HISTORY_TICKS];
@@ -3043,8 +3065,20 @@ export class Match {
       .filter((o) => o.alive && this.hostile(shooter, o))
       .map((o) => {
         const then = past?.get(o.slot);
-        return { slot: o.slot, feet: then ?? o.move.pos, height: then?.h ?? bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size, who: o };
+        // The rewound body is the whole body as it was: where it stood, which way it faced, its stance and shapes.
+        return then ? { slot: o.slot, feet: then, height: then.h, radius: PLAYER.radius * o.size, box: then.box, yaw: then.yaw, stance: then.stance, scale: then.scale, who: o } : this.shotBody(o);
       });
+  }
+
+  /** A combatant's body where it is now, for shots: its measured shapes, facing, stance and scale. */
+  private shotBody(o: Combatant): ShotBody {
+    const box = this.hitBodyOf(o);
+    return { slot: o.slot, feet: o.move.pos, height: bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size, box, yaw: o.yaw, stance: stanceOf(o.move), scale: o.hitScale * o.size, who: o };
+  }
+
+  /** A combatant's hit shapes, taken again when its look changed (players and bots; an NPC's are set at its spawn). */
+  hitBodyOf(c: Combatant): LookHitbox {
+    return hitboxOf(c);
   }
 
   private recordHistory(): void {
@@ -3055,11 +3089,15 @@ export class Match {
     for (const c of this.actors()) {
       if (!c.alive) continue;
       let o = e.pool.get(c.slot);
-      if (!o) e.pool.set(c.slot, (o = { x: 0, y: 0, z: 0, h: 0 }));
+      if (!o) e.pool.set(c.slot, (o = { x: 0, y: 0, z: 0, h: 0, yaw: 0, stance: 0, scale: 1, box: c.hitbox }));
       o.x = c.move.pos.x;
       o.y = c.move.pos.y;
       o.z = c.move.pos.z;
       o.h = bodyHeightOf(c.move, c.size);
+      o.yaw = c.yaw;
+      o.stance = stanceOf(c.move);
+      o.box = this.hitBodyOf(c);
+      o.scale = c.hitScale * c.size;
       e.at.set(c.slot, o);
     }
   }
@@ -3133,7 +3171,7 @@ export class Match {
         // Your own discs never hit you.
         if (!c.alive || (c === owner && (p.age < OWNER_GRACE_TICKS || spec.disc))) continue;
         if (owner && c !== owner && !this.hostile(owner, c)) continue;
-        const d = rayCapsule(p.pos, dir, c.move.pos, PLAYER.radius * c.size, bodyHeightOf(c.move, c.size));
+        const d = rayTarget(p.pos, dir, this.shotBody(c), len);
         if (d !== null && d <= len && (hitDist === null || d < hitDist)) {
           hitDist = d;
           victim = c;
@@ -3355,7 +3393,7 @@ export class Match {
     if (shooter) return this.targetsFor(shooter, 0);
     return this.actors()
       .filter((o) => o.alive && o.slot !== owner)
-      .map((o) => ({ slot: o.slot, feet: o.move.pos, height: bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size, who: o }));
+      .map((o) => this.shotBody(o));
   }
 
   /** One tick of flight (BULLET_SUBSTEPS segments). Returns where it ended, or null while it flies on. */
@@ -3388,16 +3426,18 @@ export class Match {
     const wall = this.physics.raycastNormal(a, u, len);
     let best = wall?.dist ?? Infinity;
     let victim: ShotTargets[number] | null = null;
+    let zone: HitZone = 0;
     // Only bodies near the segment are worth the capsule test.
     const mx = (a.x + c.x) / 2;
     const mz = (a.z + c.z) / 2;
     const reach = len / 2 + 2;
     for (const t of targets) {
       if (Math.abs(t.feet.x - mx) > reach || Math.abs(t.feet.z - mz) > reach || (t.who && !t.who.alive)) continue;
-      const d = rayCapsule(a, u, t.feet, t.radius, t.height);
+      const d = rayTarget(a, u, t, Math.min(len, best));
       if (d !== null && d <= len && d < best) {
         best = d;
         victim = t;
+        zone = lastHit.zone;
       }
     }
     // Water soaks up energy on the way to whatever is hit (spec §8): a pistol round dies in a metre of it,
@@ -3422,7 +3462,6 @@ export class Match {
     }
     if (victim) {
       const at = add(a, scale(u, best));
-      const zone = hitZone(victim.feet, at.y, victim.height);
       const gp = gunplayOf(getWeapon(b.trig.id));
       const damage = b.trig.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, b.travelled + best) * b.scale;
       return { at, victim: this.actor(victim.slot) ?? null, zone, damage, dir: u };
@@ -4409,7 +4448,7 @@ export class Match {
     const world = this.physics.raycastHit(muzzle, dir, def.range);
     const targets = this.actors()
       .filter((c) => c.alive && c.slot !== m.builtBy && (m.faction === null || relation(this.factions, m.faction, c.faction) === 'enemy'))
-      .map((c) => ({ slot: c.slot, feet: c.move.pos }));
+      .map((c) => this.shotBody(c));
     const shot = resolveHitscan(muzzle, dir, def.range, world && world.handle !== m.body.handle ? world.dist : null, targets);
     this.scenario.shootGlass(muzzle, dir, shot.distance, m.builtBy ?? null);
     this.pendingEvents.push({ e: 'shot', s: -1, w: def.id, from: tuple(muzzle), to: [tuple(shot.end)], hit: [shot.hitSlot] });
@@ -5572,7 +5611,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, size: c.size };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, size: c.size, box: hitboxOf(c), hitScale: c.hitScale };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -5591,6 +5630,19 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean): void {
   v.concealed = concealed;
   v.riding = c.move.zip !== undefined;
   v.size = c.size;
+  v.box = hitboxOf(c);
+  v.hitScale = c.hitScale;
+}
+
+/** A combatant's hit shapes, taken again when its look changed (players and bots; an NPC's are set at its spawn). */
+function hitboxOf(c: Combatant): LookHitbox {
+  if (c.kind !== 'npc' && c.hitLook !== c.look) {
+    const h = lookHitbox(c.look);
+    c.hitbox = h.box;
+    c.hitScale = h.scale;
+    c.hitLook = c.look;
+  }
+  return c.hitbox;
 }
 
 /** Distance from point p to the segment a-b. */

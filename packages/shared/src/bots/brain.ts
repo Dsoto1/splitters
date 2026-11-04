@@ -1,3 +1,4 @@
+import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
@@ -66,6 +67,9 @@ export interface CombatantView {
   riding?: boolean;
   /** Body size (BODY_SIZES scale: small 0.78, large 1.18; absent = 1): eye, aim point and hit body scale with it. */
   size?: number;
+  /** Its measured hit shapes and their scale before `size` (sim/hitbox.ts): bots aim at the real head and chest. */
+  box?: LookHitbox | null;
+  hitScale?: number;
 }
 
 export interface PickupView {
@@ -876,7 +880,7 @@ export class BotBrain {
     const aimAtTarget = (t: CombatantView) => {
       aimedTarget = true;
       const ta = simProfile.on ? performance.now() : 0;
-      sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: this.aimStance(def, t), size: t.size ?? 1 });
+      sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: this.aimStance(def, t), size: t.size ?? 1, box: t.box ?? null, yaw: t.yaw, hitScale: t.hitScale ?? 1, bodyStance: t.stance ?? 0 });
       if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
       this.turnToward(sol.yaw, sol.pitch);
       lookDone = true;

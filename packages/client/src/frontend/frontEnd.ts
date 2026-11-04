@@ -59,6 +59,7 @@ import { installTooltips } from './tooltip.ts';
 import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
+import { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from '../game/hitboxPrefs.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
@@ -1957,6 +1958,8 @@ export class FrontEnd {
     firstPerson.addEventListener('change', () => saveFirstPersonMode(firstPerson.value as FirstPersonMode));
     const perfOverlay = el('input', { type: 'checkbox', checked: loadPerfOverlay() });
     perfOverlay.addEventListener('change', () => savePerfOverlay(perfOverlay.checked));
+    const hitboxes = el('input', { type: 'checkbox', checked: loadHitboxOverlay() });
+    hitboxes.addEventListener('change', () => saveHitboxOverlay(hitboxes.checked));
     const fullscreen = el('button', { type: 'button' });
     bindFullscreenButton(fullscreen);
     const mouse = loadMousePrefs();
@@ -2104,6 +2107,8 @@ export class FrontEnd {
         row('Frame cap', frameCap, 'Most frames drawn a second. 60 is smooth and keeps laptops cool.'),
         row('First person', firstPerson, 'Full body: look down and see your character, legs and feet. Arms only: just your arms on the gun. The gun handles the same either way.'),
         row('Performance overlay', toggle(perfOverlay), 'Frame time and what each frame costs, top left in a match (F3). If the game runs slowly, Pause → Settings → Copy performance report gives a report to send.'),
+        // A dev and test setting: only on a dev server, a test build or a page served from this machine.
+        ...(hitboxOverlayAllowed() ? [row('Show hitboxes', toggle(hitboxes), 'Developer: draws every body\'s hit shapes (head red, torso yellow, arms green, legs blue) in your next match. Also ?hitboxes=1.')] : []),
       ]],
       ['controls', 'Controls', [
         row('Mouse sensitivity', el('span', { class: 'opt-range' }, sens, sensVal)),

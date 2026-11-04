@@ -14,7 +14,7 @@ export interface TestOptions {
   god: boolean;
 }
 
-function allowedHere(): boolean {
+export function allowedHere(): boolean {
   if (import.meta.env.DEV || (import.meta.env.VITE_TEST_HOOKS as string | undefined) === '1') return true;
   return typeof location !== 'undefined' && /^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname);
 }

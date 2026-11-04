@@ -30,7 +30,8 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
 const rules = { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 100_000 };
 const eye = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + PLAYER.eyeHeight, z: p.z });
-const chest = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + 1, z: p.z });
+// The middle of the chest of a standing 1.8 m body (the measured torso runs from the belt to the shoulders).
+const chest = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + 1.25, z: p.z });
 
 /** An open yard 40 × 16 m (x -4..36, z -4..12) with walls round it. */
 function yard(spawns: [number, number, number][]): MapDocument {
@@ -72,6 +73,8 @@ function duel(targets: [number, number, number][], weaponId: string) {
   // Spawns are picked by distance from enemies, so place everyone by hand.
   a.move = { pos: { x: 0, y: 0, z: 4 }, velY: 0, grounded: true };
   targets.forEach((t, i) => (others[i]!.move = { pos: { x: t[0], y: t[1], z: t[2] }, velY: 0, grounded: true }));
+  // Facing the shooter, as in a duel: hit shapes are the measured body (sim/hitbox.ts), narrower side-on.
+  for (const o of others) o.yaw = Math.atan2(a.move.pos.x - o.move.pos.x, a.move.pos.z - o.move.pos.z);
   give(a, weaponId);
   const look = lookAngles(eye(a.move.pos), chest(others[0]!.move.pos));
   const aim = (extra: Partial<PlayerInput> = {}) => d.input(a, { yaw: look.yaw, pitch: look.pitch, ...extra });
@@ -101,7 +104,8 @@ describe('hit zones and spread', () => {
 
     const legs = duel([[12, 0, 4]], 'core.rifle');
     const t2 = legs.others[0]!;
-    const low = lookAngles(eye(legs.a.move.pos), { x: t2.move.pos.x, y: t2.move.pos.y + 0.45, z: t2.move.pos.z });
+    // At a thigh (the measured legs are two, with a gap between them).
+    const low = lookAngles(eye(legs.a.move.pos), { x: t2.move.pos.x, y: t2.move.pos.y + 0.7, z: t2.move.pos.z + 0.12 });
     legs.d.run(1, () => legs.d.input(legs.a, { yaw: low.yaw, pitch: low.pitch, buttons: BUTTON_FIRE }));
     expect(100 - t2.health).toBeCloseTo(getWeapon('core.rifle').damage * gunplayOf(getWeapon('core.rifle')).legs, 5);
   });
@@ -127,8 +131,10 @@ describe('hit zones and spread', () => {
     };
     const scoped = shots(BUTTON_FIRE | BUTTON_ZOOM);
     const hip = shots(BUTTON_FIRE);
-    expect(scoped).toBe(1);
-    expect(hip).toBeLessThan(0.6);
+    // Against the measured body (sim/hitbox.ts: about 0.35 m across the chest, not the old 0.8 m capsule) the scope's
+    // small cone still lands most rounds at 30 m; from the hip hardly any.
+    expect(scoped).toBeGreaterThanOrEqual(0.75);
+    expect(hip).toBeLessThan(0.3);
   });
 });
 
@@ -328,7 +334,11 @@ describe('extended arsenal', () => {
     const first = lmg.d.run(40, () => lmg.aim({ buttons: BUTTON_FIRE })).findIndex((e) => e.e === 'shot');
     expect(first).toBeGreaterThanOrEqual(0);
     expect(lmg.match.tick).toBeGreaterThan(getWeapon('core.lmg').windupTicks!);
-    const { d, others, aim } = duel([[10, 0, 4], [16, 0, 4], [22, 0, 4]], 'core.railgun');
+    const { d, a, others } = duel([[10, 0, 4], [16, 0, 4], [22, 0, 4]], 'core.railgun');
+    // Nearly level, through all three chests (a line down from the eye to the first chest would pass between the
+    // last one's legs: the measured legs have a gap).
+    const line = lookAngles(eye(a.move.pos), { x: 10, y: 1.35, z: 4 });
+    const aim = (extra: Partial<PlayerInput> = {}) => d.input(a, { yaw: line.yaw, pitch: line.pitch, ...extra });
     // Scoped in (the railgun fired from the hip sprays).
     const ev = d.run(getWeapon('core.railgun').windupTicks! - 2, () => aim({ buttons: BUTTON_FIRE | BUTTON_ZOOM }));
     expect(ev.some((e) => e.e === 'shot')).toBe(false);

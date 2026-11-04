@@ -21,7 +21,8 @@ import { makeMap } from './helpers.ts';
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
 const eye = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + PLAYER.eyeHeight, z: p.z });
-const chest = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + 1.0, z: p.z });
+// The middle of the chest of a standing 1.8 m body (the measured torso runs from the belt to the shoulders).
+const chest = (p: { x: number; y: number; z: number }) => ({ x: p.x, y: p.y + 1.25, z: p.z });
 const rules = { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 100_000 };
 
 function room(spawns: [number, number, number][], pickups: { item: string; at: [number, number, number] }[] = []): MapDocument {
@@ -104,7 +105,8 @@ describe('weapons', () => {
     });
     const shot = d.events.find((e) => e.e === 'shot' && e.w === 'core.shotgun');
     expect(shot && shot.e === 'shot' && shot.to.length).toBe(getWeapon('core.shotgun').pellets);
-    expect(shot && shot.e === 'shot' && shot.hit.filter((h) => h === b.slot).length).toBeGreaterThan(4);
+    // Ten pellets in a 0.075 rad cone at about 5.7 m against the measured body (sim/hitbox.ts): a good few strike.
+    expect(shot && shot.e === 'shot' && shot.hit.filter((h) => h === b.slot).length).toBeGreaterThanOrEqual(3);
   });
 
   it('knife hits only at close range', () => {

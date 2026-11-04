@@ -26,6 +26,8 @@ export * from './sim/thirdPerson.ts';
 export * from './sim/liquids.ts';
 export * from './sim/effectsPhysics.ts';
 export * from './sim/weapons.ts';
+export * from './sim/hitbox.ts';
+export { MEASURED_HITBOXES } from './content/hitboxes.generated.ts';
 export * from './sim/gunplay.ts';
 export * from './sim/impact.ts';
 export * from './sim/trajectory.ts';

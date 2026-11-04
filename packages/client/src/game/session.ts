@@ -112,6 +112,7 @@ import { MountState } from './mountState.ts';
 import { LocalTransport } from './localTransport.ts';
 import { SYS, netProbe, perfProbe } from './perfProbe.ts';
 import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
+import { loadHitboxOverlay } from './hitboxPrefs.ts';
 import { PerfRecorder, captureTrace, downloadJson, fileStamp, type RecorderContext } from './perfRecorder.ts';
 import { NetTransport } from './netTransport.ts';
 import { HostPanel } from './hostPanel.ts';
@@ -462,6 +463,8 @@ export class GameSession {
 
   constructor(private readonly opts: SessionOptions) {
     this.view = new GameView(opts.engine);
+    // Show hitboxes (dev and test setting): every body's hit shapes drawn over it.
+    this.view.showHitboxes = loadHitboxOverlay();
     this.input = new InputState(opts.canvas);
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
     // The performance overlay: ?stats, F3 or Options; remembered.
