@@ -9,7 +9,7 @@
   "nameTheme": "soldier",
   "bio": "Buried with full honours in three different wars. Keeps marching back for a fourth.",
   "body": "male",
-  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks: found on the mesh (landmarks.mjs), then the knees set by hand (the straps hanging between the legs pulled a found knee inward and back, crossing the legs). The download is 1.1M triangles whose careful cut stopped at 22k, so it is built with `surface: rebake`. A grinning skeleton in a helmet and camouflage fatigues, webbing and bone hands.",
+  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks: found on the mesh (landmarks.mjs), then the knees set by hand (the straps hanging between the legs pulled a found knee inward and back, crossing the legs). The download is 1.1M triangles whose careful cut stopped at 22k, so it is built with `surface: rebake`. A grinning skeleton in a helmet and camouflage fatigues, webbing and bone hands. 2026-11-03: finish.maps (the download's glossy metal-roughness map) and the rebake at 17k triangles with headShare 0.24 (at 14k his helmet was faceted and his skull blotchy; the download layout keeps 25k at any budget, over the 20k limit).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -21,15 +21,17 @@
     "file": "^Meshy_AI_Undead_Soldier_\\d+_texture\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.8
+    "metallic": 1,
+    "roughness": 1,
+    "maps": true
   },
   "firstPerson": {
     "arms": "own"
   },
   "fixes": {
-    "triangles": 14000,
+    "triangles": 17000,
     "surface": "rebake",
+    "headShare": 0.24,
     "feet": true,
     "hands": {
       "r": {

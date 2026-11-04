@@ -1,4 +1,4 @@
-import { CREATURE_ROLES } from '../map/schema.ts';
+import { CREATURE_ROLES } from '../map/mapKeys.ts';
 import type { PlayerInput } from './movement.ts';
 import { BUTTON_FIRE } from './movement.ts';
 import type { Vec3 } from '../math.ts';

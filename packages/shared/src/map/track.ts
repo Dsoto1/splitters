@@ -1,5 +1,5 @@
 import type { ValidationIssue } from './validate.ts';
-import { RaceSettings, type MapDocument, type MapEntity, type MapPath, type MountEntity, type PathUse, type Track } from './schema.ts';
+import { type RaceSettings, type MapDocument, type MapEntity, type MapPath, type MountEntity, type PathUse, type Track } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
 import { hypot } from '../math.ts';
 
@@ -310,8 +310,12 @@ function centreLine(track: Track, loop: boolean, shape: CurveShape): TrackSample
   return out;
 }
 
-/** A race path's settings when it has none of its own. */
-export const DEFAULT_RACE: RaceSettings = RaceSettings.parse({});
+/**
+ * A race path's settings when it has none of its own: RaceSettings' defaults,
+ * written out so the menu (raceTrack) doesn't run the zod schemas
+ * (test/menuSplit.test.ts checks they match RaceSettings.parse({})).
+ */
+export const DEFAULT_RACE: RaceSettings = { laps: 3, grid: 8, vehicle: 'kart', combat: false, curbs: true, ambient: 0, ambientVehicle: 'kart', pit: null };
 
 /** How a smooth path's centre line is drawn through its points (see CurveShape). */
 const SMOOTH_CURVE = { step: 1, centripetal: true } as const;

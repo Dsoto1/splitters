@@ -16,6 +16,9 @@ made only on a commit that passed CI on a check branch.
 - **Busy matches draw less**: only the nearest 12 characters in view cast shadows (and anyone within 10 m), small clutter (grass, wheat, flowers, small rocks) casts shadows only within 15 m, characters 15–35 m away animate at 30 Hz, and in crowds characters switch to their low-detail model at 12.6 m instead of 18 m. Nothing changes close to you.
 - **No stall on the first sight of an effect or a character**: the loading screen now builds the shaders for every character in the match and every effect the map can play.
 
+**Loading**
+- **The menu's first download is about a fifth smaller** (837 to 649 kB gzipped): MapMaker's building pieces, the prop table and the map checks now load with the first map that is drawn, opened or played, not before the menu. The game, maps and MapMaker work as before.
+
 **Maps**
 - **Map reworks from the owner's review** (made in MapMaker):
   - **Step Temple** is a stepped sun temple in carved stone: an inlaid court with cover, roofed galleries, and outside on each side a broad stair to a terrace with a shrine (armour) and an arch into the galleries. The owner's temple statues, fire bowls, banners and braziers; ammo matched to each wing's weapon; the spear for the laser rifle.
@@ -25,6 +28,13 @@ made only on a commit that passed CI on a check branch.
   - **Concrete Annex**: each part of the works has its own materials, so the hangars, hall, tunnels and corridors tell apart, and the hazard stripes are gone. The owner's shipping containers and crates fill the hangars, and a flame jet runs in the tunnels.
   - **Dune Harbor**: real domes instead of stacked slabs, the cantina and trading house in blue tiles; the market in the Desert City kit and the owner's stalls, well and raider buggies.
   - **Coldwater Gulch**: one family of mossy rock instead of five mismatched ones, bedded into the slopes.
+  - **Fogbound**: no-man's land is shelled (craters, mud in the deepest), with knocked-out vehicles out in it, a ruined farm on each flank, more shattered trees and a stormy sky.
+  - **Citadel**: a town under the castle. Through a new gate and down the hill are a market square with a fountain and stalls, houses, a smithy, a bell tower and a watchtower, with spawns and pickups down there.
+  - **Eagle Spires**: ziplines from the four flank spires down into the valley, low walls for cover on the mesas and the summit, boulders across the valley floor, and snow-capped tops.
+  - **Express Lobby**: a sky bridge across the atrium on every floor (alternating ends, glass rails). Cars, bins, benches and kiosks fill the street.
+  - **Gallows Yard**: the gallows itself on the central platform, fire bowls for the crystal baskets, weeping angels, sarcophagi, a mistier night.
+  - **Sandgate**: in the Desert City style. Ashlar and plaster fronts, roofs and domes, market dressing and a desert sky; same layout.
+  - **Sandfall Colosseum**: a gladiator school by Embers' gate, a market by Tide's forum, cypress avenues, and broken columns on the arena sand.
 - **New props: Plaster Dome and Blue Tiled Dome** (MapMaker → Desert City): round roofs for desert houses, 5 m across, Scale for any size.
 - **Five maps removed, three more retired** (owner's review of 3 Nov): After Hours, Clockwork, Fallout Lane, Ridge Camp and Stonewatch Keep are deleted with their pictures; Blackout, Cedar Lane and Glacier Line stay only as test fixtures (retired: no menu, playlist or host picker offers them).
 - **Better automatic map pictures**: the capture tool now aims at the busy area (spawns, pickups, objectives) and can take a three-quarter aerial view framed to it, so Citadel, Silo Complex and Step Temple show their layout instead of a wall or empty ground; map plans crop tighter to what is built.
@@ -44,6 +54,11 @@ made only on a commit that passed CI on a check branch.
 **Characters**
 - **Cleaner faces on fifteen characters** (Biker Gang Girl, Cal, WWII Infantry, Sgt. Mackie, Stealth Operative, Thornweaver, Lancer Mei, Rourke, Elder Tomo, Grandpa Chains, Dog Tag Doyle, Rattles, Count Bonesworth, Grinning Gus, Pemberton). Faces built from low-poly downloads shaded in flat facets (their smooth shading was read upside down), and the model cut laid triangles across the texture's seams, which drew dark and pale wedges over eyes and noses. Rattles' skull no longer follows his collarbones when he raises the gun.
 - **Off the roster:** Vampire, The Hollow Visitor, Dust Trooper, Goblin, Rotter and Giggles (Rotter and Giggles tore open at the sides). A saved choice of one plays Count Bonesworth, The Visitor, Desert Ranger, Goblina, Shambler or Punkin. Goblin NPCs keep their look. The Imp and the Puglin are no longer offered in Character Select; they stay NPCs and bot looks.
+- **Character Select shows each body at its size**: small characters (Goblina, the Space Marine and the rest) stand at 1.40 m and large ones at 2.12 m, as a match draws them, instead of everyone at 1.80 m. The Imp's portrait is framed on its head and shoulders like the others.
+- **Honest Abe is large** (gameplay): 2.12 m tall, speed ×0.94, 115 health, and a bigger hit box, like the other large characters.
+- **Goblina looks up**: her head no longer hangs down over the gun.
+- **Shooting shoulder no longer tucked in** with a rifle: the body turns less side-on (0.22 rad, was 0.45), the stock sits 4 cm inside the shoulder (was 7) and the shooting elbow comes out to the side, so the right shoulder and arm stand out from the chest instead of running along it (owner's note on Santa and Zombie Soldier A; every character). Aim, recoil and hit boxes are unchanged.
+- **Faces closer to their models**: Grinning Gus's skull is glossy black chrome and Dog Tag Doyle's helmet and skull smooth and glossy, as modelled (their builds kept one matte finish and dropped the model's metal/roughness map); Cal, Sgt. Mackie and Elder Tomo lose the dark wedges and lines across their faces (the rebuilt surface's shading was read upside down); Biker Gang Girl loses the pale wedge down her nose (her model is used uncut with its own shading map).
 
 **Infrastructure**
 - Faster CI: a commit whose code matches one already green on a check branch (only docs differ) isn't tested again; `tools/ci/train.mjs` lands several green branches as one candidate; a change to the match renderer or a content manifest runs only the browser tests that exercise it.

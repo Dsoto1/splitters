@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 25,
   "metadata": {
     "id": "gallows_yard",
     "name": "Gallows Yard",
     "author": "Tile Trigger",
     "description": "A walled castle courtyard crowded with tomb blocks of every height. Embers and Tide each hold a gatehouse at one end; its roof runs into a raised walkway along the far wall, over a covered arcade and across a narrow bridge. Open stairs climb out of the graves, and jump pads throw you up onto the gallows in the middle, where the railgun waits above the rocket launcher.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-04T00:26:56.529Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 2,
@@ -871,7 +871,7 @@
       "position": [
         32,
         4,
-        16
+        12.5
       ],
       "kind": "pickup",
       "item": "core.weapon_railgun",
@@ -1328,8 +1328,8 @@
         31
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
-      "yaw": 0,
+      "model": "prop.ge_angel_statue",
+      "yaw": 1.571,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1342,8 +1342,8 @@
         1
       ],
       "kind": "prop",
-      "model": "prop.obelisk",
-      "yaw": 3.141592653589793,
+      "model": "prop.ge_angel_statue",
+      "yaw": -1.571,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1468,7 +1468,7 @@
         2
       ],
       "kind": "prop",
-      "model": "prop.fire_basket",
+      "model": "prop.jt_fire_bowl",
       "yaw": 0,
       "scale": 0.6,
       "solid": true,
@@ -1482,7 +1482,7 @@
         30
       ],
       "kind": "prop",
-      "model": "prop.fire_basket",
+      "model": "prop.jt_fire_bowl",
       "yaw": 3.141592653589793,
       "scale": 0.6,
       "solid": true,
@@ -2775,6 +2775,48 @@
       "intensity": 1,
       "range": 9,
       "fixture": "ceiling"
+    },
+    {
+      "id": "prop_dmxokrxrmg",
+      "kind": "prop",
+      "position": [
+        32,
+        4,
+        17.5
+      ],
+      "model": "prop.ww_gallows",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jo92buckom",
+      "kind": "prop",
+      "position": [
+        28,
+        0,
+        4.5
+      ],
+      "model": "prop.ge_sarcophagus",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1b7vb2ebxt",
+      "kind": "prop",
+      "position": [
+        36,
+        0,
+        27.5
+      ],
+      "model": "prop.ge_sarcophagus",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -39335,11 +39377,11 @@
     "height": 8
   },
   "backdrop": {
-    "sky": "dusk",
+    "sky": "night",
     "scenery": "forest",
     "ground": "grass",
     "haze": 0.6,
-    "mist": 0.45
+    "mist": 0.6
   },
   "physics": null,
   "blood": null,

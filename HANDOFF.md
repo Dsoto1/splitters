@@ -61,6 +61,90 @@ Owner-approved. Guide for the owner: docs/PERF_TOOLS.md (how to record on the ho
   ci:plan: full suite (index.html, atmosphere, characters): needs a `check/` run before main; visual baselines may
   move where small clutter's far shadows went (not run here).
 
+### Character fixes 2: Imp portrait, bodies, shoulders, faces (`wip/char-fixes-2`, agent, 2026-11-03; pushed, not merged; from main 716c012)
+Continues the entry below (owner's notes of 3 Nov). Evidence (before/after screenshots, audits, raw comparisons): agent
+scratchpad `charfix2/`.
+- **Imp portrait** framed on its top 42 % (portraits.ts `CREATURE_TOPS`), recaptured.
+- **Bodies:** Character Select draws each look at its size class (menuScene.ts: small 1.40 m, large 2.12 m), which
+  is what made Goblina and the Space Marine (both already small) look too big. Honest Abe `"size": "large"` (gameplay:
+  speed x0.94, 115 health). Goblina: `lean.neck` 0 (was 10) and `lean.Head` 18, rebuilt from her rigged download
+  (meshy-drive `skin-fix-rig/meshy_grizzelda.glb`). Goblina and the Space Marine were not made smaller than small: at
+  their size class they read small next to a standard look (`charfix2/select-after-heroes.png`); a further shrink would
+  need a new size class or a visual scale that disagrees with the hit box: owner to say.
+- **Shoulders (every character, long guns):** `LONG_GUN_BLADE` 0.45 -> 0.22, stock pocket 7 -> 4 cm inside the shoulder
+  (`POCKET_IN`), shooting elbow aimed out and less down (`ELBOW_POLE_OUT/DOWN` 0.45/0.18, were 0.35/0.3): the right
+  arm stands out from the chest instead of running along it (Santa, Zombie Soldier A). Grip audit (rifle+pistol, 29
+  looks): before 101 / 21 flagged, after 106 / 22 (Anoobys +3 back, Beanie Alien +2 off, Honest Abe +3 flat, Shade -3).
+- **Hands/fingers: NOT fixed.** Tried and reverted: palm 0.3 hand-lengths further along the grip and a gentler curl
+  (audit 201, every hand drawn off its point); `mitten` for 11 looks and `wrist` for the Otter via rehand-built (no
+  visible change; the Otter measured worse). What the sheets show (`charfix2/hands-all1-p*.png`): the support hand lies
+  flat under the handguard with its fingers straight out (Abe, Gorgle, Zhao, Punkin, Shade), and split fingers crumple
+  when the shooting hand closes fully (Desert Ranger, Grunt '68). Next: curl the support fingers about the handguard's
+  axis rather than the hand's own, and cap the curl per joint for low-poly hands. The Imp (bots only now) holds its
+  left claw above the handguard: creatureAnimator `holdWith`, not touched.
+- **Faces (pipeline, tools/content):** `finish.maps` keeps the download's metal-roughness map (Grinning Gus: black
+  chrome; Dog Tag Doyle: glossy, and rebaked at 17k with `headShare` 0.24). Rebaked characters' own normal maps were read
+  as a download's (`DOWNLOAD_GREEN`) in the final bake: fixed (`hiGreen`), Cal's cheek line and Sgt. Mackie's wedge
+  gone; Bonesworth, Elder Tomo (centre seam gone), Thornweaver and Goblina rebuilt with it. Barnaby, Slugger and Rusty
+  Mech are rebakes with the same bug, NOT rebuilt (downloads in meshy-drive `build-newchars/`, `tposes-2026-11-01/`; check
+  each against its download). Uncut downloads (a low-poly download within budget) ship the download's own normal map
+  with no TANGENT attribute and padded gutters: Biker Gang Girl's nose wedge gone; Kenji rebuilt the same way (his pale
+  fringe patch is in the download itself: `charfix2/raw-faces-1.jpg`). WWII Infantry and Stealth Operative are All
+  Animations downloads and would change on rebuild (not rebuilt). Comparison tool: `charfix2/tools/cmp.mjs` (raw / old /
+  new in their rest pose, same light and framing; serve the files under `public/zz-charfix-raw`, never commit it).
+
+### E2E flakes: dedicatedhost, offline, handoff, lobby (`wip/flaky-e2e`, agent, 2026-11-04; not merged)
+Four flows that failed on CI's slow software-rendered pages (1–2 fps). No check skipped or loosened.
+- **dedicatedhost, Kick:** idle takeover. The visitor (after its walk) and the owner (in the pause menu) sit still
+  for minutes; after 90 s (`AWAY.afkSeconds`) a bot plays for each, `match.roster()` marks them `bot`, and the
+  admin's player list (people only, `session.peopleIn`) drops the visitor's Kick button. Fix: the flow starts the
+  Host Service with its own setting `AFK_SECONDS=0`. (The idle rules have unit tests.)
+- **offline, kill cam / skip:** the kill cam was 3.5 s of wall clock from the death message, so one long frame
+  ate it unseen, and the Space meant to skip it then toggled the free camera. Fix (product): its time is the
+  time it's drawn, each frame counting at most 0.25 s (`spectatorCam.ts` `KILL_CAM_FRAME_MS`, as session.ts caps a
+  frame's step). Same on a normal machine. `spec().killCamEnd` ('skipped' | 'over') lets the flow prove the skip
+  rather than a timeout. **Join game:** the bots weren't held, so one could shoot the player between "alive" and
+  the check; the flow holds them (`holdBots`) and checks the alive it waited for.
+- **handoff:** the friends never touched their controls, so after 90 s they were "away", and an away friend is
+  no successor (`matchHost.tendSuccessor`): the successor, its checkpoints and the takeover went with it. Fix:
+  each friend looks about (a small turn every 3 s) from the moment it's in; both joins wait in parallel. The
+  **404** on every page was the hub's `/api/v1/maps` with publishing off (no `PUBLISHED_MAPS_DIR`, as in e2e and
+  any community hub): it now answers an empty list (`publish.ts noPublishingHandler`), and the flow names any
+  failed request in its log.
+- **lobby, 2 players:** the check waited 30 s for a check-in that comes every 20 s (`LOBBY_HEARTBEAT_SECONDS`) on
+  the host page's timer, late on heavy Sandgate. It now waits for two of the host's check-ins (its PUTs) after the
+  join, then the listing must say 2: independent of map weight.
+
+### Content scalability step 1: the menu's first download (`wip/menu-bundle`, agent, 2026-11-03; not merged; rebased on main 51519b2)
+docs/CONTENT_SCALABILITY.md step 1. **Menu's first JS 837.0 -> 649.0 kB gzip** (2970 -> 2305 kB raw, on main 51519b2; `index` 396.1 ->
+208.1 kB gzip; `babylon` and `vendor` unchanged). Budget left at 840 kB (now ~190 kB of room). How it works:
+docs/LOADING.md, "Map content".
+- **What moved out:** the pack tiles (`packTiles*.ts`), `catalog.ts`'s tables, the prop table (`props.generated.ts`),
+  geometry, validate, dressing, editor operations, the zod map schemas (`schema.ts`, `logic.ts`), mounts, border,
+  backdrop, gunplay, serverRules, scenarioDefs, `mapPlan.ts`, `mapMeshes.ts` and its patterns, `editor/storage.ts`.
+  `STYLE_PACKS` was never in the menu chunk (editor only). The map content (`client/src/mapContent.ts`, ~149 kB
+  gzip) loads with the first map drawn, opened or played (`loadMapContent()`, in parallel with the map file).
+- **Why they were in:** the shared barrel re-exports everything and the package had no `sideEffects` field, so any
+  menu import kept every module; `schema.ts` imported `catalog.ts` for six constants (and catalog builds
+  `CORE_TILES` from every pack at load); `track.ts` ran `RaceSettings.parse({})` at load.
+- **Changes:** `@tiletrigger/shared` `"sideEffects": false`; `map/tileOptions.ts` (out of catalog.ts, re-exported)
+  and `map/mapKeys.ts` (out of schema.ts, re-exported); `DEFAULT_RACE` written out (test/menuSplit.test.ts checks
+  it equals the parse); client `mapContent.ts` + `mapContentLoader.ts`; mapIndex, mapThumbs (plan), modelThumbs
+  (tile pictures import mapMeshes on demand), main.ts (`playOffline`, `travelLocal`; Change map's own maps via
+  matchCode). Hygiene: lazy weapon-code, prop and look maps, pure `CORE_TILES`/`coreCatalog` (no menu change).
+- **Pitfall:** a static import of `loadMap`, `buildMapGeometry`, `mapPlan.ts`, `mapMeshes.ts` or `editor/storage.ts`
+  from anything the menu loads brings ~190 kB back; so does an import-for-effect module in shared.
+- **Still in the menu chunk, could be trimmed next** (rendered size before minifying): `frontEnd.ts` 123 kB (every
+  screen; split per screen), `characterAnimator.ts` 66 kB (Character Select preview), `virtual:map-index` 66 kB
+  (cards; could drop fields the cards don't show), `sim/weapons.ts` 52 kB (the menu reads names and models: a
+  weapon-list module, which step 3 "weapons as data" makes natural), `characters.generated.ts` 34 kB, the inline
+  env BRDF PNG 31 kB (could be a fetched file), `game/input.ts` 23 kB (frontEnd's controls screen), synth 17 kB.
+- **Checks:** `pnpm typecheck` clean. `pnpm test:changed` (everything, the change is unmapped): 1450 pass, 2 fail,
+  both known load failures: host.test (hub wait: Bob's account) and pads eagle_spires (180 s timeout). E2E: see the
+  next line. `pnpm ci:plan`: full suite (the new client files have no rule): needs a `check/` run before main.
+- **E2E (local):** offline (53 checks), editor (60), visual (4: menu, mapmaker, arena, canyon at 0.1 %) and maps (30) PASS
+  (`CI=1 E2E_CLIENT_PORT=4273 E2E_SERVER_PORT=7887`: another session's preview held 4173).
+
 ### Character fixes: faces, roster (`wip/char-fixes`, agent, 2026-11-03; not merged, not pushed; from main ef2c103)
 Owner's notes of 3 Nov (agent scratchpad `charfix/owner-notes.md`). Steps 1-2 done here; steps 3-5 (Imp thumbnail,
 bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agent scratchpad `charfix/`.
@@ -110,7 +194,7 @@ bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agen
   Not pushed: the lead asked that the face rebuilds not go towards main until they match the downloads.
 
 ### Queued (owner-approved, 2026-11-03): content scalability, see docs/CONTENT_SCALABILITY.md
-The owner approved every pick in docs/CONTENT_SCALABILITY.md. Not started. Order:
+The owner approved every pick in docs/CONTENT_SCALABILITY.md. Step 1 done on `wip/menu-bundle` (above; not merged). Order:
 1. Get the menu's first JS off its 800 KB gzip ceiling: pack tiles, the prop table and STYLE_PACKS load with a
    match or MapMaker, not the menu.
 2. Per-pack prop files and palette atlases, plus one `pnpm content:rebuild` command, so parallel branches stop
@@ -197,6 +281,47 @@ The first item of the owner's queue above. Three commits:
 - Tests: tools/ci/test/greenTree.test.mjs, train.test.mjs, testChanged.test.mjs; select.test.mjs's "runs everything" list
   lost view.ts and content/props.json (they no longer do) and gained models.json, packs.json, intake/, assets-src/.
 - Not proven on GitHub yet: the github-script step (dynamic import of greenTree.mjs, listWorkflowRuns) needs one check/ run.
+### Map reworks, batch 2 (`wip/map-rework-2`, agent, 2026-11-04; pushed, not merged; from wip/map-rework 9b2373f)
+Same method as batch 1 below (MapMaker driven by Playwright, steps in agent scratchpad `rework/<map>/pass*.mjs`,
+pictures in `rework/<map>-before-*.png` / `-after-*.png` and `rework/<map>/cmp-*.png`). New driver ops: terrain
+paint strokes with a ground material, the sky pane's controls redrawn between changes (a stale pane reverted the
+sky), per-pass `SEED`.
+- **Fogbound:** 22 craters with the lower brush (four hold swamp mud), rough rises at the rear corners, Meshy
+  armoured trucks and burnt cars in no-man's land, a ruined farm on each flank, eight dead trees, stormy sky.
+- **Citadel:** a Medieval Village town a level down the hill, south of the bailey: a gate in the bailey's south
+  wall (tile Walls → wide) with a 0.2 m cobble step, the slope smoothed (smooth brush), a market square (the
+  Meshy fountain and stalls), houses, a smithy, a bell tower turned to open onto the square, a watchtower; four
+  spawns, large health, the marksman (in the bell tower; its belfry and the watchtower's lookout don't path), and
+  the fire basket swapped for a fire bowl.
+- **Eagle Spires:** four ziplines, one from each flank spire's top to the valley. They must be under 35°, start
+  near the top's edge and use 4.9-5.1 m posts to pass the reach and clearance checks. Frozen-rock cover walls on
+  the mesas and the summit, boulder pairs in the valley, snow caps (paint brush), "Paint steep slopes as stone".
+- **Express Lobby:** five steel-grating sky bridges with glass rails across the atrium (alternating ends); street
+  dressing. Sofas and vending machines on the 3 m balconies cut off routes, so the balconies only got planters.
+- **Gallows Yard:** a Wild West gallows on the central platform (railgun moved 4.5 m along it), fire bowls for the
+  fire baskets, weeping angels, sarcophagi, night sky, mist 0.6.
+- **Sandgate:** Desert City theme, rooms roofed with desert facades, dc_dome/dc_dome_blue on the roofs, market
+  dressing, a backdrop (it had none). Layout unchanged; the `sandgate` e2e flow passes.
+- **Sandfall Colosseum:** ludus west, market east, cypress avenues, four broken columns on the sand. MapMaker's
+  in-page check warns the arena hill can't be reached from spawn_268; it warns the same on the original map, and
+  validate-map reports 0 issues.
+- **Not reached, and why:**
+  - **runway_nine:** the owner wants an imported airliner. No airliner model exists in the props or vehicles (only
+    the transport plane and dropship that fly over). It needs a Meshy model, which can't be made without the
+    owner's go-ahead on credits; the walkable cabin would stay as blocks under it.
+  - **apex_ring:** needs a new race-car vehicle class (a MOUNT_DEFS entry on kart handling with an imported car
+    model, wheels and tests). That is engineering work, not map work.
+  - **underdrain** ("not what I thought it would be. layout strange"): needs the owner to say what he expected.
+  - **capitol_mall, atomic_court, backwoods, st_johns (better paths), iron_compound (spawns, layout):** not
+    started.
+- Checks: validate-map 0 issues on each map. These e2e flows pass: maps (fogbound, citadel, eagle_spires,
+  express_lobby, gallows_yard, sandfall_colosseum), sandgate, citadel and zombies.
+  **lobby fails here with the new Sandgate and passes with the old one.** The lobby flow hosts on Sandgate. Twice
+  the host's check-in reported 2 players only after the check's 30 s wait (the listing then showed 2); once the
+  join timed out. That points to the heavier Sandgate (roofs, facades, domes) slowing the SwiftShader host page at
+  load 12, not to a broken map. Watch the lobby shard on CI; if it fails there too, trim Sandgate's domes and
+  facades or give that check more time.
+
 ### Map reworks from the owner's review (`wip/map-rework`, agent, 2026-11-03; ST and VZ on main, the rest pushed, not merged)
 Owner's notes (review page, rounds 1 and 2) for the rework-verdict maps. Every edit was made in MapMaker by a
 Playwright driver (agent scratchpad `rework/tools/maker3.mjs`): Import, palette card plus a click on the view, then

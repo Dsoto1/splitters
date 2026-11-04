@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 25,
   "metadata": {
     "id": "citadel",
     "name": "Citadel",
     "author": "Tile Trigger",
     "description": "A castle keep around a two-storey atrium, inside an outer bailey of courtyards behind a curtain wall; the corner rooms and stairwells are its gates. Halls with arched openings ring the ground floor; stairwells in two corners climb to barracks, a map room and roof terraces with cannons. Rockets wait in the atrium, the sniper rifle on the north roof. Shoot out the window panes, break the boards, and mind the powder kegs.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-03T23:43:36.214Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 4,
@@ -316,7 +316,7 @@
         "z": 0,
         "rotation": 0,
         "edges": {
-          "0,0,0:S": "high"
+          "0,0,0:S": "wide"
         }
       },
       {
@@ -463,6 +463,62 @@
           "0,0,0:N": "high",
           "0,0,0:E": "high"
         }
+      },
+      {
+        "id": "tile_dmxokrxrmg",
+        "tile": "medieval.market_square",
+        "x": 1,
+        "y": -4,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jo92buckom",
+        "tile": "medieval.bell_tower",
+        "x": 3,
+        "y": -4,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_1b7vb2ebxt",
+        "tile": "medieval.house",
+        "x": 3,
+        "y": -3,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ddrdoryh7l",
+        "tile": "medieval.house_shop",
+        "x": -1,
+        "y": -3,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_w42hr4qujz",
+        "tile": "medieval.forge",
+        "x": 0,
+        "y": -4,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6ctcqgmocs",
+        "tile": "medieval.house_balcony",
+        "x": -1,
+        "y": -5,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_6ac1tuagd0",
+        "tile": "medieval.watchtower",
+        "x": 4,
+        "y": -4,
+        "z": -1,
+        "rotation": 0
       }
     ]
   },
@@ -863,7 +919,7 @@
         34.5
       ],
       "kind": "prop",
-      "model": "prop.fire_basket",
+      "model": "prop.jt_fire_bowl",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2728,7 +2784,7 @@
       "id": "prop_213",
       "position": [
         1.59,
-        -3.51,
+        -3.77,
         -44.96
       ],
       "kind": "prop",
@@ -3843,6 +3899,175 @@
       "scale": 1,
       "solid": false,
       "tint": null
+    },
+    {
+      "id": "block_5ts8ky0uqr",
+      "kind": "block",
+      "position": [
+        16,
+        -0.4,
+        -4.7
+      ],
+      "yaw": 0,
+      "size": [
+        5,
+        0.2,
+        1.2
+      ],
+      "material": "core.cobblestones",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "prop_t7qf6k4zjn",
+      "kind": "prop",
+      "position": [
+        12,
+        -4,
+        -28
+      ],
+      "model": "prop.town_fountain",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2jqidvnp6y",
+      "kind": "prop",
+      "position": [
+        6.5,
+        -4,
+        -22.5
+      ],
+      "model": "prop.mv_market_stall",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_05ldagivf5",
+      "kind": "prop",
+      "position": [
+        17.5,
+        -4,
+        -22.5
+      ],
+      "model": "prop.rustic_market_stall",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mfl0mwrrnn",
+      "kind": "prop",
+      "position": [
+        6,
+        -4,
+        -33.5
+      ],
+      "model": "prop.mv_hay_cart",
+      "yaw": 0.524,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x0rc1yotvd",
+      "kind": "prop",
+      "position": [
+        0,
+        -4,
+        -30
+      ],
+      "model": "prop.anvil",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "spawn_ypl82jhglz",
+      "kind": "spawn",
+      "position": [
+        4,
+        -4,
+        -26
+      ],
+      "yaw": 3.142,
+      "faction": null
+    },
+    {
+      "id": "spawn_7nlyaxevjz",
+      "kind": "spawn",
+      "position": [
+        20,
+        -4,
+        -26
+      ],
+      "yaw": 3.142,
+      "faction": null
+    },
+    {
+      "id": "spawn_amleo2l0kj",
+      "kind": "spawn",
+      "position": [
+        10,
+        -4,
+        -34
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "spawn_w9sdjfv9q9",
+      "kind": "spawn",
+      "position": [
+        14,
+        -4,
+        -18
+      ],
+      "yaw": 0,
+      "faction": null
+    },
+    {
+      "id": "pickup_odkmv3mx3b",
+      "kind": "pickup",
+      "position": [
+        12,
+        -4,
+        -24
+      ],
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_x9abza46ly",
+      "kind": "pickup",
+      "position": [
+        24,
+        -4,
+        -32
+      ],
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_e2hxfyh75y",
+      "kind": "pickup",
+      "position": [
+        22,
+        -4,
+        -25
+      ],
+      "item": "core.ammo_sniper",
+      "respawnSeconds": null
     }
   ],
   "factions": [],
@@ -6454,15 +6679,15 @@
       -329,
       -347,
       -362,
-      -374,
-      -382,
-      -386,
-      -387,
-      -384,
-      -379,
-      -372,
-      -366,
-      -359,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
       -351,
       -343,
       -336,
@@ -7677,17 +7902,17 @@
       -472,
       -442,
       -418,
-      -401,
-      -391,
-      -389,
-      -390,
-      -392,
-      -395,
-      -399,
-      -404,
+      -452,
+      -452,
+      -405,
+      -452,
+      -452,
+      -452,
+      -405,
+      -452,
       -409,
-      -414,
-      -420,
+      -416,
+      -424,
       -427,
       -433,
       -440,
@@ -7786,25 +8011,25 @@
       -498,
       -457,
       -418,
-      -386,
-      -360,
-      -342,
-      -331,
-      -327,
-      -328,
-      -330,
-      -333,
-      -337,
-      -342,
-      -347,
-      -352,
-      -359,
-      -365,
-      -372,
-      -378,
-      -385,
-      -392,
-      -399,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
+      -405,
       -406,
       -412,
       -419,
@@ -7906,12 +8131,12 @@
       -271,
       -274,
       -277,
-      -281,
-      -286,
-      -292,
-      -298,
-      -304,
-      -311,
+      -287,
+      -309,
+      -315,
+      -317,
+      -321,
+      -323,
       -317,
       -324,
       -331,
@@ -8017,13 +8242,13 @@
       -214,
       -216,
       -219,
-      -223,
       -227,
-      -232,
-      -238,
-      -244,
-      -250,
+      -237,
+      -248,
+      -253,
       -256,
+      -255,
+      -258,
       -263,
       -269,
       -276,
@@ -8128,13 +8353,13 @@
       -159,
       -160,
       -163,
-      -166,
-      -170,
-      -174,
-      -179,
-      -184,
-      -190,
+      -171,
+      -178,
+      -185,
+      -191,
+      -193,
       -196,
+      -198,
       -202,
       -208,
       -214,
@@ -8239,13 +8464,13 @@
       -105,
       -106,
       -108,
-      -111,
-      -114,
-      -118,
-      -122,
-      -126,
-      -131,
-      -136,
+      -117,
+      -125,
+      -130,
+      -133,
+      -137,
+      -139,
+      -140,
       -141,
       -146,
       -151,
@@ -8350,13 +8575,13 @@
       -53,
       -54,
       -55,
-      -57,
-      -59,
-      -62,
-      -65,
-      -68,
-      -72,
-      -76,
+      -69,
+      -78,
+      -83,
+      -84,
+      -88,
+      -87,
+      -84,
       -80,
       -84,
       -88,
@@ -8463,9 +8688,9 @@
       -40,
       -40,
       -40,
-      -40,
-      -40,
-      -40,
+      -46,
+      -52,
+      -48,
       -40,
       -40,
       -40,
@@ -40391,7 +40616,12 @@
     ]
   },
   "bounds": null,
-  "backdrop": null,
+  "backdrop": {
+    "sky": "cloudy",
+    "scenery": "mountains",
+    "ground": "grass",
+    "haze": 0.35
+  },
   "physics": null,
   "blood": null,
   "teamSetup": null,

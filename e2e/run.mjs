@@ -1216,6 +1216,8 @@ async function spectateChecks(browser) {
   const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/spectate-${name}.png` }).catch(() => {}) : Promise.resolve());
   await page.goto(`${CLIENT}/?offline&test=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+  // Bots hold fire: only the kills below happen to you (CI: a bot shot the player between Join game and the check).
+  await holdBots(page);
   const spec = () => page.evaluate(() => window.__cs.spec());
   // A bot kills you; your respawn waits a minute, so there's time to watch (the bots respawn as usual).
   const killer = await sim(page, (m, me) => {
@@ -1224,12 +1226,14 @@ async function spectateChecks(browser) {
     me.respawnTick = m.tick + 60 * 60;
     return { slot: bot.slot, name: bot.name };
   });
-  // The banner, read the moment it's up (the kill cam lasts a few seconds).
+  // The banner, read the moment it's up. The kill cam lasts a few seconds as drawn (each frame counts at most a
+  // quarter second: spectatorCam.ts), so a page drawing a frame a second shows it for many seconds; the death reaches
+  // the page with the match's next snapshots, which a loaded page can take a while to get to.
   const banner = await page
     .waitForFunction(() => {
       const el = document.getElementById('killcam');
       return el && !el.hidden && window.__cs.spec().killCam !== null && { text: el.textContent, killer: window.__cs.spec().killCam };
-    }, null, { timeout: T(5000), polling: 50 })
+    }, null, { timeout: T(30000), polling: 50 })
     .then((h) => h.jsonValue())
     .catch(() => null);
   check(banner?.killer === killer.slot && banner.text.includes(killer.name), `the kill cam shows the killer (${banner?.text ?? 'no banner'})`);
@@ -1237,7 +1241,7 @@ async function spectateChecks(browser) {
   await page.evaluate(() => (document.getElementById('pause').hidden = true));
   await shot('killcam');
   // When it ends (the match's own respawn delay, as this page knows it), you follow a player (free-for-all: anyone).
-  await page.waitForFunction(() => window.__cs.spec().killCam === null && window.__cs.spec().following >= 0, null, { timeout: T(8000) }).catch(() => {});
+  await page.waitForFunction(() => window.__cs.spec().killCam === null && window.__cs.spec().following >= 0, null, { timeout: T(60000) }).catch(() => {});
   const first = await spec();
   const watching = await page.evaluate(() => document.querySelector('#spectating b')?.textContent ?? '');
   check(first.killCam === null && first.following >= 0 && !first.free && /^Watching /.test(watching), `after the kill cam you follow a player (${watching})`);
@@ -1273,11 +1277,13 @@ async function spectateChecks(browser) {
     m.kill(me, m.combatants().find((c) => c.kind === 'bot' && c.alive), 'core.pistol');
     me.respawnTick = m.tick + 60 * 60;
   });
-  await page.waitForFunction(() => window.__cs.spec().killCam !== null, null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForFunction(() => window.__cs.spec().killCam !== null, null, { timeout: T(30000) }).catch(() => {});
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => window.__cs.spec().killCam === null, null, { timeout: T(1500) }).catch(() => {});
+  // The page takes the key on its next frame (a second or more on a loaded page). It skipped (not ran out), and
+  // Space did only that (no free camera).
+  await page.waitForFunction(() => window.__cs.spec().killCam === null, null, { timeout: T(15000) }).catch(() => {});
   const skipped = await spec();
-  check(skipped.killCam === null && !skipped.free, `a key skips the kill cam (${JSON.stringify({ killCam: skipped.killCam, following: skipped.following })})`);
+  check(skipped.killCam === null && skipped.killCamEnd === 'skipped' && !skipped.free, `a key skips the kill cam (${JSON.stringify({ killCam: skipped.killCam, end: skipped.killCamEnd, free: skipped.free, following: skipped.following })})`);
   await sim(page, (m, me) => void (me.respawnTick = m.tick));
   await page.waitForFunction(() => window.__cs.local.alive && !window.__cs.spec().out, null, { timeout: T(5000) }).catch(() => {});
   // Spectate by choice (pause menu): out of the match, a bot in the place, the free camera; Join game puts you back.
@@ -1297,9 +1303,9 @@ async function spectateChecks(browser) {
   await page.evaluate(() => (document.getElementById('pause').hidden = true));
   await shot('spectator');
   await page.evaluate(() => document.getElementById('pause-spectate').click());
-  await page.waitForFunction(() => !window.__cs.spec().spectator && window.__cs.local.alive, null, { timeout: T(5000) }).catch(() => {});
+  const alive = await page.waitForFunction(() => !window.__cs.spec().spectator && window.__cs.local.alive, null, { timeout: T(15000) }).then(() => true, () => false);
   const joined = await sim(page, (m, me) => ({ human: m.slots[me.slot]?.kind === 'human', n: m.combatants().length }));
-  check(joined.human && joined.n === before && (await page.evaluate(() => window.__cs.local.alive)), `Join game puts you back in play (${JSON.stringify(joined)})`);
+  check(alive && joined.human && joined.n === before, `Join game puts you back in play (${JSON.stringify({ ...joined, alive })})`);
   check(errors.length === 0, `no page errors while spectating (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();
@@ -3920,6 +3926,9 @@ async function lobbyFlow(browser) {
   }
   check(listed, `the host's match is listed (${await host.evaluate(() => document.getElementById('host-public-status').textContent)})`);
   const hostCode = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
+  // The host's check-ins with the hub (hub.ts LobbyAdvertiser: every LOBBY_HEARTBEAT_SECONDS, with fresh counts).
+  let checkins = 0;
+  host.on('requestfinished', (r) => r.method() === 'PUT' && /\/lobby\/games\/[\w-]+$/.test(r.url()) && checkins++);
   const relayNote = await host.evaluate(() => document.getElementById('host-info').textContent);
   check(relayNote.includes('hub provides a relay'), 'the hub hands out relay credentials, and the host is told');
   const player = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
@@ -3935,9 +3944,14 @@ async function lobbyFlow(browser) {
   check(joined, 'joining from the game browser puts the player in the match');
   const lobbyGames = () => player.evaluate(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => JSON.stringify(d.games.map((g) => [g.name, g.code, g.players])))).catch((e) => e.message);
   if (joined) {
-    // The next check-in reports two players.
-    const two = await player.waitForFunction(() => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => d.games.find((g) => g.name === 'E2E Friday Night')?.players === 2), null, { timeout: T(30000), polling: 2000 }).then(() => true, () => false);
-    check(two, `the listing updates to 2 players${two ? '' : ` (${await lobbyGames()})`}`);
+    // The host's next check-in reports two players. Its timer runs on the host's page, which on a heavy map and a
+    // loaded machine fires late: wait for the check-ins themselves, not a time. Two finished after the join (the
+    // first may have been sent before the host counted the player), then the listing must say 2.
+    const from = checkins;
+    const twoNow = async () => ((await hubGames(HUB_PORT)) ?? []).find((g) => g.name === 'E2E Friday Night')?.players === 2;
+    await hubUntil(async () => (await twoNow()) || checkins >= from + 2, T(180000));
+    const two = await hubUntil(twoNow, 3000);
+    check(two, `the listing updates to 2 players${two ? '' : ` (${checkins - from} check-ins since the join: ${await lobbyGames()})`}`);
   }
   await host.context().close();
   // The host's listing goes (the player may carry the match on under a listing of their own: host handoff).
@@ -4015,7 +4029,10 @@ async function dedicatedhostFlow(browser) {
   const CONTROL_PORT = +(process.env.E2E_DEDICATED_CONTROL_PORT ?? 7801);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478', LAN_DISCOVERY: '0' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000));
-  const hostState = await startHostService({ hubPort: HUB_PORT, controlPort: CONTROL_PORT, env: { MAP: 'sandgate', MODE: 'core.tdm', BOT_FILL: '8', SERVER_NAME: 'E2E Dedicated', ADMIN_TOKEN: 'e2e-admin-token' } });
+  // AFK_SECONDS 0: no idle takeover. The test's players sit still for minutes on a slow runner (the visitor after
+  // its walk, the owner in the pause menu); after 90 s a bot played for each, the roster called them bots, and the
+  // admin's player list (people only) lost the visitor's Kick button mid-check. The idle rules have unit tests.
+  const hostState = await startHostService({ hubPort: HUB_PORT, controlPort: CONTROL_PORT, env: { MAP: 'sandgate', MODE: 'core.tdm', BOT_FILL: '8', SERVER_NAME: 'E2E Dedicated', ADMIN_TOKEN: 'e2e-admin-token', AFK_SECONDS: '0' } });
   const listed = await hubUntil(async () => ((await hubGames(HUB_PORT)) ?? []).some((g) => g.name === 'E2E Dedicated'), T(60000));
   check(listed, 'the Host Service registers on the hub and lists itself');
   if (!listed) return;
@@ -4580,12 +4597,18 @@ async function handoffFlow(browser) {
   const errors = [];
   const logs = [];
   const began = Date.now();
+  // The pages' console, for a failed check (CI annotations carry it).
+  const dump = () => console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
   const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
   const open = async (name, url) => {
     const p = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
     p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
     // The friends' console (warnings and up, and timed lines), shown when a check after the handoff fails.
     p.on('console', (m) => (m.type() === 'warning' || m.type() === 'error' || process.env.E2E_HANDOFF_LOG) && logs.push(`${((Date.now() - began) / 1000).toFixed(1)} ${name} ${m.type()}: ${m.text().slice(0, 300)}`));
+    // …and the match's worker (where a hosted match runs: matchHost.ts says why it closes a friend's link).
+    p.on('worker', (w) => w.on('console', (m) => (m.type() === 'warning' || m.type() === 'error') && logs.push(`${((Date.now() - began) / 1000).toFixed(1)} ${name} worker ${m.type()}: ${m.text().slice(0, 300)}`)));
+    // The console's "Failed to load resource" doesn't say which: name it.
+    p.on('response', (r) => r.status() >= 400 && logs.push(`${((Date.now() - began) / 1000).toFixed(1)} ${name} ${r.status()}: ${r.url().slice(0, 200)}`));
     await p.addInitScript((n) => localStorage.setItem('cs.name', n), name);
     await p.goto(url, { waitUntil: 'domcontentloaded', timeout: T(60000) });
     return p;
@@ -4607,9 +4630,15 @@ async function handoffFlow(browser) {
   check(listed && /^[A-Z0-9]{6}$/.test(code), `the host's match is listed with a code (${code})`);
   const ann = await open('Ann', `${CLIENT}/?join=${code}${hub}`);
   const bo = await open('Bo', `${CLIENT}/?join=${code}${hub}`);
-  const inBoth = (await ann.waitForFunction(playing, null, { timeout: T(120000) }).then(() => true, () => false)) && (await bo.waitForFunction(playing, null, { timeout: T(120000) }).then(() => true, () => false));
+  // Each friend, once in, looks about now and then, as players do. Left idle they were "away" after 90 s
+  // (AWAY.afkSeconds) on a slow run: a bot played for them, and an away friend is no successor (matchHost
+  // tendSuccessor), so the successor, its checkpoints and the takeover went with it. (Turning counts as playing:
+  // Match.noteActivity.)
+  const lookAbout = (p) => p.evaluate(() => setInterval(() => window.__cs?.input && (window.__cs.input.yaw += (window.__lookAbout = -(window.__lookAbout ?? -0.1))), 3000));
+  const joins = (p) => p.waitForFunction(playing, null, { timeout: T(120000) }).then(() => lookAbout(p).then(() => true), () => false);
+  const inBoth = (await Promise.all([joins(ann), joins(bo)])).every(Boolean);
   check(inBoth, 'two friends join the hosted match');
-  if (!inBoth) return void console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
+  if (!inBoth) return void dump();
   // What each friend's link knows: its standby code (asked to stand by), the successor named, a checkpoint.
   const known = (p) => p.evaluate(() => {
     const h = window.__cs?.transport?.handoff;
@@ -4626,7 +4655,7 @@ async function handoffFlow(browser) {
     return !!heir;
   }, T(180000));
   check(named, `the host names a successor in advance, everyone knows its code, and it gets checkpoints (${((Date.now() - t0) / 1000).toFixed(0)} s; ${JSON.stringify([await known(ann), await known(bo)])})`);
-  if (!named) return;
+  if (!named) return void dump();
   // Both friends score: the other one's must survive the handoff. No score limit: on a slow run a bot reaching
   // it would end the round, and the next round's scores start from nothing.
   const scores = { Ann: 7, Bo: 6 };
@@ -4645,7 +4674,7 @@ async function handoffFlow(browser) {
     return true;
   }, T(30000));
   check(carried, "the successor's checkpoint carries the other friend's score");
-  if (!carried) return;
+  if (!carried) return void dump();
   // The host leaves; whichever friend was named last carries the match on.
   await host.evaluate(() => document.getElementById('exitmatch').click());
   await host.evaluate(() => document.getElementById('leave-yes')?.click());
@@ -4657,14 +4686,14 @@ async function handoffFlow(browser) {
     return true;
   }, T(60000));
   check(took, `${heir.name} takes the match over and hosts it`);
-  if (!took) return void console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
+  if (!took) return void dump();
   const heirCode = await heir.page.evaluate(() => document.querySelector('#host-info .host-code b').textContent);
   const followed = await other.page.waitForFunction((c) => window.__cs?.transport?.label === `code ${c}` && !!window.__cs.local && !document.getElementById('host-left'), heirCode, { timeout: T(95000) }).then(() => true, () => false);
   check(followed, `${other.name} follows to ${heir.name}'s code (${heirCode}) by themselves`);
   const back = await simWait(heir.page, (m, me, [n, k]) => m.combatants().some((c) => c.kind === 'human' && c.name === n && !c.away && c.kills >= k), [other.name, scores[other.name]], T(30000));
   const seen = await sim(heir.page, (m) => m.combatants().map((c) => `${c.name}:${c.kind}:${c.kills}`));
   check(back, `${other.name} has their place back, with their score (${seen.join(', ')})`);
-  if (!followed || !back) console.log(`handoff console (last 40):\n  ${logs.slice(-40).join('\n  ')}`);
+  if (!followed || !back) dump();
   const moved = await heir.page
     .waitForFunction((c) => fetch(`http://${new URLSearchParams(location.search).get('hub')}/lobby/games`).then((r) => r.json()).then((d) => { const g = d.games.filter((x) => x.name === 'E2E Handoff'); return g.length === 1 && g[0].code === c; }), heirCode, { timeout: T(40000), polling: 1000 })
     .then(() => true, () => false);

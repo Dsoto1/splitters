@@ -221,6 +221,23 @@ function readBody(req: IncomingMessage): Promise<Buffer> {
 }
 
 /**
+ * A hub that doesn't publish (no PUBLISHED_MAPS_DIR): the list is empty, as on a hub with nothing published yet.
+ * Every page asks for it as it loads (publishedMaps.ts); a 404 there was handled, but logged as a failed resource
+ * on every page. Anything else under /api/v1/maps (a map's file, publishing) goes on to a 404.
+ */
+export function noPublishingHandler() {
+  return (req: IncomingMessage, res: ServerResponse, next: () => void): void => {
+    const path = new URL(req.url ?? '/', 'http://hub').pathname.replace(/\/+$/, '');
+    if (path !== '/api/v1/maps' || (req.method !== 'GET' && req.method !== 'HEAD')) return next();
+    res.statusCode = 200;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=30');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.end(req.method === 'HEAD' ? undefined : JSON.stringify({ maps: [] }));
+  };
+}
+
+/**
  * /api/v1/maps: the published maps for everyone to read, and publishing for owners.
  *   GET    /api/v1/maps                         the list (PublishedEntry[])
  *   GET    /api/v1/maps/<id>                    a published map's file

@@ -1,6 +1,7 @@
 import { CORE_LOOKS, RETIRED_LOOKS, encodeLook, getLook, type CharacterGroup } from '../content/looks.ts';
 import { CORE_BOT_PROFILES, type BotProfile } from '../bots/profile.ts';
-import { NPC_ROLES, PLAYERS_FACTION, type Faction, type MapDocument, type NpcRole, type Relation } from '../map/schema.ts';
+import { NPC_ROLES, PLAYERS_FACTION } from '../map/mapKeys.ts';
+import type { Faction, MapDocument, NpcRole, Relation } from '../map/schema.ts';
 
 /**
  * NPC combatants (MASTER_SPEC_V2 §8, CHARACTERS_BOTS_V2 §14): scenario

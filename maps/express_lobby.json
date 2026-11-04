@@ -1,13 +1,13 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 25,
   "metadata": {
     "id": "express_lobby",
     "name": "Express Lobby",
     "author": "Tile Trigger",
     "description": "A skyscraper's elevator core is the arena: six open glass cabs race up and down a 48 m neon atrium, and the shaft runs over anyone in a car's way. Hop cab to cab, ride up to the two mezzanines that hold the hills, take the roof with its gunship, and hit the machine-room console to drop cab C's floor out from under its riders (hold jump for a parachute: long falls kill).",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-10-23T00:00:00.000Z",
+    "updatedAt": "2026-11-04T00:10:44.490Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 8,
@@ -6817,6 +6817,654 @@
       "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
+    },
+    {
+      "id": "block_jo92buckom",
+      "kind": "block",
+      "position": [
+        9.6,
+        7.6,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        2.4,
+        0.4,
+        13.2
+      ],
+      "material": "core.steel_grating",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ddrdoryh7l",
+      "kind": "block",
+      "position": [
+        8.43,
+        8,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "block_6ctcqgmocs",
+      "kind": "block",
+      "position": [
+        10.77,
+        8,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "light_zpwk35dqcp",
+      "kind": "light",
+      "position": [
+        9.6,
+        11,
+        0
+      ],
+      "yaw": 0,
+      "color": "#e8f4ff",
+      "intensity": 1,
+      "range": 8,
+      "fixture": "strip"
+    },
+    {
+      "id": "block_t7qf6k4zjn",
+      "kind": "block",
+      "position": [
+        -9.6,
+        15.6,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        2.4,
+        0.4,
+        13.2
+      ],
+      "material": "core.steel_grating",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_05ldagivf5",
+      "kind": "block",
+      "position": [
+        -10.77,
+        16,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "block_x0rc1yotvd",
+      "kind": "block",
+      "position": [
+        -8.43,
+        16,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "light_7nlyaxevjz",
+      "kind": "light",
+      "position": [
+        -9.6,
+        19,
+        0
+      ],
+      "yaw": 0,
+      "color": "#e8f4ff",
+      "intensity": 1,
+      "range": 8,
+      "fixture": "strip"
+    },
+    {
+      "id": "block_w9sdjfv9q9",
+      "kind": "block",
+      "position": [
+        9.6,
+        23.6,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        2.4,
+        0.4,
+        13.2
+      ],
+      "material": "core.steel_grating",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_x9abza46ly",
+      "kind": "block",
+      "position": [
+        8.43,
+        24,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "block_q1y59c4csi",
+      "kind": "block",
+      "position": [
+        10.77,
+        24,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "light_26cjl0x171",
+      "kind": "light",
+      "position": [
+        9.6,
+        27,
+        0
+      ],
+      "yaw": 0,
+      "color": "#e8f4ff",
+      "intensity": 1,
+      "range": 8,
+      "fixture": "strip"
+    },
+    {
+      "id": "block_xo4odrco3m",
+      "kind": "block",
+      "position": [
+        -9.6,
+        31.6,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        2.4,
+        0.4,
+        13.2
+      ],
+      "material": "core.steel_grating",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_y07fpt0nwn",
+      "kind": "block",
+      "position": [
+        -10.77,
+        32,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "block_xvlpf0046m",
+      "kind": "block",
+      "position": [
+        -8.43,
+        32,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "light_tjjq2xgvb7",
+      "kind": "light",
+      "position": [
+        -9.6,
+        35,
+        0
+      ],
+      "yaw": 0,
+      "color": "#e8f4ff",
+      "intensity": 1,
+      "range": 8,
+      "fixture": "strip"
+    },
+    {
+      "id": "block_u5uhixt8oj",
+      "kind": "block",
+      "position": [
+        9.6,
+        39.6,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        2.4,
+        0.4,
+        13.2
+      ],
+      "material": "core.steel_grating",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_9w07a2nv37",
+      "kind": "block",
+      "position": [
+        8.43,
+        40,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "block_mc5vpcweqh",
+      "kind": "block",
+      "position": [
+        10.77,
+        40,
+        0
+      ],
+      "yaw": 0,
+      "size": [
+        0.06,
+        1,
+        13.2
+      ],
+      "material": "core.pbr_steel",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "glass": "reinforced"
+    },
+    {
+      "id": "light_6lmfgc3cff",
+      "kind": "light",
+      "position": [
+        9.6,
+        43,
+        0
+      ],
+      "yaw": 0,
+      "color": "#e8f4ff",
+      "intensity": 1,
+      "range": 8,
+      "fixture": "strip"
+    },
+    {
+      "id": "prop_0w3jql50ed",
+      "kind": "prop",
+      "position": [
+        13,
+        8,
+        -8.4
+      ],
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7z14fgs7s3",
+      "kind": "prop",
+      "position": [
+        -13,
+        16,
+        8.4
+      ],
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_89yclntz5q",
+      "kind": "prop",
+      "position": [
+        13,
+        24,
+        -8.4
+      ],
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_je74016k41",
+      "kind": "prop",
+      "position": [
+        -13,
+        32,
+        8.4
+      ],
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_nl8jy5oyw4",
+      "kind": "prop",
+      "position": [
+        13,
+        40,
+        -8.4
+      ],
+      "model": "prop.potted_plant",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ekrqxstr16",
+      "kind": "prop",
+      "position": [
+        -24,
+        0,
+        -15
+      ],
+      "model": "prop.car_beetle",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3n235pv1oz",
+      "kind": "prop",
+      "position": [
+        24,
+        0,
+        15
+      ],
+      "model": "prop.car_pickup",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_83reavktfo",
+      "kind": "prop",
+      "position": [
+        -26,
+        0,
+        16
+      ],
+      "model": "prop.car_offroader",
+      "yaw": 1.396,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6zlwkdt8y3",
+      "kind": "prop",
+      "position": [
+        26,
+        0,
+        -16
+      ],
+      "model": "prop.car_beetle",
+      "yaw": -1.745,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jrtyepj7rp",
+      "kind": "prop",
+      "position": [
+        -30,
+        0,
+        2
+      ],
+      "model": "prop.street_dumpster",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_inq9aipltk",
+      "kind": "prop",
+      "position": [
+        30,
+        0,
+        -2
+      ],
+      "model": "prop.street_trash_can_classic",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wi4ho8ca33",
+      "kind": "prop",
+      "position": [
+        -20,
+        0,
+        19
+      ],
+      "model": "prop.mt_bench",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_zlsiuwh1ug",
+      "kind": "prop",
+      "position": [
+        20,
+        0,
+        -19
+      ],
+      "model": "prop.mt_bench",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6tweacke6m",
+      "kind": "prop",
+      "position": [
+        -17,
+        0,
+        -19
+      ],
+      "model": "prop.street_post_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_7uar2m0i99",
+      "kind": "prop",
+      "position": [
+        17,
+        0,
+        19
+      ],
+      "model": "prop.street_post_barrel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2ee3q5cgbj",
+      "kind": "prop",
+      "position": [
+        33,
+        0,
+        10
+      ],
+      "model": "prop.nc_holo_kiosk",
+      "yaw": -1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_azewwg7z21",
+      "kind": "prop",
+      "position": [
+        -33,
+        0,
+        -10
+      ],
+      "model": "prop.mt_vending_machine",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -7446,7 +8094,6 @@
     "style": "invisible",
     "height": 60
   },
-  "track": null,
   "backdrop": {
     "sky": "night",
     "scenery": "city",
