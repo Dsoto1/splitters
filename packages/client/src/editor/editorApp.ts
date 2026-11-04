@@ -3340,7 +3340,9 @@ export class EditorApp {
         $<HTMLSelectElement>('ed-scope').value = scope.value;
       });
       el.append(row('Apply to', scope));
-      for (const slot of SURFACE_SLOTS) el.append(this.surfaceRow(t, slot));
+      // The roof's top only where the room has a roof (room option Ceiling).
+      const roofed = !!t.options?.ceiling && t.options.ceiling !== 'open';
+      for (const slot of SURFACE_SLOTS) if (slot !== 'roof' || roofed || t.surfaces?.roof) el.append(this.surfaceRow(t, slot));
       el.append(small(`ID ${t.id}`));
     } else if (entities.length === 1 && tiles.length === 0) {
       this.entityInspector(el, doc.entities.find((x) => x.id === entities[0])!);
@@ -4101,7 +4103,7 @@ export class EditorApp {
   private surfaceRow(t: MapDocument['classicStructure']['tiles'][number], slot: SurfaceSlot): HTMLElement {
     const current = t.surfaces?.[slot];
     const mat = document.createElement('select');
-    mat.append(new Option(`Theme (${resolveSurface({ ...this.doc }, undefined, slot).material.displayName})`, '', false, !current));
+    mat.append(new Option(slot === 'roof' ? 'Same as the floor' : `Theme (${resolveSurface({ ...this.doc }, undefined, slot).material.displayName})`, '', false, !current));
     for (const def of coreMaterials.all()) mat.append(new Option(def.displayName, def.id, false, current?.material === def.id));
     const tint = document.createElement('input');
     tint.type = 'color';

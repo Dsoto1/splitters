@@ -156,6 +156,30 @@
       "collide": "box"
     },
     {
+      "id": "im_capitol_dome",
+      "src": "im_capitol_dome.glb",
+      "name": "Capitol Dome",
+      "category": "Imperial Arena",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "im_copper_dome",
+      "src": "im_copper_dome.glb",
+      "name": "Copper Dome",
+      "category": "Imperial Arena",
+      "scale": 1,
+      "collide": "model"
+    },
+    {
+      "id": "im_pediment",
+      "src": "im_pediment.glb",
+      "name": "Pediment",
+      "category": "Imperial Arena",
+      "scale": 1,
+      "collide": "shell"
+    },
+    {
       "id": "eg_obelisk",
       "src": "eg_obelisk.glb",
       "name": "Obelisk",

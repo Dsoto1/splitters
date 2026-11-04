@@ -120,7 +120,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
     ],
     props: /* @__PURE__ */ props(
       'im_column_ionic', 'im_brazier', 'im_statue_emperor', 'im_amphorae', 'im_weapon_rack', 'im_training_post', 'im_aquila', 'im_vexillum', 'im_chariot',
-      'im_lift_cage', 'im_stakes', 'im_altar', 'im_bench', 'im_fountain', 'im_velarium', 'im_bust', 'im_throne',
+      'im_lift_cage', 'im_stakes', 'im_altar', 'im_bench', 'im_fountain', 'im_velarium', 'im_bust', 'im_throne', 'im_capitol_dome', 'im_copper_dome', 'im_pediment',
       // Quaternius Ultimate Modular Ruins, already in the game.
       'rn_column_round', 'rn_column_square', 'rn_column_broken', 'rn_arch_round', 'rn_wall', 'rn_wall_broken', 'rn_wall_half', 'rn_stairs', 'rn_urn', 'rn_urn_broken', 'rn_cart', 'rn_buttress',
     ),

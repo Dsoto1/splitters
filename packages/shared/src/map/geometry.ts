@@ -37,6 +37,8 @@ export interface WorldBox {
   roll?: number;
   /** Material for every face (free blocks), instead of the theme's. */
   surface?: { material: string; tint: string | null };
+  /** A room's roof slab (room option Ceiling): its top is painted as the tile's `roof` surface. */
+  roof?: true;
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -690,7 +692,7 @@ function roomOptionBoxes(map: MapDocument, catalog: TileCatalog, cells: Map<stri
       const cz = y * cellSize;
       const top = z * levelHeight + levelHeight;
       if (o.ceiling && o.ceiling !== 'open' && !cells.has(cellKey(x, y, z + 1))) {
-        const roof = (x0: number, z0: number, x1: number, z1: number) => out.push({ min: [cx + x0, top - TILE_DIMENSIONS.floorThickness, cz + z0], max: [cx + x1, top, cz + z1], kind: 'floor', sourceId: placement.id });
+        const roof = (x0: number, z0: number, x1: number, z1: number) => out.push({ min: [cx + x0, top - TILE_DIMENSIONS.floorThickness, cz + z0], max: [cx + x1, top, cz + z1], kind: 'floor', sourceId: placement.id, roof: true });
         if (decor) {
           if (o.ceiling === 'beams') {
             // Three beams under the roof, across the room's short way in its own frame.

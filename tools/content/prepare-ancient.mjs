@@ -59,6 +59,10 @@ const MATS = {
   coal: { color: hex('#2a1a12'), emissive: glow('#ff5a1a', 0.4) },
   fire: { color: hex('#ff8a2a'), emissive: glow('#ff8a2a') },
   flame: { color: hex('#ffd060'), emissive: glow('#ffd060') },
+  // Domes: weathered copper (verdigris) and the dark glass of drum windows.
+  verdigris: { color: hex('#7fae98'), metal: 0.25, rough: 0.55 },
+  verdigrisDark: { color: hex('#557f6c'), metal: 0.25, rough: 0.55 },
+  window: { color: hex('#2a3038'), metal: 0.3, rough: 0.2 },
 };
 const piece = (name) => new Piece(name, MATS);
 
@@ -97,6 +101,114 @@ function amphora(p, x, z, s = 1, mat = 'terracotta') {
   p.cylinder(mat, [x, 0, z], 0.07 * s, 0.62 * s, 0.82 * s, { seg: 10, r1: 0.06 * s });
   p.ring(mat, [x, 0.82 * s, z], 0.05 * s, 0.09 * s, 0, 0.04 * s, { seg: 10 });
   for (const d of [-1, 1]) p.box(mat, [x + d * 0.07 * s - 0.02 * s, 0.6 * s, z - 0.02 * s], [x + d * 0.16 * s + 0.02 * s, 0.78 * s, z + 0.02 * s]);
+}
+
+// ---------------------------------------------------------------- domes (civic and classical)
+
+/**
+ * A dome's shell as a stack of turned bands following a quarter ellipse: springing at y0 with radius R, rising H.
+ * `inside` faces the bands inward (seen from under the dome: a rotunda's ceiling), else outward.
+ * Returns the rings' [radius, height] so ribs can follow them.
+ */
+function domeShell(p, mat, y0, R, H, { n = 12, seg = 48, inside = false, top = 0.04 } = {}) {
+  const rings = [];
+  for (let i = 0; i <= n; i++) {
+    const a = (i / n) * (Math.PI / 2);
+    rings.push([Math.max(top, R * Math.cos(a)), y0 + H * Math.sin(a)]);
+  }
+  for (let i = 0; i < n; i++) {
+    const [r0, h0] = rings[i];
+    const [r1, h1] = rings[i + 1];
+    // The band's normal leans up the slope: from (dr, dh) along the meridian.
+    const dr = r1 - r0;
+    const dh = h1 - h0;
+    const l = Math.hypot(dr, dh) || 1;
+    const nr = dh / l;
+    const ny = -dr / l;
+    for (let j = 0; j < seg; j++) {
+      const a0 = (j / seg) * Math.PI * 2;
+      const a1 = ((j + 1) / seg) * Math.PI * 2;
+      const am = (a0 + a1) / 2;
+      const P = (r, h, a) => [Math.cos(a) * r, h, Math.sin(a) * r];
+      const nOut = [Math.cos(am) * nr, ny, Math.sin(am) * nr];
+      if (inside) p.quad(mat, P(r0, h0, a0), P(r0, h0, a1), P(r1, h1, a1), P(r1, h1, a0), nOut.map((v) => -v));
+      else p.quad(mat, P(r0, h0, a1), P(r0, h0, a0), P(r1, h1, a0), P(r1, h1, a1), nOut);
+    }
+  }
+  return rings;
+}
+
+/** Raised ribs down a dome (`count` of them), following the rings domeShell returned: `w` wide, standing `t` proud. */
+function domeRibs(p, mat, rings, count, w, t, skip = 1) {
+  for (let k = 0; k < count; k++) {
+    const a = (k / count) * Math.PI * 2;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    // Across the rib (horizontal, tangent to the ring) and out from the surface.
+    const tx = -s;
+    const tz = c;
+    for (let i = 0; i < rings.length - 1 - skip; i++) {
+      const [r0, h0] = rings[i];
+      const [r1, h1] = rings[i + 1];
+      const l = Math.hypot(r1 - r0, h1 - h0) || 1;
+      const out = [((h1 - h0) / l) * c, -(r1 - r0) / l, ((h1 - h0) / l) * s];
+      const at = (r, h, side, lift) => [c * r + tx * side * (w / 2) + out[0] * lift, h + out[1] * lift, s * r + tz * side * (w / 2) + out[2] * lift];
+      // Top face, then the two sides, each wound to face along its normal.
+      const face = (a, b, c, d, n) => {
+        const u = [0, 1, 2].map((k) => b[k] - a[k]);
+        const v = [0, 1, 2].map((k) => c[k] - a[k]);
+        const x = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+        if (x[0] * n[0] + x[1] * n[1] + x[2] * n[2] >= 0) p.quad(mat, a, b, c, d, n);
+        else p.quad(mat, d, c, b, a, n);
+      };
+      face(at(r0, h0, 1, t), at(r0, h0, -1, t), at(r1, h1, -1, t), at(r1, h1, 1, t), out);
+      face(at(r0, h0, -1, 0), at(r1, h1, -1, 0), at(r1, h1, -1, t), at(r0, h0, -1, t), [-tx, 0, -tz]);
+      face(at(r0, h0, 1, t), at(r1, h1, 1, t), at(r1, h1, 1, 0), at(r0, h0, 1, 0), [tx, 0, tz]);
+    }
+  }
+}
+
+/** A box `size` [across, tall, deep] facing out from the axis at angle `a`, its back `r` out, its foot at y. */
+function radialBox(p, mat, a, r, y, size) {
+  const [w, h, d] = size;
+  const cx = Math.cos(a) * (r + d / 2);
+  const cz = Math.sin(a) * (r + d / 2);
+  // box() turns +z to (sin yaw, cos yaw): face it along (cos a, sin a).
+  p.box(mat, [cx - w / 2, y, cz - d / 2], [cx + w / 2, y + h, cz + d / 2], Math.PI / 2 - a);
+}
+
+/** A round column standing at (x, y, z), `h` tall: plinth, torus base, tapering shaft, capital and abacus (light: 60 triangles). */
+function roundColumn(p, mat, x, y, z, h, r) {
+  p.box(mat, [x - r * 1.3, y, z - r * 1.3], [x + r * 1.3, y + 0.22, z + r * 1.3]);
+  p.cylinder(mat, [x, y, z], r * 1.2, 0.22, 0.42, { seg: 8, r1: r * 1.05, caps: false });
+  p.cylinder(mat, [x, y, z], r, 0.42, h - 0.42, { seg: 8, r1: r * 0.86, caps: false });
+  p.cylinder(mat, [x, y, z], r * 0.86, h - 0.42, h - 0.2, { seg: 8, r1: r * 1.2, caps: false });
+  p.box(mat, [x - r * 1.3, y + h - 0.2, z - r * 1.3], [x + r * 1.3, y + h, z + r * 1.3]);
+}
+
+/**
+ * Collision for something round, `r` out from the axis between y0 and y1: three boxes (a cross and a square), which
+ * together are a twelve-sided column a little inside the circle.
+ */
+const roundBoxes = (r, y0, y1) => [
+  [-r * 0.94, y0, -r * 0.36, r * 0.94, y1, r * 0.36],
+  [-r * 0.36, y0, -r * 0.94, r * 0.36, y1, r * 0.94],
+  [-r * 0.68, y0, -r * 0.68, r * 0.68, y1, r * 0.68],
+];
+
+/** A shape in the x–y plane (points counter-clockwise, convex) made solid from z0 to z1. */
+function prism(p, mat, pts, z0, z1) {
+  const n = pts.length;
+  for (let i = 1; i < n - 1; i++) {
+    p.tri(mat, [...pts[0], z1], [...pts[i], z1], [...pts[i + 1], z1], [0, 0, 1]);
+    p.tri(mat, [...pts[0], z0], [...pts[i + 1], z0], [...pts[i], z0], [0, 0, -1]);
+  }
+  for (let i = 0; i < n; i++) {
+    const [ax, ay] = pts[i];
+    const [bx, by] = pts[(i + 1) % n];
+    const l = Math.hypot(bx - ax, by - ay) || 1;
+    p.quad(mat, [ax, ay, z0], [ax, ay, z1], [bx, by, z1], [bx, by, z0], [(by - ay) / l, -(bx - ax) / l, 0]);
+  }
 }
 
 // ---------------------------------------------------------------- 03 Imperial Arena
@@ -360,6 +472,109 @@ const PROPS = {
     return p;
   },
 
+  im_capitol_dome() {
+    // A capitol's dome, 28.8 m across, to stand on a flat roof over a rotunda: a drum with tall windows ringed by a
+    // colonnade of 20 columns under an entablature and a balustrade, an attic, a ribbed white dome (lined inside, so
+    // it is a ceiling seen from the rotunda) and a lantern with a bronze finial. Open below: the rotunda shows
+    // through to its ceiling. Collision: the drum and dome as solid rounds, each column on its own (the walk between
+    // the drum and the colonnade stays open).
+    const p = piece('im_capitol_dome');
+    const boxes = [];
+    const seg = 32;
+    // Drum (hollow) and its windows between the columns.
+    p.ring('marble', [0, 0, 0], 10.6, 11.4, 0, 6.45, { seg });
+    for (let i = 0; i < 20; i++) {
+      const a = ((i + 0.5) / 20) * Math.PI * 2;
+      radialBox(p, 'window', a, 11.38, 1.0, [1.2, 3.4, 0.06]);
+      radialBox(p, 'marbleShade', a, 11.38, 4.4, [1.6, 0.3, 0.12]);
+    }
+    boxes.push(...roundBoxes(11.4, 0, 7.55));
+    // Colonnade.
+    for (let i = 0; i < 20; i++) {
+      const a = (i / 20) * Math.PI * 2;
+      const [x, z] = [Math.cos(a) * 13.4, Math.sin(a) * 13.4];
+      roundColumn(p, 'marble', x, 0, z, 6.45, 0.42);
+      boxes.push([x - 0.5, 0, z - 0.5, x + 0.5, 6.45, z + 0.5]);
+    }
+    // Entablature and cornice over the colonnade, a balustrade along its edge.
+    p.ring('marble', [0, 0, 0], 10.6, 14.1, 6.45, 0.8, { seg });
+    p.ring('marbleShade', [0, 0, 0], 10.6, 14.4, 7.25, 0.3, { seg });
+    p.ring('marble', [0, 0, 0], 13.85, 14.2, 7.55, 0.75, { seg });
+    // Attic and its cornice.
+    p.ring('marble', [0, 0, 0], 10.2, 11.0, 7.55, 2.45, { seg });
+    p.ring('marbleShade', [0, 0, 0], 10.0, 11.3, 10.0, 0.3, { seg });
+    // The dome: white, ribbed, lined inside.
+    const rings = domeShell(p, 'marble', 10.3, 10.6, 8.4, { n: 12, seg, top: 1.75 });
+    domeRibs(p, 'marbleShade', rings, 12, 0.36, 0.14, 1);
+    domeShell(p, 'marbleShade', 10.0, 10.2, 8.3, { n: 8, seg: 20, inside: true });
+    boxes.push(...roundBoxes(10.6, 7.55, 13.5), ...roundBoxes(8.6, 13.5, 16.6), ...roundBoxes(5.2, 16.6, 18.7));
+    // Lantern: a ring of small columns round a dark core, a cornice, a little dome and a bronze finial.
+    const top = 10.3 + 8.4;
+    p.cylinder('marble', [0, top - 0.3, 0], 1.95, 0, 0.5, { seg: 16 });
+    p.cylinder('window', [0, top + 0.2, 0], 1.1, 0, 2.0, { seg: 12, caps: false });
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      p.cylinder('marble', [Math.cos(a) * 1.5, top + 0.2, Math.sin(a) * 1.5], 0.14, 0, 2.0, { seg: 6, r1: 0.12, caps: false });
+    }
+    p.cylinder('marble', [0, top + 2.2, 0], 1.8, 0, 0.3, { seg: 16 });
+    domeShell(p, 'marble', top + 2.5, 1.6, 1.2, { n: 5, seg: 16 });
+    p.cylinder('bronze', [0, top + 3.6, 0], 0.32, 0, 0.5, { seg: 8, r1: 0.18 });
+    p.cylinder('bronze', [0, top + 4.1, 0], 0.16, 0, 1.0, { seg: 6, r1: 0.1 });
+    p.sphere('bronze', [0, top + 5.25, 0], 0.22, { rings: 5, seg: 8 });
+    boxes.push([-1.9, top, -1.9, 1.9, top + 3.7, 1.9]);
+    return { p, boxes };
+  },
+  im_copper_dome() {
+    // A museum's dome, 23.6 m across: a limestone drum with pilasters and windows under a cornice, a ribbed dome of
+    // weathered copper (lined inside) and a small lantern. Open below, like the Capitol Dome.
+    const p = piece('im_copper_dome');
+    const boxes = [];
+    const seg = 32;
+    p.ring('marble', [0, 0, 0], 10.6, 11.4, 0, 4.0, { seg });
+    for (let i = 0; i < 16; i++) {
+      radialBox(p, 'marbleShade', (i / 16) * Math.PI * 2, 11.38, 0, [0.7, 4.0, 0.22]);
+      const b = ((i + 0.5) / 16) * Math.PI * 2;
+      radialBox(p, 'window', b, 11.38, 1.0, [1.4, 2.2, 0.06]);
+      radialBox(p, 'marbleShade', b, 11.38, 3.2, [1.7, 0.25, 0.12]);
+    }
+    p.ring('marble', [0, 0, 0], 10.4, 11.8, 4.0, 0.35, { seg });
+    p.ring('marbleShade', [0, 0, 0], 10.4, 11.6, 4.35, 0.25, { seg });
+    boxes.push(...roundBoxes(11.4, 0, 4.6));
+    const rings = domeShell(p, 'verdigris', 4.6, 11.0, 8.0, { n: 12, seg, top: 1.5 });
+    domeRibs(p, 'verdigrisDark', rings, 16, 0.3, 0.12, 1);
+    domeShell(p, 'marbleShade', 4.3, 10.4, 7.8, { n: 8, seg: 24, inside: true });
+    boxes.push(...roundBoxes(11.0, 4.6, 8.6), ...roundBoxes(8.8, 8.6, 11.0), ...roundBoxes(5.2, 11.0, 12.6));
+    // Lantern.
+    const top = 4.6 + 8.0;
+    p.cylinder('marble', [0, top - 0.25, 0], 1.7, 0, 1.9, { seg: 16 });
+    for (let i = 0; i < 8; i++) radialBox(p, 'window', ((i + 0.5) / 8) * Math.PI * 2, 1.66, 0.35 + top, [0.5, 1.0, 0.05]);
+    p.cylinder('marble', [0, top + 1.65, 0], 1.9, 0, 0.25, { seg: 16 });
+    domeShell(p, 'verdigris', top + 1.9, 1.75, 1.2, { n: 5, seg: 16 });
+    p.cylinder('verdigrisDark', [0, top + 3.0, 0], 0.18, 0, 1.0, { seg: 6, r1: 0.06 });
+    p.sphere('verdigrisDark', [0, top + 4.05, 0], 0.16, { rings: 5, seg: 8 });
+    boxes.push([-1.7, top, -1.7, 1.7, top + 3.0, 1.7]);
+    return { p, boxes };
+  },
+  im_pediment() {
+    // A classical pediment, 12 m wide and 1.95 m tall, for the top of a portico: a low triangle (15°) set back
+    // between a raking cornice and a horizontal cornice. The same both ways round.
+    const p = piece('im_pediment');
+    const W = 6;
+    const k = Math.tan((15 * Math.PI) / 180);
+    const H = W * k;
+    p.box('marble', [-W - 0.2, 0, -0.95], [W + 0.2, 0.32, 0.95]);
+    p.box('marbleShade', [-W - 0.1, 0.32, -0.8], [W + 0.1, 0.42, 0.8]);
+    // The tympanum, set back from the cornices.
+    prism(p, 'marbleShade', [[-W + 0.4, 0.42], [W - 0.4, 0.42], [0, 0.42 + H - 0.4 * k]], -0.7, 0.7);
+    // Raking cornices: a band along each slope.
+    const t = 0.34;
+    for (const s of [-1, 1]) {
+      const pts = [[s * (W + 0.2), 0.32], [0, 0.32 + (W + 0.2) * k], [0, 0.32 + (W + 0.2) * k + t], [s * (W + 0.2), 0.32 + t]];
+      prism(p, 'marble', s < 0 ? pts : [...pts].reverse(), -0.95, 0.95);
+    }
+    return p;
+  },
+
   // ---------------------------------------------------------------- 09 Sands of Egypt
 
   eg_obelisk() {
@@ -619,7 +834,11 @@ const PROPS = {
 // ---------------------------------------------------------------- build
 
 for (const [id, make] of Object.entries(PROPS)) {
-  const doc = piecesDocument([make()], 'tiletrigger prepare-ancient');
+  const made = make();
+  const doc = piecesDocument([made.p ?? made], 'tiletrigger prepare-ancient');
+  // Pieces that bring their own collision (collide: "model") carry it in the node's extras, in the frame they were
+  // modelled in; glTF x is the game's mirrored, so it is mirrored here (prepare-props normalises it with the model).
+  if (made.boxes) doc.getRoot().listNodes()[0].setExtras({ collision: made.boxes.map(([x0, y0, z0, x1, y1, z1]) => [-x1, y0, z0, -x0, y1, z1].map((v) => Math.round(v * 1000) / 1000)) });
   await doc.transform(dedup(), prune());
   writeFileSync(join(SRC, `${id}.glb`), Buffer.from(await io.writeBinary(doc)));
 }
