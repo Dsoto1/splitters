@@ -4288,8 +4288,13 @@ async function hostpageFlow(browser) {
   const started = await launcher.waitForFunction(() => document.getElementById('pill')?.dataset.state === 'running', null, { timeout: T(60000) }).then(() => true, () => false);
   check(started, 'Start in the right bar starts the server');
   if (started) {
-    await launcher.click('#f-vis button[data-v="listed"]');
-    const ran = await launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
+    // The bar runs the command only once its own status poll has seen the server running (the pill can turn first,
+    // CI 4 Nov: the click only set the draft): click again until the command shows.
+    const ran = await until(async () => {
+      if (await launcher.evaluate(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)))) return true;
+      await launcher.click('#f-vis button[data-v="listed"]');
+      return launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)), null, { timeout: 2000 }).then(() => true, () => false);
+    }, T(10000));
     check(ran, 'a right-bar toggle runs its console command (visibility listed)');
     // Match rules: the score and time limit steppers run rules commands, wait for the restart, and Restart now plays them.
     const status = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
