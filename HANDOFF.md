@@ -10,6 +10,25 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Procedural environment, Phase 0: audit and plan (`wip/env-audit`, agent, 2026-11-04; docs only, pushed, not merged)
+The owner's spec for replacing natural assets with an in-house procedural pipeline is `docs/PROCEDURAL_ENVIRONMENT.md`
+(verbatim). The audit and plan are in `docs/PROCEDURAL_ENVIRONMENT_AUDIT.md`: an inventory of 143 natural prop ids
+(6,246 instances in 53 maps) with triangles, colliders and usage, how collision, shots, impact effects, nav,
+rendering and MapMaker work today, baseline counts for Backwoods, Norman Shores and Eagle Spires, the old-id ->
+`env.<family>.<species>` mapping and unknown-id policy, a design proposal (zod schema, tools/content generator, chunked
+thin instances, host shapes, shared surface types), the Phase 1 slice plan, and 13 owner questions.
+Findings to know before touching it:
+- Trees collide as a 0.5 m post as tall as the whole tree, crown included.
+- Every trunk is ballistic `concrete` (`materialClass` regexes miss the ids). `bush` reads as `thin_metal`
+  ("bus") and `tree_plateau` as `metal` ("plate").
+- The client's impact effect comes from a different word list (`content/vfx.json map.surfaces`) than the
+  server's class.
+- An unknown prop id makes a map fail to load (`validate.ts:207`).
+- WebGL2 is the default renderer; WebGPU is opt-in.
+- Frame times were not measurable here (SwiftShader under load). Q9 asks the owner for a recording on real
+  hardware.
+Next: the owner answers Q1–Q13, then Phase 1.
+
 ### Grips round 3: per-look hands and arms (`wip/char-grips-3`, agent, 2026-11-04; pushed, not merged; from main 47864cb)
 Owner's notes of 3 Nov ("arm position (mainly right arms) and grips", the 28 looks; Santa's and Zombie Soldier A's
 shoulders). Round 2's global changes made things worse, so nothing shared moved: each look carries its own data.
