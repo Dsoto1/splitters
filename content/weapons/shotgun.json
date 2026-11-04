@@ -1,0 +1,44 @@
+{
+  "id": "core.shotgun",
+  "code": 4,
+  "displayName": "Shotgun",
+  "category": "shotgun",
+  "kind": "hitscan",
+  "slot": 4,
+  "family": "shotgun",
+  "damage": 12,
+  "pellets": 10,
+  "spread": 0.075,
+  "fireIntervalTicks": 45,
+  "range": 40,
+  "magazine": 6,
+  "reserveMax": 36,
+  "pickupAmmo": 12,
+  "reloadTicks": 134,
+  "reload": { "type": "shell", "start": 14, "each": 18, "end": 12 },
+  "raiseTicks": 16,
+  "ammo": "shells",
+  "alt": {
+    "label": "Both barrels",
+    "ammo": "shared",
+    "cost": 2,
+    "fireIntervalTicks": 70,
+    "kind": "hitscan",
+    "damage": 12,
+    "pellets": 16,
+    "spread": 0.11
+  },
+  "botDesirability": 0.65,
+  "botRange": [0, 9],
+  "view": {
+    "model": "guns/shotgun.glb",
+    "fallback": "weapons/shotgun.glb",
+    "viewOffset": [0.2, -0.2, 0.6],
+    "tracer": "#ffb38a",
+    "hold": { "style": "long", "grip": [0, 0, -0.18], "support": [0, 0.045, 0.22], "shoulder": [0, -0.03, -0.46] }
+  },
+  "notes": {
+    "design": "Benchmark shotgun: makes you close in. Ten pellets in a fixed 75 mrad pattern: all of them on a body out to about 5 m (one shot kills), a few at 15 m, a scratch at 25 m (pattern and steep falloff).",
+    "reload": "Shell by shell: each one loaded can be fired straight away."
+  }
+}

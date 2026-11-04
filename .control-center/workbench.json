@@ -1,0 +1,131 @@
+{
+  "collections": [
+    {
+      "id": "weapons",
+      "label": "Weapons",
+      "files": "content/weapons/*.json",
+      "key": "id",
+      "title": "displayName",
+      "subtitle": "category",
+      "filters": ["category", "slot", "family", "kind"],
+      "fields": [
+        { "path": "id", "label": "Id", "type": "text" },
+        { "path": "code", "label": "Network code (never changes)", "type": "number" },
+        { "path": "kind", "label": "Kind", "type": "text" },
+        { "path": "view.hold.style", "label": "Hold (edited in the grip tool)", "type": "text" },
+        { "path": "displayName", "label": "Name", "type": "text", "edit": true },
+        { "path": "category", "label": "Category (random pickups)", "type": "select", "options": ["pistol", "smg", "rifle", "shotgun", "sniper", "explosive", "melee", "special"], "edit": true },
+        { "path": "slot", "label": "Slot (0 mounted, 1-9)", "type": "number", "edit": true },
+        { "path": "family", "label": "Family (gunplay defaults)", "type": "select", "options": ["pistol", "revolver", "machine_pistol", "smg", "rifle", "battle_rifle", "marksman", "precision", "lmg", "shotgun"], "edit": true },
+        { "path": "view.model", "label": "Model", "type": "text", "edit": true },
+        { "path": "damage", "label": "Damage (per pellet)", "type": "number", "edit": true },
+        { "path": "pellets", "label": "Pellets", "type": "number", "edit": true },
+        { "path": "range", "label": "Range (m)", "type": "number", "edit": true },
+        { "path": "falloff.start", "label": "Falloff from (m; empty: family's)", "type": "number", "edit": true },
+        { "path": "falloff.end", "label": "Falloff to (m)", "type": "number", "edit": true },
+        { "path": "falloff.min", "label": "Falloff floor (share of damage)", "type": "number", "edit": true },
+        { "path": "falloff.curve", "label": "Falloff curve", "type": "select", "options": ["linear", "smooth", "steep"], "edit": true },
+        { "path": "headshot", "label": "Head multiplier (empty: family's)", "type": "number", "edit": true },
+        { "path": "legshot", "label": "Leg multiplier (empty: family's)", "type": "number", "edit": true },
+        { "path": "fireIntervalTicks", "label": "Fire interval (ticks; RPM = 3600 / ticks)", "type": "number", "edit": true },
+        { "path": "reloadTicks", "label": "Reload (ticks; seconds = ticks / 60)", "type": "number", "edit": true },
+        { "path": "raiseTicks", "label": "Raise (ticks; seconds = ticks / 60)", "type": "number", "edit": true },
+        { "path": "magazine", "label": "Magazine", "type": "number", "edit": true },
+        { "path": "reserveMax", "label": "Reserve", "type": "number", "edit": true },
+        { "path": "pickupAmmo", "label": "Pickup ammo", "type": "number", "edit": true },
+        { "path": "accuracy.base", "label": "Base spread (rad; empty: family's)", "type": "number", "edit": true },
+        { "path": "accuracy.ads", "label": "ADS spread (multiple; empty: family's)", "type": "number", "edit": true },
+        { "path": "kick.visual", "label": "Kick strength (0-1.5; empty: family's)", "type": "number", "edit": true },
+        { "path": "projectile.speed", "label": "Projectile speed (m/s)", "type": "number", "edit": true },
+        { "path": "projectile.splashRadius", "label": "Splash radius (m)", "type": "number", "edit": true },
+        { "path": "projectile.splashDamage", "label": "Splash damage (centre)", "type": "number", "edit": true },
+        { "path": "projectile.fuseSeconds", "label": "Fuse (s)", "type": "number", "edit": true },
+        { "path": "heat.perShot", "label": "Heat per shot (1 = overheat)", "type": "number", "edit": true },
+        { "path": "heat.coolPerTick", "label": "Cooling per tick", "type": "number", "edit": true },
+        { "path": "botDesirability", "label": "Bot desirability (0-1)", "type": "number", "edit": true },
+        { "path": "botRange", "label": "Bot range (m, from-to)", "type": "list", "edit": true },
+        { "path": "notes.design", "label": "Design notes", "type": "longtext", "edit": true }
+      ]
+    },
+    {
+      "id": "weapon-families",
+      "label": "Weapon families",
+      "files": "content/weapons/families.json",
+      "items": "families",
+      "key": "$key",
+      "title": "$key",
+      "fields": [
+        { "path": "ballistic.velocity", "label": "Muzzle velocity (m/s)", "type": "number", "edit": true },
+        { "path": "accuracy.base", "label": "Base spread (rad)", "type": "number", "edit": true },
+        { "path": "accuracy.ads", "label": "ADS spread (multiple)", "type": "number", "edit": true },
+        { "path": "kick.visual", "label": "Kick strength (0-1.5)", "type": "number", "edit": true },
+        { "path": "falloff.start", "label": "Falloff from (m)", "type": "number", "edit": true },
+        { "path": "falloff.end", "label": "Falloff to (m)", "type": "number", "edit": true },
+        { "path": "falloff.min", "label": "Falloff floor (share of damage)", "type": "number", "edit": true },
+        { "path": "falloff.curve", "label": "Falloff curve", "type": "select", "options": ["linear", "smooth", "steep"], "edit": true },
+        { "path": "head", "label": "Head multiplier", "type": "number", "edit": true },
+        { "path": "legs", "label": "Leg multiplier", "type": "number", "edit": true }
+      ]
+    },
+    {
+      "id": "classes",
+      "label": "Classes",
+      "files": "content/classes.json",
+      "items": "classes",
+      "key": "id",
+      "title": "name",
+      "subtitle": "role",
+      "filters": ["role", "ability"],
+      "fields": [
+        { "path": "id", "label": "Id", "type": "text" },
+        { "path": "code", "label": "Network code (never changes)", "type": "number" },
+        { "path": "name", "label": "Name", "type": "text", "edit": true },
+        { "path": "role", "label": "Role", "type": "select", "options": ["Offence", "Defence", "Support"], "edit": true },
+        { "path": "blurb", "label": "Blurb (class screen)", "type": "longtext", "edit": true },
+        { "path": "health", "label": "Health", "type": "number", "edit": true },
+        { "path": "speed", "label": "Speed (multiple)", "type": "number", "edit": true },
+        { "path": "airJumps", "label": "Extra jumps in the air", "type": "number", "edit": true },
+        { "path": "weapons", "label": "Weapons (ids; the last one is held)", "type": "list", "edit": true },
+        { "path": "throwable.kind", "label": "Throwable", "type": "select", "options": ["frag", "mine", "sticky", "incendiary", "toxic", "vortex", "holy", "cluster", "sheep", "airstrike", "sandbag", "dynamite"], "edit": true },
+        { "path": "throwable.count", "label": "Throwable count", "type": "number", "edit": true },
+        { "path": "ability", "label": "Ability (G; numbers: Class abilities)", "type": "select", "options": ["sentry", "cloak", "overcharge"], "edit": true },
+        { "path": "backstab", "label": "Knife in the back kills", "type": "bool", "edit": true }
+      ]
+    },
+    {
+      "id": "abilities",
+      "label": "Class abilities",
+      "files": "content/abilities.json",
+      "items": "abilities",
+      "key": "$key",
+      "title": "$key",
+      "fields": [
+        { "path": "rebuildSeconds", "label": "Sentry: kit back after (s)", "type": "number", "edit": true },
+        { "path": "dispenser.radius", "label": "Sentry: dispenser reach (m)", "type": "number", "edit": true },
+        { "path": "dispenser.hps", "label": "Sentry: dispenser health per second", "type": "number", "edit": true },
+        { "path": "dispenser.ammo", "label": "Sentry: dispenser ammo (share of pickup per s)", "type": "number", "edit": true },
+        { "path": "seconds", "label": "Lasts (s)", "type": "number", "edit": true },
+        { "path": "rechargeSeconds", "label": "Cloak: recharges in (s)", "type": "number", "edit": true },
+        { "path": "healing", "label": "Overcharge: healing to fill it", "type": "number", "edit": true }
+      ]
+    },
+    {
+      "id": "throwables",
+      "label": "Throwables",
+      "files": "content/throwables.json",
+      "items": "throwables",
+      "key": "kind",
+      "title": "displayName",
+      "fields": [
+        { "path": "kind", "label": "Kind", "type": "text" },
+        { "path": "code", "label": "Network code (never changes)", "type": "number" },
+        { "path": "displayName", "label": "Name", "type": "text", "edit": true },
+        { "path": "max", "label": "Most carried", "type": "number", "edit": true },
+        { "path": "throwIntervalTicks", "label": "Throw interval (ticks; seconds = ticks / 60)", "type": "number", "edit": true },
+        { "path": "projectile.splashRadius", "label": "Splash radius (m)", "type": "number", "edit": true },
+        { "path": "projectile.splashDamage", "label": "Splash damage (centre)", "type": "number", "edit": true },
+        { "path": "projectile.fuseSeconds", "label": "Fuse (s)", "type": "number", "edit": true }
+      ]
+    }
+  ]
+}

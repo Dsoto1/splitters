@@ -1,0 +1,25 @@
+{
+  "id": "core.grapple",
+  "code": 41,
+  "displayName": "Grapple Hook",
+  "kind": "melee",
+  "slot": 1,
+  "fireMode": "semi",
+  "fireIntervalTicks": 50,
+  "range": 32,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 15,
+  "grapple": { "speed": 17 },
+  "botDesirability": 0,
+  "botRange": [0, 0],
+  "view": {
+    "model": "weapons/flare_gun.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#d8d2c0",
+    "hold": { "style": "pistol", "grip": [0, -0.045, -0.106], "support": [-0.02, -0.055, -0.096] },
+    "sound": "fire.flare"
+  }
+}

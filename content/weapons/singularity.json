@@ -1,0 +1,42 @@
+{
+  "id": "core.singularity",
+  "code": 30,
+  "displayName": "Singularity Cannon",
+  "category": "special",
+  "kind": "projectile",
+  "slot": 8,
+  "fireMode": "semi",
+  "fireIntervalTicks": 90,
+  "magazine": 1,
+  "reserveMax": 4,
+  "pickupAmmo": 2,
+  "reloadTicks": 110,
+  "raiseTicks": 34,
+  "botDesirability": 0.65,
+  "botRange": [8, 30],
+  "ammo": "cells",
+  "projectile": {
+    "speed": 13,
+    "gravity": 0,
+    "fuseSeconds": 1.6,
+    "splashRadius": 1,
+    "splashDamage": 0,
+    "splashEdgeDamage": 0,
+    "selfDamageScale": 0,
+    "visual": "vortex",
+    "zone": { "kind": "singularity", "radius": 8, "seconds": 2.4 }
+  },
+  "view": {
+    "model": "guns/plasma_blaster.glb",
+    "viewOffset": [0.27, -0.28, 0.54],
+    "tracer": "#b07aff",
+    "hold": { "style": "long", "grip": [0, -0.13, -0.17], "support": [0, -0.076, 0.17], "shoulder": [0, 0, -0.33] },
+    "fallback": "weapons/singularity.glb",
+    "muzzleAt": [0, 0.042, 0.33],
+    "sound": "fire.vortex"
+  },
+  "notes": {
+    "group": "The extended arsenal: every one fires differently. 8: heavy.",
+    "model": "The Plasma Blaster (Meshy community, CC0 per the owner; content/guns.json), its glow turned purple; the Quaternius sci-fi sniper it replaced is the fallback."
+  }
+}

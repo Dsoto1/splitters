@@ -1,0 +1,31 @@
+{
+  "id": "core.mount_mg",
+  "code": 34,
+  "displayName": "Mounted MG",
+  "kind": "hitscan",
+  "slot": 0,
+  "damage": 11,
+  "spread": 0.018,
+  "fireIntervalTicks": 4,
+  "range": 160,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 0,
+  "botDesirability": 0,
+  "botRange": [0, 80],
+  "heat": { "perShot": 0.022, "coolPerTick": 0.008 },
+  "view": {
+    "model": "guns/tripod_mg.glb",
+    "fallback": "turrets/mg.glb",
+    "viewOffset": [0, -0.35, 0.7],
+    "tracer": "#ffd36b",
+    "hold": { "style": "long", "grip": [0, 0, 0] },
+    "sound": "fire.rifle"
+  },
+  "notes": {
+    "design": "A gun on a turret or vehicle (slot 0: never carried or picked up). It runs on heat, so a gunner never reloads but has to pace the trigger.",
+    "model": "The owner's toy machine gun on a tripod (Meshy, owned), the space-kit twin gun as the fallback."
+  }
+}

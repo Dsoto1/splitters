@@ -295,7 +295,7 @@ false` and its reason in `clipsWhy`.
 
 ## Holding weapons
 
-Each weapon's `view.hold` (in `packages/shared/src/sim/weapons.ts`) gives a
+Each weapon's `view.hold` (in its `content/weapons/<name>.json`) gives a
 style and points on the model, in model space (+Z barrel, +Y up):
 
 | Style | Weapon placement | Hands |

@@ -1,0 +1,44 @@
+{
+  "id": "core.railgun",
+  "code": 21,
+  "displayName": "Railgun",
+  "category": "sniper",
+  "kind": "hitscan",
+  "slot": 5,
+  "damage": 100,
+  "fireIntervalTicks": 40,
+  "range": 320,
+  "magazine": 4,
+  "reserveMax": 16,
+  "pickupAmmo": 8,
+  "reloadTicks": 110,
+  "raiseTicks": 28,
+  "botDesirability": 0.7,
+  "botRange": [15, 150],
+  "windupTicks": 24,
+  "windupResets": true,
+  "ammo": "cells",
+  "pierce": 3,
+  "knockback": 6,
+  "recoil": { "bloom": 0, "maxBloom": 0, "recover": 0 },
+  "kick": { "pitch": [0.09], "yaw": [0.0225, -0.0225], "variance": 0.018, "delay": 4, "settle": 8, "rate": 0.1, "visual": 1.2 },
+  "view": {
+    "model": "weapons/railgun.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#5fe0ff",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.029, -0.165],
+      "support": [0, 0.083, 0.318],
+      "shoulder": [0, 0.002, -0.555]
+    },
+    "zoomFov": 0.5,
+    "sound": "fire.railgun",
+    "beam": true
+  },
+  "notes": {
+    "recoil": "`kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).",
+    "group": "The extended arsenal: every one fires differently. 5: precision.",
+    "design": "Charges briefly, then one body hit kills an unarmoured player."
+  }
+}

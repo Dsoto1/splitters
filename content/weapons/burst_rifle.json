@@ -1,0 +1,36 @@
+{
+  "id": "core.burst_rifle",
+  "code": 15,
+  "displayName": "Burst Rifle",
+  "category": "rifle",
+  "kind": "hitscan",
+  "slot": 3,
+  "family": "rifle",
+  "fireMode": "burst",
+  "damage": 17,
+  "spread": 0.008,
+  "fireIntervalTicks": 24,
+  "range": 160,
+  "magazine": 24,
+  "reserveMax": 144,
+  "pickupAmmo": 48,
+  "reloadTicks": 85,
+  "botDesirability": 0.68,
+  "botRange": [5, 45],
+  "burst": { "count": 3, "intervalTicks": 4 },
+  "ammo": "rifle",
+  "recoil": { "bloom": 0.006, "maxBloom": 0.03, "recover": 0.002 },
+  "view": {
+    "model": "guns/neon_flux.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#ffd36b",
+    "hold": { "style": "long", "grip": [0, -0.06, -0.16], "support": [0, -0.04, 0.13], "shoulder": [0, 0.05, -0.34] },
+    "fallback": "weapons/burst_rifle.glb",
+    "sound": "fire.rifle"
+  },
+  "notes": {
+    "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
+    "group": "The extended arsenal: every one fires differently. 3: rifles.",
+    "model": "The owner's Neon Flux (Meshy, owned), the gun-pack rifle as the fallback."
+  }
+}

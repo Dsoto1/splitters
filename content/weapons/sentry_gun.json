@@ -1,0 +1,30 @@
+{
+  "id": "core.sentry_gun",
+  "code": 38,
+  "displayName": "Sentry Gun",
+  "kind": "hitscan",
+  "slot": 0,
+  "damage": 7,
+  "spread": 0.03,
+  "fireIntervalTicks": 7,
+  "range": 40,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 0,
+  "botDesirability": 0,
+  "botRange": [0, 30],
+  "view": {
+    "model": "guns/sentry_turret.glb",
+    "fallback": "turrets/sentry.glb",
+    "viewOffset": [0, 0, 0],
+    "tracer": "#ff6a5a",
+    "hold": { "style": "long", "grip": [0, 0, 0] },
+    "sound": "fire.smg"
+  },
+  "notes": {
+    "design": "A gun on a turret or vehicle (slot 0: never carried or picked up). It runs on heat, so a gunner never reloads but has to pace the trigger.",
+    "model": "The owner's Large Sentry Gun (Meshy, owned), the space-kit turret as the fallback."
+  }
+}

@@ -16,11 +16,13 @@ import type { MapEntity } from '../map/schema.ts';
 import type { MatchRules } from './rules.ts';
 import type { WeaponDefinition } from './weapons.ts';
 import { hypot } from '../math.ts';
+import { WEAPON_FAMILIES } from '../content/weapons.generated.ts';
+import { FAMILY_DEFAULTS } from '../content/weaponFamilies.generated.ts';
 
 // ---------------------------------------------------------------- families
 
-/** Weapon families (spec §34): they carry the defaults below. */
-export const WEAPON_FAMILIES = ['pistol', 'revolver', 'machine_pistol', 'smg', 'rifle', 'battle_rifle', 'marksman', 'precision', 'lmg', 'shotgun'] as const;
+/** Weapon families (spec §34): they carry the defaults below (content/weapons/families.json). */
+export { WEAPON_FAMILIES };
 export type WeaponFamily = (typeof WEAPON_FAMILIES)[number];
 
 /** Gravity bullets fall with (m/s²) before a weapon's own `gravityScale` and the ballistics rule. */
@@ -125,7 +127,8 @@ export interface FalloffSpec {
   curve: 'linear' | 'smooth' | 'steep';
 }
 
-interface FamilyDefaults {
+/** A family's defaults (content/weapons/families.json `families`). */
+export interface FamilyDefaults {
   ballistic: BallisticSpec | null;
   accuracy: AccuracySpec;
   kick: KickSpec;
@@ -137,95 +140,8 @@ interface FamilyDefaults {
 const acc = (base: number, move: number, air: number, perShot: number, tight: number, max: number, recovery: number, ads: number, adsTicks = 12): AccuracySpec => ({ base, move, air, perShot, tight, max, recovery, ads, adsTicks });
 const kick = (pitch: number[], yaw: number[], variance: number, delay: number, settle: number, rate: number, visual: number): KickSpec => ({ pitch, yaw, variance, delay, settle, rate, visual });
 
-/** Family baselines (spec §4 velocities, §11 body multipliers, §37 falloff). */
-export const FAMILY_DEFAULTS: Readonly<Record<WeaponFamily, FamilyDefaults>> = {
-  pistol: {
-    ballistic: { velocity: 375, gravityScale: 1, energy: 450, tracerEvery: 0, tracerFinal: 0 },
-    accuracy: acc(0.002, 0.006, 0.02, 0.003, 1, 0.03, 10, 0.6, 8),
-    kick: kick([0.012], [0.002, -0.002], 0.003, 4, 12, 0.35, 0.5),
-    falloff: { start: 18, end: 45, min: 0.65, curve: 'linear' },
-    head: 2,
-    legs: 0.8,
-  },
-  revolver: {
-    ballistic: { velocity: 300, gravityScale: 1, energy: 1800, tracerEvery: 1 },
-    // A true first shot, but a round fired before the last one's spray has settled (about half a second) is a guess.
-    accuracy: acc(0.0005, 0.012, 0.06, 0.022, 0, 0.06, 3, 0.5, 10),
-    kick: kick([0.12], [0.012, -0.008], 0.008, 10, 3.5, 0.06, 1.5),
-    falloff: { start: 25, end: 60, min: 0.7, curve: 'smooth' },
-    head: 1.75,
-    legs: 0.85,
-  },
-  machine_pistol: {
-    ballistic: { velocity: 360, gravityScale: 1, energy: 350, tracerEvery: 4 },
-    accuracy: acc(0.012, 0.006, 0.03, 0.006, 2, 0.08, 16, 0.85, 8),
-    kick: kick([0.006], [0.003, 0.004, -0.002, -0.004], 0.004, 3, 14, 0.3, 0.4),
-    falloff: { start: 8, end: 25, min: 0.5, curve: 'steep' },
-    head: 1.5,
-    legs: 0.85,
-  },
-  smg: {
-    ballistic: { velocity: 400, gravityScale: 1, energy: 400, tracerEvery: 3, tracerFinal: 5 },
-    // Dead steady for five rounds, then it climbs and blooms hard; let go and it is steady again almost at once.
-    accuracy: acc(0.006, 0.004, 0.03, 0.0065, 5, 0.09, 40, 0.8, 10),
-    kick: kick([0.003, 0.003, 0.003, 0.003, 0.003, 0.006, 0.008, 0.01, 0.011], [0, 0.001, 0.002, 0.003, 0.004, 0.002, -0.002, -0.004, -0.004, -0.002], 0.004, 3, 14, 0.3, 0.45),
-    falloff: { start: 12, end: 35, min: 0.55, curve: 'steep' },
-    head: 1.5,
-    legs: 0.85,
-  },
-  rifle: {
-    ballistic: { velocity: 820, gravityScale: 1, energy: 1200, tracerEvery: 3, tracerFinal: 3 },
-    accuracy: acc(0.0015, 0.008, 0.035, 0.0012, 3, 0.025, 8, 0.4, 14),
-    kick: kick([0.01, 0.0085], [0, 0.001, 0.002, 0.002, 0.001, 0, -0.001, -0.002, -0.002, -0.001], 0.002, 5, 7, 0.12, 0.6),
-    falloff: { start: 30, end: 80, min: 0.75, curve: 'smooth' },
-    head: 2,
-    legs: 0.8,
-  },
-  battle_rifle: {
-    ballistic: { velocity: 880, gravityScale: 1, energy: 1800, tracerEvery: 2 },
-    accuracy: acc(0.001, 0.02, 0.06, 0.004, 1, 0.03, 6, 0.3, 16),
-    kick: kick([0.03], [0.004, -0.003], 0.004, 6, 6, 0.1, 0.8),
-    falloff: { start: 40, end: 100, min: 0.8, curve: 'smooth' },
-    head: 2,
-    legs: 0.85,
-  },
-  marksman: {
-    ballistic: { velocity: 900, gravityScale: 1, energy: 2000, tracerEvery: 1 },
-    accuracy: acc(0.001, 0.025, 0.07, 0.005, 0, 0.035, 5, 0.3, 16),
-    kick: kick([0.035], [0.003, -0.003], 0.004, 6, 6, 0.1, 0.8),
-    falloff: { start: 60, end: 150, min: 0.85, curve: 'smooth' },
-    head: 2,
-    legs: 0.85,
-  },
-  precision: {
-    // Fast (least lead of all) but heavy: 12 cm of drop at 100 m, half a metre at 200 m. A shot taken the moment
-    // the bolt closes is a little off; wait a beat and it is dead on (patience).
-    ballistic: { velocity: 950, gravityScale: 2.5, energy: 3000, tracerEvery: 1 },
-    accuracy: acc(0, 0.03, 0.1, 0.015, 0, 0.05, 1.2, 0.2, 18),
-    kick: kick([0.07], [0.006, -0.004], 0.005, 8, 5, 0.08, 1.1),
-    falloff: { start: 150, end: 300, min: 0.9, curve: 'linear' },
-    head: 3,
-    legs: 0.9,
-  },
-  lmg: {
-    ballistic: { velocity: 760, gravityScale: 1, energy: 1500, tracerEvery: 4 },
-    accuracy: acc(0.012, 0.03, 0.07, 0.0012, 6, 0.045, 5, 0.7, 20),
-    kick: kick([0.005], [0.002, -0.001, 0.001, -0.002], 0.003, 4, 6, 0.12, 0.45),
-    falloff: { start: 30, end: 80, min: 0.7, curve: 'smooth' },
-    head: 1.5,
-    legs: 0.85,
-  },
-  shotgun: {
-    // Pellets stay hitscan (spec §3.1 allows it for performance): damage loss comes from spread and per-pellet falloff.
-    ballistic: null,
-    // The pellet pattern is the weapon's own `spread` (pelletCone); this is aim error on top of it.
-    accuracy: acc(0, 0.006, 0.02, 0, 0, 0.04, 6, 0.9, 10),
-    kick: kick([0.06], [0.006, -0.006], 0.004, 8, 5, 0.1, 1),
-    falloff: { start: 6, end: 22, min: 0.25, curve: 'steep' },
-    head: 1.25,
-    legs: 0.85,
-  },
-};
+/** Family baselines (spec §4 velocities, §11 body multipliers, §37 falloff): content/weapons/families.json, with named fields. */
+export { FAMILY_DEFAULTS };
 
 /** Everything gunplay needs to know about one weapon, defaults filled in. */
 export interface Gunplay {
@@ -256,9 +172,9 @@ export function gunplayOf(def: WeaponDefinition): Gunplay {
     // Hitscan weapons with a bullet family fly; projectiles, beams and melee never do.
     ballistic: def.kind === 'hitscan' && !def.view.beam ? ballistic : null,
     accuracy: def.accuracy ? { ...(fam?.accuracy ?? acc(def.spread, 0.014, 0.035, 0, 0, 0.1, 6, 0.55)), ...def.accuracy } : (fam?.accuracy ?? null),
-    // Weapons without a family keep their old camera kick, now as a deterministic climb.
+    // Weapons without a family kick only by their own `kick` (the exotic arsenal's old camera kick, folded in).
     // A melee weapon never kicks; its second trigger's kick (the Battle Axe's blunderbuss) settles by its own curve.
-    kick: def.kick ? { ...(fam?.kick ?? kick([0], [0], 0, 4, 8, 0.1, 0.5)), ...def.kick } : (fam?.kick ?? (def.recoil?.kick ? kick([def.recoil.kick], [0.25 * def.recoil.kick, -0.25 * def.recoil.kick], 0.2 * def.recoil.kick, 4, 8, 0.1, Math.min(1.2, def.recoil.kick * 15)) : def.kind === 'melee' ? (def.alt?.kick ?? null) : null)),
+    kick: def.kick ? { ...(fam?.kick ?? kick([0], [0], 0, 4, 8, 0.1, 0.5)), ...def.kick } : (fam?.kick ?? (def.kind === 'melee' ? (def.alt?.kick ?? null) : null)),
     reload: def.reload ?? { type: 'magazine', tactical: def.reloadTicks, empty: def.reloadTicks, out: 0.35, in: 1 },
     falloff: def.falloff ?? fam?.falloff ?? null,
     head: def.headshot ?? fam?.head ?? DEFAULT_HEAD,

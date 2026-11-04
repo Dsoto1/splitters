@@ -1,0 +1,102 @@
+{
+  "$comment": "Classes (a match setting, sim/classes.ts). `code`: what the class screen sends and snapshots carry; never change one, never reuse one (content/codes.lock.json), and they run 0, 1, 2... `speed`: movement multiplier. `weapons`: spawned with, the last one held. `ability`: what G does instead of a grenade (its numbers: content/abilities.json). Edit, then run `node tools/content/weapons.mjs`.",
+  "classes": [
+    {
+      "id": "runner",
+      "code": 0,
+      "name": "Runner",
+      "role": "Offence",
+      "blurb": "Fastest on foot, double jump, a sawed-off up close. Fragile.",
+      "health": 75,
+      "speed": 1.3,
+      "airJumps": 1,
+      "weapons": ["core.knife", "core.machine_pistol", "core.sawed_off"]
+    },
+    {
+      "id": "rocketeer",
+      "code": 1,
+      "name": "Rocketeer",
+      "role": "Offence",
+      "blurb": "Blast rockets: fire one at your feet to rocket-jump.",
+      "health": 130,
+      "speed": 0.86,
+      "weapons": ["core.knife", "core.shotgun", "core.blast_rockets"],
+      "throwable": { "kind": "frag", "count": 1 }
+    },
+    {
+      "id": "torch",
+      "code": 2,
+      "name": "Torch",
+      "role": "Offence",
+      "blurb": "Flamethrower up close; the oil slicker lays slick, flammable puddles.",
+      "health": 115,
+      "speed": 1,
+      "weapons": ["core.knife", "core.shotgun", "core.oil_slicker", "core.flamethrower"]
+    },
+    {
+      "id": "breacher",
+      "code": 3,
+      "name": "Breacher",
+      "role": "Defence",
+      "blurb": "Grenade launcher and three proximity mines to lock down a route.",
+      "health": 115,
+      "speed": 0.93,
+      "weapons": ["core.knife", "core.pistol", "core.launcher"],
+      "throwable": { "kind": "mine", "count": 3 }
+    },
+    {
+      "id": "bulwark",
+      "code": 4,
+      "name": "Bulwark",
+      "role": "Defence",
+      "blurb": "Huge health, slow, and a spin gun that shreds once it is turning.",
+      "health": 200,
+      "speed": 0.77,
+      "weapons": ["core.knife", "core.shotgun", "core.lmg"]
+    },
+    {
+      "id": "mechanic",
+      "code": 5,
+      "name": "Mechanic",
+      "role": "Defence",
+      "blurb": "G builds a sentry gun that also heals and restocks teammates beside it.",
+      "health": 100,
+      "speed": 1,
+      "weapons": ["core.knife", "core.pistol", "core.shotgun"],
+      "ability": "sentry"
+    },
+    {
+      "id": "medic",
+      "code": 6,
+      "name": "Medic",
+      "role": "Support",
+      "blurb": "Medi-beam heals teammates; healing charges an overcharge (G): 6 s untouchable for you and your patient.",
+      "health": 100,
+      "speed": 1.07,
+      "weapons": ["core.knife", "core.nailgun", "core.medi_beam"],
+      "ability": "overcharge"
+    },
+    {
+      "id": "marksman",
+      "code": 7,
+      "name": "Marksman",
+      "role": "Support",
+      "blurb": "A charged railgun from long range, an SMG for anyone who gets close.",
+      "health": 85,
+      "speed": 1,
+      "weapons": ["core.knife", "core.smg", "core.railgun"]
+    },
+    {
+      "id": "shade",
+      "code": 8,
+      "name": "Shade",
+      "role": "Support",
+      "blurb": "G cloaks you (firing breaks it); a knife in the back kills outright.",
+      "health": 85,
+      "speed": 1.07,
+      "weapons": ["core.hand_cannon", "core.knife"],
+      "ability": "cloak",
+      "backstab": true
+    }
+  ]
+}

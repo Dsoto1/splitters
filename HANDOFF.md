@@ -10,6 +10,46 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Content scalability step 3: weapons, throwables, classes and abilities as data (`wip/weapons-data`, agent, 2026-11-04; not merged; rebased on main 5bc2455)
+docs/CONTENT_SCALABILITY.md "Weapons as data", all five steps; how to add a weapon: docs/CONTENT_PIPELINE.md.
+- **Where things are now:** `content/weapons/families.json` (the old `weapon()` default block and the ten gunplay
+  families with named fields), `content/weapons/<name>.json` (one per weapon: only what differs, an explicit
+  network `code`, `notes` with the design intent of the old comments), `content/throwables.json`,
+  `content/classes.json` (explicit codes), `content/abilities.json` (sentry rebuild + dispenser, cloak, overcharge
+  numbers), `content/codes.lock.json` (every code ever given). `tools/content/weapons.mjs` (`pnpm content:weapons`,
+  `--check`) validates the schema (unknown fields are errors) and references (ammo, models, sounds, slots 0-9,
+  codes unique / never changed / never reused, classes name real weapons, throwables, abilities) and writes
+  `packages/shared/src/content/weapons.generated.ts` (+ `weaponFamilies.generated.ts`: gunplay's families, kept out of
+  the menu chunk). weapons.ts, gunplay.ts and classes.ts keep the types,
+  `gunplayOf` and all behaviour and re-export the generated tables; `weaponCode` reads the codes, not object order.
+- **Proof of no change:** `packages/shared/test/fixtures/weapons-resolved.json` (written from the hand-written
+  tables, step 1) holds every weapon's definition, `gunplayOf` and code, the slot order, throwables and classes
+  with their codes and the dispenser; `weaponsData.test.ts` deep-equals it (keeping -0) and pins the old ability
+  constants. Steps 2-3 pass it unchanged. Step 4 changed only definitions (recoil.kick out, `kick` in for three
+  weapons), with every `gunplayOf` identical (scripted check in the commit message).
+- **Step 4, part not done (owner's call):** the camera kick is folded (Pulse Pistol, Gilded Pistol, Railgun carry
+  an explicit `kick`). The legacy spread bloom (`recoil.bloom/maxBloom/recover`) is NOT folded: the family spread
+  model differs (recovery timing, what the cap covers, ADS blend, where the no-scope penalty sits, bots read
+  `accuracy.tight`), so moving it would change the feel. Details: CONTENT_SCALABILITY step 4.
+- **Workbench:** `.control-center/workbench.json`: weapons, weapon families, classes, class abilities, throwables
+  (id, code, kind, holds read-only). Checked with the dashboard's parser. The Workbench format (v1.10) has no
+  "from family / overridden" marker, no reset and no unit display: an empty weapon field means "the family's or
+  the default's" (labels say so), and ticks are labelled with the RPM / seconds formula. Those need dashboard work.
+- **Pitfalls:** edit the JSON, never `weapons.generated.ts`; never change or reuse a code (the lock refuses it);
+  throwable and class codes must run 0, 1, 2... (clients read them by position); `falloff` and `reload` in a weapon
+  file replace the family's whole (write all fields), `accuracy` / `kick` / `ballistic` merge. A change to a
+  weapon's numbers is a fixture change: rewrite with `UPDATE_WEAPON_FIXTURE=1` and read the diff.
+- **Checks:** menu's first JS 649.1 kB gzip on main c4cedd7 -> 649.3 kB (`index` 208.2 -> 208.4; one generated file
+  put gunplay's families in the menu chunk, 649.8, hence `weaponFamilies.generated.ts`). `pnpm typecheck` clean.
+  `pnpm test:changed` (everything): 1496 pass, 3 failed at load ~19 (server join wait, bigMatch tick budget, npc
+  Outpost Siege timeout); rerun: server and bench pass, npc and bigMatch pass with `--testTimeout=180000`. E2E (`CI=1`,
+  ports 4283/7893): arsenal PASS (619 s; a first run at 3 s frames failed 4 melee/spear timing checks, as in earlier
+  sessions' runs), vehicles PASS (253 s). `pnpm ci:plan`: full suite (shared code): needs a `check/` run before main.
+- **Not done / next:** `pnpm content:rebuild` (the parallel props branch) should also run `node tools/content/weapons.mjs`;
+  e2e/flowMap has no rule for `content/weapons/` or `.control-center/` (they run the full suite; a weapon change
+  always regenerates shared code anyway); stopping power by category stays in `sim/impact.ts`; the menu could
+  import a small weapon-name list instead of the whole table (CONTENT_SCALABILITY step 1 note).
+
 ### Content scalability step 1: the menu's first download (`wip/menu-bundle`, agent, 2026-11-03; not merged; rebased on main 51519b2)
 docs/CONTENT_SCALABILITY.md step 1. **Menu's first JS 837.0 -> 649.0 kB gzip** (2970 -> 2305 kB raw, on main 51519b2; `index` 396.1 ->
 208.1 kB gzip; `babylon` and `vendor` unchanged). Budget left at 840 kB (now ~190 kB of room). How it works:

@@ -1,0 +1,34 @@
+{
+  "id": "core.sniper",
+  "code": 5,
+  "displayName": "Sniper Rifle",
+  "category": "sniper",
+  "kind": "hitscan",
+  "slot": 5,
+  "family": "precision",
+  "damage": 80,
+  "fireIntervalTicks": 75,
+  "range": 1000,
+  "magazine": 5,
+  "reserveMax": 25,
+  "pickupAmmo": 10,
+  "reloadTicks": 110,
+  "reload": { "type": "magazine", "tactical": 90, "empty": 110, "out": 0.3, "in": 0.65 },
+  "raiseTicks": 30,
+  "ammo": "sniper",
+  "headshot": 3,
+  "botDesirability": 0.6,
+  "botRange": [18, 120],
+  "view": {
+    "model": "guns/sniper_rifle.glb",
+    "fallback": "weapons/sniper.glb",
+    "viewOffset": [0.2, -0.2, 0.65],
+    "tracer": "#9ad7ff",
+    "zoomFov": 0.4,
+    "hold": { "style": "long", "grip": [0, -0.05, -0.27], "support": [0, -0.02, 0.24], "shoulder": [0, 0.06, -0.57] }
+  },
+  "notes": {
+    "design": "Benchmark precision rifle: patience, prediction and holdover. A body shot and anything else kills, a head shot kills outright; the heavy round drops half a metre by 200 m and the next shot wants a settled beat.",
+    "model": "The owner's military sniper rifle (Meshy, owned; content/guns.json), the gun-pack sniper rifle as the fallback."
+  }
+}

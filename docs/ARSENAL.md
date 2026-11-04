@@ -1,7 +1,8 @@
 # Arsenal: weapons, ammo, throwables and destruction
 
-All gameplay numbers live in `packages/shared/src/sim/weapons.ts` and
-`sim/items.ts`; nothing in the simulation names a specific weapon.
+All gameplay numbers live in `content/weapons/*.json`, `content/throwables.json`
+(built into `packages/shared/src/content/weapons.generated.ts`; docs/CONTENT_PIPELINE.md,
+"How to add a weapon") and `sim/items.ts`; nothing in the simulation names a specific weapon.
 
 | Slot | Weapon | Ammo | Second trigger (right mouse) |
 |---|---|---|---|
@@ -86,7 +87,7 @@ triangles: a modern long-barrelled revolver with a ventilated rib and an olive
 grip; the lettering, skull decal and tally marks it came with were painted out
 of its colour map, see ASSET_SOURCES.md). The Quaternius Ultimate Gun Pack
 revolver (CC0) stays as its `fallback`. Its holds are read off the model's own
-grip (`grip` / `support` in `weapons.ts`); aiming down the sights lines the top
+grip (`grip` / `support` in the weapon's `content/weapons/<name>.json`); aiming down the sights lines the top
 of the front and rear sights up under the eye.
 
 **Training Range** (`maps/training_range.json`, built by

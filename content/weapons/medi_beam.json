@@ -1,0 +1,28 @@
+{
+  "id": "core.medi_beam",
+  "code": 46,
+  "displayName": "Medi-Beam",
+  "kind": "melee",
+  "slot": 1,
+  "fireIntervalTicks": 12,
+  "range": 9,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 15,
+  "botDesirability": 0,
+  "botRange": [0, 0],
+  "heal": 6,
+  "view": {
+    "model": "guns/medkit.glb",
+    "fallback": "procedural/medkit",
+    "viewOffset": [0.22, -0.3, 0.52],
+    "tracer": "#7dff9a",
+    "sound": "pickup.health",
+    "hold": { "style": "pistol", "grip": [0, 0.1, 0] }
+  },
+  "notes": {
+    "design": "A variant of an existing weapon for Disc Arena and Classes. The medi-beam: a Medkit that heals a little, often, from further away."
+  }
+}

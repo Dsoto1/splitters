@@ -1,0 +1,45 @@
+{
+  "id": "core.flamethrower",
+  "code": 32,
+  "displayName": "Flamethrower",
+  "category": "special",
+  "kind": "projectile",
+  "slot": 9,
+  "spread": 0.05,
+  "fireIntervalTicks": 3,
+  "magazine": 100,
+  "reserveMax": 200,
+  "pickupAmmo": 100,
+  "reloadTicks": 110,
+  "raiseTicks": 24,
+  "botDesirability": 0.58,
+  "botRange": [0, 8],
+  "ammo": "fuel",
+  "projectile": {
+    "speed": 17,
+    "gravity": -2,
+    "drag": 1.2,
+    "fuseSeconds": 0.55,
+    "splashRadius": 1.4,
+    "splashDamage": 5,
+    "splashEdgeDamage": 3,
+    "selfDamageScale": 0,
+    "visual": "flame",
+    "impactDamage": 3,
+    "status": { "kind": "burn", "seconds": 3 },
+    "ignites": true
+  },
+  "view": {
+    "model": "weapons/flamethrower.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#ff8a2a",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.084, -0.027],
+      "support": [0, -0.054, 0.328],
+      "shoulder": [0, 0.069, -0.455]
+    },
+    "sound": "fire.flame"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 9: energy and chemical." }
+}

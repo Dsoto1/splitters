@@ -1,0 +1,30 @@
+{
+  "id": "core.auto_shotgun",
+  "code": 19,
+  "displayName": "Auto Shotgun",
+  "category": "shotgun",
+  "kind": "hitscan",
+  "slot": 4,
+  "family": "shotgun",
+  "damage": 7,
+  "pellets": 7,
+  "spread": 0.09,
+  "fireIntervalTicks": 18,
+  "range": 40,
+  "magazine": 8,
+  "pickupAmmo": 16,
+  "reloadTicks": 100,
+  "raiseTicks": 22,
+  "botDesirability": 0.64,
+  "botRange": [0, 10],
+  "ammo": "shells",
+  "recoil": { "bloom": 0.012, "maxBloom": 0.04, "recover": 0.0015 },
+  "view": {
+    "model": "weapons/auto_shotgun.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#ffb38a",
+    "hold": { "style": "long", "grip": [0, -0.06, -0.27], "support": [0, -0.04, 0.108], "shoulder": [0, 0, -0.45] },
+    "sound": "fire.shotgun"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 4: shotguns." }
+}

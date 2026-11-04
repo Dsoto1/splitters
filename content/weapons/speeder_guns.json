@@ -1,0 +1,38 @@
+{
+  "id": "core.speeder_guns",
+  "code": 37,
+  "displayName": "Speeder Blasters",
+  "kind": "projectile",
+  "slot": 0,
+  "spread": 0.02,
+  "fireIntervalTicks": 7,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 0,
+  "botDesirability": 0,
+  "botRange": [0, 60],
+  "heat": { "perShot": 0.05, "coolPerTick": 0.01 },
+  "projectile": {
+    "speed": 70,
+    "gravity": 0,
+    "fuseSeconds": 1.5,
+    "splashRadius": 1.5,
+    "splashDamage": 16,
+    "splashEdgeDamage": 8,
+    "selfDamageScale": 0,
+    "visual": "plasma",
+    "impactDamage": 10
+  },
+  "view": {
+    "model": "vehicles/speeder.glb",
+    "viewOffset": [0, -0.6, 1.4],
+    "tracer": "#7dffb0",
+    "hold": { "style": "long", "grip": [0, 0, 0] },
+    "sound": "fire.plasma"
+  },
+  "notes": {
+    "design": "A gun on a turret or vehicle (slot 0: never carried or picked up). It runs on heat, so a gunner never reloads but has to pace the trigger."
+  }
+}

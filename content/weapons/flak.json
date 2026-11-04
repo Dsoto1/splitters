@@ -1,0 +1,45 @@
+{
+  "id": "core.flak",
+  "code": 20,
+  "displayName": "Flak Cannon",
+  "category": "shotgun",
+  "kind": "projectile",
+  "slot": 4,
+  "pellets": 7,
+  "spread": 0.08,
+  "fireIntervalTicks": 50,
+  "magazine": 4,
+  "reserveMax": 24,
+  "pickupAmmo": 8,
+  "reloadTicks": 95,
+  "raiseTicks": 24,
+  "botDesirability": 0.62,
+  "botRange": [0, 14],
+  "ammo": "shells",
+  "projectile": {
+    "speed": 48,
+    "gravity": 6,
+    "fuseSeconds": 1.2,
+    "splashRadius": 0,
+    "splashDamage": 0,
+    "splashEdgeDamage": 0,
+    "selfDamageScale": 0,
+    "visual": "shard",
+    "impactDamage": 13,
+    "bounce": 0.65,
+    "maxBounces": 2
+  },
+  "view": {
+    "model": "weapons/flak.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#ffcf6a",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.087, -0.18],
+      "support": [0, -0.057, 0.177],
+      "shoulder": [0, 0.078, -0.405]
+    },
+    "sound": "fire.flak"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 4: shotguns." }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "core.machine_pistol",
+  "code": 14,
+  "displayName": "Machine Pistol",
+  "category": "smg",
+  "kind": "hitscan",
+  "slot": 2,
+  "family": "machine_pistol",
+  "damage": 7,
+  "spread": 0.03,
+  "fireIntervalTicks": 3,
+  "range": 60,
+  "magazine": 24,
+  "reserveMax": 144,
+  "pickupAmmo": 48,
+  "reloadTicks": 60,
+  "raiseTicks": 12,
+  "botRange": [0, 14],
+  "ammo": "light",
+  "recoil": { "bloom": 0.006, "maxBloom": 0.07, "recover": 0.002 },
+  "view": {
+    "model": "weapons/machine_pistol.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#ffe9a8",
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.1292], "support": [-0.02, -0.04, -0.11399999999999999] },
+    "sound": "fire.smg"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }
+}

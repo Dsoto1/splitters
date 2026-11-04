@@ -1,0 +1,34 @@
+{
+  "id": "core.launcher",
+  "code": 6,
+  "displayName": "Grenade Launcher",
+  "category": "explosive",
+  "kind": "projectile",
+  "slot": 6,
+  "fireIntervalTicks": 55,
+  "range": 0,
+  "magazine": 4,
+  "reserveMax": 16,
+  "pickupAmmo": 6,
+  "reloadTicks": 100,
+  "raiseTicks": 38,
+  "projectile": {
+    "speed": 26,
+    "gravity": 12,
+    "fuseSeconds": 3,
+    "splashRadius": 4.5,
+    "splashDamage": 100,
+    "splashEdgeDamage": 15,
+    "selfDamageScale": 0.6,
+    "visual": "grenade"
+  },
+  "ammo": "explosive",
+  "botDesirability": 0.75,
+  "botRange": [6, 22],
+  "view": {
+    "model": "weapons/launcher.glb",
+    "viewOffset": [0.22, -0.22, 0.55],
+    "tracer": "#c2c9a8",
+    "hold": { "style": "long", "grip": [0, -0.1, 0.02], "support": [0, 0.029, 0.187], "shoulder": [0, 0.023, -0.43] }
+  }
+}

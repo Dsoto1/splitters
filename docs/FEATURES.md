@@ -13,7 +13,7 @@ Everything players can use, checked against the code, and what exists but isn't 
 
 MapMaker's pickup palette lists every item, so **anything below can be placed in a custom map**.
 
-## Weapons (`shared/src/sim/weapons.ts`)
+## Weapons (`content/weapons/*.json`, behaviour in `shared/src/sim/weapons.ts`)
 
 | Weapon | Kind | Slot | Players get it from | Notes |
 |---|---|---|---|---|

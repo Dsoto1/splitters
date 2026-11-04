@@ -1,0 +1,41 @@
+{
+  "id": "core.flare_gun",
+  "code": 13,
+  "displayName": "Flare Gun",
+  "category": "special",
+  "kind": "projectile",
+  "slot": 2,
+  "fireMode": "semi",
+  "fireIntervalTicks": 40,
+  "magazine": 1,
+  "reserveMax": 10,
+  "pickupAmmo": 4,
+  "reloadTicks": 50,
+  "raiseTicks": 15,
+  "botDesirability": 0.45,
+  "botRange": [5, 25],
+  "ammo": "fuel",
+  "projectile": {
+    "speed": 30,
+    "gravity": 9,
+    "fuseSeconds": 5,
+    "splashRadius": 1.6,
+    "splashDamage": 25,
+    "splashEdgeDamage": 10,
+    "selfDamageScale": 0.3,
+    "visual": "flare",
+    "impactDamage": 20,
+    "sticky": "any",
+    "status": { "kind": "burn", "seconds": 4 },
+    "zone": { "kind": "fire", "radius": 1.8, "seconds": 4 },
+    "ignites": true
+  },
+  "view": {
+    "model": "weapons/flare_gun.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#ff7a3a",
+    "hold": { "style": "pistol", "grip": [0, -0.045, -0.106], "support": [-0.02, -0.055, -0.096] },
+    "sound": "fire.flare"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }
+}

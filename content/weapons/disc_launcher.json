@@ -1,0 +1,42 @@
+{
+  "id": "core.disc_launcher",
+  "code": 22,
+  "displayName": "Disc Launcher",
+  "category": "explosive",
+  "kind": "projectile",
+  "slot": 6,
+  "fireIntervalTicks": 50,
+  "magazine": 3,
+  "reserveMax": 18,
+  "pickupAmmo": 6,
+  "reloadTicks": 90,
+  "raiseTicks": 26,
+  "botDesirability": 0.72,
+  "botRange": [6, 35],
+  "ammo": "explosive",
+  "projectile": {
+    "speed": 34,
+    "gravity": 0,
+    "fuseSeconds": 3,
+    "splashRadius": 3.8,
+    "splashDamage": 75,
+    "splashEdgeDamage": 10,
+    "selfDamageScale": 0.45,
+    "visual": "disc",
+    "impactDamage": 25,
+    "knockback": 10
+  },
+  "view": {
+    "model": "weapons/disc_launcher.glb",
+    "viewOffset": [0.21, -0.21, 0.52],
+    "tracer": "#7ad6ff",
+    "hold": {
+      "style": "long",
+      "grip": [0, -0.06, -0.06],
+      "support": [0, -0.022, 0.142],
+      "shoulder": [0, -0.076, -0.43]
+    },
+    "sound": "fire.disc"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 6: lobbers." }
+}

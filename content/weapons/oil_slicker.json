@@ -1,0 +1,55 @@
+{
+  "id": "core.oil_slicker",
+  "code": 25,
+  "displayName": "Oil Slicker",
+  "category": "special",
+  "kind": "projectile",
+  "slot": 6,
+  "magazine": 12,
+  "reserveMax": 48,
+  "pickupAmmo": 24,
+  "reloadTicks": 70,
+  "raiseTicks": 18,
+  "botDesirability": 0.3,
+  "botRange": [4, 16],
+  "ammo": "fuel",
+  "projectile": {
+    "speed": 17,
+    "gravity": 12,
+    "fuseSeconds": 3,
+    "splashRadius": 0,
+    "splashDamage": 0,
+    "splashEdgeDamage": 0,
+    "selfDamageScale": 0,
+    "visual": "oil",
+    "zone": { "kind": "oil", "radius": 3, "seconds": 16 }
+  },
+  "alt": {
+    "label": "Igniter",
+    "ammo": "shared",
+    "cost": 2,
+    "fireIntervalTicks": 30,
+    "kind": "projectile",
+    "projectile": {
+      "speed": 26,
+      "gravity": 8,
+      "fuseSeconds": 3,
+      "splashRadius": 1.4,
+      "splashDamage": 12,
+      "splashEdgeDamage": 6,
+      "selfDamageScale": 0.3,
+      "visual": "flare",
+      "ignites": true,
+      "status": { "kind": "burn", "seconds": 3 },
+      "zone": { "kind": "fire", "radius": 1.5, "seconds": 3 }
+    }
+  },
+  "view": {
+    "model": "weapons/oil_slicker.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#8a7a5a",
+    "hold": { "style": "long", "grip": [0, -0.07, 0], "support": [0, -0.037, 0.192], "shoulder": [0, 0.014, -0.38] },
+    "sound": "fire.goo"
+  },
+  "notes": { "group": "The extended arsenal: every one fires differently. 6: lobbers." }
+}

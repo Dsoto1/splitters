@@ -1,0 +1,67 @@
+{
+  "id": "core.battle_axe",
+  "code": 48,
+  "displayName": "Battle Axe",
+  "category": "melee",
+  "kind": "melee",
+  "slot": 1,
+  "fireMode": "semi",
+  "damage": 85,
+  "fireIntervalTicks": 48,
+  "range": 2.7,
+  "magazine": 0,
+  "reserveMax": 12,
+  "pickupAmmo": 4,
+  "reloadTicks": 0,
+  "raiseTicks": 18,
+  "botDesirability": 0.45,
+  "botRange": [0, 2.5],
+  "knockback": 6,
+  "ammo": "shells",
+  "alt": {
+    "label": "Blunderbuss",
+    "ammo": "own",
+    "cost": 1,
+    "max": 2,
+    "pickup": 2,
+    "fireIntervalTicks": 36,
+    "kind": "hitscan",
+    "damage": 11,
+    "pellets": 9,
+    "spread": 0.12,
+    "range": 24,
+    "headshot": 1.25,
+    "falloff": { "start": 4, "end": 16, "min": 0.2, "curve": "steep" },
+    "reload": { "start": 16, "each": 66, "end": 14 },
+    "kick": {
+      "pitch": [0.1],
+      "yaw": [0.016, -0.012],
+      "variance": 0.006,
+      "delay": 10,
+      "settle": 4,
+      "rate": 0.12,
+      "visual": 1.4
+    }
+  },
+  "view": {
+    "model": "guns/battle_axe.glb",
+    "fallback": "weapons/knife.glb",
+    "viewOffset": [0.24, -0.26, 0.42],
+    "tracer": "#ffd9a0",
+    "sound": "fire.knife",
+    "hold": { "style": "melee", "grip": [0, 0, -0.3] },
+    "muzzleAt": [0, 0.062, 0.4],
+    "altShot": {
+      "sound": "fire.shotgun",
+      "rate": 0.78,
+      "flash": { "effect": "wide_flash_02", "scale": 0.32 },
+      "smoke": 1.2
+    }
+  },
+  "notes": {
+    "design": "Made for the owner's own Meshy model (content/guns.json, pack meshy-owned-guns). The heavy melee weapon: a slow, wide swing that hits hard and shoves, and a black-powder blunderbuss for the second trigger (two loads in the barrel, reloaded one at a time from a reserve of shotgun shells).",
+    "ammo": "Powder and shot: shotgun shells (shell boxes and the general ammo box top it up), loaded into the barrel by hand.",
+    "alt": "The blunderbuss (docs/ARSENAL.md): a wide, short cone of nine pellets that falls off fast (it never outreaches the Shotgun), two loads, each rammed home in a slow 1.1 s, and a big kick.",
+    "model": "The owner's Steampunk Battle Axe (Meshy, owned): a flintlock blunderbuss with an axe blade under the muzzle, held by its stock with the blade forward. The bore's mouth is the front of the barrel, on top."
+  }
+}
