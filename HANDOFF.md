@@ -10,6 +10,49 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Content scalability step 4: vehicles, turrets and NPC roles as data (`wip/vehicles-npcs-data`, agent, 2026-11-04; not merged; on `wip/per-pack-content` 27d7a58)
+docs/CONTENT_SCALABILITY.md step 4, same pattern as weapons; how to add one: docs/CONTENT_PIPELINE.md, "Vehicles, turrets and NPC roles".
+- **Where things are now:** `content/vehicles/<id>.json` (one per mount: the 17 placeable ones with an `order`, which
+  is MapMaker's palette order, and the 2 route crafts `airplane` / `dropship_drop`; kind, model, health, box, seats
+  with mounted weapons and arcs, reach, respawn, blast, `vehicle` handling incl. suspension, `sentry` block, drawing
+  numbers, blurb, `notes` from the old comments). `content/npcs.json` (18 roles: explicit `code`, health, weapon,
+  speed, scale, damage, creature / melee, look, and `bot`: what each role's profile changes from `NPC_PROFILE`).
+  `tools/content/vehicles.mjs` (`pnpm content:vehicles`) -> `packages/shared/src/content/mounts.generated.ts`;
+  `tools/content/npcs.mjs` (`pnpm content:npcs`) -> `npcRoles.generated.ts` (`NPC_ROLES` in code order,
+  `CREATURE_ROLES`, `NPC_ROLE_SPECS`, `NPC_ROLE_BOTS`) and `content/codes.lock.json` `npcRoles`. sim/mounts.ts,
+  sim/npc.ts and map/mapKeys.ts keep the types and all behaviour and re-export; `NPC_ROLE_PROFILES` is built from
+  `NPC_PROFILE` + `NPC_ROLE_BOTS`. NPC looks logic (skins, colours, `NPC_KEPT_LOOKS`) stays in code.
+- **Checks in the generators:** schema (unknown fields are errors); mounts: weapons exist and are slot 0, models
+  exist, the two vehicle sounds every mount plays exist, seats fit the kind (turret: gunners only; sentry: none;
+  vehicle: one driver; gunners need a weapon, passengers have none), unique `order`, both route crafts present.
+  NPC roles: weapon exists and is carried (slot 1-9), look is a `content/characters` look, a creature has its body
+  in `CREATURE_SPECS`, tags are ones the brain reads (`hasTag`), traits 0-100, codes unique / never changed / never
+  reused / 0..n-1. Mounts have **no network code** (a mount travels as its map entity index; maps name it by id).
+- **Proof of no change:** `packages/shared/test/fixtures/vehicles-resolved.json` and `npc-roles-resolved.json`
+  (written from the hand-written tables first: every MountDef with `mountMass` and each seat's `cockpitEye`, the
+  route crafts and lookups; every role's code, spec and full bot profile, CREATURE_ROLES, the NPC skins and their
+  groups); `vehiclesNpcsData.test.ts` deep-equals them. NPC role codes equal the old `NPC_ROLES` order.
+- **Wiring:** `pnpm content:rebuild` runs weapons, vehicles and npcs (its generated-file pattern now also matches
+  camel-case names: `weaponFamilies`, `npcRoles`); `pnpm content:check` now runs all three `--check`s (the weapons one
+  wasn't in it). weapons.mjs exports its schema / TS helpers and keeps other sections of the codes lock.
+- **Workbench:** "Vehicles & turrets" (37 fields: name, blurb, model, health, box, reach, respawn, blast, speeds,
+  grip, drift, mass, hover, fly, ride height, sentry and arc numbers, the first three seats' weapon and arc, glow;
+  id, kind, order and the seat list read-only) and "NPC roles" (20 fields: name, health, weapon, speed, size, damage,
+  melee, seven bot traits, tags, notes; role, code, creature and look read-only). Checked with the dashboard's
+  `parseManifest` / `itemsOf` (no errors; `seats.1.weapon` paths resolve).
+- **Pitfalls:** edit the JSON, never the `.generated.ts`; never rename a mount id (maps) or change / reuse an NPC
+  code; a seat's place and the suspension are JSON-only; a numbers change is a fixture change
+  (`UPDATE_VEHICLE_FIXTURE=1`). Seat `facing` of ±π/2 is written as ±1.5707963267948966 (exact).
+- **Checks:** menu's first JS 649.3 -> 649.4 kB gzip (`index` 208.4 -> 208.6; raw 2308.2 -> 2308.1 kB;
+  base built from 27d7a58's shared sources on the same machine); the mount tables stay out of the menu chunk (they
+  load with a match / MapMaker), the NPC roles were already in it (Character Select's NPC skins). `pnpm typecheck`
+  clean. `pnpm test:changed` (everything, shared changed): 1517 pass, 1 failed at load ~18 (spectate idle-kick, 22 s
+  timeout), passes alone. `content:check` and `content:rebuild` (nothing changed). E2E (`CI=1`, ports 4287/7897):
+  vehicles PASS (215 s), zombies PASS (49 s), outpost FAIL at load (2 characters in 20 s, run took 143 s), rerun PASS
+  (9 characters, 51 s).
+- **Not done / next:** e2e/flowMap has no rule for `content/vehicles/` or `content/npcs.json` (a change regenerates
+  shared code, which runs the full suite anyway); per-role NPC skin colours stay in code (looks logic, as asked).
+
 ### Content scalability step 3: weapons, throwables, classes and abilities as data (`wip/weapons-data`, agent, 2026-11-04; not merged; rebased on main 5bc2455)
 docs/CONTENT_SCALABILITY.md "Weapons as data", all five steps; how to add a weapon: docs/CONTENT_PIPELINE.md.
 - **Where things are now:** `content/weapons/families.json` (the old `weapon()` default block and the ten gunplay
