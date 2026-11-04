@@ -240,7 +240,7 @@ export interface Combatant {
   size: number;
   /**
    * Measured hit shapes (sim/hitbox.ts) of the look `hitLook` they were taken for, and their scale before `size`
-   * (an NPC role's drawn scale, a creature skin's fit). Refreshed whenever the look changes (Match.hitBodyOf).
+   * (an NPC role's drawn scale, a creature skin's fit). Refreshed whenever the look changes (hitboxOf).
    */
   hitbox: LookHitbox;
   hitLook: string;
@@ -3122,13 +3122,8 @@ export class Match {
 
   /** A combatant's body where it is now, for shots: its measured shapes, facing, stance and scale. */
   private shotBody(o: Combatant): ShotBody {
-    const box = this.hitBodyOf(o);
+    const box = hitboxOf(o);
     return { slot: o.slot, feet: o.move.pos, height: bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size, box, yaw: o.yaw, stance: stanceOf(o.move), scale: o.hitScale * o.size, who: o };
-  }
-
-  /** A combatant's hit shapes, taken again when its look changed (players and bots; an NPC's are set at its spawn). */
-  hitBodyOf(c: Combatant): LookHitbox {
-    return hitboxOf(c);
   }
 
   private recordHistory(): void {
@@ -3146,7 +3141,7 @@ export class Match {
       o.h = bodyHeightOf(c.move, c.size);
       o.yaw = c.yaw;
       o.stance = stanceOf(c.move);
-      o.box = this.hitBodyOf(c);
+      o.box = hitboxOf(c);
       o.scale = c.hitScale * c.size;
       e.at.set(c.slot, o);
     }
