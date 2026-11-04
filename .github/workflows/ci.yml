@@ -280,14 +280,8 @@ jobs:
         job: ${{ fromJSON(needs.plan.outputs.unit_jobs) }}
     name: unit (${{ matrix.job.name }})
     steps:
+      # The whole tree: content tests read the client's models.
       - uses: actions/checkout@v4
-        with:
-          filter: blob:none
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |
-            /*
-            !/packages/client/public/
-            !/assets-src/
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
