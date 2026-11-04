@@ -298,7 +298,7 @@ export function edgeSegments(style: ResolvedEdge, half: number, height: number):
 }
 
 /** Visual trim for an edge (inner face only): [u0, u1, y0, y1, depth] standing off the wall face. */
-function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
+export function edgeTrim(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
   const out: [number, number, number, number, number][] = [];
   const base = (u0: number, u1: number) => out.push([u0, u1, 0, 0.16, 0.04]);
   const cornice = (u0: number, u1: number) => height >= 3 && out.push([u0, u1, height - 0.2, height, 0.07]);
