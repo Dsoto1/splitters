@@ -294,6 +294,61 @@
         { "path": "slots.trim.tint", "label": "Trim & frames: tint (#rrggbb; empty: none)", "type": "text", "edit": true },
         { "path": "notes.section", "label": "Notes", "type": "longtext", "edit": true }
       ]
+    },
+    {
+      "id": "kit-tiles",
+      "label": "Kit tiles",
+      "files": "content/tiles/core.json",
+      "items": "tiles",
+      "key": "id",
+      "title": "displayName",
+      "subtitle": "category",
+      "filters": ["category", "open", "configurable"],
+      "fields": [
+        { "path": "id", "label": "Id (maps name it; never changes)", "type": "text" },
+        { "path": "displayName", "label": "Name", "type": "text", "edit": true },
+        { "path": "category", "label": "Palette group", "type": "select", "options": ["Rooms", "Large", "Buildings", "Curves", "Corridors", "Vertical", "Open", "Special"], "edit": true },
+        { "path": "blurb", "label": "Blurb (MapMaker tooltip)", "type": "longtext", "edit": true },
+        { "path": "footprint", "label": "Footprint (cells: w, d, levels)", "type": "list" },
+        { "path": "cells", "label": "Cells (dx, dy, dz; edited in the JSON)", "type": "text" },
+        { "path": "floors", "label": "Levels with a floor slab", "type": "list", "edit": true },
+        { "path": "ports", "label": "Ports: where doorways can open (edited in the JSON)", "type": "text" },
+        { "path": "open", "label": "Open ground (no wall where it meets open ground)", "type": "bool", "edit": true },
+        { "path": "configurable", "label": "Takes room options (layout, floor, ceiling, corners, facade)", "type": "bool", "edit": true },
+        { "path": "edgeDefault", "label": "Unconnected sides become (an edge style; empty: solid wall)", "type": "select", "options": ["wall", "door", "wide", "arch", "window", "windows", "slit", "half", "railing", "high", "tower", "fence", "broken", "bars", "shutter", "open"], "edit": true },
+        { "path": "edgeDefaults", "label": "Per-side defaults (\"dx,dy,dz:S\": style; edited in the JSON)", "type": "text" },
+        { "path": "model.file", "label": "Model (packages/client/public; collision from its prop parts)", "type": "text", "edit": true },
+        { "path": "model.lift", "label": "Model lift (m)", "type": "number", "edit": true },
+        { "path": "solids", "label": "Parts: what stands in it (builder and numbers; edited in the JSON)", "type": "text" },
+        { "path": "extraFloors", "label": "Partial floors: balconies, decks, ledges (edited in the JSON)", "type": "text" },
+        { "path": "notes.design", "label": "Design notes", "type": "longtext", "edit": true }
+      ]
+    },
+    {
+      "id": "edge-styles",
+      "label": "Edge styles (walls & openings)",
+      "files": "content/tiles/edges.json",
+      "items": "edges",
+      "key": "id",
+      "title": "label",
+      "filters": ["glass", "corner", "facade", "dressing.kind"],
+      "fields": [
+        { "path": "id", "label": "Id (maps name it; never changes)", "type": "text" },
+        { "path": "rule", "label": "Rule in code (auto, open)", "type": "text" },
+        { "path": "label", "label": "Name (MapMaker)", "type": "text", "edit": true },
+        { "path": "segments", "label": "Collision segments (u along the side, y up; edited in the JSON)", "type": "text" },
+        { "path": "trim", "label": "Trim (base, cornice, frame, window, boxes; edited in the JSON)", "type": "text" },
+        { "path": "trimFrom", "label": "Trim stands off at (m; empty: the wall thickness)", "type": "number", "edit": true },
+        { "path": "openings", "label": "Openings [u0, u1, y0, y1] (facade frames, glass; edited in the JSON)", "type": "text" },
+        { "path": "glass", "label": "Takes window glass", "type": "bool", "edit": true },
+        { "path": "corner", "label": "Room corner pieces stand against it", "type": "bool", "edit": true },
+        { "path": "facade", "label": "Facades dress it", "type": "bool", "edit": true },
+        { "path": "street", "label": "Street face (frontier awning and boardwalk)", "type": "bool", "edit": true },
+        { "path": "openDefault", "label": "As a tile's default edge, counts as open (no doorway)", "type": "bool", "edit": true },
+        { "path": "dressing.kind", "label": "Room dressing reads it as (door, window, see-through; empty: wall)", "type": "select", "options": ["door", "window", "see-through"], "edit": true },
+        { "path": "dressing.span", "label": "Room dressing: opening width (m)", "type": "number", "edit": true },
+        { "path": "notes.design", "label": "Design notes", "type": "longtext", "edit": true }
+      ]
     }
   ]
 }

@@ -28,7 +28,8 @@
   "fixes": {
     "hands": {
       "r": {
-        "palm": [0.006, 0.061, 0.078]
+        "palm": [0.006, 0.061, 0.078],
+        "curl": 0.6
       }
     },
     "triangles": 10000,
@@ -43,6 +44,10 @@
       "gripLong": [-0.06, -0.03, -0.015],
       "supportLong": [0, 0.06, 0],
       "supportPistol": [0.02, 0.06, -0.06]
+    },
+    "skin": {
+      "joints": 0.3,
+      "knuckle": 0.3
     }
   },
   "landmarks": {

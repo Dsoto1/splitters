@@ -1,0 +1,212 @@
+{
+  "$comment": "Edge styles: how one side of one cell can be built (docs/CONTENT_PIPELINE.md, \"Tiles and edge styles\"). Maps store a side's style by its id, so an id never changes. The order is MapMaker's (Walls & Openings tool, inspector). u runs along the side (-half..half, half = half a cell side), y up from the floor; a value is metres, or \"half\", \"-half\", \"half-0.75\", \"-half+0.75\", \"height\" (the level height), \"height*2\", \"height-0.15\", \"height*2-0.2\" or \"min(3.5,height)\". segments collide (t: thickness, default the wall thickness); trim is drawn only (depth: how far it stands off the wall face). auto and open are rules in code (map/geometry.ts resolveEdge).",
+  "edges": [
+    { "id": "auto", "label": "Auto", "rule": "auto", "notes": { "design": "The classic rule: a doorway where two ports meet, nothing between open ground, otherwise the tile's default edge." } },
+    {
+      "id": "wall",
+      "label": "Solid wall",
+      "segments": [{ "u": ["-half", "half"], "y": [0, "height"] }],
+      "trim": [{ "base": ["-half", "half"] }, { "cornice": ["-half", "half"] }],
+      "corner": true,
+      "facade": true
+    },
+    {
+      "id": "door",
+      "label": "Doorway",
+      "segments": [
+        { "u": ["-half", -1.5], "y": [0, "height"] },
+        { "u": [1.5, "half"], "y": [0, "height"] },
+        { "u": [-1.5, 1.5], "y": ["min(3,height)", "height"] }
+      ],
+      "trim": [{ "base": ["-half", -1.66] }, { "base": [1.66, "half"] }, { "cornice": ["-half", "half"] }, { "frame": { "half": 1.5, "top": 3 } }],
+      "openings": [[-1.5, 1.5, 0, 3]],
+      "corner": true,
+      "facade": true,
+      "street": true,
+      "dressing": { "kind": "door", "span": 3 },
+      "notes": { "design": "3 m wide, 3 m high: the tile kit's doorWidth and doorHeight (map/catalog.ts TILE_DIMENSIONS)." }
+    },
+    {
+      "id": "wide",
+      "label": "Wide doorway",
+      "segments": [
+        { "u": ["-half", -2.5], "y": [0, "height"] },
+        { "u": [2.5, "half"], "y": [0, "height"] },
+        { "u": [-2.5, 2.5], "y": ["min(3.5,height)", "height"] }
+      ],
+      "trim": [{ "base": ["-half", -2.66] }, { "base": [2.66, "half"] }, { "cornice": ["-half", "half"] }, { "frame": { "half": 2.5, "top": 3.5 } }],
+      "openings": [[-2.5, 2.5, 0, 3.5]],
+      "corner": true,
+      "facade": true,
+      "street": true,
+      "dressing": { "kind": "door", "span": 5 }
+    },
+    {
+      "id": "arch",
+      "label": "Archway",
+      "segments": [
+        { "u": ["-half", "-half+0.75"], "y": [0, "height"] },
+        { "u": ["half-0.75", "half"], "y": [0, "height"] },
+        { "u": ["-half+0.75", "half-0.75"], "y": ["min(3.4,height)", "height"] }
+      ],
+      "trim": [{ "base": ["-half", "-half+0.75"] }, { "base": ["half-0.75", "half"] }, { "cornice": ["-half", "half"] }, { "u": ["-half+0.75", "half-0.75"], "y": [3.25, 3.4], "depth": 0.08 }],
+      "openings": [[-3.25, 3.25, 0, 3.4]],
+      "facade": true,
+      "street": true,
+      "dressing": { "kind": "door", "span": 6.5 }
+    },
+    {
+      "id": "window",
+      "label": "Window",
+      "segments": [
+        { "u": ["-half", -1.3], "y": [0, "height"] },
+        { "u": [1.3, "half"], "y": [0, "height"] },
+        { "u": [-1.3, 1.3], "y": [0, 0.9] },
+        { "u": [-1.3, 1.3], "y": ["min(2.5,height)", "height"] }
+      ],
+      "trim": [{ "base": ["-half", "half"] }, { "cornice": ["-half", "half"] }, { "window": { "u": [-1.3, 1.3], "y": [0.9, 2.5] } }],
+      "openings": [[-1.3, 1.3, 0.9, 2.5]],
+      "glass": true,
+      "corner": true,
+      "facade": true,
+      "dressing": { "kind": "window", "span": 2.6 },
+      "notes": { "design": "Sill 0.9 m, opening 1.6 m: jump and crouch (legs tucked) to climb through." }
+    },
+    {
+      "id": "windows",
+      "label": "Twin windows",
+      "segments": [
+        { "u": ["-half", -2.7], "y": [0, "height"] },
+        { "u": [-0.8, 0.8], "y": [0, "height"] },
+        { "u": [2.7, "half"], "y": [0, "height"] },
+        { "u": [-2.7, -0.8], "y": [0, 0.9] },
+        { "u": [0.8, 2.7], "y": [0, 0.9] },
+        { "u": [-2.7, -0.8], "y": ["min(2.5,height)", "height"] },
+        { "u": [0.8, 2.7], "y": ["min(2.5,height)", "height"] }
+      ],
+      "trim": [
+        { "base": ["-half", "half"] },
+        { "cornice": ["-half", "half"] },
+        { "window": { "u": [-2.7, -0.8], "y": [0.9, 2.5] } },
+        { "window": { "u": [0.8, 2.7], "y": [0.9, 2.5] } }
+      ],
+      "openings": [[-2.7, -0.8, 0.9, 2.5], [0.8, 2.7, 0.9, 2.5]],
+      "glass": true,
+      "corner": true,
+      "facade": true,
+      "street": true,
+      "dressing": { "kind": "window", "span": 5.4 }
+    },
+    {
+      "id": "slit",
+      "label": "Firing slit",
+      "segments": [
+        { "u": ["-half", -1.5], "y": [0, "height"] },
+        { "u": [1.5, "half"], "y": [0, "height"] },
+        { "u": [-1.5, 1.5], "y": [0, 1.25] },
+        { "u": [-1.5, 1.5], "y": ["min(1.6,height)", "height"] }
+      ],
+      "trim": [{ "base": ["-half", "half"] }, { "cornice": ["-half", "half"] }, { "window": { "u": [-1.5, 1.5], "y": [1.25, 1.6] } }],
+      "openings": [[-1.5, 1.5, 1.25, 1.6]],
+      "glass": true,
+      "corner": true,
+      "facade": true,
+      "dressing": { "kind": "window", "span": 3 }
+    },
+    {
+      "id": "half",
+      "label": "Half wall",
+      "segments": [{ "u": ["-half", "half"], "y": [0, 1.1] }],
+      "trim": [{ "base": ["-half", "half"] }, { "u": ["-half", "half"], "y": [1.1, 1.18], "depth": 0.04 }],
+      "facade": true,
+      "dressing": { "kind": "see-through" }
+    },
+    {
+      "id": "railing",
+      "label": "Railing",
+      "segments": [{ "u": ["-half", "half"], "y": [0, 1], "t": 0.12 }],
+      "trim": [
+        { "repeat": { "from": "-half+0.1", "through": "half-0.1", "step": 2 }, "u": [-0.06, 0.06], "y": [0, 1.08], "depth": 0.04 },
+        { "u": ["-half", "half"], "y": [0.95, 1.08], "depth": 0.05 }
+      ],
+      "trimFrom": 0.12,
+      "openDefault": true,
+      "dressing": { "kind": "see-through" },
+      "notes": { "design": "Posts every 2 m and a top rail. As a tile's default edge (balconies, railed platforms) it counts as open: ports meeting there build no doorway." }
+    },
+    {
+      "id": "high",
+      "label": "High wall (2 storeys)",
+      "segments": [{ "u": ["-half", "half"], "y": [0, "height*2"] }],
+      "trim": [{ "base": ["-half", "half"] }, { "u": ["-half", "half"], "y": ["height*2-0.2", "height*2"], "depth": 0.07 }],
+      "corner": true,
+      "facade": true
+    },
+    {
+      "id": "tower",
+      "label": "Towering wall (4 storeys)",
+      "segments": [{ "u": ["-half", "half"], "y": [0, "height*4"] }],
+      "trim": [{ "base": ["-half", "half"] }, { "u": ["-half", "half"], "y": ["height*4-0.2", "height*4"], "depth": 0.07 }],
+      "corner": true,
+      "facade": true
+    },
+    {
+      "id": "fence",
+      "label": "Tall fence",
+      "segments": [
+        { "repeat": { "from": "-half", "through": "half", "step": 1, "clamp": true }, "u": [-0.06, 0.06], "y": [0, 3], "t": 0.12 },
+        { "u": ["-half", "half"], "y": [0.05, 0.2], "t": 0.1 },
+        { "u": ["-half", "half"], "y": [1.45, 1.6], "t": 0.1 },
+        { "u": ["-half", "half"], "y": [2.85, 3], "t": 0.1 }
+      ],
+      "trim": [],
+      "dressing": { "kind": "see-through" },
+      "notes": { "design": "Posts every metre and three rails: 3 m high, see-through; stops players, and shots only at the bars." }
+    },
+    {
+      "id": "broken",
+      "label": "Broken wall",
+      "segments": [
+        { "u": ["-half", -2.2], "y": [0, "height"] },
+        { "u": [1.4, "half"], "y": [0, "height"] },
+        { "u": [-2.2, -0.6], "y": ["min(2.7,height)", "height"] },
+        { "u": [-0.6, 1.4], "y": ["min(3.2,height)", "height"] },
+        { "u": [-2.2, -1.3], "y": [0, 0.45] }
+      ],
+      "trim": [{ "base": ["-half", -2.2] }, { "base": [1.4, "half"] }, { "cornice": ["-half", "half"] }],
+      "facade": true,
+      "dressing": { "kind": "door", "span": 4.4 },
+      "notes": { "design": "A ragged hole knocked through, a heap of masonry on one side of it." }
+    },
+    {
+      "id": "bars",
+      "label": "Bars",
+      "segments": [
+        { "repeat": { "from": "-half+0.15", "below": "half-0.1", "step": 0.3 }, "u": [-0.03, 0.03], "y": [0, "height"], "t": 0.1 },
+        { "u": ["-half", "half"], "y": [0, 0.12], "t": 0.12 },
+        { "u": ["-half", "half"], "y": ["height-0.15", "height"], "t": 0.12 }
+      ],
+      "trim": [],
+      "dressing": { "kind": "see-through" },
+      "notes": { "design": "Floor-to-ceiling bars 0.3 m apart: see and shoot through, nobody squeezes through." }
+    },
+    {
+      "id": "shutter",
+      "label": "Shutter (crouch under)",
+      "segments": [
+        { "u": ["-half", -2.5], "y": [0, "height"] },
+        { "u": [2.5, "half"], "y": [0, "height"] },
+        { "u": [-2.5, 2.5], "y": ["min(3.5,height)", "height"] },
+        { "u": [-2.5, 2.5], "y": [1.35, "min(3.5,height)"], "t": 0.12 }
+      ],
+      "trim": [{ "base": ["-half", -2.66] }, { "base": [2.66, "half"] }, { "cornice": ["-half", "half"] }, { "frame": { "half": 2.5, "top": 3.5 } }],
+      "openings": [[-2.5, 2.5, 0, 3.5]],
+      "corner": true,
+      "facade": true,
+      "street": true,
+      "dressing": { "kind": "door", "span": 5 },
+      "notes": { "design": "A wide opening with its roller shutter stuck 1.35 m up: crouch under it (bots don't path through)." }
+    },
+    { "id": "open", "label": "No wall", "rule": "open" }
+  ]
+}

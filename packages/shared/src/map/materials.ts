@@ -15,9 +15,14 @@ import { CORE_MATERIALS, CORE_THEMES, TINT_SWATCHES } from '../content/materials
 
 export { CORE_MATERIALS, CORE_THEMES, TINT_SWATCHES };
 
-/** Paintable surface groups of a Classic Grid tile. */
-export const SURFACE_SLOTS = ['floor', 'walls', 'solids', 'underside', 'trim'] as const;
+/**
+ * Paintable surface groups of a Classic Grid tile. `roof` is the top of a room's roof (room option Ceiling: Roof,
+ * skylight or beams); until it is painted it looks like the room's floor, so it has no theme default of its own.
+ */
+export const SURFACE_SLOTS = ['floor', 'walls', 'solids', 'underside', 'trim', 'roof'] as const;
 export type SurfaceSlot = (typeof SURFACE_SLOTS)[number];
+/** The slots a theme gives a default for. */
+export type ThemeSlot = Exclude<SurfaceSlot, 'roof'>;
 
 export const SURFACE_SLOT_LABELS: Record<SurfaceSlot, string> = {
   floor: 'Floor',
@@ -25,6 +30,7 @@ export const SURFACE_SLOT_LABELS: Record<SurfaceSlot, string> = {
   solids: 'Pillars, cover & steps',
   underside: 'Underside (ceiling below)',
   trim: 'Trim & frames',
+  roof: 'Roof (top, outside)',
 };
 
 /** Procedural patterns a material can use; each has its painter in client code (packages/client/src/materials/patterns.ts). */
@@ -147,7 +153,7 @@ export interface ThemeDefinition {
   id: string;
   displayName: string;
   /** Default style for each slot when a tile does not override it. */
-  slots: Record<SurfaceSlot, SurfaceStyleDef>;
+  slots: Record<ThemeSlot, SurfaceStyleDef>;
   sky: string;
 }
 

@@ -7,7 +7,7 @@
     "author": "Tile Trigger",
     "description": "A scaled-down look-alike of the National Mall: 300 m of lawn, gravel walks and elm rows from a domed capitol at the east end to a columned memorial with its great seated statue at the west, past a 44 m obelisk you can climb inside to a sniper deck, and a reflecting pool lined with cherry blossom. Historic buildings line the lawns either side, the domes are smooth white and copper green over Ionic porticos, and a security cordon of barriers, sandbags and a parked armoured truck rings the obelisk. Fight through the capitol's rotunda and chambers, the natural-history museum (a mammoth in the rotunda, a theropod in the fossil hall) and the air-and-space museum, where the flyers on show can be taken out through the glass front. The Capitol team holds the east end, the Memorial team the west.",
     "createdAt": "2026-10-23T00:00:00.000Z",
-    "updatedAt": "2026-11-04T07:15:23.322Z",
+    "updatedAt": "2026-11-04T11:28:53.773Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 16,
@@ -396,6 +396,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -440,6 +444,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -482,6 +490,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -521,6 +533,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -559,6 +575,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -597,6 +617,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -664,6 +688,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1033,6 +1061,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1077,6 +1109,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1119,6 +1155,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1158,6 +1198,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1196,6 +1240,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1234,6 +1282,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1301,6 +1353,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1416,6 +1472,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1455,6 +1515,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1568,6 +1632,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1607,6 +1675,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1721,6 +1793,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -1759,6 +1835,10 @@
           "trim": {
             "material": "core.brass",
             "tint": null
+          },
+          "roof": {
+            "material": "core.marble",
+            "tint": "#e4dfd2"
           }
         },
         "edges": {
@@ -2015,6 +2095,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2054,6 +2138,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2096,6 +2184,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2134,6 +2226,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2353,6 +2449,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2392,6 +2492,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2434,6 +2538,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2472,6 +2580,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2590,6 +2702,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2666,6 +2782,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -2742,6 +2862,10 @@
           "trim": {
             "material": "core.stone_trim",
             "tint": null
+          },
+          "roof": {
+            "material": "core.pbr_travertine",
+            "tint": "#e8e2d4"
           }
         },
         "edges": {
@@ -4598,1958 +4722,6 @@
       "health": 120
     },
     {
-      "id": "block_080",
-      "position": [
-        139.74,
-        8.4,
-        1.16
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -1.67,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_081",
-      "position": [
-        139.29,
-        8.4,
-        3.43
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -1.87,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_082",
-      "position": [
-        138.41,
-        8.4,
-        5.56
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -2.06,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_083",
-      "position": [
-        137.12,
-        8.4,
-        7.49
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -2.26,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_084",
-      "position": [
-        135.49,
-        8.4,
-        9.12
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -2.45,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_085",
-      "position": [
-        133.56,
-        8.4,
-        10.41
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -2.65,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_086",
-      "position": [
-        131.43,
-        8.4,
-        11.29
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -2.85,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_087",
-      "position": [
-        129.16,
-        8.4,
-        11.74
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -3.04,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_088",
-      "position": [
-        126.84,
-        8.4,
-        11.74
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 3.04,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_089",
-      "position": [
-        124.57,
-        8.4,
-        11.29
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 2.85,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_090",
-      "position": [
-        122.44,
-        8.4,
-        10.41
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 2.65,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_091",
-      "position": [
-        120.51,
-        8.4,
-        9.12
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 2.45,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_092",
-      "position": [
-        118.88,
-        8.4,
-        7.49
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 2.26,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_093",
-      "position": [
-        117.59,
-        8.4,
-        5.56
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 2.06,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_094",
-      "position": [
-        116.71,
-        8.4,
-        3.43
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 1.87,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_095",
-      "position": [
-        116.26,
-        8.4,
-        1.16
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 1.67,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_096",
-      "position": [
-        116.26,
-        8.4,
-        -1.16
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 1.47,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_097",
-      "position": [
-        116.71,
-        8.4,
-        -3.43
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 1.28,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_098",
-      "position": [
-        117.59,
-        8.4,
-        -5.56
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 1.08,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_099",
-      "position": [
-        118.88,
-        8.4,
-        -7.49
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 0.88,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_100",
-      "position": [
-        120.51,
-        8.4,
-        -9.12
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 0.69,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_101",
-      "position": [
-        122.44,
-        8.4,
-        -10.41
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 0.49,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_102",
-      "position": [
-        124.57,
-        8.4,
-        -11.29
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 0.29,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_103",
-      "position": [
-        126.84,
-        8.4,
-        -11.74
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": 0.1,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_104",
-      "position": [
-        129.16,
-        8.4,
-        -11.74
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -0.1,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_105",
-      "position": [
-        131.43,
-        8.4,
-        -11.29
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -0.29,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_106",
-      "position": [
-        133.56,
-        8.4,
-        -10.41
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -0.49,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_107",
-      "position": [
-        135.49,
-        8.4,
-        -9.12
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -0.69,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_108",
-      "position": [
-        137.12,
-        8.4,
-        -7.49
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -0.88,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_109",
-      "position": [
-        138.41,
-        8.4,
-        -5.56
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -1.08,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_110",
-      "position": [
-        139.29,
-        8.4,
-        -3.43
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -1.28,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_111",
-      "position": [
-        139.74,
-        8.4,
-        -1.16
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        6.6,
-        0.8
-      ],
-      "yaw": -1.47,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "prop_112",
-      "position": [
-        141.43,
-        8.4,
-        2.13
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_113",
-      "position": [
-        140.12,
-        8.4,
-        6.17
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_114",
-      "position": [
-        137.62,
-        8.4,
-        9.62
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_115",
-      "position": [
-        134.17,
-        8.4,
-        12.12
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_116",
-      "position": [
-        130.13,
-        8.4,
-        13.43
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_117",
-      "position": [
-        125.87,
-        8.4,
-        13.43
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_118",
-      "position": [
-        121.83,
-        8.4,
-        12.12
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_119",
-      "position": [
-        118.38,
-        8.4,
-        9.62
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_120",
-      "position": [
-        115.88,
-        8.4,
-        6.17
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_121",
-      "position": [
-        114.57,
-        8.4,
-        2.13
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_122",
-      "position": [
-        114.57,
-        8.4,
-        -2.13
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_123",
-      "position": [
-        115.88,
-        8.4,
-        -6.17
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_124",
-      "position": [
-        118.38,
-        8.4,
-        -9.62
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_125",
-      "position": [
-        121.83,
-        8.4,
-        -12.12
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_126",
-      "position": [
-        125.87,
-        8.4,
-        -13.43
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_127",
-      "position": [
-        130.13,
-        8.4,
-        -13.43
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_128",
-      "position": [
-        134.17,
-        8.4,
-        -12.12
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_129",
-      "position": [
-        137.62,
-        8.4,
-        -9.62
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_130",
-      "position": [
-        140.12,
-        8.4,
-        -6.17
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_131",
-      "position": [
-        141.43,
-        8.4,
-        -2.13
-      ],
-      "kind": "prop",
-      "model": "prop.im_column_ionic",
-      "yaw": 0,
-      "scale": 1.083,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "block_132",
-      "position": [
-        141.34,
-        14.9,
-        1.31
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -1.67,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_133",
-      "position": [
-        140.82,
-        14.9,
-        3.89
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -1.87,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_134",
-      "position": [
-        139.82,
-        14.9,
-        6.32
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -2.06,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_135",
-      "position": [
-        138.36,
-        14.9,
-        8.5
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -2.26,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_136",
-      "position": [
-        136.5,
-        14.9,
-        10.36
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -2.45,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_137",
-      "position": [
-        134.32,
-        14.9,
-        11.82
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -2.65,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_138",
-      "position": [
-        131.89,
-        14.9,
-        12.82
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -2.85,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_139",
-      "position": [
-        129.31,
-        14.9,
-        13.34
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -3.04,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_140",
-      "position": [
-        126.69,
-        14.9,
-        13.34
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 3.04,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_141",
-      "position": [
-        124.11,
-        14.9,
-        12.82
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 2.85,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_142",
-      "position": [
-        121.68,
-        14.9,
-        11.82
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 2.65,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_143",
-      "position": [
-        119.5,
-        14.9,
-        10.36
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 2.45,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_144",
-      "position": [
-        117.64,
-        14.9,
-        8.5
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 2.26,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_145",
-      "position": [
-        116.18,
-        14.9,
-        6.32
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 2.06,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_146",
-      "position": [
-        115.18,
-        14.9,
-        3.89
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 1.87,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_147",
-      "position": [
-        114.66,
-        14.9,
-        1.31
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 1.67,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_148",
-      "position": [
-        114.66,
-        14.9,
-        -1.31
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 1.47,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_149",
-      "position": [
-        115.18,
-        14.9,
-        -3.89
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 1.28,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_150",
-      "position": [
-        116.18,
-        14.9,
-        -6.32
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 1.08,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_151",
-      "position": [
-        117.64,
-        14.9,
-        -8.5
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 0.88,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_152",
-      "position": [
-        119.5,
-        14.9,
-        -10.36
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 0.69,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_153",
-      "position": [
-        121.68,
-        14.9,
-        -11.82
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 0.49,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_154",
-      "position": [
-        124.11,
-        14.9,
-        -12.82
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 0.29,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_155",
-      "position": [
-        126.69,
-        14.9,
-        -13.34
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": 0.1,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_156",
-      "position": [
-        129.31,
-        14.9,
-        -13.34
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -0.1,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_157",
-      "position": [
-        131.89,
-        14.9,
-        -12.82
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -0.29,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_158",
-      "position": [
-        134.32,
-        14.9,
-        -11.82
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -0.49,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_159",
-      "position": [
-        136.5,
-        14.9,
-        -10.36
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -0.69,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_160",
-      "position": [
-        138.36,
-        14.9,
-        -8.5
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -0.88,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_161",
-      "position": [
-        139.82,
-        14.9,
-        -6.32
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -1.08,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_162",
-      "position": [
-        140.82,
-        14.9,
-        -3.89
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -1.28,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_163",
-      "position": [
-        141.34,
-        14.9,
-        -1.31
-      ],
-      "kind": "block",
-      "size": [
-        2.94,
-        0.7,
-        2
-      ],
-      "yaw": -1.47,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_164",
-      "position": [
-        128,
-        15.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        24.34,
-        1.38,
-        24.34
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_165",
-      "position": [
-        128,
-        15.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        24.34,
-        1.38,
-        24.34
-      ],
-      "yaw": 0.52,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_166",
-      "position": [
-        128,
-        15.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        24.34,
-        1.38,
-        24.34
-      ],
-      "yaw": 1.05,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_188",
-      "position": [
-        128,
-        29.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        4.25,
-        2.6,
-        4.25
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_189",
-      "position": [
-        128,
-        29.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        4.25,
-        2.6,
-        4.25
-      ],
-      "yaw": 0.52,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_190",
-      "position": [
-        128,
-        29.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        4.25,
-        2.6,
-        4.25
-      ],
-      "yaw": 1.05,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_191",
-      "position": [
-        128,
-        32.2,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        5.02,
-        0.4,
-        5.02
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_192",
-      "position": [
-        128,
-        32.2,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        5.02,
-        0.4,
-        5.02
-      ],
-      "yaw": 0.52,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_193",
-      "position": [
-        128,
-        32.2,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        5.02,
-        0.4,
-        5.02
-      ],
-      "yaw": 1.05,
-      "material": "core.paint_matte",
-      "tint": "#f4f2ec",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_194",
-      "position": [
-        128,
-        32.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        1.93,
-        1.4,
-        1.93
-      ],
-      "yaw": 0,
-      "material": "core.brass",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_195",
-      "position": [
-        128,
-        32.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        1.93,
-        1.4,
-        1.93
-      ],
-      "yaw": 0.52,
-      "material": "core.brass",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_196",
-      "position": [
-        128,
-        32.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        1.93,
-        1.4,
-        1.93
-      ],
-      "yaw": 1.05,
-      "material": "core.brass",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
       "id": "prop_197",
       "position": [
         105.4,
@@ -6659,116 +4831,6 @@
         3.8,
         1.2,
         23.2
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#f1eee6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_205",
-      "position": [
-        106.1,
-        9.2,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        3.8,
-        0.68,
-        23.2
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#f1eee6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_206",
-      "position": [
-        106.1,
-        9.88,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        3.8,
-        0.68,
-        18.56
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#f1eee6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_207",
-      "position": [
-        106.1,
-        10.56,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        3.8,
-        0.68,
-        13.92
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#f1eee6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_208",
-      "position": [
-        106.1,
-        11.24,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        3.8,
-        0.68,
-        9.28
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#f1eee6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_209",
-      "position": [
-        106.1,
-        11.92,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        3.8,
-        0.68,
-        4.64
       ],
       "yaw": 0,
       "material": "core.marble",
@@ -6949,94 +5011,6 @@
         3.6,
         1.2,
         16
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#f1eee6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_220",
-      "position": [
-        149.8,
-        9.2,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        3.6,
-        0.65,
-        16
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#f1eee6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_221",
-      "position": [
-        149.8,
-        9.85,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        3.6,
-        0.65,
-        12
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#f1eee6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_222",
-      "position": [
-        149.8,
-        10.5,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        3.6,
-        0.65,
-        8
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#f1eee6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_223",
-      "position": [
-        149.8,
-        11.15,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        3.6,
-        0.65,
-        4
       ],
       "yaw": 0,
       "material": "core.marble",
@@ -12488,182 +10462,6 @@
       "health": 120
     },
     {
-      "id": "block_472",
-      "position": [
-        -36,
-        36,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        15,
-        1.2,
-        15
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#fbfaf6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_473",
-      "position": [
-        -36,
-        37.2,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        12.9,
-        1.2,
-        12.9
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#fbfaf6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_474",
-      "position": [
-        -36,
-        38.4,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        10.8,
-        1.2,
-        10.8
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#fbfaf6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_475",
-      "position": [
-        -36,
-        39.6,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        8.7,
-        1.2,
-        8.7
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#fbfaf6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_476",
-      "position": [
-        -36,
-        40.8,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        6.6,
-        1.2,
-        6.6
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#fbfaf6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_477",
-      "position": [
-        -36,
-        42,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        4.5,
-        1.2,
-        4.5
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#fbfaf6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_478",
-      "position": [
-        -36,
-        43.2,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        2.4,
-        1.2,
-        2.4
-      ],
-      "yaw": 0,
-      "material": "core.marble",
-      "tint": "#fbfaf6",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_479",
-      "position": [
-        -36,
-        44.4,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        0.8,
-        0.6,
-        0.8
-      ],
-      "yaw": 0,
-      "material": "core.pbr_steel",
-      "tint": "#d8dce0",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
       "id": "light_480",
       "position": [
         -33,
@@ -15791,842 +13589,6 @@
       "health": 120
     },
     {
-      "id": "block_678",
-      "position": [
-        67.74,
-        8.4,
-        49.16
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -1.67,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_679",
-      "position": [
-        67.29,
-        8.4,
-        51.43
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -1.87,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_680",
-      "position": [
-        66.41,
-        8.4,
-        53.56
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -2.06,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_681",
-      "position": [
-        65.12,
-        8.4,
-        55.49
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -2.26,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_682",
-      "position": [
-        63.49,
-        8.4,
-        57.12
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -2.45,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_683",
-      "position": [
-        61.56,
-        8.4,
-        58.41
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -2.65,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_684",
-      "position": [
-        59.43,
-        8.4,
-        59.29
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -2.85,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_685",
-      "position": [
-        57.16,
-        8.4,
-        59.74
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -3.04,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_686",
-      "position": [
-        54.84,
-        8.4,
-        59.74
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 3.04,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_687",
-      "position": [
-        52.57,
-        8.4,
-        59.29
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 2.85,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_688",
-      "position": [
-        50.44,
-        8.4,
-        58.41
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 2.65,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_689",
-      "position": [
-        48.51,
-        8.4,
-        57.12
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 2.45,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_690",
-      "position": [
-        46.88,
-        8.4,
-        55.49
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 2.26,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_691",
-      "position": [
-        45.59,
-        8.4,
-        53.56
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 2.06,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_692",
-      "position": [
-        44.71,
-        8.4,
-        51.43
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 1.87,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_693",
-      "position": [
-        44.26,
-        8.4,
-        49.16
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 1.67,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_694",
-      "position": [
-        44.26,
-        8.4,
-        46.84
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 1.47,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_695",
-      "position": [
-        44.71,
-        8.4,
-        44.57
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 1.28,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_696",
-      "position": [
-        45.59,
-        8.4,
-        42.44
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 1.08,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_697",
-      "position": [
-        46.88,
-        8.4,
-        40.51
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 0.88,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_698",
-      "position": [
-        48.51,
-        8.4,
-        38.88
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 0.69,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_699",
-      "position": [
-        50.44,
-        8.4,
-        37.59
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 0.49,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_700",
-      "position": [
-        52.57,
-        8.4,
-        36.71
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 0.29,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_701",
-      "position": [
-        54.84,
-        8.4,
-        36.26
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": 0.1,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_702",
-      "position": [
-        57.16,
-        8.4,
-        36.26
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -0.1,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_703",
-      "position": [
-        59.43,
-        8.4,
-        36.71
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -0.29,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_704",
-      "position": [
-        61.56,
-        8.4,
-        37.59
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -0.49,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_705",
-      "position": [
-        63.49,
-        8.4,
-        38.88
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -0.69,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_706",
-      "position": [
-        65.12,
-        8.4,
-        40.51
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -0.88,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_707",
-      "position": [
-        66.41,
-        8.4,
-        42.44
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -1.08,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_708",
-      "position": [
-        67.29,
-        8.4,
-        44.57
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -1.28,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_709",
-      "position": [
-        67.74,
-        8.4,
-        46.84
-      ],
-      "kind": "block",
-      "size": [
-        2.49,
-        3.6,
-        0.8
-      ],
-      "yaw": -1.47,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_710",
-      "position": [
-        56,
-        12,
-        48
-      ],
-      "kind": "block",
-      "size": [
-        24.34,
-        1.14,
-        24.34
-      ],
-      "yaw": 0,
-      "material": "core.paint_matte",
-      "tint": "#8fae9e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_711",
-      "position": [
-        56,
-        12,
-        48
-      ],
-      "kind": "block",
-      "size": [
-        24.34,
-        1.14,
-        24.34
-      ],
-      "yaw": 0.52,
-      "material": "core.paint_matte",
-      "tint": "#8fae9e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_712",
-      "position": [
-        56,
-        12,
-        48
-      ],
-      "kind": "block",
-      "size": [
-        24.34,
-        1.14,
-        24.34
-      ],
-      "yaw": 1.05,
-      "material": "core.paint_matte",
-      "tint": "#8fae9e",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_731",
-      "position": [
-        56,
-        25.8,
-        48
-      ],
-      "kind": "block",
-      "size": [
-        3.48,
-        2,
-        3.48
-      ],
-      "yaw": 0,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_732",
-      "position": [
-        56,
-        25.8,
-        48
-      ],
-      "kind": "block",
-      "size": [
-        3.48,
-        2,
-        3.48
-      ],
-      "yaw": 0.52,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_733",
-      "position": [
-        56,
-        25.8,
-        48
-      ],
-      "kind": "block",
-      "size": [
-        3.48,
-        2,
-        3.48
-      ],
-      "yaw": 1.05,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
       "id": "prop_734",
       "position": [
         45,
@@ -16749,116 +13711,6 @@
       "size": [
         24.8,
         1.2,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_743",
-      "position": [
-        56,
-        9.2,
-        34.5
-      ],
-      "kind": "block",
-      "size": [
-        24.8,
-        0.6,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_744",
-      "position": [
-        56,
-        9.8,
-        34.5
-      ],
-      "kind": "block",
-      "size": [
-        19.84,
-        0.6,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_745",
-      "position": [
-        56,
-        10.4,
-        34.5
-      ],
-      "kind": "block",
-      "size": [
-        14.88,
-        0.6,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_746",
-      "position": [
-        56,
-        11,
-        34.5
-      ],
-      "kind": "block",
-      "size": [
-        9.92,
-        0.6,
-        4.2
-      ],
-      "yaw": 0,
-      "material": "core.pbr_travertine",
-      "tint": "#e8e2d4",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_747",
-      "position": [
-        56,
-        11.6,
-        34.5
-      ],
-      "kind": "block",
-      "size": [
-        4.96,
-        0.6,
         4.2
       ],
       "yaw": 0,
@@ -30950,34 +27802,6 @@
       "fixture": "none"
     },
     {
-      "id": "prop_6o5jvn4wb1",
-      "position": [
-        128,
-        17,
-        0
-      ],
-      "kind": "prop",
-      "model": "prop.dc_dome",
-      "yaw": 0,
-      "scale": 4,
-      "solid": true,
-      "tint": "#f4f2ec"
-    },
-    {
-      "id": "prop_jk24s98i0n",
-      "position": [
-        56,
-        13.1,
-        48
-      ],
-      "kind": "prop",
-      "model": "prop.dc_dome",
-      "yaw": 0,
-      "scale": 4,
-      "solid": true,
-      "tint": "#8fae9e"
-    },
-    {
       "id": "prop_1vsdv7rqms",
       "position": [
         -100,
@@ -31240,6 +28064,90 @@
       "model": "prop.plastic_road_barrier",
       "yaw": 1.571,
       "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dmxokrxrmg",
+      "position": [
+        128,
+        8.4,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.im_capitol_dome",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jo92buckom",
+      "position": [
+        56,
+        8.4,
+        48
+      ],
+      "kind": "prop",
+      "model": "prop.im_copper_dome",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1b7vb2ebxt",
+      "position": [
+        106.1,
+        9.2,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.im_pediment",
+      "yaw": 1.571,
+      "scale": 1.9,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ddrdoryh7l",
+      "position": [
+        149.8,
+        9.2,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.im_pediment",
+      "yaw": 1.571,
+      "scale": 1.32,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_w42hr4qujz",
+      "position": [
+        56,
+        9.2,
+        34.5
+      ],
+      "kind": "prop",
+      "model": "prop.im_pediment",
+      "yaw": 0,
+      "scale": 2,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6ctcqgmocs",
+      "position": [
+        -36,
+        36,
+        0
+      ],
+      "kind": "prop",
+      "model": "prop.eg_pyramidion",
+      "yaw": 0,
+      "scale": 3.75,
       "solid": true,
       "tint": null
     }
