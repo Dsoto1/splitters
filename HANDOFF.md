@@ -10,6 +10,38 @@ The session branch is **`claude/launcher-ui-map-cards`**. Poll CI without auth:
 `curl -s "https://api.github.com/repos/Dsoto1/splitters/actions/workflows/ci.yml/runs?branch=check/candidate&per_page=1"`.
 Use `pnpm typecheck`, not `pnpm -s typecheck` (the silent flag hides type errors; one reached CI that way).
 
+### Character fixes 2: Imp portrait, bodies, shoulders, faces (`wip/char-fixes-2`, agent, 2026-11-03; pushed, not merged; from main 716c012)
+Continues the entry below (owner's notes of 3 Nov). Evidence (before/after screenshots, audits, raw comparisons): agent
+scratchpad `charfix2/`.
+- **Imp portrait** framed on its top 42 % (portraits.ts `CREATURE_TOPS`), recaptured.
+- **Bodies:** Character Select draws each look at its size class (menuScene.ts: small 1.40 m, large 2.12 m), which
+  is what made Goblina and the Space Marine (both already small) look too big. Honest Abe `"size": "large"` (gameplay:
+  speed x0.94, 115 health). Goblina: `lean.neck` 0 (was 10) and `lean.Head` 18, rebuilt from her rigged download
+  (meshy-drive `skin-fix-rig/meshy_grizzelda.glb`). Goblina and the Space Marine were not made smaller than small: at
+  their size class they read small next to a standard look (`charfix2/select-after-heroes.png`); a further shrink would
+  need a new size class or a visual scale that disagrees with the hit box: owner to say.
+- **Shoulders (every character, long guns):** `LONG_GUN_BLADE` 0.45 -> 0.22, stock pocket 7 -> 4 cm inside the shoulder
+  (`POCKET_IN`), shooting elbow aimed out and less down (`ELBOW_POLE_OUT/DOWN` 0.45/0.18, were 0.35/0.3): the right
+  arm stands out from the chest instead of running along it (Santa, Zombie Soldier A). Grip audit (rifle+pistol, 29
+  looks): before 101 / 21 flagged, after 106 / 22 (Anoobys +3 back, Beanie Alien +2 off, Honest Abe +3 flat, Shade -3).
+- **Hands/fingers: NOT fixed.** Tried and reverted: palm 0.3 hand-lengths further along the grip and a gentler curl
+  (audit 201, every hand drawn off its point); `mitten` for 11 looks and `wrist` for the Otter via rehand-built (no
+  visible change; the Otter measured worse). What the sheets show (`charfix2/hands-all1-p*.png`): the support hand lies
+  flat under the handguard with its fingers straight out (Abe, Gorgle, Zhao, Punkin, Shade), and split fingers crumple
+  when the shooting hand closes fully (Desert Ranger, Grunt '68). Next: curl the support fingers about the handguard's
+  axis rather than the hand's own, and cap the curl per joint for low-poly hands. The Imp (bots only now) holds its
+  left claw above the handguard: creatureAnimator `holdWith`, not touched.
+- **Faces (pipeline, tools/content):** `finish.maps` keeps the download's metal-roughness map (Grinning Gus: black
+  chrome; Dog Tag Doyle: glossy, and rebaked at 17k with `headShare` 0.24). Rebaked characters' own normal maps were read
+  as a download's (`DOWNLOAD_GREEN`) in the final bake: fixed (`hiGreen`), Cal's cheek line and Sgt. Mackie's wedge
+  gone; Bonesworth, Elder Tomo (centre seam gone), Thornweaver and Goblina rebuilt with it. Barnaby, Slugger and Rusty
+  Mech are rebakes with the same bug, NOT rebuilt (downloads in meshy-drive `build-newchars/`, `tposes-2026-11-01/`; check
+  each against its download). Uncut downloads (a low-poly download within budget) ship the download's own normal map
+  with no TANGENT attribute and padded gutters: Biker Gang Girl's nose wedge gone; Kenji rebuilt the same way (his pale
+  fringe patch is in the download itself: `charfix2/raw-faces-1.jpg`). WWII Infantry and Stealth Operative are All
+  Animations downloads and would change on rebuild (not rebuilt). Comparison tool: `charfix2/tools/cmp.mjs` (raw / old /
+  new in their rest pose, same light and framing; serve the files under `public/zz-charfix-raw`, never commit it).
+
 ### Character fixes: faces, roster (`wip/char-fixes`, agent, 2026-11-03; not merged, not pushed; from main ef2c103)
 Owner's notes of 3 Nov (agent scratchpad `charfix/owner-notes.md`). Steps 1-2 done here; steps 3-5 (Imp thumbnail,
 bodies, arms/grips/shoulders/fingers) NOT done: see "Open" below. Evidence: agent scratchpad `charfix/`.
