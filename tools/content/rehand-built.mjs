@@ -8,6 +8,9 @@
 //   node tools/content/rehand-built.mjs            every character with a manifest
 //   ONLY=<ids> node tools/content/rehand-built.mjs just those
 //   OUT=<dir> ...                                 a trial: the files written to <dir>, the lock left alone
+//   SIDES=r ...                                   refit only those hands (l, r); the other is kept as built
+//                                                 (a refit from the built file measures a hand a little differently
+//                                                 from the download, so a fix for one hand needn't move the other)
 //
 // Running it again gives the same files (the hand chain's weights are shared out afresh each time).
 // prepare-meshy-characters.mjs does the same at import, so a rebuild from the downloads keeps all this.
@@ -30,6 +33,7 @@ const OUT = join(ROOT, 'packages/client/public/characters');
 /** OUT=<dir>: a trial, the refitted files written there instead (outside the repo) and the lock left alone. */
 const TRIAL = process.env.OUT ? resolve(process.env.OUT) : null;
 const LOCK = join(ROOT, 'content/meshy.lock.json');
+const SIDES = process.env.SIDES ? process.env.SIDES.split(',').filter((x) => x === 'l' || x === 'r') : ['l', 'r'];
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -216,14 +220,14 @@ function rehand(doc, overrides, label, skinFix) {
   // Cloth hanging off an arm goes with the body (armweights.mjs), then the hands are fitted without it.
   // Opt-in (fixes.armCloth), by distance along the surface (armweights.mjs).
   if (label === 'body' && overrides?.armCloth) keepArmsToArms({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, log: (l) => console.log(`  ${label} ${l}`) });
-  const { moved, data } = fitHands({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, rig, overrides, skin: fingerSkin(skinFix), log: (l) => console.log(`  ${label} ${l}`) });
+  const { moved, data } = fitHands({ meshes: c.meshes, jointNames: c.jointNames, world: c.world, rig, overrides, skin: fingerSkin(skinFix), sides: SIDES, log: (l) => console.log(`  ${label} ${l}`) });
   // This look's body skin fixes (fixes.skin; skinfix.mjs), once: a file records the ones it was given.
   const body = bodySkin(skinFix);
   const had = c.skin.getExtras()?.skinFix;
   if (body && JSON.stringify(had) !== JSON.stringify(body)) {
     if (had) console.log(`  ${label} skin fixes were ${JSON.stringify(had)}: the new ones go on top (start from the file before them to replace them)`);
     const parentOf = new Map(c.joints.map((j) => [j.getName(), j.getParentNode()?.getName()]));
-    fixBodySkin({ meshes: c.meshes.map((m) => ({ ...m, idx: m.idx ?? new Uint32Array(0) })), jointNames: c.jointNames, parentOf, fix: body, log: (l) => console.log(`  ${label} ${l}`) });
+    fixBodySkin({ meshes: c.meshes.map((m) => ({ ...m, idx: m.idx ?? new Uint32Array(0) })), jointNames: c.jointNames, parentOf, fix: body, world: c.world, hands: { l: data.l ?? c.joints.find((j) => j.getName() === 'hand_l')?.getExtras()?.hand, r: data.r ?? c.joints.find((j) => j.getName() === 'hand_r')?.getExtras()?.hand }, log: (l) => console.log(`  ${label} ${l}`) });
     c.skin.setExtras({ ...c.skin.getExtras(), skinFix: body });
   }
   if (overrides?.scale || overrides?.l?.scale || overrides?.r?.scale) {

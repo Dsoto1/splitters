@@ -10,8 +10,10 @@
 //   skeleton from a vertex's own joint (a belly vertex held by a thigh and a collarbone at once, stretched between
 //   them when the arm rises: Croakley's), `clamp` drops influences under that weight, and `smooth` evens the weights
 //   of the vertices a joint pattern holds with their neighbours' (`{ joints: "<regex>", passes }`: a tabard's skin
-//   flipping from one thigh to the other between neighbouring vertices: the Iron Knight's).
-// Vertices held by a hand chain (hand, fingers, thumb) are left to fitHands.
+//   flipping from one thigh to the other between neighbouring vertices: the Iron Knight's); `wrist`
+//   (`{ until, band }`, shares of the hand's length past the wrist joint) puts the skin up to `until` on the forearm
+//   alone, easing back to the hand over `band` (a cuff or bracelet that twisted with the hand: the Wealthy Otter's).
+// Apart from `wrist`, vertices held by a hand chain (hand, fingers, thumb) are left to fitHands.
 //
 // The body part is not idempotent (smoothing twice smooths more), so a file records the body fixes it was given
 // (`extras.skinFix` on its skin) and rehand-built.mjs does not apply the same ones again.
@@ -29,7 +31,7 @@ export function fingerSkin(skin) {
 export function bodySkin(skin) {
   if (!skin) return null;
   const out = {};
-  for (const k of ['hops', 'clamp', 'smooth']) if (skin[k] !== undefined) out[k] = skin[k];
+  for (const k of ['hops', 'clamp', 'smooth', 'wrist']) if (skin[k] !== undefined) out[k] = skin[k];
   return Object.keys(out).length ? out : null;
 }
 
@@ -99,13 +101,50 @@ function neighbours(m) {
 }
 
 /**
+ * Skin of one hand up to `until` (a share of the hand's length past the wrist joint, along the forearm) goes to the
+ * forearm alone, easing back to the hand over `band`. `world` maps joint name to bind { q, t }; `hand` is the hand's
+ * measurement (extras.hand: its length). Returns the vertices changed.
+ */
+function wristToForearm(meshes, jointNames, world, hand, s, { until = 0.08, band = 0.08 }) {
+  const lower = jointNames.indexOf(`lowerarm_${s}`);
+  const E = world.get(`lowerarm_${s}`)?.t;
+  const H = world.get(`hand_${s}`)?.t;
+  if (lower < 0 || !E || !H || !hand?.length) return 0;
+  const d = [H[0] - E[0], H[1] - E[1], H[2] - E[2]];
+  const len = Math.hypot(...d);
+  const dir = d.map((x) => x / len);
+  const chain = new RegExp(`^(hand|index|middle|ring|pinky|thumb)(_0\\d)?_${s}$`);
+  const inChain = jointNames.map((n) => chain.test(n));
+  const a = until * hand.length;
+  const b = Math.max(1e-4, band * hand.length);
+  let n = 0;
+  for (const m of meshes) for (let v = 0; v < m.pos.length / 3; v++) {
+    const u = (m.pos[v * 3] - H[0]) * dir[0] + (m.pos[v * 3 + 1] - H[1]) * dir[1] + (m.pos[v * 3 + 2] - H[2]) * dir[2];
+    if (u >= a + b || u < -len) continue;
+    const keep = u <= a ? 0 : ((t) => t * t * (3 - 2 * t))((u - a) / b);
+    const acc = influences(m, v);
+    let moved = 0;
+    for (const [j, w] of [...acc]) if (inChain[j]) {
+      acc.set(j, w * keep);
+      moved += w * (1 - keep);
+    }
+    if (moved < 1e-4) continue;
+    acc.set(lower, (acc.get(lower) ?? 0) + moved);
+    put(m, v, acc);
+    n++;
+  }
+  return n;
+}
+
+/**
  * The body part of a look's skin fixes, on meshes in bind space ({ pos, J, W, idx }; J indexes `jointNames`).
  * `parentOf` maps joint name to its parent's name. Returns a short report.
  */
-export function fixBodySkin({ meshes, jointNames, parentOf, fix, log = () => {} }) {
+export function fixBodySkin({ meshes, jointNames, parentOf, fix, world = null, hands = {}, log = () => {} }) {
   if (!fix) return null;
   const isHand = jointNames.map((n) => HAND_CHAIN.test(n));
-  const report = { hops: 0, clamp: 0, smooth: 0 };
+  const report = { hops: 0, clamp: 0, smooth: 0, wrist: 0 };
+  if (fix.wrist && world) for (const s of ['l', 'r']) report.wrist += wristToForearm(meshes, jointNames, world, hands[s], s, fix.wrist);
   const re = fix.smooth ? new RegExp(fix.smooth.joints) : null;
   const near = new Map();
   const within = (a, b) => {

@@ -286,14 +286,15 @@ export function fingerGaps(uvt, uK, u1) {
  * influences per vertex, joint indices into `jointNames`) }, the first the one
  * measured. `world` maps joint name to fitted rest world { q, t } (rotations
  * the rig's); `rig` the same for the rig itself. `overrides` is the manifest's
- * `fixes.hands`. Weights are rewritten in place (J, W); returns the new world
+ * `fixes.hands`, `skin` its `fixes.skin` finger options (skinfix.mjs fingerSkin), `sides` the hands to fit (both
+ * unless set). Weights are rewritten in place (J, W); returns the new world
  * positions of the moved finger joints and the measurements per side.
  */
-export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin = {}, log = () => {} }) {
+export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin = {}, sides = ['l', 'r'], log = () => {} }) {
   const index = new Map(jointNames.map((n, i) => [n, i]));
   const moved = new Map();
   const data = {};
-  for (const s of ['l', 'r']) {
+  for (const s of sides) {
     const n = names(s);
     const H = world.get(n.hand);
     if (!H || !n.fingers.flat().every((f) => world.has(f))) continue;
@@ -400,18 +401,21 @@ export function fitHands({ meshes, jointNames, world, rig, overrides = {}, skin 
     const band = (sk.knuckle ?? 0.1) * span;
     // Each finger's share of a vertex across the hand: its own finger's, or (`fixes.skin.lanes`) blended with the
     // next finger's near the boundary between them (half each on it), so split fingers bend apart without tearing.
-    const bounds = gaps && gaps.length === 3 ? gaps : null;
+    // (Fingers in order across the hand, index side first: three fingers, as on some paws and claws, skip the ring.)
+    const order = gaps ? (gaps.length === 3 ? [0, 1, 2, 3] : [0, 1, 3]) : null;
     const spacing = width / 4;
     const sharesOf = (v) => {
       const f = mode === 'mitten' ? 1 : groupOf(v);
-      if (!bounds || !sk.lanes) return [[f, 1]];
+      if (!order || !sk.lanes) return [[f, 1]];
       const reach = sk.lanes * spacing;
-      for (const [b, other] of [[bounds[f - 1], f - 1], [bounds[f], f + 1]]) {
-        if (b === undefined) continue;
+      const k = order.indexOf(f);
+      // The boundary on the index side of this finger (gaps[k - 1]) and on its pinky side (gaps[k]).
+      for (const [b, other] of [[gaps[k - 1], order[k - 1]], [gaps[k], order[k + 1]]]) {
+        if (b === undefined || other === undefined) continue;
         const d = Math.abs(v - b);
         if (d < reach) {
-          const k = 0.5 * (1 - smooth(0, reach, d));
-          return [[f, 1 - k], [other, k]];
+          const share = 0.5 * (1 - smooth(0, reach, d));
+          return [[f, 1 - share], [other, share]];
         }
       }
       return [[f, 1]];

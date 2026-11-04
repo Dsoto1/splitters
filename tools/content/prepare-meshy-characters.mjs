@@ -959,7 +959,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   const skinBody = bodySkin(c.skin);
   if (skinBody) {
     const parentOf = new Map(joints.map((j) => [j.getName(), j.getParentNode()?.getName()]));
-    fixBodySkin({ meshes: [{ pos, J, W, idx: src.indices }], jointNames: rigNames, parentOf, fix: skinBody, log: (l) => console.log(`  ${out} ${l}`) });
+    fixBodySkin({ meshes: [{ pos, J, W, idx: src.indices }], jointNames: rigNames, parentOf, fix: skinBody, world: new Map([...fitted].map(([n, w]) => [n, { ...w, t: target.get(n) }])), hands: hands.data, log: (l) => console.log(`  ${out} ${l}`) });
     skin.setExtras({ ...skin.getExtras(), skinFix: skinBody });
   }
   for (const [n, t] of hands.moved) target.set(n, t);

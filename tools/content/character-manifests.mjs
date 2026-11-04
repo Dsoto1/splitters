@@ -172,7 +172,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     // This look's own skin weights (tools/content/skinfix.mjs; docs/CHARACTERS.md, "A look's own skin weights").
     const k = x.skin;
     const FINGER = ['tips', 'knuckle', 'joints', 'lanes', 'fingers'];
-    need(typeof k === 'object' && k !== null && Object.keys(k).every((q) => [...FINGER, 'hops', 'clamp', 'smooth', 'l', 'r'].includes(q)), `fixes.skin: { ${FINGER.join(', ')}, hops, clamp, smooth; or l / r for one hand's fingers }`);
+    need(typeof k === 'object' && k !== null && Object.keys(k).every((q) => [...FINGER, 'hops', 'clamp', 'smooth', 'wrist', 'l', 'r'].includes(q)), `fixes.skin: { ${FINGER.join(', ')}, hops, clamp, smooth, wrist; or l / r for one hand's fingers }`);
     for (const side of [k, k?.l, k?.r].filter(Boolean)) {
       if (side !== k) need(Object.keys(side).every((q) => FINGER.includes(q)), `fixes.skin.l / r: { ${FINGER.join(', ')} }`);
       need(side.tips === undefined || (typeof side.tips === 'number' && side.tips > 0 && side.tips <= 0.5), 'fixes.skin.tips: 0–0.5 (strays past the knuckles up to this share of the hand past its tips are fingers)');
@@ -183,6 +183,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     }
     need(k?.hops === undefined || (Number.isInteger(k.hops) && k.hops >= 1 && k.hops <= 4), 'fixes.skin.hops: 1–4 (joints further along the skeleton from a vertex\'s own are dropped)');
     need(k?.clamp === undefined || (typeof k.clamp === 'number' && k.clamp > 0 && k.clamp <= 0.3), 'fixes.skin.clamp: 0–0.3 (influences under it are dropped)');
+    need(k?.wrist === undefined || (typeof k.wrist === 'object' && k.wrist !== null && Object.keys(k.wrist).every((q) => ['until', 'band'].includes(q)) && Object.values(k.wrist).every((x) => typeof x === 'number' && x >= 0 && x <= 0.4)), 'fixes.skin.wrist: { until, band } (shares of the hand\'s length past the wrist joint, 0–0.4)');
     if (k?.smooth !== undefined) {
       let ok = false;
       try {
