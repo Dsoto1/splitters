@@ -48,6 +48,11 @@ large, Hyena and Croakley hunched, T-TreeFitty robot, Big Bogdan wide; creatures
 - **Perf (96 bots, Frost Basin TDM, 30 s, process CPU per tick, two interleaved runs each, load 12-17):** clumped
   6.41 / 6.36 ms -> 6.69 / 6.69 ms; combat 0.44 / 0.41 -> 0.48 / 0.50 ms; spread 7.40 / 7.51 -> 7.72 / 8.29 ms (noisy).
   A shot against 96 bodies: 8-12 us (old capsule 16-19 us), `hitboxPerf.test.ts`.
+- **Checks:** typecheck clean; content:check OK (hitboxes up to date); test:changed (all units: shared code) 1359 of
+  1366 passed, then the 5 fixed or re-run alone (sticky grenade throw and botPush bound fixed; host.test and two
+  pads.test cases are load timeouts, pass alone). E2E (`CI=1`, ports 4951/7951/9951-9954/7953-7954; the change maps to
+  all 38 flows): offline PASS 450 s, arsenal PASS 533 s, characters PASS 1845 s, lobby PASS 785 s, dedicatedhost PASS
+  381 s, visual PASS 414 s (baselines unchanged: menu 0.5 %, others <= 0.1 %). Needs a `check/` run (full suite).
 
 ### Capitol Mall: domes on drums, marble roofs (`wip/capitol-domes`, agent, 2026-11-04; pushed, not merged; from main 5a002f8)
 Owner-approved follow-up to "Map reworks, batch 3" (its "Not done": the slab skirt under the domes, the black corner
