@@ -10,15 +10,7 @@
 // frame times; hitches (count, per minute, the worst, and where they cluster: 10 m cells of the map); draws,
 // shadow casters and the counts.
 import { readFileSync } from 'node:fs';
-
-const args = process.argv.slice(2);
-const files = args.filter((a) => !a.startsWith('--'));
-const asJson = args.includes('--json');
-const worstN = Number(args.find((a) => a.startsWith('--worst='))?.slice(8) ?? 8);
-if (!files.length || files.length > 2) {
-  console.error('usage: node tools/perf/compare.mjs <recording.json> [after.json] [--json] [--worst=N]');
-  process.exit(2);
-}
+import { pathToFileURL } from 'node:url';
 
 /** p-quantile from a histogram (bucket edges `edges`, counts one longer: the last is "above the top edge"). */
 export function histQuantile(edges, counts, q) {
@@ -55,7 +47,7 @@ const SYSTEMS = [
   ['renderPost', 'render: post-processing'],
 ];
 
-export function summarise(rec) {
+export function summarise(rec, worstN = 8) {
   if (rec.format !== 'tiletrigger-perf-recording') throw new Error('not a Tile Trigger performance recording');
   const f = rec.secondFields;
   const col = (name) => f.indexOf(name);
@@ -119,42 +111,54 @@ export function summarise(rec) {
   };
 }
 
-const fmt = (x, d = 1) => (x === null || x === undefined ? '–' : x.toFixed(d));
-const delta = (a, b) => {
-  if (a === null || b === null || a === undefined || b === undefined) return '';
-  if (!a) return b ? ' (new)' : '';
-  const p = ((b - a) / a) * 100;
-  return ` (${p >= 0 ? '+' : ''}${p.toFixed(0)} %)`;
-};
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
 
-const sums = files.map((p) => summarise(JSON.parse(readFileSync(p, 'utf8'))));
-if (asJson) {
-  console.log(JSON.stringify(sums.length === 1 ? sums[0] : { before: sums[0], after: sums[1] }, null, 2));
-  process.exit(0);
-}
-const [a, b] = sums;
-const head = (s, label) => console.log(`${label}${s.match}\n  ${s.app}; ${s.machine}; ${s.settings}\n  ${s.seconds.toFixed(0)} s, ${s.frames} frames, ${s.fps.toFixed(1)} fps`);
-head(a, b ? 'before: ' : '');
-if (b) head(b, 'after:  ');
-console.log('');
-console.log(`${'ms a frame'.padEnd(40)}${b ? 'avg before → after'.padEnd(34) + 'p95 before → after' : 'avg      p95'}`);
-for (const [k, label] of SYSTEMS) {
-  const x = a.systems[k];
-  if (!b) console.log(`${label.padEnd(40)}${fmt(x.avg, 2).padEnd(9)}${fmt(x.p95, 2)}`);
-  else {
-    const y = b.systems[k];
-    console.log(`${label.padEnd(40)}${`${fmt(x.avg, 2)} → ${fmt(y.avg, 2)}${delta(x.avg, y.avg)}`.padEnd(34)}${fmt(x.p95, 2)} → ${fmt(y.p95, 2)}${delta(x.p95, y.p95)}`);
+function main() {
+const args = process.argv.slice(2);
+  const files = args.filter((a) => !a.startsWith('--'));
+  const asJson = args.includes('--json');
+  const worstN = Number(args.find((a) => a.startsWith('--worst='))?.slice(8) ?? 8);
+  if (!files.length || files.length > 2) {
+    console.error('usage: node tools/perf/compare.mjs <recording.json> [after.json] [--json] [--worst=N]');
+    process.exit(2);
   }
-}
-console.log('');
-console.log('per frame (avg)');
-for (const k of Object.keys(a.counts)) console.log(`  ${k.padEnd(14)}${b ? `${fmt(a.counts[k])} → ${fmt(b.counts[k])}${delta(a.counts[k], b.counts[k])}` : fmt(a.counts[k])}`);
-console.log(`  ${'shaders built in play'.padEnd(14)} ${b ? `${a.shadersNew} → ${b.shadersNew}` : a.shadersNew}`);
-if (a.serverTick !== null || b?.serverTick) console.log(`  server tick ms ${b ? `${fmt(a.serverTick, 2)} → ${fmt(b.serverTick, 2)}` : fmt(a.serverTick, 2)}`);
-for (const [s, label] of b ? [[a, 'before'], [b, 'after']] : [[a, '']]) {
+  const fmt = (x, d = 1) => (x === null || x === undefined ? '–' : x.toFixed(d));
+  const delta = (a, b) => {
+    if (a === null || b === null || a === undefined || b === undefined) return '';
+    if (!a) return b ? ' (new)' : '';
+    const p = ((b - a) / a) * 100;
+    return ` (${p >= 0 ? '+' : ''}${p.toFixed(0)} %)`;
+  };
+
+  const sums = files.map((p) => summarise(JSON.parse(readFileSync(p, 'utf8')), worstN));
+  if (asJson) {
+    console.log(JSON.stringify(sums.length === 1 ? sums[0] : { before: sums[0], after: sums[1] }, null, 2));
+    return;
+  }
+  const [a, b] = sums;
+  const head = (s, label) => console.log(`${label}${s.match}\n  ${s.app}; ${s.machine}; ${s.settings}\n  ${s.seconds.toFixed(0)} s, ${s.frames} frames, ${s.fps.toFixed(1)} fps`);
+  head(a, b ? 'before: ' : '');
+  if (b) head(b, 'after:  ');
   console.log('');
-  const h = s.hitches;
-  console.log(`hitches ${label}: ${h.count} over 50 ms (${h.perMinute.toFixed(1)} a minute), ${h.over100} over 100 ms, ${h.over250} over 250 ms`);
-  for (const w of h.worst) console.log(`  ${w.dt.toFixed(0).padStart(5)} ms at ${w.t.toFixed(0)} s, ${w.pos ? `(${w.pos.join(', ')})` : '?'}: ${w.top}${w.outside > w.dt / 2 ? `; ${w.outside.toFixed(0)} ms outside the frame` : ''}; in view ${w.inView.characters} characters, ${w.inView.draws} draws, ${w.inView.casters} casters, ${w.inView.effects} effects, ${w.inView.ragdolls} ragdolls${w.shadersNew ? `; ${w.shadersNew} shaders built` : ''}${w.server ? `; server tick ${w.server.tickAvg} / ${w.server.tickMax} ms` : ''}`);
-  if (h.places.length) console.log(`  places (10 m cells, by hitch time): ${h.places.map((c) => `${c.at} ×${c.hitches} (worst ${c.worst.toFixed(0)})`).join('; ')}`);
+  console.log(`${'ms a frame'.padEnd(40)}${b ? 'avg before → after'.padEnd(34) + 'p95 before → after' : 'avg      p95'}`);
+  for (const [k, label] of SYSTEMS) {
+    const x = a.systems[k];
+    if (!b) console.log(`${label.padEnd(40)}${fmt(x.avg, 2).padEnd(9)}${fmt(x.p95, 2)}`);
+    else {
+      const y = b.systems[k];
+      console.log(`${label.padEnd(40)}${`${fmt(x.avg, 2)} → ${fmt(y.avg, 2)}${delta(x.avg, y.avg)}`.padEnd(34)}${fmt(x.p95, 2)} → ${fmt(y.p95, 2)}${delta(x.p95, y.p95)}`);
+    }
+  }
+  console.log('');
+  console.log('per frame (avg)');
+  for (const k of Object.keys(a.counts)) console.log(`  ${k.padEnd(14)}${b ? `${fmt(a.counts[k])} → ${fmt(b.counts[k])}${delta(a.counts[k], b.counts[k])}` : fmt(a.counts[k])}`);
+  console.log(`  ${'shaders built in play'.padEnd(14)} ${b ? `${a.shadersNew} → ${b.shadersNew}` : a.shadersNew}`);
+  if (a.serverTick !== null || b?.serverTick) console.log(`  server tick ms ${b ? `${fmt(a.serverTick, 2)} → ${fmt(b.serverTick, 2)}` : fmt(a.serverTick, 2)}`);
+  for (const [s, label] of b ? [[a, 'before'], [b, 'after']] : [[a, '']]) {
+    console.log('');
+    const h = s.hitches;
+    console.log(`hitches ${label}: ${h.count} over 50 ms (${h.perMinute.toFixed(1)} a minute), ${h.over100} over 100 ms, ${h.over250} over 250 ms`);
+    for (const w of h.worst) console.log(`  ${w.dt.toFixed(0).padStart(5)} ms at ${w.t.toFixed(0)} s, ${w.pos ? `(${w.pos.join(', ')})` : '?'}: ${w.top}${w.outside > w.dt / 2 ? `; ${w.outside.toFixed(0)} ms outside the frame` : ''}; in view ${w.inView.characters} characters, ${w.inView.draws} draws, ${w.inView.casters} casters, ${w.inView.effects} effects, ${w.inView.ragdolls} ragdolls${w.shadersNew ? `; ${w.shadersNew} shaders built` : ''}${w.server ? `; server tick ${w.server.tickAvg} / ${w.server.tickMax} ms` : ''}`);
+    if (h.places.length) console.log(`  places (10 m cells, by hitch time): ${h.places.map((c) => `${c.at} ×${c.hitches} (worst ${c.worst.toFixed(0)})`).join('; ')}`);
+  }
 }

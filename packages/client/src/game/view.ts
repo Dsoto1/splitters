@@ -3073,6 +3073,12 @@ export class GameView {
  * shadow maps and the mist's depth map; post-processing from the end of the draw to the end of the camera.
  */
 function instrumentRender(scene: Scene): void {
+  const skin = (t0: number) => {
+    perfProbe.add(SYS.skin, t0);
+    perfProbe.n[COUNT.skinned]!++;
+  };
+  scene.onBeforeAnimationsObservable.add(() => void (CharacterAnimator.skinProbe = perfProbe.on ? skin : null), undefined, true);
+  scene.onDisposeObservable.addOnce(() => void (CharacterAnimator.skinProbe = null));
   let anim = 0;
   let cull = 0;
   let skin0 = 0;
