@@ -51,7 +51,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { clearNodeTransform, dedup, flatten, prune, quantize, weld } from '@gltf-transform/functions';
 import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
-import { MESHY_QUANTIZE, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
+import { MESHY_QUANTIZE, markings, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
 import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -99,17 +99,6 @@ async function shrink(tex, size, mime) {
   tex.setImage(data).setMimeType(mime).setURI('');
 }
 
-/** The colour test for `paintOut` rules (see the header). */
-function markings(rules) {
-  const tests = rules.map((r) =>
-    r.warm
-      ? (R, G, B) => R >= r.warm[0] && R - B >= r.warm[1] && R - G >= r.warm[2]
-      : r.dark !== undefined
-        ? (R, G, B) => Math.max(R, G, B) <= r.dark && Math.max(R, G, B) - Math.min(R, G, B) < r.chroma
-        : (R, G, B) => Math.min(R, G, B) >= r.light && Math.max(R, G, B) - Math.min(R, G, B) < r.chroma,
-  );
-  return (R, G, B) => tests.some((t) => t(R, G, B));
-}
 
 /** `glow` (see the header): turn the glowing pixels the `warm` test picks to the glow colour, light and dark kept. */
 function recolourGlow(glow) {

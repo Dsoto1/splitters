@@ -51,6 +51,15 @@ describe('map loading', () => {
     expect(r.ok).toBe(true);
     expect(r.issues.filter((i) => i.severity !== 'suggestion').map((i) => [i.code, i.targetId])).toEqual([['spawn.no_floor', 'spawn_1']]);
   });
+
+  it("counts a solid prop's collision as a spawn's floor (an airliner cabin's floor), not a walk-through one", () => {
+    // A straight cabin section: its floor's top is 2.683 m above its base (the cabin floor at 6.79 m in a shell at 0).
+    const map = makeMap([{ id: 'tile_a', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }], [[0, 0, 0], [40, 6.79, 0], [60, 6.79, 0]]);
+    const section = (id: string, x: number, solid: boolean) => ({ id, kind: 'prop' as const, model: 'prop.ac_section_straight', position: [x, 4.107, 0] as [number, number, number], yaw: 0.4, scale: 1, solid, tint: null });
+    map.entities.push(section('prop_a', 40, true), section('prop_b', 60, false));
+    const r = loadMap(map);
+    expect(r.issues.filter((i) => i.code === 'spawn.no_floor').map((i) => i.targetId)).toEqual(['spawn_2']);
+  });
 });
 
 describe('migrations', () => {

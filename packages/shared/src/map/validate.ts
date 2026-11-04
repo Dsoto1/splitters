@@ -5,7 +5,7 @@ import { getItem } from '../sim/items.ts';
 import { itemCategory } from '../sim/pickupRoll.ts';
 import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { getProp } from '../content/props.ts';
-import { buildMapGeometry, buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, resolveEdge, yawXZ } from './geometry.ts';
+import { buildMapGeometry, buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, yawXZ, type WorldBox } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { floatingProps, rebedProps, terrainUnderFloors } from './settle.ts';
@@ -172,6 +172,7 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   }
 
   const { cellSize, levelHeight } = map.classicStructure;
+  let propTops: WorldBox[] | undefined;
   for (const s of spawns) {
     const [x, y, z] = s.position;
     const gx = Math.round(x / cellSize);
@@ -182,7 +183,9 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
     const onTerrain = ground !== null && Math.abs(ground - y) < 1.5;
     // Standing on a free block (its top within reach of the spawn's feet).
     const onBlock = blocks.some((b) => b.kind === 'block' && Math.abs(b.position[1] + b.size[1] - y) < 1 && pointOnBlock(b, x, z));
-    if (!onTerrain && !onBlock && (!occ || !cellHasFloor(occ))) {
+    // Or on a solid prop's collision (an airliner cabin's floor, a stair truck's platform), the same way.
+    const onProp = !onTerrain && !onBlock && (propTops ??= propBoxes(map)).some((b) => Math.abs(b.max[1] - y) < 1 && pointOnBox(b, x, z));
+    if (!onTerrain && !onBlock && !onProp && (!occ || !cellHasFloor(occ))) {
       issues.push({ severity: 'warning', code: 'spawn.no_floor', message: `spawn ${s.id} is not above a tile floor`, targetId: s.id });
     }
   }
@@ -258,6 +261,13 @@ export function serializeMap(map: MapDocument): string {
 }
 
 /** Whether (x, z) is over a block's (turned) footprint. */
+/** Whether (x, z) is inside a world box's footprint (turned with its yaw about its middle). */
+function pointOnBox(b: WorldBox, x: number, z: number): boolean {
+  const [cx, cz] = [(b.min[0] + b.max[0]) / 2, (b.min[2] + b.max[2]) / 2];
+  const [lx, lz] = yawXZ(x - cx, z - cz, -(b.yaw ?? 0));
+  return Math.abs(lx) <= (b.max[0] - b.min[0]) / 2 && Math.abs(lz) <= (b.max[2] - b.min[2]) / 2;
+}
+
 function pointOnBlock(b: Extract<MapEntity, { kind: 'block' }>, x: number, z: number): boolean {
   const [lx, lz] = yawXZ(x - b.position[0], z - b.position[2], -b.yaw);
   return Math.abs(lx) <= b.size[0] / 2 && Math.abs(lz) <= b.size[2] / 2;
